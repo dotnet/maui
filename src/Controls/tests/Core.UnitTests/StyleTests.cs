@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -51,7 +52,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Setters = {
 					new Setter { Property = Label.TextProperty, Value = "foo" },
-					new Setter { Property = VisualElement.BackgroundColorProperty, Value = Color.Pink },
+					new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Pink },
 				}
 			};
 
@@ -60,7 +61,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Style = style
 			};
 			Assert.AreEqual("foo", label.Text);
-			Assert.AreEqual(Color.Pink, label.BackgroundColor);
+			Assert.AreEqual(Colors.Pink, label.BackgroundColor);
 
 			label.Style = null;
 			Assert.AreEqual(Label.TextProperty.DefaultValue, label.Text);
@@ -88,9 +89,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual("FOO", label.Text);
 
 			label.Resources = new ResourceDictionary {
-				{"qux", Color.Pink}
+				{"qux", Colors.Pink}
 			};
-			Assert.AreEqual(Color.Pink, label.BackgroundColor);
+			Assert.AreEqual(Colors.Pink, label.BackgroundColor);
 
 			label.Style = null;
 			Assert.AreEqual(Label.TextProperty.DefaultValue, label.Text);
@@ -120,14 +121,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			label0.BindingContext = label1.BindingContext = new { foo = "FOO" };
 			label0.Resources = label1.Resources = new ResourceDictionary {
-				{"qux", Color.Pink}
+				{"qux", Colors.Pink}
 			};
 
 			Assert.AreEqual("FOO", label0.Text);
 			Assert.AreEqual("FOO", label1.Text);
 
-			Assert.AreEqual(Color.Pink, label0.BackgroundColor);
-			Assert.AreEqual(Color.Pink, label1.BackgroundColor);
+			Assert.AreEqual(Colors.Pink, label0.BackgroundColor);
+			Assert.AreEqual(Colors.Pink, label1.BackgroundColor);
 
 			label0.Style = label1.Style = null;
 
@@ -193,12 +194,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var rd = new ResourceDictionary {
 				new Style (typeof(Label)) { Setters = {
-						new Setter { Property = Label.TextColorProperty, Value = Color.Pink },
+						new Setter { Property = Label.TextColorProperty, Value = Colors.Pink },
 					}
 				},
 				{ "foo", "FOO" },
 				{"labelStyle", new Style (typeof(Label)) { Setters = {
-							new Setter { Property = Label.TextColorProperty, Value = Color.Purple }
+							new Setter { Property = Label.TextColorProperty, Value = Colors.Purple }
 						}
 					}
 				}
@@ -213,12 +214,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var rd = new ResourceDictionary {
 				new Style (typeof(Label)) { Setters = {
-						new Setter { Property = Label.TextColorProperty, Value = Color.Pink },
+						new Setter { Property = Label.TextColorProperty, Value = Colors.Pink },
 					}
 				},
 				{ "foo", "FOO" },
 				{"labelStyle", new Style (typeof(Label)) { Setters = {
-							new Setter { Property = Label.TextColorProperty, Value = Color.Purple }
+							new Setter { Property = Label.TextColorProperty, Value = Colors.Purple }
 						}
 					}
 				}
@@ -229,7 +230,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.AreEqual(label.TextColor, Label.TextColorProperty.DefaultValue);
 			layout.Resources = rd;
-			Assert.AreEqual(label.TextColor, Color.Pink);
+			Assert.AreEqual(label.TextColor, Colors.Pink);
 		}
 
 		[Test]
@@ -237,12 +238,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var rd = new ResourceDictionary {
 				new Style (typeof(Label)) { Setters = {
-						new Setter { Property = Label.TextColorProperty, Value = Color.Pink },
+						new Setter { Property = Label.TextColorProperty, Value = Colors.Pink },
 					}
 				},
 				{ "foo", "FOO" },
 				{"labelStyle", new Style (typeof(Label)) { Setters = {
-							new Setter { Property = Label.TextColorProperty, Value = Color.Purple }
+							new Setter { Property = Label.TextColorProperty, Value = Colors.Purple }
 						}
 					}
 				}
@@ -254,7 +255,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.AreEqual(label.TextColor, Label.TextColorProperty.DefaultValue);
 			layout.Children.Add(label);
-			Assert.AreEqual(label.TextColor, Color.Pink);
+			Assert.AreEqual(label.TextColor, Colors.Pink);
 		}
 
 		[Test]
@@ -262,12 +263,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var rd = new ResourceDictionary {
 				new Style (typeof(Label)) { Setters = {
-						new Setter { Property = Label.TextColorProperty, Value = Color.Pink },
+						new Setter { Property = Label.TextColorProperty, Value = Colors.Pink },
 					}
 				},
 				{ "foo", "FOO" },
 				{"labelStyle", new Style (typeof(Label)) { Setters = {
-							new Setter { Property = Label.TextColorProperty, Value = Color.Purple }
+							new Setter { Property = Label.TextColorProperty, Value = Colors.Purple }
 						}
 					}
 				}
@@ -277,7 +278,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.SetDynamicResource(VisualElement.StyleProperty, "labelStyle");
 			var layout = new StackLayout { Children = { label }, Resources = rd };
 
-			Assert.AreEqual(label.TextColor, Color.Purple);
+			Assert.AreEqual(label.TextColor, Colors.Purple);
 		}
 
 		[Test]
@@ -285,12 +286,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var rd = new ResourceDictionary {
 				new Style (typeof(Label)) { Setters = {
-						new Setter { Property = Label.TextColorProperty, Value = Color.Pink },
+						new Setter { Property = Label.TextColorProperty, Value = Colors.Pink },
 					}
 				},
 				{ "foo", "FOO" },
 				{"labelStyle", new Style (typeof(Label)) { Setters = {
-							new Setter { Property = Label.TextColorProperty, Value = Color.Purple }
+							new Setter { Property = Label.TextColorProperty, Value = Colors.Purple }
 						}
 					}
 				}
@@ -300,9 +301,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.SetDynamicResource(VisualElement.StyleProperty, "labelStyle");
 			var layout = new StackLayout { Children = { label }, Resources = rd };
 
-			Assert.AreEqual(label.TextColor, Color.Purple);
+			Assert.AreEqual(label.TextColor, Colors.Purple);
 			label.Style = null;
-			Assert.AreEqual(label.TextColor, Color.Pink);
+			Assert.AreEqual(label.TextColor, Colors.Pink);
 		}
 
 		[Test]
@@ -312,22 +313,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Setters = {
 					new Setter {Property = Label.TextProperty, Value = "foo"},
-					new Setter {Property = Label.TextColorProperty, Value = Color.Pink}
+					new Setter {Property = Label.TextColorProperty, Value = Colors.Pink}
 				}
 			};
 			var baseStyle1 = new Style(typeof(Label))
 			{
 				Setters = {
 					new Setter {Property = Label.TextProperty, Value = "bar"},
-					new Setter {Property = Label.TextColorProperty, Value = Color.Purple}
+					new Setter {Property = Label.TextColorProperty, Value = Colors.Purple}
 				}
 			};
 			var style = new Style(typeof(Label))
 			{
 				BaseResourceKey = "basestyle",
 				Setters = {
-					new Setter { Property = Label.BackgroundColorProperty, Value = Color.Red },
-					new Setter { Property = Label.TextColorProperty, Value = Color.Red },
+					new Setter { Property = Label.BackgroundColorProperty, Value = Colors.Red },
+					new Setter { Property = Label.TextColorProperty, Value = Colors.Red },
 				}
 			};
 
@@ -336,8 +337,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Style = style
 			};
 
-			Assert.AreEqual(Color.Red, label0.BackgroundColor);
-			Assert.AreEqual(Color.Red, label0.TextColor);
+			Assert.AreEqual(Colors.Red, label0.BackgroundColor);
+			Assert.AreEqual(Colors.Red, label0.TextColor);
 			Assert.AreEqual(Label.TextProperty.DefaultValue, label0.Text);
 
 			var layout0 = new StackLayout
@@ -350,8 +351,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			Assert.AreEqual(Color.Red, label0.BackgroundColor);
-			Assert.AreEqual(Color.Red, label0.TextColor);
+			Assert.AreEqual(Colors.Red, label0.BackgroundColor);
+			Assert.AreEqual(Colors.Red, label0.TextColor);
 			Assert.AreEqual("foo", label0.Text);
 
 			var label1 = new Label
@@ -359,8 +360,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Style = style
 			};
 
-			Assert.AreEqual(Color.Red, label1.BackgroundColor);
-			Assert.AreEqual(Color.Red, label1.TextColor);
+			Assert.AreEqual(Colors.Red, label1.BackgroundColor);
+			Assert.AreEqual(Colors.Red, label1.TextColor);
 			Assert.AreEqual(Label.TextProperty.DefaultValue, label1.Text);
 
 			var layout1 = new StackLayout
@@ -373,8 +374,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{"basestyle", baseStyle1}
 			};
 
-			Assert.AreEqual(Color.Red, label1.BackgroundColor);
-			Assert.AreEqual(Color.Red, label1.TextColor);
+			Assert.AreEqual(Colors.Red, label1.BackgroundColor);
+			Assert.AreEqual(Colors.Red, label1.TextColor);
 			Assert.AreEqual("bar", label1.Text);
 		}
 
@@ -421,12 +422,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var style = new Style(typeof(Label))
 			{
 				Setters = {
-					new Setter {Property = Label.TextColorProperty, Value=Color.Black},
+					new Setter {Property = Label.TextColorProperty, Value=Colors.Black},
 				}
 			};
 
-			var label = new Label { TextColor = Color.White, Style = style };
-			Assert.AreEqual(Color.White, label.TextColor);
+			var label = new Label { TextColor = Colors.White, Style = style };
+			Assert.AreEqual(Colors.White, label.TextColor);
 		}
 
 		[Test]
@@ -436,23 +437,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var style = new Style(typeof(Entry))
 			{
 				Setters = {
-					new Setter { Property = Entry.TextColorProperty, Value = Color.Yellow }
+					new Setter { Property = Entry.TextColorProperty, Value = Colors.Yellow }
 				},
 				Triggers = {
 					new Trigger (typeof(Entry)) {
 						Property = VisualElement.IsEnabledProperty,
 						Value = false,
 						Setters = {
-							new Setter { Property = Entry.TextColorProperty, Value = Color.Red }
+							new Setter { Property = Entry.TextColorProperty, Value = Colors.Red }
 						},
 					}
 				},
 			};
 
 			var entry = new Entry { IsEnabled = false, Style = style };
-			Assert.AreEqual(Color.Red, entry.TextColor);
+			Assert.AreEqual(Colors.Red, entry.TextColor);
 			entry.IsEnabled = true;
-			Assert.AreEqual(Color.Yellow, entry.TextColor);
+			Assert.AreEqual(Colors.Yellow, entry.TextColor);
 		}
 
 		[Test]
@@ -530,7 +531,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var style = new Style(typeof(Label))
 			{
 				Setters = {
-					new Setter { Property = Label.TextColorProperty, Value = Color.Red }
+					new Setter { Property = Label.TextColorProperty, Value = Colors.Red }
 				},
 			};
 			var view = new ContentView
@@ -543,7 +544,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 			Assert.AreEqual("Foo", ((Label)view.Content).Text);
-			Assert.AreEqual(Color.Red, ((Label)view.Content).TextColor);
+			Assert.AreEqual(Colors.Red, ((Label)view.Content).TextColor);
 		}
 
 		[Test]
@@ -558,7 +559,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var style = new Style(typeof(Label))
 			{
 				Setters = {
-					new Setter { Property = Label.TextColorProperty, Value = Color.Red }
+					new Setter { Property = Label.TextColorProperty, Value = Colors.Red }
 				},
 			};
 			var view = new ContentView
@@ -570,7 +571,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 			Assert.AreEqual(Label.TextProperty.DefaultValue, ((Label)view.Content).Text);
-			Assert.AreEqual(Color.Red, ((Label)view.Content).TextColor);
+			Assert.AreEqual(Colors.Red, ((Label)view.Content).TextColor);
 		}
 
 		[Test]
@@ -585,7 +586,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var style = new Style(typeof(Label))
 			{
 				Setters = {
-					new Setter { Property = Label.TextColorProperty, Value = Color.Red },
+					new Setter { Property = Label.TextColorProperty, Value = Colors.Red },
 				},
 				CanCascade = true
 			};
@@ -598,7 +599,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 			Assert.AreEqual("Foo", ((Label)view.Content).Text);
-			Assert.AreEqual(Color.Red, ((Label)view.Content).TextColor);
+			Assert.AreEqual(Colors.Red, ((Label)view.Content).TextColor);
 		}
 
 		[Test]
@@ -607,7 +608,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var buttonStyle = new Style(typeof(Button))
 			{
 				Setters = {
-					new Setter { Property = Button.TextColorProperty, Value = Color.Pink },
+					new Setter { Property = Button.TextColorProperty, Value = Colors.Pink },
 				},
 				Class = "pink",
 				ApplyToDerivedTypes = true,
@@ -615,7 +616,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var labelStyle = new Style(typeof(Label))
 			{
 				Setters = {
-					new Setter { Property = Button.BackgroundColorProperty, Value = Color.Pink },
+					new Setter { Property = Button.BackgroundColorProperty, Value = Colors.Pink },
 				},
 				Class = "pink",
 				ApplyToDerivedTypes = false,
@@ -652,17 +653,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			Assert.AreEqual(Color.Pink, button.TextColor);
-			Assert.AreEqual(Color.Default, button.BackgroundColor);
+			Assert.AreEqual(Colors.Pink, button.TextColor);
+			Assert.AreEqual(null, button.BackgroundColor);
 
-			Assert.AreEqual(Color.Pink, myButton.TextColor);
-			Assert.AreEqual(Color.Default, myButton.BackgroundColor);
+			Assert.AreEqual(Colors.Pink, myButton.TextColor);
+			Assert.AreEqual(null, myButton.BackgroundColor);
 
-			Assert.AreEqual(Color.Pink, label.BackgroundColor);
-			Assert.AreEqual(Color.Default, label.TextColor);
+			Assert.AreEqual(Colors.Pink, label.BackgroundColor);
+			Assert.AreEqual(null, label.TextColor);
 
-			Assert.AreEqual(Color.Default, myLabel.BackgroundColor);
-			Assert.AreEqual(Color.Default, myLabel.TextColor);
+			Assert.AreEqual(null, myLabel.BackgroundColor);
+			Assert.AreEqual(null, myLabel.TextColor);
 		}
 
 		[Test]
@@ -671,7 +672,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var buttonStyle = new Style(typeof(Button))
 			{
 				Setters = {
-					new Setter { Property = Button.TextColorProperty, Value = Color.Pink },
+					new Setter { Property = Button.TextColorProperty, Value = Colors.Pink },
 				},
 				Class = "pink",
 				ApplyToDerivedTypes = true,
@@ -679,7 +680,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var labelStyle = new Style(typeof(Label))
 			{
 				Setters = {
-					new Setter { Property = Button.BackgroundColorProperty, Value = Color.Pink },
+					new Setter { Property = Button.BackgroundColorProperty, Value = Colors.Pink },
 				},
 				Class = "pink",
 				ApplyToDerivedTypes = false,
@@ -707,11 +708,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			Assert.AreEqual(Color.Pink, button.TextColor);
-			Assert.AreEqual(Color.Default, button.BackgroundColor);
+			Assert.AreEqual(Colors.Pink, button.TextColor);
+			Assert.AreEqual(null, button.BackgroundColor);
 
-			Assert.AreEqual(Color.Pink, label.BackgroundColor);
-			Assert.AreEqual(Color.Default, label.TextColor);
+			Assert.AreEqual(Colors.Pink, label.BackgroundColor);
+			Assert.AreEqual(null, label.TextColor);
 		}
 
 		[Test]
@@ -720,7 +721,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var buttonStyle = new Style(typeof(Button))
 			{
 				Setters = {
-						new Setter { Property = Button.TextColorProperty, Value = Color.Pink },
+						new Setter { Property = Button.TextColorProperty, Value = Colors.Pink },
 					},
 				Class = "pink",
 				ApplyToDerivedTypes = true,
@@ -728,7 +729,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var labelStyle = new Style(typeof(Label))
 			{
 				Setters = {
-						new Setter { Property = Button.BackgroundColorProperty, Value = Color.Pink },
+						new Setter { Property = Button.BackgroundColorProperty, Value = Colors.Pink },
 					},
 				Class = "pink",
 				ApplyToDerivedTypes = false,
@@ -755,11 +756,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			(cv.Content as StackLayout).Children.Add(button);
 			(cv.Content as StackLayout).Children.Add(label);
 
-			Assert.AreEqual(Color.Pink, button.TextColor);
-			Assert.AreEqual(Color.Default, button.BackgroundColor);
+			Assert.AreEqual(Colors.Pink, button.TextColor);
+			Assert.AreEqual(null, button.BackgroundColor);
 
-			Assert.AreEqual(Color.Pink, label.BackgroundColor);
-			Assert.AreEqual(Color.Default, label.TextColor);
+			Assert.AreEqual(Colors.Pink, label.BackgroundColor);
+			Assert.AreEqual(null, label.TextColor);
 		}
 
 		[Test]
@@ -768,7 +769,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var pinkStyle = new Style(typeof(Button))
 			{
 				Setters = {
-					new Setter { Property = Button.TextColorProperty, Value = Color.Pink },
+					new Setter { Property = Button.TextColorProperty, Value = Colors.Pink },
 				},
 				Class = "pink",
 				ApplyToDerivedTypes = true,
@@ -792,7 +793,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = button
 			};
 
-			Assert.AreEqual(Color.Pink, button.TextColor);
+			Assert.AreEqual(Colors.Pink, button.TextColor);
 			Assert.AreEqual(20d, button.FontSize);
 		}
 
@@ -801,24 +802,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var label0 = new Label
 			{
-				TextColor = Color.Pink
+				TextColor = Colors.Pink
 			};
 			var label1 = new Label();
 
-			Assume.That(label0.TextColor, Is.EqualTo(Color.Pink));
-			Assume.That(label1.TextColor, Is.EqualTo(Color.Default));
+			Assume.That(label0.TextColor, Is.EqualTo(Colors.Pink));
+			Assume.That(label1.TextColor, Is.EqualTo(null));
 
 			var rd0 = new ResourceDictionary {
 				new Style (typeof(Label)) {
 					Setters = {
-						new Setter {Property = Label.TextColorProperty, Value = Color.Olive}
+						new Setter {Property = Label.TextColorProperty, Value = Colors.Olive}
 					}
 				}
 			};
 			var rd1 = new ResourceDictionary {
 				new Style (typeof(Label)) {
 					Setters = {
-						new Setter {Property = Label.TextColorProperty, Value = Color.Lavender}
+						new Setter {Property = Label.TextColorProperty, Value = Colors.Lavender}
 					}
 				}
 			};
@@ -837,14 +838,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			mockApp.MainPage = new ContentPage { Content = layout };
 			//Assert.That(label0.TextColor, Is.EqualTo(Color.Pink));
-			//Assert.That(label1.TextColor, Is.EqualTo(Color.Default));
+			//Assert.That(label1.TextColor, Is.EqualTo(null));
 
-			Assert.That(label0.TextColor, Is.EqualTo(Color.Pink));
-			Assert.That(label1.TextColor, Is.EqualTo(Color.Olive));
+			Assert.That(label0.TextColor, Is.EqualTo(Colors.Pink));
+			Assert.That(label1.TextColor, Is.EqualTo(Colors.Olive));
 
 			mockApp.Resources = rd1;
-			Assert.That(label0.TextColor, Is.EqualTo(Color.Pink));
-			Assert.That(label1.TextColor, Is.EqualTo(Color.Lavender));
+			Assert.That(label0.TextColor, Is.EqualTo(Colors.Pink));
+			Assert.That(label1.TextColor, Is.EqualTo(Colors.Lavender));
 		}
 
 		[Test]
@@ -959,7 +960,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Setters = {
 					new Setter { Property = Label.TextProperty, Value = "foo" },
-					new Setter { Property = VisualElement.BackgroundColorProperty, Value = Color.Pink },
+					new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Pink },
 				}
 			};
 
@@ -986,7 +987,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Setters = {
 					new Setter { Property = Label.TextProperty, Value = "foo" },
-					new Setter { Property = VisualElement.BackgroundColorProperty, Value = Color.Pink },
+					new Setter { Property = VisualElement.BackgroundColorProperty, Value = Colors.Pink },
 				}
 			};
 

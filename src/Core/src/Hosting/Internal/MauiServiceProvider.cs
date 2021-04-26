@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,8 +23,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			_constructorInjection = constructorInjection;
 			_singletons = new ConcurrentDictionary<ServiceDescriptor, object?>();
 		}
-
-		public object? GetService(Type serviceType)
+		public ServiceDescriptor? GetServiceType(Type serviceType)
 		{
 			if (serviceType == null)
 				throw new ArgumentNullException(nameof(serviceType));
@@ -48,24 +48,32 @@ namespace Microsoft.Maui.Hosting.Internal
 			{
 				if (_collection.TryGetService(type, out var descriptor))
 				{
-					if (descriptor!.Lifetime == ServiceLifetime.Singleton)
-					{
-						if (_singletons.TryGetValue(descriptor, out var singletonInstance))
-							return singletonInstance;
-					}
 
-					var typeInstance = CreateInstance(descriptor);
-
-					if (descriptor.Lifetime == ServiceLifetime.Singleton)
-					{
-						_singletons[descriptor] = typeInstance;
-					}
-
-					return typeInstance;
+					return descriptor;
 				}
 			}
 
 			return default!;
+		}
+
+		public object? GetService(Type serviceType)
+		{
+			var descriptor = GetServiceType(serviceType);
+			if (descriptor == null)
+				return default!;
+
+			if (descriptor!.Lifetime == ServiceLifetime.Singleton)
+			{
+				if (_singletons.TryGetValue(descriptor, out var singletonInstance))
+					return singletonInstance;
+			}
+			var typeInstance = CreateInstance(descriptor);
+
+			if (descriptor.Lifetime == ServiceLifetime.Singleton)
+			{
+				_singletons[descriptor] = typeInstance;
+			}
+			return typeInstance;
 		}
 
 		object? CreateInstance(ServiceDescriptor item)

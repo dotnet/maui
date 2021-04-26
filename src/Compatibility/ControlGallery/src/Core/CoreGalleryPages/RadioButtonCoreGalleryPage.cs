@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -33,8 +34,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new RadioButton
 				{
 					Content = "BorderColor",
-					BackgroundColor = Color.Transparent,
-					BorderColor = Color.Red,
+					BackgroundColor = Colors.Transparent,
+					BorderColor = Colors.Red,
 					BorderWidth = 1,
 				}
 			);
@@ -43,8 +44,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new RadioButton
 				{
 					Content = "BorderRadius",
-					BackgroundColor = Color.Transparent,
-					BorderColor = Color.Red,
+					BackgroundColor = Colors.Transparent,
+					BorderColor = Colors.Red,
 					BorderWidth = 1,
 				}
 			);
@@ -53,8 +54,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new RadioButton
 				{
 					Content = "BorderWidth",
-					BackgroundColor = Color.Transparent,
-					BorderColor = Color.Red,
+					BackgroundColor = Colors.Transparent,
+					BorderColor = Colors.Red,
 					BorderWidth = 15,
 				}
 			);
@@ -79,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new RadioButton
 				{
 					Content = "TextColor",
-					TextColor = Color.Pink
+					TextColor = Colors.Pink
 				}
 			);
 
@@ -87,7 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new RadioButton
 				{
 					Content = "Padding",
-					BackgroundColor = Color.Red,
+					BackgroundColor = Colors.Red,
 					Padding = new Thickness(20, 30, 60, 15)
 				}
 			);

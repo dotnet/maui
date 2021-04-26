@@ -1,6 +1,7 @@
 using System;
 using CoreGraphics;
 using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -34,6 +35,26 @@ namespace Microsoft.Maui
 		}
 
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Action<Rectangle>? CrossPlatformArrange { get; set; }
+		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
+	}
+
+	public class PageView : UIView
+	{
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			return size;
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			var width = Frame.Width;
+			var height = Frame.Height;
+
+			CrossPlatformArrange?.Invoke(Frame.ToRectangle());
+		}
+
+		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
 	}
 }

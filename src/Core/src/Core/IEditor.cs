@@ -1,9 +1,11 @@
-﻿namespace Microsoft.Maui
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a View used to accept multi-line input.
 	/// </summary>
-	public interface IEditor : IView, ITextInput
+	public interface IEditor : IView, ITextInput, ITextStyle
 	{
 		/// <summary>
 		/// Gets or sets the placeholder text color.

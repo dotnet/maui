@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -521,7 +522,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						View.UpdateBackground(Element.Background);
 					else
 					{
-						if (Element.BackgroundColor == Color.Default)
+						if (Element.BackgroundColor == null)
 							View.BackgroundColor = UIColor.White;
 						else
 							View.BackgroundColor = Element.BackgroundColor.ToUIColor();

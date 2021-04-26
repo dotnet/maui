@@ -6,10 +6,15 @@ namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
+		public static AView ToContainerView(this IView view, IMauiContext context) => new ContainerView(context) { CurrentView = view };
 		public static AView ToNative(this IView view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
+
+			//This is how MVU works. It collapses views down
+			if (view is IReplaceableView ir)
+				view = ir.ReplacedView;
 
 			var handler = view.Handler;
 

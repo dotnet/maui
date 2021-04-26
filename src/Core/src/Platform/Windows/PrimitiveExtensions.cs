@@ -1,4 +1,5 @@
-﻿using WPoint = Windows.Foundation.Point;
+﻿using Microsoft.Maui.Graphics;
+using WPoint = Windows.Foundation.Point;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui

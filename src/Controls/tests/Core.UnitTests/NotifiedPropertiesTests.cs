@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -73,13 +74,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<View, bool> ("IsVisible", v => v.IsVisible, (v, o) => v.IsVisible = o, () => true, false),
 			new PropertyTestCase<View, string> ("ClassId", v => v.ClassId, (v, o) => v.ClassId = o, () => null, "Foo"),
 			new PropertyTestCase<ActivityIndicator, bool> ("IsRunning", v => v.IsRunning, (v, o) => v.IsRunning = o, () => false, true),
-			new PropertyTestCase<ActivityIndicator, Color> ("Color", v => v.Color, (v, o) => v.Color = o, () => Color.Default, new Color (0, 1, 0)),
+			new PropertyTestCase<ActivityIndicator, Color> ("Color", v => v.Color, (v, o) => v.Color = o, () => null, new Color (0, 1, 0)),
 			new PropertyTestCase<Button, string> ("Text", v => v.Text, (v, o) => v.Text = o, () => null, "Foo"),
-			new PropertyTestCase<Button, Color> ("TextColor", v => v.TextColor, (v, o) => v.TextColor = o, () => Color.Default, new Color (0, 1, 0)),
+			new PropertyTestCase<Button, Color> ("TextColor", v => v.TextColor, (v, o) => v.TextColor = o, () => null, new Color (0, 1, 0)),
 			new PropertyTestCase<Button, Font> ("Font", v => v.Font, (v, o) => v.Font = o, () => default (Font), Font.SystemFontOfSize (20)),
 			new PropertyTestCase<Button, double> ("BorderWidth", v => v.BorderWidth, (v, o) => v.BorderWidth = o, () => -1d, 16d),
 			new PropertyTestCase<Button, int> ("CornerRadius", v => v.CornerRadius, (v, o) => v.CornerRadius = o, () => -1, 12),
-			new PropertyTestCase<Button, Color> ("BorderColor", v => v.BorderColor, (v, o) => v.BorderColor = o, () => Color.Default, new Color (0, 1, 0)),
+			new PropertyTestCase<Button, Color> ("BorderColor", v => v.BorderColor, (v, o) => v.BorderColor = o, () => null, new Color (0, 1, 0)),
 			new PropertyTestCase<Button, string> ("FontFamily", v => v.FontFamily, (v, o) => v.FontFamily = o, () => null, "TestingFace"),
 			new PropertyTestCase<Button, double> ("FontSize", v => v.FontSize, (v, o) => v.FontSize = o, () => Device.GetNamedSize (NamedSize.Default, typeof (Button), true), 123.0),
 			new PropertyTestCase<Button, FontAttributes> ("FontAttributes", v => v.FontAttributes, (v, o) => v.FontAttributes = o, () => FontAttributes.None, FontAttributes.Italic),
@@ -92,8 +93,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<Entry, string> ("Text", v => v.Text, (v, o) => v.Text = o, () => null, "Foo"),
 			new PropertyTestCase<Entry, string> ("Placeholder", v => v.Placeholder, (v, o) => v.Placeholder = o, () => null, "Foo"),
 			new PropertyTestCase<Entry, bool> ("IsPassword", v => v.IsPassword, (v, o) => v.IsPassword = o, () => false, true),
-			new PropertyTestCase<Entry, Color> ("TextColor", v => v.TextColor, (v, o) => v.TextColor = o, () => Color.Default, new Color (0, 1, 0)),
-			new PropertyTestCase<Frame, Color> ("BackgroundColor", v => v.BackgroundColor, (v, o) => v.BackgroundColor = o, () => Color.Default, new Color (0, 1, 0)),
+			new PropertyTestCase<Entry, Color> ("TextColor", v => v.TextColor, (v, o) => v.TextColor = o, () => null, new Color (0, 1, 0)),
+			new PropertyTestCase<Frame, Color> ("BackgroundColor", v => v.BackgroundColor, (v, o) => v.BackgroundColor = o, () => null, new Color (0, 1, 0)),
 			new PropertyTestCase<Frame, bool> ("HasShadow", v => v.HasShadow, (v, o) => v.HasShadow = o, () => true, false),
 			new PropertyTestCase<Grid, double> ("RowSpacing", v => v.RowSpacing, (v, o) => v.RowSpacing = o, () => 6, 12),
 			new PropertyTestCase<Grid, double> ("ColumnSpacing", v => v.ColumnSpacing, (v, o) => v.ColumnSpacing = o, () => 6, 12),
@@ -102,7 +103,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<Image, Aspect> ("Aspect", v => v.Aspect, (v, o) => v.Aspect = o, () => Aspect.AspectFit, Aspect.AspectFill),
 			new PropertyTestCase<Image, bool> ("IsOpaque", v => v.IsOpaque, (v, o) => v.IsOpaque = o, () => false, true),
 			new PropertyTestCase<Label, string> ("Text", v => v.Text, (v, o) => v.Text = o, () => null, "Foo"),
-			new PropertyTestCase<Label, Color> ("TextColor", v => v.TextColor, (v, o) => v.TextColor = o, () => Color.Default, new Color (0, 1, 0)),
+			new PropertyTestCase<Label, Color> ("TextColor", v => v.TextColor, (v, o) => v.TextColor = o, () => null, new Color (0, 1, 0)),
 			new PropertyTestCase<Label, LineBreakMode> ("LineBreakMode", v => v.LineBreakMode, (v, o) => v.LineBreakMode = o, () => LineBreakMode.WordWrap, LineBreakMode.TailTruncation),
 			new PropertyTestCase<Label, string> ("FontFamily", v => v.FontFamily, (v, o) => v.FontFamily = o, () => null, "TestingFace"),
 			new PropertyTestCase<Label, double> ("FontSize", v => v.FontSize, (v, o) => v.FontSize = o, () => Device.GetNamedSize (NamedSize.Default, typeof (Label), true), 123.0),
@@ -122,7 +123,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<Picker, string> ("Title", v=>v.Title, (v, o) =>v.Title = o, () => null, "FooBar"),
 			new PropertyTestCase<Picker, int> ("SelectedIndex", v=>v.SelectedIndex, (v, o) =>v.SelectedIndex = o, () => -1, 2, ()=>new Picker{Items= {"Foo", "Bar", "Baz", "Qux"}}),
 			new PropertyTestCase<ProgressBar, double> ("Progress", v => v.Progress, (v, o) => v.Progress = o, () => 0, .5),
-			new PropertyTestCase<ProgressBar, Color> ("ProgressColor", v => v.ProgressColor, (v, o) => v.ProgressColor = o, () => Color.Default, new Color (0, 1, 0)),
+			new PropertyTestCase<ProgressBar, Color> ("ProgressColor", v => v.ProgressColor, (v, o) => v.ProgressColor = o, () => null, new Color (0, 1, 0)),
 			new PropertyTestCase<SearchBar, string> ("Placeholder", v => v.Placeholder, (v, o) => v.Placeholder = o, () => null, "Foo"),
 			new PropertyTestCase<SearchBar, string> ("Text", v => v.Text, (v, o) => v.Text = o, () => null, "Foo"),
 			new PropertyTestCase<Slider, double> ("Minimum", v => v.Minimum, (v, o) => v.Minimum = o, () => 0, .5),
@@ -140,8 +141,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<TableView, TableIntent> ("Intent", v => v.Intent, (v, o) => v.Intent = o, () => TableIntent.Data, TableIntent.Menu),
 			new PropertyTestCase<TextCell, string> ("Text", v => v.Text, (v, o) => v.Text = o, () => null, "Foo"),
 			new PropertyTestCase<TextCell, string> ("Detail", v => v.Detail, (v, o) => v.Detail = o, () => null, "Foo"),
-			new PropertyTestCase<TextCell, Color> ("TextColor", v => v.TextColor, (v, o) => v.TextColor = o, () => Color.Default, new Color (0, 1, 0)),
-			new PropertyTestCase<TextCell, Color> ("DetailColor", v => v.DetailColor, (v, o) => v.DetailColor = o, () => Color.Default, new Color (0, 1, 0)),
+			new PropertyTestCase<TextCell, Color> ("TextColor", v => v.TextColor, (v, o) => v.TextColor = o, () => null, new Color (0, 1, 0)),
+			new PropertyTestCase<TextCell, Color> ("DetailColor", v => v.DetailColor, (v, o) => v.DetailColor = o, () => null, new Color (0, 1, 0)),
 			new PropertyTestCase<TimePicker, TimeSpan> ("Time", v => v.Time, (v, o) => v.Time = o, () => default(TimeSpan), new TimeSpan (8, 0, 0)),
 			new PropertyTestCase<TimePicker, string> ("Format", v => v.Format, (v, o) => v.Format = o, () => "t", "T"),
 			new PropertyTestCase<ViewCell, View> ("View", v => v.View, (v, o) => v.View = o, () => null, new View ()),

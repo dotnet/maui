@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var instructions = new Label { Text = "If you can see this, the test has passed." };
 
-			var button = new Button { Text = ButtonText, BackgroundColor = Color.CornflowerBlue };
+			var button = new Button { Text = ButtonText, BackgroundColor = Colors.CornflowerBlue };
 
 			layout.Children.Add(instructions);
 			layout.Children.Add(button);

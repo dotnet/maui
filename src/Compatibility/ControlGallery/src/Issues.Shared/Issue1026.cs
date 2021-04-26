@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Children = {
 						new Button {
 							BackgroundColor = Color.FromHex ("#006599"),
-							TextColor = Color.White,
+							TextColor = Colors.White,
 							Text = "Subscribe with LinkedIn",
 							WidthRequest = 262,
 							HorizontalOptions = LayoutOptions.Center,
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						},
 						new Button {
 							BackgroundColor = Color.FromHex ("#05addc"),
-							TextColor = Color.White,
+							TextColor = Colors.White,
 							Text = "Create an account",
 							WidthRequest = 262,
 							HorizontalOptions = LayoutOptions.Center,
@@ -77,7 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						},
 						new Label {
 							Text = "by subscribing, you accept the general conditions.",
-							TextColor = Color.White,
+							TextColor = Colors.White,
 							HorizontalTextAlignment = TextAlignment.Center,
 							FontSize = Device.GetNamedSize(NamedSize.Micro, typeof(Label)),
 							WidthRequest = 262,

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
@@ -19,10 +20,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Size DesiredSize { get; set; } = new Size(20, 20);
 
-		public bool IsMeasureValid { get; set; }
-
-		public bool IsArrangeValid { get; set; }
-
 		public double Width { get; set; }
 
 		public double Height { get; set; }
@@ -39,10 +36,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Semantics Semantics { get; set; } = new Semantics();
 
-		public void Arrange(Rectangle bounds)
+		public Size Arrange(Rectangle bounds)
 		{
 			Frame = bounds;
 			DesiredSize = bounds.Size;
+			return DesiredSize;
 		}
 
 		protected bool SetProperty<T>(ref T backingStore, T value,

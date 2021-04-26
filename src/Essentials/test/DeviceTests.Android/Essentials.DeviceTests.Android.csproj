@@ -9,7 +9,6 @@
     <RootNamespace>Microsoft.Maui.Essentials.DeviceTests.Droid</RootNamespace>
     <AssemblyName>EssentialsDeviceTestsAndroid</AssemblyName>
     <TargetFrameworkVersion>v10.0</TargetFrameworkVersion>
-    <AndroidUseLatestPlatformSdk>false</AndroidUseLatestPlatformSdk>
     <AndroidApplication>True</AndroidApplication>
     <AndroidUseIntermediateDesignerFile>true</AndroidUseIntermediateDesignerFile>
     <AndroidResgenClass>Resource</AndroidResgenClass>
@@ -60,7 +59,7 @@
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.devices" Version="2.5.25" />
     <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21124.1" />
-    <PackageReference Include="Xamarin.AndroidX.MediaRouter" />
+   <PackageReference Include="Xamarin.AndroidX.MediaRouter" />
     <PackageReference Include="Xamarin.AndroidX.Palette" />
     <PackageReference Include="Xamarin.AndroidX.RecyclerView" />
   </ItemGroup>

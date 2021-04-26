@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
@@ -18,8 +19,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 					EndPoint = new Point(0, 1),
 					GradientStops = new GradientStopCollection
 					{
-						new GradientStop { Color = Color.Red, Offset = 0.5f },
-						new GradientStop { Color = Color.Green, Offset = 1.0f }
+						new GradientStop { Color = Colors.Red, Offset = 0.5f },
+						new GradientStop { Color = Colors.Green, Offset = 1.0f }
 					}
 				};
 			}
@@ -35,12 +36,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			var screenshotHeight = (int)screenshot.Size.Height;
 			var screenshotWidth = (int)screenshot.Size.Width;
 
-			var expectedTopColor = Color.Red.ToUIColor();
+			var expectedTopColor = Colors.Red.ToUIColor();
 			var resultTopColor = screenshot.ColorAtPoint(screenshotWidth / 2, 1);
 
 			Assert.IsTrue(AreColorsSimilar(expectedTopColor, resultTopColor, Tolerance));
 
-			var expectedBottomColor = Color.Green.ToUIColor();
+			var expectedBottomColor = Colors.Green.ToUIColor();
 			var resultBottomColor = screenshot.ColorAtPoint(screenshotWidth / 2, screenshotHeight - 1);
 
 			Assert.IsTrue(AreColorsSimilar(expectedBottomColor, resultBottomColor, Tolerance));
@@ -56,12 +57,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			var screenshotHeight = (int)screenshot.Size.Height;
 			var screenshotWidth = (int)screenshot.Size.Width;
 
-			var expectedTopColor = Color.Red.ToUIColor();
+			var expectedTopColor = Colors.Red.ToUIColor();
 			var resultTopColor = screenshot.ColorAtPoint(screenshotWidth / 2, 1);
 
 			Assert.IsTrue(AreColorsSimilar(expectedTopColor, resultTopColor, Tolerance));
 
-			var expectedBottomColor = Color.Green.ToUIColor();
+			var expectedBottomColor = Colors.Green.ToUIColor();
 			var resultBottomColor = screenshot.ColorAtPoint(screenshotWidth / 2, screenshotHeight - 1);
 
 			Assert.IsTrue(AreColorsSimilar(expectedBottomColor, resultBottomColor, Tolerance));

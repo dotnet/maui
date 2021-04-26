@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -64,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			PickerPage pickerPage = new PickerPage { Title = "Picker Page" };
 			Children.Add(pickerPage);
-			Children.Add(new ContentPage { BackgroundColor = Color.Blue, Title = "Page 2" });
+			Children.Add(new ContentPage { BackgroundColor = Colors.Blue, Title = "Page 2" });
 		}
 
 #if UITEST && __ANDROID__

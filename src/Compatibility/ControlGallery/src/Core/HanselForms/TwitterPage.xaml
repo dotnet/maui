@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.TwitterPage" Title="{Binding Title}" Icon="{Binding Icon}" IsBusy="{Binding IsBusy}">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.TwitterPage" Title="{Binding Title}" Icon="{Binding Icon}" IsBusy="{Binding IsBusy}">
 	<AbsoluteLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
 		<ListView CachingStrategy="RecycleElement" x:Name="listView" ItemsSource="{Binding Tweets}" HasUnevenRows="True" RowHeight="150" IsPullToRefreshEnabled="True" RefreshCommand="{Binding LoadTweetsCommand}" IsRefreshing="{Binding IsBusy, Mode=OneWay}" AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0,0,1,1">
 			<ListView.ItemTemplate>

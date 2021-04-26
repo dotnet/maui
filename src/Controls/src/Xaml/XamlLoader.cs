@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					RootNode rootNode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), null, (IXmlNamespaceResolver)reader) { LineNumber = ((IXmlLineInfo)reader).LineNumber, LinePosition = ((IXmlLineInfo)reader).LinePosition };
 					XamlParser.ParseXaml(rootNode, reader);
 					var rNode = (IElementNode)rootNode;
-					if (!rNode.Properties.TryGetValue(new XmlName(XamlParser.XFUri, "Resources"), out var resources))
+					if (!rNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Resources"), out var resources))
 						return null;
 
 					var visitorContext = new HydrationContext
@@ -192,14 +192,14 @@ namespace Microsoft.Maui.Controls.Xaml
 						ExceptionHandler = ResourceLoader.ExceptionHandler2 != null ? ehandler : (Action<Exception>)null,
 					};
 					var cvv = new CreateValuesVisitor(visitorContext);
-					if (resources is ElementNode resourcesEN && (resourcesEN.XmlType.NamespaceUri != XamlParser.XFUri || resourcesEN.XmlType.Name != nameof(ResourceDictionary)))
+					if (resources is ElementNode resourcesEN && (resourcesEN.XmlType.NamespaceUri != XamlParser.MauiUri || resourcesEN.XmlType.Name != nameof(ResourceDictionary)))
 					{ //single implicit resource
-						resources = new ElementNode(new XmlType(XamlParser.XFUri, nameof(ResourceDictionary), null), XamlParser.XFUri, rootNode.NamespaceResolver);
+						resources = new ElementNode(new XmlType(XamlParser.MauiUri, nameof(ResourceDictionary), null), XamlParser.MauiUri, rootNode.NamespaceResolver);
 						((ElementNode)resources).CollectionItems.Add(resourcesEN);
 					}
 					else if (resources is ListNode resourcesLN)
 					{ //multiple implicit resources
-						resources = new ElementNode(new XmlType(XamlParser.XFUri, nameof(ResourceDictionary), null), XamlParser.XFUri, rootNode.NamespaceResolver);
+						resources = new ElementNode(new XmlType(XamlParser.MauiUri, nameof(ResourceDictionary), null), XamlParser.MauiUri, rootNode.NamespaceResolver);
 						foreach (var n in resourcesLN.CollectionItems)
 							((ElementNode)resources).CollectionItems.Add(n);
 					}

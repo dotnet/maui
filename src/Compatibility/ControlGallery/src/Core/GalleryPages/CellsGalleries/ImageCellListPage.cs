@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -55,9 +56,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				ItemsSource = Enumerable.Range(0, 100).Select(i => new ImageCellTest
 				{
 					Text = "Text " + i,
-					TextColor = i % 2 == 0 ? Color.Red : Color.Blue,
+					TextColor = i % 2 == 0 ? Colors.Red : Colors.Blue,
 					Detail = "Detail " + i,
-					DetailColor = i % 2 == 0 ? Color.Red : Color.Blue,
+					DetailColor = i % 2 == 0 ? Colors.Red : Colors.Blue,
 					Image = albums[rand.Next(0, 3)]
 				}),
 				ItemTemplate = dataTemplate
@@ -107,9 +108,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				ItemsSource = Enumerable.Range(0, 300).Select(i => new ImageCellTest
 				{
 					Text = "Text " + i,
-					TextColor = i % 2 == 0 ? Color.Red : Color.Blue,
+					TextColor = i % 2 == 0 ? Colors.Red : Colors.Blue,
 					Detail = "Detail " + i,
-					DetailColor = i % 2 == 0 ? Color.Red : Color.Blue,
+					DetailColor = i % 2 == 0 ? Colors.Red : Colors.Blue,
 					Image = albums[random.Next(0, albums.Count - 1)]
 				}),
 				ItemTemplate = dataTemplate

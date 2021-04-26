@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
@@ -33,18 +34,18 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			StackLayout container = new StackLayout()
 			{
-				BackgroundColor = Color.Purple
+				BackgroundColor = Colors.Purple
 			};
 
 			StackLayout layout = new StackLayout()
 			{
-				BackgroundColor = Color.Pink,
+				BackgroundColor = Colors.Pink,
 				HeightRequest = 200
 			};
 
 			var editor = new Editor()
 			{
-				BackgroundColor = Color.Green,
+				BackgroundColor = Colors.Green,
 				MinimumHeightRequest = 10,
 				AutoSize = EditorAutoSizeOption.TextChanges,
 				AutomationId = editorHeightShrinkWithPressureId
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var editorHeightGrow = new Editor()
 			{
-				BackgroundColor = Color.Green,
+				BackgroundColor = Colors.Green,
 				MinimumHeightRequest = 200,
 				AutoSize = EditorAutoSizeOption.TextChanges,
 				AutomationId = editorHeightGrowId
@@ -64,13 +65,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			StackLayout layoutHorizontal = new StackLayout()
 			{
-				BackgroundColor = Color.Yellow,
+				BackgroundColor = Colors.Yellow,
 				Orientation = StackOrientation.Horizontal
 			};
 
 			var editorWidthGrow1 = new Editor()
 			{
-				BackgroundColor = Color.Green,
+				BackgroundColor = Colors.Green,
 				MinimumWidthRequest = 10,
 				AutoSize = EditorAutoSizeOption.TextChanges,
 				AutomationId = editorWidthGrow1Id
@@ -78,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var editorWidthGrow2 = new Editor()
 			{
-				BackgroundColor = Color.Green,
+				BackgroundColor = Colors.Green,
 				MinimumWidthRequest = 200,
 				AutoSize = EditorAutoSizeOption.TextChanges,
 				AutomationId = editorWidthGrow2Id,

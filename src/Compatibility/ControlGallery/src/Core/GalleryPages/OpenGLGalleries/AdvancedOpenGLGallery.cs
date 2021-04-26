@@ -8,6 +8,8 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Graphics.ES20;
 #endif
 
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	public class AdvancedOpenGLGallery : ContentPage

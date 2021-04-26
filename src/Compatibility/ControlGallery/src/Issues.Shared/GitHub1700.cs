@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var actionGrid = new Grid()
 			{
 				Padding = new Thickness(10),
-				BackgroundColor = Color.Aquamarine
+				BackgroundColor = Colors.Aquamarine
 			};
 			actionGrid.AddChild(new Button()
 			{
@@ -233,13 +234,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				item.Focused += (_, e) =>
 				{
-					BackgroundColor = e.VisualElement.IsTabStop ? Color.Transparent : Color.OrangeRed;
+					BackgroundColor = e.VisualElement.IsTabStop ? Colors.Transparent : Colors.OrangeRed;
 					Title = $"{e.VisualElement.TabIndex} - " + (e.VisualElement.IsTabStop ? "[+]" : "WRONG");
 					e.VisualElement.Scale = 0.7;
 				};
 				item.Unfocused += (_, e) =>
 				{
-					BackgroundColor = Color.Transparent;
+					BackgroundColor = Colors.Transparent;
 					Title = string.Empty;
 					e.VisualElement.Scale = 1;
 				};

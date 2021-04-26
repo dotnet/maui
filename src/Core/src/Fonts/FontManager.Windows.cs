@@ -1,8 +1,11 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using Microsoft.Graphics.Canvas.Text;
 using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui
@@ -30,10 +33,10 @@ namespace Microsoft.Maui
 		}
 
 		public FontFamily DefaultFontFamily =>
-			(FontFamily)MauiWinUIApplication.Current.Resources[SystemFontFamily];
+			(FontFamily)UI.Xaml.Application.Current.Resources[SystemFontFamily];
 
 		public double DefaultFontSize =>
-			(double)MauiWinUIApplication.Current.Resources[SystemFontSize];
+			(double)UI.Xaml.Application.Current.Resources[SystemFontSize];
 
 		public FontFamily GetFontFamily(Font font)
 		{
@@ -153,24 +156,24 @@ namespace Microsoft.Maui
 
 		string? FindFontFamilyName(string? fontFile)
 		{
+			if (fontFile == null)
+				return null;
+
 			try
 			{
-				// TODO: WINUI3 needs a build of Win2D or some implementation of CanvasFontSet
-				throw new NotImplementedException("A build of Win2D for WinUI is needed.");
+				var fontUri = new Uri(fontFile, UriKind.RelativeOrAbsolute);
 
-				//	var fontUri = new Uri(fontFile, UriKind.RelativeOrAbsolute);
+				// CanvasFontSet only supports ms-appx:// and ms-appdata:// font URIs
+				if (fontUri.IsAbsoluteUri && (fontUri.Scheme == "ms-appx" || fontUri.Scheme == "ms-appdata"))
+				{
+					using (var fontSet = new CanvasFontSet(fontUri))
+					{
+						if (fontSet.Fonts.Count != 0)
+							return fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName).FirstOrDefault().Value;
+					}
+				}
 
-				//	// CanvasFontSet only supports ms-appx:// and ms-appdata:// font URIs
-				//	if (fontUri.IsAbsoluteUri && (fontUri.Scheme == "ms-appx" || fontUri.Scheme == "ms-appdata"))
-				//	{
-				//		using (var fontSet = new CanvasFontSet(fontUri))
-				//		{
-				//			if (fontSet.Fonts.Count != 0) 
-				//				return fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName).FirstOrDefault().Value;
-				//		}
-				//	}
-
-				//	return null;
+				return null;
 			}
 			catch (Exception ex)
 			{

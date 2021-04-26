@@ -37,6 +37,8 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <!-- Windows -->
+    <WindowsProjectFolder>Platform\Windows\</WindowsProjectFolder>
     <!-- Android -->
     <AndroidProjectFolder>Platform\Android\</AndroidProjectFolder>
     <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
@@ -75,11 +77,13 @@
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <PackageReference Include="Microsoft.ProjectReunion" />
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
   <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
     <PropertyGroup>

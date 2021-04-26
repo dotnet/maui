@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.TabIndexTest
 {
@@ -8,8 +9,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.TabIndexTest
 	{
 		public static Color Cerulean = Color.FromRgb(0, 115, 209);
 		public static Color Gray = Color.FromRgb(216, 221, 230);
-		public static Color White = Color.White;
-		public static Color Black = Color.Black;
+		public static Color White = Graphics.Colors.White;
+		public static Color Black = Graphics.Colors.Black;
 	}
 	[Flags]
 	public enum DaysOfWeek

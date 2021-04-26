@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
@@ -62,8 +63,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 			var indicators = new IndicatorView
 			{
 				Margin = new Thickness(15, 20),
-				IndicatorColor = Color.Gray,
-				SelectedIndicatorColor = Color.Black,
+				IndicatorColor = Colors.Gray,
+				SelectedIndicatorColor = Colors.Black,
 				IndicatorsShape = IndicatorShape.Square
 			};
 
@@ -102,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 			{
 				_viewModel.Items.Add(new CarouselData
 				{
-					Color = Color.Red,
+					Color = Colors.Red,
 					Name = $"{_viewModel.Items.Count + 1}"
 				});
 				_viewModel.CarouselPosition = _viewModel.Items.Count - 1;

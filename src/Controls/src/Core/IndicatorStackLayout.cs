@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -98,8 +99,8 @@ namespace Microsoft.Maui.Controls
 				var selectedIndex = position >= maxVisible ? maxVisible - 1 : position;
 				bool isSelected = index == selectedIndex;
 				Children[index].BackgroundColor = isSelected
-					? GetColorOrDefault(_indicatorView.SelectedIndicatorColor, Color.Gray)
-					: GetColorOrDefault(_indicatorView.IndicatorColor, Color.Silver);
+					? GetColorOrDefault(_indicatorView.SelectedIndicatorColor, Colors.Gray)
+					: GetColorOrDefault(_indicatorView.IndicatorColor, Colors.Silver);
 
 				VisualStateManager.GoToState(Children[index], isSelected
 					? VisualStateManager.CommonStates.Selected
@@ -110,7 +111,7 @@ namespace Microsoft.Maui.Controls
 			IsVisible = indicatorCount > 1 || !_indicatorView.HideSingle;
 		}
 
-		Color GetColorOrDefault(Color color, Color defaultColor) => color.IsDefault ? defaultColor : color;
+		Color GetColorOrDefault(Color color, Color defaultColor) => color ?? defaultColor;
 
 		void AddExtraIndicatorItems()
 		{
@@ -127,7 +128,7 @@ namespace Microsoft.Maui.Controls
 				{
 					Padding = 0,
 					HasShadow = false,
-					BorderColor = Color.Transparent,
+					BorderColor = Colors.Transparent,
 					VerticalOptions = LayoutOptions.Center,
 					HorizontalOptions = LayoutOptions.Center,
 					WidthRequest = size,

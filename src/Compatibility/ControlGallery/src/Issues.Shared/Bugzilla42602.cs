@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			//background white 800 x 600 square
 			content = new AbsoluteLayout()
 			{
-				BackgroundColor = Color.White,
+				BackgroundColor = Colors.White,
 				WidthRequest = 800,
 				HeightRequest = 800,
 				VerticalOptions = LayoutOptions.CenterAndExpand,
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			//test TextBoxView 400 x 400, color gray, should have a red ellipse and a red "hello world"
 
-			var test = new TextBoxView() { WidthRequest = 300, HeightRequest = 300, BackgroundColor = Color.Blue };
+			var test = new TextBoxView() { WidthRequest = 300, HeightRequest = 300, BackgroundColor = Colors.Blue };
 			content.Children.Add(test, new Point((content.WidthRequest - test.WidthRequest) / 2f, (content.HeightRequest - test.HeightRequest) / 2f));
 
 			Content = content;

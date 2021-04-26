@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 
 			var color = view.BackgroundColor;
 
-			if (!color.IsDefault)
+			if (color != null)
 				nativeView.BackgroundColor = color.ToNative();
 		}
 
@@ -42,7 +42,7 @@ namespace Microsoft.Maui
 			if (semantics.IsHeading)
 				nativeView.AccessibilityTraits |= UIAccessibilityTrait.Header;
 			else
-				nativeView.AccessibilityTraits |= ~UIAccessibilityTrait.Header;
+				nativeView.AccessibilityTraits &= ~UIAccessibilityTrait.Header;
 		}
 
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView

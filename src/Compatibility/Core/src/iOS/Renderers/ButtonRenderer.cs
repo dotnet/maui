@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using UIKit;
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Control == null)
 				return;
 
-			UIColor backgroundColor = Element.BackgroundColor == Color.Default ? null : Element.BackgroundColor.ToUIColor();
+			UIColor backgroundColor = Element.BackgroundColor == null ? null : Element.BackgroundColor.ToUIColor();
 
 			if (!Brush.IsNullOrEmpty(brush))
 			{
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler]
 		void UpdateTextColor()
 		{
-			if (Element.TextColor == Color.Default)
+			if (Element.TextColor == null)
 			{
 				Control.SetTitleColor(_buttonTextColorDefaultNormal, UIControlState.Normal);
 				Control.SetTitleColor(_buttonTextColorDefaultHighlighted, UIControlState.Highlighted);

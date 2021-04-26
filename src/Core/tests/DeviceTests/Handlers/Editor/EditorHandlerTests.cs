@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -42,13 +43,25 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
+		[Fact(DisplayName = "TextColor Initializes Correctly")]
+		public async Task TextColorInitializesCorrectly()
+		{
+			var editor = new EditorStub()
+			{
+				Text = "Test",
+				TextColor = Colors.Yellow
+			};
+
+			await ValidatePropertyInitValue(editor, () => editor.TextColor, GetNativeTextColor, editor.TextColor);
+		}
+
 		[Fact(DisplayName = "PlaceholderColor Initializes Correctly")]
 		public async Task PlaceholderColorInitializesCorrectly()
 		{
 			var editor = new EditorStub()
 			{
 				Placeholder = "Test",
-				PlaceholderColor = Color.Yellow
+				PlaceholderColor = Colors.Yellow
 			};
 
 			await ValidatePropertyInitValue(editor, () => editor.PlaceholderColor, GetNativePlaceholderColor, editor.PlaceholderColor);

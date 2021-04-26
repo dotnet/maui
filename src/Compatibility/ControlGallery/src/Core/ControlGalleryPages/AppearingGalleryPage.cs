@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					new Button { Text = MasterPageTitle, Command = new Command (() => {
 						var page = new FlyoutPage {
 							Title = MasterPageTitle,
-							Flyout = new ContentPage { Title = "Flyout", BackgroundColor = Color.Red },
+							Flyout = new ContentPage { Title = "Flyout", BackgroundColor = Colors.Red },
 							Detail =  new NavAppearingPage(initalPage)
 						};
 						SetMainPage (page);

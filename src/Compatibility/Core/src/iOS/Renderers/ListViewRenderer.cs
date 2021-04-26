@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -11,6 +11,7 @@ using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.ListView;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -133,7 +134,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					var backgroundColor = solidColorBrush.Color;
 
-					if (backgroundColor == Color.Default)
+					if (backgroundColor == null)
 						_backgroundUIView.BackgroundColor = UIColor.White;
 					else
 						_backgroundUIView.BackgroundColor = backgroundColor.ToUIColor();
@@ -774,7 +775,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var color = Element.RefreshControlColor;
 
 			if (_tableViewController != null)
-				_tableViewController.UpdateRefreshControlColor(color == Color.Default ? null : color.ToUIColor());
+				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToUIColor());
 		}
 
 		void UpdateVerticalScrollBarVisibility()

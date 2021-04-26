@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Layouts
 			for (int n = 0; n < views.Count; n++)
 			{
 				var child = views[n];
-				var measure = child.IsMeasureValid ? child.DesiredSize : child.Measure(double.PositiveInfinity, heightConstraint);
+				var measure = child.Measure(double.PositiveInfinity, heightConstraint);
 				totalRequestedWidth += measure.Width;
 				requestedHeight = Math.Max(requestedHeight, measure.Height);
 			}

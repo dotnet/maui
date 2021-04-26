@@ -241,8 +241,22 @@ Task("Clean")
     .Description("Deletes all the obj/bin directories")
     .Does(() =>
 {
-    CleanDirectories("./**/obj", (fsi)=> !fsi.Path.FullPath.StartsWith("tools"));
-    CleanDirectories("./**/bin", (fsi)=> !fsi.Path.FullPath.StartsWith("tools"));
+    List<string> foldersToClean = new List<string>();
+
+    foreach (var item in new [] {"obj", "bin"})
+    {
+        foreach(string f in System.IO.Directory.GetDirectories(".", item, SearchOption.AllDirectories))
+        {
+            if(f.StartsWith(@".\bin") || f.StartsWith(@".\tools"))
+                continue;
+
+            // this is here as a safety check
+            if(!f.StartsWith(@".\src"))
+                continue;
+
+            CleanDirectories(f);
+        }        
+    } 
 });
 
 Task("provision-macsdk")
@@ -896,22 +910,30 @@ Task("VS-NET6")
 
 
 Task("VS-WINUI")
+    .IsDependentOn("Clean")
     .Does(() =>
     {
         DotNetCoreBuild("./src/DotNet/Dotnet.csproj");
         var ext = IsRunningOnWindows() ? ".exe" : "";
+        
+        StartProcess("powershell", $"./eng/dogfood.ps1 -JustCreateGlobalJSON");
         DotNetCoreBuild("./Microsoft.Maui.BuildTasks-net6.sln", new DotNetCoreBuildSettings { ToolPath = $"./bin/dotnet/dotnet{ext}" });
         
-        MSBuild("Microsoft.Maui.WinUI.sln", 
-            GetMSBuildSettings()
-            .WithRestore()
-            .WithProperty("MauiPlatforms", "net6.0-windows10.0.19041.0")
-            );
+
+        MSBuild("Microsoft.Maui.WinUI.sln",
+                GetMSBuildSettings(includePrerelease:true).
+                WithRestore());
 
         StartVisualStudioForDotNet6("./Microsoft.Maui.WinUI.sln");
     });
 
 Task("VS")
+    .Description("Builds projects necessary so solution compiles on VS")
+    .IsDependentOn("Clean")
+    .IsDependentOn("VSMAC")
+    .IsDependentOn("VSWINDOWS");
+
+Task("VS-CG")
     .Description("Builds projects necessary so solution compiles on VS")
     .IsDependentOn("Clean")
     .IsDependentOn("VSMAC")
@@ -924,11 +946,15 @@ Task("VSWINDOWS")
     .WithCriteria(IsRunningOnWindows())
     .Does(() =>
     {
-        MSBuild("Microsoft.Maui.sln",
+        string sln = "Microsoft.Maui.sln";
+        if (target == "VS-CG")
+            sln = "Compatibility.ControlGallery.sln";
+
+        MSBuild(sln,
                 GetMSBuildSettings()
                     .WithRestore());
 
-        StartVisualStudio();
+        StartVisualStudio(sln);
     });
 
 Task("VSMAC")
@@ -937,25 +963,30 @@ Task("VSMAC")
     .IsDependentOn("BuildTasks")
     .Does(() =>
     {
+        
+        string sln = "Microsoft.Maui.sln";
+        if (target == "VS-CG")
+            sln = "Compatibility.ControlGallery.sln";
 
-        MSBuild("src/Core/src.Core.csproj",
+        MSBuild("src/Core/src/Core.csproj",
                 GetMSBuildSettings()
                     .WithRestore());
 
         MSBuild("src/Controls/samples/Controls.Sample.Droid/Controls.Sample.Droid.csproj",
                 GetMSBuildSettings()
                     .WithRestore());
+        
 
         MSBuild("src/Controls/samples/Controls.Sample.iOS/Controls.Sample.iOS.csproj",
-                GetMSBuildSettings()
-                    .WithProperty("iOSPlatform", "iPhoneSimulator")
-                    .WithRestore());
+            new MSBuildSettings().WithRestore());
 
-        MSBuild("src/Essentials/src/Essentials/Essentials.csproj",
+        MSBuild("src/Essentials/src/Essentials.csproj",
                 GetMSBuildSettings()
                     .WithRestore());
                     
-        StartVisualStudio();
+        MSBuild("src/SingleProject/Resizetizer/src/Resizetizer.csproj", GetMSBuildSettings().WithRestore());
+
+        StartVisualStudio(sln);
     });
     
 Task("cg-android")
@@ -1240,13 +1271,31 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
     StartProcess("powershell", $"./eng/dogfood.ps1 -vs '{devenv}' -sln '{sln}'");
 }
 
-MSBuildSettings GetMSBuildSettings(PlatformTarget? platformTarget = PlatformTarget.MSIL, string buildConfiguration = null)
+MSBuildSettings GetMSBuildSettings(
+    PlatformTarget? platformTarget = PlatformTarget.MSIL, 
+    string buildConfiguration = null,
+    bool includePrerelease = false)
 {
     var buildSettings =  new MSBuildSettings {
         PlatformTarget = platformTarget,
         MSBuildPlatform = Cake.Common.Tools.MSBuild.MSBuildPlatform.x86,
         Configuration = buildConfiguration ?? configuration,
     };
+
+
+    if(IsRunningOnWindows())
+    {
+        var vsInstallation =
+            VSWhereLatest(new VSWhereLatestSettings { Requires = "Microsoft.Component.MSBuild", IncludePrerelease = includePrerelease })
+            ?? VSWhereLatest(new VSWhereLatestSettings { Requires = "Microsoft.Component.MSBuild" });
+
+        if (vsInstallation != null)
+        {
+            buildSettings.ToolPath = vsInstallation.CombineWithFilePath(@"MSBuild\Current\Bin\MSBuild.exe");
+            if (!FileExists(buildSettings.ToolPath))
+                buildSettings.ToolPath = vsInstallation.CombineWithFilePath(@"MSBuild\15.0\Bin\MSBuild.exe");
+        }
+    }
 
     buildSettings = buildSettings.WithProperty("ANDROID_RENDERERS", $"{ANDROID_RENDERERS}");
     if(!String.IsNullOrWhiteSpace(XamarinFormsVersion))

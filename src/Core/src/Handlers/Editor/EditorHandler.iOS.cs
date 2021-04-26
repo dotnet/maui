@@ -2,6 +2,7 @@
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
@@ -39,6 +40,11 @@ namespace Microsoft.Maui.Handlers
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, editor);
+		}
+
+		public static void MapTextColor(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateTextColor(editor);
 		}
 
 		public static void MapPlaceholder(EditorHandler handler, IEditor editor)
@@ -114,9 +120,6 @@ namespace Microsoft.Maui.Handlers
 
 			handler.NativeView?.UpdateFont(editor, fontManager);
 		}
-
-		[MissingMapper]
-		public static void MapTextColor(EditorHandler handler, IEditor editor) { }
 
 		public static void MapKeyboard(EditorHandler handler, IEditor editor)
 		{

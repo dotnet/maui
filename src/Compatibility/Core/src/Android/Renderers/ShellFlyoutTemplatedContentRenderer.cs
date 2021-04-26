@@ -344,7 +344,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (_defaultBackgroundColor == null)
 					_defaultBackgroundColor = _rootView.Background;
 
-				_rootView.Background = color.IsDefault ? _defaultBackgroundColor : new ColorDrawable(color.ToAndroid());
+				_rootView.Background = color == null ? _defaultBackgroundColor : new ColorDrawable(color.ToAndroid());
 			}
 			else
 				_rootView.UpdateBackground(brush);

@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.UnitTests
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.UnitTests
 
 		public Semantics Semantics { get; set; } = new Semantics();
 
-		public void Arrange(Rectangle bounds)
+		public Size Arrange(Rectangle bounds)
 		{
 			throw new NotImplementedException();
 		}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 			modal.Clicked += async (object sender, EventArgs e) =>
 			{
-				var page = new ContentPage() { BackgroundColor = Color.Red };
+				var page = new ContentPage() { BackgroundColor = Colors.Red };
 
 				await Navigation.PushModalAsync(page);
 

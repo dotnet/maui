@@ -6,6 +6,7 @@ using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 using PageSpecific = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -531,12 +532,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						NativeView.UpdateBackground(Element.Background);
 					else
 					{
-						Color backgroundColor = Element.BackgroundColor;
-
-						if (backgroundColor.IsDefault)
-							NativeView.BackgroundColor = ColorExtensions.BackgroundColor;
-						else
-							NativeView.BackgroundColor = backgroundColor.ToUIColor();
+						NativeView.BackgroundColor = Element.BackgroundColor?.ToUIColor() ?? ColorExtensions.BackgroundColor;
 					}
 				}
 			});

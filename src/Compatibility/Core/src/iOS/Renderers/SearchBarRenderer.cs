@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.ComponentModel;
-using System.Drawing;
 using CoreGraphics;
 using Foundation;
 using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (Control == null)
 				{
-					var searchBar = new UISearchBar(RectangleF.Empty) { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
+					var searchBar = new UISearchBar(RectangleF.Zero) { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
 					var cancelButton = searchBar.FindDescendantView<UIButton>();
 					_cancelButtonTextColorDefaultNormal = cancelButton.TitleColor(UIControlState.Normal);
@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (cancelButton == null)
 				return;
 
-			if (Element.CancelButtonColor == Color.Default)
+			if (Element.CancelButtonColor == null)
 			{
 				cancelButton.SetTitleColor(_cancelButtonTextColorDefaultNormal, UIControlState.Normal);
 				cancelButton.SetTitleColor(_cancelButtonTextColorDefaultHighlighted, UIControlState.Highlighted);
@@ -322,7 +322,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				// Placeholder default color is 70% gray
 				// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
 
-				var color = Element.IsEnabled && !targetColor.IsDefault 
+				var color = Element.IsEnabled && targetColor != null 
 					? targetColor : ColorExtensions.PlaceholderColor.ToColor();
 
 				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, color);
@@ -331,7 +331,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else
 			{
-				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, targetColor.IsDefault 
+				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, targetColor == null 
 					? ColorExtensions.PlaceholderColor.ToColor() : targetColor);
 				_textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 			}
@@ -368,12 +368,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (_useLegacyColorManagement)
 			{
-				var color = Element.IsEnabled && !targetColor.IsDefault ? targetColor : _defaultTextColor.ToColor();
+				var color = Element.IsEnabled && targetColor != null ? targetColor : _defaultTextColor.ToColor();
 				_textField.TextColor = color.ToUIColor();
 			}
 			else
 			{
-				_textField.TextColor = targetColor.IsDefault ? _defaultTextColor : targetColor.ToUIColor();
+				_textField.TextColor = targetColor == null ? _defaultTextColor : targetColor.ToUIColor();
 			}
 		}
 

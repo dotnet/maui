@@ -9,6 +9,17 @@ namespace Microsoft.Maui
 {
 	public class EmbeddedFontLoader : IEmbeddedFontLoader
 	{
+
+#if !NET6_0
+		// The NET6_0 linker won't need this
+		// Make sure to test with full linking on before removing
+		[Preserve]
+		public EmbeddedFontLoader()
+		{
+
+		}
+#endif
+
 		public (bool success, string? filePath) LoadFont(EmbeddedFont font)
 		{
 			try

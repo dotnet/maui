@@ -2,6 +2,7 @@
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -139,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Children = {
 					new Label {
-						TextColor = Color.Red,
+						TextColor = Colors.Red,
 						Text = "I have been pushed"
 					}
 				}
