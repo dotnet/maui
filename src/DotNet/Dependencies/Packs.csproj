@@ -11,5 +11,9 @@
     <PackageDownload Include="Microsoft.MacCatalyst.Sdk"        Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.iOS.Ref"                Version="[$(MicrosoftiOSSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.iOS.Sdk"                Version="[$(MicrosoftiOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.tvOS.Ref"               Version="[$(MicrosofttvOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.tvOS.Sdk"               Version="[$(MicrosofttvOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.macOS.Ref"              Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.macOS.Sdk"              Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
   </ItemGroup>
 </Project>
