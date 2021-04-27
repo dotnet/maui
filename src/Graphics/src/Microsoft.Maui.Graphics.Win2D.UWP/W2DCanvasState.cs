@@ -24,8 +24,10 @@ namespace Microsoft.Maui.Graphics.Win2D
 		private CanvasSolidColorBrush _fontBrush;
 		private bool _fontBrushValid;
 		private float _fontSize;
-		private Vector2 _gradientPoint1;
-		private Vector2 _gradientPoint2;
+		private Vector2 _linearGradientStartPoint;
+		private Vector2 _linearGradientEndPoint;
+		private Vector2 _radialGradientCenter;
+		private float _radialGradientRadius;
 		//private GradientStopCollection _gradientStopCollection;
 		private CanvasGeometry _layerBounds;
 		private CanvasGeometry _layerClipBounds;
@@ -280,24 +282,24 @@ namespace Microsoft.Maui.Graphics.Win2D
 			}
 		}
 
-		public void SetLinearGradient(Paint aPaint, Vector2 aPoint1, Vector2 aPoint2)
+		public void SetLinearGradient(Paint aPaint, Vector2 startPoint, Vector2 endPoint)
 		{
 			ReleaseFillBrush();
 			_fillBrushValid = false;
 			_sourceFillColor = null;
 			_sourceFillpaint = aPaint;
-			_gradientPoint1 = aPoint1;
-			_gradientPoint2 = aPoint2;
+			_linearGradientStartPoint = startPoint;
+			_linearGradientEndPoint = endPoint;
 		}
 
-		public void SetRadialGradient(Paint aPaint, Vector2 aPoint1, Vector2 aPoint2)
+		public void SetRadialGradient(Paint aPaint, Vector2 center, float radius)
 		{
 			ReleaseFillBrush();
 			_fillBrushValid = false;
 			_sourceFillColor = null;
 			_sourceFillpaint = aPaint;
-			_gradientPoint1 = aPoint1;
-			_gradientPoint2 = aPoint2;
+			_radialGradientCenter = center;
+			_radialGradientRadius = radius;
 		}
 
 		public void SetBitmapBrush(CanvasImageBrush bitmapBrush)
@@ -319,39 +321,39 @@ namespace Microsoft.Maui.Graphics.Win2D
 					}
 					else if (_sourceFillpaint != null)
 					{
-						if (_sourceFillpaint.PaintType == PaintType.LinearGradient)
+						if (_sourceFillpaint is LinearGradientPaint linearGradientPaint)
 						{
-							var gradientStops = new CanvasGradientStop[_sourceFillpaint.Stops.Length];
-							for (int i = 0; i < _sourceFillpaint.Stops.Length; i++)
+							var gradientStops = new CanvasGradientStop[linearGradientPaint.GradientStops.Length];
+							for (int i = 0; i < linearGradientPaint.GradientStops.Length; i++)
 							{
 								gradientStops[i] = new CanvasGradientStop()
 								{
-									Position = _sourceFillpaint.Stops[i].Offset,
-									Color = _sourceFillpaint.Stops[i].Color.AsColor(Colors.White, _alpha)
+									Position = linearGradientPaint.GradientStops[i].Offset,
+									Color = linearGradientPaint.GradientStops[i].Color.AsColor(Colors.White, _alpha)
 								};
 							}
 
 							_fillBrush = new CanvasLinearGradientBrush(_owner.Session, gradientStops);
-							((CanvasLinearGradientBrush)_fillBrush).StartPoint = _gradientPoint1;
-							((CanvasLinearGradientBrush)_fillBrush).EndPoint = _gradientPoint2;
+							((CanvasLinearGradientBrush)_fillBrush).StartPoint = _linearGradientStartPoint;
+							((CanvasLinearGradientBrush)_fillBrush).EndPoint = _linearGradientEndPoint;
 						}
-						else
+						else if (_sourceFillpaint is RadialGradientPaint radialGradientPaint)
 						{
-							float radius = Geometry.GetDistance(_gradientPoint1.X, _gradientPoint1.Y, _gradientPoint2.X, _gradientPoint2.Y);
+							//float radius = Geometry.GetDistance(_gradientPoint1.X, _gradientPoint1.Y, _gradientPoint2.X, _gradientPoint2.Y);
 
-							var gradientStops = new CanvasGradientStop[_sourceFillpaint.Stops.Length];
-							for (int i = 0; i < _sourceFillpaint.Stops.Length; i++)
+							var gradientStops = new CanvasGradientStop[radialGradientPaint.GradientStops.Length];
+							for (int i = 0; i < radialGradientPaint.GradientStops.Length; i++)
 							{
 								gradientStops[i] = new CanvasGradientStop
 								{
-									Position = _sourceFillpaint.Stops[i].Offset,
-									Color = _sourceFillpaint.Stops[i].Color.AsColor(Colors.White, _alpha)
+									Position = radialGradientPaint.GradientStops[i].Offset,
+									Color = radialGradientPaint.GradientStops[i].Color.AsColor(Colors.White, _alpha)
 								};
 							}
 							_fillBrush = new CanvasRadialGradientBrush(_owner.Session, gradientStops);
-							((CanvasRadialGradientBrush)_fillBrush).Center = _gradientPoint1;
-							((CanvasRadialGradientBrush)_fillBrush).RadiusX = radius;
-							((CanvasRadialGradientBrush)_fillBrush).RadiusY = radius;
+							((CanvasRadialGradientBrush)_fillBrush).Center = _radialGradientCenter;
+							((CanvasRadialGradientBrush)_fillBrush).RadiusX = _radialGradientRadius;
+							((CanvasRadialGradientBrush)_fillBrush).RadiusY = _radialGradientRadius;
 						}
 						_fillBrushValid = true;
 					}

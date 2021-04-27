@@ -17,8 +17,11 @@ namespace Microsoft.Maui.Graphics.SharpDX
 		private SolidColorBrush _fontBrush;
 		private bool _fontBrushValid;
 		private float _fontSize;
-		private Vector2 _gradientPoint1;
-		private Vector2 _gradientPoint2;
+		private Vector2 _linearGradientStartPoint;
+		private Vector2 _linearGradientEndPoint;
+		private Vector2 _radialGradientCenterPoint;
+		private float _radialGradientRadius;
+		private RectangleF _fillRectangle;
 		private GradientStopCollection _gradientStopCollection;
 		private RectangleGeometry _layerBounds;
 		private RectangleGeometry _layerClipBounds;
@@ -289,44 +292,45 @@ namespace Microsoft.Maui.Graphics.SharpDX
 					}
 					else if (_sourceFillpaint != null)
 					{
-						if (_sourceFillpaint.PaintType == PaintType.LinearGradient)
+						if (_sourceFillpaint is LinearGradientPaint linearGradientPaint)
 						{
 							var linearGradientProperties = new LinearGradientBrushProperties();
-							var gradientStops = new global::SharpDX.Direct2D1.GradientStop[_sourceFillpaint.Stops.Length];
-							for (int i = 0; i < _sourceFillpaint.Stops.Length; i++)
+							var gradientStops = new global::SharpDX.Direct2D1.GradientStop[linearGradientPaint.GradientStops.Length];
+							for (int i = 0; i < linearGradientPaint.GradientStops.Length; i++)
 							{
 								gradientStops[i] = new global::SharpDX.Direct2D1.GradientStop
 								{
-									Position = _sourceFillpaint.Stops[i].Offset,
-									Color = _sourceFillpaint.Stops[i].Color.AsDxColor(_alpha)
+									Position = linearGradientPaint.GradientStops[i].Offset,
+									Color = linearGradientPaint.GradientStops[i].Color.AsDxColor(_alpha)
 								};
 							}
 
 							_gradientStopCollection = new GradientStopCollection(_renderTarget, gradientStops, ExtendMode.Clamp);
 							_fillBrush = new LinearGradientBrush(_renderTarget, linearGradientProperties, _gradientStopCollection);
-							((LinearGradientBrush) _fillBrush).StartPoint = _gradientPoint1;
-							((LinearGradientBrush) _fillBrush).EndPoint = _gradientPoint2;
+							((LinearGradientBrush) _fillBrush).StartPoint = _linearGradientStartPoint;
+							((LinearGradientBrush) _fillBrush).EndPoint = _linearGradientEndPoint;
 						}
-						else
+						else if (_sourceFillpaint is RadialGradientPaint radialGradientPaint)
 						{
-							float radius = Geometry.GetDistance(_gradientPoint1.X, _gradientPoint1.Y, _gradientPoint2.X, _gradientPoint2.Y);
+							if(_radialGradientRadius == 0)
+							 _radialGradientRadius = Geometry.GetDistance(_fillRectangle.Left, _fillRectangle.Top, _fillRectangle.Right, _fillRectangle.Bottom);
 
 							var radialGradientBrushProperties = new RadialGradientBrushProperties();
-							var gradientStops = new global::SharpDX.Direct2D1.GradientStop[_sourceFillpaint.Stops.Length];
-							for (int i = 0; i < _sourceFillpaint.Stops.Length; i++)
+							var gradientStops = new global::SharpDX.Direct2D1.GradientStop[radialGradientPaint.GradientStops.Length];
+							for (int i = 0; i < radialGradientPaint.GradientStops.Length; i++)
 							{
 								gradientStops[i] = new global::SharpDX.Direct2D1.GradientStop
 								{
-									Position = _sourceFillpaint.Stops[i].Offset,
-									Color = _sourceFillpaint.Stops[i].Color.AsDxColor(_alpha)
+									Position = radialGradientPaint.GradientStops[i].Offset,
+									Color = radialGradientPaint.GradientStops[i].Color.AsDxColor(_alpha)
 								};
 							}
 
 							_gradientStopCollection = new GradientStopCollection(_renderTarget, gradientStops, ExtendMode.Clamp);
 							_fillBrush = new RadialGradientBrush(_renderTarget, radialGradientBrushProperties, _gradientStopCollection);
-							((RadialGradientBrush) _fillBrush).Center = _gradientPoint1;
-							((RadialGradientBrush) _fillBrush).RadiusX = radius;
-							((RadialGradientBrush) _fillBrush).RadiusY = radius;
+							((RadialGradientBrush) _fillBrush).Center = _radialGradientCenterPoint;
+							((RadialGradientBrush) _fillBrush).RadiusX = _radialGradientRadius;
+							((RadialGradientBrush) _fillBrush).RadiusY = _radialGradientRadius;
 						}
 
 						_fillBrushValid = true;
@@ -541,24 +545,25 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			}
 		}
 
-		public void SetLinearGradient(Paint aPaint, Vector2 aPoint1, Vector2 aPoint2)
+		public void SetLinearGradient(Paint aPaint, Vector2 startPoint, Vector2 endPoint)
 		{
 			ReleaseFillBrush();
 			_fillBrushValid = false;
 			_sourceFillColor = null;
 			_sourceFillpaint = aPaint;
-			_gradientPoint1 = aPoint1;
-			_gradientPoint2 = aPoint2;
+			_linearGradientStartPoint = startPoint;
+			_linearGradientEndPoint = endPoint;
 		}
 
-		public void SetRadialGradient(Paint aPaint, Vector2 aPoint1, Vector2 aPoint2)
+		public void SetRadialGradient(Paint aPaint, Vector2 center, float radius, RectangleF rectangle)
 		{
 			ReleaseFillBrush();
 			_fillBrushValid = false;
 			_sourceFillColor = null;
 			_sourceFillpaint = aPaint;
-			_gradientPoint1 = aPoint1;
-			_gradientPoint2 = aPoint2;
+			_radialGradientCenterPoint = center;
+			_radialGradientRadius = radius;
+			_fillRectangle = rectangle;
 		}
 
 		private void InvalidateStrokeStyle()
