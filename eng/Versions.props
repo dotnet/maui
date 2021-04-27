@@ -5,5 +5,7 @@
     <MicrosoftAndroidSdkWindowsPackageVersion>11.0.200-preview.4.234</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>14.5.100-preview.4.623</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>14.5.100-preview.4.623</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>14.5.100-preview.4.623</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>11.3.100-preview.4.623</MicrosoftmacOSSdkPackageVersion>
   </PropertyGroup>
 </Project>
