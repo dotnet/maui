@@ -1,5 +1,5 @@
 <!-- "Single Project" support -->
-<Project InitialTargets="_FixRazorAndroidContent">
+<Project InitialTargets="_FixMobileRazorContent">
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' ">
 
     <!-- Android -->
@@ -64,7 +64,7 @@
   </ItemGroup>
 
   <!--Fix @(Content) for .razor files on Android -->
-  <Target Name="_FixRazorAndroidContent" Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+  <Target Name="_FixMobileRazorContent" Condition=" '$(TargetPlatformIdentifier)' == 'android' or '$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
     <ItemGroup>
       <RazorComponent
           Condition=" '%(Content.Extension)' == '.razor' "
