@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Handlers;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class NavigationPageHandler :
-		ViewHandler<NavigationPage, object>
+		ViewHandler<NavigationPage, UIView>
 	{
-		protected override object CreateNativeView()
+		protected override UIView CreateNativeView()
 		{
 			throw new NotImplementedException();
 		}

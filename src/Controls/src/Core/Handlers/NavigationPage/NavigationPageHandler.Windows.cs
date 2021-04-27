@@ -25,27 +25,6 @@ namespace Microsoft.Maui.Controls.Handlers
 		ViewHandler<NavigationPage, PageControl>, ITitleProvider, ITitleIconProvider, 
 		ITitleViewProvider, IToolbarProvider, IToolBarForegroundBinder, IViewHandler
 	{
-		// Shane will move this once he starts working on other platforms :-)
-		public static PropertyMapper<NavigationPage, NavigationPageHandler> NavigationPageMapper
-			= new PropertyMapper<NavigationPage, NavigationPageHandler>(ViewHandler.ViewMapper)
-			{
-				[NavigationPage.BarTextColorProperty.PropertyName] = MapTitleColor,
-				[NavigationPage.BarBackgroundColorProperty.PropertyName] = MapNavigationBarBackground,
-				[NavigationPage.BarBackgroundProperty.PropertyName] = MapNavigationBarBackground,
-				[nameof(IPadding.Padding)] = MapPadding,
-				[nameof(NavigationPage.TitleIconImageSourceProperty.PropertyName)] = MapTitleIcon,
-				[nameof(NavigationPage.TitleViewProperty.PropertyName)] = MapTitleView,
-
-#if WINDOWS
-				[nameof(ToolbarPlacementProperty.PropertyName)] = MapToolbarPlacement,
-				[nameof(ToolbarDynamicOverflowEnabledProperty.PropertyName)] = MapToolbarDynamicOverflowEnabled,
-#endif
-			};
-
-		public NavigationPageHandler() : base(NavigationPageMapper)
-		{
-		}
-
 		Page _currentPage;
 		Page _previousPage;
 
