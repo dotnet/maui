@@ -21,6 +21,13 @@ namespace Maui.Controls.Sample.Pages
 
 		public MainPage(IServiceProvider services, MainPageViewModel viewModel)
 		{
+			BackgroundColor = Colors.White;
+			ToolbarItems.Add(new ToolbarItem()
+			{
+				Text = "Page"
+			});
+
+			Title = "Welcome to the Samples";
 			_services = services;
 			BindingContext = _viewModel = viewModel;
 
@@ -59,6 +66,16 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center });
 			verticalStack.Add(new Label { Text = "This should have character spacing!", CharacterSpacing = 3 });
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
+			verticalStack.Add(
+				new Button
+				{
+					Text = "Push a Page",
+					Command = new Command(async () =>
+					{
+						await Navigation.PushAsync(new SemanticsPage());
+					})
+				}
+			);
 
 			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Colors.LightBlue });
 			verticalStack.Add(new Label { Text = loremIpsum });

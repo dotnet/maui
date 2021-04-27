@@ -119,6 +119,10 @@ namespace Microsoft.Maui.Handlers
 	public abstract partial class ViewHandler<TVirtualView> : ViewHandler
 		where TVirtualView : class, IView
 	{
+		internal ViewHandler()
+		{
+		}
+
 		public new TVirtualView? VirtualView
 		{
 			get => (TVirtualView?)base.VirtualView;

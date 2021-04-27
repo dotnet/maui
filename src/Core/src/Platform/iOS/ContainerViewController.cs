@@ -11,9 +11,19 @@ namespace Microsoft.Maui
 			get => _view;
 			set => SetView(value);
 		}
+
+		public UIView? CurrentNativeView 
+			=> _pendingLoadedView ?? currentNativeView;
+
 		public IMauiContext? Context { get; set; }
 
 		UIView? currentNativeView;
+
+		// The handler needs this view before LoadView is called on the controller
+		// So this is used to create the first view that the handler will use
+		// without forcing the VC to call LoadView
+		UIView? _pendingLoadedView;
+
 		void SetView(IView? view, bool forceRefresh = false)
 		{
 			if (view == _view && !forceRefresh)
@@ -28,18 +38,37 @@ namespace Microsoft.Maui
 			currentNativeView?.RemoveFromSuperview();
 			currentNativeView = null;
 			if (IsViewLoaded && _view != null)
-			{
-				_ = Context ?? throw new ArgumentNullException(nameof(Context));
-				View!.AddSubview(currentNativeView = _view.ToNative(Context));
-			}
+				LoadNativeView(_view);
+		}
+
+		internal UIView LoadFirstView(IView view)
+		{
+			_pendingLoadedView = CreateNativeView(view);
+			return _pendingLoadedView;
 		}
 
 		public override void LoadView()
 		{
 			base.LoadView();
 			if (_view != null && Context != null)
-				View!.AddSubview(currentNativeView = _view.ToNative(Context));
+				LoadNativeView(_view);
 		}
+
+		void LoadNativeView(IView view)
+		{
+			currentNativeView = _pendingLoadedView ?? CreateNativeView(view);
+			_pendingLoadedView = null;
+			View!.AddSubview(currentNativeView);
+		}
+
+		protected virtual UIView CreateNativeView(IView view)
+		{
+			_ = Context ?? throw new ArgumentNullException(nameof(Context));
+			_ = _view ?? throw new ArgumentNullException(nameof(view));
+
+			return _view.ToNative(Context);
+		}
+
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();

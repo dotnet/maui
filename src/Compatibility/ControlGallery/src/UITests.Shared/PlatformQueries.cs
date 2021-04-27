@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			{ View.ScaleProperty, Tuple.Create (new[] { "getLayerTransformString" }, true) },
 		};
 
-#elif __ANDROID__ || __WINDOWS__
+#elif __ANDROID__ || WINDOWS
 		public static readonly Dictionary<BindableProperty, Tuple<string[], bool>> PropertyPlatformMethodDictionary = new Dictionary
 			<BindableProperty, Tuple<string[], bool>>
 			{
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public static readonly string TableView = "UITableView";
 		public static readonly string TimePicker = "UITextField";
 		public static readonly string WebView = "WKWebView";
-#elif __ANDROID__ || __WINDOWS__
+#elif __ANDROID__ || WINDOWS
 		public static readonly string ActivityIndicator = "android.widget.ProgressBar";
 		public static readonly string BoxView = "xamarin.forms.platform.android.BoxRenderer";
 		public static readonly string Button = "android.widget.Button";
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public static readonly Func<AppQuery, AppQuery> PageWithoutNavigationBar = q => q.Raw("*").Index(7);
 		public static readonly Func<AppQuery, AppQuery> NavigationBarBackButton = q => q.Class("UINavigationItemButtonView");
 
-#elif __ANDROID__ || __WINDOWS__
+#elif __ANDROID__ || WINDOWS
 		public static readonly Func<AppQuery, AppQuery> Root = q => q.Id("content");
 		public static readonly Func<AppQuery, AppQuery> RootPageListView = q => q.Raw("ListViewRenderer index:0");
 		public static readonly Func<AppQuery, AppQuery> GalleryListView = q => q.Raw("ListViewRenderer index:1");

@@ -11,6 +11,7 @@ using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProper
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -146,11 +147,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateBounds();
 
 			InitializeStatusBar();
-						
-			// TODO WINUI
-			//SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
+				
+			if(!NativeVersion.IsDesktop)
+				SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
 
-			// TODO WINUI
+			// TODO WINUI: This event is only available on UWP
 			// Microsoft.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
 		}
 
@@ -555,14 +556,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					button.Content = img;
 				}
 
-				// WINUUI FIX
+				// TODO WINUI FIX
 				//button.Command = new MenuItemCommand(item);
 				button.DataContext = item;
 				button.SetValue(NativeAutomationProperties.AutomationIdProperty, item.AutomationId);
 				button.SetAutomationPropertiesName(item);
 				button.SetAutomationPropertiesAccessibilityView(item);
 				button.SetAutomationPropertiesHelpText(item);
-				button.SetAutomationPropertiesLabeledBy(item);
+
+				// TODO MAUI
+				button.SetAutomationPropertiesLabeledBy(item, null);
 
 				ToolbarItemOrder order = item.Order == ToolbarItemOrder.Default ? ToolbarItemOrder.Primary : item.Order;
 				if (order == ToolbarItemOrder.Primary)

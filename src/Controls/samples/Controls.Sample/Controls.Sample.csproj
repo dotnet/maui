@@ -1,7 +1,7 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <TargetFrameworks>MonoAndroid10.0;Xamarin.iOS10</TargetFrameworks>
+    <TargetFrameworks>$(NonNet6Platforms)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

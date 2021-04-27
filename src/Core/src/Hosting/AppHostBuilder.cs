@@ -39,19 +39,6 @@ namespace Microsoft.Maui.Hosting
 
 		public IDictionary<object, object> Properties => new Dictionary<object, object>();
 
-		public static IAppHostBuilder CreateDefaultAppBuilder()
-		{
-			var builder = new AppHostBuilder();
-
-			builder.UseMauiServiceProviderFactory(false);
-
-			builder.UseMauiHandlers();
-			builder.ConfigureFonts();
-			builder.ConfigureImageSourceServices();
-
-			return builder;
-		}
-
 		public IAppHost Build()
 		{
 			if (_hostBuilt)
@@ -80,7 +67,7 @@ namespace Microsoft.Maui.Hosting
 
 			ConfigureServiceCollectionBuilders(_serviceProvider);
 
-			return new AppHost(_serviceProvider, null);
+			return new Internal.AppHost(_serviceProvider, null);
 		}
 
 		public IAppHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)

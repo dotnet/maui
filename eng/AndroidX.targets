@@ -20,6 +20,22 @@
         Version="2.3.1-$(_AndroidXVersion)"
     />
     <PackageReference
+        Update="Xamarin.AndroidX.Navigation.UI"
+        Version="2.3.5-$(_AndroidXVersion)"
+    />
+    <PackageReference
+        Update="Xamarin.AndroidX.Navigation.Fragment"
+        Version="2.3.5-$(_AndroidXVersion)"
+    />
+    <PackageReference
+        Update="Xamarin.AndroidX.Navigation.Runtime"
+        Version="2.3.5-$(_AndroidXVersion)"
+    />
+    <PackageReference
+        Update="Xamarin.AndroidX.Navigation.Common"
+        Version="2.3.5-$(_AndroidXVersion)"
+    />
+    <PackageReference
         Update="Xamarin.AndroidX.MediaRouter"
         Version="1.2.2.1-$(_AndroidXVersion)"
     />

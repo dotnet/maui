@@ -13,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Controls;
@@ -21,8 +23,8 @@ namespace Maui.Controls.Sample
 {
 	public class Startup : IStartup
 	{
-		enum PageType { Xaml, Semantics, Main, Blazor }
-		private PageType _pageType = PageType.Main;
+		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage }
+		private PageType _pageType = PageType.NavigationPage;
 
 		public readonly static bool UseXamlApp = true;
 		public readonly static bool UseFullDI = false;
@@ -46,6 +48,7 @@ namespace Maui.Controls.Sample
 			appBuilder.EnableHotReload();
 #endif
 			appBuilder
+				.UseMauiControlsHandlers()
 #if NET6_0_OR_GREATER
 				.RegisterBlazorMauiWebView()
 #endif
@@ -81,6 +84,7 @@ namespace Maui.Controls.Sample
 						serviceType: typeof(Page),
 						implementationType: _pageType switch
 						{
+							PageType.NavigationPage => typeof(NavPage),
 							PageType.Xaml => typeof(XamlPage),
 							PageType.Semantics => typeof(SemanticsPage),
 							PageType.Blazor =>

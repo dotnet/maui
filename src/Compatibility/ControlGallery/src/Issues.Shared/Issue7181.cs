@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		private void OnToolbarClicked() =>
 			_toolbarItem.Text = $"{AfterClickToolbarItemText} {_clicks++}";
 
-#if UITEST && (__ANDROID__ || __WINDOWS__)
+#if UITEST && (__ANDROID__ || WINDOWS)
 		[Test]
 		public void ShellToolbarItemTests()
 		{

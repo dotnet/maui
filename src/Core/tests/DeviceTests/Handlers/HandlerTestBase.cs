@@ -17,7 +17,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public HandlerTestBase()
 		{
-			var appBuilder = AppHostBuilder
+			var appBuilder = AppHost
 				.CreateDefaultAppBuilder()
 				.ConfigureImageSourceServices((ctx, services) =>
 				{

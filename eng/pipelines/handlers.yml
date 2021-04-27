@@ -146,10 +146,6 @@ stages:
           demands:
             - sh
             - Xamarin.iOS
-        variables:
-          provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
-          provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-          provisionator.extraArguments : '--v'
         steps:
           - template: common/controlgallery-ios.yml
 
@@ -168,9 +164,6 @@ stages:
         variables:
           renderers: 'FAST'
           outputfolder: 'newRenderers'
-          provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
-          provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-          provisionator.extraArguments : '--v'
         steps:
           - template: common/controlgallery-android.yml
 
@@ -189,6 +182,25 @@ stages:
             vmImage: ${{ BuildPlatform.vmImage }}
           steps:
             - ${{ if eq(BuildPlatform.name, 'macos') }}:
+              - task: xamops.azdevex.provisionator-task.provisionator@1
+                displayName: 'Provision Xcode'
+                condition: ne(variables['REQUIRED_XCODE'], '')
+                inputs:
+                  provisioning_script: $(provisionator.xcode)
+
+              - task: xamops.azdevex.provisionator-task.provisionator@1
+                displayName: 'Provisionator'
+                condition: eq(variables['provisioning'], 'true')
+                inputs:
+                  provisioning_script: $(provisionator.xcode)
+                  provisioning_extra_args: $(provisionator.extraArguments)
+
+              - script: |
+                  echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
+                  echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
+                displayName: 'Setup SDK Paths'
+                condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
+
               - bash: |
                   set -x
                   mkdir -p ~/Library/Preferences/Xamarin
@@ -239,6 +251,25 @@ stages:
               vmImage: ${{ BuildPlatform.vmImage }}
             steps:
               - ${{ if eq(BuildPlatform.name, 'macos') }}:
+                - task: xamops.azdevex.provisionator-task.provisionator@1
+                  displayName: 'Provision Xcode'
+                  condition: ne(variables['REQUIRED_XCODE'], '')
+                  inputs:
+                    provisioning_script: $(provisionator.xcode)
+
+                - task: xamops.azdevex.provisionator-task.provisionator@1
+                  displayName: 'Provisionator'
+                  condition: eq(variables['provisioning'], 'true')
+                  inputs:
+                    provisioning_script: $(provisionator.xcode)
+                    provisioning_extra_args: $(provisionator.extraArguments)
+
+                - script: |
+                    echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
+                    echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
+                  displayName: 'Setup SDK Paths'
+                  condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
+                
                 - bash: |
                     set -x
                     mkdir -p ~/Library/Preferences/Xamarin

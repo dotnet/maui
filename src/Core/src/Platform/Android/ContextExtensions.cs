@@ -107,6 +107,11 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static bool TryResolveAttribute(this Context context, int id)
+		{
+			return context.Theme.TryResolveAttribute(id);
+		}
+
 		internal static int GetThemeAttrColor(this Context context, int attr)
 		{
 			using (TypedValue mTypedValue = new TypedValue())
@@ -181,7 +186,7 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		public static AFragmentManager? GetFragmentManager(this Context context)
+		public static FragmentManager? GetFragmentManager(this Context context)
 		{
 			if (context == null)
 				return null;

@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;__WINDOWS__;UITEST</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS;WINDOWS;UITEST</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0114;0108;4014;0649;0169;0168;0219</NoWarn>
@@ -27,7 +27,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;__WINDOWS__;UITEST</DefineConstants>
+    <DefineConstants>TRACE;WINDOWS;UITEST</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0114;0108;4014;0649;0169;0168;0219</NoWarn>

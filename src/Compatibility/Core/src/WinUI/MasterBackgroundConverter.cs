@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			brush = value as WSolidColorBrush;
 			if (brush != null)
 			{
-				Maui.Graphics.Color color = brush.ToFormsColor();
+				Maui.Graphics.Color color = brush.ToColor();
 
 				double delta = Shift;
 				if (color.GetLuminosity() > .6)

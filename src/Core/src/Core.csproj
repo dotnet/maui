@@ -1,6 +1,6 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.1;netstandard2.0;Xamarin.iOS10;MonoAndroid10.0</TargetFrameworks>
+		<TargetFrameworks>netstandard2.1;netstandard2.0;$(NonNet6Platforms)</TargetFrameworks>
 		<RootNamespace>Microsoft.Maui</RootNamespace>
 		<AssemblyName>Microsoft.Maui</AssemblyName>
 		<Nullable>enable</Nullable>

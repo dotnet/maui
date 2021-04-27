@@ -6,7 +6,7 @@
     <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.UAP</RootNamespace>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
-    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP;UWP_16299;UWP_18362;UWP_17134</DefineConstants>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS;UWP_16299;UWP_18362;UWP_17134</DefineConstants>
     <NoWarn>$(NoWarn);NU5104</NoWarn>
   </PropertyGroup>
 

@@ -10,9 +10,6 @@ namespace Microsoft.Maui.Controls
 		// TODO ezhart That there's a layout alignment here tells us this hierarchy needs work :) 
 		public Primitives.LayoutAlignment HorizontalLayoutAlignment => Primitives.LayoutAlignment.Fill;
 
-		// TODO ezhart super sus
-		public Thickness Margin => Thickness.Zero;
-
 		IView IPage.Content => Content;
 
 

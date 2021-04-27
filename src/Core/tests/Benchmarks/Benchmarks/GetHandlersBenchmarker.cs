@@ -16,8 +16,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[GlobalSetup(Target = nameof(GetHandlerUsingDI))]
 		public void SetupForDI()
 		{
-			_host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			_host = AppHost
+				.CreateDefaultBuilder()
 				.Build();
 		}
 
