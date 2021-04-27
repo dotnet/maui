@@ -37,7 +37,7 @@ namespace Microsoft.Maui
 			nativeComboBox.CharacterSpacing = picker.CharacterSpacing.ToEm();
 		}
 
-		public static void UpdateFont(this ComboBox nativeComboBox, IPicker picker, IFontManager fontManager) =>
+		public static void UpdateFont(this MauiComboBox nativeComboBox, IPicker picker, IFontManager fontManager) =>
 			nativeComboBox.UpdateFont(picker.Font, fontManager);
 	}
 }
