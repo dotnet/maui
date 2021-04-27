@@ -66,8 +66,9 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = "This should have character spacing!", CharacterSpacing = 3 });
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
 			verticalStack.Add(
-				new Button { 
-					Text = "Push a Page", 
+				new Button
+				{
+					Text = "Push a Page",
 					Command = new Command(async () =>
 					{
 						await Navigation.PushAsync(new SemanticsPage());
