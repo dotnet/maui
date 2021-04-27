@@ -10,11 +10,11 @@ namespace MauiApp1
 			InitializeComponent();
 		}
 
-		public override IWindow CreateWindow(IActivationState activationState)
+		protected override IWindow CreateWindow(IActivationState activationState)
 		{
 			Microsoft.Maui.Controls.Compatibility.Forms.Init(activationState);
 
-			return new MainWindow();
+			return new Microsoft.Maui.Controls.Window(new MainPage());
 		}
 	}
 }
