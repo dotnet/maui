@@ -12,6 +12,7 @@ namespace Microsoft.Maui
 			set => SetView(value);
 		}
 		public IMauiContext? Context { get; set; }
+		internal UIView? CurrentNativeView => currentNativeView;
 
 		UIView? currentNativeView;
 		void SetView(IView? view, bool forceRefresh = false)
@@ -40,6 +41,7 @@ namespace Microsoft.Maui
 			if (_view != null && Context != null)
 				View!.AddSubview(currentNativeView = _view.ToNative(Context));
 		}
+
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();

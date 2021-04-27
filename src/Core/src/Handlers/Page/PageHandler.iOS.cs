@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 
 			_pageViewController = new PageViewController(VirtualView, this.MauiContext);
 
-			if (_pageViewController.View is PageView pv)
+			if (_pageViewController.CurrentNativeView is PageView pv)
 				return pv;
 
 			throw new InvalidOperationException($"PageViewController.View must be a PageView");
