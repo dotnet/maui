@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 
@@ -44,14 +45,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if(oldItem != null)
 				oldItem.PropertyChanged -= ToolbarItemPropertyChanged;
 
-			this.SetAutomationProperties(newItem, defaultName: newItem?.Text);
+			// TODO MAUI
+			this.SetAutomationProperties(newItem, null, defaultName: newItem?.Text);
 
 			if (newItem != null)
 				newItem.PropertyChanged += ToolbarItemPropertyChanged;
 
 			void ToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
-				this.SetAutomationProperties(newItem, defaultName: newItem?.Text);
+				// TODO MAUI
+				this.SetAutomationProperties(newItem, null, defaultName: newItem?.Text);
 			}
 		}
 	}

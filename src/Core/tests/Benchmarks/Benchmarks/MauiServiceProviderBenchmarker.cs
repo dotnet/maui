@@ -17,8 +17,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[IterationSetup(Target = nameof(DefaultBuilder))]
 		public void SetupForDefaultBuilder()
 		{
-			_host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			_host = AppHost
+				.CreateDefaultBuilder()
 				.ConfigureServices((ctx, svc) => svc.AddTransient<IFooService, FooService>())
 				.Build();
 		}
@@ -26,8 +26,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[IterationSetup(Target = nameof(DefaultBuilderWithConstructorInjection))]
 		public void SetupForDefaultBuilderWithConstructorInjection()
 		{
-			_host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			_host = AppHost
+				.CreateDefaultBuilder()
 				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, svc) => svc.AddTransient<IFooService, FooService>())
 				.Build();
@@ -36,8 +36,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[IterationSetup(Target = nameof(OneConstructorParameter))]
 		public void SetupForOneConstructorParameter()
 		{
-			_host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			_host = AppHost
+				.CreateDefaultBuilder()
 				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, svc) =>
 				{
@@ -50,8 +50,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[IterationSetup(Target = nameof(TwoConstructorParameters))]
 		public void SetupForTwoConstructorParameters()
 		{
-			_host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			_host = AppHost
+				.CreateDefaultBuilder()
 				.UseMauiServiceProviderFactory(true)
 				.ConfigureServices((ctx, svc) =>
 				{
@@ -65,8 +65,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[IterationSetup(Target = nameof(ExtensionsWithConstructorInjection))]
 		public void SetupForExtensionsWithConstructorInjection()
 		{
-			_host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			_host = AppHost
+				.CreateDefaultBuilder()
 				.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
 				.ConfigureServices((ctx, svc) => svc.AddTransient<IFooService, FooService>())
 				.Build();
@@ -75,8 +75,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[IterationSetup(Target = nameof(ExtensionsWithOneConstructorParameter))]
 		public void SetupForExtensionsWithOneConstructorParameter()
 		{
-			_host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			_host = AppHost
+				.CreateDefaultBuilder()
 				.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
 				.ConfigureServices((ctx, svc) =>
 				{
@@ -89,8 +89,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[IterationSetup(Target = nameof(ExtensionsWithTwoConstructorParameters))]
 		public void SetupForExtensionsWithTwoConstructorParameters()
 		{
-			_host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			_host = AppHost
+				.CreateDefaultBuilder()
 				.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
 				.ConfigureServices((ctx, svc) =>
 				{

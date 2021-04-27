@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.Page), typeof(_2489CustomRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI

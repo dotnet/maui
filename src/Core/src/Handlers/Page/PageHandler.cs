@@ -7,16 +7,17 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PageHandler : IViewHandler
 	{
-		public static PropertyMapper<IPage> LayoutMapper = new PropertyMapper<IPage>(ViewHandler.ViewMapper)
+		public static PropertyMapper<IPage, PageHandler> PageMapper = new PropertyMapper<IPage, PageHandler>(ViewHandler.ViewMapper)
 		{
+			[nameof(IPage.Title)] = MapTitle,
 		};
 
-		public PageHandler() : base(LayoutMapper)
+		public PageHandler() : base(PageMapper)
 		{
 
 		}
 
-		public PageHandler(PropertyMapper? mapper = null) : base(mapper ?? LayoutMapper)
+		public PageHandler(PropertyMapper? mapper = null) : base(mapper ?? PageMapper)
 		{
 
 		}

@@ -35,5 +35,9 @@ namespace Microsoft.Maui.Handlers
 			//var wrap = ViewGroup.LayoutParams.WrapContent;
 			NativeView.AddView(VirtualView.Content.ToNative(MauiContext)); // , new ViewGroup.LayoutParams(wrap, wrap));
 		}
+
+		public static void MapTitle(PageHandler handler, IPage page)
+		{
+		}
 	}
 }
