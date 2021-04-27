@@ -18,10 +18,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 		private bool _fillDirty = true;
 		private Color _fillColor = Colors.White;
 		private Paint _fillPaint = null;
-		private double _fillX1;
-		private double _fillY1;
-		private double _fillX2;
-		private double _fillY2;
+		private RectangleF _fillRectangle;
 
 		private bool _textDirty = true;
 		private Color _textColor = Colors.Black;
@@ -45,10 +42,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_fillDirty = true;
 			_fillColor = prototype._fillColor;
 			_fillPaint = prototype._fillPaint;
-			_fillX1 = prototype._fillX1;
-			_fillY1 = prototype._fillY1;
-			_fillX2 = prototype._fillX2;
-			_fillY2 = prototype._fillY2;
+			_fillRectangle = prototype._fillRectangle;
 			_dashPattern = prototype._dashPattern;
 
 			_textDirty = true;
@@ -221,20 +215,20 @@ namespace Microsoft.Maui.Graphics.Blazor
 				else if (_fillPaint != null)
 				{
 					/*
-					if (_fillPaint.PaintType == PaintType.LinearGradient)
+					if (_fillPaint is LinearPaint linearPaint)
 					{
 						var gradient = context.CreateLinearGradient(_fillX1, _fillY1, _fillX2, _fillY2);
-						for (int i = 0; i < _fillPaint.Stops.Length; i++)
+						for (int i = 0; i < linearPaint.GradientStops.Length; i++)
 						{
-							var color = _fillPaint.Stops[i].Color;
-							var offset = _fillPaint.Stops[i].Offset;
+							var color = linearPaint.GradientStops[i].Color;
+							var offset = linearPaint.GradientStops[i].Offset;
 							//var oouiColor = color != null ? color.AsOouiColorObject() : new Color(255, 255, 255, 255);
 							var oouiColor = color != null ? color.AsOouiColor() : StandardColors.White.AsOouiColor();
 							gradient.AddColorStop(offset, oouiColor);
 						}
 						context.FillStyle = gradient;
 					}
-					else if (_fillPaint.PaintType == PaintType.RadialGradient)
+					else if (_fillPaint is RadialGradientPaint radialGradientPaint)
 					{
 
 					}*/
@@ -267,14 +261,11 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_textDirty = true;
 		}
 
-		internal void SetFillPaint(Paint paint, float x1, float y1, float x2, float y2)
+		internal void SetFillPaint(Paint paint, RectangleF rectangle)
 		{
 			_fillColor = null;
 			_fillPaint = paint;
-			_fillX1 = x1;
-			_fillY1 = y1;
-			_fillX2 = x2;
-			_fillY2 = y2;
+			_fillRectangle = rectangle;
 			_fillDirty = true;
 		}
 	}

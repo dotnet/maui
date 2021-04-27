@@ -34,6 +34,8 @@ namespace Microsoft.Maui.Graphics.SharpDX
 
 		private Vector2 _point1;
 		private Vector2 _point2;
+		private float _radius;
+		private RectangleF _fillRectangle;
 		private Size2F _size;
 		private global::SharpDX.RectangleF _rect;
 		private RenderTarget _renderTarget;
@@ -776,7 +778,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			set { }
 		}
 
-		public override void SetFillPaint(Paint paint, float x1, float y1, float x2, float y2)
+		public override void SetFillPaint(Paint paint, RectangleF rectangle)
 		{
 			if (paint == null)
 			{
@@ -784,15 +786,15 @@ namespace Microsoft.Maui.Graphics.SharpDX
 				return;
 			}
 
-			if (paint.PaintType == PaintType.Solid)
+			if (paint is SolidPaint solidPaint)
 			{
-				CurrentState.FillColor = paint.StartColor;
+				CurrentState.FillColor = solidPaint.Color;
 				return;
 			}
 
-			if (paint.PaintType == PaintType.Image)
+			if (paint is ImagePaint imagePaint)
 			{
-				if (paint.Image is DXImage image)
+				if (imagePaint.Image is DXImage image)
 				{
 					var parentContext = _renderTarget as DeviceContext;
 					var properties = new BitmapBrushProperties
@@ -811,10 +813,10 @@ namespace Microsoft.Maui.Graphics.SharpDX
 				return;
 			}
 
-			if (paint.PaintType == PaintType.Pattern)
+			if (paint is PatternPaint patternPaint)
 			{
 				var parentContext = _renderTarget as DeviceContext;
-				var pattern = paint.Pattern;
+				var pattern = patternPaint.Pattern;
 				if (pattern == null)
 				{
 					CurrentState.FillColor = Colors.White;
@@ -865,21 +867,34 @@ namespace Microsoft.Maui.Graphics.SharpDX
 				return;
 			}
 
-			if (paint.PaintType == PaintType.LinearGradient)
+			_fillRectangle = rectangle;
+
+			if (paint is LinearGradientPaint linearGradientPaint)
 			{
+				float x1 = (float)(linearGradientPaint.StartPoint.X * rectangle.Width) + rectangle.X;
+				float y1 = (float)(linearGradientPaint.StartPoint.Y * rectangle.Height) + rectangle.Y;
+
+				float x2 = (float)(linearGradientPaint.EndPoint.X * rectangle.Width) + rectangle.X;
+				float y2 = (float)(linearGradientPaint.EndPoint.Y * rectangle.Height) + rectangle.Y;
+
 				_point1.X = x1;
 				_point1.Y = y1;
 				_point2.X = x2;
 				_point2.Y = y2;
+
 				CurrentState.SetLinearGradient(paint, _point1, _point2);
 			}
-			else
+			else if (paint is RadialGradientPaint radialGradientPaint)
 			{
-				_point1.X = x1;
-				_point1.Y = y1;
-				_point2.X = x2;
-				_point2.Y = y2;
-				CurrentState.SetRadialGradient(paint, _point1, _point2);
+				float centerX = (float)(radialGradientPaint.Center.X * rectangle.Width) + rectangle.X;
+				float centerY = (float)(radialGradientPaint.Center.Y * rectangle.Height) + rectangle.Y;
+				float radius = (float)radialGradientPaint.Radius * Math.Max(rectangle.Height, rectangle.Width);
+
+				_point1.X = centerX;
+				_point1.Y = centerY;
+				_radius = radius;
+
+				CurrentState.SetRadialGradient(paint, _point1, _radius, _fillRectangle);
 			}
 		}
 

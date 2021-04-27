@@ -198,15 +198,15 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_context.GlobalAlpha = alpha;
 		}
 
-		public override void SetFillPaint(Paint paint, float x1, float y1, float x2, float y2)
+		public override void SetFillPaint(Paint paint, RectangleF rectangle)
 		{
-			if (paint.PaintType == PaintType.Solid)
+			if (paint is SolidPaint solidPaint)
 			{
-				FillColor = paint.StartColor;
+				FillColor = solidPaint.Color;
 			}
 			else
 			{
-				CurrentState.SetFillPaint(paint, x1, y1, x2, y2);
+				CurrentState.SetFillPaint(paint, rectangle);
 			}
 		}
 

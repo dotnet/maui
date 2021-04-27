@@ -256,11 +256,6 @@ namespace Microsoft.Maui.Graphics
 			_commands.Add(canvas => canvas.SetFillPaint(paint, rectangle));
 		}
 
-		public void SetFillPaint(Paint paint, float x1, float y1, float x2, float y2)
-		{
-			_commands.Add(canvas => canvas.SetFillPaint(paint, x1, y1, x2, y2));
-		}
-
 		public void SetToSystemFont()
 		{
 			_commands.Add(canvas => canvas.SetToSystemFont());

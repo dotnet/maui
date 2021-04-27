@@ -1,5 +1,3 @@
-using Windows.Foundation;
-using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml.Media;
 
@@ -10,10 +8,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 		private Color _strokeColor = Colors.Black;
 		private Color _fillColor = Colors.White;
 		private Paint _fillPaint;
-		private float _fillPaintX1;
-		private float _fillPaintX2;
-		private float _fillPaintY1;
-		private float _fillPaintY2;
+		private RectangleF _fillRectangle;
 		private Color _fontColor = Colors.Black;
 		private float _alpha = 1;
 		private DoubleCollection _dashArray;
@@ -37,10 +32,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			_strokeColor = prototype._strokeColor;
 			_fillColor = prototype._fillColor;
 			_fillPaint = prototype._fillPaint;
-			_fillPaintX1 = prototype._fillPaintX1;
-			_fillPaintX2 = prototype._fillPaintX2;
-			_fillPaintY1 = prototype._fillPaintY1;
-			_fillPaintY2 = prototype._fillPaintY2;
+			_fillRectangle = prototype._fillRectangle;
 			_fontColor = prototype._fontColor;
 			_dashArray = prototype._dashArray;
 			_strokeLineCap = prototype._strokeLineCap;
@@ -67,30 +59,43 @@ namespace Microsoft.Maui.Graphics.Xaml
 
 				if (_fillPaint != null)
 				{
-					if (_fillPaint.PaintType == PaintType.Solid)
-						return new SolidColorBrush(_fillPaint.StartColor.AsColor());
+					if (_fillPaint is SolidPaint solidPaint)
+						return new SolidColorBrush(solidPaint.Color.AsColor());
 
-					if (_fillPaint.PaintType == PaintType.LinearGradient)
+					if (_fillPaint is LinearGradientPaint linearGradientPaint)
 					{
+						float x1 = (float)(linearGradientPaint.StartPoint.X * _fillRectangle.Width);
+						float y1 = (float)(linearGradientPaint.StartPoint.Y * _fillRectangle.Height);
+
+						float x2 = (float)(linearGradientPaint.EndPoint.X * _fillRectangle.Width);
+						float y2 = (float)(linearGradientPaint.EndPoint.Y * _fillRectangle.Height);
+
 						var brush = new LinearGradientBrush
 						{
 							MappingMode = BrushMappingMode.Absolute,
-							StartPoint = new global::Windows.Foundation.Point(_fillPaintX1, _fillPaintY1),
-							EndPoint = new global::Windows.Foundation.Point(_fillPaintX2, _fillPaintY2)
+							StartPoint = new Windows.Foundation.Point(x1, y1),
+							EndPoint = new Windows.Foundation.Point(x2, y2)
 						};
 
-						foreach (var stop in _fillPaint.Stops)
-							brush.GradientStops.Add(new global::Windows.UI.Xaml.Media.GradientStop() { Color = stop.Color.AsColor(), Offset = stop.Offset });
+						foreach (var stop in linearGradientPaint.GradientStops)
+							brush.GradientStops.Add(new Windows.UI.Xaml.Media.GradientStop() { Color = stop.Color.AsColor(), Offset = stop.Offset });
 
 						return brush;
 					}
 
-					/*if (fillPaint.PaintType == PaintType.RadialGraident)
+					/*if (_fillPaint is RadialGradientPaint radialGradientPaint)
 					{
+						float centerX = (float)(radialGradientPaint.Center.X * _fillRectangle.Width);
+ 						float centerY = (float)(radialGradientPaint.Center.Y * _fillRectangle.Height);
+ 						float radius = (float)radialGradientPaint.Radius * Math.Max(_fillRectangle.Height, _fillRectangle.Width);
+
+						if (radius == 0)
+							radius = Geometry.GetDistance(_fillRectangle.Left, _fillRectangle.Top, _fillRectangle.Right, _fillRectangle.Bottom);
+
 						var brush = new RadialGradientBrush();
 						brush.MappingMode = BrushMappingMode.Absolute;
-						brush.GradientOrigin = brush.Center = new Point(fillPaintX1, fillPaintY1);
-						var radius = Geometry.GetDistance(fillPaintX1, fillPaintY1, fillPaintX2, fillPaintY2);
+						brush.GradientOrigin = brush.Center = new Point(centerX, centerY);
+
 						brush.RadiusX = radius;
 						brush.RadiusY = radius;
 
@@ -100,10 +105,11 @@ namespace Microsoft.Maui.Graphics.Xaml
 						return brush;
 					}*/
 
-					return new SolidColorBrush(_fillPaint.BlendStartAndEndColors().AsColor());
+					if (_fillPaint is GradientPaint gradientPaint)
+						return new SolidColorBrush(gradientPaint.BlendStartAndEndColors().AsColor());
 				}
 
-				return new SolidColorBrush(global::Windows.UI.Colors.White);
+				return new SolidColorBrush(Windows.UI.Colors.White);
 			}
 		}
 
@@ -425,14 +431,11 @@ namespace Microsoft.Maui.Graphics.Xaml
 			return group;
 		}
 
-		internal void SetFillPaint(Paint paint, float x1, float y1, float x2, float y2)
+		internal void SetFillPaint(Paint paint, RectangleF rectangle)
 		{
 			_fillColor = null;
 			_fillPaint = paint;
-			_fillPaintX1 = x1;
-			_fillPaintX2 = x2;
-			_fillPaintY1 = y1;
-			_fillPaintY2 = y2;
+			_fillRectangle = rectangle;
 		}
 	}
 }

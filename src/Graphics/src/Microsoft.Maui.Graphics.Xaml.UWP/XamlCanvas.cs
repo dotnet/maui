@@ -478,12 +478,12 @@ namespace Microsoft.Maui.Graphics.Xaml
 			CurrentState.Font = defaultSystemFont;
 		}
 
-		public override void SetFillPaint(Paint paint, float x1, float y1, float x2, float y2)
+		public override void SetFillPaint(Paint paint, RectangleF rectangle)
 		{
-			if (paint.PaintType == PaintType.Solid)
-				FillColor = paint.StartColor;
+			if (paint is SolidPaint solidPaint)
+				FillColor = solidPaint.Color;
 
-			CurrentState.SetFillPaint(paint, x1, y1, x2, y2);
+			CurrentState.SetFillPaint(paint, rectangle);
 		}
 
 		public override void SetShadow(SizeF offset, float blur, Color color)

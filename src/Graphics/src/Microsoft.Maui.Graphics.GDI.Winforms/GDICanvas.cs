@@ -476,7 +476,7 @@ namespace Microsoft.Maui.Graphics.GDI
 		{
 		}
 
-		public override void SetFillPaint(Paint paint, float x1, float y1, float x2, float y2)
+		public override void SetFillPaint(Paint paint, RectangleF rectangle)
 		{
 			if (paint == null)
 			{
@@ -484,20 +484,21 @@ namespace Microsoft.Maui.Graphics.GDI
 				return;
 			}
 
-			if (paint.PaintType == PaintType.Solid)
+			if (paint is SolidPaint solidPaint)
 			{
-				CurrentState.FillColor = paint.StartColor.AsColor();
+				CurrentState.FillColor = solidPaint.Color.AsColor();
 				return;
 			}
 
-			if (paint.PaintType == PaintType.Pattern)
+			if (paint is PatternPaint)
 			{
 				CurrentState.StrokeColor = paint.ForegroundColor.AsColor();
 				CurrentState.FillColor = paint.BackgroundColor.AsColor();
 				return;
 			}
 
-/*            if (paint.PaintType == PaintType.LinearGradient)
+			/*
+			if (paint is LinearGradientPaint linearGradientPaint)
 			{
 				point1.X = x1;
 				point1.Y = y1;
@@ -505,14 +506,15 @@ namespace Microsoft.Maui.Graphics.GDI
 				point2.Y = y2;
 				currentState.SetLinearGradient(paint, point1, point2);
 			}
-			else
+			else if(paint is RadialGradientPaint radialGradientPaint)
 			{
 				point1.X = x1;
 				point1.Y = y1;
 				point2.X = x2;
 				point2.Y = y2;
 				currentState.SetRadialGradient(paint, point1, point2);
-			}*/
+			}
+			*/
 		}
 
 		public override void SetToSystemFont()

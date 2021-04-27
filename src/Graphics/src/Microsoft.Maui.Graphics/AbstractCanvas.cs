@@ -216,7 +216,7 @@ namespace Microsoft.Maui.Graphics
 		}
 
 		public abstract void SetShadow(SizeF offset, float blur, Color color);
-		public abstract void SetFillPaint(Paint paint, float x1, float y1, float x2, float y2);
+		public abstract void SetFillPaint(Paint paint, RectangleF rectangle);
 		public abstract void SetToSystemFont();
 		public abstract void SetToBoldSystemFont();
 		public abstract void DrawImage(IImage image, float x, float y, float width, float height);

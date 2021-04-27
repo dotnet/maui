@@ -199,9 +199,9 @@ namespace Microsoft.Maui.Graphics
 			_canvas.Rotate(degrees, x * _scaleX, y * _scaleY);
 		}
 
-		public void SetFillPaint(Paint paint, float x1, float y1, float x2, float y2)
+		public void SetFillPaint(Paint paint, RectangleF rectangle)
 		{
-			_canvas.SetFillPaint(paint, x1 * _scaleX, y1 * _scaleY, x2 * _scaleX, y2 * _scaleY);
+			_canvas.SetFillPaint(paint, new RectangleF(rectangle.X * _scaleX, rectangle.Y * _scaleY, rectangle.Width * _scaleX, rectangle.Height * _scaleY));
 		}
 
 		public void Rotate(float degrees)

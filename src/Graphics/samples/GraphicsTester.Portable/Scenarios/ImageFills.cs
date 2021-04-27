@@ -21,7 +21,7 @@ namespace GraphicsTester.Scenarios
 
 			if (image != null)
 			{
-				canvas.SetFillPaint(image.AsPaint(), 0, 0, 0, 0);
+				canvas.SetFillPaint(image.AsPaint(), RectangleF.Zero);
 				canvas.FillRectangle(50, 50, 500, 500);
 			}
 		}
