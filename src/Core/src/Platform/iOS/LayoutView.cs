@@ -58,14 +58,16 @@ namespace Microsoft.Maui
 		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
 	}
 
-	public class PageViewController : UIViewController
+	public class PageViewController : ContainerViewController
 	{
 		readonly IPage _page;
 		PageView? _pageView;
 
-		public PageViewController(IPage page)
+		public PageViewController(IPage page,IMauiContext mauiContext)
 		{
 			_page = page;
+			CurrentView = page;
+			Context = mauiContext;
 		}
 
 		public override void LoadView()

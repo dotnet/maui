@@ -17,12 +17,10 @@ namespace Microsoft.Maui.Handlers
 
 		protected override PageView CreateNativeView()
 		{
-			if (VirtualView == null)
-			{
-				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a LayoutView");
-			}
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a LayoutView");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 
-			_pageViewController = new PageViewController(VirtualView);
+			_pageViewController = new PageViewController(VirtualView, this.MauiContext);
 
 			if (_pageViewController.View is PageView pv)
 				return pv;

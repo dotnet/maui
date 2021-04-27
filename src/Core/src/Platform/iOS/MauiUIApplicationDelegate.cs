@@ -30,16 +30,10 @@ namespace Microsoft.Maui
 			var window = Application.CreateWindow(activationState);
 
 			var page = window.View;
-			var nativePage = page.ToNative(mauiContext);
-			var viewController = (page?.Handler as INativeViewHandler)?.ViewController;
-			if (viewController == null)
-			{
-				throw new InvalidOperationException("Root View needs to have a ViewController");
-			}
 
 			Window = new UIWindow
 			{
-				RootViewController = viewController
+				RootViewController = window.View.ToUIViewController(mauiContext)
 			};
 
 			Window.MakeKeyAndVisible();
