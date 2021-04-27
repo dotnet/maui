@@ -125,6 +125,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void OnControlSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			if (Element != null)
@@ -173,11 +174,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			});
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			if (Control == null)
@@ -211,17 +214,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_fontApplied = true;
 		}
 
+		[PortHandler]
 		void UpdateSelectedIndex()
 		{
 			Control.SelectedIndex = Element.SelectedIndex;
 		}
 
+		[PortHandler]
 		void UpdateTextColor()
 		{
 			Color color = Element.TextColor;
 			Control.Foreground = color.IsDefault() ? (_defaultBrush ?? Maui.ColorExtensions.ToNative(color)) : Maui.ColorExtensions.ToNative(color);
 		}
 
+		[PortHandler]
 		void UpdateTitle()
 		{
 			Control.Header = null;
