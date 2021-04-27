@@ -56,14 +56,14 @@ if ($IsWindows)
             /p:SymbolPackageFormat=snupkg `
             /restore `
             /t:build `
-            /p:Packing=true `
+            /p:Packing=true /p:DisableEmbeddedXbf=false `
             /bl:"$artifacts/maui-build-$configuration.binlog"
 
         & $msbuild $sln `
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
             /t:pack `
-            /p:Packing=true `
+            /p:Packing=true /p:DisableEmbeddedXbf=false `
             /bl:"$artifacts/maui-pack-$configuration.binlog"
     }
     finally
