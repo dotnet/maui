@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui
+﻿#nullable enable
+namespace Microsoft.Maui
 {
 	public interface IImageSource
 	{

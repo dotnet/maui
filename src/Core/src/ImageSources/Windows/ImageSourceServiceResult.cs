@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui

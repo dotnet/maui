@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿#nullable enable
+using Android.Content;
 using Bumptech.Glide;
 
 namespace Microsoft.Maui.BumptechGlide

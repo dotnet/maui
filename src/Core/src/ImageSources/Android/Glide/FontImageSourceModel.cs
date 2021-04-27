@@ -1,4 +1,5 @@
-﻿using Android.Graphics;
+﻿#nullable enable
+using Android.Graphics;
 
 namespace Microsoft.Maui.BumptechGlide
 {

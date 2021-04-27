@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿#nullable enable
+using System.Threading.Tasks;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 

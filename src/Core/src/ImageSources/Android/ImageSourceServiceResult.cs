@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using Android.Graphics.Drawables;
 
 namespace Microsoft.Maui

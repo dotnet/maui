@@ -1,4 +1,5 @@
-﻿using Bumptech.Glide;
+﻿#nullable enable
+using Bumptech.Glide;
 using Bumptech.Glide.Load;
 using Bumptech.Glide.Load.Data;
 using Bumptech.Glide.Load.Model;

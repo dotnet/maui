@@ -1,4 +1,5 @@
-﻿using Bumptech.Glide.Load;
+﻿#nullable enable
+using Bumptech.Glide.Load;
 using Bumptech.Glide.Load.Engine;
 using Bumptech.Glide.Load.Engine.BitmapRecycle;
 using Bumptech.Glide.Load.Resource.Bitmap;
