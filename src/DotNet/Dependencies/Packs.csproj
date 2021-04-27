@@ -11,6 +11,7 @@
     <PackageDownload Include="Microsoft.MacCatalyst.Sdk"        Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.iOS.Ref"                Version="[$(MicrosoftiOSSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.iOS.Sdk"                Version="[$(MicrosoftiOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.iOS.Windows.Sdk"        Version="[$(MicrosoftiOSSdkPackageVersion)]" Condition="$([MSBuild]::IsOSPlatform('windows'))" />
     <PackageDownload Include="Microsoft.tvOS.Ref"               Version="[$(MicrosofttvOSSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.tvOS.Sdk"               Version="[$(MicrosofttvOSSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.macOS.Ref"              Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
