@@ -1,5 +1,5 @@
 param(
-  [string] $configuration = 'Debug',
+  [string] $configuration = 'Release',
   [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
 )
 
@@ -56,14 +56,14 @@ if ($IsWindows)
             /p:SymbolPackageFormat=snupkg `
             /restore `
             /t:build `
-            /p:Packing=true /p:DisableEmbeddedXbf=false `
+            /p:Packing=true `
             /bl:"$artifacts/maui-build-$configuration.binlog"
 
         & $msbuild $sln `
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
             /t:pack `
-            /p:Packing=true /p:DisableEmbeddedXbf=false `
+            /p:Packing=true `
             /bl:"$artifacts/maui-pack-$configuration.binlog"
     }
     finally
