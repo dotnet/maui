@@ -27,18 +27,14 @@ namespace Microsoft.Maui.Handlers
 			_sourceManager.Reset();
 		}
 
-		public static void MapAspect(ImageHandler handler, IImage image)
-		{
+		public static void MapAspect(ImageHandler handler, IImage image) =>
 			handler.NativeView?.UpdateAspect(image);
-		}
 
-		public static void MapIsAnimationPlaying(ImageHandler handler, IImage image)
-		{
+		public static void MapIsAnimationPlaying(ImageHandler handler, IImage image) =>
 			handler.NativeView?.UpdateIsAnimationPlaying(image);
-		}
 
-		public static void MapSource(ImageHandler handler, IImage image) =>
-			MapSourceAsync(handler, image).FireAndForget<ImageHandler>(handler);
+		public static async void MapSource(ImageHandler handler, IImage image) =>
+			await MapSourceAsync(handler, image);
 
 		public static async Task MapSourceAsync(ImageHandler handler, IImage image)
 		{

@@ -70,7 +70,6 @@ namespace Microsoft.Maui
 
 			try
 			{
-				await Task.Run(() => { throw new Exception("TESTS"); });
 				var service = services.GetRequiredImageSourceService(imageSource);
 
 				var scale = imageView.XamlRoot?.RasterizationScale ?? 1;
