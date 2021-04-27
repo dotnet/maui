@@ -17,6 +17,7 @@ namespace Microsoft.Maui.BumptechGlide
 		{
 			var source = (FontImageSourceModel)model;
 
+			// TODO: do not use the static here, make the service extensible so that it can be overridden
 			var bitmap = FontImageSourceService.RenderBitmap(source, (w, h, c) => _bitmapPool.Get(w, h, c));
 
 			return new BitmapResource(bitmap, _bitmapPool);
