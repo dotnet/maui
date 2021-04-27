@@ -20,7 +20,5 @@ namespace MauiApp1
 			count++;
 			CountLabel.Text = $"You clicked {count} times!";
 		}
-
-		public IView View { get => (IView)Content; set => Content = (View)value; }
 	}
 }
