@@ -120,6 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
 
+		[PortHandler]
 		void OnControlDateChanged(object sender, DatePickerValueChangedEventArgs e)
 		{
 			if (Element == null)

@@ -9,13 +9,18 @@ namespace Microsoft.Maui
 		public static void UpdateDate(this DatePicker nativeDatePicker, IDatePicker datePicker)
 		{
 			var date = datePicker.Date;
-			nativeDatePicker.Date = new DateTimeOffset(new DateTime(date.Ticks, DateTimeKind.Unspecified));
+			nativeDatePicker.UpdateDate(date);
 
 			nativeDatePicker.UpdateDay(datePicker);
 			nativeDatePicker.UpdateMonth(datePicker);
 			nativeDatePicker.UpdateYear(datePicker);
 		}
 
+		public static void UpdateDate(this DatePicker nativeDatePicker, DateTime dateTime)
+		{
+			nativeDatePicker.Date = new DateTimeOffset(new DateTime(dateTime.Ticks, DateTimeKind.Unspecified));
+		}
+	
 		public static void UpdateMinimumDate(this DatePicker nativeDatePicker, IDatePicker datePicker)
 		{
 			DateTime mindate = datePicker.MinimumDate;
