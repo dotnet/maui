@@ -35,6 +35,7 @@
 
     <!-- Remove all Windows (WinUI) XAML Files from the Windows folder -->
     <EmbeddedResource
+      Condition="'$(WindowsProjectFolder)' != ''"
       Remove="$(WindowsProjectFolder)**/*.xaml" />
 
     <Compile

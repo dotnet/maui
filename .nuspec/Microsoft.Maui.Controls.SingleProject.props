@@ -77,7 +77,7 @@
       Visible="true" />
 
     <ApplicationDefinition
-      Condition="Exists('$(WindowsProjectFolder)/App.xaml')"
+      Condition="Exists('$(WindowsProjectFolder)App.xaml')"
       Include="$(WindowsProjectFolder)App.xaml"
       Link="%(FileName)%(Extension)"
       Visible="true">
@@ -86,7 +86,7 @@
     </ApplicationDefinition>
 
     <ApplicationDefinition
-      Condition="Exists('$(WindowsProjectFolder)/Application.xaml')"
+      Condition="Exists('$(WindowsProjectFolder)Application.xaml')"
       Include="$(WindowsProjectFolder)Application.xaml"
       Link="%(FileName)%(Extension)"
       Visible="true">
