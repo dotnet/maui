@@ -1,26 +1,35 @@
 ﻿#nullable enable
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui
 {
 	public static class TaskExtensions
 	{
-		public static async void FireAndForget(
-			this Task task,
-			Action<Exception>? errorCallback
-			)
+		public static async void FireAndForget(this Task task, Action<Exception>? errorCallback)
 		{
 			try
 			{
 				await task;
 			}
-			catch (Exception exc)
+			catch (Exception ex)
 			{
-				errorCallback?.Invoke(exc);
+				errorCallback?.Invoke(ex);
 			}
 		}
+
+		public static void FireAndForget(this Task task, ILogger? logger, [CallerMemberName] string? callerName = null) =>
+			task.FireAndForget(ex => Log(logger, ex, callerName));
+
+		public static void FireAndForget<T>(this Task task, IViewHandler? viewHandler, [CallerMemberName] string? callerName = null) =>
+			task.FireAndForget(ex => Log(viewHandler?.CreateLogger<T>(), ex, callerName));
+
+		static ILogger? CreateLogger<T>(this IViewHandler? viewHandler) =>
+			viewHandler?.MauiContext?.Services?.CreateLogger<T>();
+
+		static void Log(ILogger? logger, Exception ex, string? callerName) =>
+			logger?.LogError(ex, "Unexpected exception in {Member}.", callerName);
 	}
 }

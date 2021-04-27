@@ -1,7 +1,7 @@
 <ResourceDictionary
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	x:Class="Microsoft.Maui.Resources">
+	x:Class="Microsoft.Maui.Controls.Platform.Resources">
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="MauiControlsCommandBarStyle.xaml" />

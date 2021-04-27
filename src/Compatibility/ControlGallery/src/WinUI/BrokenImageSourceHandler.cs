@@ -6,6 +6,7 @@ using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(_51173Image), typeof(_51173CustomImageRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI

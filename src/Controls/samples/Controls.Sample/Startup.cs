@@ -32,7 +32,8 @@ namespace Maui.Controls.Sample
 		public void Configure(IAppHostBuilder appBuilder)
 		{
 			appBuilder
-				.UseFormsCompatibility();
+				.UseFormsCompatibility()
+				.UseMauiControlsHandlers();
 
 			if (UseXamlApp)
 				appBuilder.UseMauiApp<XamlApp>();
@@ -47,11 +48,11 @@ namespace Maui.Controls.Sample
 #if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
 #endif
-			appBuilder
-				.UseMauiControlsHandlers()
+
 #if NET6_0_OR_GREATER
-				.RegisterBlazorMauiWebView()
+			appBuilder.RegisterBlazorMauiWebView();
 #endif
+			appBuilder
 				.ConfigureAppConfiguration(config =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>

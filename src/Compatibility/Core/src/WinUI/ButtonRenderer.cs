@@ -8,7 +8,6 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WStretch = Microsoft.UI.Xaml.Media.Stretch;
 using WThickness = Microsoft.UI.Xaml.Thickness;
-using Microsoft.Maui.Controls.Compatibility.Platform.UAP.Extensions;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 
