@@ -9,16 +9,16 @@ namespace Microsoft.Maui
 		{
 			DefaultStyleKey = typeof(MauiComboBox);
 
-			DropDownOpened += FormsComboBoxDropDownOpened;
-			SelectionChanged += FormsComboBoxSelectionChanged;
+			DropDownOpened += OnMauiComboBoxDropDownOpened;
+			SelectionChanged += OnMauiComboBoxSelectionChanged;
 		}
 
-		void FormsComboBoxDropDownOpened(object? sender, object e)
+		void OnMauiComboBoxDropDownOpened(object? sender, object e)
 		{
 			MinWidth = ActualWidth;
 		}
 
-		void FormsComboBoxSelectionChanged(object? sender, SelectionChangedEventArgs e)
+		void OnMauiComboBoxSelectionChanged(object? sender, SelectionChangedEventArgs e)
 		{
 			MinWidth = 0;
 		}
