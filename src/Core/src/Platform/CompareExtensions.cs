@@ -6,6 +6,9 @@ namespace Microsoft.Maui
 	{
 		public static T Clamp<T>(this T value, T min, T max) where T : IComparable<T>
 		{
+			if (max.CompareTo(min) < 0)
+				return max;
+
 			if (value.CompareTo(min) < 0)
 				return min;
 
