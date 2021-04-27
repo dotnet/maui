@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 		{
 			try
 			{
-				await task;
+				await task.ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
@@ -23,8 +23,11 @@ namespace Microsoft.Maui
 		public static void FireAndForget(this Task task, ILogger? logger, [CallerMemberName] string? callerName = null) =>
 			task.FireAndForget(ex => Log(logger, ex, callerName));
 
-		public static void FireAndForget<T>(this Task task, IViewHandler? viewHandler, [CallerMemberName] string? callerName = null) =>
+		public static void FireAndForget<T>(this Task task, T? viewHandler, [CallerMemberName] string? callerName = null)
+			where T : IViewHandler
+		{
 			task.FireAndForget(ex => Log(viewHandler?.CreateLogger<T>(), ex, callerName));
+		}
 
 		static ILogger? CreateLogger<T>(this IViewHandler? viewHandler) =>
 			viewHandler?.MauiContext?.Services?.CreateLogger<T>();

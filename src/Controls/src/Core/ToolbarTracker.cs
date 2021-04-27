@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Platform
+namespace Microsoft.Maui.Controls
 {
 	internal class ToolbarTracker
 	{

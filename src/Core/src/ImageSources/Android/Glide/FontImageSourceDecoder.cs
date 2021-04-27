@@ -1,34 +1,12 @@
-﻿using Android.Graphics;
-using Bumptech.Glide.Load;
+﻿using Bumptech.Glide.Load;
 using Bumptech.Glide.Load.Engine;
 using Bumptech.Glide.Load.Engine.BitmapRecycle;
 using Bumptech.Glide.Load.Resource.Bitmap;
 
 namespace Microsoft.Maui.BumptechGlide
 {
-	public class FontImageSourceModel : Java.Lang.Object, FontImageSourceService.IModel
-	{
-		public FontImageSourceModel(string glyph, float textSize, Typeface? typeface, Color color)
-		{
-			Glyph = glyph;
-			TextSize = textSize;
-			Typeface = typeface;
-			Color = color;
-		}
-
-		public string Glyph { get; }
-
-		public float TextSize { get; }
-
-		public Typeface? Typeface { get; }
-
-		public Color Color { get; }
-
-		public override string ToString() =>
-			$"FontImageSourceModel{{Glyph={Glyph}, TextSize={TextSize}, Typeface={Typeface}, Color={Color}}}";
-	}
-
-	public class FontImageSourceDecoder : Java.Lang.Object, IResourceDecoder
+	// TODO: make this public and do it better
+	class FontImageSourceDecoder : Java.Lang.Object, IResourceDecoder
 	{
 		readonly IBitmapPool _bitmapPool = new BitmapPoolAdapter();
 

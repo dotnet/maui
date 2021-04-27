@@ -33,8 +33,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsAnimationPlaying(ImageHandler handler, IImage image) =>
 			handler.NativeView?.UpdateIsAnimationPlaying(image);
 
-		public static async void MapSource(ImageHandler handler, IImage image) =>
-			await MapSourceAsync(handler, image);
+		public static void MapSource(ImageHandler handler, IImage image) =>
+			MapSourceAsync(handler, image).FireAndForget(handler);
 
 		public static async Task MapSourceAsync(ImageHandler handler, IImage image)
 		{

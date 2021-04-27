@@ -9,6 +9,7 @@ using Java.IO;
 namespace Microsoft.Maui.BumptechGlide
 {
 	// This class name is very specific as it is directly loaded.
+	// TODO: make this extensible
 	[Register("com.bumptech.glide.GeneratedAppGlideModuleImpl")]
 	public class MauiAppGlideModule : GeneratedAppGlideModule
 	{
