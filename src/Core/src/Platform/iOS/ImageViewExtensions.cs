@@ -86,7 +86,6 @@ namespace Microsoft.Maui
 				}
 			}
 
-			await Task.Run(() => { });
 			return null;
 		}
 	}
