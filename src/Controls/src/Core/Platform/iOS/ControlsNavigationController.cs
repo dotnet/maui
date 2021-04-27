@@ -159,15 +159,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void PushPage(IPage page, bool animated, IMauiContext mauiContext, TaskCompletionSource<bool> completionSource = null)
 		{
-			var nativeView = page.ToNative(mauiContext);
+			var viewController = page.ToUIViewController(mauiContext);
 			var handler = (INativeViewHandler)page.Handler;
 
 			_trackers[page] = handler;
 
 			if (completionSource != null)
-				_completionTasks[handler.ViewController] = completionSource;
+				_completionTasks[viewController] = completionSource;
 
-			PushViewController(handler.ViewController, animated);
+			PushViewController(viewController, animated);
 		}
 
 

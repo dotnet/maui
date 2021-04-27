@@ -28,10 +28,9 @@ namespace Microsoft.Maui
 			}
 			currentNativeView?.RemoveFromSuperview();
 			currentNativeView = null;
-			if (IsViewLoaded && _view != null)
+			if (IsViewLoaded)
 			{
-				_ = Context ?? throw new ArgumentNullException(nameof(Context));
-				View!.AddSubview(currentNativeView = _view.ToNative(Context));
+				LoadNativeView();
 			}
 		}
 
@@ -39,7 +38,16 @@ namespace Microsoft.Maui
 		{
 			base.LoadView();
 			if (_view != null && Context != null)
-				View!.AddSubview(currentNativeView = _view.ToNative(Context));
+				LoadNativeView();
+		}
+
+		internal void LoadNativeView()
+		{
+			if (_view == null)
+				return;
+
+			_ = Context ?? throw new ArgumentNullException(nameof(Context));
+			View!.AddSubview(currentNativeView = _view.ToNative(Context));
 		}
 
 		public override void ViewDidLayoutSubviews()
