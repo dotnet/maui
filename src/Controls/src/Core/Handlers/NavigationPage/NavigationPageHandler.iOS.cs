@@ -69,14 +69,14 @@ namespace Microsoft.Maui.Controls.Handlers
 			//VirtualView.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
 		}
 
-		void OnPopRequested(object sender, NavigationRequestedEventArgs e)
+		void OnPopRequested(object? sender, NavigationRequestedEventArgs e)
 		{
 			_controlsNavigationController?
 				.OnPopRequestedAsync(e)
 				.FireAndForget((exc) => Log.Warning(nameof(NavigationPage), $"{exc}"));
 		}
 
-		void OnPushRequested(object sender, NavigationRequestedEventArgs e)
+		void OnPushRequested(object? sender, NavigationRequestedEventArgs e)
 		{
 			_controlsNavigationController?
 				.OnPushRequested(e, this.MauiContext);
