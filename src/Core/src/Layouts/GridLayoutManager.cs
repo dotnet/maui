@@ -175,7 +175,6 @@ namespace Microsoft.Maui.Layouts
 					if (cell.ColumnGridLengthType == GridLengthType.Absolute
 						&& cell.RowGridLengthType == GridLengthType.Absolute)
 					{
-						//_grid.Children[cell.ViewIndex].Measure(_columns[cell.Column].Size, _rows[cell.Row].Size);
 						continue;
 					}
 
