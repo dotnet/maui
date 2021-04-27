@@ -1,7 +1,6 @@
 <!-- "Single Project" support -->
-<Project>
+<Project InitialTargets="_FixRazorAndroidContent">
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' ">
-    <EnableDefaultRazorComponentItems>False</EnableDefaultRazorComponentItems>
 
     <!-- Android -->
     <EnableDefaultAndroidItems>false</EnableDefaultAndroidItems>
@@ -63,5 +62,19 @@
     <ProjectCapability Include="MauiSingleProject" />
     <ProjectCapability Include="LaunchProfiles" />
   </ItemGroup>
+
+  <!--Fix @(Content) for .razor files on Android -->
+  <Target Name="_FixRazorAndroidContent" Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+    <ItemGroup>
+      <RazorComponent
+          Condition=" '%(Content.Extension)' == '.razor' "
+          Include="@(Content)"
+      />
+      <Content
+          Condition=" '%(Content.Extension)' == '.razor' "
+          Remove="@(Content)"
+      />
+    </ItemGroup>
+  </Target>
 
 </Project>
