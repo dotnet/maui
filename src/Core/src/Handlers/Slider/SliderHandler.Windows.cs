@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SliderHandler : ViewHandler<ISlider, Slider>
 	{
-		static Brush? DefaultForegroundColor;		
+		static Brush? DefaultForegroundColor;
 		static Brush? DefaultBackgroundColor;
 		
 		PointerEventHandler? _pointerPressedHandler;

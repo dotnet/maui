@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, MauiComboBox>
 	{
-		WBrush? _defaultForeground;
+		static WBrush? DefaultForeground;
 
 		protected override MauiComboBox CreateNativeView()
 		{
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void SetupDefaults(MauiComboBox nativeView)
 		{
-			_defaultForeground = nativeView.Foreground;
+			DefaultForeground = nativeView.Foreground;
 
 			base.SetupDefaults(nativeView);
 		}
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTextColor(picker, handler._defaultForeground);
+			handler.NativeView?.UpdateTextColor(picker, DefaultForeground);
 		}
 
 		[MissingMapper]
