@@ -6,21 +6,48 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override TimePicker CreateNativeView() => new TimePicker();
 
-		[MissingMapper]
-		public static void MapFormat(TimePickerHandler handler, ITimePicker view) { }
+		protected override void ConnectHandler(TimePicker nativeView)
+		{
+			nativeView.TimeChanged += OnControlTimeChanged;
+		}
+
+		protected override void DisconnectHandler(TimePicker nativeView)
+		{
+			nativeView.TimeChanged -= OnControlTimeChanged;
+		}
+
+		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.NativeView?.UpdateTime(timePicker);
+		}
 
 		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.NativeView?.UpdateTime(timePicker);
 		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker view) { }
+		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.NativeView?.UpdateCharacterSpacing(timePicker);
+		}
 
-		[MissingMapper]
-		public static void MapFont(TimePickerHandler handler, ITimePicker view) { }
+		public static void MapFont(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.NativeView?.UpdateFont(timePicker, fontManager);
+		}
 
 		[MissingMapper]
 		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker) { }
+
+		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)
+		{
+			if (VirtualView != null)
+			{
+				VirtualView.Time = e.NewTime;
+				VirtualView.InvalidateMeasure();
+			}
+		}
 	}
 }
