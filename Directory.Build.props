@@ -1,12 +1,33 @@
 <Project>
   <Import Project="eng\Versions.props" />
+
   <PropertyGroup>
+
     <BuildForWinUI Condition="'$(SolutionFileName)' == 'Microsoft.Maui.WinUI.sln'">true</BuildForWinUI>
     <BuildForNet6 Condition="'$(SolutionFileName)' == 'Microsoft.Maui-net6.sln' or '$(BuildForWinUI)' == 'true'">true</BuildForNet6>
     <MauiPlatforms>net6.0-ios;net6.0-maccatalyst;net6.0-android</MauiPlatforms>
     <WindowsTargetFramework Condition="'$(WindowsTargetFramework)' == ''">net6.0-windows10.0.18362</WindowsTargetFramework>
     <MauiPlatforms Condition="'$(Packing)' == 'true'">$(MauiPlatforms);$(WindowsTargetFramework)</MauiPlatforms>
     <MauiPlatforms Condition="'$(BuildForWinUI)' == 'true'">$(WindowsTargetFramework)</MauiPlatforms>
+
+    <!-- This is used to easily build for a specific target to make the IDE work a bit better  -->   
+    <NonNet6Platforms>Xamarin.iOS10;MonoAndroid10.0</NonNet6Platforms>
+    <NonNet6EssentialsPlatforms>netstandard2.0;netstandard2.1;Xamarin.iOS10;MonoAndroid90;MonoAndroid10.0;tizen40;Xamarin.Mac20;</NonNet6EssentialsPlatforms>
+    <NonNet6EssentialsPlatforms Condition=" '$(OS)' == 'Windows_NT'">$(NonNet6EssentialsPlatforms);uap10.0.16299;</NonNet6EssentialsPlatforms>
+
+    <BuildNonNet6ForiOS>false</BuildNonNet6ForiOS>
+    <BuildNonNet6ForiOS Condition="'$(SolutionFileName)' == 'Microsoft.Maui.iOS.sln'">true</BuildNonNet6ForiOS>
+    <NonNet6Platforms Condition="'$(BuildNonNet6ForiOS)' == 'true'">Xamarin.iOS10</NonNet6Platforms>
+    <NonNet6EssentialsPlatforms Condition="'$(BuildNonNet6ForiOS)' == 'true'">netstandard2.0;netstandard2.1;Xamarin.iOS10</NonNet6EssentialsPlatforms>
+
+    <BuildNonNet6ForAndroid>false</BuildNonNet6ForAndroid>
+    <NonNet6Platforms Condition="'$(BuildNonNet6ForAndroid)' == 'true'">MonoAndroid10.0</NonNet6Platforms>
+    <NonNet6EssentialsPlatforms Condition="'$(BuildNonNet6ForAndroid)' == 'true'">netstandard2.0;netstandard2.1;MonoAndroid10.0</NonNet6EssentialsPlatforms>
+
+  </PropertyGroup>
+
+  <PropertyGroup>
+    
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
     <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\</_MauiBuildTasksLocation>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

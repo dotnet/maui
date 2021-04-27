@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var dragRec = new DragGestureRecognizer();
 			var element = (VisualElement)Activator.CreateInstance(fieldType);
 			Assert.IsTrue(element.TrySetValue(result));
-			var args = dragRec.SendDragStarting(element);
+			var args = dragRec.SendDragStarting((IView)element);
 			Assert.AreEqual(result, args.Data.Text);
 		}
 
