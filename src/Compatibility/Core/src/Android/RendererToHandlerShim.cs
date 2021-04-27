@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return new RendererToHandlerShim();
 		}
 
-		public RendererToHandlerShim() : base(Handlers.ViewHandler.ViewMapper)
+		public RendererToHandlerShim() : base(ViewHandler.ViewMapper)
 		{
 		}
 
