@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -7,25 +6,37 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override DatePicker CreateNativeView() => new DatePicker();
 
-		[MissingMapper]
-		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.NativeView?.UpdateDate(datePicker);
+		}
 
 		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.NativeView?.UpdateDate(datePicker);
 		}
 
-		[MissingMapper]
-		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapMinimumDate(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.NativeView?.UpdateMinimumDate(datePicker);
+		}
 
-		[MissingMapper]
-		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapMaximumDate(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.NativeView?.UpdateMaximumDate(datePicker);
+		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapCharacterSpacing(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.NativeView?.UpdateCharacterSpacing(datePicker);
+		}
 
-		[MissingMapper]
-		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapFont(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.NativeView?.UpdateFont(datePicker, fontManager);
+		}
 
 		[MissingMapper]
 		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker) { }
