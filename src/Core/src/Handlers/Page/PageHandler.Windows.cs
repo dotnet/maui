@@ -36,5 +36,9 @@ namespace Microsoft.Maui.Handlers
 
 			return view;
 		}
+
+		public static void MapTitle(PageHandler handler, IPage page)
+		{
+		}
 	}
 }

@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 #if __ANDROID__
 			App.Invoke("Reset");
 #endif
-#if __WINDOWS__
+#if WINDOWS
 			WindowsTestBase.Reset();
 #endif
 		}

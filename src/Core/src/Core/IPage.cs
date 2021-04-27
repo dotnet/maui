@@ -9,5 +9,10 @@ namespace Microsoft.Maui
 		/// Gets the view that contains the content of the Page.
 		/// </summary>
 		public IView Content { get; }
+
+		/// <summary>
+		/// Gets the title of the Page.
+		/// </summary>
+		public string Title { get; }
 	}
 }

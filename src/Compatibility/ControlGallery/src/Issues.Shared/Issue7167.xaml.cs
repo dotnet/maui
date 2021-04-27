@@ -6,7 +6,7 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
-#if UITEST && __WINDOWS__
+#if UITEST && WINDOWS
 using Xamarin.UITest;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		}
 
-#if UITEST && __WINDOWS__
+#if UITEST && WINDOWS
 		const string ListViewId = "ListViewId";
 		const string AddCommandID = "AddCommandID";
 		const string ClearListCommandId = "ClearListCommandId";
