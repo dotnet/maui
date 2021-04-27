@@ -17,8 +17,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		public HandlerTestBase()
 		{
-			var appBuilder = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var appBuilder = AppHost
+				.CreateDefaultBuilder()
 				.ConfigureFonts((ctx, fonts) =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");

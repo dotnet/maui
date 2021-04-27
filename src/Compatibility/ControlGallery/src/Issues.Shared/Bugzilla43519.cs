@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			});
 		}
 
-#if UITEST && __WINDOWS__
+#if UITEST && WINDOWS
 
 		[Test]
 		public void TabbedModalNavigation()

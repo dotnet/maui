@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using WRect = Windows.Foundation.Rect;
 using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

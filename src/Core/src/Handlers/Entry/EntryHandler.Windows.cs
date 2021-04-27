@@ -27,11 +27,15 @@
 			handler.NativeView?.UpdateMaxLength(entry);
 		}
 
-		[MissingMapper]
-		public static void MapPlaceholder(IViewHandler handler, IEntry entry) { }
+		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdatePlaceholder(entry);
+		}
 
-		[MissingMapper]
-		public static void MapIsReadOnly(IViewHandler handler, IEntry entry) { }
+		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateIsReadOnly(entry);
+		}
 
 		[MissingMapper]
 		public static void MapFont(IViewHandler handler, IEntry entry) { }

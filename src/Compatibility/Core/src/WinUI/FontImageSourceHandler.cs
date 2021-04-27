@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					Glyph = fontImageSource.Glyph,
 					FontSize = fontImageSource.Size,
-					Foreground = fontImageSource.Color.ToBrush()
+					Foreground = Maui.ColorExtensions.ToNative(fontImageSource.Color)
 				};
 
 				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily();
@@ -90,7 +91,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					Glyph = fontImageSource.Glyph,
 					FontSize = fontImageSource.Size,
-					Foreground = fontImageSource.Color.ToBrush()
+					Foreground = Maui.ColorExtensions.ToNative(fontImageSource.Color)
 				};
 
 				var uwpFontFamily = fontImageSource.FontFamily.ToFontFamily();

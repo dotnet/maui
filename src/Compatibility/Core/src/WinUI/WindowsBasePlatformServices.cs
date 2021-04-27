@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (!Microsoft.UI.Xaml.Application.Current?.Resources.ContainsKey(name) ?? true)
 				return KnownColor.Default;
 
-			return ((Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToFormsColor();
+			return ((Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToColor();
 		}
 
 		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)

@@ -76,14 +76,14 @@
     />
     <!--
       NOTE: Workloads need to go in dotnet/sdk-manifests/6.0.100/Microsoft.Workload.NET.*/
-      Workloads only contain two files: WorkloadManifest.targets & WorkloadManifest.json
-      We have to move everything up one directory, for things to land in the right location.
+      Workloads only contain two files: data/WorkloadManifest.targets & data/WorkloadManifest.json
+      We have to move everything up two directories, for things to land in the right location.
     -->
     <ItemGroup>
-      <_WorkloadFiles Include="$(DotNetSdkManifestsDirectory)Microsoft.NET.Workload.*/*/WorkloadManifest.*" />
+      <_WorkloadFiles Include="$(DotNetSdkManifestsDirectory)Microsoft.NET.Workload.*/*/data/WorkloadManifest.*" />
       <_WorkloadDirectoriesToDelete Include="@(_WorkloadFiles->'%(RootDir)%(Directory)'->Distinct())" />
     </ItemGroup>
-    <Copy SourceFiles="@(_WorkloadFiles)" DestinationFiles="@(_WorkloadFiles->'%(RootDir)%(Directory)../%(FileName)%(Extension)')" />
+    <Copy SourceFiles="@(_WorkloadFiles)" DestinationFiles="@(_WorkloadFiles->'%(RootDir)%(Directory)../../%(FileName)%(Extension)')" />
     <RemoveDir Directories="@(_WorkloadDirectoriesToDelete);@(_PacksToRemove->'$(DotNetSdkManifestsDirectory)%(Identity)')" />
     <Touch Files="$(DotNetSdkManifestsDirectory).stamp" AlwaysCreate="true" />
   </Target>

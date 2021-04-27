@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -102,6 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateMaximumTrackColor();
 		}
 
+		[PortHandler]
 		void UpdateMinimumTrackColor()
 		{
 			if (Control != null)
@@ -109,10 +111,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (Element.MinimumTrackColor.IsDefault())
 					Control.Foreground = defaultforegroundcolor;
 				else
-					Control.Foreground = Element.MinimumTrackColor.ToBrush();
+					Control.Foreground = Maui.ColorExtensions.ToNative(Element.MinimumTrackColor);
 			}
 		}
 
+		[PortHandler]
 		void UpdateMaximumTrackColor()
 		{
 			if (Control != null)
@@ -120,7 +123,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (Element.MaximumTrackColor.IsDefault())
 					Control.Background = defaultbackgroundcolor;
 				else
-					Control.Background = Element.MaximumTrackColor.ToBrush();
+					Control.Background = Maui.ColorExtensions.ToNative(Element.MaximumTrackColor);
 			}
 		}
 
@@ -192,7 +195,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Color backgroundColor = Element.BackgroundColor;
 				if (!backgroundColor.IsDefault())
 				{
-					Control.Background = backgroundColor.ToBrush();
+					Control.Background = Maui.ColorExtensions.ToNative(backgroundColor);
 				}
 				else
 				{

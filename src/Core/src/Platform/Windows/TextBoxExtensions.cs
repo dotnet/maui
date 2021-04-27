@@ -7,16 +7,26 @@ namespace Microsoft.Maui
 			textBox.Text = entry.Text;
 		}
 
-		public static void UpdateTextColor(this MauiTextBox textView, ITextStyle textStyle)
+		public static void UpdateTextColor(this MauiTextBox textBox, ITextStyle textStyle)
 		{
 			if (textStyle.TextColor == null)
 				return;
 
 			var brush = textStyle.TextColor.ToNative();
-			textView.Foreground = brush;
-			textView.ForegroundFocusBrush = brush;
+			textBox.Foreground = brush;
+			textBox.ForegroundFocusBrush = brush;
 		}
 
+		public static void UpdatePlaceholder(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.PlaceholderText = entry.Placeholder ?? string.Empty;
+		}
+
+		public static void UpdateIsReadOnly(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.IsReadOnly = entry.IsReadOnly;
+    }
+    
 		public static void UpdateMaxLength(this MauiTextBox textBox, IEntry entry)
 		{
 			var maxLength = entry.MaxLength;
