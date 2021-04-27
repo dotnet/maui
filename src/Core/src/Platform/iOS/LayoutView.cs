@@ -60,13 +60,19 @@ namespace Microsoft.Maui
 
 	public class PageViewController : ContainerViewController
 	{
-		readonly IPage _page;
-
 		public PageViewController(IPage page,IMauiContext mauiContext)
 		{
-			_page = page;
 			CurrentView = page;
 			Context = mauiContext;
+			LoadFirstView(page);
+		}
+
+		protected override UIView CreateNativeView(IView view)
+		{
+			return new PageView
+			{
+				CrossPlatformArrange = view.Arrange,
+			};
 		}
 	}
 

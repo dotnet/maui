@@ -22,9 +22,6 @@ namespace Microsoft.Maui.Handlers
 
 			_pageViewController = new PageViewController(VirtualView, this.MauiContext);
 
-			if (_pageViewController.CurrentNativeView == null)
-				_pageViewController.LoadNativeView();
-
 			if (_pageViewController.CurrentNativeView is PageView pv)
 				return pv;
 
