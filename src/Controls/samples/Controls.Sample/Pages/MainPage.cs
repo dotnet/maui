@@ -20,6 +20,7 @@ namespace Maui.Controls.Sample.Pages
 
 		public MainPage(IServiceProvider services, MainPageViewModel viewModel)
 		{
+			BackgroundColor = Colors.White;
 			ToolbarItems.Add(new ToolbarItem()
 			{
 				Text = "Page"

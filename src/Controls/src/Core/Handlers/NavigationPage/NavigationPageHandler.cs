@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					[nameof(ToolbarPlacementProperty.PropertyName)] = MapToolbarPlacement,
 					[nameof(ToolbarDynamicOverflowEnabledProperty.PropertyName)] = MapToolbarDynamicOverflowEnabled,
 #endif
-			};
+			   };
 
 		public NavigationPageHandler() : base(NavigationPageMapper)
 		{
