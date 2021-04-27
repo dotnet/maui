@@ -62,35 +62,23 @@ namespace Microsoft.Maui
 			try
 			{
 				var service = services.GetRequiredImageSourceService(imageSource);
-				if (service is IApplyImageSourceService applyService)
+
+				var result = await service.GetDrawableAsync(imageSource, context, cancellationToken);
+				var drawable = result?.Value;
+
+				var applied = !cancellationToken.IsCancellationRequested && imageView.IsAlive() && imageSource == image.Source;
+
+				// only set the image if we are still on the same one
+				if (applied)
 				{
-					// use the faster/better way
+					imageView.SetImageDrawable(drawable);
 
-					var applied = await applyService.ApplyDrawableAsync(imageSource, image, imageView, cancellationToken);
-
-					events?.LoadingCompleted(applied);
+					imageView.UpdateIsAnimationPlaying(image);
 				}
-				else
-				{
-					// fall back to setting it manually
 
-					var result = await service.GetDrawableAsync(imageSource, context, cancellationToken);
-					var drawable = result?.Value;
+				events?.LoadingCompleted(applied);
 
-					var applied = !cancellationToken.IsCancellationRequested && imageView.IsAlive() && imageSource == image.Source;
-
-					// only set the image if we are still on the same one
-					if (applied)
-					{
-						imageView.SetImageDrawable(drawable);
-
-						imageView.UpdateIsAnimationPlaying(image);
-					}
-
-					events?.LoadingCompleted(applied);
-
-					return result;
-				}
+				return result;
 			}
 			catch (OperationCanceledException)
 			{
