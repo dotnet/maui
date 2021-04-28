@@ -13,7 +13,7 @@ namespace Microsoft.Maui
 	public partial class FileImageSourceService
 	{
 		public override Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
-			GetImageSourceAsync((IFileImageSource)mageSource, scale, cancellationToken);
+			GetImageSourceAsync((IFileImageSource)imageSource, scale, cancellationToken);
 
 		public async Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IFileImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
