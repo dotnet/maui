@@ -14,13 +14,8 @@ namespace Microsoft.Maui
 {
 	public partial class FontImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
-		{
-			if (imageSource is IFontImageSource fontImageSource)
-				return GetDrawableAsync(fontImageSource, context, cancellationToken);
-
-			return Task.FromResult<IImageSourceServiceResult<Drawable>?>(null);
-		}
+		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>
+			GetDrawableAsync((IFontImageSource)imageSource, context, cancellationToken);
 
 		public async Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IFontImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
@@ -40,12 +35,15 @@ namespace Microsoft.Maui
 					.SubmitAsync(context, cancellationToken)
 					.ConfigureAwait(false);
 
+				if (result == null)
+					throw new InvalidOperationException("Unable to generate font image.");
+
 				return result;
 			}
 			catch (Exception ex)
 			{
 				Logger?.LogWarning(ex, "Unable to generate font image '{Glyph}'.", glyph);
-				return null;
+				throw;
 			}
 		}
 

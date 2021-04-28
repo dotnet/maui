@@ -11,13 +11,8 @@ namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
-		{
-			if (imageSource is IUriImageSource uriImageSource)
-				return GetImageSourceAsync(uriImageSource, scale, cancellationToken);
-
-			return Task.FromResult<IImageSourceServiceResult<WImageSource>?>(null);
-		}
+		public override Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
+			GetImageSourceAsync((IUriImageSource)imageSource, scale, cancellationToken);
 
 		public async Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IUriImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
@@ -26,13 +21,14 @@ namespace Microsoft.Maui
 
 			// TODO: use a real caching library with the URI
 			if (imageSource is not IStreamImageSource streamImageSource)
-				return null;
+				throw new InvalidOperationException("Unable to load URI as a stream.");
 
 			try
 			{
 				using var stream = await streamImageSource.GetStreamAsync(cancellationToken);
+
 				if (stream == null)
-					return null;
+					throw new InvalidOperationException("Unable to load image stream.");
 
 				var image = new BitmapImage();
 
@@ -46,7 +42,7 @@ namespace Microsoft.Maui
 			catch (Exception ex)
 			{
 				Logger?.LogWarning(ex, "Unable to load image URI '{Uri}'.", imageSource.Uri);
-				return null;
+				throw;
 			}
 		}
 	}

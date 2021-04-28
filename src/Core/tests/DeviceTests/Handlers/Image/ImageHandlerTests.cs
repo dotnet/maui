@@ -62,7 +62,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				Assert.Equal(isAnimating, GetNativeIsAnimationPlaying(handler));
+				await GetNativeImageView(handler).AttachAndRun(() =>
+				{
+					Assert.Equal(isAnimating, GetNativeIsAnimationPlaying(handler));
+				});
 			});
 		}
 
@@ -106,6 +109,11 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler(image);
 
 				await image.Wait();
+
+#if __ANDROID__
+				handler.NativeView.SetMinimumHeight(1);
+				handler.NativeView.SetMinimumWidth(1);
+#endif
 
 				await handler.NativeView.AssertContainsColor(Colors.Black);
 			});

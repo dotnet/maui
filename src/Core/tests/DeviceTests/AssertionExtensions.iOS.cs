@@ -24,6 +24,13 @@ namespace Microsoft.Maui.DeviceTests
 			return $"{message}. This is what it looked like:<img>{imageAsString}</img>";
 		}
 
+		// TODO: attach this view to the UI if anything breaks
+		public static Task AttachAndRun(this UIView view, Action action)
+		{
+			action();
+			return Task.CompletedTask;
+		}
+
 		public static Task<UIImage> ToBitmap(this UIView view)
 		{
 			var imageRect = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);

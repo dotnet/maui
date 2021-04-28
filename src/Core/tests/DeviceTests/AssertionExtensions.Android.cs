@@ -47,7 +47,14 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static async Task<Bitmap> ToBitmap(this AView view)
+		public static Task AttachAndRun(this AView view, Action action) =>
+			view.AttachAndRun(() =>
+			{
+				action();
+				return true;
+			});
+
+		public static async Task<T> AttachAndRun<T>(this AView view, Func<T> action)
 		{
 			var layout = new FrameLayout(view.Context);
 			layout.LayoutParameters = new FrameLayout.LayoutParams(500, 500);
@@ -67,17 +74,28 @@ namespace Microsoft.Maui.DeviceTests
 
 			await Task.Delay(100);
 
-			var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888);
-			using (var canvas = new Canvas(bitmap))
+			try
 			{
-				view.Draw(canvas);
+				var result = action();
+				return result;
 			}
-
-			rootView.RemoveView(layout);
-			layout.RemoveView(view);
-
-			return bitmap;
+			finally
+			{
+				rootView.RemoveView(layout);
+				layout.RemoveView(view);
+			}
 		}
+
+		public static Task<Bitmap> ToBitmap(this AView view) =>
+			view.AttachAndRun(() =>
+			{
+				var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888);
+				using (var canvas = new Canvas(bitmap))
+				{
+					view.Draw(canvas);
+				}
+				return bitmap;
+			});
 
 		public static Bitmap AssertColorAtPoint(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{

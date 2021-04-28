@@ -12,13 +12,8 @@ namespace Microsoft.Maui
 {
 	public partial class FileImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default)
-		{
-			if (imageSource is IFileImageSource fileImageSource)
-				return GetDrawableAsync(fileImageSource, context, cancellationToken);
-
-			return Task.FromResult<IImageSourceServiceResult<Drawable>?>(null);
-		}
+		public override Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IImageSource imageSource, Context context, CancellationToken cancellationToken = default) =>
+			GetDrawableAsync((IFileImageSource)imageSource, context, cancellationToken);
 
 		public async Task<IImageSourceServiceResult<Drawable>?> GetDrawableAsync(IFileImageSource imageSource, Context context, CancellationToken cancellationToken = default)
 		{
@@ -35,12 +30,15 @@ namespace Microsoft.Maui
 					.SubmitAsync(context, cancellationToken)
 					.ConfigureAwait(false);
 
+				if (result == null)
+					throw new InvalidOperationException("Unable to load image file.");
+
 				return result;
 			}
 			catch (Exception ex)
 			{
 				Logger?.LogWarning(ex, "Unable to load image file '{File}'.", filename);
-				return null;
+				throw;
 			}
 		}
 	}

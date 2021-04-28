@@ -10,13 +10,8 @@ namespace Microsoft.Maui
 {
 	public partial class FileImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
-		{
-			if (imageSource is IFileImageSource fileImageSource)
-				return GetImageAsync(fileImageSource, scale, cancellationToken);
-
-			return FromResult(null);
-		}
+		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
+			GetImageAsync((IFileImageSource)imageSource, scale, cancellationToken);
 
 		public Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IFileImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
@@ -32,7 +27,7 @@ namespace Microsoft.Maui
 					: UIImage.FromBundle(filename);
 
 				if (image == null)
-					return FromResult(null);
+					throw new InvalidOperationException("Unable to load image file.");
 
 				var result = new ImageSourceServiceResult(image, () => image.Dispose());
 
@@ -41,7 +36,7 @@ namespace Microsoft.Maui
 			catch (Exception ex)
 			{
 				Logger?.LogWarning(ex, "Unable to load image file '{File}'.", filename);
-				return FromResult(null);
+				throw;
 			}
 		}
 

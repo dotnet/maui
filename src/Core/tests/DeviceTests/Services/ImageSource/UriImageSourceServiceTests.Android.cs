@@ -11,15 +11,13 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(typeof(FileImageSourceStub))]
 		[InlineData(typeof(FontImageSourceStub))]
 		[InlineData(typeof(StreamImageSourceStub))]
-		public async Task GetDrawableAsyncReturnsNullForIncorrectTypes(Type type)
+		public async Task ThrowsForIncorrectTypes(Type type)
 		{
 			var service = new UriImageSourceService();
 
 			var imageSource = (ImageSourceStub)Activator.CreateInstance(type);
 
-			using var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
-
-			Assert.Null(drawable);
+			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetDrawableAsync(imageSource, Platform.DefaultContext));
 		}
 	}
 }

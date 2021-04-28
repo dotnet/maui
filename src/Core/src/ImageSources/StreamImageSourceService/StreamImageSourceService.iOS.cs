@@ -10,13 +10,8 @@ namespace Microsoft.Maui
 {
 	public partial class StreamImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
-		{
-			if (imageSource is IStreamImageSource streamImageSource)
-				return GetImageAsync(streamImageSource, scale, cancellationToken);
-
-			return Task.FromResult<IImageSourceServiceResult<UIImage>?>(null);
-		}
+		public override Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
+			GetImageAsync((IStreamImageSource)imageSource, scale, cancellationToken);
 
 		public async Task<IImageSourceServiceResult<UIImage>?> GetImageAsync(IStreamImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
@@ -26,14 +21,15 @@ namespace Microsoft.Maui
 			try
 			{
 				var stream = await imageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+
 				if (stream == null)
-					return null;
+					throw new InvalidOperationException("Unable to load image stream.");
 
 				using var data = NSData.FromStream(stream);
 				var image = UIImage.LoadFromData(data, scale);
 
 				if (image == null)
-					return null;
+					throw new InvalidOperationException("Unable to decode image from stream.");
 
 				var result = new ImageSourceServiceResult(image, () => image.Dispose());
 
@@ -42,7 +38,7 @@ namespace Microsoft.Maui
 			catch (Exception ex)
 			{
 				Logger?.LogWarning(ex, "Unable to load image stream.");
-				return null;
+				throw;
 			}
 		}
 	}

@@ -15,13 +15,8 @@ namespace Microsoft.Maui
 	{
 		const float BaseLogicalDpi = 96.0f;
 
-		public override Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
-		{
-			if (imageSource is IFontImageSource fontImageSource)
-				return GetImageSourceAsync(fontImageSource, scale, cancellationToken);
-
-			return FromResult(null);
-		}
+		public override Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
+			GetImageSourceAsync((IFontImageSource)imageSource, scale, cancellationToken);
 
 		public Task<IImageSourceServiceResult<WImageSource>?> GetImageSourceAsync(IFontImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{
@@ -32,8 +27,9 @@ namespace Microsoft.Maui
 			{
 				// TODO: use a cached way
 				var image = RenderImageSource(imageSource, scale);
+
 				if (image == null)
-					return FromResult(null);
+					throw new InvalidOperationException("Unable to generate font image.");
 
 				var result = new ImageSourceServiceResult(image, true);
 
@@ -42,7 +38,7 @@ namespace Microsoft.Maui
 			catch (Exception ex)
 			{
 				Logger?.LogWarning(ex, "Unable to generate font image '{Glyph}'.", imageSource.Glyph);
-				return FromResult(null);
+				throw;
 			}
 		}
 
