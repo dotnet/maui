@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (VirtualView == null)
 			{
-				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(LayoutViewAsFixed)}");
+				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(LayoutView)}");
 			}
 
 			return new LayoutView
