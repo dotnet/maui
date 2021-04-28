@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -50,27 +51,39 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var pixel = bitmap.GetPixel(x, y);
 
-			// Returned pixel data is B, G, R, A (ARGB little endian byte order)
-			var color = new UIColor(pixel[2] / 255.0f, pixel[1] / 255.0f, pixel[0] / 255.0f, pixel[3] / 255.0f);
+			var color = new UIColor(
+				pixel[0] / 255.0f,
+				pixel[1] / 255.0f,
+				pixel[2] / 255.0f,
+				pixel[3] / 255.0f);
 
 			return color;
 		}
 
 		public static byte[] GetPixel(this UIImage bitmap, int x, int y)
 		{
-			var cgImage = bitmap.CGImage.WithColorSpace(CGColorSpace.CreateDeviceRGB());
+			var cgImage = bitmap.CGImage;
+			var width = cgImage.Width;
+			var height = cgImage.Height;
+			var colorSpace = CGColorSpace.CreateDeviceRGB();
+			var bitsPerComponent = 8;
+			var bytesPerRow = 4 * width;
+			var componentCount = 4;
 
-			// Grab the raw image data
-			var nsData = cgImage.DataProvider.CopyData();
+			var dataBytes = new byte[width * height * componentCount];
 
-			// Copy the data into a buffer
-			var dataBytes = new byte[nsData.Length];
-			System.Runtime.InteropServices.Marshal.Copy(nsData.Bytes, dataBytes, 0, (int)nsData.Length);
+			using var context = new CGBitmapContext(
+				dataBytes,
+				width, height,
+				bitsPerComponent, bytesPerRow,
+				colorSpace,
+				CGBitmapFlags.ByteOrder32Big | CGBitmapFlags.PremultipliedLast);
 
-			// Figure out where the pixel we care about is
-			var pixelLocation = (cgImage.BytesPerRow * y) + (4 * x);
+			context.DrawImage(new CGRect(0, 0, width, height), cgImage);
 
-			var pixel = new byte[4]
+			var pixelLocation = (bytesPerRow * y) + componentCount * x;
+
+			var pixel = new byte[]
 			{
 				dataBytes[pixelLocation],
 				dataBytes[pixelLocation + 1],
