@@ -11,9 +11,9 @@ namespace Microsoft.Maui.HotReload
 {
 	public static class MauiHotReloadHelper
 	{
-		static IMauiServiceCollection? HandlerService;
+		static IMauiHandlersCollection? HandlerService;
 		//static IMauiHandlersServiceProvider? HandlerServiceProvider;
-		public static void Init(IMauiServiceCollection handlerService)
+		public static void Init(IMauiHandlersCollection handlerService)
 		{
 			HandlerService = handlerService;
 			//HandlerServiceProvider = new MauiHandlersServiceProvider(handlerService);
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.HotReload
 				var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 				var t = assemblies.Select(x => x.GetType(oldViewType)).FirstOrDefault(x => x != null);
 
-				var views = HandlerService!.Where(x => x.ImplementationType == t).Select(x => new KeyValuePair<Type,Type>(x.ServiceType, x.ImplementationType!)).ToList();
+				var views = HandlerService!.Where(x => x.ImplementationType == t).Select(x => new KeyValuePair<Type, Type>(x.ServiceType, x.ImplementationType!)).ToList();
 
 
 				replacedHandlers[oldViewType] = views.ToList();
@@ -125,12 +125,14 @@ namespace Microsoft.Maui.HotReload
 					RegisterHandler(h, newViewType);
 				}
 			}
-			try{
-			//Call static init if it exists on new classes!
+			try
+			{
+				//Call static init if it exists on new classes!
 				var staticInit = newViewType.GetMethod("Init", BindingFlags.Static | BindingFlags.Public);
 				staticInit?.Invoke(null, null);
 			}
-			catch(Exception ex){
+			catch (Exception ex)
+			{
 
 				Debug.WriteLine($"Error calling Init on type: {newViewType}");
 				Debug.WriteLine(ex);
@@ -146,7 +148,7 @@ namespace Microsoft.Maui.HotReload
 			var newType = newHandler;
 			if (pair.Value.IsGenericType)
 				newType = pair.Value.GetGenericTypeDefinition().MakeGenericType(newHandler);
-			HandlerService.AddTransient(view, newType);
+			HandlerService.AddHandler(view, newType);
 		}
 
 		public static void TriggerReload()

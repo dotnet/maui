@@ -35,6 +35,8 @@ namespace Microsoft.Maui.Handlers
 			this.NativeView.RemoveAllViews();
 			foreach (var child in VirtualView.Children)
 			{
+				//var wrap = ViewGroup.LayoutParams.WrapContent;
+				//NativeView.AddView(child.ToNative(MauiContext), new ViewGroup.LayoutParams(wrap, wrap));
 				NativeView.AddView(child.ToNative(MauiContext));
 			}
 		}

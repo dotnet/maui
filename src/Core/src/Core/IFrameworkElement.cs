@@ -26,12 +26,12 @@ namespace Microsoft.Maui
 		Rectangle Frame { get; }
 
 		/// <summary>
-		/// Gets the current rendered width of this FrameworkElement. 
+		/// Gets the specified width of this FrameworkElement. 
 		/// </summary>
 		double Width { get; }
 
 		/// <summary>
-		/// Gets the current rendered height of this FrameworkElement. 
+		/// Gets the specified height of this FrameworkElement. 
 		/// </summary>
 		double Height { get; }
 
@@ -64,16 +64,6 @@ namespace Microsoft.Maui
 		/// Gets the current desired Size of this FrameworkElement. 
 		/// </summary>
 		Size DesiredSize { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the current size returned by layout measure is valid.
-		/// </summary>
-		bool IsMeasureValid { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the computed size and position of child elements in this element's layout are valid.
-		/// </summary>
-		bool IsArrangeValid { get; }
 
 		/// <summary>
 		/// Signals that the current measure value of this FrameworkElement is no longer valid and must be recomputed during the next measure pass.

@@ -6,6 +6,7 @@
 	<PropertyGroup>
 		<PackageId>Microsoft.Maui.Controls</PackageId>
 	</PropertyGroup>
+	<Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 	<ItemGroup>
 		<Compile Remove="Internals\Legacy\**" />
 		<EmbeddedResource Remove="Internals\Legacy\**" />

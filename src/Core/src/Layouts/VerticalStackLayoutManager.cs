@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Layouts
 
 			foreach (var child in views)
 			{
-				var measure = child.IsMeasureValid ? child.DesiredSize : child.Measure(widthConstraint, double.PositiveInfinity);
+				var measure = child.Measure(widthConstraint, double.PositiveInfinity);
 				totalRequestedHeight += measure.Height;
 				requestedWidth = Math.Max(requestedWidth, measure.Width);
 			}

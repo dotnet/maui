@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
@@ -33,26 +34,15 @@ namespace Microsoft.Maui.Controls.Layout2
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (IsMeasureValid)
-			{
-				return DesiredSize;
-			}
-
 			var sizeWithoutMargins = LayoutManager.Measure(widthConstraint, heightConstraint);
 			DesiredSize = new Size(sizeWithoutMargins.Width + Margin.HorizontalThickness,
 				sizeWithoutMargins.Height + Margin.VerticalThickness);
 
-			IsMeasureValid = true;
 			return DesiredSize;
 		}
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			if (!IsMeasureValid)
-			{
-				return bounds.Size;
-			}
-
 			base.ArrangeOverride(bounds);
 
 			LayoutManager.ArrangeChildren(Frame);

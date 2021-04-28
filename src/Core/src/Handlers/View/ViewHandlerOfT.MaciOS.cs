@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
 		UIView? INativeViewHandler.NativeView => (UIView?)base.NativeView;
+		UIViewController? INativeViewHandler.ViewController => null;
 
 		public override void SetFrame(Rectangle rect)
 		{

@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -124,6 +125,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void OnControlSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
 			if (Element != null)
@@ -172,11 +174,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			});
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			if (Control == null)
@@ -210,17 +214,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_fontApplied = true;
 		}
 
+		[PortHandler]
 		void UpdateSelectedIndex()
 		{
 			Control.SelectedIndex = Element.SelectedIndex;
 		}
 
+		[PortHandler]
 		void UpdateTextColor()
 		{
 			Color color = Element.TextColor;
-			Control.Foreground = color.IsDefault() ? (_defaultBrush ?? color.ToBrush()) : color.ToBrush();
+			Control.Foreground = color.IsDefault() ? (_defaultBrush ?? Maui.ColorExtensions.ToNative(color)) : Maui.ColorExtensions.ToNative(color);
 		}
 
+		[PortHandler]
 		void UpdateTitle()
 		{
 			Control.Header = null;

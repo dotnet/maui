@@ -25,8 +25,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 				//The page instance must be created inside the new UI Thread.
 				ContentPage instance = (ContentPage)Activator.CreateInstance(pageType);
 				frame.Navigate(instance);
-				Window.Current.Content = frame;
-				Window.Current.Activate();
+				UI.Xaml.Window.Current.Content = frame;
+				UI.Xaml.Window.Current.Activate();
 
 				newViewId = ApplicationView.GetForCurrentView().Id;
 			});

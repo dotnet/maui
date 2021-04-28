@@ -17,6 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\MauiSplash.storyboard" LogicalName="MauiSplash.storyboard" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="$(TargetPath)" Visible="False" Pack="True" PackagePath="buildTransitive" />
     <None Include="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSystem_Memory)\lib\netstandard2.0\System.Memory.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />

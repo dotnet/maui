@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 #if UITEST
 
-#if !__WINDOWS__
+#if !WINDOWS
 		[Test]
 		public void ImageFromFileSourceAppearsAndDisappearsCorrectly()
 		{

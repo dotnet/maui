@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 				Navigation.PushAsync(cellNav.Page);
 				_last = cellNav;
-#if !__WINDOWS__
+#if !WINDOWS
 				SelectedItem = null;
 #endif
 			};

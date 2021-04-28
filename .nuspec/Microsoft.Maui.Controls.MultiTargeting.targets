@@ -32,10 +32,16 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) != true ">
     <Compile Remove="**\*.Windows.cs" />
     <None Include="**\*.Windows.cs" />
-    <Compile Remove="**\Windows\*.cs" />
-    <None Include="**\Windows\*.cs" />
+    <Compile Remove="**\Windows\**\*.cs" />
+    <None Include="**\Windows\**\*.cs" />
+    <Compile Remove="**\*.uwp.cs" />
+    <None Include="**\*.uwp.cs" />
   </ItemGroup>
-
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
+    <Compile Remove="**\*.uwp.cs" />
+    <None Include="**\*.uwp.cs" />
+  </ItemGroup>
+  
   <PropertyGroup>
     <!-- Windows -->
     <WindowsProjectFolder>Platform\Windows\</WindowsProjectFolder>
@@ -64,7 +70,6 @@
     <DefineConstants>$(DefineConstants);MACCATALYST;IOS</DefineConstants>
   </PropertyGroup>
 
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -73,11 +78,18 @@
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
   </ItemGroup>
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
+    <DefineConstants>WINDOWS_UWP;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <PackageReference Include="Microsoft.ProjectReunion" />

@@ -178,16 +178,6 @@ namespace Microsoft.Maui.Controls
 
 		#region IView
 
-		protected override void OnSizeAllocated(double width, double height)
-		{
-			base.OnSizeAllocated(width, height);
-
-			if (IsArrangeValid)
-			{
-				Handler?.SetFrame(Bounds);
-			}
-		}
-
 		protected PropertyMapper propertyMapper;
 
 		protected PropertyMapper<T> GetRendererOverrides<T>() where T : IView => (PropertyMapper<T>)(propertyMapper as PropertyMapper<T> ?? (propertyMapper = new PropertyMapper<T>()));
@@ -222,6 +212,6 @@ namespace Microsoft.Maui.Controls
 				//TODO: if reload handler is null, Do a manual reload?
 			});
 		}
-#endregion
+		#endregion
 	}
 }
