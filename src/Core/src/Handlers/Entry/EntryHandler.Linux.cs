@@ -2,11 +2,13 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : ViewHandler<IEditor, Entry>
+
+	public partial class EntryHandler : ViewHandler<IEntry, Entry>
 	{
+
 		protected override Entry CreateNativeView()
 		{
-			return new Entry();
+			return new();
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry)
@@ -14,29 +16,48 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateText(entry);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(EntryHandler handler, IEntry entry) { }
+		public static void MapTextColor(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateTextColor(entry.TextColor);
+		}
 
-		[MissingMapper]
-		public static void MapIsPassword(EntryHandler handler, IEntry entry) { }
+		public static void MapIsPassword(EntryHandler handler, IEntry entry)
+		{
+			if (handler.NativeView != null && entry.IsPassword)
+				handler.NativeView.InputPurpose = InputPurpose.Password;
+		}
 
-		[MissingMapper]
-		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry) { }
+		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry)
+		{
+			if (handler.NativeView is { } nativeView)
+				nativeView.Alignment = entry.HorizontalTextAlignment.ToXyAlign();
+		}
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry) { }
 
-		[MissingMapper]
-		public static void MapMaxLength(EntryHandler handler, IEntry entry) { }
+		public static void MapMaxLength(EntryHandler handler, IEntry entry)
+		{
+			if (handler.NativeView is { } nativeView)
+				nativeView.MaxLength = entry.MaxLength;
+		}
 
-		[MissingMapper]
-		public static void MapPlaceholder(EntryHandler handler, IEntry entry) { }
+		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
+		{
+			if (handler.NativeView is { } nativeView)
+				nativeView.PlaceholderText = entry.Placeholder;
+		}
 
-		[MissingMapper]
-		public static void MapIsReadOnly(EntryHandler handler, IEntry entry) { }
+		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
+		{
+			if (handler.NativeView is { } nativeView)
+				nativeView.IsEditable = entry.IsReadOnly;
+		}
 
-		[MissingMapper]
-		public static void MapFont(EntryHandler handler, IEntry entry) { }
+		public static void MapFont(EntryHandler handler, IEntry entry)
+		{
+			handler.MapFont(entry);
+		}
 
 		[MissingMapper]
 		public static void MapReturnType(EntryHandler handler, IEntry entry) { }
@@ -49,5 +70,7 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapKeyboard(EntryHandler handler, IEntry entry) { }
+
 	}
+
 }
