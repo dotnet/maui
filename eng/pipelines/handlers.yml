@@ -223,6 +223,7 @@ stages:
                   **/Microsoft.AspNetCore.Components.WebView.Maui.*.nupkg
                   **/Microsoft.AspNetCore.Components.WebView.Maui.*.snupkg
                   **/SignList.xml
+                  **/*.binlog
                 TargetFolder: $(build.artifactstagingdirectory)
                 flattenFolders: true
             - task: PublishBuildArtifacts@1
