@@ -382,7 +382,7 @@ namespace Microsoft.Maui
 
 		public static SizeConstraint operator -(SizeConstraint c, double s) => !c.IsConstrained ? c : WithSize(Math.Max(c.AvailableSize - s, 0));
 
-		public override bool Equals(object ob) => (ob is SizeConstraint constraint) && this == constraint;
+		public override bool Equals(object? ob) => (ob is SizeConstraint constraint) && this == constraint;
 
 		public bool Equals(SizeConstraint other) => this == other;
 

@@ -23,11 +23,11 @@ namespace Microsoft.Maui
 		protected void RegisterLifecycleEvents(Gtk.Application app)
 		{
 
-			app.Startup += OnStartup;
-			app.Shutdown += OnShutdown;
+			app.Startup += OnStartup!;
+			app.Shutdown += OnShutdown!;
 			app.Opened += OnOpened;
 			app.WindowAdded += OnWindowAdded;
-			app.Activated += OnActivated;
+			app.Activated += OnActivated!;
 			app.WindowRemoved += OnWindowRemoved;
 			app.CommandLine += OnCommandLine;
 
