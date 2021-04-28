@@ -52,21 +52,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			return image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 		}
 
-		class Result : IImageSourceServiceResult<UIImage>
+		class Result : ImageSourceServiceResult
 		{
 			public Result(UIImage image, bool resolutionDependent)
+				: base(image, resolutionDependent, () => image.Dispose())
 			{
-				Value = image;
-				IsResolutionDependent = resolutionDependent;
-			}
-
-			public UIImage Value { get; }
-
-			public bool IsResolutionDependent { get; }
-
-			public void Dispose()
-			{
-				Value.Dispose();
 			}
 		}
 	}

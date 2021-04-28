@@ -221,10 +221,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
 
 			verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
-			verticalStack.Add(new VerticalStackLayout
-			{
-				CreateImagesGrid()
-			});
+			verticalStack.Add(CreateImagesGrid());
 
 			Content = new ScrollView
 			{

@@ -8,5 +8,7 @@ namespace Microsoft.Maui
 		T Value { get; }
 
 		bool IsResolutionDependent { get; }
+
+		bool IsDisposed { get; }
 	}
 }

@@ -24,8 +24,15 @@ namespace Microsoft.Maui
 
 		public bool IsResolutionDependent { get; internal set; }
 
+		public bool IsDisposed { get; private set; }
+
 		public void Dispose()
 		{
+			if (IsDisposed)
+				return;
+
+			IsDisposed = true;
+
 			_dispose?.Invoke();
 			_dispose = null;
 		}

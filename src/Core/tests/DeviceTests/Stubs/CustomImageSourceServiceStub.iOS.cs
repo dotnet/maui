@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 			var drawable = _cache.Get(color);
 
-			var result = new CustomImageSourceServiceResult(drawable, () => _cache.Return(color));
+			var result = new ImageSourceServiceResult(drawable, () => _cache.Return(color));
 
 			return Task.FromResult<IImageSourceServiceResult<UIImage>>(result);
 		}

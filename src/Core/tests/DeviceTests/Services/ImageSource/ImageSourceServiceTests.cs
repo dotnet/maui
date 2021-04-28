@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
@@ -58,6 +59,32 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Contains(nameof(InvalidImageSourceStub), ex.Message);
 			Assert.Contains(nameof(IImageSource), ex.Message);
+		}
+
+		[Fact]
+		public void ResultsDisposeCorrectlyAndOnce()
+		{
+			var dispose = 0;
+
+			var cache = new CustomImageCacheStub();
+			var image = cache.Get(Colors.Red);
+
+			var result = new ImageSourceServiceResult(image, () => dispose++);
+
+			Assert.False(result.IsDisposed);
+			Assert.Equal(0, dispose);
+
+			result.Dispose();
+
+			Assert.True(result.IsDisposed);
+			Assert.Equal(1, dispose);
+
+			result.Dispose();
+
+			Assert.True(result.IsDisposed);
+			Assert.Equal(1, dispose);
+
+			cache.Return(Colors.Red);
 		}
 
 		private IImageSourceServiceProvider CreateImageSourceServiceProvider(Action<IImageSourceServiceCollection> configure)

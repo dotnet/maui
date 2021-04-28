@@ -35,21 +35,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			}
 		}
 
-		class Result : IImageSourceServiceResult<Drawable>
+		class Result : ImageSourceServiceResult
 		{
 			public Result(ColorDrawable drawable, bool resolutionDependent)
+				: base(drawable, resolutionDependent, () => drawable.Dispose())
 			{
-				Value = drawable;
-				IsResolutionDependent = resolutionDependent;
-			}
-
-			public Drawable Value { get; }
-
-			public bool IsResolutionDependent { get; }
-
-			public void Dispose()
-			{
-				Value.Dispose();
 			}
 		}
 	}
