@@ -30,6 +30,9 @@ namespace Microsoft.Maui
 				return;
 			_view = view;
 
+			if (view is IPage page)
+				Title = page.Title;
+
 			if (_view is IHotReloadableView ihr)
 			{
 				ihr.ReloadHandler = this;
@@ -59,6 +62,8 @@ namespace Microsoft.Maui
 			currentNativeView = _pendingLoadedView ?? CreateNativeView(view);
 			_pendingLoadedView = null;
 			View!.AddSubview(currentNativeView);
+			if (view.BackgroundColor == null)
+				View.BackgroundColor = UIColor.SystemBackgroundColor;
 		}
 
 		protected virtual UIView CreateNativeView(IView view)
