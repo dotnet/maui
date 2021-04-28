@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UIKit;
 
@@ -62,6 +63,38 @@ namespace Microsoft.Maui
 			}
 
 			return null;
+		}
+
+		public static void InvalidateMeasure(this UIView nativeView, IView view) { }
+
+		public static void UpdateWidth(this UIView nativeView, IView view)
+		{
+			if (view.Width == -1)
+			{
+				// Ignore the initial set of the height; the initial layout will take care of it
+				return;
+			}
+
+			UpdateFrame(nativeView, view);
+		}
+
+		public static void UpdateHeight(this UIView nativeView, IView view)
+		{
+			if (view.Height == -1)
+			{
+				// Ignore the initial set of the height; the initial layout will take care of it
+				return;
+			}
+
+			UpdateFrame(nativeView, view);
+		}
+
+		public static void UpdateFrame(UIView nativeView, IView view) 
+		{
+			// Updating the frame (assuming it's an actual change) will kick off a layout update
+			// Handling of the default (-1) width/height will be taken care of by GetDesiredSize
+			var currentFrame = nativeView.Frame;
+			nativeView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
 		}
 	}
 }

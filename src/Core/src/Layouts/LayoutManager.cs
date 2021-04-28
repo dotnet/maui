@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Layouts
 		public abstract Size Measure(double widthConstraint, double heightConstraint);
 		public abstract void ArrangeChildren(Rectangle childBounds);
 
+		// TODO ezhart after checking Android and iOS, refactor this
 		public static double ResolveConstraints(double externalConstraint, double desiredLength)
 		{
 			if (desiredLength == -1)
@@ -23,7 +24,9 @@ namespace Microsoft.Maui.Layouts
 				return externalConstraint;
 			}
 
-			return Math.Min(externalConstraint, desiredLength);
+			//return Math.Min(externalConstraint, desiredLength);
+
+			return externalConstraint;
 		}
 
 		public static double ResolveConstraints(double externalConstraint, double desiredLength, double measuredLength)
@@ -35,7 +38,8 @@ namespace Microsoft.Maui.Layouts
 			}
 
 			// User-specified length wins, subject to external constraints
-			return Math.Min(desiredLength, externalConstraint);
+			//return Math.Min(desiredLength, externalConstraint);
+			return externalConstraint;
 		}
 	}
 }
