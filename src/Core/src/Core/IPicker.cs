@@ -15,23 +15,18 @@ namespace Microsoft.Maui
 		string Title { get; }
 
 		/// <summary>
-		/// Gets or sets the internal list of items to template and display.
+		/// Gets the count for the number of items in the picker
 		/// </summary>
-		IList<string> Items { get; }
+		int Count();
 
 		/// <summary>
-		/// Gets or sets the source list of items to template and display.
+		/// Gets the Display String for the index
 		/// </summary>
-		IList ItemsSource { get; }
+		string DisplayFor(int index);
 
 		/// <summary>
 		/// Gets the index of the selected item of the picker.
 		/// </summary>
 		int SelectedIndex { get; set; }
-
-		/// <summary>
-		/// Gets the selected item.
-		/// </summary>
-		object? SelectedItem { get; set; }
 	}
 }

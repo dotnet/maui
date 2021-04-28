@@ -34,6 +34,12 @@ namespace Microsoft.Maui.Handlers
 
 			base.SetupDefaults(nativeView);
 		}
+		void Reload()
+		{
+			throw new NotImplementedException();
+		}
+
+		public static void MapReload(PickerHandler handler, IPicker picker) => handler.Reload();
 
 		public static void MapTitle(PickerHandler handler, IPicker picker) 
 		{
