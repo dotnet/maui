@@ -9,13 +9,18 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Android.OS;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Graphics.Drawable;
+using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
+using AndroidX.Lifecycle;
+using AndroidX.Navigation;
+using AndroidX.Navigation.Fragment;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -30,12 +35,6 @@ using Fragment = AndroidX.Fragment.App.Fragment;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 using Object = Java.Lang.Object;
-
-using AndroidX.Navigation.Fragment;
-using AndroidX.Navigation;
-using Android.OS;
-using AndroidX.AppCompat.Widget;
-using AndroidX.Lifecycle;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -60,7 +59,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					.GetFragmentManager()
 					.FindFragmentById(Resource.Id.nav_host);
 
-			FragmentNavigator = 
+			FragmentNavigator =
 				(FragmentNavigator)NavHost
 					.NavController
 					.NavigatorProvider
@@ -82,10 +81,10 @@ namespace Microsoft.Maui.Controls.Handlers
 			var inflater = NavHost.NavController.NavInflater;
 			NavGraph graph = new NavGraph(navGraphNavigator);
 			System.Diagnostics.Debug.WriteLine($"RABBIT {graph.NavigatorName}");
-			
+
 			NavDestination navDestination = null;
 			List<int> destinations = new List<int>();
-			foreach(var page in VirtualView.Navigation.NavigationStack)
+			foreach (var page in VirtualView.Navigation.NavigationStack)
 			{
 				navDestination =
 					MauiFragmentNavDestination.

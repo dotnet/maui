@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected NavHostPageFragment(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
-			
+
 		}
 
 		public NavHostPageFragment()
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			NavHostPageFragment _navHostPageFragment;
 
-			public ProcessBackClick(NavHostPageFragment navHostPageFragment) 
+			public ProcessBackClick(NavHostPageFragment navHostPageFragment)
 				: base(true)
 			{
 				_navHostPageFragment = navHostPageFragment;

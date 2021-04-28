@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTitle(PageHandler handler, IPage page)
 		{
-			if(handler._pageViewController != null)
+			if (handler._pageViewController != null)
 				handler._pageViewController.Title = page.Title;
 		}
 	}

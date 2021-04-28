@@ -1,14 +1,14 @@
 ﻿//#nullable enable
 using System;
-using UIKit;
-using Microsoft.Maui.Controls.Handlers;
-using Foundation;
-using System.Threading.Tasks;
-using ObjCRuntime;
 using System.Collections.Generic;
-using Microsoft.Maui.Handlers;
 using System.Linq;
+using System.Threading.Tasks;
+using Foundation;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Handlers;
+using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
