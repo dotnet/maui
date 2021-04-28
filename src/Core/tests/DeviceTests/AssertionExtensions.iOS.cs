@@ -83,25 +83,12 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static UIImage AssertColorAtPoint(this UIImage bitmap, UIColor expectedColor, int x, int y)
 		{
-			try
-			{
-				var cap = bitmap.ColorAtPoint(x, y);
+			var cap = bitmap.ColorAtPoint(x, y);
 
-				if (!ColorComparison.ARGBEquivalent(cap, expectedColor))
-				{
-					System.Diagnostics.Debug.WriteLine("Here");
-				}
-
+			if (!ColorComparison.ARGBEquivalent(cap, expectedColor))
 				Assert.Equal(cap, expectedColor, new ColorComparison());
 
-				return bitmap;
-			}
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine(ex);
-			}
-
-			return null;
+			return bitmap;
 		}
 
 		public static UIImage AssertColorAtCenter(this UIImage bitmap, UIColor expectedColor)

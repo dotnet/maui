@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using Android.Graphics.Drawables;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
+using UIKit;
 using Xunit;
-using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -19,34 +19,32 @@ namespace Microsoft.Maui.DeviceTests
 
 			var imageSource = (ImageSourceStub)Activator.CreateInstance(type);
 
-			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetDrawableAsync(imageSource, Platform.DefaultContext));
+			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetImageAsync(imageSource));
 		}
 
 		[Theory]
 		[InlineData("red.png", "#FF0000")]
 		[InlineData("green.png", "#00FF00")]
 		[InlineData("black.png", "#000000")]
-		public async Task GetDrawableAsyncWithResource(string filename, string colorHex)
+		public async Task GetImageAsyncWithResource(string filename, string colorHex)
 		{
 			var service = new FileImageSourceService();
 
 			var imageSource = new FileImageSourceStub(filename);
 
-			using var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			using var result = await service.GetImageAsync(imageSource);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
-
-			var bitmap = bitmapDrawable.Bitmap;
+			var uiimage = Assert.IsType<UIImage>(result.Value);
 
 			var expectedColor = Color.FromHex(colorHex);
-			bitmap.AssertColorAtCenter(expectedColor.ToNative());
+			uiimage.AssertColorAtCenter(expectedColor.ToNative());
 		}
 
 		[Theory]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#000000")]
-		public async Task GetDrawableAsyncWithFile(string colorHex)
+		public async Task GetImageAsyncWithFile(string colorHex)
 		{
 			var expectedColor = Color.FromHex(colorHex);
 
@@ -55,13 +53,11 @@ namespace Microsoft.Maui.DeviceTests
 			var filename = CreateBitmapFile(100, 100, expectedColor);
 			var imageSource = new FileImageSourceStub(filename);
 
-			using var drawable = await service.GetDrawableAsync(imageSource, Platform.DefaultContext);
+			using var drawable = await service.GetImageAsync(imageSource);
 
-			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable.Value);
+			var uiimage = Assert.IsType<UIImage>(drawable.Value);
 
-			var bitmap = bitmapDrawable.Bitmap;
-
-			bitmap.AssertColorAtCenter(expectedColor.ToNative());
+			uiimage.AssertColorAtCenter(expectedColor.ToNative());
 		}
 	}
 }

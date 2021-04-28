@@ -7,13 +7,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class CountedImageSourceServiceStub
 	{
-		public Task<IImageSourceServiceResult<UIImage>> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default)
-		{
-			if (imageSource is ICountedImageSourceStub counted)
-				return GetImageAsync(counted, scale, cancellationToken);
-
-			return Task.FromResult<IImageSourceServiceResult<UIImage>>(null);
-		}
+		public Task<IImageSourceServiceResult<UIImage>> GetImageAsync(IImageSource imageSource, float scale = 1, CancellationToken cancellationToken = default) =>
+			GetImageAsync((ICountedImageSourceStub)imageSource, scale, cancellationToken);
 
 		public async Task<IImageSourceServiceResult<UIImage>> GetImageAsync(ICountedImageSourceStub imageSource, float scale = 1, CancellationToken cancellationToken = default)
 		{

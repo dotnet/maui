@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
@@ -61,18 +60,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			return handler;
 		}
-
-		public Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
-			MainThread.InvokeOnMainThreadAsync(func);
-
-		protected Task InvokeOnMainThreadAsync(Action action) =>
-			MainThread.InvokeOnMainThreadAsync(action);
-
-		protected Task InvokeOnMainThreadAsync(Func<Task> func) =>
-			MainThread.InvokeOnMainThreadAsync(func);
-
-		public Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> func) =>
-			MainThread.InvokeOnMainThreadAsync(func);
 
 		protected async Task<THandler> CreateHandlerAsync(IView view)
 		{

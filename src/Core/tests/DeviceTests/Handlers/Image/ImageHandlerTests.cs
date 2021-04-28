@@ -45,7 +45,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(new[] { "LoadingStarted", "LoadingCompleted(True)" }, order);
 		}
 
-		[Theory]
+		[Theory(
+#if __IOS__
+			Skip = "Animated GIFs are not yet supported on iOS"
+#endif
+		)]
 		[InlineData("animated_heart.gif", true)]
 		[InlineData("animated_heart.gif", false)]
 		public async Task AnimatedSourceInitializesCorrectly(string filename, bool isAnimating)
@@ -84,12 +88,17 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(image, () => image.Aspect, GetNativeAspect, aspect);
 		}
 
-		[Fact]
-		public async Task InvalidSourceFailsToLoad()
+		[Theory]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		[InlineData("#000000")]
+		public async Task InvalidSourceFailsToLoad(string colorHex)
 		{
+			var color = Color.FromHex(colorHex);
+
 			var image = new ImageStub
 			{
-				BackgroundColor = Colors.Black,
+				BackgroundColor = color,
 				Source = new FileImageSourceStub("bad path"),
 			};
 
@@ -115,7 +124,7 @@ namespace Microsoft.Maui.DeviceTests
 				handler.NativeView.SetMinimumWidth(1);
 #endif
 
-				await handler.NativeView.AssertContainsColor(Colors.Black);
+				await handler.NativeView.AssertContainsColor(color);
 			});
 
 			Assert.Equal(new[] { "LoadingStarted", "LoadingFailed" }, order);
@@ -228,6 +237,7 @@ namespace Microsoft.Maui.DeviceTests
 				handler.UpdateValue(nameof(IImage.Source));
 				await image.Wait();
 				await startingTask;
+				await image.Wait();
 
 				// make sure it did actually work
 				await handler.NativeView.AssertContainsColor(Colors.Red);

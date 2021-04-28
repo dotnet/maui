@@ -52,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				Log(uri);
 			}
 
-			private void Log(object value, [CallerMemberName] string member = null)
+			void Log(object value, [CallerMemberName] string member = null)
 			{
 				ImageEvents.Add((member, value));
 			}
