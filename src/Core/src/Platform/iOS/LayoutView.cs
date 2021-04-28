@@ -60,7 +60,7 @@ namespace Microsoft.Maui
 
 	public class PageViewController : ContainerViewController
 	{
-		public PageViewController(IPage page,IMauiContext mauiContext)
+		public PageViewController(IPage page, IMauiContext mauiContext)
 		{
 			CurrentView = page;
 			Context = mauiContext;

@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 			set => SetView(value);
 		}
 
-		public UIView? CurrentNativeView 
+		public UIView? CurrentNativeView
 			=> _pendingLoadedView ?? currentNativeView;
 
 		public IMauiContext? Context { get; set; }
