@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Primitives
+namespace Microsoft.Maui
 {
 	public class ItemDelegateList<T> : IReadOnlyList<T>
 	{
