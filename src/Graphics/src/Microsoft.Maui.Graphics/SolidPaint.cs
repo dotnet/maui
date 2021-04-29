@@ -6,6 +6,11 @@
 		{
 		}
 
+		public SolidPaint(Color color)
+		{
+			Color = color;
+		}
+
 		public Color Color { get; set; }
 
 		public override bool IsTransparent
