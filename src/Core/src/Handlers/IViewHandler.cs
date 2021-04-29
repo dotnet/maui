@@ -10,6 +10,7 @@ namespace Microsoft.Maui
 		void DisconnectHandler();
 		object? NativeView { get; }
 		IView? VirtualView { get; }
+		IMauiContext? MauiContext { get; }
 		bool HasContainer { get; set; }
 		Size GetDesiredSize(double widthConstraint, double heightConstraint);
 		void SetFrame(Rectangle frame);

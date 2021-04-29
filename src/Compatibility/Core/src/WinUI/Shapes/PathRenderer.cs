@@ -1,7 +1,8 @@
 using System.ComponentModel;
 using Path = Microsoft.Maui.Controls.Shapes.Path;
+using Microsoft.Maui.Controls.Platform;
 
-#if WINDOWS_UWP
+#if WINDOWS
 using WPath = Microsoft.UI.Xaml.Shapes.Path;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
@@ -41,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 
 		void UpdateData()
 		{
-			Control.Data = Element.Data.ToWindows();
+			Control.Data = Element.Data.ToNative();
 		}
 
 		void UpdateRenderTransform()

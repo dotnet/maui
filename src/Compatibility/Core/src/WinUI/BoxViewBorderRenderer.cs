@@ -3,6 +3,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using WShape = Microsoft.UI.Xaml.Shapes.Shape;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				backgroundColor = Element.BackgroundColor;
 			}
 
-			Control.Background = backgroundColor.IsDefault() ? null : backgroundColor.ToBrush();
+			Control.Background = backgroundColor.IsDefault() ? null : Maui.ColorExtensions.ToNative(backgroundColor);
 		}
 
 		protected override void UpdateBackground()
@@ -81,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Color backgroundColor = Element.BackgroundColor;
 
 				if (!backgroundColor.IsDefault())
-					Control.Background = backgroundColor.ToBrush();
+					Control.Background = Maui.ColorExtensions.ToNative(backgroundColor);
 				else
 				{
 					if (Element.Color.IsDefault())
@@ -97,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (color.IsDefault())
 				UpdateBackground();
 			else
-				Control.Background = color.ToBrush();
+				Control.Background = Maui.ColorExtensions.ToNative(color);
 		}
 
 		void SetCornerRadius(CornerRadius cornerRadius)

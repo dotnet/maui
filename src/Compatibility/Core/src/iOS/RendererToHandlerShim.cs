@@ -2,7 +2,6 @@ using System;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, UIKit.UIView>;
 using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -21,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return new RendererToHandlerShim();
 		}
 
-		public RendererToHandlerShim() : base(Handlers.ViewHandler.ViewMapper)
+		public RendererToHandlerShim() : base(ViewHandler.ViewMapper)
 		{
 		}
 

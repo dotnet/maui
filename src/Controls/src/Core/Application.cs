@@ -321,13 +321,17 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void ClearCurrent() => Current = null;
+		internal static void ClearCurrent() => Current = null;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool IsApplicationOrNull(Element element)
 		{
-			return element == null || element is Application;
+			return element == null || element is Application || element is IWindow;
+		}
+
+		internal static bool IsApplicationOrNull(IView element)
+		{
+			return element == null || element is Application || element is IWindow;
 		}
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)

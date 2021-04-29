@@ -19,7 +19,7 @@
 ## Maui.sln
 
 ### SDKS required
-- Install the SDKs listed here https://github.com/xamarin/net6-samples
+- Install the SDKs listed here https://github.com/dotnet/net6-mobile-samples
 
 - And/or run the following
 

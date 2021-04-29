@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.InputView;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -279,6 +280,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.IsPassword = Element.IsPassword;
 		}
 
+		[PortHandler]
 		void UpdatePlaceholder()
 		{
 			Control.PlaceholderText = Element.Placeholder ?? "";
@@ -311,6 +313,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				() => Control.ForegroundFocusBrush, brush => Control.ForegroundFocusBrush = brush);
 		}
 
+		[PortHandler]
 		void UpdateMaxLength()
 		{
 			var maxLength = Element.MaxLength;
@@ -472,6 +475,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateIsReadOnly()
 		{
 			Control.IsReadOnly = Element.IsReadOnly;

@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Shapes;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Bugzilla42602.TextBoxView), typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.TextBoxViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]

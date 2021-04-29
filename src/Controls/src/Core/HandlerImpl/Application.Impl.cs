@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 			_windows.Add(window);
 
 			if (window is Element windowElement)
-			{				
+			{
 				windowElement.Parent = this;
 				InternalChildren.Add(windowElement);
 				OnChildAdded(windowElement);

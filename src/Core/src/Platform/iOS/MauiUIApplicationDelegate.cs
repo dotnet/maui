@@ -33,10 +33,7 @@ namespace Microsoft.Maui
 
 			Window = new UIWindow
 			{
-				RootViewController = new UIViewController
-				{
-					View = page.ToNative(mauiContext)
-				}
+				RootViewController = window.View.ToUIViewController(mauiContext)
 			};
 
 			Window.MakeKeyAndVisible();

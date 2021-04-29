@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample
 		public IWindow CreateWindow(IActivationState activationState)
 		{
 			Microsoft.Maui.Controls.Compatibility.Forms.Init(activationState);
-			var window =  Services.GetRequiredService<IWindow>();
+			var window = Services.GetRequiredService<IWindow>();
 			_windows.Add(window);
 			return window;
 		}

@@ -14,17 +14,9 @@ namespace Microsoft.Maui
 
 			if (!Application.Current.Resources.ContainsKey("MauiRootContainerStyle"))
 			{
-				var mauiActivityIndicatorStyle = new ResourceDictionary
-				{
-					Source = new Uri("ms-appx:///Microsoft.Maui/Platform/Windows/Styles/MauiActivityIndicatorStyle.xbf")
-				};
-				Application.Current.Resources.MergedDictionaries.Add(mauiActivityIndicatorStyle);
-
-				var mauiTextBoxDictionary = new ResourceDictionary
-				{
-					Source = new Uri("ms-appx:///Microsoft.Maui/Platform/Windows/Styles/MauiTextBoxStyle.xbf")
-				};
-				Application.Current.Resources.MergedDictionaries.Add(mauiTextBoxDictionary);
+				var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
+				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
+				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
 			}
 		}
 

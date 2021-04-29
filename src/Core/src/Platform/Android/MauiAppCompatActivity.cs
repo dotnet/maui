@@ -13,9 +13,9 @@ namespace Microsoft.Maui
 		protected override void OnCreate(Bundle? savedInstanceState)
 		{
 			// If the theme has the maui_splash attribute, change the theme
-			if (Theme != null && Theme.ResolveAttribute(Resource.Attribute.maui_splash, new Android.Util.TypedValue(), resolveRefs: true))
+			if (Theme.TryResolveAttribute(Resource.Attribute.maui_splash))
 			{
-				SetTheme(Resource.Style.Maui_MainTheme);
+				SetTheme(Resource.Style.Maui_MainTheme_NoActionBar);
 			}
 
 			base.OnCreate(savedInstanceState);
@@ -29,44 +29,20 @@ namespace Microsoft.Maui
 				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
 
 			var mauiContext = new MauiContext(services, this);
-
 			var state = new ActivationState(mauiContext, savedInstanceState);
 			var window = mauiApp.CreateWindow(state);
+			SetContentView(window.View.ToNative(mauiContext));
 
-			//var matchParent = ViewGroup.LayoutParams.MatchParent;
-			var wrap = ViewGroup.LayoutParams.WrapContent;
-
-			// Create the root native layout and set the Activity's content to it
-			//var nativeRootLayout = new CoordinatorLayout(this);
-			var nativeRootLayout = new LinearLayoutCompat(this);
-			SetContentView(nativeRootLayout, new ViewGroup.LayoutParams(wrap, wrap));
-
-			//AddToolbar(parent);
-
-			var page = window.View;
-
-			// This currently relies on IPage : IView, which may not exactly be right
-			// we may have to add another handler extension that works for Page
-			// Also, AbstractViewHandler is set to work for IView (obviously); if IPage is not IView,
-			// then we'll need to change it to AbstractFrameworkElementHandler or create a separate
-			// abstract handler for IPage
-			// TODO ezhart Think about all this stuff ^^
-
-			var nativePage = page.ToNative(mauiContext);
-
-			// Add the IPage to the root layout; use match parent so the page automatically has the dimensions of the activity
-			// nativeRootLayout.AddView(nativePage, new CoordinatorLayout.LayoutParams(wrap, wrap));
-			nativeRootLayout.AddView(nativePage, new LinearLayoutCompat.LayoutParams(wrap, wrap));
-		}
-
-		void AddToolbar(ViewGroup parent)
-		{
-			Toolbar toolbar = new Toolbar(this);
-			var appbarLayout = new AppBarLayout(this);
-
-			appbarLayout.AddView(toolbar, new ViewGroup.LayoutParams(AppBarLayout.LayoutParams.MatchParent, global::Android.Resource.Attribute.ActionBarSize));
-			SetSupportActionBar(toolbar);
-			parent.AddView(appbarLayout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent));
+			//TODO MAUI
+			// Allow users to customize the toolbarid?
+			bool? windowActionBar;
+			if (Theme.TryResolveAttribute(Resource.Attribute.windowActionBar, out windowActionBar) &&
+				windowActionBar == false)
+			{
+				var toolbar = FindViewById<Toolbar>(Resource.Id.maui_toolbar);
+				if (toolbar != null)
+					SetSupportActionBar(toolbar);
+			}
 		}
 	}
 }
