@@ -225,6 +225,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateAlign(TextBlock textBlock)
 		{
 			_perfectSizeValid = false;
@@ -275,6 +276,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_fontApplied = true;
 		}
 
+		[PortHandler]
 		void UpdateLineBreakMode(TextBlock textBlock)
 		{
 			_perfectSizeValid = false;
@@ -386,6 +388,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateLineHeight(TextBlock textBlock)
 		{
 			if (textBlock == null)

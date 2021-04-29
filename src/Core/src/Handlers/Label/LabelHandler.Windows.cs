@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Handlers
 			handler.TextBlock?.UpdateFont(label, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label) { }
+		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label) => 
+			handler.TextBlock?.UpdateHorizontalTextAlignment(label);
 
 		[MissingMapper]
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label) { }
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPadding(LabelHandler handler, ILabel label) =>
 			handler.TextBlock?.UpdatePadding(label);
 
-		[MissingMapper]
-		public static void MapLineHeight(LabelHandler handler, ILabel label) { }
+		public static void MapLineHeight(LabelHandler handler, ILabel label) =>		
+			handler.TextBlock?.UpdateLineHeight(label);
 	}
 }

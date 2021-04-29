@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.Extensions
 {
 	internal static class TextBlockExtensions
 	{
+		[PortHandler]
 		public static void UpdateLineBreakMode(this TextBlock textBlock, LineBreakMode lineBreakMode)
 		{
 			if (textBlock == null)
