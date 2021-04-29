@@ -29,12 +29,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		string IItemDelegate<string>.GetItem(int index)
 		{
 			if (index < 0)
-				return string.Empty;
+				return "";
 			if (index < Items?.Count)
 				return Items[index];
 			if (index < ItemsSource?.Count)
-				return ItemsSource[index]?.ToString() ?? string.Empty;
-			return string.Empty;
+				return ItemsSource[index]?.ToString() ?? "";
+			return "";
 		}
 	}
 }

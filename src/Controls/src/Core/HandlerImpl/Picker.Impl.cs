@@ -1,5 +1,4 @@
-﻿using System;
-namespace Microsoft.Maui.Controls
+﻿namespace Microsoft.Maui.Controls
 {
 	public partial class Picker : IPicker
 	{
@@ -12,12 +11,12 @@ namespace Microsoft.Maui.Controls
 		string IItemDelegate<string>.GetItem(int index)
 		{
 			if (index < 0)
-				return String.Empty;
+				return "";
 			if (index < Items?.Count)
 				return Items[index];
 			if (index < ItemsSource?.Count)
 				return GetDisplayMember(ItemsSource[index]);
-			return String.Empty;
+			return "";
 		}
 
 	}
