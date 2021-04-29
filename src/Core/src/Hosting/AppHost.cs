@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Hosting
 
 			builder.UseMauiHandlers();
 			builder.ConfigureFonts();
-			builder.ConfigureImageSourceServices();
+			builder.ConfigureImageSources();
 
 			return builder;
 		}

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
 	public class HostBuilderServicesTests
@@ -77,6 +77,135 @@ namespace Microsoft.Maui.UnitTests
 
 			var foobar = Assert.IsType<FooDualConstructor>(service);
 			Assert.IsType<BarService>(foobar.Bar);
+		}
+
+		[Fact]
+		public void GetServiceHandlesUsesCorrectCtor_DefaultWithNothing()
+		{
+			var host = new AppHostBuilder()
+				.UseMauiServiceProviderFactory(true)
+				.ConfigureServices((ctx, services) =>
+				{
+					services.AddTransient<IFooBarService, FooTrioConstructor>();
+				})
+				.Build();
+
+			var service = host.Services.GetService<IFooBarService>();
+
+			var trio = Assert.IsType<FooTrioConstructor>(service);
+			Assert.Null(trio.Foo);
+			Assert.Null(trio.Bar);
+			Assert.Null(trio.Cat);
+			Assert.Equal("()", trio.Option);
+		}
+
+		[Fact]
+		public void GetServiceHandlesUsesCorrectCtor_DefaultWithBar()
+		{
+			var host = new AppHostBuilder()
+				.UseMauiServiceProviderFactory(true)
+				.ConfigureServices((ctx, services) =>
+				{
+					services.AddTransient<IBarService, BarService>();
+					services.AddTransient<IFooBarService, FooTrioConstructor>();
+				})
+				.Build();
+
+			var service = host.Services.GetService<IFooBarService>();
+
+			var trio = Assert.IsType<FooTrioConstructor>(service);
+			Assert.Null(trio.Foo);
+			Assert.Null(trio.Bar);
+			Assert.Null(trio.Cat);
+			Assert.Equal("()", trio.Option);
+		}
+
+		[Fact]
+		public void GetServiceHandlesUsesCorrectCtor_Foo()
+		{
+			var host = new AppHostBuilder()
+				.UseMauiServiceProviderFactory(true)
+				.ConfigureServices((ctx, services) =>
+				{
+					services.AddTransient<IFooService, FooService>();
+					services.AddTransient<IFooBarService, FooTrioConstructor>();
+				})
+				.Build();
+
+			var service = host.Services.GetService<IFooBarService>();
+
+			var trio = Assert.IsType<FooTrioConstructor>(service);
+			Assert.IsType<FooService>(trio.Foo);
+			Assert.Null(trio.Bar);
+			Assert.Null(trio.Cat);
+			Assert.Equal("(Foo)", trio.Option);
+		}
+
+		[Fact]
+		public void GetServiceHandlesUsesCorrectCtor_FooWithCat()
+		{
+			var host = new AppHostBuilder()
+				.UseMauiServiceProviderFactory(true)
+				.ConfigureServices((ctx, services) =>
+				{
+					services.AddTransient<IFooService, FooService>();
+					services.AddTransient<ICatService, CatService>();
+					services.AddTransient<IFooBarService, FooTrioConstructor>();
+				})
+				.Build();
+
+			var service = host.Services.GetService<IFooBarService>();
+
+			var trio = Assert.IsType<FooTrioConstructor>(service);
+			Assert.IsType<FooService>(trio.Foo);
+			Assert.Null(trio.Bar);
+			Assert.Null(trio.Cat);
+			Assert.Equal("(Foo)", trio.Option);
+		}
+
+		[Fact]
+		public void GetServiceHandlesUsesCorrectCtor_FooBar()
+		{
+			var host = new AppHostBuilder()
+				.UseMauiServiceProviderFactory(true)
+				.ConfigureServices((ctx, services) =>
+				{
+					services.AddTransient<IFooService, FooService>();
+					services.AddTransient<IBarService, BarService>();
+					services.AddTransient<IFooBarService, FooTrioConstructor>();
+				})
+				.Build();
+
+			var service = host.Services.GetService<IFooBarService>();
+
+			var trio = Assert.IsType<FooTrioConstructor>(service);
+			Assert.IsType<FooService>(trio.Foo);
+			Assert.IsType<BarService>(trio.Bar);
+			Assert.Null(trio.Cat);
+			Assert.Equal("(Foo, Bar)", trio.Option);
+		}
+
+		[Fact]
+		public void GetServiceHandlesUsesCorrectCtor_FooBarCat()
+		{
+			var host = new AppHostBuilder()
+				.UseMauiServiceProviderFactory(true)
+				.ConfigureServices((ctx, services) =>
+				{
+					services.AddTransient<IFooService, FooService>();
+					services.AddTransient<IBarService, BarService>();
+					services.AddTransient<ICatService, CatService>();
+					services.AddTransient<IFooBarService, FooTrioConstructor>();
+				})
+				.Build();
+
+			var service = host.Services.GetService<IFooBarService>();
+
+			var trio = Assert.IsType<FooTrioConstructor>(service);
+			Assert.IsType<FooService>(trio.Foo);
+			Assert.IsType<BarService>(trio.Bar);
+			Assert.IsType<CatService>(trio.Cat);
+			Assert.Equal("(Foo, Bar, Cat)", trio.Option);
 		}
 
 		[Fact]

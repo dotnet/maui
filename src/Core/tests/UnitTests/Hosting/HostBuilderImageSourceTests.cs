@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
 	public class HostBuilderImageSourceTests
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.UnitTests
 		public void CanRetrieveFileUsingInterfaceImageSource(Type type)
 		{
 			var host = new AppHostBuilder()
-				.ConfigureImageSourceServices()
+				.ConfigureImageSources()
 				.Build();
 
 			var images = host.Services.GetRequiredService<IImageSourceServiceProvider>();
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var host = new AppHostBuilder()
 				.ConfigureFonts()
-				.ConfigureImageSourceServices()
+				.ConfigureImageSources()
 				.Build();
 
 			var manager = host.Services.GetRequiredService<IFontManager>();
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var host = new AppHostBuilder()
 				.ConfigureFonts()
-				.ConfigureImageSourceServices()
+				.ConfigureImageSources()
 				.Build();
 
 			var manager = host.Services.GetRequiredService<IFontManager>();

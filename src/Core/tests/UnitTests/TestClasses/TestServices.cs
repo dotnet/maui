@@ -10,6 +10,10 @@ namespace Microsoft.Maui.UnitTests
 	{
 	}
 
+	interface ICatService
+	{
+	}
+
 	interface IFooBarService
 	{
 	}
@@ -30,6 +34,10 @@ namespace Microsoft.Maui.UnitTests
 	}
 
 	class BarService : IBarService
+	{
+	}
+
+	class CatService : ICatService
 	{
 	}
 
@@ -54,6 +62,43 @@ namespace Microsoft.Maui.UnitTests
 		public IFooService Foo { get; }
 
 		public IBarService Bar { get; }
+	}
+
+	class FooTrioConstructor : IFooBarService
+	{
+		public FooTrioConstructor()
+		{
+			Option = "()";
+		}
+
+		public FooTrioConstructor(IFooService foo)
+		{
+			Foo = foo;
+			Option = "(Foo)";
+		}
+
+		public FooTrioConstructor(IFooService foo, IBarService bar)
+		{
+			Foo = foo;
+			Bar = bar;
+			Option = "(Foo, Bar)";
+		}
+
+		public FooTrioConstructor(IFooService foo, IBarService bar, ICatService cat)
+		{
+			Foo = foo;
+			Bar = bar;
+			Cat = cat;
+			Option = "(Foo, Bar, Cat)";
+		}
+
+		public IFooService Foo { get; }
+
+		public IBarService Bar { get; }
+
+		public ICatService Cat { get; }
+
+		public string Option { get; }
 	}
 
 	class FooDualConstructor : IFooBarService

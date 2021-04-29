@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var appBuilder = AppHost
 				.CreateDefaultBuilder()
-				.ConfigureImageSourceServices((ctx, services) =>
+				.ConfigureImageSources((ctx, services) =>
 				{
 					services.AddService<ICountedImageSourceStub, CountedImageSourceServiceStub>();
 				})

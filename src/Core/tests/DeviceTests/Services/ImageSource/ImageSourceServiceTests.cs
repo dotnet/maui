@@ -91,7 +91,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var host = new AppHostBuilder()
 				.UseMauiServiceProviderFactory(true)
-				.ConfigureImageSourceServices(configure)
+				.ConfigureImageSources(configure)
 				.Build();
 
 			var services = host.Services;

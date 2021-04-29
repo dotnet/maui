@@ -1,16 +1,15 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Hosting.Internal;
 
 namespace Microsoft.Maui.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{
-		public static IAppHostBuilder ConfigureImageSourceServices(this IAppHostBuilder builder)
+		public static IAppHostBuilder ConfigureImageSources(this IAppHostBuilder builder)
 		{
-			builder.ConfigureImageSourceServices(services =>
+			builder.ConfigureImageSources(services =>
 			{
 				services.AddService<IFileImageSource>(svcs => new FileImageSourceService(svcs.GetService<IImageSourceServiceConfiguration>(), svcs.CreateLogger<FileImageSourceService>()));
 				services.AddService<IFontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
@@ -20,13 +19,13 @@ namespace Microsoft.Maui.Hosting
 			return builder;
 		}
 
-		public static IAppHostBuilder ConfigureImageSourceServices(this IAppHostBuilder builder, Action<IImageSourceServiceCollection> configureDelegate)
+		public static IAppHostBuilder ConfigureImageSources(this IAppHostBuilder builder, Action<IImageSourceServiceCollection> configureDelegate)
 		{
 			builder.ConfigureServices<ImageSourceServiceBuilder>((_, services) => configureDelegate(services));
 			return builder;
 		}
 
-		public static IAppHostBuilder ConfigureImageSourceServices(this IAppHostBuilder builder, Action<HostBuilderContext, IImageSourceServiceCollection> configureDelegate)
+		public static IAppHostBuilder ConfigureImageSources(this IAppHostBuilder builder, Action<HostBuilderContext, IImageSourceServiceCollection> configureDelegate)
 		{
 			builder.ConfigureServices<ImageSourceServiceBuilder>(configureDelegate);
 			return builder;

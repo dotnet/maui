@@ -34,7 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var host = new AppHostBuilder()
 				.ConfigureFonts()
-				.ConfigureImageSourceServices()
+				.ConfigureImageSources()
 				.Build();
 
 			var images = host.Services.GetRequiredService<IImageSourceServiceProvider>();
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
 				})
-				.ConfigureImageSourceServices()
+				.ConfigureImageSources()
 				.Build();
 
 			var images = host.Services.GetRequiredService<IImageSourceServiceProvider>();
