@@ -1,6 +1,4 @@
 #nullable enable
-using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -35,8 +33,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label) => 
 			handler.TextBlock?.UpdateHorizontalTextAlignment(label);
 
-		[MissingMapper]
-		public static void MapLineBreakMode(LabelHandler handler, ILabel label) { }
+		public static void MapLineBreakMode(LabelHandler handler, ILabel label) => 
+			handler.TextBlock?.UpdateLineBreakMode(label);
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label) =>	
 			handler.TextBlock?.UpdateTextDecorations(label);
