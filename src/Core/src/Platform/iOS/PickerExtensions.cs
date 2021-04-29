@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui

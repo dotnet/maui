@@ -5,8 +5,11 @@
 	x:Class="Microsoft.Maui.Resources">
 
     <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="MauiComboBoxStyle.xaml" />
         <ResourceDictionary Source="MauiStepperStyle.xaml" />
         <ResourceDictionary Source="MauiTextBoxStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
-	
+     
+    <uwp:ColorConverter x:Key="ColorConverter" />
+    
 </ResourceDictionary>
