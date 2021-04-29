@@ -8,8 +8,25 @@
 			EndPoint = new Point(1, 1);
 		}
 
+		public LinearGradientPaint(GradientPaint gradientPaint) : base(gradientPaint)
+		{
+		
+		}
+
+		public LinearGradientPaint(GradientStop[] gradientStops)
+		{
+			GradientStops = gradientStops;
+		}
+
 		public LinearGradientPaint(Point startPoint, Point endPoint)
 		{
+			StartPoint = startPoint;
+			EndPoint = endPoint;
+		}
+
+		public LinearGradientPaint(GradientStop[] gradientStops, Point startPoint, Point endPoint)
+		{
+			GradientStops = gradientStops;
 			StartPoint = startPoint;
 			EndPoint = endPoint;
 		}

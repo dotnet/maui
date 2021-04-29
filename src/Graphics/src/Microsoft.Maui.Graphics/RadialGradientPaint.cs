@@ -8,8 +8,25 @@
 			Radius = 0.5;
 		}
 
+		public RadialGradientPaint(GradientPaint gradientPaint) : base(gradientPaint)
+		{
+
+		}
+
+		public RadialGradientPaint(GradientStop[] gradientStops)
+		{
+			GradientStops = gradientStops;
+		}
+
 		public RadialGradientPaint(Point center, double radius)
 		{
+			Center = center;
+			Radius = radius;
+		}
+
+		public RadialGradientPaint(GradientStop[] gradientStops, Point center, double radius)
+		{
+			GradientStops = gradientStops;
 			Center = center;
 			Radius = radius;
 		}
