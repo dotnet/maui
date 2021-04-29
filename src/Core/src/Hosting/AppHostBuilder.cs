@@ -64,7 +64,11 @@ namespace Microsoft.Maui.Hosting
 
 			ConfigureServiceCollectionBuilders(_serviceProvider);
 
-			return new Internal.AppHost(_serviceProvider, null);
+			var appHost = new Internal.AppHost(_serviceProvider, null);
+
+			AppHost.Current = appHost;
+
+			return appHost;
 		}
 
 		public IAppHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
