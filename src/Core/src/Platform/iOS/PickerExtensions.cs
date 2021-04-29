@@ -16,12 +16,12 @@ namespace Microsoft.Maui
 		{
 			var selectedIndex = picker.SelectedIndex;
 
-			nativePicker.Text = selectedIndex == -1 ? "" : picker.DisplayFor(selectedIndex);
+			nativePicker.Text = selectedIndex == -1 ? "" : picker.GetItem(selectedIndex);
 
 			var pickerView = nativePicker.UIPickerView;
 			pickerView?.ReloadAllComponents();
 
-			if (picker.Count() == 0)
+			if (picker.GetCount() == 0)
 				return;
 
 			nativePicker.SetSelectedIndex(picker, selectedIndex);

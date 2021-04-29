@@ -6,17 +6,18 @@
 
 		Font ITextStyle.Font => _font ??= Font.OfSize(FontFamily, FontSize).WithAttributes(FontAttributes);
 
-		int IPicker.GetCount() => Items?.Count ?? ItemsSource?.Count ?? 0;
+		int IITemDelegate<string>.GetCount() => Items?.Count ?? ItemsSource?.Count ?? 0;
 
-		string IPicker.DisplayFor(int index)
+		string IITemDelegate<string>.GetItem(int index)
 		{
 			if (index < 0)
 				return "";
-			if (Items?.Count < index)
+			if (index < Items?.Count)
 				return Items[index];
-			if (ItemsSource?.Count < index)
-				GetDisplayMember(ItemsSource[index]);
+			if (index < ItemsSource?.Count)
+				return GetDisplayMember(ItemsSource[index]);
 			return "";
 		}
+
 	}
 }

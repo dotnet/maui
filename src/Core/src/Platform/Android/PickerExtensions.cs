@@ -12,10 +12,10 @@
 		{
 			nativePicker.Hint = picker.Title;
 
-			if (picker.SelectedIndex == -1 || picker.SelectedIndex >= picker.Count())
+			if (picker.SelectedIndex == -1 || picker.SelectedIndex >= picker.GetCount())
 				nativePicker.Text = null;
 			else
-				nativePicker.Text = picker.DisplayFor(picker.SelectedIndex);
+				nativePicker.Text = picker.GetItem(picker.SelectedIndex);
 		}
 	}
 }

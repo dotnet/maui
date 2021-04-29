@@ -23,11 +23,11 @@ namespace Microsoft.Maui.Handlers
 			var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
 			{
 				var pickerSource = (PickerSource)_pickerView.Model;
-
-				if (pickerSource.SelectedIndex == -1 && VirtualView?.Count() > 0)
+				var count = VirtualView?.GetCount() ?? 0;
+				if (pickerSource.SelectedIndex == -1 && count > 0)
 					UpdatePickerSelectedIndex(0);
 
-				if (VirtualView?.SelectedIndex == -1 && VirtualView?.Count() > 0)
+				if (VirtualView?.SelectedIndex == -1 && count > 0)
 				{
 					NativeView?.SetSelectedIndex(VirtualView, 0);
 				}
@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Handlers
 			// Reset the TextField's Text so it appears as if typing with a keyboard does not work.
 			var selectedIndex = VirtualView.SelectedIndex;
 
-			NativeView.Text = VirtualView.DisplayFor(selectedIndex);
+			NativeView.Text = VirtualView.GetItem(selectedIndex);
 
 			// Also clears the undo stack (undo/redo possible on iPads)
 			NativeView.UndoManager.RemoveAllActions();
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || NativeView == null)
 				return;
 
-			NativeView.Text = VirtualView.DisplayFor(pickerSource.SelectedIndex);
+			NativeView.Text = VirtualView.GetItem(pickerSource.SelectedIndex);
 			VirtualView.SelectedIndex = pickerSource.SelectedIndex;
 		}
 
@@ -191,10 +191,10 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public override nint GetRowsInComponent(UIPickerView pickerView, nint component) =>
-			_virtualView?.Count() ?? 0;
+			_virtualView?.GetCount() ?? 0;
 
 		public override string GetTitle(UIPickerView picker, nint row, nint component) =>
-			_virtualView?.DisplayFor((int)row) ?? "";
+			_virtualView?.GetItem((int)row) ?? "";
 
 		public override void Selected(UIPickerView picker, nint row, nint component) =>
 			SelectedIndex = (int)row;
