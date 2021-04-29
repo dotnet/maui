@@ -289,10 +289,18 @@ namespace Microsoft.Maui.Controls
 			return base.OnBackButtonPressed();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public event EventHandler<NavigationRequestedEventArgs> InsertPageBeforeRequested;
+		EventHandler<NavigationRequestedEventArgs> _insertPageBeforeRequested;
+		event EventHandler<NavigationRequestedEventArgs> INavigationPageController.InsertPageBeforeRequested
+		{
+			add => _insertPageBeforeRequested += value;
+			remove => _insertPageBeforeRequested -= value;
+		}
 
-		async Task<Page> INavigationPageController.PopAsyncInner(bool animated, bool fast)
+
+		internal async Task<Page> PopAsyncInner(
+			bool animated,
+			bool fast,
+			bool requestedFromHandler)
 		{
 			if (NavigationPageController.StackDepth == 1)
 			{
@@ -300,10 +308,14 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var page = (Page)InternalChildren.Last();
-			return await (this as INavigationPageController).RemoveAsyncInner(page, animated, fast);
+			return await RemoveAsyncInner(page, animated, fast, requestedFromHandler);
 		}
 
-		async Task<Page> INavigationPageController.RemoveAsyncInner(Page page, bool animated, bool fast)
+		internal async Task<Page> RemoveAsyncInner(
+			Page page, 
+			bool animated, 
+			bool fast,
+			bool requestedFromHandler)
 		{
 			if (NavigationPageController.StackDepth == 1)
 			{
@@ -320,7 +332,7 @@ namespace Microsoft.Maui.Controls
 			var removed = true;
 
 			EventHandler<NavigationRequestedEventArgs> requestPop = PopRequested;
-			if (requestPop != null)
+			if (requestPop != null && !requestedFromHandler)
 			{
 				requestPop(this, args);
 
@@ -339,6 +351,16 @@ namespace Microsoft.Maui.Controls
 				Popped(this, args);
 
 			return page;
+		}
+
+		Task<Page> INavigationPageController.PopAsyncInner(bool animated, bool fast)
+		{
+			return PopAsyncInner(animated, fast, false);
+		}
+
+		Task<Page> INavigationPageController.RemoveAsyncInner(Page page, bool animated, bool fast)
+		{
+			return RemoveAsyncInner(page, animated, fast, false);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -367,8 +389,7 @@ namespace Microsoft.Maui.Controls
 			if (InternalChildren.Contains(page))
 				throw new ArgumentException("Cannot insert page which is already in the navigation stack");
 
-			EventHandler<NavigationRequestedEventArgs> handler = InsertPageBeforeRequested;
-			handler?.Invoke(this, new NavigationRequestedEventArgs(page, before, false));
+			_insertPageBeforeRequested?.Invoke(this, new NavigationRequestedEventArgs(page, before, false));
 
 			int index = InternalChildren.IndexOf(before);
 			InternalChildren.Insert(index, page);
