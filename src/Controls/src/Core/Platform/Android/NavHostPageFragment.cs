@@ -66,6 +66,9 @@ namespace Microsoft.Maui.Controls.Platform
 			HasOptionsMenu = true;
 
 			NavDestination.NavigationPageHandler.Toolbar.SetNavigationOnClickListener(BackClick);
+
+			NavDestination.NavigationPageHandler.Toolbar
+				.Title = NavDestination.Page.Title;
 		}
 
 		public override void OnCreate(Bundle savedInstanceState)

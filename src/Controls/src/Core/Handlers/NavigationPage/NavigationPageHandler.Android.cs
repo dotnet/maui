@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				.PopAsync()
 				.FireAndForget((e) =>
 			{
-
+				Log.Warning(nameof(NavigationPageHandler), $"{e}");
 			});
 		}
 
@@ -147,6 +147,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		void UpdatePadding()
 		{
 		}
+
 		void UpdateTitleColor()
 		{
 		}
