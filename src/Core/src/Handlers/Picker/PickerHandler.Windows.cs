@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 			var nativePicker = new MauiComboBox();
 
 			if (VirtualView != null)
-				nativePicker.ItemsSource = VirtualView.GetItemsAsArray();
+				nativePicker.ItemsSource = new ItemDelegateList<string>(VirtualView);
 
 			return nativePicker;
 		}
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView == null || NativeView == null)
 				return;
-			NativeView.ItemsSource = VirtualView.GetItemsAsArray();
+			NativeView.ItemsSource = new ItemDelegateList<string>(VirtualView);
 		}
 
 		public static void MapReload(PickerHandler handler, IPicker picker) => handler.Reload();
