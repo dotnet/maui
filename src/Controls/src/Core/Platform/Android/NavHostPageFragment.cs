@@ -8,27 +8,32 @@ using AndroidX.Fragment.App;
 using AndroidX.Navigation.Fragment;
 using Microsoft.Maui.Controls.Handlers;
 using AView = Android.Views.View;
+using AndroidX.AppCompat.Widget;
+using AndroidX.Navigation.UI;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	class NavHostPageFragment : Fragment
 	{
+		ProcessBackClick BackClick { get; }
+
 		NavHostFragment NavHost =>
 			   (NavHostFragment)
 				   Context
 					   .GetFragmentManager()
 					   .FindFragmentById(Resource.Id.nav_host);
 
+		MauiFragmentNavDestination NavDestination { get; set; }
+
 		protected NavHostPageFragment(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
-
+			BackClick = new ProcessBackClick(this);
 		}
 
 		public NavHostPageFragment()
 		{
+			BackClick = new ProcessBackClick(this);
 		}
-
-		MauiFragmentNavDestination NavDestination { get; set; }
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
@@ -41,7 +46,26 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_ = NavDestination ?? throw new ArgumentNullException(nameof(NavDestination));
 
-			return NavDestination.Page.ToNative(NavDestination.MauiContext);
+			var view = NavDestination.Page.ToNative(NavDestination.MauiContext);
+			return view;
+		}
+
+		public override void OnViewCreated(AView view, Bundle savedInstanceState)
+		{
+			base.OnViewCreated(view, savedInstanceState);
+
+			var controller = NavHostFragment.FindNavController(this);
+			var appbarConfig =
+				new AppBarConfiguration
+					.Builder(controller.Graph)
+					.Build();
+
+			NavigationUI
+				.SetupWithNavController(NavDestination.NavigationPageHandler.Toolbar, controller, appbarConfig);
+
+			HasOptionsMenu = true;
+
+			NavDestination.NavigationPageHandler.Toolbar.SetNavigationOnClickListener(BackClick);
 		}
 
 		public override void OnCreate(Bundle savedInstanceState)
@@ -49,7 +73,7 @@ namespace Microsoft.Maui.Controls.Platform
 			base.OnCreate(savedInstanceState);
 			RequireActivity()
 				.OnBackPressedDispatcher
-				.AddCallback(this, new ProcessBackClick(this));
+				.AddCallback(this, BackClick);
 		}
 
 		public void HandleOnBackPressed()
@@ -57,7 +81,7 @@ namespace Microsoft.Maui.Controls.Platform
 			NavDestination.NavigationPageHandler.OnPop();
 		}
 
-		class ProcessBackClick : AndroidX.Activity.OnBackPressedCallback
+		class ProcessBackClick : AndroidX.Activity.OnBackPressedCallback, AView.IOnClickListener
 		{
 			NavHostPageFragment _navHostPageFragment;
 
@@ -70,6 +94,11 @@ namespace Microsoft.Maui.Controls.Platform
 			public override void HandleOnBackPressed()
 			{
 				_navHostPageFragment.HandleOnBackPressed();
+			}
+
+			public void OnClick(AView v)
+			{
+				HandleOnBackPressed();
 			}
 		}
 	}

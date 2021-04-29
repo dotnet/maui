@@ -18,9 +18,15 @@ namespace Microsoft.Maui
 
 			var handler = view.Handler;
 
+			if (handler?.MauiContext != null &&
+				handler.MauiContext != context)
+			{
+				view.Handler = null;
+				handler = null;
+			}
+
 			if (handler == null)
 			{
-
 				handler = context.Handlers.GetHandler(view.GetType());
 
 				if (handler == null)
