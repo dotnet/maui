@@ -6,7 +6,7 @@
 
 		Font ITextStyle.Font => _font ??= Font.OfSize(FontFamily, FontSize).WithAttributes(FontAttributes);
 
-		int IPicker.Count() => Items?.Count ?? ItemsSource?.Count ?? 0;
+		int IPicker.GetCount() => Items?.Count ?? ItemsSource?.Count ?? 0;
 
 		string IPicker.DisplayFor(int index)
 		{

@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the count for the number of items in the picker
 		/// </summary>
-		int Count();
+		int GetCount();
 
 		/// <summary>
 		/// Gets the Display String for the index

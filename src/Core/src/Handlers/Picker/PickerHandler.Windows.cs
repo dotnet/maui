@@ -11,10 +11,10 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiComboBox CreateNativeView()
 		{
 			var nativePicker = new MauiComboBox();
-			
+
 			if (VirtualView != null)
-				nativePicker.ItemsSource = ((LockableObservableListWrapper)VirtualView.Items)._list;
-		
+				nativePicker.ItemsSource = VirtualView.GetItemsAsArray();
+
 			return nativePicker;
 		}
 
@@ -36,7 +36,10 @@ namespace Microsoft.Maui.Handlers
 		}
 		void Reload()
 		{
-			throw new NotImplementedException();
+
+			if (VirtualView == null || NativeView == null)
+				return;
+			NativeView.ItemsSource = VirtualView.GetItemsAsArray();
 		}
 
 		public static void MapReload(PickerHandler handler, IPicker picker) => handler.Reload();
