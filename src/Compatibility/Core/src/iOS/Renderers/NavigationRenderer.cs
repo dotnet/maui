@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
 using UIKit;
-using Microsoft.Maui.Controls.Compatibility.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;

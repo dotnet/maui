@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
 	public class HostBuilderAppTests

@@ -13,9 +13,6 @@
 		<None Remove="Internals\Legacy\**" />
 	</ItemGroup>
 	<ItemGroup>
-		<Folder Include="Xaml\Diagnostics\" />
-	</ItemGroup>
-	<ItemGroup>
 		<ProjectReference Include="..\..\..\Core\src\Core.csproj" />
 	</ItemGroup>
 	<PropertyGroup>

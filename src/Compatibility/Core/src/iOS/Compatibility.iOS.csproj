@@ -112,12 +112,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\TimePickerRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CellExtensions.cs" />
-    <Compile Include="..\..\..\..\Controls\src\Core\Crc64.cs">
-      <Link>Crc64.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\Controls\src\Core\StreamWrapper.cs">
-      <Link>StreamWrapper.cs</Link>
-    </Compile>
     <Compile Include="..\AppHostBuilderExtensions.cs">
       <Link>AppHostBuilderExtensions.cs</Link>
     </Compile>
@@ -184,7 +178,6 @@
     <Compile Include="Flags.cs" />
     <Compile Include="HandlerToRendererShim.cs" />
     <Compile Include="IOSDeviceInfo.cs" />
-    <Compile Include="LinkerSafeAttribute.cs" />
     <Compile Include="ModalWrapper.cs" />
     <Compile Include="Renderers\FormsCAKeyFrameAnimation.cs" />
     <Compile Include="Renderers\FormsCheckBox.cs" />
