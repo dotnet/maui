@@ -40,6 +40,5 @@ namespace Microsoft.Maui
 				Height = (int)size.Height,
 				Width = (int)size.Width
 			};
-
 	}
 }
