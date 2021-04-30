@@ -63,17 +63,17 @@ namespace Microsoft.Maui
 
 		protected void OnCommandLine(object o, GLib.CommandLineArgs args)
 		{
-			;
+			// future use: to resolove command line arguments at cross platform Application level
 		}
 
 		protected void OnWindowRemoved(object o, WindowRemovedArgs args)
 		{
-			;
+			// future use: to have notifications at cross platform Window level
 		}
 
 		protected void OnWindowAdded(object o, WindowAddedArgs args)
 		{
-			;
+			// future use: to have notifications at cross platform Window level
 		}
 
 		// https://developer.gnome.org/gio/stable/GApplication.html#g-application-id-is-valid
@@ -150,7 +150,9 @@ namespace Microsoft.Maui
 		}
 
 		protected void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{ }
+		{
+			//future use: there will be a need of GtkNativeServices, eg. for WebView
+		}
 
 	}
 
