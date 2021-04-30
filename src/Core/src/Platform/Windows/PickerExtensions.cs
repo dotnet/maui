@@ -24,6 +24,9 @@ namespace Microsoft.Maui
 		public static void UpdateTextColor(this MauiComboBox nativeComboBox, IPicker picker, WBrush? defaultForeground)
 		{
 			Color color = picker.TextColor;
+			if (color.IsDefault() && defaultForeground == null)
+				return;
+
 			nativeComboBox.Foreground = color.IsDefault() ? (defaultForeground ?? color.ToNative()) : color.ToNative();
 		}
 
