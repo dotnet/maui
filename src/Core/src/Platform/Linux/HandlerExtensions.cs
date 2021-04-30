@@ -1,9 +1,8 @@
-using System;
 using Gtk;
+using System;
 
 namespace Microsoft.Maui
 {
-
 	public static class HandlerExtensions
 	{
 		public static Widget ToNative(this IView view, IMauiContext context)
@@ -27,7 +26,7 @@ namespace Microsoft.Maui
 
 			handler.SetVirtualView(view);
 
-			if (!(handler.NativeView is Widget result))
+			if (handler.NativeView is not Widget result)
 			{
 				throw new InvalidOperationException($"Unable to convert {view} to {typeof(Widget)}");
 			}
@@ -43,5 +42,4 @@ namespace Microsoft.Maui
 			};
 
 	}
-
 }

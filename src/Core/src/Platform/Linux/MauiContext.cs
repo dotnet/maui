@@ -24,5 +24,4 @@ namespace Microsoft.Maui
 		public IMauiHandlersServiceProvider Handlers =>
 			_mauiHandlersServiceProvider ?? throw new InvalidOperationException($"No service provider was specified during construction.");
 	}
-
 }
