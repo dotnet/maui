@@ -289,7 +289,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				path.AddRoundRect(rect, borderRadius, borderRadius, APath.Direction.Cw);
 				paint.StrokeWidth = borderWidth;
 				paint.SetStyle(Paint.Style.Stroke);
-				paint.Color = BorderElement.BorderColor.ToAndroid();
+				paint.Color = BorderElement.BorderColor.ToAndroid(Graphics.Colors.Black);
 
 				canvas.DrawPath(path, paint);
 			}
