@@ -219,9 +219,7 @@ namespace Microsoft.Maui.Controls
 
 		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
 		{
-#pragma warning disable CS0618 // Type or member is obsolete	
-			DesiredSize = OnSizeRequest(widthConstraint, heightConstraint).Request;
-#pragma warning restore CS0618 // Type or member is obsolete	
+			DesiredSize = OnMeasure(widthConstraint, heightConstraint).Request;
 			return DesiredSize;
 		}
 
