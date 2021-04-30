@@ -2,7 +2,8 @@
                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                    xmlns:controls="clr-namespace:Maui.Controls.Sample.Controls"
                    x:Class="Maui.Controls.Sample.Pages.SemanticsPage"
-                   Title="Semantics Page">
+                   Title="Semantics Page"
+                   BackgroundColor="White">
 
     <ScrollView Margin="15,20">
         <VerticalStackLayout>
