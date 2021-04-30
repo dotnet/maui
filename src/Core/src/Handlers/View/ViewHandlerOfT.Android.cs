@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 		View? INativeViewHandler.NativeView => (View?)base.NativeView;
 		public Context? Context => MauiContext?.Context;
 
-		public override void SetFrame(Rectangle frame)
+		public override void NativeArrange(Rectangle frame)
 		{
 			var nativeView = NativeView;
 

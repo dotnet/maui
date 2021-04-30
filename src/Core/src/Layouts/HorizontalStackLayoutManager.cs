@@ -12,9 +12,7 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
-			var heightMeasureConstraint = ResolveConstraints(heightConstraint, Stack.Height);
-
-			var measure = Measure(heightMeasureConstraint, Stack.Spacing, Stack.Children);
+			var measure = Measure(heightConstraint, Stack.Spacing, Stack.Children);
 
 			var finalWidth = ResolveConstraints(widthConstraint, Stack.Width, measure.Width);
 

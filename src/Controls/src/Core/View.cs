@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Controls
 			if (width >= 0 && height >= 0)
 			{
 				// This is a temporary measure to keep the old layouts working 
-				Handler?.SetFrame(Bounds);
+				Handler?.NativeArrange(Bounds);
 			}
 		}
 

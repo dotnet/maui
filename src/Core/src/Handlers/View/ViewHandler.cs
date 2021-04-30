@@ -21,9 +21,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.BackgroundColor)] = MapBackgroundColor,
-			[nameof(IView.Frame)] = MapFrame,
+			[nameof(IView.Width)] = MapWidth,
+			[nameof(IView.Height)] = MapHeight,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
 			[nameof(IView.Semantics)] = MapSemantics,
+			Actions = {
+					[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure
+				}
 		};
 
 		internal ViewHandler()
@@ -71,8 +75,7 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
-		// TODO ezhart This should maybe be called NativeArrange or something
-		public abstract void SetFrame(Rectangle frame);
+		public abstract void NativeArrange(Rectangle frame);
 
 		private protected void ConnectHandler(NativeView? nativeView)
 		{
@@ -90,9 +93,14 @@ namespace Microsoft.Maui.Handlers
 			VirtualView = null;
 		}
 
-		public static void MapFrame(IViewHandler handler, IView view)
+		public static void MapWidth(IViewHandler handler, IView view)
 		{
-			handler.SetFrame(view.Frame);
+			((NativeView?)handler.NativeView)?.UpdateWidth(view);
+		}
+
+		public static void MapHeight(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateHeight(view);
 		}
 
 		public static void MapIsEnabled(IViewHandler handler, IView view)
@@ -116,6 +124,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			MappingSemantics(handler, view);
 			((NativeView?)handler.NativeView)?.UpdateSemantics(view);
+		}
+
+		public static void MapInvalidateMeasure(IViewHandler handler, IView view) 
+		{
+			((NativeView?)handler.NativeView)?.InvalidateMeasure(view);
 		}
 	}
 }
