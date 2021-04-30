@@ -65,7 +65,10 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		public static void InvalidateMeasure(this UIView nativeView, IView view) { }
+		public static void InvalidateMeasure(this UIView nativeView, IView view) 
+		{
+			nativeView.SetNeedsLayout();
+		}
 
 		public static void UpdateWidth(this UIView nativeView, IView view)
 		{

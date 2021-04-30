@@ -51,7 +51,10 @@ namespace Microsoft.Maui
 			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
 		}
 
-		public static void InvalidateMeasure(this AView nativeView, IView view) { }
+		public static void InvalidateMeasure(this AView nativeView, IView view) 
+		{
+			nativeView.RequestLayout();
+		}
 
 		public static void UpdateWidth(this AView nativeView, IView view) 
 		{
