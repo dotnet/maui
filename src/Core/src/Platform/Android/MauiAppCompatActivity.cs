@@ -45,6 +45,7 @@ namespace Microsoft.Maui
 				window = mauiApp.CreateWindow(state);
 			}
 
+			SetContentView(window.View.ToNative(mauiContext));
 
 			//TODO MAUI
 			// Allow users to customize the toolbarid?
