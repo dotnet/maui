@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Handlers;
 using AView = Android.Views.View;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Navigation.UI;
+using AndroidX.AppCompat.App;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -69,6 +70,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			NavDestination.NavigationPageHandler.Toolbar
 				.Title = NavDestination.Page.Title;
+						
+			if(Context.GetActivity() is AppCompatActivity aca)
+			{
+				aca.SupportActionBar.Title = NavDestination.Page.Title;
+			}
 		}
 
 		public override void OnCreate(Bundle savedInstanceState)
