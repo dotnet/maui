@@ -157,13 +157,6 @@ namespace Microsoft.Maui
 			return it.Context.ColorFor("bg", state);
 		}
 
-		public static Gdk.Color Dark(this Gtk.Style it, Gtk.StateType state)
-		{
-			// TODO
-			return it.Foreground(state);
-
-		}
-
 		public static Gdk.Color Foreground(this Gtk.Style it, Gtk.StateType state)
 		{
 			return it.Context.ColorFor("fg", state);
@@ -173,11 +166,6 @@ namespace Microsoft.Maui
 		public static Gdk.Color Base(this Gtk.Style it, Gtk.StateType state)
 		{
 			return it.Context.ColorFor("", state);
-		}
-
-		public static void ModifyBase(this Gtk.Widget it, Gtk.StateType state, Gdk.Color color)
-		{
-			// TODO
 		}
 
 	}
