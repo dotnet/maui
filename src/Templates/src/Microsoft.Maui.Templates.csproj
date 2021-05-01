@@ -20,8 +20,7 @@
 
   <ItemGroup>
     <_TemplateFile Include="maui-mobile/MauiApp1/MauiApp1.in.csproj" />
-    <_TemplateFile Include="maui-mobile/MauiApp1.WinUI3/MauiApp1.WinUI3.in.csproj" />
-    <_TemplateFile Include="maui-mobile/MauiApp1.WinUI3 (Package)/MauiApp1.WinUI3 (Package).in.wapproj" />
+    <_TemplateFile Include="maui-mobile/MauiApp1 (Package)/MauiApp1 (Package).in.wapproj" />
   </ItemGroup>
 
   <ItemGroup>

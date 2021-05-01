@@ -3,6 +3,8 @@
   <PropertyGroup>
     <!-- iOS, Android, MacCatalyst -->
     <TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
+    <TargetFramework Condition="'$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFramework>
+
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <RootNamespace>MauiApp1</RootNamespace>
@@ -39,6 +41,46 @@
     <PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
   </ItemGroup>
 
+  <!-- Remove Windows Project Reunion XAML -->
+  <ItemGroup>
+    <EmbeddedResource Remove="Windows\**\*.xaml" />
+  </ItemGroup>
+
+  <!-- Temporary Project Reunion Settings -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <OutputType>WinExe</OutputType>
+		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+		<ApplicationManifest>Windows\app.manifest</ApplicationManifest>
+		<Platforms>x86;x64;arm64</Platforms>
+		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+		<EnableDefaultPageItems>False</EnableDefaultPageItems>
+		<EnableDefaultApplicationDefintition>False</EnableDefaultApplicationDefintition>
+		<StartupObject>MauiApp1.WinUI.Program</StartupObject>
+  </PropertyGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+  	<Manifest Include="$(ApplicationManifest)" />
+		<ApplicationDefinition Include="Windows\App.xaml">
+			<Generator>MSBuild:Compile</Generator>
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</ApplicationDefinition>
+		<Page Include="Windows\*.xaml" Exclude="Windows\App.xaml">
+			<Generator>MSBuild:Compile</Generator>
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</Page>
+		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.16" />
+		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.19041.16" />
+    <PackageReference Include="Microsoft.ProjectReunion" Version="[0.5.6]">
+			<IncludeAssets>build</IncludeAssets>
+		</PackageReference>
+    <EmbeddedResource Remove="iOS\**\*.xaml;MacCatalyst\**\*.xaml;Android\**\*.xaml" />
+    <Compile Remove="iOS\**\*.cs;MacCatalyst\**\*.cs;Android\**\*.cs" />
+	</ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework.Contains('-windows'))' != 'true' ">
+    <Compile Remove="Windows\**\*.cs" />
+  </ItemGroup>
+
+  <!-- Temporary iOS / MacCatalyst Properties -->
   <PropertyGroup>
     <InvariantGlobalization Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">true</InvariantGlobalization>
     <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>

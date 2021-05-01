@@ -14,8 +14,7 @@
     "preferNameDirectory": true,
     "primaryOutputs": [
       { "path": "MauiApp1\\MauiApp1.csproj" },
-      { "path": "MauiApp1.WinUI3\\MauiApp1.WinUI3.csproj" },
-      { "path": "MauiApp1.WinUI3 (Package)\\MauiApp1.WinUI3 (Package).csproj" },
+      { "path": "MauiApp1 (Package)\\MauiApp1 (Package).wapproj" },
       { "path": "MauiApp1.sln" }
     ],
     "symbols": {
