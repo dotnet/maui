@@ -28,8 +28,6 @@ namespace MauiApp1.WinUI
             Microsoft.Maui.Essentials.Platform.OnLaunched(args);
         }
     }
-
-    // TODO: this is not nice.
     public class MiddleApp : MauiWinUIApplication<Startup>
     {
     }

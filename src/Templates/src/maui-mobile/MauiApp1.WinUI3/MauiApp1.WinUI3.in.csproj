@@ -17,9 +17,9 @@
 		<PackageReference Include="Microsoft.ProjectReunion" Version="[0.5.6]">
 			<IncludeAssets>build</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.Maui" Version="6.0.100-preview.4.469" />
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="6.0.100-preview.4.469" />
-		<PackageReference Include="Microsoft.Maui.Resizetizer" Version="6.0.100-preview.4.469" />
+		<PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="MAUI_VERSION" />
+		<PackageReference Include="Microsoft.Maui.Resizetizer" Version="MAUI_VERSION" />
 	</ItemGroup>
 
 	<ItemGroup>
