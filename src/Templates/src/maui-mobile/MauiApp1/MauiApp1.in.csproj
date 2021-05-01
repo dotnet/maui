@@ -1,54 +1,55 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <!-- iOS, Android, MacCatalyst -->
-    <TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
-    <TargetFramework Condition="'$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFramework>
+	<PropertyGroup>
+		<!-- iOS, Android, MacCatalyst -->
+		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
+		<TargetFramework Condition="'$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFramework>
 
-    <OutputType>Exe</OutputType>
-    <SingleProject>true</SingleProject>
-    <RootNamespace>MauiApp1</RootNamespace>
+		<OutputType>Exe</OutputType>
+		<SingleProject>true</SingleProject>
+		<RootNamespace>MauiApp1</RootNamespace>
 
-    <!-- Display name -->
-    <ApplicationTitle>MauiApp1</ApplicationTitle>
+		<!-- Display name -->
+		<ApplicationTitle>MauiApp1</ApplicationTitle>
 
-    <!-- App Identifier -->
-    <ApplicationId>com.companyname.MauiApp1</ApplicationId>
+		<!-- App Identifier -->
+		<ApplicationId>com.companyname.MauiApp1</ApplicationId>
 
-    <!-- Versions -->
-    <ApplicationVersion>1.0</ApplicationVersion>
-    <AndroidVersionCode>1</AndroidVersionCode>
-  </PropertyGroup>
+		<!-- Versions -->
+		<ApplicationVersion>1.0</ApplicationVersion>
+		<AndroidVersionCode>1</AndroidVersionCode>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <!-- App Icon -->
-    <MauiImage
-      Include="Resources\appicon.svg"
-      ForegroundFile="Resources\appiconfg.svg"
-      IsAppIcon="true" />
+	<ItemGroup>
+		<!-- App Icon -->
+		<MauiImage
+			Include="Resources\appicon.svg"
+			ForegroundFile="Resources\appiconfg.svg"
+			IsAppIcon="true" />
 
-    <!-- Splash Screen -->
-    <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />
+		<!-- Splash Screen -->
+		<MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />
 
-    <!-- Images -->
-    <MauiImage Include="Resources\Images\*" />
+		<!-- Images -->
+		<MauiImage Include="Resources\Images\*" />
 
-    <!-- Custom Fonts -->
-    <MauiFont Include="Resources\Fonts\*" />
-  </ItemGroup>
+		<!-- Custom Fonts -->
+		<MauiFont Include="Resources\Fonts\*" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="MAUI_VERSION" />
+	</ItemGroup>
 
-  <!-- Remove Windows Project Reunion XAML -->
-  <ItemGroup>
-    <EmbeddedResource Remove="Windows\**\*.xaml" />
-  </ItemGroup>
+	<!-- Remove Windows Project Reunion XAML -->
+	<ItemGroup>
+		<EmbeddedResource Remove="Windows\**\*.xaml" />
+	</ItemGroup>
 
-  <!-- Temporary Project Reunion Settings -->
-  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <OutputType>WinExe</OutputType>
+	<!-- Temporary Project Reunion Settings -->
+	<PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+		<OutputType>WinExe</OutputType>
 		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
 		<ApplicationManifest>Windows\app.manifest</ApplicationManifest>
 		<Platforms>x86;x64;arm64</Platforms>
@@ -56,35 +57,35 @@
 		<EnableDefaultPageItems>False</EnableDefaultPageItems>
 		<EnableDefaultApplicationDefinition>False</EnableDefaultApplicationDefinition>
 		<StartupObject>MauiApp1.WinUI.Program</StartupObject>
-  </PropertyGroup>
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-  	<Manifest Include="$(ApplicationManifest)" />
-		<ApplicationDefinition Include="Windows\App.xaml">
+	</PropertyGroup>
+	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+		<Manifest Include="$(ApplicationManifest)" />
+		<ApplicationDefinition Include="Windows\WindowsApp.xaml">
 			<Generator>MSBuild:Compile</Generator>
 			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		</ApplicationDefinition>
-		<Page Include="Windows\*.xaml" Exclude="Windows\App.xaml">
+		<Page Include="Windows\*.xaml" Exclude="Windows\WindowsApp.xaml">
 			<Generator>MSBuild:Compile</Generator>
 			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		</Page>
 		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.16" />
 		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.19041.16" />
-    <PackageReference Include="Microsoft.ProjectReunion" Version="[0.5.6]">
+		<PackageReference Include="Microsoft.ProjectReunion" Version="[0.5.6]">
 			<IncludeAssets>build</IncludeAssets>
 		</PackageReference>
-    <EmbeddedResource Remove="iOS\**\*.xaml;MacCatalyst\**\*.xaml;Android\**\*.xaml" />
-    <Compile Remove="iOS\**\*.cs;MacCatalyst\**\*.cs;Android\**\*.cs" />
+		<EmbeddedResource Remove="iOS\**\*.xaml;MacCatalyst\**\*.xaml;Android\**\*.xaml" />
+		<Compile Remove="iOS\**\*.cs;MacCatalyst\**\*.cs;Android\**\*.cs" />
 	</ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework.Contains('-windows'))' != 'true' ">
-    <Compile Remove="Windows\**\*.cs" />
-  </ItemGroup>
+	<ItemGroup Condition=" $(TargetFramework.Contains('-windows')) != 'true' ">
+		<Compile Remove="Windows\**\*.cs" />
+	</ItemGroup>
 
-  <!-- Temporary iOS / MacCatalyst Properties -->
-  <PropertyGroup>
-    <InvariantGlobalization Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">true</InvariantGlobalization>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
-  </PropertyGroup>
+	<!-- Temporary iOS / MacCatalyst Properties -->
+	<PropertyGroup>
+		<InvariantGlobalization Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">true</InvariantGlobalization>
+		<RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>
+		<RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
+	</PropertyGroup>
 
 </Project>

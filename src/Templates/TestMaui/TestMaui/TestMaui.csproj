@@ -1,0 +1,103 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- iOS, Android, MacCatalyst -->
+    <TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.19041</TargetFrameworks>
+    <!--<TargetFramework Condition="'$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFramework>-->
+    <OutputType>Exe</OutputType>
+    <SingleProject>true</SingleProject>
+    <RootNamespace>TestMaui</RootNamespace>
+    <!-- Display name -->
+    <ApplicationTitle>TestMaui</ApplicationTitle>
+    <!-- App Identifier -->
+    <ApplicationId>com.companyname.TestMaui</ApplicationId>
+    <!-- Versions -->
+    <ApplicationVersion>1.0</ApplicationVersion>
+    <AndroidVersionCode>1</AndroidVersionCode>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- App Icon -->
+    <MauiImage Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" IsAppIcon="true" />
+    <!-- Splash Screen -->
+    <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />
+    <!-- Images -->
+    <MauiImage Include="Resources\Images\*" />
+    <!-- Custom Fonts -->
+    <MauiFont Include="Resources\Fonts\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui" Version="6.0.100-preview.4.469" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="6.0.100-preview.4.469" />
+    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="6.0.100-preview.4.469" />
+  </ItemGroup>
+  <!-- Remove Windows Project Reunion XAML -->
+  <ItemGroup>
+    <EmbeddedResource Remove="Windows\*.xaml" />
+  </ItemGroup>
+  <!-- Temporary Project Reunion Settings -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <OutputType>WinExe</OutputType>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <ApplicationManifest>Windows\app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;arm64</Platforms>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <EnableDefaultPageItems>False</EnableDefaultPageItems>
+    <EnableDefaultApplicationDefinition>False</EnableDefaultApplicationDefinition>
+    <!-- StartupObject>TestMaui.Program</StartupObject -->
+    <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <Manifest Include="$(ApplicationManifest)" />
+    <ApplicationDefinition Include="Windows\WindowsApp.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </ApplicationDefinition>
+    <!--<Page Include="Windows\*.xaml" Exclude="Windows\WindowsApp.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>-->
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.16" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.19041.16" />
+    <PackageReference Include="Microsoft.ProjectReunion" Version="[0.5.6]">
+      <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
+    <!--<EmbeddedResource Remove="iOS\**\*.xaml;MacCatalyst\**\*.xaml;Android\**\*.xaml" />-->
+    <Compile Remove="iOS\**\*.cs;iOS\*.cs;MacCatalyst\**\*.cs;MacCatalyst\*.cs;Android\**\*.cs;Android\*.cs" />
+    <Compile Include="*.xaml" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) != 'true' ">
+    <Compile Remove="Windows\**\*.cs" />
+  </ItemGroup>
+  <!-- Temporary iOS / MacCatalyst Properties -->
+  <PropertyGroup>
+    <InvariantGlobalization Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">true</InvariantGlobalization>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+
+  <!--NOTE: since an overridden GetTargetPath might not include a DependsOn
+for this target, it's safer to establish the dependency here with a
+BeforeTargets. -->
+  <Target
+  Condition="'$(TargetFramework)' == ''"
+  Name="GetTargetPathWithTargetPlatformMoniker"
+  Returns="@(TargetPathWithTargetPlatformMoniker)">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker Include="C:\code\maui\src\Templates\TestMaui\TestMaui\bin\Debug\net6.0-windows10.0.19041\TestMaui.dll">
+        <TargetPlatformMoniker>Windows,Version=10.0.19041.0</TargetPlatformMoniker>
+        <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
+        <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
+        <TargetFrameworkVersion>6.0</TargetFrameworkVersion>
+        <ReferenceAssembly Condition="'$(ProduceReferenceAssembly)' == 'true'">C:\code\maui\src\Templates\TestMaui\TestMaui\bin\Debug\net6.0-windows10.0.19041\ref\TestMaui.dll</ReferenceAssembly>
+        <CopyUpToDateMarker>C:\code\maui\src\Templates\TestMaui\TestMaui\obj\Debug\net6.0-windows10.0.19041\TestMaui.csproj.CopyComplete</CopyUpToDateMarker>
+      </TargetPathWithTargetPlatformMoniker>
+    </ItemGroup>
+  </Target>
+
+  <Target
+   Condition="'$(TargetFramework)' == ''"
+  Name="GetTargetPath"
+  Returns="C:\code\maui\src\Templates\TestMaui\TestMaui\bin\Debug\net6.0-windows10.0.19041\TestMaui.dll">
+  </Target>
+ 
+</Project>
