@@ -14,12 +14,21 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <!-- This project has no .NET assemblies, so disable the warning for that -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
-    <_TemplateFile>maui-mobile/MauiApp1.in.csproj</_TemplateFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="**/*" Exclude="**/bin/**;**/obj/**;$(MSBuildProjectFile)*;$(_TemplateFile)" />
+    <_TemplateFile Include="maui-mobile/MauiApp1/MauiApp1.in.csproj" />
+    <_TemplateFile Include="maui-mobile/MauiApp1.WinUI3/MauiApp1.WinUI3.in.csproj" />
+    <_TemplateFile Include="maui-mobile/MauiApp1.WinUI3 (Package)/MauiApp1.WinUI3 (Package).in.wapproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="**/*" Exclude="**/bin/**;**/obj/**;$(MSBuildProjectFile)*;@(_TemplateFile)" />
     <Compile Remove="**/*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_TemplateFileDest Include="$(IntermediateOutputPath)\$([System.IO.Path]::GetFileName(%(_TemplateFile.Identity)).Replace('.in',''))" />
   </ItemGroup>
 
   <!-- Eventually replaced by eng/Versions.targets -->
@@ -29,19 +38,21 @@
       BeforeTargets="Build"
       DependsOnTargets="SetVersions"
       Inputs="$(MSBuildProjectFile);$(_TemplateFile)"
-      Outputs="$(IntermediateOutputPath)MauiApp1.csproj">
+      Outputs="@(_TemplateFileDest)">
     <Copy
-        SourceFiles="$(_TemplateFile)"
-        DestinationFiles="$(IntermediateOutputPath)MauiApp1.csproj"
+        SourceFiles="@(_TemplateFile)"
+        DestinationFiles="$(IntermediateOutputPath)\$([System.IO.Path]::GetFileName(%(_TemplateFile.Identity)).Replace('.in',''))"
     />
-    <XmlPoke
-        XmlInputPath="$(IntermediateOutputPath)MauiApp1.csproj"
+
+    <Message Text="$(IntermediateOutputPath)\$([System.IO.Path]::GetFileName(%(_TemplateFile.Identity)).Replace('.in',''))" />
+    <!-- <XmlPoke
+        XmlInputPath="@(_TemplateFileDest)"
         Value="$(PackageVersion)"
         Query="/Project/ItemGroup/PackageReference/@Version"
-    />
+    /> -->
     <ItemGroup>
-      <Content Include="$(IntermediateOutputPath)MauiApp1.csproj" PackagePath="content/maui-mobile" />
-      <FileWrites Include="$(IntermediateOutputPath)MauiApp1.csproj" />
+      <Content Include="@(_TemplateFileDest)" PackagePath="content/maui-mobile" />
+      <FileWrites Include="@(_TemplateFileDest)" />
     </ItemGroup>
   </Target>
 
