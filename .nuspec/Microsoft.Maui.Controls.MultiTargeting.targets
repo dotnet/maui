@@ -18,10 +18,10 @@
     <None Include="**\MaciOS\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) != true AND $(TargetFramework.StartsWith('net6.0-android')) != true ">
-    <Compile Remove="**\*.Android.cs" />
-    <None Include="**\*.Android.cs" />
-    <Compile Remove="**\Android\*.cs" />
-    <None Include="**\Android\*.cs" />
+    <Compile Remove="**\**\*.Android.cs" />
+    <None Include="**\**\*.Android.cs" />
+    <Compile Remove="**\Android\**\*.cs" />
+    <None Include="**\Android\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard')) != true ">
     <Compile Remove="**\*.Standard.cs" />

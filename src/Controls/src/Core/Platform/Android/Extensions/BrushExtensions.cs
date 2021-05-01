@@ -8,7 +8,7 @@ using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
 using Paint = Android.Graphics.Paint;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Controls.Platform
 {
 	public static class BrushExtensions
 	{
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (brush is SolidColorBrush solidColorBrush)
 			{
 				var backgroundColor = solidColorBrush.Color;
-				paint.Color = backgroundColor.ToAndroid();
+				paint.Color = backgroundColor.ToNative();
 			}
 
 			if (brush is LinearGradientBrush linearGradientBrush)
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (brush is SolidColorBrush solidColorBrush)
 			{
 				Color bgColor = solidColorBrush.Color;
-				gradientDrawable.SetColor(bgColor?.ToAndroid() ?? Colors.Transparent.ToAndroid());
+				gradientDrawable.SetColor(bgColor?.ToNative() ?? Colors.Transparent.ToNative());
 			}
 
 			if (brush is LinearGradientBrush linearGradientBrush)
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public static bool UseGradients(this GradientDrawable gradientDrawable)
 		{
-			if (!Forms.IsNougatOrNewer)
+			if (!NativeVersion.IsAtLeast(24))
 				return false;
 
 			var colors = gradientDrawable.GetColors();
@@ -197,11 +197,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Shape = new RectShape()
 			};
 
-			gradientStrokeDrawable.SetStroke(0, Colors.Transparent.ToAndroid());
+			gradientStrokeDrawable.SetStroke(0, Colors.Transparent.ToNative());
 
 			if (brush is SolidColorBrush solidColorBrush)
 			{
-				var color = solidColorBrush.Color?.ToAndroid() ?? Colors.Transparent.ToAndroid();
+				var color = solidColorBrush.Color?.ToNative() ?? Colors.Transparent.ToNative();
 				gradientStrokeDrawable.SetColor(color);
 			}
 			else
@@ -256,7 +256,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			int count = 0;
 			foreach (var orderStop in orderStops)
 			{
-				colors[count] = orderStop.Color.ToAndroid().ToArgb();
+				colors[count] = orderStop.Color.ToNative().ToArgb();
 				offsets[count] = orderStop.Offset;
 				count++;
 			}
