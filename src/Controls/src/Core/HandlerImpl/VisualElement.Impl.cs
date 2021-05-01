@@ -48,9 +48,16 @@ namespace Microsoft.Maui.Controls
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
-			// Setting Bounds here is equivalent to setting the Frame
-			Bounds = this.ComputeFrame(bounds);
-
+			// We check the previous bounds here to avoid getting into a loop caused by the OnSizeAllocated override
+			// in View.cs; the arrange it forces ends up back here and if we have a margin, ComputeFrame will 
+			// keep applying it in a loop until the element disappears. Hopefully we can remove the OnSizeAllocated 
+			// hack at some point and avoid this extra check.
+			if(Bounds != bounds)
+			{
+				// Setting Bounds here is equivalent to setting the Frame
+				Bounds = this.ComputeFrame(bounds);
+			}
+			
 			return Frame.Size;
 		}
 
@@ -66,9 +73,7 @@ namespace Microsoft.Maui.Controls
 
 		// InvalidateMeasureOverride provides a way to allow subclasses (e.g., Layout) to override InvalidateMeasure even though
 		// the interface has to be explicitly implemented to avoid conflict with the VisualElement.InvalidateMeasure method
-		protected virtual void InvalidateMeasureOverride()
-		{
-		}
+		protected virtual void InvalidateMeasureOverride() => Handler?.UpdateValue(nameof(IFrameworkElement.InvalidateMeasure));
 
 		void IFrameworkElement.InvalidateArrange()
 		{

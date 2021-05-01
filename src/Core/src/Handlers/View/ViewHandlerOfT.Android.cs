@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Handlers
 			return Context;
 		}
 
-		public override void SetFrame(Rectangle frame)
+		public override void NativeArrange(Rectangle frame)
 		{
 			var nativeView = NativeView;
 

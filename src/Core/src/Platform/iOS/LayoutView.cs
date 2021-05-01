@@ -1,6 +1,5 @@
 using System;
 using CoreGraphics;
-using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -75,5 +74,4 @@ namespace Microsoft.Maui
 			};
 		}
 	}
-
 }

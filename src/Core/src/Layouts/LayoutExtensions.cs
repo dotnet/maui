@@ -21,10 +21,6 @@ namespace Microsoft.Maui.Layouts
 			widthConstraint -= margin.HorizontalThickness;
 			heightConstraint -= margin.VerticalThickness;
 
-			// Determine whether the external constraints or the requested size values will determine the measurements
-			widthConstraint = LayoutManager.ResolveConstraints(widthConstraint, frameworkElement.Width);
-			heightConstraint = LayoutManager.ResolveConstraints(heightConstraint, frameworkElement.Height);
-
 			// Ask the handler to do the actual measuring								
 			var measureWithMargins = frameworkElement.Handler.GetDesiredSize(widthConstraint, heightConstraint);
 
