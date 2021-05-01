@@ -40,6 +40,7 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <InvariantGlobalization Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">true</InvariantGlobalization>
     <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
   </PropertyGroup>
