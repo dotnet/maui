@@ -686,9 +686,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static void MapPadding(NavigationPageHandler handler, NavigationPage view) =>
 			handler.UpdatePadding();
 
-		public static void MapTitleColor(NavigationPageHandler handler, NavigationPage view) => handler.UpdateTitleColor();
+		public static void MapBarTextColor(NavigationPageHandler handler, NavigationPage view) => handler.UpdateTitleColor();
 
-		public static void MapNavigationBarBackground(NavigationPageHandler handler, NavigationPage view) => handler.UpdateNavigationBarBackground();
+		public static void MapBarBackground(NavigationPageHandler handler, NavigationPage view) => handler.UpdateNavigationBarBackground();
 
 		// TODO MAUI: Task Based Mappers?
 		public static void MapTitleIcon(NavigationPageHandler handler, NavigationPage view) => handler.UpdateTitleIcon();

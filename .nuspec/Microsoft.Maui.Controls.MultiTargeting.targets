@@ -1,9 +1,9 @@
 <Project>
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true ">
-    <Compile Remove="**\*.iOS.cs" />
-    <None Include="**\*.iOS.cs" />
-    <Compile Remove="**\iOS\*.cs" />
-    <None Include="**\iOS\*.cs" />
+    <Compile Remove="**\**\*.iOS.cs" />
+    <None Include="**\**\*.iOS.cs" />
+    <Compile Remove="**\iOS\**\*.cs" />
+    <None Include="**\iOS\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac')) != true ">
     <Compile Remove="**\*.Mac.cs" />

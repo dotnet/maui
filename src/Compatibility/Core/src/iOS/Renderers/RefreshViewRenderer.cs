@@ -3,6 +3,7 @@ using System.ComponentModel;
 using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
