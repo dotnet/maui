@@ -69,6 +69,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			//VirtualView.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
 		}
 
+		void OnPushRequested(object? sender, NavigationRequestedEventArgs e)
+		{
+			_controlsNavigationController?
+				.OnPushRequested(e, this.MauiContext);
+		}
+
 		void OnPopRequested(object? sender, NavigationRequestedEventArgs e)
 		{
 			_controlsNavigationController?
@@ -76,18 +82,12 @@ namespace Microsoft.Maui.Controls.Handlers
 				.FireAndForget((exc) => Log.Warning(nameof(NavigationPage), $"{exc}"));
 		}
 
-		void OnPushRequested(object? sender, NavigationRequestedEventArgs e)
-		{
-			_controlsNavigationController?
-				.OnPushRequested(e, this.MauiContext);
-		}
-
 		internal void SendPopping(Task popTask)
 		{
 			if (VirtualView == null)
 				return;
 
-			(VirtualView as INavigationPageController)?.PopAsyncInner(false, true)
+			VirtualView.PopAsyncInner(false, true, true)
 				.FireAndForget((exc) => Log.Warning(nameof(NavigationPage), $"{exc}"));
 		}
 	}

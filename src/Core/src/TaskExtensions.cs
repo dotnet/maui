@@ -10,7 +10,8 @@ namespace Microsoft.Maui
 	{
 		public static async void FireAndForget(
 			this Task task,
-			Action<Exception>? errorCallback
+			Action<Exception>? errorCallback = null,
+			Action? finishedCallBack = null
 			)
 		{
 			try
@@ -20,6 +21,10 @@ namespace Microsoft.Maui
 			catch (Exception exc)
 			{
 				errorCallback?.Invoke(exc);
+			}
+			finally
+			{
+				finishedCallBack?.Invoke();
 			}
 		}
 	}
