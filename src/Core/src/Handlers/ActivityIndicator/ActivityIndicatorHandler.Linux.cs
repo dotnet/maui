@@ -2,11 +2,11 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ActivityIndicatorHandler : ViewHandler<ICheckBox, Spinner>
+	public partial class ActivityIndicatorHandler : ViewHandler<IActivityIndicator, Spinner>
 	{
 		protected override Spinner CreateNativeView()
 		{
-			return new Spinner();
+			return new();
 		}
 
 		public static void MapIsRunning(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
@@ -14,7 +14,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateIsRunning(activityIndicator);
 		}
 
-		[MissingMapper]
-		public static void MapColor(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator) { }
+		
+		public static void MapColor(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		{
+			handler.NativeView?.SetForegroundColor(activityIndicator.Color);
+			
+		}
 	}
 }

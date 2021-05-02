@@ -1,4 +1,4 @@
-﻿using Gtk;
+using Gtk;
 using System;
 
 namespace Microsoft.Maui
@@ -33,5 +33,12 @@ namespace Microsoft.Maui
 
 			return result;
 		}
+
+		public static Gtk.Requisition ToGtkRequisition(this Graphics.Size size) =>
+			new()
+			{
+				Height = (int)size.Height,
+				Width = (int)size.Width
+			};
 	}
 }
