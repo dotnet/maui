@@ -43,6 +43,12 @@ namespace Microsoft.Maui.Handlers
 			private set => base.NativeView = value;
 		}
 
+		protected TNativeView NativeViewValidation([CallerMemberName] string callerName = "")
+		{
+			_ = NativeView ?? throw new InvalidOperationException($"NativeView cannot be null here: {callerName}");
+			return NativeView;
+		}
+
 		public override void SetVirtualView(IView view)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));

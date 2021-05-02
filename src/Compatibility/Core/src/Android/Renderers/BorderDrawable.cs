@@ -2,6 +2,7 @@
 using System.Linq;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Microsoft.Maui.Controls.Platform;
 using AColor = Android.Graphics.Color;
 using APath = Android.Graphics.Path;
 using Color = Microsoft.Maui.Graphics.Color;
