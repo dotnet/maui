@@ -59,13 +59,19 @@ namespace Microsoft.Maui
 		public static void UpdateWidth(this AView nativeView, IView view) 
 		{
 			// GetDesiredSize will take the specified Width into account during the layout
-			nativeView.RequestLayout();
+			if (!nativeView.IsInLayout)
+			{
+				nativeView.RequestLayout();
+			}
 		}
 
 		public static void UpdateHeight(this AView nativeView, IView view) 
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
-			nativeView.RequestLayout();
+			if (!nativeView.IsInLayout)
+			{
+				nativeView.RequestLayout();
+			}
 		}
 	}
 }
