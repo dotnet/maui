@@ -22,12 +22,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public CarouselViewController(CarouselView itemsView, ItemsViewLayout layout) : base(itemsView, layout)
 		{
+#if MACCATALYST
+			_isDragging = false;
+#endif
 			Carousel = itemsView;
 			CollectionView.AllowsSelection = false;
 			CollectionView.AllowsMultipleSelection = false;
 			Carousel.PropertyChanged += CarouselViewPropertyChanged;
 			Carousel.Scrolled += CarouselViewScrolled;
 			_oldViews = new List<View>();
+
+
 		}
 
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
@@ -101,6 +106,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Carousel.ScrollTo(Carousel.Position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: false);
 		}
 
+#if !MACCATALYST
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
 			_isDragging = true;
@@ -112,6 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Carousel.SetIsDragging(false);
 			_isDragging = false;
 		}
+#endif
 
 		public override void UpdateItemsSource()
 		{
