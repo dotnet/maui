@@ -5,6 +5,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui
 {
 	[DebuggerDisplay("Left={Left}, Top={Top}, Right={Right}, Bottom={Bottom}, HorizontalThickness={HorizontalThickness}, VerticalThickness={VerticalThickness}")]
+	[TypeConverter(typeof(ThicknessTypeConverter))]
 	public struct Thickness
 	{
 		public double Left { get; set; }
