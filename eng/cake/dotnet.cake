@@ -19,8 +19,8 @@ Task("dotnet")
 
 Task("dotnet-pack")
     .Description("Build and create .NET 6 NuGet packages")
-    .IsDependentOn("dotnet")
-    .IsDependentOn("dotnet-buildtasks")
+    //.IsDependentOn("dotnet")
+   // .IsDependentOn("dotnet-buildtasks")
     .Does(()=>
     {
 
