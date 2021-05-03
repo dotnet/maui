@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Controls.Platform
 				bool navBarVisible = true;
 
 				if (element is BindableObject bo)
-					navBarVisible = Shell.GetNavBarIsVisible(bo);
+					navBarVisible = NavigationPage.GetHasNavigationBar(bo);
 
 				navigationController.SetNavigationBarHidden(!navBarVisible, true);
 
