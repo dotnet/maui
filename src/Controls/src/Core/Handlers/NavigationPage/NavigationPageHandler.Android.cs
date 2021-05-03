@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using AView = Android.Views.View;
 using System;
+using Google.Android.Material.AppBar;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -22,6 +23,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		private NavHostFragment? _navHost;
 		private FragmentNavigator? _fragmentNavigator;
 		private Toolbar? _toolbar;
+		private AppBarLayout? _appBar;
 
 		NavHostFragment NavHost
 		{
@@ -38,10 +40,16 @@ namespace Microsoft.Maui.Controls.Handlers
 		int NativeNavigationStackCount => NavHost?.NavController.BackStack.Size() - 1 ?? 0;
 		int NavigationStackCount => VirtualView?.Navigation.NavigationStack.Count ?? 0;
 
-		internal Toolbar Toolbar 
-		{ 
+		internal Toolbar Toolbar
+		{
 			get => _toolbar ?? throw new InvalidOperationException($"ToolBar cannot be null");
 			set => _toolbar = value;
+		}
+
+		internal AppBarLayout AppBar
+		{
+			get => _appBar ?? throw new InvalidOperationException($"AppBar cannot be null");
+			set => _appBar = value;
 		}
 
 		protected override AView CreateNativeView()
@@ -53,6 +61,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			_ = view ?? throw new InvalidOperationException($"Resource.Layout.navigationlayout view not found");
 
 			_toolbar = view.FindViewById<Toolbar>(Resource.Id.maui_toolbar);
+			_appBar = view.FindViewById<AppBarLayout>(Resource.Id.appbar);
 			return view;
 		}
 

@@ -31,6 +31,9 @@ namespace Maui.Controls.Sample.Pages
 			BindingContext = _viewModel = viewModel;
 
 			SetupMauiLayout();
+
+			NavigationPage.SetHasNavigationBar(this, false);
+	
 			//SetupCompatibilityLayout();
 		}
 
