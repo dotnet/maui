@@ -908,6 +908,16 @@ Task("VS-NET6")
         StartVisualStudioForDotNet6();
     });
 
+    
+Task("VS-ANDROID")
+    .Does(() =>
+    {
+        DotNetCoreBuild("./src/DotNet/Dotnet.csproj");
+        var ext = IsRunningOnWindows() ? ".exe" : "";
+        DotNetCoreBuild("./Microsoft.Maui.BuildTasks-net6.sln", new DotNetCoreBuildSettings { ToolPath = $"./bin/dotnet/dotnet{ext}" });
+        StartVisualStudioForDotNet6("./Microsoft.Maui.Droid.sln");
+    });
+
 
 Task("VS-WINUI")
     .IsDependentOn("Clean")

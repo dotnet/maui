@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -8,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 		UIView? INativeViewHandler.NativeView => (UIView?)base.NativeView;
 		UIViewController? INativeViewHandler.ViewController => null;
 
-		public override void SetFrame(Rectangle rect)
+		public override void NativeArrange(Rectangle rect)
 		{
 			if (NativeView != null)
 			{
@@ -19,10 +20,15 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (NativeView == null)
+			if (NativeView == null || VirtualView == null)
 			{
 				return new Size(widthConstraint, heightConstraint);
 			}
+
+			var explicitWidth = VirtualView.Width;
+			var explicitHeight = VirtualView.Height;
+			var hasExplicitWidth = explicitWidth >= 0;
+			var hasExplicitHeight = explicitHeight >= 0;
 
 			var sizeThatFits = NativeView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
 
@@ -33,11 +39,11 @@ namespace Microsoft.Maui.Handlers
 			if (double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
 			{
 				NativeView.SizeToFit();
-
 				size = new Size(NativeView.Frame.Width, NativeView.Frame.Height);
 			}
 
-			return size;
+			return new Size( hasExplicitWidth ? explicitWidth : size.Width, 
+				hasExplicitHeight ? explicitHeight : size.Height);
 		}
 
 		protected override void SetupContainer()

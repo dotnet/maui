@@ -1080,6 +1080,13 @@ namespace Microsoft.Maui.Controls
 			}
 
 			element.SelfConstraint = constraint;
+
+			if (element is IFrameworkElement fe)
+			{
+				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Width));
+				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Height));
+			}
+
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.SizeRequestChanged);
 		}
 

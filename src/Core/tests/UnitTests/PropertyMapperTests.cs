@@ -133,8 +133,6 @@ namespace Microsoft.Maui.UnitTests
 			Assert.True(wasMapper2Called);
 		}
 
-
-
 		[Fact]
 		public void GenericMappersWorks()
 		{

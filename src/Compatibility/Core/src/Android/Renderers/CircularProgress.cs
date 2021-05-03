@@ -6,6 +6,7 @@ using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Util;
 using Android.Views;
+using Microsoft.Maui.Controls.Platform;
 using AColor = Android.Graphics.Color;
 using AProgressBar = Android.Widget.ProgressBar;
 using Color = Microsoft.Maui.Graphics.Color;
