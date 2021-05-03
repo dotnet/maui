@@ -6,21 +6,21 @@ using Windows.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellFooterRenderer : Microsoft.UI.Xaml.Controls.ContentControl
+	public class ShellFooterView : Microsoft.UI.Xaml.Controls.ContentControl
 	{
 		Shell _shell;
 
-		public ShellFooterRenderer(Shell element)
+		public ShellFooterView(Shell element)
 		{
-			Shell.VerifyShellUWPFlagEnabled(nameof(ShellFooterRenderer));
+			Shell.VerifyShellUWPFlagEnabled(nameof(ShellFooterView));
 
 			SetElement(element);
-			SizeChanged += OnShellFooterRendererSizeChanged;
+			SizeChanged += OnShellFooterViewSizeChanged;
 			HorizontalContentAlignment = HorizontalAlignment.Stretch;
 			VerticalContentAlignment = VerticalAlignment.Stretch;
 		}
 
-		void OnShellFooterRendererSizeChanged(object sender, SizeChangedEventArgs e)
+		void OnShellFooterViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			if (Element is Layout layout)
 				layout.ForceLayout();

@@ -5,21 +5,21 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellHeaderRenderer : Microsoft.UI.Xaml.Controls.ContentControl
+	public class ShellHeaderView : Microsoft.UI.Xaml.Controls.ContentControl
 	{
 		Shell _shell;
 
-		public ShellHeaderRenderer(Shell element)
+		public ShellHeaderView(Shell element)
 		{
-			Shell.VerifyShellUWPFlagEnabled(nameof(ShellHeaderRenderer));
+			Shell.VerifyShellUWPFlagEnabled(nameof(ShellHeaderView));
 
 			SetElement(element);
-			SizeChanged += OnShellHeaderRendererSizeChanged;
+			SizeChanged += OnShellHeaderViewSizeChanged;
 			HorizontalContentAlignment = HorizontalAlignment.Stretch;
 			VerticalContentAlignment = VerticalAlignment.Stretch;
 		}
 
-		void OnShellHeaderRendererSizeChanged(object sender, SizeChangedEventArgs e)
+		void OnShellHeaderViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			if (Element is Layout layout)
 				layout.ForceLayout();

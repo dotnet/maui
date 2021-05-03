@@ -12,10 +12,10 @@ using WRect = Windows.Foundation.Rect;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellFlyoutItemRenderer : ContentControl
+	public class ShellFlyoutItemView : ContentControl
 	{
 		public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(
-			nameof(IsSelected), typeof(bool), typeof(ShellFlyoutItemRenderer),
+			nameof(IsSelected), typeof(bool), typeof(ShellFlyoutItemView),
 			new PropertyMetadata(default(bool), IsSelectedChanged));
 
 		View _content;
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 		double _previousWidth;
 		FrameworkElement FrameworkElement { get; set; }
 		Shell _shell;
-		public ShellFlyoutItemRenderer()
+		public ShellFlyoutItemView()
 		{
 			this.DataContextChanged += OnDataContextChanged;
 			this.LayoutUpdated += OnLayoutUpdated;
@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static void IsSelectedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			((ShellFlyoutItemRenderer)d).UpdateVisualState();
+			((ShellFlyoutItemView)d).UpdateVisualState();
 		}
 	}
 }

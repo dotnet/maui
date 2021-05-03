@@ -16,10 +16,10 @@ using Microsoft.Maui.Controls.Platform;
 namespace Microsoft.Maui.Controls.Platform
 {
 	[Microsoft.UI.Xaml.Data.Bindable]
-	public class ShellRenderer : Microsoft.UI.Xaml.Controls.NavigationView, IAppearanceObserver, IFlyoutBehaviorObserver
+	public class ShellView : Microsoft.UI.Xaml.Controls.NavigationView, IAppearanceObserver, IFlyoutBehaviorObserver
 	{
 		public static readonly DependencyProperty FlyoutBackgroundColorProperty = DependencyProperty.Register(
-			nameof(FlyoutBackgroundColor), typeof(Brush), typeof(ShellRenderer),
+			nameof(FlyoutBackgroundColor), typeof(Brush), typeof(ShellView),
 			new PropertyMetadata(default(Brush)));
 
 		internal static readonly Windows.UI.Color DefaultBackgroundColor = Windows.UI.Color.FromArgb(255, 3, 169, 244);
@@ -36,18 +36,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 		FlyoutBehavior _flyoutBehavior;
 		List<List<Element>> _flyoutGrouping;
-		ShellItemRenderer ItemRenderer { get; }
+		ShellItemView ItemRenderer { get; }
 		IShellController ShellController => (IShellController)_shell;
 		ObservableCollection<object> FlyoutItems = new ObservableCollection<object>();
 
-		public ShellRenderer()
+		public ShellView()
 		{
-			Microsoft.Maui.Controls.Shell.VerifyShellUWPFlagEnabled(nameof(ShellRenderer));
+			Microsoft.Maui.Controls.Shell.VerifyShellUWPFlagEnabled(nameof(ShellView));
 			_flyoutBackdrop = Brush.Default;
 			IsSettingsVisible = false;
 			PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
 			IsPaneOpen = false;
-			Content = ItemRenderer = CreateShellItemRenderer();
+			Content = ItemRenderer = CreateShellItemView();
 			MenuItemTemplateSelector = CreateShellFlyoutTemplateSelector();
 			ItemInvoked += OnMenuItemInvoked;
 			BackRequested += OnBackRequested;
@@ -123,10 +123,6 @@ namespace Microsoft.Maui.Controls.Platform
 		#region IVisualElementRenderer
 
 		public EventHandler<VisualElementChangedEventArgs> ElementChanged;
-
-		//FrameworkElement IVisualElementRenderer.ContainerElement => this;
-
-		//VisualElement IVisualElementRenderer.Element => Element;
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -315,9 +311,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (shell == null)
 				return;
 
-			var shr = CreateShellHeaderRenderer(shell);
+			var shr = CreateShellHeaderView(shell);
 			PaneCustomContent = shr;
-			PaneFooter = CreateShellFooterRenderer(shell);
+			PaneFooter = CreateShellFooterView(shell);
 
 			UpdateMenuItemSource();
 			SwitchShellItem(shell.CurrentItem, false);
@@ -498,9 +494,9 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		public virtual ShellFlyoutTemplateSelector CreateShellFlyoutTemplateSelector() => new ShellFlyoutTemplateSelector();
-		public virtual ShellHeaderRenderer CreateShellHeaderRenderer(Shell shell) => new ShellHeaderRenderer(shell);
-		public virtual ShellFooterRenderer CreateShellFooterRenderer(Shell shell) => new ShellFooterRenderer(shell);
-		public virtual ShellItemRenderer CreateShellItemRenderer() => new ShellItemRenderer(this);
-		public virtual ShellSectionRenderer CreateShellSectionRenderer() => new ShellSectionRenderer();
+		public virtual ShellHeaderView CreateShellHeaderView(Shell shell) => new ShellHeaderView(shell);
+		public virtual ShellFooterView CreateShellFooterView(Shell shell) => new ShellFooterView(shell);
+		public virtual ShellItemView CreateShellItemView() => new ShellItemView(this);
+		public virtual ShellSectionView CreateShellSectionView() => new ShellSectionView();
 	}
 }

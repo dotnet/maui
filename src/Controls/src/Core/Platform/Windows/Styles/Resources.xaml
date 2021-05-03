@@ -6,8 +6,6 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="MauiControlsPageControlStyle.xaml" />
         <ResourceDictionary Source="ShellPageWrapper.xaml" />
-        <ResourceDictionary Source="ShellParts.xaml" />
-        
         <ResourceDictionary Source="ShellStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>
 	

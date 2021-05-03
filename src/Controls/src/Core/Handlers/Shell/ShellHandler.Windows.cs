@@ -7,11 +7,11 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class ShellHandler : ViewHandler<Shell, ShellRenderer>
+	public partial class ShellHandler : ViewHandler<Shell, ShellView>
 	{
-		protected override ShellRenderer CreateNativeView()
+		protected override ShellView CreateNativeView()
 		{
-			return new ShellRenderer();
+			return new ShellView();
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
