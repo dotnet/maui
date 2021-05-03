@@ -50,6 +50,8 @@ namespace Maui.Controls.Sample.Pages
 			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Colors.CornflowerBlue };
 
 			verticalStack.Add(CreateSampleGrid());
+			verticalStack.Add(CreateResizingButton());
+
 			AddTextResizeDemo(verticalStack);
 
 			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
@@ -227,6 +229,45 @@ namespace Maui.Controls.Sample.Pages
 			{
 				Content = verticalStack
 			};
+		}
+
+		Button CreateResizingButton() 
+		{
+			var initialWidth = 200;
+			var otherWidth = 100;
+
+			var initialHeight = 80;
+			var otherHeight = 140;
+
+			var count = 1;
+
+			var resizeButton = new Button { Text = "Resize", BackgroundColor = Colors.Gray,
+				WidthRequest = initialWidth, HeightRequest = initialHeight };
+
+			resizeButton.Clicked += (sender, args) => {
+
+				count += 1;
+
+				if (count == 1)
+				{
+					resizeButton.WidthRequest = initialWidth;
+					resizeButton.HeightRequest = initialHeight;
+				}
+				else if (count == 2)
+				{
+					resizeButton.WidthRequest = otherWidth;
+					resizeButton.HeightRequest = otherHeight;
+				}
+				else
+				{
+					// Go back to using whatever the layout gives us
+					resizeButton.WidthRequest = -1;
+					resizeButton.HeightRequest = -1;
+					count = 0;
+				}
+			};
+
+			return resizeButton;
 		}
 
 		void SetupCompatibilityLayout()

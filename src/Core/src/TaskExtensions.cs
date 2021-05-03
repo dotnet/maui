@@ -8,15 +8,23 @@ namespace Microsoft.Maui
 {
 	public static class TaskExtensions
 	{
-		public static async void FireAndForget(this Task task, Action<Exception>? errorCallback)
+		public static async void FireAndForget(
+			this Task task,
+			Action<Exception>? errorCallback = null,
+			Action? finishedCallBack = null
+			)
 		{
 			try
 			{
 				await task.ConfigureAwait(false);
 			}
-			catch (Exception ex)
+			catch (Exception exc)
 			{
 				errorCallback?.Invoke(ex);
+			}
+			finally
+			{
+				finishedCallBack?.Invoke();
 			}
 		}
 

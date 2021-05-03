@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
 		{
-			ViewHandler?.SetFrame(Element.Bounds);
+			ViewHandler?.NativeArrange(Element.Bounds);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

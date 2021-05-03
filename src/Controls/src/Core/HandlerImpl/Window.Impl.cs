@@ -27,6 +27,12 @@ namespace Microsoft.Maui.Controls
 			Page = page;
 		}
 
+
+		void SendWindowAppearing()
+		{
+			Page?.SendAppearing();
+		}
+
 		void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (e.OldItems != null)
@@ -43,6 +49,12 @@ namespace Microsoft.Maui.Controls
 				foreach (Element item in e.NewItems)
 				{
 					OnChildAdded(item);
+
+					// TODO once we have better life cycle events on pages 
+					if (item is Page)
+					{
+						SendWindowAppearing();
+					}
 				}
 			}
 		}

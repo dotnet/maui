@@ -427,6 +427,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			app.MainPage = page;
 			app.PageAppearing += (sender, args) => actual = args;
 
+			((IPageController)page).SendDisappearing();
 			((IPageController)page).SendAppearing();
 
 			Assert.AreSame(page, actual);

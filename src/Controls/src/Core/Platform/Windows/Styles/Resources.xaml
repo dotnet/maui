@@ -4,7 +4,6 @@
 	x:Class="Microsoft.Maui.Controls.Platform.Resources">
 
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="MauiControlsCommandBarStyle.xaml" />
         <ResourceDictionary Source="MauiControlsPageControlStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
 	
