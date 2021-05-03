@@ -2,7 +2,6 @@
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
-
 namespace Microsoft.Maui
 {
 	/// <summary>
@@ -16,9 +15,9 @@ namespace Microsoft.Maui
 		bool IsEnabled { get; }
 
 		/// <summary>
-		/// Gets the color which will fill the background of a FrameworkElement.
+		/// Gets the paint which will fill the background of a FrameworkElement.
 		/// </summary>
-		Color BackgroundColor { get; }
+		Paint? Background { get; }
 
 		/// <summary>
 		/// Gets the bounds of the FrameworkElement.

@@ -1,12 +1,6 @@
 using Microsoft.Maui.Graphics;
 using UIKit;
 
-#if __IOS__ || IOS || MACCATALYST
-using NativeColor = UIKit.UIColor;
-#else
-using NativeColor = AppKit.NSColor;
-#endif
-
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
@@ -17,7 +11,10 @@ namespace Microsoft.Maui.Handlers
 		public override void SetFrame(Rectangle rect)
 		{
 			if (NativeView != null)
+			{
 				NativeView.Frame = rect.ToCGRect();
+				NativeView.UpdateBackgroundLayerFrame();
+			}
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -50,7 +47,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void RemoveContainer()
 		{
-
 
 		}
 	}

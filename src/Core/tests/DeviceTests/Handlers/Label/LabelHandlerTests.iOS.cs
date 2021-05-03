@@ -214,14 +214,6 @@ namespace Microsoft.Maui.DeviceTests
 		UITextAlignment GetNativeHorizontalTextAlignment(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).TextAlignment;
 
-		Task ValidateNativeBackgroundColor(ILabel label, Color color)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				return GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
-			});
-		}
-
 		UILineBreakMode GetNativeLineBreakMode(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).LineBreakMode;
 
@@ -238,6 +230,16 @@ namespace Microsoft.Maui.DeviceTests
 				return new nfloat(-1.0f);
 
 			return paragraphStyle.LineHeightMultiple;
+		}
+
+		Task ValidateHasColor(ILabel label, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeLabel = GetNativeLabel(CreateHandler(label));
+				action?.Invoke();
+				nativeLabel.AssertContainsColor(color);
+			});
 		}
 	}
 }

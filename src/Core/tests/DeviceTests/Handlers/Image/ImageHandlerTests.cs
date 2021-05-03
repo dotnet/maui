@@ -21,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var image = new ImageStub
 			{
-				BackgroundColor = Colors.Black,
+				Background = new SolidPaintStub(Colors.Black),
 				Source = new FileImageSourceStub(filename),
 			};
 
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var image = new ImageStub
 			{
-				BackgroundColor = color,
+				Background = new SolidPaintStub(color),
 				Source = new FileImageSourceStub("bad path"),
 			};
 
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var image = new ImageStub
 			{
-				BackgroundColor = Colors.Black,
+				Background = new SolidPaintStub(Colors.Black)
 			};
 
 			var order = new ConcurrentQueue<string>();
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var image = new ImageStub
 			{
-				BackgroundColor = Colors.Black,
+				Background = new SolidPaintStub(Colors.Black)
 			};
 
 			var order = new List<string>();
