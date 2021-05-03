@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			base.UpdateValue(property);
 			if (property == "Frame")
 			{
-				SetFrame(VisualElementRenderer.Element.Bounds);
+				NativeArrange(VisualElementRenderer.Element.Bounds);
 			}
 		}
 	}

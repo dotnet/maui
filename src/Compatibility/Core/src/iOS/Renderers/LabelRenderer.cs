@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
+using Microsoft.Maui.Controls.Platform;
 
 #if __MOBILE__
 using UIKit;

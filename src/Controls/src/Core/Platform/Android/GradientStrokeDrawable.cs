@@ -4,7 +4,7 @@ using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
 using AColor = Android.Graphics.Color;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Controls.Platform
 {
 	public class GradientStrokeDrawable : PaintDrawable
 	{

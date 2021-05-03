@@ -5,6 +5,7 @@ using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AShapes = Android.Graphics.Drawables.Shapes;

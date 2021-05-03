@@ -14,9 +14,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static PropertyMapper<NavigationPage, NavigationPageHandler> NavigationPageMapper
 			   = new PropertyMapper<NavigationPage, NavigationPageHandler>(ViewHandler.ViewMapper)
 			   {
-				   [NavigationPage.BarTextColorProperty.PropertyName] = MapTitleColor,
-				   [NavigationPage.BarBackgroundColorProperty.PropertyName] = MapNavigationBarBackground,
-				   [NavigationPage.BarBackgroundProperty.PropertyName] = MapNavigationBarBackground,
+				   [NavigationPage.BarTextColorProperty.PropertyName] = MapBarTextColor,
+				   [NavigationPage.BarBackgroundColorProperty.PropertyName] = MapBarBackground,
+				   [NavigationPage.BarBackgroundProperty.PropertyName] = MapBarBackground,
 				   [nameof(IPadding.Padding)] = MapPadding,
 				   [nameof(NavigationPage.TitleIconImageSourceProperty.PropertyName)] = MapTitleIcon,
 				   [nameof(NavigationPage.TitleViewProperty.PropertyName)] = MapTitleView,

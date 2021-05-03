@@ -4,6 +4,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.Fragment.App;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat;
 using AView = Android.Views.View;
 
