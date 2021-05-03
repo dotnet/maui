@@ -101,6 +101,7 @@ Task("VS-ANDROID")
     .Description("Provisions .NET 6 and launches an instance of Visual Studio with Android projects.")
     .IsDependentOn("Clean")
     .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
         DotNetCoreRestore("./Microsoft.Maui-net6.sln", new DotNetCoreRestoreSettings
