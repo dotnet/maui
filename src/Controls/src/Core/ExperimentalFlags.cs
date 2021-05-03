@@ -23,28 +23,28 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (Device.Flags == null || !Device.Flags.Contains(flagName))
-			{
-				if (!String.IsNullOrEmpty(memberName))
-				{
-					if (!String.IsNullOrEmpty(constructorHint))
-					{
-						constructorHint = constructorHint + " ";
-					}
+			//if (Device.Flags == null || !Device.Flags.Contains(flagName))
+			//{
+			//	if (!String.IsNullOrEmpty(memberName))
+			//	{
+			//		if (!String.IsNullOrEmpty(constructorHint))
+			//		{
+			//			constructorHint = constructorHint + " ";
+			//		}
 
-					var call = $"('{constructorHint}{memberName}')";
+			//		var call = $"('{constructorHint}{memberName}')";
 
-					var errorMessage = $"The class, property, or method you are attempting to use {call} is part of "
-										+ $"{coreComponentName}; to use it, you must opt-in by calling "
-										+ $"Forms.SetFlags(\"{flagName}\") before calling Forms.Init().";
-					throw new InvalidOperationException(errorMessage);
-				}
+			//		var errorMessage = $"The class, property, or method you are attempting to use {call} is part of "
+			//							+ $"{coreComponentName}; to use it, you must opt-in by calling "
+			//							+ $"Forms.SetFlags(\"{flagName}\") before calling Forms.Init().";
+			//		throw new InvalidOperationException(errorMessage);
+			//	}
 
-				var genericErrorMessage =
-					$"To use {coreComponentName} or associated classes, you must opt-in by calling "
-					+ $"Forms.SetFlags(\"{flagName}\") before calling Forms.Init().";
-				throw new InvalidOperationException(genericErrorMessage);
-			}
+			//	var genericErrorMessage =
+			//		$"To use {coreComponentName} or associated classes, you must opt-in by calling "
+			//		+ $"Forms.SetFlags(\"{flagName}\") before calling Forms.Init().";
+			//	throw new InvalidOperationException(genericErrorMessage);
+			//}
 		}
 	}
 }

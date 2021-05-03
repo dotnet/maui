@@ -7,40 +7,8 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:primitiveContract7Present="using:Microsoft.UI.Xaml.Controls.Primitives?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:xf="using:Microsoft.Maui.Controls.Compatibility.Platform.UWP">
+    xmlns:xf="using:Microsoft.Maui.Controls.Platform">
     <x:Double x:Key="NavigationViewItemOnLeftMinHeight">0</x:Double>
-    <DataTemplate x:Key="ShellFlyoutBaseShellItemTemplate">
-        <winui:NavigationViewItem x:Name="navItem" AutomationProperties.AutomationId="{Binding AutomationId}">
-            <xf:ShellFlyoutItemRenderer IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></xf:ShellFlyoutItemRenderer>
-        </winui:NavigationViewItem>
-    </DataTemplate>
-    <DataTemplate x:Key="ShellFlyoutMenuItemTemplate">
-        <winui:NavigationViewItem x:Name="navItem" AutomationProperties.AutomationId="{Binding AutomationId}">
-            <xf:ShellFlyoutItemRenderer IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></xf:ShellFlyoutItemRenderer>
-        </winui:NavigationViewItem>
-    </DataTemplate>
-    <DataTemplate x:Key="ShellFlyoutSeperatorTemplate">
-        <winui:NavigationViewItemSeparator />
-    </DataTemplate>
-    <DataTemplate x:Key="ShellSectionMenuItemTemplate">
-        <winui:NavigationViewItem Content="{Binding Title}"/>
-    </DataTemplate>
-    <ItemsPanelTemplate x:Key="ShellToolbarItemsPanelTemplate">
-        <StackPanel Orientation="Horizontal" />
-    </ItemsPanelTemplate>
-    <DataTemplate x:Key="ShellToolbarItemTemplate">
-        <xf:ShellToolbarItemRenderer  ToolbarItem="{Binding}" Margin="0" Background="Transparent" BorderThickness="1" IsEnabled="{Binding IsEnabled}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"></ColumnDefinition>
-                    <ColumnDefinition Width="Auto"></ColumnDefinition>
-                </Grid.ColumnDefinitions>
-                <Image
-				    DataContext="{Binding IconImageSource, Converter={StaticResource ImageConverter}}" Source="{Binding Value}" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Foreground="White" VerticalAlignment="Center" Text="{Binding Text}"></TextBlock>
-            </Grid>
-        </xf:ShellToolbarItemRenderer>
-    </DataTemplate>
 
     <Style TargetType="xf:ShellRenderer" x:Key="ShellNavigationView">
         <Setter Property="PaneToggleButtonStyle" Value="{StaticResource PaneToggleButtonStyle}" />

@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WRect = Windows.Foundation.Rect;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	public class ShellFlyoutItemRenderer : ContentControl
 	{
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			var bo = (BindableObject)args.NewValue;
 			var element = bo as Element;
-			_shell = element?.FindParent<Shell>();
+			_shell = element?.FindParentOfType<Shell>();
 			DataTemplate dataTemplate = (_shell as IShellController)?.GetFlyoutItemDataTemplate(bo);
 
 			if (bo != null)
@@ -70,11 +70,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_shell.AddLogicalChild(_content);
 				
 				_content.MeasureInvalidated += OnMeasureInvalidated;
-				IVisualElementRenderer renderer = Platform.CreateRenderer(_content);
-				Platform.SetRenderer(_content, renderer);
+				var renderer = _content.ToNative(_shell.Handler.MauiContext);
 
-				Content = renderer.ContainerElement;
-				FrameworkElement = renderer.ContainerElement;
+				Content = renderer;
+				FrameworkElement = renderer;
 
 				// make sure we re-measure once the template is applied
 				if (FrameworkElement != null)

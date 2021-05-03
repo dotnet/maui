@@ -21,8 +21,8 @@ namespace Maui.Controls.Sample
 {
 	public class Startup : IStartup
 	{
-		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage }
-		private PageType _pageType = PageType.NavigationPage;
+		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage, Shell }
+		private PageType _pageType = PageType.Shell;
 
 		public readonly static bool UseXamlApp = true;
 
@@ -71,6 +71,7 @@ namespace Maui.Controls.Sample
 						serviceType: typeof(IPage),
 						implementationType: _pageType switch
 						{
+							PageType.Shell => typeof(AppShell),
 							PageType.NavigationPage => typeof(NavPage),
 							PageType.Xaml => typeof(XamlPage),
 							PageType.Semantics => typeof(SemanticsPage),

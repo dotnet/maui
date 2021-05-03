@@ -13,10 +13,10 @@ using System.Collections.Specialized;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	[Microsoft.UI.Xaml.Data.Bindable]
-	public class ShellRenderer : Microsoft.UI.Xaml.Controls.NavigationView, IVisualElementRenderer, IAppearanceObserver, IFlyoutBehaviorObserver
+	public class ShellRenderer : Microsoft.UI.Xaml.Controls.NavigationView, IAppearanceObserver, IFlyoutBehaviorObserver
 	{
 		public static readonly DependencyProperty FlyoutBackgroundColorProperty = DependencyProperty.Register(
 			nameof(FlyoutBackgroundColor), typeof(Brush), typeof(ShellRenderer),
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			MenuItemTemplateSelector = CreateShellFlyoutTemplateSelector();
 			ItemInvoked += OnMenuItemInvoked;
 			BackRequested += OnBackRequested;
-			//Style = Microsoft.UI.Xaml.Application.Current.Resources["ShellNavigationView"] as Microsoft.UI.Xaml.Style;
+			Style = Microsoft.UI.Xaml.Application.Current.Resources["ShellNavigationView"] as Microsoft.UI.Xaml.Style;
 			MenuItemsSource = FlyoutItems;
 		}
 
@@ -122,19 +122,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		#region IVisualElementRenderer
 
-		event EventHandler<VisualElementChangedEventArgs> _elementChanged;
+		public EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
-		event EventHandler<VisualElementChangedEventArgs> IVisualElementRenderer.ElementChanged
-		{
-			add { _elementChanged += value; }
-			remove { _elementChanged -= value; }
-		}
+		//FrameworkElement IVisualElementRenderer.ContainerElement => this;
 
-		FrameworkElement IVisualElementRenderer.ContainerElement => this;
+		//VisualElement IVisualElementRenderer.Element => Element;
 
-		VisualElement IVisualElementRenderer.Element => Element;
-
-		SizeRequest IVisualElementRenderer.GetDesiredSize(double widthConstraint, double heightConstraint)
+		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
 
@@ -184,7 +178,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				OnElementSet(Element);
 				Element.PropertyChanged += OnElementPropertyChanged;
 				ItemRenderer.SetShellContext(this);
-				_elementChanged?.Invoke(this, new VisualElementChangedEventArgs(null, Element));
+				ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(null, Element));
 			}
 			else if (Element != null)
 			{
@@ -204,6 +198,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 
 		#endregion IVisualElementRenderer
+
+
+
 		ShellSplitView ShellSplitView => GetTemplateChild("RootSplitView") as ShellSplitView;
 		ScrollViewer ShellLeftNavScrollViewer => (ScrollViewer)GetTemplateChild("LeftNavScrollViewer");
 		protected internal Shell Element { get; set; }

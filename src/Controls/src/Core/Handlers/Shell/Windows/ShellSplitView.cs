@@ -4,7 +4,7 @@ using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 using Microsoft.UI.Xaml;
 using Microsoft.Maui.Controls.Platform;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	public class ShellSplitView : SplitView
 	{

@@ -14,7 +14,7 @@ using Microsoft.Maui.Controls.Internals;
 using System.Collections.Specialized;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	// Renders the actual page area where the contents gets rendered, as well as set of optional top-bar menu items and search box.
 	[Microsoft.UI.Xaml.Data.Bindable]

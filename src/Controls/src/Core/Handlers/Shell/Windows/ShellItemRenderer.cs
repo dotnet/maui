@@ -19,7 +19,7 @@ using UwpApplication = Microsoft.UI.Xaml.Application;
 using UwpSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.Maui.Controls.Platform;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	// Responsible for rendering the content title, as well as the bottom bar list of shell sections
 	public class ShellItemRenderer : UwpGrid, IAppearanceObserver, IFlyoutBehaviorObserver
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		Border _BottomBarArea;
 		UwpGrid _BottomBar;
 		UwpGrid _HeaderArea;
-		ItemsControl _Toolbar;
+		//ItemsControl _Toolbar;
 
 		internal ShellItem ShellItem { get; set; }
 
@@ -61,13 +61,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_HeaderArea.Children.Add(_Title);
 			Children.Add(_HeaderArea);
 
-			_Toolbar = new ItemsControl()
-			{
-				ItemTemplate = UwpApplication.Current.Resources["ShellToolbarItemTemplate"] as UwpDataTemplate,
-				ItemsPanel = UwpApplication.Current.Resources["ShellToolbarItemsPanelTemplate"] as ItemsPanelTemplate,
-			};
-			SetColumn(_Toolbar, 1);
-			_HeaderArea.Children.Add(_Toolbar);
+			//_Toolbar = new ItemsControl()
+			//{
+			//	ItemTemplate = UwpApplication.Current.Resources["ShellToolbarItemTemplate"] as UwpDataTemplate,
+			//	ItemsPanel = UwpApplication.Current.Resources["ShellToolbarItemsPanelTemplate"] as ItemsPanelTemplate,
+			//};
+			//SetColumn(_Toolbar, 1);
+			//_HeaderArea.Children.Add(_Toolbar);
 
 			SectionRenderer = shellContext.CreateShellSectionRenderer();
 			SetRow(SectionRenderer, 1);
@@ -384,7 +384,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateToolbar()
 		{
-			_Toolbar.ItemsSource = DisplayedPage?.ToolbarItems;
+		//	_Toolbar.ItemsSource = DisplayedPage?.ToolbarItems;
 		}
 
 		void OnNavigationRequested(object sender, NavigationRequestedEventArgs e)
