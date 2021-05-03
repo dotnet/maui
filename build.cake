@@ -1244,7 +1244,7 @@ void StartVisualStudio(string sln = "./Microsoft.Maui.sln", bool usePreviewVs = 
     {
         if(usePreviewVs)
         {
-            var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, });
+            var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = usePreviewVs });
             if (vsLatest == null)
                 throw new Exception("Unable to find Visual Studio!");
             var devenv = vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe");
