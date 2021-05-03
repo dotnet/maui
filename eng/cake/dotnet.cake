@@ -109,12 +109,6 @@ Task("VS-ANDROID")
             ToolPath = dotnetPath
         });
 
-        DotNetCoreBuild("./Microsoft.Maui.Droid.sln", new DotNetCoreBuildSettings
-        {
-            Configuration = configuration,
-            ToolPath = dotnetPath
-        });
-
         StartVisualStudioForDotNet6("./Microsoft.Maui.Droid.sln");
     });
 
