@@ -104,7 +104,16 @@ Task("VS-ANDROID")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui.Droid.sln");
+        DotNetCoreRestore("./Microsoft.Maui.Droid.sln", new DotNetCoreRestoreSettings
+        {
+            ToolPath = dotnetPath
+        });
+        DotNetCoreBuild("./Microsoft.Maui.Droid.sln", new DotNetCoreBuildSettings
+        {
+            Configuration = configuration,
+            ToolPath = dotnetPath
+        });
+
         StartVisualStudioForDotNet6("./Microsoft.Maui.Droid.sln");
     });
 
@@ -167,21 +176,25 @@ void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null)
     var binlog = $"artifacts/{name}-{configuration}.binlog";
 
     // If we're not on Windows, just use ./bin/dotnet/dotnet, that's it
-    if (!IsRunningOnWindows ())
+    if (!IsRunningOnWindows())
     {
+        var dotnetBuildSettings = new DotNetCoreMSBuildSettings
+        {
+            BinaryLogger = new MSBuildBinaryLoggerSettings
+            {
+                Enabled = true,
+                FileName = binlog,
+            },
+        };
+
+        settings?.Invoke(dotnetBuildSettings);
+        
         DotNetCoreBuild(sln,
             new DotNetCoreBuildSettings
             {
                 Configuration = configuration,
                 ToolPath = dotnetPath,
-                MSBuildSettings = new DotNetCoreMSBuildSettings
-                {
-                    BinaryLogger = new MSBuildBinaryLoggerSettings
-                    {
-                        Enabled = true,
-                        FileName = binlog,
-                    },
-                },
+                MSBuildSettings = dotnetBuildSettings,
             });
         return;
     }
