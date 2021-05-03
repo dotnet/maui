@@ -213,7 +213,7 @@ stages:
                 displayName: set JI_JAVA_HOME
             - script: dotnet tool restore
               displayName: install dotnet tools
-            - script: dotnet cake --BUILD_CONFIGURATION=Release
+            - script: dotnet cake --configuration=Release
               displayName: pack nugets
             - task: CopyFiles@2
               displayName: 'Copy SignList.xml Files'
