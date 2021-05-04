@@ -86,6 +86,8 @@ namespace Microsoft.Maui
 		{
 			var family = font.FontFamily;
 			var size = (nfloat)font.FontSize;
+			if (size <= 0)
+				size = DefaultFont.PointSize;
 			bool hasAttributes = font.Weight != FontWeight.Regular || font.Italic;
 
 
