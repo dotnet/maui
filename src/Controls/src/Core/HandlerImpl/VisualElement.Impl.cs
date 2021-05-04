@@ -54,14 +54,14 @@ namespace Microsoft.Maui.Controls
 
 		// The CloseEnough methods will likely go away once we get rid of the cause (see comments below); if not, we'll
 		// add a proper extension method or add a compare method to MG with a tolerance parameter
-		bool CloseEnough(double a, double b) 
+		bool CloseEnough(double a, double b)
 		{
 			const double tolerance = 0.0001;
 
 			return (Math.Abs(a - b) < tolerance);
 		}
 
-		bool CloseEnough(Rectangle currentBounds, Rectangle newBounds) 
+		bool CloseEnough(Rectangle currentBounds, Rectangle newBounds)
 		{
 			if (!CloseEnough(currentBounds.X, newBounds.X))
 			{
@@ -94,12 +94,12 @@ namespace Microsoft.Maui.Controls
 			// in View.cs; the arrange it forces ends up back here and if we have a margin, ComputeFrame will 
 			// keep applying it in a loop until the element disappears. Hopefully we can remove the OnSizeAllocated 
 			// hack at some point and avoid this extra check.
-			if(!CloseEnough(Bounds, bounds))
+			if (!CloseEnough(Bounds, bounds))
 			{
 				// Setting Bounds here is equivalent to setting the Frame
 				Bounds = this.ComputeFrame(bounds);
 			}
-			
+
 			return Frame.Size;
 		}
 

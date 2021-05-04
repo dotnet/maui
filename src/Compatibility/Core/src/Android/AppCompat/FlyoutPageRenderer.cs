@@ -423,12 +423,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void UpdateBackgroundImage(Page view)
 		{
-			this.ApplyDrawableAsync(view, Page.BackgroundImageSourceProperty, Context, 
+			this.ApplyDrawableAsync(view, Page.BackgroundImageSourceProperty, Context,
 				(Drawable drawable) =>
 			{
 				if (drawable != null)
 					this.SetBackground(drawable);
-			}).FireAndForget(e=> Internals.Log.Warning(nameof(FlyoutPageRenderer), $"{e}"));
+			}).FireAndForget(e => Internals.Log.Warning(nameof(FlyoutPageRenderer), $"{e}"));
 		}
 
 		void UpdateDetail()

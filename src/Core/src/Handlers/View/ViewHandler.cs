@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateSemantics(view);
 		}
 
-		public static void MapInvalidateMeasure(IViewHandler handler, IView view) 
+		public static void MapInvalidateMeasure(IViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.InvalidateMeasure(view);
 		}

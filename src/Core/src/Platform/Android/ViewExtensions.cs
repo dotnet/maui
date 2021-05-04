@@ -66,12 +66,12 @@ namespace Microsoft.Maui
 			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
 		}
 
-		public static void InvalidateMeasure(this AView nativeView, IView view) 
+		public static void InvalidateMeasure(this AView nativeView, IView view)
 		{
 			nativeView.RequestLayout();
 		}
 
-		public static void UpdateWidth(this AView nativeView, IView view) 
+		public static void UpdateWidth(this AView nativeView, IView view)
 		{
 			// GetDesiredSize will take the specified Width into account during the layout
 			if (!nativeView.IsInLayout)
@@ -80,7 +80,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateHeight(this AView nativeView, IView view) 
+		public static void UpdateHeight(this AView nativeView, IView view)
 		{
 			// GetDesiredSize will take the specified Height into account during the layout
 			if (!nativeView.IsInLayout)

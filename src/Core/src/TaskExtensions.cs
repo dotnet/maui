@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 			}
 			catch (Exception exc)
 			{
-				errorCallback?.Invoke(ex);
+				errorCallback?.Invoke(exc);
 			}
 			finally
 			{

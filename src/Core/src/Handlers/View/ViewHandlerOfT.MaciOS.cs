@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 				size = new Size(NativeView.Frame.Width, NativeView.Frame.Height);
 			}
 
-			return new Size( hasExplicitWidth ? explicitWidth : size.Width, 
+			return new Size(hasExplicitWidth ? explicitWidth : size.Width,
 				hasExplicitHeight ? explicitHeight : size.Height);
 		}
 

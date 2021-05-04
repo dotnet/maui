@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 			get
 			{
 				Context? context;
-				if ( _context.TryGetTarget(out context))
+				if (_context.TryGetTarget(out context))
 				{
 					return context;
 				}
