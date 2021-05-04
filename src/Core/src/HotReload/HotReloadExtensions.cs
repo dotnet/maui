@@ -52,7 +52,7 @@ namespace Microsoft.Maui.HotReload
 
 		class ReflectionMethodComparer : IEqualityComparer<MethodInfo>
 		{
-			public bool Equals(MethodInfo g1, MethodInfo g2) => g1.MethodHandle == g2.MethodHandle;
+			public bool Equals(MethodInfo? g1, MethodInfo? g2) => g1?.MethodHandle == g2?.MethodHandle;
 
 			public int GetHashCode(MethodInfo obj) => obj.MethodHandle.GetHashCode();
 		}
