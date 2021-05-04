@@ -47,7 +47,7 @@ namespace Microsoft.Maui
 			new() { FontFamily = name, FontSize = size, Weight = weight, Italic = italic };
 
 		public static Font SystemFontOfSize(double size, FontWeight weight = FontWeight.Regular , bool italic = false) =>
-			new ()) { FontSize = size, Weight = weight, Italic = italic };
+			new () { FontSize = size, Weight = weight, Italic = italic };
 
 		public static Font SystemFontOfWeight(FontWeight weight, bool italic = false)
 		{
