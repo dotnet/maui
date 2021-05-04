@@ -76,6 +76,14 @@ Task("dotnet-buildtasks")
         RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln");
     });
 
+Task("VS-DOGFOOD")
+    .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
+    .IsDependentOn("dotnet")
+    .Does(() =>
+    {
+        StartVisualStudioForDotNet6(null);
+    });
+
 Task("VS-NET6")
     .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
     .IsDependentOn("Clean")
