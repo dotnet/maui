@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			LayoutHandler?.Add(child);
 		}
 
-		public void Remove(IView child)
+		public virtual void Remove(IView child)
 		{
 			if (child == null)
 				return;
