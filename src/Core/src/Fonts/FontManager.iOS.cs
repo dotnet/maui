@@ -99,7 +99,7 @@ namespace Microsoft.Maui
 						var descriptor = new UIFontDescriptor().CreateWithFamily(family);
 						if(hasAttributes)
 						{
-							descriptor.CreateWithAttributes(GetFontAttributes(font));
+							descriptor = descriptor.CreateWithAttributes(GetFontAttributes(font));
 						}
 						
 						result = UIFont.FromDescriptor(descriptor, size);
