@@ -312,8 +312,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal async Task<Page> RemoveAsyncInner(
-			Page page, 
-			bool animated, 
+			Page page,
+			bool animated,
 			bool fast,
 			bool requestedFromHandler)
 		{
@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Controls
 
 			FireDisappearing(page);
 
-			if(InternalChildren.Last() == page)
+			if (InternalChildren.Last() == page)
 				FireAppearing((Page)InternalChildren[NavigationPageController.StackDepth - 2]);
 
 			var args = new NavigationRequestedEventArgs(page, animated);
