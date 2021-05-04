@@ -170,6 +170,17 @@ namespace Microsoft.Maui.Controls.Platform
 			PushViewController(viewController, animated);
 		}
 
+		IPage ElementForViewController(UIViewController viewController)
+		{
+			foreach (var child in _trackers)
+			{
+				if (child.Value.ViewController == viewController)
+					return child.Key;
+			}
+
+			return null;
+		}
+
 
 		class NavDelegate : UINavigationControllerDelegate
 		{
@@ -208,16 +219,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public override void WillShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
-				//var element = _self.ElementForViewController(viewController);
+				var element = _self.ElementForViewController(viewController);
 
-				//bool navBarVisible;
-				//if (element is ShellSection)
-				//	navBarVisible = _self._renderer.ShowNavBar;
-				//else
-				//	navBarVisible = Shell.GetNavBarIsVisible(element);
-
-				// TODO Make this work
 				bool navBarVisible = true;
+
+				if (element is BindableObject bo)
+					navBarVisible = NavigationPage.GetHasNavigationBar(bo);
 
 				navigationController.SetNavigationBarHidden(!navBarVisible, true);
 

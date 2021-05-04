@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Platform;
 using Bitmap = Microsoft.UI.Xaml.Media.ImageSource;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: Dependency(typeof(_13109IssueHelper))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
