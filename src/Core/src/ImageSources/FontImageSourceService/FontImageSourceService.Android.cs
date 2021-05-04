@@ -23,7 +23,11 @@ namespace Microsoft.Maui
 				return null;
 
 			var glyph = imageSource.Glyph;
-			var textSize = TypedValue.ApplyDimension(ComplexUnitType.Dip, FontManager.GetScaledPixel(imageSource.Font), context.Resources?.DisplayMetrics);
+
+			var sp = (float)imageSource.Font.FontSize;
+			if (sp == 0)
+				sp = 14f;
+			var textSize = TypedValue.ApplyDimension(ComplexUnitType.Dip, sp, context.Resources?.DisplayMetrics);
 			var typeface = FontManager.GetTypeface(imageSource.Font);
 			var color = (imageSource.Color ?? Graphics.Colors.White).ToNative();
 

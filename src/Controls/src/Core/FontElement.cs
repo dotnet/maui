@@ -12,6 +12,10 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create("FontFamily", typeof(string), typeof(IFontElement), default(string),
 									propertyChanged: OnFontFamilyChanged);
 
+		public static readonly BindableProperty FontNamedSizeProperty =
+			BindableProperty.Create("NamedSize", typeof(NamedSize), typeof(IFontElement), default(string),
+									propertyChanged: OnNamedSizeChanged);
+
 		public static readonly BindableProperty FontSizeProperty =
 			BindableProperty.Create("FontSize", typeof(double), typeof(IFontElement), -1.0,
 									propertyChanged: OnFontSizeChanged,
@@ -47,13 +51,29 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				bindable.SetValue(FontFamilyProperty, font.FontFamily);
-				if (font.UseNamedSize)
-					bindable.SetValue(FontSizeProperty, Device.GetNamedSize(font.NamedSize, bindable.GetType(), true));
-				else
-					bindable.SetValue(FontSizeProperty, font.FontSize);
-				bindable.SetValue(FontAttributesProperty, font.FontAttributes);
+				bindable.SetValue(FontSizeProperty, font.FontSize);
+				bindable.SetValue(FontAttributesProperty, font.GetFontAttributes());
 			}
 			SetCancelEvents(bindable, false);
+		}
+
+		static void OnNamedSizeChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+
+			if (GetCancelEvents(bindable))
+				return;
+
+			SetCancelEvents(bindable, true);
+
+			var namedSize = (NamedSize)bindable.GetValue(FontNamedSizeProperty);
+			var fontSize = Device.GetNamedSize(namedSize, bindable.GetType(), true);
+			var fontAttributes = (FontAttributes)bindable.GetValue(FontAttributesProperty);
+			var fontFamily = (string)newValue;
+
+			if (fontFamily != null)
+				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize).WithAttributes(fontAttributes));
+			else
+				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize).WithAttributes(fontAttributes));
 		}
 
 		static void OnFontFamilyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -70,7 +90,7 @@ namespace Microsoft.Maui.Controls
 			if (fontFamily != null)
 				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize).WithAttributes(fontAttributes));
 			else
-				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize, fontAttributes));
+				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize).WithAttributes(fontAttributes));
 
 			SetCancelEvents(bindable, false);
 			((IFontElement)bindable).OnFontFamilyChanged((string)oldValue, (string)newValue);
@@ -90,7 +110,7 @@ namespace Microsoft.Maui.Controls
 			if (fontFamily != null)
 				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize).WithAttributes(fontAttributes));
 			else
-				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize, fontAttributes));
+				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize).WithAttributes(fontAttributes));
 
 			SetCancelEvents(bindable, false);
 			((IFontElement)bindable).OnFontSizeChanged((double)oldValue, (double)newValue);
@@ -115,7 +135,7 @@ namespace Microsoft.Maui.Controls
 			if (fontFamily != null)
 				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize).WithAttributes(fontAttributes));
 			else
-				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize, fontAttributes));
+				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize).WithAttributes(fontAttributes));
 
 			SetCancelEvents(bindable, false);
 			((IFontElement)bindable).OnFontAttributesChanged((FontAttributes)oldValue, (FontAttributes)newValue);

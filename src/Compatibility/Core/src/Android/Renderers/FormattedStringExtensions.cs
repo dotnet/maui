@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			void Apply(Paint paint)
 			{
 				paint.SetTypeface(Font.ToTypeface());
-				float value = Font.ToScaledPixel();
+				float value = (float)Font.FontSize;
 				paint.TextSize = TypedValue.ApplyDimension(ComplexUnitType.Sp, value, TextView.Resources.DisplayMetrics);
 				if (Forms.IsLollipopOrNewer)
 				{
