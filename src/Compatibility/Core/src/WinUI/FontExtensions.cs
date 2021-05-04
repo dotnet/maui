@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -27,8 +28,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		internal static void ApplyFont(this UI.Xaml.Documents.TextElement self, IFontElement element) =>
 			self.UpdateFont(element.AsFont(), CompatServiceProvider.FontManager);
 
-		internal static double GetFontSize(this NamedSize size) =>
-			CompatServiceProvider.FontManager.GetFontSize(Font.OfSize(null, size));
+		internal static double GetFontSize(this NamedSize size) => size switch
+		{
+			NamedSize.Default => CompatServiceProvider.FontManager.DefaultFontSize,
+			NamedSize.Micro => 15.667,
+			NamedSize.Small => 18.667,
+			NamedSize.Medium => 22.667,
+			NamedSize.Large => 32,
+			NamedSize.Body => 14,
+			NamedSize.Caption => 12,
+			NamedSize.Header => 46,
+			NamedSize.Subtitle => 20,
+			NamedSize.Title => 24,
+			_ => throw new ArgumentOutOfRangeException(nameof(size)),
+		};
 
 		internal static bool IsDefault(this IFontElement self) =>
 			self.FontFamily == null && self.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Label), true) && self.FontAttributes == FontAttributes.None;

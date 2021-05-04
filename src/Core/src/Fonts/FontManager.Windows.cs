@@ -46,34 +46,7 @@ namespace Microsoft.Maui
 			return _fonts.GetOrAdd(font.FontFamily, CreateFontFamily);
 		}
 
-		public double GetFontSize(Font font)
-		{
-			if (font.UseNamedSize)
-				return GetFontSize(font.NamedSize);
-
-			return font.FontSize;
-		}
-
-		public double GetFontSize(NamedSize namedSize)
-		{
-			// TODO: Hmm, maybe we need to revisit this, since we no longer support Windows Phone OR WinRT.
-			// These are values pulled from the mapped sizes on Windows Phone, WinRT has no equivalent sizes, only intents.
-
-			return namedSize switch
-			{
-				NamedSize.Default => DefaultFontSize,
-				NamedSize.Micro => 15.667,
-				NamedSize.Small => 18.667,
-				NamedSize.Medium => 22.667,
-				NamedSize.Large => 32,
-				NamedSize.Body => 14,
-				NamedSize.Caption => 12,
-				NamedSize.Header => 46,
-				NamedSize.Subtitle => 20,
-				NamedSize.Title => 24,
-				_ => throw new ArgumentOutOfRangeException(nameof(namedSize)),
-			};
-		}
+		public double GetFontSize(Font font) => font.FontSize <= 0 ? DefaultFontSize : font.FontSize;
 
 		FontFamily CreateFontFamily(string fontFamily)
 		{
