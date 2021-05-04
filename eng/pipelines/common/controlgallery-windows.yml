@@ -10,18 +10,13 @@ steps:
       provisioning_extra_args: $(provisionator.extraArguments)
 
   - powershell: |
-      & dotnet build src\DotNet\DotNet.csproj -bl:${{ parameters.artifactsTargetFolder }}\$(BuildConfiguration)-dotnet.binlog
-    displayName: install .NET
-
-  - powershell: |
       $(System.DefaultWorkingDirectory)/build.ps1 --target provision --TeamProject="$(System.TeamProject)"
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
-  
-  - script: dotnet tool restore
-    displayName: install dotnet tools
-  - script: dotnet cake --configuration=$(BuildConfiguration) --target=VS-WINUI
-    displayName: Build WinUI Solution
+
+  - powershell: |
+      $(System.DefaultWorkingDirectory)/build.ps1 --target VS-WINUI --TeamProject="$(System.TeamProject)"
+    displayName: 'Build WinUI Solution'
   
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: ${{ parameters.artifactsName }}'
