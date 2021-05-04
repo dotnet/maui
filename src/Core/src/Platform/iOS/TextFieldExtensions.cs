@@ -102,9 +102,7 @@ namespace Microsoft.Maui
 		public static void UpdateSelectionLength(this UITextField textField, IEntry entry)
 			=> UpdateCursorSelection(textField, entry);
 
-		/// <summary>
-		/// Updates both the <see cref="IEntry.CursorPosition"/> & <see cref="IEntry.SelectionLength"/> properties.
-		/// </summary>
+		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
 		static void UpdateCursorSelection(this UITextField textField, IEntry entry)
 		{
 			if (textField == null)
