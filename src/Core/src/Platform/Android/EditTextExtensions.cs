@@ -208,9 +208,8 @@ namespace Microsoft.Maui
 		public static void UpdateSelectionLength(this AppCompatEditText editText, IEntry entry)
 			=> UpdateCursorSelection(editText, entry);
 
-		/// <summary>
-		/// Updates both the <see cref="IEntry.CursorPosition"/> & <see cref="IEntry.SelectionLength"/> properties.
-		/// </summary>
+	
+		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */	
 		static void UpdateCursorSelection(AppCompatEditText editText, IEntry entry)
 		{
 			if (editText == null)
