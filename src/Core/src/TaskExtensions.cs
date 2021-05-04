@@ -18,7 +18,7 @@ namespace Microsoft.Maui
 			{
 				await task.ConfigureAwait(false);
 			}
-			catch (Exception exc)
+			catch (Exception ex)
 			{
 				errorCallback?.Invoke(ex);
 			}
