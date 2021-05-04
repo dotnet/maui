@@ -133,6 +133,7 @@ stages:
 
   - stage: windows_controlgallery
     displayName: Build Windows ControlGallery
+    dependsOn: []
     jobs:
       - ${{ each BuildCondition in parameters.BuildConfigurations }}:
         - job: win_hosted_${{ BuildCondition }}
