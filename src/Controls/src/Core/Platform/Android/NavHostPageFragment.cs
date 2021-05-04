@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Android.Content.Res;
+using Android.Graphics;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
+using AndroidX.AppCompat.App;
+using AndroidX.AppCompat.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.Navigation.Fragment;
+using AndroidX.Navigation.UI;
 using Microsoft.Maui.Controls.Handlers;
 using AView = Android.Views.View;
-using AndroidX.AppCompat.Widget;
-using AndroidX.Navigation.UI;
-using AndroidX.AppCompat.App;
-using Android.Graphics;
-using Android.Content.Res;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Platform
 		// TODO Move somewhere else
 		void UpdateToolbar()
 		{
-			
+
 		}
 
 

@@ -20,5 +20,8 @@
     <PackageReference Include="Microsoft.Maui.Graphics" />
     <PackageReference Include="Reloadify3000" Version="1.0.6" />
   </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <PackageReference Include="Xamarin.Android.Glide" />
+  </ItemGroup>
 </Project>
 
