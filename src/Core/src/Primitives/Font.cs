@@ -43,29 +43,11 @@ namespace Microsoft.Maui
 			return new Font { FontFamily = FontFamily, FontSize = FontSize, Italic = italic, Weight = weight };
 		}
 
-		public static Font OfSize(string name, double size)
-		{
-			var result = new Font { FontFamily = name, FontSize = size, Weight = FontWeight.Regular };
-			return result;
-		}
+		public static Font OfSize(string name, double size, FontWeight weight = FontWeight.Regular , bool italic = false)=>
+			new() { FontFamily = name, FontSize = size, Weight = weight, Italic = italic };
 
-		public static Font SystemFontOfSize(double size)
-		{
-			var result = new Font { FontSize = size, Weight = FontWeight.Regular };
-			return result;
-		}
-
-		public static Font SystemFontOfSize(double size, FontWeight weight)
-		{
-			var result = new Font { FontSize = size, Weight = weight };
-			return result;
-		}
-
-		public static Font SystemFontOfSize(double size, FontWeight weight, bool italic)
-		{
-			var result = new Font { FontSize = size, Weight = weight, Italic = italic };
-			return result;
-		}
+		public static Font SystemFontOfSize(double size, FontWeight weight = FontWeight.Regular , bool italic = false) =>
+			new ()) { FontSize = size, Weight = weight, Italic = italic };
 
 		public static Font SystemFontOfWeight(FontWeight weight, bool italic = false)
 		{
