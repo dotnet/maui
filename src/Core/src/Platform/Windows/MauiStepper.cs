@@ -13,7 +13,7 @@ using WVisualState = Microsoft.UI.Xaml.VisualState;
 
 namespace Microsoft.Maui
 {
-	public sealed class MauiStepper : Control
+	public class MauiStepper : Control
 	{
 		public static readonly DependencyProperty ValueProperty = 
 			DependencyProperty.Register("Value", typeof(double), typeof(MauiStepper), new PropertyMetadata(default(double), OnValueChanged));
