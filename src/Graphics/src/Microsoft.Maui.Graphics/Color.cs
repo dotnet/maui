@@ -12,6 +12,12 @@ namespace Microsoft.Maui.Graphics
 		public readonly float Blue;
 		public readonly float Alpha = 1;
 
+		public Color()
+		{
+			// Default Black - XAML Editor is happy with param-less ctor!
+			Red = Green = Blue = 0;	
+		}
+		
 		public Color(float gray)
 		{
 			Red = Green = Blue = gray.Clamp(0, 1);
