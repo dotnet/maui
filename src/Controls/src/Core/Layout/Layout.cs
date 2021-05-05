@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			}
 		}
 
-		public void Add(IView child)
+		public virtual void Add(IView child)
 		{
 			if (child == null)
 				return;
