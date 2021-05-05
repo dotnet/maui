@@ -73,18 +73,7 @@ namespace Microsoft.Maui
 			return Equals((Font)obj);
 		}
 
-		public override int GetHashCode()
-		{
-			unchecked
-			{
-				int hashCode = FontFamily != null ? FontFamily.GetHashCode() : 0;
-				hashCode = (hashCode * 397) ^ FontSize.GetHashCode();
-				hashCode = (hashCode * 397) ^ Weight.GetHashCode();
-				hashCode = (hashCode * 397) ^ FontSlant.GetHashCode();
-
-				return hashCode;
-			}
-		}
+		public override int GetHashCode() => (FontFamily, FontSize, Weight, FontSlant).GetHashCode();
 
 		public static bool operator ==(Font left, Font right)
 		{
