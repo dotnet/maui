@@ -71,11 +71,11 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				Font = Font.OfSize("Arial", 10,weight,isItalic)
+				Font = Font.OfSize("Arial", 10,weight, isItalic ? FontSlant.Italic : FontSlant.Default)
 			};
 
 			await ValidatePropertyInitValue(label, () => label.Font.Weight.HasFlag(FontWeight.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(label, () => label.Font.Italic, GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(label, () => label.Font.FontSlant.HasFlag(FontSlant.Italic), GetNativeIsItalic, isItalic);
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]

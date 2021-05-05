@@ -187,11 +187,11 @@ namespace Microsoft.Maui.DeviceTests
 			var entry = new EntryStub()
 			{
 				Text = "Test",
-				Font = Font.OfSize("Arial", 10,weight,isItalic)
+				Font = Font.OfSize("Arial", 10,weight, isItalic ? FontSlant.Italic : FontSlant.Default)
 			};
 
 			await ValidatePropertyInitValue(entry, () => entry.Font.Weight.HasFlag(FontWeight.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(entry, () => entry.Font.Italic, GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(entry, () => entry.Font.FontSlant.HasFlag(FontSlant.Italic), GetNativeIsItalic, isItalic);
 		}
 
 		[Theory(DisplayName = "Validates clear button visibility.")]

@@ -75,11 +75,11 @@ namespace Microsoft.Maui.DeviceTests
 			var button = new ButtonStub()
 			{
 				Text = "Test",
-				Font = Font.OfSize("Arial", 10,weight,isItalic)
+				Font = Font.OfSize("Arial", 10,weight,isItalic ? FontSlant.Italic : FontSlant.Default)
 			};
 
 			await ValidatePropertyInitValue(button, () => button.Font.Weight.HasFlag(FontWeight.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(button, () => button.Font.Italic, GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(button, () => button.Font.FontSlant.HasFlag(FontSlant.Italic), GetNativeIsItalic, isItalic);
 		}
 	}
 }

@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 				parts.Add(font.FontFamily);
 			if (font.Weight == FontWeight.Bold)
 				parts.Add("Bold");
-			if (font.Italic)
+			if (font.FontSlant != FontSlant.Default)
 				parts.Add("Italic");
 			parts.Add($"{font.FontSize}");
 			return string.Join(", ", parts);

@@ -9,9 +9,9 @@ namespace Microsoft.Maui
 
 		public double FontSize { get; private set; }
 
-		public bool Italic { get; private set; }
+		public FontSlant FontSlant { get; private set; }
 
-		public bool IsDefault => FontFamily == null && FontSize == 0 && Italic == false && Weight == FontWeight.Regular;
+		public bool IsDefault => FontFamily == null && FontSize == 0 && FontSlant == FontSlant.Default && Weight == FontWeight.Regular;
 
 		static Font _default = default(Font).WithWeight(FontWeight.Regular);
 		public static Font Default => _default;
@@ -25,39 +25,39 @@ namespace Microsoft.Maui
 
 		public Font WithSize(double size)
 		{
-			return new Font { FontFamily = FontFamily, FontSize = size, Italic = Italic, Weight = Weight };
+			return new Font { FontFamily = FontFamily, FontSize = size, FontSlant = FontSlant, Weight = Weight };
 		}
 
-		public Font WithItalic(bool italic)
+		public Font WithSlant(FontSlant fontSlant)
 		{
-			return new Font { FontFamily = FontFamily, FontSize = FontSize, Italic = italic, Weight = Weight };
+			return new Font { FontFamily = FontFamily, FontSize = FontSize, FontSlant = fontSlant, Weight = Weight };
 		}
 
 		public Font WithWeight(FontWeight weight)
 		{
-			return new Font { FontFamily = FontFamily, FontSize = FontSize, Italic = Italic, Weight = weight };
+			return new Font { FontFamily = FontFamily, FontSize = FontSize, FontSlant = FontSlant, Weight = weight };
 		}
 
-		public Font WithWeight(FontWeight weight, bool italic)
+		public Font WithWeight(FontWeight weight, FontSlant fontSlant)
 		{
-			return new Font { FontFamily = FontFamily, FontSize = FontSize, Italic = italic, Weight = weight };
+			return new Font { FontFamily = FontFamily, FontSize = FontSize, FontSlant = FontSlant, Weight = weight };
 		}
 
-		public static Font OfSize(string name, double size, FontWeight weight = FontWeight.Regular , bool italic = false)=>
-			new() { FontFamily = name, FontSize = size, Weight = weight, Italic = italic };
+		public static Font OfSize(string name, double size, FontWeight weight = FontWeight.Regular , FontSlant fontSlant = FontSlant.Default) =>
+			new() { FontFamily = name, FontSize = size, Weight = weight, FontSlant = fontSlant };
 
-		public static Font SystemFontOfSize(double size, FontWeight weight = FontWeight.Regular , bool italic = false) =>
-			new () { FontSize = size, Weight = weight, Italic = italic };
+		public static Font SystemFontOfSize(double size, FontWeight weight = FontWeight.Regular , FontSlant fontSlant = FontSlant.Default) =>
+			new () { FontSize = size, Weight = weight, FontSlant = fontSlant };
 
-		public static Font SystemFontOfWeight(FontWeight weight, bool italic = false)
+		public static Font SystemFontOfWeight(FontWeight weight, FontSlant fontSlant = FontSlant.Default)
 		{
-			var result = new Font { Weight = weight, Italic = italic };
+			var result = new Font { Weight = weight, FontSlant = fontSlant };
 			return result;
 		}
 
 		bool Equals(Font other)
 		{
-			return string.Equals(FontFamily, other.FontFamily) && FontSize.Equals(other.FontSize) && Weight == other.Weight && Italic == other.Italic;
+			return string.Equals(FontFamily, other.FontFamily) && FontSize.Equals(other.FontSize) && Weight == other.Weight && FontSlant == other.FontSlant;
 		}
 
 		public override bool Equals(object? obj)
@@ -80,7 +80,7 @@ namespace Microsoft.Maui
 				int hashCode = FontFamily != null ? FontFamily.GetHashCode() : 0;
 				hashCode = (hashCode * 397) ^ FontSize.GetHashCode();
 				hashCode = (hashCode * 397) ^ Weight.GetHashCode();
-				hashCode = (hashCode * 397) ^ Italic.GetHashCode();
+				hashCode = (hashCode * 397) ^ FontSlant.GetHashCode();
 
 				return hashCode;
 			}
@@ -97,6 +97,6 @@ namespace Microsoft.Maui
 		}
 
 		public override string ToString()
-			=> $"FontFamily: {FontFamily}, FontSize: {FontSize}, Weight: {Weight}, Italic: {Italic}";
+			=> $"FontFamily: {FontFamily}, FontSize: {FontSize}, Weight: {Weight}, FontSlant: {FontSlant}";
 	}
 }

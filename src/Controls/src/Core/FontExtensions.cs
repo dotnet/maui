@@ -9,12 +9,12 @@ namespace Microsoft.Maui.Controls
 		{
 			var bold = (attributes & FontAttributes.Bold) != 0;
 			var italic = (attributes & FontAttributes.Italic) != 0;
-			return font.WithWeight(bold ? FontWeight.Bold : FontWeight.Regular, italic);
+			return font.WithWeight(bold ? FontWeight.Bold : FontWeight.Regular, italic ? FontSlant.Italic : FontSlant.Default);
 		}
 		public static FontAttributes GetFontAttributes(this Font font)
 		{
 			FontAttributes attributes = font.Weight == FontWeight.Bold ? FontAttributes.Bold : FontAttributes.None;
-			if (font.Italic)
+			if (font.FontSlant != FontSlant.Default)
 			{
 				if (attributes == FontAttributes.None)
 					attributes = FontAttributes.Italic;

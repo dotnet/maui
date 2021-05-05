@@ -45,11 +45,11 @@ namespace Microsoft.Maui.DeviceTests
 			var timePicker = new TimePickerStub()
 			{
 				Time = new TimeSpan(17, 0, 0),
-				Font = Font.OfSize("Arial", 10, weight, isItalic)
+				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
 			};
 
 			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.Weight.HasFlag(FontWeight.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.Italic, GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.FontSlant.HasFlag(FontSlant.Italic), GetNativeIsItalic, isItalic);
 		}
 	}
 }

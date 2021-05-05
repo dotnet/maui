@@ -24,10 +24,10 @@ namespace Microsoft.Maui
 
 		public Typeface? GetTypeface(Font font)
 		{
-			if (font == Font.Default || (font.Weight == FontWeight.Regular && string.IsNullOrEmpty(font.FontFamily) && !font.Italic))
+			if (font == Font.Default || (font.Weight == FontWeight.Regular && string.IsNullOrEmpty(font.FontFamily) && font.FontSlant == FontSlant.Default))
 				return DefaultTypeface;
 
-			return _typefaces.GetOrAdd((font.FontFamily,font.Weight,font.Italic), CreateTypeface);
+			return _typefaces.GetOrAdd((font.FontFamily,font.Weight,font.FontSlant != FontSlant.Default), CreateTypeface);
 		}
 
 		(bool success, Typeface? typeface) TryGetFromAssets(string fontName)

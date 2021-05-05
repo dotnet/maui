@@ -79,11 +79,11 @@ namespace Microsoft.Maui.DeviceTests
 			var searchBar = new SearchBarStub()
 			{
 				Text = "Test",
-				Font = Font.OfSize("Arial", 10, weight, isItalic),
+				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default),
 			};
 
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.Weight.HasFlag(FontWeight.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.Italic, GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontSlant.HasFlag(FontSlant.Italic), GetNativeIsItalic, isItalic);
 		}
 	}
 }

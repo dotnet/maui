@@ -72,10 +72,10 @@ namespace Microsoft.Maui
 				a.Traits = new UIFontTraits
 				{
 					Weight = GetWeightConstant(font.Weight),
-					Slant = font.Italic ? 30.0f : 0.0f
+					Slant = font.FontSlant == FontSlant.Oblique ? 30.0f : 0.0f
 				};
 			}
-			if (font.Italic)
+			if (font.FontSlant == FontSlant.Italic)
 				traits |= UIFontDescriptorSymbolicTraits.Italic;
 			
 			a.Traits.SymbolicTrait = traits;
@@ -88,7 +88,7 @@ namespace Microsoft.Maui
 			var size = (nfloat)font.FontSize;
 			if (size <= 0)
 				size = DefaultFont.PointSize;
-			bool hasAttributes = font.Weight != FontWeight.Regular || font.Italic;
+			bool hasAttributes = font.Weight != FontWeight.Regular || font.FontSlant != FontSlant.Default;
 
 
 			if (family != null && family != DefaultFont.FamilyName)
