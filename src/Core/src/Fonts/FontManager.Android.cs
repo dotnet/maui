@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 {
 	public class FontManager : IFontManager
 	{
-		readonly ConcurrentDictionary<Font, Typeface?> _typefaces = new();
+		readonly ConcurrentDictionary<(string fontFamilyName, FontWeight weight, bool italic) , Typeface?> _typefaces = new();
 		readonly IFontRegistrar _fontRegistrar;
 		readonly ILogger<FontManager>? _logger;
 
@@ -27,7 +27,7 @@ namespace Microsoft.Maui
 			if (font == Font.Default || (font.Weight == FontWeight.Regular && string.IsNullOrEmpty(font.FontFamily) && !font.Italic))
 				return DefaultTypeface;
 
-			return _typefaces.GetOrAdd(font, CreateTypeface);
+			return _typefaces.GetOrAdd((font.FontFamily,font.Weight,font.Italic), CreateTypeface);
 		}
 
 		(bool success, Typeface? typeface) TryGetFromAssets(string fontName)
@@ -105,10 +105,9 @@ namespace Microsoft.Maui
 			return name != null && (name.Contains(".ttf#") || name.Contains(".otf#"));
 		}
 
-		Typeface? CreateTypeface(Font font)
+		Typeface? CreateTypeface((string fontFamilyName, FontWeight weight, bool italic) fontData)
 		{
-			var fontFamily = font.FontFamily;
-			var weight = font.Weight;
+			var (fontFamily, weight, italic) = fontData;
 			fontFamily ??= string.Empty;
 
 			Typeface? result;
@@ -117,7 +116,7 @@ namespace Microsoft.Maui
 			{
 				//var style = ToTypefaceStyle(FontWeight);
 
-				result = Typeface.Create(Typeface.Default, (int)weight, font.Italic);//, style);
+				result = Typeface.Create(Typeface.Default, (int)weight, italic);//, style);
 			}
 			else if (IsAssetFontFamily(fontFamily))
 			{
@@ -135,7 +134,7 @@ namespace Microsoft.Maui
 				{
 					//var style = ToTypefaceStyle(FontWeight);
 
-					return Typeface.Create(Typeface.Default, (int)weight, font.Italic);//, style);
+					return Typeface.Create(Typeface.Default, (int)weight, italic);//, style);
 					//return Typeface.Create(fontFamily, style);
 				}
 			}
