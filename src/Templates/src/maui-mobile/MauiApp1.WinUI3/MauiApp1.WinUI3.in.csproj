@@ -44,6 +44,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+    <EmbeddedResource Remove="Windows\*.xaml" />
 		<EmbeddedResource Include="..\MauiApp1\*.xaml" Link="%(FileName)%(Extension)" />
 	</ItemGroup>
 
