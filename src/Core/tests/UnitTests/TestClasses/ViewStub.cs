@@ -7,7 +7,9 @@ namespace Microsoft.Maui.UnitTests
 	{
 		public bool IsEnabled => { get; set; }
 
-		public bool IsVisible { get; set; }
+		public Visibility Visibility { get; set; }
+
+		public double Opacity { get; set; }
 
 
 		public Rectangle Frame => { get; set; }

@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	{
 		public bool IsEnabled { get; set; } = true;
 
-		public bool IsVisible { get; set; } = true;
+		public Visibility Visibility { get; set; } = Visibility.Visible;
+
+		public double Opacity { get; set; } = 1.0d;
 
 		public Paint Background { get; set; }
 

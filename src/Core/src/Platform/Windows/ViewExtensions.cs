@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 		public static void UpdateIsEnabled(this FrameworkElement nativeView, IView view) =>
 			(nativeView as Control)?.UpdateIsEnabled(view.IsEnabled);
 		
-		public static void UpdateIsVisible(this FrameworkElement nativeView, IView view)
+		public static void UpdateVisibility(this FrameworkElement nativeView, IView view)
 		{
 			nativeView.Visibility = view.IsVisible ? Visibility.Visible : Visibility.Collapsed;
 		}

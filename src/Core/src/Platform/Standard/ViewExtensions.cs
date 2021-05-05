@@ -4,7 +4,7 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateIsEnabled(this object nativeView, IView view) { }
 
-		public static void UpdateIsVisible(this object nativeView, IView view) { }
+		public static void UpdateVisibility(this object nativeView, IView view) { }
 
 		public static void UpdateBackground(this object nativeView, IView view) { }
 

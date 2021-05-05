@@ -16,12 +16,20 @@ namespace Microsoft.Maui
 				nativeView.Enabled = view.IsEnabled;
 		}
 
-		public static void UpdateIsVisible(this AView nativeView, IView view)
+		public static void UpdateVisibility(this AView nativeView, IView view)
 		{
-			if (view.IsVisible && nativeView.Visibility != ViewStates.Visible)
-				nativeView.Visibility = ViewStates.Visible;
-			if (!view.IsVisible && nativeView.Visibility != ViewStates.Gone)
-				nativeView.Visibility = ViewStates.Gone;
+			switch (view.Visibility)
+			{
+				case Visibility.Visible:
+					nativeView.Visibility = ViewStates.Visible;
+					break;
+				case Visibility.Hidden:
+					nativeView.Visibility = ViewStates.Invisible;
+					break;
+				case Visibility.Collapsed:
+					nativeView.Visibility = ViewStates.Gone;
+					break;
+			}
 
 			nativeView.Invalidate();
 			nativeView.RequestLayout();

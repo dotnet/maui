@@ -21,9 +21,25 @@ namespace Microsoft.Maui
 			uiControl.Enabled = view.IsEnabled;
 		}
 
-		public static void UpdateIsVisible(this UIView nativeView, IView view)
+		public static void UpdateVisibility(this UIView nativeView, IView view)
 		{
-			nativeView.Hidden = !view.IsVisible;
+			double opacity = view.Opacity;
+
+			switch (view.Visibility)
+			{
+				case Visibility.Visible:
+					nativeView.Alpha = (float)opacity;
+					nativeView.Hidden = false;
+					break;
+				case Visibility.Hidden:
+					nativeView.Alpha = 0;
+					nativeView.Hidden = false;
+					break;
+				case Visibility.Collapsed:
+					nativeView.Alpha = (float)opacity;
+					nativeView.Hidden = true;
+					break;
+			}
 		}
 
 		public static void UpdateBackground(this UIView nativeView, IView view)

@@ -17,7 +17,12 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets a value that determines whether this FrameworkElement should be part of the visual tree or not.
 		/// </summary>
-		bool IsVisible { get; }
+		Visibility Visibility { get; }
+
+		/// <summary>
+		/// Gets the opacity value applied to the view when it is rendered.
+		/// </summary>
+		double Opacity { get; }
 
 		/// <summary>
 	
