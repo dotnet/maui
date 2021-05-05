@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+		<TargetFrameworks>net472</TargetFrameworks>
 		<AssemblyName>Microsoft.Maui.Controls.Xaml.Design</AssemblyName>
 		<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
 	</PropertyGroup>
@@ -9,19 +9,14 @@
 		<Description>Provides the design-time metadata for the XAML language service.</Description>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(OS)' != 'Unix' ">
-		<Reference Include="Microsoft.Windows.Design.Extensibility, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-			<SpecificVersion>True</SpecificVersion>
+		<Reference Include="Microsoft.Windows.Design.Extensibility, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+				<SpecificVersion>True</SpecificVersion>
+				<HintPath>$(MSBuildToolsPath)\..\..\..\Common7\IDE\PublicAssemblies\Microsoft.Windows.Design.Extensibility.dll</HintPath>
 		</Reference>
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="Xamarin.Forms.Design" Version="1.0.26-pre" Condition=" '$(OS)' != 'Unix' " />
-	</ItemGroup>
-	<ItemGroup Condition=" '$(OS)' != 'Unix' ">
+		<Reference Include="System.Xaml" />
 		<Compile Include="AttributeTableBuilder.cs" />
 		<Compile Include="Properties\AssemblyInfo.cs" />
 		<Compile Include="RegisterMetadata.cs" />
-	</ItemGroup>
-	<ItemGroup>
 		<ProjectReference Include="..\Core\Controls.Core.csproj" />
 		<ProjectReference Include="..\Xaml\Controls.Xaml.csproj">
 			<GenerateDesignMetadata>true</GenerateDesignMetadata>
