@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls
 		bool _containerAreaSet;
 
 		bool _hasAppeared;
+		private protected bool HasAppeared => _hasAppeared;
 
 		ReadOnlyCollection<Element> _logicalChildren;
 

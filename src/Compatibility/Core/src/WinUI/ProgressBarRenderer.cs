@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -82,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 			else
 			{
-				Control.Foreground = color.ToBrush();
+				Control.Foreground = Maui.ColorExtensions.ToNative(color);
 			}
 		}
 

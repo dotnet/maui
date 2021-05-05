@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		[Theory]
-		[InlineData ("#abcdef", "#ffabcdef")]
+		[InlineData("#abcdef", "#ffabcdef")]
 		[InlineData("Red", "#ffff0000")]
 		public void XmlIsValid(string inputColor, string outputColor)
 		{

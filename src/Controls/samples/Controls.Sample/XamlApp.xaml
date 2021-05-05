@@ -1,7 +1,9 @@
 ﻿<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
-             x:Class="Maui.Controls.Sample.XamlApp">
+             xmlns:windows="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;assembly=Microsoft.Maui.Controls"
+             x:Class="Maui.Controls.Sample.XamlApp"
+             windows:Application.ImageDirectory="Assets">
     <Application.Resources>
         <ResourceDictionary>
             <Color x:Key="DotNetPurple">#512BD4</Color>

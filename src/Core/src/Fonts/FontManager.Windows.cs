@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.UI.Xaml.Media;
 
@@ -22,14 +22,14 @@ namespace Microsoft.Maui
 			".otf",
 		};
 
-		readonly ConcurrentDictionary<string, FontFamily> _fonts =
-			new ConcurrentDictionary<string, FontFamily>();
-
+		readonly ConcurrentDictionary<string, FontFamily> _fonts = new();
 		readonly IFontRegistrar _fontRegistrar;
+		readonly ILogger<FontManager>? _logger;
 
-		public FontManager(IFontRegistrar fontRegistrar)
+		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
 		{
 			_fontRegistrar = fontRegistrar;
+			_logger = logger;
 		}
 
 		public FontFamily DefaultFontFamily =>
@@ -178,7 +178,8 @@ namespace Microsoft.Maui
 			catch (Exception ex)
 			{
 				// the CanvasFontSet constructor can throw an exception in case something's wrong with the font. It should not crash the app
-				Debug.WriteLine("Font", $"Error loading font {fontFile}: {ex.Message}");
+
+				_logger?.LogError(ex, "Error loading font '{Font}'.", fontFile);
 
 				return null;
 			}

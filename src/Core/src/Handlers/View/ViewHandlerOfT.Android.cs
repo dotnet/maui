@@ -1,3 +1,5 @@
+using System;
+using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
@@ -11,7 +13,13 @@ namespace Microsoft.Maui.Handlers
 		View? INativeViewHandler.NativeView => (View?)base.NativeView;
 		public Context? Context => MauiContext?.Context;
 
-		public override void SetFrame(Rectangle frame)
+		protected Context ContextWithValidation([CallerMemberName] string callerName = "")
+		{
+			_ = Context ?? throw new InvalidOperationException($"Context cannot be null here: {callerName}");
+			return Context;
+		}
+
+		public override void NativeArrange(Rectangle frame)
 		{
 			var nativeView = NativeView;
 

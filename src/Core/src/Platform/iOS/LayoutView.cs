@@ -1,6 +1,5 @@
 using System;
 using CoreGraphics;
-using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -56,5 +55,23 @@ namespace Microsoft.Maui
 		}
 
 		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
+	}
+
+	public class PageViewController : ContainerViewController
+	{
+		public PageViewController(IPage page, IMauiContext mauiContext)
+		{
+			CurrentView = page;
+			Context = mauiContext;
+			LoadFirstView(page);
+		}
+
+		protected override UIView CreateNativeView(IView view)
+		{
+			return new PageView
+			{
+				CrossPlatformArrange = view.Arrange,
+			};
+		}
 	}
 }

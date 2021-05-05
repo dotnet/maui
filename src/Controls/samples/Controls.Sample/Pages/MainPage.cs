@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.ViewModel;
@@ -20,10 +21,20 @@ namespace Maui.Controls.Sample.Pages
 
 		public MainPage(IServiceProvider services, MainPageViewModel viewModel)
 		{
+			BackgroundColor = Colors.White;
+			ToolbarItems.Add(new ToolbarItem()
+			{
+				Text = "Page"
+			});
+
+			Title = "Welcome to the Samples";
 			_services = services;
 			BindingContext = _viewModel = viewModel;
 
 			SetupMauiLayout();
+
+			NavigationPage.SetHasNavigationBar(this, false);
+
 			//SetupCompatibilityLayout();
 		}
 
@@ -42,6 +53,8 @@ namespace Maui.Controls.Sample.Pages
 			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Colors.CornflowerBlue };
 
 			verticalStack.Add(CreateSampleGrid());
+			verticalStack.Add(CreateResizingButton());
+
 			AddTextResizeDemo(verticalStack);
 
 			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
@@ -58,17 +71,17 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center });
 			verticalStack.Add(new Label { Text = "This should have character spacing!", CharacterSpacing = 3 });
 			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
+			verticalStack.Add(
+				new Button
+				{
+					Text = "Push a Page",
+					Command = new Command(async () =>
+					{
+						await Navigation.PushAsync(new SemanticsPage());
+					})
+				}
+			);
 
-
-#if __ANDROID__
-			string fontFamily = "ionicons.ttf#";
-#elif WINDOWS
-			string fontFamily = "Assets/ionicons.ttf#ionicons";
-#else
-			string fontFamily = "Ionicons";
-#endif
-
-			verticalStack.Add(new Image { Source = new FontImageSource() { FontFamily = fontFamily, Glyph = '\uf2fe'.ToString() } });
 			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Colors.LightBlue });
 			verticalStack.Add(new Label { Text = loremIpsum });
 			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2 });
@@ -212,12 +225,58 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new TimePicker());
 			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
 
-			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
+			verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
+			verticalStack.Add(CreateImagesGrid());
 
 			Content = new ScrollView
 			{
 				Content = verticalStack
 			};
+		}
+
+		Button CreateResizingButton()
+		{
+			var initialWidth = 200;
+			var otherWidth = 100;
+
+			var initialHeight = 80;
+			var otherHeight = 140;
+
+			var count = 1;
+
+			var resizeButton = new Button
+			{
+				Text = "Resize",
+				BackgroundColor = Colors.Gray,
+				WidthRequest = initialWidth,
+				HeightRequest = initialHeight
+			};
+
+			resizeButton.Clicked += (sender, args) =>
+			{
+
+				count += 1;
+
+				if (count == 1)
+				{
+					resizeButton.WidthRequest = initialWidth;
+					resizeButton.HeightRequest = initialHeight;
+				}
+				else if (count == 2)
+				{
+					resizeButton.WidthRequest = otherWidth;
+					resizeButton.HeightRequest = otherHeight;
+				}
+				else
+				{
+					// Go back to using whatever the layout gives us
+					resizeButton.WidthRequest = -1;
+					resizeButton.HeightRequest = -1;
+					count = 0;
+				}
+			};
+
+			return resizeButton;
 		}
 
 		void SetupCompatibilityLayout()
@@ -257,6 +316,78 @@ namespace Maui.Controls.Sample.Pages
 			});
 
 			Content = verticalStack;
+		}
+
+		IView CreateImagesGrid()
+		{
+			var layout = new Microsoft.Maui.Controls.Layout2.GridLayout { ColumnSpacing = 10, RowSpacing = 10, Margin = 10 };
+
+			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
+			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
+			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
+			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
+			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
+
+			layout.AddColumnDefinition(new ColumnDefinition { Width = new GridLength(120) });
+			layout.AddColumnDefinition(new ColumnDefinition { Width = new GridLength(120) });
+
+			var row = -1;
+
+			Add(new Label { Text = "App Bundle", WidthRequest = 150 }, row: (row += 2) - 1, col: 0, colSpan: 2);
+			Add(new Image { Source = "dotnet_bot.png" }, row: row, col: 0);
+			Add(new Image { Source = "animated_heart.gif", IsAnimationPlaying = true }, row: row, col: 1);
+
+			Add(new Label { Text = "File", WidthRequest = 150 }, row: (row += 2) - 1, col: 0, colSpan: 2);
+			Add(new Image { Source = CopyLocal("dotnet_bot.png") }, row: row, col: 0);
+			Add(new Image { Source = CopyLocal("animated_heart.gif"), IsAnimationPlaying = true }, row: row, col: 1);
+
+			Add(new Label { Text = "Font", WidthRequest = 150 }, row: (row += 2) - 1, col: 0, colSpan: 2);
+			Add(new Image { Source = new FontImageSource { FontFamily = "Ionicons", Glyph = "\uf2fe" }, BackgroundColor = Color.FromUint(0xFF512BD4), Aspect = Aspect.Center }, row: row, col: 0);
+			Add(new Image { Source = new FontImageSource { FontFamily = "Dokdo", Glyph = "M" }, BackgroundColor = Color.FromUint(0xFF512BD4), Aspect = Aspect.Center }, row: row, col: 1);
+
+			Add(new Label { Text = "URI", WidthRequest = 150 }, row: (row += 2) - 1, col: 0, colSpan: 2);
+			Add(new Image { Source = "https://raw.githubusercontent.com/dotnet-foundation/swag/05cc70d33fa8c310147b9bd70ae9e103a072cae0/dotnet-bot/dotnet-bot-pot.png" }, row: row, col: 0);
+			Add(new Image { Source = "https://raw.githubusercontent.com/mono/SkiaSharp/6753bfad91dce1894c69084555dab6494efa90eb/samples/Gallery/Shared/Media/animated-heart.gif", IsAnimationPlaying = true }, row: row, col: 1);
+
+			Add(new Label { Text = "Stream", WidthRequest = 150 }, row: (row += 2) - 1, col: 0, colSpan: 2);
+			Add(new Image { Source = ImageSource.FromStream(() => GetEmbedded("dotnet_bot.png")) }, row: row, col: 0);
+			Add(new Image { Source = ImageSource.FromStream(() => GetEmbedded("animated_heart.gif")), IsAnimationPlaying = true }, row: row, col: 1);
+
+			return layout;
+
+			void Add(IView view, int row = 0, int col = 0, int rowSpan = 1, int colSpan = 1)
+			{
+				layout.Add(view);
+				layout.SetRow(view, row);
+				layout.SetRowSpan(view, rowSpan);
+				layout.SetColumn(view, col);
+				layout.SetColumnSpan(view, colSpan);
+			}
+
+			string CopyLocal(string embeddedPath)
+			{
+				var path = Path.Combine(FileSystem.CacheDirectory, Guid.NewGuid().ToString("N"));
+
+				using var stream = GetEmbedded(embeddedPath);
+				using var file = File.Create(path);
+				stream.CopyTo(file);
+
+				return path;
+			}
+
+			Stream GetEmbedded(string embeddedPath)
+			{
+				var assembly = GetType().Assembly;
+				var name = assembly
+					.GetManifestResourceNames()
+					.First(n => n.EndsWith(embeddedPath, StringComparison.InvariantCultureIgnoreCase));
+				return assembly.GetManifestResourceStream(name);
+			}
 		}
 
 		IView CreateSampleGrid()

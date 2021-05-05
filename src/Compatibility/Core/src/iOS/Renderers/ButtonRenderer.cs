@@ -5,6 +5,7 @@ using UIKit;
 using SizeF = CoreGraphics.CGSize;
 using PreserveAttribute = Foundation.PreserveAttribute;
 using CoreGraphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {

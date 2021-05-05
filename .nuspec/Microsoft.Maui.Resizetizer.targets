@@ -38,8 +38,8 @@
             _CleanResizetizer;
         </CleanDependsOn>
 
-        <_ResizetizerInputsFile>$(IntermediateOutputPath)resizetizer.inputs</_ResizetizerInputsFile>
-        <_ResizetizerStampFile>$(IntermediateOutputPath)resizetizer.stamp</_ResizetizerStampFile>
+        <_ResizetizerInputsFile>$(IntermediateOutputPath)mauiimage.inputs</_ResizetizerInputsFile>
+        <_ResizetizerStampFile>$(IntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
         <_MauiFontInputsFile>$(IntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
         <_MauiFontStampFile>$(IntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
         <_MauiSplashInputsFile>$(IntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
@@ -79,6 +79,7 @@
         <ResizetizeDependsOnTargets>
             $(ResizetizeDependsOnTargets);
             ResizetizeCollectItems;
+            ProcessMauiSplashScreens;
         </ResizetizeDependsOnTargets>
         <ProcessMauiFontsDependsOnTargets>
             $(ProcessMauiFontsDependsOnTargets);

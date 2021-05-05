@@ -1,25 +1,15 @@
+#nullable enable
 using System;
-using System.Diagnostics;
 using CoreGraphics;
 using CoreText;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class EmbeddedFontLoader : IEmbeddedFontLoader
+	public partial class EmbeddedFontLoader
 	{
-
-#if !NET6_0
-		// The NET6_0 linker won't need this
-		// Make sure to test with full linking on before removing
-		[Preserve]
-		public EmbeddedFontLoader()
-		{
-
-		}
-#endif
-
 		public (bool success, string? filePath) LoadFont(EmbeddedFont font)
 		{
 			try
@@ -31,21 +21,19 @@ namespace Microsoft.Maui
 				var provider = new CGDataProvider(data);
 				var cGFont = CGFont.CreateFromProvider(provider);
 				var name = cGFont.PostScriptName;
+
 				if (CTFontManager.RegisterGraphicsFont(cGFont, out var error))
-				{
 					return (true, name);
-				}
-				else //Lets check if the font is already registered
-				{
-					var uiFont = UIFont.FromName(name, 10);
-					if (uiFont != null)
-						return (true, name);
-				}
-				Debug.WriteLine(error.Description);
+
+				var uiFont = UIFont.FromName(name, 10);
+				if (uiFont != null)
+					return (true, name);
+
+				throw new NSErrorException(error);
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(ex);
+				_logger?.LogWarning(ex, "Unable register font {Font} with the system.", font.FontName);
 			}
 
 			return (false, null);

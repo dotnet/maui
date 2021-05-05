@@ -9,12 +9,12 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Windows.UI.Text;
 using Microsoft.Maui.Controls.Compatibility.Platform.UAP;
-using Microsoft.Maui.Controls.Compatibility.Platform.UAP.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Label;
 using WRect = Windows.Foundation.Rect;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var run = new Run { Text = span.Text ?? string.Empty };
 
 			if (span.TextColor.IsNotDefault())
-				run.Foreground = span.TextColor.ToBrush();
+				run.Foreground = Maui.ColorExtensions.ToNative(span.TextColor);
 
 			if (!span.IsDefault())
 				run.ApplyFont(span);
@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Label label = Element;
 			if (label != null && label.TextColor.IsNotDefault())
 			{
-				textBlock.Foreground = label.TextColor.ToBrush();
+				textBlock.Foreground = Maui.ColorExtensions.ToNative(label.TextColor);
 			}
 			else
 			{
