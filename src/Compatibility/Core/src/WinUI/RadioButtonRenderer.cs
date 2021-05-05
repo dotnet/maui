@@ -210,6 +210,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			);
 		}
 
+		[PortHandler]
 		void UpdateCheck()
 		{
 			if (Control == null || Element == null)
