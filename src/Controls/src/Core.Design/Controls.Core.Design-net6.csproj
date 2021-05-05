@@ -12,6 +12,7 @@
 		</Reference>
 		<Reference Include="System.Xaml" />
 		<Compile Include="AttributeTableBuilder.cs" />
+		<Compile Include="NamedColorsConverter.cs" />
 		<Compile Include="EnumConverter.cs" />
 		<Compile Include="NonExclusiveEnumConverter.cs" />
 		<Compile Include="Properties\AssemblyInfo.cs" />
