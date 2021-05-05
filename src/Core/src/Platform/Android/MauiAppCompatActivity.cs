@@ -13,6 +13,7 @@ namespace Microsoft.Maui
 	{
 		protected override void OnCreate(Bundle? savedInstanceState)
 		{
+			Java.Lang.JavaSystem.LoadLibrary("System.Security.Cryptography.Native.OpenSsl");
 			// If the theme has the maui_splash attribute, change the theme
 			if (Theme.TryResolveAttribute(Resource.Attribute.maui_splash))
 			{
