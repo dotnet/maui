@@ -27,14 +27,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		const string LogFormat = "[{0}] {1}";
 		private static ApplicationExecutionState s_state;
-		private static IFontManager s_fontManager;
 
 		//TODO WINUI3 This is set by main page currently because
 		// it's only a single window
 		public static UI.Xaml.Window MainWindow { get; set; }
-
-		internal static IFontManager FontManager =>
-			s_fontManager ??= new FontManager(Registrar.FontRegistrar);
 
 		public static bool IsInitialized { get; private set; }
 		public static IMauiContext MauiContext { get; private set; }

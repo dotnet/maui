@@ -17,12 +17,11 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-		<PackageReference Include="Microsoft.Maui.Graphics" />
+    <PackageReference Include="Microsoft.Maui.Graphics" />
     <PackageReference Include="Reloadify3000" Version="1.0.6" />
   </ItemGroup>
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
-    <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\Microsoft.Maui.pri" Visible="False" Pack="True" PackagePath="runtimes\$(WindowsTargetFramework)\native" />
-    <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\**\*.xbf" Visible="False" Pack="True" PackagePath="lib\$(WindowsTargetFramework)\%(RecursiveDir)%(FileName)%(Extension);runtimes\$(WindowsTargetFramework)\native\%(RecursiveDir)%(FileName)%(Extension)" />
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <PackageReference Include="Xamarin.Android.Glide" />
   </ItemGroup>
 </Project>
 
