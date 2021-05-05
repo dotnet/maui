@@ -7,7 +7,12 @@ namespace Microsoft.Maui
 	public static class FontExtensions
 	{
 		public static FontStyle ToFontStyle(this Font fontAttributes) =>
-			fontAttributes.Italic ? FontStyle.Italic : FontStyle.Normal;
+				fontAttributes.FontSlant switch
+				{
+					FontSlant.Italic => FontStyle.Italic,
+					FontSlant.Oblique => FontStyle.Oblique,
+					_ => FontStyle.Normal,
+				};
 
 		public static FWeight ToFontWeight(this Font font) => font.Weight switch
 		{
