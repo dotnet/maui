@@ -53,25 +53,6 @@ namespace Microsoft.Maui.Controls
 			SetCancelEvents(bindable, false);
 		}
 
-		static void OnNamedSizeChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-
-			if (GetCancelEvents(bindable))
-				return;
-
-			SetCancelEvents(bindable, true);
-
-			var namedSize = (NamedSize)bindable.GetValue(FontNamedSizeProperty);
-			var fontSize = Device.GetNamedSize(namedSize, bindable.GetType(), true);
-			var fontAttributes = (FontAttributes)bindable.GetValue(FontAttributesProperty);
-			var fontFamily = (string)newValue;
-
-			if (fontFamily != null)
-				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize).WithAttributes(fontAttributes));
-			else
-				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize).WithAttributes(fontAttributes));
-		}
-
 		static void OnFontFamilyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (GetCancelEvents(bindable))
