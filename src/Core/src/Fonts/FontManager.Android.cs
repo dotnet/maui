@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 
 		public Typeface? GetTypeface(Font font)
 		{
-			if (font == Font.Default || (font.Weight == FontWeight.Regular && string.IsNullOrEmpty(font.FontFamily)))
+			if (font == Font.Default || (font.Weight == FontWeight.Regular && string.IsNullOrEmpty(font.FontFamily) && !font.Italic))
 				return DefaultTypeface;
 
 			return _typefaces.GetOrAdd(font, CreateTypeface);
@@ -117,7 +117,7 @@ namespace Microsoft.Maui
 			{
 				//var style = ToTypefaceStyle(FontWeight);
 
-				result = Typeface.Create(Typeface.Default, (int)weight,false );//, style);
+				result = Typeface.Create(Typeface.Default, (int)weight, font.Italic);//, style);
 			}
 			else if (IsAssetFontFamily(fontFamily))
 			{
@@ -135,7 +135,7 @@ namespace Microsoft.Maui
 				{
 					//var style = ToTypefaceStyle(FontWeight);
 
-					return Typeface.Create(Typeface.Default, (int)weight, false);//, style);
+					return Typeface.Create(Typeface.Default, (int)weight, font.Italic);//, style);
 					//return Typeface.Create(fontFamily, style);
 				}
 			}
