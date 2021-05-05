@@ -27,5 +27,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Throws(typeof(KeyNotFoundException), () => gl.GetColumn(view));
 			Assert.Throws(typeof(KeyNotFoundException), () => gl.GetColumnSpan(view));
 		}
+
+		[Test]
+		public void AddedViewGetsDefaultRowAndColumn()
+		{
+			var gl = new GridLayout();
+			var view = new Label();
+
+			gl.Add(view);
+			Assert.AreEqual(0, gl.GetRow(view));
+			Assert.AreEqual(0, gl.GetColumn(view));
+			Assert.AreEqual(1, gl.GetRowSpan(view));
+			Assert.AreEqual(1, gl.GetColumnSpan(view));
+		}
 	}
 }
