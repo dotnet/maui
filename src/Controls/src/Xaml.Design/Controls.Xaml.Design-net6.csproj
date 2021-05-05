@@ -3,10 +3,7 @@
 		<TargetFrameworks>net472</TargetFrameworks>
 		<AssemblyName>Microsoft.Maui.Controls.Xaml.Design</AssemblyName>
 		<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
-	</PropertyGroup>
-	<PropertyGroup>
-		<PackageId>Microsoft.Maui.Controls.Xaml.Design</PackageId>
-		<Description>Provides the design-time metadata for the XAML language service.</Description>
+		<Packable>False</Packable>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(OS)' != 'Unix' ">
 		<Reference Include="Microsoft.Windows.Design.Extensibility, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">

@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>net472</TargetFrameworks>
-		<AssemblyName>Microsoft.Maui.Controls.Core.Design</AssemblyName>
+		<AssemblyName>Microsoft.Maui.Controls.Design</AssemblyName>
 		<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
-	</PropertyGroup>
-	<PropertyGroup>
-		<PackageId>Microsoft.Maui.Controls.Core.Design</PackageId>
+		<Packable>False</Packable>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(OS)' != 'Unix' ">
 		<Reference Include="Microsoft.Windows.Design.Extensibility, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -28,6 +26,7 @@
 			<Private>False</Private>
 		</ProjectReference>
 	</ItemGroup>
+
 	<!-- The IDE will look for a top level assembly resource called 'Microsoft.Maui.toolbox.xml' to -->
 	<!-- load the toolbox metadata from.                                                           -->
 	<ItemGroup>
