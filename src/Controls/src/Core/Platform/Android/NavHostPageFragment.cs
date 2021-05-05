@@ -8,12 +8,12 @@ using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
 using Microsoft.Maui.Controls.Handlers;
 using AView = Android.Views.View;
-using AndroidX.CoordinatorLayout.Widget;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var appBar = NavDestination.NavigationPageHandler.AppBar;
 				if (!showNavBar)
 				{
-					if(appBar.LayoutParameters is CoordinatorLayout.LayoutParams cl)
+					if (appBar.LayoutParameters is CoordinatorLayout.LayoutParams cl)
 					{
 						cl.Height = 0;
 						appBar.LayoutParameters = cl;
