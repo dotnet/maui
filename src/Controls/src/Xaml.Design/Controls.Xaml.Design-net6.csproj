@@ -17,8 +17,8 @@
 		<Compile Include="AttributeTableBuilder.cs" />
 		<Compile Include="Properties\AssemblyInfo.cs" />
 		<Compile Include="RegisterMetadata.cs" />
-		<ProjectReference Include="..\Core\Controls.Core.csproj" />
-		<ProjectReference Include="..\Xaml\Controls.Xaml.csproj">
+		<ProjectReference Include="..\Core\Controls.Core-net6.csproj" />
+		<ProjectReference Include="..\Xaml\Controls.Xaml-net6.csproj">
 			<GenerateDesignMetadata>true</GenerateDesignMetadata>
 			<Private>False</Private>
 		</ProjectReference>

@@ -22,8 +22,8 @@
 		<Compile Include="ItemsLayoutDesignTypeConverter.cs" />
 		<Compile Include="KeyboardDesignTypeConverter.cs" />
 		<Compile Include="EasingDesignTypeConverter.cs" />
-		<ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-		<ProjectReference Include="..\Core\Controls.Core.csproj">
+		<ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+		<ProjectReference Include="..\Core\Controls.Core-net6.csproj">
 			<GenerateDesignMetadata>true</GenerateDesignMetadata>
 			<Private>False</Private>
 		</ProjectReference>
