@@ -31,10 +31,10 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label) => 
-			handler.TextBlock?.UpdateHorizontalTextAlignment(label);
+			handler.RealNativeView?.UpdateHorizontalTextAlignment(label);
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label) => 
-			handler.TextBlock?.UpdateLineBreakMode(label);
+			handler.RealNativeView?.UpdateLineBreakMode(label);
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label) =>	
 			handler.RealNativeView?.UpdateTextDecorations(label);
@@ -46,6 +46,6 @@ namespace Microsoft.Maui.Handlers
 			handler.RealNativeView?.UpdatePadding(label);
 
 		public static void MapLineHeight(LabelHandler handler, ILabel label) =>		
-			handler.TextBlock?.UpdateLineHeight(label);
+			handler.RealNativeView?.UpdateLineHeight(label);
 	}
 }
