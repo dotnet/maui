@@ -3,7 +3,7 @@ using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class RadioButtonHandler : AbstractViewHandler<IRadioButton, AppCompatRadioButton>
+	public partial class RadioButtonHandler : ViewHandler<IRadioButton, AppCompatRadioButton>
 	{
 		CompoundButtonCheckedChangeListener CheckedChangeListener { get; } = new CompoundButtonCheckedChangeListener();
 
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
 		{
-			handler.TypedNativeView?.UpdateIsChecked(radioButton);
+			handler.NativeView?.UpdateIsChecked(radioButton);
 		}
 
 		void UpdateIsChecked(bool isChecked)

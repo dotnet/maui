@@ -3,7 +3,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class RadioButtonHandler : AbstractViewHandler<IRadioButton, UIButton>
+	public partial class RadioButtonHandler : ViewHandler<IRadioButton, UIButton>
 	{
 		static readonly UIControlState[] ControlStates = { UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled };
 
@@ -23,31 +23,31 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsChecked(RadioButtonHandler handler, IRadioButton radioButton)
 		{
-			handler.TypedNativeView?.UpdateIsChecked(radioButton, RadioButtonLayer);
+			handler.NativeView?.UpdateIsChecked(radioButton, RadioButtonLayer);
 		}
 
 		protected virtual CALayer CreateRadioBoxLayer()
 		{
-			return new RadioButtonCALayer(VirtualView, TypedNativeView);
+			return new RadioButtonCALayer(VirtualView, NativeView);
 		}
 
 		void SetControlPropertiesFromProxy()
 		{
-			if (TypedNativeView == null)
+			if (NativeView == null)
 				return;
 
 			foreach (UIControlState uiControlState in ControlStates)
 			{
-				TypedNativeView.SetTitleColor(UIButton.Appearance.TitleColor(uiControlState), uiControlState); // If new values are null, old values are preserved.
-				TypedNativeView.SetTitleShadowColor(UIButton.Appearance.TitleShadowColor(uiControlState), uiControlState);
-				TypedNativeView.SetBackgroundImage(UIButton.Appearance.BackgroundImageForState(uiControlState), uiControlState);
+				NativeView.SetTitleColor(UIButton.Appearance.TitleColor(uiControlState), uiControlState); // If new values are null, old values are preserved.
+				NativeView.SetTitleShadowColor(UIButton.Appearance.TitleShadowColor(uiControlState), uiControlState);
+				NativeView.SetBackgroundImage(UIButton.Appearance.BackgroundImageForState(uiControlState), uiControlState);
 			}
 		}
 
 		void SetRadioBoxLayer(CALayer layer)
 		{
 			RadioButtonLayer = layer;
-			TypedNativeView?.Layer.AddSublayer(RadioButtonLayer);
+			NativeView?.Layer.AddSublayer(RadioButtonLayer);
 			RadioButtonLayer.SetNeedsLayout();
 			RadioButtonLayer.SetNeedsDisplay();
 		}
