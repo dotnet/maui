@@ -4,10 +4,10 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
-	public class GridLayoutTests 
+	public class GridLayoutTests
 	{
 		[Test]
-		public void RemovedViewsHaveNoRowColumnInfo() 
+		public void RemovedViewsHaveNoRowColumnInfo()
 		{
 			var gl = new GridLayout();
 			var view = new Label();

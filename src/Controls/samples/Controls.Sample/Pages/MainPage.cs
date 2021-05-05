@@ -34,7 +34,7 @@ namespace Maui.Controls.Sample.Pages
 			SetupMauiLayout();
 
 			NavigationPage.SetHasNavigationBar(this, false);
-	
+
 			//SetupCompatibilityLayout();
 		}
 
