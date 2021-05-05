@@ -4,10 +4,10 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
-	public class GridLayoutTests 
+	public class GridLayoutTests
 	{
 		[Test]
-		public void RemovedViewsHaveNoRowColumnInfo() 
+		public void RemovedViewsHaveNoRowColumnInfo()
 		{
 			var gl = new GridLayout();
 			var view = new Label();
@@ -26,6 +26,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Throws(typeof(KeyNotFoundException), () => gl.GetRowSpan(view));
 			Assert.Throws(typeof(KeyNotFoundException), () => gl.GetColumn(view));
 			Assert.Throws(typeof(KeyNotFoundException), () => gl.GetColumnSpan(view));
+		}
+
+		[Test]
+		public void AddedViewGetsDefaultRowAndColumn()
+		{
+			var gl = new GridLayout();
+			var view = new Label();
+
+			gl.Add(view);
+			Assert.AreEqual(0, gl.GetRow(view));
+			Assert.AreEqual(0, gl.GetColumn(view));
+			Assert.AreEqual(1, gl.GetRowSpan(view));
+			Assert.AreEqual(1, gl.GetColumnSpan(view));
 		}
 	}
 }

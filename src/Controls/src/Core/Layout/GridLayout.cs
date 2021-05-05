@@ -15,7 +15,13 @@ namespace Microsoft.Maui.Controls.Layout2
 		public double RowSpacing { get; set; }
 		public double ColumnSpacing { get; set; }
 
-		Dictionary<IView, GridInfo> _viewInfo = new Dictionary<IView, GridInfo>();
+		readonly Dictionary<IView, GridInfo> _viewInfo = new();
+
+		public override void Add(IView child)
+		{
+			base.Add(child);
+			_viewInfo[child] = new GridInfo();
+		}
 
 		public override void Remove(IView child)
 		{
