@@ -17,6 +17,6 @@
     <PackageReference Include="Reloadify3000" Version="1.0.6" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid'))">
-    <PackageReference Include="Xamarin.Android.Glide" Version="$(_XamarinAndroidGlideVersion)" />
+    <PackageReference Include="Xamarin.Android.Glide" />
   </ItemGroup>
 </Project>
