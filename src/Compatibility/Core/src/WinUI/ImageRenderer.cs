@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -87,13 +88,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				ImageElementManager.RefreshImage(this);
 			}
 
-			Element?.SetIsLoading(false);
+			((IImageController)Element)?.SetIsLoading(false);
 		}
 
 		protected virtual void OnImageFailed(object sender, ExceptionRoutedEventArgs exceptionRoutedEventArgs)
 		{
 			Log.Warning("Image Loading", $"Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}");
-			Element?.SetIsLoading(false);
+			((IImageController)Element)?.SetIsLoading(false);
 		}
 
 		protected virtual async Task TryUpdateSource()

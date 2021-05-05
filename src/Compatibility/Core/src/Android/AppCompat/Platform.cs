@@ -8,6 +8,7 @@ using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -257,7 +258,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			{
 				returnValue = new SizeRequest(Size.Zero, Size.Zero);
 			}
-			else if (visualElementRenderer == null && view is IView iView)
+			else if ((visualElementRenderer == null || visualElementRenderer is HandlerToRendererShim) && view is IView iView)
 			{
 				returnValue = iView.Handler.GetDesiredSize(widthConstraint, heightConstraint);
 			}

@@ -1,8 +1,8 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;Xamarin.iOS10;MonoAndroid10.0;</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);uap10.0.16299</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;$(NonNet6Platforms)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' AND '$(BuildNonNet6ForAndroid)' == 'false' AND '$(BuildNonNet6ForiOS)' == 'false' ">$(TargetFrameworks);uap10.0.16299</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.TestUtils</RootNamespace>
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests</AssemblyName>
 

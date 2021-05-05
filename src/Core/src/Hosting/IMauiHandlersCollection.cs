@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Hosting
 {
-	public interface IMauiHandlersCollection : IServiceCollection
+	public interface IMauiHandlersCollection : IMauiServiceCollection
 	{
 	}
 }

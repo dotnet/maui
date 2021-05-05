@@ -3,7 +3,7 @@ using System;
 
 namespace Microsoft.Maui
 {
-	public interface IMauiHandlersServiceProvider : IServiceProvider
+	public interface IMauiHandlersServiceProvider : IMauiServiceProvider
 	{
 		Type? GetHandlerType(Type iview);
 

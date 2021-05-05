@@ -65,5 +65,22 @@ namespace Microsoft.Maui
 			else
 				nativeControl.SetValue(property, value);
 		}
+
+		public static void InvalidateMeasure(this FrameworkElement nativeView, IView view) 
+		{
+			nativeView.InvalidateMeasure();
+		}
+
+		public static void UpdateWidth(this FrameworkElement nativeView, IView view)
+		{
+			// WinUI uses NaN for "unspecified"
+			nativeView.Width = view.Width >= 0 ? view.Width : double.NaN;
+		}
+
+		public static void UpdateHeight(this FrameworkElement nativeView, IView view)
+		{
+			// WinUI uses NaN for "unspecified"
+			nativeView.Height = view.Height >= 0 ? view.Height : double.NaN;
+		}
 	}
 }

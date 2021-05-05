@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 using PageSpecific = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
