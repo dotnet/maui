@@ -1,31 +1,45 @@
+#nullable enable
+
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using Microsoft.Maui;
 
 namespace Microsoft.Maui.Controls
 {
 	public class Window : VisualElement, IWindow
 	{
-		ReadOnlyCollection<Element> _logicalChildren;
+		ReadOnlyCollection<Element>? _logicalChildren;
+		Page? _page;
+
 		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
+
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
-			_logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
+			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
 
-		Page _page;
-
-		public Window(Page page)
+		public Window()
 		{
 			InternalChildren.CollectionChanged += OnCollectionChanged;
+		}
+
+		public Window(Page page)
+			: this()
+		{
 			Page = page;
 		}
 
-		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+
+		void SendWindowAppearing()
+		{
+			Page?.SendAppearing();
+		}
+
+		void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (e.OldItems != null)
 			{
 				for (var i = 0; i < e.OldItems.Count; i++)
 				{
-					var item = (Element)e.OldItems[i];
+					var item = (Element?)e.OldItems[i];
 					OnChildRemoved(item, e.OldStartingIndex + i);
 				}
 			}
@@ -35,17 +49,17 @@ namespace Microsoft.Maui.Controls
 				foreach (Element item in e.NewItems)
 				{
 					OnChildAdded(item);
+
+					// TODO once we have better life cycle events on pages 
+					if (item is Page)
+					{
+						SendWindowAppearing();
+					}
 				}
 			}
 		}
 
-		public Page Page
-		{
-			get => (Page)(this as IWindow).View;
-			set => (this as IWindow).View = (IView)value;
-		}
-
-		IView IWindow.View
+		public Page? Page
 		{
 			get => _page;
 			set
@@ -53,14 +67,20 @@ namespace Microsoft.Maui.Controls
 				if (_page != null)
 					InternalChildren.Remove(_page);
 
-				_page = (Page)value;
+				_page = value;
 
-				if (value != null)
+				if (_page != null)
 					InternalChildren.Add(_page);
 
 				if (value is NavigableElement ne)
 					ne.NavigationProxy.Inner = NavigationProxy;
 			}
+		}
+
+		IView IWindow.View
+		{
+			get => Page ?? throw new InvalidOperationException("No page was set on the window.");
+			set => Page = (Page)value;
 		}
 	}
 }

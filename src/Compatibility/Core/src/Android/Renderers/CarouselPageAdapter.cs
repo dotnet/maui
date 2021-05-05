@@ -6,6 +6,7 @@ using Android.Views;
 using AndroidX.Core.View;
 using AndroidX.ViewPager.Widget;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Object = Java.Lang.Object;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android

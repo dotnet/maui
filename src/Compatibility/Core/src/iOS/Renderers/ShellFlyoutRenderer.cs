@@ -2,6 +2,7 @@ using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using MediaPlayer;
+using Microsoft.Maui.Controls.Platform;
 using System;
 using System.ComponentModel;
 using UIKit;

@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui
 {
-	public static class JavaObjectExtensions
+	static class JavaObjectExtensions
 	{
-		static bool IsDisposed(this Java.Lang.Object obj)
+		public static bool IsDisposed(this Java.Lang.Object obj)
 		{
 			return obj.Handle == IntPtr.Zero;
 		}
 
-		static bool IsDisposed(this global::Android.Runtime.IJavaObject obj)
+		public static bool IsDisposed(this global::Android.Runtime.IJavaObject obj)
 		{
 			return obj.Handle == IntPtr.Zero;
 		}

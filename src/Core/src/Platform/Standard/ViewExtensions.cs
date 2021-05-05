@@ -11,5 +11,11 @@ namespace Microsoft.Maui
 		public static void UpdateOpacity(this object nativeView, IView view) { }
 
 		public static void UpdateSemantics(this object nativeView, IView view) { }
+
+		public static void InvalidateMeasure(this object nativeView, IView view) { }
+
+		public static void UpdateWidth(this object nativeView, IView view) { }
+
+		public static void UpdateHeight(this object nativeView, IView view) { }
 	}
 }

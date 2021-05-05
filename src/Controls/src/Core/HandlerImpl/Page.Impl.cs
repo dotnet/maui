@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Page : IPage
 	{
-		IView IPage.Content => throw new NotImplementedException();
+		IView IPage.Content => null;
 
-		Thickness IView.Margin => Thickness.Zero;
+		// TODO ezhart super sus
+		public Thickness Margin => Thickness.Zero;
 	}
 }

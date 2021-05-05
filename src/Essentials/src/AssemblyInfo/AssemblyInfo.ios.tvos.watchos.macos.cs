@@ -1,3 +1,3 @@
 using System.Reflection;
 
-[assembly: AssemblyMetadata ("IsTrimmable", "True")]
+[assembly: AssemblyMetadata("IsTrimmable", "True")]

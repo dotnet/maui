@@ -14,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public double Opacity { get; set; } = 1.0d;
 
-		public Rectangle Frame { get; set; } = new Rectangle(0, 0, 20, 20);
+		public Rectangle Frame { get; set; }
 
 		public IViewHandler Handler { get; set; }
 
@@ -22,9 +22,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Size DesiredSize { get; set; } = new Size(20, 20);
 
-		public double Width { get; set; }
+		public double Width { get; set; } = 20;
 
-		public double Height { get; set; }
+		public double Height { get; set; } = 20;
 
 		public Thickness Margin { get; set; }
 
