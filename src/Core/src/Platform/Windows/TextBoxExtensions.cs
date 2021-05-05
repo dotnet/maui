@@ -16,11 +16,11 @@ namespace Microsoft.Maui
 			textBox.Foreground = brush;
 			textBox.ForegroundFocusBrush = brush;
 		}
-    
+
 		public static void UpdateReturnType(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.InputScope = entry.ReturnType.ToNative();
-    }
+		}
 
 		public static void UpdatePlaceholder(this MauiTextBox textBox, IEntry entry)
 		{
