@@ -11,16 +11,18 @@
 			textView.Foreground = brush;
 			textView.ForegroundFocusBrush = brush;
 		}
-		
+
 		public static void UpdateText(this MauiTextBox nativeControl, IEditor editor)
 		{
 			string newText = editor.Text;
 
 			if (nativeControl.Text == newText)
 				return;
-			
+
 			nativeControl.Text = newText;
-			nativeControl.SelectionStart = nativeControl.Text.Length;
+
+			if (!string.IsNullOrEmpty(nativeControl.Text))
+				nativeControl.SelectionStart = nativeControl.Text.Length;
 		}
 
 		public static void UpdateText(this MauiTextBox nativeControl, IEntry entry)
