@@ -30,6 +30,10 @@ namespace Microsoft.Maui
 			return _typefaces.GetOrAdd((font.FontFamily,font.Weight,font.FontSlant != FontSlant.Default), CreateTypeface);
 		}
 
+		public float GetFontSize(Font font) =>
+			font.FontSize <= 0 ? 14f : (float)font.FontSize;
+		
+
 		(bool success, Typeface? typeface) TryGetFromAssets(string fontName)
 		{
 			//First check Alias
@@ -114,8 +118,6 @@ namespace Microsoft.Maui
 
 			if (string.IsNullOrWhiteSpace(fontFamily))
 			{
-				//var style = ToTypefaceStyle(FontWeight);
-
 				result = Typeface.Create(Typeface.Default, (int)weight, italic);//, style);
 			}
 			else if (IsAssetFontFamily(fontFamily))
@@ -132,26 +134,11 @@ namespace Microsoft.Maui
 				}
 				else
 				{
-					//var style = ToTypefaceStyle(FontWeight);
-
-					return Typeface.Create(Typeface.Default, (int)weight, italic);//, style);
-					//return Typeface.Create(fontFamily, style);
+					return Typeface.Create(Typeface.Default, (int)weight, italic);
 				}
 			}
 
 			return result;
-		}
-
-		TypefaceStyle ToTypefaceStyle(FontWeight attrs)
-		{
-			var style = TypefaceStyle.Normal;
-			//if ((attrs & (FontWeight.Bold | FontWeight.Italic)) == (FontWeight.Bold | FontWeight.Italic))
-			//	style = TypefaceStyle.BoldItalic;
-			//else if ((attrs & FontWeight.Bold) != 0)
-			//	style = TypefaceStyle.Bold;
-			//else if ((attrs & FontWeight.Italic) != 0)
-			//	style = TypefaceStyle.Italic;
-			return style;
 		}
 
 		string FontNameToFontFile(string fontFamily)

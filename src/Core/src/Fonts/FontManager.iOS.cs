@@ -25,6 +25,8 @@ namespace Microsoft.Maui
 
 		public UIFont GetFont(Font font) =>  GetFont(font, CreateFont);
 
+		public nfloat GetFontSize(Font font) => font.FontSize <= 0 ? DefaultFont.PointSize : (nfloat)font.FontSize;
+
 		// UIFontWeight[Constant] is internal in Xamarin.iOS but the convertion from
 		// the public (int-based) enum is not helpful in this case.
 		// -1.0 (Thin / 100) to 1.0 (Black / 900) with 0 being Regular (400)
@@ -85,9 +87,8 @@ namespace Microsoft.Maui
 		UIFont CreateFont(Font font)
 		{
 			var family = font.FontFamily;
-			var size = (nfloat)font.FontSize;
-			if (size <= 0)
-				size = DefaultFont.PointSize;
+			var size = GetFontSize(font);
+
 			bool hasAttributes = font.Weight != FontWeight.Regular || font.FontSlant != FontSlant.Default;
 
 

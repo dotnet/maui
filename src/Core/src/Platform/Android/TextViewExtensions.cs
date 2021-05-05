@@ -44,9 +44,7 @@ namespace Microsoft.Maui
 			var tf = fontManager.GetTypeface(font);
 			textView.Typeface = tf;
 
-			var sp = (float)font.FontSize;
-			if (sp == 0)
-				sp = 14f;
+			var sp = fontManager.GetFontSize(font);
 			textView.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 

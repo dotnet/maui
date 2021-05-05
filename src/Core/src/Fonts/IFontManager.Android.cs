@@ -7,5 +7,7 @@ namespace Microsoft.Maui
 		Typeface DefaultTypeface { get; }
 
 		Typeface? GetTypeface(Font font);
+
+		float GetFontSize(Font font);
 	}
 }
