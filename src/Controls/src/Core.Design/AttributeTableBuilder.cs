@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Markup;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Layout2;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Microsoft.Windows.Design;
@@ -90,7 +91,8 @@ namespace Microsoft.Maui.Controls.Core.Design
 			typeFromHandle = typeof(CheckBox);
 			typeFromHandle = typeof(CollectionView);
 			typeFromHandle = typeof(Color);
-			AddTypeAttributes(typeFromHandle, new TypeConverterAttribute(typeof(StructOptionsConverter<Color>)));
+			AddTypeAttributes(typeFromHandle, new TypeConverterAttribute(typeof(NamedColorsConverter)));
+			AddTypeAttributes(typeFromHandle, new ContentPropertyAttribute("Content"));
 			typeFromHandle = typeof(ConstraintExpression);
 			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
 			typeFromHandle = typeof(ContentPage);
@@ -112,6 +114,16 @@ namespace Microsoft.Maui.Controls.Core.Design
 			AddTypeAttributes(typeFromHandle, new ContentPropertyAttribute("Content"));
 			typeFromHandle = typeof(Grid);
 			AddTypeAttributes(typeFromHandle, new ContentPropertyAttribute("Children"));
+
+			typeFromHandle = typeof(GridLayout);
+			AddTypeAttributes(typeFromHandle, new ContentPropertyAttribute("Children"));
+			typeFromHandle = typeof(Layout2.Layout);
+			AddTypeAttributes(typeFromHandle, new ContentPropertyAttribute("Children"));
+			typeFromHandle = typeof(HorizontalStackLayout);
+			AddTypeAttributes(typeFromHandle, new ContentPropertyAttribute("Children"));
+			typeFromHandle = typeof(VerticalStackLayout);
+			AddTypeAttributes(typeFromHandle, new ContentPropertyAttribute("Children"));
+
 			typeFromHandle = typeof(GroupableItemsView);
 			typeFromHandle = typeof(Image);
 			typeFromHandle = typeof(ImageButton);
@@ -178,7 +190,7 @@ namespace Microsoft.Maui.Controls.Core.Design
 			AddTypeAttributes(typeFromHandle, new TypeConverterAttribute(typeof(StringConverter)));
 			typeFromHandle = typeof(WebView);
 
-			AddCustomAttributes(typeof(AbsoluteLayout).Assembly, new XmlnsSupportsValidationAttribute("http://xamarin.com/schemas/2014/forms", supportsValidation: false));
+			AddCustomAttributes(typeof(AbsoluteLayout).Assembly, new XmlnsSupportsValidationAttribute("http://schemas.microsoft.com/dotnet/2021/maui", supportsValidation: false));
 			AddCallback(typeof(Style), delegate (AttributeCallbackBuilder builder)
 			{
 				builder.AddCustomAttributes(new EditorBrowsableAttribute(EditorBrowsableState.Always), new ContentPropertyAttribute("Setters"), new TypeConverterAttribute(typeof(StringConverter)));
