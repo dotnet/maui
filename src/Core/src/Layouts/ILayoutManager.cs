@@ -1,4 +1,5 @@
 using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Layouts
 {

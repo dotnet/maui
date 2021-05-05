@@ -1,5 +1,6 @@
 ﻿using System;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -13,7 +14,7 @@ namespace Microsoft.Maui
 		static UIImage? Checked;
 		static UIImage? Unchecked;
 
-		Color _tintColor;
+		Color? _tintColor;
 		bool _isChecked;
 		bool _isEnabled;
 		float _minimumViewSize;
@@ -77,7 +78,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public Color CheckBoxTintColor
+		public Color? CheckBoxTintColor
 		{
 			get => _tintColor;
 			set
@@ -86,7 +87,7 @@ namespace Microsoft.Maui
 					return;
 
 				_tintColor = value;
-				CheckBoxTintUIColor = CheckBoxTintColor.IsDefault ? null : CheckBoxTintColor.ToNative();
+				CheckBoxTintUIColor = CheckBoxTintColor?.ToNative();
 			}
 		}
 
@@ -134,7 +135,7 @@ namespace Microsoft.Maui
 		{
 			// Ideally I would use the static images here but when disabled it always tints them grey
 			// and I don't know how to make it not tint them gray
-			if (!Enabled && CheckBoxTintColor != Color.Default)
+			if (!Enabled && CheckBoxTintColor != null)
 			{
 				if (IsChecked)
 					return CreateCheckBox(CreateCheckMark()).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);

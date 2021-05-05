@@ -1,23 +1,53 @@
+#nullable enable
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : AbstractViewHandler<ILabel, TextBlock>
+	public partial class LabelHandler : ViewHandler<ILabel, FrameworkElement>
 	{
-		protected override TextBlock CreateNativeView() => new TextBlock();
+		protected TextBlock? RealNativeView { get; set; }
 
-		public static void MapText(IViewHandler handler, ILabel label) =>
-			(handler as LabelHandler)?.TypedNativeView?.UpdateText(label);
+		protected override FrameworkElement CreateNativeView()
+		{
+			RealNativeView = new TextBlock();
+			return new Border { Child = RealNativeView };
+		}
 
-		public static void MapTextColor(IViewHandler handler, ILabel label) { }
-		public static void MapCharacterSpacing(IViewHandler handler, ILabel label) { }
-		public static void MapFont(LabelHandler handler, ILabel label) { }
+		public static void MapText(LabelHandler handler, ILabel label) =>
+			handler.RealNativeView?.UpdateText(label);
+
+		public static void MapTextColor(LabelHandler handler, ILabel label) =>
+			handler.RealNativeView?.UpdateTextColor(label);
+
+		public static void MapCharacterSpacing(LabelHandler handler, ILabel label) =>	
+			handler.RealNativeView?.UpdateCharacterSpacing(label);
+
+		public static void MapFont(LabelHandler handler, ILabel label)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.RealNativeView?.UpdateFont(label, fontManager);
+		}
+
+		[MissingMapper]
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label) { }
+
+		[MissingMapper]
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label) { }
-		public static void MapTextDecorations(LabelHandler handler, ILabel label) { }
-		public static void MapMaxLines(IViewHandler handler, ILabel label) { }
-		public static void MapPadding(LabelHandler handler, ILabel label) { }
+
+		public static void MapTextDecorations(LabelHandler handler, ILabel label) =>	
+			handler.RealNativeView?.UpdateTextDecorations(label);
+
+		public static void MapMaxLines(LabelHandler handler, ILabel label) =>
+			handler.RealNativeView?.UpdateMaxLines(label);
+
+		public static void MapPadding(LabelHandler handler, ILabel label) =>
+			handler.RealNativeView?.UpdatePadding(label);
+
+		[MissingMapper]
 		public static void MapLineHeight(LabelHandler handler, ILabel label) { }
 	}
 }

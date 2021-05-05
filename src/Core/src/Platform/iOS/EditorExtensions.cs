@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
@@ -11,12 +12,6 @@ namespace Microsoft.Maui
 		}
 
 		public static void UpdatePlaceholderColor(this MauiTextView textView, IEditor editor, UIColor? defaultPlaceholderColor)
-		{
-			Color placeholderColor = editor.PlaceholderColor;
-			if (placeholderColor.IsDefault)
-				textView.PlaceholderTextColor = defaultPlaceholderColor;
-			else
-				textView.PlaceholderTextColor = placeholderColor.ToNative();
-		}
+			=> textView.PlaceholderTextColor = editor.PlaceholderColor?.ToNative() ?? defaultPlaceholderColor;
 	}
 }

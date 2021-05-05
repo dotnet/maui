@@ -1,4 +1,4 @@
-<BindableObject xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.DuplicatePropertyElements">
+<BindableObject xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.DuplicatePropertyElements">
 	<BindableObject.BindingContext>0</BindableObject.BindingContext>
 	<BindableObject.BindingContext>0</BindableObject.BindingContext>
 </BindableObject>

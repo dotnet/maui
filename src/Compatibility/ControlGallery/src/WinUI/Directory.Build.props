@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <SampleProject>true</SampleProject>
+  </PropertyGroup>
+  <Import Project="..\..\..\..\..\Directory.Build.props" />
+  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.props"/>
+  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.props"/>
+</Project>

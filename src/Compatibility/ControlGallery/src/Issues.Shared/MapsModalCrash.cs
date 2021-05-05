@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Graphics;
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
 using Xamarin.UITest;
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			return new ContentPage
 			{
-				BackgroundColor = Color.LightBlue,
+				BackgroundColor = Colors.LightBlue,
 				Content = new Label { Text = "If you're seeing this, then the test was a success.", AutomationId = Success }
 			};
 		}

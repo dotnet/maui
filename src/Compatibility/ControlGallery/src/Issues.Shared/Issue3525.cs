@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 
 #if UITEST
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var layout = new StackLayout { Padding = new Thickness(5, 10) };
 
 			var formattedString = new FormattedString();
-			formattedString.Spans.Add(new Span { Text = "Not Clickable, ", TextColor = Color.Red, FontAttributes = FontAttributes.Bold, LineHeight = 1.8 });
+			formattedString.Spans.Add(new Span { Text = "Not Clickable, ", TextColor = Colors.Red, FontAttributes = FontAttributes.Bold, LineHeight = 1.8 });
 			formattedString.Spans.Add(new Span { Text = Environment.NewLine });
 			formattedString.Spans.Add(new Span { Text = Environment.NewLine });
 			var span = new Span { Text = "Clickable, " };

@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : AbstractViewHandler<ILabel, object>
+	public partial class LabelHandler : ViewHandler<ILabel, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Text;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 
 #if UITEST
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					HorizontalOptions = LayoutOptions.Fill,
 					VerticalOptions = LayoutOptions.Fill,
 					AutomationId = "ClickMe",
-					BackgroundColor = Color.Green
+					BackgroundColor = Colors.Green
 				});
 		}
 

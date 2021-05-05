@@ -6,6 +6,7 @@ using Foundation;
 using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using RectangleF = CoreGraphics.CGRect;
+using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -186,7 +187,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var textColor = Element.TextColor;
 
-			if (textColor.IsDefault || (!Element.IsEnabled && _useLegacyColorManagement))
+			if (textColor == null || (!Element.IsEnabled && _useLegacyColorManagement))
 				Control.TextColor = _defaultTextColor;
 			else
 				Control.TextColor = textColor.ToUIColor();
@@ -198,7 +199,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
-			var textAttr = Control.AttributedText.AddCharacterSpacing(Control.Text, Element.CharacterSpacing);
+			var textAttr = Control.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (textAttr != null)
 				Control.AttributedText = textAttr;

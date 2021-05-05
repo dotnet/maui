@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -39,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			EnumerateButtons((Button button) =>
 			{
-				button.TextColor = Color.Red;
+				button.TextColor = Colors.Red;
 				button.FontAttributes = FontAttributes.Bold;
 			});
 		}

@@ -1,7 +1,9 @@
-using System;
+﻿using System;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Google.Android.Material.BottomNavigation;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using R = Android.Resource;
 
@@ -29,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				bottomView.ItemIconTintList = _defaultList;
 			}
 
-			SetBackgroundColor(bottomView, Color.White);
+			SetBackgroundColor(bottomView, Colors.White);
 		}
 
 		public virtual void SetAppearance(BottomNavigationView bottomView, IShellAppearanceElement appearance)
@@ -64,11 +66,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var oldBackground = bottomView.Background;
 			var colorDrawable = oldBackground as ColorDrawable;
 			var colorChangeRevealDrawable = oldBackground as ColorChangeRevealDrawable;
-			AColor lastColor = colorChangeRevealDrawable?.EndColor ?? colorDrawable?.Color ?? Color.Default.ToAndroid();
+			AColor lastColor = colorChangeRevealDrawable?.EndColor ?? colorDrawable?.Color ?? Colors.Transparent.ToAndroid();
 			AColor newColor;
 
-			if (color == Color.Default)
-				newColor = Color.White.ToAndroid();
+			if (color == null)
+				newColor = Colors.White.ToAndroid();
 			else
 				newColor = color.ToAndroid();
 
@@ -103,15 +105,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		ColorStateList MakeColorStateList(Color titleColor, Color disabledColor, Color unselectedColor)
 		{
-			var disabledInt = disabledColor.IsDefault ?
+			var disabledInt = disabledColor == null ?
 				_defaultList.GetColorForState(new[] { -R.Attribute.StateEnabled }, AColor.Gray) :
 				disabledColor.ToAndroid().ToArgb();
 
-			var checkedInt = titleColor.IsDefault ?
+			var checkedInt = titleColor == null ?
 				_defaultList.GetColorForState(new[] { R.Attribute.StateChecked }, AColor.Black) :
 				titleColor.ToAndroid().ToArgb();
 
-			var defaultColor = unselectedColor.IsDefault ?
+			var defaultColor = unselectedColor == null ?
 				_defaultList.DefaultColor :
 				unselectedColor.ToAndroid().ToArgb();
 

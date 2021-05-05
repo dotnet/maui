@@ -9,6 +9,8 @@ using Android.Views;
 using Android.Widget;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 using IMenu = Android.Views.IMenu;
@@ -62,7 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_bottomView = _outerLayout.FindViewById<BottomNavigationView>(Resource.Id.bottomtab_tabbar);
 			_navigationArea = _outerLayout.FindViewById<FrameLayout>(Resource.Id.bottomtab_navarea);
 
-			_bottomView.SetBackgroundColor(Color.White.ToAndroid());
+			_bottomView.SetBackgroundColor(Colors.White.ToAndroid());
 			_bottomView.SetOnNavigationItemSelectedListener(this);
 
 			if (ShellItem == null)
@@ -205,7 +207,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					{
 						if (!image.IsDisposed())
 						{
-							var color = Color.Black.MultiplyAlpha(0.6).ToAndroid();
+							var color = Colors.Black.MultiplyAlpha(0.6f).ToAndroid();
 							icon.SetTint(color);
 							image.SetImageDrawable(icon);
 						}

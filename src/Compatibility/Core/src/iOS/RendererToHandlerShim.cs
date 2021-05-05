@@ -1,12 +1,11 @@
 using System;
-using AbstractViewHandler = Microsoft.Maui.Handlers.AbstractViewHandler<Microsoft.Maui.IView, UIKit.UIView>;
+using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, UIKit.UIView>;
 using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
-	public class RendererToHandlerShim : AbstractViewHandler
+	public class RendererToHandlerShim : ViewHandler
 	{
 		internal IVisualElementRenderer VisualElementRenderer { get; private set; }
 
@@ -111,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			base.UpdateValue(property);
 			if (property == "Frame")
 			{
-				SetFrame(VisualElementRenderer.Element.Bounds);
+				NativeArrange(VisualElementRenderer.Element.Bounds);
 			}
 		}
 	}

@@ -5,7 +5,6 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
 
-using Microsoft.Maui.Controls.Compatibility.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif

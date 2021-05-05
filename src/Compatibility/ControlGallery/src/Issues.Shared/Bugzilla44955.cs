@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					_validationEntry,
 					new Entry
 					{
-						BackgroundColor = Color.MediumPurple
+						BackgroundColor = Colors.MediumPurple
 					},
 					new Entry(),
 					new Entry
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					new Button
 					{
 						Text = "Change background of first label to yellow",
-						Command = new Command(() => _validationEntry.BackgroundColor = Color.Yellow)
+						Command = new Command(() => _validationEntry.BackgroundColor = Colors.Yellow)
 					}
 				}
 			};
@@ -75,9 +76,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			void Validate(Entry entry, string text)
 			{
 				if (text == null)
-					entry.BackgroundColor = Color.Red;
+					entry.BackgroundColor = Colors.Red;
 				else
-					entry.BackgroundColor = text.Trim() != "" ? Color.Default : Color.Red;
+					entry.BackgroundColor = text.Trim() != "" ? null : Colors.Red;
 			}
 		}
 	}

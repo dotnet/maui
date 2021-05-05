@@ -2,11 +2,12 @@ using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwitchHandler : AbstractViewHandler<ISwitch, ASwitch>
+	public partial class SwitchHandler : ViewHandler<ISwitch, ASwitch>
 	{
 		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
 		static ColorStateList? DefaultTrackColorStateList { get; set; }
@@ -52,27 +53,27 @@ namespace Microsoft.Maui.Handlers
 			return size;
 		}
 
-		public static void MapIsToggled(SwitchHandler handler, ISwitch view)
+		public static void MapIsOn(SwitchHandler handler, ISwitch view)
 		{
-			handler.TypedNativeView?.UpdateIsToggled(view);
+			handler.NativeView?.UpdateIsOn(view);
 		}
 
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.TypedNativeView?.UpdateTrackColor(view, DefaultTrackColorStateList);
+			handler.NativeView?.UpdateTrackColor(view, DefaultTrackColorStateList);
 		}
 
 		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.TypedNativeView?.UpdateThumbColor(view, DefaultThumbColorStateList);
+			handler.NativeView?.UpdateThumbColor(view, DefaultThumbColorStateList);
 		}
 
-		void OnCheckedChanged(bool isToggled)
+		void OnCheckedChanged(bool isOn)
 		{
 			if (VirtualView == null)
 				return;
 
-			VirtualView.IsToggled = isToggled;
+			VirtualView.IsOn = isOn;
 		}
 
 		class CheckedChangeListener : Java.Lang.Object, CompoundButton.IOnCheckedChangeListener

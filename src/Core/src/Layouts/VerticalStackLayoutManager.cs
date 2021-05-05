@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -11,9 +12,7 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
-			var widthMeasureConstraint = ResolveConstraints(widthConstraint, Stack.Width);
-
-			var measure = Measure(widthMeasureConstraint, Stack.Spacing, Stack.Children);
+			var measure = Measure(widthConstraint, Stack.Spacing, Stack.Children);
 
 			var finalHeight = ResolveConstraints(heightConstraint, Stack.Height, measure.Height);
 
@@ -29,7 +28,7 @@ namespace Microsoft.Maui.Layouts
 
 			foreach (var child in views)
 			{
-				var measure = child.IsMeasureValid ? child.DesiredSize : child.Measure(widthConstraint, double.PositiveInfinity);
+				var measure = child.Measure(widthConstraint, double.PositiveInfinity);
 				totalRequestedHeight += measure.Height;
 				requestedWidth = Math.Max(requestedWidth, measure.Width);
 			}

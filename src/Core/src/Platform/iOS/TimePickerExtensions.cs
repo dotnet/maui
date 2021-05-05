@@ -61,19 +61,5 @@ namespace Microsoft.Maui
 
 			mauiTimePicker.UpdateCharacterSpacing(timePicker);
 		}
-
-		public static void UpdateCharacterSpacing(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
-		{
-			var textAttr = mauiTimePicker.AttributedText?.WithCharacterSpacing(timePicker.CharacterSpacing);
-
-			if (textAttr != null)
-				mauiTimePicker.AttributedText = textAttr;
-		}
-
-		public static void UpdateFont(this MauiTimePicker mauiTimePicker, ITimePicker timePicker, IFontManager fontManager)
-		{
-			var uiFont = fontManager.GetFont(timePicker.Font);
-			mauiTimePicker.Font = uiFont;
-		}
 	}
 }

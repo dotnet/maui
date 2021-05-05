@@ -1,8 +1,6 @@
 using System;
 using System.Threading.Tasks;
-#if !NETSTANDARD1_0
-using System.Drawing;
-#endif
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -89,8 +87,6 @@ namespace Microsoft.Maui.Essentials
 
 		public ReadOnlyFile File { get; set; }
 
-#if !NETSTANDARD1_0
-        public Rectangle PresentationSourceBounds { get; set; } = Rectangle.Empty;
-#endif
+		public Rectangle PresentationSourceBounds { get; set; } = Rectangle.Zero;
 	}
 }

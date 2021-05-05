@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.SwipeViewGalleries
 {
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			var deleteSwipeItem = new SwipeItem
 			{
-				BackgroundColor = Color.Orange,
+				BackgroundColor = Colors.Orange,
 				IconImageSource = "calculator.png",
 				Text = "SwipeItem1"
 			};
@@ -59,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			var swipeContent = new Grid
 			{
-				BackgroundColor = Color.Gray
+				BackgroundColor = Colors.Gray
 			};
 
 			var swipeLabel = new Label

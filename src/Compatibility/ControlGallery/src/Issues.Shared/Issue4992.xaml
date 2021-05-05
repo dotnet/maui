@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<local:TestShell xmlns="http://xamarin.com/schemas/2014/forms"
+<local:TestShell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue4992"
                   xmlns:local="using:Microsoft.Maui.Controls.Compatibility.ControlGallery">

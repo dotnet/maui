@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Drawing;
 using SkiaSharp;
 using Svg.Skia;
 
@@ -15,7 +14,7 @@ namespace Microsoft.Maui.Resizetizer
 		{
 		}
 
-		public SkiaSharpSvgTools(string filename, Size? baseSize, Color? tintColor, ILogger logger)
+		public SkiaSharpSvgTools(string filename, SKSize? baseSize, SKColor? tintColor, ILogger logger)
 			: base(filename, baseSize, tintColor, logger)
 		{
 			var sw = new Stopwatch();

@@ -8,6 +8,7 @@ using AndroidX.Fragment.App;
 using AActivity = Android.App.Activity;
 using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
 using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

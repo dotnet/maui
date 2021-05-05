@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {

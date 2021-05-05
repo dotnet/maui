@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -52,14 +53,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			if (Device.RuntimePlatform == Device.iOS)
 			{
-				var red = new Button { Text = "Red", TextColor = Color.Red };
-				red.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(Color.Red);
+				var red = new Button { Text = "Red", TextColor = Colors.Red };
+				red.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(Colors.Red);
 
-				var blue = new Button { Text = "Blue", TextColor = Color.Blue };
-				blue.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(Color.Blue);
+				var blue = new Button { Text = "Blue", TextColor = Colors.Blue };
+				blue.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(Colors.Blue);
 
 				var defaultColor = new Button { Text = "Default" };
-				defaultColor.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(Color.Default);
+				defaultColor.Clicked += (sender, e) => _entry.On<PlatformConfiguration.iOS>().SetCursorColor(null);
 
 				layout.Children.Add(red);
 				layout.Children.Add(blue);

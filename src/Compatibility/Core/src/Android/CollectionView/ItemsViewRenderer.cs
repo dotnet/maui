@@ -6,6 +6,8 @@ using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.CollectionView;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
 using AViewCompat = AndroidX.Core.View.ViewCompat;
 
@@ -458,7 +460,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		// TODO hartez 2018/08/09 09:30:17 Package up background color and flow direction providers so we don't have to re-implement them here	
-		protected virtual void UpdateBackgroundColor(Color? color = null)
+		protected virtual void UpdateBackgroundColor(Color color = null)
 		{
 			if (Element == null)
 			{

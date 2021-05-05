@@ -4,7 +4,7 @@ using AColorFilter = Android.Graphics.ColorFilter;
 using AColor = Android.Graphics.Color;
 using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 using Android.Graphics;
-using Color = Microsoft.Maui.Color;
+using Color = Microsoft.Maui.Graphics.Color;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
 namespace Xamarin.Forms.Platform.Android
@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (drawable == null)
 				return;
 
-			if (color == Color.Default)
+			if (color == null)
 			{
 				SetColorFilter(drawable, defaultColorFilter);
 				return;

@@ -1,12 +1,16 @@
 ﻿using System.Collections.Generic;
 
-namespace Microsoft.Maui.Tests
+namespace Microsoft.Maui.UnitTests
 {
 	interface IFooService
 	{
 	}
 
 	interface IBarService
+	{
+	}
+
+	interface ICatService
 	{
 	}
 
@@ -18,8 +22,33 @@ namespace Microsoft.Maui.Tests
 	{
 	}
 
+	class BadFooService : IFooService
+	{
+		private BadFooService()
+		{
+		}
+	}
+
+	class FooService2 : IFooService
+	{
+	}
+
 	class BarService : IBarService
 	{
+	}
+
+	class CatService : ICatService
+	{
+	}
+
+	class FooEnumerableService : IFooBarService
+	{
+		public FooEnumerableService(IEnumerable<IFooService> foos)
+		{
+			Foos = foos;
+		}
+
+		public IEnumerable<IFooService> Foos { get; }
 	}
 
 	class FooBarService : IFooBarService
@@ -33,6 +62,43 @@ namespace Microsoft.Maui.Tests
 		public IFooService Foo { get; }
 
 		public IBarService Bar { get; }
+	}
+
+	class FooTrioConstructor : IFooBarService
+	{
+		public FooTrioConstructor()
+		{
+			Option = "()";
+		}
+
+		public FooTrioConstructor(IFooService foo)
+		{
+			Foo = foo;
+			Option = "(Foo)";
+		}
+
+		public FooTrioConstructor(IFooService foo, IBarService bar)
+		{
+			Foo = foo;
+			Bar = bar;
+			Option = "(Foo, Bar)";
+		}
+
+		public FooTrioConstructor(IFooService foo, IBarService bar, ICatService cat)
+		{
+			Foo = foo;
+			Bar = bar;
+			Cat = cat;
+			Option = "(Foo, Bar, Cat)";
+		}
+
+		public IFooService Foo { get; }
+
+		public IBarService Bar { get; }
+
+		public ICatService Cat { get; }
+
+		public string Option { get; }
 	}
 
 	class FooDualConstructor : IFooBarService

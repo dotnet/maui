@@ -2,6 +2,7 @@
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Content = new Slider
 			{
 				AutomationId = "SliderId",
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				Maximum = 255,
 				Minimum = 0,
 			};

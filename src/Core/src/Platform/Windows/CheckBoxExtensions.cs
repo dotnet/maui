@@ -1,5 +1,5 @@
 ﻿using Microsoft.UI.Xaml.Controls;
-using XColor = Microsoft.Maui.Color;
+using XColor = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui
 {

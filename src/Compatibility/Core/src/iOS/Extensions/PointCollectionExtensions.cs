@@ -1,5 +1,6 @@
 using CoreGraphics;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

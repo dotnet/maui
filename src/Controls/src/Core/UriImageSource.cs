@@ -9,7 +9,7 @@ using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls
 {
-	public sealed class UriImageSource : ImageSource
+	public sealed partial class UriImageSource : ImageSource, IStreamImageSource
 	{
 		internal const string CacheName = "ImageLoaderCache";
 
@@ -68,9 +68,11 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(UriProperty, value); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public async Task<Stream> GetStreamAsync(CancellationToken userToken = default(CancellationToken))
+		async Task<Stream> IStreamImageSource.GetStreamAsync(CancellationToken userToken)
 		{
+			if (IsEmpty)
+				return null;
+
 			OnLoadingStarted();
 			userToken.Register(CancellationTokenSource.Cancel);
 			Stream stream;

@@ -1,10 +1,14 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Layouts
 {
 	public class GridLayoutManager : LayoutManager
 	{
+		GridStructure? _gridStructure;
+
 		public GridLayoutManager(IGridLayout layout) : base(layout)
 		{
 			Grid = layout;
@@ -14,14 +18,14 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
-			var structure = new GridStructure(Grid, widthConstraint, heightConstraint);
+			_gridStructure = new GridStructure(Grid, widthConstraint, heightConstraint);
 
-			return new Size(structure.GridWidth(), structure.GridHeight());
+			return new Size(_gridStructure.GridWidth(), _gridStructure.GridHeight());
 		}
 
 		public override void ArrangeChildren(Rectangle childBounds)
 		{
-			var structure = new GridStructure(Grid, childBounds.Width, childBounds.Height);
+			var structure = _gridStructure ?? new GridStructure(Grid, childBounds.Width, childBounds.Height);
 
 			foreach (var view in Grid.Children)
 			{

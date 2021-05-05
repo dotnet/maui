@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using ATextAlignment = Android.Views.TextAlignment;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
-			(MauiPicker)pickerHandler.View;
+			(MauiPicker)pickerHandler.NativeView;
 
 		string GetNativeTitle(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Hint;
@@ -72,5 +73,20 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		double GetNativeUnscaledFontSize(PickerHandler pickerHandler)
+		{
+			var mauiPicker = GetNativePicker(pickerHandler);
+			return mauiPicker.TextSize / mauiPicker.Resources.DisplayMetrics.Density;
+		}
+
+		bool GetNativeIsBold(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).Typeface.IsBold;
+
+		bool GetNativeIsItalic(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).Typeface.IsItalic;
+
+		ATextAlignment GetNativeHorizontalTextAlignment(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).TextAlignment;
 	}
 }

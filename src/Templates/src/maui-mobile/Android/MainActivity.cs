@@ -3,7 +3,7 @@ using Microsoft.Maui;
 
 namespace MauiApp1
 {
-	[Activity(Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
+	[Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true)]
 	public class MainActivity : MauiAppCompatActivity
 	{
 	}

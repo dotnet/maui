@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		{
 		}
 
-#if __ANDROID__ || __IOS__ || __WINDOWS__
+#if __ANDROID__ || __IOS__ || WINDOWS
 		[Ignore("This is covered by the platform tests")]
 #endif
 		[Category(UITestCategories.UwpIgnore)]
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public override void _Opacity() { }
 #endif
 
-#if __ANDROID__ || __IOS__ || __WINDOWS__
+#if __ANDROID__ || __IOS__ || WINDOWS
 		[Ignore("This is covered by the platform tests")]
 		public override void _Rotation() { }
 
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public override void _TranslationY() { }
 #endif
 
-#if __IOS__ || __WINDOWS__
+#if __IOS__ || WINDOWS
 		[Ignore("This is covered by the platform tests")]
 		public override void _Scale() { }
 #endif

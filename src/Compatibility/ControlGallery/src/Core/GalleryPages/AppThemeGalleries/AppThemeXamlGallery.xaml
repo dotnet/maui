@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:gallerypages="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppThemeGalleries" x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppThemeGalleries.AppThemeXamlGallery" BackgroundColor="{AppThemeBinding Light=Lightgray, Dark=Black}">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:gallerypages="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppThemeGalleries" x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppThemeGalleries.AppThemeXamlGallery" BackgroundColor="{AppThemeBinding Light=Lightgray, Dark=Black}">
     <ContentPage.Resources>
         <Style x:Key="OSThemeStyle" TargetType="Label">
             <Setter Property="TextColor" Value="{AppThemeBinding Black, Light=Green, Dark=Red}" />

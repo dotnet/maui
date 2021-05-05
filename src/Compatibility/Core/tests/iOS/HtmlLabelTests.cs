@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using UIKit;
 
@@ -12,8 +13,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		[Description("Label text color should apply in HTML mode")]
 		public async Task LabelTextColorAppliesToHtml()
 		{
-			var label = new Label { TextColor = Color.Red, Text = "<p>Hello</p>", TextType = TextType.Html };
-			var expected = Color.Red.ToUIColor();
+			var label = new Label { TextColor = Colors.Red, Text = "<p>Hello</p>", TextType = TextType.Html };
+			var expected = Colors.Red.ToUIColor();
 			var actual = await GetControlProperty(label, uiLabel => uiLabel.TextColor);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			var label = new Label { Text = "<p style='color:blue;font-size:72pt'>Hello</p>", TextType = TextType.Html, 
 				VerticalOptions = LayoutOptions.Center };
-			var expected = Color.Blue.ToUIColor();
+			var expected = Colors.Blue.ToUIColor();
 
 			var actual = await GetControlProperty(label, uiLabel => uiLabel.TextColor);
 			Assert.That(actual, Is.EqualTo(expected).Using<UIColor>(ColorComparison.ARGBEquivalent));
@@ -34,8 +35,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		[Description("If Label specifies a TextColor, it should override HTML colors")]
 		public async Task LabelTextColorOverridesHtmlColors()
 		{
-			var label = new Label { Text = "<p style='color:blue;'>Hello</p>", TextType = TextType.Html, TextColor = Color.Red };
-			var expected = Color.Red.ToUIColor();
+			var label = new Label { Text = "<p style='color:blue;'>Hello</p>", TextType = TextType.Html, TextColor = Colors.Red };
+			var expected = Colors.Red.ToUIColor();
 			var actual = await GetControlProperty(label, uiLabel => uiLabel.TextColor);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
@@ -44,8 +45,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		[Description("Label background color should apply in HTML mode")]
 		public async Task LabelBackgroundColorAppliesToHtml()
 		{
-			var label = new Label { BackgroundColor = Color.Red, Text = "<p>Hello</p>", TextType = TextType.Html };
-			var expected = Color.Red.ToUIColor();
+			var label = new Label { BackgroundColor = Colors.Red, Text = "<p>Hello</p>", TextType = TextType.Html };
+			var expected = Colors.Red.ToUIColor();
 			var actual = await GetRendererProperty(label, r => r.NativeView.BackgroundColor);
 			Assert.That(actual, Is.EqualTo(expected));
 		}

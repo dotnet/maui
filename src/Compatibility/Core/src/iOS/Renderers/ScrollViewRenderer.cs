@@ -6,6 +6,8 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -300,7 +302,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackgroundColor()
 		{
-			BackgroundColor = Element.BackgroundColor.ToUIColor(Color.Transparent);
+			BackgroundColor = Element.BackgroundColor.ToUIColor(Colors.Transparent);
 		}
 
 		void UpdateBackground()

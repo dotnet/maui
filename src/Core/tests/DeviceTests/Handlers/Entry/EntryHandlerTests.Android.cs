@@ -1,11 +1,12 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
-using Android.Graphics.Drawables;
 using Android.Text;
+using Android.Text.Method;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 using AColor = Android.Graphics.Color;
@@ -84,7 +85,7 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = entry.HorizontalTextAlignment,
-					NativeViewValue = GetNativeTextAlignment(handler)
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
@@ -93,7 +94,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
-			(AppCompatEditText)entryHandler.View;
+			(AppCompatEditText)entryHandler.NativeView;
 
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
@@ -127,6 +128,55 @@ namespace Microsoft.Maui.DeviceTests
 			return !editText.Focusable && !editText.FocusableInTouchMode;
 		}
 
+		bool GetNativeIsNumericKeyboard(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+			var inputTypes = editText.InputType;
+
+			return editText.KeyListener is NumberKeyListener
+				&& (inputTypes.HasFlag(InputTypes.NumberFlagDecimal) && inputTypes.HasFlag(InputTypes.ClassNumber) && inputTypes.HasFlag(InputTypes.NumberFlagSigned));
+		}
+
+		bool GetNativeIsChatKeyboard(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+		}
+
+		bool GetNativeIsEmailKeyboard(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+			var inputTypes = editText.InputType;
+
+			return (inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextVariationEmailAddress));
+		}
+
+		bool GetNativeIsTelephoneKeyboard(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassPhone);
+		}
+
+		bool GetNativeIsUrlKeyboard(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextVariationUri);
+		}
+
+		bool GetNativeIsTextKeyboard(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+		}
+
 		double GetNativeUnscaledFontSize(EntryHandler entryHandler)
 		{
 			var textView = GetNativeEntry(entryHandler);
@@ -139,7 +189,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Typeface.IsItalic;
 
-		Android.Views.TextAlignment GetNativeTextAlignment(EntryHandler entryHandler) =>
+		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 
 		ImeAction GetNativeReturnType(EntryHandler entryHandler) =>

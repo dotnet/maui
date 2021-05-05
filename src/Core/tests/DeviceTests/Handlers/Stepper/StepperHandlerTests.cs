@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -50,10 +51,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var stepper = new StepperStub()
 			{
-				BackgroundColor = Color.Red
+				BackgroundColor = Colors.Red
 			};
 
-			await ValidateNativeBackgroundColor(stepper, Color.Red);
+			await ValidateNativeBackgroundColor(stepper, Colors.Red);
 		}
 	}
 }

@@ -1,7 +1,8 @@
 using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
-namespace Microsoft.Maui.Tests
+namespace Microsoft.Maui.UnitTests
 {
 	class ViewStub : IViewStub
 	{
@@ -31,11 +32,13 @@ namespace Microsoft.Maui.Tests
 
 		public FlowDirection FlowDirection => throw new NotImplementedException();
 
-
 		public LayoutAlignment HorizontalLayoutAlignment { get; set; }
+
 		public LayoutAlignment VerticalLayoutAlignment { get; set; }
 
-		public void Arrange(Rectangle bounds)
+		public Semantics Semantics { get; set; } = new Semantics();
+
+		public Size Arrange(Rectangle bounds)
 		{
 			throw new NotImplementedException();
 		}

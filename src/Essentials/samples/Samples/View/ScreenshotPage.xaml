@@ -1,7 +1,7 @@
-<view:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+<view:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-               xmlns:view="clr-namespace:Samples.View;assembly=Samples"
-               xmlns:viewModel="clr-namespace:Samples.ViewModel;assembly=Samples"
+               xmlns:view="clr-namespace:Samples.View"
+               xmlns:viewModel="clr-namespace:Samples.ViewModel"
                x:Class="Samples.View.ScreenshotPage"
                Title="Screenshot">
 

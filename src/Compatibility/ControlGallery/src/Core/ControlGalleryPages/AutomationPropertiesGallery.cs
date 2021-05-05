@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
 	public class AutomationPropertiesGallery : ContentPage
@@ -174,7 +176,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			image.SetAutomationPropertiesIsInAccessibleTree(true);
 
 			var instructions5 = new Label { Text = boxInstructions };
-			var boxView = new BoxView { Color = Color.Purple };
+			var boxView = new BoxView { Color = Colors.Purple };
 			// The tap gesture will NOT work on Win and Tizen
 			boxView.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => DisplayAlert("Success", "You tapped the box", "OK")) });
 			boxView.SetAutomationPropertiesName(BoxName);

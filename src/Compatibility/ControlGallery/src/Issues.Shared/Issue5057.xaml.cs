@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		void BtnSetBkgndColorRed_Clicked(object sender, System.EventArgs e)
 		{
-			BackgroundColor = Color.Red;
+			BackgroundColor = Colors.Red;
 		}
 
 		void BtnSetBkgndImg_Clicked(object sender, System.EventArgs e)

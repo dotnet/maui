@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
@@ -17,8 +16,12 @@ namespace Microsoft.Maui.DeviceTests
 
 		public HandlerTestBase()
 		{
-			var appBuilder = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var appBuilder = AppHost
+				.CreateDefaultBuilder()
+				.ConfigureImageSources((ctx, services) =>
+				{
+					services.AddService<ICountedImageSourceStub, CountedImageSourceServiceStub>();
+				})
 				.ConfigureFonts((ctx, fonts) =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
@@ -43,17 +46,20 @@ namespace Microsoft.Maui.DeviceTests
 
 		public IMauiContext MauiContext => _context;
 
-		public Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
-			MainThread.InvokeOnMainThreadAsync(func);
+		protected THandler CreateHandler(IView view) =>
+			CreateHandler<THandler>(view);
 
-		protected Task InvokeOnMainThreadAsync(Action action) =>
-			MainThread.InvokeOnMainThreadAsync(action);
+		protected TCustomHandler CreateHandler<TCustomHandler>(IView view)
+			where TCustomHandler : THandler
+		{
+			var handler = Activator.CreateInstance<TCustomHandler>();
+			handler.SetMauiContext(MauiContext);
 
-		protected Task InvokeOnMainThreadAsync(Func<Task> func) =>
-			MainThread.InvokeOnMainThreadAsync(func);
+			handler.SetVirtualView(view);
+			view.Handler = handler;
 
-		public Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> func) =>
-			MainThread.InvokeOnMainThreadAsync(func);
+			return handler;
+		}
 
 		protected async Task<THandler> CreateHandlerAsync(IView view)
 		{

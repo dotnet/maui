@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					new Label()
 					{
 						Text ="The frame below should have its corners rounded and the background should not protrude through them.",
-						TextColor = Color.Black,
+						TextColor = Colors.Black,
 						WidthRequest = 300,
 						HeightRequest = 90,
 						LineBreakMode = LineBreakMode.WordWrap,
@@ -36,8 +37,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						HeightRequest = 160,
 						HorizontalOptions = LayoutOptions.Center,
 						CornerRadius = 10,
-						BackgroundColor = Color.Red,
-						BorderColor = Color.Blue
+						BackgroundColor = Colors.Red,
+						BorderColor = Colors.Blue
 					}
 				}
 			};

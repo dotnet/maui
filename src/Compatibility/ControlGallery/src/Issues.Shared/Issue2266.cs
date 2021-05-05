@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
@@ -124,7 +125,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var menuList = new ListView
 			{
-				BackgroundColor = Color.Transparent,
+				BackgroundColor = Colors.Transparent,
 				ItemsSource = _pages,
 				ItemTemplate = new DataTemplate(typeof(TextCell))
 			};

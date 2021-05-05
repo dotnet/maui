@@ -2,7 +2,6 @@
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
-using Android.Util;
 using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui
@@ -29,10 +28,11 @@ namespace Microsoft.Maui
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
-		public static void UpdateTextColor(this AppCompatEditText editText, IEntry entry, ColorStateList? defaultColor)
+		public static void UpdateTextColor(this AppCompatEditText editText, ITextStyle entry, ColorStateList? defaultColor)
 		{
 			var textColor = entry.TextColor;
-			if (textColor.IsDefault)
+
+			if (textColor == null)
 			{
 				editText.SetTextColor(defaultColor);
 			}
@@ -80,21 +80,30 @@ namespace Microsoft.Maui
 		public static void UpdateMaxLength(this AppCompatEditText editText, int maxLength)
 		{
 			var currentFilters = new List<IInputFilter>(editText.GetFilters() ?? new IInputFilter[0]);
+			var changed = false;
 
 			for (var i = 0; i < currentFilters.Count; i++)
 			{
 				if (currentFilters[i] is InputFilterLengthFilter)
 				{
 					currentFilters.RemoveAt(i);
+					changed = true;
 					break;
 				}
 			}
 
-			currentFilters.Add(new InputFilterLengthFilter(maxLength));
+			if (maxLength > 0)
+			{
+				currentFilters.Add(new InputFilterLengthFilter(maxLength));
+				changed = true;
+			}
 
-			editText.SetFilters(currentFilters.ToArray());
+			if (changed)
+				editText.SetFilters(currentFilters.ToArray());
 
-			editText.Text = TrimToMaxLength(editText.Text, maxLength);
+			var newText = editText.Text.TrimToMaxLength(maxLength);
+			if (editText.Text != newText)
+				editText.Text = newText;
 		}
 
 		public static void UpdatePlaceholder(this AppCompatEditText editText, IPlaceholder textInput)
@@ -108,7 +117,7 @@ namespace Microsoft.Maui
 		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IEditor editor, ColorStateList? defaultColor)
 		{
 			var placeholderTextColor = editor.PlaceholderColor;
-			if (placeholderTextColor.IsDefault)
+			if (placeholderTextColor == null)
 			{
 				editText.SetHintTextColor(defaultColor);
 			}
@@ -134,6 +143,11 @@ namespace Microsoft.Maui
 			editText.Focusable = isEditable;
 		}
 
+		public static void UpdateKeyboard(this AppCompatEditText editText, IEntry entry)
+		{
+			editText.SetInputType(entry);
+		}
+
 		public static void UpdateIsReadOnly(this AppCompatEditText editText, IEditor editor)
 		{
 			bool isReadOnly = !editor.IsReadOnly;
@@ -141,17 +155,6 @@ namespace Microsoft.Maui
 			editText.FocusableInTouchMode = isReadOnly;
 			editText.Focusable = isReadOnly;
 			editText.SetCursorVisible(isReadOnly);
-		}
-
-		public static void UpdateFont(this AppCompatEditText editText, IEntry entry, IFontManager fontManager)
-		{
-			var font = entry.Font;
-
-			var tf = fontManager.GetTypeface(font);
-			editText.Typeface = tf;
-
-			var sp = fontManager.GetScaledPixel(font);
-			editText.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 
 		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry, Drawable? ClearButtonDrawable)
@@ -192,44 +195,49 @@ namespace Microsoft.Maui
 			}
 		}
 
-
 		public static void UpdateReturnType(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.ImeOptions = entry.ReturnType.ToNative();
 		}
 
-		public static void UpdateFont(this AppCompatEditText editText, IEditor editor, IFontManager fontManager)
-		{
-			var font = editor.Font;
-
-			var tf = fontManager.GetTypeface(font);
-			editText.Typeface = tf;
-
-			var sp = fontManager.GetScaledPixel(font);
-			editText.SetTextSize(Android.Util.ComplexUnitType.Sp, sp);
-		}
-
 		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)
 		{
-			editText.InputType = InputTypes.ClassText;
-			editText.InputType |= InputTypes.TextFlagMultiLine;
-
-			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassText) == InputTypes.ClassText))
-				editText.InputType |= InputTypes.TextVariationPassword;
-
-			if (entry.IsPassword && ((editText.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber))
-				editText.InputType |= InputTypes.NumberVariationPassword;
-
-			if (!entry.IsTextPredictionEnabled && ((editText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions))
-				editText.InputType |= InputTypes.TextFlagNoSuggestions;
-
 			if (entry.IsReadOnly)
+			{
 				editText.InputType = InputTypes.Null;
-		}
+			}
+			else
+			{
+				var keyboard = entry.Keyboard;
+				var nativeInputTypeToUpdate = keyboard.ToInputType();
 
-		internal static string? TrimToMaxLength(string? currentText, int maxLength) =>
-			currentText?.Length > maxLength
-				? currentText.Substring(0, maxLength)
-				: currentText;
+				if (keyboard is not CustomKeyboard)
+				{
+					// TODO: IsSpellCheckEnabled handling must be here.
+
+					if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+					{
+						if (!entry.IsTextPredictionEnabled)
+							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
+					}
+				}
+
+				if (keyboard == Keyboard.Numeric)
+				{
+					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
+				}
+
+				if (entry.IsPassword)
+				{
+					if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
+						nativeInputTypeToUpdate |= InputTypes.TextVariationPassword;
+
+					if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
+						nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
+				}
+
+				editText.InputType = nativeInputTypeToUpdate;
+			}
+		}
 	}
 }

@@ -1,6 +1,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -23,12 +24,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				Children =
 				{
 					new BoxView
 					{
-						Color = Color.Red,
+						Color = Colors.Red,
 						HeightRequest = 100,
 						WidthRequest = 100,
 					}
@@ -38,13 +39,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				Children =
 				{
 					new BoxView
 					{
 						HorizontalOptions = LayoutOptions.Start,
-						Color = Color.Red,
+						Color = Colors.Red,
 						HeightRequest = 100,
 						WidthRequest = 100,
 					}
@@ -55,11 +56,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				Content =
 				new BoxView
 				{
-					Color = Color.Red,
+					Color = Colors.Red,
 					HeightRequest = 100,
 					WidthRequest = 100,
 				}
@@ -69,12 +70,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				Children =
 				{
 					new BoxView
 					{
-						Color = Color.Red,
+						Color = Colors.Red,
 						HeightRequest = 100,
 						WidthRequest = 100,
 					}

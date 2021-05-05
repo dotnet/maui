@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Core.Design
 		{
 			// Turn off validation of values, which doesn't work for OnPlatform/OnIdiom
 			AddCustomAttributes(typeof(AbsoluteLayout).Assembly,
-				new XmlnsSupportsValidationAttribute("http://xamarin.com/schemas/2014/forms", false));
+				new XmlnsSupportsValidationAttribute("http://schemas.microsoft.com/dotnet/2021/maui", false));
 
 			// Style isn't a view, make it visible
 			AddCallback(typeof(Style), builder => builder.AddCustomAttributes(

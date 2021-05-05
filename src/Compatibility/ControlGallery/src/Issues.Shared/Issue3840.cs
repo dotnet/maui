@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 
 #if UITEST
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 							}),
 							HorizontalOptions = LayoutOptions.Start
 						},
-						new BoxView { Color = Color.Red, HeightRequest = 500 },
+						new BoxView { Color = Colors.Red, HeightRequest = 500 },
 						new Button()
 						{
 							Text = "Click Me Second",
@@ -67,8 +68,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 							}),
 							HorizontalOptions = LayoutOptions.Start
 						},
-						new BoxView { Color = Color.Gray, HeightRequest = 500 },
-						new BoxView { Color = Color.Yellow, HeightRequest = 500 }
+						new BoxView { Color = Colors.Gray, HeightRequest = 500 },
+						new BoxView { Color = Colors.Yellow, HeightRequest = 500 }
 					}
 				}
 			};
@@ -86,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			RunningApp.WaitForElement(_failedText);
 			RunningApp.Tap(_button1);
 			RunningApp.Tap(_button2);
-#if __WINDOWS__
+#if WINDOWS
 			var label = RunningApp.WaitForElement(_failedText);
 			Assert.AreEqual(0, label[0].Rect.Height);
 			Assert.AreEqual(0, label[0].Rect.Width);

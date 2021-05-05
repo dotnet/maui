@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -92,7 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				label.SetBinding(Label.TextProperty, "FullName");
 				Height = Bugzilla56298.Count % 2 == 0 ? 50 : 100;
 				View = label;
-				View.BackgroundColor = Bugzilla56298.Count % 2 == 0 ? Color.Pink : Color.LightYellow;
+				View.BackgroundColor = Bugzilla56298.Count % 2 == 0 ? Colors.Pink : Colors.LightYellow;
 				Bugzilla56298.Count++;
 			}
 		}

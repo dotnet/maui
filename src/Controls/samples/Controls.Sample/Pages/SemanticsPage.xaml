@@ -1,0 +1,185 @@
+﻿<controls:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                   xmlns:controls="clr-namespace:Maui.Controls.Sample.Controls"
+                   x:Class="Maui.Controls.Sample.Pages.SemanticsPage"
+                   Title="Semantics Page"
+                   BackgroundColor="White">
+
+    <ScrollView Margin="15,20">
+        <VerticalStackLayout>
+            <Label
+                Text="Welcome to .NET MAUI Semantics!"
+                TextColor="DodgerBlue"
+                FontSize="30"
+                HorizontalTextAlignment="Center"/>
+
+            <Label
+                Text="We hope the all-new SemanticProperties will enable you to develop accessible apps more seamlessly"
+                TextColor="DodgerBlue"
+                FontSize="20"
+                HorizontalTextAlignment="Center"/>
+
+            <Label
+                Text="Turn on your screen reader and listen for what is read aloud. The text-based controls below are labeled to indicate what is expected to be read aloud: T refers to the Text, D is the Description text, and H is the Hint text."
+                TextColor="RoyalBlue"
+                FontAttributes="Bold"
+                FontSize="16"
+                Margin="0,10"/>
+
+            <Label
+                Text="Label text TH"
+                FontSize="14"
+                SemanticProperties.Hint="Hint text"/>
+
+            <Label
+                Text="Label text DH"
+                FontSize="14"
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <Button
+                Text="Button text TH"
+                FontSize="14"
+                x:Name="pushButton"
+                HorizontalOptions="Center"
+                WidthRequest="200"
+                SemanticProperties.Hint="Hint text"/>
+
+            <Button
+                Text="Button text DH"
+                FontSize="14"
+                HorizontalOptions="CenterAndExpand"
+                WidthRequest="200"
+                x:Name="popButton"
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <Entry
+                Text="Entry text TH"
+                FontSize="14"
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <Entry
+                FontSize="14"
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <Editor
+                Text="Editor text TH"
+                FontSize="14"
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <Editor
+                FontSize="14"
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+            
+            <SearchBar
+                Text="Search bar text"
+                Placeholder="Placeholder text"
+                PlaceholderColor="DodgerBlue"
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <Picker
+                Title="Select a monkey TH"
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Baboon</x:String>
+                        <x:String>Capuchin Monkey</x:String>
+                        <x:String>Blue Monkey</x:String>
+                        <x:String>Squirrel Monkey</x:String>
+                        <x:String>Golden Lion Tamarin</x:String>
+                        <x:String>Howler Monkey</x:String>
+                        <x:String>Japanese Macaque</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+            <DatePicker
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <TimePicker
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <ActivityIndicator 
+                IsRunning="True"
+                Color="DodgerBlue"
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <ProgressBar 
+                Progress="0.5"
+                ProgressColor="DodgerBlue"
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <Slider
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <Stepper
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <Switch 
+                IsToggled="True"
+                OnColor="DodgerBlue"
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <CheckBox
+                IsChecked="True"
+                Color="DodgerBlue"
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <Image
+                Source="dotnet_bot.png"
+                SemanticProperties.Description="Description text"
+                SemanticProperties.Hint="Hint text"/>
+
+            <Label
+                Text="This next set of controls exist solely for testing the HeadingLevel property. If testing on mobile, be sure to activate Headings and swipe up/down with one finger to test."
+                TextColor="RoyalBlue"
+                FontAttributes="Bold"
+                FontSize="16"
+                Margin="0,10"/>
+
+            <Label
+                Text="Heading 1"
+                TextColor="DodgerBlue"
+                FontSize="20"
+                SemanticProperties.HeadingLevel="Level1"/>
+            
+            <Label
+                Text="not a heading"/>
+
+            <Label
+                Text="Heading 2"
+                TextColor="DodgerBlue"
+                FontSize="16"
+                SemanticProperties.HeadingLevel="Level2"/>
+            
+            <Label
+                Text="not a heading"/>
+            
+            <Label
+                Text="not a heading"/>
+
+            <Label
+                Text="Heading 3"
+                TextColor="DodgerBlue"
+                FontSize="14"
+                SemanticProperties.HeadingLevel="Level3"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</controls:BasePage>

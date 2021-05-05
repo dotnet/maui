@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var grid = new Grid
 			{
-				BackgroundColor = Color.Yellow,
+				BackgroundColor = Colors.Yellow,
 				WidthRequest = 1000,
 				HeightRequest = 1000,
 				Children =
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					{
 						WidthRequest =  200,
 						HeightRequest = 200,
-						BackgroundColor = Color.Red,
+						BackgroundColor = Colors.Red,
 						HorizontalOptions = LayoutOptions.Center,
 						VerticalOptions = LayoutOptions.Center
 					}

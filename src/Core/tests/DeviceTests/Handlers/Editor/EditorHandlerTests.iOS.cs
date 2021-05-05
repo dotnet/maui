@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
-			(MauiTextView)editorHandler.View;
+			(MauiTextView)editorHandler.NativeView;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
@@ -79,16 +80,16 @@ namespace Microsoft.Maui.DeviceTests
 			return editor.AttributedText.GetCharacterSpacing();
 		}
 
-
 		double GetNativeUnscaledFontSize(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Font.PointSize;
-
-
 
 		bool GetNativeIsReadOnly(EditorHandler editorHandler) =>
 			!GetNativeEditor(editorHandler).UserInteractionEnabled;
 
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
+
+		Color GetNativeTextColor(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).TextColor.ToColor();
 	}
 }

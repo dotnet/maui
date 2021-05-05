@@ -1,0 +1,9 @@
+<Project>
+  <Import Project="..\Nuget.targets" Condition="$(FromSource) == 'false'" />
+  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll')" />
+  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
+  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')" />
+  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
+  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.targets"  />
+  <Import Project="..\..\..\..\..\Directory.Build.targets" />
+</Project>

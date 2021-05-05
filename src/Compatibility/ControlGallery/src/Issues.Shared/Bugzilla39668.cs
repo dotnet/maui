@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 				cell.View = new StackLayout
 				{
-					BackgroundColor = Color.Green,
+					BackgroundColor = Colors.Green,
 					Children = {
 						new Label { Text = "Success" }
 					}

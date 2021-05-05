@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -18,7 +19,6 @@ namespace Microsoft.Maui.Controls
 
 		IAppIndexingProvider _appIndexProvider;
 		ReadOnlyCollection<Element> _logicalChildren;
-		Page _mainPage;
 
 		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
@@ -55,36 +55,81 @@ namespace Microsoft.Maui.Controls
 
 		public static Application Current { get; set; }
 
+		// TODO MAUI. What should this be?
 		public Page MainPage
 		{
-			get { return _mainPage; }
+			get
+			{
+				if (Windows.Count == 0)
+					return null;
+
+				return Windows[0].View as Page;
+			}
 			set
 			{
 				if (value == null)
 					throw new ArgumentNullException("value");
 
-				if (_mainPage == value)
+				if (MainPage == value)
 					return;
 
-				OnPropertyChanging();
-				if (_mainPage != null)
+				if (Windows.Count == 0)
 				{
-					InternalChildren.Remove(_mainPage);
-
-					_mainPage.Parent = null;
+					OnPropertyChanging();
+					AddWindow(new Window(value));
+					OnPropertyChanged();
 				}
-
-				_mainPage = value;
-
-				if (_mainPage != null)
+				else
 				{
-					_mainPage.Parent = this;
-					_mainPage.NavigationProxy.Inner = NavigationProxy;
-					InternalChildren.Add(_mainPage);
+					var mainPage = MainPage;
+
+					if (mainPage == value)
+						return;
+
+					OnPropertyChanging();
+					if (mainPage != null)
+						mainPage.Parent = null;
+
+					Windows[0].View = (IView)value;
+
+					if (mainPage != null)
+						mainPage.NavigationProxy.Inner = NavigationProxy;
+
+					OnPropertyChanged();
 				}
-				OnPropertyChanged();
 			}
 		}
+
+		//public Page MainPage
+		//{
+		//	get { return _mainPage; }
+		//	set
+		//	{
+		//		if (value == null)
+		//			throw new ArgumentNullException("value");
+
+		//		if (_mainPage == value)
+		//			return;
+
+		//		OnPropertyChanging();
+		//		if (_mainPage != null)
+		//		{
+		//			InternalChildren.Remove(_mainPage);
+		//			_mainPage.Parent = null;
+		//		}
+
+		//		_mainPage = value;
+
+		//		if (_mainPage != null)
+		//		{
+		//			_mainPage.Parent = this;
+		//			_mainPage.NavigationProxy.Inner = NavigationProxy;
+		//			InternalChildren.Add(_mainPage);
+		//		}
+
+		//		OnPropertyChanged();
+		//	}
+		//}
 
 		public IDictionary<string, object> Properties
 		{
@@ -159,6 +204,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 		public OSAppTheme RequestedTheme => UserAppTheme == OSAppTheme.Unspecified ? Device.PlatformServices.RequestedTheme : UserAppTheme;
+
+		public static Color AccentColor { get; set; }
 
 		public event EventHandler<AppThemeChangedEventArgs> RequestedThemeChanged
 		{
@@ -274,14 +321,10 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void ClearCurrent() => Current = null;
+		internal static void ClearCurrent() => Current = null;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static bool IsApplicationOrNull(Element element)
-		{
-			return element == null || element is Application;
-		}
+		internal static bool IsApplicationOrNull(object element) =>
+			element == null || element is IApplication || element is IWindow;
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
 		{
@@ -398,12 +441,13 @@ namespace Microsoft.Maui.Controls
 			// Unhook everything that's referencing the main page so it can be collected
 			// This only comes up if we're disposing of an embedded Forms app, and will
 			// eventually go away when we fully support multiple windows
-			if (_mainPage != null)
-			{
-				InternalChildren.Remove(_mainPage);
-				_mainPage.Parent = null;
-				_mainPage = null;
-			}
+			// TODO MAUI
+			//if (_mainPage != null)
+			//{
+			//	InternalChildren.Remove(_mainPage);
+			//	_mainPage.Parent = null;
+			//	_mainPage = null;
+			//}
 
 			NavigationProxy = null;
 		}

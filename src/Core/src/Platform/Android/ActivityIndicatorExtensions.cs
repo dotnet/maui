@@ -10,9 +10,9 @@ namespace Microsoft.Maui
 
 		public static void UpdateColor(this ProgressBar progressBar, IActivityIndicator activityIndicator)
 		{
-			Color color = activityIndicator.Color;
+			var color = activityIndicator.Color;
 
-			if (!color.IsDefault)
+			if (color != null)
 				progressBar.IndeterminateDrawable?.SetColorFilter(color.ToNative(), FilterMode.SrcIn);
 			else
 				progressBar.IndeterminateDrawable?.ClearColorFilter();

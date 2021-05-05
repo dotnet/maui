@@ -7,6 +7,7 @@ using System.Linq;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {

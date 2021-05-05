@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -35,13 +36,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-			BarTextColor = Color.White;
+			BarTextColor = Colors.White;
 			Children.RemoveAt(1);
 			Children.Insert(1, new ContentPage { Title = "Page5", IconImageSource = "Loyalty.png" });
 
 			Children.RemoveAt(3);
 			Children.Insert(2, new ContentPage { Title = "Page6", IconImageSource = "Gift.png" });
-			BarTextColor = Color.White;
+			BarTextColor = Colors.White;
 		}
 
 #if UITEST
