@@ -28,10 +28,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public class Tests
 		{
 			const string c_xaml = @"
-				<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+				<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 							 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-							 xmlns:test=""http://xamarin.com/schemas/2014/forms/customurl1""
-							 xmlns:test2=""http://xamarin.com/schemas/2014/forms/customurl2""
+							 xmlns:test=""http://schemas.microsoft.com/dotnet/2021/maui/customurl1""
+							 xmlns:test2=""http://schemas.microsoft.com/dotnet/2021/maui/customurl2""
 							 xmlns:test3=""clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace1;assembly=Microsoft.Maui.Controls.Compatibility.ControlGallery""
 							 xmlns:test4=""using:Microsoft.Maui.Controls.Xaml.UnitTests""
 							 x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.Gh2691"">
@@ -67,19 +67,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				Gh2691 issue2691 = new Gh2691(useCompiledXaml);
 
-				// http://xamarin.com/schemas/2014/forms/customurl1 -> Microsoft.Maui.Controls.ControlGallery.CustomNamespace1
+				// http://schemas.microsoft.com/dotnet/2021/maui/customurl1 -> Microsoft.Maui.Controls.ControlGallery.CustomNamespace1
 				var button = issue2691.FindByName("_testButton1") as Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace1.CustomButton;
 				Assert.IsNotNull(button);
 
-				// http://xamarin.com/schemas/2014/forms/customurl1 -> Microsoft.Maui.Controls.ControlGallery.CustomNamespace2
+				// http://schemas.microsoft.com/dotnet/2021/maui/customurl1 -> Microsoft.Maui.Controls.ControlGallery.CustomNamespace2
 				var label1 = issue2691.FindByName("_testLabel1") as Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace2.CustomLabel;
 				Assert.IsNotNull(label1);
 
-				// http://xamarin.com/schemas/2014/forms/customurl2 -> Microsoft.Maui.Controls.ControlGallery.CustomNamespace3
+				// http://schemas.microsoft.com/dotnet/2021/maui/customurl2 -> Microsoft.Maui.Controls.ControlGallery.CustomNamespace3
 				var label2 = issue2691.FindByName("_testLabel2") as Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace3.CustomLabel;
 				Assert.IsNotNull(label2);
 
-				// http://xamarin.com/schemas/2014/forms/customurl2 -> Microsoft.Maui.Controls.ControlGallery.CustomNamespace3
+				// http://schemas.microsoft.com/dotnet/2021/maui/customurl2 -> Microsoft.Maui.Controls.ControlGallery.CustomNamespace3
 				var stack = issue2691.FindByName("_testStackLayout") as Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace3.CustomStackLayout;
 				Assert.IsNotNull(stack);
 

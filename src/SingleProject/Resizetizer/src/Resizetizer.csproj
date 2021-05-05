@@ -5,7 +5,7 @@
     <RootNamespace>Microsoft.Maui.Resizetizer</RootNamespace>
     <AssemblyName>Microsoft.Maui.Resizetizer</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <IncludeBuildOutput>False</IncludeBuildOutput>
     <NoWarn>$(NoWarn);NU5100;NU5128;</NoWarn>
     <IsTrimmable>false</IsTrimmable>
@@ -17,13 +17,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\MauiSplash.storyboard" LogicalName="MauiSplash.storyboard" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="$(TargetPath)" Visible="False" Pack="True" PackagePath="buildTransitive" />
     <None Include="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSystem_Memory)\lib\netstandard2.0\System.Memory.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSystem_Buffers)\lib\netstandard2.0\System.Buffers.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSystem_Numerics_Vectors)\lib\netstandard2.0\System.Numerics.Vectors.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSystem_Runtime_CompilerServices_Unsafe)\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(PkgSystem_Drawing_Common)\lib\netstandard2.0\System.Drawing.Common.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSystem_ObjectModel)\lib\netstandard1.3\System.ObjectModel.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSvg_Custom)\lib\net461\Svg.Custom.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSvg_Picture)\lib\net461\Svg.Picture.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
@@ -35,12 +38,20 @@
     <None Include="$(PkgSkiaSharp)\runtimes\win-x86\native\libSkiaSharp.dll" Link="x86\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x86" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSkiaSharp)\runtimes\win-x64\native\libSkiaSharp.dll" Link="x64\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x64" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSkiaSharp)\runtimes\win-arm64\native\libSkiaSharp.dll" Link="arm64\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\arm64" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-arm\native\libSkiaSharp.so" Link="arm\libSkiaSharp.so" Visible="False" Pack="True" PackagePath="buildTransitive\arm" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-arm64\native\libSkiaSharp.so" Link="arm64\libSkiaSharp.so" Visible="False" Pack="True" PackagePath="buildTransitive\arm64" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-musl-x64\native\libSkiaSharp.so" Link="musl-x64\libSkiaSharp.so" Visible="False" Pack="True" PackagePath="buildTransitive\musl-x64" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-x64\native\libSkiaSharp.so" Link="x64\libSkiaSharp.so" Visible="False" Pack="True" PackagePath="buildTransitive\x64" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSkiaSharp_HarfBuzz)\lib\net462\SkiaSharp.HarfBuzz.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgHarfBuzzSharp)\lib\net462\HarfBuzzSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgHarfBuzzSharp)\runtimes\osx\native\libHarfBuzzSharp.dylib" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgHarfBuzzSharp)\runtimes\win-x86\native\libHarfBuzzSharp.dll" Link="x86\libHarfBuzzSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x86" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgHarfBuzzSharp)\runtimes\win-x64\native\libHarfBuzzSharp.dll" Link="x64\libHarfBuzzSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x64" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgHarfBuzzSharp)\runtimes\win-arm64\native\libHarfBuzzSharp.dll" Link="arm64\libHarfBuzzSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\arm64" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-arm\native\libHarfBuzzSharp.so" Link="arm\libHarfBuzzSharp.so" Visible="False" Pack="True" PackagePath="buildTransitive\arm" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-arm64\native\libHarfBuzzSharp.so" Link="arm64\libHarfBuzzSharp.so" Visible="False" Pack="True" PackagePath="buildTransitive\arm64" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-musl-x64\native\libHarfBuzzSharp.so" Link="musl-x64\libHarfBuzzSharp.so" Visible="False" Pack="True" PackagePath="buildTransitive\musl-x64" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-x64\native\libHarfBuzzSharp.so" Link="x64\libHarfBuzzSharp.so" Visible="False" Pack="True" PackagePath="buildTransitive\x64" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSvg2VectorDrawable_Net)\lib\netstandard2.0\Svg2VectorDrawable.Net.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -48,9 +59,11 @@
   <ItemGroup>
     <PackageReference Include="Fizzler" Version="1.2.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="HarfBuzzSharp" Version="2.6.1.7" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.6.1.7" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Framework" Version="16.7.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.7.0" PrivateAssets="all" />
     <PackageReference Include="SkiaSharp" Version="2.80.2" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.80.2" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.80.2" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Skia" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Custom" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
@@ -61,7 +74,6 @@
     <PackageReference Include="System.IO.UnmanagedMemoryStream" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Drawing.Common" Version="4.7.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.ObjectModel" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg2VectorDrawable.Net" Version="0.3.0" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
@@ -69,6 +81,7 @@
   <Target Name="_CopyToNuspecDir" AfterTargets="Build">
     <ItemGroup>
       <_CopyItems Include="$(TargetDir)**\*.dll" Exclude="$(TargetDir)System.*.dll" />
+      <_CopyItems Include="$(TargetDir)**\*.so" />
       <_CopyItems Include="$(TargetDir)**\*.dylib" />
     </ItemGroup>
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\..\..\..\.nuspec\%(RecursiveDir)" ContinueOnError="true" Retries="0" />

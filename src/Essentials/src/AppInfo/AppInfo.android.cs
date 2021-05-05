@@ -3,11 +3,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
 using Android.Provider;
-#if __ANDROID_29__
 using AndroidX.Core.Content.PM;
-#else
-using Android.Support.V4.Content.PM;
-#endif
 
 namespace Microsoft.Maui.Essentials
 {

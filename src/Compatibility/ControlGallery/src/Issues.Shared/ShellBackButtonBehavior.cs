@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 
 #if UITEST
@@ -51,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Label _commandResult = new Label()
 			{
 				AutomationId = CommandResultId,
-				BackgroundColor = Color.LightBlue,
+				BackgroundColor = Colors.LightBlue,
 				Text = "Label"
 			};
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries
 {
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 				CollectionView.EmptyView = new Label
 				{
 					Text = "Nothing to see here",
-					TextColor = Color.Coral,
+					TextColor = Colors.Coral,
 					HorizontalTextAlignment = TextAlignment.Center,
 					VerticalTextAlignment = TextAlignment.Center,
 					HorizontalOptions = LayoutOptions.Fill,

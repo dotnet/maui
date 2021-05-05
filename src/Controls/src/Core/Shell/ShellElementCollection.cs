@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Microsoft.Maui.Controls
@@ -246,7 +247,7 @@ namespace Microsoft.Maui.Controls
 				bsi.PropertyChanged -= BaseShellItemPropertyChanged;
 		}
 
-		void BaseShellItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void BaseShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(BaseShellItem.IsVisible))
 				CheckVisibility((BaseShellItem)sender);
@@ -262,7 +263,7 @@ namespace Microsoft.Maui.Controls
 					CheckVisibility(bsi.Parent as BaseShellItem);
 			}
 
-			void OnParentSet(object s, System.EventArgs __)
+			void OnParentSet(object s, EventArgs __)
 			{
 				var baseShellItem = (BaseShellItem)s;
 				baseShellItem.ParentSet -= OnParentSet;

@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		protected override void Init()
 		{
-			BackgroundColor = Color.Yellow;
+			BackgroundColor = Colors.Yellow;
 
 			var list = new ObservableCollection<GroupedData>();
 
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 				for (int j = 1; j < 30; j++)
 				{
-					var item = new MyItem { Title = $"Item: #{i}-{j}", Color = (j % 2 == 0) ? Color.Blue : Color.Red };
+					var item = new MyItem { Title = $"Item: #{i}-{j}", Color = (j % 2 == 0) ? Colors.Blue : Colors.Red };
 
 					group.Add(item);
 				}
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			BindingContext = this;
 			var lst = new ListView(ListViewCachingStrategy.RecycleElement)
 			{
-				BackgroundColor = Color.Transparent,
+				BackgroundColor = Colors.Transparent,
 				ItemTemplate = new DataTemplate(typeof(ItemTemplate)),
 				GroupHeaderTemplate = new DataTemplate(typeof(GroupHeaderTemplate)),
 				IsGroupingEnabled = true,
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				GroupShortNameBinding = new Binding(nameof(GroupedData.GroupName)),
 			};
 			lst.SeparatorVisibility = SeparatorVisibility.None;
-			lst.SeparatorColor = Color.Green;
+			lst.SeparatorColor = Colors.Green;
 			lst.SetBinding(ListView.ItemsSourceProperty, nameof(ListItems));
 			Content = lst;
 		}
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				stk.SetBinding(VisualElement.BackgroundColorProperty, nameof(MyItem.Color));
 				var lbl = new Label
 				{
-					TextColor = Color.Yellow,
+					TextColor = Colors.Yellow,
 					VerticalOptions = LayoutOptions.CenterAndExpand
 				};
 				lbl.SetBinding(Label.TextProperty, nameof(MyItem.Title));
@@ -76,14 +77,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			public GroupHeaderTemplate()
 			{
-				var title = new Label { TextColor = Color.White, FontSize = 16 };
+				var title = new Label { TextColor = Colors.White, FontSize = 16 };
 				title.SetBinding(Label.TextProperty, new Binding(nameof(GroupedData.GroupName), BindingMode.OneWay));
 
 				View = new StackLayout
 				{
 					Padding = new Thickness(8, 0),
 					VerticalOptions = LayoutOptions.StartAndExpand,
-					BackgroundColor = Color.Pink,
+					BackgroundColor = Colors.Pink,
 					Orientation = StackOrientation.Horizontal,
 					Children = { title },
 				};

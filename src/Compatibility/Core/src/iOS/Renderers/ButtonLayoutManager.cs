@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -209,17 +210,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var normal =
 				control
 					.GetAttributedTitle(UIControlState.Normal)
-					.AddCharacterSpacing(text, _element.CharacterSpacing);
+					.WithCharacterSpacing(_element.CharacterSpacing);
 
 			var highlighted =
 				control
 					.GetAttributedTitle(UIControlState.Highlighted)
-					.AddCharacterSpacing(text, _element.CharacterSpacing);
+					.WithCharacterSpacing(_element.CharacterSpacing);
 
 			var disabled =
 				control
 					.GetAttributedTitle(UIControlState.Disabled)
-					.AddCharacterSpacing(text, _element.CharacterSpacing);
+					.WithCharacterSpacing(_element.CharacterSpacing);
 
 			normal.AddAttribute(
 				UIStringAttributeKey.ForegroundColor,

@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		{
 			if (element.IsSet(ToolbarPlacementProperty) && GetToolbarPlacement(element) != value)
 			{
-				throw new InvalidOperationException("Changing the tabs placement after it's been set is not supported.");
+				throw new global::System.InvalidOperationException("Changing the tabs placement after it's been set is not supported.");
 			}
 
 			element.SetValue(ToolbarPlacementProperty, value);

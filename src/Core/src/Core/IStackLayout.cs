@@ -1,4 +1,4 @@
-namespace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
 	/// <summary>
 	/// A Layout that positions child elements in a single line which can be oriented vertically or horizontally.

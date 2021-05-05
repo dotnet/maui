@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	public sealed class ColumnDefinition : BindableObject, IDefinition
+	public sealed class ColumnDefinition : BindableObject, IDefinition, IGridColumnDefinition
 	{
 		public static readonly BindableProperty WidthProperty = BindableProperty.Create("Width", typeof(GridLength), typeof(ColumnDefinition), new GridLength(1, GridUnitType.Star),
 			propertyChanged: (bindable, oldValue, newValue) => ((ColumnDefinition)bindable).OnSizeChanged());
@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls
 			MinimumWidth = -1;
 		}
 
+		[TypeConverter(typeof(GridLengthTypeConverter))]
 		public GridLength Width
 		{
 			get { return (GridLength)GetValue(WidthProperty); }

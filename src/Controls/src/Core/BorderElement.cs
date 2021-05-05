@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Controls
 		public const int DefaultCornerRadius = -1;
 
 		public static readonly BindableProperty BorderColorProperty =
-			BindableProperty.Create(nameof(IBorderElement.BorderColor), typeof(Color), typeof(IBorderElement), Color.Default,
+			BindableProperty.Create(nameof(IBorderElement.BorderColor), typeof(Color), typeof(IBorderElement), null,
 									propertyChanged: OnBorderColorPropertyChanged);
 
 		public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create(nameof(IBorderElement.BorderWidth), typeof(double), typeof(IBorderElement), -1d);

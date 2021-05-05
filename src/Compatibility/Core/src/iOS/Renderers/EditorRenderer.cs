@@ -2,8 +2,9 @@ using System;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Platform.iOS;
 using UIKit;
-using RectangleF = CoreGraphics.CGRect;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -17,13 +18,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[Preserve(Conditional = true)]
 		public EditorRenderer()
 		{
-			Frame = new RectangleF(0, 20, 320, 40);
+			Frame = new CGRect(0, 20, 320, 40);
 		}
 
 		[PortHandler]
 		protected override UITextView CreateNativeControl()
 		{
-			return new FormsUITextView(RectangleF.Empty);
+			return new FormsUITextView(CGRect.Empty);
 		}
 
 		protected override UITextView TextView => Control;
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_placeholderLabel = new UILabel
 				{
 					BackgroundColor = UIColor.Clear,
-					Frame = new RectangleF(0, 0, Frame.Width, Frame.Height),
+					Frame = new CGRect(0, 0, Frame.Width, Frame.Height),
 					Lines = 0
 				};
 			}
@@ -63,6 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_placeholderLabel.Font = Element.ToUIFont();
 		}
 
+		[PortHandler]
 		protected internal override void UpdatePlaceholderText()
 		{
 			_placeholderLabel.Text = Element.Placeholder;
@@ -73,26 +75,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler("Partially ported")]
 		protected internal override void UpdateCharacterSpacing()
 		{
-			var textAttr = TextView.AttributedText.AddCharacterSpacing(Element.Text, Element.CharacterSpacing);
+			var textAttr = TextView.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if(textAttr != null)
 				TextView.AttributedText = textAttr;
 
-			var placeHolder = _placeholderLabel.AttributedText.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+			var placeHolder = _placeholderLabel.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if(placeHolder != null)
 				_placeholderLabel.AttributedText = placeHolder;
 		}
 
+		[PortHandler]
 		protected internal override void UpdatePlaceholderColor()
 		{
 			Color placeholderColor = Element.PlaceholderColor;
-			if (placeholderColor.IsDefault)
-				_placeholderLabel.TextColor = _defaultPlaceholderColor;
-			else
-				_placeholderLabel.TextColor = placeholderColor.ToUIColor();
+			_placeholderLabel.TextColor = placeholderColor?.ToUIColor() ?? _defaultPlaceholderColor;
 		}
 
+		[PortHandler]
 		void CreatePlaceholderLabel()
 		{
 			if (Control == null)
@@ -119,7 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			);
 
 			_placeholderLabel.TranslatesAutoresizingMaskIntoConstraints = false;
-			_placeholderLabel.AttributedText = _placeholderLabel.AttributedText.AddCharacterSpacing(Element.Placeholder, Element.CharacterSpacing);
+			_placeholderLabel.AttributedText = _placeholderLabel.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			Control.AddConstraints(hConstraints);
 			Control.AddConstraints(vConstraints);
@@ -175,7 +176,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					// iPhone does not have a dismiss keyboard button
 					var keyboardWidth = UIScreen.MainScreen.Bounds.Width;
-					var accessoryView = new UIToolbar(new RectangleF(0, 0, keyboardWidth, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
+					var accessoryView = new UIToolbar(new CGRect(0, 0, keyboardWidth, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
 
 					var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
 					var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
@@ -300,6 +301,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				TextView.InputAccessoryView.Hidden = !Element.IsEnabled;
 		}
 
+		[PortHandler]
 		protected internal virtual void UpdateFont()
 		{
 			var font = Element.ToUIFont();
@@ -341,7 +343,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler]
 		protected internal abstract void UpdatePlaceholderText();
+
+		[PortHandler]
 		protected internal abstract void UpdatePlaceholderColor();
 		protected internal abstract void UpdateCharacterSpacing();
 
@@ -350,16 +355,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			TextView.UpdateTextAlignment(Element);
 		}
 
+		[PortHandler]
 		protected internal virtual void UpdateTextColor()
-		{
-			var textColor = Element.TextColor;
+			=> TextView.TextColor = Element.TextColor?.ToUIColor() ?? ColorExtensions.LabelColor;
 
-			if (textColor.IsDefault)
-				TextView.TextColor = ColorExtensions.LabelColor;
-			else
-				TextView.TextColor = textColor.ToUIColor();
-		}
-
+		[PortHandler]
 		void UpdateMaxLength()
 		{
 			var currentControlText = TextView.Text;
@@ -368,12 +368,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				TextView.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 
+		[PortHandler]
 		protected virtual bool ShouldChangeText(UITextView textView, NSRange range, string text)
 		{
 			var newLength = textView.Text.Length + text.Length - range.Length;
 			return newLength <= Element.MaxLength;
 		}
 
+		[PortHandler]
 		void UpdateReadOnly()
 		{
 			TextView.UserInteractionEnabled = !Element.IsReadOnly;
@@ -394,12 +396,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			public event EventHandler FrameChanged;
 
-			public FormsUITextView(RectangleF frame) : base(frame)
+			public FormsUITextView(CGRect frame) : base(frame)
 			{
 			}
 
 
-			public override RectangleF Frame
+			public override CGRect Frame
 			{
 				get => base.Frame;
 				set

@@ -5,6 +5,8 @@ using Android.Graphics;
 using Android.Views;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using AImageView = Android.Widget.ImageView;
 using AView = Android.Views.View;
 

@@ -8,6 +8,8 @@ using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using RectangleF = CoreGraphics.CGRect;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -186,22 +188,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdatePicker();
 		}
 
+		[PortHandler("The code related to Placeholder remains to be ported")]
 		protected void UpdateCharacterSpacing()
 		{
 			if (Control == null)
 				return;
 
-			var textAttr = Control.AttributedText.AddCharacterSpacing(Control.Text, Element.CharacterSpacing);
+			var textAttr = Control.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (textAttr != null)
 				Control.AttributedText = textAttr;
 
-			var placeHolder = Control.AttributedPlaceholder.AddCharacterSpacing(Element.Title, Element.CharacterSpacing);
+			var placeHolder = Control.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 
 			if (placeHolder != null)
 				UpdateAttributedPlaceholder(placeHolder);
 		}
 
+		[PortHandler]
         protected internal virtual void UpdateFont()
 		{
 			Control.Font = Element.ToUIFont();			
@@ -219,17 +223,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (_useLegacyColorManagement)
 			{
-				var color = targetColor.IsDefault || !Element.IsEnabled ? _defaultPlaceholderColor : targetColor;
+				var color = targetColor == null || !Element.IsEnabled ? _defaultPlaceholderColor : targetColor;
 				UpdateAttributedPlaceholder(formatted.ToAttributed(Element, color));
 			}
 			else
 			{
 				// Using VSM color management; take whatever is in Element.PlaceholderColor
-				var color = targetColor.IsDefault ? _defaultPlaceholderColor : targetColor;
+				var color = targetColor == null ? _defaultPlaceholderColor : targetColor;
 				UpdateAttributedPlaceholder(formatted.ToAttributed(Element, color));
 			}
 
-			UpdateAttributedPlaceholder(Control.AttributedPlaceholder.AddCharacterSpacing(Element.Title, Element.CharacterSpacing));
+			UpdateAttributedPlaceholder(Control.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing));
 		}
 
 		protected virtual void UpdateAttributedPlaceholder(NSAttributedString nsAttributedString) => 
@@ -280,6 +284,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_picker.Select(Math.Max(formsIndex, 0), 0, true);
 		}
 
+		[PortHandler("Partially ported, still missing FlowDirection part.")]
 		void UpdateHorizontalTextAlignment()
 		{
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
@@ -293,7 +298,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var textColor = Element.TextColor;
 
-			if (textColor.IsDefault || (!Element.IsEnabled && _useLegacyColorManagement))
+			if (textColor == null || (!Element.IsEnabled && _useLegacyColorManagement))
 				Control.TextColor = _defaultTextColor;
 			else
 				Control.TextColor = textColor.ToUIColor();

@@ -4,7 +4,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using AAttribute = Android.Resource.Attribute;
 using AColor = Android.Graphics.Color;
-using XColor = Microsoft.Maui.Color;
+using XColor = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui
 {
@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackgroundColor(this AppCompatCheckBox nativeCheckBox, ICheckBox check)
 		{
-			if (check.BackgroundColor == XColor.Default)
+			if (check.BackgroundColor == null)
 				nativeCheckBox.SetBackgroundColor(AColor.Transparent);
 			else
 				nativeCheckBox.SetBackgroundColor(check.BackgroundColor.ToNative());

@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -29,11 +30,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		const string Ok = "OK";
 		protected override void Init()
 		{
-			BarBackgroundColor = Color.Red;
+			BarBackgroundColor = Colors.Red;
 
 			var contentPage2 = new ContentPage();
 			contentPage2.Title = Page2;
-			contentPage2.BackgroundColor = Color.Green;
+			contentPage2.BackgroundColor = Colors.Green;
 
 			contentPage2.Appearing += ContentPage2_Appearing;
 			contentPage2.Disappearing += ContentPage2_Disappearing;
@@ -43,26 +44,26 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			tabbedPage1.Disappearing += TabbedPage1_Disappearing;
 
 			var contentPage3 = new ContentPage() { Title = Page3 };
-			contentPage3.BackgroundColor = Color.Pink;
+			contentPage3.BackgroundColor = Colors.Pink;
 			tabbedPage1.Children.Add(contentPage3);
 
 			var FlyoutPage1 = new FlyoutPage();
 			FlyoutPage1.Title = Page3;
 			var master1 = new ContentPage();
-			master1.BackgroundColor = Color.Yellow;
+			master1.BackgroundColor = Colors.Yellow;
 			master1.Title = "Flyout 1";
 			var detail1 = new ContentPage();
 			detail1.Title = "Detail 1";
-			detail1.BackgroundColor = Color.Purple;
+			detail1.BackgroundColor = Colors.Purple;
 			FlyoutPage1.Flyout = master1;
 			FlyoutPage1.Detail = detail1;
-			FlyoutPage1.BackgroundColor = Color.Yellow;
+			FlyoutPage1.BackgroundColor = Colors.Yellow;
 			FlyoutPage1.Detail.Appearing += FlyoutPage1_Appearing;
 			FlyoutPage1.Detail.Disappearing += FlyoutPage1_Disappearing;
 
 			var contentPage1 = new ContentPage();
 			SetHasBackButton(contentPage1, true);
-			contentPage1.BackgroundColor = Color.Blue;
+			contentPage1.BackgroundColor = Colors.Blue;
 			contentPage1.Title = Page1;
 			var stack = new StackLayout();
 			contentPage1.Content = stack;
@@ -73,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			stack.Children.Add(new Label()
 			{
 				Text = "Navigate to each page 2 times, and make sure the Display Alert shows up all the times.",
-				TextColor = Color.White,
+				TextColor = Colors.White,
 				HorizontalTextAlignment = TextAlignment.Center
 			});
 
@@ -123,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 
-#if UITEST && __WINDOWS__
+#if UITEST && WINDOWS
 		[Test]
 		public void OnAppearingEvents()
 		{

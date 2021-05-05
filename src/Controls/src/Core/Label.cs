@@ -1,9 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -234,7 +236,7 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
-		void SetupSpans(System.Collections.IEnumerable spans)
+		void SetupSpans(IEnumerable spans)
 		{
 			foreach (Span span in spans)
 			{
@@ -243,14 +245,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void SetupSpanGestureRecognizers(System.Collections.IEnumerable gestureRecognizers)
+		void SetupSpanGestureRecognizers(IEnumerable gestureRecognizers)
 		{
 			foreach (GestureRecognizer gestureRecognizer in gestureRecognizers)
 				GestureController.CompositeGestureRecognizers.Add(new ChildGestureRecognizer() { GestureRecognizer = gestureRecognizer });
 		}
 
 
-		void RemoveSpans(System.Collections.IEnumerable spans)
+		void RemoveSpans(IEnumerable spans)
 		{
 			foreach (Span span in spans)
 			{
@@ -259,7 +261,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void RemoveSpanGestureRecognizers(System.Collections.IEnumerable gestureRecognizers)
+		void RemoveSpanGestureRecognizers(IEnumerable gestureRecognizers)
 		{
 			foreach (GestureRecognizer gestureRecognizer in gestureRecognizers)
 				foreach (var spanRecognizer in GestureController.CompositeGestureRecognizers.ToList())

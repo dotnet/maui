@@ -2,6 +2,9 @@ using Android.Content;
 using Android.Content.Res;
 using AndroidX.Core.Content;
 using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Android;
+using Microsoft.Maui.Graphics.Native;
 using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui
@@ -10,28 +13,13 @@ namespace Microsoft.Maui
 	{
 		public static readonly int[][] States = { new[] { global::Android.Resource.Attribute.StateEnabled }, new[] { -global::Android.Resource.Attribute.StateEnabled } };
 
-		public static AColor ToNative(this Color self)
-		{
-			return new AColor((byte)(byte.MaxValue * self.R), (byte)(byte.MaxValue * self.G), (byte)(byte.MaxValue * self.B), (byte)(byte.MaxValue * self.A));
-		}
+		public static AColor ToNative(this Color self) => self.AsColor();
 
 		public static AColor ToNative(this Color self, int defaultColorResourceId, Context context)
-		{
-			if (self == Color.Default)
-			{
-				return new AColor(ContextCompat.GetColor(context, defaultColorResourceId));
-			}
+			=> self?.ToNative() ?? new AColor(ContextCompat.GetColor(context, defaultColorResourceId));
 
-			return ToNative(self);
-		}
-
-		public static AColor ToNative(this Color self, Color defaultColor)
-		{
-			if (self == Color.Default)
-				return defaultColor.ToNative();
-
-			return ToNative(self);
-		}
+		public static AColor ToNative(this Color? self, Color defaultColor)
+			=> self?.ToNative() ?? defaultColor.ToNative();
 
 		public static ColorStateList ToAndroidPreserveDisabled(this Color color, ColorStateList defaults)
 		{

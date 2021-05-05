@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest.iOS;
@@ -65,12 +66,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Flyout = new ContentPage
 			{
 				Title = "IsPresentedChanged Test",
-				BackgroundColor = Color.Green,
+				BackgroundColor = Colors.Green,
 				Content = stacklayout1
 			};
 			Detail = new ContentPage
 			{
-				BackgroundColor = Color.Gray,
+				BackgroundColor = Colors.Gray,
 				Content = stacklayout
 			};
 			FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
@@ -124,7 +125,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		void Back()
 		{
-#if __IOS__ || __WINDOWS__
+#if __IOS__ || WINDOWS
 			RunningApp.Tap(q => q.Marked("Toggle"));
 #else
 			RunningApp.Back();

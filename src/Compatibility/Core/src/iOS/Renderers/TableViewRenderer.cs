@@ -1,5 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -151,7 +152,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackgroundView()
 		{
-			Control.BackgroundView = Element.BackgroundColor == Color.Default ? _originalBackgroundView : null;
+			Control.BackgroundView = Element.BackgroundColor == null ? _originalBackgroundView : null;
 			Control.BackgroundView.UpdateBackground(Element.Background);
 		}
 

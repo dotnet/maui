@@ -46,13 +46,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (oldElement != null)
 			{
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
-				oldElement.BatchCommitted -= OnBatchCommitted;
 			}
 
 			if (element != null)
 			{
 				element.PropertyChanged += OnElementPropertyChanged;
-				element.BatchCommitted += OnBatchCommitted;
 			}
 
 			Element = element;
@@ -66,11 +64,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
-		}
-
-		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
-		{
-			ViewHandler?.SetFrame(Element.Bounds);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

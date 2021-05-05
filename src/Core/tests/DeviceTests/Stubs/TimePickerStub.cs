@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -13,5 +14,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			get => _time;
 			set => SetProperty(ref _time, value);
 		}
+
+		public double CharacterSpacing { get; set; }
+
+		public Font Font { get; set; }
+
+		public Color TextColor { get; set; }
 	}
 }

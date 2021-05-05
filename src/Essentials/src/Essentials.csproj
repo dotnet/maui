@@ -1,50 +1,25 @@
-<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.0;netstandard2.0;Xamarin.iOS10;Xamarin.TVOS10;Xamarin.WatchOS10;MonoAndroid80;MonoAndroid81;MonoAndroid90;MonoAndroid10.0;tizen40;Xamarin.Mac20;</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);uap10.0.16299;</TargetFrameworks>
+    <TargetFrameworks>$(NonNet6EssentialsPlatforms)</TargetFrameworks>
     <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
     <RootNamespace>Microsoft.Maui.Essentials</RootNamespace>
-    <PackageId>Microsoft.Maui.Essentials</PackageId>
-    <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
-    <Version>1.0.0</Version>
-    <DefineConstants>$(DefineConstants);</DefineConstants>
-    <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <MDocDocumentationDirectory>$(MSBuildThisFileDirectory)..\docs\en</MDocDocumentationDirectory>
-    <DebugType>portable</DebugType>
-    <Configurations>Debug;Release</Configurations>
-    <LangVersion>8.0</LangVersion>
- </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
-    <DebugSymbols>true</DebugSymbols>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)'=='Release' And '$(OS)' == 'Windows_NT' ">
-    <!-- sourcelink: Declare that the Repository URL can be published to NuSpec -->
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <!-- sourcelink: Embed source files that are not tracked by the source control manager to the PDB -->
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <!-- sourcelink: Include PDB in the built .nupkg -->
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  <PropertyGroup>
+    <PackageId>Microsoft.Maui.Essentials</PackageId>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(Configuration)'=='Release' And '$(OS)' == 'Windows_NT' ">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-  </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Maui.Graphics" />
     <None Include="..\..\..\LICENSE" PackagePath="" Pack="true" />
     <None Include="..\..\..\Assets\xamarin.essentials_128x128.png" PackagePath="icon.png" Pack="true" />
     <None Include="nugetreadme.txt" PackagePath="readme.txt" Pack="true" />
-    <PackageReference Include="mdoc" Version="5.7.4.10" PrivateAssets="All" />
-    <PackageReference Include="Xamarin.Build.TypeRedirector" Version="0.1.2-preview" PrivateAssets="all" />
     <Compile Include="**\*.shared.cs" />
     <Compile Include="**\*.shared.*.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard1.')) ">
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-  </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <Compile Include="**\*.netstandard.cs" />
     <Compile Include="**\*.netstandard.*.cs" />
   </ItemGroup>
@@ -57,42 +32,30 @@
     </SDKReference>
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
+    <PackageReference Include="Xamarin.AndroidX.Browser" />
     <Compile Include="**\*.android.cs" />
     <Compile Include="**\*.android.*.cs" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />    
     <Reference Include="System.Numerics" />
     <AndroidResource Include="Resources\xml\*.xml" />
-  </ItemGroup>
-  <!-- NOTE: When Android 11.x comes out we neeed to make this check more robust -->
-  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) And '$(TargetFramework)' != 'MonoAndroid10.0'">
-    <PackageReference Include="Xamarin.Android.Support.Compat" Version="28.0.0.3" />
-    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.3" />
-    <PackageReference Condition=" '$(OS)' == 'Windows_NT' And $(TargetFrameworkVersion.TrimStart('vV')) &lt; 9.0 And $(TargetFrameworkVersion.TrimStart('vV')) &lt; 10.0" Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.3" />
-    <PackageReference Condition=" '$(OS)' != 'Windows_NT' " Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.3" />
-  </ItemGroup>
-  <!-- NOTE: When Android 11.x comes out we neeed to make this check more robust -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">
-    <PackageReference Include="Xamarin.AndroidX.Browser" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
     <Compile Include="**\*.ios.cs" />
     <Compile Include="**\*.ios.*.cs" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <Reference Include="System.Numerics" />
     <Reference Include="OpenTK-1.0" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.TVOS')) ">
     <Compile Include="**\*.tvos.cs" />
     <Compile Include="**\*.tvos.*.cs" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <Reference Include="System.Numerics" />
+    <Reference Include="netstandard" />
     <Reference Include="OpenTK-1.0" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.WatchOS')) ">
     <Compile Include="**\*.watchos.cs" />
     <Compile Include="**\*.watchos.*.cs" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <Reference Include="System.Numerics" />
+    <Reference Include="netstandard" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('tizen')) ">
     <PackageReference Include="Tizen.NET" Version="4.0.0" PrivateAssets="All" />

@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		void btnChangeColour_Click(object sender, EventArgs e)
 		{
-			this.frmDoesChange.BackgroundColor = _colourIndicator ? Color.LightBlue : Color.LightGoldenrodYellow;
+			this.frmDoesChange.BackgroundColor = _colourIndicator ? Colors.LightBlue : Colors.LightGoldenrodYellow;
 
 			_colourIndicator = !_colourIndicator;
 		}

@@ -1,10 +1,11 @@
+#nullable enable
 using System;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
-	internal static class HostingLoggerExtensions
+	static class HostingLoggerExtensions
 	{
 		public static void ApplicationError(this ILogger logger, EventId eventId, string message, Exception exception)
 		{
@@ -27,8 +28,8 @@ namespace Microsoft.Maui.Hosting.Internal
 			if (logger.IsEnabled(LogLevel.Debug))
 			{
 				logger.LogDebug(
-				   eventId: LoggerEventIds.Starting,
-				   message: "Hosting starting");
+					eventId: LoggerEventIds.Starting,
+					message: "Hosting starting");
 			}
 		}
 
@@ -85,7 +86,7 @@ namespace Microsoft.Maui.Hosting.Internal
 		}
 	}
 
-	internal static class LoggerEventIds
+	static class LoggerEventIds
 	{
 		public static readonly EventId Starting = new EventId(1, "Starting");
 		public static readonly EventId Started = new EventId(2, "Started");

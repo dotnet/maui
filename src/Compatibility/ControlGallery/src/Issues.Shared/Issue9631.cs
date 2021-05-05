@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					Orientation = StackOrientation.Vertical,
 					Spacing = 5,
 					Padding = 10,
-					BackgroundColor = Color.Beige
+					BackgroundColor = Colors.Beige
 				};
 
 

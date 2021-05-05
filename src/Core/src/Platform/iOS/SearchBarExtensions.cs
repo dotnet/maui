@@ -14,20 +14,18 @@ namespace Microsoft.Maui
 			uiSearchBar.Placeholder = searchBar.Placeholder;
 		}
 
-		public static void UpdateFont(this UISearchBar uiSearchBar, ISearchBar searchBar, IFontManager fontManager)
+		public static void UpdateFont(this UISearchBar uiSearchBar, ITextStyle textStyle, IFontManager fontManager)
 		{
-			uiSearchBar.UpdateFont(searchBar, fontManager, null);
+			uiSearchBar.UpdateFont(textStyle, fontManager, null);
 		}
 
-		public static void UpdateFont(this UISearchBar uiSearchBar, ISearchBar searchBar, IFontManager fontManager, UITextField? textField)
+		public static void UpdateFont(this UISearchBar uiSearchBar, ITextStyle textStyle, IFontManager fontManager, UITextField? textField)
 		{
 			textField ??= uiSearchBar.FindDescendantView<UITextField>();
-
 			if (textField == null)
 				return;
 
-			var uiFont = fontManager.GetFont(searchBar.Font);
-			textField.Font = uiFont;
+			textField.UpdateFont(textStyle, fontManager);
 		}
 	}
 }

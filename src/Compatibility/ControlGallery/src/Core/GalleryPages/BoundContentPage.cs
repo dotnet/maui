@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				{
 					Content = new StackLayout
 					{
-						BackgroundColor = Color.Red,
+						BackgroundColor = Colors.Red,
 						Children = {
 							new Label {
 								Text = "Second Page"

@@ -16,7 +16,9 @@
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <SharedFont Include="Fonts\*" />
+    <MauiFont Include="Fonts\*" />
+    <MauiImage Include="Images\*" />
+    <MauiImage Update="Images\*.gif" Resize="false" />
   </ItemGroup>
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
 </Project>

@@ -1,3 +1,4 @@
+#nullable enable
 namespace Microsoft.Maui
 {
 	public class Keyboard

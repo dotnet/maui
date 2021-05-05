@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -35,14 +36,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					{
 						WidthRequest = 250,
 						HeightRequest = 50,
-						BackgroundColor = Color.AntiqueWhite,
+						BackgroundColor = Colors.AntiqueWhite,
 						Keyboard = Keyboard.Numeric
 					},
 					new Editor
 					{
 						WidthRequest = 250,
 						HeightRequest = 50,
-						BackgroundColor = Color.BurlyWood,
+						BackgroundColor = Colors.BurlyWood,
 						Keyboard = Keyboard.Numeric
 					}
 				}

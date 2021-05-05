@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				HeightRequest = 100,
 				Orientation = StackOrientation.Horizontal,
 				HorizontalOptions = LayoutOptions.Fill,
-				BackgroundColor = Color.AntiqueWhite,
+				BackgroundColor = Colors.AntiqueWhite,
 				Children =
 				{
 					new Label
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				AutomationId = OuterLayout,
 				Orientation = StackOrientation.Vertical,
-				BackgroundColor = Color.Brown,
+				BackgroundColor = Colors.Brown,
 				Children =
 				{
 					_result,

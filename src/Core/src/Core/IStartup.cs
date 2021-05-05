@@ -18,12 +18,12 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Allow to create a custom IAppHostBuilder instance.
 	/// </summary>
-	public interface IHostBuilderStartup
+	public interface IAppHostBuilderStartup : IStartup
 	{
 		/// <summary>
 		/// Create and configure a builder object.
 		/// </summary>
 		/// <returns>The new instance of the IAppHostBuilder.</returns>
-		public IAppHostBuilder CreateHostBuilder();
+		IAppHostBuilder CreateAppHostBuilder();
 	}
 }

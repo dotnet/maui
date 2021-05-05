@@ -3,6 +3,7 @@ using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				HeightRequest = 100,
 				WidthRequest = 200,
 				CornerRadius = 15,
-				BackgroundColor = Color.Red
+				BackgroundColor = Colors.Red
 			};
 
 			await CheckCornerRadius(boxView);
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		[Test, Category("CornerRadius"), Category("Button")]
 		public async Task ButtonCornerRadius()
 		{
-			var backgroundColor = Color.Red;
+			var backgroundColor = Colors.Red;
 
 			var button = new Button
 			{
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		[Test, Category("CornerRadius"), Category("Frame")]
 		public async Task FrameCornerRadius()
 		{
-			var backgroundColor = Color.Red;
+			var backgroundColor = Colors.Red;
 
 			var frame = new Frame
 			{
@@ -58,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		[Test, Category("CornerRadius"), Category("ImageButton")]
 		public async Task ImageButtonCornerRadius()
 		{
-			var backgroundColor = Color.Red;
+			var backgroundColor = Colors.Red;
 
 			var button = new ImageButton
 			{
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				WidthRequest = 200,
 				CornerRadius = 15,
 				BackgroundColor = backgroundColor,
-				BorderColor = Color.Black,
+				BorderColor = Colors.Black,
 				BorderWidth = 2
 			};
 

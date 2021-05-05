@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 
 #if UITEST
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					{
 						Text = "Remove the items using the context menu. Then add 3 more items and try to delete them as well. " +
 						"If all items are deleted successfully, then the test is passed.",
-						BackgroundColor = Color.Aqua
+						BackgroundColor = Colors.Aqua
 					},
 					new Button {
 						Command = model.AddListItemCommand,
@@ -113,7 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				new Command(() => MessagingCenter.Send(this, "Remove", this));
 		}
 
-#if UITEST && !__WINDOWS__
+#if UITEST && !WINDOWS
 		[Test]
 		public void TestRemovingContextMenuItems()
 		{

@@ -5,13 +5,8 @@ using System.Threading.Tasks;
 using Android;
 using Android.Content.PM;
 using Android.OS;
-#if __ANDROID_29__
 using AndroidX.Core.App;
 using AndroidX.Core.Content;
-#else
-using Android.Support.V4.App;
-using Android.Support.V4.Content;
-#endif
 
 namespace Microsoft.Maui.Essentials
 {

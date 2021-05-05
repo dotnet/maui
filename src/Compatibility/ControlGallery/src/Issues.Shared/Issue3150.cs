@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -13,13 +14,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			const string buttonText = "Toggle IsClippedToBounds: ";
 			var frame = new Frame
 			{
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				HorizontalOptions = LayoutOptions.CenterAndExpand,
 				VerticalOptions = LayoutOptions.CenterAndExpand,
 				IsClippedToBounds = false,
 				Content = new BoxView
 				{
-					BackgroundColor = Color.Yellow,
+					BackgroundColor = Colors.Yellow,
 					TranslationX = 50
 				}
 			};

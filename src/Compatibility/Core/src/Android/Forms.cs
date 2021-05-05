@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -19,8 +19,10 @@ using AndroidX.Core.Content;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.DualScreen.Android;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AndroidResource = Android.Resource;
+using Size = Microsoft.Maui.Graphics.Size;
 using Trace = System.Diagnostics.Trace;
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -60,21 +62,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool? s_isNougatOrNewer;
 		static bool? s_isOreoOrNewer;
 		static bool? s_isPieOrNewer;
-		static FontManager s_fontManager;
-
-		[Obsolete("Context is obsolete as of version 2.5. Please use a local context instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Context Context { get; internal set; }
 
 		// One per process; does not change, suitable for loading resources (e.g., ResourceProvider)
-		internal static Context ApplicationContext { get; private set; }
+		internal static Context ApplicationContext { get; private set; } = global::Android.App.Application.Context;
 		internal static IMauiContext MauiContext { get; private set; }
 
 		public static bool IsInitialized { get; private set; }
 		static bool FlagsSet { get; set; }
 
 		static bool _ColorButtonNormalSet;
-		static Color _ColorButtonNormal = Color.Default;
+		static Color _ColorButtonNormal = null;
 		public static Color ColorButtonNormalOverride { get; set; }
 
 		internal static BuildVersionCodes SdkInt
@@ -157,9 +154,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		internal static IFontManager FontManager =>
-			s_fontManager ??= new FontManager(Registrar.FontRegistrar);
-
 		public static float GetFontSizeNormal(Context context)
 		{
 			float size = 50;
@@ -230,30 +224,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				options
 			);
 			Profile.FrameEnd();
-		}
-
-		/// <summary>
-		/// Sets title bar visibility programmatically. Must be called after Microsoft.Maui.Controls.Compatibility.Forms.Init() method
-		/// </summary>
-		/// <param name="visibility">Title bar visibility enum</param>
-		[Obsolete("SetTitleBarVisibility(AndroidTitleBarVisibility) is obsolete as of version 2.5. "
-			+ "Please use SetTitleBarVisibility(Activity, AndroidTitleBarVisibility) instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetTitleBarVisibility(AndroidTitleBarVisibility visibility)
-		{
-			if (Context.GetActivity() == null)
-				throw new NullReferenceException("Must be called after Microsoft.Maui.Controls.Compatibility.Forms.Init() method");
-
-			if (visibility == AndroidTitleBarVisibility.Never)
-			{
-				if (!Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
-					Context.GetActivity().Window.AddFlags(WindowManagerFlags.Fullscreen);
-			}
-			else
-			{
-				if (Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
-					Context.GetActivity().Window.ClearFlags(WindowManagerFlags.Fullscreen);
-			}
 		}
 
 		public static void SetTitleBarVisibility(Activity activity, AndroidTitleBarVisibility visibility)
@@ -358,16 +328,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var activity = context.Context;
 			Profile.FrameBegin();
 			Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
-			if (!IsInitialized)
-			{
-				// Only need to get this once; it won't change
-				ApplicationContext = activity.ApplicationContext;
-				MauiContext = context;
-			}
 
-#pragma warning disable 618 // Still have to set this up so obsolete code can function
-			Context = activity;
-#pragma warning restore 618
+			// Allow this multiple times to support the app and then the activity
+			ApplicationContext = activity.ApplicationContext;
+			MauiContext = context;
 
 			if (!IsInitialized)
 			{
@@ -379,7 +343,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FramePartition("Color.SetAccent()");
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// This could change if the UI mode changes (e.g., if night mode is enabled)
-			Color.SetAccent(GetAccentColor(activity));
+			Application.AccentColor = GetAccentColor(activity);
 			_ColorButtonNormalSet = false;
 
 			if (!IsInitialized)
@@ -418,7 +382,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Profile.FramePartition("RegisterAll");
 
-			RegisterCompatRenderers(maybeOptions);
+			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
+				RegisterCompatRenderers(maybeOptions);
 
 			Profile.FramePartition("Epilog");
 
@@ -551,7 +516,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			Color rc = ColorButtonNormalOverride;
 
-			if (ColorButtonNormalOverride == Color.Default)
+			if (ColorButtonNormalOverride == null)
 			{
 				using (var value = new TypedValue())
 				{
@@ -883,13 +848,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 						color = ContextCompat.GetColor(_context, AndroidResource.Color.WidgetEditTextDark);
 						break;
 					default:
-						return Color.Default;
+						return null;
 				}
 
 				if (color != 0)
 					return new AColor(color).ToColor();
 
-				return Color.Default;
+				return null;
 			}
 
 			public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)

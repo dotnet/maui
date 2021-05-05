@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			for (int i = 0; i < N; i++)
 			{
-				_builder.RegisterHandler<IButton, ButtonHandler>();
+				_builder.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<IButton, ButtonHandler>());
 			}
 		}
 

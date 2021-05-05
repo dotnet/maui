@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.ShapesGalleries
 {
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Shap
 
 			_grid = new Grid
 			{
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				HorizontalOptions = LayoutOptions.Center,
 				HeightRequest = 150,
 				WidthRequest = 150

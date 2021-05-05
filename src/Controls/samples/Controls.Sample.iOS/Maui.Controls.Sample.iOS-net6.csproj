@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0-ios</TargetFramework>
-    <RuntimeIdentifier>ios-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
     <RootNamespace>Maui.Controls.Sample.iOS</RootNamespace>
     <AssemblyName>Maui.Controls.Sample.iOS</AssemblyName>

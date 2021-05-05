@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -41,11 +42,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		protected override void Init()
 		{
 			var people = new ObservableCollection<Person> {
-				new Person ("Abigail", new DateTime (1975, 1, 15), Color.Aqua),
-				new Person ("Bob", new DateTime (1976, 2, 20), Color.Black),
-				new Person ("Cathy", new DateTime (1977, 3, 10), Color.Blue),
+				new Person ("Abigail", new DateTime (1975, 1, 15), Colors.Aqua),
+				new Person ("Bob", new DateTime (1976, 2, 20), Colors.Black),
+				new Person ("Cathy", new DateTime (1977, 3, 10), Colors.Blue),
 #pragma warning disable 618
-				new Person ("David", new DateTime (1978, 4, 25), Color.Fuchsia),
+				new Person ("David", new DateTime (1978, 4, 25), Colors.Fuchsia),
 #pragma warning restore 618
 			};
 
@@ -95,7 +96,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				   {
 					   Padding = new Thickness(0, 5),
 					   Orientation = StackOrientation.Horizontal,
-					   BackgroundColor = Color.Black,
+					   BackgroundColor = Colors.Black,
 					   Children = {
 							boxView,
 							new StackLayout {
@@ -123,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			buttonAdd.Clicked += (sender, e) =>
 			{
-				var person = new Person(string.Format("Name {0}", _count++), DateTime.Today, Color.Blue);
+				var person = new Person(string.Format("Name {0}", _count++), DateTime.Today, Colors.Blue);
 
 				people.Add(person);
 

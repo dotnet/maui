@@ -1,9 +1,10 @@
 using System;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>
+	public partial class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>
 	{
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(DatePicker), "d");
 
@@ -99,19 +100,26 @@ namespace Microsoft.Maui.Controls
 		}
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, (DatePicker)this);
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
+			HandleFontChanged();
+
+		void HandleFontChanged()
+		{
+			// Null out the Maui font value so it will be recreated next time it's accessed
+			_font = null;
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		}
 
 		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
 		{

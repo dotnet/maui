@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
-	internal class ConfigureContainerAdapter<TContainerBuilder> : IConfigureContainerAdapter
+	class ConfigureContainerAdapter<TContainerBuilder> : IConfigureContainerAdapter
 	{
 		readonly Action<HostBuilderContext, TContainerBuilder> _action;
 
@@ -12,6 +12,5 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		public void ConfigureContainer(HostBuilderContext hostContext, object containerBuilder) =>
 			_action(hostContext, (TContainerBuilder)containerBuilder);
-
 	}
 }

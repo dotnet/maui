@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	public sealed class RowDefinition : BindableObject, IDefinition
+	public sealed class RowDefinition : BindableObject, IDefinition, IGridRowDefinition
 	{
 		public static readonly BindableProperty HeightProperty = BindableProperty.Create("Height", typeof(GridLength), typeof(RowDefinition), new GridLength(1, GridUnitType.Star),
 			propertyChanged: (bindable, oldValue, newValue) => ((RowDefinition)bindable).OnSizeChanged());
@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls
 			MinimumHeight = -1;
 		}
 
+		[TypeConverter(typeof(GridLengthTypeConverter))]
 		public GridLength Height
 		{
 			get { return (GridLength)GetValue(HeightProperty); }

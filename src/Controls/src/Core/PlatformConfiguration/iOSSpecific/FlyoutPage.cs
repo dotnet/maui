@@ -1,7 +1,6 @@
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	using System;
 	using FormsElement = Maui.Controls.FlyoutPage;
 
 	public static class FlyoutPage
@@ -32,7 +31,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		#endregion
 	}
 
-	[Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
+	[global::System.Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
 	public static class MasterDetailPage
 	{
 		#region ApplyShadow

@@ -289,7 +289,7 @@ namespace Microsoft.Maui.Controls
 						if (prop.PropertyType == typeof(String))
 						{
 							if (value != null)
-								value = System.Net.WebUtility.UrlDecode(value);
+								value = global::System.Net.WebUtility.UrlDecode(value);
 
 							prop.SetValue(content, value);
 						}

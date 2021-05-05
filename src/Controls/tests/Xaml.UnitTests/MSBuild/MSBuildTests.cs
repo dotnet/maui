@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 		class Xaml
 		{
-			const string MicrosoftMauiControlsFormsDefaultNamespace = "http://xamarin.com/schemas/2014/forms";
+			const string MicrosoftMauiControlsFormsDefaultNamespace = "http://schemas.microsoft.com/dotnet/2021/maui";
 			const string MicrosoftMauiControlsFormsXNamespace = "http://schemas.microsoft.com/winfx/2006/xaml";
 
 			public static readonly string MainPage = $@"
@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			var ext = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
 			var dotnet = IOPath.Combine(testDirectory, "..", "..", "..", "..", "..", "..", "..", "bin", "dotnet", $"dotnet{ext}");
-			if (!File.Exists (dotnet))
+			if (!File.Exists(dotnet))
 			{
 				Console.WriteLine($"Using 'dotnet', did not find: {dotnet}");
 
@@ -297,7 +297,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Save(projectFile);
 
 			string log = Build(projectFile, additionalArgs: "-p:MauiXamlCValidateOnly=True", shouldSucceed: false);
-			StringAssert.Contains("MainPage.xaml(7,6): XamlC error XFC0000: Cannot resolve type \"http://xamarin.com/schemas/2014/forms:NotARealThing\".", log);
+			StringAssert.Contains("MainPage.xaml(7,6): XamlC error XFC0000: Cannot resolve type \"http://schemas.microsoft.com/dotnet/2021/maui:NotARealThing\".", log);
 		}
 
 		/// <summary>

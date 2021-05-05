@@ -21,11 +21,9 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-#if !NETSTANDARD1_0
-		protected UnsolvableConstraintsException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+		protected UnsolvableConstraintsException(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context)
 			: base(info, context)
 		{
 		}
-#endif
 	}
 }

@@ -1,8 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
-
-
 
 // This is a temporary namespace until we rename everything and move the legacy layouts
 namespace Microsoft.Maui.Controls.Layout2
@@ -34,45 +34,34 @@ namespace Microsoft.Maui.Controls.Layout2
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (IsMeasureValid)
-			{
-				return DesiredSize;
-			}
-
 			var sizeWithoutMargins = LayoutManager.Measure(widthConstraint, heightConstraint);
 			DesiredSize = new Size(sizeWithoutMargins.Width + Margin.HorizontalThickness,
 				sizeWithoutMargins.Height + Margin.VerticalThickness);
 
-			IsMeasureValid = true;
 			return DesiredSize;
 		}
 
-		protected override void ArrangeOverride(Rectangle bounds)
+		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			if (!IsMeasureValid)
+			base.ArrangeOverride(bounds);
+
+			LayoutManager.ArrangeChildren(Frame);
+
+			foreach (var child in Children)
 			{
-				return;
+				child.Handler?.NativeArrange(child.Frame);
 			}
 
-			if (IsArrangeValid)
-			{
-				return;
-			}
-
-			Arrange(bounds);
-
-			LayoutManager.Arrange(Frame);
-			IsArrangeValid = true;
-			Handler?.SetFrame(Frame);
+			return Frame.Size;
 		}
 
 		protected override void InvalidateMeasureOverride()
 		{
-			base.InvalidateMeasure();
+			base.InvalidateMeasureOverride();
 
 			foreach (var child in Children)
 			{
-				child.InvalidateArrange();
+				child.InvalidateMeasure();
 			}
 		}
 
@@ -83,25 +72,23 @@ namespace Microsoft.Maui.Controls.Layout2
 
 			_children.Add(child);
 
-			// TODO MAUI
-			if (child is Element ve)
-				ve.Parent = this;
+			if (child is Element element)
+				element.Parent = this;
 
 			InvalidateMeasure();
 
 			LayoutHandler?.Add(child);
 		}
 
-		public void Remove(IView child)
+		public virtual void Remove(IView child)
 		{
 			if (child == null)
 				return;
 
 			_children.Remove(child);
 
-			// TODO MAUI
-			if (child is Element ve)
-				ve.Parent = null;
+			if (child is Element element)
+				element.Parent = null;
 
 			InvalidateMeasure();
 

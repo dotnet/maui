@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -26,11 +27,11 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var activityIndicator = new ActivityIndicatorStub()
 			{
-				BackgroundColor = Color.Yellow,
+				BackgroundColor = Colors.Yellow,
 				IsRunning = true
 			};
 
-			await ValidateColor(activityIndicator, Color.Yellow, () => activityIndicator.BackgroundColor = Color.Yellow);
+			await ValidateColor(activityIndicator, Colors.Yellow, () => activityIndicator.BackgroundColor = Colors.Yellow);
 		}
 	}
 }

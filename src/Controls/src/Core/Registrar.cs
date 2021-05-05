@@ -5,19 +5,13 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Maui.Controls.StyleSheets;
 
-
 namespace Microsoft.Maui.Controls
 {
 	[Flags]
 	public enum InitializationFlags : long
 	{
-		DisableCss = 1 << 0
-	}
-
-	// Previewer uses reflection to bind to this method; Removal or modification of visibility will break previewer.
-	internal static class Registrar
-	{
-		internal static void RegisterAll(Type[] attrTypes) => Internals.Registrar.RegisterAll(attrTypes);
+		DisableCss = 1 << 0,
+		SkipRenderers = 1 << 1,
 	}
 }
 
@@ -55,7 +49,6 @@ namespace Microsoft.Maui.Controls.Internals
 				else
 					visualRenderers[supportedVisuals[i]] = (trender, priority);
 			}
-
 
 			// This registers a factory into the Handler version of the registrar.
 			// This way if you are running a .NET MAUI app but want to use legacy renderers
@@ -139,7 +132,6 @@ namespace Microsoft.Maui.Controls.Internals
 
 			return GetHandler(type, obj, (obj as IVisualController)?.EffectiveVisual, args) as TOut;
 		}
-
 
 		public Type GetHandlerType(Type viewType) => GetHandlerType(viewType, _defaultVisualType);
 
@@ -271,9 +263,8 @@ namespace Microsoft.Maui.Controls.Internals
 			Registered = new Registrar<IRegisterable>();
 		}
 
-		public static IFontRegistrar FontRegistrar { get; } = new FontRegistrar();
-
 		internal static Dictionary<string, Type> Effects { get; } = new Dictionary<string, Type>();
+
 		internal static Dictionary<string, IList<StylePropertyAttribute>> StyleProperties => LazyStyleProperties.Value;
 
 		static bool DisableCSS = false;
@@ -347,7 +338,6 @@ namespace Microsoft.Maui.Controls.Internals
 			RegisterAll(attrTypes, default(InitializationFlags));
 		}
 
-
 		public static void RegisterAll(Type[] attrTypes, InitializationFlags flags)
 		{
 			RegisterAll(
@@ -400,7 +390,7 @@ namespace Microsoft.Maui.Controls.Internals
 						var attribute = a as HandlerAttribute;
 						if (attribute == null && (a is ExportFontAttribute fa))
 						{
-							FontRegistrar.Register(fa.FontFileName, fa.Alias, assembly);
+							CompatServiceProvider.FontRegistrar.Register(fa.FontFileName, fa.Alias, assembly);
 						}
 						else
 						{
@@ -432,12 +422,9 @@ namespace Microsoft.Maui.Controls.Internals
 				Profile.FrameEnd(frameName);
 			}
 
-			if (FontRegistrar is FontRegistrar fontRegistrar)
-			{
-				var type = Registered.GetHandlerType(typeof(EmbeddedFont));
-				if (type != null)
-					fontRegistrar.SetFontLoader((IEmbeddedFontLoader)Activator.CreateInstance(type));
-			}
+			var type = Registered.GetHandlerType(typeof(EmbeddedFont));
+			if (type != null)
+				CompatServiceProvider.SetFontLoader(type);
 
 			RegisterStylesheets(flags);
 			Profile.FramePartition("DependencyService.Initialize");

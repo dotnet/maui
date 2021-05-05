@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void ImplicitCollectionWithSingleElement()
 		{
 			var xaml = @"
-				<Grid xmlns=""http://xamarin.com/schemas/2014/forms"">
+				<Grid xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"">
 					<Grid.RowDefinitions>
 						<RowDefinition Height=""*"" />
 			        </Grid.RowDefinitions>

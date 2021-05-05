@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
@@ -116,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				float shadowRadius = 0;
 				float shadowDy = 0;
 				float shadowDx = 0;
-				AColor shadowColor = Color.Transparent.ToAndroid();
+				AColor shadowColor = Colors.Transparent.ToAndroid();
 				// Add Android's default material shadow if we want it
 				if (useDefaultShadow)
 				{

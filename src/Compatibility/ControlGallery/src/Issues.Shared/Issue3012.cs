@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -71,7 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var divider = new BoxView
 			{
 				HeightRequest = 1,
-				BackgroundColor = Color.Black
+				BackgroundColor = Colors.Black
 			};
 
 			StackLayout stackLayout = new StackLayout();

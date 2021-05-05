@@ -1,28 +1,26 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui
 {
 	public class FontRegistrar : IFontRegistrar
 	{
-		readonly Dictionary<string, (string Filename, string? Alias, Assembly Assembly)> _embeddedFonts =
-			new Dictionary<string, (string Filename, string? Alias, Assembly Assembly)>();
-
-		readonly Dictionary<string, (string Filename, string? Alias)> _nativeFonts =
-			new Dictionary<string, (string Filename, string? Alias)>();
-
-		readonly Dictionary<string, (bool Success, string? Path)> _fontLookupCache =
-			new Dictionary<string, (bool Success, string? Path)>();
+		readonly Dictionary<string, (string Filename, string? Alias, Assembly Assembly)> _embeddedFonts = new();
+		readonly Dictionary<string, (string Filename, string? Alias)> _nativeFonts = new();
+		readonly Dictionary<string, (bool Success, string? Path)> _fontLookupCache = new();
+		readonly ILogger<FontRegistrar>? _logger;
 
 		IEmbeddedFontLoader? _fontLoader;
 
-		public FontRegistrar(IEmbeddedFontLoader? fontLoader = null)
+		public FontRegistrar(IEmbeddedFontLoader? fontLoader = null, ILogger<FontRegistrar>? logger = null)
 		{
 			_fontLoader = fontLoader;
+			_logger = logger;
 		}
 
 		public void SetFontLoader(IEmbeddedFontLoader? fontLoader)
@@ -61,14 +59,23 @@ namespace Microsoft.Maui
 				}
 				else if (_nativeFonts.TryGetValue(font, out var foundNativeFont))
 				{
-					using var stream = GetNativeFontStream(foundNativeFont);
+					if (CanUsePackagedNativeFonts)
+					{
+						var match = (true, GetNativeFontUri(foundNativeFont));
+						_fontLookupCache[font] = match;
+						return match;
+					}
+					else
+					{
+						using var stream = GetNativeFontStream(foundNativeFont);
 
-					return TryLoadFont(font, foundNativeFont.Filename, foundNativeFont.Alias, stream);
+						return TryLoadFont(font, foundNativeFont.Filename, foundNativeFont.Alias, stream);
+					}
 				}
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(ex);
+				_logger?.LogWarning(ex, "Unable to load font '{Font}'.", font);
 			}
 
 			return _fontLookupCache[font] = (false, null);
@@ -109,6 +116,40 @@ namespace Microsoft.Maui
 				return false;
 
 			return path.Replace(file, "").EndsWith(".", StringComparison.Ordinal);
+		}
+
+		bool CanUsePackagedNativeFonts =>
+#if WINDOWS
+			true;
+#else
+			false;
+#endif
+
+		string GetNativeFontUri((string Filename, string? Alias) nativeFont)
+		{
+#if WINDOWS
+			var alias = nativeFont.Alias;
+			if (!string.IsNullOrEmpty(alias))
+				alias = "#" + alias;
+
+			var root = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
+
+			var packagePath = Path.Combine(root, "Assets", nativeFont.Filename);
+			if (File.Exists(packagePath))
+				return $"ms-appx:///Assets/{nativeFont.Filename}{alias}";
+
+			packagePath = Path.Combine(root, "Fonts", nativeFont.Filename);
+			if (File.Exists(packagePath))
+				return $"ms-appx:///Fonts/{nativeFont.Filename}{alias}";
+
+			packagePath = Path.Combine(root, "Assets", "Fonts", nativeFont.Filename);
+			if (File.Exists(packagePath))
+				return $"ms-appx:///Assets/Fonts/{nativeFont.Filename}{alias}";
+
+			// TODO: check other folders as well
+#endif
+
+			throw new FileNotFoundException($"Native font with the name {nativeFont.Filename} was not found.");
 		}
 
 		Stream GetNativeFontStream((string Filename, string? Alias) nativeFont)

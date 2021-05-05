@@ -1,5 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
 using NSubstitute;
 
 namespace Microsoft.Maui.UnitTests.Layouts
@@ -29,9 +30,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		protected IView CreateTestView(Size viewSize)
 		{
 			var view = CreateTestView();
+			var handler = Substitute.For<IViewHandler>();
 
 			view.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(viewSize);
 			view.DesiredSize.Returns(viewSize);
+			view.Handler.Returns(handler);
 
 			return view;
 		}
@@ -44,7 +47,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			for (int n = 0; n < viewCount; n++)
 			{
-				var view = CreateTestView(new Size(viewWidth, viewHeight));
+				var view = LayoutTestHelpers.CreateTestView(new Size(viewWidth, viewHeight));
 				children.Add(view);
 			}
 

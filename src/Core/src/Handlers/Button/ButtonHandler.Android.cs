@@ -6,8 +6,10 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : AbstractViewHandler<IButton, AppCompatButton>
+	public partial class ButtonHandler : ViewHandler<IButton, AppCompatButton>
 	{
+		static Thickness? DefaultPadding;
+
 		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
 		ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();
 
@@ -19,6 +21,17 @@ namespace Microsoft.Maui.Handlers
 			};
 
 			return nativeButton;
+		}
+
+		protected override void SetupDefaults(AppCompatButton nativeView)
+		{
+			DefaultPadding = new Thickness(
+				nativeView.PaddingLeft,
+				nativeView.PaddingTop,
+				nativeView.PaddingRight,
+				nativeView.PaddingBottom);
+
+			base.SetupDefaults(nativeView);
 		}
 
 		protected override void ConnectHandler(AppCompatButton nativeView)
@@ -45,29 +58,32 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateText(button);
+			handler.NativeView?.UpdateText(button);
 		}
 
 		public static void MapTextColor(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdateTextColor(button);
+			handler.NativeView?.UpdateTextColor(button);
+		}
+
+		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)
+		{
+			handler.NativeView?.UpdateCharacterSpacing(button);
 		}
 
 		public static void MapFont(ButtonHandler handler, IButton button)
 		{
-			_ = handler.Services ?? throw new InvalidOperationException($"{nameof(Services)} should have been set by base class.");
+			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
-
-			handler.TypedNativeView?.UpdateFont(button, fontManager);
+			handler.NativeView?.UpdateFont(button, fontManager);
 		}
 
 		public static void MapPadding(ButtonHandler handler, IButton button)
 		{
-			handler.TypedNativeView?.UpdatePadding(button);
+			handler.NativeView?.UpdatePadding(button, DefaultPadding);
 		}
 
-		public bool OnTouch(IButton? button, AView? v, MotionEvent? e)
+		bool OnTouch(IButton? button, AView? v, MotionEvent? e)
 		{
 			switch (e?.ActionMasked)
 			{
@@ -82,12 +98,12 @@ namespace Microsoft.Maui.Handlers
 			return false;
 		}
 
-		public void OnClick(IButton? button, AView? v)
+		void OnClick(IButton? button, AView? v)
 		{
 			button?.Clicked();
 		}
 
-		public class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener
+		class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener
 		{
 			public ButtonHandler? Handler { get; set; }
 
@@ -97,7 +113,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public class ButtonTouchListener : Java.Lang.Object, AView.IOnTouchListener
+		class ButtonTouchListener : Java.Lang.Object, AView.IOnTouchListener
 		{
 			public ButtonHandler? Handler { get; set; }
 

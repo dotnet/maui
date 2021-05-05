@@ -12,6 +12,7 @@ using Android.Widget;
 using AndroidX.Core.Content;
 using Java.Lang;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -319,7 +320,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.SetTextSize(ComplexUnitType.Sp, (float)Element.FontSize);
 		}
 
-		[PortHandler("Partially ported")]
+		[PortHandler("IsSpellCheckEnabled is missing.")]
+		[PortHandler("No override for GetDigitsKeyListener")]
 		void UpdateInputType()
 		{
 			Entry model = Element;
@@ -366,6 +368,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Control?.ClearFocus();
 		}
 
+		[PortHandler]
 		void UpdateMaxLength()
 		{
 			var currentFilters = new List<IInputFilter>(EditText?.GetFilters() ?? new IInputFilter[0]);
@@ -389,6 +392,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				EditText.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			if (Forms.IsLollipopOrNewer)
@@ -548,6 +552,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	}
 
 	// Entry clear button management
+	[PortHandler("Focus management part might need to be reworked after IsFocused implementation.")]
 	public abstract partial class EntryRendererBase<TControl>
 	{
 		Drawable _clearBtn;

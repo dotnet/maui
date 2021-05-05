@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.1;netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
+		<AssemblyName>Microsoft.Maui.Controls.Maps</AssemblyName>
+	</PropertyGroup>
+	<PropertyGroup>
+		<PackageId>Microsoft.Maui.Controls.Maps</PackageId>
+	</PropertyGroup>
+	<PropertyGroup>
+		<Description>Provides Maps support for Microsoft MAUI Controls</Description>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
+	</ItemGroup>
+</Project>

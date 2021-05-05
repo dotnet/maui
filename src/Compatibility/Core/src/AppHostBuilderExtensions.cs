@@ -1,76 +1,117 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	public static class AppHostBuilderExtensions
 	{
-		public static IAppHostBuilder RegisterCompatibilityRenderers(this IAppHostBuilder builder)
+		public static IAppHostBuilder UseFormsCompatibility(this IAppHostBuilder builder, bool registerRenderers = true)
 		{
-			// This won't really be a thing once we have all the handlers built
-			var defaultHandlers = new List<Type>
+			// TODO: this hideousness is just until the dynamic handler registration is merged
+			FormsCompatBuilder? compatBuilder = null;
+			IMauiHandlersCollection? handlersCollection = null;
+			builder.ConfigureMauiHandlers(handlers =>
 			{
-				typeof(Button),
-				typeof(ContentPage),
-				typeof(Editor),
-				typeof(Entry),
-				typeof(Label),
-				typeof(Page),
-        typeof(RadioButton),
-				typeof(SearchBar),
-				typeof(Slider),
-				typeof(Stepper),
-				typeof(Switch)
-			};
+				handlersCollection = handlers;
+				compatBuilder?.SetHandlersCollection(handlersCollection);
+			});
 
-			Forms.RegisterCompatRenderers(
-				new[] { typeof(RendererToHandlerShim).Assembly },
-				typeof(RendererToHandlerShim).Assembly,
-				(controlType) =>
-				{
-					foreach (var type in defaultHandlers)
+			builder.ConfigureServices<FormsCompatBuilder>(compat =>
+			{
+				// TODO: this hideousness is just until the dynamic handler registration is merged
+				compatBuilder = compat;
+				if (handlersCollection != null)
+					compatBuilder.SetHandlersCollection(handlersCollection);
+
+				compat.UseCompatibilityRenderers = registerRenderers;
+			});
+
+			return builder;
+		}
+	}
+
+	class FormsCompatBuilder : IMauiServiceBuilder
+	{
+		// TODO: This won't really be a thing once we have all the handlers built
+		static readonly List<Type> ControlsWithHandlers = new()
+		{
+			typeof(Button),
+			typeof(ContentPage),
+			typeof(Page),
+			typeof(Label),
+			typeof(CheckBox),
+			typeof(Entry),
+			typeof(Image),
+			typeof(Switch),
+			typeof(Editor),
+			typeof(ActivityIndicator),
+			typeof(DatePicker),
+			typeof(Picker),
+			typeof(ProgressBar),
+			typeof(SearchBar),
+			typeof(Slider),
+			typeof(Stepper),
+			typeof(TimePicker),
+		};
+
+		static readonly List<(Type Control, Type Renderer)> PendingRenderers = new();
+
+		IMauiHandlersCollection? _handlers;
+
+		public bool UseCompatibilityRenderers { get; set; }
+
+		public void SetHandlersCollection(IMauiHandlersCollection handlersCollection) =>
+			_handlers = handlersCollection;
+
+		public static void AddRenderer(Type control, Type renderer) =>
+			PendingRenderers.Add((control, renderer));
+
+		public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
+		{
+		}
+
+		public void Configure(HostBuilderContext context, IServiceProvider services)
+		{
+			CompatServiceProvider.SetServiceProvider(services);
+
+#if __ANDROID__
+			var options = new InitializationOptions(global::Android.App.Application.Context, null, null);
+#elif __IOS__
+			var options = new InitializationOptions();
+#elif WINDOWS
+			var options = new InitializationOptions(MauiWinUIApplication.Current.LaunchActivatedEventArgs);
+#endif
+
+			options.Flags |= InitializationFlags.SkipRenderers;
+
+			Forms.Init(options);
+
+			if (UseCompatibilityRenderers)
+			{
+				Forms.RegisterCompatRenderers(
+					new[] { typeof(RendererToHandlerShim).Assembly },
+					typeof(RendererToHandlerShim).Assembly,
+					(controlType) =>
 					{
-						if (type.IsAssignableFrom(controlType))
-							return;
-					}
+						foreach (var type in ControlsWithHandlers)
+						{
+							if (type.IsAssignableFrom(controlType))
+								return;
+						}
 
-					builder.RegisterHandler(controlType, typeof(RendererToHandlerShim));
-				});
+						_handlers?.AddHandler(controlType, typeof(RendererToHandlerShim));
+					});
+			}
 
-			return builder;
-		}
-
-		public static IAppHostBuilder RegisterCompatibilityRenderer(
-			this IAppHostBuilder builder,
-			Type controlType,
-			Type rendererType)
-		{
 			// register renderer with old registrar so it can get shimmed
-			// This will move to some extension method
-			Microsoft.Maui.Controls.Internals.Registrar.Registered.Register(
-				controlType,
-				rendererType);
-
-			builder.RegisterHandler(controlType, typeof(RendererToHandlerShim));
-			return builder;
+			foreach (var (control, renderer) in PendingRenderers)
+			{
+				Internals.Registrar.Registered.Register(control, renderer);
+			}
 		}
-
-		public static IAppHostBuilder RegisterCompatibilityRenderer<TControlType, TMauiType, TRenderer>(this IAppHostBuilder builder)
-			where TMauiType : IFrameworkElement
-		{
-			// register renderer with old registrar so it can get shimmed
-			// This will move to some extension method
-			Controls.Internals.Registrar.Registered.Register(
-				typeof(TControlType),
-				typeof(TRenderer));
-
-			builder.RegisterHandler<TMauiType, RendererToHandlerShim>();
-			return builder;
-		}
-
-		public static IAppHostBuilder RegisterCompatibilityRenderer<TControlType, TRenderer>(this IAppHostBuilder builder)
-			where TControlType : IFrameworkElement =>
-				builder.RegisterCompatibilityRenderer<TControlType, TControlType, TRenderer>();
 	}
 }

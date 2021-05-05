@@ -1,13 +1,15 @@
-﻿namespace Microsoft.Maui
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a View used to accept multi-line input.
 	/// </summary>
-	public interface IEditor : IView, IText
+	public interface IEditor : IView, ITextInput, ITextStyle
 	{
 		/// <summary>
-		/// Gets a value that controls whether text prediction and automatic text correction is on or off.
+		/// Gets or sets the placeholder text color.
 		/// </summary>
-		bool IsTextPredictionEnabled { get; }
+		Color PlaceholderColor { get; set; }
 	}
 }

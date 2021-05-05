@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Foundation;
 using UIKit;
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				var sectionHeaderTextColor = View.Model.GetSectionTextColor((int)section);
 
-				if (sectionHeaderTextColor != Color.Default)
+				if (sectionHeaderTextColor != null)
 				{
 					header.TextLabel.TextColor = sectionHeaderTextColor.ToUIColor();
 				}

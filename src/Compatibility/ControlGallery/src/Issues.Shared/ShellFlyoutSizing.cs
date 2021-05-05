@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 
 #if UITEST
@@ -43,14 +44,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				EndPoint = new Point(1, 0),
 				GradientStops = new GradientStopCollection
 				{
-					new GradientStop { Color = Color.Blue, Offset = 0.1f },
-					new GradientStop { Color = Color.BlueViolet, Offset = 1.0f },
+					new GradientStop { Color = Colors.Blue, Offset = 0.1f },
+					new GradientStop { Color = Colors.BlueViolet, Offset = 1.0f },
 				}
 			};
 
 			FlyoutHeader = new Label()
 			{
-				BackgroundColor = Color.LightBlue,
+				BackgroundColor = Colors.LightBlue,
 				Text = "Header",
 				AutomationId = "FlyoutHeader"
 			};
@@ -58,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			FlyoutFooter = new Label()
 			{
-				BackgroundColor = Color.LightBlue,
+				BackgroundColor = Colors.LightBlue,
 				Text = "Footer",
 				AutomationId = "FlyoutFooter"
 			};

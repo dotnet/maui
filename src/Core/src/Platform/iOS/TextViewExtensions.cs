@@ -14,20 +14,47 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateCharacterSpacing(this UITextView textView, IEditor editor)
+		public static void UpdateTextColor(this UITextView textView, IEditor editor)
 		{
-			var textAttr = textView.AttributedText?.WithCharacterSpacing(editor.CharacterSpacing);
+			var textColor = editor.TextColor;
 
+			if (textColor == null)
+				textView.TextColor = ColorExtensions.LabelColor;
+			else
+				textView.TextColor = textColor.ToNative();
+		}
+
+		public static void UpdateCharacterSpacing(this UITextView textView, ITextStyle textStyle)
+		{
+			var textAttr = textView.AttributedText?.WithCharacterSpacing(textStyle.CharacterSpacing);
 			if (textAttr != null)
 				textView.AttributedText = textAttr;
 
 			// TODO: Include AttributedText to Label Placeholder
 		}
 
+		public static void UpdateMaxLength(this UITextView textView, IEditor editor)
+		{
+			var newText = textView.AttributedText.TrimToMaxLength(editor.MaxLength);
+			if (newText != null && textView.AttributedText != newText)
+				textView.AttributedText = newText;
+		}
+
 		public static void UpdatePredictiveText(this UITextView textView, IEditor editor)
 		{
 			textView.AutocorrectionType = editor.IsTextPredictionEnabled
 				? UITextAutocorrectionType.Yes : UITextAutocorrectionType.No;
+		}
+
+		public static void UpdateFont(this UITextView textView, ITextStyle textStyle, IFontManager fontManager)
+		{
+			var uiFont = fontManager.GetFont(textStyle.Font);
+			textView.Font = uiFont;
+		}
+
+		public static void UpdateIsReadOnly(this UITextView textView, IEditor editor)
+		{
+			textView.UserInteractionEnabled = !editor.IsReadOnly;
 		}
 	}
 }

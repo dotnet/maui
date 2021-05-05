@@ -1,9 +1,12 @@
-﻿using System.Threading.Tasks;
+using System.Linq;
+using System.Threading.Tasks;
 using Android.Text;
+using Android.Text.Method;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 using AColor = Android.Graphics.Color;
@@ -27,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await CreateHandlerAsync(entry);
 			var nativeEntry = GetNativeEntry(handler);
 
-			var fontManager = App.Services.GetRequiredService<IFontManager>();
+			var fontManager = handler.Services.GetRequiredService<IFontManager>();
 
 			var nativeFont = fontManager.GetTypeface(Font.OfSize(family, 0.0));
 
@@ -82,7 +85,7 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = entry.HorizontalTextAlignment,
-					NativeViewValue = GetNativeTextAlignment(handler)
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
@@ -91,7 +94,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
-			(AppCompatEditText)entryHandler.View;
+			(AppCompatEditText)entryHandler.NativeView;
 
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
@@ -125,6 +128,55 @@ namespace Microsoft.Maui.DeviceTests
 			return !editText.Focusable && !editText.FocusableInTouchMode;
 		}
 
+		bool GetNativeIsNumericKeyboard(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+			var inputTypes = editText.InputType;
+
+			return editText.KeyListener is NumberKeyListener
+				&& (inputTypes.HasFlag(InputTypes.NumberFlagDecimal) && inputTypes.HasFlag(InputTypes.ClassNumber) && inputTypes.HasFlag(InputTypes.NumberFlagSigned));
+		}
+
+		bool GetNativeIsChatKeyboard(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+		}
+
+		bool GetNativeIsEmailKeyboard(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+			var inputTypes = editText.InputType;
+
+			return (inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextVariationEmailAddress));
+		}
+
+		bool GetNativeIsTelephoneKeyboard(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassPhone);
+		}
+
+		bool GetNativeIsUrlKeyboard(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextVariationUri);
+		}
+
+		bool GetNativeIsTextKeyboard(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+		}
+
 		double GetNativeUnscaledFontSize(EntryHandler entryHandler)
 		{
 			var textView = GetNativeEntry(entryHandler);
@@ -137,10 +189,66 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Typeface.IsItalic;
 
-		Android.Views.TextAlignment GetNativeTextAlignment(EntryHandler entryHandler) =>
+		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 
 		ImeAction GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ImeOptions;
+
+		bool GetNativeClearButtonVisibility(EntryHandler entryHandler)
+		{
+			var nativeEntry = GetNativeEntry(entryHandler);
+			var unfocusedDrawables = nativeEntry.GetCompoundDrawables();
+
+			bool compoundsValidWhenUnfocused = !unfocusedDrawables.Any(a => a != null);
+
+			// This will display 'X' drawable.
+			nativeEntry.RequestFocus();
+
+			var focusedDrawables = nativeEntry.GetCompoundDrawables();
+
+			// Index 2 for FlowDirection.LeftToRight.
+			bool compoundsValidWhenFocused = focusedDrawables.Length == 4 && focusedDrawables[2] != null;
+
+			return compoundsValidWhenFocused && compoundsValidWhenUnfocused;
+		}
+
+		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+		public async Task CharacterSpacingInitializesCorrectly()
+		{
+			var xplatCharacterSpacing = 4;
+
+			var entry = new EntryStub()
+			{
+				CharacterSpacing = xplatCharacterSpacing,
+				Text = "Some Test Text"
+			};
+
+			float expectedValue = entry.CharacterSpacing.ToEm();
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.CharacterSpacing,
+					NativeViewValue = GetNativeCharacterSpacing(handler)
+				};
+			});
+
+			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
+		}
+
+		double GetNativeCharacterSpacing(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+
+			if (editText != null)
+			{
+				return editText.LetterSpacing;
+			}
+
+			return -1;
+		}
 	}
 }

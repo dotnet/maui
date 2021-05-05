@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
-	[System.AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
+	[global::System.AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
 	public sealed class TypeConversionAttribute : Attribute
 	{
 		public Type TargetType { get; private set; }

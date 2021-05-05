@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using SkiaSharp;
 
@@ -8,37 +7,36 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal abstract class SkiaSharpTools
 	{
-		public static SkiaSharpTools Create(bool isVector, string filename, Size? baseSize, Color? tintColor, ILogger logger)
+		public static SkiaSharpTools Create(bool isVector, string filename, SKSize? baseSize, SKColor? tintColor, ILogger logger)
 			=> isVector
 				? new SkiaSharpSvgTools(filename, baseSize, tintColor, logger) as SkiaSharpTools
 				: new SkiaSharpBitmapTools(filename, baseSize, tintColor, logger);
 
-		public SkiaSharpTools(SharedImageInfo info, ILogger logger)
+		public SkiaSharpTools(ResizeImageInfo info, ILogger logger)
 			: this(info.Filename, info.BaseSize, info.TintColor, logger)
 		{
 		}
 
-		public SkiaSharpTools(string filename, Size? baseSize, Color? tintColor, ILogger logger)
+		public SkiaSharpTools(string filename, SKSize? baseSize, SKColor? tintColor, ILogger logger)
 		{
 			Logger = logger;
 			Filename = filename;
 			BaseSize = baseSize;
 
-			if (tintColor is Color tint)
+			if (tintColor is SKColor tint)
 			{
-				var color = new SKColor(unchecked((uint)tint.ToArgb()));
-				Logger?.Log($"Detected a tint color of {color}");
+				Logger?.Log($"Detected a tint color of {tint}");
 
 				Paint = new SKPaint
 				{
-					ColorFilter = SKColorFilter.CreateBlendMode(color, SKBlendMode.SrcIn)
+					ColorFilter = SKColorFilter.CreateBlendMode(tint, SKBlendMode.SrcIn)
 				};
 			}
 		}
 
 		public string Filename { get; }
 
-		public Size? BaseSize { get; }
+		public SKSize? BaseSize { get; }
 		public ILogger Logger { get; }
 
 		public SKPaint Paint { get; }
@@ -84,7 +82,7 @@ namespace Microsoft.Maui.Resizetizer
 				return GetScaledSize(originalSize, dpi.Scale);
 		}
 
-		(SKSizeI, float) GetScaledSize(SKSize originalSize, decimal scale, SizeF absoluteSize)
+		(SKSizeI, float) GetScaledSize(SKSize originalSize, decimal scale, SKSize absoluteSize)
 		{
 			var ratio = (decimal)absoluteSize.Width / (decimal)originalSize.Width;
 
@@ -93,8 +91,8 @@ namespace Microsoft.Maui.Resizetizer
 
 		public (SKSizeI, float) GetScaledSize(SKSize originalSize, decimal resizeRatio)
 		{
-			int sourceNominalWidth = BaseSize?.Width ?? (int)originalSize.Width;
-			int sourceNominalHeight = BaseSize?.Height ?? (int)originalSize.Height;
+			int sourceNominalWidth = (int)(BaseSize?.Width ?? originalSize.Width);
+			int sourceNominalHeight = (int)(BaseSize?.Height ?? originalSize.Height);
 
 			// Find the actual size of the image
 			var sourceActualWidth = originalSize.Width;

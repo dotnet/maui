@@ -1,3 +1,4 @@
+using Rect = Microsoft.Maui.Graphics.Rectangle;
 namespace Microsoft.Maui.Controls.Shapes
 {
 	public class RectangleGeometry : Geometry

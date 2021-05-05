@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			var box1 = new ContentView
 			{
-				BackgroundColor = Color.Gray,
+				BackgroundColor = Colors.Gray,
 				Content = new Label
 				{
 					Text = "0"
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				var relativeTo = last; // local copy
 				var box = new ContentView
 				{
-					BackgroundColor = Color.Gray,
+					BackgroundColor = Colors.Gray,
 					Content = new Label
 					{
 						Text = (i + 1).ToString()

@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var maximumDateContainer = new ViewContainer<DatePicker>(Test.DatePicker.MaximumDate,
 				new DatePicker { MaximumDate = new DateTime(2087, 9, 13) });
 			var textColorContainer = new ViewContainer<DatePicker>(Test.DatePicker.TextColor,
-				new DatePicker { Date = new DateTime(1978, 12, 24), TextColor = Color.Lime });
+				new DatePicker { Date = new DateTime(1978, 12, 24), TextColor = Colors.Lime });
 			var fontAttributesContainer = new ViewContainer<DatePicker>(Test.DatePicker.FontAttributes,
 				new DatePicker { FontAttributes = FontAttributes.Bold });
 

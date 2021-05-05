@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,7 @@ namespace Microsoft.Maui
 		{
 			_ = input ?? throw new ArgumentNullException(nameof(input));
 
-			var hashIndex = input.IndexOf("#", System.StringComparison.Ordinal);
+			var hashIndex = input.IndexOf("#", global::System.StringComparison.Ordinal);
 			//UWP names require Spaces. Sometimes people may use those, "CuteFont-Regular#Cute Font" should be "CuteFont-Regular#CuteFont"
 			var postScriptName = hashIndex > 0 ? input.Substring(hashIndex + 1).Replace(" ", "") : input;
 			//Get the fontFamily name;

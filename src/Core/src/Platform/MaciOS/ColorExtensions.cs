@@ -1,5 +1,7 @@
 using CoreGraphics;
 using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.CoreGraphics;
 using System;
 
 #if __IOS__
@@ -49,7 +51,7 @@ namespace Microsoft.Maui
 				if (NativeVersion.IsAtLeast(13))
 					return UIColor.SecondaryLabelColor;
 
-				return new Color(.32, .4, .57).ToNative();
+				return new Color(.32f, .4f, .57f).ToNative();
 			}
 		}
 
@@ -165,7 +167,7 @@ namespace Microsoft.Maui
 		}
 #endif
 
-		public static Color ToColor(this UIColor color)
+		public static Color? ToColor(this UIColor color)
 		{
 			nfloat red;
 			nfloat green;
@@ -173,7 +175,7 @@ namespace Microsoft.Maui
 			nfloat alpha;
 
 			if (color == null)
-				return Color.Default;
+				return null;
 #if __IOS__
 			color.GetRGBA(out red, out green, out blue, out alpha);
 #else
@@ -184,7 +186,7 @@ namespace Microsoft.Maui
 
 			color.GetRgba(out red, out green, out blue, out alpha);
 #endif
-			return new Color(red, green, blue, alpha);
+			return new Color((float)red, (float)green, (float)blue, (float)alpha);
 		}
 
 #if __MACOS__
@@ -199,45 +201,25 @@ namespace Microsoft.Maui
 #if __IOS__
 		public static UIColor ToNative(this Color color)
 		{
-			return new UIColor((float)color.R, (float)color.G, (float)color.B, (float)color.A);
+			return new UIColor(color.Red, color.Green, color.Blue, color.Alpha);
 		}
 
-		public static UIColor ToNative(this Color color, Color defaultColor)
-		{
-			if (color.IsDefault)
-				return defaultColor.ToNative();
+		public static UIColor? ToNative(this Color? color, Color? defaultColor)
+			=> color?.ToNative() ?? defaultColor?.ToNative();
 
-			return color.ToNative();
-		}
-
-		public static UIColor ToNative(this Color color, UIColor defaultColor)
-		{
-			if (color.IsDefault)
-				return defaultColor;
-
-			return color.ToNative();
-		}
+		public static UIColor ToNative(this Color? color, UIColor defaultColor)
+			=> color?.ToNative() ?? defaultColor;
 #else
-		public static NSColor ToNative(this Color color)
+		public static NSColor ToNative(this Color? color)
 		{
 			return NSColor.FromRgba((float)color.R, (float)color.G, (float)color.B, (float)color.A);
 		}
 
-		public static NSColor ToNative(this Color color, Color defaultColor)
-		{
-			if (color.IsDefault)
-				return defaultColor.ToNative();
+		public static NSColor? ToNative(this Color? color, Color? defaultColor)
+			=> color?.ToNative() ?? defaultColor?.ToNative();
 
-			return color.ToNative();
-		}
-
-		public static NSColor ToNative(this Color color, NSColor defaultColor)
-		{
-			if (color.IsDefault)
-				return defaultColor;
-
-			return color.ToNative();
-		}
+		public static NSColor ToNative(this Color? color, NSColor defaultColor)
+			=> color?.ToNative() ?? defaultColor;
 #endif
 	}
 }

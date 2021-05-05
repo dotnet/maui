@@ -28,7 +28,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <!-- This is used by the libraries -->

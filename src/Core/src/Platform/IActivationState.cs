@@ -2,9 +2,11 @@ namespace Microsoft.Maui
 {
 	public interface IActivationState
 	{
-		public IMauiContext Context { get; }
+		IMauiContext Context { get; }
 #if __ANDROID__
-		public Android.OS.Bundle? SavedInstance { get; }
+		Android.OS.Bundle? SavedInstance { get; }
+#elif WINDOWS
+		UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; }
 #endif
 	}
 }

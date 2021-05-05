@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:test="http://xamarin.com/schemas/2014/forms/customurl1"
-			 xmlns:test2="http://xamarin.com/schemas/2014/forms/customurl2" 
+			 xmlns:test="http://schemas.microsoft.com/dotnet/2021/maui/customurl1"
+			 xmlns:test2="http://schemas.microsoft.com/dotnet/2021/maui/customurl2" 
 			 xmlns:test3="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace1;assembly=Microsoft.Maui.Controls.Compatibility.ControlGallery"
 			 xmlns:test4="using:Microsoft.Maui.Controls.Xaml.UnitTests"
              x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Gh2691">

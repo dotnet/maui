@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls
 
 		//Used by the XamlC compiled converter
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SetAndLoadSource(Uri value, string resourcePath, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
+		public void SetAndLoadSource(Uri value, string resourcePath, Assembly assembly, global::System.Xml.IXmlLineInfo lineInfo)
 		{
 			_source = value;
 

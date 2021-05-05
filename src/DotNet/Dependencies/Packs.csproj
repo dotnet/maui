@@ -3,13 +3,18 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageDownload Include="Microsoft.Android.Ref"            Version="[$(MicrosoftAndroidSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.Android.Sdk.win-x64"    Version="[$(MicrosoftAndroidSdkPackageVersion)]" Condition="$([MSBuild]::IsOSPlatform('windows'))" />
-    <PackageDownload Include="Microsoft.Android.Sdk.osx-x64"    Version="[$(MicrosoftAndroidSdkPackageVersion)]" Condition="$([MSBuild]::IsOSPlatform('osx'))" />
-    <PackageDownload Include="Microsoft.Android.Sdk.BundleTool" Version="[$(MicrosoftAndroidSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.Android.Ref"            Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
+    <PackageDownload Include="Microsoft.Android.Sdk.Windows"    Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" Condition="$([MSBuild]::IsOSPlatform('windows'))" />
+    <PackageDownload Include="Microsoft.Android.Sdk.Darwin"     Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" Condition="$([MSBuild]::IsOSPlatform('osx'))" />
+    <PackageDownload Include="Microsoft.Android.Sdk.BundleTool" Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
     <PackageDownload Include="Microsoft.MacCatalyst.Ref"        Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.MacCatalyst.Sdk"        Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.iOS.Ref"                Version="[$(MicrosoftiOSSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.iOS.Sdk"                Version="[$(MicrosoftiOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.iOS.Windows.Sdk"        Version="[$(MicrosoftiOSSdkPackageVersion)]" Condition="$([MSBuild]::IsOSPlatform('windows'))" />
+    <PackageDownload Include="Microsoft.tvOS.Ref"               Version="[$(MicrosofttvOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.tvOS.Sdk"               Version="[$(MicrosofttvOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.macOS.Ref"              Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.macOS.Sdk"              Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
   </ItemGroup>
 </Project>

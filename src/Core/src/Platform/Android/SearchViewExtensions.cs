@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Android.Util;
 using Android.Widget;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -17,25 +16,13 @@ namespace Microsoft.Maui
 			searchView.QueryHint = searchBar.Placeholder;
 		}
 
-		public static void UpdateFont(this SearchView searchView, ISearchBar searchBar, IFontManager fontManager)
-		{
-			searchView.UpdateFont(searchBar, fontManager, null);
-		}
-
-		public static void UpdateFont(this SearchView searchView, ISearchBar searchBar, IFontManager fontManager, EditText? editText)
+		public static void UpdateFont(this SearchView searchView, ISearchBar searchBar, IFontManager fontManager, EditText? editText = null)
 		{
 			editText ??= searchView.GetChildrenOfType<EditText>().FirstOrDefault();
-
 			if (editText == null)
 				return;
 
-			var font = searchBar.Font;
-
-			var tf = fontManager.GetTypeface(font);
-			editText.Typeface = tf;
-
-			var sp = fontManager.GetScaledPixel(font);
-			editText.SetTextSize(ComplexUnitType.Sp, sp);
+			editText.UpdateFont(searchBar, fontManager);
 		}
 	}
 }

@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui</RootNamespace>
     <AssemblyName>Microsoft.Maui</AssemblyName>
     <Nullable>enable</Nullable>
@@ -9,16 +9,19 @@
     <PackageId>Microsoft.Maui.Core</PackageId>
   </PropertyGroup>
   <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
-
-  <PropertyGroup>
-    <!-- TODO: disable Fast Deployment temporarily -->
-    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
-  </PropertyGroup>
-
+  <ItemGroup>
+    <None Include="..\..\..\.nuspec\Microsoft.Maui.Core.targets" Visible="False" Pack="True" PackagePath="build;buildTransitive" />
+    <None Include="..\..\..\.nuspec\Microsoft.Maui.Core.props" Visible="False" Pack="True" PackagePath="build;buildTransitive" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Maui.Graphics" />
+    <PackageReference Include="Reloadify3000" Version="1.0.6" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <PackageReference Include="Xamarin.Android.Glide" />
   </ItemGroup>
 </Project>
 

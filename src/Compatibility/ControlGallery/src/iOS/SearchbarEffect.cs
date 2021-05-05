@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Graphics;
 
 [assembly: ExportEffect(typeof(SearchbarEffect), "SearchbarEffect")]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			if (_defaultBackColor == null)
 				_defaultBackColor = Control.BackgroundColor;
 
-			Control.BackgroundColor = Color.Cornsilk.ToUIColor();
+			Control.BackgroundColor = Colors.Cornsilk.ToUIColor();
 			
 			if (Control is UISearchBar searchBar)
 			{
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				if (_defaultBackImage == null)
 					_defaultBackImage = searchBar.BackgroundImage;
 
-				searchBar.BarTintColor = Color.Goldenrod.ToUIColor();
+				searchBar.BarTintColor = Colors.Goldenrod.ToUIColor();
 				searchBar.BackgroundImage = new UIImage();
 			}
 		}

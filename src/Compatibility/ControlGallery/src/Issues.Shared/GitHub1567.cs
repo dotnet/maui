@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -58,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				var grd = new Grid();
 				var boxView = new BoxView
 				{
-					BackgroundColor = Color.Transparent,
+					BackgroundColor = Colors.Transparent,
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 					VerticalOptions = LayoutOptions.FillAndExpand
 				};

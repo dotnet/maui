@@ -10,59 +10,39 @@ namespace Microsoft.Maui
 			nativeLabel.Text = label.Text;
 		}
 
-		public static void UpdateTextColor(this UILabel nativeLabel, ILabel label)
+		public static void UpdateTextColor(this UILabel nativeLabel, ITextStyle textStyle, UIColor? defaultColor = null)
 		{
-			var textColor = label.TextColor;
-
-			if (textColor.IsDefault)
-			{
-				// Default value of color documented to be black in iOS docs
-				nativeLabel.TextColor = textColor.ToNative(ColorExtensions.LabelColor);
-			}
-			else
-			{
-				nativeLabel.TextColor = textColor.ToNative(textColor);
-			}
+			// Default value of color documented to be black in iOS docs
+			var textColor = textStyle.TextColor;
+			nativeLabel.TextColor = textColor.ToNative(defaultColor ?? ColorExtensions.LabelColor);
 		}
 
-		public static void UpdateCharacterSpacing(this UILabel nativeLabel, ILabel label)
+		public static void UpdateCharacterSpacing(this UILabel nativeLabel, ITextStyle textStyle)
 		{
-			if (string.IsNullOrEmpty(label.Text))
-				return;
-
-			var textAttr = nativeLabel.AttributedText?.WithCharacterSpacing(label.CharacterSpacing);
-
+			var textAttr = nativeLabel.AttributedText?.WithCharacterSpacing(textStyle.CharacterSpacing);
 			if (textAttr != null)
 				nativeLabel.AttributedText = textAttr;
 		}
 
-		public static void UpdateFont(this UILabel nativeLabel, ILabel label, IFontManager fontManager)
+		public static void UpdateFont(this UILabel nativeLabel, ITextStyle textStyle, IFontManager fontManager)
 		{
-			var uiFont = fontManager.GetFont(label.Font);
+			var uiFont = fontManager.GetFont(textStyle.Font);
 			nativeLabel.Font = uiFont;
 		}
 
 		public static void UpdateHorizontalTextAlignment(this UILabel nativeLabel, ILabel label)
 		{
-			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
-			// TODO ezhart Update this when FlowDirection is available 
-			// (or update the extension to take an ILabel instead of an alignment and work it out from there) 
-			nativeLabel.TextAlignment = label.HorizontalTextAlignment.ToNative(true);
+			nativeLabel.TextAlignment = label.HorizontalTextAlignment.ToNative(label.FlowDirection == FlowDirection.LeftToRight);
 		}
 
 		public static void UpdateLineBreakMode(this UILabel nativeLabel, ILabel label)
 		{
-			SetLineBreakMode(nativeLabel, label);
+			nativeLabel.SetLineBreakMode(label);
 		}
 
 		public static void UpdateMaxLines(this UILabel nativeLabel, ILabel label)
 		{
-			int maxLines = label.MaxLines;
-
-			if (maxLines >= 0)
-			{
-				nativeLabel.Lines = maxLines;
-			}
+			nativeLabel.SetLineBreakMode(label);
 		}
 
 		public static void UpdatePadding(this MauiLabel nativeLabel, ILabel label)
@@ -72,6 +52,22 @@ namespace Microsoft.Maui
 				(float)label.Padding.Left,
 				(float)label.Padding.Bottom,
 				(float)label.Padding.Right);
+		}
+
+		public static void UpdateTextDecorations(this UILabel nativeLabel, ILabel label)
+		{
+			var modAttrText = nativeLabel.AttributedText?.WithDecorations(label.TextDecorations);
+
+			if (modAttrText != null)
+				nativeLabel.AttributedText = modAttrText;
+		}
+
+		public static void UpdateLineHeight(this UILabel nativeLabel, ILabel label)
+		{
+			var modAttrText = nativeLabel.AttributedText?.WithLineHeight(label.LineHeight);
+
+			if (modAttrText != null)
+				nativeLabel.AttributedText = modAttrText;
 		}
 
 		internal static void SetLineBreakMode(this UILabel nativeLabel, ILabel label)
@@ -107,22 +103,6 @@ namespace Microsoft.Maui
 			}
 
 			nativeLabel.Lines = maxLines;
-		}
-
-		public static void UpdateTextDecorations(this UILabel nativeLabel, ILabel label)
-		{
-			var modAttrText = nativeLabel.AttributedText?.WithDecorations(label.TextDecorations);
-
-			if (modAttrText != null)
-				nativeLabel.AttributedText = modAttrText;
-		}
-
-		internal static void UpdateLineHeight(this UILabel nativeLabel, ILabel label)
-		{
-			var modAttrText = nativeLabel.AttributedText?.WithLineHeight(label.LineHeight);
-
-			if (modAttrText != null)
-				nativeLabel.AttributedText = modAttrText;
 		}
 	}
 }

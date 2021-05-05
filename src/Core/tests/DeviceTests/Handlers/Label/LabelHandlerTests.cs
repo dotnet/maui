@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -14,11 +15,11 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var label = new LabelStub()
 			{
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				Text = "Test"
 			};
 
-			await ValidateNativeBackgroundColor(label, Color.Blue);
+			await ValidateNativeBackgroundColor(label, Colors.Blue);
 		}
 
 		[Fact(DisplayName = "Text Initializes Correctly")]
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				TextColor = Color.Red
+				TextColor = Colors.Red
 			};
 
 			await ValidatePropertyInitValue(label, () => label.TextColor, GetNativeTextColor, label.TextColor);
@@ -111,21 +112,23 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
-		[Fact(DisplayName = "Updating Font Does Not Affect CharacterSpacing")]
-		public async Task FontDoesNotAffectCharacterSpacing()
+		[Theory(DisplayName = "Updating Font Does Not Affect CharacterSpacing")]
+		[InlineData(10, 20)]
+		[InlineData(20, 10)]
+		public async Task FontDoesNotAffectCharacterSpacing(double initialSize, double newSize)
 		{
 			var label = new LabelStub
 			{
 				Text = "This is TEXT!",
 				CharacterSpacing = 5,
-				Font = Font.SystemFontOfSize(20)
+				Font = Font.SystemFontOfSize(initialSize)
 			};
 
 			await ValidateUnrelatedPropertyUnaffected(
 				label,
 				GetNativeCharacterSpacing,
 				nameof(ILabel.Font),
-				() => label.Font = Font.SystemFontOfSize(15));
+				() => label.Font = Font.SystemFontOfSize(newSize));
 		}
 
 		[Theory(DisplayName = "Updating Text Does Not Affect CharacterSpacing")]
@@ -144,6 +147,82 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeCharacterSpacing,
 				nameof(ILabel.Text),
 				() => label.Text = newText);
+		}
+
+		[Theory(DisplayName = "Updating Font Does Not Affect HorizontalTextAlignment")]
+		[InlineData(10, 20)]
+		[InlineData(20, 10)]
+		public async Task FontDoesNotAffectHorizontalTextAlignment(double initialSize, double newSize)
+		{
+			var label = new LabelStub
+			{
+				Text = "This is TEXT!",
+				HorizontalTextAlignment = TextAlignment.Center,
+				Font = Font.SystemFontOfSize(initialSize),
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				label,
+				GetNativeHorizontalTextAlignment,
+				nameof(ILabel.Font),
+				() => label.Font = Font.SystemFontOfSize(newSize));
+		}
+
+		[Theory(DisplayName = "Updating Text Does Not Affect HorizontalTextAlignment")]
+		[InlineData("Short", "Longer Text")]
+		[InlineData("Long thext here", "Short")]
+		public async Task TextDoesNotAffectHorizontalTextAlignment(string initialText, string newText)
+		{
+			var label = new LabelStub
+			{
+				Text = initialText,
+				HorizontalTextAlignment = TextAlignment.Center,
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				label,
+				GetNativeHorizontalTextAlignment,
+				nameof(ILabel.Text),
+				() => label.Text = newText);
+		}
+
+		[Theory(DisplayName = "Updating LineHeight Does Not Affect HorizontalTextAlignment")]
+		[InlineData(1, 2)]
+		[InlineData(2, 1)]
+		public async Task LineHeightDoesNotAffectHorizontalTextAlignment(double initialSize, double newSize)
+		{
+			var label = new LabelStub
+			{
+				Text = "This is TEXT!",
+				HorizontalTextAlignment = TextAlignment.Center,
+				LineHeight = initialSize,
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				label,
+				GetNativeHorizontalTextAlignment,
+				nameof(ILabel.LineHeight),
+				() => label.LineHeight = newSize);
+		}
+
+		[Theory(DisplayName = "Updating TextDecorations Does Not Affect HorizontalTextAlignment")]
+		[InlineData(TextDecorations.None, TextDecorations.Underline)]
+		[InlineData(TextDecorations.Underline, TextDecorations.Strikethrough)]
+		[InlineData(TextDecorations.Underline, TextDecorations.None)]
+		public async Task TextDecorationsDoesNotAffectHorizontalTextAlignment(TextDecorations initialDecorations, TextDecorations newDecorations)
+		{
+			var label = new LabelStub
+			{
+				Text = "This is TEXT!",
+				HorizontalTextAlignment = TextAlignment.Center,
+				TextDecorations = initialDecorations,
+			};
+
+			await ValidateUnrelatedPropertyUnaffected(
+				label,
+				GetNativeHorizontalTextAlignment,
+				nameof(ILabel.TextDecorations),
+				() => label.TextDecorations = newDecorations);
 		}
 
 		[Fact(DisplayName = "LineBreakMode Initializes Correctly")]
@@ -267,6 +346,113 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(label, () => label.MaxLines, GetNativeMaxLines, label.MaxLines);
+		}
+
+		[Fact]
+		[Category(TestCategory.TextFormatting)]
+		public async Task LineHeightAppliedWhenTextAdded()
+		{
+			double xplatLineHeight = 2;
+			var expectedLineHeight = xplatLineHeight;
+
+			var label = new LabelStub() { LineHeight = xplatLineHeight }; // No text set
+
+			var handler = await CreateHandlerAsync(label);
+
+			label.Text = "Now we have text";
+			await InvokeOnMainThreadAsync(() => handler.UpdateValue(nameof(label.Text)));
+
+			var actualLineHeight = await InvokeOnMainThreadAsync(() => GetNativeLineHeight(handler));
+
+			Assert.Equal(expectedLineHeight, actualLineHeight);
+		}
+
+		[Fact]
+		[Category(TestCategory.TextFormatting)]
+		public async Task CharacterSpacingAppliedWhenTextAdded()
+		{
+			double xplatCharacterSpacing = 1.5;
+			var expectedCharacterSpacing = xplatCharacterSpacing;
+
+			var label = new LabelStub() { CharacterSpacing = xplatCharacterSpacing }; // No text set
+
+			var handler = await CreateHandlerAsync(label);
+
+			label.Text = "Now we have text";
+			await InvokeOnMainThreadAsync(() => handler.UpdateValue(nameof(label.Text)));
+
+			var actualCharacterSpacing = await InvokeOnMainThreadAsync(() => GetNativeCharacterSpacing(handler));
+
+			Assert.Equal(expectedCharacterSpacing, actualCharacterSpacing);
+		}
+
+		[Fact]
+		[Category(TestCategory.TextFormatting)]
+		public async Task LineHeightSurvivesCharacterSpacing()
+		{
+			double xplatCharacterSpacing = 1.5;
+			var expectedCharacterSpacing = xplatCharacterSpacing;
+			double xplatLineHeight = 2;
+			var expectedLineHeight = xplatLineHeight;
+
+			var label = new LabelStub() { Text = "test", LineHeight = xplatLineHeight };
+
+			var handler = await CreateHandlerAsync(label);
+
+			label.CharacterSpacing = xplatCharacterSpacing;
+			await InvokeOnMainThreadAsync(() => handler.UpdateValue(nameof(label.CharacterSpacing)));
+
+			var actualLineHeight = await InvokeOnMainThreadAsync(() => GetNativeLineHeight(handler));
+			var actualCharacterSpacing = await InvokeOnMainThreadAsync(() => GetNativeCharacterSpacing(handler));
+
+			Assert.Equal(expectedLineHeight, actualLineHeight);
+			Assert.Equal(expectedCharacterSpacing, actualCharacterSpacing);
+		}
+
+		[Theory(DisplayName = "Negative MaxLines value with wrap is correct")]
+#if __IOS__
+		[InlineData(0)]
+#elif __ANDROID__
+		[InlineData(int.MaxValue)]
+#endif
+		public async Task NegativeMaxValueWithWrapIsCorrect(int expectedLines)
+		{
+			var label = new LabelStub()
+			{
+				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+				MaxLines = -1,
+				LineBreakMode = LineBreakMode.WordWrap
+			};
+
+			var nativeValue = await GetValueAsync(label, GetNativeMaxLines);
+
+			Assert.Equal(expectedLines, nativeValue);
+		}
+
+		[Fact(DisplayName = "LineHeight Initializes Correctly")]
+		public async Task LineHeightInitializesCorrectly()
+		{
+			var xplatLineHeight = 1.5d;
+
+			var labelHandler = new LabelStub()
+			{
+				Text = "test",
+				LineHeight = xplatLineHeight
+			};
+
+			var values = await GetValueAsync(labelHandler, (handler) =>
+			{
+				return new
+				{
+					ViewValue = labelHandler.LineHeight,
+					NativeViewValue = GetNativeLineHeight(handler)
+				};
+			});
+
+			float expectedValue = 1.5f;
+
+			Assert.Equal(xplatLineHeight, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue);
 		}
 	}
 }

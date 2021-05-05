@@ -20,7 +20,7 @@
         This is needed for non SDK style project so the IDE will pick the correct LangVersion.
         Once this is an SDK style project it will pick this up from the Directory.Build.Props file correctly
      -->
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -76,12 +76,6 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Core\Crc64.cs">
-      <Link>Crc64.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core\StreamWrapper.cs">
-      <Link>StreamWrapper.cs</Link>
-    </Compile>
     <Compile Include="..\iOS\Extensions\LabelExtensions.cs">
       <Link>Extensions\LabelExtensions.cs</Link>
     </Compile>

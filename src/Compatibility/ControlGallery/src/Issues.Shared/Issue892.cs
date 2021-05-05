@@ -2,6 +2,7 @@
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -214,13 +215,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var label = new Label
 			{
 				Text = "Not Tapped",
-				TextColor = Color.Red
+				TextColor = Colors.Red
 			};
 
 			var label2 = new Label
 			{
 				Text = "You are at the end of the line",
-				TextColor = Color.Red
+				TextColor = Colors.Red
 			};
 
 			Content = new StackLayout

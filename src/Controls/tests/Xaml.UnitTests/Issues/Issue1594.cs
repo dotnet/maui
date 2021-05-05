@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<Button 
-					xmlns=""http://xamarin.com/schemas/2014/forms"" 
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" 
 					xmlns:sys=""clr-namespace:System;assembly=mscorlib""
 					x:Name=""activateButton"" Text=""ACTIVATE NOW"" TextColor=""White"" BackgroundColor=""#00A0FF"">

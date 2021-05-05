@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var frame = new Frame()
 			{
 				Visual = VisualMarker.Material,
-				BackgroundColor = Color.White,
+				BackgroundColor = Colors.White,
 				AutomationId = "NoContentFrame"
 			};
 

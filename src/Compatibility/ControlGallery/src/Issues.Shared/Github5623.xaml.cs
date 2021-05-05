@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -97,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					collection.Add(new Model5623((BindingContext as ViewModel5623).ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems)
 					{
 						Text = i.ToString(),
-						BackgroundColor = i % 2 == 0 ? Color.AntiqueWhite : Color.Lavender
+						BackgroundColor = i % 2 == 0 ? Colors.AntiqueWhite : Colors.Lavender
 					});
 				}
 
@@ -156,7 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				collection.Add(new Model5623(ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems)
 				{
 					Text = i.ToString(),
-					BackgroundColor = i % 2 == 0 ? Color.AntiqueWhite : Color.Lavender
+					BackgroundColor = i % 2 == 0 ? Colors.AntiqueWhite : Colors.Lavender
 				});
 			}
 
