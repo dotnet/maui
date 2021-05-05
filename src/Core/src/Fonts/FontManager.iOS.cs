@@ -31,7 +31,7 @@ namespace Microsoft.Maui
 		// the public (int-based) enum is not helpful in this case.
 		// -1.0 (Thin / 100) to 1.0 (Black / 900) with 0 being Regular (400)
 		// which is not quite the center, not are the constant values linear
-		static readonly (float value, FontWeight weight)[] map = new (float, FontWeight)[] {
+		static readonly (float value, FontWeight weight)[] FontWeightMap = new (float, FontWeight)[] {
 			(-0.80f, FontWeight.Ultralight),
 			(-0.60f, FontWeight.Thin),
 			(-0.40f, FontWeight.Light),
@@ -45,7 +45,7 @@ namespace Microsoft.Maui
 
 		static float GetWeightConstant(FontWeight self)
 		{
-			foreach (var (value, weight) in map)
+			foreach (var (value, weight) in FontWeightMap)
 			{
 				if (self <= weight)
 					return value;

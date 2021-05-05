@@ -12,10 +12,6 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create("FontFamily", typeof(string), typeof(IFontElement), default(string),
 									propertyChanged: OnFontFamilyChanged);
 
-		public static readonly BindableProperty FontNamedSizeProperty =
-			BindableProperty.Create("NamedSize", typeof(NamedSize), typeof(IFontElement), default(string),
-									propertyChanged: OnNamedSizeChanged);
-
 		public static readonly BindableProperty FontSizeProperty =
 			BindableProperty.Create("FontSize", typeof(double), typeof(IFontElement), -1.0,
 									propertyChanged: OnFontSizeChanged,
