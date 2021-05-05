@@ -6,6 +6,7 @@ using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.CollectionView;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
 using AViewCompat = AndroidX.Core.View.ViewCompat;

@@ -51,7 +51,7 @@ steps:
       packageType: 'sdk'
 
   - pwsh: |
-      ./build.ps1 --target=BuildTasks --BUILD_CONFIGURATION=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
+      ./build.ps1 --target=BuildTasks --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
     name: winbuild
     displayName: 'Build the MSBuild Tasks'
 

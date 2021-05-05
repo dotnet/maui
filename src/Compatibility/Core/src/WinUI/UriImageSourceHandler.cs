@@ -6,6 +6,7 @@ using Windows.Storage.Streams;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (imageLoader?.Uri == null)
 				return null;
 
-			Stream streamImage = await imageLoader.GetStreamAsync(cancellationToken);
+			Stream streamImage = await ((IStreamImageSource)imageLoader).GetStreamAsync(cancellationToken);
 
 			if (streamImage == null || !streamImage.CanRead)
 			{

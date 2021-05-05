@@ -20,7 +20,7 @@
     <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="$(TargetFramework.StartsWith('uap10.0'))">
-    <DefineConstants>$(DefineConstants);__UWP__</DefineConstants>
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="BuildNumber.txt" />

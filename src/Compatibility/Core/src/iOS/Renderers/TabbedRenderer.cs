@@ -10,6 +10,7 @@ using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.i
 using TabbedPageConfiguration = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.TabbedPage;
 using TranslucencyMode = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.TranslucencyMode;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -409,13 +410,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else
 				tabBarTextColor = barTextColor.ToUIColor();
 
-#if MACCATALYST
-			var attributes = new UIStringAttributes();
-			attributes.ForegroundColor = tabBarTextColor;
-#else
+
 			var attributes = new UITextAttributes();
 			attributes.TextColor = tabBarTextColor;
-#endif
 
 			foreach (UITabBarItem item in TabBar.Items)
 			{
