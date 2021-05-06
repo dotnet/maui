@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+        <RootNamespace>GraphicsTester.Gtk</RootNamespace>
+
+        <PackageId>GraphicsTester.Gtk</PackageId>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Gtk\Microsoft.Maui.Graphics.Gtk.csproj" />
+      <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
+      <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
+
+    </ItemGroup>
+
+
+</Project>
