@@ -1,10 +1,10 @@
 using System;
-using Windows.UI.Input;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.UI.Xaml.Input;
+using Windows.UI.Input;
 
 [assembly: ExportRenderer(typeof(Bugzilla60122._60122Image), typeof(_60122ImageRenderer))]
 
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			if (e.NewElement != null)
 			{
 				_customControl = e.NewElement as Bugzilla60122._60122Image;
-				_gestureRecognizer.GestureSettings = GestureSettings.HoldWithMouse;         
+				_gestureRecognizer.GestureSettings = GestureSettings.HoldWithMouse;
 				Holding += OnHolding;
 			}
 			else

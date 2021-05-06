@@ -1,19 +1,20 @@
+using Microsoft.UI;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.UI;
 using Windows.UI.ViewManagement;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	internal class BrokenNativeControl : Panel
 	{
-		public BrokenNativeControl ()
+		public BrokenNativeControl()
 		{
-			_textBlock = new TextBlock {
+			_textBlock = new TextBlock
+			{
 				MinHeight = 0,
 				MaxHeight = double.PositiveInfinity,
 				MinWidth = 0,
@@ -22,17 +23,17 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 				HorizontalAlignment = HorizontalAlignment.Center
 			};
 
-			Children.Add (_textBlock);
+			Children.Add(_textBlock);
 
 			Background =
-				new Microsoft.UI.Xaml.Media.LinearGradientBrush (
-					new Microsoft.UI.Xaml.Media.GradientStopCollection { new Microsoft.UI.Xaml.Media.GradientStop { Color = Colors.Green, Offset = 0.5}, new Microsoft.UI.Xaml.Media.GradientStop { Color = Colors.Blue, Offset = 1} }, 0);
+				new Microsoft.UI.Xaml.Media.LinearGradientBrush(
+					new Microsoft.UI.Xaml.Media.GradientStopCollection { new Microsoft.UI.Xaml.Media.GradientStop { Color = Colors.Green, Offset = 0.5 }, new Microsoft.UI.Xaml.Media.GradientStop { Color = Colors.Blue, Offset = 1 } }, 0);
 		}
 
-		public static readonly DependencyProperty TextProperty = DependencyProperty.Register (
-			"Text", typeof(string), typeof(BrokenNativeControl), new PropertyMetadata (default(string), PropertyChangedCallback));
+		public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
+			"Text", typeof(string), typeof(BrokenNativeControl), new PropertyMetadata(default(string), PropertyChangedCallback));
 
-		static void PropertyChangedCallback (DependencyObject dependencyObject,
+		static void PropertyChangedCallback(DependencyObject dependencyObject,
 			DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
 		{
 			((BrokenNativeControl)dependencyObject)._textBlock.Text = (string)dependencyPropertyChangedEventArgs.NewValue;
@@ -40,8 +41,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 
 		public string Text
 		{
-			get { return (string)GetValue (TextProperty); }
-			set { SetValue (TextProperty, value); }
+			get { return (string)GetValue(TextProperty); }
+			set { SetValue(TextProperty, value); }
 		}
 
 		readonly TextBlock _textBlock;
@@ -53,16 +54,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		}
 
 
-		protected override global::Windows.Foundation.Size  MeasureOverride (Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
 		{
-			_textBlock.Measure (availableSize);
+			_textBlock.Measure(availableSize);
 
 			// This deliberately does something wrong so we can demo fixing it
-			var bounds = ApplicationView.GetForCurrentView ().VisibleBounds;
-			double scaleFactor = DisplayInformation.GetForCurrentView ().RawPixelsPerViewPixel;
-			var size = new Size (bounds.Width * scaleFactor, bounds.Height * scaleFactor);
+			var bounds = ApplicationView.GetForCurrentView().VisibleBounds;
+			double scaleFactor = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
+			var size = new Size(bounds.Width * scaleFactor, bounds.Height * scaleFactor);
 
-			return new Windows.Foundation.Size (size.Width, _textBlock.DesiredSize.Height);
+			return new Windows.Foundation.Size(size.Width, _textBlock.DesiredSize.Height);
 		}
 	}
 }

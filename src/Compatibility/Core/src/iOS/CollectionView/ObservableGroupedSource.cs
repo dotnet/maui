@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				|| _collectionView.NumberOfSections() == 0;
 		}
 
-		void Update(Action update) 
+		void Update(Action update)
 		{
 			if (_collectionView.Hidden)
 			{

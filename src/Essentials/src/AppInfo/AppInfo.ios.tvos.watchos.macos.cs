@@ -24,8 +24,8 @@ namespace Microsoft.Maui.Essentials
 		   => NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
 
 #if __IOS__ || __TVOS__
-        static async void PlatformShowSettingsUI()
-            => await Launcher.OpenAsync(UIApplication.OpenSettingsUrlString);
+		static async void PlatformShowSettingsUI()
+			=> await Launcher.OpenAsync(UIApplication.OpenSettingsUrlString);
 #elif __MACOS__
         static void PlatformShowSettingsUI()
         {
@@ -42,21 +42,21 @@ namespace Microsoft.Maui.Essentials
 #endif
 
 #if __IOS__ || __TVOS__
-        static AppTheme PlatformRequestedTheme()
-        {
-            if (!Platform.HasOSVersion(13, 0))
-                return AppTheme.Unspecified;
+		static AppTheme PlatformRequestedTheme()
+		{
+			if (!Platform.HasOSVersion(13, 0))
+				return AppTheme.Unspecified;
 
-            var uiStyle = Platform.GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
-                UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
+			var uiStyle = Platform.GetCurrentUIViewController()?.TraitCollection?.UserInterfaceStyle ??
+				UITraitCollection.CurrentTraitCollection.UserInterfaceStyle;
 
-            return uiStyle switch
-            {
-                UIUserInterfaceStyle.Light => AppTheme.Light,
-                UIUserInterfaceStyle.Dark => AppTheme.Dark,
-                _ => AppTheme.Unspecified
-            };
-        }
+			return uiStyle switch
+			{
+				UIUserInterfaceStyle.Light => AppTheme.Light,
+				UIUserInterfaceStyle.Dark => AppTheme.Dark,
+				_ => AppTheme.Unspecified
+			};
+		}
 #elif __MACOS__
         static AppTheme PlatformRequestedTheme()
         {

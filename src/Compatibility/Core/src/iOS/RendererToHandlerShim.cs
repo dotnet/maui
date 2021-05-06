@@ -1,7 +1,7 @@
 using System;
-using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, UIKit.UIView>;
-using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using UIKit;
+using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, UIKit.UIView>;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {

@@ -1,6 +1,6 @@
-﻿using Microsoft.Maui;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
+using Microsoft.Maui;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
