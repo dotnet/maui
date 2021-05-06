@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 
 		public Font WithWeight(FontWeight weight, FontSlant fontSlant)
 		{
-			return new Font { FontFamily = FontFamily, FontSize = FontSize, FontSlant = FontSlant, Weight = weight };
+			return new Font { FontFamily = FontFamily, FontSize = FontSize, FontSlant = fontSlant, Weight = weight };
 		}
 
 		public static Font OfSize(string name, double size, FontWeight weight = FontWeight.Regular , FontSlant fontSlant = FontSlant.Default) =>
