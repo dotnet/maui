@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class RadioButtonHandlerTests
 	{
 		AppCompatRadioButton GetNativeRadioButton(RadioButtonHandler radioButtonHandler) =>
-			(AppCompatRadioButton)radioButtonHandler.View;
+			(AppCompatRadioButton)radioButtonHandler.NativeView;
 
 		bool GetNativeIsChecked(RadioButtonHandler radioButtonHandler) =>
 			GetNativeRadioButton(radioButtonHandler).Checked;
@@ -21,18 +21,18 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			bool xplatIsChecked = isChecked;
 
-			var slider = new RadioButtonStub()
+			var radioButton = new RadioButtonStub()
 			{
 				IsChecked = xplatIsChecked
 			};
 
 			bool expectedValue = isChecked;
 
-			var values = await GetValueAsync(slider, (handler) =>
+			var values = await GetValueAsync(radioButton, (handler) =>
 			{
 				return new
 				{
-					ViewValue = slider.IsChecked,
+					ViewValue = radioButton.IsChecked,
 					NativeViewValue = GetNativeIsChecked(handler)
 				};
 			});
