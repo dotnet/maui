@@ -80,7 +80,7 @@ namespace Samples
 
 			// Connect events
 			_treeView.Selection.Changed += Selection_Changed;
-			Destroyed += (sender, e) => Application.Quit();
+			Destroyed += (sender, e) => this.Close();
 
 			var scenario = ScenarioList.Scenarios[0];
 			_skiaGraphicsView.Drawable = scenario;

@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("GraphicsTester.Gtk")]
+[assembly: AssemblyTitle("GraphicsTester.Skia.Gtk")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("GraphicsTester.Gtk")]
+[assembly: AssemblyProduct("GraphicsTester.Skia.Gtk")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("afb715c2-b39b-4592-97b8-766863c0a9a9")]
+[assembly: Guid("cdd557c3-4bf0-43f6-b4c8-6aa657f783fd")]
 
 // Version information for an assembly consists of the following four values:
 //
