@@ -22,7 +22,7 @@ namespace Maui.Controls.Sample
 	public class Startup : IStartup
 	{
 		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage }
-		private PageType _pageType = PageType.NavigationPage;
+		private PageType _pageType = PageType.Xaml;
 
 		public readonly static bool UseXamlApp = true;
 
