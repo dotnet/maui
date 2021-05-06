@@ -244,6 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
+		[PortHandler("Still pending the code related to Focus.")]
 		protected virtual bool OnShouldReturn(UITextField view)
 		{
 			Control.ResignFirstResponder();
