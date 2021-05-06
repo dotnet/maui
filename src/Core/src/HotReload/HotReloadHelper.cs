@@ -140,7 +140,7 @@ namespace Microsoft.Maui.HotReload
 					RegisterHandler(h, newViewType);
 				}
 			}
-		
+
 		}
 
 
