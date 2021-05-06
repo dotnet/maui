@@ -7,3 +7,15 @@ variables:
   value: true
 - name: DOTNET_VERSION
   value: 5.0.102
+- name: LogDirectory
+  value: $(Build.ArtifactStagingDirectory)/logs
+- name: provisionator.xcode
+  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
+- name: provisionator.path
+  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
+- name: provisionator.vs2019
+  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs2019.csx'
+- name: provisionator.extraArguments
+  value: '--v'
+- name: DotNet.Path
+  value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
