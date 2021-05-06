@@ -1,12 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Linq;
-using UIKit;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using PointF = CoreGraphics.CGPoint;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
+using UIKit;
+using PointF = CoreGraphics.CGPoint;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {

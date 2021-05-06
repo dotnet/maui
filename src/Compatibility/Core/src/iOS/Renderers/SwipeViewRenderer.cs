@@ -4,12 +4,12 @@ using System.ComponentModel;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
-using UIKit;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.SwipeView;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
+using UIKit;
+using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.SwipeView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {

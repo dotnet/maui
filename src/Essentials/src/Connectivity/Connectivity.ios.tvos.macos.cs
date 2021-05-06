@@ -9,9 +9,9 @@ namespace Microsoft.Maui.Essentials
 	public static partial class Connectivity
 	{
 #if __IOS__
-        static readonly Lazy<CTCellularData> cellularData = new Lazy<CTCellularData>(() => new CTCellularData());
+		static readonly Lazy<CTCellularData> cellularData = new Lazy<CTCellularData>(() => new CTCellularData());
 
-        internal static CTCellularData CellularData => cellularData.Value;
+		internal static CTCellularData CellularData => cellularData.Value;
 #endif
 
 		static ReachabilityListener listener;
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Essentials
 			{
 				var restricted = false;
 #if __IOS__
-                restricted = CellularData.RestrictedState == CTCellularDataRestrictedState.Restricted;
+				restricted = CellularData.RestrictedState == CTCellularDataRestrictedState.Restricted;
 #endif
 				var internetStatus = Reachability.InternetConnectionStatus();
 				if ((internetStatus == NetworkStatus.ReachableViaCarrierDataNetwork && !restricted) || internetStatus == NetworkStatus.ReachableViaWiFiNetwork)

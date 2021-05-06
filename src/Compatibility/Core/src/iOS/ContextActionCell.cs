@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Foundation;
-using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS.Resources;
+using UIKit;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public void Update(UITableView tableView, Cell cell, UITableViewCell nativeCell)
 		{
 			var parentListView = cell.RealParent as ListView;
-			var recycling = parentListView != null && 
+			var recycling = parentListView != null &&
 				((parentListView.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0);
 			if (_cell != cell && recycling)
 			{
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_scroller = new UIScrollView(new RectangleF(0, 0, width, height));
 				_scroller.ScrollsToTop = false;
 				_scroller.ShowsHorizontalScrollIndicator = false;
-				
+
 				_scroller.PreservesSuperviewLayoutMargins = true;
 
 				ContentView.AddSubview(_scroller);
@@ -489,7 +489,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void OnContextItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			var parentListView = _cell?.RealParent as ListView;
-			var recycling = parentListView != null && 
+			var recycling = parentListView != null &&
 				((parentListView.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0);
 			if (recycling)
 				Update(_tableView, _cell, ContentCell);
@@ -501,7 +501,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void OnMenuItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var parentListView = _cell.RealParent as ListView;
-			var recycling = parentListView != null && 
+			var recycling = parentListView != null &&
 				((parentListView.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0);
 			if (recycling)
 				Update(_tableView, _cell, ContentCell);

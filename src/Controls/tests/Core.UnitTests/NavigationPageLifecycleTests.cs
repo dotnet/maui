@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			ContentPage contentPage = new ContentPage();
 			ContentPage resultPage = null;
 
-			contentPage.Appearing += (sender, _) 
+			contentPage.Appearing += (sender, _)
 				=> resultPage = (ContentPage)sender;
 
 			NavigationPage nav = new NavigationPage(contentPage);

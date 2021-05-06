@@ -1,7 +1,7 @@
-using Foundation;
-using ObjCRuntime;
 using System;
 using System.Collections.Generic;
+using Foundation;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -38,12 +38,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (_loaded)
 					return _accessibilityElements;
-				
+
 				// lazy-loading this list so that the expensive call to GetAccessibilityElements only happens when VoiceOver is on.
 				if (_accessibilityElements == null || _accessibilityElements.Count == 0)
 				{
-					var elements =_parent.GetAccessibilityElements();
-					if(elements != null)
+					var elements = _parent.GetAccessibilityElements();
+					if (elements != null)
 					{
 						_accessibilityElements = NSArray.FromNSObjects(elements.ToArray());
 					}

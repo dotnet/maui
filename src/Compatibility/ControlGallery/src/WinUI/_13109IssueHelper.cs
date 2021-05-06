@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
-using Bitmap = Microsoft.UI.Xaml.Media.ImageSource;
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Platform;
+using Bitmap = Microsoft.UI.Xaml.Media.ImageSource;
 
 [assembly: Dependency(typeof(_13109IssueHelper))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI

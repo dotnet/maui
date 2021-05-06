@@ -1,5 +1,5 @@
-using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Internals;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
