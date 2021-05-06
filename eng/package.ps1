@@ -60,6 +60,7 @@ if ($IsWindows)
             /t:build `
             /p:Packing=true `
             /bl:"$artifacts/maui-build-$configuration.binlog"
+        if (!$?) { throw "Build failed." }
 
         & $msbuild $sln `
             /p:configuration=$configuration `
@@ -67,6 +68,7 @@ if ($IsWindows)
             /t:pack `
             /p:Packing=true `
             /bl:"$artifacts/maui-pack-$configuration.binlog"
+        if (!$?) { throw "Build failed." }
     }
     finally
     {
@@ -88,4 +90,5 @@ else
         -c:$configuration `
         -p:SymbolPackageFormat=snupkg `
         -bl:$artifacts/maui-pack-$configuration.binlog
+    if (!$?) { throw "Build failed." }
 }
