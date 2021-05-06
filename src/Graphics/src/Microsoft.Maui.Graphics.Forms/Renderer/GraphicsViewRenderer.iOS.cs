@@ -1,7 +1,7 @@
 using System.ComponentModel;
-using Microsoft.Maui.Graphics.CoreGraphics;
 using Microsoft.Maui.Graphics.Forms;
 using Microsoft.Maui.Graphics.Forms.iOS;
+using Microsoft.Maui.Graphics.Native;
 using Foundation;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Graphics.Forms.iOS
 			if (e.NewElement != null)
 			{
 				SetNativeControl(new NativeGraphicsView());
+				UpdateDrawable();
 			}
 		}
 
