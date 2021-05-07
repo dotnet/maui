@@ -21,11 +21,11 @@ namespace Microsoft.Maui
 		}
 
 		public UIFont DefaultFont =>
-			_defaultFont ??= UIFont.SystemFontOfSize(12);
+			_defaultFont ??= UIFont.SystemFontOfSize(UIFont.SystemFontSize);
 
-		public UIFont GetFont(Font font) =>  GetFont(font, CreateFont);
+		public UIFont GetFont(Font font, double defaultFontSize = 0) =>  GetFont(font, defaultFontSize, CreateFont);
 
-		public nfloat GetFontSize(Font font) => font.FontSize <= 0 ? DefaultFont.PointSize : (nfloat)font.FontSize;
+		public double GetFontSize(Font font, double defaultFontSize = 0) => font.FontSize <= 0 ? (defaultFontSize > 0 ? (float)defaultFontSize : DefaultFont.PointSize) : (nfloat)font.FontSize;
 
 		// UIFontWeight[Constant] is internal in Xamarin.iOS but the convertion from
 		// the public (int-based) enum is not helpful in this case.
@@ -53,8 +53,11 @@ namespace Microsoft.Maui
 			return 1.0f;
 		}
 
-		UIFont GetFont(Font font, Func<Font, UIFont> factory)
+		UIFont GetFont(Font font, double defaultFont, Func<Font, UIFont> factory)
 		{
+			var size = GetFontSize(font, defaultFont);
+			if (size != font.FontSize)
+				font = font.WithSize(size);
 			return _fonts.GetOrAdd(font, factory);
 		}
 		static UIFontAttributes GetFontAttributes(Font font)
@@ -87,7 +90,7 @@ namespace Microsoft.Maui
 		UIFont CreateFont(Font font)
 		{
 			var family = font.FontFamily;
-			var size = GetFontSize(font);
+			var size = (nfloat)font.FontSize;
 
 			bool hasAttributes = font.Weight != FontWeight.Regular || font.FontSlant != FontSlant.Default;
 

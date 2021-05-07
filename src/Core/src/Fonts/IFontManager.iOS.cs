@@ -7,8 +7,8 @@ namespace Microsoft.Maui
 	{
 		UIFont DefaultFont { get; }
 
-		UIFont GetFont(Font font);
+		UIFont GetFont(Font font, double defaultFontSize = 0);
 
-		nfloat GetFontSize(Font font);
+		double GetFontSize(Font font, double defaultFontSize = 0);
 	}
 }

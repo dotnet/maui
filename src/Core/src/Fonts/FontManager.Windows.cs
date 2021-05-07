@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 			return _fonts.GetOrAdd(font.FontFamily, CreateFontFamily);
 		}
 
-		public double GetFontSize(Font font) => font.FontSize <= 0 ? DefaultFontSize : font.FontSize;
+		public double GetFontSize(Font font, double defaultFontSize = 0) => font.FontSize > 0 ? font.FontSize : (defaultFontSize > 0 ? defaultFontSize : DefaultFontSize);
 
 		FontFamily CreateFontFamily(string fontFamily)
 		{
