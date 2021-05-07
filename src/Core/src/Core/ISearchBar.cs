@@ -5,6 +5,9 @@
 	/// </summary>
 	public interface ISearchBar : IView, ITextInput, ITextAlignment
 	{
-
+		/// <summary>
+		/// Notify when the user presses the Search button.
+		/// </summary>
+		void SearchButtonPressed();
 	}
 }
