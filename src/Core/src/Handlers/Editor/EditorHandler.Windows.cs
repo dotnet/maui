@@ -1,12 +1,21 @@
-﻿using System;
-using Microsoft.UI.Xaml.Controls;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
+﻿#nullable enable
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler : ViewHandler<IEditor, MauiTextBox>
 	{
 		protected override MauiTextBox CreateNativeView() => new MauiTextBox();
+
+		protected override void ConnectHandler(MauiTextBox nativeView)
+		{
+			nativeView.LostFocus += OnLostFocus;
+		}
+
+		protected override void DisconnectHandler(MauiTextBox nativeView)
+		{
+			nativeView.LostFocus -= OnLostFocus;
+		}
 
 		[MissingMapper]
 		public static void MapText(IViewHandler handler, IEditor editor) { }
@@ -34,5 +43,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateTextColor(editor);
+		
+		void OnLostFocus(object? sender, RoutedEventArgs e)
+		{
+			VirtualView?.Completed();
+		}
 	}
 }
