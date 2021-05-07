@@ -31,6 +31,9 @@ namespace Maui.Controls.Sample.Pages
 			BindingContext = _viewModel = viewModel;
 
 			SetupMauiLayout();
+
+			NavigationPage.SetHasNavigationBar(this, false);
+
 			//SetupCompatibilityLayout();
 		}
 
@@ -239,7 +242,7 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-		Button CreateResizingButton() 
+		Button CreateResizingButton()
 		{
 			var initialWidth = 200;
 			var otherWidth = 100;
@@ -249,10 +252,16 @@ namespace Maui.Controls.Sample.Pages
 
 			var count = 1;
 
-			var resizeButton = new Button { Text = "Resize", BackgroundColor = Colors.Gray,
-				WidthRequest = initialWidth, HeightRequest = initialHeight };
+			var resizeButton = new Button
+			{
+				Text = "Resize",
+				BackgroundColor = Colors.Gray,
+				WidthRequest = initialWidth,
+				HeightRequest = initialHeight
+			};
 
-			resizeButton.Clicked += (sender, args) => {
+			resizeButton.Clicked += (sender, args) =>
+			{
 
 				count += 1;
 

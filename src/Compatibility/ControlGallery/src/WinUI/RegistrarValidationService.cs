@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 
 			var renderer = Platform.UWP.Platform.CreateRenderer(element);
 
-			if (renderer == null 
+			if (renderer == null
 				|| renderer.GetType().Name == "DefaultRenderer"
 				)
 			{

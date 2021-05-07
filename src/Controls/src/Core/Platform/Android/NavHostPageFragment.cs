@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Android.Content.Res;
+using Android.Graphics;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
+using AndroidX.AppCompat.App;
+using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.Navigation.Fragment;
+using AndroidX.Navigation.UI;
 using Microsoft.Maui.Controls.Handlers;
 using AView = Android.Views.View;
-using AndroidX.AppCompat.Widget;
-using AndroidX.Navigation.UI;
-using AndroidX.AppCompat.App;
-using Android.Graphics;
-using Android.Content.Res;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -77,7 +78,52 @@ namespace Microsoft.Maui.Controls.Platform
 			if (Context.GetActivity() is AppCompatActivity aca)
 			{
 				aca.SupportActionBar.Title = NavDestination.Page.Title;
+
+				// TODO MAUI put this elsewhere once we figure out how attached property handlers work
+				bool showNavBar = false;
+				if (NavDestination.Page is BindableObject bo)
+					showNavBar = NavigationPage.GetHasNavigationBar(bo);
+
+				var appBar = NavDestination.NavigationPageHandler.AppBar;
+				if (!showNavBar)
+				{
+					if (appBar.LayoutParameters is CoordinatorLayout.LayoutParams cl)
+					{
+						cl.Height = 0;
+						appBar.LayoutParameters = cl;
+					}
+				}
+				else
+				{
+					if (appBar.LayoutParameters is CoordinatorLayout.LayoutParams cl)
+					{
+						cl.Height = ActionBarHeight();
+						appBar.LayoutParameters = cl;
+					}
+				}
 			}
+
+
+			int ActionBarHeight()
+			{
+				int attr = Resource.Attribute.actionBarSize;
+
+				int actionBarHeight = (int)Context.GetThemeAttributePixels(Resource.Attribute.actionBarSize);
+
+				//if (actionBarHeight <= 0)
+				//	return Device.Info.CurrentOrientation.IsPortrait() ? (int)Context.ToPixels(56) : (int)Context.ToPixels(48);
+
+				//if (Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.TranslucentStatus) || Context.GetActivity().Window.Attributes.Flags.HasFlag(WindowManagerFlags.TranslucentNavigation))
+				//{
+				//	if (_toolbar.PaddingTop == 0)
+				//		_toolbar.SetPadding(0, GetStatusBarHeight(), 0, 0);
+
+				//	return actionBarHeight + GetStatusBarHeight();
+				//}
+
+				return actionBarHeight;
+			}
+
 		}
 
 		public override void OnCreate(Bundle savedInstanceState)
@@ -96,7 +142,7 @@ namespace Microsoft.Maui.Controls.Platform
 		// TODO Move somewhere else
 		void UpdateToolbar()
 		{
-			
+
 		}
 
 

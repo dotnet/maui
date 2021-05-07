@@ -65,7 +65,7 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		public static void InvalidateMeasure(this UIView nativeView, IView view) 
+		public static void InvalidateMeasure(this UIView nativeView, IView view)
 		{
 			nativeView.SetNeedsLayout();
 		}
@@ -92,7 +92,7 @@ namespace Microsoft.Maui
 			UpdateFrame(nativeView, view);
 		}
 
-		public static void UpdateFrame(UIView nativeView, IView view) 
+		public static void UpdateFrame(UIView nativeView, IView view)
 		{
 			// Updating the frame (assuming it's an actual change) will kick off a layout update
 			// Handling of the default (-1) width/height will be taken care of by GetDesiredSize

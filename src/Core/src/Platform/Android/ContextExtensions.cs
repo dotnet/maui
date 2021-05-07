@@ -74,7 +74,7 @@ namespace Microsoft.Maui
 			return (int?)self?.ApplicationInfo?.TargetSdkVersion;
 		}
 
-		internal static double GetThemeAttributeDp(this Context self, int resource)
+		public static double GetThemeAttributeDp(this Context self, int resource)
 		{
 			using (var value = new TypedValue())
 			{
@@ -87,6 +87,20 @@ namespace Microsoft.Maui
 				var pixels = (double)TypedValue.ComplexToDimension(value.Data, self.Resources?.DisplayMetrics);
 
 				return self.FromPixels(pixels);
+			}
+		}
+
+		public static double GetThemeAttributePixels(this Context self, int resource)
+		{
+			using (var value = new TypedValue())
+			{
+				if (self == null || self.Theme == null)
+					return -1;
+
+				if (!self.Theme.ResolveAttribute(resource, value, true))
+					return -1;
+
+				return (double)TypedValue.ComplexToDimension(value.Data, self.Resources?.DisplayMetrics);
 			}
 		}
 

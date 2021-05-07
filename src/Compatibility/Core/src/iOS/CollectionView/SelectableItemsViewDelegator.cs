@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		where TItemsView : SelectableItemsView
 		where TViewController : SelectableItemsViewController<TItemsView>
 	{
-		public SelectableItemsViewDelegator(ItemsViewLayout itemsViewLayout, TViewController itemsViewController) 
+		public SelectableItemsViewDelegator(ItemsViewLayout itemsViewLayout, TViewController itemsViewController)
 			: base(itemsViewLayout, itemsViewController)
 		{
 		}

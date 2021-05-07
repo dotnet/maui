@@ -1,11 +1,6 @@
 using System;
 using System.Linq;
-
-#if __IOS__ || IOS || MACCATALYST
 using NativeView = UIKit.UIView;
-#else
-using NativeView = AppKit.NSView;
-#endif
 
 namespace Microsoft.Maui.Handlers
 {

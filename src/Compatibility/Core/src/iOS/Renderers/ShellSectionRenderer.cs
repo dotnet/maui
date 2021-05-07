@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Foundation;
+using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
 		}
 
-		public ShellSectionRenderer(IShellContext context, Type navigationBarType, Type toolbarType) 
+		public ShellSectionRenderer(IShellContext context, Type navigationBarType, Type toolbarType)
 			: base(navigationBarType, toolbarType)
 		{
 			Delegate = new NavDelegate(this);
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			SendPop();
 
 		internal bool SendPop()
-		{ 
+		{
 			// this means the pop is already done, nothing we can do
 			if (ViewControllers.Length < NavigationBar.Items.Length)
 				return true;
