@@ -18,27 +18,27 @@ namespace Microsoft.Maui.Essentials
 	public static partial class Platform
 	{
 #if __IOS__ || __TVOS__
-        public static bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
-            => WebAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
+		public static bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
+			=> WebAuthenticator.OpenUrl(new Uri(url.AbsoluteString));
 
-        public static bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
-            => WebAuthenticator.OpenUrl(new Uri(userActivity?.WebPageUrl?.AbsoluteString));
+		public static bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
+			=> WebAuthenticator.OpenUrl(new Uri(userActivity?.WebPageUrl?.AbsoluteString));
 #endif
 
 #if __IOS__
-        public static void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
-        {
-            if (shortcutItem.Type == AppActions.Type)
-            {
-                var appAction = shortcutItem.ToAppAction();
+		public static void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
+		{
+			if (shortcutItem.Type == AppActions.Type)
+			{
+				var appAction = shortcutItem.ToAppAction();
 
-                AppActions.InvokeOnAppAction(application, shortcutItem.ToAppAction());
-            }
-        }
+				AppActions.InvokeOnAppAction(application, shortcutItem.ToAppAction());
+			}
+		}
 #endif
 
 #if __IOS__
-        [DllImport(Constants.SystemLibrary, EntryPoint = "sysctlbyname")]
+		[DllImport(Constants.SystemLibrary, EntryPoint = "sysctlbyname")]
 #else
 		[DllImport(Constants.libSystemLibrary, EntryPoint = "sysctlbyname")]
 #endif
@@ -73,67 +73,67 @@ namespace Microsoft.Maui.Essentials
 
 #if __IOS__ || __TVOS__
 
-        public static UIViewController GetCurrentUIViewController() =>
-            GetCurrentViewController(false);
+		public static UIViewController GetCurrentUIViewController() =>
+			GetCurrentViewController(false);
 
-        internal static UIViewController GetCurrentViewController(bool throwIfNull = true)
-        {
-            UIViewController viewController = null;
+		internal static UIViewController GetCurrentViewController(bool throwIfNull = true)
+		{
+			UIViewController viewController = null;
 
-            var window = UIApplication.SharedApplication.KeyWindow;
+			var window = UIApplication.SharedApplication.KeyWindow;
 
-            if (window != null && window.WindowLevel == UIWindowLevel.Normal)
-                viewController = window.RootViewController;
+			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
+				viewController = window.RootViewController;
 
-            if (viewController == null)
-            {
-                window = UIApplication.SharedApplication
-                    .Windows
-                    .OrderByDescending(w => w.WindowLevel)
-                    .FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
+			if (viewController == null)
+			{
+				window = UIApplication.SharedApplication
+					.Windows
+					.OrderByDescending(w => w.WindowLevel)
+					.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
 
-                if (window == null && throwIfNull)
-                    throw new InvalidOperationException("Could not find current view controller.");
-                else
-                    viewController = window?.RootViewController;
-            }
+				if (window == null && throwIfNull)
+					throw new InvalidOperationException("Could not find current view controller.");
+				else
+					viewController = window?.RootViewController;
+			}
 
-            while (viewController?.PresentedViewController != null)
-                viewController = viewController.PresentedViewController;
+			while (viewController?.PresentedViewController != null)
+				viewController = viewController.PresentedViewController;
 
-            if (throwIfNull && viewController == null)
-                throw new InvalidOperationException("Could not find current view controller.");
+			if (throwIfNull && viewController == null)
+				throw new InvalidOperationException("Could not find current view controller.");
 
-            return viewController;
-        }
+			return viewController;
+		}
 
-        internal static UIWindow GetCurrentWindow(bool throwIfNull = true)
-        {
-            var window = UIApplication.SharedApplication.KeyWindow;
+		internal static UIWindow GetCurrentWindow(bool throwIfNull = true)
+		{
+			var window = UIApplication.SharedApplication.KeyWindow;
 
-            if (window != null && window.WindowLevel == UIWindowLevel.Normal)
-                return window;
+			if (window != null && window.WindowLevel == UIWindowLevel.Normal)
+				return window;
 
-            if (window == null)
-            {
-                window = UIApplication.SharedApplication
-                    .Windows
-                    .OrderByDescending(w => w.WindowLevel)
-                    .FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
-            }
+			if (window == null)
+			{
+				window = UIApplication.SharedApplication
+					.Windows
+					.OrderByDescending(w => w.WindowLevel)
+					.FirstOrDefault(w => w.RootViewController != null && w.WindowLevel == UIWindowLevel.Normal);
+			}
 
-            if (throwIfNull && window == null)
-                throw new InvalidOperationException("Could not find current window.");
+			if (throwIfNull && window == null)
+				throw new InvalidOperationException("Could not find current window.");
 
-            return window;
-        }
+			return window;
+		}
 #endif
 
 #if __IOS__ || __WATCHOS__
-        static CMMotionManager motionManager;
+		static CMMotionManager motionManager;
 
-        internal static CMMotionManager MotionManager =>
-            motionManager ?? (motionManager = new CMMotionManager());
+		internal static CMMotionManager MotionManager =>
+			motionManager ?? (motionManager = new CMMotionManager());
 #endif
 
 		internal static NSOperationQueue GetCurrentQueue() =>

@@ -5,14 +5,14 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Foundation;
-using UIKit;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
+using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.ListView;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateRowHeight();
 
 				Control.Source = _dataSource = e.NewElement.HasUnevenRows ? new UnevenListViewDataSource(e.NewElement, _tableViewController) : new ListViewDataSource(e.NewElement, _tableViewController);
-			
+
 				UpdateHeader();
 				UpdateFooter();
 				UpdatePullToRefreshEnabled();
@@ -1516,7 +1516,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetTableViewCell(UITableViewCell value)
 		{
-			if (ReferenceEquals(_tableViewCell, value)) return;
+			if (ReferenceEquals(_tableViewCell, value))
+				return;
 			_tableViewCell?.RemoveFromSuperview();
 			_tableViewCell = value;
 			AddSubview(value);
@@ -1577,7 +1578,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						if (_refresh == null || _disposed)
 							return;
 
-						if( _isStartRefreshingPending)
+						if (_isStartRefreshingPending)
 							StartRefreshing();
 
 

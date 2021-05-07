@@ -6,10 +6,10 @@ using Android.OS;
 using Android.Util;
 using Android.Views;
 using AndroidX.Core.Content;
+using Microsoft.Maui.Handlers;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Platform
 {

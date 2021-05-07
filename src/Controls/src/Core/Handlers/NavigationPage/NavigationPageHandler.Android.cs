@@ -1,5 +1,6 @@
 ﻿#nullable enable
 
+using System;
 using System.Collections.Generic;
 using Android.Runtime;
 using Android.Views;
@@ -7,12 +8,11 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using AView = Android.Views.View;
-using System;
-using Google.Android.Material.AppBar;
 
 namespace Microsoft.Maui.Controls.Handlers
 {

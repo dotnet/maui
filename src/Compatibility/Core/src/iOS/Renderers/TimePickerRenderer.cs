@@ -3,10 +3,10 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Foundation;
-using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using RectangleF = CoreGraphics.CGRect;
 using Microsoft.Maui.Platform.iOS;
+using UIKit;
+using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 							  .Where(c => c.Name.EndsWith("-" + iOSLocale)).FirstOrDefault();
 			if (cultureInfos == null)
 				cultureInfos = CultureInfo.InvariantCulture;
-			
+
 			if (String.IsNullOrEmpty(Element.Format))
 			{
 				string timeformat = cultureInfos.DateTimeFormat.ShortTimePattern;
