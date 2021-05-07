@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 			newText ??= string.Empty;
 			var oldText = textView.Text ?? string.Empty;
 
-			if (oldText != newText)
+			if (oldText == newText)
 				return;
 
 			switch (textType)
