@@ -278,6 +278,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
+		[PortHandler("Missing to port the code related with Focus")]
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
 			if (TextView.Text != Element.Text)
