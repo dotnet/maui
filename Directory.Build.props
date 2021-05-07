@@ -26,6 +26,7 @@
     <BuildNonNet6ForAndroid>false</BuildNonNet6ForAndroid>
     <NonNet6Platforms Condition="'$(BuildNonNet6ForAndroid)' == 'true'">MonoAndroid10.0</NonNet6Platforms>
     <NonNet6EssentialsPlatforms Condition="'$(BuildNonNet6ForAndroid)' == 'true'">netstandard2.0;netstandard2.1;MonoAndroid10.0</NonNet6EssentialsPlatforms>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
   </PropertyGroup>
 
