@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using UIKit;
-using Microsoft.Maui.Controls.Compatibility.Internals;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {

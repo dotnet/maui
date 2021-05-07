@@ -98,7 +98,22 @@ namespace Microsoft.Maui.HotReload
 			if (!IsEnabled)
 				return;
 
-			Console.WriteLine($"{oldViewType} - {newViewType}");
+			Action<MethodInfo> executeStaticMethod = (method) =>
+			{
+				try
+				{
+					method?.Invoke(null, null);
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"Error calling {method.Name} on type: {newViewType}");
+					Debug.WriteLine(ex);
+					//TODO: Notifiy that we couldnt execute OnHotReload for the Method;
+				}
+			};
+
+			var onHotReloadMethods = newViewType.GetOnHotReloadMethods();
+			onHotReloadMethods.ForEach(x => executeStaticMethod(x));
 
 			if (typeof(IHotReloadableView).IsAssignableFrom(newViewType))
 				replacedViews[oldViewType] = newViewType;
@@ -125,19 +140,7 @@ namespace Microsoft.Maui.HotReload
 					RegisterHandler(h, newViewType);
 				}
 			}
-			try
-			{
-				//Call static init if it exists on new classes!
-				var staticInit = newViewType.GetMethod("Init", BindingFlags.Static | BindingFlags.Public);
-				staticInit?.Invoke(null, null);
-			}
-			catch (Exception ex)
-			{
 
-				Debug.WriteLine($"Error calling Init on type: {newViewType}");
-				Debug.WriteLine(ex);
-				//TODO: Notifiy that we couldnt hot reload.
-			}
 		}
 
 

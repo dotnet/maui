@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Android.Views;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android

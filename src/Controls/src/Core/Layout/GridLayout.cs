@@ -6,8 +6,8 @@ namespace Microsoft.Maui.Controls.Layout2
 {
 	public class GridLayout : Layout, IGridLayout
 	{
-		List<IGridRowDefinition> _rowDefinitions = new List<IGridRowDefinition>();
-		List<IGridColumnDefinition> _columnDefinitions = new List<IGridColumnDefinition>();
+		readonly List<IGridRowDefinition> _rowDefinitions = new();
+		readonly List<IGridColumnDefinition> _columnDefinitions = new();
 
 		public IReadOnlyList<IGridRowDefinition> RowDefinitions => _rowDefinitions;
 		public IReadOnlyList<IGridColumnDefinition> ColumnDefinitions => _columnDefinitions;
@@ -15,48 +15,38 @@ namespace Microsoft.Maui.Controls.Layout2
 		public double RowSpacing { get; set; }
 		public double ColumnSpacing { get; set; }
 
-		Dictionary<IView, GridInfo> _viewInfo = new Dictionary<IView, GridInfo>();
+		readonly Dictionary<IView, GridInfo> _viewInfo = new();
 
-		// TODO ezhart This needs to override Remove and clean up any row/column/span info for the removed child
+		public override void Add(IView child)
+		{
+			base.Add(child);
+			_viewInfo[child] = new GridInfo();
+		}
+
+		public override void Remove(IView child)
+		{
+			_viewInfo.Remove(child);
+			base.Remove(child);
+		}
 
 		public int GetColumn(IView view)
 		{
-			if (_viewInfo.TryGetValue(view, out GridInfo gridInfo))
-			{
-				return gridInfo.Col;
-			}
-
-			return 0;
+			return _viewInfo[view].Col;
 		}
 
 		public int GetColumnSpan(IView view)
 		{
-			if (_viewInfo.TryGetValue(view, out GridInfo gridInfo))
-			{
-				return gridInfo.ColSpan;
-			}
-
-			return 1;
+			return _viewInfo[view].ColSpan;
 		}
 
 		public int GetRow(IView view)
 		{
-			if (_viewInfo.TryGetValue(view, out GridInfo gridInfo))
-			{
-				return gridInfo.Row;
-			}
-
-			return 0;
+			return _viewInfo[view].Row;
 		}
 
 		public int GetRowSpan(IView view)
 		{
-			if (_viewInfo.TryGetValue(view, out GridInfo gridInfo))
-			{
-				return gridInfo.RowSpan;
-			}
-
-			return 1;
+			return _viewInfo[view].RowSpan;
 		}
 
 		protected override ILayoutManager CreateLayoutManager() => new GridLayoutManager(this);

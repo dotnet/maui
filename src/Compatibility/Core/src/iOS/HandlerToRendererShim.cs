@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using UIKit;
-using Microsoft.Maui.Controls.Compatibility.Internals;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -55,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
 		{
-			ViewHandler?.SetFrame(Element.Bounds);
+			ViewHandler?.NativeArrange(Element.Bounds);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

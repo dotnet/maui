@@ -28,7 +28,6 @@
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" PrivateAssets="all" />
 		<!-- <PackageReference Include="StrongNamer" Version="0.2.5" PrivateAssets="all" GeneratePathProperty="true" /> -->
-		<PackageReference Include="XliffTasks" Version="1.0.0-beta.21110.1" PrivateAssets="all" />
 	</ItemGroup>
 
 	<PropertyGroup>
@@ -57,10 +56,6 @@
 		<None Include="..\Core\bin\$(Configuration)\net6.0\Microsoft.Maui.Controls.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 		<None Include="..\Xaml\bin\$(Configuration)\net6.0\Microsoft.Maui.Controls.Xaml.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 	</ItemGroup>
-
-	<PropertyGroup>
-		 <UpdateXlfOnBuild Condition="'$(CI)' != 'true'">true</UpdateXlfOnBuild>
-	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Controls.Core.csproj" PrivateAssets="all" />

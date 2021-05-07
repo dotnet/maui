@@ -2,6 +2,7 @@
                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                    xmlns:controls="clr-namespace:Maui.Controls.Sample.Controls"
                    x:Class="Maui.Controls.Sample.Pages.SemanticsPage"
+                   Title="Semantics Page"
                    BackgroundColor="White">
 
     <ScrollView Margin="15,20">
@@ -39,6 +40,7 @@
             <Button
                 Text="Button text TH"
                 FontSize="14"
+                x:Name="pushButton"
                 HorizontalOptions="Center"
                 WidthRequest="200"
                 SemanticProperties.Hint="Hint text"/>
@@ -48,6 +50,7 @@
                 FontSize="14"
                 HorizontalOptions="CenterAndExpand"
                 WidthRequest="200"
+                x:Name="popButton"
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
 

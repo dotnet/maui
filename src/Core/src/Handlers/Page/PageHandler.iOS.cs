@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Linq;
-
-#if __IOS__ || IOS || MACCATALYST
-using NativeView = UIKit.UIView;
 using UIKit;
-#else
-using NativeView = AppKit.NSView;
-#endif
+using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -46,7 +41,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTitle(PageHandler handler, IPage page)
 		{
-			if(handler._pageViewController != null)
+			if (handler._pageViewController != null)
 				handler._pageViewController.Title = page.Title;
 		}
 	}

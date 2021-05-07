@@ -50,7 +50,7 @@ dotnet build src\DotNet\DotNet.csproj
 # Builds the rest of Maui
 .\bin\dotnet\dotnet build Microsoft.Maui-net6.sln
 # (Windows-only) to launch Visual Studio
-.\eng\dogfood.ps1
+dotnet cake --target=VS-DOGFOOD
 ```
 
 To build & run .NET 6 sample apps, you will also need to use `.\bin\dotnet\dotnet`:

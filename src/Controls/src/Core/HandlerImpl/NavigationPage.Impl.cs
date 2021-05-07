@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls
 			if (Content is IFrameworkElement element)
 			{
 				element.Arrange(bounds);
-				element.Handler?.SetFrame(element.Frame);
+				element.Handler?.NativeArrange(element.Frame);
 			}
 
 			return Frame.Size;

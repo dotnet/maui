@@ -4,6 +4,7 @@ using Android.Content.Res;
 using Android.Runtime;
 using Android.Views;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
