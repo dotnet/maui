@@ -43,7 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 			var imageSource = new FontImageSourceStub
 			{
 				Glyph = "X",
-				Font = Font.Default,
+				Font = Font.Default.WithSize(30),
 				Color = expectedColor,
 			};
 

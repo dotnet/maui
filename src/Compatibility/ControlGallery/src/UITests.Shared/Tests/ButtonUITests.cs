@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			Assert.Inconclusive("needs testing");
 #else
 			var font = remote.GetProperty<Font>(Button.FontProperty);
-			Assert.True(font.FontAttributes.HasFlag(FontAttributes.Bold));
+			Assert.True(font.Weight.HasFlag(FontWeight.Bold));
 #endif
 		}
 
