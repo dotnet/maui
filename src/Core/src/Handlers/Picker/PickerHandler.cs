@@ -10,6 +10,10 @@
 			[nameof(IPicker.TextColor)] = MapTextColor,
 			[nameof(IPicker.Title)] = MapTitle,
 			[nameof(IPicker.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			Actions =
+			{
+				["Reload"] = MapReload,
+			}
 		};
 
 		public PickerHandler() : base(PickerMapper)
