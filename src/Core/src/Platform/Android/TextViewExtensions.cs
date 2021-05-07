@@ -3,21 +3,40 @@ using Android.Graphics;
 using Android.Text;
 using Android.Util;
 using Android.Widget;
+using static Android.Widget.TextView;
 
 namespace Microsoft.Maui
 {
 	public static class TextViewExtensions
 	{
-		public static void UpdateText(this TextView textView, ILabel label) =>
-			UpdateText(textView, label.Text);
+		public static void UpdateText(this TextView textView, ILabel label)
+		{
+			textView.UpdateText(label.Text, label.TextType);
+		}
 
-		public static void UpdateText(this TextView textView, string newText)
+		public static void UpdateText(this TextView textView, string newText, TextType textType = TextType.Text)
 		{
 			newText ??= string.Empty;
 			var oldText = textView.Text ?? string.Empty;
 
 			if (oldText != newText)
-				textView.Text = newText;
+				return;
+
+			switch (textType)
+			{
+				case TextType.Html:
+					if (NativeVersion.IsAtLeast(24))
+						textView.SetText(Html.FromHtml(newText, FromHtmlOptions.ModeCompact), BufferType.Spannable);
+					else
+#pragma warning disable CS0618 // Type or member is obsolete
+						textView.SetText(Html.FromHtml(newText), BufferType.Spannable);
+#pragma warning restore CS0618 // Type or member is obsolete
+					break;
+
+				default:
+					textView.Text = newText;
+					break;
+			}
 		}
 
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)

@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.MaxLines)] = MapMaxLines,
 			[nameof(ILabel.Padding)] = MapPadding,
 			[nameof(ILabel.Text)] = MapText,
+			[nameof(ILabel.TextType)] = MapTextType,
 			[nameof(ILabel.TextColor)] = MapTextColor,
 			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
 		};

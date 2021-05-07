@@ -6,6 +6,11 @@ namespace Microsoft.Maui
 	public interface ILabel : IView, IText, ITextAlignment, IPadding
 	{
 		/// <summary>
+		/// Gets a value that define the type of format to use in the Label, plain text or Html.
+		/// </summary>
+		TextType TextType { get; }
+
+		/// <summary>
 		/// Gets the option for line breaking.
 		/// </summary>
 		LineBreakMode LineBreakMode { get; }
