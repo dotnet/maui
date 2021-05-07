@@ -157,6 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			   () => Control.BackgroundFocusBrush, brush => Control.BackgroundFocusBrush = brush);
 		}
 
+		[PortHandler]
 		void OnLostFocus(object sender, RoutedEventArgs e)
 		{
 			ElementController.SendCompleted();
