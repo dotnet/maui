@@ -52,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 			var picker = new PickerStub()
 			{
 				Title = "Select an Item",
-				Font = Font.OfSize("Arial", 10,weight, isItalic ? FontSlant.Italic : FontSlant.Default)
+				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
 			};
 
 			picker.ItemsSource = items;

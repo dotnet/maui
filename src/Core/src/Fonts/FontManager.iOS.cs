@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 		public UIFont DefaultFont =>
 			_defaultFont ??= UIFont.SystemFontOfSize(UIFont.SystemFontSize);
 
-		public UIFont GetFont(Font font, double defaultFontSize = 0) =>  GetFont(font, defaultFontSize, CreateFont);
+		public UIFont GetFont(Font font, double defaultFontSize = 0) => GetFont(font, defaultFontSize, CreateFont);
 
 		public double GetFontSize(Font font, double defaultFontSize = 0) => font.FontSize <= 0 ? (defaultFontSize > 0 ? (float)defaultFontSize : DefaultFont.PointSize) : (nfloat)font.FontSize;
 
@@ -72,7 +72,7 @@ namespace Microsoft.Maui
 			var traits = (UIFontDescriptorSymbolicTraits)0;
 			if (weight == FontWeight.Bold)
 				traits |= UIFontDescriptorSymbolicTraits.Bold;
-			else if(weight != FontWeight.Regular)
+			else if (weight != FontWeight.Regular)
 			{
 				a.Traits = new UIFontTraits
 				{
@@ -82,7 +82,7 @@ namespace Microsoft.Maui
 			}
 			if (font.FontSlant == FontSlant.Italic)
 				traits |= UIFontDescriptorSymbolicTraits.Italic;
-			
+
 			a.Traits.SymbolicTrait = traits;
 			return a;
 		}
@@ -103,11 +103,11 @@ namespace Microsoft.Maui
 					if (UIFont.FamilyNames.Contains(family))
 					{
 						var descriptor = new UIFontDescriptor().CreateWithFamily(family);
-						if(hasAttributes)
+						if (hasAttributes)
 						{
 							descriptor = descriptor.CreateWithAttributes(GetFontAttributes(font));
 						}
-						
+
 						result = UIFont.FromDescriptor(descriptor, size);
 						if (result != null)
 							return result;

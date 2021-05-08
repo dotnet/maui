@@ -43,11 +43,11 @@ namespace Microsoft.Maui
 			return new Font { FontFamily = FontFamily, FontSize = FontSize, FontSlant = fontSlant, Weight = weight };
 		}
 
-		public static Font OfSize(string name, double size, FontWeight weight = FontWeight.Regular , FontSlant fontSlant = FontSlant.Default) =>
+		public static Font OfSize(string name, double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default) =>
 			new() { FontFamily = name, FontSize = size, Weight = weight, FontSlant = fontSlant };
 
-		public static Font SystemFontOfSize(double size, FontWeight weight = FontWeight.Regular , FontSlant fontSlant = FontSlant.Default) =>
-			new () { FontSize = size, Weight = weight, FontSlant = fontSlant };
+		public static Font SystemFontOfSize(double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default) =>
+			new() { FontSize = size, Weight = weight, FontSlant = fontSlant };
 
 		public static Font SystemFontOfWeight(FontWeight weight, FontSlant fontSlant = FontSlant.Default)
 		{
