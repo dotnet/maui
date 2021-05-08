@@ -130,6 +130,9 @@
       <Item ItemId=";InvalidXaml" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Invalid Xaml "{0}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Xaml“{0}”无效。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -298,6 +301,9 @@
       <Item ItemId=";XKeyNotLiteral" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[x:Key expects a string literal.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[x:Key 需要字符串字面量。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
