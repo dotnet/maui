@@ -318,6 +318,9 @@ namespace Microsoft.Maui.Layouts
 			}
 		}
 
+		// Dictionary key for tracking a Span
+		record SpanKey(int Start, int Length, bool IsColumn);
+
 		class Span
 		{
 			public int Start { get; }
@@ -335,33 +338,6 @@ namespace Microsoft.Maui.Layouts
 				Requested = value;
 
 				Key = new SpanKey(Start, Length, IsColumn);
-			}
-		}
-
-		class SpanKey
-		{
-			public SpanKey(int start, int length, bool isColumn)
-			{
-				Start = start;
-				Length = length;
-				IsColumn = isColumn;
-			}
-
-			public int Start { get; }
-			public int Length { get; }
-			public bool IsColumn { get; }
-
-			public override bool Equals(object? obj)
-			{
-				return obj is SpanKey key &&
-					   Start == key.Start &&
-					   Length == key.Length &&
-					   IsColumn == key.IsColumn;
-			}
-
-			public override int GetHashCode()
-			{
-				return Start.GetHashCode() ^ Length.GetHashCode() ^ IsColumn.GetHashCode();
 			}
 		}
 
