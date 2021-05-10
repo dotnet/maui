@@ -3,6 +3,8 @@ param(
   [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
 )
 
+$ErrorActionPreference = "Stop"
+
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
 
@@ -58,6 +60,7 @@ if ($IsWindows)
             /t:build `
             /p:Packing=true `
             /bl:"$artifacts/maui-build-$configuration.binlog"
+        if (!$?) { throw "Build failed." }
 
         & $msbuild $sln `
             /p:configuration=$configuration `
@@ -65,6 +68,7 @@ if ($IsWindows)
             /t:pack `
             /p:Packing=true `
             /bl:"$artifacts/maui-pack-$configuration.binlog"
+        if (!$?) { throw "Build failed." }
     }
     finally
     {
@@ -86,4 +90,5 @@ else
         -c:$configuration `
         -p:SymbolPackageFormat=snupkg `
         -bl:$artifacts/maui-pack-$configuration.binlog
+    if (!$?) { throw "Build failed." }
 }
