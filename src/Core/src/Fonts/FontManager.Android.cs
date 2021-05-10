@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 {
 	public class FontManager : IFontManager
 	{
-		readonly ConcurrentDictionary<(string fontFamilyName, FontWeight weight, bool italic) , Typeface?> _typefaces = new();
+		readonly ConcurrentDictionary<(string fontFamilyName, FontWeight weight, bool italic), Typeface?> _typefaces = new();
 		readonly IFontRegistrar _fontRegistrar;
 		readonly ILogger<FontManager>? _logger;
 
@@ -27,12 +27,12 @@ namespace Microsoft.Maui
 			if (font == Font.Default || (font.Weight == FontWeight.Regular && string.IsNullOrEmpty(font.FontFamily) && font.FontSlant == FontSlant.Default))
 				return DefaultTypeface;
 
-			return _typefaces.GetOrAdd((font.FontFamily,font.Weight,font.FontSlant != FontSlant.Default), CreateTypeface);
+			return _typefaces.GetOrAdd((font.FontFamily, font.Weight, font.FontSlant != FontSlant.Default), CreateTypeface);
 		}
 
 		public float GetFontSize(Font font, float defaultFontSize = 0) =>
 			font.FontSize > 0 ? (float)font.FontSize : (defaultFontSize > 0 ? defaultFontSize : 14f);
-		
+
 
 		(bool success, Typeface? typeface) TryGetFromAssets(string fontName)
 		{

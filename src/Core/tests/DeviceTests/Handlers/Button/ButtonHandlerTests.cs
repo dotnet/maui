@@ -75,7 +75,7 @@ namespace Microsoft.Maui.DeviceTests
 			var button = new ButtonStub()
 			{
 				Text = "Test",
-				Font = Font.OfSize("Arial", 10,weight,isItalic ? FontSlant.Italic : FontSlant.Default)
+				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
 			};
 
 			await ValidatePropertyInitValue(button, () => button.Font.Weight.HasFlag(FontWeight.Bold), GetNativeIsBold, isBold);
