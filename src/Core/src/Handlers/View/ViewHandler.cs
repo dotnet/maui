@@ -1,10 +1,8 @@
 #nullable enable
 using Microsoft.Maui.Graphics;
 using System;
-#if __IOS__
+#if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
-#elif __MACOS__
-using NativeView = AppKit.NSView;
 #elif MONOANDROID
 using NativeView = Android.Views.View;
 #elif WINDOWS
@@ -126,7 +124,7 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateSemantics(view);
 		}
 
-		public static void MapInvalidateMeasure(IViewHandler handler, IView view) 
+		public static void MapInvalidateMeasure(IViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.InvalidateMeasure(view);
 		}

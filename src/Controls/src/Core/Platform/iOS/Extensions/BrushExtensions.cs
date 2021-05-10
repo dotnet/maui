@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			backgroundLayer.RenderInContext(UIGraphics.GetCurrentContext());
 			UIImage gradientImage = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext(); 
+			UIGraphics.EndImageContext();
 
 			return gradientImage;
 		}

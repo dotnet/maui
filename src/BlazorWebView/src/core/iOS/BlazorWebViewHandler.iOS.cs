@@ -1,17 +1,17 @@
-﻿using Foundation;
-using UIKit;
-using WebKit;
-using RectangleF = CoreGraphics.CGRect;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Foundation;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
+using UIKit;
+using WebKit;
+using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {

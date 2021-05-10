@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 		{
 			nativeComboBox.UpdateTextColor(picker, null);
 		}
-		
+
 		public static void UpdateTextColor(this MauiComboBox nativeComboBox, IPicker picker, WBrush? defaultForeground)
 		{
 			Color color = picker.TextColor;

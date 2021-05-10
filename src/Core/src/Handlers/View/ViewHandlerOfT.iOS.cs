@@ -1,12 +1,5 @@
-using System;
 using Microsoft.Maui.Graphics;
 using UIKit;
-
-#if __IOS__ || IOS || MACCATALYST
-using NativeColor = UIKit.UIColor;
-#else
-using NativeColor = AppKit.NSColor;
-#endif
 
 namespace Microsoft.Maui.Handlers
 {
@@ -45,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 				size = new Size(NativeView.Frame.Width, NativeView.Frame.Height);
 			}
 
-			return new Size( hasExplicitWidth ? explicitWidth : size.Width, 
+			return new Size(hasExplicitWidth ? explicitWidth : size.Width,
 				hasExplicitHeight ? explicitHeight : size.Height);
 		}
 

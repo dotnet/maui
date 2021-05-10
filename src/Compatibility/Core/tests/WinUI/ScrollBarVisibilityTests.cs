@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {

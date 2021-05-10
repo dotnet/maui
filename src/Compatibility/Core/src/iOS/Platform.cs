@@ -4,13 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
-using UIKit;
-using IOPath = System.IO.Path;
-using CGRect = CoreGraphics.CGRect;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
+using UIKit;
+using CGRect = CoreGraphics.CGRect;
+using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {

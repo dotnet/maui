@@ -1,12 +1,12 @@
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using NUnit.Framework;
-//using Microsoft.Maui.Controls.Compatibility;
-//using Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests;
-//using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests;
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using NUnit.Framework;
 
 //[assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]
 //namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
@@ -37,6 +37,7 @@
 //			{
 //				Assert.Fail(exc.ToString());
 //			}
+
 
 //			Assert.Pass();
 //		}
