@@ -168,7 +168,7 @@
     <comment>0 is enum value</comment>
   </data>
   <data name="InvalidXaml" xml:space="preserve">
-    <value>Invalid Xaml "{0}".</value>
+    <value>Geçersiz Xaml "{0}".</value>
     <comment>0 is the invalid xaml snippet</comment>
   </data>
   <data name="MarkupNotClosed" xml:space="preserve">
@@ -246,6 +246,6 @@
     <value>x:Static için söz dizimi "[Member=][önek:]türAdı.statikÜyeAdı" şeklindedir.</value>
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
-    <value>x:Key expects a string literal.</value>
+    <value>x:Key bir sabit değerli dize bekliyor.</value>
   </data>
 </root>

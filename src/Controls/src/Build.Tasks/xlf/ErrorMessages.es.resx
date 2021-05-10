@@ -168,7 +168,7 @@
     <comment>0 is enum value</comment>
   </data>
   <data name="InvalidXaml" xml:space="preserve">
-    <value>Invalid Xaml "{0}".</value>
+    <value>XAML no válido "{0}".</value>
     <comment>0 is the invalid xaml snippet</comment>
   </data>
   <data name="MarkupNotClosed" xml:space="preserve">
@@ -246,6 +246,6 @@
     <value>La sintaxis de x:Static es "[Member=][prefix:]typeName.staticMemberName".</value>
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
-    <value>x:Key expects a string literal.</value>
+    <value>x:Clave espera un literal de cadena.</value>
   </data>
 </root>

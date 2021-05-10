@@ -168,7 +168,7 @@
     <comment>0 is enum value</comment>
   </data>
   <data name="InvalidXaml" xml:space="preserve">
-    <value>Invalid Xaml "{0}".</value>
+    <value>Xaml“{0}”无效。</value>
     <comment>0 is the invalid xaml snippet</comment>
   </data>
   <data name="MarkupNotClosed" xml:space="preserve">
@@ -246,6 +246,6 @@
     <value>x:Static 的语法为 "[Member=][prefix:]typeName.staticMemberName"。</value>
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
-    <value>x:Key expects a string literal.</value>
+    <value>x:Key 需要字符串字面量。</value>
   </data>
 </root>
