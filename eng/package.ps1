@@ -66,7 +66,7 @@ if ($IsWindows)
             /t:pack `
             /p:Packing=true `
             /bl:"$artifacts/maui-pack-$configuration.binlog"
-        if (!$?) { throw "Pacl failed." }
+        if (!$?) { throw "Pack failed." }
     }
     finally
     {
