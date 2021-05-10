@@ -1,7 +1,7 @@
 using System;
 using CoreGraphics;
-using ObjCRuntime;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 			base.LayoutSubviews();
 
 			var bounds = Frame.ToRectangle();
-			if(View is ISafeAreaView sav && !sav.IgnoreSafeArea && RespondsToSafeArea())
+			if (View is ISafeAreaView sav && !sav.IgnoreSafeArea && RespondsToSafeArea())
 			{
 				var safe = SafeAreaInsets;
 				bounds.X += safe.Left;
@@ -47,7 +47,7 @@ namespace Microsoft.Maui
 		{
 			if (respondsToSafeArea.HasValue)
 				return respondsToSafeArea.Value;
-			return (bool) (respondsToSafeArea = this.RespondsToSelector(new Selector("safeAreaInsets")));
+			return (bool)(respondsToSafeArea = this.RespondsToSelector(new Selector("safeAreaInsets")));
 		}
 
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
