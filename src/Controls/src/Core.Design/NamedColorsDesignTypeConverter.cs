@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Design
@@ -166,5 +167,20 @@ namespace Microsoft.Maui.Controls.Design
 				"Yellow",
 				"YellowGreen"
 			};
+
+		// #000, #000fff, #000fff00 are all valid 
+		const string RxColorHexPattern = @"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$";
+		static readonly Lazy<Regex> RxColorHex = new(() => new Regex(RxColorHexPattern, RegexOptions.Compiled | RegexOptions.Singleline));
+
+		public override bool IsValid(ITypeDescriptorContext context, object value)
+		{
+			// Any named colors are ok
+			if (KnownValues.Any(v => value?.ToString()?.Equals(v, StringComparison.Ordinal) ?? false))
+				return true;
+
+			// HTML Hex colors are also ok
+			// Check if HTML Hex Color code, which is also valid
+			return RxColorHex.Value.IsMatch(value?.ToString());
+		}
 	}
 }
