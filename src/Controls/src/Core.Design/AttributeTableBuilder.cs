@@ -59,19 +59,20 @@ namespace Microsoft.Maui.Controls.Design
 			AddTypeAttributes("Microsoft.Maui.Controls.ConstraintExpression", new MarkupExtensionReturnTypeAttribute());
 			AddTypeAttributes("Microsoft.Maui.Controls.LayoutOptions", new TypeConverterAttribute(typeof(LayoutOptionsDesignTypeConverter)));
 			AddTypeAttributes("Microsoft.Maui.Controls.LinearItemsLayout", new TypeConverterAttribute(typeof(LinearItemsLayoutDesignTypeConverter)));
-			AddTypeAttributes("Microsoft.Maui.Controls.ResourcesChangedEventArgs", new TypeConverterAttribute(typeof(NamedSizeDesignTypeConverter)));
+			AddTypeAttributes("Microsoft.Maui.Controls.ResourcesChangedEventArgs", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
 
-			AddMemberAttributes("Microsoft.Maui.Controls.Button", "FontSize", new TypeConverterAttribute(typeof(NamedSizeDesignTypeConverter)));
-			AddMemberAttributes("Microsoft.Maui.Controls.DatePicker", "FontSize", new TypeConverterAttribute(typeof(NamedSizeDesignTypeConverter)));
-			AddMemberAttributes("Microsoft.Maui.Controls.Editor", "FontSize", new TypeConverterAttribute(typeof(NamedSizeDesignTypeConverter)));
-			AddMemberAttributes("Microsoft.Maui.Controls.Entry", "FontSize", new TypeConverterAttribute(typeof(NamedSizeDesignTypeConverter)));
-			AddMemberAttributes("Microsoft.Maui.Controls.Label", "FontSize", new TypeConverterAttribute(typeof(NamedSizeDesignTypeConverter)));
-			AddMemberAttributes("Microsoft.Maui.Controls.Picker", "FontSize", new TypeConverterAttribute(typeof(NamedSizeDesignTypeConverter)));
-			AddMemberAttributes("Microsoft.Maui.Controls.SearchBar", "FontSize", new TypeConverterAttribute(typeof(NamedSizeDesignTypeConverter)));
-			AddMemberAttributes("Microsoft.Maui.Controls.TimePicker", "FontSize", new TypeConverterAttribute(typeof(NamedSizeDesignTypeConverter)));
-			AddMemberAttributes("Microsoft.Maui.Controls.RadioButton", "FontSize", new TypeConverterAttribute(typeof(NamedSizeDesignTypeConverter)));
-			AddMemberAttributes("Microsoft.Maui.Controls.SearchHandler", "FontSize", new TypeConverterAttribute(typeof(NamedSizeDesignTypeConverter)));
-			AddMemberAttributes("Microsoft.Maui.Controls.Span", "FontSize", new TypeConverterAttribute(typeof(NamedSizeDesignTypeConverter)));
+			AddMemberAttributes("Microsoft.Maui.Controls.Button", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
+			AddMemberAttributes("Microsoft.Maui.Controls.DatePicker", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
+			AddMemberAttributes("Microsoft.Maui.Controls.Editor", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
+			AddMemberAttributes("Microsoft.Maui.Controls.Entry", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
+			AddMemberAttributes("Microsoft.Maui.Controls.Label", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
+			AddMemberAttributes("Microsoft.Maui.Controls.Picker", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
+			AddMemberAttributes("Microsoft.Maui.Controls.SearchBar", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
+			AddMemberAttributes("Microsoft.Maui.Controls.TimePicker", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
+			AddMemberAttributes("Microsoft.Maui.Controls.RadioButton", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
+			AddMemberAttributes("Microsoft.Maui.Controls.SearchHandler", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
+			AddMemberAttributes("Microsoft.Maui.Controls.Span", "FontSize", new TypeConverterAttribute(typeof(FontSizeDesignTypeConverter)));
+
 		}
 
 		private void AddTypeAttributes(string typeName, params Attribute[] attribs)
