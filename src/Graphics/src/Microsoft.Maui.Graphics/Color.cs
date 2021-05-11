@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Graphics
 		}
 
 		[Obsolete("Use FromArgb instead.")]
-		public static Color FromHex(string colorAsHex) => FromArgb(colorAsHex);
+		public static Color FromHex(string colorAsArgbHex) => FromArgb(colorAsArgbHex);
 
 		public Paint AsPaint()
 		{
