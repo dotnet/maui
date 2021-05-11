@@ -1,10 +1,13 @@
 param(
   [string] $configuration = 'Debug',
-  [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
+  [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\MSBuild.exe"
 )
+
+Write-Host $msbuild
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
+$slnTasks = Join-Path $PSScriptRoot ../Microsoft.Maui.BuildTasks-net6.sln
 
 # Bootstrap .\bin\dotnet\
 $csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
@@ -49,6 +52,14 @@ if ($IsWindows)
 
         # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
         $env:PATH=($env:DOTNET_ROOT + ";" + $env:PATH)
+
+        # Have to build the solution tasks
+        & $msbuild $slnTasks `
+            /p:configuration=$configuration `
+            /p:SymbolPackageFormat=snupkg `
+            /restore `
+            /t:build `
+            /bl:"$artifacts/maui-build-tasks-$configuration.binlog"
 
         # Have to build the solution first so the xbf files are there for pack
         & $msbuild $sln `
