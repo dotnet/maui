@@ -21,7 +21,7 @@
 		<Compile Include="KnownValuesDesignTypeConverter.cs" />
 		<Compile Include="LayoutOptionsDesignTypeConverter.cs" />
 		<Compile Include="LinearItemsLayoutDesignTypeConverter.cs" />
-		<Compile Include="NamedSizeDesignTypeConverter.cs" />
+		<Compile Include="FontSizeDesignTypeConverter.cs" />
 		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility">
 			<Version>16.9.31025.104</Version>
 		</PackageReference>
