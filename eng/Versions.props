@@ -8,4 +8,8 @@
     <MicrosofttvOSSdkPackageVersion>14.5.100-ci.main.697</MicrosofttvOSSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>11.3.100-ci.main.697</MicrosoftmacOSSdkPackageVersion>
   </PropertyGroup>
+  <PropertyGroup>
+    <!-- Trim all characters after first `-` or `+` is encountered. -->
+    <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Replace($(MicrosoftDotnetSdkInternalPackageVersion), `[-+].*$`, ""))</DotNetPreviewVersionBand>
+  </PropertyGroup>
 </Project>

@@ -65,6 +65,8 @@
     <_PacksToRemove Include="microsoft.build.notargets" />
     <_PacksToRemove Include="microsoft.netcore.platforms" />
     <_PacksToRemove Include="netstandard.library" />
+    <!-- These are past workload names -->
+    <_PacksToRemove Include="Microsoft.NET.Workload.Android" />
   </ItemGroup>
 
   <Target Name="_AcquireWorkloads"
@@ -80,7 +82,7 @@
       We have to move everything up two directories, for things to land in the right location.
     -->
     <ItemGroup>
-      <_WorkloadFiles Include="$(DotNetSdkManifestsDirectory)Microsoft.NET.Workload.*/*/data/WorkloadManifest.*" />
+      <_WorkloadFiles Include="$(DotNetSdkManifestsDirectory)Microsoft.NET.*/*/data/WorkloadManifest.*" />
       <_WorkloadDirectoriesToDelete Include="@(_WorkloadFiles->'%(RootDir)%(Directory)'->Distinct())" />
     </ItemGroup>
     <Copy SourceFiles="@(_WorkloadFiles)" DestinationFiles="@(_WorkloadFiles->'%(RootDir)%(Directory)../../%(FileName)%(Extension)')" />
