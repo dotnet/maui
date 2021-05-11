@@ -312,6 +312,8 @@ stages:
                   displayName: 'Provision VSWindows'
                   inputs:
                     provisioning_script: $(provisionator.vs2019)
+                - script: dotnet tool restore
+                  displayName: install dotnet tools
                 - script: dotnet cake --target=VS-WINUI --configuration=$(BuildConfiguration)
                   displayName: build WinUI sample
 
