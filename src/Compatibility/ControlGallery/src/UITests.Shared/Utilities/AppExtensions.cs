@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Linq;
-
-using Xamarin.UITest;
-using Xamarin.UITest.Queries;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Xamarin.UITest;
+using Xamarin.UITest.Queries;
 
 #if __IOS__
 using Xamarin.UITest.iOS;

@@ -6,9 +6,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[TestFixture]
 	public class FontConverterTests : BaseTestFixture
 	{
-		[TestCase("Bold", Maui.FontAttributes.Bold)]
-		[TestCase("Italic", Maui.FontAttributes.Italic)]
-		[TestCase("Bold, Italic", Maui.FontAttributes.Bold | Maui.FontAttributes.Italic)]
+		[TestCase("Bold", Controls.FontAttributes.Bold)]
+		[TestCase("Italic", Controls.FontAttributes.Italic)]
+		[TestCase("Bold, Italic", Controls.FontAttributes.Bold | Controls.FontAttributes.Italic)]
 		public void FontAttributes(string attributeString, FontAttributes result)
 		{
 			var xaml = @"

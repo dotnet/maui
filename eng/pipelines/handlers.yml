@@ -49,16 +49,6 @@ schedules:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
-  - name: LogDirectory
-    value: $(Build.ArtifactStagingDirectory)/logs
-  - name: provisionator.xcode
-    value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
-  - name: provisionator.path
-    value: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-  - name: provisionator.extraArguments
-    value: '--v'
-  - name: DotNet.Path
-    value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
 
 parameters:
   - name: BuildEverything
@@ -230,9 +220,16 @@ stages:
                   /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
                   cat ~/Library/Preferences/Xamarin/Settings.plist || true
                 displayName: configure vsmac xcode
-            - ${{ if eq(BuildPlatform.name, 'macos') }}:
+              
               - script: echo '##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)'
                 displayName: set JI_JAVA_HOME
+
+            - ${{ if eq(BuildPlatform.name, 'windows') }}:
+              - task: xamops.azdevex.provisionator-task.provisionator@1
+                displayName: 'Provision VSWindows'
+                inputs:
+                  provisioning_script: $(provisionator.vs2019)
+
             - script: dotnet tool restore
               displayName: install dotnet tools
             - script: dotnet cake --configuration=Release
@@ -308,9 +305,15 @@ stages:
                     /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
                     cat ~/Library/Preferences/Xamarin/Settings.plist || true
                   displayName: configure vsmac xcode
-              - ${{ if eq(BuildPlatform.name, 'macos') }}:
                 - script: echo '##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)'
                   displayName: set JI_JAVA_HOME
+              
+              - ${{ if eq(BuildPlatform.name, 'windows') }}:
+                - task: xamops.azdevex.provisionator-task.provisionator@1
+                  displayName: 'Provision VSWindows'
+                  inputs:
+                    provisioning_script: $(provisionator.vs2019)
+
               - pwsh: |
                   & dotnet build src/DotNet/DotNet.csproj -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
                   & $(DotNet.Path) build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-buildtasks.binlog
@@ -352,6 +355,7 @@ stages:
       jobs:
         - template: sign-artifacts/jobs/v2.yml@xamarin-templates
           parameters:
+            signType: Real
             teamName: Maui
             usePipelineArtifactTasks: false
             targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed

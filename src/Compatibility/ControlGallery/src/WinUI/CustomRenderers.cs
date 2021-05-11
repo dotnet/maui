@@ -2,16 +2,16 @@
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Bugzilla42602.TextBoxView), typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.TextBoxViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]
@@ -66,7 +66,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 	{
 		public static void TestKeyboardFlags(this FormsTextBox Control, KeyboardFlags? flags)
 		{
-			if (flags == null) { return; }
+			if (flags == null)
+			{ return; }
 			if (flags.Value.HasFlag(KeyboardFlags.CapitalizeSentence))
 			{
 				if (!Control.IsSpellCheckEnabled)
@@ -95,7 +96,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 
 		public static void SetKeyboardFlags(this FormsTextBox Control, KeyboardFlags? flags)
 		{
-			if (flags == null) { return; }
+			if (flags == null)
+			{ return; }
 			var result = new InputScope();
 			var value = InputScopeNameValue.Default;
 
