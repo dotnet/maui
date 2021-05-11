@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.UpdateFlowDirection(Element);
 		}
 
+		[PortHandler]
 		void UpdateOnColor()
 		{
 			if (Control == null)
@@ -156,6 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateThumbColor()
 		{
 			if (Control == null)

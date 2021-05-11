@@ -1,21 +1,22 @@
+﻿#nullable enable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.Maui.Controls.Internals
+namespace Microsoft.Maui
 {
-	[PortHandler]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class ReflectionExtensions
 	{
-		public static FieldInfo GetField(this Type type, Func<FieldInfo, bool> predicate)
+		public static FieldInfo? GetField(this Type type, Func<FieldInfo, bool> predicate)
 		{
 			return GetFields(type).FirstOrDefault(predicate);
 		}
 
-		public static FieldInfo GetField(this Type type, string name)
+		public static FieldInfo? GetField(this Type type, string name)
 		{
 			return type.GetField(fi => fi.Name == name);
 		}
@@ -30,13 +31,15 @@ namespace Microsoft.Maui.Controls.Internals
 			return GetParts(type, ti => ti.DeclaredProperties);
 		}
 
-		public static PropertyInfo GetProperty(this Type type, string name)
+		public static PropertyInfo? GetProperty(this Type type, string name)
 		{
-			Type t = type;
+			Type? t = type;
+
 			while (t != null)
 			{
 				TypeInfo ti = t.GetTypeInfo();
-				PropertyInfo property = ti.GetDeclaredProperty(name);
+				PropertyInfo? property = ti.GetDeclaredProperty(name);
+
 				if (property != null)
 					return property;
 
@@ -46,7 +49,7 @@ namespace Microsoft.Maui.Controls.Internals
 			return null;
 		}
 
-		internal static object[] GetCustomAttributesSafe(this Assembly assembly, Type attrType)
+		internal static object[]? GetCustomAttributesSafe(this Assembly assembly, Type attrType)
 		{
 			try
 			{
@@ -59,7 +62,7 @@ namespace Microsoft.Maui.Controls.Internals
 			catch (global::System.IO.FileNotFoundException)
 			{
 				// Sometimes the previewer doesn't actually have everything required for these loads to work
-				Log.Warning(nameof(Registrar), "Could not load assembly: {0} for Attribute {1} | Some renderers may not be loaded", assembly.FullName, attrType.FullName);
+				Debug.WriteLine("Could not load assembly: {0} for Attribute {1} | Some renderers may not be loaded", assembly.FullName, attrType.FullName);
 			}
 
 			return null;
@@ -82,12 +85,15 @@ namespace Microsoft.Maui.Controls.Internals
 
 		static IEnumerable<T> GetParts<T>(Type type, Func<TypeInfo, IEnumerable<T>> selector)
 		{
-			Type t = type;
+			Type? t = type;
+
 			while (t != null)
 			{
 				TypeInfo ti = t.GetTypeInfo();
+
 				foreach (T f in selector(ti))
 					yield return f;
+
 				t = ti.BaseType;
 			}
 		}

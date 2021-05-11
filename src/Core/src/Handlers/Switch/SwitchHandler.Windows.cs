@@ -1,9 +1,15 @@
+#nullable enable
 using Microsoft.UI.Xaml.Controls;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, ToggleSwitch>
 	{
+		readonly object _originalOnHoverColor;
+		readonly WBrush _originalOnColorBrush;
+		readonly WBrush _originalThumbOnBrush;
+
 		protected override ToggleSwitch CreateNativeView() => new ToggleSwitch();
 
 		public static void MapIsOn(SwitchHandler handler, ISwitch view)
@@ -11,11 +17,15 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateIsToggled(view);
 		}
 
-		[MissingMapper]
-		public static void MapTrackColor(SwitchHandler handler, ISwitch view) { }
+		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
+		{
+			handler.NativeView?.UpdateTrackColor(view, handler._originalOnHoverColor, handler._originalOnColorBrush);
+		}
 
-		[MissingMapper]
-		public static void MapThumbColor(SwitchHandler handler, ISwitch view) { }
+		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
+		{
+			handler.NativeView?.UpdateThumbColor(view, handler._originalThumbOnBrush);
+		}
 
 		protected override void DisconnectHandler(ToggleSwitch nativeView)
 		{
