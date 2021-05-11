@@ -1,28 +1,41 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MauiApp1.MainPage"
-             BackgroundColor="White">
+             BackgroundColor="{DynamicResource PageBackgroundColor}">
 
-    <StackLayout Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
+    <ScrollView Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
+        <VerticalStackLayout>
 
-        <Label Text="Welcome to"
-               FontSize="32"
-               TextColor="Black"
-               HorizontalOptions="Center" />
-        <Label Text=".NET Multi-platform App UI"
-               FontSize="24"
-               TextColor="Black"
-               HorizontalOptions="Center" />
+            <Label Text="Hello, World!" 
+                SemanticProperties.HeadingLevel="Level1"
+                FontSize="32"
+                HorizontalOptions="CenterAndExpand"
+                Margin="0,0,0,10" />
 
-        <Button Text="Click Me!"
+            <Label Text="Welcome to .NET Multi-platform App UI"
+                SemanticProperties.Hint="Counts the number of times you click"
+                FontSize="16"
+                HorizontalOptions="CenterAndExpand" />
+
+            <Label Text="Current count: 0"
+                SemanticProperties.Hint="Counts the number of times you click"
+                FontSize="18"
+                FontAttributes="Bold"
+                x:Name="CounterLabel"
                 HorizontalOptions="Center"
-                Clicked="OnButtonClicked"/>
-        <Label x:Name="CountLabel"
-               Text="Click the button above!"
-               FontSize="20"
-               TextColor="Black"
-               HorizontalOptions="Center" />
+                Margin="0,40,0,20" />
 
-    </StackLayout>
+            <Button Text="Click me" Padding="40,0,40,0"
+                SemanticProperties.Hint="Counts the number of times you click"
+                Clicked="OnCounterClicked"
+                HorizontalOptions="Center" />
 
+            <Image 
+                Source="dotnet_bot.png"
+                SemanticProperties.Description="Cute dotnet bot waving hi to you!"
+                WidthRequest="300"
+                HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

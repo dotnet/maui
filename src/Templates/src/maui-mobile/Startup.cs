@@ -10,7 +10,11 @@ namespace MauiApp1
 		{
 			appBuilder
 				.UseFormsCompatibility()
-				.UseMauiApp<App>();
+				.UseMauiApp<App>()
+				.ConfigureFonts(fonts =>
+				{
+					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+				});
 		}
 	}
 }
