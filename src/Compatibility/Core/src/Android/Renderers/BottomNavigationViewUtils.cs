@@ -7,6 +7,7 @@ using Android.Views;
 using Android.Widget;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ALabelVisibilityMode = Google.Android.Material.BottomNavigation.LabelVisibilityMode;

@@ -9,6 +9,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -273,7 +274,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else
 			{
 				Typeface = font.ToTypeface();
-				SetTextSize(ComplexUnitType.Sp, font.ToScaledPixel());
+				SetTextSize(ComplexUnitType.Sp, (float)font.FontSize);
 			}
 		}
 

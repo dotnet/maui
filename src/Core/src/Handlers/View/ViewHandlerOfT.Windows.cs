@@ -1,5 +1,4 @@
 #nullable enable
-using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 
@@ -9,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		FrameworkElement? INativeViewHandler.NativeView => (FrameworkElement?)base.NativeView;
 
-		public override void SetFrame(Rectangle rect)
+		public override void NativeArrange(Rectangle rect)
 		{
 			var nativeView = NativeView;
 
@@ -30,37 +29,11 @@ namespace Microsoft.Maui.Handlers
 			if (widthConstraint < 0 || heightConstraint < 0)
 				return Size.Zero;
 
-			var explicitWidth = VirtualView.Width;
-			var explicitHeight = VirtualView.Height;
-			var useExplicitWidth = explicitWidth >= 0;
-			var useExplicitHeight = explicitHeight >= 0;
-
-			if (useExplicitWidth)
-			{
-				widthConstraint = Math.Min(VirtualView.Width, widthConstraint);
-			}
-
-			if (useExplicitHeight)
-			{
-				heightConstraint = Math.Min(VirtualView.Height, heightConstraint);
-			}
-
 			var measureConstraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
 
 			NativeView.Measure(measureConstraint);
 
-			var desiredWidth = NativeView.DesiredSize.Width;
-			var desiredHeight = NativeView.DesiredSize.Height;
-
-			var resultWidth = useExplicitWidth 
-				? Math.Max(desiredWidth, explicitWidth) 
-				: desiredWidth;
-
-			var resultHeight = useExplicitHeight
-				? Math.Max(desiredHeight, explicitHeight)
-				: desiredHeight;
-
-			return new Size(resultWidth, resultHeight);
+			return new Size(NativeView.DesiredSize.Width, NativeView.DesiredSize.Height);
 		}
 
 		protected override void SetupContainer()

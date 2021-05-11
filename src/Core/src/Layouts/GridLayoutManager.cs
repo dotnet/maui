@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Layouts
 {
 	public class GridLayoutManager : LayoutManager
 	{
+		GridStructure? _gridStructure;
+
 		public GridLayoutManager(IGridLayout layout) : base(layout)
 		{
 			Grid = layout;
@@ -16,14 +18,14 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
-			var structure = new GridStructure(Grid, widthConstraint, heightConstraint);
+			_gridStructure = new GridStructure(Grid, widthConstraint, heightConstraint);
 
-			return new Size(structure.GridWidth(), structure.GridHeight());
+			return new Size(_gridStructure.GridWidth(), _gridStructure.GridHeight());
 		}
 
 		public override void ArrangeChildren(Rectangle childBounds)
 		{
-			var structure = new GridStructure(Grid, childBounds.Width, childBounds.Height);
+			var structure = _gridStructure ?? new GridStructure(Grid, childBounds.Width, childBounds.Height);
 
 			foreach (var view in Grid.Children)
 			{
@@ -316,6 +318,9 @@ namespace Microsoft.Maui.Layouts
 			}
 		}
 
+		// Dictionary key for tracking a Span
+		record SpanKey(int Start, int Length, bool IsColumn);
+
 		class Span
 		{
 			public int Start { get; }
@@ -333,33 +338,6 @@ namespace Microsoft.Maui.Layouts
 				Requested = value;
 
 				Key = new SpanKey(Start, Length, IsColumn);
-			}
-		}
-
-		class SpanKey
-		{
-			public SpanKey(int start, int length, bool isColumn)
-			{
-				Start = start;
-				Length = length;
-				IsColumn = isColumn;
-			}
-
-			public int Start { get; }
-			public int Length { get; }
-			public bool IsColumn { get; }
-
-			public override bool Equals(object? obj)
-			{
-				return obj is SpanKey key &&
-					   Start == key.Start &&
-					   Length == key.Length &&
-					   IsColumn == key.IsColumn;
-			}
-
-			public override int GetHashCode()
-			{
-				return Start.GetHashCode() ^ Length.GetHashCode() ^ IsColumn.GetHashCode();
 			}
 		}
 

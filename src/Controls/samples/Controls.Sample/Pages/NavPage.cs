@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Maui.Controls.Sample.ViewModel;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -17,6 +18,8 @@ namespace Maui.Controls.Sample.Pages
 			{
 				Text = "Nav Page"
 			});
+			BarBackgroundColor = Colors.Purple;
+			BarTextColor = Colors.Green;
 
 		}
 	}

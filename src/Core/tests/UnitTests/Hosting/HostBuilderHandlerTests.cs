@@ -5,7 +5,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
 	public class HostBuilderHandlerTests
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.UnitTests
 			Assert.NotNull(host);
 			Assert.NotNull(host.Services);
 			Assert.NotNull(host.Handlers);
-			Assert.IsType<Hosting.Internal.MauiHandlersServiceProvider>(host.Handlers);
+			Assert.IsType<Maui.Hosting.Internal.MauiHandlersServiceProvider>(host.Handlers);
 			Assert.Equal(host.Handlers, host.Services.GetService<IMauiHandlersServiceProvider>());
 		}
 

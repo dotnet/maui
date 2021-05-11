@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					initialLoad = false;
 					Element.SetIsLoading(true);
-					await (Element.Source as UriImageSource).GetStreamAsync();
+					await ((IStreamImageSource)Element.Source).GetStreamAsync();
 					Element.SetIsLoading(false);
 				}
 			}

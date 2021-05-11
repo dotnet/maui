@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		internal static HorizontalAlignment ToNativeHorizontalAlignment(this TextAlignment alignment)
 		{
 			switch (alignment)

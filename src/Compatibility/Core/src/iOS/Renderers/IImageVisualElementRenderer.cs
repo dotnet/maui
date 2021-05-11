@@ -1,6 +1,6 @@
 #if __MOBILE__
-using NativeImageView = UIKit.UIImageView;
 using NativeImage = UIKit.UIImage;
+using NativeImageView = UIKit.UIImageView;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
 using NativeImageView = AppKit.NSImageView;

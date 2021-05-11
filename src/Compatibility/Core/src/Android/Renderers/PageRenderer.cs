@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Views;
 using Android.Views.Accessibility;
 using AndroidX.Core.Content;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AColorRes = Android.Resource.Color;
