@@ -137,6 +137,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_queryTextBox.SetAutomationPropertiesAutomationId($"{id}_AutoSuggestBox");
 		}
 
+		[PortHandler]
 		void OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs e)
 		{
 			// Modifies the text of the control if it does not match the query.
@@ -147,6 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Element.OnSearchButtonPressed();
 		}
 
+		[PortHandler]
 		void OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs e)
 		{
 			if (e.Reason == AutoSuggestionBoxTextChangeReason.ProgrammaticChange)

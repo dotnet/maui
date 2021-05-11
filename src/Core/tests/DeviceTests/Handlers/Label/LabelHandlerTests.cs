@@ -64,20 +64,20 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontAttributes.None, false, false)]
-		[InlineData(FontAttributes.Bold, true, false)]
-		[InlineData(FontAttributes.Italic, false, true)]
-		[InlineData(FontAttributes.Bold | FontAttributes.Italic, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontAttributes attributes, bool isBold, bool isItalic)
+		[InlineData(FontWeight.Regular, false, false)]
+		[InlineData(FontWeight.Bold, true, false)]
+		[InlineData(FontWeight.Regular, false, true)]
+		[InlineData(FontWeight.Bold, true, true)]
+		public async Task FontAttributesInitializeCorrectly(FontWeight weight, bool isBold, bool isItalic)
 		{
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				Font = Font.OfSize("Arial", 10).WithAttributes(attributes)
+				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
 			};
 
-			await ValidatePropertyInitValue(label, () => label.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(label, () => label.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(label, () => label.Font.Weight.HasFlag(FontWeight.Bold), GetNativeIsBold, isBold);
+			await ValidatePropertyInitValue(label, () => label.Font.FontSlant.HasFlag(FontSlant.Italic), GetNativeIsItalic, isItalic);
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]

@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Button button = new Button
 			{
 				Text = "Click Here",
-				Font = Font.SystemFontOfSize(NamedSize.Large),
+				Font = Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Large, typeof(Button), false)),
 				BorderWidth = 1,
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.CenterAndExpand,

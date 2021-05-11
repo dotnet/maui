@@ -10,8 +10,8 @@ namespace Microsoft.Maui
 		{
 			nativeControl.FontSize = fontManager.GetFontSize(font);
 			nativeControl.FontFamily = fontManager.GetFontFamily(font);
-			nativeControl.FontStyle = font.FontAttributes.ToFontStyle();
-			nativeControl.FontWeight = font.FontAttributes.ToFontWeight();
+			nativeControl.FontStyle = font.ToFontStyle();
+			nativeControl.FontWeight = font.ToFontWeight();
 		}
 
 		public static void UpdateIsEnabled(this Control nativeControl, bool isEnabled) =>

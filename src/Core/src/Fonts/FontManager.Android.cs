@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 {
 	public class FontManager : IFontManager
 	{
-		readonly ConcurrentDictionary<(string fontFamily, FontAttributes fontAttributes), Typeface?> _typefaces = new();
+		readonly ConcurrentDictionary<(string fontFamilyName, FontWeight weight, bool italic), Typeface?> _typefaces = new();
 		readonly IFontRegistrar _fontRegistrar;
 		readonly ILogger<FontManager>? _logger;
 
@@ -24,38 +24,15 @@ namespace Microsoft.Maui
 
 		public Typeface? GetTypeface(Font font)
 		{
-			if (font.IsDefault || (font.FontAttributes == FontAttributes.None && string.IsNullOrEmpty(font.FontFamily)))
+			if (font == Font.Default || (font.Weight == FontWeight.Regular && string.IsNullOrEmpty(font.FontFamily) && font.FontSlant == FontSlant.Default))
 				return DefaultTypeface;
 
-			return _typefaces.GetOrAdd((font.FontFamily, font.FontAttributes), CreateTypeface);
+			return _typefaces.GetOrAdd((font.FontFamily, font.Weight, font.FontSlant != FontSlant.Default), CreateTypeface);
 		}
 
-		public float GetScaledPixel(Font font)
-		{
-			if (font.IsDefault)
-				return 14;
+		public float GetFontSize(Font font, float defaultFontSize = 0) =>
+			font.FontSize > 0 ? (float)font.FontSize : (defaultFontSize > 0 ? defaultFontSize : 14f);
 
-			if (font.UseNamedSize)
-			{
-				switch (font.NamedSize)
-				{
-					case NamedSize.Micro:
-						return 10;
-
-					case NamedSize.Small:
-						return 12;
-
-					case NamedSize.Default:
-					case NamedSize.Medium:
-						return 14;
-
-					case NamedSize.Large:
-						return 18;
-				}
-			}
-
-			return (float)font.FontSize;
-		}
 
 		(bool success, Typeface? typeface) TryGetFromAssets(string fontName)
 		{
@@ -132,17 +109,24 @@ namespace Microsoft.Maui
 			return name != null && (name.Contains(".ttf#") || name.Contains(".otf#"));
 		}
 
-		Typeface? CreateTypeface((string fontFamily, FontAttributes fontAttributes) familyAttributePair)
+		Typeface? CreateTypeface((string fontFamilyName, FontWeight weight, bool italic) fontData)
 		{
-			var (fontFamily, fontAttributes) = familyAttributePair;
+			var (fontFamily, weight, italic) = fontData;
 			fontFamily ??= string.Empty;
 
 			Typeface? result;
 
 			if (string.IsNullOrWhiteSpace(fontFamily))
 			{
-				var style = ToTypefaceStyle(fontAttributes);
-				result = Typeface.Create(Typeface.Default, style);
+				if (NativeVersion.IsAtLeast(28))
+				{
+					result = Typeface.Create(Typeface.Default, (int)weight, italic);
+				}
+				else
+				{
+					var style = ToTypefaceStyle(weight, italic);
+					result = Typeface.Create(Typeface.Default, style);
+				}
 			}
 			else if (IsAssetFontFamily(fontFamily))
 			{
@@ -158,26 +142,33 @@ namespace Microsoft.Maui
 				}
 				else
 				{
-					var style = ToTypefaceStyle(fontAttributes);
-					return Typeface.Create(fontFamily, style);
+					if (NativeVersion.IsAtLeast(28))
+					{
+						return Typeface.Create(Typeface.Default, (int)weight, italic);
+					}
+					else
+					{
+						var style = ToTypefaceStyle(weight, italic);
+						return Typeface.Create(Typeface.Default, style);
+					}
 				}
 			}
 
 			return result;
 		}
 
-		TypefaceStyle ToTypefaceStyle(FontAttributes attrs)
+		TypefaceStyle ToTypefaceStyle(FontWeight weight, bool italic)
 		{
 			var style = TypefaceStyle.Normal;
-			if ((attrs & (FontAttributes.Bold | FontAttributes.Italic)) == (FontAttributes.Bold | FontAttributes.Italic))
+			var bold = weight > FontWeight.Bold;
+			if (bold && italic)
 				style = TypefaceStyle.BoldItalic;
-			else if ((attrs & FontAttributes.Bold) != 0)
+			else if (bold)
 				style = TypefaceStyle.Bold;
-			else if ((attrs & FontAttributes.Italic) != 0)
+			else if (italic)
 				style = TypefaceStyle.Italic;
 			return style;
 		}
-
 		string FontNameToFontFile(string fontFamily)
 		{
 			fontFamily ??= string.Empty;

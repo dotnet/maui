@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					break;
 			}
 
-			var font = Font.OfSize(fontName, NamedSize.Medium);
+			var font = Font.OfSize(fontName, Device.GetNamedSize(NamedSize.Medium, typeof(Button), false));
 
 			var themedButton = new Button
 			{

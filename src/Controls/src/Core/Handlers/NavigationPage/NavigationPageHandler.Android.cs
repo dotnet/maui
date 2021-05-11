@@ -8,6 +8,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
@@ -22,6 +23,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		private NavHostFragment? _navHost;
 		private FragmentNavigator? _fragmentNavigator;
 		private Toolbar? _toolbar;
+		private AppBarLayout? _appBar;
 
 		NavHostFragment NavHost
 		{
@@ -44,6 +46,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			set => _toolbar = value;
 		}
 
+		internal AppBarLayout AppBar
+		{
+			get => _appBar ?? throw new InvalidOperationException($"AppBar cannot be null");
+			set => _appBar = value;
+		}
+
 		protected override AView CreateNativeView()
 		{
 			LayoutInflater? li = LayoutInflater.From(ContextWithValidation());
@@ -53,6 +61,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			_ = view ?? throw new InvalidOperationException($"Resource.Layout.navigationlayout view not found");
 
 			_toolbar = view.FindViewById<Toolbar>(Resource.Id.maui_toolbar);
+			_appBar = view.FindViewById<AppBarLayout>(Resource.Id.appbar);
 			return view;
 		}
 
