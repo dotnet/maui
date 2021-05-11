@@ -1,10 +1,12 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 
 namespace Microsoft.Maui.Graphics
 {
 	[DebuggerDisplay("Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}")]
+	[TypeConverter(typeof(ColorTypeConverter))]
 	public class Color
 	{
 		public readonly float Red;
