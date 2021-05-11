@@ -1,6 +1,6 @@
 using System;
-using System.Drawing;
 using System.ComponentModel;
+using System.Drawing;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	public class StepperRenderer : ViewRenderer<Stepper, UIStepper>
 	{
 		bool _disposed;
-	
+
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public StepperRenderer()
 		{
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			_disposed = true;
 
-			if(disposing)
+			if (disposing)
 			{
 				if (Control != null)
 					Control.ValueChanged -= OnValueChanged;

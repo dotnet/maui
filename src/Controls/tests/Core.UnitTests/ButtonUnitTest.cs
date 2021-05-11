@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var button = new Button();
 
 			button.FontAttributes = FontAttributes.Italic | FontAttributes.Bold;
-			Assert.AreEqual(button.Font, Font.SystemFontOfSize(button.FontSize, FontWeight.Bold,FontSlant.Italic));
+			Assert.AreEqual(button.Font, Font.SystemFontOfSize(button.FontSize, FontWeight.Bold, FontSlant.Italic));
 		}
 
 		[Test]

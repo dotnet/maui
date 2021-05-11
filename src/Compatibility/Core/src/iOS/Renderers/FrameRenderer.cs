@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		public virtual void SetupLayer()
-		{			
+		{
 			if (_actualView == null)
 				return;
 
@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			public override bool PointInside(CGPoint point, UIEvent uievent)
 			{
-				foreach(var view in Subviews)
+				foreach (var view in Subviews)
 				{
 					if (view.HitTest(ConvertPointToView(point, view), uievent) != null)
 						return true;

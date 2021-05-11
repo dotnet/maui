@@ -187,7 +187,7 @@ namespace Microsoft.Maui.DeviceTests
 			var entry = new EntryStub()
 			{
 				Text = "Test",
-				Font = Font.OfSize("Arial", 10,weight, isItalic ? FontSlant.Italic : FontSlant.Default)
+				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
 			};
 
 			await ValidatePropertyInitValue(entry, () => entry.Font.Weight.HasFlag(FontWeight.Bold), GetNativeIsBold, isBold);

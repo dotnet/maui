@@ -871,7 +871,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public IIsolatedStorageFile GetUserStoreForApplication()
 			{
-				return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
+				throw new NotImplementedException("GetUserStoreForApplication currently not available https://github.com/dotnet/runtime/issues/52332");
+				//return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
 			}
 
 			public bool IsInvokeRequired
