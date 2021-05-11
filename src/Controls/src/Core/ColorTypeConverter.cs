@@ -415,10 +415,10 @@ namespace Microsoft.Maui.Controls
 						case "yellowgreen":
 							return Colors.YellowGreen;
 					}
-					var field = typeof(Color).GetFields().FirstOrDefault(fi => fi.IsStatic && string.Equals(fi.Name, color, StringComparison.OrdinalIgnoreCase));
+					var field = typeof(Colors).GetFields().FirstOrDefault(fi => fi.IsStatic && string.Equals(fi.Name, color, StringComparison.OrdinalIgnoreCase));
 					if (field != null)
 						return (Color)field.GetValue(null);
-					var property = typeof(Color).GetProperties().FirstOrDefault(pi => string.Equals(pi.Name, color, StringComparison.OrdinalIgnoreCase) && pi.CanRead && pi.GetMethod.IsStatic);
+					var property = typeof(Colors).GetProperties().FirstOrDefault(pi => string.Equals(pi.Name, color, StringComparison.OrdinalIgnoreCase) && pi.CanRead && pi.GetMethod.IsStatic);
 					if (property != null)
 						return (Color)property.GetValue(null, null);
 				}
