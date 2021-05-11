@@ -12,6 +12,12 @@ namespace Microsoft.Maui.Graphics
 		public readonly float Blue;
 		public readonly float Alpha = 1;
 
+		public Color()
+		{
+			// Default Black - param-less ctor need for some XAML/TypeConverter things
+			Red = Green = Blue = 0;	
+		}
+
 		public Color(float gray)
 		{
 			Red = Green = Blue = gray.Clamp(0, 1);
