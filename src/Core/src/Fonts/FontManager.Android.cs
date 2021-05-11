@@ -118,7 +118,15 @@ namespace Microsoft.Maui
 
 			if (string.IsNullOrWhiteSpace(fontFamily))
 			{
-				result = Typeface.Create(Typeface.Default, (int)weight, italic);//, style);
+				if (NativeVersion.IsAtLeast(28))
+				{
+					result = Typeface.Create(Typeface.Default, (int)weight, italic);
+				}
+				else
+				{
+					var style = ToTypefaceStyle(weight, italic);
+					result = Typeface.Create(Typeface.Default, style);
+				}
 			}
 			else if (IsAssetFontFamily(fontFamily))
 			{
@@ -134,13 +142,33 @@ namespace Microsoft.Maui
 				}
 				else
 				{
-					return Typeface.Create(Typeface.Default, (int)weight, italic);
+					if (NativeVersion.IsAtLeast(28))
+					{
+						return Typeface.Create(Typeface.Default, (int)weight, italic);
+					}
+					else
+					{
+						var style = ToTypefaceStyle(weight, italic);
+						return Typeface.Create(Typeface.Default, style);
+					}
 				}
 			}
 
 			return result;
 		}
 
+		TypefaceStyle ToTypefaceStyle(FontWeight weight, bool italic)
+		{
+			var style = TypefaceStyle.Normal;
+			var bold = weight > FontWeight.Bold;
+			if (bold && italic)
+				style = TypefaceStyle.BoldItalic;
+			else if (bold)
+				style = TypefaceStyle.Bold;
+			else if (italic)
+				style = TypefaceStyle.Italic;
+			return style;
+		}
 		string FontNameToFontFile(string fontFamily)
 		{
 			fontFamily ??= string.Empty;
