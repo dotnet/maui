@@ -8,25 +8,6 @@ namespace Microsoft.Maui
 {
 	public class FontManager : IFontManager
 	{
-		readonly ConcurrentDictionary<Font, UIFont> _fonts = new();
-		readonly IFontRegistrar _fontRegistrar;
-		readonly ILogger<FontManager>? _logger;
-
-		UIFont? _defaultFont;
-
-		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
-		{
-			_fontRegistrar = fontRegistrar;
-			_logger = logger;
-		}
-
-		public UIFont DefaultFont =>
-			_defaultFont ??= UIFont.SystemFontOfSize(UIFont.SystemFontSize);
-
-		public UIFont GetFont(Font font, double defaultFontSize = 0) => GetFont(font, defaultFontSize, CreateFont);
-
-		public double GetFontSize(Font font, double defaultFontSize = 0) => font.FontSize <= 0 ? (defaultFontSize > 0 ? (float)defaultFontSize : DefaultFont.PointSize) : (nfloat)font.FontSize;
-
 		// UIFontWeight[Constant] is internal in Xamarin.iOS but the convertion from
 		// the public (int-based) enum is not helpful in this case.
 		// -1.0 (Thin / 100) to 1.0 (Black / 900) with 0 being Regular (400)
@@ -42,6 +23,29 @@ namespace Microsoft.Maui
 			(0.56f, FontWeight.Heavy),
 			(0.62f, FontWeight.Black)
 		};
+
+		readonly ConcurrentDictionary<Font, UIFont> _fonts = new();
+		readonly IFontRegistrar _fontRegistrar;
+		readonly ILogger<FontManager>? _logger;
+
+		UIFont? _defaultFont;
+
+		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
+		{
+			_fontRegistrar = fontRegistrar;
+			_logger = logger;
+		}
+
+		public UIFont DefaultFont =>
+			_defaultFont ??= UIFont.SystemFontOfSize(UIFont.SystemFontSize);
+
+		public UIFont GetFont(Font font, double defaultFontSize = 0) =>
+			GetFont(font, defaultFontSize, CreateFont);
+
+		public double GetFontSize(Font font, double defaultFontSize = 0) =>
+			font.FontSize <= 0
+				? (defaultFontSize > 0 ? (float)defaultFontSize : DefaultFont.PointSize)
+				: (nfloat)font.FontSize;
 
 		static float GetWeightConstant(FontWeight self)
 		{
@@ -60,6 +64,7 @@ namespace Microsoft.Maui
 				font = font.WithSize(size);
 			return _fonts.GetOrAdd(font, factory);
 		}
+
 		static UIFontAttributes GetFontAttributes(Font font)
 		{
 			var a = new UIFontAttributes
@@ -92,21 +97,21 @@ namespace Microsoft.Maui
 			var family = font.FontFamily;
 			var size = (nfloat)font.FontSize;
 
-			bool hasAttributes = font.Weight != FontWeight.Regular || font.FontSlant != FontSlant.Default;
-
+			var hasAttributes =
+				font.Weight != FontWeight.Regular ||
+				font.FontSlant != FontSlant.Default;
 
 			if (family != null && family != DefaultFont.FamilyName)
 			{
 				try
 				{
 					UIFont? result = null;
+
 					if (UIFont.FamilyNames.Contains(family))
 					{
 						var descriptor = new UIFontDescriptor().CreateWithFamily(family);
 						if (hasAttributes)
-						{
 							descriptor = descriptor.CreateWithAttributes(GetFontAttributes(font));
-						}
 
 						result = UIFont.FromDescriptor(descriptor, size);
 						if (result != null)
@@ -128,6 +133,7 @@ namespace Microsoft.Maui
 						result = UIFont.SystemFontOfSize(size, UIFontWeight.Regular);
 						return result;
 					}
+
 					if (result == null)
 						result = UIFont.FromName(family, size);
 					if (result != null)
