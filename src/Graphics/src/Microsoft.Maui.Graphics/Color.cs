@@ -64,11 +64,16 @@ namespace Microsoft.Maui.Graphics
 		}
 
 		[Obsolete("Use ToArgbHex instead.")]
-		public string ToHex(bool includeAlpha = false)
+		public string ToHex(bool includeAlpha)
 		{
 			if (includeAlpha || Alpha < 1)
 				return "#" + ToHex(Alpha) + ToHex(Red) + ToHex(Green) + ToHex(Blue);
 
+			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
+		}
+
+		public string ToHex()
+		{
 			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
 		}
 
