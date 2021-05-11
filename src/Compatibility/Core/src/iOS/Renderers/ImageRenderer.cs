@@ -4,10 +4,10 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
-using UIKit;
-using RectangleF = CoreGraphics.CGRect;
-using PreserveAttribute = Foundation.PreserveAttribute;
 using Microsoft.Maui.Graphics;
+using UIKit;
+using PreserveAttribute = Foundation.PreserveAttribute;
+using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var iconcolor = fontsource.Color ?? _defaultColor;
 				var attString = new NSAttributedString(fontsource.Glyph, font: font, foregroundColor: iconcolor.ToUIColor());
 				var imagesize = ((NSString)fontsource.Glyph).GetSizeUsingAttributes(attString.GetUIKitAttributes(0, out _));
-				
+
 				UIGraphics.BeginImageContextWithOptions(imagesize, false, 0f);
 				var ctx = new NSStringDrawingContext();
 				var boundingRect = attString.GetBoundingRect(imagesize, (NSStringDrawingOptions)0, ctx);

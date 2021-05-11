@@ -71,7 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				Font = Font.OfSize("Arial", 10,weight, isItalic ? FontSlant.Italic : FontSlant.Default)
+				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
 			};
 
 			await ValidatePropertyInitValue(label, () => label.Font.Weight.HasFlag(FontWeight.Bold), GetNativeIsBold, isBold);

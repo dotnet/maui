@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 {
 	public class FontManager : IFontManager
 	{
-		readonly ConcurrentDictionary<(string fontFamilyName, FontWeight weight, bool italic) , Typeface?> _typefaces = new();
+		readonly ConcurrentDictionary<(string fontFamilyName, FontWeight weight, bool italic), Typeface?> _typefaces = new();
 		readonly IFontRegistrar _fontRegistrar;
 		readonly ILogger<FontManager>? _logger;
 
@@ -27,12 +27,12 @@ namespace Microsoft.Maui
 			if (font == Font.Default || (font.Weight == FontWeight.Regular && string.IsNullOrEmpty(font.FontFamily) && font.FontSlant == FontSlant.Default))
 				return DefaultTypeface;
 
-			return _typefaces.GetOrAdd((font.FontFamily,font.Weight,font.FontSlant != FontSlant.Default), CreateTypeface);
+			return _typefaces.GetOrAdd((font.FontFamily, font.Weight, font.FontSlant != FontSlant.Default), CreateTypeface);
 		}
 
 		public float GetFontSize(Font font, float defaultFontSize = 0) =>
 			font.FontSize > 0 ? (float)font.FontSize : (defaultFontSize > 0 ? defaultFontSize : 14f);
-		
+
 
 		(bool success, Typeface? typeface) TryGetFromAssets(string fontName)
 		{
@@ -118,7 +118,15 @@ namespace Microsoft.Maui
 
 			if (string.IsNullOrWhiteSpace(fontFamily))
 			{
-				result = Typeface.Create(Typeface.Default, (int)weight, italic);//, style);
+				if (NativeVersion.IsAtLeast(28))
+				{
+					result = Typeface.Create(Typeface.Default, (int)weight, italic);
+				}
+				else
+				{
+					var style = ToTypefaceStyle(weight, italic);
+					result = Typeface.Create(Typeface.Default, style);
+				}
 			}
 			else if (IsAssetFontFamily(fontFamily))
 			{
@@ -134,13 +142,33 @@ namespace Microsoft.Maui
 				}
 				else
 				{
-					return Typeface.Create(Typeface.Default, (int)weight, italic);
+					if (NativeVersion.IsAtLeast(28))
+					{
+						return Typeface.Create(Typeface.Default, (int)weight, italic);
+					}
+					else
+					{
+						var style = ToTypefaceStyle(weight, italic);
+						return Typeface.Create(Typeface.Default, style);
+					}
 				}
 			}
 
 			return result;
 		}
 
+		TypefaceStyle ToTypefaceStyle(FontWeight weight, bool italic)
+		{
+			var style = TypefaceStyle.Normal;
+			var bold = weight > FontWeight.Bold;
+			if (bold && italic)
+				style = TypefaceStyle.BoldItalic;
+			else if (bold)
+				style = TypefaceStyle.Bold;
+			else if (italic)
+				style = TypefaceStyle.Italic;
+			return style;
+		}
 		string FontNameToFontFile(string fontFamily)
 		{
 			fontFamily ??= string.Empty;
