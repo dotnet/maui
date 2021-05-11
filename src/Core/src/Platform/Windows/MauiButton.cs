@@ -1,24 +1,23 @@
-using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Graphics;
+﻿#nullable enable
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
-
 using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui
 {
-	[PortHandler]
-	public class FormsButton : Microsoft.UI.Xaml.Controls.Button
+	public class MauiButton : Button
 	{
-		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),
-			new PropertyMetadata(default(int), OnBorderRadiusChanged));
+		public static readonly DependencyProperty BorderRadiusProperty =
+			DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(MauiButton),
+				new PropertyMetadata(default(int), OnBorderRadiusChanged));
 
-		public static readonly DependencyProperty BackgroundColorProperty = DependencyProperty.Register(nameof(BackgroundColor), typeof(WBrush), typeof(FormsButton),
-			new PropertyMetadata(default(WBrush), OnBackgroundColorChanged));
+		public static readonly DependencyProperty BackgroundColorProperty =
+			DependencyProperty.Register(nameof(BackgroundColor), typeof(WBrush), typeof(MauiButton),
+				new PropertyMetadata(default(WBrush), OnBackgroundColorChanged));
 
-		WContentPresenter _contentPresenter;
-		Microsoft.UI.Xaml.Controls.Grid _rootGrid;
+		WContentPresenter? _contentPresenter;
+		Grid? _rootGrid;
 
 		public WBrush BackgroundColor
 		{
@@ -49,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnApplyTemplate();
 
 			_contentPresenter = GetTemplateChild("ContentPresenter") as WContentPresenter;
-			_rootGrid = GetTemplateChild("RootGrid") as Microsoft.UI.Xaml.Controls.Grid;
+			_rootGrid = GetTemplateChild("RootGrid") as Grid;
 
 			UpdateBackgroundColor();
 			UpdateBorderRadius();
@@ -57,12 +56,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		static void OnBackgroundColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			((FormsButton)d).UpdateBackgroundColor();
+			((MauiButton)d).UpdateBackgroundColor();
 		}
 
 		static void OnBorderRadiusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			((FormsButton)d).UpdateBorderRadius();
+			((MauiButton)d).UpdateBorderRadius();
 		}
 
 		void UpdateBackgroundColor()
@@ -72,6 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (_contentPresenter != null)
 				_contentPresenter.Background = BackgroundColor;
+
 			Background = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
 		}
 
@@ -79,10 +79,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			var radius = BorderRadius == -1 ? 0 : BorderRadius;
 			var cornerRadius = WinUIHelpers.CreateCornerRadius(radius);
-			if (_contentPresenter != null)						
-				_contentPresenter.CornerRadius = cornerRadius;				
-			
-			if(_rootGrid != null)
+
+			if (_contentPresenter != null)
+				_contentPresenter.CornerRadius = cornerRadius;
+
+			if (_rootGrid != null)
 				_rootGrid.CornerRadius = cornerRadius;
 		}
 
@@ -94,13 +95,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_contentPresenter.CharacterSpacing = CharacterSpacing;
 
 			var textBlock = GetTextBlock(Content);
-			
+
 			if (textBlock != null)
 				textBlock.CharacterSpacing = CharacterSpacing;
 
 		}
 
-		public TextBlock GetTextBlock(object content)
+		public TextBlock? GetTextBlock(object content)
 		{
 			if (content is TextBlock tb)
 			{
