@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 			toggleSwitch.IsOn = view.IsOn;
 		}
 
-		public static void UpdateTrackColor(this ToggleSwitch toggleSwitch, ISwitch view, object? originalOnHoverColor = null, WBrush? originalOnColorBrush = null)
+		public static void UpdateTrackColor(this ToggleSwitch toggleSwitch, ISwitch view, object? originalTrackHoverColor = null, WBrush? originalTrackColorBrush = null)
 		{
 			if (toggleSwitch == null)
 				return;
@@ -57,24 +57,24 @@ namespace Microsoft.Maui
 
 							if (frame != null)
 							{
-								if (originalOnHoverColor == null)
+								if (originalTrackHoverColor == null)
 								{
 									if (frame.Value is WColor color)
-										originalOnHoverColor = color;
+										originalTrackHoverColor = color;
 
 									if (frame.Value is WSolidColorBrush solidColorBrush)
-										originalOnHoverColor = solidColorBrush;
+										originalTrackHoverColor = solidColorBrush;
 								}
 
 								if (!view.TrackColor.IsDefault())
 								{
 									frame.Value = new WSolidColorBrush(view.TrackColor.ToWindowsColor())
 									{
-										Opacity = originalOnHoverColor is WSolidColorBrush originalOnHoverBrush ? originalOnHoverBrush.Opacity : 1
+										Opacity = originalTrackHoverColor is WSolidColorBrush originalOnHoverBrush ? originalOnHoverBrush.Opacity : 1
 									};
 								}
 								else
-									frame.Value = originalOnHoverColor;
+									frame.Value = originalTrackHoverColor;
 							}
 							break;
 						}
@@ -86,13 +86,13 @@ namespace Microsoft.Maui
 
 			if (rect != null)
 			{
-				if (originalOnColorBrush == null)
-					originalOnColorBrush = rect.Fill;
+				if (originalTrackColorBrush == null)
+					originalTrackColorBrush = rect.Fill;
 
 				if (!view.TrackColor.IsDefault())
 					rect.Fill = new WSolidColorBrush(view.TrackColor.ToWindowsColor());
 				else
-					rect.Fill = originalOnColorBrush;
+					rect.Fill = originalTrackColorBrush;
 			}
 		}
 

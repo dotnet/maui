@@ -13,8 +13,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, ToggleSwitch>
 	{
-		object? _originalOnHoverColor;
-		WBrush? _originalOnColorBrush;
+		object? _originalTrackHoverColor;
+		WBrush? _originalTrackColorBrush;
 		WBrush? _originalThumbOnBrush;
 
 		protected override ToggleSwitch CreateNativeView() => new ToggleSwitch();
@@ -66,13 +66,13 @@ namespace Microsoft.Maui.Handlers
 
 							if (frame != null)
 							{
-								if (_originalOnHoverColor == null)
+								if (_originalTrackHoverColor == null)
 								{
 									if (frame.Value is WColor color)
-										_originalOnHoverColor = color;
+										_originalTrackHoverColor = color;
 
 									if (frame.Value is WSolidColorBrush solidColorBrush)
-										_originalOnHoverColor = solidColorBrush;
+										_originalTrackHoverColor = solidColorBrush;
 								}
 							}
 						}
@@ -84,8 +84,8 @@ namespace Microsoft.Maui.Handlers
 
 			if (rect != null)
 			{
-				if (_originalOnColorBrush == null)
-					_originalOnColorBrush = rect.Fill;
+				if (_originalTrackColorBrush == null)
+					_originalTrackColorBrush = rect.Fill;
 			}
 		}
 
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateTrackColor(view, handler._originalOnHoverColor, handler._originalOnColorBrush);
+			handler.NativeView?.UpdateTrackColor(view, handler._originalTrackHoverColor, handler._originalTrackColorBrush);
 		}
 
 		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
