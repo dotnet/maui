@@ -23,7 +23,7 @@
 		<Compile Include="LinearItemsLayoutDesignTypeConverter.cs" />
 		<Compile Include="NamedSizeDesignTypeConverter.cs" />
 		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility">
-			<Version>16.4.29519.181</Version>
+			<Version>16.9.31025.104</Version>
 		</PackageReference>
 	</ItemGroup>
 
