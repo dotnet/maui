@@ -6,9 +6,9 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, ToggleSwitch>
 	{
-		readonly object _originalOnHoverColor;
-		readonly WBrush _originalOnColorBrush;
-		readonly WBrush _originalThumbOnBrush;
+		readonly object? _originalOnHoverColor;
+		readonly WBrush? _originalOnColorBrush;
+		readonly WBrush? _originalThumbOnBrush;
 
 		protected override ToggleSwitch CreateNativeView() => new ToggleSwitch();
 
