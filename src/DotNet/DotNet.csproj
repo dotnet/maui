@@ -65,6 +65,11 @@
     <_PacksToRemove Include="microsoft.build.notargets" />
     <_PacksToRemove Include="microsoft.netcore.platforms" />
     <_PacksToRemove Include="netstandard.library" />
+    <!-- These are past workload names -->
+    <_PacksToRemove Include="Microsoft.NET.Workload.MacCatalyst" />
+    <_PacksToRemove Include="Microsoft.NET.Workload.iOS" />
+    <_PacksToRemove Include="Microsoft.NET.Workload.tvOS" />
+    <_PacksToRemove Include="Microsoft.NET.Workload.macOS" />
   </ItemGroup>
 
   <Target Name="_AcquireWorkloads"
