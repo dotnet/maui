@@ -4,9 +4,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageDownload Include="Microsoft.NET.Workload.Android"                 Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-6.0.100" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-6.0.100"         Version="[$(MicrosoftiOSSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-6.0.100"        Version="[$(MicrosofttvOSSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-6.0.100"       Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-$(DotNetPreviewVersionBand)" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-$(DotNetPreviewVersionBand)"         Version="[$(MicrosoftiOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-$(DotNetPreviewVersionBand)"        Version="[$(MicrosofttvOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-$(DotNetPreviewVersionBand)"       Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
   </ItemGroup>
 </Project>

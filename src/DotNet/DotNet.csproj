@@ -85,7 +85,7 @@
       We have to move everything up two directories, for things to land in the right location.
     -->
     <ItemGroup>
-      <_WorkloadFiles Include="$(DotNetSdkManifestsDirectory)Microsoft.NET.Workload.*/*/data/WorkloadManifest.*" />
+      <_WorkloadFiles Include="$(DotNetSdkManifestsDirectory)Microsoft.NET.*/*/data/WorkloadManifest.*" />
       <_WorkloadDirectoriesToDelete Include="@(_WorkloadFiles->'%(RootDir)%(Directory)'->Distinct())" />
     </ItemGroup>
     <Copy SourceFiles="@(_WorkloadFiles)" DestinationFiles="@(_WorkloadFiles->'%(RootDir)%(Directory)../../%(FileName)%(Extension)')" />
