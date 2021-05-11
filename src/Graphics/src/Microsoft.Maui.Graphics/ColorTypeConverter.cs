@@ -5,7 +5,6 @@ using System.Linq;
 
 namespace Microsoft.Maui.Graphics
 {
-	[TypeConverter(typeof(ColorTypeConverter))]
 	public class ColorTypeConverter : TypeConverter
 	{
 		// Supported inputs
