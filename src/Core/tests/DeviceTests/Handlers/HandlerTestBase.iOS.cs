@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.DeviceTests.Stubs;
+using CoreAnimation;
 using UIKit;
 using Xunit;
 
@@ -8,6 +8,25 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase<THandler, TStub>
 	{
+		[Fact(DisplayName = "Transformation Initialize Correctly")]
+		public async Task TransformationInitializeCorrectly()
+		{
+			var view = new TStub()
+			{
+				TranslationX = 10,
+				TranslationY = 10,
+				Scale = 1.2,
+				Rotation = 90
+			};
+
+			var handler = await CreateHandlerAsync(view);
+			var nativeView = (UIView)handler.NativeView;
+
+			var transform = nativeView.Layer.Transform;
+
+			Assert.NotEqual(CATransform3D.Identity, transform);
+		}
+
 		protected THandler CreateHandler(IView view)
 		{
 			var handler = Activator.CreateInstance<THandler>();

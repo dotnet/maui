@@ -23,9 +23,20 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Height)] = MapHeight,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
 			[nameof(IView.Semantics)] = MapSemantics,
-			Actions = {
-					[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure
-				}
+			[nameof(IView.TranslationX)] = MapTranslationX,
+			[nameof(IView.TranslationY)] = MapTranslationY,
+			[nameof(IView.Scale)] = MapScale,
+			[nameof(IView.ScaleX)] = MapScale,
+			[nameof(IView.ScaleY)] = MapScale,
+			[nameof(IView.Rotation)] = MapRotation,
+			[nameof(IView.RotationX)] = MapRotationX,
+			[nameof(IView.RotationY)] = MapRotationY,
+			[nameof(IView.AnchorX)] = MapAnchorX,
+			[nameof(IView.AnchorY)] = MapAnchorY,
+			Actions =
+			{
+				[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure
+			}
 		};
 
 		internal ViewHandler()
@@ -77,12 +88,20 @@ namespace Microsoft.Maui.Handlers
 
 		private protected void ConnectHandler(NativeView? nativeView)
 		{
+#if __IOS__
+			_layer = nativeView?.Layer;
+			_originalAnchor = _layer?.AnchorPoint;
+#endif
 		}
 
 		partial void DisconnectingHandler(NativeView? nativeView);
 
 		private protected void DisconnectHandler(NativeView? nativeView)
 		{
+#if __IOS__
+			_layer = null;
+			_originalAnchor = null;
+#endif
 			DisconnectingHandler(nativeView);
 
 			if (VirtualView != null)

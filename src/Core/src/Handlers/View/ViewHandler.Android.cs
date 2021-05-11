@@ -14,9 +14,59 @@ namespace Microsoft.Maui.Handlers
 			if (nativeView.IsAlive() && AccessibilityDelegate != null)
 			{
 				AccessibilityDelegate.Handler = null;
-				AndroidX.Core.View.ViewCompat.SetAccessibilityDelegate(nativeView, null);
+				ViewCompat.SetAccessibilityDelegate(nativeView, null);
 				AccessibilityDelegate = null;
 			}
+		}
+
+		public static void MapTranslationX(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateTranslationX(view);
+		}
+
+		public static void MapTranslationY(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateTranslationY(view);
+		}
+
+		public static void MapScale(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateScale(view);
+		}
+
+		public static void MapScaleX(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateScaleX(view);
+		}
+
+		public static void MapScaleY(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateScaleY(view);
+		}
+
+		public static void MapRotation(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateRotation(view);
+		}
+
+		public static void MapRotationX(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateRotationX(view);
+		}
+
+		public static void MapRotationY(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateRotationY(view);
+		}
+
+		public static void MapAnchorX(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateAnchorX(view);
+		}
+
+		public static void MapAnchorY(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateAnchorY(view);
 		}
 
 		static partial void MappingSemantics(IViewHandler handler, IView view)
