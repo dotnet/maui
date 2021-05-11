@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 			toggleSwitch.IsOn = view.IsOn;
 		}
 
-		public static void UpdateTrackColor(this ToggleSwitch toggleSwitch, ISwitch view, object? originalOnHoverColor, WBrush? originalOnColorBrush)
+		public static void UpdateTrackColor(this ToggleSwitch toggleSwitch, ISwitch view, object? originalOnHoverColor = null, WBrush? originalOnColorBrush = null)
 		{
 			if (toggleSwitch == null)
 				return;
@@ -35,6 +35,7 @@ namespace Microsoft.Maui
 				return;
 
 			var groups = WVisualStateManager.GetVisualStateGroups(grid);
+
 			foreach (var group in groups)
 			{
 				if (group.Name != ToggleSwitchCommonStates)
