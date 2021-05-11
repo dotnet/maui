@@ -1,6 +1,6 @@
 ﻿using System;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.CustomAttributes;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.UITests
 {

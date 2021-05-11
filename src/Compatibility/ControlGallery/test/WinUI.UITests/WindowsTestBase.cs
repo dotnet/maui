@@ -31,12 +31,13 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		{
 			AppiumOptions options = new AppiumOptions();
 			options.AddAdditionalCapability("app", "0d4424f6-1e29-4476-ac00-ba22c3789cb6_ph1m9x8skttmg!App");
-			
+
 			try
 			{
 				Session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), options);
 			}
-			catch {
+			catch
+			{
 				// This crashes because it can't find the window but it will at least start the application
 			}
 		}

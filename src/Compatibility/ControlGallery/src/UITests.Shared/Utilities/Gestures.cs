@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			app.Back();
 #elif WINDOWS
 			var screenbounds = app.RootViewRect();
-			app.TapCoordinates (screenbounds.CenterX, screenbounds.CenterY);
+			app.TapCoordinates(screenbounds.CenterX, screenbounds.CenterY);
 #endif
 		}
 	}
