@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Graphics
 		public Color()
 		{
 			// Default Black - param-less ctor need for some XAML/TypeConverter things
-			Red = Green = Blue = 0;	
+			Red = Green = Blue = 0;
 		}
 
 		public Color(float gray)
@@ -63,6 +63,7 @@ namespace Microsoft.Maui.Graphics
 			return base.Equals(obj);
 		}
 
+		[Obsolete("Use ToArgbHex instead.")]
 		public string ToHex(bool includeAlpha = false)
 		{
 			if (includeAlpha || Alpha < 1)
@@ -71,6 +72,23 @@ namespace Microsoft.Maui.Graphics
 			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
 		}
 
+		public string ToArgbHex(bool includeAlpha = false)
+		{
+			if (includeAlpha || Alpha < 1)
+				return "#" + ToHex(Alpha) + ToHex(Red) + ToHex(Green) + ToHex(Blue);
+
+			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
+		}
+
+		public string ToRgbaHex(bool includeAlpha = false)
+		{
+			if (includeAlpha || Alpha < 1)
+				return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue) + ToHex(Alpha);
+
+			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
+		}
+
+		[Obsolete("Use FromArgb instead.")]
 		public static Color FromHex(string colorAsHex) => FromArgb(colorAsHex);
 
 		public Paint AsPaint()
