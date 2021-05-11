@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
-using Java.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -135,7 +134,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		bool GetNativeIsBold(ButtonHandler buttonHandler) =>
-			GetNativeButton(buttonHandler).Typeface.Weight == (int)FontWeight.Bold || GetNativeButton(buttonHandler).Typeface.IsBold;
+			GetNativeButton(buttonHandler).Typeface.GetFontWeight() == FontWeight.Bold;
 
 		bool GetNativeIsItalic(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).Typeface.IsItalic;
