@@ -19,10 +19,10 @@ namespace Microsoft.Maui
 
 				var data = NSData.FromStream(font.ResourceStream);
 				var provider = new CGDataProvider(data);
-				var cGFont = CGFont.CreateFromProvider(provider);
-				var name = cGFont.PostScriptName;
+				var cgFont = CGFont.CreateFromProvider(provider);
+				var name = cgFont.PostScriptName;
 
-				if (CTFontManager.RegisterGraphicsFont(cGFont, out var error))
+				if (CTFontManager.RegisterGraphicsFont(cgFont, out var error))
 					return (true, name);
 
 				var uiFont = UIFont.FromName(name, 10);
