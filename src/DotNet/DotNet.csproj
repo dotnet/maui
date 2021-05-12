@@ -125,9 +125,11 @@
     </ParameterGroup>
     <Task>
       <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
       <Code Type="Fragment" Language="cs">
         <![CDATA[
-          File.WriteAllText(Input, File.ReadAllText(Input).Replace(OldValue, NewValue));
+          var regex = new Regex(Regex.Escape(OldValue));
+          File.WriteAllText(Input, regex.Replace(File.ReadAllText(Input), NewValue, count: 1));
         ]]>
       </Code>
     </Task>
