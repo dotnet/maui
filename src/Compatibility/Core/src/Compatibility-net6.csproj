@@ -77,7 +77,6 @@
   <ItemGroup>
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />
-    <Compile Include="FontRegistrarExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
 

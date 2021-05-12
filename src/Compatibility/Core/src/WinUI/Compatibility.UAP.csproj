@@ -28,7 +28,6 @@
 
   <ItemGroup>
     <Compile Include="..\AppHostBuilderExtensions.cs" Link="AppHostBuilderExtensions.cs" />
-    <Compile Include="..\FontRegistrarExtensions.cs" Link="FontRegistrarExtensions.cs" />
     <Compile Include="..\MauiHandlersCollectionExtensions.cs" Link="MauiHandlersCollectionExtensions.cs" />
   </ItemGroup>
 
