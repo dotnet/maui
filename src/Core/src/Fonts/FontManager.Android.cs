@@ -8,6 +8,13 @@ namespace Microsoft.Maui
 {
 	public class FontManager : IFontManager
 	{
+		static readonly string[] FontFolders = new[]
+		{
+			"",
+			"Fonts/",
+			"fonts/",
+		};
+
 		readonly ConcurrentDictionary<(string fontFamilyName, FontWeight weight, bool italic), Typeface?> _typefaces = new();
 		readonly IFontRegistrar _fontRegistrar;
 		readonly ILogger<FontManager>? _logger;
@@ -36,76 +43,58 @@ namespace Microsoft.Maui
 				: (float)font.FontSize;
 
 
-		(bool success, Typeface? typeface) TryGetFromAssets(string fontName)
+		Typeface? GetFromAssets(string fontName)
 		{
-			//First check Alias
-			var (hasFontAlias, fontPostScriptName) = _fontRegistrar.HasFont(fontName);
-			if (hasFontAlias)
-				return (true, Typeface.CreateFromFile(fontPostScriptName));
+			// First check Alias
+			if (_fontRegistrar.GetFont(fontName) is string fontPostScriptName)
+				return Typeface.CreateFromFile(fontPostScriptName);
 
 			var isAssetFont = IsAssetFontFamily(fontName);
 			if (isAssetFont)
-			{
 				return LoadTypefaceFromAsset(fontName);
-			}
 
-			var folders = new[]
-			{
-				"",
-				"Fonts/",
-				"fonts/",
-			};
-
-			//copied text
+			// copied text
 			var fontFile = FontFile.FromString(fontName);
 
 			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
 			{
-				var (hasFont, fontPath) = _fontRegistrar.HasFont(fontFile.FileNameWithExtension());
-				if (hasFont)
-				{
-					return (true, Typeface.CreateFromFile(fontPath));
-				}
+				if (_fontRegistrar.GetFont(fontFile.FileNameWithExtension()) is string fontPath)
+					return Typeface.CreateFromFile(fontPath);
 			}
 			else
 			{
 				foreach (var ext in FontFile.Extensions)
 				{
-					var formated = fontFile.FileNameWithExtension(ext);
-					var (hasFont, fontPath) = _fontRegistrar.HasFont(formated);
-					if (hasFont)
-					{
-						return (true, Typeface.CreateFromFile(fontPath));
-					}
+					var formatted = fontFile.FileNameWithExtension(ext);
+					if (_fontRegistrar.GetFont(formatted) is string fontPath)
+						return Typeface.CreateFromFile(fontPath);
 
-					foreach (var folder in folders)
+					foreach (var folder in FontFolders)
 					{
-						formated = $"{folder}{fontFile.FileNameWithExtension()}#{fontFile.PostScriptName}";
-						var result = LoadTypefaceFromAsset(formated, false);
-						if (result.success)
+						formatted = $"{folder}{fontFile.FileNameWithExtension()}#{fontFile.PostScriptName}";
+						var result = LoadTypefaceFromAsset(formatted, false);
+						if (result != null)
 							return result;
 					}
 				}
 			}
 
-			return (false, null);
+			return null;
 		}
 
-		(bool success, Typeface? typeface) LoadTypefaceFromAsset(string fontfamily, bool warning = true)
+		Typeface? LoadTypefaceFromAsset(string fontfamily, bool warning = true)
 		{
 			try
 			{
-				var result = Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(fontfamily));
-
-				return (true, result);
+				return Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(fontfamily));
 			}
 			catch (Exception ex)
 			{
 				if (warning)
 					_logger?.LogWarning(ex, "Unable to load font '{Font}' from assets.", fontfamily);
-
-				return (false, null);
 			}
+
+			return null;
 		}
 
 		bool IsAssetFontFamily(string name)
@@ -129,8 +118,7 @@ namespace Microsoft.Maui
 				}
 				else
 				{
-					var (success, typeface) = TryGetFromAssets(fontFamily);
-					if (success)
+					if (GetFromAssets(fontFamily) is Typeface typeface)
 						result = typeface;
 					else
 						result = Typeface.Create(fontFamily, style);

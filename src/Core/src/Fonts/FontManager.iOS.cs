@@ -162,26 +162,22 @@ namespace Microsoft.Maui
 		string? CleanseFontName(string fontName)
 		{
 			// First check Alias
-			var (hasFontAlias, fontPostScriptName) = _fontRegistrar.HasFont(fontName);
-			if (hasFontAlias)
+			if (_fontRegistrar.GetFont(fontName) is string fontPostScriptName)
 				return fontPostScriptName;
 
 			var fontFile = FontFile.FromString(fontName);
 
 			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
 			{
-				var (hasFont, filePath) = _fontRegistrar.HasFont(fontFile.FileNameWithExtension());
-				if (hasFont)
+				if (_fontRegistrar.GetFont(fontFile.FileNameWithExtension()) is string filePath)
 					return filePath ?? fontFile.PostScriptName;
 			}
 			else
 			{
 				foreach (var ext in FontFile.Extensions)
 				{
-
-					var formated = fontFile.FileNameWithExtension(ext);
-					var (hasFont, filePath) = _fontRegistrar.HasFont(formated);
-					if (hasFont)
+					var formatted = fontFile.FileNameWithExtension(ext);
+					if (_fontRegistrar.GetFont(formatted) is string filePath)
 						return filePath;
 				}
 			}

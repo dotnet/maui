@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 {
 	public partial class EmbeddedFontLoader
 	{
-		public (bool success, string? filePath) LoadFont(EmbeddedFont font)
+		public string? LoadFont(EmbeddedFont font)
 		{
 			try
 			{
@@ -23,11 +23,11 @@ namespace Microsoft.Maui
 				var name = cgFont.PostScriptName;
 
 				if (CTFontManager.RegisterGraphicsFont(cgFont, out var error))
-					return (true, name);
+					return name;
 
 				var uiFont = UIFont.FromName(name, 10);
 				if (uiFont != null)
-					return (true, name);
+					return name;
 
 				throw new NSErrorException(error);
 			}
@@ -36,7 +36,7 @@ namespace Microsoft.Maui
 				_logger?.LogWarning(ex, "Unable register font {Font} with the system.", font.FontName);
 			}
 
-			return (false, null);
+			return null;
 		}
 	}
 }

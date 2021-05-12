@@ -31,31 +31,7 @@ namespace Maui.Controls.Sample.Pages
 			_services = services;
 			BindingContext = _viewModel = viewModel;
 
-			// SetupMauiLayout();
-
-			Content = new VerticalStackLayout
-			{
-				new Label { Text = "none | none", FontAttributes = FontAttributes.None },
-				new Label { Text = "none | bold", FontAttributes = FontAttributes.Bold },
-				new Label { Text = "none | italic", FontAttributes = FontAttributes.Italic },
-				new Label { Text = "none | bolditalic", FontAttributes = FontAttributes.Bold | FontAttributes.Italic },
-				new Label { Text = "tnr | none", FontFamily = "Times New Roman", FontAttributes = FontAttributes.None },
-				new Label { Text = "tnr | bold", FontFamily = "Times New Roman", FontAttributes = FontAttributes.Bold },
-				new Label { Text = "tnr | italic", FontFamily = "Times New Roman", FontAttributes = FontAttributes.Italic },
-				new Label { Text = "tnr | bolditalic", FontFamily = "Times New Roman", FontAttributes = FontAttributes.Bold | FontAttributes.Italic },
-				new Label { Text = "space | none", FontFamily = "Lobster Two", FontAttributes = FontAttributes.None },
-				new Label { Text = "space | bold", FontFamily = "Lobster Two", FontAttributes = FontAttributes.Bold },
-				new Label { Text = "space | italic", FontFamily = "Lobster Two", FontAttributes = FontAttributes.Italic },
-				new Label { Text = "space | bolditalic", FontFamily = "Lobster Two", FontAttributes = FontAttributes.Bold | FontAttributes.Italic },
-				new Label { Text = "space | none", FontFamily = "Lobster Two Bold", FontAttributes = FontAttributes.None },
-				new Label { Text = "space | bold", FontFamily = "Lobster Two Bold", FontAttributes = FontAttributes.Bold },
-				new Label { Text = "space | italic", FontFamily = "Lobster Two Bold", FontAttributes = FontAttributes.Italic },
-				new Label { Text = "space | bolditalic", FontFamily = "Lobster Two Bold", FontAttributes = FontAttributes.Bold | FontAttributes.Italic },
-				new Label { Text = "custom | none", FontFamily = "Dokdo", FontAttributes = FontAttributes.None },
-				new Label { Text = "custom | bold", FontFamily = "Dokdo", FontAttributes = FontAttributes.Bold },
-				new Label { Text = "custom | italic", FontFamily = "Dokdo", FontAttributes = FontAttributes.Italic },
-				new Label { Text = "custom | bolditalic", FontFamily = "Dokdo", FontAttributes = FontAttributes.Bold | FontAttributes.Italic },
-			};
+			SetupMauiLayout();
 
 			NavigationPage.SetHasNavigationBar(this, false);
 

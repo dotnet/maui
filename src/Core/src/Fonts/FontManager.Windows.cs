@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 			return _fonts.GetOrAdd(font.FontFamily, CreateFontFamily);
 		}
 
-		public double GetFontSize(Font font, double defaultFontSize = 0) => 
+		public double GetFontSize(Font font, double defaultFontSize = 0) =>
 			font.FontSize <= 0
 				? (defaultFontSize > 0 ? defaultFontSize : DefaultFontSize)
 				: font.FontSize;
@@ -63,7 +63,7 @@ namespace Microsoft.Maui
 		IEnumerable<string> GetAllFontPossibilities(string fontFamily)
 		{
 			// First check Alias
-			if (_fontRegistrar.TryGetFont(fontFamily, out var fontPostScriptName))
+			if (_fontRegistrar.GetFont(fontFamily) is string fontPostScriptName)
 			{
 				if (fontPostScriptName!.Contains("://") && fontPostScriptName.Contains("#"))
 				{
@@ -87,8 +87,7 @@ namespace Microsoft.Maui
 			var hasExtension = !string.IsNullOrWhiteSpace(fontFile.Extension);
 			if (hasExtension)
 			{
-				var (hasFont, filePath) = _fontRegistrar.HasFont(fontFile.FileNameWithExtension());
-				if (hasFont)
+				if (_fontRegistrar.GetFont(fontFile.FileNameWithExtension()) is string filePath)
 				{
 					var familyName = FindFontFamilyName(filePath);
 					var formatted = $"{filePath}#{familyName ?? fontFile.GetPostScriptNameWithSpaces()}";
@@ -105,8 +104,7 @@ namespace Microsoft.Maui
 			// There was no extension so let's just try a few things
 			foreach (var ext in TypicalFontFileExtensions)
 			{
-				var (hasFont, filePath) = _fontRegistrar.HasFont(fontFile.FileNameWithExtension(ext));
-				if (hasFont)
+				if (_fontRegistrar.GetFont(fontFile.FileNameWithExtension(ext)) is string filePath)
 				{
 					var familyName = FindFontFamilyName(filePath);
 					var formatted = $"{filePath}#{familyName ?? fontFile.GetPostScriptNameWithSpaces()}";
