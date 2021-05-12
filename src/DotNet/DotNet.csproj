@@ -6,7 +6,7 @@
     <DotNetDirectory>$(MauiOutputPath)dotnet/</DotNetDirectory>
     <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
     <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
-    <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(MicrosoftDotnetSdkInternalPackageVersion.Split('-')[0])/</DotNetSdkManifestsDirectory>
+    <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetPreviewVersionBand)/</DotNetSdkManifestsDirectory>
     <DotNetSentinelPath>$(DotNetDirectory)sdk/$(MicrosoftDotnetSdkInternalPackageVersion)/EnableWorkloadResolver.sentinel</DotNetSentinelPath>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
@@ -77,7 +77,7 @@
         EnvironmentVariables="NUGET_PACKAGES=$(DotNetSdkManifestsDirectory);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
     />
     <!--
-      NOTE: Workloads need to go in dotnet/sdk-manifests/6.0.100/Microsoft.Workload.NET.*/
+      NOTE: Workloads need to go in dotnet/sdk-manifests/6.0.100/Microsoft.NET.Sdk.*/
       Workloads only contain two files: data/WorkloadManifest.targets & data/WorkloadManifest.json
       We have to move everything up two directories, for things to land in the right location.
     -->
@@ -87,6 +87,14 @@
     </ItemGroup>
     <Copy SourceFiles="@(_WorkloadFiles)" DestinationFiles="@(_WorkloadFiles->'%(RootDir)%(Directory)../../%(FileName)%(Extension)')" />
     <RemoveDir Directories="@(_WorkloadDirectoriesToDelete);@(_PacksToRemove->'$(DotNetSdkManifestsDirectory)%(Identity)')" />
+
+    <!-- In order for the build to support older MSBuild versions, change the version string to an integer -->
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.android.manifest-$(DotNetPreviewVersionBand)/WorkloadManifest.json"
+        OldValue="&quot;version&quot;: &quot;$(MicrosoftAndroidSdkWindowsPackageVersion)&quot;"
+        NewValue="&quot;version&quot;: 6"
+    />
+
     <Touch Files="$(DotNetSdkManifestsDirectory).stamp" AlwaysCreate="true" />
   </Target>
 
@@ -106,5 +114,23 @@
       Outputs="$(DotNetSentinelPath)">
     <Touch Files="$(DotNetSentinelPath)" AlwaysCreate="true" />
   </Target>
+
+  <UsingTask TaskName="ReplaceText"
+      TaskFactory="RoslynCodeTaskFactory"
+      AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Input ParameterType="System.String" Required="true" />
+      <OldValue ParameterType="System.String" Required="true" />
+      <NewValue ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          File.WriteAllText(Input, File.ReadAllText(Input).Replace(OldValue, NewValue));
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
 
 </Project>
