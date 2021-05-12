@@ -341,6 +341,10 @@ stages:
           desc: Core
           android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
+        - name: compat
+          desc: Compatibility
+          android: $(System.DefaultWorkingDirectory)/src/Compatibility/Core/tests/DeviceTests.Android/Compatibility.DeviceTests.Android.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Compatibility/Core/tests/DeviceTests.iOS/Compatibility.DeviceTests.iOS.csproj
 
           stages:
   
