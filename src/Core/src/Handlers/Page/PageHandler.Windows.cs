@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
 
 			NativeView.Children.Clear();
-			NativeView.Children.Add(VirtualView.Content.ToNative(MauiContext));
+
+			if (VirtualView.Content != null)
+				NativeView.Children.Add(VirtualView.Content.ToNative(MauiContext));
 		}
 
 		protected override PagePanel CreateNativeView()
