@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample.Controls
 	{
 		public static IAppHostBuilder UseRed(this IAppHostBuilder builder, Action<RedServiceBuilder> configureDelegate = null)
 		{
-			builder.ConfigureServices<RedServiceBuilder>((ctx, red) => configureDelegate(red));
+			builder.ConfigureServices<RedServiceBuilder>((ctx, red) => configureDelegate?.Invoke(red));
 
 			return builder;
 		}
