@@ -248,13 +248,13 @@
 
     <Target Name="ProcessMauiAssets">
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
-            <AndroidAsset Include="@(MauiAsset)" Link="%(FileName)%(Extension)" />
+            <AndroidAsset Include="@(MauiAsset)" Link="%(RecursiveDir)\%(FileName)%(Extension)" />
         </ItemGroup>
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
-            <Content Include="@(MauiAsset)" Link="%(FileName)%(Extension)" />
+            <Content Include="@(MauiAsset)" Link="%(RecursiveDir)\%(FileName)%(Extension)" />
         </ItemGroup>
         <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWinUIApp)' == 'True'">
-            <ContentWithTargetPath Include="@(MauiAsset)" TargetPath="Assets\%(Filename)%(Extension)" />
+            <ContentWithTargetPath Include="@(MauiAsset)" TargetPath="Assets\%(RecursiveDir)\%(Filename)%(Extension)" />
         </ItemGroup>
     </Target>
 
