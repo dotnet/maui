@@ -172,12 +172,19 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(null, FontWeight.Regular, FontSlant.Italic)]
 		[InlineData(null, FontWeight.Bold, FontSlant.Default)]
 		[InlineData(null, FontWeight.Bold, FontSlant.Italic)]
+		[InlineData("Lobster Two", FontWeight.Regular, FontSlant.Default)]
+		[InlineData("Lobster Two", FontWeight.Regular, FontSlant.Italic)]
+		[InlineData("Lobster Two", FontWeight.Bold, FontSlant.Default)]
+		[InlineData("Lobster Two", FontWeight.Bold, FontSlant.Italic)]
+#if !__IOS__
+		// iOS cannot force a font to be bold like all other OS
 		[InlineData("Dokdo", FontWeight.Regular, FontSlant.Default)]
 		[InlineData("Dokdo", FontWeight.Regular, FontSlant.Italic)]
 		[InlineData("Dokdo", FontWeight.Bold, FontSlant.Default)]
 		[InlineData("Dokdo", FontWeight.Bold, FontSlant.Italic)]
+#endif
 #if __ANDROID__
-		// "monospace" is a special font name
+		// "monospace" is a special font name on Android
 		[InlineData("monospace", FontWeight.Regular, FontSlant.Default)]
 		[InlineData("monospace", FontWeight.Regular, FontSlant.Italic)]
 		[InlineData("monospace", FontWeight.Bold, FontSlant.Default)]
@@ -191,10 +198,13 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize(family, 30, weight, slant)
 			};
 
-			var handler = await CreateHandlerAsync(label);
+			var (isBold, isItalic) = await GetValueAsync(label, (handler) =>
+			{
+				var isBold = GetNativeIsBold(handler);
+				var isItalic = GetNativeIsItalic(handler);
 
-			var isBold = GetNativeIsBold(handler);
-			var isItalic = GetNativeIsItalic(handler);
+				return (isBold, isItalic);
+			});
 
 			Assert.Equal(weight == FontWeight.Bold, isBold);
 			Assert.Equal(slant == FontSlant.Italic, isItalic);
