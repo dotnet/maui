@@ -11,8 +11,8 @@ using Microsoft.Maui.TestUtils;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Activity(
-		Name = "com.microsoft.maui.core.devicetests.TestActivity",
-		Label = "Core Tests",
+		Name = "com.microsoft.maui.compatibility.devicetests.TestActivity",
+		Label = "Compat Tests",
 		Theme = "@style/MainTheme",
 		ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
 	public class TestActivity : BaseTestActivity
@@ -27,11 +27,12 @@ namespace Microsoft.Maui.DeviceTests
 		public override IEnumerable<TestAssemblyInfo> GetTestAssemblies()
 		{
 			yield return new TestAssemblyInfo(typeof(TestInstrumentation).Assembly, typeof(TestInstrumentation).Assembly.Location);
+			yield return new TestAssemblyInfo(typeof(CompatTests).Assembly, typeof(CompatTests).Assembly.Location);
 			yield return new TestAssemblyInfo(typeof(CoreTests).Assembly, typeof(CoreTests).Assembly.Location);
 		}
 	}
 
-	[Instrumentation(Name = "com.microsoft.maui.core.devicetests.TestInstrumentation")]
+	[Instrumentation(Name = "com.microsoft.maui.compatibility.devicetests.TestInstrumentation")]
 	public class TestInstrumentation : BaseTestInstrumentation<TestActivity>
 	{
 		protected TestInstrumentation(IntPtr handle, JniHandleOwnership transfer)

@@ -5,12 +5,12 @@
     <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{EE8FC716-27FC-405B-BD27-AF17E01A6671}</ProjectGuid>
+    <ProjectGuid>{566352A7-5AC2-454B-A94C-59402C801936}</ProjectGuid>
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Microsoft.Maui.Core.DeviceTests.iOS</RootNamespace>
+    <RootNamespace>Microsoft.Maui.Compatibility.DeviceTests.iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>Microsoft.Maui.Core.DeviceTests.iOS</AssemblyName>
+    <AssemblyName>Microsoft.Maui.Compatibility.DeviceTests.iOS</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
     <DebugSymbols>true</DebugSymbols>
@@ -80,17 +80,33 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests.csproj">
+    <ProjectReference Include="..\..\..\..\Core\tests\DeviceTests\Core.DeviceTests.csproj">
+      <Project>{da9e4d76-8ca4-4cc3-a47c-ba75dff805c6}</Project>
+      <Name>Core.DeviceTests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests.csproj">
       <Project>{551b2209-4298-4d60-b55c-79077b8bc244}</Project>
       <Name>TestUtils.DeviceTests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DeviceTests\Core.DeviceTests.csproj">
-      <Project>{DA9E4D76-8CA4-4CC3-A47C-BA75DFF805C6}</Project>
-      <Name>Core.DeviceTests</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj">
+    <ProjectReference Include="..\..\..\..\Essentials\src\Essentials.csproj">
       <Project>{29913989-0f70-48d8-8ede-b1dd266621d1}</Project>
       <Name>Essentials</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj">
+      <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj">
+      <Project>{29913989-0f70-48d8-8ede-b1dd216f21d1}</Project>
+      <Name>Controls.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\iOS\Compatibility.iOS.csproj">
+      <Project>{271193c1-6e7c-429c-a36d-3f1be5267231}</Project>
+      <Name>Compatibility.iOS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DeviceTests\Compatibility.DeviceTests.csproj">
+      <Project>{d86215d1-9d48-445f-9fc0-9c4a035d0783}</Project>
+      <Name>Compatibility.DeviceTests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -101,5 +117,5 @@
     <Compile Include="TestApplicationDelegate.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
+  <Import Project="..\..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
 </Project>

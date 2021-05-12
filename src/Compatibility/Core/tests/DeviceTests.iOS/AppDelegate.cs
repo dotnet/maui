@@ -14,6 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			// tests can be inside the main assembly
 			AddTestAssembly(typeof(AppDelegate).Assembly);
+			AddTestAssembly(typeof(CompatTests).Assembly);
 			AddTestAssembly(typeof(CoreTests).Assembly);
 
 			return base.FinishedLaunching(app, options);

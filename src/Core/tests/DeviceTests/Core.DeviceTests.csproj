@@ -16,9 +16,12 @@
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <MauiFont Include="Fonts\*" />
-    <MauiImage Include="Images\*" />
-    <MauiImage Update="Images\*.gif" Resize="false" />
+    <MauiFont Include="Resources\Fonts\*" />
+    <MauiImage Include="Resources\Images\*" />
+    <MauiImage Update="Resources\Images\*.gif" Resize="false" />
+    <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
+    <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
+    <AndroidResource Remove="Resources\**" />
   </ItemGroup>
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
 </Project>

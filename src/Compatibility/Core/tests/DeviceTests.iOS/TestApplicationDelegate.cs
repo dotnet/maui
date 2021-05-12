@@ -12,6 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 		public override IEnumerable<TestAssemblyInfo> GetTestAssemblies()
 		{
 			yield return new TestAssemblyInfo(typeof(TestApplicationDelegate).Assembly, typeof(TestApplicationDelegate).Assembly.Location);
+			yield return new TestAssemblyInfo(typeof(CompatTests).Assembly, typeof(CompatTests).Assembly.Location);
 			yield return new TestAssemblyInfo(typeof(CoreTests).Assembly, typeof(CoreTests).Assembly.Location);
 		}
 	}

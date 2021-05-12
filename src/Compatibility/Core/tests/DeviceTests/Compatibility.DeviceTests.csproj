@@ -1,0 +1,41 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras">
+
+  <PropertyGroup>
+    <TargetFrameworks>Xamarin.iOS10;MonoAndroid10.0</TargetFrameworks>
+    <RootNamespace>Microsoft.Maui.Compatibility.DeviceTests</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Compatibility.DeviceTests</AssemblyName>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <Import Project="..\..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="UnitTests.HeadlessRunner" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\tests\DeviceTests\Core.DeviceTests.csproj" />
+    <ProjectReference Include="..\..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Essentials\src\Essentials.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) == true ">
+    <ProjectReference Include="..\..\src\iOS\Compatibility.iOS.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true ">
+    <ProjectReference Include="..\..\src\Android\Compatibility.Android.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiFont Include="Resources\Fonts\*" />
+    <MauiImage Include="Resources\Images\*" />
+    <MauiImage Update="Resources\Images\*.gif" Resize="false" />
+    <AndroidResource Remove="Resources\**" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
+
+</Project>

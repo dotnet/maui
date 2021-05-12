@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A0B8D99F-4C0E-4D47-8182-9E8879A9B105}</ProjectGuid>
+    <ProjectGuid>{393BB054-E17F-423A-ADB9-072E5CBD318C}</ProjectGuid>
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Maui.Core.DeviceTests.Android</RootNamespace>
-    <AssemblyName>Microsoft.Maui.Core.DeviceTests.Android</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Compatibility.DeviceTests.Android</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Compatibility.DeviceTests.Android</AssemblyName>
     <TargetFrameworkVersion>v11.0</TargetFrameworkVersion>
     <AndroidApplication>True</AndroidApplication>
     <AndroidUseIntermediateDesignerFile>true</AndroidUseIntermediateDesignerFile>
@@ -62,21 +62,29 @@
     <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21124.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests.csproj">
+    <ProjectReference Include="..\..\..\..\Core\tests\DeviceTests\Core.DeviceTests.csproj">
+      <Project>{da9e4d76-8ca4-4cc3-a47c-ba75dff805c6}</Project>
+      <Name>Core.DeviceTests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests.csproj">
       <Project>{551b2209-4298-4d60-b55c-79077b8bc244}</Project>
       <Name>TestUtils.DeviceTests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj">
+    <ProjectReference Include="..\..\..\..\Essentials\src\Essentials.csproj">
       <Project>{8CB95D25-8442-42BC-82BE-319D21138549}</Project>
       <Name>Essentials</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Core.csproj">
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj">
       <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DeviceTests\Core.DeviceTests.csproj">
-      <Project>{da9e4d76-8ca4-4cc3-a47c-ba75dff805c6}</Project>
-      <Name>Core.DeviceTests</Name>
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj">
+      <Project>{29913989-0f70-48d8-8ede-b1dd216f21d1}</Project>
+      <Name>Controls.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DeviceTests\Compatibility.DeviceTests.csproj">
+      <Project>{d86215d1-9d48-445f-9fc0-9c4a035d0783}</Project>
+      <Name>Compatibility.DeviceTests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -90,5 +98,5 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
+  <Import Project="..\..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
 </Project>

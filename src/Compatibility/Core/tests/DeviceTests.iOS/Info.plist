@@ -24,13 +24,13 @@
 	<key>MinimumOSVersion</key>
 	<string>10.0</string>
 	<key>CFBundleDisplayName</key>
-	<string>Core Tests</string>
+	<string>Compat Tests</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.microsoft.maui.core.devicetests</string>
+	<string>com.microsoft.maui.compatibility.devicetests</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>CFBundleName</key>
-	<string>Core Tests</string>
+	<string>Compat Tests</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0.1.0</string>
 	<key>XSAppIconAssets</key>

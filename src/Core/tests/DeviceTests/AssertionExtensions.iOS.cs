@@ -196,16 +196,16 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static UILineBreakMode ToNative(this LineBreakMode mode) =>
-		mode switch
-		{
-			LineBreakMode.NoWrap => UILineBreakMode.Clip,
-			LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
-			LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
-			LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
-			LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
-			LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
-			_ => throw new ArgumentOutOfRangeException(nameof(mode))
-		};
+			mode switch
+			{
+				LineBreakMode.NoWrap => UILineBreakMode.Clip,
+				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
+				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
+				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
+				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+				_ => throw new ArgumentOutOfRangeException(nameof(mode))
+			};
 
 		public static double GetCharacterSpacing(this NSAttributedString text)
 		{

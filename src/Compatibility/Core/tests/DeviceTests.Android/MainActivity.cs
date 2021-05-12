@@ -7,8 +7,8 @@ using Android.Content.PM;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Activity(
-		Name = "com.microsoft.maui.core.devicetests.MainActivity",
-		Label = "Core Tests",
+		Name = "com.microsoft.maui.compatibility.devicetests.MainActivity",
+		Label = "Compat Tests",
 		Theme = "@style/Maui.MainTheme",
 		MainLauncher = true,
 		ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
@@ -21,6 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			// Tests can be inside the main assembly
 			AddTestAssembly(typeof(MainActivity).Assembly);
+			AddTestAssembly(typeof(CompatTests).Assembly);
 			AddTestAssembly(typeof(CoreTests).Assembly);
 
 			base.OnCreate(bundle);
