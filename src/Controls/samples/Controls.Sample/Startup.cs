@@ -51,23 +51,21 @@ namespace Maui.Controls.Sample
 #endif
 			appBuilder
 				.UseMauiControlsHandlers()
-#if NET6_0_OR_GREATER
-				.RegisterBlazorMauiWebView()
-
-			appBuilder
-				.UseMauiControlsHandlers()
-#if BLAZOR_ENABLED
-				.RegisterBlazorMauiWebView(typeof(Startup).Assembly)
 				.ConfigureAppConfiguration(config =>
-				{
-					config.AddInMemoryCollection(new Dictionary<string, string>
+				 {
+					 config.AddInMemoryCollection(new Dictionary<string, string>
 					{
 						{"MyKey", "Dictionary MyKey Value"},
 						{":Title", "Dictionary_Title"},
 						{"Position:Name", "Dictionary_Name" },
 						{"Logging:LogLevel:Default", "Warning"}
 					});
-				});
+				 });
+
+#if BLAZOR_ENABLED
+			appBuilder
+				.RegisterBlazorMauiWebView(typeof(Startup).Assembly);
+#endif
 
 			if (_pageType == PageType.Blazor)
 				appBuilder.UseMicrosoftExtensionsServiceProviderFactory();
@@ -79,11 +77,9 @@ namespace Maui.Controls.Sample
 				{
 					services.AddSingleton<ITextService, TextService>();
 					services.AddTransient<MainPageViewModel>();
-
 #if BLAZOR_ENABLED
 					services.AddBlazorWebView();
 #endif
-
 					services.AddTransient(
 						serviceType: _pageType == PageType.Blazor ? typeof(Page) : typeof(IPage),
 						implementationType: _pageType switch
