@@ -7,37 +7,37 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
-    public class EllipseRenderer : ShapeRenderer<Ellipse, EllipseView>
-    {
-        [Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-        public EllipseRenderer()
-        {
+	public class EllipseRenderer : ShapeRenderer<Ellipse, EllipseView>
+	{
+		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
+		public EllipseRenderer()
+		{
 
-        }
+		}
 
-        protected override void OnElementChanged(ElementChangedEventArgs<Ellipse> args)
-        {
-            if (Control == null && args.NewElement != null)
-            {
-                SetNativeControl(new EllipseView());
-            }
+		protected override void OnElementChanged(ElementChangedEventArgs<Ellipse> args)
+		{
+			if (Control == null && args.NewElement != null)
+			{
+				SetNativeControl(new EllipseView());
+			}
 
-            base.OnElementChanged(args);
-        }
-    }
+			base.OnElementChanged(args);
+		}
+	}
 
-    public class EllipseView : ShapeView
-    {
-        public EllipseView()
-        {
-            UpdateShape();
-        }
+	public class EllipseView : ShapeView
+	{
+		public EllipseView()
+		{
+			UpdateShape();
+		}
 
-        void UpdateShape()
-        {
+		void UpdateShape()
+		{
 			var path = new CGPath();
-            path.AddEllipseInRect(new CGRect(0, 0, 1, 1));
-            ShapeLayer.UpdateShape(path);
-        }
-    }
+			path.AddEllipseInRect(new CGRect(0, 0, 1, 1));
+			ShapeLayer.UpdateShape(path);
+		}
+	}
 }

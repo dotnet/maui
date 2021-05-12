@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		void BoundsSizeChanged() 
+		void BoundsSizeChanged()
 		{
 			//if the size changed center the item	
 			Carousel.ScrollTo(Carousel.Position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: false);
@@ -315,7 +315,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)
-		{	
+		{
 			if (Carousel.Loop)
 				carouselPosition = _carouselViewLoopManager?.GetCorrectPositionForCenterItem(CollectionView) ?? -1;
 
@@ -616,7 +616,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var currentOffset = collectionView.ContentOffset;
 			var contentWidth = GetTotalContentWidth();
 			var boundsWidth = collectionView.Bounds.Size.Width;
-			
+
 			if (contentWidth == 0 || cellWidth == 0)
 				return;
 

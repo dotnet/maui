@@ -1,18 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSBuild.Sdk.Extras">
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
+		<TargetFrameworks>netstandard2.1;netstandard2.0;$(NonNet6Platforms)</TargetFrameworks>
 		<AssemblyName>Microsoft.Maui.Controls</AssemblyName>
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackageId>Microsoft.Maui.Controls</PackageId>
 	</PropertyGroup>
+	<Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 	<ItemGroup>
 		<Compile Remove="Internals\Legacy\**" />
 		<EmbeddedResource Remove="Internals\Legacy\**" />
 		<None Remove="Internals\Legacy\**" />
-	</ItemGroup>
-	<ItemGroup>
-		<Folder Include="Xaml\Diagnostics\" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\Core\src\Core.csproj" />

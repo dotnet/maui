@@ -38,7 +38,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateFont(this UIButton nativeButton, ITextStyle textStyle, IFontManager fontManager)
 		{
-			nativeButton.TitleLabel.UpdateFont(textStyle, fontManager);
+			nativeButton.TitleLabel.UpdateFont(textStyle, fontManager, UIFont.ButtonFontSize);
 		}
 
 		public static void UpdatePadding(this UIButton nativeButton, IButton button)

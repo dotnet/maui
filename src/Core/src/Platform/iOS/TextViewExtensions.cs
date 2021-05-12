@@ -48,7 +48,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateFont(this UITextView textView, ITextStyle textStyle, IFontManager fontManager)
 		{
-			var uiFont = fontManager.GetFont(textStyle.Font);
+			var uiFont = fontManager.GetFont(textStyle.Font, UIFont.LabelFontSize);
 			textView.Font = uiFont;
 		}
 

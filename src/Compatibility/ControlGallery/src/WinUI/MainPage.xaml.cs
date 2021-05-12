@@ -2,6 +2,12 @@
 
 using System;
 using System.Globalization;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -10,11 +16,6 @@ using Windows.Graphics.Display;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery;
-using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
@@ -78,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 				}
 			});
 		}
-		
+
 		private void _app_PropertyChanged(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == "MainPage")

@@ -6,5 +6,7 @@
     <PackageDownload Include="Microsoft.NET.Workload.Android"     Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Workload.MacCatalyst" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Workload.iOS"         Version="[$(MicrosoftiOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.tvOS"        Version="[$(MicrosofttvOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.macOS"       Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
   </ItemGroup>
 </Project>

@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					OnChildAdded(child);
 			}
 		}
-		
+
 		internal void Disconnect()
 		{
 			Disconnect(_element);

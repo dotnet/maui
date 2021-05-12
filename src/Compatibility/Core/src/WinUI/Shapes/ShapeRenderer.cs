@@ -2,8 +2,9 @@ using System;
 using System.ComponentModel;
 using Shape = Microsoft.Maui.Controls.Shapes.Shape;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Controls.Platform;
 
-#if WINDOWS_UWP
+#if WINDOWS
 using Microsoft.UI.Xaml;
 using WDoubleCollection = Microsoft.UI.Xaml.Media.DoubleCollection;
 using WPenLineCap = Microsoft.UI.Xaml.Media.PenLineCap;
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 				UpdateStrokeMiterLimit();
 		}
 
-#if !WINDOWS_UWP
+#if !WINDOWS
 		new
 #endif
 		void UpdateHeight()
@@ -82,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			Control.Height = Math.Max(Element.Height, 0);
 		}
 
-#if !WINDOWS_UWP
+#if !WINDOWS
 		new
 #endif
 		void UpdateWidth()

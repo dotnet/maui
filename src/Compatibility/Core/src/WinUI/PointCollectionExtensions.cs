@@ -1,7 +1,7 @@
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 
-#if WINDOWS_UWP
+#if WINDOWS
 using WPoint = Windows.Foundation.Point;
 using WPointCollection = Microsoft.UI.Xaml.Media.PointCollection;
 

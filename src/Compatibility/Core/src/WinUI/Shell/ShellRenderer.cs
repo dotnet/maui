@@ -11,6 +11,7 @@ using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.UI;
 using System.Collections.Specialized;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -302,7 +303,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					new WSolidColorBrush(uiColor);
 			}
 			else
-				FlyoutBackgroundColor = _shell.FlyoutBackgroundColor.ToBrush();
+				FlyoutBackgroundColor = Maui.ColorExtensions.ToNative(_shell.FlyoutBackgroundColor);
 		}
 
 		protected virtual void OnElementSet(Shell shell)

@@ -6,4 +6,35 @@ variables:
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 5.0.102
+  value: 5.0.201
+- name: LocBranchPrefix
+  value: 'loc-hb'
+- name: LocBranch
+  value: 'loc'
+- name: isMainBranch
+  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+- name: isLocBranch
+  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/loc')]
+- name: isTargetMainBranch
+  value: $[eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')]
+- name: isTargetLocBranch
+  value: $[eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/loc')]
+- name: isLocPRBranch
+  value: $[startsWith(variables['System.PullRequest.SourceBranch'], 'loc-hb')]
+- name: isPullRequest
+  value: $[eq(variables['Build.Reason'], 'PullRequest')]
+# Common Agent Pools in use
+- name: HostedWinVS2019
+  value: Hosted Windows 2019 with VS2019 
+- name: LogDirectory
+  value: $(Build.ArtifactStagingDirectory)/logs
+- name: provisionator.xcode
+  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
+- name: provisionator.path
+  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
+- name: provisionator.vs2019
+  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs2019.csx'
+- name: provisionator.extraArguments
+  value: '--v'
+- name: DotNet.Path
+  value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet

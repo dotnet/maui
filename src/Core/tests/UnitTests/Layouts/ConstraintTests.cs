@@ -7,21 +7,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 	public class ConstraintTests
 	{
 		[Theory("When resolving constraints, external constraints take precedence")]
-		[InlineData(100, 200, 100)]
-		[InlineData(100, 100, 100)]
-		[InlineData(100, -1, 100)]
-		public void ExternalWinsOverDesired(double externalConstraint, double desiredLength, double expected)
-		{
-			var resolution = LayoutManager.ResolveConstraints(externalConstraint, desiredLength);
-			Assert.Equal(expected, resolution);
-		}
-
-		[Theory("When resolving constraints, external constraints take precedence")]
 		[InlineData(100, 200, 130, 100)]
 		[InlineData(100, -1, 130, 100)]
-		public void ExternalWinsOverDesiredAndMeasured(double externalConstraint, double desiredLength, double measured, double expected)
+		public void ExternalWinsOverDesiredAndMeasured(double externalConstraint, double explicitLength, double measured, double expected)
 		{
-			var resolution = LayoutManager.ResolveConstraints(externalConstraint, desiredLength, measured);
+			var resolution = LayoutManager.ResolveConstraints(externalConstraint, explicitLength, measured);
 			Assert.Equal(expected, resolution);
 		}
 

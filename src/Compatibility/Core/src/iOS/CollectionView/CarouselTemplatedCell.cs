@@ -14,13 +14,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		protected CarouselTemplatedCell(CGRect frame) : base(frame)
-		{ 
+		{
 		}
 
 		public override void ConstrainTo(nfloat constant)
 		{
 		}
-		
+
 		public override void ConstrainTo(CGSize constraint)
 		{
 			ClearConstraints();
