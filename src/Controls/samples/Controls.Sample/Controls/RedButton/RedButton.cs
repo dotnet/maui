@@ -6,7 +6,7 @@ namespace Maui.Controls.Sample.Controls
 	{
 		static RedButton()
 		{
-			RedServiceBuilder.RegisterHandler<RedButton, RedButtonHandler>();
+			RedServiceBuilder.TryAddHandler<RedButton, RedButtonHandler>();
 		}
 	}
 }

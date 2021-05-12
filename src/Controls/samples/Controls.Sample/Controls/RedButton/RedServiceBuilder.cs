@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Controls
 		static IMauiHandlersCollection handlersCollection;
 		static Dictionary<Type, Type> pendingHandlers = new();
 
-		public static void RegisterHandler<TType, TTypeRender>()
+		public static void TryAddHandler<TType, TTypeRender>()
 			where TType : IFrameworkElement
 			where TTypeRender : IViewHandler
 		{
