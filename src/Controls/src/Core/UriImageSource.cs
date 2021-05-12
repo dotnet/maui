@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls
 
 		public bool CachingEnabled
 		{
-			get 
+			get
 			{
 				return false;
 				//return _cachingEnabled; 

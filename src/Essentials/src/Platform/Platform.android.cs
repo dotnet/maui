@@ -245,7 +245,7 @@ namespace Microsoft.Maui.Essentials
 			else
 #endif
 #pragma warning disable CS0618 // Type or member is obsolete
-				config.Locale = locale;
+			config.Locale = locale;
 #pragma warning restore CS0618 // Type or member is obsolete
 
 #pragma warning disable CS0618 // Type or member is obsolete
