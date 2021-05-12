@@ -32,8 +32,9 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformMeasure = VirtualView.Measure;
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
 			NativeView.RemoveAllViews();
-			//var wrap = ViewGroup.LayoutParams.WrapContent;
-			NativeView.AddView(VirtualView.Content.ToNative(MauiContext)); // , new ViewGroup.LayoutParams(wrap, wrap));
+
+			if (VirtualView.Content != null)
+				NativeView.AddView(VirtualView.Content.ToNative(MauiContext));
 		}
 
 		public static void MapTitle(PageHandler handler, IPage page)
