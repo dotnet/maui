@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Design
 			);
 
 			AddTypeAttributes("Microsoft.Maui.Graphics.Color", new TypeConverterAttribute(typeof(NamedColorsDesignTypeConverter)));
-			AddTypeAttributes("Microsoft.Maui.Graphics.Color", new TypeConverterAttribute("Microsoft.Maui.Controls.ColorTypeConverter"));
+			
 
 			AddTypeAttributes("Microsoft.Maui.Controls.ConstraintExpression", new MarkupExtensionReturnTypeAttribute());
 			AddTypeAttributes("Microsoft.Maui.Controls.LayoutOptions", new TypeConverterAttribute(typeof(LayoutOptionsDesignTypeConverter)));
