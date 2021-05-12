@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 			return new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
 		}
 
-		public static bool IsCloseTo(this CGSize size0, CGSize size1, nfloat tolerance) 
+		public static bool IsCloseTo(this CGSize size0, CGSize size1, nfloat tolerance)
 		{
 			var diff = size0 - size1;
 			return Math.Abs(diff.Width) < tolerance && Math.Abs(diff.Height) < tolerance;
