@@ -32,10 +32,8 @@ namespace Microsoft.Maui.Hosting
 			public async void Configure(HostBuilderContext context, IServiceProvider services)
 			{
 				var handlers = services.GetRequiredService<IMauiHandlersServiceProvider>();
-				if (handlers is IHotReloadableHandlersServiceProvider hotReloadable)
-					MauiHotReloadHelper.Init(hotReloadable.GetCollection());
-				else
-					throw new NotSupportedException($"Hot Reload only works with a {nameof(IHotReloadableHandlersServiceProvider)}.");
+
+				MauiHotReloadHelper.Init(handlers.GetCollection());
 
 				Reloadify.Reload.Instance.ReplaceType = (d) =>
 				{
