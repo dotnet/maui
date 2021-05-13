@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Text;
@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 	public class W2DCanvasState : CanvasState
 	{
 		private static FontWeight _nativeFontWeight = new FontWeight();
+		private static readonly float[] _emptyFloatArray = new float[] { };
 
 		private readonly W2DCanvas _owner;
 		private readonly W2DCanvasState _parentState;
@@ -359,7 +360,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 					}
 					else
 					{
-						_fillBrush = new CanvasSolidColorBrush(_owner.Session, global::Windows.UI.Colors.White);
+						_fillBrush = new CanvasSolidColorBrush(_owner.Session, global::Microsoft.UI.Colors.White);
 						_fillBrushValid = true;
 					}
 				}
@@ -440,7 +441,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 		{
 			var values = new float[6];
 			transform.GetMatrix(values);
-			Matrix = Matrix3x2.Multiply(Matrix, new Matrix3x2(values[0],values[1],values[2],values[3],values[4],values[5]));
+			Matrix = Matrix3x2.Multiply(Matrix, new Matrix3x2(values[0], values[1], values[2], values[3], values[4], values[5]));
 			return Matrix;
 		}
 
@@ -566,7 +567,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 					}
 					else
 					{
-						_strokeStyle.CustomDashStyle = null;
+						_strokeStyle.CustomDashStyle = _emptyFloatArray;
 					}
 
 					_strokeStyle.MiterLimit = _miterLimit;
