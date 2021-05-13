@@ -8,6 +8,6 @@
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Label Text="Hello, .NET MAUI Single Project!" TextColor="Black" FontSize="32" HorizontalOptions="CenterAndExpand" />
-        <WebView Grid.Row="1" Source="index.html" />
+        <WebView Grid.Row="1" Source="Resources/Raw/index.html" />
     </Grid>
 </ContentPage>
