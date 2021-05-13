@@ -1021,5 +1021,39 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view1, 0, expectedHeight, 50, expectedHeight);
 			AssertArranged(view2, 0, expectedHeight * 2, 50, expectedHeight);
 		}
+
+		[Category(GridAbsoluteSizing)]
+		[Category(GridStarSizing)]
+		[Fact]
+		public void MixStarsAndExplicitSizes() 
+		{
+			var screenWidth = 300;
+			var screenHeight = 600;
+			var viewSize = new Size(50, 50);
+
+			var grid = CreateGridLayout(rows: "auto", columns: $"3*,100,*");
+			var view0 = CreateTestView(viewSize);
+			var view1 = CreateTestView(viewSize);
+			var view2 = CreateTestView(viewSize);
+
+			AddChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+
+			MeasureAndArrange(grid, screenWidth, screenHeight);
+
+			// Row height is auto, so it gets the height of the view
+			// Columns are 3*,100,* 
+			// So we expect the center column to be 100, leaving 500 for the stars
+			// 3/4 of that goes to the first column, so 375; the remaining 125 is the last column
+			var expectedStarWidth = (screenWidth - 100) / 4;
+			var expectedHeight = viewSize.Height;
+
+			AssertArranged(view0, 0, 0, expectedStarWidth * 3, expectedHeight);
+			AssertArranged(view1, expectedStarWidth * 3, 0, 100, expectedHeight);
+			AssertArranged(view2, (expectedStarWidth * 3) + 100, 0, expectedStarWidth, expectedHeight);
+		}
 	}
 }
