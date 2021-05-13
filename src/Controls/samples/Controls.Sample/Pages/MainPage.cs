@@ -142,6 +142,8 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Button { Text = "CharacterSpacing" });
 			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
 
+			verticalStack.Add(new RedButton { Text = "Dynamically Registered" });
+
 			var checkbox = new CheckBox();
 			checkbox.CheckedChanged += (sender, e) =>
 			{
