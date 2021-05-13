@@ -86,22 +86,17 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract void NativeArrange(Rectangle frame);
 
+		partial void ConnectingHandler(NativeView? nativeView);
+
 		private protected void ConnectHandler(NativeView? nativeView)
 		{
-#if __IOS__
-			_layer = nativeView?.Layer;
-			_originalAnchor = _layer?.AnchorPoint;
-#endif
+			ConnectingHandler(nativeView);
 		}
 
 		partial void DisconnectingHandler(NativeView? nativeView);
 
 		private protected void DisconnectHandler(NativeView? nativeView)
 		{
-#if __IOS__
-			_layer = null;
-			_originalAnchor = null;
-#endif
 			DisconnectingHandler(nativeView);
 
 			if (VirtualView != null)

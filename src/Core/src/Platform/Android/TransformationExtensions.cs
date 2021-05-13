@@ -6,14 +6,18 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateTranslationX(this AView nativeView, IView view)
 		{
-			if (nativeView.Context != null)
-				nativeView.TranslationX = nativeView.Context.ToPixels(view.TranslationX);
+			if (nativeView.Context == null)
+				return;
+
+			nativeView.TranslationX = nativeView.Context.ToPixels(view.TranslationX);
 		}
 
 		public static void UpdateTranslationY(this AView nativeView, IView view)
 		{
-			if (nativeView.Context != null)
-				nativeView.TranslationY = nativeView.Context.ToPixels(view.TranslationY);
+			if (nativeView.Context == null)
+				return;
+
+			nativeView.TranslationY = nativeView.Context.ToPixels(view.TranslationY);
 		}
 
 		public static void UpdateScale(this AView nativeView, IView view)

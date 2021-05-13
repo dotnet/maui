@@ -9,6 +9,18 @@ namespace Microsoft.Maui.Handlers
 		CALayer? _layer;
 		CGPoint? _originalAnchor;
 
+		partial void ConnectingHandler(NativeView? nativeView)
+		{
+			_layer = nativeView?.Layer;
+			_originalAnchor = _layer?.AnchorPoint;
+		}
+
+		partial void DisconnectingHandler(NativeView? nativeView)
+		{
+			_layer = null;
+			_originalAnchor = null;
+		}
+
 		public static void MapTranslationX(IViewHandler handler, IView view)
 		{
 			UpdateTransformation(handler, view);

@@ -362,12 +362,28 @@ namespace Maui.Controls.Sample.Pages
 
 		IView CreateTransformations()
 		{
-			var verticalStack = new VerticalStackLayout();
-			var label = new Button { BackgroundColor = Colors.Red, TextColor = Colors.White, Text = "Transformations" };
-			var rotationSlider = new Slider { Minimum = -360, Maximum = 360 };
+			var label = new Button
+			{
+				BackgroundColor = Colors.Red,
+				TextColor = Colors.White,
+				Text = "Transformations",
+				WidthRequest = 200,
+				HeightRequest = 40
+			};
+
+			var rotationSlider = new Slider
+			{
+				Minimum = -360,
+				Maximum = 360
+			};
+
 			rotationSlider.ValueChanged += (sender, e) => label.Rotation = e.NewValue;
-			verticalStack.Add(rotationSlider);
-			verticalStack.Add(label);
+
+			var verticalStack = new VerticalStackLayout
+			{
+				rotationSlider,
+				label,
+			};
 
 			return verticalStack;
 		}
