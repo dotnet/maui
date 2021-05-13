@@ -25,8 +25,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Semantics)] = MapSemantics,
 			Actions =
 			{
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 				[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure,
-				[nameof(ViewHandler.NeedsContainer)] = MapNeedsContainer,
 			}
 		};
 
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.InvalidateMeasure(view);
 		}
 
-		public static void MapNeedsContainer(IViewHandler handler, IView view)
+		public static void MapContainerView(IViewHandler handler, IView view)
 		{
 			if (handler is ViewHandler viewHandler)
 				handler.HasContainer = viewHandler.NeedsContainer;
