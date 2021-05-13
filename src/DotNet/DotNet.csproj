@@ -7,7 +7,6 @@
     <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
     <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
     <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetPreviewVersionBand)/</DotNetSdkManifestsDirectory>
-    <DotNetSentinelPath>$(DotNetDirectory)sdk/$(MicrosoftDotnetSdkInternalPackageVersion)/EnableWorkloadResolver.sentinel</DotNetSentinelPath>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
@@ -29,7 +28,6 @@
       _InstallDotNet;
       _AcquireWorkloads;
       _AcquirePacks;
-      _CreateWorkloadSentinel;
     </_ProvisionDependsOn>
   </PropertyGroup>
   <Target Name="_Provision" BeforeTargets="Build" DependsOnTargets="$(_ProvisionDependsOn)" />
@@ -131,12 +129,6 @@
     />
     <RemoveDir Directories="@(_PacksToRemove->'$(DotNetPacksDirectory)%(Identity)')" />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />
-  </Target>
-
-  <Target Name="_CreateWorkloadSentinel"
-      Inputs="$(_Inputs)"
-      Outputs="$(DotNetSentinelPath)">
-    <Touch Files="$(DotNetSentinelPath)" AlwaysCreate="true" />
   </Target>
 
   <UsingTask TaskName="ReplaceText"
