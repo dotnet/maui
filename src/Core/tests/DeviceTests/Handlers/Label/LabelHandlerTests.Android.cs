@@ -139,7 +139,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		bool GetNativeIsBold(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Typeface.IsBold;
+			GetNativeLabel(labelHandler).Typeface.GetFontWeight() == FontWeight.Bold;
 
 		bool GetNativeIsItalic(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Typeface.IsItalic;

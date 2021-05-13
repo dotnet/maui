@@ -26,4 +26,9 @@
     </ProjectReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\AppHostBuilderExtensions.cs" Link="AppHostBuilderExtensions.cs" />
+    <Compile Include="..\MauiHandlersCollectionExtensions.cs" Link="MauiHandlersCollectionExtensions.cs" />
+  </ItemGroup>
+
 </Project>

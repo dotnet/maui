@@ -6,8 +6,7 @@
     <DotNetDirectory>$(MauiOutputPath)dotnet/</DotNetDirectory>
     <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
     <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
-    <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(MicrosoftDotnetSdkInternalPackageVersion.Split('-')[0])/</DotNetSdkManifestsDirectory>
-    <DotNetSentinelPath>$(DotNetDirectory)sdk/$(MicrosoftDotnetSdkInternalPackageVersion)/EnableWorkloadResolver.sentinel</DotNetSentinelPath>
+    <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetPreviewVersionBand)/</DotNetSdkManifestsDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
@@ -29,7 +28,6 @@
       _InstallDotNet;
       _AcquireWorkloads;
       _AcquirePacks;
-      _CreateWorkloadSentinel;
     </_ProvisionDependsOn>
   </PropertyGroup>
   <Target Name="_Provision" BeforeTargets="Build" DependsOnTargets="$(_ProvisionDependsOn)" />
@@ -65,6 +63,12 @@
     <_PacksToRemove Include="microsoft.build.notargets" />
     <_PacksToRemove Include="microsoft.netcore.platforms" />
     <_PacksToRemove Include="netstandard.library" />
+    <!-- These are past workload names -->
+    <_PacksToRemove Include="Microsoft.NET.Workload.Android" />
+    <_PacksToRemove Include="Microsoft.NET.Workload.MacCatalyst" />
+    <_PacksToRemove Include="Microsoft.NET.Workload.iOS" />
+    <_PacksToRemove Include="Microsoft.NET.Workload.tvOS" />
+    <_PacksToRemove Include="Microsoft.NET.Workload.macOS" />
   </ItemGroup>
 
   <Target Name="_AcquireWorkloads"
@@ -75,16 +79,44 @@
         EnvironmentVariables="NUGET_PACKAGES=$(DotNetSdkManifestsDirectory);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
     />
     <!--
-      NOTE: Workloads need to go in dotnet/sdk-manifests/6.0.100/Microsoft.Workload.NET.*/
+      NOTE: Workloads need to go in dotnet/sdk-manifests/6.0.100/Microsoft.NET.Sdk.*/
       Workloads only contain two files: data/WorkloadManifest.targets & data/WorkloadManifest.json
       We have to move everything up two directories, for things to land in the right location.
     -->
     <ItemGroup>
-      <_WorkloadFiles Include="$(DotNetSdkManifestsDirectory)Microsoft.NET.Workload.*/*/data/WorkloadManifest.*" />
+      <_WorkloadFiles Include="$(DotNetSdkManifestsDirectory)Microsoft.NET.*/*/data/WorkloadManifest.*" />
       <_WorkloadDirectoriesToDelete Include="@(_WorkloadFiles->'%(RootDir)%(Directory)'->Distinct())" />
     </ItemGroup>
     <Copy SourceFiles="@(_WorkloadFiles)" DestinationFiles="@(_WorkloadFiles->'%(RootDir)%(Directory)../../%(FileName)%(Extension)')" />
     <RemoveDir Directories="@(_WorkloadDirectoriesToDelete);@(_PacksToRemove->'$(DotNetSdkManifestsDirectory)%(Identity)')" />
+
+    <!-- In order to support older MSBuild versions, change the version string to an integer -->
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.android.manifest-$(DotNetPreviewVersionBand)/WorkloadManifest.json"
+        OldValue="&quot;version&quot;: &quot;$(MicrosoftAndroidSdkWindowsPackageVersion)&quot;"
+        NewValue="&quot;version&quot;: 6"
+    />
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.maccatalyst.manifest-$(DotNetPreviewVersionBand)/WorkloadManifest.json"
+        OldValue="&quot;version&quot;: &quot;$(MicrosoftMacCatalystSdkPackageVersion)&quot;"
+        NewValue="&quot;version&quot;: 6"
+    />
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.ios.manifest-$(DotNetPreviewVersionBand)/WorkloadManifest.json"
+        OldValue="&quot;version&quot;: &quot;$(MicrosoftiOSSdkPackageVersion)&quot;"
+        NewValue="&quot;version&quot;: 6"
+    />
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.tvos.manifest-$(DotNetPreviewVersionBand)/WorkloadManifest.json"
+        OldValue="&quot;version&quot;: &quot;$(MicrosofttvOSSdkPackageVersion)&quot;"
+        NewValue="&quot;version&quot;: 6"
+    />
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.macos.manifest-$(DotNetPreviewVersionBand)/WorkloadManifest.json"
+        OldValue="&quot;version&quot;: &quot;$(MicrosoftmacOSSdkPackageVersion)&quot;"
+        NewValue="&quot;version&quot;: 6"
+    />
+
     <Touch Files="$(DotNetSdkManifestsDirectory).stamp" AlwaysCreate="true" />
   </Target>
 
@@ -99,10 +131,24 @@
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />
   </Target>
 
-  <Target Name="_CreateWorkloadSentinel"
-      Inputs="$(_Inputs)"
-      Outputs="$(DotNetSentinelPath)">
-    <Touch Files="$(DotNetSentinelPath)" AlwaysCreate="true" />
-  </Target>
+  <UsingTask TaskName="ReplaceText"
+      TaskFactory="RoslynCodeTaskFactory"
+      AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Input ParameterType="System.String" Required="true" />
+      <OldValue ParameterType="System.String" Required="true" />
+      <NewValue ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          var regex = new Regex(Regex.Escape(OldValue));
+          File.WriteAllText(Input, regex.Replace(File.ReadAllText(Input), NewValue, count: 1));
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
 
 </Project>
