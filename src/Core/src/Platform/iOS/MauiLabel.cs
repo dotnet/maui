@@ -1,5 +1,5 @@
-﻿using CoreGraphics;
-using System;
+﻿using System;
+using CoreGraphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform.iOS
