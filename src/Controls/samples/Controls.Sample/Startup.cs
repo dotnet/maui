@@ -103,6 +103,10 @@ namespace Maui.Controls.Sample
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
+					fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
+					fonts.AddFont("LobsterTwo-Bold.ttf", "Lobster Two Bold");
+					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
+					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 					fonts.AddFont("ionicons.ttf", "Ionicons");
 				})
 				//.ConfigureEssentials(essentials =>

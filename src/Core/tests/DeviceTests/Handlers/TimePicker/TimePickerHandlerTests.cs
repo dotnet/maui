@@ -48,8 +48,8 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
 			};
 
-			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.Weight.HasFlag(FontWeight.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.FontSlant.HasFlag(FontSlant.Italic), GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
+			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
 	}
 }
