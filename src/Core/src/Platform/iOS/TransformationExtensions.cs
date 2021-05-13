@@ -120,14 +120,15 @@ namespace Microsoft.Maui
 				{
 					if (layer != null)
 						layer.Transform = transform;
-					return;
 				}
-
-				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+				else
 				{
-					if (layer != null)
-						layer.Transform = transform;
-				});
+					CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+					{
+						if (layer != null)
+							layer.Transform = transform;
+					});
+				}
 			}
 
 			// TODO: Use the thread var when porting the Device class.
