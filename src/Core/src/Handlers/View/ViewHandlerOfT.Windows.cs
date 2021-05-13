@@ -6,7 +6,16 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
-		FrameworkElement? INativeViewHandler.NativeView => (FrameworkElement?)base.NativeView;
+		FrameworkElement? INativeViewHandler.NativeView => WrappedNativeView;
+		FrameworkElement? INativeViewHandler.ContainerView => ContainerView;
+
+		protected FrameworkElement? WrappedNativeView => ContainerView ?? (FrameworkElement?)NativeView;
+
+		public new WrapperView? ContainerView
+		{
+			get => (WrapperView?)base.ContainerView;
+			protected set => base.ContainerView = value;
+		}
 
 		public override void NativeArrange(Rectangle rect)
 		{

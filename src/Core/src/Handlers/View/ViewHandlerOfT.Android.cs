@@ -10,7 +10,17 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
-		View? INativeViewHandler.NativeView => (View?)base.NativeView;
+		View? INativeViewHandler.NativeView => WrappedNativeView;
+		View? INativeViewHandler.ContainerView => ContainerView;
+
+		protected View? WrappedNativeView => ContainerView ?? (View?)NativeView;
+
+		public new WrapperView? ContainerView
+		{
+			get => (WrapperView?)base.ContainerView;
+			protected set => base.ContainerView = value;
+		}
+
 		public Context? Context => MauiContext?.Context;
 
 		protected Context ContextWithValidation([CallerMemberName] string callerName = "")
@@ -21,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override void NativeArrange(Rectangle frame)
 		{
-			var nativeView = NativeView;
+			var nativeView = WrappedNativeView;
 
 			if (nativeView == null)
 				return;
@@ -85,7 +95,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void SetupContainer()
 		{
+			if (Context == null)
+				return;
 
+			var oldParent = NativeView?.Parent;
+			ContainerView ??= new WrapperView(Context);
+
+			if (oldParent == ContainerView)
+				return;
+
+			ContainerView.MainView = NativeView;
 		}
 
 		protected override void RemoveContainer()
