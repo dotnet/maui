@@ -53,9 +53,9 @@ namespace Microsoft.Maui
 			editText.SetInputType(entry);
 		}
 
-		public static void UpdateHorizontalTextAlignment(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateHorizontalTextAlignment(this AppCompatEditText editText, ITextAlignment textAlignment)
 		{
-			editText.UpdateHorizontalAlignment(entry.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
+			editText.UpdateHorizontalAlignment(textAlignment.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this AppCompatEditText editText, IEntry entry)
@@ -239,21 +239,5 @@ namespace Microsoft.Maui
 				editText.InputType = nativeInputTypeToUpdate;
 			}
 		}
-
-		public static void UpdateHorizontalTextAlignment(this AppCompatEditText textField, IEditor editor)
-		{
-			if (textField.Context!.HasRtlSupport())
-			{
-				// We want to use TextAlignment where possible because it doesn't conflict with the
-				// overall gravity of the underlying control
-				textField.TextAlignment = editor.HorizontalTextAlignment.ToTextAlignment();
-			}
-			else
-			{
-				// But if RTL support is not available for some reason, we have to resort
-				// to gravity, because Android will simply ignore text alignment
-				textField.Gravity = editor.HorizontalTextAlignment.ToHorizontalGravityFlags();
-			}
-       }
 	}
 }
