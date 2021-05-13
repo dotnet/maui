@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Editor : InputView, IEditorController, IFontElement, IElementConfiguration<Editor>
+	public partial class Editor : InputView, IEditorController, IFontElement, ITextAlignmentElement, IElementConfiguration<Editor>
 	{
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 
@@ -26,6 +26,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty AutoSizeProperty = BindableProperty.Create(nameof(AutoSize), typeof(EditorAutoSizeOption), typeof(Editor), defaultValue: EditorAutoSizeOption.Disabled, propertyChanged: (bindable, oldValue, newValue)
 			=> ((Editor)bindable)?.InvalidateMeasure());
+
+		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<Editor>> _platformConfigurationRegistry;
 
@@ -59,6 +61,14 @@ namespace Microsoft.Maui.Controls
 			get { return (double)GetValue(FontSizeProperty); }
 			set { SetValue(FontSizeProperty, value); }
 		}
+
+		public TextAlignment HorizontalTextAlignment
+		{
+			get { return (TextAlignment)GetValue(HorizontalTextAlignmentProperty); }
+			set { SetValue(HorizontalTextAlignmentProperty, value); }
+		}
+
+		public TextAlignment VerticalTextAlignment { get; set; }
 
 		protected void UpdateAutoSizeOption()
 		{
@@ -118,6 +128,10 @@ namespace Microsoft.Maui.Controls
 			{
 				InvalidateMeasure();
 			}
+		}
+
+		public void OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)
+		{
 		}
 	}
 }
