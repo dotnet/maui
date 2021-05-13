@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using UIKit;
 using Xunit;
 
@@ -20,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 				Rotation = 90
 			};
 
-			var transform = await GetValueAsync(view, handler => GetLayerTransform(handler));
+			var transform = await GetLayerTransformAsync(view);
 
 			Assert.NotEqual(CATransform3D.Identity, transform);
 		}
@@ -37,7 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 				ScaleX = 2.0,
 			};
 
-			var transform = await GetValueAsync(view, handler => GetLayerTransform(handler));
+			var transform = await GetLayerTransformAsync(view);
 
 			var expected = new CATransform3D
 			{
@@ -71,7 +73,7 @@ namespace Microsoft.Maui.DeviceTests
 				Scale = scale,
 			};
 
-			var transform = await GetValueAsync(view, handler => GetLayerTransform(handler));
+			var transform = await GetLayerTransformAsync(view);
 
 			var expected = CATransform3D.MakeScale(scale, scale, scale);
 
@@ -95,13 +97,11 @@ namespace Microsoft.Maui.DeviceTests
 			var view = new TStub()
 			{
 				Rotation = rotation,
-				Width = 100,
-				Height = 100
 			};
 
-			var transform = await GetValueAsync(view, handler => GetLayerTransform(handler));
+			var transform = await GetLayerTransformAsync(view);
 
-			var expected = CATransform3D.MakeRotation(rotation, 0, 0, 1);
+			var expected = CATransform3D.MakeRotation(rotation * (float)Math.PI / 180.0f, 0, 0, 1);
 
 			expected.AssertEqual(transform);
 		}
@@ -117,14 +117,21 @@ namespace Microsoft.Maui.DeviceTests
 			return handler;
 		}
 
-		protected CATransform3D GetLayerTransform(IViewHandler viewHandler)
+		// TODO: this is all kinds of wrong
+		protected Task<CATransform3D> GetLayerTransformAsync(TStub view)
 		{
-			var view = (UIView)viewHandler.NativeView;
+			var window = new WindowStub();
 
-			var transform = view.Layer.Transform;
+			window.View = view;
+			view.Parent = window;
 
-			return transform;
+			view.Frame = new Rectangle(0, 0, 100, 100);
+
+			return GetValueAsync(view, handler => GetLayerTransform(handler));
 		}
+
+		protected CATransform3D GetLayerTransform(IViewHandler viewHandler) =>
+			((UIView)viewHandler.NativeView).Layer.Transform;
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).AccessibilityIdentifier;
