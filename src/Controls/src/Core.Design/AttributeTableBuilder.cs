@@ -12,6 +12,9 @@ namespace Microsoft.Maui.Controls.Design
 			AddAssemblyCustomAttributes("Microsoft.Maui.Controls",
 				new XmlnsSupportsValidationAttribute("http://schemas.microsoft.com/dotnet/2021/maui", false));
 
+			AddAssemblyCustomAttributes("Microsoft.Maui.Graphics",
+				new XmlnsSupportsValidationAttribute("http://schemas.microsoft.com/dotnet/2021/maui", false));
+
 			// Style isn't a view, make it visible
 			AddTypeAttributes("Microsoft.Maui.Controls.Style",
 			   new EditorBrowsableAttribute(EditorBrowsableState.Always),
