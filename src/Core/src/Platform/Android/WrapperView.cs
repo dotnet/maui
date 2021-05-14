@@ -6,45 +6,33 @@ namespace Microsoft.Maui
 {
 	public partial class WrapperView : FrameLayout
 	{
-		View? _mainView;
-
 		public WrapperView(Context context)
 			: base(context)
 		{
-			LayoutParameters = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
 		}
 
-		public View? MainView
+		public override void OnViewAdded(View? child)
 		{
-			get => _mainView;
-			set
+			base.OnViewAdded(child);
+
+			if (child != null)
 			{
-				if (_mainView == value)
-					return;
-
-				if (_mainView != null)
-					RemoveView(_mainView);
-
-				_mainView = value;
-
-				if (_mainView == null)
-					return;
-
-				_mainView.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
-				AddView(_mainView);
+				child.LayoutParameters = new LayoutParams(
+					ViewGroup.LayoutParams.MatchParent,
+					ViewGroup.LayoutParams.MatchParent);
 			}
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			if (_mainView == null)
+			if (ChildCount == 0 || GetChildAt(0) is not View child)
 				return;
 
-			_mainView.Measure(widthMeasureSpec, heightMeasureSpec);
+			child.Measure(widthMeasureSpec, heightMeasureSpec);
 
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 
-			SetMeasuredDimension(_mainView.MeasuredWidth, _mainView.MeasuredHeight);
+			SetMeasuredDimension(child.MeasuredWidth, child.MeasuredHeight);
 		}
 	}
 }

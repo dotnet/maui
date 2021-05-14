@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 			if (NativeView == null || ContainerView != null)
 				return;
 
-			var oldParent = (Panel?)NativeView?.Parent;
+			var oldParent = (Panel?)NativeView.Parent;
 
 			var oldIndex = oldParent?.Children.IndexOf(NativeView);
 			oldParent?.Children.Remove(NativeView);
