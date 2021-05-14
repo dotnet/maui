@@ -28,8 +28,8 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// Returns the default 'X' char drawable in the AppCompatEditText.
-		protected virtual Drawable GetClearButtonDrawable()
-			=> ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
+		protected virtual Drawable GetClearButtonDrawable() =>
+			ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
 
 		protected override void ConnectHandler(AppCompatEditText nativeView)
 		{
@@ -63,6 +63,17 @@ namespace Microsoft.Maui.Handlers
 
 			ClearButtonDrawable = GetClearButtonDrawable();
 			DefaultTextColors = nativeView.TextColors;
+		}
+
+		public override bool NeedsContainer =>
+			VirtualView?.BackgroundColor != null ||
+			base.NeedsContainer;
+
+		public static void MapBackgroundColor(EntryHandler handler, IEntry entry)
+		{
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+
+			handler.ContainerView?.UpdateBackgroundColor(entry);
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry)

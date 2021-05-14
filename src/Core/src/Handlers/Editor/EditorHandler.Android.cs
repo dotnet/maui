@@ -35,6 +35,17 @@ namespace Microsoft.Maui.Handlers
 			DefaultPlaceholderTextColors = nativeView.HintTextColors;
 		}
 
+		public override bool NeedsContainer =>
+			VirtualView?.BackgroundColor != null ||
+			base.NeedsContainer;
+
+		public static void MapBackgroundColor(EditorHandler handler, IEditor editor)
+		{
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+
+			handler.ContainerView?.UpdateBackgroundColor(editor);
+		}
+
 		public static void MapText(EditorHandler handler, IEditor editor)
 		{
 			handler.NativeView?.UpdateText(editor);
