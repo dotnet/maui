@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Graphics.Native.Gtk {
 			=> new Color(color.Red, color.Green, color.Blue, opacity);
 
 		public static Color ToColor(this Gdk.RGBA color)
-			=> new Color((byte) (color.Red * 255), (byte) (color.Green * 255), (byte) (color.Blue * 255), (byte) (color.Alpha * 255));
+			=> new Color((float) color.Red, (float) color.Green, (float) color.Blue, (float) color.Alpha);
 
 		public static Cairo.Color ToCairoColor(this Color color)
 			=> color == default ? default : new Cairo.Color(color.Red, color.Green, color.Blue, color.Alpha);
