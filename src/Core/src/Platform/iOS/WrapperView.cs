@@ -14,7 +14,7 @@ namespace Microsoft.Maui
 
 			var child = Subviews[0];
 
-			child.Bounds = Bounds;
+			child.Frame = Bounds;
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
