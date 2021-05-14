@@ -31,44 +31,7 @@ namespace Maui.Controls.Sample.Pages
 			_services = services;
 			BindingContext = _viewModel = viewModel;
 
-
-			var label1 = new Entry { Text = "1 Hello World!" };
-			var label2 = new Entry { Text = "2 Hello World!", BackgroundColor = Colors.Red };
-			var label3 = new Editor { Text = "3 Hello World!" };
-			var label4 = new Editor { Text = "4 Hello World!", BackgroundColor = Colors.Red };
-
-			var button = new Button { Text = "Click" };
-
-			button.Clicked += delegate
-			{
-				if (label1.BackgroundColor == null)
-					label1.BackgroundColor = Colors.Red;
-				else
-					label1.BackgroundColor = null;
-				if (label2.BackgroundColor == null)
-					label2.BackgroundColor = Colors.Red;
-				else
-					label2.BackgroundColor = null;
-				if (label3.BackgroundColor == null)
-					label3.BackgroundColor = Colors.Red;
-				else
-					label3.BackgroundColor = null;
-				if (label4.BackgroundColor == null)
-					label4.BackgroundColor = Colors.Red;
-				else
-					label4.BackgroundColor = null;
-			};
-
-			Content = new VerticalStackLayout
-			{
-				label1,
-				label2,
-				label3,
-				label4,
-				button,
-			};
-
-			//SetupMauiLayout();
+			SetupMauiLayout();
 
 			NavigationPage.SetHasNavigationBar(this, false);
 
@@ -264,8 +227,8 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new TimePicker());
 			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
 
-			//verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
-			//verticalStack.Add(CreateImagesGrid());
+			verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
+			verticalStack.Add(CreateImagesGrid());
 
 			Content = new ScrollView
 			{

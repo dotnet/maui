@@ -1,10 +1,9 @@
 ﻿using Android.Content;
 using Android.Views;
-using Android.Widget;
 
 namespace Microsoft.Maui
 {
-	public partial class WrapperView : FrameLayout
+	public partial class WrapperView : ViewGroup
 	{
 		public WrapperView(Context context)
 			: base(context)
@@ -15,12 +14,22 @@ namespace Microsoft.Maui
 		{
 			base.OnViewAdded(child);
 
-			if (child != null)
-			{
-				child.LayoutParameters = new LayoutParams(
-					ViewGroup.LayoutParams.MatchParent,
-					ViewGroup.LayoutParams.MatchParent);
-			}
+			if (child == null)
+				return;
+
+			child.LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent);
+		}
+
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		{
+			if (ChildCount == 0 || GetChildAt(0) is not View child)
+				return;
+
+			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(right - left);
+			var heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(bottom - top);
+
+			child.Measure(widthMeasureSpec, heightMeasureSpec);
+			child.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -29,8 +38,6 @@ namespace Microsoft.Maui
 				return;
 
 			child.Measure(widthMeasureSpec, heightMeasureSpec);
-
-			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 
 			SetMeasuredDimension(child.MeasuredWidth, child.MeasuredHeight);
 		}
