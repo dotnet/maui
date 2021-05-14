@@ -1,6 +1,4 @@
-using Android.Graphics.Drawables;
 using AndroidX.Core.View;
-using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -12,17 +10,15 @@ namespace Microsoft.Maui
 
 		public static void UpdateIsEnabled(this AView nativeView, IView view)
 		{
-			nativeView.Enabled = view.IsEnabled;
+			if (nativeView != null)
+				nativeView.Enabled = view.IsEnabled;
 		}
 
-		public static void UpdateBackgroundColor(this AView nativeView, IView view, Drawable? defaultBackground = null)
+		public static void UpdateBackgroundColor(this AView nativeView, IView view)
 		{
 			var backgroundColor = view.BackgroundColor;
-
-			if (backgroundColor == null && defaultBackground != null)
-				nativeView.Background = defaultBackground;
-			else
-				nativeView.SetBackgroundColor(backgroundColor.ToNative(Colors.Transparent));
+			if (backgroundColor != null)
+				nativeView?.SetBackgroundColor(backgroundColor.ToNative());
 		}
 
 		public static bool GetClipToOutline(this AView view)
