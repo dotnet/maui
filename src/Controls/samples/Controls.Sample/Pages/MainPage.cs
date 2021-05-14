@@ -32,15 +32,15 @@ namespace Maui.Controls.Sample.Pages
 			_services = services;
 			BindingContext = _viewModel = viewModel;
 
-			//SetupMauiLayout();
-			SetupVisibilityTest();
+			SetupMauiLayout();
 
 			NavigationPage.SetHasNavigationBar(this, false);
 
 			//SetupCompatibilityLayout();
+			//SetupVisibilityTest();
 		}
 
-		public class VisibilityLabel : Label
+		public class VisibilityLabel : Label, IFrameworkElement
 		{
 			private Visibility _visibility;
 
@@ -50,75 +50,13 @@ namespace Maui.Controls.Sample.Pages
 				Handler?.UpdateValue(nameof(Visibility));
 			}
 
-			public override Visibility Visibility
+			Visibility IFrameworkElement.Visibility
 			{
 				get 
 				{
 					return _visibility; 
 				}
 			}
-		}
-
-		void SetupVisibilityTest()
-		{
-			var layout = new VerticalStackLayout() { BackgroundColor = Colors.BurlyWood };
-			//var layout = new Microsoft.Maui.Controls.Layout2.GridLayout() { BackgroundColor = Colors.AntiqueWhite };
-
-			var button1 = new Button { Text = "Controls", Margin = new Thickness(0, 40) };
-
-			var button2 = new Button { Text = "MAUI" };
-
-			var controlsLabel = new Label { Text = "Controls Label" };
-			controlsLabel.IsVisible = true;
-
-			var alwaysVisible = new Label { Text = "Always visible" };
-
-			var mauiLabel = new VisibilityLabel() { Text = "Core Label" };
-
-			button1.Clicked += (sender, args) => {
-				controlsLabel.IsVisible = !controlsLabel.IsVisible;
-			};
-			
-			button2.Clicked += (sender, args) => 
-			{ 
-				switch (mauiLabel.Visibility) 
-				{ 
-					case Visibility.Visible:
-						mauiLabel.SetVisibility(Visibility.Hidden);
-						break; 
-					case Visibility.Hidden:
-						mauiLabel.SetVisibility(Visibility.Collapsed);
-						break; 
-					case Visibility.Collapsed:
-						mauiLabel.SetVisibility(Visibility.Visible);
-						break; 
-				} 
-			};
-
-			//layout.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
-			//layout.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
-			//layout.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
-			//layout.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
-			//layout.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
-
-			//layout.AddColumnDefinition(new ColumnDefinition { Width = new GridLength(300) });
-
-			layout.Add(button1);
-			//layout.SetRow(button1, 0);
-
-			layout.Add(button2);
-			//layout.SetRow(button2, 1);
-
-			layout.Add(controlsLabel);
-			//layout.SetRow(controlsLabel, 2);
-
-			layout.Add(mauiLabel);
-			//layout.SetRow(mauiLabel, 3);
-
-			layout.Add(alwaysVisible);
-			//layout.SetRow(alwaysVisible, 4);
-
-			Content = layout;
 		}
 
 		const string LoremIpsum =
@@ -571,6 +509,50 @@ namespace Maui.Controls.Sample.Pages
 			layout.Add(resizeTestLabel);
 			layout.Add(widthAndHeightTestLabel);
 			layout.Add(explicitWidthTestLabel);
+		}
+
+		void SetupVisibilityTest()
+		{
+			var layout = new VerticalStackLayout() { BackgroundColor = Colors.BurlyWood };
+
+			var button1 = new Button { Text = "Controls", Margin = new Thickness(0, 40) };
+
+			var button2 = new Button { Text = "MAUI" };
+
+			var controlsLabel = new Label { Text = "Controls Label" };
+			controlsLabel.IsVisible = true;
+
+			var alwaysVisible = new Label { Text = "Always visible" };
+
+			var mauiLabel = new VisibilityLabel() { Text = "Core Label" };
+
+			button1.Clicked += (sender, args) => {
+				controlsLabel.IsVisible = !controlsLabel.IsVisible;
+			};
+
+			button2.Clicked += (sender, args) =>
+			{
+				switch ((mauiLabel as IFrameworkElement).Visibility)
+				{
+					case Visibility.Visible:
+						mauiLabel.SetVisibility(Visibility.Hidden);
+						break;
+					case Visibility.Hidden:
+						mauiLabel.SetVisibility(Visibility.Collapsed);
+						break;
+					case Visibility.Collapsed:
+						mauiLabel.SetVisibility(Visibility.Visible);
+						break;
+				}
+			};
+
+			layout.Add(button1);
+			layout.Add(button2);
+			layout.Add(controlsLabel);
+			layout.Add(mauiLabel);
+			layout.Add(alwaysVisible);
+
+			Content = layout;
 		}
 	}
 }
