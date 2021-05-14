@@ -88,7 +88,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(image, () => image.Aspect, GetNativeAspect, aspect);
 		}
 
-		[Theory]
+		[Theory(Skip = "Image needs to use ContainerView to handle Brushes properly.")]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#000000")]
