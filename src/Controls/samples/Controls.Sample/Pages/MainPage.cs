@@ -181,7 +181,13 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new CheckBox { BackgroundColor = Colors.LightPink });
 			verticalStack.Add(new CheckBox { IsChecked = true, Color = Colors.Aquamarine });
 
-			verticalStack.Add(new Editor());
+			var editor = new Editor();
+			editor.Completed += (sender, args) =>
+			{
+				Debug.WriteLine($"Editor Completed");
+			};
+
+			verticalStack.Add(editor);
 			verticalStack.Add(new Editor { Text = "Editor" });
 			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", MaxLength = 10 });
 			verticalStack.Add(new Editor { Text = "Predictive Text Off", IsTextPredictionEnabled = false });
