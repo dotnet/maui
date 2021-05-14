@@ -10,16 +10,6 @@ namespace Microsoft.Maui
 		{
 		}
 
-		public override void OnViewAdded(View? child)
-		{
-			base.OnViewAdded(child);
-
-			if (child == null)
-				return;
-
-			child.LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent);
-		}
-
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
 			if (ChildCount == 0 || GetChildAt(0) is not View child)
