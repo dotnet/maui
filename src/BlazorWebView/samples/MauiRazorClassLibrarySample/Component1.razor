@@ -1,0 +1,15 @@
+﻿<div class="my-component">
+    This Blazor component is defined in the <strong>MauiRazorClassLibrarySample</strong> library.
+</div>
+
+<h1>This is the count in a component: @count</h1>
+<button @onclick="Increment">Increment</button>
+
+@code {
+    int count = 0;
+
+    void Increment()
+    {
+        count++;
+    }
+}

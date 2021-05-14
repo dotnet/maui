@@ -2,10 +2,12 @@
   <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' == 'true'">
     <_MicrosoftHostingVersion>6.0.0-preview.3.21174.7</_MicrosoftHostingVersion>
     <_MicrosoftDependencyInjectionVersion>$(_MicrosoftHostingVersion)</_MicrosoftDependencyInjectionVersion>
+    <_MicrosoftFileProvidersVersion>6.0.0-preview.3.21201.13</_MicrosoftFileProvidersVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' != 'true'">
     <_MicrosoftHostingVersion>5.0.0</_MicrosoftHostingVersion>
     <_MicrosoftDependencyInjectionVersion>5.0.1</_MicrosoftDependencyInjectionVersion>
+    <_MicrosoftFileProvidersVersion>5.0.6</_MicrosoftFileProvidersVersion>
   </PropertyGroup>
   <PropertyGroup>
     <_MicrosoftProjectReunionVersion>0.5.0</_MicrosoftProjectReunionVersion>
@@ -27,6 +29,10 @@
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
         Version="$(_MicrosoftDependencyInjectionVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.FileProviders.Embedded"
+        Version="$(_MicrosoftFileProvidersVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Hosting.Abstractions"
