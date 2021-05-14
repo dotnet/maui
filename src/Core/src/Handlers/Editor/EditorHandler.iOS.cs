@@ -21,12 +21,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiTextView nativeView)
 		{
+			base.ConnectHandler(nativeView);
+
 			nativeView.Changed += OnChanged;
 			nativeView.ShouldChangeText += OnShouldChangeText;
 		}
 
 		protected override void DisconnectHandler(MauiTextView nativeView)
 		{
+			base.DisconnectHandler(nativeView);
+
 			nativeView.Changed -= OnChanged;
 			nativeView.ShouldChangeText -= OnShouldChangeText;
 		}

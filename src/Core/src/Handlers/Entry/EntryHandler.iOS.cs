@@ -21,6 +21,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiTextField nativeView)
 		{
+			base.ConnectHandler(nativeView);
+
 			nativeView.ShouldReturn = OnShouldReturn;
 			nativeView.EditingChanged += OnEditingChanged;
 			nativeView.EditingDidEnd += OnEditingEnded;
@@ -30,6 +32,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiTextField nativeView)
 		{
+			base.DisconnectHandler(nativeView);
+
 			nativeView.EditingChanged -= OnEditingChanged;
 			nativeView.EditingDidEnd -= OnEditingEnded;
 			nativeView.TextPropertySet -= OnTextPropertySet;
