@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 	public static class ButtonExtensions
 	{
 		public static void UpdateBackground(this Button nativeButton, IButton button, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeButton.UpdateBackground(button.BackgroundColor, defaultBrush);
+			nativeButton.UpdateBackground(button.Background, defaultBrush);
 
 		public static void UpdateText(this Button nativeButton, IButton button) =>
 			nativeButton.Content = button.Text;
