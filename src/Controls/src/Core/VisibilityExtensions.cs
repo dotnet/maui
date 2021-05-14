@@ -7,7 +7,7 @@
 			if (isVisible)
 				return Visibility.Visible;
 
-			return Visibility.Hidden;
+			return Visibility.Collapsed;
 		}
 	}
 }

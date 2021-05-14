@@ -30,9 +30,6 @@ namespace Microsoft.Maui
 					nativeView.Visibility = ViewStates.Gone;
 					break;
 			}
-
-			nativeView.Invalidate();
-			nativeView.RequestLayout();
 		}
 
 		public static void UpdateBackground(this AView nativeView, IView view)
