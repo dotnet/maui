@@ -1,11 +1,15 @@
 <Project>
   <!--Package versions-->
   <PropertyGroup>
-    <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-preview.5.21229.1</MicrosoftDotnetSdkInternalPackageVersion>
-    <MicrosoftAndroidSdkWindowsPackageVersion>11.0.200-ci.main.250</MicrosoftAndroidSdkWindowsPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>14.5.100-ci.main.697</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>14.5.100-ci.main.697</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>14.5.100-ci.main.697</MicrosofttvOSSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>11.3.100-ci.main.697</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-preview.5.21255.8</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>11.0.200-ci.main.260</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>14.5.100-ci.main.733</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>14.5.100-ci.main.733</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>14.5.100-ci.main.733</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>11.3.100-ci.main.733</MicrosoftmacOSSdkPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- Trim all characters after first `-` or `+` is encountered. -->
+    <DotNetPreviewVersionBand Condition=" '$(DotNetPreviewVersionBand)' == '' ">$([System.Text.RegularExpressions.Regex]::Replace($(MicrosoftDotnetSdkInternalPackageVersion), `[-+].*$`, ""))</DotNetPreviewVersionBand>
   </PropertyGroup>
 </Project>

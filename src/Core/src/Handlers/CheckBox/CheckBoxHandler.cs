@@ -5,7 +5,7 @@
 		public static PropertyMapper<ICheckBox, CheckBoxHandler> CheckBoxMapper = new PropertyMapper<ICheckBox, CheckBoxHandler>(ViewHandler.ViewMapper)
 		{
 #if MONOANDROID
-			[nameof(ICheckBox.BackgroundColor)] = MapBackgroundColor,
+			[nameof(ICheckBox.Background)] = MapBackground,
 #endif
 			[nameof(ICheckBox.IsChecked)] = MapIsChecked,
 		};

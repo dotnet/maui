@@ -267,7 +267,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			if (label.IsDefault() && _isInitiallyDefault)
-				textBlock.ApplyFont(Font.SystemFontOfSize(NamedSize.Medium));
+				textBlock.ApplyFont(Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)));
 			else
 				textBlock.ApplyFont(label);
 

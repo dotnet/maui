@@ -163,6 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			ElementController.SendCompleted();
 		}
 
+		[PortHandler]
 		void UpdatePlaceholderText()
 		{
 			Control.PlaceholderText = Element.Placeholder ?? "";
@@ -277,6 +278,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
 		}
 	
+		[PortHandler]
 		void UpdateText()
 		{
 			string newText = _transformedText = Element.UpdateFormsText(Element.Text, Element.TextTransform);
@@ -306,6 +308,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.UpdateFlowDirection(Element);
 		}
 
+		[PortHandler]
 		void UpdateMaxLength()
 		{
 			Control.MaxLength = Element.MaxLength;
@@ -331,6 +334,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateIsReadOnly()
 		{
 			Control.IsReadOnly = Element.IsReadOnly;

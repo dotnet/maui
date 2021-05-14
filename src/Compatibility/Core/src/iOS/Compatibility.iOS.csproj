@@ -53,6 +53,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\AppHostBuilderExtensions.cs" Link="AppHostBuilderExtensions.cs" />
+    <Compile Include="..\MauiHandlersCollectionExtensions.cs" Link="MauiHandlersCollectionExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ContextActionCell.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContextScrollViewDelegate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalCloseContextGestureRecognizer.cs" />
@@ -112,12 +116,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\TimePickerRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CellExtensions.cs" />
-    <Compile Include="..\AppHostBuilderExtensions.cs">
-      <Link>AppHostBuilderExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\MauiHandlersCollectionExtensions.cs">
-      <Link>MauiHandlersCollectionExtensions.cs</Link>
-    </Compile>
     <Compile Include="CADisplayLinkTicker.cs" />
     <Compile Include="CollectionView\CarouselViewDelegator.cs" />
     <Compile Include="CollectionView\CarouselViewRenderer.cs" />

@@ -5,9 +5,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	public static class FontExtensions
 	{
-		public static float ToScaledPixel(this Font self)
-			=> CompatServiceProvider.FontManager.GetScaledPixel(self);
-
 		public static Typeface ToTypeface(this Font self)
 			=> CompatServiceProvider.FontManager.GetTypeface(self);
 

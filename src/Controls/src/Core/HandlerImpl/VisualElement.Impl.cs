@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -21,6 +18,18 @@ namespace Microsoft.Maui.Controls
 			{
 				_handler = value;
 				IsPlatformEnabled = _handler != null;
+			}
+		}
+
+		Paint IFrameworkElement.Background
+		{
+			get
+			{
+				if (!Brush.IsNullOrEmpty(Background))
+					return Background;
+				if (BackgroundColor.IsNotDefault())
+					return new SolidColorBrush(BackgroundColor);
+				return null;
 			}
 		}
 

@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
 	[TestFixture]
-	public class IsEnabledTests : PlatformTestFixture 
+	public class IsEnabledTests : PlatformTestFixture
 	{
 		static IEnumerable TestCases
 		{

@@ -212,6 +212,8 @@ namespace Microsoft.Maui.Controls
 			// If the index has not changed, still need to change the selected item
 			if (newIndex == oldIndex)
 				UpdateSelectedItem(newIndex);
+			//This sends the notification to the Maui Handler to reload
+			OnPropertyChanged("Reload");
 		}
 
 		static void OnItemsSourceChanged(BindableObject bindable, object oldValue, object newValue)

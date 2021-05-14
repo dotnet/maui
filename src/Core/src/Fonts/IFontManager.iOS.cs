@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using System;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -6,6 +7,8 @@ namespace Microsoft.Maui
 	{
 		UIFont DefaultFont { get; }
 
-		UIFont GetFont(Font font);
+		UIFont GetFont(Font font, double defaultFontSize = 0);
+
+		double GetFontSize(Font font, double defaultFontSize = 0);
 	}
 }
