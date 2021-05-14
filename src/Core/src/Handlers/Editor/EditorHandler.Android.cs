@@ -30,16 +30,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(AppCompatEditText nativeView)
 		{
-			nativeView.OnFocusChangeListener = null;
+			FocusChangeListener.Handler = this;
 
-			FocusChangeListener.Handler = null;
+			nativeView.OnFocusChangeListener = FocusChangeListener;
 		}
 
 		protected override void DisconnectHandler(AppCompatEditText nativeView)
 		{
-			FocusChangeListener.Handler = this;
+			nativeView.OnFocusChangeListener = null;
 
-			nativeView.OnFocusChangeListener = FocusChangeListener;
+			FocusChangeListener.Handler = null;
 		}
 
 		protected override void SetupDefaults(AppCompatEditText nativeView)
