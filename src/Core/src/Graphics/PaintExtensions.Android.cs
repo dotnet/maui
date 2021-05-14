@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Graphics
 {
 	public static partial class PaintExtensions
 	{
-        public static Drawable? ToDrawable(this Paint paint)
+		public static Drawable? ToDrawable(this Paint paint)
 		{
 			if (paint is SolidPaint solidPaint)
 				return solidPaint.CreateDrawable();
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Graphics
 			return null;
 		}
 
-        public static Drawable? CreateDrawable(this SolidPaint solidPaint)
+		public static Drawable? CreateDrawable(this SolidPaint solidPaint)
 		{
 			var drawable = new MauiDrawable();
 			drawable.SetPaint(solidPaint);
