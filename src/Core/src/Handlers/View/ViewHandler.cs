@@ -105,13 +105,19 @@ namespace Microsoft.Maui.Handlers
 			VirtualView = null;
 		}
 
+		static partial void UpdatingWidth(IViewHandler handler, IView view);
+
 		public static void MapWidth(IViewHandler handler, IView view)
 		{
+			UpdatingWidth(handler, view);
 			((NativeView?)handler.NativeView)?.UpdateWidth(view);
 		}
 
+		static partial void UpdatingHeight(IViewHandler handler, IView view);
+
 		public static void MapHeight(IViewHandler handler, IView view)
 		{
+			UpdatingHeight(handler, view);
 			((NativeView?)handler.NativeView)?.UpdateHeight(view);
 		}
 
