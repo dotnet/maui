@@ -25,7 +25,6 @@ namespace Microsoft.Maui
 		double Opacity { get; }
 
 		/// <summary>
-	
 		/// Gets the paint which will fill the background of a FrameworkElement.
 		/// </summary>
 		Paint? Background { get; }
