@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample.Controls
 	{
 		public static PropertyMapper<RedButton, RedButtonHandler> RedButtonMapper = new PropertyMapper<RedButton, RedButtonHandler>(ButtonHandler.ButtonMapper)
 		{
-			[nameof(IButton.BackgroundColor)] = MapBackgroundColor,
+			[nameof(IButton.Background)] = MapBackground,
 		};
 
 		public RedButtonHandler()
@@ -22,17 +22,17 @@ namespace Maui.Controls.Sample.Controls
 		}
 
 #if __ANDROID__
-		public static void MapBackgroundColor(RedButtonHandler handler, RedButton redButton)
+		public static void MapBackground(RedButtonHandler handler, RedButton redButton)
 		{
 			handler.NativeView.SetBackgroundColor(Colors.Red.ToNative());
 		}
 #elif __IOS__
-		public static void MapBackgroundColor(RedButtonHandler handler, RedButton redButton)
+		public static void MapBackground(RedButtonHandler handler, RedButton redButton)
 		{
 			handler.NativeView.BackgroundColor = Colors.Red.ToNative();
 		}
 #elif WINDOWS
-		public static void MapBackgroundColor(RedButtonHandler handler, RedButton redButton)
+		public static void MapBackground(RedButtonHandler handler, RedButton redButton)
 		{
 			handler.NativeView.Background = Colors.Red.ToNative();
 		}

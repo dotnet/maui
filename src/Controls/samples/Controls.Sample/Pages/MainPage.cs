@@ -11,6 +11,7 @@ using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.LifecycleEvents;
 using Debug = System.Diagnostics.Debug;
+using GradientStop = Microsoft.Maui.Controls.GradientStop;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -38,14 +39,14 @@ namespace Maui.Controls.Sample.Pages
 			//SetupCompatibilityLayout();
 		}
 
-		const string loremIpsum =
-				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
-				"Quisque ut dolor metus. Duis vel iaculis mauris, sit amet finibus mi. " +
-				"Etiam congue ornare risus, in facilisis libero tempor eget. " +
-				"Phasellus mattis mollis libero ut semper. In sit amet sapien odio. " +
-				"Sed interdum ullamcorper dui eu rutrum. Vestibulum non sagittis justo. " +
-				"Cras rutrum scelerisque elit, et porta est lobortis ac. " +
-				"Pellentesque eu ornare tortor. Sed bibendum a nisl at laoreet.";
+		const string LoremIpsum =
+			"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
+			"Quisque ut dolor metus. Duis vel iaculis mauris, sit amet finibus mi. " +
+			"Etiam congue ornare risus, in facilisis libero tempor eget. " +
+			"Phasellus mattis mollis libero ut semper. In sit amet sapien odio. " +
+			"Sed interdum ullamcorper dui eu rutrum. Vestibulum non sagittis justo. " +
+			"Cras rutrum scelerisque elit, et porta est lobortis ac. " +
+			"Pellentesque eu ornare tortor. Sed bibendum a nisl at laoreet.";
 
 		void SetupMauiLayout()
 		{
@@ -83,11 +84,38 @@ namespace Maui.Controls.Sample.Pages
 			);
 
 			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Colors.LightBlue });
-			verticalStack.Add(new Label { Text = loremIpsum });
-			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2 });
-			verticalStack.Add(new Label { Text = loremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
-			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
-			verticalStack.Add(new Label { Text = "This should have five times the line height! " + loremIpsum, LineHeight = 5, MaxLines = 2 });
+			verticalStack.Add(new Label { Text = LoremIpsum });
+			verticalStack.Add(new Label { Text = LoremIpsum, MaxLines = 2 });
+			verticalStack.Add(new Label { Text = LoremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
+			verticalStack.Add(new Label { Text = LoremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
+			verticalStack.Add(new Label { Text = "This should have five times the line height! " + LoremIpsum, LineHeight = 5, MaxLines = 2 });
+			verticalStack.Add(new Label
+			{
+				FontSize = 24,
+				Text = "LinearGradient Text",
+				Background = new LinearGradientBrush(
+				new GradientStopCollection
+				{
+ 					new GradientStop(Colors.Green, 0),
+ 					new GradientStop(Colors.Blue, 1)
+				},
+				new Point(0, 0),
+				new Point(1, 0))
+			});
+			verticalStack.Add(new Label
+			{
+				Text = "RadialGradient",
+				Padding = new Thickness(30),
+				Background = new RadialGradientBrush(
+ 				new GradientStopCollection
+ 				{
+ 					new GradientStop(Colors.DarkBlue, 0),
+ 					new GradientStop(Colors.Yellow, 0.6f),
+ 					new GradientStop(Colors.LightPink, 1)
+ 				},
+ 				new Point(0.5, 0.5),
+ 				0.3f)
+			});
 
 			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level2);
 
@@ -184,13 +212,17 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
 
-			var searchBar = new SearchBar();
-			searchBar.CharacterSpacing = 4;
-			searchBar.Text = "A search query";
+			var searchBar = new SearchBar
+			{
+				CharacterSpacing = 4,
+				Text = "A search query"
+			};
 			verticalStack.Add(searchBar);
 
-			var placeholderSearchBar = new SearchBar();
-			placeholderSearchBar.Placeholder = "Placeholder";
+			var placeholderSearchBar = new SearchBar
+			{
+				Placeholder = "Placeholder"
+			};
 			verticalStack.Add(placeholderSearchBar);
 
 			var monkeyList = new List<string>
@@ -435,9 +467,9 @@ namespace Maui.Controls.Sample.Pages
 			{
 				if (resizeTestLabel.Text == "Short Text")
 				{
-					resizeTestLabel.Text = loremIpsum;
-					explicitWidthTestLabel.Text = loremIpsum;
-					widthAndHeightTestLabel.Text = loremIpsum;
+					resizeTestLabel.Text = LoremIpsum;
+					explicitWidthTestLabel.Text = LoremIpsum;
+					widthAndHeightTestLabel.Text = LoremIpsum;
 				}
 				else
 				{
