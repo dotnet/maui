@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using UWPApp = Microsoft.UI.Xaml.Application;
 using UWPControls = Microsoft.UI.Xaml.Controls;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -41,11 +42,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public static readonly DependencyProperty EmptyViewVisibilityProperty =
 			DependencyProperty.Register(nameof(EmptyViewVisibility), typeof(Visibility),
-				typeof(FormsGridView), new PropertyMetadata(Visibility.Collapsed));
+				typeof(FormsGridView), new PropertyMetadata(WVisibility.Collapsed));
 
-		public Visibility EmptyViewVisibility
+		public WVisibility EmptyViewVisibility
 		{
-			get { return (Visibility)GetValue(EmptyViewVisibilityProperty); }
+			get { return (WVisibility)GetValue(EmptyViewVisibilityProperty); }
 			set { SetValue(EmptyViewVisibilityProperty, value); }
 		}
 

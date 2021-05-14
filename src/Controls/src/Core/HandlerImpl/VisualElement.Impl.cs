@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls
 		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => default;
 		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => default;
 
-		public Visibility Visibility => IsVisible.ToVisibility();
+		public virtual Visibility Visibility => IsVisible.ToVisibility();
 
 		Semantics IFrameworkElement.Semantics
 		{
