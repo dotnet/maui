@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (NativeView == null || VirtualView == null)
+			var nativeView = WrappedNativeView;
+
+			if (nativeView == null || VirtualView == null)
 			{
 				return new Size(widthConstraint, heightConstraint);
 			}
@@ -40,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 			var hasExplicitWidth = explicitWidth >= 0;
 			var hasExplicitHeight = explicitHeight >= 0;
 
-			var sizeThatFits = NativeView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
+			var sizeThatFits = nativeView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
 
 			var size = new Size(
 				sizeThatFits.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Width,
@@ -48,8 +50,8 @@ namespace Microsoft.Maui.Handlers
 
 			if (double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
 			{
-				NativeView.SizeToFit();
-				size = new Size(NativeView.Frame.Width, NativeView.Frame.Height);
+				nativeView.SizeToFit();
+				size = new Size(nativeView.Frame.Width, nativeView.Frame.Height);
 			}
 
 			return new Size(hasExplicitWidth ? explicitWidth : size.Width,
@@ -58,18 +60,39 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void SetupContainer()
 		{
-			var oldParent = NativeView?.Superview;
-			ContainerView ??= new WrapperView();
-
-			if (oldParent == ContainerView)
+			if (NativeView == null || ContainerView != null)
 				return;
 
-			ContainerView.MainView = NativeView;
+			var oldParent = (UIView?)NativeView.Superview;
+
+			var oldIndex = oldParent?.IndexOfSubview(NativeView);
+			NativeView.RemoveFromSuperview();
+
+			ContainerView ??= new WrapperView() { BackgroundColor = UIColor.Green };
+			ContainerView.AddSubview(NativeView);
+
+			if (oldIndex is int idx && idx >= 0)
+				oldParent?.InsertSubview(ContainerView, idx);
+			else
+				oldParent?.AddSubview(ContainerView);
 		}
 
 		protected override void RemoveContainer()
 		{
+			if (NativeView == null || ContainerView == null || NativeView.Superview != ContainerView)
+				return;
 
+			var oldParent = (UIView?)ContainerView.Superview;
+
+			var oldIndex = oldParent?.IndexOfSubview(ContainerView);
+			ContainerView.RemoveFromSuperview();
+
+			ContainerView = null;
+
+			if (oldIndex is int idx && idx >= 0)
+				oldParent?.InsertSubview(NativeView, idx);
+			else
+				oldParent?.AddSubview(NativeView);
 		}
 	}
 }

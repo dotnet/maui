@@ -99,5 +99,13 @@ namespace Microsoft.Maui
 			var currentFrame = nativeView.Frame;
 			nativeView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
 		}
+
+		public static int IndexOfSubview(this UIView nativeView, UIView subview)
+		{
+			if (nativeView.Subviews.Length == 0)
+				return -1;
+
+			return Array.IndexOf(nativeView.Subviews, subview);
+		}
 	}
 }

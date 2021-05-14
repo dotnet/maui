@@ -31,7 +31,43 @@ namespace Maui.Controls.Sample.Pages
 			_services = services;
 			BindingContext = _viewModel = viewModel;
 
-			SetupMauiLayout();
+			var label1 = new Label { Text = "1 Hello World!" };
+			var label2 = new Label { Text = "2 Hello World!", BackgroundColor = Colors.Red };
+			// var label3 = new Label { Text = "3 Hello World!" };
+			// var label4 = new Label { Text = "4 Hello World!", BackgroundColor = Colors.Red };
+
+			var button = new Button { Text = "Click" };
+
+			button.Clicked += delegate
+			{
+				if (label1.BackgroundColor == null)
+					label1.BackgroundColor = Colors.Red;
+				else
+					label1.BackgroundColor = null;
+				if (label2.BackgroundColor == null)
+					label2.BackgroundColor = Colors.Red;
+				else
+					label2.BackgroundColor = null;
+				// if (label3.BackgroundColor == null)
+				// 	label3.BackgroundColor = Colors.Red;
+				// else
+				// 	label3.BackgroundColor = null;
+				// if (label4.BackgroundColor == null)
+				// 	label4.BackgroundColor = Colors.Red;
+				// else
+				// 	label4.BackgroundColor = null;
+			};
+
+			Content = new VerticalStackLayout
+			{
+				label1,
+				label2,
+				label3,
+				label4,
+				button,
+			};
+
+			// SetupMauiLayout();
 
 			NavigationPage.SetHasNavigationBar(this, false);
 

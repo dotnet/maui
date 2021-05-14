@@ -1,54 +1,30 @@
-﻿using UIKit;
+﻿using CoreGraphics;
+using UIKit;
 
 namespace Microsoft.Maui
 {
 	public partial class WrapperView : UIView
 	{
-		UIView? _mainView;
-
-		public WrapperView()
+		public override void LayoutSubviews()
 		{
-			AutosizesSubviews = true;
-		}
+			base.LayoutSubviews();
 
-		public UIView? MainView
-		{
-			get => _mainView;
-			set
-			{
-				if (_mainView == value)
-					return;
-
-				if (_mainView != null)
-					_mainView.RemoveFromSuperview();
-
-				_mainView = value;
-
-				if (_mainView == null)
-					return;
-
-				Frame = _mainView.Frame;
-				var oldParent = _mainView.Superview;
-
-				if (oldParent != null)
-					oldParent.InsertSubviewAbove(this, _mainView);
-
-				_mainView.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
-				_mainView.Frame = Bounds;
-
-				AddSubview(_mainView);
-			}
-		}
-
-		public override void SizeToFit()
-		{
-			if (MainView == null)
+			if (Subviews.Length == 0)
 				return;
 
-			MainView.SizeToFit();
-			Bounds = MainView.Bounds;
+			var child = Subviews[0];
 
-			base.SizeToFit();
+			child.Bounds = Bounds;
+		}
+
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			if (Subviews.Length == 0)
+				return base.SizeThatFits(size);
+
+			var child = Subviews[0];
+
+			return child.SizeThatFits(size);
 		}
 	}
 }
