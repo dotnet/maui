@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	public class ShellFlyoutTemplateSelector : Microsoft.UI.Xaml.Controls.DataTemplateSelector
 	{

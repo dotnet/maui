@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	public class ShellToolbarItemRenderer : Microsoft.UI.Xaml.Controls.Button
 	{

@@ -7,16 +7,16 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:primitiveContract7Present="using:Microsoft.UI.Xaml.Controls.Primitives?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
-    xmlns:xf="using:Microsoft.Maui.Controls.Compatibility.Platform.UWP">
+    xmlns:xf="using:Microsoft.Maui.Controls.Platform">
     <x:Double x:Key="NavigationViewItemOnLeftMinHeight">0</x:Double>
     <DataTemplate x:Key="ShellFlyoutBaseShellItemTemplate">
         <winui:NavigationViewItem x:Name="navItem" AutomationProperties.AutomationId="{Binding AutomationId}">
-            <xf:ShellFlyoutItemRenderer IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></xf:ShellFlyoutItemRenderer>
+            <xf:ShellFlyoutItemView IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></xf:ShellFlyoutItemView>
         </winui:NavigationViewItem>
     </DataTemplate>
     <DataTemplate x:Key="ShellFlyoutMenuItemTemplate">
         <winui:NavigationViewItem x:Name="navItem" AutomationProperties.AutomationId="{Binding AutomationId}">
-            <xf:ShellFlyoutItemRenderer IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></xf:ShellFlyoutItemRenderer>
+            <xf:ShellFlyoutItemView IsSelected="{Binding IsSelected, ElementName=navItem, Mode=TwoWay}"></xf:ShellFlyoutItemView>
         </winui:NavigationViewItem>
     </DataTemplate>
     <DataTemplate x:Key="ShellFlyoutSeperatorTemplate">
@@ -41,8 +41,7 @@
             </Grid>
         </xf:ShellToolbarItemRenderer>
     </DataTemplate>
-
-    <Style TargetType="xf:ShellRenderer" x:Key="ShellNavigationView">
+    <Style TargetType="xf:ShellView" x:Key="ShellNavigationView">
         <Setter Property="PaneToggleButtonStyle" Value="{StaticResource PaneToggleButtonStyle}" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="CompactPaneLength" Value="{ThemeResource NavigationViewCompactPaneLength}" />

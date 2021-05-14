@@ -10,12 +10,12 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WRect = Windows.Foundation.Rect;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellFlyoutItemRenderer : ContentControl
+	public class ShellFlyoutItemView : ContentControl
 	{
 		public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(
-			nameof(IsSelected), typeof(bool), typeof(ShellFlyoutItemRenderer),
+			nameof(IsSelected), typeof(bool), typeof(ShellFlyoutItemView),
 			new PropertyMetadata(default(bool), IsSelectedChanged));
 
 		View _content;
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		double _previousWidth;
 		FrameworkElement FrameworkElement { get; set; }
 		Shell _shell;
-		public ShellFlyoutItemRenderer()
+		public ShellFlyoutItemView()
 		{
 			this.DataContextChanged += OnDataContextChanged;
 			this.LayoutUpdated += OnLayoutUpdated;
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			var bo = (BindableObject)args.NewValue;
 			var element = bo as Element;
-			_shell = element?.FindParent<Shell>();
+			_shell = element?.FindParentOfType<Shell>();
 			DataTemplate dataTemplate = (_shell as IShellController)?.GetFlyoutItemDataTemplate(bo);
 
 			if (bo != null)
@@ -70,11 +70,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_shell.AddLogicalChild(_content);
 				
 				_content.MeasureInvalidated += OnMeasureInvalidated;
-				IVisualElementRenderer renderer = Platform.CreateRenderer(_content);
-				Platform.SetRenderer(_content, renderer);
+				var renderer = _content.ToNative(_shell.Handler.MauiContext);
 
-				Content = renderer.ContainerElement;
-				FrameworkElement = renderer.ContainerElement;
+				Content = renderer;
+				FrameworkElement = renderer;
 
 				// make sure we re-measure once the template is applied
 				if (FrameworkElement != null)
@@ -164,7 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		static void IsSelectedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			((ShellFlyoutItemRenderer)d).UpdateVisualState();
+			((ShellFlyoutItemView)d).UpdateVisualState();
 		}
 	}
 }
