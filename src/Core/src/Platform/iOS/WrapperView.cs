@@ -26,5 +26,12 @@ namespace Microsoft.Maui
 
 			return child.SizeThatFits(size);
 		}
+
+		public override void SetNeedsLayout()
+		{
+			base.SetNeedsLayout();
+
+			Superview?.SetNeedsLayout();
+		}
 	}
 }
