@@ -195,7 +195,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Editor { Text = "ReadOnly Editor", IsReadOnly = true });
 
 
-			var entry = new Entry() { BackgroundColor = Colors.Red };
+			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>
 			{
 				Debug.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
@@ -213,6 +213,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Text = "This should be text with character spacing", CharacterSpacing = 10 });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Numeric, Placeholder = "Numeric Entry" });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
+			verticalStack.Add(new Entry { Placeholder = "This is a blue text box", BackgroundColor = Colors.CornflowerBlue });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });

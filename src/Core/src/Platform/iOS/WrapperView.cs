@@ -5,6 +5,15 @@ namespace Microsoft.Maui
 {
 	public partial class WrapperView : UIView
 	{
+		public WrapperView()
+		{
+		}
+
+		public WrapperView(CGRect frame)
+			: base(frame)
+		{
+		}
+
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();

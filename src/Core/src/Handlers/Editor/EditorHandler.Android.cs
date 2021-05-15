@@ -1,4 +1,5 @@
 ﻿using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
@@ -10,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		static ColorStateList? DefaultTextColors { get; set; }
 		static ColorStateList? DefaultPlaceholderTextColors { get; set; }
+		static Drawable? DefaultBackground;
 
 		EditorFocusChangeListener FocusChangeListener { get; } = new EditorFocusChangeListener();
 
@@ -48,6 +50,13 @@ namespace Microsoft.Maui.Handlers
 
 			DefaultTextColors = nativeView.TextColors;
 			DefaultPlaceholderTextColors = nativeView.HintTextColors;
+			DefaultBackground = nativeView.Background;
+		}
+
+		// This is a Android-specific mapping
+		public static void MapBackground(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateBackground(editor, DefaultBackground);
 		}
 
 		public static void MapText(EditorHandler handler, IEditor editor)

@@ -81,8 +81,11 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract void NativeArrange(Rectangle frame);
 
+		partial void ConnectingHandler(NativeView? nativeView);
+
 		private protected void ConnectHandler(NativeView? nativeView)
 		{
+			ConnectingHandler(nativeView);
 		}
 
 		partial void DisconnectingHandler(NativeView? nativeView);

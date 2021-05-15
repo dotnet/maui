@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Handlers
 			var oldIndex = oldParent?.IndexOfSubview(NativeView);
 			NativeView.RemoveFromSuperview();
 
-			ContainerView ??= new WrapperView();
+			ContainerView ??= new WrapperView(NativeView.Bounds);
 			ContainerView.AddSubview(NativeView);
 
 			if (oldIndex is int idx && idx >= 0)

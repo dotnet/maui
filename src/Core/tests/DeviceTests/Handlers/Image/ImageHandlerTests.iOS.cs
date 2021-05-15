@@ -10,7 +10,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageHandlerTests
 	{
-		[Theory(Skip = "Image needs to use ContainerView to handle Brushes properly.")]
+		[Theory]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#000000")]
