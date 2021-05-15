@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using CoreAnimation;
+using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -9,9 +10,6 @@ namespace Microsoft.Maui
 	public static class ViewExtensions
 	{
 		const string BackgroundLayerName = "MauiBackgroundLayer";
-
-		public static UIColor? GetBackgroundColor(this UIView view)
-			=> view?.BackgroundColor;
 
 		public static void UpdateIsEnabled(this UIView nativeView, IView view)
 		{
@@ -81,7 +79,7 @@ namespace Microsoft.Maui
 
 			return null;
 		}
-    
+
 		public static void UpdateBackgroundLayerFrame(this UIView view)
 		{
 			if (view == null || view.Frame.IsEmpty)
@@ -89,7 +87,7 @@ namespace Microsoft.Maui
 
 			var layer = view.Layer;
 
-			if (layer == null || layer.Sublayers == null)
+			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
 				return;
 
 			foreach (var sublayer in layer.Sublayers)
@@ -101,7 +99,7 @@ namespace Microsoft.Maui
 				}
 			}
 		}
-		    
+
 		public static void InvalidateMeasure(this UIView nativeView, IView view)
 		{
 			nativeView.SetNeedsLayout();
@@ -184,6 +182,6 @@ namespace Microsoft.Maui
 					break;
 				}
 			}
-    }
+		}
 	}
 }

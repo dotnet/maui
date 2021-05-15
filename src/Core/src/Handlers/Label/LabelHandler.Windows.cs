@@ -11,14 +11,14 @@ namespace Microsoft.Maui.Handlers
 		protected override TextBlock CreateNativeView() => new TextBlock();
 
 		public override bool NeedsContainer =>
-			VirtualView?.BackgroundColor != null ||
+			VirtualView?.Background != null ||
 			base.NeedsContainer;
 
-		public static void MapBackgroundColor(LabelHandler handler, ILabel label)
+		public static void MapBackground(LabelHandler handler, ILabel label)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
-			handler.ContainerView?.UpdateBackgroundColor(label);
+			handler.WrappedNativeView?.UpdateBackground(label);
 		}
 
 		public static void MapText(LabelHandler handler, ILabel label) =>

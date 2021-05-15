@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 			if (paint.IsNullOrEmpty())
 				nativeView.Background = defaultBackground;
 			else
-				nativeView.Background = paint.ToDrawable();
+				nativeView.Background = paint!.ToDrawable();
 		}
 
 		public static bool GetClipToOutline(this AView view)

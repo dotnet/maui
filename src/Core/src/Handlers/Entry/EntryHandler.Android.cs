@@ -65,17 +65,6 @@ namespace Microsoft.Maui.Handlers
 			DefaultTextColors = nativeView.TextColors;
 		}
 
-		public override bool NeedsContainer =>
-			VirtualView?.BackgroundColor != null ||
-			base.NeedsContainer;
-
-		public static void MapBackgroundColor(EntryHandler handler, IEntry entry)
-		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-
-			handler.ContainerView?.UpdateBackgroundColor(entry);
-		}
-
 		public static void MapText(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateText(entry);

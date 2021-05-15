@@ -11,10 +11,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override Image CreateNativeView() => new Image();
 
-		public override bool NeedsContainer =>
-			VirtualView?.BackgroundColor != null ||
-			base.NeedsContainer;
-
 		protected override void ConnectHandler(Image nativeView)
 		{
 			base.ConnectHandler(nativeView);
@@ -38,11 +34,15 @@ namespace Microsoft.Maui.Handlers
 			_sourceManager.Reset();
 		}
 
-		public static void MapBackgroundColor(ImageHandler handler, IImage image)
+		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
+			base.NeedsContainer;
+
+		public static void MapBackground(ImageHandler handler, IImage image)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
-			handler.ContainerView?.UpdateBackgroundColor(image);
+			handler.WrappedNativeView?.UpdateBackground(image);
 		}
 
 		public static void MapAspect(ImageHandler handler, IImage image) =>
