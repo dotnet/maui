@@ -20,12 +20,13 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory(DisplayName = "Visibility is set correctly")]
 		[InlineData(Visibility.Collapsed)]
 		[InlineData(Visibility.Hidden)]
-		public async Task SetVisibility(Visibility visibility)
+		public virtual async Task SetVisibility(Visibility visibility)
 		{
 			var view = new TStub
 			{
 				Visibility = visibility
 			};
+
 			var id = await GetValueAsync(view, handler => GetVisibility(handler));
 			Assert.Equal(view.Visibility, id);
 		}

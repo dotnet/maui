@@ -18,18 +18,17 @@ namespace Microsoft.Maui
 
 		public static void UpdateVisibility(this AView nativeView, IView view)
 		{
-			switch (view.Visibility)
+			nativeView.Visibility = view.Visibility.ToNativeVisibility();
+		}
+
+		public static ViewStates ToNativeVisibility(this Visibility visibility) 
+		{
+			return visibility switch
 			{
-				case Visibility.Visible:
-					nativeView.Visibility = ViewStates.Visible;
-					break;
-				case Visibility.Hidden:
-					nativeView.Visibility = ViewStates.Invisible;
-					break;
-				case Visibility.Collapsed:
-					nativeView.Visibility = ViewStates.Gone;
-					break;
-			}
+				Visibility.Hidden => ViewStates.Invisible,
+				Visibility.Collapsed => ViewStates.Gone,
+				_ => ViewStates.Visible,
+			};
 		}
 
 		public static void UpdateBackground(this AView nativeView, IView view)
