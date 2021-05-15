@@ -11,25 +11,15 @@ namespace Microsoft.Maui
 		public static void UpdateIsEnabled(this FrameworkElement nativeView, IView view) =>
 			(nativeView as Control)?.UpdateIsEnabled(view.IsEnabled);
 
-		public static void UpdateBackgroundColor(this FrameworkElement nativeView, IView view)
+		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
 		{
 			if (nativeView is Control control)
-				control.UpdateBackgroundColor(view.BackgroundColor);
+				control.UpdateBackground(view.Background);
 			else if (nativeView is Border border)
-				border.UpdateBackgroundColor(view.BackgroundColor);
+				border.UpdateBackground(view.Background);
 			else if (nativeView is Panel panel)
-				panel.UpdateBackgroundColor(view.BackgroundColor);
+				panel.UpdateBackground(view.Background);
 		}
-
-		// TODO ezhart Do we need all three of these? 
-		public static void UpdateBackgroundColor(this Control nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Background = color?.ToNative() ?? defaultBrush ?? nativeControl.Background;
-
-		public static void UpdateBackgroundColor(this Border nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Background = color?.ToNative() ?? defaultBrush ?? nativeControl.Background;
-
-		public static void UpdateBackgroundColor(this Panel nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeControl.Background = color?.ToNative() ?? defaultBrush ?? nativeControl.Background;
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);

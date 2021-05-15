@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			nativeView.Frame = rect.ToCGRect();
+			nativeView.UpdateBackgroundLayerFrame();
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)

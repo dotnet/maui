@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 		public static PropertyMapper<IImage, ImageHandler> ImageMapper = new PropertyMapper<IImage, ImageHandler>(ViewHandler.ViewMapper)
 		{
 #if WINDOWS
-			[nameof(ILabel.BackgroundColor)] = MapBackgroundColor,
+			[nameof(ILabel.Background)] = MapBackground,
 #endif
 			[nameof(IImage.Aspect)] = MapAspect,
 			[nameof(IImage.IsAnimationPlaying)] = MapIsAnimationPlaying,

@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 		public static PropertyMapper<ILabel, LabelHandler> LabelMapper = new PropertyMapper<ILabel, LabelHandler>(ViewHandler.ViewMapper)
 		{
 #if WINDOWS || __IOS__
-			[nameof(ILabel.BackgroundColor)] = MapBackgroundColor,
+			[nameof(ILabel.Background)] = MapBackground,
 #endif
 			[nameof(ILabel.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ILabel.Font)] = MapFont,

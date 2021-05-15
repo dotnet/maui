@@ -1,5 +1,3 @@
-using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Platform.iOS;
 
 namespace Microsoft.Maui.Handlers
@@ -12,11 +10,11 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.BackgroundColor != null ||
 			base.NeedsContainer;
 
-		public static void MapBackgroundColor(LabelHandler handler, ILabel label)
+		public static void MapBackground(LabelHandler handler, ILabel label)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
-			handler.ContainerView?.UpdateBackgroundColor(label);
+			handler.NativeView?.UpdateBackground(label);
 		}
 
 		public static void MapText(LabelHandler handler, ILabel label)

@@ -15,14 +15,21 @@ namespace Microsoft.Maui
 			nativeView.Enabled = view.IsEnabled;
 		}
 
-		public static void UpdateBackgroundColor(this AView nativeView, IView view, Drawable? defaultBackground = null)
+		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackground = null)
 		{
-			var backgroundColor = view.BackgroundColor;
+			// Remove previous background gradient if any
+			if (nativeView.Background is MauiDrawable mauiDrawable)
+			{
+				nativeView.Background = null;
+				mauiDrawable.Dispose();
+			}
 
-			if (backgroundColor == null && defaultBackground != null)
+			var paint = view.Background;
+
+			if (paint.IsNullOrEmpty())
 				nativeView.Background = defaultBackground;
 			else
-				nativeView.SetBackgroundColor(backgroundColor.ToNative(Colors.Transparent));
+				nativeView.Background = paint.ToDrawable();
 		}
 
 		public static bool GetClipToOutline(this AView view)
@@ -39,7 +46,7 @@ namespace Microsoft.Maui
 		{
 			if (AutomationTagId == DefaultAutomationTagId)
 			{
-				AutomationTagId = Microsoft.Maui.Resource.Id.automation_tag_id;
+				AutomationTagId = Resource.Id.automation_tag_id;
 			}
 
 			nativeView.SetTag(AutomationTagId, view.AutomationId);
@@ -48,6 +55,7 @@ namespace Microsoft.Maui
 		public static void UpdateSemantics(this AView nativeView, IView view)
 		{
 			var semantics = view.Semantics;
+
 			if (semantics == null)
 				return;
 

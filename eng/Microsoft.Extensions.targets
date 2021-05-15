@@ -10,7 +10,7 @@
   <PropertyGroup>
     <_MicrosoftProjectReunionVersion>0.5.0</_MicrosoftProjectReunionVersion>
     <_MicrosoftGraphicsWin2DVersion>0.5.0.13</_MicrosoftGraphicsWin2DVersion>
-    <_MicrosoftMauiGraphics>6.0.100-preview.3.61</_MicrosoftMauiGraphics>
+    <_MicrosoftMauiGraphics>6.0.100-preview.4.78</_MicrosoftMauiGraphics>
     <_XamarinAndroidGlideVersion>4.11.0.1</_XamarinAndroidGlideVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
