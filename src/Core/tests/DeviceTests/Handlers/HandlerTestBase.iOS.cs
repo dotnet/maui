@@ -20,17 +20,25 @@ namespace Microsoft.Maui.DeviceTests
 		protected Visibility GetVisibility(IViewHandler viewHandler)
 		{
 			var nativeView = (UIView)viewHandler.NativeView;
-			var alpha = nativeView.Alpha;
 
-			if (alpha == 0)
-				return Visibility.Hidden;
-			else
+			foreach (var constraint in nativeView.Constraints)
 			{
-				if (nativeView.Hidden)
-					return Visibility.Collapsed;
-
-				return Visibility.Visible;
+				if (constraint is CollapseConstraint collapseConstraint)
+				{
+					// Active the collapse constraint; that will squish the view down to zero height
+					if (collapseConstraint.Active)
+					{
+						return Visibility.Collapsed;
+					}
+				}
 			}
+
+			if (nativeView.Hidden)
+			{
+				return Visibility.Hidden;
+			}
+
+			return Visibility.Visible;
 		}
 	}
 }
