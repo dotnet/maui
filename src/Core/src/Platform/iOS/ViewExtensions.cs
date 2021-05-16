@@ -111,7 +111,7 @@ namespace Microsoft.Maui
 
 			return null;
 		}
-    
+
 		public static void UpdateBackgroundLayerFrame(this UIView view)
 		{
 			if (view == null || view.Frame.IsEmpty)
@@ -131,7 +131,7 @@ namespace Microsoft.Maui
 				}
 			}
 		}
-		    
+
 		public static void InvalidateMeasure(this UIView nativeView, IView view)
 		{
 			nativeView.SetNeedsLayout();
@@ -197,11 +197,11 @@ namespace Microsoft.Maui
 					return true;
 				}
 			}
-			
+
 			return false;
 		}
-    
-    	static void InsertBackgroundLayer(this UIView control, CALayer backgroundLayer, int index = -1)
+
+		static void InsertBackgroundLayer(this UIView control, CALayer backgroundLayer, int index = -1)
 		{
 			control.RemoveBackgroundLayer();
 

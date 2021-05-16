@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Graphics
 			return null;
 		}
 
-        public static CALayer? CreateCALayer(this SolidPaint solidPaint, CGRect frame = default)
+		public static CALayer? CreateCALayer(this SolidPaint solidPaint, CGRect frame = default)
 		{
 			var solidColorLayer = new CALayer
 			{
