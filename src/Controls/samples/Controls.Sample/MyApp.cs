@@ -9,14 +9,16 @@ namespace Maui.Controls.Sample
 {
 	public class MyApp : IApplication
 	{
-		List<IWindow> _windows = new List<IWindow>();
-		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
+		readonly List<IWindow> _windows = new();
 
-		public MyApp(IServiceProvider services, ITextService textService)
+		public MyApp(IServiceProvider services, ITextService textService, IImageSourceServiceConfiguration imageConfig)
 		{
 			Services = services;
 			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
+			imageConfig.SetImageDirectory("Assets");
 		}
+
+		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
 
 		public IServiceProvider Services { get; }
 

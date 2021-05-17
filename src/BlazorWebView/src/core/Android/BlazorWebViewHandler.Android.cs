@@ -1,10 +1,10 @@
-﻿using Android.Webkit;
-using static Android.Views.ViewGroup;
-using AWebView = Android.Webkit.WebView;
+﻿using System;
+using System.Collections.ObjectModel;
+using Android.Webkit;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Handlers;
-using System;
-using System.Collections.ObjectModel;
+using static Android.Views.ViewGroup;
+using AWebView = Android.Webkit.WebView;
 using Path = System.IO.Path;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui

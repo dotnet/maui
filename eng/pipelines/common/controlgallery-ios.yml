@@ -52,14 +52,14 @@ steps:
     inputs:
       targetType: 'filePath'
       filePath: 'build.sh'
-      arguments: --target cg-ios --BUILD_CONFIGURATION=$(BuildConfiguration)
+      arguments: --target cg-ios --configuration=$(BuildConfiguration)
 
   - task: Bash@3
     displayName: 'Build iOS UITests Tests'
     inputs:
       targetType: 'filePath'
       filePath: 'build.sh'
-      arguments: --target cg-ios-build-tests --BUILD_CONFIGURATION=$(BuildConfiguration)
+      arguments: --target cg-ios-build-tests --configuration=$(BuildConfiguration)
 
   - task: CopyFiles@2
     displayName: 'Copy iOS Files for UITest'

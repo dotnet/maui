@@ -13,6 +13,6 @@ namespace Microsoft.Maui
 		IMauiContext? MauiContext { get; }
 		bool HasContainer { get; set; }
 		Size GetDesiredSize(double widthConstraint, double heightConstraint);
-		void SetFrame(Rectangle frame);
+		void NativeArrange(Rectangle frame);
 	}
 }

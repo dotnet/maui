@@ -8,6 +8,7 @@ using Maui.Controls.Sample.ViewModel;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 #endif
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
@@ -16,6 +17,8 @@ using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Controls;
+using Maui.Controls.Sample.Controls;
 
 namespace Maui.Controls.Sample
 {
@@ -25,31 +28,36 @@ namespace Maui.Controls.Sample
 		private PageType _pageType = PageType.NavigationPage;
 
 		public readonly static bool UseXamlApp = true;
+		public readonly static bool UseFullDI = false;
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{
+			appBuilder
+				.UseFormsCompatibility()
+				.UseMauiControlsHandlers();
+
 			if (UseXamlApp)
-			{
-				// Use all the Forms features
-				appBuilder = appBuilder
-					.UseFormsCompatibility()
-					.UseMauiApp<XamlApp>();
-			}
+				appBuilder.UseMauiApp<XamlApp>();
 			else
-			{
-				// Use just the Forms renderers
-				appBuilder = appBuilder
-					.UseCompatibilityRenderers()
-					.UseMauiApp<MyApp>();
-			}
-#if DEBUG
+				appBuilder.UseMauiApp<MyApp>();
+
+			if (UseFullDI)
+				appBuilder.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory());
+			else
+				appBuilder.UseMauiServiceProviderFactory(true);
+
+			// Use a "third party" library that brings in a massive amount of controls
+			appBuilder.UseRed();
+
+#if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
 #endif
-			appBuilder
-				.UseMauiControlsHandlers()
+
 #if NET6_0_OR_GREATER
-				.RegisterBlazorMauiWebView()
+			appBuilder.RegisterBlazorMauiWebView();
 #endif
+
+			appBuilder
 				.ConfigureAppConfiguration(config =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>
@@ -60,15 +68,26 @@ namespace Maui.Controls.Sample
 						{"Logging:LogLevel:Default", "Warning"}
 					});
 				})
-				.UseMauiServiceProviderFactory(true)
-				//.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
 				.ConfigureServices(services =>
 				{
+					// The MAUI DI does not support generic argument resolution
+					if (UseFullDI)
+					{
+						services.AddLogging(logging =>
+						{
+#if WINDOWS
+							logging.AddDebug();
+#else
+							logging.AddConsole();
+#endif
+						});
+					}
+
 					services.AddSingleton<ITextService, TextService>();
 					services.AddTransient<MainPageViewModel>();
 
 					services.AddTransient(
-						serviceType: typeof(IPage),
+						serviceType: typeof(Page),
 						implementationType: _pageType switch
 						{
 							PageType.NavigationPage => typeof(NavPage),
@@ -84,24 +103,29 @@ namespace Maui.Controls.Sample
 							_ => throw new Exception(),
 						});
 
-					services.AddTransient<IWindow, Microsoft.Maui.Controls.Window>();
+					services.AddTransient<IWindow, Window>();
 				})
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
+					fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
+					fonts.AddFont("LobsterTwo-Bold.ttf", "Lobster Two Bold");
+					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
+					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
+					fonts.AddFont("ionicons.ttf", "Ionicons");
 				})
-				//.ConfigureEssentials(essentials =>
-				//{
-				//	essentials
-				//		.UseVersionTracking()
-				//		.UseMapServiceToken("YOUR-KEY-HERE")
-				//		.AddAppAction("test_action", "Test App Action")
-				//		.AddAppAction("second_action", "Second App Action")
-				//		.OnAppAction(appAction =>
-				//		{
-				//			Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
-				//		});
-				//})
+				.ConfigureEssentials(essentials =>
+				{
+					essentials
+						.UseVersionTracking()
+						.UseMapServiceToken("YOUR-KEY-HERE")
+						.AddAppAction("test_action", "Test App Action")
+						.AddAppAction("second_action", "Second App Action")
+						.OnAppAction(appAction =>
+						{
+							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
+						});
+				})
 				.ConfigureLifecycleEvents(events =>
 				{
 					events.AddEvent<Action<string>>("CustomEventName", value => LogEvent("CustomEventName"));

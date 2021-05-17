@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using NUnit.Framework;
 using WColor = Windows.UI.Color;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {

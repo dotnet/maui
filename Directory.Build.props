@@ -4,11 +4,14 @@
   <PropertyGroup>
 
     <BuildForWinUI Condition="'$(SolutionFileName)' == 'Microsoft.Maui.WinUI.sln'">true</BuildForWinUI>
+    <BuildForAndroid Condition="'$(SolutionFileName)' == 'Microsoft.Maui.Droid.sln'">true</BuildForAndroid>
+    
     <BuildForNet6 Condition="'$(SolutionFileName)' == 'Microsoft.Maui-net6.sln' or '$(BuildForWinUI)' == 'true'">true</BuildForNet6>
     <MauiPlatforms>net6.0-ios;net6.0-maccatalyst;net6.0-android</MauiPlatforms>
     <WindowsTargetFramework Condition="'$(WindowsTargetFramework)' == ''">net6.0-windows10.0.18362</WindowsTargetFramework>
     <MauiPlatforms Condition="'$(Packing)' == 'true'">$(MauiPlatforms);$(WindowsTargetFramework)</MauiPlatforms>
     <MauiPlatforms Condition="'$(BuildForWinUI)' == 'true'">$(WindowsTargetFramework)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(BuildForAndroid)' == 'true'">net6.0-android</MauiPlatforms>
 
     <!-- This is used to easily build for a specific target to make the IDE work a bit better  -->   
     <NonNet6Platforms>Xamarin.iOS10;MonoAndroid10.0</NonNet6Platforms>
@@ -23,11 +26,17 @@
     <BuildNonNet6ForAndroid>false</BuildNonNet6ForAndroid>
     <NonNet6Platforms Condition="'$(BuildNonNet6ForAndroid)' == 'true'">MonoAndroid10.0</NonNet6Platforms>
     <NonNet6EssentialsPlatforms Condition="'$(BuildNonNet6ForAndroid)' == 'true'">netstandard2.0;netstandard2.1;MonoAndroid10.0</NonNet6EssentialsPlatforms>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
   </PropertyGroup>
 
   <PropertyGroup>
-    
+    <DotNetOutputPath>$(MSBuildThisFileDirectory)bin/</DotNetOutputPath>
+    <DotNetTempDirectory>$(DotNetOutputPath)temp/</DotNetTempDirectory>
+    <DotNetDirectory>$(DotNetOutputPath)dotnet/</DotNetDirectory>
+    <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
+    <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
+    <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetPreviewVersionBand)/</DotNetSdkManifestsDirectory>
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
     <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\</_MauiBuildTasksLocation>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

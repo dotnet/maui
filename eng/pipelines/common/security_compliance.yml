@@ -1,0 +1,43 @@
+stages:
+  - stage: security_compliance
+    displayName: Security and Compliance checks
+    jobs:
+    - job: run_policheck_security_compliance
+      displayName: 'Policheck And Credentials Compliance'
+      pool: $(HostedWinVS2019)
+      timeoutInMinutes: 60
+      cancelTimeoutInMinutes: 5
+      steps:
+      - checkout: self
+
+      - template: security/policheck/v1.yml@xamarin-templates
+
+      - template: security/xa-static-analysis/v2.yml@xamarin-templates
+        parameters:
+          credScanSuppressionsFile: $(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json
+
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
+        displayName: Run AntiMalware (Defender) Scan
+        condition: succeededOrFailed()
+        inputs:
+          FileDirPath: $(System.DefaultWorkingDirectory)
+          EnableServices: true
+
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
+        displayName: Create Security Analysis Report
+        condition: succeededOrFailed()
+        inputs:
+          AllTools: true
+
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+        displayName: Publish Security Analysis Logs
+        condition: succeededOrFailed()
+        inputs:
+          ArtifactName: CodeAnalysisLogs
+        
+      - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
+        displayName: Fail Job if Security Issues are Detected
+        condition: succeededOrFailed()
+        inputs:
+          AllTools: true
+        

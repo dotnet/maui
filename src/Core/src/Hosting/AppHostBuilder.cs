@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Hosting.Internal;
 
 namespace Microsoft.Maui.Hosting
@@ -39,8 +41,6 @@ namespace Microsoft.Maui.Hosting
 
 		public IAppHost Build()
 		{
-			_services = _serviceCollectionFactory();
-
 			if (_hostBuilt)
 				throw new InvalidOperationException("Build can only be called once.");
 
@@ -52,15 +52,18 @@ namespace Microsoft.Maui.Hosting
 			CreateHostBuilderContext();
 			BuildAppConfiguration();
 
+			_services = _serviceCollectionFactory();
 			if (_services == null)
 				throw new InvalidOperationException("The ServiceCollection cannot be null");
 
 			BuildServiceCollections(_services);
+			BuildServices(_services);
 
-			CreateServiceProvider(_services);
+			_services.TryAddSingleton<ILoggerFactory, FallbackLoggerFactory>();
 
+			_serviceProvider = ConfigureContainerAndGetProvider(_services);
 			if (_serviceProvider == null)
-				throw new InvalidOperationException($"The ServiceProvider cannot be null");
+				throw new InvalidOperationException($"The IServiceProviderFactory returned a null IServiceProvider.");
 
 			ConfigureServiceCollectionBuilders(_serviceProvider);
 
@@ -157,7 +160,7 @@ namespace Microsoft.Maui.Hosting
 			};
 		}
 
-		void CreateServiceProvider(IServiceCollection services)
+		void BuildServices(IServiceCollection services)
 		{
 			if (services == null)
 				throw new ArgumentNullException(nameof(services));
@@ -170,13 +173,6 @@ namespace Microsoft.Maui.Hosting
 			foreach (Action<HostBuilderContext, IServiceCollection> configureServicesAction in _configureServicesActions)
 			{
 				configureServicesAction(_hostBuilderContext, services);
-			}
-
-			_serviceProvider = ConfigureContainerAndGetProvider(services);
-
-			if (_serviceProvider == null)
-			{
-				throw new InvalidOperationException($"The IServiceProviderFactory returned a null IServiceProvider.");
 			}
 		}
 

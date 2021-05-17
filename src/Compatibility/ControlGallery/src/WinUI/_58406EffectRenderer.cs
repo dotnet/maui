@@ -1,8 +1,8 @@
 using System.Linq;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.UI.Xaml.Controls;
 
 [assembly: ExportEffect(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI._58406EffectRenderer), Bugzilla58406.EffectName)]
 
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 				return;
 			}
 
-			textBlock.Text = new string(textBlock.Text.ToCharArray().Reverse().ToArray()); 
+			textBlock.Text = new string(textBlock.Text.ToCharArray().Reverse().ToArray());
 		}
 
 		protected override void OnDetached()

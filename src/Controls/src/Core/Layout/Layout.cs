@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Layout2
 
 			foreach (var child in Children)
 			{
-				child.Handler?.SetFrame(child.Frame);
+				child.Handler?.NativeArrange(child.Frame);
 			}
 
 			return Frame.Size;
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			}
 		}
 
-		public void Add(IView child)
+		public virtual void Add(IView child)
 		{
 			if (child == null)
 				return;
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			LayoutHandler?.Add(child);
 		}
 
-		public void Remove(IView child)
+		public virtual void Remove(IView child)
 		{
 			if (child == null)
 				return;

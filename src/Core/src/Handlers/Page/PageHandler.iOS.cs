@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Linq;
-
-#if __IOS__ || IOS || MACCATALYST
-using NativeView = UIKit.UIView;
 using UIKit;
-#else
-using NativeView = AppKit.NSView;
-#endif
+using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -41,7 +36,9 @@ namespace Microsoft.Maui.Handlers
 			oldChildren.ForEach(x => x.RemoveFromSuperview());
 
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
-			NativeView.AddSubview(VirtualView.Content.ToNative(MauiContext));
+
+			if (VirtualView.Content != null)
+				NativeView.AddSubview(VirtualView.Content.ToNative(MauiContext));
 		}
 
 		public static void MapTitle(PageHandler handler, IPage page)

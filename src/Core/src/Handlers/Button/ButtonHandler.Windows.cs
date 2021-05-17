@@ -46,9 +46,9 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// This is a Windows-specific mapping
-		public static void MapBackgroundColor(ButtonHandler handler, IButton button)
+		public static void MapBackground(ButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateBackgroundColor(button, DefaultBackground);
+			handler.NativeView?.UpdateBackground(button, DefaultBackground);
 		}
 
 		public static void MapText(ButtonHandler handler, IButton button)

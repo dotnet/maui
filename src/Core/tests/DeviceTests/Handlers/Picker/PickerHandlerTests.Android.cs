@@ -81,7 +81,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		bool GetNativeIsBold(PickerHandler pickerHandler) =>
-			GetNativePicker(pickerHandler).Typeface.IsBold;
+			GetNativePicker(pickerHandler).Typeface.GetFontWeight() == FontWeight.Bold;
 
 		bool GetNativeIsItalic(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Typeface.IsItalic;

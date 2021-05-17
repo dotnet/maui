@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
-using WResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
+using WResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
 
 [assembly: ExportRenderer(typeof(CustomSwitch), typeof(CustomSwitchRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
