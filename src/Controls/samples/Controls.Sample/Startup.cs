@@ -36,12 +36,7 @@ namespace Maui.Controls.Sample
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{
-			bool useFullDIAndBlazor = UseFullDI
-
-#if BLAZOR_ENABLED
-				|| _pageType == PageType.Blazor
-#endif
-				;
+			bool useFullDIAndBlazor = UseFullDI || _pageType == PageType.Blazor;
 
 			appBuilder
 				.UseFormsCompatibility()
