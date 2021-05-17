@@ -178,7 +178,9 @@ void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null)
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var binlog = $"artifacts/{name}-{configuration}.binlog";
 
-    // If we're not on Windows, just use ./bin/dotnet/dotnet, that's it
+    SetDotNetEnvironmentVariables();
+
+    // If we're not on Windows, use ./bin/dotnet/dotnet
     if (!IsRunningOnWindows())
     {
         var dotnetBuildSettings = new DotNetCoreMSBuildSettings
@@ -202,8 +204,7 @@ void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null)
         return;
     }
 
-    // Otherwise we need to set env variables and run MSBuild
-    SetDotNetEnvironmentVariables();
+    // Otherwise we need to run MSBuild for WinUI support
     var msbuildSettings = new MSBuildSettings
         {
             Configuration = configuration,
