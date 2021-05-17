@@ -6,8 +6,8 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category(TestCategory.Picker)]
-	public partial class PageHandlerTests : HandlerTestBase<PickerHandler, PickerStub>
+	[Category(TestCategory.Page)]
+	public partial class PageHandlerTests : HandlerTestBase<PageHandler, PageStub>
 	{
 		[Fact(DisplayName = "Title Initializes Correctly")]
 		public async Task ContentInitializes()
