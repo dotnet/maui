@@ -52,7 +52,7 @@ if ($IsWindows)
         $env:MSBuildEnableWorkloadResolver=$true
 
         # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
-        $env:PATH=($env:DOTNET_ROOT + ";" + $env:PATH)
+        $env:PATH=($env:DOTNET_ROOT + [IO.Path]::PathSeparator + $env:PATH)
 
         # Have to build the solution tasks
         & $msbuild $slnTasks `
