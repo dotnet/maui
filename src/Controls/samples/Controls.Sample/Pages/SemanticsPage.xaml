@@ -55,10 +55,10 @@
                 SemanticProperties.Hint="Hint text"/>
 
             <Entry
-                Text="Entry text TH"
+                Text="Entry text, iOS:DTH, Android:TH"
                 FontSize="14"
                 SemanticProperties.Description="Description text"
-                SemanticProperties.Hint="Hint text"/>
+                SemanticProperties.Hint="Hint text" />
 
             <Entry
                 FontSize="14"
@@ -66,7 +66,7 @@
                 SemanticProperties.Hint="Hint text"/>
 
             <Editor
-                Text="Editor text TH"
+                Text="Editor text, iOS:DTH, Android:TH"
                 FontSize="14"
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
@@ -77,14 +77,21 @@
                 SemanticProperties.Hint="Hint text"/>
             
             <SearchBar
-                Text="Search bar text"
+                Text="Search bar text, iOS:T, Android:DH?"
                 Placeholder="Placeholder text"
                 PlaceholderColor="DodgerBlue"
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
 
+            <Label
+                Text="The next 3 controls read out iOS:DTH, Android:TH"
+                TextColor="RoyalBlue"
+                FontAttributes="Bold"
+                FontSize="16"
+                Margin="0,10"/>
+
             <Picker
-                Title="Select a monkey TH"
+                Title="Select a monkey, iOS:DTH, Android:TH"
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text">
                 <Picker.ItemsSource>
@@ -108,6 +115,13 @@
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
 
+            <Label
+                Text="The rest of the controls read out DH"
+                TextColor="RoyalBlue"
+                FontAttributes="Bold"
+                FontSize="16"
+                Margin="0,10"/>
+
             <ActivityIndicator 
                 IsRunning="True"
                 Color="DodgerBlue"
@@ -124,6 +138,7 @@
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
 
+            <!-- iOS: currently not accessible as a whole; only focuses on increment/decrement buttons individually -->
             <Stepper
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
@@ -140,6 +155,7 @@
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
 
+            <!-- iOS: currently not accessible -->
             <Image
                 Source="dotnet_bot.png"
                 SemanticProperties.Description="Description text"
