@@ -18,6 +18,7 @@ using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Controls;
+using Maui.Controls.Sample.Controls;
 
 namespace Maui.Controls.Sample
 {
@@ -45,6 +46,9 @@ namespace Maui.Controls.Sample
 			else
 				appBuilder.UseMauiServiceProviderFactory(true);
 
+			// Use a "third party" library that brings in a massive amount of controls
+			appBuilder.UseRed();
+
 #if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
 #endif
@@ -52,6 +56,7 @@ namespace Maui.Controls.Sample
 #if NET6_0_OR_GREATER
 			appBuilder.RegisterBlazorMauiWebView();
 #endif
+
 			appBuilder
 				.ConfigureAppConfiguration(config =>
 				{
@@ -103,20 +108,24 @@ namespace Maui.Controls.Sample
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
+					fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
+					fonts.AddFont("LobsterTwo-Bold.ttf", "Lobster Two Bold");
+					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
+					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 					fonts.AddFont("ionicons.ttf", "Ionicons");
 				})
-				//.ConfigureEssentials(essentials =>
-				//{
-				//	essentials
-				//		.UseVersionTracking()
-				//		.UseMapServiceToken("YOUR-KEY-HERE")
-				//		.AddAppAction("test_action", "Test App Action")
-				//		.AddAppAction("second_action", "Second App Action")
-				//		.OnAppAction(appAction =>
-				//		{
-				//			Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
-				//		});
-				//})
+				.ConfigureEssentials(essentials =>
+				{
+					essentials
+						.UseVersionTracking()
+						.UseMapServiceToken("YOUR-KEY-HERE")
+						.AddAppAction("test_action", "Test App Action")
+						.AddAppAction("second_action", "Second App Action")
+						.OnAppAction(appAction =>
+						{
+							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
+						});
+				})
 				.ConfigureLifecycleEvents(events =>
 				{
 					events.AddEvent<Action<string>>("CustomEventName", value => LogEvent("CustomEventName"));

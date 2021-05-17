@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Imaging;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -32,13 +33,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (slider.ThumbImageSource != null)
 			{
-				slider.Thumb.Visibility = Visibility.Collapsed;
-				slider.ImageThumb.Visibility = Visibility.Visible;
+				slider.Thumb.Visibility = WVisibility.Collapsed;
+				slider.ImageThumb.Visibility = WVisibility.Visible;
 			}
 			else
 			{
-				slider.Thumb.Visibility = Visibility.Visible;
-				slider.ImageThumb.Visibility = Visibility.Collapsed;
+				slider.Thumb.Visibility = WVisibility.Visible;
+				slider.ImageThumb.Visibility = WVisibility.Collapsed;
 			}
 		}
 

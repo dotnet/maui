@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+#nullable enable
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -10,6 +11,16 @@ namespace Microsoft.Maui.Handlers
 			TextWrapping = TextWrapping.Wrap,
 			VerticalContentAlignment = VerticalAlignment.Top
 		};
+
+		protected override void ConnectHandler(MauiTextBox nativeView)
+		{
+			nativeView.LostFocus += OnLostFocus;
+		}
+
+		protected override void DisconnectHandler(MauiTextBox nativeView)
+		{
+			nativeView.LostFocus -= OnLostFocus;
+		}
 
 		public static void MapText(EditorHandler handler, IEditor editor)
 		{
@@ -49,5 +60,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateTextColor(editor);
+		
+		void OnLostFocus(object? sender, RoutedEventArgs e)
+		{
+			VirtualView?.Completed();
+		}
 	}
 }

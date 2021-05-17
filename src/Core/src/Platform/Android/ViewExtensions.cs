@@ -1,4 +1,6 @@
+using Android.Views;
 using AndroidX.Core.View;
+using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -14,11 +16,39 @@ namespace Microsoft.Maui
 				nativeView.Enabled = view.IsEnabled;
 		}
 
-		public static void UpdateBackgroundColor(this AView nativeView, IView view)
+		public static void UpdateVisibility(this AView nativeView, IView view)
 		{
-			var backgroundColor = view.BackgroundColor;
-			if (backgroundColor != null)
-				nativeView?.SetBackgroundColor(backgroundColor.ToNative());
+			nativeView.Visibility = view.Visibility.ToNativeVisibility();
+		}
+
+		public static ViewStates ToNativeVisibility(this Visibility visibility) 
+		{
+			return visibility switch
+			{
+				Visibility.Hidden => ViewStates.Invisible,
+				Visibility.Collapsed => ViewStates.Gone,
+				_ => ViewStates.Visible,
+			};
+		}
+
+		public static void UpdateBackground(this AView nativeView, IView view)
+		{
+			if (view == null)
+				return;
+
+			// Remove previous background gradient if any
+			if (nativeView.Background is MauiDrawable mauiDrawable)
+			{
+				nativeView.Background = null;
+				mauiDrawable.Dispose();
+			}
+
+			var paint = view.Background;
+
+			if (paint.IsNullOrEmpty())
+				return;
+
+			nativeView.Background = paint?.ToDrawable();
 		}
 
 		public static bool GetClipToOutline(this AView view)
@@ -35,7 +65,7 @@ namespace Microsoft.Maui
 		{
 			if (AutomationTagId == DefaultAutomationTagId)
 			{
-				AutomationTagId = Microsoft.Maui.Resource.Id.automation_tag_id;
+				AutomationTagId = Resource.Id.automation_tag_id;
 			}
 
 			nativeView.SetTag(AutomationTagId, view.AutomationId);
@@ -44,6 +74,7 @@ namespace Microsoft.Maui
 		public static void UpdateSemantics(this AView nativeView, IView view)
 		{
 			var semantics = view.Semantics;
+
 			if (semantics == null)
 				return;
 

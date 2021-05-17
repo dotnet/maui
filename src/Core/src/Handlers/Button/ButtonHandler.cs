@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 		public static PropertyMapper<IButton, ButtonHandler> ButtonMapper = new PropertyMapper<IButton, ButtonHandler>(ViewHandler.ViewMapper)
 		{
 #if WINDOWS
-			[nameof(IButton.BackgroundColor)] = MapBackgroundColor,
+			[nameof(IButton.Background)] = MapBackground,
 #endif
 			[nameof(IButton.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IButton.Font)] = MapFont,
