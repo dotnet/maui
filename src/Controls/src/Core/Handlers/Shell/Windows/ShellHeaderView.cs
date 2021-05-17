@@ -1,26 +1,25 @@
 using System;
-using System.ComponentModel;
-using Microsoft.UI.Xaml;
 using Windows.Foundation;
-using Windows.UI.Xaml;
+using Microsoft.UI.Xaml;
+using System.ComponentModel;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellFooterRenderer : Microsoft.UI.Xaml.Controls.ContentControl
+	public class ShellHeaderView : Microsoft.UI.Xaml.Controls.ContentControl
 	{
 		Shell _shell;
 
-		public ShellFooterRenderer(Shell element)
+		public ShellHeaderView(Shell element)
 		{
-			Shell.VerifyShellUWPFlagEnabled(nameof(ShellFooterRenderer));
+			Shell.VerifyShellUWPFlagEnabled(nameof(ShellHeaderView));
 
 			SetElement(element);
-			SizeChanged += OnShellFooterRendererSizeChanged;
+			SizeChanged += OnShellHeaderViewSizeChanged;
 			HorizontalContentAlignment = HorizontalAlignment.Stretch;
 			VerticalContentAlignment = VerticalAlignment.Stretch;
 		}
 
-		void OnShellFooterRendererSizeChanged(object sender, SizeChangedEventArgs e)
+		void OnShellHeaderViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			if (Element is Layout layout)
 				layout.ForceLayout();
@@ -37,21 +36,21 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				_shell = shell;
 				_shell.PropertyChanged += OnShellPropertyChanged;
-				UpdateFooter();
+				UpdateHeader();
 			}
 		}
 
 		void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if(e.IsOneOf(Shell.FlyoutFooterProperty, Shell.FlyoutFooterTemplateProperty))
-				UpdateFooter();
+			if(e.IsOneOf(Shell.FlyoutHeaderProperty, Shell.FlyoutHeaderTemplateProperty))
+				UpdateHeader();
 		}
 
-		void UpdateFooter()
+		void UpdateHeader()
 		{
 			if (Element != null)
 			{
-				if(Content is ViewToRendererConverter.WrapperControl wrapperControl)
+				if(Content is ViewToHandlerConverter.WrapperControl wrapperControl)
 				{
 					wrapperControl.CleanUp();
 					Content = null;
@@ -60,15 +59,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Element = null;
 			}
 
-			object Footer = null;
+			object header = null;
 
 			if (_shell is IShellController controller)
-				Footer = controller.FlyoutFooter;
+				header = controller.FlyoutHeader;
 
-			if (Footer is View visualElement)
+			if (header is View visualElement)
 			{
 				Element = visualElement;
-				Content = new ViewToRendererConverter.WrapperControl(visualElement);
+				Content = new ViewToHandlerConverter.WrapperControl(visualElement);
 			}
 			else
 			{

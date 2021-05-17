@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
@@ -80,21 +82,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					var ms = new InMemoryRandomAccessStream();
 					ms.WriteAsync(memStream.GetWindowsRuntimeBuffer()).AsTask().Wait();
 
-					// NOTE: This is a workaround for an issue with earlier builds of Blazor WebView/Desktop
-					// where the wrong MIME type is used, so we overwrite it.
-					if (allowFallbackOnHostPage)
-					{
-						headers = headers.Replace("application/octet-stream", "text/html");
-					}
-					else
-					{
-						if (eventArgs.Request.Uri.Contains("css", StringComparison.Ordinal))
-						{
-							headers = headers.Replace("application/octet-stream", "text/css");
-						}
-					}
-
-					eventArgs.Response = environment.CreateWebResourceResponse(ms, statusCode, statusMessage, headers);
+					var headerString = GetHeaderString(headers);
+					eventArgs.Response = environment.CreateWebResourceResponse(ms, statusCode, statusMessage, headerString);
 				}
 			};
 
@@ -122,8 +111,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			};
 		}
 
-		//private static string GetHeaderString(IDictionary<string, string> headers) =>
-		//	string.Join(Environment.NewLine, headers.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+		private static string GetHeaderString(IDictionary<string, string> headers) =>
+			string.Join(Environment.NewLine, headers.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
 
 		private void ApplyDefaultWebViewSettings()
 		{

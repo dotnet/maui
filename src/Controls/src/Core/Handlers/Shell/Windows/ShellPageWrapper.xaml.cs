@@ -6,13 +6,21 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	partial class ShellPageWrapper
 	{
+		Microsoft.UI.Xaml.Controls.ContentPresenter Root { get; }
 		public ShellPageWrapper()
 		{
 			InitializeComponent();
+			Root = new Microsoft.UI.Xaml.Controls.ContentPresenter()
+			{
+				HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch,
+				VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch
+			};
+
+			this.Content = Root;
 		}
 
 		public Page Page { get; set; }
@@ -32,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (Page != null)
 			{
-				var container = Page.GetOrCreateRenderer().ContainerElement;
+				var container = Page.ToNative(Page.FindMauiContextOnParent());
 				Root.Content = container;
 				container.Loaded -= OnPageLoaded;
 				container.Loaded += OnPageLoaded; 

@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			typeof(Slider),
 			typeof(Stepper),
 			typeof(TimePicker),
+			typeof(Shell),
 		};
 
 		public static IAppHostBuilder UseFormsCompatibility(this IAppHostBuilder builder, bool registerRenderers = true)

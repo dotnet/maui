@@ -8,69 +8,70 @@ using Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using NUnit.Framework;
 
-[assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
-{
-	public class ShellTests : PlatformTestFixture
-	{
-		[OneTimeSetUp]
-		public void ShellTestSetup()
-		{
-			Device.SetFlags(new[] { "Shell_UWP_Experimental" });
-		}
+//[assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]
+//namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
+//{
+//	public class ShellTests : PlatformTestFixture
+//	{
+//		[OneTimeSetUp]
+//		public void ShellTestSetup()
+//		{
+//			Device.SetFlags(new[] { "Shell_UWP_Experimental" });
+//		}
 
-		[Test, Category("Shell")]
-		[Description("Shell doesn't crash when Flyout Behavior Initialized to Locked")]
-		public async Task FlyoutHeaderReactsToChanges()
-		{
-			var shell = CreateShell();
-			shell.FlyoutBehavior = FlyoutBehavior.Locked;
+//		[Test, Category("Shell")]
+//		[Description("Shell doesn't crash when Flyout Behavior Initialized to Locked")]
+//		public async Task FlyoutHeaderReactsToChanges()
+//		{
+//			var shell = CreateShell();
+//			shell.FlyoutBehavior = FlyoutBehavior.Locked;
 
-			try
-			{
-				await Device.InvokeOnMainThreadAsync(() =>
-				{
-					var r = GetRenderer(shell);
-				});
-			}
-			catch (Exception exc)
-			{
-				Assert.Fail(exc.ToString());
-			}
+//			try
+//			{
+//				await Device.InvokeOnMainThreadAsync(() =>
+//				{
+//					var r = GetRenderer(shell);
+//				});
+//			}
+//			catch (Exception exc)			
+//			{
+//				Assert.Fail(exc.ToString());
+//			}
 
-			Assert.Pass();
-		}
 
-		Shell CreateShell()
-		{
-			return new Shell()
-			{
-				Items =
-				{
-					new FlyoutItem()
-					{
-						Items =
-						{
-							new Tab()
-							{
-								Items =
-								{
-									new ShellContent()
-									{
-										Content = new ContentPage()
-									}
-								}
-							}
-						}
-					}
-				}
-			};
-		}
-	}
+//			Assert.Pass();
+//		}
 
-	public class TestShell : Shell { }
+//		Shell CreateShell()
+//		{
+//			return new Shell()
+//			{
+//				Items =
+//				{
+//					new FlyoutItem()
+//					{
+//						Items =
+//						{
+//							new Tab()
+//							{
+//								Items =
+//								{
+//									new ShellContent()
+//									{
+//										Content = new ContentPage()
+//									}
+//								}
+//							}
+//						}
+//					}
+//				}
+//			};
+//		}
+//	}
 
-	public class TestShellRenderer : ShellRenderer
-	{
-	}
-}
+//	public class TestShell : Shell { }	
+	
+//	public class TestShellRenderer : ShellRenderer
+//	{
+//	}
+//}
