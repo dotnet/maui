@@ -158,6 +158,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 		{
 			public void Initialize(IServiceProvider services)
 			{
+
 #if WINDOWS
 				var dispatcher =
 					services.GetService<IDispatcher>() ??

@@ -194,6 +194,5 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				throw new NotImplementedException();
 			}
 		}
-
 	}
 }
