@@ -105,6 +105,30 @@ namespace Microsoft.Maui
 			return null;
 		}
 
+		internal static ResourceDictionary CloneResources(this FrameworkElement element)
+		{
+			var rd = new ResourceDictionary();
+
+			foreach (var r in element.Resources)
+				rd.TryAdd(r.Key, r.Value);
+
+			return rd;
+		}
+
+		internal static void TryUpdateResource(this FrameworkElement element, object newValue, params string[] keys)
+		{
+			var rd = element?.Resources;
+
+			if (rd == null)
+				return;
+
+			foreach (var key in keys)
+			{
+				if (rd?.ContainsKey(key) ?? false)
+					rd[key] = newValue;
+			}
+		}
+
 		static DependencyProperty? GetForegroundProperty(FrameworkElement element)
 		{
 			if (element is Control)
