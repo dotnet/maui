@@ -8,85 +8,19 @@ using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
+using WResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, ToggleSwitch>
 	{
-		object? _originalTrackHoverColor;
-		WBrush? _originalTrackColorBrush;
-		WBrush? _originalThumbOnBrush;
+		WResourceDictionary? _originalResources;
 
 		protected override ToggleSwitch CreateNativeView() => new ToggleSwitch();
 
 		protected override void SetupDefaults(ToggleSwitch nativeView)
 		{
-			var grid = nativeView.GetFirstDescendant<WGrid>();
-
-			if (grid == null)
-				return;
-
-			var groups = WVisualStateManager.GetVisualStateGroups(grid);
-
-			foreach (var group in groups)
-			{
-				if (group.Name != SwitchExtensions.ToggleSwitchCommonStates)
-					continue;
-
-				foreach (var state in group.States)
-				{
-					if (state.Name != SwitchExtensions.ToggleSwitchPointerOver)
-						continue;
-
-					foreach (var timeline in state.Storyboard.Children.OfType<ObjectAnimationUsingKeyFrames>())
-					{
-						var property = Storyboard.GetTargetProperty(timeline);
-						var target = Storyboard.GetTargetName(timeline);
-
-						if ((target == SwitchExtensions.ToggleSwitchKnobOn) && (property == SwitchExtensions.ToggleSwitchFillMode))
-						{
-							var frame = timeline.KeyFrames.FirstOrDefault();
-
-							if (frame != null)
-							{
-								if (_originalThumbOnBrush == null)
-								{
-									if (frame.Value is WColor color)
-										_originalThumbOnBrush = new WSolidColorBrush(color);
-
-									if (frame.Value is WBrush brush)
-										_originalThumbOnBrush = brush;
-								}
-							}
-						}
-
-						if (target == SwitchExtensions.ToggleSwitchKnobBounds && property == SwitchExtensions.ToggleSwitchFillMode)
-						{
-							var frame = timeline.KeyFrames.FirstOrDefault();
-
-							if (frame != null)
-							{
-								if (_originalTrackHoverColor == null)
-								{
-									if (frame.Value is WColor color)
-										_originalTrackHoverColor = color;
-
-									if (frame.Value is WSolidColorBrush solidColorBrush)
-										_originalTrackHoverColor = solidColorBrush;
-								}
-							}
-						}
-					}
-				}
-			}
-
-			var rect = nativeView.GetDescendantsByName<WRectangle>(SwitchExtensions.ToggleSwitchKnobBounds).FirstOrDefault();
-
-			if (rect != null)
-			{
-				if (_originalTrackColorBrush == null)
-					_originalTrackColorBrush = rect.Fill;
-			}
+			_originalResources = nativeView?.CloneResources();
 		}
 
 		public static void MapIsOn(SwitchHandler handler, ISwitch view)
@@ -96,12 +30,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateTrackColor(view, handler._originalTrackHoverColor, handler._originalTrackColorBrush);
+			handler.NativeView?.UpdateTrackColor(view, handler._originalResources);
 		}
 
 		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateThumbColor(view, handler._originalThumbOnBrush);
+			handler.NativeView?.UpdateThumbColor(view, handler._originalResources);
 		}
 
 		protected override void DisconnectHandler(ToggleSwitch nativeView)
