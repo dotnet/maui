@@ -11,7 +11,10 @@ namespace Microsoft.Maui.Handlers
 		public override void NativeArrange(Rectangle rect)
 		{
 			if (NativeView != null)
+			{
 				NativeView.Frame = rect.ToCGRect();
+				NativeView.UpdateBackgroundLayerFrame();
+			}
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)

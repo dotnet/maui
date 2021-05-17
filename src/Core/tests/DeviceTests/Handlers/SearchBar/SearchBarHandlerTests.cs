@@ -82,8 +82,8 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default),
 			};
 
-			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.Weight.HasFlag(FontWeight.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontSlant.HasFlag(FontSlant.Italic), GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
+			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
 	}
 }

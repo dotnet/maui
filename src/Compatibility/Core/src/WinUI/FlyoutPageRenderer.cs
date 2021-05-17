@@ -11,6 +11,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -76,7 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					return;
 
 				_showTitle = value;
-				Control.DetailTitleVisibility = _showTitle ? Visibility.Visible : Visibility.Collapsed;
+				Control.DetailTitleVisibility = _showTitle ? WVisibility.Visible : WVisibility.Collapsed;
 			}
 		}
 

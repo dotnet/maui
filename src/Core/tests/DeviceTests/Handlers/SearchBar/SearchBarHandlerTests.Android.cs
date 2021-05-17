@@ -110,7 +110,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (editText == null)
 				return false;
 
-			return editText.Typeface.IsBold;
+			return editText.Typeface.GetFontWeight() == FontWeight.Bold;
 		}
 
 		bool GetNativeIsItalic(SearchBarHandler searchBarHandler)
