@@ -3,9 +3,9 @@
   <PropertyGroup>
     <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-preview.4.21255.9</MicrosoftDotnetSdkInternalPackageVersion>
     <MicrosoftAndroidSdkWindowsPackageVersion>11.0.200-preview.4.251</MicrosoftAndroidSdkWindowsPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>14.5.100-preview.4.641</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>14.5.100-preview.4.641</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>14.5.100-preview.4.641</MicrosofttvOSSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>11.3.100-preview.4.641</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>14.5.100-preview.4.642</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>14.5.100-preview.4.642</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>14.5.100-preview.4.642</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>11.3.100-preview.4.642</MicrosoftmacOSSdkPackageVersion>
   </PropertyGroup>
 </Project>
