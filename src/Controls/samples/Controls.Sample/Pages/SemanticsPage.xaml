@@ -155,7 +155,6 @@
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
 
-            <!-- iOS: currently not accessible -->
             <Image
                 Source="dotnet_bot.png"
                 SemanticProperties.Description="Description text"
