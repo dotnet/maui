@@ -83,6 +83,8 @@ namespace Microsoft.Maui
 
 			if (semantics == null)
 				return;
+			else
+				nativeView.IsAccessibilityElement = true;
 
 			nativeView.AccessibilityLabel = semantics.Description;
 			nativeView.AccessibilityHint = semantics.Hint;
