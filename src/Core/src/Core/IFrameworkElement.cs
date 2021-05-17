@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
@@ -13,6 +13,16 @@ namespace Microsoft.Maui
 		/// Gets a value indicating whether this FrameworkElement is enabled in the user interface. 
 		/// </summary>
 		bool IsEnabled { get; }
+
+		/// <summary>
+		/// Gets a value that determines whether this FrameworkElement should be part of the visual tree or not.
+		/// </summary>
+		Visibility Visibility { get; }
+
+		/// <summary>
+		/// Gets the opacity value applied to the view when it is rendered.
+		/// </summary>
+		double Opacity { get; }
 
 		/// <summary>
 		/// Gets the paint which will fill the background of a FrameworkElement.

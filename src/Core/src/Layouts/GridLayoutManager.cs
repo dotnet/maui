@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
+using System.Linq;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -29,6 +30,11 @@ namespace Microsoft.Maui.Layouts
 
 			foreach (var view in Grid.Children)
 			{
+				if (view.Visibility == Visibility.Collapsed)
+				{
+					continue;
+				}
+
 				var cell = structure.ComputeFrameFor(view);
 				view.Arrange(cell);
 			}
@@ -42,6 +48,7 @@ namespace Microsoft.Maui.Layouts
 
 			Row[] _rows { get; }
 			Column[] _columns { get; }
+			IView[] _children;
 			Cell[] _cells { get; }
 
 			readonly Dictionary<SpanKey, Span> _spans = new Dictionary<SpanKey, Span>();
@@ -65,7 +72,10 @@ namespace Microsoft.Maui.Layouts
 					_columns[n] = new Column(_grid.ColumnDefinitions[n]);
 				}
 
-				_cells = new Cell[_grid.Children.Count];
+				_children = _grid.Children.Where(child => child.Visibility != Visibility.Collapsed).ToArray();
+
+				// We'll ignore any collapsed child views during layout
+				_cells = new Cell[_children.Length];
 
 				InitializeCells();
 
@@ -74,9 +84,15 @@ namespace Microsoft.Maui.Layouts
 
 			void InitializeCells()
 			{
-				for (int n = 0; n < _grid.Children.Count; n++)
+				for (int n = 0; n < _children.Length; n++)
 				{
-					var view = _grid.Children[n];
+					var view = _children[n];
+
+					if (view.Visibility == Visibility.Collapsed)
+					{
+						continue;
+					}
+
 					var column = _grid.GetColumn(view);
 					var columnSpan = _grid.GetColumnSpan(view);
 
@@ -181,7 +197,7 @@ namespace Microsoft.Maui.Layouts
 					var availableWidth = _gridWidthConstraint - GridWidth();
 					var availableHeight = _gridHeightConstraint - GridHeight();
 
-					var measure = _grid.Children[cell.ViewIndex].Measure(availableWidth, availableHeight);
+					var measure = _children[cell.ViewIndex].Measure(availableWidth, availableHeight);
 
 					if (cell.IsColumnSpanAuto)
 					{

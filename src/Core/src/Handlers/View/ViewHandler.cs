@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Handlers
 		public static PropertyMapper<IView> ViewMapper = new PropertyMapper<IView>
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
+			[nameof(IView.Visibility)] = MapVisibility,
 			[nameof(IView.Background)] = MapBackground,
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
@@ -113,6 +114,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsEnabled(IViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateIsEnabled(view);
+		}
+
+		public static void MapVisibility(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateVisibility(view);
 		}
 
 		public static void MapBackground(IViewHandler handler, IView view)

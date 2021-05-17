@@ -12,6 +12,7 @@ using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -139,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			MessagingCenter.Subscribe(this, Page.BusySetSignalName, (Page sender, bool enabled) =>
 			{
 				Microsoft.UI.Xaml.Controls.ProgressBar indicator = GetBusyIndicator();
-				indicator.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+				indicator.Visibility = enabled ? WVisibility.Visible : WVisibility.Collapsed;
 			});
 
 			_toolbarTracker.CollectionChanged += OnToolbarItemsChanged;
@@ -317,7 +318,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_busyIndicator = new Microsoft.UI.Xaml.Controls.ProgressBar
 				{
 					IsIndeterminate = true,
-					Visibility = Visibility.Collapsed,
+					Visibility = WVisibility.Collapsed,
 					VerticalAlignment = UI.Xaml.VerticalAlignment.Top
 				};
 

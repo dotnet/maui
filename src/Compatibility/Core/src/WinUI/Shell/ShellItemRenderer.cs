@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml.Media;
 using UwpApplication = Microsoft.UI.Xaml.Application;
 using UwpSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.Maui.Controls.Platform;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -361,12 +362,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			if (DisplayedPage == null || Shell.GetNavBarIsVisible(DisplayedPage))
 			{
-				_HeaderArea.Visibility = Visibility.Visible;
+				_HeaderArea.Visibility = WVisibility.Visible;
 				Shell.SetFlyoutBehavior(Shell.Current, Microsoft.Maui.Controls.FlyoutBehavior.Flyout);
 			}
 			else
 			{
-				_HeaderArea.Visibility = Visibility.Collapsed;
+				_HeaderArea.Visibility = WVisibility.Collapsed;
 				Shell.SetFlyoutBehavior(Shell.Current, Microsoft.Maui.Controls.FlyoutBehavior.Disabled);
 			}
 		}
@@ -379,7 +380,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateBottomBarVisibility()
 		{
 			bool isVisible = ShellItemController?.ShowTabs ?? false;
-			_BottomBar.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+			_BottomBar.Visibility = isVisible ? WVisibility.Visible : WVisibility.Collapsed;
 		}
 
 		void UpdateToolbar()
