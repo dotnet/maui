@@ -190,39 +190,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				{
 					statusCode = 200;
 					using var ms = new MemoryStream();
-					var uri = new Uri(url);
 
 					content.CopyTo(ms);
-
-					content.Position = 0;
-					var sr = new StreamReader(content);
-					var cc = sr.ReadToEnd();
-
 					content.Dispose();
 
-
-					var headersDict =
-						new Dictionary<string, string>(
-						headers
-							.Split(Environment.NewLine)
-							.Select(headerString =>
-								new KeyValuePair<string, string>(
-									headerString.Substring(0, headerString.IndexOf(':')),
-									headerString.Substring(headerString.IndexOf(':') + 2))));
-
-					contentType = headersDict["Content-Type"];
-					if (cc.StartsWith("<!DOCTYPE", StringComparison.Ordinal))
-					{
-						contentType = "text/html";
-					}
-					else if (cc.Contains("box-shadow", StringComparison.Ordinal))
-					{
-						contentType = "text/css";
-					}
-					else if (url.Contains(".js", StringComparison.Ordinal))
-					{
-						contentType = "application/javascript";
-					}
+					contentType = headers["Content-Type"];
 
 					return ms.ToArray();
 				}

@@ -26,10 +26,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="6.0.0-preview.3.21173.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="6.0.0-preview.3.21173.10" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.0-preview.3.21173.10" />
-    <PackageReference Include="Microsoft.JSInterop" Version="6.0.0-preview.3.21173.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <PackageReference Include="Microsoft.JSInterop" />
   </ItemGroup>
 
   <ItemGroup>
