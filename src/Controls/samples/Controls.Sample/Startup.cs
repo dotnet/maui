@@ -14,8 +14,8 @@ using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Essentials;
@@ -45,24 +45,18 @@ namespace Maui.Controls.Sample
 			else
 				appBuilder.UseMauiApp<MyApp>();
 
-			if (UseFullDI)
-				appBuilder.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory());
-			else
-				appBuilder.UseMauiServiceProviderFactory(true);
-
 			// Use a "third party" library that brings in a massive amount of controls
 			appBuilder.UseRed();
 
 #if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
 #endif
-			appBuilder
-				.UseMauiControlsHandlers()
+			appBuilder.UseMauiControlsHandlers();
 
 			appBuilder
 				.ConfigureAppConfiguration(config =>
-				 {
-					 config.AddInMemoryCollection(new Dictionary<string, string>
+				{
+					config.AddInMemoryCollection(new Dictionary<string, string>
 					{
 						{"MyKey", "Dictionary MyKey Value"},
 						{":Title", "Dictionary_Title"},
@@ -76,7 +70,7 @@ namespace Maui.Controls.Sample
 				.RegisterBlazorMauiWebView(typeof(Startup).Assembly);
 #endif
 
-			if (_pageType == PageType.Blazor)
+			if (_pageType == PageType.Blazor || UseFullDI)
 				appBuilder.UseMicrosoftExtensionsServiceProviderFactory();
 			else
 				appBuilder.UseMauiServiceProviderFactory(constructorInjection: true);
