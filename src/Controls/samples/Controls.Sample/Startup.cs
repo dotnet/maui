@@ -36,6 +36,8 @@ namespace Maui.Controls.Sample
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{
+			bool useFullDIAndBlazor = UseFullDI || _pageType == PageType.Blazor;
+
 			appBuilder
 				.UseFormsCompatibility()
 				.UseMauiControlsHandlers();
@@ -65,21 +67,24 @@ namespace Maui.Controls.Sample
 					});
 				 });
 
+			if (useFullDIAndBlazor)
+			{
 #if BLAZOR_ENABLED
-			appBuilder
-				.RegisterBlazorMauiWebView(typeof(Startup).Assembly);
+				appBuilder
+					.RegisterBlazorMauiWebView(typeof(Startup).Assembly);
 #endif
-
-			if (_pageType == PageType.Blazor || UseFullDI)
 				appBuilder.UseMicrosoftExtensionsServiceProviderFactory();
+			}
 			else
+			{
 				appBuilder.UseMauiServiceProviderFactory(constructorInjection: true);
+			}
 
 			appBuilder
 				.ConfigureServices(services =>
 				{
 					// The MAUI DI does not support generic argument resolution
-					if (UseFullDI)
+					if (useFullDIAndBlazor)
 					{
 						services.AddLogging(logging =>
 						{
@@ -94,7 +99,8 @@ namespace Maui.Controls.Sample
 					services.AddSingleton<ITextService, TextService>();
 					services.AddTransient<MainPageViewModel>();
 #if BLAZOR_ENABLED
-					services.AddBlazorWebView();
+					if (useFullDIAndBlazor)
+						services.AddBlazorWebView();
 #endif
 					services.AddTransient(
 						serviceType: _pageType == PageType.Blazor ? typeof(Page) : typeof(IPage),
