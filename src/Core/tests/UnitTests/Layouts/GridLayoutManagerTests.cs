@@ -48,12 +48,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			if (rows == null)
 			{
-				var rowDef = Substitute.For<IGridRowDefinition>();
-				rowDef.Height.Returns(GridLength.Auto);
-				var rowDefs = new List<IGridRowDefinition>
-				{
-					rowDef
-				};
+				var rowDefs = new List<IGridRowDefinition>();
 				grid.RowDefinitions.Returns(rowDefs);
 			}
 			else
@@ -66,7 +61,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			if (cols == null)
 			{
-				var colDefs = CreateTestColumns("auto");
+				var colDefs = new List<IGridColumnDefinition>();
 				grid.ColumnDefinitions.Returns(colDefs);
 			}
 			else
@@ -150,7 +145,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
-			// We expect that the only child of the grid will be given its full size
+			// No rows/columns were specified, so the implied */* is used; we're measuring with infinity, so
+			// we expect that the view will be arranged at its measured size
 			AssertArranged(view, 0, 0, 100, 100);
 		}
 
@@ -687,7 +683,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		[Category(GridSpan)]
 		[Fact]
-		public void CanSpanAbsoluteColumns() 
+		public void CanSpanAbsoluteColumns()
 		{
 			var grid = CreateGridLayout(rows: "auto", columns: "100,100");
 			var view0 = CreateTestView(new Size(150, 100));
@@ -774,7 +770,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view2 = CreateTestView(viewSize);
 
 			AddChildren(grid, view0, view1, view2);
-			
+
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
 			SetLocation(grid, view2, col: 2);
@@ -1025,7 +1021,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Category(GridAbsoluteSizing)]
 		[Category(GridStarSizing)]
 		[Fact]
-		public void MixStarsAndExplicitSizes() 
+		public void MixStarsAndExplicitSizes()
 		{
 			var screenWidth = 300;
 			var screenHeight = 600;
@@ -1054,6 +1050,21 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view0, 0, 0, expectedStarWidth * 3, expectedHeight);
 			AssertArranged(view1, expectedStarWidth * 3, 0, 100, expectedHeight);
 			AssertArranged(view2, (expectedStarWidth * 3) + 100, 0, expectedStarWidth, expectedHeight);
+		}
+
+		[Fact]
+		public void UsesImpliedRowAndColumnIfNothingDefined()
+		{
+			var grid = CreateGridLayout();
+			var view0 = CreateTestView(new Size(100, 100));
+			AddChildren(grid, view0);
+			SetLocation(grid, view0);
+			
+			// Using 300,300 - the implied row/column are GridLength.Star
+			MeasureAndArrange(grid, 300, 300);
+
+			// Since it's using GridLength.Star, we expect the view to be arranged at the full size of the grid
+			AssertArranged(view0, 0, 0, 300, 300);
 		}
 	}
 }
