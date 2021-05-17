@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 using EColor = ElmSharp.Color;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {

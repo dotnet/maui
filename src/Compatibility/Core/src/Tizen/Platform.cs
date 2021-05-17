@@ -5,9 +5,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
 
-[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Material")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Material")]
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -43,7 +43,46 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		internal static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
-			IVisualElementRenderer renderer = Forms.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
+			IVisualElementRenderer renderer = null;
+
+			if (renderer == null)
+			{
+				IViewHandler handler = null;
+
+				//TODO: Handle this with AppBuilderHost
+				try
+				{
+					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType());
+					handler.SetMauiContext(Forms.MauiContext);
+				}
+				catch
+				{
+					// TODO define better catch response or define if this is needed?
+				}
+
+				if (handler == null)
+				{
+					renderer = Forms.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
+				}
+				// This means the only thing registered is the RendererToHandlerShim
+				// Which is only used when you are running a .NET MAUI app
+				// This indicates that the user hasn't registered a specific handler for this given type
+				else if (handler is RendererToHandlerShim shim)
+				{
+					renderer = shim.VisualElementRenderer;
+
+					if (renderer == null)
+					{
+						renderer = Forms.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
+					}
+				}
+				else if (handler is IVisualElementRenderer ver)
+					renderer = ver;
+				else if (handler is INativeViewHandler vh)
+				{
+					renderer = new HandlerToRendererShim(vh);
+				}
+			}
 			renderer.SetElement(element);
 			return renderer;
 		}
@@ -65,6 +104,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			double width = !double.IsPositiveInfinity(widthConstraint) ? widthConstraint : Int32.MaxValue;
 			double height = !double.IsPositiveInfinity(heightConstraint) ? heightConstraint : Int32.MaxValue;
+
+			var renderView = GetRenderer(view);
+			if (renderView == null || renderView.NativeView == null)
+			{
+				if (view is IView iView)
+					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
+				 return new SizeRequest(Graphics.Size.Zero);
+			}
 
 			return Platform.GetRenderer(view).GetDesiredSize(width, height);
 		}

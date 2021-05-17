@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Specialized;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
@@ -394,7 +394,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateSeparator()
 		{
-			Control.BottomLineColor = Element.SeparatorVisibility == SeparatorVisibility.Default ? Element.SeparatorColor.ToPlatform() : EColor.Transparent;
+			Control.BottomLineColor = Element.SeparatorVisibility == SeparatorVisibility.Default ? Element.SeparatorColor.ToPlatformEFL() : EColor.Transparent;
 		}
 	}
 }

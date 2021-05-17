@@ -33,10 +33,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected override void UpdateBackgroundColor(bool initialize)
 		{
-			if (initialize && Element.BackgroundColor.IsDefault)
+			if (initialize && Element.BackgroundColor == null)
 				return;
 
-			if (Element.Color.IsDefault)
+			if (Element.Color == null)
 			{
 				UpdateColor();
 			}
@@ -71,9 +71,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateColor()
 		{
-			if (Element.Color.IsDefault)
+			if (Element.Color == null)
 			{
-				if (Element.BackgroundColor.IsDefault)
+				if (Element.BackgroundColor == null)
 				{
 					// Set to default color. (Transparent)
 					Control.Color = EColor.Transparent;
@@ -81,13 +81,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				else
 				{
 					// Use BackgroundColor only if color is default and background color is not default.
-					Control.Color = Element.BackgroundColor.MultiplyAlpha(Element.Opacity).ToPlatform();
+					Control.Color = Element.BackgroundColor.MultiplyAlpha((float)Element.Opacity).ToPlatform();
 				}
 			}
 			else
 			{
 				// Color has higer priority than BackgroundColor.
-				Control.Color = Element.Color.MultiplyAlpha(Element.Opacity).ToPlatform();
+				Control.Color = Element.Color.MultiplyAlpha((float)Element.Opacity).ToPlatform();
 			}
 		}
 	}

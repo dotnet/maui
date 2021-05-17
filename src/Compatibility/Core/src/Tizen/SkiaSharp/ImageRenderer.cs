@@ -1,5 +1,5 @@
 using ESize = ElmSharp.Size;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.Image;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Image;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 {
@@ -101,10 +101,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 
 		void UpdateBlendColor(bool initialize)
 		{
-			if (initialize && Specific.GetBlendColor(Element).IsDefault)
+			if (initialize && Specific.GetBlendColor(Element) == null)
 				return;
 
-			RealControl.Color = Specific.GetBlendColor(Element).ToPlatform();
+			RealControl.Color = Specific.GetBlendColor(Element).ToPlatformEFL();
 		}
 	}
 }

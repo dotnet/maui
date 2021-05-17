@@ -1,6 +1,8 @@
 using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using EEntry = ElmSharp.Entry;
+using NIEntry = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IEntry;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -30,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				entry.Unfocused += OnEntryUnfocused;
 				entry.Unfocused += OnCompleted;
 				entry.PrependMarkUpFilter(MaxLengthFilter);
-				if (entry is IEntry ie)
+				if (entry is NIEntry ie)
 				{
 					ie.TextChanged += OnTextChanged;
 					ie.EntryLayoutFocused += OnFocused;
@@ -61,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					Control.BackButtonPressed -= OnCompleted;
 					Control.Unfocused -= OnEntryUnfocused;
 					Control.Focused -= OnEntryFocused;
-					if (Control is IEntry ie)
+					if (Control is NIEntry ie)
 					{
 						ie.TextChanged -= OnTextChanged;
 						ie.EntryLayoutFocused -= OnFocused;
@@ -79,9 +81,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void UpdateTextColor()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
-				ie.TextColor = Element.TextColor.ToPlatform();
+				ie.TextColor = Element.TextColor.ToPlatformEFL();
 			}
 		}
 
@@ -127,7 +129,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFontSize()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontSize = Element.FontSize;
 			}
@@ -135,7 +137,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFontFamily()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontFamily = Element.FontFamily.ToNativeFontFamily();
 			}
@@ -143,7 +145,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFontAttributes()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.FontAttributes = Element.FontAttributes;
 			}
@@ -154,7 +156,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (initialize && Element.Keyboard == Keyboard.Default)
 				return;
 
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.UpdateKeyboard(Element.Keyboard, Element.IsSpellCheckEnabled, true);
 			}
@@ -173,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdatePlaceholder()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
 				ie.Placeholder = Element.Placeholder;
 			}
@@ -181,9 +183,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdatePlaceholderColor()
 		{
-			if (Control is IEntry ie)
+			if (Control is NIEntry ie)
 			{
-				ie.PlaceholderColor = Element.PlaceholderColor.ToPlatform();
+				ie.PlaceholderColor = Element.PlaceholderColor.ToPlatformEFL();
 			}
 		}
 

@@ -84,7 +84,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				if (Renderer == null)
 					return;
 
-				var arg = dragGestureRecognizer.SendDragStarting(Renderer.Element);
+				if (Renderer.Element is not View view)
+					return;
+
+				var arg = dragGestureRecognizer.SendDragStarting(view);
 
 				if (arg.Cancel)
 					return;

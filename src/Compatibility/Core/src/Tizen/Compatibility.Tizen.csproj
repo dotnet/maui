@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
- <PropertyGroup>
-    <Description>Tizen Backend for Xamarin.Forms</Description>
-  </PropertyGroup>
+﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
+    <Description>Tizen Compatibility Backend for Microsoft MAUI</Description>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility.Tizen</AssemblyName>
     <TargetFramework>tizen40</TargetFramework>
-    <TargetFrameworkIdentifier>Tizen</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <RootNamespace>Microsoft.Maui.Controls.Compatibility</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Resource\arrow_left.png" />
@@ -13,9 +13,12 @@
     <None Remove="Resource\menu.png" />
     <None Remove="Resource\wc_visual_cue.png" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Core\Crc64.cs" Link="Crc64.cs" />
+    <Compile Include="..\AppHostBuilderExtensions.cs" Link="AppHostBuilderExtensions.cs" />
+    <Compile Include="..\MauiHandlersCollectionExtensions.cs" Link="MauiHandlersCollectionExtensions.cs" />
   </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="Resource\arrow_left.png" />
     <EmbeddedResource Include="Resource\dots_horizontal.png" />
@@ -26,11 +29,11 @@
 
   <ItemGroup>
     <PackageReference Include="SkiaSharp.Views" Version="2.88.0-preview.127" />
-    <PackageReference Include="Tizen.NET" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
   </ItemGroup>
 
 </Project>

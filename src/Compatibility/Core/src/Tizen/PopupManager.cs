@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Internals;
-using Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific;
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
 using EProgressBar = ElmSharp.ProgressBar;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -213,7 +214,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				MinimumWidthRequest = 200,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				BackgroundColor = Color.FromRgb(250, 250, 250),
-				TextColor = Color.Black,
+				TextColor = Color.FromRgb(0, 0, 0),
 				Keyboard = args.Keyboard,
 			};
 
@@ -234,7 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					new Label
 					{
 						LineBreakMode = LineBreakMode.CharacterWrap,
-						TextColor = DeviceInfo.Idiom == DeviceIdiom.Watch ? Color.White : Color.Accent,
+						TextColor = DeviceInfo.Idiom == TargetIdiom.Watch ? Color.FromRgb(255,255,255) : Application.AccentColor,
 						Text = args.Message,
 						HorizontalOptions = LayoutOptions.FillAndExpand,
 						HorizontalTextAlignment = TextAlignment.Center,

@@ -1,7 +1,6 @@
 using System;
 using ElmSharp;
 using ElmSharp.Wearable;
-using Microsoft.Maui.Controls.Compatibility.Platform.TV;
 using static Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.TableView;
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
@@ -960,24 +959,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return s_navigationViewFlyoutItemFontSize = CalculateDoubleScaledSizeInLargeScreen(25);
 		}
 
-		public static Color GetTvFlyoutItemDefaultColor(this INavigationView nav)
+		public static Graphics.Color GetTvFlyoutItemDefaultColor(this INavigationView nav)
 		{
-			return Color.Transparent;
+			return new Graphics.Color(0f);
 		}
 
-		public static Color GetTvFlyoutItemFocusedColor(this INavigationView nav)
+		public static Graphics.Color GetTvFlyoutItemFocusedColor(this INavigationView nav)
 		{
-			return new Color(0.95);
+			return new Graphics.Color(0.95f);
 		}
 
-		public static Color GetTvFlyoutItemTextDefaultColor(this INavigationView nav)
+		public static Graphics.Color GetTvFlyoutItemTextDefaultColor(this INavigationView nav)
 		{
-			return Color.White;
+			return Graphics.Color.FromRgb(255, 255, 255);
 		}
 
-		public static Color GetTvFlyoutItemTextFocusedColor(this INavigationView nav)
+		public static Graphics.Color GetTvFlyoutItemTextFocusedColor(this INavigationView nav)
 		{
-			return Color.Black;
+			return Graphics.Color.FromRgb(0, 0, 0);
 		}
 
 		#endregion

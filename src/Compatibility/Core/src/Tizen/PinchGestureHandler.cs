@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	public class PinchGestureHandler : GestureHandler
 	{
-		Point _currentScalePoint;
+		Graphics.Point _currentScalePoint;
 		int _previousPinchRadius;
 		double _originalPinchScale;
 
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			var geometry = Platform.GetRenderer(sender).NativeView.Geometry;
 			var zoomData = (GestureLayer.ZoomData)data;
-			_currentScalePoint = new Point((zoomData.X - geometry.X) / (double)geometry.Width, (zoomData.Y - geometry.Y) / (double)geometry.Height);
+			_currentScalePoint = new Graphics.Point((zoomData.X - geometry.X) / (double)geometry.Width, (zoomData.Y - geometry.Y) / (double)geometry.Height);
 			_originalPinchScale = sender.Scale;
 			_previousPinchRadius = zoomData.Radius;
 			(Recognizer as IPinchGestureController)?.SendPinchStarted(sender, _currentScalePoint);

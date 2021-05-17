@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -119,7 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateFlyoutBackgroundColor()
 		{
-			_navigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToPlatform();
+			_navigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToPlatformEFL();
 		}
 
 		void UpdateFlyoutBackgroundImageAspect()

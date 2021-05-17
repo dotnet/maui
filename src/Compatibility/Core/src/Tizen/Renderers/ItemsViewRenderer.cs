@@ -3,7 +3,7 @@ using System.Linq;
 
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.ItemsView;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ItemsView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void OnLayoutPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == nameof(Microsoft.Maui.Controls.Compatibility.ItemsLayout.SnapPointsType))
+			if (e.PropertyName == nameof(Microsoft.Maui.Controls.ItemsLayout.SnapPointsType))
 			{
 				Control.SnapPointsType = (sender as ItemsLayout)?.SnapPointsType ?? SnapPointsType.None;
 			}

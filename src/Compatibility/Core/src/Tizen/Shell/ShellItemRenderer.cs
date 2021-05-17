@@ -9,6 +9,7 @@ using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
 using EImage = ElmSharp.Image;
 using EToolbarItem = ElmSharp.ToolbarItem;
+using EToolbarItemEventArgs = ElmSharp.ToolbarItemEventArgs;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -282,10 +283,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
-			var tabBarBackgroudColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor ?? Color.Default;
-			var tabBarTitleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor ?? Color.Default;
-			TabBarBackgroundColor = tabBarBackgroudColor.IsDefault ? ShellRenderer.DefaultBackgroundColor.ToPlatform() : tabBarBackgroudColor.ToPlatform();
-			TabBarTitleColor = tabBarTitleColor.IsDefault ? ShellRenderer.DefaultTitleColor.ToPlatform() : tabBarTitleColor.ToPlatform();
+			var tabBarBackgroudColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
+			var tabBarTitleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor;
+			TabBarBackgroundColor = tabBarBackgroudColor == null ? ShellRenderer.DefaultBackgroundColor.ToPlatform() : tabBarBackgroudColor.ToPlatform();
+			TabBarTitleColor = tabBarTitleColor == null ? ShellRenderer.DefaultTitleColor.ToPlatform() : tabBarTitleColor.ToPlatform();
 		}
 
 		void UpdateTabsBackgroudColor(EColor color)
@@ -388,7 +389,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			_contentHolder.PackEnd(_currentStack);
 		}
 
-		void OnTabsSelected(object sender, ToolbarItemEventArgs e)
+		void OnTabsSelected(object sender, EToolbarItemEventArgs e)
 		{
 			if (_tabs.SelectedItem == null)
 				return;

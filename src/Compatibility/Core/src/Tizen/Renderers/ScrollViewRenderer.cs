@@ -6,7 +6,7 @@ using EContainer = ElmSharp.Container;
 using ERect = ElmSharp.Rect;
 using NBox = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Box;
 using NScroller = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Scroller;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.ScrollView;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ScrollView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -198,12 +198,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var y = e.ScrollY;
 			if (e.Mode == ScrollToMode.Element)
 			{
-				Point itemPosition = (Element as IScrollViewController).GetScrollPositionForElement(e.Element as VisualElement, e.Position);
+				Graphics.Point itemPosition = (Element as IScrollViewController).GetScrollPositionForElement(e.Element as VisualElement, e.Position);
 				x = itemPosition.X;
 				y = itemPosition.Y;
 			}
 
-			ERect region = new Rectangle(x, y, Element.Width, Element.Height).ToPixel();
+			ERect region = new Graphics.Rectangle(x, y, Element.Width, Element.Height).ToEFLPixel();
 			await Control.ScrollToAsync(region, e.ShouldAnimate);
 			Element.SendScrollFinished();
 		}

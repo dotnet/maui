@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			base.Dispose(disposing);
 		}
 
-		protected override Size MinimumSize()
+		protected override Graphics.Size MinimumSize()
 		{
 			return Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
 		}

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
 using ERect = ElmSharp.Rect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (SwipeDirection == 0)
 			{
-				var direction = SwipeDirectionHelper.GetSwipeDirection(new Point(moment.X1, moment.Y1), new Point(moment.X2, moment.Y2));
+				var direction = SwipeDirectionHelper.GetSwipeDirection(new Graphics.Point(moment.X1, moment.Y1), new Graphics.Point(moment.X2, moment.Y2));
 
 				if (HasRightItems && direction == SwipeDirection.Left)
 				{

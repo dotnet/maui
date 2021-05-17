@@ -228,6 +228,19 @@ namespace Maui.Controls.Sample
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
 						.OnVisibilityChanged((a, b) => LogEvent(nameof(WindowsLifecycle.OnVisibilityChanged))));
+#elif __TIZEN__ || TIZEN
+					events.AddTizen(tizen => tizen
+						.OnAppControlReceived((a, b) => LogEvent(nameof(TizenLifecycle.OnAppControlReceived)))
+						.OnCreate((a) => LogEvent(nameof(TizenLifecycle.OnCreate)))
+						.OnDeviceOrientationChanged((a, b) => LogEvent(nameof(TizenLifecycle.OnDeviceOrientationChanged)))
+						.OnLocaleChanged((a, b) => LogEvent(nameof(TizenLifecycle.OnLocaleChanged)))
+						.OnLowBattery((a, b) => LogEvent(nameof(TizenLifecycle.OnLowBattery)))
+						.OnLowMemory((a, b) => LogEvent(nameof(TizenLifecycle.OnLowMemory)))
+						.OnPause((a) => LogEvent(nameof(TizenLifecycle.OnPause)))
+						.OnPreCreate((a) => LogEvent(nameof(TizenLifecycle.OnPreCreate)))
+						.OnRegionFormatChanged((a, b) => LogEvent(nameof(TizenLifecycle.OnRegionFormatChanged)))
+						.OnResume((a) => LogEvent(nameof(TizenLifecycle.OnResume)))
+						.OnTerminate((a) => LogEvent(nameof(TizenLifecycle.OnTerminate))));
 #endif
 
 					static bool LogEvent(string eventName, string type = null)

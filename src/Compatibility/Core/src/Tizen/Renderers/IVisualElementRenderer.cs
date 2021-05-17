@@ -27,6 +27,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			get;
 		}
 
+		event EventHandler<VisualElementChangedEventArgs> ElementChanged;
+
 		/// <summary>
 		/// Sets the VisualElement associated with this renderer.
 		/// </summary>

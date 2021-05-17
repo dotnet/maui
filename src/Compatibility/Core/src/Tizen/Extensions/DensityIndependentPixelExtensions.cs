@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
 

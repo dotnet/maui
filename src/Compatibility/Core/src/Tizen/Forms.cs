@@ -7,12 +7,14 @@ using System.Reflection;
 using ElmSharp;
 using ElmSharp.Wearable;
 using Tizen.Applications;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
-using Microsoft.Maui.Controls.Compatibility.Shapes;
-using DeviceOrientation = Microsoft.Maui.Controls.Compatibility.Internals.DeviceOrientation;
+using Microsoft.Maui.Controls.Shapes;
+using DeviceOrientation = Microsoft.Maui.Controls.Internals.DeviceOrientation;
 using ELayout = ElmSharp.Layout;
 using TSystemInfo = Tizen.System.Information;
+using Size = Microsoft.Maui.Graphics.Size;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -232,6 +234,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
 
+		public static IMauiContext MauiContext
+		{
+			get;
+			internal set;
+		}
+
 		public static CoreApplication Context
 		{
 			get;
@@ -384,21 +392,25 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		public static void Init(CoreApplication application)
+		public static void Init(IActivationState activationState) => Init(activationState.Context.Context.CurrentApplication);
+
+		public static void Init(CoreApplication application) => Init(new MauiContext(CoreUIAppContext.GetInstance(application)));
+
+		public static void Init(IMauiContext context)
 		{
-			Init(application, false);
+			SetupInit(context);
 		}
 
 		public static void Init(CoreApplication application, bool useDeviceIndependentPixel)
 		{
 			DisplayResolutionUnit = DisplayResolutionUnit.FromInit(useDeviceIndependentPixel);
-			SetupInit(application);
+			SetupInit(new MauiContext(CoreUIAppContext.GetInstance(application)));
 		}
 
 		public static void Init(CoreApplication application, DisplayResolutionUnit unit)
 		{
 			DisplayResolutionUnit = unit ?? DisplayResolutionUnit.Pixel();
-			SetupInit(application);
+			SetupInit(new MauiContext(CoreUIAppContext.GetInstance(application)));
 		}
 
 		public static void Init(InitializationOptions options)
@@ -409,12 +421,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			DisplayResolutionUnit = options.DisplayResolutionUnit ?? DisplayResolutionUnit.FromInit(options.UseDeviceIndependentPixel);
-			SetupInit(options.Context, options);
+			SetupInit(new MauiContext(CoreUIAppContext.GetInstance(options.Context)), options);
 		}
 
-		static void SetupInit(CoreApplication application, InitializationOptions options = null)
+		static void SetupInit(IMauiContext context, InitializationOptions options = null)
 		{
-			Context = application;
+			Context = context.Context.CurrentApplication;
+			NativeParent = context.Context.NativeParent;
+			MauiContext = context;
+			Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 
 			if (!IsInitialized)
 			{
@@ -438,8 +453,23 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Device.Info = new Forms.TizenDeviceInfo();
 
-			if (!Forms.IsInitialized)
+			if (options?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
+				RegisterCompatRenderers(options);
+
+			Application.AccentColor = GetAccentColor(profile);
+			ExpressionSearch.Default = new TizenExpressionSearch();
+
+			if (Context is WatchApplication)
+				s_platformType = PlatformType.Lightweight;
+
+			IsInitialized = true;
+		}
+
+		internal static void RegisterCompatRenderers(InitializationOptions options)
+		{
+			if (!IsInitializedRenderers)
 			{
+				IsInitializedRenderers = true;
 				if (options != null)
 				{
 					s_platformType = options.PlatformType;
@@ -464,11 +494,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 							{
 								Registrar.RegisterAll(new Type[]
 								{
-										typeof(ExportRendererAttribute),
-										typeof(ExportImageSourceHandlerAttribute),
-										typeof(ExportCellAttribute),
-										typeof(ExportHandlerAttribute),
-										typeof(ExportFontAttribute)
+									typeof(ExportRendererAttribute),
+									typeof(ExportImageSourceHandlerAttribute),
+									typeof(ExportCellAttribute),
+									typeof(ExportHandlerAttribute),
+									typeof(ExportFontAttribute)
 								});
 
 								if (UseSkiaSharp)
@@ -520,14 +550,30 @@ namespace Microsoft.Maui.Controls.Compatibility
 					});
 				}
 			}
+		}
 
-			Color.SetAccent(GetAccentColor(profile));
-			ExpressionSearch.Default = new TizenExpressionSearch();
+		internal static void RegisterCompatRenderers(
+			Assembly[] assemblies,
+			Assembly defaultRendererAssembly,
+			Action<Type> viewRegistered)
+		{
+			if (IsInitializedRenderers)
+				return;
 
-			if (application is WatchApplication)
-				s_platformType = PlatformType.Lightweight;
+			IsInitializedRenderers = true;
 
-			IsInitialized = true;
+			// Only need to do this once
+			Controls.Internals.Registrar.RegisterAll(
+				assemblies,
+				defaultRendererAssembly,
+				new[] {
+						typeof(ExportRendererAttribute),
+						typeof(ExportImageSourceHandlerAttribute),
+						typeof(ExportCellAttribute),
+						typeof(ExportHandlerAttribute),
+						typeof(ExportFontAttribute)
+					}, default(InitializationFlags),
+				viewRegistered);
 		}
 
 		static void RegisterSkiaSharpRenderers()
@@ -563,7 +609,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					// Theme A (Default) 1st HSB: 207 75 16
 					return Color.FromRgba(10, 27, 41, 255);
 				default:
-					return Color.Black;
+					return Color.FromRgb(0, 0, 0);
 			}
 		}
 

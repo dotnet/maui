@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		/// <summary>
 		/// Sets the section title.
 		/// </summary>
-		void AddSectionTitle(string title, Color textColor)
+		void AddSectionTitle(string title, Graphics.Color textColor)
 		{
 			Cell cell = new SectionCell()
 			{

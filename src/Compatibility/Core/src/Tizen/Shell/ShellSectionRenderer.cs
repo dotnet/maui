@@ -6,6 +6,7 @@ using ElmSharp;
 using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
 using EToolbarItem = ElmSharp.ToolbarItem;
+using EToolbarItemEventArgs = ElmSharp.ToolbarItemEventArgs;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -127,10 +128,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
-			var backgroundColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor ?? Color.Default;
-			var foregroundColor = appearance?.ForegroundColor ?? Color.Default;
-			ToolbarBackgroundColor = backgroundColor.IsDefault ? ShellRenderer.DefaultBackgroundColor.ToPlatform() : backgroundColor.ToPlatform();
-			ToolbarForegroundColor = foregroundColor.IsDefault ? ShellRenderer.DefaultForegroundColor.ToPlatform() : foregroundColor.ToPlatform();
+			var backgroundColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
+			var foregroundColor = appearance?.ForegroundColor;
+			ToolbarBackgroundColor = backgroundColor == null ? ShellRenderer.DefaultBackgroundColor.ToPlatform() : backgroundColor.ToPlatform();
+			ToolbarForegroundColor = foregroundColor == null ? ShellRenderer.DefaultForegroundColor.ToPlatform() : foregroundColor.ToPlatform();
 		}
 
 		void UpdateDisplayedPage(Page page)
@@ -296,7 +297,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			UpdateTabsItem();
 		}
 
-		void OnTabsSelected(object sender, ToolbarItemEventArgs e)
+		void OnTabsSelected(object sender, EToolbarItemEventArgs e)
 		{
 			if (_tabs.SelectedItem == null)
 			{

@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using ElmSharp;
 using ElmSharp.Wearable;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.Application;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch
 			return base.GetCellRenderer(cell, isGroup);
 		}
 
-		void AddSectionTitle(string title, Color textColor)
+		void AddSectionTitle(string title, Graphics.Color textColor)
 		{
 			Cell cell = new SectionCell()
 			{

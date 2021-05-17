@@ -137,13 +137,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (_navBar == null)
 				return;
 
-			var titleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor ?? Microsoft.Maui.Controls.Compatibility.Color.Default;
-			var backgroundColor = appearance?.BackgroundColor ?? Microsoft.Maui.Controls.Compatibility.Color.Default;
-			var foregroundColor = appearance?.ForegroundColor ?? Microsoft.Maui.Controls.Compatibility.Color.Default;
+			var titleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor;
+			var backgroundColor = appearance?.BackgroundColor;
+			var foregroundColor = appearance?.ForegroundColor;
 
-			_navBar.TitleColor = titleColor.IsDefault ? ShellRenderer.DefaultTitleColor.ToPlatform() : titleColor.ToPlatform();
-			_navBar.BackgroundColor = backgroundColor.IsDefault ? ShellRenderer.DefaultBackgroundColor.ToPlatform() : backgroundColor.ToPlatform();
-			_navBar.ForegroundColor = foregroundColor.IsDefault ? ShellRenderer.DefaultForegroundColor.ToPlatform() : foregroundColor.ToPlatform();
+			_navBar.TitleColor = titleColor == null ? ShellRenderer.DefaultTitleColor.ToPlatformEFL() : titleColor.ToPlatformEFL();
+			_navBar.BackgroundColor = backgroundColor == null ? ShellRenderer.DefaultBackgroundColor.ToPlatformEFL() : backgroundColor.ToPlatformEFL();
+			_navBar.ForegroundColor = foregroundColor == null ? ShellRenderer.DefaultForegroundColor.ToPlatformEFL() : foregroundColor.ToPlatformEFL();
 		}
 
 

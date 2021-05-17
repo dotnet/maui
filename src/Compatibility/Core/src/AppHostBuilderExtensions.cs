@@ -33,6 +33,11 @@ using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using WebViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.WkWebViewRenderer;
 using RadioButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
 using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
+#elif TIZEN
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.BoxViewRenderer;
+using CollectionViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.StructuredItemsViewRenderer;
+using OpenGLViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.DefaultRenderer;
 #endif
 
 namespace Microsoft.Maui.Controls.Compatibility.Hosting

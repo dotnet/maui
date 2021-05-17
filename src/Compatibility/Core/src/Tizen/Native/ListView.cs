@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
 using EColor = ElmSharp.Color;
 using ERect = ElmSharp.Rect;
 using EScroller = ElmSharp.Scroller;

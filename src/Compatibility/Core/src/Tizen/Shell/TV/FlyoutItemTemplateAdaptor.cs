@@ -1,5 +1,5 @@
 ﻿using System.Collections;
-using Xamarin.Forms.Platform.Tizen.Native;
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.TV
 {

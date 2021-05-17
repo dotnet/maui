@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			base.OnElementChanged(e);
 		}
 
-		protected override Size MinimumSize()
+		protected override Graphics.Size MinimumSize()
 		{
 			return Control.Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
 		}
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void CancelButtonColorPropertyHandler(bool initialize)
 		{
-			if (initialize && Element.CancelButtonColor.IsDefault)
+			if (initialize && Element.CancelButtonColor == null)
 				return;
 
 			Control.SetClearButtonColor(Element.CancelButtonColor.ToPlatform());
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void PlaceholderColorPropertyHandler(bool initialize)
 		{
-			if (initialize && Element.TextColor.IsDefault)
+			if (initialize && Element.TextColor == null)
 				return;
 
 			Control.PlaceholderColor = Element.PlaceholderColor.ToPlatform();
@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// </summary>
 		void TextColorPropertyHandler(bool initialize)
 		{
-			if (initialize && Element.TextColor.IsDefault)
+			if (initialize && Element.TextColor == null)
 				return;
 
 			Control.TextColor = Element.TextColor.ToPlatform();

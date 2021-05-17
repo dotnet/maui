@@ -1,9 +1,9 @@
 using System;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific;
+using Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific;
 using EColor = ElmSharp.Color;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.VisualElement;
-using SpecificSwitch = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.Switch;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.VisualElement;
+using SpecificSwitch = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -70,24 +70,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		protected virtual void UpdateColor()
 		{
 			var color = SpecificSwitch.GetColor(Element);
-			if (color != Color.Default)
+			if (color != null)
 			{
-				Control.Color = color.ToPlatform();
+				Control.Color = color.ToPlatformEFL();
 			}
 		}
 
 		protected void UpdateOnColor(bool initialize)
 		{
-			if (initialize && Element.OnColor.IsDefault)
+			if (initialize && Element.OnColor == null)
 				return;
 
-			if (Element.OnColor.IsDefault)
+			if (Element.OnColor == null)
 			{
 				Control.DeleteOnColors();
 			}
 			else
 			{
-				Control.SetOnColors(Element.OnColor.ToPlatform());
+				Control.SetOnColors(Element.OnColor.ToPlatformEFL());
 			}
 		}
 

@@ -1,6 +1,8 @@
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
-using Microsoft.Maui.Controls.Compatibility.Shapes;
+using Microsoft.Maui.Controls.Shapes;
 
 [assembly: Dependency(typeof(ResourcesProvider))]
 [assembly: Dependency(typeof(Deserializer))]
@@ -59,7 +61,7 @@ using Microsoft.Maui.Controls.Compatibility.Shapes;
 [assembly: ExportCell(typeof(EntryCell), typeof(EntryCellRenderer))]
 [assembly: ExportCell(typeof(ViewCell), typeof(ViewCellRenderer))]
 
-[assembly: ExportRenderer(typeof(EmbeddedFont), typeof(EmbeddedFontLoader))]
+[assembly: ExportRenderer(typeof(Microsoft.Maui.EmbeddedFont), typeof(Microsoft.Maui.EmbeddedFontLoader))]
 
 [assembly: ExportHandler(typeof(TapGestureRecognizer), typeof(TapGestureHandler))]
 [assembly: ExportHandler(typeof(PinchGestureRecognizer), typeof(PinchGestureHandler))]
@@ -76,4 +78,4 @@ using Microsoft.Maui.Controls.Compatibility.Shapes;
 [assembly: ExportRenderer(typeof(Path), typeof(PathRenderer))]
 [assembly: ExportRenderer(typeof(Polygon), typeof(PolygonRenderer))]
 [assembly: ExportRenderer(typeof(Polyline), typeof(PolylineRenderer))]
-[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.Compatibility.Shapes.Rectangle), typeof(RectangleRenderer))]
+[assembly: ExportRenderer(typeof(Rectangle), typeof(RectangleRenderer))]

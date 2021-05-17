@@ -1,5 +1,6 @@
 using Tizen.Common;
 using EColor = ElmSharp.Color;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -588,8 +589,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			public class ColorClass
 			{
 				public static readonly Color DefaultBackgroundColor = Color.FromRgb(33, 150, 243);
-				public static readonly Color DefaultForegroundColor = Color.White;
-				public static readonly Color DefaultTitleColor = Color.White;
+				public static readonly Color DefaultForegroundColor = Color.FromRgb(255, 255, 255);
+				public static readonly Color DefaultTitleColor = Color.FromRgb(0, 0, 0);
 				public static readonly EColor DefaultNavigationViewBackgroundColor = EColor.White;
 				public static readonly EColor DefaultDrawerDimBackgroundColor = new EColor(0, 0, 0, 82);
 

@@ -4,13 +4,16 @@ using System.ComponentModel;
 using System.Linq;
 using ElmSharp;
 using ElmSharp.Accessible;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Size = Microsoft.Maui.Graphics.Size;
+using Rectangle = Microsoft.Maui.Graphics.Rectangle;
+using Point = Microsoft.Maui.Graphics.Point;
 using EFocusDirection = ElmSharp.FocusDirection;
 using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
-using Specific = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.VisualElement;
-using XFocusDirection = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.TizenSpecific.FocusDirection;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.VisualElement;
+using XFocusDirection = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.FocusDirection;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -89,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			Dispose(false);
 		}
 
-		event EventHandler<VisualElementChangedEventArgs> ElementChanged
+		event EventHandler<VisualElementChangedEventArgs> IVisualElementRenderer.ElementChanged
 		{
 			add
 			{
@@ -119,6 +122,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 
 		public EvasObject NativeView { get; private set; }
+
+		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
 
 		protected bool IsDisposed => _flags.HasFlag(VisualElementRendererFlags.Disposed);
 
@@ -338,6 +343,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 			}
 
+			var args = new VisualElementChangedEventArgs(e.OldElement, e.NewElement);
+			for (var i = 0; i < _elementChangedHandlers.Count; i++)
+				_elementChangedHandlers[i](this, args);
+
+			ElementChanged?.Invoke(this, e);
+
 			if (null != e.NewElement)
 			{
 				e.NewElement.PropertyChanged += OnElementPropertyChanged;
@@ -526,7 +537,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateNativeGeometry()
 		{
-			var updatedGeometry = new Rectangle(ComputeAbsolutePoint(Element), new Size(Element.Width, Element.Height)).ToPixel();
+			var updatedGeometry = new Rectangle(ComputeAbsolutePoint(Element), new Size(Element.Width, Element.Height)).ToEFLPixel();
 
 			if (NativeView.Geometry != updatedGeometry)
 			{
@@ -644,12 +655,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void UpdateBackgroundColor(bool initialize)
 		{
-			if (initialize && Element.BackgroundColor.IsDefault)
+			if (initialize && Element.BackgroundColor == null)
 				return;
 
 			if (NativeView is Widget)
 			{
-				(NativeView as Widget).BackgroundColor = Element.BackgroundColor.ToPlatform();
+				(NativeView as Widget).BackgroundColor = Element.BackgroundColor.ToPlatformEFL();
 			}
 			else
 			{

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ElmSharp;
 using ESize = ElmSharp.Size;
-using XLabel = Microsoft.Maui.Controls.Compatibility.Label;
+using XLabel = Microsoft.Maui.Controls.Label;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {
@@ -91,8 +91,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 						Text = "No items found",
 						VerticalOptions = LayoutOptions.CenterAndExpand,
 						HorizontalOptions = LayoutOptions.CenterAndExpand,
-						HorizontalTextAlignment = Microsoft.Maui.Controls.Compatibility.TextAlignment.Center,
-						VerticalTextAlignment = Microsoft.Maui.Controls.Compatibility.TextAlignment.Center,
+						HorizontalTextAlignment = Maui.TextAlignment.Center,
+						VerticalTextAlignment = Maui.TextAlignment.Center,
 					}
 				);
 			}

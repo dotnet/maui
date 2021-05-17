@@ -7,8 +7,9 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using ElmSharp;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
 using TAppControl = Tizen.Applications.AppControl;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

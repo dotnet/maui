@@ -1,8 +1,11 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using ElmSharp;
+using Microsoft.Maui.Graphics;
 using ERect = ElmSharp.Rect;
+using EvasObject = ElmSharp.EvasObject;
+using GestureLayer = ElmSharp.GestureLayer;
+using Scroller = ElmSharp.Scroller;
 using TWebView = Tizen.WebView.WebView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
@@ -28,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			layout.Children.Add(new BoxView
 			{
-				Color = Color.White,
+				Color = Color.FromRgb(255, 255, 255),
 				CornerRadius = new CornerRadius(IconSize),
 			}, new Rectangle(0.5, 0.5, IconSize, IconSize), AbsoluteLayoutFlags.PositionProportional);
 
@@ -51,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 			set
 			{
-				PlatformConfiguration.TizenSpecific.Image.SetBlendColor(_icon, value == Color.Default ? DefaultColor : value);
+				PlatformConfiguration.TizenSpecific.Image.SetBlendColor(_icon, value == null ? DefaultColor : value);
 			}
 		}
 
@@ -163,7 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 	public class RefreshViewRenderer : LayoutRenderer
 	{
-		GestureLayer _gestureLayer;
+		ElmSharp.GestureLayer _gestureLayer;
 
 		RefreshLayout _refreshLayout;
 		IVisualElementRenderer _refreshLayoutRenderer;

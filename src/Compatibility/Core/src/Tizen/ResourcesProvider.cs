@@ -1,4 +1,5 @@
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -56,14 +57,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			return style;
 		}
 
-		Style GetStyle(int? fontSize = null, Color? textColor = null)
+		Style GetStyle(int? fontSize = null, Color textColor = null)
 		{
 			Style style = new Style(typeof(Label));
 			if (fontSize.HasValue)
 			{
 				style.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = fontSize });
 			}
-			if (textColor.HasValue)
+			if (textColor != null)
 			{
 				style.Setters.Add(new Setter { Property = Label.TextColorProperty, Value = textColor });
 			}

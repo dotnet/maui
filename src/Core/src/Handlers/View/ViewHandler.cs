@@ -7,6 +7,8 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+#elif TIZEN || __TIZEN__
+using PlatformView = ElmSharp.EvasObject;
 #elif NETSTANDARD
 using PlatformView = System.Object;
 #endif
