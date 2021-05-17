@@ -39,7 +39,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public event EventHandler Completed;
 
-		void IEntry.Completed() => Completed?.Invoke(this, EventArgs.Empty);
+		void IEntry.Completed() =>
+			Completed?.Invoke(this, EventArgs.Empty);
 
 		void OnTextChanged(string oldValue, string newValue) =>
 			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));

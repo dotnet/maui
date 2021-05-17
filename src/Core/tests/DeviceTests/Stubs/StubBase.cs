@@ -10,7 +10,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		public bool IsEnabled { get; set; } = true;
 
-		public Color BackgroundColor { get; set; }
+		public Visibility Visibility { get; set; } = Visibility.Visible;
+
+		public double Opacity { get; set; } = 1.0d;
+
+		public Paint Background { get; set; }
 
 		public Rectangle Frame { get; set; }
 

@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				// Only need to do this once
 				Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
 			}
-			
+
 #if __MOBILE__
 			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
 			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());

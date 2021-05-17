@@ -98,7 +98,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		bool GetNativeIsBold(TimePickerHandler timePickerHandler) =>
-			GetNativeTimePicker(timePickerHandler).Typeface.IsBold;
+			GetNativeTimePicker(timePickerHandler).Typeface.GetFontWeight() == FontWeight.Bold;
 
 		bool GetNativeIsItalic(TimePickerHandler timePickerHandler) =>
 			GetNativeTimePicker(timePickerHandler).Typeface.IsItalic;

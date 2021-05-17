@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
-    <AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
-    <RootNamespace>Microsoft.Maui.Controls.Xaml</RootNamespace>
-    <NoWarn>$(NoWarn);CA2200;</NoWarn>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
+		<AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
+		<RootNamespace>Microsoft.Maui.Controls.Xaml</RootNamespace>
+		<NoWarn>$(NoWarn);CA2200;NU5128</NoWarn>
+	</PropertyGroup>
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <NoWarn>$(NoWarn);CA1416</NoWarn>
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
@@ -27,5 +27,17 @@
     <PropertyGroup>
       <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
     </PropertyGroup>
+  </Target>
+
+   <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);_MauiPackXamlDesignAssemblies</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+
+  <Target Name="_MauiPackXamlDesignAssemblies">
+    <ItemGroup>
+      <BuildOutputInPackage Include="..\Xaml.Design\bin\$(Configuration)\net472\Microsoft.Maui.Controls.Xaml.Design.dll">
+        <TargetPath>Design</TargetPath>
+      </BuildOutputInPackage>
+    </ItemGroup>
   </Target>
 </Project>

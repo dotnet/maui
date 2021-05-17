@@ -8,8 +8,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextField>
 	{
-		static readonly int BaseHeight = 30;
-
 		static UIColor? DefaultTextColor;
 
 		protected override MauiTextField CreateNativeView()
@@ -42,9 +40,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			DefaultTextColor = nativeView.TextColor;
 		}
-
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
-			new SizeRequest(new Size(widthConstraint, BaseHeight));
 
 		public static void MapText(EntryHandler handler, IEntry entry)
 		{
