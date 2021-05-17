@@ -19,6 +19,16 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		static partial void UpdatingWidth(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateAnchorX(view);
+		}
+
+		static partial void UpdatingHeight(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateAnchorY(view);
+		}
+
 		public static void MapTranslationX(IViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateTranslationX(view);

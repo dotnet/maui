@@ -57,7 +57,7 @@ namespace Microsoft.Maui
 				return;
 
 			float currentPivot = nativeView.PivotX;
-			var target = (float)(view.AnchorX * nativeView.Context.ToPixels(view.Width));
+			var target = (float)(view.AnchorX * nativeView.Context.ToPixels(view.Frame.Width));
 
 			if (currentPivot != target)
 				nativeView.PivotX = target;
@@ -69,7 +69,7 @@ namespace Microsoft.Maui
 				return;
 
 			float currentPivot = nativeView.PivotY;
-			var target = (float)(view.AnchorY * nativeView.Context.ToPixels(view.Height));
+			var target = (float)(view.AnchorY * nativeView.Context.ToPixels(view.Frame.Height));
 
 			if (currentPivot != target)
 				nativeView.PivotY = target;
