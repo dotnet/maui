@@ -209,8 +209,8 @@ namespace Microsoft.Maui.Essentials
 			AppContext.GetSystemService(Context.PowerService) as PowerManager;
 
 #if __ANDROID_25__
-        internal static ShortcutManager ShortcutManager =>
-            AppContext.GetSystemService(Context.ShortcutService) as ShortcutManager;
+		internal static ShortcutManager ShortcutManager =>
+			AppContext.GetSystemService(Context.ShortcutService) as ShortcutManager;
 #endif
 
 		internal static IWindowManager WindowManager =>
@@ -224,8 +224,8 @@ namespace Microsoft.Maui.Essentials
 			var resources = AppContext.Resources;
 			var config = resources.Configuration;
 #if __ANDROID_24__
-            if (HasApiLevelN)
-                return config.Locales.Get(0);
+			if (HasApiLevelN)
+				return config.Locales.Get(0);
 #endif
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -240,9 +240,9 @@ namespace Microsoft.Maui.Essentials
 			var config = resources.Configuration;
 
 #if __ANDROID_24__
-            if (HasApiLevelN)
-                config.SetLocale(locale);
-            else
+			if (HasApiLevelN)
+				config.SetLocale(locale);
+			else
 #endif
 #pragma warning disable CS0618 // Type or member is obsolete
 			config.Locale = locale;

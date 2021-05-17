@@ -10,12 +10,9 @@ namespace Microsoft.Maui.Controls
 		// TODO ezhart That there's a layout alignment here tells us this hierarchy needs work :) 
 		public Primitives.LayoutAlignment HorizontalLayoutAlignment => Primitives.LayoutAlignment.Fill;
 
-		// TODO ezhart super sus
-		public Thickness Margin => Thickness.Zero;
-
 		IView IPage.Content => Content;
 
-		
+
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
@@ -35,7 +32,7 @@ namespace Microsoft.Maui.Controls
 			if (Content is IFrameworkElement element)
 			{
 				element.Arrange(bounds);
-				element.Handler?.SetFrame(element.Frame);
+				element.Handler?.NativeArrange(element.Frame);
 			}
 
 			return Frame.Size;

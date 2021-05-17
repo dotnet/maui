@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.Xaml.Internals;

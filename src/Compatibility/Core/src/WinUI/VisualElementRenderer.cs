@@ -11,6 +11,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.
 using WRect = Windows.Foundation.Rect;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -434,7 +435,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Control == null)
 				return;
 
-			_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, _defaultAutomationPropertiesLabeledBy);
+			// TODO MAUI
+			_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, null, _defaultAutomationPropertiesLabeledBy);
 		}
 
 		protected void SetNativeControl(TNativeElement control)
@@ -499,7 +501,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (!backgroundColor.IsDefault())
 				{
-					_control.Background = backgroundColor.ToBrush();
+					_control.Background = Maui.ColorExtensions.ToNative(backgroundColor);
 				}
 				else
 				{
@@ -511,7 +513,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (!backgroundColor.IsDefault())
 				{
-					backgroundLayer.Background = backgroundColor.ToBrush();
+					backgroundLayer.Background = Maui.ColorExtensions.ToNative(backgroundColor);
 				}
 				else
 				{
@@ -539,7 +541,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else
 				{
 					if (!backgroundColor.IsDefault())
-						_control.Background = backgroundColor.ToBrush();
+						_control.Background = Maui.ColorExtensions.ToNative(backgroundColor);
 					else
 					{
 						_control.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
@@ -554,7 +556,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else
 				{
 					if (!backgroundColor.IsDefault())
-						backgroundLayer.Background = backgroundColor.ToBrush();
+						backgroundLayer.Background = Maui.ColorExtensions.ToNative(backgroundColor);
 					else
 						backgroundLayer.ClearValue(BackgroundProperty);
 				}

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using NUnit.Framework;
 
 [assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 					var r = GetRenderer(shell);
 				});
 			}
-			catch (Exception exc)			
+			catch (Exception exc)
 			{
 				Assert.Fail(exc.ToString());
 			}
@@ -68,8 +68,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 		}
 	}
 
-	public class TestShell : Shell { }	
-	
+	public class TestShell : Shell { }
+
 	public class TestShellRenderer : ShellRenderer
 	{
 	}

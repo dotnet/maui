@@ -11,6 +11,7 @@ using WEllipse = Microsoft.UI.Xaml.Shapes.Ellipse;
 using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -199,7 +200,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 								if (!Element.ThumbColor.IsDefault())
 								{
-									var brush = Element.ThumbColor.ToBrush();
+									var brush = Maui.ColorExtensions.ToNative(Element.ThumbColor);
 									brush.Opacity = _originalThumbOnBrush.Opacity;
 									frame.Value = brush;
 								}
@@ -218,7 +219,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					_originalThumbOnBrush = thumb.Fill;
 
 				if (!Element.ThumbColor.IsDefault())
-					thumb.Fill = Element.ThumbColor.ToBrush();
+					thumb.Fill = Maui.ColorExtensions.ToNative(Element.ThumbColor);
 				else
 					thumb.Fill = _originalThumbOnBrush;
 			}

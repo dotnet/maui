@@ -11,6 +11,8 @@ using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProper
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -99,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			get
 			{
-				var frame = Window.Current?.Content as Microsoft.UI.Xaml.Controls.Frame;
+				var frame = UI.Xaml.Window.Current?.Content as Microsoft.UI.Xaml.Controls.Frame;
 				var wbp = frame?.Content as WindowsBasePage;
 				return wbp?.Platform;
 			}
@@ -138,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			MessagingCenter.Subscribe(this, Page.BusySetSignalName, (Page sender, bool enabled) =>
 			{
 				Microsoft.UI.Xaml.Controls.ProgressBar indicator = GetBusyIndicator();
-				indicator.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+				indicator.Visibility = enabled ? WVisibility.Visible : WVisibility.Collapsed;
 			});
 
 			_toolbarTracker.CollectionChanged += OnToolbarItemsChanged;
@@ -146,11 +148,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateBounds();
 
 			InitializeStatusBar();
-						
-			// TODO WINUI
-			//SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
+				
+			if(!NativeVersion.IsDesktop)
+				SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
 
-			// TODO WINUI
+			// TODO WINUI: This event is only available on UWP
 			// Microsoft.UI.Xaml.Application.Current.Resuming += OnResumingAsync;
 		}
 
@@ -316,7 +318,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_busyIndicator = new Microsoft.UI.Xaml.Controls.ProgressBar
 				{
 					IsIndeterminate = true,
-					Visibility = Visibility.Collapsed,
+					Visibility = WVisibility.Collapsed,
 					VerticalAlignment = UI.Xaml.VerticalAlignment.Top
 				};
 
@@ -555,14 +557,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					button.Content = img;
 				}
 
-				// WINUUI FIX
+				// TODO WINUI FIX
 				//button.Command = new MenuItemCommand(item);
 				button.DataContext = item;
 				button.SetValue(NativeAutomationProperties.AutomationIdProperty, item.AutomationId);
 				button.SetAutomationPropertiesName(item);
 				button.SetAutomationPropertiesAccessibilityView(item);
 				button.SetAutomationPropertiesHelpText(item);
-				button.SetAutomationPropertiesLabeledBy(item);
+
+				// TODO MAUI
+				button.SetAutomationPropertiesLabeledBy(item, null);
 
 				ToolbarItemOrder order = item.Order == ToolbarItemOrder.Default ? ToolbarItemOrder.Primary : item.Order;
 				if (order == ToolbarItemOrder.Primary)

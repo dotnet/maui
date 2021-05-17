@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		public static bool IsWindowClosedException(this Exception exc)
 		{
-#if __WINDOWS__
+#if WINDOWS
 			return exc.Message?.Contains("Currently selected window has been closed") ?? false;
 #else
 			return false;

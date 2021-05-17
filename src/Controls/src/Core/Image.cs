@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement
+	public partial class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement
 	{
 		public static readonly BindableProperty SourceProperty = ImageElement.SourceProperty;
 
@@ -35,7 +32,8 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsLoading
 		{
-			get { return (bool)GetValue(IsLoadingProperty); }
+			get => (bool)GetValue(IsLoadingProperty);
+			private set => SetValue(IsLoadingPropertyKey, value);
 		}
 
 		public bool IsOpaque
@@ -57,8 +55,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(SourceProperty, value); }
 		}
 
-		bool IImageController.GetLoadAsAnimation() => ImageElement.GetLoadAsAnimation(this);
-
 		protected override void OnBindingContextChanged()
 		{
 			ImageElement.OnBindingContextChanged(this, this);
@@ -73,20 +69,21 @@ namespace Microsoft.Maui.Controls
 			return ImageElement.Measure(this, desiredSize, widthConstraint, heightConstraint);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SetIsLoading(bool isLoading)
-		{
-			SetValue(IsLoadingPropertyKey, isLoading);
-		}
-
 		public IPlatformElementConfiguration<T, Image> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
+		bool IImageController.GetLoadAsAnimation() =>
+			ImageElement.GetLoadAsAnimation(this);
+
+		void IImageController.SetIsLoading(bool isLoading) =>
+			IsLoading = isLoading;
+
 		void IImageElement.OnImageSourceSourceChanged(object sender, EventArgs e) =>
 			ImageElement.ImageSourceSourceChanged(this, e);
 
-		void IImageElement.RaiseImageSourcePropertyChanged() => OnPropertyChanged(nameof(Source));
+		void IImageElement.RaiseImageSourcePropertyChanged() =>
+			OnPropertyChanged(nameof(Source));
 	}
 }

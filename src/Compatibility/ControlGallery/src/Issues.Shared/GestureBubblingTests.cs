@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					from Button button in element.InternalChildren
 					let text = button.Text
 					// UwpIgnore
-#if __WINDOWS__
+#if WINDOWS
 					where text != "Stepper" && text != "Entry"
 #endif
 					select new object[]

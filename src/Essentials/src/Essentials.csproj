@@ -1,7 +1,6 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;Xamarin.iOS10;MonoAndroid90;MonoAndroid10.0;tizen40;Xamarin.Mac20;</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);uap10.0.16299;</TargetFrameworks>
+    <TargetFrameworks>$(NonNet6EssentialsPlatforms)</TargetFrameworks>
     <AssemblyName>Microsoft.Maui.Essentials</AssemblyName>
     <RootNamespace>Microsoft.Maui.Essentials</RootNamespace>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>

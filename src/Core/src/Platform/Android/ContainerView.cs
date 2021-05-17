@@ -5,8 +5,8 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
-using AView = Android.Views.View;
 using Microsoft.Maui.HotReload;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui
 {

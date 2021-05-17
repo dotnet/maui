@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 	{
 		public static AppRect RootViewRect(this IApp app)
 		{
-#if __WINDOWS__
+#if WINDOWS
 			return app.Query(WinDriverApp.AppName)[0].Rect;
 #else
 			return app.Query(q => q.Raw("* index:0"))[0].Rect;

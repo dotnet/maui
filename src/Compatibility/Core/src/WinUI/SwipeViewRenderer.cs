@@ -9,6 +9,7 @@ using WSwipeItems = Microsoft.UI.Xaml.Controls.SwipeItems;
 using WSwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
 using WSwipeMode = Microsoft.UI.Xaml.Controls.SwipeMode;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -131,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Control != null)
 			{
-				Control.Background = backgroundColor.IsDefault() ? null : backgroundColor.ToBrush();
+				Control.Background = backgroundColor.IsDefault() ? null : Maui.ColorExtensions.ToNative(backgroundColor);
 			}
 
 			base.UpdateBackgroundColor();
@@ -256,10 +257,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				windowsSwipeItem.Text = formsSwipeItem.Text;
 				windowsSwipeItem.IconSource = formsSwipeItem.IconImageSource.ToWindowsIconSource();
-				windowsSwipeItem.Background = formsSwipeItem.BackgroundColor.ToBrush();
+				windowsSwipeItem.Background = Maui.ColorExtensions.ToNative(formsSwipeItem.BackgroundColor);
 
 				var textColor = GetSwipeItemColor(formsSwipeItem.BackgroundColor);
-				windowsSwipeItem.Foreground = textColor.ToBrush();
+				windowsSwipeItem.Foreground = Maui.ColorExtensions.ToNative(textColor);
 			}
 		}
 
@@ -326,8 +327,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 					var windowsSwipeItem = new WSwipeItem
 					{
-						Background = formsSwipeItem.BackgroundColor.IsDefault() ? null : formsSwipeItem.BackgroundColor.ToBrush(),
-						Foreground = textColor.ToBrush(),
+						Background = formsSwipeItem.BackgroundColor.IsDefault() ? null : Maui.ColorExtensions.ToNative(formsSwipeItem.BackgroundColor),
+						Foreground = Maui.ColorExtensions.ToNative(textColor),
 						IconSource = formsSwipeItem.IconImageSource.ToWindowsIconSource(),
 						Text = !string.IsNullOrEmpty(formsSwipeItem.Text) ? formsSwipeItem.Text : string.Empty,
 						BehaviorOnInvoked = GetSwipeBehaviorOnInvoked(items.SwipeBehaviorOnInvoked)

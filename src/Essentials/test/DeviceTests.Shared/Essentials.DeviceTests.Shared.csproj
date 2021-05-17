@@ -2,6 +2,8 @@
   <PropertyGroup>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">Xamarin.iOS10;MonoAndroid10.0;uap10.0.16299</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">Xamarin.iOS10;MonoAndroid10.0;</TargetFrameworks>
+    <TargetFrameworks Condition="'$(BuildNonNet6ForAndroid)' == 'true'">MonoAndroid10.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(BuildNonNet6ForiOS)' == 'true'">Xamarin.iOS10</TargetFrameworks>
     <AssemblyName>EssentialsDeviceTestsShared</AssemblyName>
     <RootNamespace>Microsoft.Maui.Essentials.DeviceTests.Shared</RootNamespace>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>

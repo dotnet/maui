@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using UwpApp = Microsoft.UI.Xaml.Application;
 using UwpControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
 using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -25,11 +26,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public static readonly DependencyProperty EmptyViewVisibilityProperty =
 			DependencyProperty.Register(nameof(EmptyViewVisibility), typeof(Visibility),
-				typeof(FormsListView), new PropertyMetadata(Visibility.Collapsed));
+				typeof(FormsListView), new PropertyMetadata(WVisibility.Collapsed));
 
-		public Visibility EmptyViewVisibility
+		public WVisibility EmptyViewVisibility
 		{
-			get { return (Visibility)GetValue(EmptyViewVisibilityProperty); }
+			get { return (WVisibility)GetValue(EmptyViewVisibilityProperty); }
 			set { SetValue(EmptyViewVisibilityProperty, value); }
 		}
 
