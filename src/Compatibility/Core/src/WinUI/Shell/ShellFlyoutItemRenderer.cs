@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WRect = Windows.Foundation.Rect;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -123,11 +124,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (!_content.IsVisible)
 				{
-					fe.Visibility = Visibility.Collapsed;
+					fe.Visibility = WVisibility.Collapsed;
 				}
 				else
 				{
-					fe.Visibility = Visibility.Visible;
+					fe.Visibility = WVisibility.Visible;
 				}
 			}
 

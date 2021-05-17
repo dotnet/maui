@@ -1,3 +1,4 @@
+using Android.Views;
 using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
@@ -13,6 +14,21 @@ namespace Microsoft.Maui
 		{
 			if (nativeView != null)
 				nativeView.Enabled = view.IsEnabled;
+		}
+
+		public static void UpdateVisibility(this AView nativeView, IView view)
+		{
+			nativeView.Visibility = view.Visibility.ToNativeVisibility();
+		}
+
+		public static ViewStates ToNativeVisibility(this Visibility visibility) 
+		{
+			return visibility switch
+			{
+				Visibility.Hidden => ViewStates.Invisible,
+				Visibility.Collapsed => ViewStates.Gone,
+				_ => ViewStates.Visible,
+			};
 		}
 
 		public static void UpdateBackground(this AView nativeView, IView view)

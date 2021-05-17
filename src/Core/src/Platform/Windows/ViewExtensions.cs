@@ -10,6 +10,27 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateIsEnabled(this FrameworkElement nativeView, IView view) =>
 			(nativeView as Control)?.UpdateIsEnabled(view.IsEnabled);
+		
+		public static void UpdateVisibility(this FrameworkElement nativeView, IView view)
+		{
+			double opacity = view.Opacity;
+
+			switch (view.Visibility)
+			{
+				case Visibility.Visible:
+					nativeView.Opacity = opacity;
+					nativeView.Visibility = UI.Xaml.Visibility.Visible;
+					break;
+				case Visibility.Hidden:
+					nativeView.Opacity = 0;
+					nativeView.Visibility = UI.Xaml.Visibility.Visible;
+					break;
+				case Visibility.Collapsed:
+					nativeView.Opacity = opacity;
+					nativeView.Visibility = UI.Xaml.Visibility.Collapsed;
+					break;
+			}
+		}
 
 		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
 		{
