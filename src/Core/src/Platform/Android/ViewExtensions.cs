@@ -74,6 +74,8 @@ namespace Microsoft.Maui
 
 			if (semantics == null)
 				return;
+			else
+				nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
 
 			nativeView.ContentDescription = semantics.Description;
 			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
