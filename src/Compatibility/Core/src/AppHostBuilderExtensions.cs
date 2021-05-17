@@ -36,20 +36,12 @@ using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platf
 #elif TIZEN
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Microsoft.Maui.Graphics.Skia;
-using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.BoxViewRenderer;
 using CollectionViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.StructuredItemsViewRenderer;
 using OpenGLViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.DefaultRenderer;
+using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.BoxViewRenderer;
+using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.DefaultRenderer;
 using StreamImagesourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.StreamImageSourceHandler;
 using ImageLoaderSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.UriImageSourceHandler;
-using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.DefaultRenderer;
-using FrameRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.FrameRenderer;
-using ImageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.ImageRenderer;
-using EllipseRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.EllipseRenderer;
-using LineRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.LineRenderer;
-using PathRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.PathRenderer;
-using PolygonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.PolygonRenderer;
-using PolylineRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.PolylineRenderer;
-using RectangleRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp.RectangleRenderer;
 #endif
 
 namespace Microsoft.Maui.Controls.Compatibility.Hosting
