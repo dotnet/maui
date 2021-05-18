@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui
 {
@@ -14,6 +14,25 @@ namespace Microsoft.Maui
 					return HorizontalAlignment.Right;
 				default:
 					return HorizontalAlignment.Left;
+			}
+		}
+
+		public static UI.Xaml.TextAlignment ToNative(this TextAlignment alignment, bool isLtr = true)
+		{
+			switch (alignment)
+			{
+				case TextAlignment.Center:
+					return UI.Xaml.TextAlignment.Center;
+				case TextAlignment.End:
+					if (isLtr)
+						return UI.Xaml.TextAlignment.Right;
+					else
+						return UI.Xaml.TextAlignment.Left;
+				default:
+					if (isLtr)
+						return UI.Xaml.TextAlignment.Left;
+					else
+						return UI.Xaml.TextAlignment.Right;
 			}
 		}
 	}
