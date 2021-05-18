@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Handlers
 		public static PropertyMapper<IPage, PageHandler> PageMapper = new PropertyMapper<IPage, PageHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IPage.Title)] = MapTitle,
+			[nameof(IPage.Content)] = MapContent,
 		};
 
 		public PageHandler() : base(PageMapper)

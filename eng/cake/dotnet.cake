@@ -97,12 +97,25 @@ Task("VS-NET6")
 Task("VS-WINUI")
     .Description("Provisions .NET 6 and launches an instance of Visual Studio with WinUI projects.")
     .IsDependentOn("Clean")
-    .IsDependentOn("dotnet")
-    .IsDependentOn("dotnet-buildtasks")
+    // .IsDependentOn("dotnet") WINUI currently can't launch application with local dotnet 
+    // .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui.WinUI.sln");
-        StartVisualStudioForDotNet6("./Microsoft.Maui.WinUI.sln");
+        string sln = "./Microsoft.Maui.WinUI.sln";
+        var msbuildSettings = new MSBuildSettings
+        {
+            Configuration = configuration,
+            ToolPath = FindMSBuild(),
+        };
+
+        MSBuild("./Microsoft.Maui.BuildTasks-net6.sln", msbuildSettings.WithRestore());
+        MSBuild(sln, msbuildSettings.WithRestore());
+
+        var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, });
+        if (vsLatest == null)
+            throw new Exception("Unable to find Visual Studio!");
+        Environment.SetEnvironmentVariable("_ExcludeMauiProjectCapability", "true", EnvironmentVariableTarget.Process);
+        StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
     });
 
 Task("VS-ANDROID")
