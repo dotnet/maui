@@ -687,7 +687,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		[Category(GridSpan)]
 		[Fact]
-		public void CanSpanAbsoluteColumns() 
+		public void CanSpanAbsoluteColumns()
 		{
 			var grid = CreateGridLayout(rows: "auto", columns: "100,100");
 			var view0 = CreateTestView(new Size(150, 100));
@@ -774,7 +774,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view2 = CreateTestView(viewSize);
 
 			AddChildren(grid, view0, view1, view2);
-			
+
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
 			SetLocation(grid, view2, col: 2);
@@ -1025,7 +1025,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Category(GridAbsoluteSizing)]
 		[Category(GridStarSizing)]
 		[Fact]
-		public void MixStarsAndExplicitSizes() 
+		public void MixStarsAndExplicitSizes()
 		{
 			var screenWidth = 300;
 			var screenHeight = 600;

@@ -1,8 +1,8 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Graphics;
 using System.Linq;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -498,7 +498,7 @@ namespace Microsoft.Maui.Layouts
 
 			public abstract bool IsAuto { get; }
 			public abstract bool IsStar { get; }
-			
+
 			public abstract GridLength GridLength { get; }
 		}
 

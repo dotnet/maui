@@ -65,7 +65,7 @@ namespace Maui.Controls.Sample
 						{"Position:Name", "Dictionary_Name" },
 						{"Logging:LogLevel:Default", "Warning"}
 					});
-				 });
+				});
 
 			if (useFullDIAndBlazor)
 			{
