@@ -13,7 +13,7 @@ using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
 
 namespace Microsoft.Maui
 {
-	public static class FrameworkElementExtensions
+	internal static class FrameworkElementExtensions
 	{
 		static readonly Lazy<ConcurrentDictionary<Type, DependencyProperty>> ForegroundProperties =
 			new Lazy<ConcurrentDictionary<Type, DependencyProperty>>(() => new ConcurrentDictionary<Type, DependencyProperty>());

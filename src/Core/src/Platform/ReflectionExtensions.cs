@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Microsoft.Maui
 {
-	public static class ReflectionExtensions
+	internal static class ReflectionExtensions
 	{
 		public static FieldInfo? GetField(this Type type, Func<FieldInfo, bool> predicate)
 		{
