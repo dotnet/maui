@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (_ignoreNativeScrolling || SelectedIndex >= ElementController.LogicalChildren.Count)
 				return;
-						
+
 			var currentPage = (ContentPage)ElementController.LogicalChildren[SelectedIndex];
 			if (_previousPage != currentPage)
 			{

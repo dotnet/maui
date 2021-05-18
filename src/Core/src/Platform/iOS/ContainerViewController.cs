@@ -62,7 +62,7 @@ namespace Microsoft.Maui
 			currentNativeView = _pendingLoadedView ?? CreateNativeView(view);
 			_pendingLoadedView = null;
 			View!.AddSubview(currentNativeView);
-			if (view.BackgroundColor == null)
+			if (view.Background == null)
 				View.BackgroundColor = UIColor.SystemBackgroundColor;
 		}
 

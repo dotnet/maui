@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.Internals;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -54,8 +55,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					RightBtn.Content = options.Destruction;
 			}
 
-			LeftBtn.Visibility = LeftBtn.Content == null ? Visibility.Collapsed : Visibility.Visible;
-			RightBtn.Visibility = RightBtn.Content == null ? Visibility.Collapsed : Visibility.Visible;
+			LeftBtn.Visibility = LeftBtn.Content == null ? WVisibility.Collapsed : WVisibility.Visible;
+			RightBtn.Visibility = RightBtn.Content == null ? WVisibility.Collapsed : WVisibility.Visible;
 		}
 
 		void ListItemSelected (object sender, ItemClickEventArgs e)

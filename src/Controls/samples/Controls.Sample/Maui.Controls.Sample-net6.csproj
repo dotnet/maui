@@ -6,7 +6,6 @@
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
     <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows')) == true ">10.0.17763.0</TargetPlatformMinVersion>
-    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
@@ -20,7 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.0-preview.3.21175.8" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <PackageReference Include="Microsoft.ProjectReunion" />
@@ -30,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\BlazorWebView\samples\MauiRazorClassLibrarySample\MauiRazorClassLibrarySample.csproj" />
     <ProjectReference Include="..\..\..\BlazorWebView\src\core\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials-net6.csproj" />
     <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
@@ -40,6 +40,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\Embedded\*" />
+    <MauiAsset Include="Resources\Raw\*" />
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
@@ -48,26 +49,12 @@
     <AndroidResource Remove="Resources\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Remove="wwwroot\css\app.css" />
-    <Content Remove="wwwroot\index.html" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="wwwroot\css\app.css" />
-    <EmbeddedResource Include="wwwroot\index.html" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="**\*.razor" />
-  </ItemGroup>
-  <ItemGroup>
-    <RazorComponent Include="**\*.razor" />
-  </ItemGroup>
-
   <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
     <PropertyGroup>
       <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
     </PropertyGroup>
   </Target>
+
+  <Import Project="..\..\..\BlazorWebView\src\core\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
 </Project>

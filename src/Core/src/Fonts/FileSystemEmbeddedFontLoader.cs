@@ -16,11 +16,11 @@ namespace Microsoft.Maui
 			_logger = logger;
 		}
 
-		public (bool success, string? filePath) LoadFont(EmbeddedFont font)
+		public string? LoadFont(EmbeddedFont font)
 		{
 			var filePath = Path.Combine(_rootPath, font.FontName!);
 			if (File.Exists(filePath))
-				return (true, filePath);
+				return filePath;
 
 			try
 			{
@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 					font.ResourceStream.CopyTo(fileStream);
 				}
 
-				return (true, filePath);
+				return filePath;
 			}
 			catch (Exception ex)
 			{
@@ -44,7 +44,7 @@ namespace Microsoft.Maui
 				File.Delete(filePath);
 			}
 
-			return (false, null);
+			return null;
 		}
 	}
 }

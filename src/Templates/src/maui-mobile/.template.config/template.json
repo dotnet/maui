@@ -1,10 +1,10 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "Maui", "Android", "iOS", "macOS", "Catalyst" ],
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst" ],
     "identity": "Microsoft.Maui.SingleProject",
-    "name": ".NET Maui Mobile Application",
-    "description": "A project for creating a .NET MAUI application for iOS, Android and macOS",
+    "name": ".NET MAUI (Multi-platform App UI) Application",
+    "description": "A project for creating a .NET MAUI application for iOS, Android, and Mac Catalyst",
     "shortName": "maui",
     "tags": {
       "language": "C#",

@@ -1,8 +1,9 @@
-﻿using Android.Webkit;
-using AWebView = Android.Webkit.WebView;
-using Microsoft.Extensions.FileProviders;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using Android.Webkit;
+using Microsoft.Extensions.FileProviders;
+using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -47,10 +48,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webview.PostWebMessage(new WebMessage(message), AndroidAppOriginUri);
 		}
 
-		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out string headers) =>
+		internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers) =>
 			TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
-		//internal bool TryGetResponseContentInternal(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers) =>
-		//	TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
 
 		internal void SetUpMessageChannel()
 		{

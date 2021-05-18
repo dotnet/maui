@@ -13,6 +13,7 @@ using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WRect = Windows.Foundation.Rect;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -472,7 +473,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				if (_emptyView != null && ListViewBase is IEmptyView emptyView)
 				{
-					emptyView.EmptyViewVisibility = Visibility.Visible;
+					emptyView.EmptyViewVisibility = WVisibility.Visible;
 
 					if (ActualWidth >= 0 && ActualHeight >= 0)
 						_formsEmptyView?.Layout(new Rectangle(0, 0, ActualWidth, ActualHeight));
@@ -485,7 +486,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (_emptyViewDisplayed)
 				{
 					if (_emptyView != null && ListViewBase is IEmptyView emptyView)
-						emptyView.EmptyViewVisibility = Visibility.Collapsed;
+						emptyView.EmptyViewVisibility = WVisibility.Collapsed;
 
 					ItemsView.RemoveLogicalChild(_formsEmptyView);
 				}
@@ -582,7 +583,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (element == null || container == null)
 				return false;
 
-			if (element.Visibility != Visibility.Visible)
+			if (element.Visibility != WVisibility.Visible)
 				return false;
 
 			var elementBounds = element.TransformToVisual(container).TransformBounds(new WRect(0, 0, element.ActualWidth, element.ActualHeight));

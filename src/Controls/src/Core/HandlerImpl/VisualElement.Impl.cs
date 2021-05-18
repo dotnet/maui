@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -10,7 +7,8 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class VisualElement : IFrameworkElement
 	{
-		private IViewHandler _handler;
+		Semantics _semantics;
+		IViewHandler _handler;
 
 		public Rectangle Frame => Bounds;
 
@@ -21,6 +19,18 @@ namespace Microsoft.Maui.Controls
 			{
 				_handler = value;
 				IsPlatformEnabled = _handler != null;
+			}
+		}
+
+		Paint IFrameworkElement.Background
+		{
+			get
+			{
+				if (!Brush.IsNullOrEmpty(Background))
+					return Background;
+				if (BackgroundColor.IsNotDefault())
+					return new SolidColorBrush(BackgroundColor);
+				return null;
 			}
 		}
 
@@ -130,8 +140,9 @@ namespace Microsoft.Maui.Controls
 		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => default;
 		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => default;
 
-		Maui.Semantics _semantics;
-		Maui.Semantics IFrameworkElement.Semantics
+		Visibility IFrameworkElement.Visibility => IsVisible.ToVisibility();
+
+		Semantics IFrameworkElement.Semantics
 		{
 			get => _semantics;
 		}
@@ -139,7 +150,7 @@ namespace Microsoft.Maui.Controls
 		// We don't want to initialize Semantics until someone explicitly 
 		// wants to modify some aspect of the semantics class
 		internal Semantics SetupSemantics() =>
-			_semantics ??= new Maui.Semantics();
+			_semantics ??= new Semantics();
 
 		double IFrameworkElement.Width => WidthRequest;
 		double IFrameworkElement.Height => HeightRequest;

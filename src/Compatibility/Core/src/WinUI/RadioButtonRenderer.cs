@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (font == Font.Default && !_fontApplied)
 				return;
 
-			Font fontToApply = font == Font.Default ? Font.SystemFontOfSize(NamedSize.Medium) : font;
+			Font fontToApply = font == Font.Default ? Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)) : font;
 
 			Control.ApplyFont(fontToApply);
 			_fontApplied = true;

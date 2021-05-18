@@ -1,3 +1,5 @@
+using System;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 
@@ -9,8 +11,8 @@ namespace Microsoft.Maui
 		{
 			nativeControl.FontSize = fontManager.GetFontSize(font);
 			nativeControl.FontFamily = fontManager.GetFontFamily(font);
-			nativeControl.FontStyle = font.FontAttributes.ToFontStyle();
-			nativeControl.FontWeight = font.FontAttributes.ToFontWeight();
+			nativeControl.FontStyle = font.ToFontStyle();
+			nativeControl.FontWeight = font.ToFontWeight();
 		}
 
 		public static void UpdateFont(this TextBlock nativeControl, IText text, IFontManager fontManager) =>
@@ -70,5 +72,60 @@ namespace Microsoft.Maui
 				nativeControl.Text = nativeControl.Text;
 			}
 		}
+
+		public static void UpdateLineHeight(this TextBlock nativeControl, ILabel label)
+		{
+			if (label.LineHeight >= 0)
+			{
+				nativeControl.LineHeight = label.LineHeight * nativeControl.FontSize;
+			}
+		}
+
+		public static void UpdateHorizontalTextAlignment(this TextBlock nativeControl, ILabel label)
+		{
+			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
+			// TODO: Update this when FlowDirection is available 
+			nativeControl.TextAlignment = label.HorizontalTextAlignment.ToNative(true);
+		}
+
+		public static void UpdateLineBreakMode(this TextBlock nativeControl, ILabel label)
+		{
+			var lineBreakMode = label.LineBreakMode;
+
+			switch (lineBreakMode)
+			{
+				case LineBreakMode.NoWrap:
+					nativeControl.TextTrimming = TextTrimming.Clip;
+					nativeControl.TextWrapping = TextWrapping.NoWrap;
+					break;
+				case LineBreakMode.WordWrap:
+					nativeControl.TextTrimming = TextTrimming.None;
+					nativeControl.TextWrapping = TextWrapping.Wrap;
+					break;
+				case LineBreakMode.CharacterWrap:
+					nativeControl.TextTrimming = TextTrimming.WordEllipsis;
+					nativeControl.TextWrapping = TextWrapping.Wrap;
+					break;
+				case LineBreakMode.HeadTruncation:
+					// TODO: This truncates at the end.
+					nativeControl.TextTrimming = TextTrimming.WordEllipsis;
+					nativeControl.DetermineTruncatedTextWrapping();
+					break;
+				case LineBreakMode.TailTruncation:
+					nativeControl.TextTrimming = TextTrimming.CharacterEllipsis;
+					nativeControl.DetermineTruncatedTextWrapping();
+					break;
+				case LineBreakMode.MiddleTruncation:
+					// TODO: This truncates at the end.
+					nativeControl.TextTrimming = TextTrimming.WordEllipsis;
+					nativeControl.DetermineTruncatedTextWrapping();
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+
+		internal static void DetermineTruncatedTextWrapping(this TextBlock textBlock) =>	 
+			textBlock.TextWrapping = textBlock.MaxLines > 1 ? TextWrapping.Wrap : TextWrapping.NoWrap;
 	}
 }
