@@ -8,6 +8,12 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
+  <!-- HACK: seems to fix a threading issue for now -->
+  <ItemGroup>
+    <None Remove="environment.txt" />
+    <AndroidEnvironment Include="environment.txt" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
