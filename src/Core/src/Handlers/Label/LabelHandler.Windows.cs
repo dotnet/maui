@@ -1,6 +1,4 @@
 #nullable enable
-using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -32,11 +30,11 @@ namespace Microsoft.Maui.Handlers
 			handler.RealNativeView?.UpdateFont(label, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label) { }
+		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label) => 
+			handler.RealNativeView?.UpdateHorizontalTextAlignment(label);
 
-		[MissingMapper]
-		public static void MapLineBreakMode(LabelHandler handler, ILabel label) { }
+		public static void MapLineBreakMode(LabelHandler handler, ILabel label) => 
+			handler.RealNativeView?.UpdateLineBreakMode(label);
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label) =>	
 			handler.RealNativeView?.UpdateTextDecorations(label);
@@ -47,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPadding(LabelHandler handler, ILabel label) =>
 			handler.RealNativeView?.UpdatePadding(label);
 
-		[MissingMapper]
-		public static void MapLineHeight(LabelHandler handler, ILabel label) { }
+		public static void MapLineHeight(LabelHandler handler, ILabel label) =>		
+			handler.RealNativeView?.UpdateLineHeight(label);
 	}
 }

@@ -121,13 +121,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(Forms.GetTabletResources());
 			}
 
-			if (!current.Resources.ContainsKey(ShellRenderer.ShellStyle))
-			{
-				var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
-				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/WinUI/Shell/ShellStyles.xbf");
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
-			}
-
 			_container = new Canvas
 			{
 				Style = (Microsoft.UI.Xaml.Style)current.Resources["RootContainerStyle"]
