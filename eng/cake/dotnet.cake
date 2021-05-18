@@ -114,7 +114,7 @@ Task("VS-WINUI")
         var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, });
         if (vsLatest == null)
             throw new Exception("Unable to find Visual Studio!");
-        Environment.SetEnvironmentVariable("_ExcludeMauiProjectCapability", "true", EnvironmentVariableTarget.Process);
+        
         StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
     });
 
