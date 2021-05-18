@@ -73,7 +73,7 @@ using Windows.System;
 
 			if (VirtualView?.ReturnType == ReturnType.Next)
 			{
-				NativeView?.TryMoveFocus(FocusNavigationDirection.Next);
+				FocusManager.TryMoveFocus(FocusNavigationDirection.Next);
 			}
 			else
 			{

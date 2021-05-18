@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Element.ReturnType == ReturnType.Next)
 			{
-				Control.TryMoveFocus(FocusNavigationDirection.Next);
+				FocusManager.TryMoveFocus(FocusNavigationDirection.Next);
 			}
 			else
 			{
