@@ -3,6 +3,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui
 {
@@ -10,7 +11,7 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateIsEnabled(this FrameworkElement nativeView, IView view) =>
 			(nativeView as Control)?.UpdateIsEnabled(view.IsEnabled);
-		
+
 		public static void UpdateVisibility(this FrameworkElement nativeView, IView view)
 		{
 			double opacity = view.Opacity;
@@ -72,7 +73,7 @@ namespace Microsoft.Maui
 				nativeControl.SetValue(property, value);
 		}
 
-		public static void InvalidateMeasure(this FrameworkElement nativeView, IView view) 
+		public static void InvalidateMeasure(this FrameworkElement nativeView, IView view)
 		{
 			nativeView.InvalidateMeasure();
 		}
@@ -87,6 +88,14 @@ namespace Microsoft.Maui
 		{
 			// WinUI uses NaN for "unspecified"
 			nativeView.Height = view.Height >= 0 ? view.Height : double.NaN;
+		}
+
+		public static bool TryMoveFocus(this FrameworkElement nativeView, FocusNavigationDirection direction)
+		{
+			if (nativeView?.XamlRoot?.Content is not UIElement xamlRootContent)
+				return false;
+
+			return FocusManager.TryMoveFocus(direction, new FindNextElementOptions { SearchRoot = xamlRootContent });
 		}
 	}
 }
