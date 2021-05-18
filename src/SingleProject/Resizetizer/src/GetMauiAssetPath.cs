@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Resizetizer
 					if (Path.IsPathRooted(path))
 					{
 						path = Path.GetFullPath(path);
-						if (!MakeRelative (item.GetMetadata("ProjectDirectory"), ref path) && !MakeRelative (ProjectDirectory, ref path))
+						if (!MakeRelative(item.GetMetadata("ProjectDirectory"), ref path) && !MakeRelative(ProjectDirectory, ref path))
 						{
 							// If this is a random path, the best we can do is use the file name
 							path = Path.GetFileName(path);
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Resizetizer
 			return !Log.HasLoggedErrors;
 		}
 
-		static bool MakeRelative (string projectDirectory, ref string path)
+		static bool MakeRelative(string projectDirectory, ref string path)
 		{
 			if (string.IsNullOrEmpty(projectDirectory))
 				return false;
