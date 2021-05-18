@@ -9,5 +9,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTitle(PageHandler handler, IPage page)
 		{
 		}
+		public static void MapContent(PageHandler handler, IPage page)
+		{
+		}
 	}
 }

@@ -34,6 +34,12 @@ namespace Microsoft.Maui.Controls.Layout2
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
+			var margin = (this as IView)?.Margin ?? Thickness.Zero;
+
+			// Adjust the constraints to account for the margins
+			widthConstraint -= margin.HorizontalThickness;
+			heightConstraint -= margin.VerticalThickness;
+
 			var sizeWithoutMargins = LayoutManager.Measure(widthConstraint, heightConstraint);
 			DesiredSize = new Size(sizeWithoutMargins.Width + Margin.HorizontalThickness,
 				sizeWithoutMargins.Height + Margin.VerticalThickness);

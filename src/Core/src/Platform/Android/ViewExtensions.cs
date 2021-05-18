@@ -21,7 +21,7 @@ namespace Microsoft.Maui
 			nativeView.Visibility = view.Visibility.ToNativeVisibility();
 		}
 
-		public static ViewStates ToNativeVisibility(this Visibility visibility) 
+		public static ViewStates ToNativeVisibility(this Visibility visibility)
 		{
 			return visibility switch
 			{

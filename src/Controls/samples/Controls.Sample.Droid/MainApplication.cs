@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Droid
 		}
 
 #if NET6_0_OR_GREATER
-		// https://github.com/dotnet/runtime/issues/51274
+		// TODO: https://github.com/dotnet/runtime/issues/51274
 		public override void OnCreate()
 		{
 			Java.Lang.JavaSystem.LoadLibrary("System.Security.Cryptography.Native.OpenSsl");
