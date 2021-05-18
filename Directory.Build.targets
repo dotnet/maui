@@ -16,4 +16,6 @@
       <_EmbedFileResfilePath>$(IntermediateOutputPath)$(AppxSubfolderWithFilesToBeEmbedded)\embed.resfiles</_EmbedFileResfilePath>
     </PropertyGroup>
   </Target>
+
+  <Target Name="ValidateWinUIPlatform" />
 </Project>

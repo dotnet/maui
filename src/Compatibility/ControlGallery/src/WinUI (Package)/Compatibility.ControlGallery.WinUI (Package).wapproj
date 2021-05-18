@@ -50,10 +50,10 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.ProjectReunion" Version="[0.5.0]">
+    <PackageReference Include="Microsoft.ProjectReunion" Version="[$(_MicrosoftProjectReunionVersion)]">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[0.5.0]">
+    <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[$(_MicrosoftProjectReunionVersion)]">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
   </ItemGroup>
