@@ -10,9 +10,13 @@ $artifacts = Join-Path $PSScriptRoot ../artifacts
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
 $slnTasks = Join-Path $PSScriptRoot ../Microsoft.Maui.BuildTasks-net6.sln
 
-# Bootstrap .\bin\dotnet\
+# Bootstrap ./bin/dotnet/
 $csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
 & dotnet build $csproj -bl:$artifacts/dotnet-$configuration.binlog
+
+# Full path to dotnet folder
+$dotnet = Join-Path $PSScriptRoot ../bin/dotnet/
+$dotnet = (Get-Item $dotnet).FullName
 
 if ($IsWindows)
 {
@@ -34,13 +38,10 @@ if ($IsWindows)
     $oldPATH=$env:PATH
     try
     {
-        $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/
-        $dotnet=(Get-Item $dotnet).FullName
-
         $env:DOTNET_INSTALL_DIR=$dotnet
 
         # This tells .NET to use the bootstrapped runtime
-        $env:DOTNET_ROOT=$env:DOTNET_INSTALL_DIR
+        $env:DOTNET_ROOT=$dotnet
 
         # This tells MSBuild to load the SDK from the directory of the bootstrapped SDK
         $env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$env:DOTNET_ROOT
@@ -52,7 +53,7 @@ if ($IsWindows)
         $env:MSBuildEnableWorkloadResolver=$true
 
         # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
-        $env:PATH=($env:DOTNET_ROOT + ";" + $env:PATH)
+        $env:PATH=($dotnet + [IO.Path]::PathSeparator + $env:PATH)
 
         # Have to build the solution tasks
         & $msbuild $slnTasks `
@@ -92,13 +93,22 @@ if ($IsWindows)
 }
 else
 {
-    $ext = if ($IsWindows) { ".exe" } else { "" }
-    $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/dotnet$ext
+    $oldPATH=$env:PATH
+    try
+    {
+        # Put our local dotnet on $PATH
+        $env:PATH=($dotnet + [IO.Path]::PathSeparator + $env:PATH)
+        $dotnet_tool = Join-Path $dotnet dotnet
 
-    # Build with .\bin\dotnet\dotnet.exe
-    & $dotnet pack $sln `
-        -c:$configuration `
-        -p:SymbolPackageFormat=snupkg `
-        -bl:$artifacts/maui-pack-$configuration.binlog
-    if (!$?) { throw "Pack failed." }
+        # Build with ./bin/dotnet/dotnet
+        & $dotnet_tool pack $sln `
+            -c:$configuration `
+            -p:SymbolPackageFormat=snupkg `
+            -bl:$artifacts/maui-pack-$configuration.binlog
+        if (!$?) { throw "Pack failed." }
+    }
+    finally
+    {
+        $env:PATH=$oldPATH
+    }
 }
