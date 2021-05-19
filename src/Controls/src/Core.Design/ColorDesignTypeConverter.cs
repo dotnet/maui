@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Design
 {
-	public class NamedColorsDesignTypeConverter : KnownValuesDesignTypeConverter
+	public class ColorDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
-		public NamedColorsDesignTypeConverter()
+		public ColorDesignTypeConverter()
 		{ }
 
 		protected override string[] KnownValues =>
