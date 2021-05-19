@@ -77,7 +77,8 @@ namespace Microsoft.Maui
 
 			if (semantics == null)
 				return;
-			else
+
+			if (!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description))
 				nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
 
 			nativeView.ContentDescription = semantics.Description;
