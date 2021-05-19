@@ -31,6 +31,15 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
 		}
 
+		public static void MapTitle(PageHandler handler, IPage page)
+		{
+		}
+
+		public static void MapContent(PageHandler handler, IPage page)
+		{
+			handler.UpdateContent();
+		}
+
 		void UpdateContent()
 		{
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
@@ -41,15 +50,6 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.Content != null)
 				NativeView.AddView(VirtualView.Content.ToNative(MauiContext));
-		}
-
-		public static void MapTitle(PageHandler handler, IPage page)
-		{
-		}
-
-		public static void MapContent(PageHandler handler, IPage page)
-		{
-			handler.UpdateContent();
 		}
 	}
 }
