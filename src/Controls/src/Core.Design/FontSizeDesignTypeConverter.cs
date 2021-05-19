@@ -7,8 +7,7 @@ namespace Microsoft.Maui.Controls.Design
 	public class FontSizeDesignTypeConverter : KnownValuesDesignTypeConverter
 	{
 		public FontSizeDesignTypeConverter()
-		{
-		}
+		{ }
 
 		protected override string[] KnownValues
 			=> new[] { "Default", "Micro", "Small", "Medium", "Large", "Body", "Header", "Title", "Subtitle", "Caption" };

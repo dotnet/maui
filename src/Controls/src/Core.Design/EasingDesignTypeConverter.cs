@@ -19,8 +19,7 @@ namespace Microsoft.Maui.Controls.Design
 				"BounceOut",
 				"BounceIn",
 				"SpringIn",
-				"SpringOut",
-
+				"SpringOut"
 			};
 	}
 }
