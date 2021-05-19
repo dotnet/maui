@@ -1,0 +1,25 @@
+steps:
+  - checkout: self
+    clean: true
+
+  - task: xamops.azdevex.provisionator-task.provisionator@1
+    displayName: 'Provisionator'
+    condition: eq(variables['provisioning'], 'true')
+    inputs:
+      provisioning_script: $(provisionator.path)
+      provisioning_extra_args: $(provisionator.extraArguments)
+
+  - powershell: |
+      $(System.DefaultWorkingDirectory)/build.ps1 --target provision --TeamProject="$(System.TeamProject)"
+    displayName: 'Cake Provision'
+    condition: eq(variables['provisioningCake'], 'true')
+
+  - powershell: |
+      $(System.DefaultWorkingDirectory)/build.ps1 --target VS-WINUI --TeamProject="$(System.TeamProject)"
+    displayName: 'Build WinUI Solution'
+  
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: ${{ parameters.artifactsName }}'
+    condition: always()
+    inputs:
+      ArtifactName: WINUI

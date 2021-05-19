@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new Button
 				{
 					Text = "Font",
-					Font = Font.SystemFontOfSize(NamedSize.Large, FontAttributes.Bold)
+					Font = Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Micro, typeof(Button), false), FontWeight.Bold)
 				}
 			);
 

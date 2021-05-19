@@ -4,6 +4,7 @@
     <RootNamespace>Microsoft.Maui.Controls</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
     <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Controls</PackageId>
@@ -25,8 +26,17 @@
       <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
     </PropertyGroup>
   </Target>
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
-    <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\Microsoft.Maui.Controls.pri" Visible="False" Pack="True" PackagePath="runtimes\$(WindowsTargetFramework)\native" />
-    <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\**\*.xbf" Visible="False" Pack="True" PackagePath="lib\$(WindowsTargetFramework)\%(RecursiveDir)%(FileName)%(Extension);runtimes\$(WindowsTargetFramework)\native\%(RecursiveDir)%(FileName)%(Extension)" />
-  </ItemGroup>
+
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);_MauiPackXamlDesignAssemblies</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+
+  <Target Name="_MauiPackXamlDesignAssemblies">
+    <ItemGroup>
+      <BuildOutputInPackage Include="..\Core.Design\bin\$(Configuration)\net472\Microsoft.Maui.Controls.Design.dll">
+        <TargetPath>Design</TargetPath>
+      </BuildOutputInPackage>
+    </ItemGroup>
+  </Target>
 </Project>

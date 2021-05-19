@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -82,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			DefaultStyleKey = typeof(FlyoutPageControl);
 
-			DetailTitleVisibility = Visibility.Collapsed;
+			DetailTitleVisibility = WVisibility.Collapsed;
 
 			CollapseStyle = CollapseStyle.Full;
 		}
@@ -133,9 +134,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set { SetValue(DetailTitleViewProperty, value); }
 		}
 
-		public Visibility DetailTitleVisibility
+		public WVisibility DetailTitleVisibility
 		{
-			get { return (Visibility)GetValue(DetailTitleVisibilityProperty); }
+			get { return (WVisibility)GetValue(DetailTitleVisibilityProperty); }
 			set { SetValue(DetailTitleVisibilityProperty, value); }
 		}
 
@@ -187,15 +188,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set { SetValue(FlyoutTitleProperty, value); }
 		}
 
-		public Visibility FlyoutTitleVisibility
+		public WVisibility FlyoutTitleVisibility
 		{
-			get { return (Visibility)GetValue(FlyoutTitleVisibilityProperty); }
+			get { return (WVisibility)GetValue(FlyoutTitleVisibilityProperty); }
 			set { SetValue(FlyoutTitleVisibilityProperty, value); }
 		}
 
-		public Visibility FlyoutToolbarVisibility
+		public WVisibility FlyoutToolbarVisibility
 		{
-			get { return (Visibility)GetValue(FlyoutToolbarVisibilityProperty); }
+			get { return (WVisibility)GetValue(FlyoutToolbarVisibilityProperty); }
 			set { SetValue(FlyoutToolbarVisibilityProperty, value); }
 		}
 
@@ -231,9 +232,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		public Visibility ContentTogglePaneButtonVisibility
+		public WVisibility ContentTogglePaneButtonVisibility
 		{
-			get { return (Visibility)GetValue(ContentTogglePaneButtonVisibilityProperty); }
+			get { return (WVisibility)GetValue(ContentTogglePaneButtonVisibilityProperty); }
 			set { SetValue(ContentTogglePaneButtonVisibilityProperty, value); }
 		}
 
@@ -349,20 +350,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				// If we've determined that the pane will always be open, then there's no
 				// reason to display the show/hide pane button in the master
-				FlyoutToolbarVisibility = Visibility.Collapsed;
+				FlyoutToolbarVisibility = WVisibility.Collapsed;
 			}
 
 			// If we're in compact mode or the pane is always open,
 			// we don't need to display the content pane's toggle button
 			ContentTogglePaneButtonVisibility = _split.DisplayMode == SplitViewDisplayMode.Overlay
-				? Visibility.Visible
-				: Visibility.Collapsed;
+				? WVisibility.Visible
+				: WVisibility.Collapsed;
 
-			if (ContentTogglePaneButtonVisibility == Visibility.Visible)
-				DetailTitleVisibility = Visibility.Visible;
+			if (ContentTogglePaneButtonVisibility == WVisibility.Visible)
+				DetailTitleVisibility = WVisibility.Visible;
 
-			if (DetailTitleVisibility == Visibility.Visible && !ShouldShowNavigationBar)
-				DetailTitleVisibility = Visibility.Collapsed;
+			if (DetailTitleVisibility == WVisibility.Visible && !ShouldShowNavigationBar)
+				DetailTitleVisibility = WVisibility.Collapsed;
 
 			_firstLoad = true;
 		}
@@ -401,13 +402,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set => FlyoutTitle = value;
 		}
 
-		public Visibility MasterTitleVisibility
+		public WVisibility MasterTitleVisibility
 		{
 			get => FlyoutTitleVisibility;
 			set => FlyoutTitleVisibility = value;
 		}
 
-		public Visibility MasterToolbarVisibility
+		public WVisibility MasterToolbarVisibility
 		{
 			get => FlyoutToolbarVisibility;
 			set => FlyoutToolbarVisibility = value;

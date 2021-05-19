@@ -1,9 +1,7 @@
-﻿using Android.Runtime;
+﻿using System;
+using Android.Runtime;
 using Android.Webkit;
 using AWebView = Android.Webkit.WebView;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -72,22 +70,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				_webViewHandler.WebviewManager != null &&
 				_webViewHandler.WebviewManager.TryGetResponseContentInternal(requestUri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 			{
-				var headersDict =
-					new Dictionary<string, string>(
-					headers
-						.Split(Environment.NewLine)
-						.Select(headerString =>
-							new KeyValuePair<string, string>(
-								headerString.Substring(0, headerString.IndexOf(':')),
-								headerString.Substring(headerString.IndexOf(':') + 2))));
+				var contentType = headers["Content-Type"];
 
-				var contentType = headersDict["Content-Type"];
-				if (allowFallbackOnHostPage)
-				{
-					// Override the host page to always be text/html. This is a bug in StaticContentProvider in Blazor WebView that is fixed in later builds
-					contentType = "text/html";
-				}
-				return new WebResourceResponse(contentType, "UTF-8", statusCode, statusMessage, headersDict, content);
+				return new WebResourceResponse(contentType, "UTF-8", statusCode, statusMessage, headers, content);
 			}
 
 			return base.ShouldInterceptRequest(view, request);

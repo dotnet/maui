@@ -1,10 +1,9 @@
 #nullable enable
 using System;
-using Microsoft.Maui.HotReload;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
-	class MauiHandlersServiceProvider : MauiServiceProvider, IMauiHandlersServiceProvider, IHotReloadableHandlersServiceProvider
+	class MauiHandlersServiceProvider : MauiServiceProvider, IMauiHandlersServiceProvider
 	{
 		readonly IMauiHandlersCollection _collection;
 

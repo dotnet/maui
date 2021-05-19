@@ -34,6 +34,12 @@ namespace Microsoft.Maui.Controls.Layout2
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
+			var margin = (this as IView)?.Margin ?? Thickness.Zero;
+
+			// Adjust the constraints to account for the margins
+			widthConstraint -= margin.HorizontalThickness;
+			heightConstraint -= margin.VerticalThickness;
+
 			var sizeWithoutMargins = LayoutManager.Measure(widthConstraint, heightConstraint);
 			DesiredSize = new Size(sizeWithoutMargins.Width + Margin.HorizontalThickness,
 				sizeWithoutMargins.Height + Margin.VerticalThickness);
@@ -49,7 +55,7 @@ namespace Microsoft.Maui.Controls.Layout2
 
 			foreach (var child in Children)
 			{
-				child.Handler?.SetFrame(child.Frame);
+				child.Handler?.NativeArrange(child.Frame);
 			}
 
 			return Frame.Size;
@@ -65,7 +71,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			}
 		}
 
-		public void Add(IView child)
+		public virtual void Add(IView child)
 		{
 			if (child == null)
 				return;
@@ -80,7 +86,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			LayoutHandler?.Add(child);
 		}
 
-		public void Remove(IView child)
+		public virtual void Remove(IView child)
 		{
 			if (child == null)
 				return;

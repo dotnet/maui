@@ -53,6 +53,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\AppHostBuilderExtensions.cs" Link="AppHostBuilderExtensions.cs" />
+    <Compile Include="..\MauiHandlersCollectionExtensions.cs" Link="MauiHandlersCollectionExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ContextActionCell.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContextScrollViewDelegate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalCloseContextGestureRecognizer.cs" />
@@ -112,12 +116,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\TimePickerRenderer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CellExtensions.cs" />
-    <Compile Include="..\AppHostBuilderExtensions.cs">
-      <Link>AppHostBuilderExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\MauiHandlersCollectionExtensions.cs">
-      <Link>MauiHandlersCollectionExtensions.cs</Link>
-    </Compile>
     <Compile Include="CADisplayLinkTicker.cs" />
     <Compile Include="CollectionView\CarouselViewDelegator.cs" />
     <Compile Include="CollectionView\CarouselViewRenderer.cs" />
@@ -275,12 +273,10 @@
     <Compile Include="Shapes\PolygonRenderer.cs" />
     <Compile Include="Shapes\PolylineRenderer.cs" />
     <Compile Include="Shapes\RectangleRenderer.cs" />
-    <Compile Include="Extensions\BrushExtensions.cs" />
     <Compile Include="CollectionView\LoopObservableItemsSource.cs" />
     <Compile Include="CollectionView\LoopListSource.cs" />
     <Compile Include="CollectionView\ILoopItemsViewSource.cs" />
     <Compile Include="Renderers\IDisconnectable.cs" />
-    <Compile Include="Extensions\BrushExtensions.shared.cs" />
     <Compile Include="Renderers\ShellFlyoutHeaderContainer.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -80,6 +80,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.UITests.Share
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinUI.UITests", "src\Compatibility\ControlGallery\test\WinUI.UITests\WinUI.UITests.csproj", "{0A39A74B-6F7A-4D41-84F2-B0CCDCE899DF}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiRazorClassLibrarySample", "src\BlazorWebView\samples\MauiRazorClassLibrarySample\MauiRazorClassLibrarySample.csproj", "{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 4
@@ -415,6 +417,22 @@ Global
 		{0A39A74B-6F7A-4D41-84F2-B0CCDCE899DF}.Release|x64.Build.0 = Release|Any CPU
 		{0A39A74B-6F7A-4D41-84F2-B0CCDCE899DF}.Release|x86.ActiveCfg = Release|Any CPU
 		{0A39A74B-6F7A-4D41-84F2-B0CCDCE899DF}.Release|x86.Build.0 = Release|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Debug|arm64.Build.0 = Debug|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Debug|x64.Build.0 = Debug|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Debug|x86.Build.0 = Debug|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Release|arm64.ActiveCfg = Release|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Release|arm64.Build.0 = Release|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Release|x64.ActiveCfg = Release|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Release|x64.Build.0 = Release|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Release|x86.ActiveCfg = Release|Any CPU
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -450,6 +468,7 @@ Global
 		{10F4E7CB-E20E-4393-BD88-FD7075AC4525} = {802AA31E-051C-482F-9CA2-3F8FB11C251E}
 		{E175485B-3C8C-47D7-8DD5-F7FED627EB25} = {10F4E7CB-E20E-4393-BD88-FD7075AC4525}
 		{0A39A74B-6F7A-4D41-84F2-B0CCDCE899DF} = {10F4E7CB-E20E-4393-BD88-FD7075AC4525}
+		{1373F90D-D4BA-4A76-BDB8-FAD569BD682B} = {17CD1D1D-B4EA-4E7E-ABEF-945AC320936B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

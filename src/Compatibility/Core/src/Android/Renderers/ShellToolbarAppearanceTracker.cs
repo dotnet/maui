@@ -1,5 +1,6 @@
 using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android

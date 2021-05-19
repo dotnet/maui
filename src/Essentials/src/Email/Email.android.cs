@@ -22,8 +22,8 @@ namespace Microsoft.Maui.Essentials
 			var intent = CreateIntent(message);
 			var flags = ActivityFlags.ClearTop | ActivityFlags.NewTask;
 #if __ANDROID_24__
-            if (Platform.HasApiLevelN)
-                flags |= ActivityFlags.LaunchAdjacent;
+			if (Platform.HasApiLevelN)
+				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			intent.SetFlags(flags);
 
@@ -53,11 +53,11 @@ namespace Microsoft.Maui.Essentials
 				{
 					ISpanned html;
 #if __ANDROID_24__
-                    if (Platform.HasApiLevelN)
-                    {
-                        html = Html.FromHtml(message.Body, FromHtmlOptions.ModeLegacy);
-                    }
-                    else
+					if (Platform.HasApiLevelN)
+					{
+						html = Html.FromHtml(message.Body, FromHtmlOptions.ModeLegacy);
+					}
+					else
 #endif
 					{
 #pragma warning disable CS0618 // Type or member is obsolete

@@ -78,8 +78,8 @@
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
@@ -88,9 +88,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
-    <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\Microsoft.Maui.Controls.Compatibility.pri" Visible="False" Pack="True" PackagePath="runtimes\$(WindowsTargetFramework)\native" />
-    <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\**\*.xbf" Visible="False" Pack="True" PackagePath="lib\$(WindowsTargetFramework)\%(RecursiveDir)%(FileName)%(Extension);runtimes\$(WindowsTargetFramework)\native\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 </Project>

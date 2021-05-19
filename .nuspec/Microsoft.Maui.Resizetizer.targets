@@ -32,6 +32,10 @@
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.GenerateSplashStoryboard" />
 
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GetMauiAssetPath" />
+
     <PropertyGroup>
         <CleanDependsOn>
             $(CleanDependsOn);
@@ -167,7 +171,7 @@
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' == ''" />
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiImage.ForegroundFile)'))" />
             <MauiItem Include="@(MauiFont)"  ItemGroupName="MauiFont" />
-            <MauiItem Include="@(MauiAsset)" ItemGroupName="MauiAsset" />
+            <MauiItem Include="@(MauiAsset)" ItemGroupName="MauiAsset" ProjectDirectory="$(MSBuildProjectDirectory)" />
             <MauiItem Include="@(MauiSplashScreen)" ItemGroupName="MauiSplashScreen" />
         </ItemGroup>
 
@@ -247,15 +251,19 @@
     </Target>
 
     <Target Name="ProcessMauiAssets">
-        <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
-            <AndroidAsset Include="@(MauiAsset)" Link="%(FileName)%(Extension)" />
-        </ItemGroup>
-        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
-            <Content Include="@(MauiAsset)" Link="%(FileName)%(Extension)" />
-        </ItemGroup>
-        <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWinUIApp)' == 'True'">
-            <ContentWithTargetPath Include="@(MauiAsset)" TargetPath="Assets\%(Filename)%(Extension)" />
-        </ItemGroup>
+        <PropertyGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWinUIApp)' == 'True'">
+            <_MauiAssetFolderName>Assets</_MauiAssetFolderName>
+            <_MauiAssetItemMetadata>TargetPath</_MauiAssetItemMetadata>
+        </PropertyGroup>
+        <GetMauiAssetPath
+            ProjectDirectory="$(MSBuildProjectDirectory)"
+            FolderName="$(_MauiAssetFolderName)"
+            ItemMetadata="$(_MauiAssetItemMetadata)"
+            Input="@(MauiAsset)">
+            <Output ItemName="AndroidAsset"          TaskParameter="Output" Condition="'$(_ResizetizerIsAndroidApp)' == 'True'" />
+            <Output ItemName="Content"               TaskParameter="Output" Condition="'$(_ResizetizerIsiOSApp)' == 'True'" />
+            <Output ItemName="ContentWithTargetPath" TaskParameter="Output" Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWinUIApp)' == 'True'" />
+        </GetMauiAssetPath>
     </Target>
 
     <Target Name="ProcessMauiSplashScreens"

@@ -14,13 +14,10 @@ namespace MauiApp1
 		}
 
 		int count = 0;
-
-		private void OnButtonClicked(object sender, EventArgs e)
+		private void OnCounterClicked(object sender, EventArgs e)
 		{
 			count++;
-			CountLabel.Text = $"You clicked {count} times!";
+			CounterLabel.Text = $"Current count: {count}";
 		}
-
-		public IView View { get => (IView)Content; set => Content = (View)value; }
 	}
 }

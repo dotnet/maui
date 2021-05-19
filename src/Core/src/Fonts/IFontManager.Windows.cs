@@ -10,6 +10,6 @@ namespace Microsoft.Maui
 
 		FontFamily GetFontFamily(Font font);
 
-		double GetFontSize(Font font);
+		double GetFontSize(Font font, double defaultFontSize = 0);
 	}
 }
