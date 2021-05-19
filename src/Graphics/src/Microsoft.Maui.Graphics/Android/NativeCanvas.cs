@@ -733,7 +733,7 @@ namespace Microsoft.Maui.Graphics.Native
 
 		protected override void StateRestored(NativeCanvasState state)
 		{
-			_canvas.Restore();
+			_canvas?.Restore();
 		}
 
 		public override void SetShadow(SizeF offset, float blur, Color color)
