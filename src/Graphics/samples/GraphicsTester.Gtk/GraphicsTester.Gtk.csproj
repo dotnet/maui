@@ -6,14 +6,14 @@
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 
         <RootNamespace>GraphicsTester.Gtk</RootNamespace>
-        <AssemblyName>GraphicsTester.Gtk</AssemblyName>
+
+        <PackageId>GraphicsTester.Gtk</PackageId>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Skia.GtkSharp\Microsoft.Maui.Graphics.Skia.GtkSharp.csproj" />
+      <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Gtk\Microsoft.Maui.Graphics.Gtk.csproj" />
       <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
       <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
-      <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.2" />
 
     </ItemGroup>
 

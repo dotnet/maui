@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+        <RootNamespace>GraphicsTester.Skia.Gtk</RootNamespace>
+
+        <PackageId>GraphicsTester.Skia.Gtk</PackageId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Skia.GtkSharp\Microsoft.Maui.Graphics.Skia.GtkSharp.csproj" />
+        <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
+        <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.2" />
+
+    </ItemGroup>
+
+
+</Project>

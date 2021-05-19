@@ -3,7 +3,7 @@
 
 using System;
 using Gtk;
-using Microsoft.Maui.Graphics.Native.Gtk;
+using Microsoft.Maui.Graphics.Skia;
 
 namespace Samples {
 
@@ -14,12 +14,9 @@ namespace Samples {
 
 		[STAThread]
 		public static void Main(string[] args) {
-
 			Application.Init();
 
-			App = new Application("Microsoft.Maui.Graphics.Samples", GLib.ApplicationFlags.None);
-
-			App.Startup += (s, e) => StartupTests();
+			App = new Application("Microsoft.Maui.Graphics.Samples.Gtk.Skia", GLib.ApplicationFlags.None);
 
 			App.Startup += (s, e) => {
 
@@ -50,14 +47,10 @@ namespace Samples {
 			((GLib.Application) App).Run();
 		}
 
-		private static void StartupTests() {
-			StartupTest.InitTests();
-		}
-
 		private static void AboutActivated(object sender, EventArgs e) {
 			var dialog = new AboutDialog {
 				TransientFor = Win,
-				ProgramName = $"{nameof(GtkGraphicsView)} Sample Application",
+				ProgramName = $"{nameof(GtkSkiaGraphicsView)} Sample Application",
 				Version = "1.0.0.0",
 				Comments = $"A gtk sample application for the {typeof(Microsoft.Maui.Graphics.Point).Namespace} project.",
 				LogoIconName = "system-run-symbolic",

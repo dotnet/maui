@@ -1,0 +1,18 @@
+<Project Sdk="MSBuild.Sdk.Extras/">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
+        <RootNamespace>Microsoft.Maui.Graphics.Gtk</RootNamespace>
+    </PropertyGroup>
+    <PropertyGroup>
+        <LangVersion>8.0</LangVersion>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj"/>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="GtkSharp" Version="3.24.24.34"/>
+    </ItemGroup>
+
+</Project>

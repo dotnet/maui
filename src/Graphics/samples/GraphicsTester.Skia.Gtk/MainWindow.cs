@@ -7,59 +7,68 @@ using System.Collections.Generic;
 using System.IO;
 using GraphicsTester.Scenarios;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Native.Gtk;
+using Microsoft.Maui.Graphics.Skia;
 
-namespace Samples {
-
-	class MainWindow : Window {
-
+namespace Samples
+{
+	class MainWindow : Window
+	{
 		private TreeView _treeView;
 		private TreeStore _store;
 		private Dictionary<string, AbstractScenario> _items;
-		private GtkGraphicsView _gtkGtkGraphicsView;
+		private GtkSkiaGraphicsView _skiaGraphicsView;
 
-		public MainWindow() : base(WindowType.Toplevel) {
+		public MainWindow() : base(WindowType.Toplevel)
+		{
 			// Setup GUI
 			WindowPosition = WindowPosition.Center;
 			DefaultSize = new Gdk.Size(800, 600);
 
-			var headerBar = new HeaderBar {
+			var headerBar = new HeaderBar
+			{
 				ShowCloseButton = true,
-				Title = $"{typeof(Point).Namespace} Gtk Sample Application"
+				Title = $"{nameof(GtkSkiaGraphicsView)} Sample Application"
 			};
 
-			var btnClickMe = new Button {
+			var btnClickMe = new Button
+			{
 				AlwaysShowImage = true,
 				Image = Image.NewFromIconName("document-new-symbolic", IconSize.Button)
 			};
-
 			headerBar.PackStart(btnClickMe);
 
 			Titlebar = headerBar;
 
-			var hpanned = new HPaned {
+			var hpanned = new HPaned
+			{
 				Position = 300
 			};
 
-			_treeView = new TreeView {
+			_treeView = new TreeView
+			{
 				HeadersVisible = false
 			};
-
-			var scroll0 = new ScrolledWindow {
+			var scroll0 = new ScrolledWindow
+			{
 				Child = _treeView
 			};
-
 			hpanned.Pack1(scroll0, true, true);
 
-			Fonts.Register(NativeFontService.Instance);
-			GraphicsPlatform.RegisterGlobalService(NativeGraphicsService.Instance);
+			Fonts.Register(new SkiaFontService("", ""));
+			GraphicsPlatform.RegisterGlobalService(SkiaGraphicsService.Instance);
 
-			_gtkGtkGraphicsView = new GtkGraphicsView {
+			_skiaGraphicsView = new GtkSkiaGraphicsView();
+
+			var skiaGraphicsRenderer = new GtkSkiaDirectRenderer
+			{
 				BackgroundColor = Colors.White
 			};
 
-			var scroll1 = new ScrolledWindow {
-				Child = _gtkGtkGraphicsView
+			_skiaGraphicsView.Renderer = skiaGraphicsRenderer;
+
+			var scroll1 = new ScrolledWindow
+			{
+				Child = _skiaGraphicsView
 			};
 
 			hpanned.Pack2(scroll1, true, true);
@@ -74,30 +83,35 @@ namespace Samples {
 			Destroyed += (sender, e) => this.Close();
 
 			var scenario = ScenarioList.Scenarios[0];
-			_gtkGtkGraphicsView.Drawable = scenario;
+			_skiaGraphicsView.Drawable = scenario;
 		}
 
-		private void Selection_Changed(object sender, EventArgs e) {
-			if (!_treeView.Selection.GetSelected(out TreeIter iter)) return;
+		private void Selection_Changed(object sender, EventArgs e)
+		{
+			if (_treeView.Selection.GetSelected(out TreeIter iter))
+			{
+				var s = _store.GetValue(iter, 0).ToString();
 
-			var s = _store.GetValue(iter, 0).ToString();
+				if (_items.TryGetValue(s, out var scenario))
+				{
+					_skiaGraphicsView.Drawable = scenario;
+					_skiaGraphicsView.HeightRequest = (int) scenario.Height;
+					_skiaGraphicsView.WidthRequest = (int) scenario.Width;
+				}
 
-			if (!_items.TryGetValue(s, out var scenario)) return;
-
-			_gtkGtkGraphicsView.Drawable = scenario;
-			_gtkGtkGraphicsView.HeightRequest = (int) scenario.Height;
-			_gtkGtkGraphicsView.WidthRequest = (int) scenario.Width;
+			}
 		}
 
-		private void FillUpTreeView() {
+		private void FillUpTreeView()
+		{
 			// Init cells
 			var cellName = new CellRendererText();
 
 			// Init columns
-			var columeSections = new TreeViewColumn {
+			var columeSections = new TreeViewColumn
+			{
 				Title = "Sections"
 			};
-
 			columeSections.PackStart(cellName, true);
 
 			columeSections.AddAttribute(cellName, "text", 0);
@@ -109,7 +123,8 @@ namespace Samples {
 			_treeView.Model = _store;
 			_items = new Dictionary<string, AbstractScenario>();
 
-			foreach (var scenario in ScenarioList.Scenarios) {
+			foreach (var scenario in ScenarioList.Scenarios)
+			{
 				_store.AppendValues(scenario.ToString());
 				_items[scenario.ToString()] = scenario;
 
