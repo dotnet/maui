@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public class GestureElement : Element, ISpatialElement, IGestureRecognizers
+	public partial class GestureElement : Element, ISpatialElement, IGestureRecognizers
 	{
 		readonly GestureRecognizerCollection _gestureRecognizers = new GestureRecognizerCollection();
 		internal event NotifyCollectionChangedEventHandler GestureRecognizersCollectionChanged;

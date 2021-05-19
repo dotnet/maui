@@ -4,7 +4,7 @@ using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
-	public sealed class TapGestureRecognizer : GestureRecognizer
+	public sealed partial class TapGestureRecognizer : GestureRecognizer
 	{
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create("Command", typeof(ICommand), typeof(TapGestureRecognizer), null);
 

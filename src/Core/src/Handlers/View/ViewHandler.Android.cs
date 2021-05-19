@@ -11,8 +11,20 @@ namespace Microsoft.Maui.Handlers
 	{
 		MauiAccessibilityDelegate? AccessibilityDelegate { get; set; }
 
+		MauiTouchListener TouchListener { get; } = new MauiTouchListener();
+
+
+		partial void ConnectingHandler(NativeView? nativeView)
+		{
+			TouchListener.GestureManager = GestureManager;
+			nativeView?.SetOnTouchListener(TouchListener);
+		}
+
 		partial void DisconnectingHandler(NativeView? nativeView)
 		{
+			TouchListener.GestureManager = null;
+			nativeView?.SetOnTouchListener(null);
+
 			if (nativeView.IsAlive() && AccessibilityDelegate != null)
 			{
 				AccessibilityDelegate.Handler = null;
@@ -191,6 +203,14 @@ namespace Microsoft.Maui.Handlers
 				base.OnInitializeAccessibilityNodeInfo(host, info);
 				Handler?.OnInitializeAccessibilityNodeInfo(host, info);
 			}
+		}
+
+		class MauiTouchListener : Java.Lang.Object, NativeView.IOnTouchListener
+		{
+			public GestureManager? GestureManager { get; set; }
+
+			public bool OnTouch(NativeView? v, Android.Views.MotionEvent? e) =>
+				GestureManager?.OnTouchEvent(e) ?? false;
 		}
 	}
 }

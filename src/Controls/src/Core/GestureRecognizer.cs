@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Controls
 {
-	public class GestureRecognizer : Element, IGestureRecognizer
+	public partial class GestureRecognizer : Element, IGestureRecognizer
 	{
 		public GestureRecognizer()
 		{

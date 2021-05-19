@@ -25,6 +25,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 {
+	[PortHandler("Partially ported")]
 	public class EventTracker : IDisposable
 	{
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
@@ -100,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			OnElementChanged(this, new VisualElementChangedEventArgs(null, _renderer.Element));
 		}
 
-		static IList<GestureElement> GetChildGestures(
+		static IList<IGestureView> GetChildGestures(
 			NativeGestureRecognizer sender,
 			WeakReference weakEventTracker, WeakReference weakRecognizer, EventTracker eventTracker, View view)
 		{

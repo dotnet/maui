@@ -1,8 +1,9 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui
 {
 	public interface IGestureRecognizer : INotifyPropertyChanged
 	{
+
 	}
 }

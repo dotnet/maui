@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -9,5 +9,11 @@ namespace Microsoft.Maui.Controls
 
 		// TODO ezhart super sus
 		public Thickness Margin => Thickness.Zero;
+
+		public IList<IGestureRecognizer> GestureRecognizers { get; set; }
+
+		public IList<IGestureRecognizer> CompositeGestureRecognizers { get; set; }
+
+		public IList<IGestureView> GetChildElements(Point point) => null;
 	}
 }

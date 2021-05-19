@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls
 			get { return _compositeGestureRecognizers ?? (_compositeGestureRecognizers = new ObservableCollection<IGestureRecognizer>()); }
 		}
 
-		public virtual IList<GestureElement> GetChildElements(Point point)
+		public virtual IList<IGestureView> GetChildElements(Point point)
 		{
 			return null;
 		}

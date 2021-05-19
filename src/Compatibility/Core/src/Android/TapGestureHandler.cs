@@ -6,15 +6,16 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	[PortHandler]
 	internal class TapGestureHandler
 	{
-		public TapGestureHandler(Func<View> getView, Func<IList<GestureElement>> getChildElements)
+		public TapGestureHandler(Func<View> getView, Func<IList<IGestureView>> getChildElements)
 		{
 			GetView = getView;
 			GetChildElements = getChildElements;
 		}
 
-		Func<IList<GestureElement>> GetChildElements { get; }
+		Func<IList<IGestureView>> GetChildElements { get; }
 		Func<View> GetView { get; }
 
 		public void OnSingleClick()
