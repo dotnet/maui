@@ -9,6 +9,7 @@
         <VerticalStackLayout>
             <Label
                 Text="Welcome to .NET MAUI Semantics!"
+                SemanticProperties.Description="Welcome to dotnet MAUI Semantics!"
                 TextColor="DodgerBlue"
                 FontSize="30"
                 HorizontalTextAlignment="Center"/>
