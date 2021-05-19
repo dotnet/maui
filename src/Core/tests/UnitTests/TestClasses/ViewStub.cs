@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
@@ -43,6 +44,9 @@ namespace Microsoft.Maui.UnitTests
 
 		public Paint Background { get; set; }
 
+		public IList<IGestureRecognizer> GestureRecognizers { get; set; }
+
+		public IList<IGestureRecognizer> CompositeGestureRecognizers { get; set; }
 		public double TranslationX { get; set; }
 
 		public double TranslationY { get; set; }
@@ -64,6 +68,8 @@ namespace Microsoft.Maui.UnitTests
 		public double AnchorY { get; set; }
 
 		public Size Arrange(Rectangle bounds) => Size.Zero;
+
+		public IList<IGestureView> GetChildElements(Point point) => null;
 
 		public void InvalidateArrange() { }
 

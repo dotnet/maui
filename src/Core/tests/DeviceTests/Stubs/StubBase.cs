@@ -6,7 +6,7 @@ using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class StubBase : IFrameworkElement
+	public class StubBase : IView
 	{
 		public bool IsEnabled { get; set; } = true;
 
@@ -62,6 +62,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Semantics Semantics { get; set; } = new Semantics();
 
+		public IList<IGestureRecognizer> GestureRecognizers { get; set; }
+
+		public IList<IGestureRecognizer> CompositeGestureRecognizers { get; set; }
+
 		public Size Arrange(Rectangle bounds)
 		{
 			Frame = bounds;
@@ -95,5 +99,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			return new Size(widthConstraint, heightConstraint);
 		}
+
+		public IList<IGestureView> GetChildElements(Point point) => null;
 	}
 }

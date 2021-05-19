@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui
 {
-	public class GestureMananger : IGestureManager
+	public class GestureManager : IGestureManager
 	{
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 
@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 		IView? _virtualView;
 		FrameworkElement? _nativeView;
 
-		public GestureMananger()
+		public GestureManager()
 		{
 			_collectionChangedHandler = OnGestureRecognizersCollectionChanged;
 		}
