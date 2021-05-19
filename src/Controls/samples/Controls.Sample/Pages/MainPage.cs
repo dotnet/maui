@@ -75,6 +75,9 @@ namespace Maui.Controls.Sample.Pages
 
 			//verticalStack.Add(CreateSampleGrid());
 			verticalStack.Add(CreateResizingButton());
+			verticalStack.Add(new Entry { Text = "Entry1", ReturnType = ReturnType.Next });
+			verticalStack.Add(new Entry { Text = "Entry2", ReturnType = ReturnType.Next });
+			verticalStack.Add(new Entry { Text = "Entry3", ReturnType = ReturnType.Next });
 
 			AddTextResizeDemo(verticalStack);
 
