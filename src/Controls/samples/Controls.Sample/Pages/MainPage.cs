@@ -7,11 +7,14 @@ using Maui.Controls.Sample.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes2;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.LifecycleEvents;
 using Debug = System.Diagnostics.Debug;
 using GradientStop = Microsoft.Maui.Controls.GradientStop;
+using Path = Microsoft.Maui.Controls.Shapes2.Path;
+using Rectangle = Microsoft.Maui.Controls.Shapes2.Rectangle;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -289,6 +292,13 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
 			verticalStack.Add(CreateImagesGrid());
 
+			verticalStack.Add(new ShapeView(new Ellipse()) { Fill = new SolidColorBrush(Colors.Red), Stroke = Colors.Yellow, StrokeThickness = 4, HeightRequest = 60, WidthRequest = 100 });
+			verticalStack.Add(new ShapeView(new Line { X1 = 0, Y1 = 0, X2 = 80, Y2 = 90 }) { Fill = new SolidColorBrush(Colors.Red), Stroke = Colors.Green, StrokeThickness = 4, StrokeDashPattern = new float[] { 2, 2 }, HeightRequest = 100, WidthRequest = 100 });
+			verticalStack.Add(new ShapeView(new Path("M15.999996,0L31.999999,13.000001 15.999996,26.199999 0,13.000001z")) { Fill = new SolidColorBrush(Colors.Pink), Stroke = Colors.Red, StrokeThickness = 1, HeightRequest = 100, WidthRequest = 100 });
+			verticalStack.Add(new ShapeView(new Polyline { Points = new PointCollection() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } }) { Stroke = Colors.Black, StrokeThickness = 2, StrokeDashPattern = new float[] { 1, 1, 1, 1 }, HeightRequest = 100, WidthRequest = 100 });
+			verticalStack.Add(new ShapeView(new Polygon { Points = new PointCollection() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } }) { Fill = new SolidColorBrush(Colors.LightBlue), Stroke = Colors.Black, StrokeThickness = 2, StrokeDashPattern = new float[] { 2, 2 }, HeightRequest = 100, WidthRequest = 100 });
+			verticalStack.Add(new ShapeView(new Rectangle { CornerRadius = new CornerRadius(12, 24, 0, 12) }) { Fill = new LinearGradientBrush(new GradientStopCollection { new GradientStop(Colors.Green, 0), new GradientStop(Colors.Blue, 1) }, new Point(0, 0), new Point(1, 0)), Stroke = Colors.Purple, StrokeThickness = 2, StrokeDashPattern = new float[] { 2, 2 }, HeightRequest = 60, WidthRequest = 100 });
+
 			Content = new ScrollView
 			{
 				Content = verticalStack
@@ -433,7 +443,7 @@ namespace Maui.Controls.Sample.Pages
 
 			string CopyLocal(string embeddedPath)
 			{
-				var path = Path.Combine(FileSystem.CacheDirectory, Guid.NewGuid().ToString("N"));
+				var path = System.IO.Path.Combine(FileSystem.CacheDirectory, Guid.NewGuid().ToString("N"));
 
 				using var stream = GetEmbedded(embeddedPath);
 				using var file = File.Create(path);

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting.Internal;
 
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Hosting
 			{ typeof(IPicker), typeof(PickerHandler) },
 			{ typeof(IProgress), typeof(ProgressBarHandler) },
 			{ typeof(ISearchBar), typeof(SearchBarHandler) },
+			{ typeof(IShapeView), typeof(ShapeViewHandler) },
 			{ typeof(ISlider), typeof(SliderHandler) },
 			{ typeof(IStepper), typeof(StepperHandler) },
 			{ typeof(ISwitch), typeof(SwitchHandler) },
