@@ -73,9 +73,9 @@ stages:
             vmImage:  windows-latest
           steps:
             - task: NuGetToolInstaller@1
-              displayName: 'Use NuGet 5.7.0'
+              displayName: 'Use NuGet 5.9.1'
               inputs:
-                versionSpec: 5.7.0
+                versionSpec: 5.9.1
 
             - task: DotNetCoreCLI@2
               displayName: 'Install NET6'
@@ -109,6 +109,14 @@ stages:
                 basePath: '$(System.DefaultWorkingDirectory)'
                 versioningScheme : 'byEnvVar'
                 versionEnvVar: 'BUILD_BUILDNUMBER'
+            
+                
+            - task: MSBuild@1
+              displayName: 'Pack Win2D.WinUI'
+              inputs:
+                solution: Microsoft.Maui.Graphics.Win2D.WinUI.Desktop\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop
+                configuration: ${{ BuildCondition }}
+                msbuildArguments: /verbosity:normal /t:Pack -p:PackageOutputPath=$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}
 
             - task: CopyFiles@2
               displayName: 'Copy SignList.xml Files'
