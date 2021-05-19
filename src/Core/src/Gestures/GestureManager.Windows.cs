@@ -31,16 +31,13 @@ namespace Microsoft.Maui
 
 			_handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
-			_virtualView = _handler.VirtualView as IView;
+			_virtualView = _handler.VirtualView;
 			_nativeView = _handler.NativeView as FrameworkElement;
 
-			if (_virtualView != null)
+			if (_virtualView is IView view && view.GestureRecognizers != null)
 			{
-				if (_virtualView is IView view)
-				{
-					var gestureRecognizers = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
-					gestureRecognizers.CollectionChanged += _collectionChangedHandler;
-				}
+				var gestureRecognizers = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
+				gestureRecognizers.CollectionChanged += _collectionChangedHandler;
 			}
 
 			UpdatingGestureRecognizers();
@@ -62,13 +59,10 @@ namespace Microsoft.Maui
 			if (!disposing)
 				return;
 
-			if (_virtualView != null)
+			if (_virtualView is IView view && view.GestureRecognizers != null)
 			{
-				if (_virtualView is IView view)
-				{
-					var oldRecognizers = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
-					oldRecognizers.CollectionChanged -= _collectionChangedHandler;
-				}
+				var oldRecognizers = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
+				oldRecognizers.CollectionChanged -= _collectionChangedHandler;
 			}
 
 			if (_nativeView != null)
