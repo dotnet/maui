@@ -1,14 +1,12 @@
 ﻿using Microsoft.Maui.Graphics;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ShapeViewHandler : ViewHandler<IShapeView, FrameworkElement>
+	public partial class ShapeViewHandler : ViewHandler<IShapeView, MauiShapeView>
 	{
-		protected override Control CreateNativeView()
+		protected override MauiShapeView CreateNativeView()
 		{
-			return new UserControl();
+			return new MauiShapeView();
 		}
 
 		[MissingMapper]
