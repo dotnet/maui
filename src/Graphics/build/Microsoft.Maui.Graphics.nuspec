@@ -30,11 +30,11 @@
     <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/xamarin.mac20/Microsoft.Maui.Graphics.dll" target="lib/xamarin.mac20/Microsoft.Maui.Graphics.dll"/>
     <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/xamarin.mac20/Microsoft.Maui.Graphics.pdb" target="lib/xamarin.mac20/Microsoft.Maui.Graphics.pdb"/>
 
-    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-ios/Microsoft.Maui.Graphics.dll" target="lib/net6.0-ios/Microsoft.Maui.Graphics.dll"/>
-    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-ios/Microsoft.Maui.Graphics.pdb" target="lib/net6.0-ios/Microsoft.Maui.Graphics.pdb"/>
-    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-android/Microsoft.Maui.Graphics.dll" target="lib/net6.0-android/Microsoft.Maui.Graphics.dll"/>
-    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-android/Microsoft.Maui.Graphics.pdb" target="lib/net6.0-android/Microsoft.Maui.Graphics.pdb"/>
-    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-maccatalyst/Microsoft.Maui.Graphics.dll" target="lib/net6.0-maccatalyst/Microsoft.Maui.Graphics.dll"/>
-    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-maccatalyst/Microsoft.Maui.Graphics.pdb" target="lib/net6.0-maccatalyst/Microsoft.Maui.Graphics.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-ios/Microsoft.Maui.Graphics.dll" target="lib/net6.0-ios14.3/Microsoft.Maui.Graphics.dll"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-ios/Microsoft.Maui.Graphics.pdb" target="lib/net6.0-ios14.3/Microsoft.Maui.Graphics.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-android/Microsoft.Maui.Graphics.dll" target="lib/net6.0-android30.0/Microsoft.Maui.Graphics.dll"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-android/Microsoft.Maui.Graphics.pdb" target="lib/net6.0-android30.0/Microsoft.Maui.Graphics.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-maccatalyst/Microsoft.Maui.Graphics.dll" target="lib/net6.0-maccatalyst13.5/Microsoft.Maui.Graphics.dll"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-maccatalyst/Microsoft.Maui.Graphics.pdb" target="lib/net6.0-maccatalyst13.5/Microsoft.Maui.Graphics.pdb"/>
   </files>
 </package>
