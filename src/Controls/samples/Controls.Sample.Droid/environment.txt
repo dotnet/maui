@@ -1,1 +1,1 @@
-﻿MONO_THREADS_SUSPEND=preemptive
+MONO_THREADS_SUSPEND=preemptive
