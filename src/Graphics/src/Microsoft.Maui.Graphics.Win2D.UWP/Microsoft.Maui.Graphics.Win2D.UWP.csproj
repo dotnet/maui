@@ -113,7 +113,6 @@
     <Compile Include="W2DFontStyle.cs" />
     <Compile Include="W2DCanvas.cs" />
     <Compile Include="W2DCanvasState.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="W2DExtensions.cs" />
     <Compile Include="W2DGraphicsService.cs" />
     <Compile Include="W2DGraphicsView.cs" />
