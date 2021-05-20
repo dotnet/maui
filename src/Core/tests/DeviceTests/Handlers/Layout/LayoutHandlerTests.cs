@@ -44,5 +44,18 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			Assert.Equal(0, count);
 		}
+
+		[Fact(DisplayName = "Assign New Handler To Layout")]
+		public async Task AssignNewHandlerToLayout()
+		{
+			var layout = new LayoutStub();
+			var slider = new SliderStub();
+			layout.Add(slider);
+
+			await CreateHandlerAsync(layout);
+			layout.Handler = null;
+			var handler = await CreateHandlerAsync(layout);
+			Assert.Equal(handler, layout.Handler);
+		}
 	}
 }

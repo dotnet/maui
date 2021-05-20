@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.RemoveAllViews();
 
 			if (VirtualView.Content != null)
-				NativeView.AddView(VirtualView.Content.ToNative(MauiContext));
+				NativeView.AddView(VirtualView.Content, MauiContext);
 		}
 
 		public static void MapTitle(PageHandler handler, IPage page)

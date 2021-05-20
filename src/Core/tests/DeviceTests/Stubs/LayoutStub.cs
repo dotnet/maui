@@ -14,11 +14,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public void Add(IView child)
 		{
 			_children.Add(child);
+			LayoutHandler?.Add(child);
 		}
 
 		public void Remove(IView child)
 		{
 			_children.Remove(child);
+			LayoutHandler?.Remove(child);
 		}
 	}
 }

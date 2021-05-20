@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				//var wrap = ViewGroup.LayoutParams.WrapContent;
 				//NativeView.AddView(child.ToNative(MauiContext), new ViewGroup.LayoutParams(wrap, wrap));
-				NativeView.AddView(child.ToNative(MauiContext));
+				NativeView.AddView(child, MauiContext);
 			}
 		}
 
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.AddView(child.ToNative(MauiContext), 0);
+			NativeView.InsertView(child, 0, MauiContext);
 		}
 
 		public void Remove(IView child)

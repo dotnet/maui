@@ -101,5 +101,10 @@ namespace Microsoft.Maui
 				nativeView.RequestLayout();
 			}
 		}
+		public static void RemoveFromParent(this AView view)
+		{
+			if (view?.Parent is ViewGroup vg)
+				vg.RemoveView(view);
+		}
 	}
 }
