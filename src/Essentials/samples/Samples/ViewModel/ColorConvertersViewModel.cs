@@ -85,7 +85,7 @@ namespace Samples.ViewModel
 		{
 			try
 			{
-				var color = Color.FromHex(Hex);
+				var color = Color.FromArgb(Hex);
 				RegularColor = color;
 				AlphaColor = color.WithAlpha(Alpha / 255f);
 				SaturationColor = color.WithSaturation(Saturation / 255f);
