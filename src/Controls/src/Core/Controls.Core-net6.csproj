@@ -5,6 +5,7 @@
     <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
     <Nullable>disable</Nullable>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Controls</PackageId>
@@ -28,7 +29,7 @@
   </Target>
 
 
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' ">
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);_MauiPackXamlDesignAssemblies</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
