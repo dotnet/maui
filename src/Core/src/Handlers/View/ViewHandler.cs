@@ -62,11 +62,11 @@ namespace Microsoft.Maui.Handlers
 
 		public object? NativeView { get; private protected set; }
 
-		public IView? VirtualView { get; private protected set; }
+		public IFrameworkElement? VirtualView { get; private protected set; }
 
 		public void SetMauiContext(IMauiContext mauiContext) => MauiContext = mauiContext;
 
-		public abstract void SetVirtualView(IView view);
+		public abstract void SetVirtualView(IFrameworkElement view);
 
 		public abstract void UpdateValue(string property);
 

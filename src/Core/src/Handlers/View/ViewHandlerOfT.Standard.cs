@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
@@ -9,9 +10,6 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-			=> Size.Zero;
-
 		protected override void SetupContainer()
 		{
 
@@ -21,5 +19,10 @@ namespace Microsoft.Maui.Handlers
 		{
 
 		}
+	}
+
+	public partial class WidgetHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView, TNativeView>
+	{
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => throw new NotImplementedException();
 	}
 }

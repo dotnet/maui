@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : ViewHandler<IEditor, object>
+	public partial class EditorHandler : WidgetHandler<IEditor, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 

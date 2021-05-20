@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	public static class HandlerExtensions
 	{
 		public static AView ToContainerView(this IView view, IMauiContext context) => new ContainerView(context) { CurrentView = view };
-		public static AView ToNative(this IView view, IMauiContext context)
+		public static AView ToNative(this IFrameworkElement view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));

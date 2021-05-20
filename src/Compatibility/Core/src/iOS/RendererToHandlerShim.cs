@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using UIKit;
-using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, UIKit.UIView>;
+using ViewHandler = Microsoft.Maui.Handlers.WidgetHandler<Microsoft.Maui.IView, UIKit.UIView>;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			VirtualView.Handler = null;
 		}
 
-		public override void SetVirtualView(IView view)
+		public override void SetVirtualView(IFrameworkElement view)
 		{
 			if (VisualElementRenderer == null)
 			{

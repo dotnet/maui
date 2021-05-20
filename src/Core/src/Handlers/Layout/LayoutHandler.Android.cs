@@ -3,7 +3,7 @@ using Android.Views;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LayoutHandler : ViewHandler<ILayout, LayoutViewGroup>
+	public partial class LayoutHandler : WidgetHandler<ILayout, LayoutViewGroup>
 	{
 		protected override LayoutViewGroup CreateNativeView()
 		{
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 			return viewGroup;
 		}
 
-		public override void SetVirtualView(IView view)
+		public override void SetVirtualView(IFrameworkElement view)
 		{
 			base.SetVirtualView(view);
 
@@ -35,8 +35,6 @@ namespace Microsoft.Maui.Handlers
 			this.NativeView.RemoveAllViews();
 			foreach (var child in VirtualView.Children)
 			{
-				//var wrap = ViewGroup.LayoutParams.WrapContent;
-				//NativeView.AddView(child.ToNative(MauiContext), new ViewGroup.LayoutParams(wrap, wrap));
 				NativeView.AddView(child.ToNative(MauiContext));
 			}
 		}

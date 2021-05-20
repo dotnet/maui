@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls
 					if (mainPage != null)
 						mainPage.Parent = null;
 
-					Windows[0].View = (IView)value;
+					Windows[0].View = (IPage)value;
 
 					if (mainPage != null)
 						mainPage.NavigationProxy.Inner = NavigationProxy;

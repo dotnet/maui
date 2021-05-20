@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
+	public partial class DatePickerHandler : WidgetHandler<IDatePicker, MauiDatePicker>
 	{
 		DatePickerDialog? _dialog;
 

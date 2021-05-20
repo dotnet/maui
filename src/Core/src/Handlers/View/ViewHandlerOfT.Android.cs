@@ -43,6 +43,19 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Layout((int)left, (int)top, (int)right, (int)bottom);
 		}
 
+		protected override void SetupContainer()
+		{
+
+		}
+
+		protected override void RemoveContainer()
+		{
+
+		}
+	}
+
+	public partial class WidgetHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView, TNativeView> 
+	{
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (NativeView == null || VirtualView == null || Context == null)
@@ -81,16 +94,6 @@ namespace Microsoft.Maui.Handlers
 			var deviceConstraint = (int)Context!.ToPixels(constraint);
 
 			return mode.MakeMeasureSpec(deviceConstraint);
-		}
-
-		protected override void SetupContainer()
-		{
-
-		}
-
-		protected override void RemoveContainer()
-		{
-
 		}
 	}
 }

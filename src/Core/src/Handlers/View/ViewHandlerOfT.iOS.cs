@@ -17,6 +17,19 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		protected override void SetupContainer()
+		{
+
+		}
+
+		protected override void RemoveContainer()
+		{
+
+		}
+	}
+
+	public partial class WidgetHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView, TNativeView>
+	{
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (NativeView == null || VirtualView == null)
@@ -43,16 +56,6 @@ namespace Microsoft.Maui.Handlers
 
 			return new Size(hasExplicitWidth ? explicitWidth : size.Width,
 				hasExplicitHeight ? explicitHeight : size.Height);
-		}
-
-		protected override void SetupContainer()
-		{
-
-		}
-
-		protected override void RemoveContainer()
-		{
-
 		}
 	}
 }

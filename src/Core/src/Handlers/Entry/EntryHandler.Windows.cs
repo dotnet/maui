@@ -4,7 +4,7 @@ using Windows.System;
 
 ﻿namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : ViewHandler<IEntry, MauiTextBox>
+	public partial class EntryHandler : WidgetHandler<IEntry, MauiTextBox>
 	{
 		protected override MauiTextBox CreateNativeView() =>
 			new MauiTextBox { Style = UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as UI.Xaml.Style };

@@ -5,7 +5,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class VisualElement : IFrameworkElement
+	public partial class VisualElement : IView
 	{
 		Semantics _semantics;
 		IViewHandler _handler;
@@ -137,10 +137,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		Maui.FlowDirection IFrameworkElement.FlowDirection => FlowDirection.ToPlatformFlowDirection();
-		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => default;
-		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => default;
-
-		Visibility IFrameworkElement.Visibility => IsVisible.ToVisibility();
 
 		Semantics IFrameworkElement.Semantics
 		{
@@ -152,7 +148,12 @@ namespace Microsoft.Maui.Controls
 		internal Semantics SetupSemantics() =>
 			_semantics ??= new Semantics();
 
-		double IFrameworkElement.Width => WidthRequest;
-		double IFrameworkElement.Height => HeightRequest;
+		// VisualElement/View together implement parts of IView; the mapping doesn't go 1:1 
+		// So we have a couple of members of IView implemented here with default values which are 
+		// overridden in View
+		Thickness IView.Margin => default;
+		Visibility IView.Visibility => default;
+		Primitives.LayoutAlignment IView.HorizontalLayoutAlignment => default;
+		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => default;
 	}
 }

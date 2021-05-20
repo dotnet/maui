@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
-		public static FrameworkElement ToNative(this IView view, IMauiContext context)
+		public static FrameworkElement ToNative(this IFrameworkElement view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));

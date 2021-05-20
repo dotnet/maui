@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
 #if WINDOWS
@@ -30,5 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		public NavigationPageHandler() : base(NavigationPageMapper)
 		{
 		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => throw new NotImplementedException();
 	}
 }

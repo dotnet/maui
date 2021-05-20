@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ImageHandler : ViewHandler<IImage, FrameworkElement>
+	public partial class ImageHandler : WidgetHandler<IImage, FrameworkElement>
 	{
 		double _lastScale = 0.0;
 

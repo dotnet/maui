@@ -6,7 +6,7 @@ using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EditorHandler : ViewHandler<IEditor, AppCompatEditText>
+	public partial class EditorHandler : WidgetHandler<IEditor, AppCompatEditText>
 	{
 		static ColorStateList? DefaultTextColors { get; set; }
 		static ColorStateList? DefaultPlaceholderTextColors { get; set; }

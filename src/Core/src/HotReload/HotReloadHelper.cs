@@ -12,18 +12,20 @@ namespace Microsoft.Maui.HotReload
 	public static class MauiHotReloadHelper
 	{
 		static IMauiHandlersCollection? HandlerService;
-		//static IMauiHandlersServiceProvider? HandlerServiceProvider;
+		
 		public static void Init(IMauiHandlersCollection handlerService)
 		{
 			HandlerService = handlerService;
-			//HandlerServiceProvider = new MauiHandlersServiceProvider(handlerService);
 			IsEnabled = true;
 		}
+
 		public static void AddActiveView(IHotReloadableView view) => ActiveViews.Add(view);
+
 		public static void Reset()
 		{
 			replacedViews.Clear();
 		}
+
 		public static bool IsEnabled { get; set; } = Debugger.IsAttached;
 
 		public static void Register(IHotReloadableView view, params object[] parameters)
@@ -39,6 +41,7 @@ namespace Microsoft.Maui.HotReload
 				return;
 			currentViews.Remove(view);
 		}
+
 		public static bool IsReplacedView(IHotReloadableView view, IView newView)
 		{
 			if (!IsEnabled)
@@ -50,7 +53,8 @@ namespace Microsoft.Maui.HotReload
 				return false;
 			return newView.GetType() == newViewType;
 		}
-		public static IView GetReplacedView(IHotReloadableView view)
+
+		public static IFrameworkElement GetReplacedView(IHotReloadableView view)
 		{
 			if (!IsEnabled)
 				return view;
@@ -70,14 +74,14 @@ namespace Microsoft.Maui.HotReload
 			catch (MissingMethodException)
 			{
 				Debug.WriteLine("You are using trying to HotReload a view that requires Parameters. Please call `HotReloadHelper.Register(this, params);` in the constructor;");
-				//TODO: Notifiy that we couldnt hot reload.
+				//TODO: Notify that we couldn't hot reload.
 				return view;
 			}
 			catch (Exception ex)
 			{
 				Debug.WriteLine($"Error Hotreloading type: {newViewType}");
 				Debug.WriteLine(ex);
-				//TODO: Notifiy that we couldnt hot reload.
+				//TODO: Notify that we couldn't hot reload.
 				return view;
 			}
 
@@ -85,7 +89,6 @@ namespace Microsoft.Maui.HotReload
 
 		static void TransferState(IHotReloadableView oldView, IView newView)
 		{
-
 			oldView.TransferState(newView);
 		}
 
@@ -142,7 +145,6 @@ namespace Microsoft.Maui.HotReload
 			}
 
 		}
-
 
 		static void RegisterHandler(KeyValuePair<Type, Type> pair, Type newHandler)
 		{

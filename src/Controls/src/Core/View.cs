@@ -12,7 +12,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public class View : VisualElement, IView, IViewController, IGestureController, IGestureRecognizers, IPropertyMapperView, IHotReloadableView
+	public partial class View : VisualElement, IView, IViewController, IGestureController, IGestureRecognizers, IPropertyMapperView, IHotReloadableView
 	{
 		protected internal IGestureController GestureController => this;
 
@@ -66,7 +66,6 @@ namespace Microsoft.Maui.Controls
 		internal static readonly BindableProperty MarginBottomProperty =
 			BindableProperty.Create("MarginBottom", typeof(double), typeof(View), default(double),
 									propertyChanged: OnMarginBottomPropertyChanged);
-
 
 		static void OnMarginBottomPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -175,54 +174,5 @@ namespace Microsoft.Maui.Controls
 			if (gesture is PinchGestureRecognizer && _gestureRecognizers.GetGesturesFor<PinchGestureRecognizer>().Count() > 1)
 				throw new InvalidOperationException($"Only one {nameof(PinchGestureRecognizer)} per view is allowed");
 		}
-
-		#region IView
-
-		protected PropertyMapper propertyMapper;
-
-		protected PropertyMapper<T> GetRendererOverrides<T>() where T : IView => (PropertyMapper<T>)(propertyMapper as PropertyMapper<T> ?? (propertyMapper = new PropertyMapper<T>()));
-		PropertyMapper IPropertyMapperView.GetPropertyMapperOverrides() => propertyMapper;
-
-		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => HorizontalOptions.ToCore();
-		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => VerticalOptions.ToCore();
-
-		protected override void OnSizeAllocated(double width, double height)
-		{
-			base.OnSizeAllocated(width, height);
-
-			if (width >= 0 && height >= 0)
-			{
-				// This is a temporary measure to keep the old layouts working 
-				Handler?.NativeArrange(Bounds);
-			}
-		}
-
-		#endregion
-
-		#region HotReload
-
-		IView IReplaceableView.ReplacedView => MauiHotReloadHelper.GetReplacedView(this) ?? this;
-
-		IReloadHandler IHotReloadableView.ReloadHandler { get; set; }
-
-		void IHotReloadableView.TransferState(IView newView)
-		{
-			//TODO: LEt you hot reload the the ViewModel
-			if (newView is View v)
-				v.BindingContext = BindingContext;
-		}
-
-		void IHotReloadableView.Reload()
-		{
-			Device.BeginInvokeOnMainThread(() =>
-			{
-				this.CheckHandlers();
-				//Handler = null;
-				var reloadHandler = ((IHotReloadableView)this).ReloadHandler;
-				reloadHandler?.Reload();
-				//TODO: if reload handler is null, Do a manual reload?
-			});
-		}
-		#endregion
 	}
 }

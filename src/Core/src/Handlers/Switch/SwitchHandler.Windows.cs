@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwitchHandler : ViewHandler<ISwitch, ToggleSwitch>
+	public partial class SwitchHandler : WidgetHandler<ISwitch, ToggleSwitch>
 	{
 		protected override ToggleSwitch CreateNativeView() => new ToggleSwitch();
 

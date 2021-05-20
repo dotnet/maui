@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
-		public static UIViewController ToUIViewController(this IView view, IMauiContext context)
+		public static UIViewController ToUIViewController(this IFrameworkElement view, IMauiContext context)
 		{
 			var nativeView = view.ToNative(context);
 			if (view?.Handler is INativeViewHandler nvh && nvh.ViewController != null)
@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 			return new ContainerViewController { CurrentView = view, Context = context };
 		}
 
-		public static UIView ToNative(this IView view, IMauiContext context)
+		public static UIView ToNative(this IFrameworkElement view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));

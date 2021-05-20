@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ActivityIndicatorHandler : ViewHandler<IActivityIndicator, object>
+	public partial class ActivityIndicatorHandler : WidgetHandler<IActivityIndicator, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 

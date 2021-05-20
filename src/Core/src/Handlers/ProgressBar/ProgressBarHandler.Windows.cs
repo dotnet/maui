@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ProgressBarHandler : ViewHandler<IProgress, ProgressBar>
+	public partial class ProgressBarHandler : WidgetHandler<IProgress, ProgressBar>
 	{
 		protected override ProgressBar CreateNativeView() => new ProgressBar { Minimum = 0, Maximum = 1 };
 

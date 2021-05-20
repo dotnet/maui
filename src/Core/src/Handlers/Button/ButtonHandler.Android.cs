@@ -6,7 +6,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : ViewHandler<IButton, AppCompatButton>
+	public partial class ButtonHandler : WidgetHandler<IButton, AppCompatButton>
 	{
 		static Thickness? DefaultPadding;
 

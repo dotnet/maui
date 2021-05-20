@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
 #elif MONOANDROID
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ViewHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView>,
 		IViewHandler
-		where TVirtualView : class, IView
+		where TVirtualView : class, IFrameworkElement
 #if !NETSTANDARD || IOS || ANDROID || WINDOWS
 		where TNativeView : NativeView
 #else
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 			return NativeView;
 		}
 
-		public override void SetVirtualView(IView view)
+		public override void SetVirtualView(IFrameworkElement view)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
@@ -127,8 +128,22 @@ namespace Microsoft.Maui.Handlers
 		protected virtual void SetupDefaults(TNativeView nativeView) { }
 	}
 
-	public abstract partial class ViewHandler<TVirtualView> : ViewHandler
+
+	public abstract partial class WidgetHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView, TNativeView>
 		where TVirtualView : class, IView
+#if !NETSTANDARD || IOS || ANDROID || WINDOWS
+		where TNativeView : NativeView
+#else
+		where TNativeView : class
+#endif
+	{
+		internal WidgetHandler(PropertyMapper mapper) : base(mapper)
+		{ 
+		}
+	}
+
+	public abstract partial class ViewHandler<TVirtualView> : ViewHandler
+		where TVirtualView : class, IFrameworkElement
 	{
 		internal ViewHandler()
 		{

@@ -1,5 +1,6 @@
 ﻿using System;
 using Android.Views;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 			return viewGroup;
 		}
 
-		public override void SetVirtualView(IView view)
+		public override void SetVirtualView(IFrameworkElement view)
 		{
 			base.SetVirtualView(view);
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");

@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class DatePickerHandler : ViewHandler<IDatePicker, DatePicker>
+	public partial class DatePickerHandler : WidgetHandler<IDatePicker, DatePicker>
 	{
 		protected override DatePicker CreateNativeView() => new DatePicker();
 

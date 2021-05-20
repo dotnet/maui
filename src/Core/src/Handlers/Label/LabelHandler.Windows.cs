@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : ViewHandler<ILabel, FrameworkElement>
+	public partial class LabelHandler : WidgetHandler<ILabel, FrameworkElement>
 	{
 		protected TextBlock? RealNativeView { get; set; }
 

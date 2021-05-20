@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LayoutHandler : ViewHandler<ILayout, NSView>
+	public partial class LayoutHandler : WidgetHandler<ILayout, NSView>
 	{
 		protected override NSView CreateView()
 		{

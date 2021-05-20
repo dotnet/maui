@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class DatePickerHandler : ViewHandler<IDatePicker, object>
+	public partial class DatePickerHandler : WidgetHandler<IDatePicker, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 

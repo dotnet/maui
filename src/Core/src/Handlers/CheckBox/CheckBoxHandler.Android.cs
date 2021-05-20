@@ -3,7 +3,7 @@ using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class CheckBoxHandler : ViewHandler<ICheckBox, AppCompatCheckBox>
+	public partial class CheckBoxHandler : WidgetHandler<ICheckBox, AppCompatCheckBox>
 	{
 		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
 

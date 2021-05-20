@@ -40,7 +40,7 @@ namespace Maui.Controls.Sample.Pages
 			//SetupVisibilityTest();
 		}
 
-		public class VisibilityLabel : Label, IFrameworkElement
+		public class VisibilityLabel : Label, IView
 		{
 			private Visibility _visibility;
 
@@ -50,7 +50,7 @@ namespace Maui.Controls.Sample.Pages
 				Handler?.UpdateValue(nameof(Visibility));
 			}
 
-			Visibility IFrameworkElement.Visibility
+			Visibility IView.Visibility
 			{
 				get
 				{
@@ -533,7 +533,7 @@ namespace Maui.Controls.Sample.Pages
 
 			button2.Clicked += (sender, args) =>
 			{
-				switch ((mauiLabel as IFrameworkElement).Visibility)
+				switch ((mauiLabel as IView).Visibility)
 				{
 					case Visibility.Visible:
 						mauiLabel.SetVisibility(Visibility.Hidden);

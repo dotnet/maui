@@ -17,5 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		public ShellHandler(PropertyMapper mapper) : base(mapper)
 		{
 		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => throw new NotImplementedException();
 	}
 }

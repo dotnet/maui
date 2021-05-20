@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 			return base.SizeThatFits(crossPlatformSize.ToCGSize());
 		}
 
-		public IView? View { get; set; }
+		public IFrameworkElement? View { get; set; }
 
 		public override void LayoutSubviews()
 		{
@@ -83,7 +83,7 @@ namespace Microsoft.Maui
 			LoadFirstView(page);
 		}
 
-		protected override UIView CreateNativeView(IView view)
+		protected override UIView CreateNativeView(IFrameworkElement view)
 		{
 			return new PageView
 			{

@@ -4,7 +4,7 @@ using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEv
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PickerHandler : ViewHandler<IPicker, MauiComboBox>
+	public partial class PickerHandler : WidgetHandler<IPicker, MauiComboBox>
 	{
 		WBrush? _defaultForeground;
 

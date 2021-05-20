@@ -1,4 +1,6 @@
 ﻿#nullable enable
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Handlers
 {
 	public partial class PageHandler : IViewHandler
@@ -17,6 +19,11 @@ namespace Microsoft.Maui.Handlers
 		public PageHandler(PropertyMapper? mapper = null) : base(mapper ?? PageMapper)
 		{
 
+		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			return new Size(widthConstraint, heightConstraint);
 		}
 	}
 }

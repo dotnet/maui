@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : ViewHandler<IButton, Button>
+	public partial class ButtonHandler : WidgetHandler<IButton, Button>
 	{
 		static UI.Xaml.Thickness? DefaultPadding;
 		static UI.Xaml.Media.Brush? DefaultForeground;

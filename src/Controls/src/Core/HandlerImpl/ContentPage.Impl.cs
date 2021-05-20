@@ -12,8 +12,6 @@ namespace Microsoft.Maui.Controls
 
 		IView IPage.Content => Content;
 
-
-
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			if (Content is IFrameworkElement frameworkElement)
@@ -29,7 +27,7 @@ namespace Microsoft.Maui.Controls
 			// Update the Bounds (Frame) for this page
 			Layout(bounds);
 
-			if (Content is IFrameworkElement element)
+			if (Content is IView element)
 			{
 				element.Arrange(bounds);
 				element.Handler?.NativeArrange(element.Frame);
@@ -49,11 +47,11 @@ namespace Microsoft.Maui.Controls
 
 		#region HotReload
 
-		IView IReplaceableView.ReplacedView => HotReload.MauiHotReloadHelper.GetReplacedView(this) ?? this;
+		IFrameworkElement IReplaceableView.ReplacedView => HotReload.MauiHotReloadHelper.GetReplacedView(this) ?? this;
 
 		HotReload.IReloadHandler HotReload.IHotReloadableView.ReloadHandler { get; set; }
 
-		void HotReload.IHotReloadableView.TransferState(IView newView)
+		void HotReload.IHotReloadableView.TransferState(IFrameworkElement newView)
 		{
 			//TODO: Let you hot reload the the ViewModel
 			//TODO: Lets do a real state transfer

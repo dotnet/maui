@@ -6,10 +6,8 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class NavigationPage : IView
+	public partial class NavigationPage : IPage
 	{
-		Thickness IView.Margin => Thickness.Zero;
-
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			if (Content is IFrameworkElement frameworkElement)
@@ -25,7 +23,7 @@ namespace Microsoft.Maui.Controls
 			// Update the Bounds (Frame) for this page
 			Layout(bounds);
 
-			if (Content is IFrameworkElement element)
+			if (Content is IView element)
 			{
 				element.Arrange(bounds);
 				element.Handler?.NativeArrange(element.Frame);

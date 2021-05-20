@@ -21,6 +21,19 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Arrange(new Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
 		}
 
+		protected override void SetupContainer()
+		{
+
+		}
+
+		protected override void RemoveContainer()
+		{
+
+		}
+	}
+
+	public partial class WidgetHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView, TNativeView>
+	{
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (NativeView == null || VirtualView == null)
@@ -34,16 +47,6 @@ namespace Microsoft.Maui.Handlers
 			NativeView.Measure(measureConstraint);
 
 			return new Size(NativeView.DesiredSize.Width, NativeView.DesiredSize.Height);
-		}
-
-		protected override void SetupContainer()
-		{
-
-		}
-
-		protected override void RemoveContainer()
-		{
-
 		}
 	}
 }

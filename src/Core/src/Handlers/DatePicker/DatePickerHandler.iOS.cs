@@ -6,7 +6,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
+	public partial class DatePickerHandler : WidgetHandler<IDatePicker, MauiDatePicker>
 	{
 		UIDatePicker? _picker;
 

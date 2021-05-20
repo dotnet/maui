@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : ViewHandler<IStepper, object>
+	public partial class StepperHandler : WidgetHandler<IStepper, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 

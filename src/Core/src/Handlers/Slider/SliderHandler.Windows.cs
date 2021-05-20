@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SliderHandler : ViewHandler<ISlider, Slider>
+	public partial class SliderHandler : WidgetHandler<ISlider, Slider>
 	{
 		static Brush? DefaultForegroundColor;
 		static Brush? DefaultBackgroundColor;

@@ -6,7 +6,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
+	public partial class PickerHandler : WidgetHandler<IPicker, MauiPicker>
 	{
 		UIPickerView? _pickerView;
 

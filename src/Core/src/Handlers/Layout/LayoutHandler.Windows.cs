@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LayoutHandler : ViewHandler<ILayout, LayoutPanel>
+	public partial class LayoutHandler : WidgetHandler<ILayout, LayoutPanel>
 	{
 		public void Add(IView child)
 		{

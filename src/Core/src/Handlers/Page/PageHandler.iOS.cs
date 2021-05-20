@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 			throw new InvalidOperationException($"PageViewController.View must be a PageView");
 		}
 
-		public override void SetVirtualView(IView view)
+		public override void SetVirtualView(IFrameworkElement view)
 		{
 			base.SetVirtualView(view);
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");

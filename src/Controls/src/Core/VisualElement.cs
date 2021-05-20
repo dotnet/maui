@@ -943,7 +943,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (this is IFrameworkElement fe)
 			{
-				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Visibility));
+				fe.Handler?.UpdateValue(nameof(IView.Visibility));
 			}
 
 			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
@@ -1091,8 +1091,8 @@ namespace Microsoft.Maui.Controls
 
 			if (element is IFrameworkElement fe)
 			{
-				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Width));
-				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Height));
+				fe.Handler?.UpdateValue(nameof(IView.Width));
+				fe.Handler?.UpdateValue(nameof(IView.Height));
 			}
 
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.SizeRequestChanged);

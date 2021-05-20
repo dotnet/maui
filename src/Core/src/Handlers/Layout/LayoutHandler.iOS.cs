@@ -4,7 +4,7 @@ using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LayoutHandler : ViewHandler<ILayout, LayoutView>
+	public partial class LayoutHandler : WidgetHandler<ILayout, LayoutView>
 	{
 		protected override LayoutView CreateNativeView()
 		{
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
-		public override void SetVirtualView(IView view)
+		public override void SetVirtualView(IFrameworkElement view)
 		{
 			base.SetVirtualView(view);
 
