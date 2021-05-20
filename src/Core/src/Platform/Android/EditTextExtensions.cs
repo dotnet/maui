@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
@@ -202,21 +203,27 @@ namespace Microsoft.Maui
 
 		[PortHandler]
 		public static void UpdateCursorPosition(this AppCompatEditText editText, IEntry entry)
-			=> UpdateCursorSelection(editText, entry);
+		{
+			if (editText.SelectionStart != entry.CursorPosition)
+				UpdateCursorSelection(editText, entry);
+		}
 
 		[PortHandler]
 		public static void UpdateSelectionLength(this AppCompatEditText editText, IEntry entry)
-			=> UpdateCursorSelection(editText, entry);
+		{
+			if ((editText.SelectionEnd - editText.SelectionStart) != entry.SelectionLength)
+				UpdateCursorSelection(editText, entry);
+		}
 
 	
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */	
 		static void UpdateCursorSelection(AppCompatEditText editText, IEntry entry)
 		{
-			if (editText == null)
-				return;
-
-			if (!entry.IsReadOnly && editText.RequestFocus())
+			if (!entry.IsReadOnly)// && editText.HasFocus)// || editText.RequestFocus()))//&& editText.RequestFocus())
 			{
+				if (!editText.HasFocus)
+					editText.RequestFocus();
+
 				int start = GetSelectionStart(editText, entry);
 				int end = GetSelectionEnd(editText, entry, start);
 

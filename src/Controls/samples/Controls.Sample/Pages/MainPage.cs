@@ -493,16 +493,8 @@ namespace Maui.Controls.Sample.Pages
 			layout.AddColumnDefinition(new ColumnDefinition() { Width = new GridLength(80) });
 			layout.AddColumnDefinition(new ColumnDefinition() { Width = new GridLength(80) });
 
-
-			Entry targetEntry = new()
-			{
-				Placeholder = "Selectable Text",
-			};
-
-			Entry forPosition = new()
-			{
-				Placeholder = "CursorPos"
-			};
+			Entry targetEntry = new() { Placeholder = "Selectable Text" };
+			Entry forPosition = new() { Keyboard = Keyboard.Numeric, Placeholder = "CursorPos" };
 			forPosition.TextChanged += (sender, args) =>
 			{
 				if (!int.TryParse(args.NewTextValue, out int newPos))
@@ -510,17 +502,13 @@ namespace Maui.Controls.Sample.Pages
 				targetEntry.CursorPosition = newPos;
 			};
 
-			Entry forSelectionLen = new()
-			{
-				Placeholder = "SelectionLen"
-			};
+			Entry forSelectionLen = new() { Keyboard = Keyboard.Numeric, Placeholder = "SelectionLen" };
 			forSelectionLen.TextChanged += (sender, args) =>
 			{
 				if (!int.TryParse(args.NewTextValue, out int newSelectionLen))
 					return;
 				targetEntry.SelectionLength = newSelectionLen;
 			};
-
 
 			layout.Add(targetEntry);
 			layout.Add(forPosition);

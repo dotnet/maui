@@ -95,22 +95,32 @@ namespace Microsoft.Maui
 		}
 
 		[PortHandler]
-		public static void UpdateCursorPosition(this UITextField textField, IEntry entry)		
-			=> UpdateCursorSelection(textField, entry);
+		public static void UpdateCursorPosition(this UITextField textField, IEntry entry)
+		{
+			var selectedTextRange = textField.SelectedTextRange;
+			if (selectedTextRange == null)
+				return;
+			if (textField.GetOffsetFromPosition(textField.BeginningOfDocument, selectedTextRange.Start) != entry.CursorPosition)
+				UpdateCursorSelection(textField, entry);
+		}
 
 		[PortHandler]
 		public static void UpdateSelectionLength(this UITextField textField, IEntry entry)
-			=> UpdateCursorSelection(textField, entry);
+		{
+			var selectedTextRange = textField.SelectedTextRange;
+			if (selectedTextRange == null)
+				return;
+			if (textField.GetOffsetFromPosition(selectedTextRange.Start, selectedTextRange.End) != entry.SelectionLength)
+				UpdateCursorSelection(textField, entry);
+		}
 
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
 		static void UpdateCursorSelection(this UITextField textField, IEntry entry)
 		{
-			if (textField == null)
-				return;
-
 			if (!entry.IsReadOnly)
 			{
-				textField.BecomeFirstResponder();
+				if (!textField.IsFirstResponder)
+					textField.BecomeFirstResponder();
 				UITextPosition start = GetSelectionStart(textField, entry, out int startOffset);
 				UITextPosition end = GetSelectionEnd(textField, entry, start, startOffset);
 
