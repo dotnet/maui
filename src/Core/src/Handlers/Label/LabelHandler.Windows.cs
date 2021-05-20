@@ -1,5 +1,4 @@
 #nullable enable
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
@@ -36,10 +35,10 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label) => 
-			handler.RealNativeView?.UpdateHorizontalTextAlignment(label);
+			handler.NativeView?.UpdateHorizontalTextAlignment(label);
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label) => 
-			handler.RealNativeView?.UpdateLineBreakMode(label);
+			handler.NativeView?.UpdateLineBreakMode(label);
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label) =>
 			handler.NativeView?.UpdateTextDecorations(label);
@@ -51,6 +50,6 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdatePadding(label);
 
 		public static void MapLineHeight(LabelHandler handler, ILabel label) =>		
-			handler.RealNativeView?.UpdateLineHeight(label);
+			handler.NativeView?.UpdateLineHeight(label);
 	}
 }
