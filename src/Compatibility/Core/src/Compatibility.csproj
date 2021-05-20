@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;$(NonNet6Platforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility</AssemblyName>
     <Nullable>disable</Nullable>
@@ -13,36 +13,14 @@
     <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
-    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
-    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
-  </PropertyGroup>
-
-  <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PropertyGroup>
-      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-    </PropertyGroup>
-  </Target>
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PackageReference Include="Microsoft.ProjectReunion" />
-    <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
-    <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
-    <PackageReference Include="Microsoft.Graphics.Win2D" />
-  </ItemGroup>
-
   <!--<Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />-->
 
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <Compile Include="$(WindowsRoot)**\*.cs"></Compile>
-    <Page Include="$(WindowsRoot)**\*.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Remove="$(WindowsRoot)TabbedPageStyle.xaml" />
-    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
-  </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) == true ">
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net.Http" />
     <Compile Include="$(AndroidRoot)**\*.cs"></Compile>
     <AndroidResource Include="$(AndroidRoot)Resources\Layout\bottomtablayout.axml" Link="Android\Resources\Layout\bottomtablayout.axml" />
     <AndroidResource Include="$(AndroidRoot)Resources\Layout\flyoutcontent.axml" Link="Android\Resources\Layout\flyoutcontent.axml" />
@@ -61,21 +39,30 @@
     <AndroidResource Include="$(AndroidRoot)Resources\values\styles.xml" Link="Android\Resources\values\styles.xml" />
     <AndroidResource Include="$(AndroidRoot)Resources\values\strings.xml" Link="Android\Resources\values\strings.xml" />
     <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" Link="Android\Resources\values\attrs.xml" />
-    <ProjectReference Include="Android.FormsViewGroup\Compatibility.Android.FormsViewGroup-net6.csproj" />
+    <ProjectReference Include="Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj" />
 
     <Compile Remove="$(AndroidRoot)AppCompat\Resource.cs" />
     <Compile Remove="$(AndroidRoot)bin\**\*.cs" />
     <Compile Remove="$(AndroidRoot)obj\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' OR '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
     <Compile Include="$(iOSRoot)**\*.cs"></Compile>
     <EmbeddedResource Include="$(iOSRoot)Resources\*.resx" />
     <Compile Remove="$(iOSRoot)bin\**\*.cs" />
     <Compile Remove="$(iOSRoot)obj\**\*.cs" />
+    <Reference Include="System" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="AppHostBuilderExtensions.cs" />
+    <Compile Include="Forms.cs">
+      <SubType>Code</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Compile>
     <Compile Include="MauiHandlersCollectionExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -87,6 +74,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
   </ItemGroup>
 </Project>
