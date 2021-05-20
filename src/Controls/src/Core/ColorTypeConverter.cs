@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 			{
 				value = value.Trim();
 				if (value.StartsWith("#", StringComparison.Ordinal))
-					return Color.FromHex(value);
+					return Color.FromArgb(value);
 
 				if (value.StartsWith("rgba", StringComparison.OrdinalIgnoreCase))
 				{

@@ -500,12 +500,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 					if (sdkVersion <= 10)
 					{
 						// legacy theme button pressed color
-						rc = Color.FromHex("#fffeaa0c");
+						rc = Color.FromArgb("#fffeaa0c");
 					}
 					else
 					{
 						// Holo dark light blue
-						rc = Color.FromHex("#ff33b5e5");
+						rc = Color.FromArgb("#ff33b5e5");
 					}
 				}
 			}
