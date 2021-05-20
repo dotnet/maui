@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			foreach (var interfac in serviceType.GetInterfaces())
 			{
-				if (typeof(IView).IsAssignableFrom(interfac))
+				if (typeof(IFrameworkElement).IsAssignableFrom(interfac))
 					types.Add(interfac);
 			}
 
