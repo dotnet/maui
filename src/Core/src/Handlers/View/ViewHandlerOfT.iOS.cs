@@ -1,33 +1,7 @@
-using Microsoft.Maui.Graphics;
-using UIKit;
+﻿using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class FrameworkElementHandler<TVirtualView, TNativeView> : INativeViewHandler
-	{
-		UIView? INativeViewHandler.NativeView => (UIView?)base.NativeView;
-		UIViewController? INativeViewHandler.ViewController => null;
-
-		public override void NativeArrange(Rectangle rect)
-		{
-			if (NativeView != null)
-			{
-				NativeView.Frame = rect.ToCGRect();
-				NativeView.UpdateBackgroundLayerFrame();
-			}
-		}
-
-		protected override void SetupContainer()
-		{
-
-		}
-
-		protected override void RemoveContainer()
-		{
-
-		}
-	}
-
 	public partial class ViewHandler<TVirtualView, TNativeView> : FrameworkElementHandler<TVirtualView, TNativeView>
 	{
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
