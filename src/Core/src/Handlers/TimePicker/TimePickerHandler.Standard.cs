@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class TimePickerHandler : WidgetHandler<ITimePicker, object>
+	public partial class TimePickerHandler : ViewHandler<ITimePicker, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 		//public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => throw new NotImplementedException();

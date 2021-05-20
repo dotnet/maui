@@ -6,7 +6,7 @@ using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PickerHandler : WidgetHandler<IPicker, MauiPicker>
+	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
 		AlertDialog? _dialog;
 

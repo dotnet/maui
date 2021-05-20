@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : WidgetHandler<IStepper, UIStepper>
+	public partial class StepperHandler : ViewHandler<IStepper, UIStepper>
 	{
 		protected override UIStepper CreateNativeView()
 		{

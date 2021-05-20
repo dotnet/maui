@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ImageHandler : WidgetHandler<IImage, UIImageView>
+	public partial class ImageHandler : ViewHandler<IImage, UIImageView>
 	{
 		protected override UIImageView CreateNativeView() => new MauiImageView();
 

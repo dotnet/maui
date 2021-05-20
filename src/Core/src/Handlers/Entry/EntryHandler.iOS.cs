@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : WidgetHandler<IEntry, MauiTextField>
+	public partial class EntryHandler : ViewHandler<IEntry, MauiTextField>
 	{
 		static UIColor? DefaultTextColor;
 

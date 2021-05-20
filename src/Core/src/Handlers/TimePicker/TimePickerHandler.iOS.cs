@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class TimePickerHandler : WidgetHandler<ITimePicker, MauiTimePicker>
+	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
 		protected override MauiTimePicker CreateNativeView()
 		{

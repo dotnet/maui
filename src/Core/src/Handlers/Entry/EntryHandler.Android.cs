@@ -12,7 +12,7 @@ using static Android.Widget.TextView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : WidgetHandler<IEntry, AppCompatEditText>
+	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
 	{
 		TextWatcher Watcher { get; } = new TextWatcher();
 		EntryTouchListener TouchListener { get; } = new EntryTouchListener();

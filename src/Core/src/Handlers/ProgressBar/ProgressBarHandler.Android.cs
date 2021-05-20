@@ -3,7 +3,7 @@ using AndroidProgressBar = Android.Widget.ProgressBar;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ProgressBarHandler : WidgetHandler<IProgress, AndroidProgressBar>
+	public partial class ProgressBarHandler : ViewHandler<IProgress, AndroidProgressBar>
 	{
 		protected override AndroidProgressBar CreateNativeView()
 		{

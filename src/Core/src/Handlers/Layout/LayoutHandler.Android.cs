@@ -3,7 +3,7 @@ using Android.Views;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LayoutHandler : WidgetHandler<ILayout, LayoutViewGroup>
+	public partial class LayoutHandler : ViewHandler<ILayout, LayoutViewGroup>
 	{
 		protected override LayoutViewGroup CreateNativeView()
 		{

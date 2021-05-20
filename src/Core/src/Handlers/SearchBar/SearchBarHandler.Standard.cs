@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SearchBarHandler : WidgetHandler<ISearchBar, object>
+	public partial class SearchBarHandler : ViewHandler<ISearchBar, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 

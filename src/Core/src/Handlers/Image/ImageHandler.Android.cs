@@ -5,7 +5,7 @@ using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ImageHandler : WidgetHandler<IImage, ImageView>
+	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
 		protected override ImageView CreateNativeView() => new AppCompatImageView(Context);
 

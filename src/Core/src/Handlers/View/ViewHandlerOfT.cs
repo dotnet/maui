@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Handlers
 	}
 
 
-	public abstract partial class WidgetHandler<TVirtualView, TNativeView> : FrameworkElementHandler<TVirtualView, TNativeView>
+	public abstract partial class ViewHandler<TVirtualView, TNativeView> : FrameworkElementHandler<TVirtualView, TNativeView>
 		where TVirtualView : class, IView
 #if !NETSTANDARD || IOS || ANDROID || WINDOWS
 		where TNativeView : NativeView
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Handlers
 		where TNativeView : class
 #endif
 	{
-		internal WidgetHandler(PropertyMapper mapper) : base(mapper)
+		internal ViewHandler(PropertyMapper mapper) : base(mapper)
 		{ 
 		}
 	}

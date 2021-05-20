@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 		}
 	}
 
-	public partial class WidgetHandler<TVirtualView, TNativeView> : FrameworkElementHandler<TVirtualView, TNativeView>
+	public partial class ViewHandler<TVirtualView, TNativeView> : FrameworkElementHandler<TVirtualView, TNativeView>
 	{
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => throw new NotImplementedException();
 	}

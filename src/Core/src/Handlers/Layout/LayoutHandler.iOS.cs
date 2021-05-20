@@ -4,7 +4,7 @@ using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LayoutHandler : WidgetHandler<ILayout, LayoutView>
+	public partial class LayoutHandler : ViewHandler<ILayout, LayoutView>
 	{
 		protected override LayoutView CreateNativeView()
 		{

@@ -3,7 +3,7 @@ using System;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ImageHandler : WidgetHandler<IImage, object>
+	public partial class ImageHandler : ViewHandler<IImage, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 
