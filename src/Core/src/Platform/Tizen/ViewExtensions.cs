@@ -73,7 +73,7 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			UpdateGeometry(nativeView, view);
+			UpdateSize(nativeView, view);
 		}
 
 		public static void UpdateHeight(this EvasObject nativeView, IView view)
@@ -84,15 +84,14 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			UpdateGeometry(nativeView, view);
+			UpdateSize(nativeView, view);
 		}
 
-		public static void UpdateGeometry(EvasObject nativeView, IView view)
+		public static void UpdateSize(EvasObject nativeView, IView view)
 		{
 			// Updating the frame (assuming it's an actual change) will kick off a layout update
 			// Handling of the default (-1) width/height will be taken care of by GetDesiredSize
-			var currentGeometry = nativeView.Geometry;
-			nativeView.Geometry = new Rect(currentGeometry.X, currentGeometry.Y, (int)view.Width, (int)view.Height);
+			nativeView.Resize(view.Width.ToScaledPixel(), view.Height.ToScaledPixel());
 		}
 	}
 }
