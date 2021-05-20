@@ -38,6 +38,9 @@
       <BuildOutputInPackage Include="..\Core.Design\bin\$(Configuration)\net472\Microsoft.Maui.Controls.DesignTools.dll">
         <TargetPath>Design</TargetPath>
       </BuildOutputInPackage>
+      <BuildOutputInPackage Include="..\Core.Design\bin\$(Configuration)\net472\Microsoft.Maui.Controls.DesignTools.pdb">
+        <TargetPath>Design</TargetPath>
+      </BuildOutputInPackage>
     </ItemGroup>
   </Target>
 </Project>
