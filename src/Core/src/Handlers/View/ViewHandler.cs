@@ -143,8 +143,11 @@ namespace Microsoft.Maui.Handlers
 				if (handler is ViewHandler viewHandler)
 					handler.HasContainer = viewHandler.NeedsContainer;
 			}
-
+#if WINDOWS			
+			((NativeView?)handler.ContainerView)?.UpdateClipShape(view);
+#else
 			((WrapperView?)handler.ContainerView)?.UpdateClipShape(view);
+#endif
 		}
 
 		static partial void MappingSemantics(IViewHandler handler, IView view);

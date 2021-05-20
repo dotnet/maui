@@ -32,7 +32,10 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateClipShape(this FrameworkElement nativeView, IView view) { }
+		public static void UpdateClipShape(this FrameworkElement nativeView, IView view)
+		{
+			// TODO: Update by including a reference to Microsoft.Maui.Graphics.Xaml.UWP
+		}
 
 		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
 		{
@@ -44,7 +47,7 @@ namespace Microsoft.Maui
 				panel.UpdateBackground(view.Background);
 		}
 
-		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
+		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>	
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);
 
 		public static void UpdateSemantics(this FrameworkElement nativeView, IView view)
