@@ -20,5 +20,10 @@
     <MauiImage Include="Images\*" />
     <MauiImage Update="Images\*.gif" Resize="false" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Stubs\EllipseStub.cs">
+      <SubType></SubType>
+    </Compile>
+  </ItemGroup>
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
 </Project>

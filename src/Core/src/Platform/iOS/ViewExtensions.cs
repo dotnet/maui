@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using CoreAnimation;
-using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -75,6 +74,11 @@ namespace Microsoft.Maui
 
 		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
 			nativeView.AccessibilityIdentifier = view.AutomationId;
+
+		public static void UpdateClipShape(this WrapperView nativeView, IView view)
+		{
+			nativeView.ClipShape = view.ClipShape;
+		}
 
 		public static void UpdateSemantics(this UIView nativeView, IView view)
 		{

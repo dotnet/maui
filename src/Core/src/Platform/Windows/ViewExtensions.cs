@@ -32,6 +32,8 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateClipShape(this FrameworkElement nativeView, IView view) { }
+
 		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
 		{
 			if (nativeView is Control control)

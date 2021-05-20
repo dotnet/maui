@@ -21,6 +21,11 @@ namespace Microsoft.Maui
 			nativeView.Visibility = view.Visibility.ToNativeVisibility();
 		}
 
+		public static void UpdateClipShape(this WrapperView nativeView, IView view)
+		{
+			nativeView.ClipShape = view.ClipShape;
+		}
+
 		public static ViewStates ToNativeVisibility(this Visibility visibility)
 		{
 			return visibility switch

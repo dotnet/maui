@@ -289,6 +289,15 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
 			verticalStack.Add(CreateImagesGrid());
 
+			verticalStack.Add(new Label
+			{
+				HeightRequest = 120,
+				WidthRequest = 120,
+				Background = new SolidColorBrush(Colors.Purple),
+				Text = "Clip",
+				ClipShape = new Microsoft.Maui.Controls.Shapes2.Ellipse()//Path("M15.997986,0L19.777008,11.620999 32,11.620999 22.109009,18.807002 25.888,30.432 15.997986,23.245997 6.1109924,30.432 9.8840027,18.807002 0,11.620999 12.222992,11.620999z")
+			});
+
 			Content = new ScrollView
 			{
 				Content = verticalStack
@@ -432,7 +441,7 @@ namespace Maui.Controls.Sample.Pages
 
 			string CopyLocal(string embeddedPath)
 			{
-				var path = Path.Combine(FileSystem.CacheDirectory, Guid.NewGuid().ToString("N"));
+				var path = System.IO.Path.Combine(FileSystem.CacheDirectory, Guid.NewGuid().ToString("N"));
 
 				using var stream = GetEmbedded(embeddedPath);
 				using var file = File.Create(path);
