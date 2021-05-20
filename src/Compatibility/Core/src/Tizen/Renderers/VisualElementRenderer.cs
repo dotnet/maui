@@ -721,7 +721,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 				else
 				{
-					parentX = Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().X);
+					if (e.Handler is INativeViewHandler nativeHandler)
+					{
+						parentX = nativeHandler.GetNativeContentGeometry().X.ToScaledDP();
+					}
+					else
+					{
+						parentX = Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().X);
+					}
 				}
 			}
 			return e.X + parentX;
@@ -738,7 +745,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 				else
 				{
-					parentY = Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().Y);
+					if (e.Handler is INativeViewHandler nativeHandler)
+					{
+						parentY = nativeHandler.GetNativeContentGeometry().Y.ToScaledDP();
+					}
+					else
+					{
+						parentY = Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().Y);
+					}
 				}
 			}
 			return e.Y + parentY;
