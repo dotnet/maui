@@ -14,11 +14,11 @@ using Microsoft.Maui.Controls.Internals;
 using System.Collections.Specialized;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Platform
 {
 	// Renders the actual page area where the contents gets rendered, as well as set of optional top-bar menu items and search box.
 	[Microsoft.UI.Xaml.Data.Bindable]
-	public class ShellSectionRenderer : Microsoft.UI.Xaml.Controls.NavigationView, IAppearanceObserver
+	public class ShellSectionView : Microsoft.UI.Xaml.Controls.NavigationView, IAppearanceObserver
 	{
 		Microsoft.UI.Xaml.Controls.Frame Frame { get; }
 		Page Page;
@@ -28,9 +28,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		List<Page> FormsNavigationStack;
 
 		ObservableCollection<ShellContent> ShellContentMenuItems;
-		public ShellSectionRenderer()
+		public ShellSectionView()
 		{
-			Microsoft.Maui.Controls.Shell.VerifyShellUWPFlagEnabled(nameof(ShellSectionRenderer));
+			Microsoft.Maui.Controls.Shell.VerifyShellUWPFlagEnabled(nameof(ShellSectionView));
 			MenuItemTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["ShellSectionMenuItemTemplate"];
 			IsBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed;
 			IsSettingsVisible = false;
@@ -46,15 +46,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			Frame = new Microsoft.UI.Xaml.Controls.Frame();
 			Content = Frame;
-			this.SizeChanged += OnShellSectionRendererSizeChanged;
-			Resources["NavigationViewTopPaneBackground"] = new Microsoft.UI.Xaml.Media.SolidColorBrush(ShellRenderer.DefaultBackgroundColor);
-			Resources["TopNavigationViewItemForeground"] = new Microsoft.UI.Xaml.Media.SolidColorBrush(ShellRenderer.DefaultForegroundColor);
-			Resources["TopNavigationViewItemForegroundSelected"] = new Microsoft.UI.Xaml.Media.SolidColorBrush(ShellRenderer.DefaultForegroundColor);
-			Resources["NavigationViewSelectionIndicatorForeground"] = new Microsoft.UI.Xaml.Media.SolidColorBrush(ShellRenderer.DefaultForegroundColor);
+			this.SizeChanged += OnShellSectionViewSizeChanged;
+			Resources["NavigationViewTopPaneBackground"] = new Microsoft.UI.Xaml.Media.SolidColorBrush(ShellView.DefaultBackgroundColor);
+			Resources["TopNavigationViewItemForeground"] = new Microsoft.UI.Xaml.Media.SolidColorBrush(ShellView.DefaultForegroundColor);
+			Resources["TopNavigationViewItemForegroundSelected"] = new Microsoft.UI.Xaml.Media.SolidColorBrush(ShellView.DefaultForegroundColor);
+			Resources["NavigationViewSelectionIndicatorForeground"] = new Microsoft.UI.Xaml.Media.SolidColorBrush(ShellView.DefaultForegroundColor);
 			FormsNavigationStack = new List<Page>();
 		}
 
-		void OnShellSectionRendererSizeChanged(object sender, Microsoft.UI.Xaml.SizeChangedEventArgs e)
+		void OnShellSectionViewSizeChanged(object sender, Microsoft.UI.Xaml.SizeChangedEventArgs e)
 		{
 			if (Page != null)
 				Page.ContainerArea = new Rectangle(0, 0, e.NewSize.Width, e.NewSize.Height);
@@ -88,13 +88,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (ShellSection != null)
 				{
 					ShellSection.PropertyChanged -= OnShellSectionPropertyChanged;
-					ShellSectionController.ItemsCollectionChanged -= OnShellSectionRendererCollectionChanged;
+					ShellSectionController.ItemsCollectionChanged -= OnShellSectionViewCollectionChanged;
 					ShellSection = null;
 				}
 
 				ShellSection = section;
 				ShellSection.PropertyChanged += OnShellSectionPropertyChanged;
-				ShellSectionController.ItemsCollectionChanged += OnShellSectionRendererCollectionChanged;
+				ShellSectionController.ItemsCollectionChanged += OnShellSectionViewCollectionChanged;
 			}
 
 			if (section.CurrentItem != SelectedItem)
@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			IsPaneVisible = ShellSectionController.GetItems().Count > 1;
 		}
 
-		void OnShellSectionRendererCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		void OnShellSectionViewCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			SyncMenuItems();
 		}
@@ -402,8 +402,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateAppearance(ShellAppearance appearance)
 		{
-			var tabBarBackgroundColor = ShellRenderer.DefaultBackgroundColor;
-			var tabBarForegroundColor = ShellRenderer.DefaultForegroundColor;
+			var tabBarBackgroundColor = ShellView.DefaultBackgroundColor;
+			var tabBarForegroundColor = ShellView.DefaultForegroundColor;
 			if (appearance != null)
 			{
 				var a = (IShellAppearanceElement)appearance;

@@ -1,8 +1,8 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Graphics;
 using System.Linq;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -20,7 +20,6 @@ namespace Microsoft.Maui.Layouts
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
 			_gridStructure = new GridStructure(Grid, widthConstraint, heightConstraint);
-
 			return new Size(_gridStructure.GridWidth(), _gridStructure.GridHeight());
 		}
 
@@ -35,7 +34,7 @@ namespace Microsoft.Maui.Layouts
 					continue;
 				}
 
-				var cell = structure.ComputeFrameFor(view);
+				var cell = structure.GetCellBoundsFor(view);
 				view.Arrange(cell);
 			}
 		}
@@ -117,7 +116,7 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			public Rectangle ComputeFrameFor(IView view)
+			public Rectangle GetCellBoundsFor(IView view)
 			{
 				var firstColumn = _grid.GetColumn(view);
 				var lastColumn = firstColumn + _grid.GetColumnSpan(view);
@@ -227,6 +226,9 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				ResolveSpans();
+
+				ResolveStarColumns();
+				ResolveStarRows();
 			}
 
 			void TrackSpan(Span span)
@@ -332,6 +334,76 @@ namespace Microsoft.Maui.Layouts
 
 				return top;
 			}
+
+			void ResolveStars(Definition[] defs, double availableSpace, Func<Cell, bool> cellCheck, Func<Size, double> dimension)
+			{
+				// Count up the total weight of star columns (e.g., "*, 3*, *" == 5)
+
+				var starCount = 0;
+
+				foreach (var definition in defs)
+				{
+					if (definition.IsStar)
+					{
+						starCount += (int)definition.GridLength.Value;
+					}
+				}
+
+				if (starCount == 0)
+				{
+					return;
+				}
+
+				double starSize = 0;
+
+				if (double.IsInfinity(availableSpace))
+				{
+					// If the available space we're measuring is infinite, then the 'star' doesn't really mean anything
+					// (each one would be infinite). So instead we'll use the size of the actual view in the star row/column.
+					// This means that an empty star row/column goes to zero if the available space is infinite. 
+
+					foreach (var cell in _cells)
+					{
+						if (cellCheck(cell)) // Check whether this cell should count toward the type of star value were measuring
+						{
+							// Update the star width if the view in this cell is bigger
+							starSize = Math.Max(starSize, dimension(_grid.Children[cell.ViewIndex].DesiredSize));
+						}
+					}
+				}
+				else
+				{
+					// If we have a finite space, we can divvy it up among the full star weight
+					starSize = availableSpace / starCount;
+				}
+
+				foreach (var definition in defs)
+				{
+					if (definition.IsStar)
+					{
+						// Give the star row/column the appropriate portion of the space based on its weight
+						definition.Size = starSize * (int)definition.GridLength.Value;
+					}
+				}
+			}
+
+			void ResolveStarColumns()
+			{
+				var availableSpace = _gridWidthConstraint - GridWidth();
+				static bool cellCheck(Cell cell) => cell.IsColumnSpanStar;
+				static double getDimension(Size size) => size.Width;
+
+				ResolveStars(_columns, availableSpace, cellCheck, getDimension);
+			}
+
+			private void ResolveStarRows()
+			{
+				var availableSpace = _gridHeightConstraint - GridHeight();
+				static bool cellCheck(Cell cell) => cell.IsRowSpanStar;
+				static double getDimension(Size size) => size.Height;
+
+				ResolveStars(_rows, availableSpace, cellCheck, getDimension);
+			}
 		}
 
 		// Dictionary key for tracking a Span
@@ -346,12 +418,12 @@ namespace Microsoft.Maui.Layouts
 
 			public SpanKey Key { get; }
 
-			public Span(int start, int length, bool isColumn, double value)
+			public Span(int start, int length, bool isColumn, double requestedLength)
 			{
 				Start = start;
 				Length = length;
 				IsColumn = isColumn;
-				Requested = value;
+				Requested = requestedLength;
 
 				Key = new SpanKey(Start, Length, IsColumn);
 			}
@@ -382,6 +454,8 @@ namespace Microsoft.Maui.Layouts
 
 			public bool IsColumnSpanAuto => HasFlag(ColumnGridLengthType, GridLengthType.Auto);
 			public bool IsRowSpanAuto => HasFlag(RowGridLengthType, GridLengthType.Auto);
+			public bool IsColumnSpanStar => HasFlag(ColumnGridLengthType, GridLengthType.Star);
+			public bool IsRowSpanStar => HasFlag(RowGridLengthType, GridLengthType.Star);
 
 			bool HasFlag(GridLengthType a, GridLengthType b)
 			{
@@ -423,6 +497,9 @@ namespace Microsoft.Maui.Layouts
 			}
 
 			public abstract bool IsAuto { get; }
+			public abstract bool IsStar { get; }
+
+			public abstract GridLength GridLength { get; }
 		}
 
 		class Column : Definition
@@ -430,6 +507,8 @@ namespace Microsoft.Maui.Layouts
 			public IGridColumnDefinition ColumnDefinition { get; set; }
 
 			public override bool IsAuto => ColumnDefinition.Width.IsAuto;
+			public override bool IsStar => ColumnDefinition.Width.IsStar;
+			public override GridLength GridLength => ColumnDefinition.Width;
 
 			public Column(IGridColumnDefinition columnDefinition)
 			{
@@ -446,6 +525,8 @@ namespace Microsoft.Maui.Layouts
 			public IGridRowDefinition RowDefinition { get; set; }
 
 			public override bool IsAuto => RowDefinition.Height.IsAuto;
+			public override bool IsStar => RowDefinition.Height.IsStar;
+			public override GridLength GridLength => RowDefinition.Height;
 
 			public Row(IGridRowDefinition rowDefinition)
 			{

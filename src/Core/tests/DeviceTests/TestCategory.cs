@@ -12,6 +12,7 @@
 		public const string ImageSource = "ImageSource";
 		public const string Label = "Label";
 		public const string Layout = "Layout";
+		public const string Page = "Page";
 		public const string Picker = "Picker";
 		public const string SearchBar = "SearchBar";
 		public const string Slider = "Slider";
