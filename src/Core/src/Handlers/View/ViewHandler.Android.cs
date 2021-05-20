@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		static partial void MappingSemantics(IFrameworkElementHandler handler, IView view)
+		static partial void MappingSemantics(IFrameworkElementHandler handler, IFrameworkElement view)
 		{
 			if (view.Semantics != null &&
 				handler is FrameworkElementHandler viewHandler &&

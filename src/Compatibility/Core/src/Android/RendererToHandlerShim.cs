@@ -2,7 +2,7 @@ using System;
 using Android.Views;
 using Microsoft.Maui.Graphics;
 using IVisualElementRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.IVisualElementRenderer;
-using ViewHandler = Microsoft.Maui.Handlers.FrameworkElementHandler<Microsoft.Maui.IView, Android.Views.View>;
+using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Android.Views.View>;
 using VisualElementChangedEventArgs = Microsoft.Maui.Controls.Compatibility.Platform.Android.VisualElementChangedEventArgs;
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return new RendererToHandlerShim();
 		}
 
-		public RendererToHandlerShim() : base(ViewHandler.ViewMapper)
+		public RendererToHandlerShim() : base(ViewMapper)
 		{
 		}
 

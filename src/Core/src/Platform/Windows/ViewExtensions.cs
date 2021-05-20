@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 {
 	public static class ViewExtensions
 	{
-		public static void UpdateIsEnabled(this FrameworkElement nativeView, IView view) =>
+		public static void UpdateIsEnabled(this FrameworkElement nativeView, IFrameworkElement view) =>
 			(nativeView as Control)?.UpdateIsEnabled(view.IsEnabled);
 		
 		public static void UpdateVisibility(this FrameworkElement nativeView, IView view)
@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
+		public static void UpdateBackground(this FrameworkElement nativeView, IFrameworkElement view)
 		{
 			if (nativeView is Control control)
 				control.UpdateBackground(view.Background);
@@ -42,10 +42,10 @@ namespace Microsoft.Maui
 				panel.UpdateBackground(view.Background);
 		}
 
-		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
+		public static void UpdateAutomationId(this FrameworkElement nativeView, IFrameworkElement view) =>
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);
 
-		public static void UpdateSemantics(this FrameworkElement nativeView, IView view)
+		public static void UpdateSemantics(this FrameworkElement nativeView, IFrameworkElement view)
 		{
 			var semantics = view.Semantics;
 			if (semantics == null)
@@ -72,7 +72,7 @@ namespace Microsoft.Maui
 				nativeControl.SetValue(property, value);
 		}
 
-		public static void InvalidateMeasure(this FrameworkElement nativeView, IView view) 
+		public static void InvalidateMeasure(this FrameworkElement nativeView, IFrameworkElement view) 
 		{
 			nativeView.InvalidateMeasure();
 		}

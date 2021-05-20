@@ -137,8 +137,30 @@ namespace Microsoft.Maui.Handlers
 		where TNativeView : class
 #endif
 	{
+		public static PropertyMapper<IView> ViewMapper = new(FrameworkElementMapper)
+		{
+			[nameof(IView.Visibility)] = MapVisibility,
+			[nameof(IView.Width)] = MapWidth,
+			[nameof(IView.Height)] = MapHeight,
+		};
+
 		internal ViewHandler(PropertyMapper mapper) : base(mapper)
 		{ 
+		}
+
+		public static void MapVisibility(IFrameworkElementHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateVisibility(view);
+		}
+
+		public static void MapWidth(IFrameworkElementHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateWidth(view);
+		}
+
+		public static void MapHeight(IFrameworkElementHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateHeight(view);
 		}
 	}
 

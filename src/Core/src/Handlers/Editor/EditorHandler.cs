@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler
 	{
-		public static PropertyMapper<IEditor, EditorHandler> EditorMapper = new PropertyMapper<IEditor, EditorHandler>(FrameworkElementHandler.ViewMapper)
+		public static PropertyMapper<IEditor, EditorHandler> EditorMapper = new PropertyMapper<IEditor, EditorHandler>(ViewMapper)
 		{
 			[nameof(IEditor.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEditor.Font)] = MapFont,

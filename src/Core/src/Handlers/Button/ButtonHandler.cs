@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler
 	{
-		public static PropertyMapper<IButton, ButtonHandler> ButtonMapper = new PropertyMapper<IButton, ButtonHandler>(FrameworkElementHandler.ViewMapper)
+		public static PropertyMapper<IButton, ButtonHandler> ButtonMapper = new PropertyMapper<IButton, ButtonHandler>(ViewMapper)
 		{
 #if WINDOWS
 			[nameof(IButton.Background)] = MapBackground,

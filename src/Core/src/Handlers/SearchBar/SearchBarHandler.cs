@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler
 	{
-		public static PropertyMapper<ISearchBar, SearchBarHandler> SearchBarMapper = new PropertyMapper<ISearchBar, SearchBarHandler>(FrameworkElementHandler.ViewMapper)
+		public static PropertyMapper<ISearchBar, SearchBarHandler> SearchBarMapper = new PropertyMapper<ISearchBar, SearchBarHandler>(ViewMapper)
 		{
 			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ISearchBar.Font)] = MapFont,

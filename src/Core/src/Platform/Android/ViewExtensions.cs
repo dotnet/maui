@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 		const int DefaultAutomationTagId = -1;
 		public static int AutomationTagId { get; set; } = DefaultAutomationTagId;
 
-		public static void UpdateIsEnabled(this AView nativeView, IView view)
+		public static void UpdateIsEnabled(this AView nativeView, IFrameworkElement view)
 		{
 			if (nativeView != null)
 				nativeView.Enabled = view.IsEnabled;
@@ -31,7 +31,7 @@ namespace Microsoft.Maui
 			};
 		}
 
-		public static void UpdateBackground(this AView nativeView, IView view)
+		public static void UpdateBackground(this AView nativeView, IFrameworkElement view)
 		{
 			if (view == null)
 				return;
@@ -61,7 +61,7 @@ namespace Microsoft.Maui
 			view.ClipToOutline = value;
 		}
 
-		public static void UpdateAutomationId(this AView nativeView, IView view)
+		public static void UpdateAutomationId(this AView nativeView, IFrameworkElement view)
 		{
 			if (AutomationTagId == DefaultAutomationTagId)
 			{
@@ -71,7 +71,7 @@ namespace Microsoft.Maui
 			nativeView.SetTag(AutomationTagId, view.AutomationId);
 		}
 
-		public static void UpdateSemantics(this AView nativeView, IView view)
+		public static void UpdateSemantics(this AView nativeView, IFrameworkElement view)
 		{
 			var semantics = view.Semantics;
 
@@ -82,7 +82,7 @@ namespace Microsoft.Maui
 			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
 		}
 
-		public static void InvalidateMeasure(this AView nativeView, IView view)
+		public static void InvalidateMeasure(this AView nativeView, IFrameworkElement view)
 		{
 			nativeView.RequestLayout();
 		}

@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 		public static UIColor? GetBackgroundColor(this UIView view)
 			=> view?.BackgroundColor;
 
-		public static void UpdateIsEnabled(this UIView nativeView, IView view)
+		public static void UpdateIsEnabled(this UIView nativeView, IFrameworkElement view)
 		{
 			if (nativeView is not UIControl uiControl)
 				return;
@@ -51,7 +51,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateBackground(this UIView nativeView, IView view)
+		public static void UpdateBackground(this UIView nativeView, IFrameworkElement view)
 		{
 			if (nativeView == null)
 				return;
@@ -74,10 +74,10 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
+		public static void UpdateAutomationId(this UIView nativeView, IFrameworkElement view) =>
 			nativeView.AccessibilityIdentifier = view.AutomationId;
 
-		public static void UpdateSemantics(this UIView nativeView, IView view)
+		public static void UpdateSemantics(this UIView nativeView, IFrameworkElement view)
 		{
 			var semantics = view.Semantics;
 
@@ -132,7 +132,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void InvalidateMeasure(this UIView nativeView, IView view)
+		public static void InvalidateMeasure(this UIView nativeView, IFrameworkElement view)
 		{
 			nativeView.SetNeedsLayout();
 		}

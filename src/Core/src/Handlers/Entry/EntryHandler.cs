@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler
 	{
-		public static PropertyMapper<IEntry, EntryHandler> EntryMapper = new PropertyMapper<IEntry, EntryHandler>(FrameworkElementHandler.ViewMapper)
+		public static PropertyMapper<IEntry, EntryHandler> EntryMapper = new PropertyMapper<IEntry, EntryHandler>(ViewMapper)
 		{
 			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,

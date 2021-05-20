@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PageHandler : IFrameworkElementHandler
 	{
-		public static PropertyMapper<IPage, PageHandler> PageMapper = new PropertyMapper<IPage, PageHandler>(FrameworkElementHandler.ViewMapper)
+		public static PropertyMapper<IPage, PageHandler> PageMapper = new PropertyMapper<IPage, PageHandler>(FrameworkElementMapper)
 		{
 			[nameof(IPage.Title)] = MapTitle,
 			[nameof(IPage.Content)] = MapContent,
