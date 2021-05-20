@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls
 
 		internal override void Unapply(bool fromBindingContextChanged = false)
 		{
-			if (Source != null && !(Source is RelativeBindingSource) && fromBindingContextChanged && IsApplied)
+			if (Source is not RelativeBindingSource&& fromBindingContextChanged && IsApplied)
 				return;
 
 			base.Unapply(fromBindingContextChanged: fromBindingContextChanged);
