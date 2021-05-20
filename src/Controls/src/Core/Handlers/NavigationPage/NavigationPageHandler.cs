@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers
 	public partial class NavigationPageHandler
 	{
 		public static PropertyMapper<NavigationPage, NavigationPageHandler> NavigationPageMapper
-			   = new PropertyMapper<NavigationPage, NavigationPageHandler>(ViewHandler.ViewMapper)
+			   = new PropertyMapper<NavigationPage, NavigationPageHandler>(FrameworkElementHandler.ViewMapper)
 			   {
 				   [NavigationPage.BarTextColorProperty.PropertyName] = MapBarTextColor,
 				   [NavigationPage.BarBackgroundColorProperty.PropertyName] = MapBarBackground,

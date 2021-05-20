@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Rectangle Frame { get; set; }
 
-		public IViewHandler Handler { get; set; }
+		public IFrameworkElementHandler Handler { get; set; }
 
 		public IFrameworkElement Parent { get; set; }
 

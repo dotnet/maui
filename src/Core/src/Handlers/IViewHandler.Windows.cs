@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui
 {
-	public interface INativeViewHandler : IViewHandler
+	public interface INativeViewHandler : IFrameworkElementHandler
 	{
 		new FrameworkElement? NativeView { get; }
 	}

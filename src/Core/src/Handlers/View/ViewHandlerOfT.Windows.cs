@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
+	public abstract partial class FrameworkElementHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
 		FrameworkElement? INativeViewHandler.NativeView => (FrameworkElement?)base.NativeView;
 
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 		}
 	}
 
-	public partial class WidgetHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView, TNativeView>
+	public partial class WidgetHandler<TVirtualView, TNativeView> : FrameworkElementHandler<TVirtualView, TNativeView>
 	{
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{

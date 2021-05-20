@@ -2,7 +2,7 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public interface INativeViewHandler : IViewHandler
+	public interface INativeViewHandler : IFrameworkElementHandler
 	{
 		new UIView? NativeView { get; }
 		UIViewController? ViewController { get; }

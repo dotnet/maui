@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Handlers
 	public partial class ShellHandler
 	{
 		// TODO override all the viewmapper things for shell
-		public ShellHandler() : this(ViewHandler.ViewMapper)
+		public ShellHandler() : this(FrameworkElementHandler.ViewMapper)
 		{
 		}
 

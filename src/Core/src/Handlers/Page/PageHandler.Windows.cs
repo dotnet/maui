@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, PagePanel>
+	public partial class PageHandler : FrameworkElementHandler<IPage, PagePanel>
 	{
 
 		public override void SetVirtualView(IView view)

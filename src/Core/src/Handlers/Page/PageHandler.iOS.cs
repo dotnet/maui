@@ -5,7 +5,7 @@ using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, PageView>, INativeViewHandler
+	public partial class PageHandler : FrameworkElementHandler<IPage, PageView>, INativeViewHandler
 	{
 		PageViewController? _pageViewController;
 		UIViewController? INativeViewHandler.ViewController => _pageViewController;

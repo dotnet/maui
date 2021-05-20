@@ -13,10 +13,10 @@ namespace Microsoft.Maui.Hosting.Internal
 			_collection = collection;
 		}
 
-		public IViewHandler? GetHandler(Type type)
-			=> GetService(type) as IViewHandler;
+		public IFrameworkElementHandler? GetHandler(Type type)
+			=> GetService(type) as IFrameworkElementHandler;
 
-		public IViewHandler? GetHandler<T>() where T : IView
+		public IFrameworkElementHandler? GetHandler<T>() where T : IView
 			=> GetHandler(typeof(T));
 
 		public Type? GetHandlerType(Type iview)

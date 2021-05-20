@@ -14,8 +14,8 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView>,
-		IViewHandler
+	public abstract partial class FrameworkElementHandler<TVirtualView, TNativeView> : FrameworkElementHandler<TVirtualView>,
+		IFrameworkElementHandler
 		where TVirtualView : class, IFrameworkElement
 #if !NETSTANDARD || IOS || ANDROID || WINDOWS
 		where TNativeView : NativeView
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 			HasSetDefaults = false;
 		}
 
-		protected ViewHandler(PropertyMapper mapper)
+		protected FrameworkElementHandler(PropertyMapper mapper)
 		{
 			_ = mapper ?? throw new ArgumentNullException(nameof(mapper));
 			_defaultMapper = mapper;
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Handlers
 			_mapper.UpdateProperties(this, VirtualView);
 		}
 
-		void IViewHandler.DisconnectHandler()
+		void IFrameworkElementHandler.DisconnectHandler()
 		{
 			if (NativeView != null && VirtualView != null)
 				DisconnectHandler(NativeView);
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Handlers
 	}
 
 
-	public abstract partial class WidgetHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView, TNativeView>
+	public abstract partial class WidgetHandler<TVirtualView, TNativeView> : FrameworkElementHandler<TVirtualView, TNativeView>
 		where TVirtualView : class, IView
 #if !NETSTANDARD || IOS || ANDROID || WINDOWS
 		where TNativeView : NativeView
@@ -142,10 +142,10 @@ namespace Microsoft.Maui.Handlers
 		}
 	}
 
-	public abstract partial class ViewHandler<TVirtualView> : ViewHandler
+	public abstract partial class FrameworkElementHandler<TVirtualView> : FrameworkElementHandler
 		where TVirtualView : class, IFrameworkElement
 	{
-		internal ViewHandler()
+		internal FrameworkElementHandler()
 		{
 		}
 

@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler
 	{
-		public static PropertyMapper<ISwitch, SwitchHandler> SwitchMapper = new PropertyMapper<ISwitch, SwitchHandler>(ViewHandler.ViewMapper)
+		public static PropertyMapper<ISwitch, SwitchHandler> SwitchMapper = new PropertyMapper<ISwitch, SwitchHandler>(FrameworkElementHandler.ViewMapper)
 		{
 			[nameof(ISwitch.IsOn)] = MapIsOn,
 			[nameof(ISwitch.ThumbColor)] = MapThumbColor,

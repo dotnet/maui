@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TNativeView>
+	public abstract partial class FrameworkElementHandler<TVirtualView, TNativeView>
 	{
 		public override void NativeArrange(Rectangle rect)
 		{
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 		}
 	}
 
-	public partial class WidgetHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView, TNativeView>
+	public partial class WidgetHandler<TVirtualView, TNativeView> : FrameworkElementHandler<TVirtualView, TNativeView>
 	{
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => throw new NotImplementedException();
 	}

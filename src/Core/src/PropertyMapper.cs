@@ -11,15 +11,15 @@ namespace Microsoft.Maui
 		List<string>? _actionKeys;
 		List<string>? _updateKeys;
 
-		internal Dictionary<string, (Action<IViewHandler, IFrameworkElement> Action, bool RunOnUpdateAll)> _mapper = new Dictionary<string, (Action<IViewHandler, IFrameworkElement> action, bool runOnUpdateAll)>();
+		internal Dictionary<string, (Action<IFrameworkElementHandler, IFrameworkElement> Action, bool RunOnUpdateAll)> _mapper = new Dictionary<string, (Action<IFrameworkElementHandler, IFrameworkElement> action, bool runOnUpdateAll)>();
 
-		protected virtual void UpdatePropertyCore(string key, IViewHandler viewHandler, IFrameworkElement virtualView)
+		protected virtual void UpdatePropertyCore(string key, IFrameworkElementHandler viewHandler, IFrameworkElement virtualView)
 		{
 			var action = Get(key);
 			action.Action?.Invoke(viewHandler, virtualView);
 		}
 
-		internal void UpdateProperty(IViewHandler viewHandler, IFrameworkElement? virtualView, string property)
+		internal void UpdateProperty(IFrameworkElementHandler viewHandler, IFrameworkElement? virtualView, string property)
 		{
 			if (virtualView == null)
 				return;
@@ -27,7 +27,7 @@ namespace Microsoft.Maui
 			UpdatePropertyCore(property, viewHandler, virtualView);
 		}
 
-		internal void UpdateProperties(IViewHandler viewHandler, IFrameworkElement? virtualView)
+		internal void UpdateProperties(IFrameworkElementHandler viewHandler, IFrameworkElement? virtualView)
 		{
 			if (virtualView == null)
 				return;
@@ -65,7 +65,7 @@ namespace Microsoft.Maui
 			_actionKeys = null;
 		}
 
-		public virtual (Action<IViewHandler, IFrameworkElement>? Action, bool RunOnUpdateAll) Get(string key)
+		public virtual (Action<IFrameworkElementHandler, IFrameworkElement>? Action, bool RunOnUpdateAll) Get(string key)
 		{
 			_mapper.TryGetValue(key, out var action);
 			return action;
@@ -77,7 +77,7 @@ namespace Microsoft.Maui
 
 	public class PropertyMapper<TVirtualView, TViewHandler> : PropertyMapper, IEnumerable
 		where TVirtualView : IFrameworkElement
-		where TViewHandler : IViewHandler
+		where TViewHandler : IFrameworkElementHandler
 	{
 		PropertyMapper? _chained;
 		ICollection<string>? _cachedKeys;
@@ -124,7 +124,7 @@ namespace Microsoft.Maui
 			_cachedKeys = null;
 		}
 
-		public override (Action<IViewHandler, IFrameworkElement>? Action, bool RunOnUpdateAll) Get(string key)
+		public override (Action<IFrameworkElementHandler, IFrameworkElement>? Action, bool RunOnUpdateAll) Get(string key)
 		{
 			if (_mapper.TryGetValue(key, out var action))
 				return action;
@@ -141,7 +141,7 @@ namespace Microsoft.Maui
 		IEnumerator IEnumerable.GetEnumerator() => _mapper.GetEnumerator();
 	}
 
-	public class PropertyMapper<TVirtualView> : PropertyMapper<TVirtualView, IViewHandler>
+	public class PropertyMapper<TVirtualView> : PropertyMapper<TVirtualView, IFrameworkElementHandler>
 		where TVirtualView : IFrameworkElement
 	{
 		public PropertyMapper()

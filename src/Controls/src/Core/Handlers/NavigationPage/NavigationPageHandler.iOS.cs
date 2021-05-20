@@ -13,7 +13,7 @@ using UIKit;
 namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class NavigationPageHandler :
-		ViewHandler<NavigationPage, UIView>, INativeViewHandler
+		FrameworkElementHandler<NavigationPage, UIView>, INativeViewHandler
 	{
 		ControlsNavigationController _controlsNavigationController;
 		UIViewController? INativeViewHandler.ViewController => _controlsNavigationController;

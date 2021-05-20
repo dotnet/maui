@@ -48,15 +48,15 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapTextColor(IFrameworkElementHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
-		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapIsTextPredictionEnabled(IFrameworkElementHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
-		public static void MapMaxLength(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapMaxLength(IFrameworkElementHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
-		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapIsReadOnly(IFrameworkElementHandler handler, ISearchBar searchBar) { }
 	}
 }

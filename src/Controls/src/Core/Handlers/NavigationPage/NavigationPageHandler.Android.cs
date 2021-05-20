@@ -17,7 +17,7 @@ using AView = Android.Views.View;
 namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class NavigationPageHandler :
-		ViewHandler<NavigationPage, AView>
+		FrameworkElementHandler<NavigationPage, AView>
 	//, IManageFragments, IOnClickListener, ILifeCycleState
 	{
 		private NavHostFragment? _navHost;

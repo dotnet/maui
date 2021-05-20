@@ -7,11 +7,11 @@ namespace Microsoft.Maui
 {
 	public static class Registrar
 	{
-		public static Registrar<IFrameworkElement, IViewHandler> Handlers { get; private set; }
+		public static Registrar<IFrameworkElement, IFrameworkElementHandler> Handlers { get; private set; }
 
 		static Registrar()
 		{
-			Handlers = new Registrar<IFrameworkElement, IViewHandler>();
+			Handlers = new Registrar<IFrameworkElement, IFrameworkElementHandler>();
 		}
 	}
 
@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 		where TTypeRender : class
 	{
 		internal Dictionary<Type, Type> _handler = new Dictionary<Type, Type>();
-		internal Dictionary<Type, Func<Type, IViewHandler>> _handlerFactories = new Dictionary<Type, Func<Type, IViewHandler>>();
+		internal Dictionary<Type, Func<Type, IFrameworkElementHandler>> _handlerFactories = new Dictionary<Type, Func<Type, IFrameworkElementHandler>>();
 #nullable enable
 		public void Register<TView, TRender>()
 			where TView : TType
@@ -34,13 +34,13 @@ namespace Microsoft.Maui
 			_handler[view] = handler;
 		}
 
-		public void Register(Type view, Func<Type, IViewHandler> factory)
+		public void Register(Type view, Func<Type, IFrameworkElementHandler> factory)
 		{
 			_handler.Remove(view);
 			_handlerFactories[view] = factory;
 		}
 
-		public void Register<TView>(Func<Type, IViewHandler> factory)
+		public void Register<TView>(Func<Type, IFrameworkElementHandler> factory)
 			where TView : TType
 		{
 			Register(typeof(TView), factory);

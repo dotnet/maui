@@ -3,7 +3,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
+	public partial class FrameworkElementHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
 		UIView? INativeViewHandler.NativeView => (UIView?)base.NativeView;
 		UIViewController? INativeViewHandler.ViewController => null;
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 		}
 	}
 
-	public partial class WidgetHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView, TNativeView>
+	public partial class WidgetHandler<TVirtualView, TNativeView> : FrameworkElementHandler<TVirtualView, TNativeView>
 	{
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{

@@ -2,7 +2,7 @@
 {
 	public partial class DatePickerHandler
 	{
-		public static PropertyMapper<IDatePicker, DatePickerHandler> DatePickerMapper = new PropertyMapper<IDatePicker, DatePickerHandler>(ViewHandler.ViewMapper)
+		public static PropertyMapper<IDatePicker, DatePickerHandler> DatePickerMapper = new PropertyMapper<IDatePicker, DatePickerHandler>(FrameworkElementHandler.ViewMapper)
 		{
 			[nameof(IDatePicker.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IDatePicker.Date)] = MapDate,

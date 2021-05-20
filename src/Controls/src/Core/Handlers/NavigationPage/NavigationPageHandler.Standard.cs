@@ -6,7 +6,7 @@ using Microsoft.Maui.Handlers;
 namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class NavigationPageHandler :
-		ViewHandler<NavigationPage, object>
+		FrameworkElementHandler<NavigationPage, object>
 	{
 		protected override object CreateNativeView()
 		{

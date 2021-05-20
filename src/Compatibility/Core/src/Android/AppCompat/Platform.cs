@@ -309,7 +309,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			// So if any changes are made here please make sure to apply them to other platform.cs files
 			if (renderer == null)
 			{
-				IViewHandler handler = null;
+				IFrameworkElementHandler handler = null;
 
 				//TODO: Handle this with AppBuilderHost
 				try

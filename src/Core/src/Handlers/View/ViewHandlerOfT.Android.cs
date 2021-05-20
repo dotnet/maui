@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
+	public partial class FrameworkElementHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
 		View? INativeViewHandler.NativeView => (View?)base.NativeView;
 		public Context? Context => MauiContext?.Context;
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 		}
 	}
 
-	public partial class WidgetHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView, TNativeView> 
+	public partial class WidgetHandler<TVirtualView, TNativeView> : FrameworkElementHandler<TVirtualView, TNativeView> 
 	{
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{

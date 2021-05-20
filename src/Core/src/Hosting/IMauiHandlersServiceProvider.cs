@@ -8,9 +8,9 @@ namespace Microsoft.Maui
 	{
 		Type? GetHandlerType(Type iview);
 
-		IViewHandler? GetHandler(Type type);
+		IFrameworkElementHandler? GetHandler(Type type);
 
-		IViewHandler? GetHandler<T>() where T : IView;
+		IFrameworkElementHandler? GetHandler<T>() where T : IView;
 
 		IMauiHandlersCollection GetCollection();
 	}

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LayoutHandler : ILayoutHandler
 	{
-		public static PropertyMapper<ILayout> LayoutMapper = new PropertyMapper<ILayout>(ViewHandler.ViewMapper)
+		public static PropertyMapper<ILayout> LayoutMapper = new PropertyMapper<ILayout>(FrameworkElementHandler.ViewMapper)
 		{
 		};
 

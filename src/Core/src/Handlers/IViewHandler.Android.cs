@@ -3,7 +3,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
-	public interface INativeViewHandler : IViewHandler
+	public interface INativeViewHandler : IFrameworkElementHandler
 	{
 		new AView? NativeView { get; }
 	}

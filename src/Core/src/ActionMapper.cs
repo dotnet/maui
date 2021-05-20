@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 {
 	public class ActionMapper<TVirtualView, TViewHandler>
 			where TVirtualView : IFrameworkElement
-			where TViewHandler : IViewHandler
+			where TViewHandler : IFrameworkElementHandler
 	{
 		public ActionMapper(PropertyMapper<TVirtualView, TViewHandler> propertyMapper)
 		{

@@ -2,7 +2,7 @@
 using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui
 {
-	public interface IViewHandler
+	public interface IFrameworkElementHandler
 	{
 		void SetMauiContext(IMauiContext mauiContext);
 		void SetVirtualView(IFrameworkElement view);

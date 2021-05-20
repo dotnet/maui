@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, PageViewGroup>
+	public partial class PageHandler : FrameworkElementHandler<IPage, PageViewGroup>
 	{
 		protected override PageViewGroup CreateNativeView()
 		{

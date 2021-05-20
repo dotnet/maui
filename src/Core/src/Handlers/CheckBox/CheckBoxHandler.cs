@@ -2,7 +2,7 @@
 {
 	public partial class CheckBoxHandler
 	{
-		public static PropertyMapper<ICheckBox, CheckBoxHandler> CheckBoxMapper = new PropertyMapper<ICheckBox, CheckBoxHandler>(ViewHandler.ViewMapper)
+		public static PropertyMapper<ICheckBox, CheckBoxHandler> CheckBoxMapper = new PropertyMapper<ICheckBox, CheckBoxHandler>(FrameworkElementHandler.ViewMapper)
 		{
 #if MONOANDROID
 			[nameof(ICheckBox.Background)] = MapBackground,

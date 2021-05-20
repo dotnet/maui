@@ -7,7 +7,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class ShellHandler : ViewHandler<Shell, object>
+	public partial class ShellHandler : FrameworkElementHandler<Shell, object>
 	{
 		protected override object CreateNativeView()
 		{

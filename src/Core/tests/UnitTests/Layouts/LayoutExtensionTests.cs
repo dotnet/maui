@@ -60,7 +60,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var widthConstraint = 400;
 			var heightConstraint = 655;
 
-			var handler = Substitute.For<IViewHandler>();
+			var handler = Substitute.For<IFrameworkElementHandler>();
 			var element = Substitute.For<IView>();
 			var margin = new Thickness(20);
 

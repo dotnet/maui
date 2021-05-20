@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly ImageSourceServiceResultManager _sourceManager = new ImageSourceServiceResultManager();
 
-		public static PropertyMapper<IImage, ImageHandler> ImageMapper = new PropertyMapper<IImage, ImageHandler>(ViewHandler.ViewMapper)
+		public static PropertyMapper<IImage, ImageHandler> ImageMapper = new PropertyMapper<IImage, ImageHandler>(FrameworkElementHandler.ViewMapper)
 		{
 			// TODO: Map Background and use the ContainerView (when available)
 			[nameof(IImage.Aspect)] = MapAspect,

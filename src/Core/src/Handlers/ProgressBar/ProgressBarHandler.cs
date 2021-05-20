@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ProgressBarHandler
 	{
-		public static PropertyMapper<IProgress, ProgressBarHandler> ProgressMapper = new PropertyMapper<IProgress, ProgressBarHandler>(ViewHandler.ViewMapper)
+		public static PropertyMapper<IProgress, ProgressBarHandler> ProgressMapper = new PropertyMapper<IProgress, ProgressBarHandler>(FrameworkElementHandler.ViewMapper)
 		{
 			[nameof(IProgress.Progress)] = MapProgress,
 		};

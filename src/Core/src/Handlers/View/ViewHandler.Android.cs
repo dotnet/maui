@@ -5,7 +5,7 @@ using NativeView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ViewHandler
+	public partial class FrameworkElementHandler
 	{
 		MauiAccessibilityDelegate? AccessibilityDelegate { get; set; }
 
@@ -19,10 +19,10 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		static partial void MappingSemantics(IViewHandler handler, IView view)
+		static partial void MappingSemantics(IFrameworkElementHandler handler, IView view)
 		{
 			if (view.Semantics != null &&
-				handler is ViewHandler viewHandler &&
+				handler is FrameworkElementHandler viewHandler &&
 				viewHandler.AccessibilityDelegate == null &&
 				ViewCompat.GetAccessibilityDelegate(handler.NativeView as NativeView) == null)
 			{
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 		public void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)
 		{
-			var semantics = ((IViewHandler)this).VirtualView?.Semantics;
+			var semantics = ((IFrameworkElementHandler)this).VirtualView?.Semantics;
 			if (semantics == null)
 				return;
 
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 
 		class MauiAccessibilityDelegate : AccessibilityDelegateCompat
 		{
-			public ViewHandler? Handler { get; set; }
+			public FrameworkElementHandler? Handler { get; set; }
 
 			public MauiAccessibilityDelegate()
 			{

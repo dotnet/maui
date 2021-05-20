@@ -9,9 +9,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		internal IVisualElementRenderer VisualElementRenderer { get; private set; }
 
-		public static IViewHandler CreateShim(object renderer)
+		public static IFrameworkElementHandler CreateShim(object renderer)
 		{
-			if (renderer is IViewHandler handler)
+			if (renderer is IFrameworkElementHandler handler)
 				return handler;
 
 			if (renderer is IVisualElementRenderer ivr)

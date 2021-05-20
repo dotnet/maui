@@ -12,12 +12,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		int? _defaultLabelFor;
 
-		public HandlerToRendererShim(IViewHandler vh)
+		public HandlerToRendererShim(IFrameworkElementHandler vh)
 		{
 			ViewHandler = vh;
 		}
 
-		IViewHandler ViewHandler { get; }
+		IFrameworkElementHandler ViewHandler { get; }
 
 		public VisualElement Element { get; private set; }
 

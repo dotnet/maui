@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, object>
+	public partial class PageHandler : FrameworkElementHandler<IPage, object>
 	{
 		protected override object CreateNativeView() => throw new NotImplementedException();
 

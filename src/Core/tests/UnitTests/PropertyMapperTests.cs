@@ -138,7 +138,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			bool wasMapper1Called = false;
 			bool wasMapper2Called = false;
-			var mapper1 = new PropertyMapper<IView, IViewHandler>
+			var mapper1 = new PropertyMapper<IView, IFrameworkElementHandler>
 			{
 				[nameof(IView.Background)] = (r, v) => wasMapper1Called = true
 			};

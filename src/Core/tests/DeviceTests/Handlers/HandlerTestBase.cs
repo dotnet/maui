@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase<THandler, TStub> : TestBase, IDisposable
-		where THandler : IViewHandler
+		where THandler : IFrameworkElementHandler
 		where TStub : StubBase, IView, new()
 	{
 		IApplication _app;

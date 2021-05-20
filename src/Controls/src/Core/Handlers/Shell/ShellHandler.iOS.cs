@@ -8,7 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class ShellHandler : ViewHandler<Shell, UIView>
+	public partial class ShellHandler : FrameworkElementHandler<Shell, UIView>
 	{
 		protected override UIView CreateNativeView()
 		{

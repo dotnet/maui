@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var button = new Button() { IsPlatformEnabled = true };
 			var expectedSize = new Size(100, 100);
 
-			var view = Substitute.For<IViewHandler>();
+			var view = Substitute.For<IFrameworkElementHandler>();
 			view.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
 			button.Handler = view;
 
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var button = new Button() { IsPlatformEnabled = true, HeightRequest = 100, WidthRequest = 100 };
 			var expectedSize = new Size(100, 100);
 
-			var view = Substitute.For<IViewHandler>();
+			var view = Substitute.For<IFrameworkElementHandler>();
 			view.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
 			button.Handler = view;
 
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var button = new Button() { IsPlatformEnabled = true, HeightRequest = 100, WidthRequest = 100 };
 			var expectedSize = new Size(100, 100);
 
-			var view = Substitute.For<IViewHandler>();
+			var view = Substitute.For<IFrameworkElementHandler>();
 			view.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
 			button.Handler = view;
 

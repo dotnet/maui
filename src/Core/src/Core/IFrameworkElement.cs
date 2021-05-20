@@ -27,7 +27,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets or sets the View Handler of the FrameworkElement.
 		/// </summary>
-		IViewHandler? Handler { get; set; }
+		IFrameworkElementHandler? Handler { get; set; }
 
 		/// <summary>
 		/// Gets the Parent of the Element.

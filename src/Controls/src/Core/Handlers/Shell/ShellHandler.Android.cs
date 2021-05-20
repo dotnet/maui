@@ -8,7 +8,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class ShellHandler : ViewHandler<Shell, AView>
+	public partial class ShellHandler : FrameworkElementHandler<Shell, AView>
 	{
 		protected override AView CreateNativeView() => throw new NotImplementedException();
 	}

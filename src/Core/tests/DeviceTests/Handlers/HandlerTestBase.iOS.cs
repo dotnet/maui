@@ -4,20 +4,20 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase<THandler, TStub>
 	{
-		protected string GetAutomationId(IViewHandler viewHandler) =>
+		protected string GetAutomationId(IFrameworkElementHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).AccessibilityIdentifier;
 
-		protected string GetSemanticDescription(IViewHandler viewHandler) =>
+		protected string GetSemanticDescription(IFrameworkElementHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).AccessibilityLabel;
 
-		protected string GetSemanticHint(IViewHandler viewHandler) =>
+		protected string GetSemanticHint(IFrameworkElementHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).AccessibilityHint;
 
-		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler) =>
+		protected SemanticHeadingLevel GetSemanticHeading(IFrameworkElementHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header)
 				? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
 
-		protected Visibility GetVisibility(IViewHandler viewHandler)
+		protected Visibility GetVisibility(IFrameworkElementHandler viewHandler)
 		{
 			var nativeView = (UIView)viewHandler.NativeView;
 

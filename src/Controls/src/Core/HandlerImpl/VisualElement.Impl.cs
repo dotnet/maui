@@ -8,11 +8,11 @@ namespace Microsoft.Maui.Controls
 	public partial class VisualElement : IView
 	{
 		Semantics _semantics;
-		IViewHandler _handler;
+		IFrameworkElementHandler _handler;
 
 		public Rectangle Frame => Bounds;
 
-		public IViewHandler Handler
+		public IFrameworkElementHandler Handler
 		{
 			get => _handler;
 			set

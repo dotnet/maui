@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Controls
 
 		public static void TryAddHandler<TType, TTypeRender>()
 			where TType : IFrameworkElement
-			where TTypeRender : IViewHandler
+			where TTypeRender : IFrameworkElementHandler
 		{
 			if (handlersCollection == null)
 				pendingHandlers[typeof(TType)] = typeof(TTypeRender);

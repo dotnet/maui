@@ -32,12 +32,12 @@ namespace Microsoft.Maui
 			task.FireAndForget(ex => Log(logger, ex, callerName));
 
 		public static void FireAndForget<T>(this Task task, T? viewHandler, [CallerMemberName] string? callerName = null)
-			where T : IViewHandler
+			where T : IFrameworkElementHandler
 		{
 			task.FireAndForget(ex => Log(viewHandler?.CreateLogger<T>(), ex, callerName));
 		}
 
-		static ILogger? CreateLogger<T>(this IViewHandler? viewHandler) =>
+		static ILogger? CreateLogger<T>(this IFrameworkElementHandler? viewHandler) =>
 			viewHandler?.MauiContext?.Services?.CreateLogger<T>();
 
 		static void Log(ILogger? logger, Exception ex, string? callerName) =>

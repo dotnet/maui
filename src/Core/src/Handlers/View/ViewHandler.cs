@@ -13,7 +13,7 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler : IViewHandler
+	public abstract partial class FrameworkElementHandler : IFrameworkElementHandler
 	{
 		public static PropertyMapper<IView> ViewMapper = new PropertyMapper<IView>
 		{
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 				}
 		};
 
-		internal ViewHandler()
+		internal FrameworkElementHandler()
 		{
 		}
 
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract void UpdateValue(string property);
 
-		void IViewHandler.DisconnectHandler() => DisconnectHandler(((NativeView?)NativeView));
+		void IFrameworkElementHandler.DisconnectHandler() => DisconnectHandler(((NativeView?)NativeView));
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
@@ -92,45 +92,45 @@ namespace Microsoft.Maui.Handlers
 			VirtualView = null;
 		}
 
-		public static void MapWidth(IViewHandler handler, IView view)
+		public static void MapWidth(IFrameworkElementHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateWidth(view);
 		}
 
-		public static void MapHeight(IViewHandler handler, IView view)
+		public static void MapHeight(IFrameworkElementHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateHeight(view);
 		}
 
-		public static void MapIsEnabled(IViewHandler handler, IView view)
+		public static void MapIsEnabled(IFrameworkElementHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateIsEnabled(view);
 		}
 
-		public static void MapVisibility(IViewHandler handler, IView view)
+		public static void MapVisibility(IFrameworkElementHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateVisibility(view);
 		}
 
-		public static void MapBackground(IViewHandler handler, IView view)
+		public static void MapBackground(IFrameworkElementHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateBackground(view);
 		}
 
-		public static void MapAutomationId(IViewHandler handler, IView view)
+		public static void MapAutomationId(IFrameworkElementHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateAutomationId(view);
 		}
 
-		static partial void MappingSemantics(IViewHandler handler, IView view);
+		static partial void MappingSemantics(IFrameworkElementHandler handler, IView view);
 
-		public static void MapSemantics(IViewHandler handler, IView view)
+		public static void MapSemantics(IFrameworkElementHandler handler, IView view)
 		{
 			MappingSemantics(handler, view);
 			((NativeView?)handler.NativeView)?.UpdateSemantics(view);
 		}
 
-		public static void MapInvalidateMeasure(IViewHandler handler, IView view)
+		public static void MapInvalidateMeasure(IFrameworkElementHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.InvalidateMeasure(view);
 		}

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public Rectangle Frame { get; set; } = new Rectangle(0, 0, 20, 20);
 
-		public IViewHandler Handler { get; set; }
+		public IFrameworkElementHandler Handler { get; set; }
 
 		public IFrameworkElement Parent { get; set; }
 

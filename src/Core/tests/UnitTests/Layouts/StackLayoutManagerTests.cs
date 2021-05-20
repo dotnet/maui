@@ -30,7 +30,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		protected IView CreateTestView(Size viewSize)
 		{
 			var view = CreateTestView();
-			var handler = Substitute.For<IViewHandler>();
+			var handler = Substitute.For<IFrameworkElementHandler>();
 
 			view.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(viewSize);
 			view.DesiredSize.Returns(viewSize);

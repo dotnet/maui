@@ -121,7 +121,7 @@ namespace Microsoft.Maui.HotReload
 			if (typeof(IHotReloadableView).IsAssignableFrom(newViewType))
 				replacedViews[oldViewType] = newViewType;
 
-			if (typeof(IViewHandler).IsAssignableFrom(newViewType))
+			if (typeof(IFrameworkElementHandler).IsAssignableFrom(newViewType))
 			{
 				if (replacedHandlers.TryGetValue(oldViewType, out var vTypes))
 				{
