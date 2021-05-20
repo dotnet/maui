@@ -34,7 +34,7 @@
 
 	<Target Name="_MauiPackXamlDesignAssemblies">
 		<ItemGroup>
-			<BuildOutputInPackage Include="..\Xaml.Design\bin\$(Configuration)\net472\Microsoft.Maui.Controls.Xaml.Design.dll">
+			<BuildOutputInPackage Include="..\Xaml.Design\bin\$(Configuration)\net472\Microsoft.Maui.Controls.Xaml.DesignTools.dll">
 				<TargetPath>Design</TargetPath>
 			</BuildOutputInPackage>
 		</ItemGroup>
