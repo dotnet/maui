@@ -30,10 +30,10 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (sourceNode == null && styleNode == null)
 				throw new BuildException(BuildExceptionCode.StyleSheetNoSourceOrContent, node, null);
 
-			if (styleNode is not ValueNode)
+			if (styleNode != null && !(styleNode is ValueNode))
 				throw new BuildException(BuildExceptionCode.StyleSheetStyleNotALiteral, node, null);
 
-			if (sourceNode is not ValueNode)
+			if (sourceNode != null && !(sourceNode is ValueNode))
 				throw new BuildException(BuildExceptionCode.StyleSheetSourceNotALiteral, node, null);
 
 			if (styleNode != null)

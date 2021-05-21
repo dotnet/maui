@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 			countChildrenWithTabStopWithoutThis = 0;
 
 			Element parentPage = (element as Element)?.Parent;
-			while (parentPage is not Page)
+			while (parentPage != null && !(parentPage is Page))
 				parentPage = parentPage.Parent;
 
 			var descendantsOnPage = parentPage?.VisibleDescendants();

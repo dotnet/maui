@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls
 		internal static Element GetVisualRoot(Element element)
 		{
 			Element parent = element.Parent;
-			while (parent is not Page)
+			while (parent != null && !(parent is Page))
 				parent = parent.Parent;
 			return parent;
 		}
