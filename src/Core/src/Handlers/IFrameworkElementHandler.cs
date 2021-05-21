@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 		void SetVirtualView(IFrameworkElement view);
 		void UpdateValue(string property);
 		void DisconnectHandler();
-		object? NativeView { get; }
+		object? NativeView { get; } // TODO ezhart NativeInstance? NativeObject?
 		IFrameworkElement? VirtualView { get; }
 		IMauiContext? MauiContext { get; }
 
