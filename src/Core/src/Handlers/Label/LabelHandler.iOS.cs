@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||
+			VirtualView?.ClipShape != null ||
 			base.NeedsContainer;
 
 		public static void MapBackground(LabelHandler handler, ILabel label)
