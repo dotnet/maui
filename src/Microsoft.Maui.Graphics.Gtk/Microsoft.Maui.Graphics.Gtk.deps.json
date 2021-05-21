@@ -1,0 +1,206 @@
+{
+  "runtimeTarget": {
+    "name": ".NETStandard,Version=v2.0/",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETStandard,Version=v2.0": {},
+    ".NETStandard,Version=v2.0/": {
+      "Microsoft.Maui.Graphics.Gtk/6.0.100": {
+        "dependencies": {
+          "GitInfo": "2.1.2",
+          "GtkSharp": "3.24.24.34",
+          "MSBuilder.GenerateAssemblyInfo": "0.2.2",
+          "Microsoft.Maui.Graphics": "0.0.1-alpha1",
+          "NETStandard.Library": "2.0.3"
+        },
+        "runtime": {
+          "Microsoft.Maui.Graphics.Gtk.dll": {}
+        }
+      },
+      "AtkSharp/3.24.24.34": {
+        "dependencies": {
+          "GLibSharp": "3.24.24.34"
+        },
+        "runtime": {
+          "lib/netstandard2.0/AtkSharp.dll": {
+            "assemblyVersion": "3.24.24.34",
+            "fileVersion": "3.24.24.34"
+          }
+        }
+      },
+      "CairoSharp/3.24.24.34": {
+        "runtime": {
+          "lib/netstandard2.0/CairoSharp.dll": {
+            "assemblyVersion": "3.24.24.34",
+            "fileVersion": "3.24.24.34"
+          }
+        }
+      },
+      "GdkSharp/3.24.24.34": {
+        "dependencies": {
+          "CairoSharp": "3.24.24.34",
+          "GLibSharp": "3.24.24.34",
+          "GioSharp": "3.24.24.34",
+          "PangoSharp": "3.24.24.34"
+        },
+        "runtime": {
+          "lib/netstandard2.0/GdkSharp.dll": {
+            "assemblyVersion": "3.24.24.34",
+            "fileVersion": "3.24.24.34"
+          }
+        }
+      },
+      "GioSharp/3.24.24.34": {
+        "dependencies": {
+          "GLibSharp": "3.24.24.34"
+        },
+        "runtime": {
+          "lib/netstandard2.0/GioSharp.dll": {
+            "assemblyVersion": "3.24.24.34",
+            "fileVersion": "3.24.24.34"
+          }
+        }
+      },
+      "GitInfo/2.1.2": {},
+      "GLibSharp/3.24.24.34": {
+        "runtime": {
+          "lib/netstandard2.0/GLibSharp.dll": {
+            "assemblyVersion": "3.24.24.34",
+            "fileVersion": "3.24.24.34"
+          }
+        }
+      },
+      "GtkSharp/3.24.24.34": {
+        "dependencies": {
+          "AtkSharp": "3.24.24.34",
+          "CairoSharp": "3.24.24.34",
+          "GLibSharp": "3.24.24.34",
+          "GdkSharp": "3.24.24.34",
+          "GioSharp": "3.24.24.34",
+          "PangoSharp": "3.24.24.34"
+        },
+        "runtime": {
+          "lib/netstandard2.0/GtkSharp.dll": {
+            "assemblyVersion": "3.24.24.34",
+            "fileVersion": "3.24.24.34"
+          }
+        }
+      },
+      "Microsoft.NETCore.Platforms/1.1.0": {},
+      "MSBuilder.GenerateAssemblyInfo/0.2.2": {},
+      "NETStandard.Library/2.0.3": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0"
+        }
+      },
+      "PangoSharp/3.24.24.34": {
+        "dependencies": {
+          "CairoSharp": "3.24.24.34",
+          "GLibSharp": "3.24.24.34"
+        },
+        "runtime": {
+          "lib/netstandard2.0/PangoSharp.dll": {
+            "assemblyVersion": "3.24.24.34",
+            "fileVersion": "3.24.24.34"
+          }
+        }
+      },
+      "Microsoft.Maui.Graphics/0.0.1-alpha1": {
+        "runtime": {
+          "Microsoft.Maui.Graphics.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Microsoft.Maui.Graphics.Gtk/6.0.100": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AtkSharp/3.24.24.34": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-CNfTGhGDxcnow5e/u0THtOJeNWaZNDeeFmzYTMdC1tdUkmAtTFDareTGesLx+Gfj75m3415AKJSC9wQ6VyacYQ==",
+      "path": "atksharp/3.24.24.34",
+      "hashPath": "atksharp.3.24.24.34.nupkg.sha512"
+    },
+    "CairoSharp/3.24.24.34": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-hr75uYPGFlmB3RvpL3/6ZJtb+UiKsrpkyjb5VGI+8y1/lkY405FMBhPZKlxFqoEH0iIZ9gAMPBqKzT1lSVaDqA==",
+      "path": "cairosharp/3.24.24.34",
+      "hashPath": "cairosharp.3.24.24.34.nupkg.sha512"
+    },
+    "GdkSharp/3.24.24.34": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-COORB6Qd4yu6HWRbzVZXrkzr1T96Gy0wO7ckJfpYxWLbDUDnZVd/g2PICp9T05a0ZvLvkE++vsSjAWobwQeS0g==",
+      "path": "gdksharp/3.24.24.34",
+      "hashPath": "gdksharp.3.24.24.34.nupkg.sha512"
+    },
+    "GioSharp/3.24.24.34": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Qyz8bhKjLMTWoxXu6cdNEtTLNUuw7Y1sPdXlyTfyWMP/JmsUE9smCsCC0kyQNSFW17flxdSoeDpG8l6zzJF0vQ==",
+      "path": "giosharp/3.24.24.34",
+      "hashPath": "giosharp.3.24.24.34.nupkg.sha512"
+    },
+    "GitInfo/2.1.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-1sO441DFuueysHa9gDWpql+bra1wL9KBHAM823dHUHuBTJjKwnv4Dpr+/+nnZ6cdY3mECtbWoMrYgeTiKwJ8Rg==",
+      "path": "gitinfo/2.1.2",
+      "hashPath": "gitinfo.2.1.2.nupkg.sha512"
+    },
+    "GLibSharp/3.24.24.34": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-PSA7YJbxpnpeltjekoUk93FI9HWUMc2NtkxNIaWzHz7BavkkZDFmx8EKTKtuBrqbZZmEhlv5472NwGdiycSfxw==",
+      "path": "glibsharp/3.24.24.34",
+      "hashPath": "glibsharp.3.24.24.34.nupkg.sha512"
+    },
+    "GtkSharp/3.24.24.34": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-CVAz7ACMxW9xPhlrrg4Xe+v3jUnpN+emQl78aaXHtoiE7pf0tR8mP8mw0/eBHxMObrmg6DsLxbEFqE/7Yo4Uow==",
+      "path": "gtksharp/3.24.24.34",
+      "hashPath": "gtksharp.3.24.24.34.nupkg.sha512"
+    },
+    "Microsoft.NETCore.Platforms/1.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-a/iSwnRZb+LHFk49hQOyThh/ZNC3vsbZsF65XwQIb863qF6msmhdQtxGXFL28Ob2NsCz/drEj28BJd/YPpLRBg==",
+      "path": "microsoft.netcore.platforms/1.1.0",
+      "hashPath": "microsoft.netcore.platforms.1.1.0.nupkg.sha512"
+    },
+    "MSBuilder.GenerateAssemblyInfo/0.2.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ghF6V1yp/fHCNWqxv/0jeHFrbREoD+uR+cuKkayypjnJ2OSe5R8DYSMA9L4WLy0/ce0VwGdrl01cdp7d9oo2+Q==",
+      "path": "msbuilder.generateassemblyinfo/0.2.2",
+      "hashPath": "msbuilder.generateassemblyinfo.0.2.2.nupkg.sha512"
+    },
+    "NETStandard.Library/2.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-548M6mnBSJWxsIlkQHfbzoYxpiYFXZZSL00p4GHYv8PkiqFBnnT68mW5mGEsA/ch9fDO9GkPgkFQpWiXZN7mAQ==",
+      "path": "netstandard.library/2.0.3",
+      "hashPath": "netstandard.library.2.0.3.nupkg.sha512"
+    },
+    "PangoSharp/3.24.24.34": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-QpBEIiE29sxkewdW7l7rVRJR1p3SGoPauHrjm0A3yxpYxj+St5x45weHI8jquMJAZBUdVQuXYHSZDW1lQeJ+PQ==",
+      "path": "pangosharp/3.24.24.34",
+      "hashPath": "pangosharp.3.24.24.34.nupkg.sha512"
+    },
+    "Microsoft.Maui.Graphics/0.0.1-alpha1": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
