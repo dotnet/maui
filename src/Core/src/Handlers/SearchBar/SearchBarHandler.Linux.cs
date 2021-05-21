@@ -1,37 +1,72 @@
-﻿namespace Microsoft.Maui.Handlers
+﻿using System;
+using Gtk;
+
+namespace Microsoft.Maui.Handlers
 {
-	public partial class SearchBarHandler : ViewHandler<ITimePicker, MauiSearchBar>
+
+	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
+
 		protected override MauiSearchBar CreateNativeView()
 		{
 			return new MauiSearchBar();
 		}
 
-		[MissingMapper]
-		public static void MapText(IViewHandler handler, ISearchBar searchBar) { }
+		protected override void ConnectHandler(MauiSearchBar nativeView)
+		{
+			nativeView.Entry.Changed += OnNativeViewChanged;
+		}
+
+		protected override void DisconnectHandler(MauiSearchBar nativeView)
+		{
+			nativeView.Entry.Changed -= OnNativeViewChanged;
+		}
+
+		protected void OnNativeViewChanged(object? sender, EventArgs e)
+		{
+			if (sender != NativeView)
+				return;
+
+			NativeView?.Entry.OnTextChanged(VirtualView);
+		}
+
+		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.Entry.UpdateText(searchBar);
+		}
+
+		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.Entry.UpdatePlaceholder(searchBar);
+
+		}
+
+		public static void MapIsReadOnly(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.Entry.UpdateIsReadOnly(searchBar);
+
+		}
+
+		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.MapFont(handler.NativeView?.Entry, searchBar);
+		}
 
 		[MissingMapper]
-		public static void MapPlaceholder(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
-		public static void MapHorizontalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
-		public static void MapFont(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
-		public static void MapCharacterSpacing(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
-		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
-
-		[MissingMapper]
-		public static void MapMaxLength(IViewHandler handler, ISearchBar searchBar) { }
-
-		[MissingMapper]
-		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
 	}
+
 }

@@ -1,4 +1,5 @@
-﻿using Gtk;
+﻿using System;
+using Gtk;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -6,8 +7,35 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override Scale CreateNativeView()
 		{
-			var adjustment = new Adjustment(0, 0, 1, 1, 1, 1);
-			return new Scale(Orientation.Horizontal, adjustment);
+			return new Scale(Orientation.Horizontal,0,1,.1);
+		}
+
+		protected override void ConnectHandler(Scale nativeView)
+		{
+			base.ConnectHandler(nativeView);
+			
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+
+			nativeView.ValueChanged += OnNativeViewValueChanged;
+		}
+
+		protected override void DisconnectHandler(Scale nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+			
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+
+			nativeView.ValueChanged -= OnNativeViewValueChanged;
+
+		}
+
+		void OnNativeViewValueChanged(object? sender, EventArgs e)
+		{
+			if (sender is not Scale nativeView || VirtualView is not {} virtualView) 
+				return;
+			
+			virtualView.Value = nativeView.Value;
+			
 		}
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)

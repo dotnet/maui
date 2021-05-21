@@ -2,9 +2,9 @@
 
 namespace Microsoft.Maui
 {
-	public class EmbeddedFontLoader : IEmbeddedFontLoader
+	public partial class EmbeddedFontLoader 
 	{
-		public (bool success, string? filePath) LoadFont(EmbeddedFont font)
+		public string? LoadFont(EmbeddedFont font)
 		{
 			throw new NotImplementedException();
 		}

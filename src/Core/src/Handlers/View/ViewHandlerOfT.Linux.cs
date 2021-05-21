@@ -13,22 +13,9 @@ namespace Microsoft.Maui.Handlers
 
 		Gtk.Widget? INativeViewHandler.NativeView => (Gtk.Widget?)base.NativeView;
 
-		public override void SetFrame(Rectangle rect)
+		public override void NativeArrange(Rectangle rect)
 		{
-			var nativeView = NativeView;
-
-			if (nativeView == null)
-				return;
-
-			if (rect.IsEmpty)
-				return;
-
-			if (rect != nativeView.Allocation.ToRectangle())
-			{
-				nativeView.SizeAllocate(rect.ToNative());
-				nativeView.QueueResize();
-			}
-
+			NativeView?.Arrange(rect);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -47,8 +34,12 @@ namespace Microsoft.Maui.Handlers
 
 		public void MapFont(ITextStyle textStyle)
 		{
-			var nativeView = NativeView;
+			MapFont(NativeView, textStyle);
 
+		}
+
+		public void MapFont(Gtk.Widget? nativeView, ITextStyle textStyle)
+		{
 			if (nativeView == null)
 				return;
 

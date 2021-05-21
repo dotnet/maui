@@ -82,10 +82,11 @@ namespace Microsoft.Maui
 
 		Widget CreateRootContainer(Widget nativePage)
 		{
-			var b = new VBox
+			var b = new Box(Orientation.Vertical, 0)
 			{
 				Expand = true,
 			};
+
 			b.PackStart(nativePage, true, true, 0);
 
 			return b;
@@ -108,10 +109,9 @@ namespace Microsoft.Maui
 
 			var activationState = new ActivationState(mauiContext);
 			var window = Application.CreateWindow(activationState);
-			window.MauiContext = mauiContext;
 
-			var content = (window.Page as IView) ?? window.Page.View;
-			var nativeContent = content.ToNative(window.MauiContext);
+			var content = window.View;
+			var nativeContent = content.ToNative(mauiContext);
 
 			var canvas = TopContainerOverride?.Invoke(nativeContent) ?? CreateRootContainer(nativeContent);
 #if DEBUG

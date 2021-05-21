@@ -27,11 +27,9 @@ namespace Microsoft.Maui
 
 			var activationState = new ActivationState(mauiContext);
 			var window = Application.CreateWindow(activationState);
-			window.MauiContext = mauiContext;
+			var content = window.View;
 
-			var content = (window.Page as IView) ?? window.Page.View;
-
-			Add(content.ToNative(window.MauiContext));
+			Add(content.ToNative(mauiContext));
 			Child.ShowAll();
 		}
 

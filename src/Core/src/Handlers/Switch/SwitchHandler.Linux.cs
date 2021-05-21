@@ -9,9 +9,9 @@ namespace Microsoft.Maui.Handlers
 			return new Switch();
 		}
 
-		public static void MapIsToggled(SwitchHandler handler, ISwitch view)
+		public static void MapIsOn(SwitchHandler handler, ISwitch view)
 		{
-			handler.NativeView?.UpdateIsToggled(view);
+			handler.NativeView?.UpdateIsOn(view);
 		}
 
 		[MissingMapper]

@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
 
-﻿namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextBox>
 	{

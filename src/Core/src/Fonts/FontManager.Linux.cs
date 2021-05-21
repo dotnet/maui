@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
 using Pango;
 
@@ -67,7 +68,7 @@ namespace Microsoft.Maui
 
 		Pango.Context SystemContext => _systemContext ??= Gdk.PangoHelper.ContextGet();
 
-		public FontManager(IFontRegistrar fontRegistrar)
+		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
 		{
 			_fontRegistrar = fontRegistrar;
 		}
@@ -83,36 +84,12 @@ namespace Microsoft.Maui
 
 		public double DefaultFontSize => _defaultFontSize ??= DefaultFontFamily?.GetSize() ?? 0;
 
-		public FontDescription GetFontFamily(Font font) => 
+		public FontDescription GetFontFamily(Font font) =>
 			font == default ? SystemContext.FontDescription : font.ToFontDescription();
 
 		public double GetFontSize(Font font)
 		{
-			if (font.UseNamedSize)
-				return GetFontSize(font.NamedSize);
-
 			return font.FontSize;
-		}
-
-		public double GetFontSize(NamedSize namedSize)
-		{
-			// TODO: Hmm, maybe we need to revisit this, since we no longer support Windows Phone OR WinRT.
-			// These are values pulled from the mapped sizes on Windows Phone, WinRT has no equivalent sizes, only intents.
-
-			return namedSize switch
-			{
-				NamedSize.Default => DefaultFontSize,
-				NamedSize.Micro => 15.667,
-				NamedSize.Small => 18.667,
-				NamedSize.Medium => 22.667,
-				NamedSize.Large => 32,
-				NamedSize.Body => 14,
-				NamedSize.Caption => 12,
-				NamedSize.Header => 46,
-				NamedSize.Subtitle => 20,
-				NamedSize.Title => 24,
-				_ => throw new ArgumentOutOfRangeException(nameof(namedSize)),
-			};
 		}
 
 		private IEnumerable<(Pango.FontFamily family, Pango.FontDescription description)> GetAvailableFamilyFaces(Pango.FontFamily family)
@@ -136,9 +113,8 @@ namespace Microsoft.Maui
 			if (fontFamilies != null)
 			{
 				styles.AddRange(fontFamilies.SelectMany(GetAvailableFamilyFaces).Select(font => font.description)
-				   .OrderBy(d=>d.Family));
+				   .OrderBy(d => d.Family));
 			}
-
 
 			return styles.ToArray();
 		}

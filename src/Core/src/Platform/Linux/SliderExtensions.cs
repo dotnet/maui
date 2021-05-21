@@ -4,7 +4,7 @@ namespace Microsoft.Maui
 {
 	public static class SliderExtensions
 	{
-		public static void UpdateRange(this Scale nativeSlider, ISlider slider)
+		public static void UpdateRange(this Range nativeSlider, IRange slider)
 		{
 			var minimum = slider.Minimum;
 			var maximum = slider.Maximum;
@@ -12,9 +12,9 @@ namespace Microsoft.Maui
 			nativeSlider.SetRange(minimum, maximum);
 		}
 
-		public static void UpdateValue(this Scale nativeSlider, ISlider slider)
+		public static void UpdateValue(this Range nativeSlider, IRange slider)
 		{
-			nativeSlider.Value = (float)slider.Value;
+			nativeSlider.Value = slider.Value;
 		}
 	}
 }

@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPadding(ButtonHandler handler, IButton button)
 		{
-			handler.NativeView.WithMargin(button.Padding);
+			handler.NativeView.WithPadding(button.Padding);
 		}
 
 		void OnButtonPressEvent(object? o, ButtonPressEventArgs args)

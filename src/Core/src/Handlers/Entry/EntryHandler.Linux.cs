@@ -1,4 +1,5 @@
-﻿using Gtk;
+﻿using System;
+using Gtk;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -9,6 +10,24 @@ namespace Microsoft.Maui.Handlers
 		protected override Entry CreateNativeView()
 		{
 			return new();
+		}
+
+		protected override void ConnectHandler(Entry nativeView)
+		{
+			nativeView.Changed += OnNativeViewChanged;
+		}
+
+		protected override void DisconnectHandler(Entry nativeView)
+		{
+			nativeView.Changed -= OnNativeViewChanged;
+		}
+
+		protected void OnNativeViewChanged(object? sender, EventArgs e)
+		{
+			if (sender != NativeView)
+				return;
+
+			NativeView?.OnTextChanged(VirtualView);
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry)
@@ -44,14 +63,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
-			if (handler.NativeView is { } nativeView)
-				nativeView.PlaceholderText = entry.Placeholder;
+			handler.NativeView?.UpdatePlaceholder(entry);
 		}
 
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
 		{
-			if (handler.NativeView is { } nativeView)
-				nativeView.IsEditable = entry.IsReadOnly;
+			handler.NativeView?.UpdateIsReadOnly(entry);
 		}
 
 		public static void MapFont(EntryHandler handler, IEntry entry)
