@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
@@ -9,7 +10,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public static class AppHostBuilderExtensions
 	{
-		public static IAppHostBuilder UseFormsCompatibility(this IAppHostBuilder builder, bool registerRenderers = true)
+		public static IAppHostBuilder UseFormsCompatibility(
+			this IAppHostBuilder builder,
+			bool registerRenderers = true)
 		{
 			// TODO: this hideousness is just until the dynamic handler registration is merged
 			FormsCompatBuilder? compatBuilder = null;
@@ -87,6 +90,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var options = new InitializationOptions(MauiWinUIApplication.Current.LaunchActivatedEventArgs);
 #endif
 
+#if __ANDROID__ || __IOS__ || WINDOWS
+
 			options.Flags |= InitializationFlags.SkipRenderers;
 
 			Forms.Init(options);
@@ -107,6 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 						_handlers?.AddHandler(controlType, typeof(RendererToHandlerShim));
 					});
 			}
+#endif
 
 			// register renderer with old registrar so it can get shimmed
 			foreach (var (control, renderer) in PendingRenderers)
