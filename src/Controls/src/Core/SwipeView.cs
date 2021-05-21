@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls
 {
-	[ContentProperty("Content")]
+	[ContentProperty(nameof(Content))]
 	public class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController
 	{
 		readonly Lazy<PlatformConfigurationRegistry<SwipeView>> _platformConfigurationRegistry;

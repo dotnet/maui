@@ -56,10 +56,9 @@
   <PropertyGroup>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>Microsoft</Authors>
-    <Owners>microsoft</Owners>
     <NeutralLanguage>en</NeutralLanguage>
     <RepositoryUrl>https://github.com/dotnet/maui.git</RepositoryUrl>
-    <ProjectUrl>https://github.com/dotnet/maui</ProjectUrl>
+    <PackageProjectUrl>https://github.com/dotnet/maui</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageVersion>0.0.1-alpha1</PackageVersion>

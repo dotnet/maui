@@ -50,25 +50,44 @@ namespace Microsoft.Maui.Layouts
 			IView[] _children;
 			Cell[] _cells { get; }
 
-			readonly Dictionary<SpanKey, Span> _spans = new Dictionary<SpanKey, Span>();
+			readonly Dictionary<SpanKey, Span> _spans = new();
 
 			public GridStructure(IGridLayout grid, double widthConstraint, double heightConstraint)
 			{
 				_grid = grid;
 				_gridWidthConstraint = widthConstraint;
 				_gridHeightConstraint = heightConstraint;
-				_rows = new Row[_grid.RowDefinitions.Count];
 
-				for (int n = 0; n < _grid.RowDefinitions.Count; n++)
+				if (_grid.RowDefinitions.Count == 0)
 				{
-					_rows[n] = new Row(_grid.RowDefinitions[n]);
+					// Since no rows are specified, we'll create an implied row 0 
+					_rows = new Row[1];
+					_rows[0] = new Row(new ImpliedRow());
+				}
+				else
+				{
+					_rows = new Row[_grid.RowDefinitions.Count];
+
+					for (int n = 0; n < _grid.RowDefinitions.Count; n++)
+					{
+						_rows[n] = new Row(_grid.RowDefinitions[n]);
+					}
 				}
 
-				_columns = new Column[_grid.ColumnDefinitions.Count];
-
-				for (int n = 0; n < _grid.ColumnDefinitions.Count; n++)
+				if (_grid.ColumnDefinitions.Count == 0)
 				{
-					_columns[n] = new Column(_grid.ColumnDefinitions[n]);
+					// Since no columns are specified, we'll create an implied column 0 
+					_columns = new Column[1];
+					_columns[0] = new Column(new ImpliedColumn());
+				}
+				else
+				{
+					_columns = new Column[_grid.ColumnDefinitions.Count];
+
+					for (int n = 0; n < _grid.ColumnDefinitions.Count; n++)
+					{
+						_columns[n] = new Column(_grid.ColumnDefinitions[n]);
+					}
 				}
 
 				_children = _grid.Children.Where(child => child.Visibility != Visibility.Collapsed).ToArray();
@@ -536,6 +555,19 @@ namespace Microsoft.Maui.Layouts
 					Size = rowDefinition.Height.Value;
 				}
 			}
+		}
+
+		// If the IGridLayout doesn't have any rows/columns defined, the manager will use an implied single row or column
+		// in their place. 
+
+		class ImpliedRow : IGridRowDefinition
+		{
+			public GridLength Height => GridLength.Star;
+		}
+
+		class ImpliedColumn : IGridColumnDefinition
+		{
+			public GridLength Width => GridLength.Star;
 		}
 	}
 }

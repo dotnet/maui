@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		public Issue8551ModalPage()
 		{
-			BackgroundColor = Color.FromHex("700000FF");
+			BackgroundColor = Color.FromArgb("700000FF");
 
 			var layout = new Grid();
 

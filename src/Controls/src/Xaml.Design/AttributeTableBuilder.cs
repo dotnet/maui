@@ -1,60 +1,38 @@
 using System;
 using System.ComponentModel;
 using System.Windows.Markup;
-using Microsoft.Windows.Design;
-using Microsoft.Windows.Design.Metadata;
+using Microsoft.VisualStudio.DesignTools.Extensibility;
+using Microsoft.VisualStudio.DesignTools.Extensibility.Metadata;
 
 namespace Microsoft.Maui.Controls.Xaml.Design
 {
-	class AttributeTableBuilder : Microsoft.Windows.Design.Metadata.AttributeTableBuilder
+	class AttributeTableBuilder : Microsoft.VisualStudio.DesignTools.Extensibility.Metadata.AttributeTableBuilder
 	{
 		public AttributeTableBuilder()
 		{
-			AddCustomAttributes(typeof(ArrayExtension).Assembly,
+			AddAssemblyCustomAttributes("Microsoft.Maui.Controls.Xaml",
 				new XmlnsSupportsValidationAttribute("http://schemas.microsoft.com/dotnet/2021/maui", false));
 
-			AddCallback(typeof(OnPlatformExtension), builder => builder.AddCustomAttributes(new Attribute[] {
-				new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),
-			}));
-			AddCallback(typeof(OnIdiomExtension), builder => builder.AddCustomAttributes(new Attribute[] {
-				new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),
-			}));
-
-			Type typeFromHandle = typeof(AppThemeBindingExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(ArrayExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(BindingExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(DataTemplateExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(DynamicResourceExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(FontImageExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(NullExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(OnIdiomExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(OnPlatformExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(ReferenceExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(RelativeSourceExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(StaticExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(StaticResourceExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(TemplateBindingExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
-			typeFromHandle = typeof(TypeExtension);
-			AddTypeAttributes(typeFromHandle, new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.ArrayExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.BindingExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.DataTemplateExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.DynamicResourceExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.FontImageExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.NullExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.OnIdiomExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.OnPlatformExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.ReferenceExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.RelativeSourceExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.StaticExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.StaticResourceExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.TemplateBindingExtension", new MarkupExtensionReturnTypeAttribute());
+			AddTypeAttributes("Microsoft.Maui.Controls.Xaml.TypeExtension", new MarkupExtensionReturnTypeAttribute());
 		}
 
-		private void AddTypeAttributes(Type type, params Attribute[] attribs)
+		private void AddTypeAttributes(string typeName, params Attribute[] attribs)
 		{
-			AddCallback(type, delegate (AttributeCallbackBuilder builder)
+			AddCallback(typeName, delegate (AttributeCallbackBuilder builder)
 			{
 				builder.AddCustomAttributes(attribs);
 			});

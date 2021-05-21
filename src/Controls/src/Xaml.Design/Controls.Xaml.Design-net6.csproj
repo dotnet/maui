@@ -1,24 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>net472</TargetFrameworks>
-		<AssemblyName>Microsoft.Maui.Controls.Xaml.Design</AssemblyName>
+		<AssemblyName>Microsoft.Maui.Controls.Xaml.DesignTools</AssemblyName>
 		<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
-		<Packable>False</Packable>
+		<IsPackable>False</IsPackable>
 		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' ">
-		<Reference Include="Microsoft.Windows.Design.Extensibility, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-				<SpecificVersion>True</SpecificVersion>
-				<HintPath>$(MSBuildToolsPath)\..\..\..\Common7\IDE\PublicAssemblies\Microsoft.Windows.Design.Extensibility.dll</HintPath>
-		</Reference>
 		<Reference Include="System.Xaml" />
 		<Compile Include="AttributeTableBuilder.cs" />
 		<Compile Include="Properties\AssemblyInfo.cs" />
 		<Compile Include="RegisterMetadata.cs" />
-		<ProjectReference Include="..\Core\Controls.Core-net6.csproj" />
-		<ProjectReference Include="..\Xaml\Controls.Xaml-net6.csproj">
-			<GenerateDesignMetadata>true</GenerateDesignMetadata>
-			<Private>False</Private>
-		</ProjectReference>
+    <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility">
+      <Version>16.9.31025.104</Version>
+    </PackageReference>
 	</ItemGroup>
 </Project>
