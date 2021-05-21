@@ -8,5 +8,10 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 		{
 			return (layoutHandler.NativeView as LayoutViewGroup).ChildCount;
 		}
+
+		object GetNativeParent(INativeViewHandler layoutHandler) 
+		{
+			return layoutHandler.NativeView?.Parent;
+		}
 	}
 }

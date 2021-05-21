@@ -57,5 +57,34 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			var handler = await CreateHandlerAsync(layout);
 			Assert.Equal(handler, layout.Handler);
 		}
+
+
+		[Fact]
+		public async Task SwitchHandlerInMiddleOfTree()
+		{
+			var root = new LayoutStub();
+			var middle = new LayoutStub();
+			var leaf = new SliderStub();
+
+			root.Add(middle);
+			middle.Add(leaf);
+
+			var rootHandler = await CreateHandlerAsync(root);
+			var middleHandler = middle.Handler;
+
+			Assert.Same(rootHandler.NativeView, GetNativeParent(middleHandler as INativeViewHandler));
+			Assert.Same(middleHandler.NativeView, GetNativeParent(leaf.Handler as INativeViewHandler));
+
+			// Change the middle handler
+			middle.Handler = null;
+			middleHandler = await CreateHandlerAsync(middle);
+			
+			// Check our assumptions
+			Assert.Equal(1, GetNativeChildCount(rootHandler));
+			Assert.Equal(1, GetNativeChildCount(middleHandler as LayoutHandler));
+
+			Assert.Same(rootHandler.NativeView, GetNativeParent(middleHandler as INativeViewHandler));
+			Assert.Same(middleHandler.NativeView, GetNativeParent(leaf.Handler as INativeViewHandler));
+		}
 	}
 }
