@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var scrollView =
 				new ScrollView
 				{
-					BackgroundColor = Color.FromHex("#dae1eb"),
+					BackgroundColor = Color.FromArgb("#dae1eb"),
 					Content =
 					new StackLayout
 					{
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Orientation = StackOrientation.Vertical,
 						Children = {
 						new Button {
-							BackgroundColor = Color.FromHex ("#006599"),
+							BackgroundColor = Color.FromArgb ("#006599"),
 							TextColor = Colors.White,
 							Text = "Subscribe with LinkedIn",
 							WidthRequest = 262,
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 							HorizontalOptions = LayoutOptions.Center,
 						},
 						new Button {
-							BackgroundColor = Color.FromHex ("#05addc"),
+							BackgroundColor = Color.FromArgb ("#05addc"),
 							TextColor = Colors.White,
 							Text = "Create an account",
 							WidthRequest = 262,

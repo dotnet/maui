@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 	public class Issue9694 : TestContentPage
 	{
-		readonly Color _customColor = Color.FromHex("#9999CCDD");
+		readonly Color _customColor = Color.FromArgb("#9999CCDD");
 		readonly Color _newCustomColor = Colors.Purple;
 
 		public Issue9694()

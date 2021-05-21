@@ -1,19 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>net472</TargetFrameworks>
-		<AssemblyName>Microsoft.Maui.Controls.Design</AssemblyName>
+		<AssemblyName>Microsoft.Maui.Controls.DesignTools</AssemblyName>
 		<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
-		<Packable>False</Packable>
+		<IsPackable>False</IsPackable>
 		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' ">
-		<Reference Include="Microsoft.Windows.Design.Extensibility, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-			<SpecificVersion>True</SpecificVersion>
-			<HintPath>$(MSBuildToolsPath)\..\..\..\Common7\IDE\PublicAssemblies\Microsoft.Windows.Design.Extensibility.dll</HintPath>
-		</Reference>
 		<Reference Include="System.Xaml" />
 		<Compile Include="AttributeTableBuilder.cs" />
-		<Compile Include="NamedColorsConverter.cs" />
+		<Compile Include="ColorDesignTypeConverter.cs" />
 		<Compile Include="EnumConverter.cs" />
 		<Compile Include="NonExclusiveEnumConverter.cs" />
 		<Compile Include="Properties\AssemblyInfo.cs" />
@@ -22,11 +18,13 @@
 		<Compile Include="ItemsLayoutDesignTypeConverter.cs" />
 		<Compile Include="KeyboardDesignTypeConverter.cs" />
 		<Compile Include="EasingDesignTypeConverter.cs" />
-		<ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
-		<ProjectReference Include="..\Core\Controls.Core-net6.csproj">
-			<GenerateDesignMetadata>true</GenerateDesignMetadata>
-			<Private>False</Private>
-		</ProjectReference>
+		<Compile Include="KnownValuesDesignTypeConverter.cs" />
+		<Compile Include="LayoutOptionsDesignTypeConverter.cs" />
+		<Compile Include="LinearItemsLayoutDesignTypeConverter.cs" />
+		<Compile Include="FontSizeDesignTypeConverter.cs" />
+		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility">
+			<Version>16.9.31025.104</Version>
+		</PackageReference>
 	</ItemGroup>
 
 	<!-- The IDE will look for a top level assembly resource called 'Microsoft.Maui.toolbox.xml' to -->
