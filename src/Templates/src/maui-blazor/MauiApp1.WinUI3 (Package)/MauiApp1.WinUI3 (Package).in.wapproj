@@ -118,5 +118,20 @@
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <Target Name="RemoveUnusedAppXTargets" BeforeTargets="_GenerateAppxPackageRecipeFile">
+    <ItemGroup>
+      <_AppxItemsToRemove Include="@(AppxPackagePayload)" Condition=" $([System.String]::Copy(%(AppxPackagePayload.Identity)).Contains('Microsoft.AspNetCore.Components.WebView.Maui')) " />
+      <AppxPackagePayload Remove="@(_AppxItemsToRemove)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="RemoveOutOfDateSourceItemsTargets" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory">
+    <ItemGroup>
+      <_SourceItemsToCopyToRemove Include="@(_SourceItemsToCopyToOutputDirectory)" Condition=" $([System.String]::Copy(%(_SourceItemsToCopyToOutputDirectory.Identity)).Contains('Microsoft.AspNetCore.Components.WebView.Maui')) " />
+      <_SourceItemsToCopyToOutputDirectory Remove="@(_SourceItemsToCopyToRemove)" />
+    </ItemGroup>
+  </Target>
+
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
 </Project>
