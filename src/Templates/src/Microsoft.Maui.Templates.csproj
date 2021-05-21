@@ -5,9 +5,10 @@
     <PackageType>Template</PackageType>
     <PackageId>Microsoft.Maui.Templates</PackageId>
     <PackageVersion>6.0.100-preview.4.479</PackageVersion>
-    <Title>.NET Maui Templates</Title>
+    <MicrosoftExtensionsPackageVersion>6.0.0-preview.4.21227.6</MicrosoftExtensionsPackageVersion>
+    <Title>.NET MAUI Templates</Title>
     <Authors>Microsoft</Authors>
-    <Description>Templates for .NET Maui.</Description>
+    <Description>Templates for .NET MAUI.</Description>
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
@@ -22,6 +23,9 @@
     <_TemplateFile Include="maui-mobile/MauiApp1/MauiApp1.in.csproj" />
     <_TemplateFile Include="maui-mobile/MauiApp1.WinUI3/MauiApp1.WinUI3.in.csproj" />
     <_TemplateFile Include="maui-mobile/MauiApp1.WinUI3 (Package)/MauiApp1.WinUI3 (Package).in.wapproj" />
+    <_TemplateFile Include="maui-blazor/MauiApp1/MauiApp1.in.csproj" />
+    <_TemplateFile Include="maui-blazor/MauiApp1.WinUI3/MauiApp1.WinUI3.in.csproj" />
+    <_TemplateFile Include="maui-blazor/MauiApp1.WinUI3 (Package)/MauiApp1.WinUI3 (Package).in.wapproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,7 +35,7 @@
 
   <ItemGroup>
     <_TemplateFile Update="@(_TemplateFile)">
-      <NewFileName>$(IntermediateOutputPath)\$([System.IO.Path]::GetFileName('%(Identity)').Replace('.in',''))</NewFileName>
+      <NewFileName>$(IntermediateOutputPath)\$([System.IO.Path]::GetDirectoryName('%(Identity)'))\$([System.IO.Path]::GetFileName('%(Identity)').Replace('.in',''))</NewFileName>
       <ProjDirName>$([System.IO.Path]::GetDirectoryName('%(Identity)'))</ProjDirName>
     </_TemplateFile>
     
@@ -43,7 +47,7 @@
   <Target Name="_GenerateTemplateFile"
       BeforeTargets="Build"
       DependsOnTargets="SetVersions"
-      Inputs="$(MSBuildProjectFile);$(_TemplateFile);$(_SolutionFile)"
+      Inputs="$(MSBuildProjectFile);@(_TemplateFile);$(_SolutionFile)"
       Outputs="%(_TemplateFile.NewFileName);$(_SolutionFileDest)">
     <Copy
         SourceFiles="@(_TemplateFile)"
@@ -58,6 +62,11 @@
         XmlInputPath="%(_TemplateFile.NewFileName)"
         Value="$(PackageVersion)"
         Query="/Project/ItemGroup/PackageReference[@Version='MAUI_VERSION']/@Version"
+    />
+    <XmlPoke
+        XmlInputPath="%(_TemplateFile.NewFileName)"
+        Value="$(MicrosoftExtensionsPackageVersion)"
+        Query="/Project/ItemGroup/PackageReference[@Version='MICROSOFT_EXTENSIONS_VERSION']/@Version"
     />
     <ItemGroup>
       <Content Include="%(_TemplateFile.NewFileName)" PackagePath="content/%(_TemplateFile.ProjDirName)" />
