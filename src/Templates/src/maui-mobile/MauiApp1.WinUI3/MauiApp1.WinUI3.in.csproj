@@ -9,7 +9,7 @@
 		<Platforms>x86;x64;arm64</Platforms>
 		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
 		<EnableDefaultPageItems>False</EnableDefaultPageItems>
-		<EnableDefaultApplicationDefintition>False</EnableDefaultApplicationDefintition>
+		<EnableDefaultApplicationDefinition>False</EnableDefaultApplicationDefinition>
 		<StartupObject>MauiApp1.WinUI.Program</StartupObject>
 	</PropertyGroup>
 

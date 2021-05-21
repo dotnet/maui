@@ -3,8 +3,8 @@
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0'">
     <VisualStudioVersion>15.0</VisualStudioVersion>
   </PropertyGroup>
-  <PropertyGroup>
-    
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DebuggerType>ManagedOnly</DebuggerType>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x86">

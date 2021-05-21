@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageType>Template</PackageType>
     <PackageId>Microsoft.Maui.Templates</PackageId>
-    <PackageVersion>6.0.100-preview.4.479</PackageVersion>
+    <PackageVersion>6.0.100-preview.4.617</PackageVersion>
     <MicrosoftExtensionsPackageVersion>6.0.0-preview.4.21227.6</MicrosoftExtensionsPackageVersion>
     <Title>.NET MAUI Templates</Title>
     <Authors>Microsoft</Authors>

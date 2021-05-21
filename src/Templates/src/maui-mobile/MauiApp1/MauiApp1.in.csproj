@@ -1,48 +1,53 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <!-- iOS, Android, MacCatalyst -->
-    <TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
-    <OutputType>Exe</OutputType>
-    <SingleProject>true</SingleProject>
-    <RootNamespace>MauiApp1</RootNamespace>
+	<PropertyGroup>
+		<!-- iOS, Android, MacCatalyst -->
+		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
+		<OutputType>Exe</OutputType>
+		<SingleProject>true</SingleProject>
+		<RootNamespace>MauiApp1</RootNamespace>
 
-    <!-- Display name -->
-    <ApplicationTitle>MauiApp1</ApplicationTitle>
+		<!-- Display name -->
+		<ApplicationTitle>MauiApp1</ApplicationTitle>
 
-    <!-- App Identifier -->
-    <ApplicationId>com.companyname.MauiApp1</ApplicationId>
+		<!-- App Identifier -->
+		<ApplicationId>com.companyname.MauiApp1</ApplicationId>
 
-    <!-- Versions -->
-    <ApplicationVersion>1.0</ApplicationVersion>
-    <AndroidVersionCode>1</AndroidVersionCode>
-  </PropertyGroup>
+		<!-- Versions -->
+		<ApplicationVersion>1.0</ApplicationVersion>
+		<AndroidVersionCode>1</AndroidVersionCode>
 
-  <ItemGroup>
-    <!-- App Icon -->
-    <MauiImage
-      Include="Resources\appicon.svg"
-      ForegroundFile="Resources\appiconfg.svg"
-      IsAppIcon="true" />
+		<UseInterpreter Condition="'$(TargetFramework)' == 'net6.0-android'">True</UseInterpreter>
+	</PropertyGroup>
 
-    <!-- Splash Screen -->
-    <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />
+	<ItemGroup>
+		<!-- App Icon -->
+		<MauiImage
+			Include="Resources\appicon.svg"
+			ForegroundFile="Resources\appiconfg.svg"
+			IsAppIcon="true" />
 
-    <!-- Images -->
-    <MauiImage Include="Resources\Images\*" />
+		<!-- Splash Screen -->
+		<MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />
 
-    <!-- Custom Fonts -->
-    <MauiFont Include="Resources\Fonts\*" />
-  </ItemGroup>
+		<!-- Images -->
+		<MauiImage Include="Resources\Images\*" />
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
-  </ItemGroup>
+		<!-- Custom Fonts -->
+		<MauiFont Include="Resources\Fonts\*" />
+	</ItemGroup>
 
-  <PropertyGroup>
-    <InvariantGlobalization Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">true</InvariantGlobalization>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
-  </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<InvariantGlobalization Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">true</InvariantGlobalization>
+		<RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>
+		<RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
+	</PropertyGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0-android'">
+		<AndroidEnvironment Include="Android\AndroidEnvironment.txt" />
+	</ItemGroup>
 
 </Project>
