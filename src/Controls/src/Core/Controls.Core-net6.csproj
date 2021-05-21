@@ -36,10 +36,10 @@
   <Target Name="_MauiPackXamlDesignAssemblies">
     <ItemGroup>
       <BuildOutputInPackage Include="..\Core.Design\bin\$(Configuration)\net472\Microsoft.Maui.Controls.DesignTools.dll">
-        <TargetPath>Design</TargetPath>
+        <TargetPath>Design\Microsoft.Maui.Controls.DesignTools.dll</TargetPath>
       </BuildOutputInPackage>
       <BuildOutputInPackage Include="..\Core.Design\bin\$(Configuration)\net472\Microsoft.Maui.Controls.DesignTools.pdb">
-        <TargetPath>Design</TargetPath>
+        <TargetPath>Design\Microsoft.Maui.Controls.DesignTools.pdb</TargetPath>
       </BuildOutputInPackage>
     </ItemGroup>
   </Target>
