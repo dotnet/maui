@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <AssemblyName>Microsoft.Maui.$(MSBuildProjectName)</AssemblyName>
-    <RootNamespace>Microsoft.Maui.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Controls.SourceGen</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Controls.SourceGen</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,8 +23,8 @@
 
   <Target Name="GetDependencyTargetPaths">
     <ItemGroup>
-      <TargetPathWithTargetPlatformMoniker Include="$(MSBuildThisFileDirectory)\..\Xaml\bin\Debug\netstandard2.0\Microsoft.Maui.Controls.Xaml.dll" IncludeRuntimeDependency="false" />
-      <TargetPathWithTargetPlatformMoniker Include="$(MSBuildThisFileDirectory)\..\Core\bin\Debug\netstandard2.0\Microsoft.Maui.Controls.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(MSBuildThisFileDirectory)\..\Xaml\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Xaml.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(MSBuildThisFileDirectory)\..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.dll" IncludeRuntimeDependency="false" />
     </ItemGroup>
   </Target>
 

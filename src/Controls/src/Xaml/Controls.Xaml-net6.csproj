@@ -3,8 +3,8 @@
 		<TargetFrameworks>netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
 		<AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
 		<RootNamespace>Microsoft.Maui.Controls.Xaml</RootNamespace>
-		<NoWarn>$(NoWarn);CA2200;NU5128</NoWarn>
 		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
+		<NoWarn>$(NoWarn);CA2200;NU5128</NoWarn>
 		<PackageId>Microsoft.Maui.Controls.Xaml</PackageId>
 	</PropertyGroup>
 
@@ -30,9 +30,12 @@
 		</PropertyGroup>
 	</Target>
 
-	<PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' ">
-		<TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);_MauiPackXamlDesignAssemblies</TargetsForTfmSpecificBuildOutput>
-	</PropertyGroup>
+    <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
+	<TargetsForTfmSpecificBuildOutput>
+	    $(TargetsForTfmSpecificBuildOutput);
+	    _MauiPackXamlDesignAssemblies
+	</TargetsForTfmSpecificBuildOutput>
+    </PropertyGroup>
 
 	<Target Name="_MauiPackXamlDesignAssemblies">
 		<ItemGroup>

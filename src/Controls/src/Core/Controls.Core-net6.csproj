@@ -28,7 +28,7 @@
     </PropertyGroup>
   </Target>
 
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);
       _MauiPackXamlDesignAssemblies
@@ -46,11 +46,4 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_MauiPackSourceGenerators">
-    <ItemGroup>
-      <TfmSpecificPackageFile Include="..\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.dll">
-        <PackagePath>analyzers/dotnet/cs</PackagePath>
-      </TfmSpecificPackageFile>
-    </ItemGroup>
-  </Target>
 </Project>
