@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31220.234
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiApp1", "MauiApp1\MauiApp1.csproj", "{07CD65EF-6238-4365-AF5D-F6D433967F48}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiApp1.WinUI3", "MauiApp1.WinUI3\MauiApp1.WinUI3.csproj", "{202C61B5-A2D9-4817-8020-731D9F855561}"
 EndProject
 Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "MauiApp1.WinUI3 (Package)", "MauiApp1.WinUI3 (Package)\MauiApp1.WinUI3 (Package).wapproj", "{A88FCF8C-EC35-4623-B126-C591EEF99C70}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiApp1", "MauiApp1\MauiApp1.csproj", "{07CD65EF-6238-4365-AF5D-F6D433967F48}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
