@@ -269,7 +269,11 @@ namespace Microsoft.Maui.Graphics.Native
 				_shader = null;
 			}
 
-			if (paint is LinearGradientPaint linearGradientPaint)
+			if (paint is SolidPaint solidPaint)
+			{
+				FillColor = solidPaint.Color;
+			}
+			else if (paint is LinearGradientPaint linearGradientPaint)
 			{
 				var colors = new int[linearGradientPaint.GradientStops.Length];
 				var stops = new float[colors.Length];
