@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Core.Design
 
 			try
 			{
-				return Graphics.Color.FromHex(strVal.TrimStart('#'));
+				return Graphics.Color.FromArgb(strVal.TrimStart('#'));
 			}
 			catch { }
 
