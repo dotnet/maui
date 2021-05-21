@@ -19,11 +19,8 @@
     <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) == true ">
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\iOS\Compatibility.iOS.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true ">
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Android\Compatibility.Android.csproj" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
   </ItemGroup>
 
   <ItemGroup>
