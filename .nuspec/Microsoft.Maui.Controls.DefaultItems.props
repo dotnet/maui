@@ -1,7 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultXamlItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
-    <EmbeddedResource Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" SubType="Designer" Generator="MSBuild:UpdateDesignTimeXaml" />
+    <MauiXaml Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultCssItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
