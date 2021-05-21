@@ -1,0 +1,110 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Enable Razor files to be visible in Solution Explorer because they are not Content files in .NET MAUI projects -->
+  <ItemGroup>
+    <AvailableItemName Include="RazorComponent"/>
+  </ItemGroup>
+
+  <!-- Prevent Razor files from being packaged as bundle resources in iOS/MacCatalyst targets by declaring them
+       as RazorComponent instead of Content. -->
+  <ItemGroup>
+    <Content Remove="**\*.razor" />
+  </ItemGroup>
+  <ItemGroup>
+    <RazorComponent Include="**\*.razor" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+
+
+  <!-- Targets temporarily remove Content items in the wwwroot folder so that they don't conflict with iOS/MacCatalyst SDK tasks -->
+  <Target Name="HideContentFromBundleResources" BeforeTargets="_CollectBundleResources">
+    <ItemGroup>
+      <!-- Find all files outside the wwwroot folder -->
+      <_NonWWWRootContent Include="@(Content)" Exclude="wwwroot/**/*" />
+      <!-- Create a list of all content that *is* in the wwwroot folder (to preserve ItemGroup metadata) -->
+      <_TemporaryHiddenContent Include="@(Content)" Exclude="@(_NonWWWRootContent)"  />
+      <!-- Temporarily remove the items -->
+      <Content Remove="@(_TemporaryHiddenContent)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="RestoreHiddenContent" AfterTargets="_CollectBundleResources" BeforeTargets="ResolveCurrentProjectStaticWebAssetsInputs">
+    <ItemGroup>
+      <!-- Restore the previously removed Content items -->
+      <Content Include="@(_TemporaryHiddenContent)" />
+    </ItemGroup>
+  </Target>
+
+
+  <!-- Targets for converting Static Web Assets to embedded resources -->
+  <Target Name="CopyStaticWebAssetsToOutputFolder" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="ResolveStaticWebAssetsInputs">
+    <ItemGroup>
+      <AllItemsFullPathWithTargetPath Include="%(StaticWebAsset.Identity)" Condition="'%(StaticWebAsset.SourceType)' != ''">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <TargetPath>$([System.String]::Copy('wwwroot\%(StaticWebAsset.BasePath)\%(StaticWebAsset.RelativePath)').Replace('/','\').Replace('\\\','\').Replace('\\','\'))</TargetPath>
+      </AllItemsFullPathWithTargetPath>
+      <AllItemsFullPathWithTargetPath Include="%(StaticWebAsset.Identity)" Condition="'%(StaticWebAsset.SourceType)' == ''">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <TargetPath>wwwroot\%(StaticWebAsset.RelativePath)</TargetPath>
+      </AllItemsFullPathWithTargetPath>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ConvertToEmbeddedFilesManifestItems" BeforeTargets="AssignTargetPaths" DependsOnTargets="ResolveStaticWebAssetsInputs">
+    <ItemGroup>
+      <!-- Prevent any previously-existing embedded resources from being included in the manifest. We want only
+           StaticWebAssets to be included in the manifest. -->
+      <EmbeddedResource>
+        <ExcludeFromManifest>true</ExcludeFromManifest>
+      </EmbeddedResource>
+
+      <EmbeddedResource Condition="'%(StaticWebAsset.SourceType)' != ''"
+                        Include="%(StaticWebAsset.Identity)"
+                        Link="$([System.String]::Copy('wwwroot\%(StaticWebAsset.BasePath)\%(StaticWebAsset.RelativePath)').Replace('/','\').Replace('\\\','\').Replace('\\','\'))" />
+
+      <EmbeddedResource Condition="'%(StaticWebAsset.SourceType)' == ''"
+                        Include="%(StaticWebAsset.Identity)"
+                        Link="wwwroot\%(StaticWebAsset.RelativePath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="EnsureBundles" BeforeTargets="CoreCompile" DependsOnTargets="BundleScopedCssFiles" />
+
+  <Target Name="_BlazorDesktopReplaceBundle" AfterTargets="_AddGeneratedScopedCssFilesForReference" DependsOnTargets="_ComputeCssBundles">
+    <ItemGroup>
+      <StaticWebAsset Include="@(_AppBundleStaticWebAsset)">
+        <SourceType></SourceType>
+      </StaticWebAsset>
+      <Staticwebasset Remove="@(_ProjectBundleStaticWebAsset)" />
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <GetCurrentProjectStaticWebAssetsDependsOn>
+      $(GetCurrentProjectStaticWebAssets);
+      _BlazorDesktopReplaceBundle2;
+    </GetCurrentProjectStaticWebAssetsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_BlazorDesktopReplaceBundle2" DependsOnTargets="_PrepareForBundling">
+    <ItemGroup>
+      <_AppBundleStaticWebAsset Include="$(_ScopedCssOutputPath)" Condition="Exists('$(_ScopedCssOutputPath)')">
+        <SourceType></SourceType>
+        <SourceId>$(PackageId)</SourceId>
+        <ContentRoot>$(_ScopedCssBundleContentRoot)</ContentRoot>
+        <BasePath>$(_ScopedCssBundleBasePath)</BasePath>
+        <RelativePath>$(PackageId).styles.css</RelativePath>
+      </_AppBundleStaticWebAsset>
+
+      <StaticWebAsset Include="@(_AppBundleStaticWebAsset)">
+        <SourceType></SourceType>
+      </StaticWebAsset>
+
+    </ItemGroup>
+  </Target>
+
+</Project>

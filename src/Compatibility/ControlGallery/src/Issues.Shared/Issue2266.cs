@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			Flyout = new ContentPage
 			{
-				BackgroundColor = Color.FromHex("363636"),
+				BackgroundColor = Color.FromArgb("363636"),
 				Title = "Menu",
 				Content = menuList
 			};

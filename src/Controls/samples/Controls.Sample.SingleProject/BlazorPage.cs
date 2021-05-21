@@ -14,16 +14,14 @@ namespace Maui.Controls.Sample.SingleProject
 	{
 		public BlazorPage()
 		{
-			var serviceCollection = new ServiceCollection();
-			serviceCollection.AddBlazorWebView();
-			//serviceCollection.AddSingleton<AppState>(_appState);
-
 			var bwv = new BlazorWebView
 			{
+				// General properties
 				BackgroundColor = Colors.Orange,
-				Services = serviceCollection.BuildServiceProvider(),
 				HeightRequest = 400,
 				MinimumHeightRequest = 400,
+
+				// BlazorWebView properties
 				HostPage = @"wwwroot/index.html",
 			};
 			bwv.RootComponents.Add(new RootComponent { Selector = "#app", ComponentType = typeof(Main) });

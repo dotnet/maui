@@ -72,6 +72,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.Design-net6",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.Design-net6", "src\Controls\src\Xaml.Design\Controls.Xaml.Design-net6.csproj", "{F9AEE4C0-9E67-4B87-932E-26EDF0FC932A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauiRazorClassLibrarySample", "src\BlazorWebView\samples\MauiRazorClassLibrarySample\MauiRazorClassLibrarySample.csproj", "{4515DAA4-9801-401D-A7A0-38D019B3B19F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -161,6 +163,10 @@ Global
 		{F9AEE4C0-9E67-4B87-932E-26EDF0FC932A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9AEE4C0-9E67-4B87-932E-26EDF0FC932A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F9AEE4C0-9E67-4B87-932E-26EDF0FC932A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4515DAA4-9801-401D-A7A0-38D019B3B19F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4515DAA4-9801-401D-A7A0-38D019B3B19F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4515DAA4-9801-401D-A7A0-38D019B3B19F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4515DAA4-9801-401D-A7A0-38D019B3B19F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -189,6 +195,7 @@ Global
 		{F7F2B379-52CE-4802-9EC9-0D7967B6BFB7} = {1614D1A4-5C3D-4D5B-8C89-426E37A564EF}
 		{F2A419ED-B18E-4075-9969-536C2EC67F82} = {50C758FE-4E10-409A-94F5-A75480960864}
 		{F9AEE4C0-9E67-4B87-932E-26EDF0FC932A} = {50C758FE-4E10-409A-94F5-A75480960864}
+		{4515DAA4-9801-401D-A7A0-38D019B3B19F} = {1614D1A4-5C3D-4D5B-8C89-426E37A564EF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

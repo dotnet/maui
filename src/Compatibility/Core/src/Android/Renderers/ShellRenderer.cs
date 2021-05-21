@@ -343,11 +343,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				AColor color;
 				if (appearance != null)
 				{
-					color = appearance.BackgroundColor.ToAndroid(Color.FromHex("#03A9F4"));
+					color = appearance.BackgroundColor.ToAndroid(Color.FromArgb("#03A9F4"));
 				}
 				else
 				{
-					color = Color.FromHex("#03A9F4").ToAndroid();
+					color = Color.FromArgb("#03A9F4").ToAndroid();
 				}
 
 				if (!(decorView.Background is SplitDrawable splitDrawable) ||
