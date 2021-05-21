@@ -74,11 +74,11 @@ namespace Microsoft.Maui.Graphics.GDI
 				{
 					var jgpEncoder = GetEncoder(Drawing.Imaging.ImageFormat.Jpeg);
 					var myEncoder = Encoder.Quality;
-					var myEncoderParameters = new EncoderParameters(1);
-					var myEncoderParameter = new EncoderParameter(myEncoder, (long) (quality * 100));
-					myEncoderParameters.Param[0] = myEncoderParameter;
-
-					_bitmap.Save(stream, jgpEncoder, myEncoderParameters);
+					using (var myEncoderParameters = new EncoderParameters(1))
+					{
+						myEncoderParameters.Param[0] = new EncoderParameter(myEncoder, (long)(quality * 100));
+						_bitmap.Save(stream, jgpEncoder, myEncoderParameters);
+					}
 				}
 				else
 				{
