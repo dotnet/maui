@@ -28,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task GetImageAsync(string colorHex)
 		{
-			var expectedColor = Color.FromHex(colorHex).ToNative();
+			var expectedColor = Color.FromArgb(colorHex).ToNative();
 
 			var service = new StreamImageSourceService();
 

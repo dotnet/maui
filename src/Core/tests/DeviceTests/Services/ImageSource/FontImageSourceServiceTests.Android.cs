@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task GetDrawableAsync(string colorHex)
 		{
-			var expectedColor = Color.FromHex(colorHex);
+			var expectedColor = Color.FromArgb(colorHex);
 
 			var host = new AppHostBuilder()
 				.ConfigureFonts()
