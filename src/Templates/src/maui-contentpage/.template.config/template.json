@@ -1,0 +1,14 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "David Ortinau",
+    "classifications": [ "Common", "Code" ],
+    "identity": "Maui.ContentPage",
+    "name": ".NET MAUI ContentPage",
+    "shortName": "maui-page",
+    "tags": {
+      "language": "C#",
+      "type": "item"
+    },
+    "sourceName": "NewPage1",
+    "defaultName": "NewPage1"
+  }
