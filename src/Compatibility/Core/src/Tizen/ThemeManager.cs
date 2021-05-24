@@ -11,6 +11,7 @@ using EProgressBar = ElmSharp.ProgressBar;
 using ESize = ElmSharp.Size;
 using ESlider = ElmSharp.Slider;
 using EToolbarItem = ElmSharp.ToolbarItem;
+using Index = ElmSharp.Index;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

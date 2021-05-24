@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		protected void OnLayoutUpdated(object sender, LayoutEventArgs e)
+		protected void OnLayoutUpdated(object? sender, LayoutEventArgs e)
 		{
 			if (VirtualView != null && NativeView != null)
 			{

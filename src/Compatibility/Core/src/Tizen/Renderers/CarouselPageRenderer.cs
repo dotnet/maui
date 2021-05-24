@@ -6,6 +6,7 @@ using EBox = ElmSharp.Box;
 using ELayout = ElmSharp.Layout;
 using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
+using Index = ElmSharp.Index;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

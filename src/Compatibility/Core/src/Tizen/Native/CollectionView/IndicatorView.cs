@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ElmSharp;
+using Index = ElmSharp.Index;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {

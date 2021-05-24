@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapCharacterSpacing(PickerHandler handler, IPicker picker) { }
 
-		void OnLayoutFocused(object sender, EventArgs e)
+		void OnLayoutFocused(object? sender, EventArgs e)
 		{
 			if (NativeView == null)
 				return;
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.FontSize = NativeView.FontSize * 1.5;
 		}
 
-		void OnLayoutUnfocused(object sender, EventArgs e)
+		void OnLayoutUnfocused(object? sender, EventArgs e)
 		{
 			if (NativeView == null)
 				return;
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.FontSize = NativeView.FontSize / 1.5;
 		}
 
-		void OnTextBlockFocused(object sender, EventArgs e)
+		void OnTextBlockFocused(object? sender, EventArgs e)
 		{
 			if (VirtualView == null || NativeView == null)
 				return;
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Handlers
 					Title = VirtualView.Title,
 				};
 				_dialog.Dismissed += OnDialogDismissed;
-				_dialog.BackButtonPressed += (object senders, EventArgs es) =>
+				_dialog.BackButtonPressed += (object? senders, EventArgs es) =>
 				{
 					_dialog.Dismiss();
 				};
@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void OnItemSelected(object senderObject, EventArgs ev)
+		void OnItemSelected(object? senderObject, EventArgs ev)
 		{
 			if (VirtualView == null || NativeView == null || _dialog == null)
 				return;
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Handlers
 			_dialog.Dismiss();
 		}
 
-		void OnDialogDismissed(object sender, EventArgs e)
+		void OnDialogDismissed(object? sender, EventArgs e)
 		{
 			CleanView();
 		}

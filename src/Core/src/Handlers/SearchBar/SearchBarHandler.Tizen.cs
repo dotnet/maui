@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Handlers
 			return null;
 		}
 
-		void OnTextChanged(object sender, EventArgs e)
+		void OnTextChanged(object? sender, EventArgs e)
 		{
 			if (VirtualView == null || NativeView == null)
 				return;
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Text = NativeView.Text;
 		}
 
-		void OnActivated(object sender, EventArgs e)
+		void OnActivated(object? sender, EventArgs e)
 		{
 			if (NativeView == null)
 				return;

@@ -5,6 +5,7 @@ using System.ComponentModel;
 using ElmSharp;
 using ElmSharp.Wearable;
 using ERect = ElmSharp.Rect;
+using Index = ElmSharp.Index;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Watch
 {

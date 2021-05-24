@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker) { }
 
-		protected virtual void OnDateTimeChanged(object sender, DateChangedEventArgs dcea)
+		protected virtual void OnDateTimeChanged(object? sender, DateChangedEventArgs dcea)
 		{
 			if (VirtualView == null || NativeView == null)
 				return;
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Time = dcea.NewDate.TimeOfDay;
 		}
 
-		void OnTextBlockFocused(object sender, EventArgs e)
+		void OnTextBlockFocused(object? sender, EventArgs e)
 		{
 			if (VirtualView == null || NativeView == null || _lazyDialog == null)
 				return;
@@ -116,11 +116,11 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		protected virtual void OnPickerOpened(object sender, EventArgs args)
+		protected virtual void OnPickerOpened(object? sender, EventArgs args)
 		{
 		}
 
-		protected virtual void OnPickerClosed(object sender, EventArgs args)
+		protected virtual void OnPickerClosed(object? sender, EventArgs args)
 		{
 		}
 	}

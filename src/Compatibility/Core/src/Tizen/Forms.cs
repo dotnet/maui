@@ -706,7 +706,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			Elementary.Initialize();
 			Elementary.ThemeOverlay();
-			var window = new PreloadedWindow();
+			var window = new Microsoft.Maui.Controls.Compatibility.Platform.Tizen.PreloadedWindow();
 			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.width", out int width);
 			TSystemInfo.TryGetValue("http://tizen.org/feature/screen.height", out int height);
 		}

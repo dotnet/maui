@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Handlers
 			return null;
 		}
 
-		void OnTextChanged(object sender, EventArgs e)
+		void OnTextChanged(object? sender, EventArgs e)
 		{
 			if (VirtualView == null || NativeView == null)
 				return;
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Handlers
 
 		
 
-		void OnEntryFocused(object sender, EventArgs e)
+		void OnEntryFocused(object? sender, EventArgs e)
 		{
 			if (NativeView == null)
 				return;
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.BackButtonPressed += OnCompleted;
 		}
 
-		void OnEntryUnfocused(object sender, EventArgs e)
+		void OnEntryUnfocused(object? sender, EventArgs e)
 		{
 			if (NativeView == null)
 				return;
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.BackButtonPressed -= OnCompleted;
 		}
 
-		void OnCompleted(object sender, EventArgs e)
+		void OnCompleted(object? sender, EventArgs e)
 		{
 			if (NativeView == null)
 				return;

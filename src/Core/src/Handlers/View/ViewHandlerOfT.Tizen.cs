@@ -182,20 +182,20 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		protected virtual void OnNativeViewDeleted(object sender, EventArgs e)
+		protected virtual void OnNativeViewDeleted(object? sender, EventArgs e)
 		{
 			Dispose();
 		}
 
-		protected virtual void OnMoved(object sender, EventArgs e)
+		protected virtual void OnMoved(object? sender, EventArgs e)
 		{
 		}
 
-		protected virtual void OnFocused(object sender, EventArgs e)
+		protected virtual void OnFocused(object? sender, EventArgs e)
 		{
 		}
 
-		protected virtual void OnUnfocused(object sender, EventArgs e)
+		protected virtual void OnUnfocused(object? sender, EventArgs e)
 		{
 		}
 
