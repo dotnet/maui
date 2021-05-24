@@ -1059,7 +1059,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(new Size(100, 100));
 			AddChildren(grid, view0);
 			SetLocation(grid, view0);
-			
+
 			// Using 300,300 - the implied row/column are GridLength.Star
 			MeasureAndArrange(grid, 300, 300);
 
