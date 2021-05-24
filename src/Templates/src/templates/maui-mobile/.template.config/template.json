@@ -13,11 +13,6 @@
     },
     "sourceName": "MauiApp1",
     "preferNameDirectory": true,
-    "primaryOutputs": [
-        { "path": "MauiApp1/MauiApp1.csproj" },
-        { "path": "MauiApp1.WinUI3/MauiApp1.WinUI3.csproj" },
-        { "path": "MauiApp1.WinUI3 (Package)/MauiApp1.WinUI3 (Package).wapproj" }
-    ],
     "guids": [
       "07CD65EF-6238-4365-AF5D-F6D433967F48",
       "202C61B5-A2D9-4817-8020-731D9F855561",
@@ -36,10 +31,6 @@
         "replaces": "MICROSOFT_EXTENSIONS_VERSION",
         "defaultValue": "6.0.0-preview.4.*"
       },
-      "HostIdentifier": {
-        "type": "bind",
-        "binding": "HostIdentifier"
-      },
       "mauiVersion": {
         "type": "parameter",
         "dataType": "string",
@@ -47,15 +38,5 @@
         "defaultValue": "6.0.100-preview.4.*"
       }
     },
-    "sources": [
-      {
-        "source": "./",
-        "target": "./",
-        "exclude": [
-          ".template.config/**"
-        ],
-        "modifiers": []
-      }
-    ],
     "defaultName": "MauiApp1"
   }
