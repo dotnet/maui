@@ -51,7 +51,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateBackground(this UIView nativeView, IFrameworkElement view)
+		public static void UpdateBackground(this UIView nativeView, IView view)
 		{
 			if (nativeView == null)
 				return;

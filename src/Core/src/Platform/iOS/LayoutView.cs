@@ -85,10 +85,17 @@ namespace Microsoft.Maui
 
 		protected override UIView CreateNativeView(IFrameworkElement view)
 		{
-			return new PageView
+			if (view is IPage page)
 			{
-				CrossPlatformArrange = view.Arrange,
-			};
+
+				return new PageView
+				{
+					CrossPlatformArrange = page.Arrange
+				};
+			}
+
+			// TODO ezhart this is wrong
+			throw new Exception("nope");
 		}
 	}
 }

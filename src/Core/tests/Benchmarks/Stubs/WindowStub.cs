@@ -4,6 +4,6 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 {
 	public class WindowStub : StubBase, IWindow
 	{
-		public IView View { get; set; }
+		public IPage View { get; set; }
 	}
 }

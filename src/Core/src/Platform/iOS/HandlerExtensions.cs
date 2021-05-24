@@ -6,13 +6,25 @@ namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
-		public static UIViewController ToUIViewController(this IFrameworkElement view, IMauiContext context)
+		public static UIViewController ToUIViewController(this IView view, IMauiContext context)
 		{
+			// TODO ezhart It's a little awkward that this calls view.ToNative just so it can get a handler
 			var nativeView = view.ToNative(context);
 			if (view?.Handler is INativeViewHandler nvh && nvh.ViewController != null)
 				return nvh.ViewController;
 
 			return new ContainerViewController { CurrentView = view, Context = context };
+		}
+
+		public static UIViewController ToUIViewController(this IPage page, IMauiContext context)
+		{
+			// TODO ezhart It's a little awkward that this calls view.ToNative just so it can get a handler
+			var nativeView = page.ToNative(context);
+			if (page?.Handler is INativeViewHandler nvh && nvh.ViewController != null)
+				return nvh.ViewController;
+
+			// TODO ezhart "page?.Handler is INativeViewHandler nvh" is suspicious, only works if page's handler is inativeviewhandler and it may not be?
+			return new ContainerViewController { CurrentView = page, Context = context };
 		}
 
 		public static UIView ToNative(this IFrameworkElement view, IMauiContext context)

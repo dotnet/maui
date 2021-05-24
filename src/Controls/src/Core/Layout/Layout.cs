@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Layout2
 		public override SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
 #pragma warning restore CS0672 // Member overrides obsolete member
 		{
-			var size = (this as IFrameworkElement).Measure(widthConstraint, heightConstraint);
+			var size = (this as IView).Measure(widthConstraint, heightConstraint);
 			return new SizeRequest(size);
 		}
 

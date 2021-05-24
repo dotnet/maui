@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		Paint IFrameworkElement.Background
+		Paint IBackground.Background
 		{
 			get
 			{
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 			Layout(bounds);
 		}
 
-		Size IFrameworkElement.Arrange(Rectangle bounds)
+		Size IArrangeable.Arrange(Rectangle bounds)
 		{
 			return ArrangeOverride(bounds);
 		}
@@ -110,20 +110,20 @@ namespace Microsoft.Maui.Controls
 			Bounds = bounds;
 		}
 
-		void IFrameworkElement.InvalidateMeasure()
+		void IArrangeable.InvalidateMeasure()
 		{
 			InvalidateMeasureOverride();
 		}
 
 		// InvalidateMeasureOverride provides a way to allow subclasses (e.g., Layout) to override InvalidateMeasure even though
 		// the interface has to be explicitly implemented to avoid conflict with the VisualElement.InvalidateMeasure method
-		protected virtual void InvalidateMeasureOverride() => Handler?.UpdateValue(nameof(IFrameworkElement.InvalidateMeasure));
+		protected virtual void InvalidateMeasureOverride() => Handler?.UpdateValue(nameof(IView.InvalidateMeasure));
 
-		void IFrameworkElement.InvalidateArrange()
+		void IArrangeable.InvalidateArrange()
 		{
 		}
 
-		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
+		Size IArrangeable.Measure(double widthConstraint, double heightConstraint)
 		{
 			return MeasureOverride(widthConstraint, heightConstraint);
 		}
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls
 			return DesiredSize;
 		}
 
-		Maui.FlowDirection IFrameworkElement.FlowDirection => FlowDirection.ToPlatformFlowDirection();
+		Maui.FlowDirection IFlowDirection.FlowDirection => FlowDirection.ToPlatformFlowDirection();
 
 		Semantics IFrameworkElement.Semantics
 		{

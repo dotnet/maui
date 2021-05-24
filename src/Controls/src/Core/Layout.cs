@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement, Microsoft.Maui.IContainer
+	public abstract class Layout : View, IView, ILayout, ILayoutController, IPaddingElement, IFrameworkElement, Microsoft.Maui.IContainer
 	{
 		IReadOnlyList<Microsoft.Maui.IView> Microsoft.Maui.IContainer.Children => InternalChildren.OfType<IView>().ToList();
 
@@ -217,14 +217,14 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
+		Size IArrangeable.Measure(double widthConstraint, double heightConstraint)
 		{
 			DesiredSize = OnMeasure(widthConstraint, heightConstraint).Request;
 			return DesiredSize;
 		}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-			=> (this as IFrameworkElement).Measure(widthConstraint, heightConstraint);
+			=> (this as IView).Measure(widthConstraint, heightConstraint);
 
 		protected override void OnSizeAllocated(double width, double height)
 		{
@@ -512,7 +512,7 @@ namespace Microsoft.Maui.Controls
 
 			foreach (var child in LogicalChildren)
 			{
-				if (child is IFrameworkElement fe)
+				if (child is IView fe)
 				{
 					fe.InvalidateMeasure();
 				}

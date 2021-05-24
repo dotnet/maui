@@ -24,6 +24,10 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Visibility)] = MapVisibility,
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
+			[nameof(IView.Background)] = MapBackground,
+			Actions = {
+					[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure
+				}
 		};
 
 		internal ViewHandler(PropertyMapper mapper) : base(mapper)
@@ -43,6 +47,16 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHeight(IFrameworkElementHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateHeight(view);
+		}
+
+		public static void MapBackground(IFrameworkElementHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateBackground(view);
+		}
+
+		public static void MapInvalidateMeasure(IFrameworkElementHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.InvalidateMeasure(view);
 		}
 	}
 }

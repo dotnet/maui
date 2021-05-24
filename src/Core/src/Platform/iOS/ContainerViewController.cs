@@ -57,13 +57,17 @@ namespace Microsoft.Maui
 				LoadNativeView(_view);
 		}
 
-		void LoadNativeView(IFrameworkElement view)
+		void LoadNativeView(IFrameworkElement element)
 		{
-			currentNativeView = _pendingLoadedView ?? CreateNativeView(view);
+			currentNativeView = _pendingLoadedView ?? CreateNativeView(element);
 			_pendingLoadedView = null;
 			View!.AddSubview(currentNativeView);
-			if (view.Background == null)
-				View.BackgroundColor = UIColor.SystemBackgroundColor;
+
+			if (element is IBackground supportsBackground)
+			{
+				if (supportsBackground.Background == null)
+					View.BackgroundColor = UIColor.SystemBackgroundColor;
+			}
 		}
 
 		protected virtual UIView CreateNativeView(IFrameworkElement view)

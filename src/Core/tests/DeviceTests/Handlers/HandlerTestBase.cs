@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase<THandler, TStub> : TestBase, IDisposable
 		where THandler : IFrameworkElementHandler
-		where TStub : StubBase, IView, new()
+		where TStub : StubBase, IFrameworkElement, new()
 	{
 		IApplication _app;
 		IAppHost _host;
@@ -50,10 +50,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		public IMauiContext MauiContext => _context;
 
-		protected THandler CreateHandler(IView view) =>
+		protected THandler CreateHandler(IFrameworkElement view) =>
 			CreateHandler<THandler>(view);
 
-		protected TCustomHandler CreateHandler<TCustomHandler>(IView view)
+		protected TCustomHandler CreateHandler<TCustomHandler>(IFrameworkElement view)
 			where TCustomHandler : THandler
 		{
 			var handler = Activator.CreateInstance<TCustomHandler>();
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 			return handler;
 		}
 
-		protected async Task<THandler> CreateHandlerAsync(IView view)
+		protected async Task<THandler> CreateHandlerAsync(IFrameworkElement view)
 		{
 			return await InvokeOnMainThreadAsync(() =>
 			{
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected Task<TValue> GetValueAsync<TValue>(IView view, Func<THandler, TValue> func)
+		protected Task<TValue> GetValueAsync<TValue>(IFrameworkElement view, Func<THandler, TValue> func)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{

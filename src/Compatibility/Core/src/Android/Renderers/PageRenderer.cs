@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var destination = Rectangle.FromLTRB(deviceIndependentLeft, deviceIndependentTop,
 				deviceIndependentRight, deviceIndependentBottom);
 
-			(Element as IFrameworkElement)?.Arrange(destination);
+			(Element as IView)?.Arrange(destination);
 			base.OnLayout(changed, l, t, r, b);
 			OrderedTraversalController.UpdateTraversalOrder();
 		}

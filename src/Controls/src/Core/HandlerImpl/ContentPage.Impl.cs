@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView frameworkElement)
 			{
 				frameworkElement.Measure(widthConstraint, heightConstraint);
 			}
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 		protected override void InvalidateMeasureOverride()
 		{
 			base.InvalidateMeasureOverride();
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView frameworkElement)
 			{
 				frameworkElement.InvalidateMeasure();
 			}

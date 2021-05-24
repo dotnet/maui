@@ -18,12 +18,8 @@ namespace Microsoft.Maui.Handlers
 		public static PropertyMapper<IFrameworkElement> FrameworkElementMapper = new PropertyMapper<IFrameworkElement>
 		{
 			[nameof(IFrameworkElement.AutomationId)] = MapAutomationId,
-			[nameof(IFrameworkElement.Background)] = MapBackground,
 			[nameof(IFrameworkElement.IsEnabled)] = MapIsEnabled,
 			[nameof(IFrameworkElement.Semantics)] = MapSemantics,
-			Actions = {
-					[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure
-				}
 		};
 
 		internal FrameworkElementHandler()
@@ -94,11 +90,6 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateIsEnabled(view);
 		}
 
-		public static void MapBackground(IFrameworkElementHandler handler, IFrameworkElement view)
-		{
-			((NativeView?)handler.NativeView)?.UpdateBackground(view);
-		}
-
 		public static void MapAutomationId(IFrameworkElementHandler handler, IFrameworkElement view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateAutomationId(view);
@@ -110,11 +101,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			MappingSemantics(handler, view);
 			((NativeView?)handler.NativeView)?.UpdateSemantics(view);
-		}
-
-		public static void MapInvalidateMeasure(IFrameworkElementHandler handler, IFrameworkElement view)
-		{
-			((NativeView?)handler.NativeView)?.InvalidateMeasure(view);
 		}
 	}
 }

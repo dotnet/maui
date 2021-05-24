@@ -4,13 +4,13 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase<THandler, TStub>
 	{
-		protected string GetAutomationId(IViewHandler viewHandler) =>
+		protected string GetAutomationId(IFrameworkElementHandler viewHandler) =>
 			$"{((View)viewHandler.NativeView).GetTag(ViewExtensions.AutomationTagId)}";
 
-		protected string GetSemanticDescription(IViewHandler viewHandler) =>
+		protected string GetSemanticDescription(IFrameworkElementHandler viewHandler) =>
 			((View)viewHandler.NativeView).ContentDescription;
 
-		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler)
+		protected SemanticHeadingLevel GetSemanticHeading(IFrameworkElementHandler viewHandler)
 		{
 			// AccessibilityHeading is only available on API 28+
 			// With lower Apis you use ViewCompat.SetAccessibilityHeading
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 			return viewHandler.VirtualView.Semantics.HeadingLevel;
 		}
 
-		protected Visibility GetVisibility(IViewHandler viewHandler)
+		protected Visibility GetVisibility(IFrameworkElementHandler viewHandler)
 		{
 			var nativeView = (View)viewHandler.NativeView;
 

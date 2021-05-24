@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		IFrameworkElement IWindow.View
+		IPage IWindow.View
 		{
 			get => Page ?? throw new InvalidOperationException("No page was set on the window.");
 			set => Page = (Page)value;

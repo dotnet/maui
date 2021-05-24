@@ -25,8 +25,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			layout.Add(button);
 			page.Content = layout;
-			(page as IFrameworkElement).Measure(100, 100);
-			(page as IFrameworkElement).Arrange(new Rectangle(0, 0, 100, 100));
+			(page as IView).Measure(100, 100);
+			(page as IView).Arrange(new Rectangle(0, 0, 100, 100));
 
 			Assert.AreEqual(expectedSize, button.Bounds.Size);
 		}
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Layout.LayoutChildIntoBoundingRegion(stackLayout, rect);
 
 			// Normally this would get called from the native platform
-			(verticalStackLayout as IFrameworkElement).Arrange(rect);
+			(verticalStackLayout as IView).Arrange(rect);
 
 			Assert.AreEqual(expectedSize, button.Bounds.Size);
 		}
@@ -74,8 +74,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			contentPage.Content = verticalStackLayout;
 
 			var rect = new Rectangle(0, 0, 100, 100);
-			(contentPage as IFrameworkElement).Measure(expectedSize.Width, expectedSize.Height);
-			(contentPage as IFrameworkElement).Arrange(rect);
+			(contentPage as IView).Measure(expectedSize.Width, expectedSize.Height);
+			(contentPage as IView).Arrange(rect);
 			Assert.AreEqual(expectedSize, button.Bounds.Size);
 		}
 	}
