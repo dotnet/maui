@@ -492,8 +492,6 @@ namespace Maui.Controls.Sample.Pages
 				BackgroundColor = Colors.Red,
 				TextColor = Colors.White,
 				Text = "Transformations",
-				WidthRequest = 200,
-				HeightRequest = 40
 			};
 
 			var rotationSlider = new Slider

@@ -21,12 +21,7 @@ namespace Microsoft.Maui.Handlers
 			_originalAnchor = null;
 		}
 
-		static partial void UpdatingWidth(IViewHandler handler, IView view)
-		{
-			UpdateTransformation(handler, view);
-		}
-
-		static partial void UpdatingHeight(IViewHandler handler, IView view)
+		static partial void MappingFrame(IViewHandler handler, IView view)
 		{
 			UpdateTransformation(handler, view);
 		}

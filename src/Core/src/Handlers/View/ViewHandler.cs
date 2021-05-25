@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 				[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure,
+				[nameof(IFrameworkElement.Frame)] = MapFrame,
 			}
 		};
 
@@ -111,19 +112,13 @@ namespace Microsoft.Maui.Handlers
 			VirtualView = null;
 		}
 
-		static partial void UpdatingWidth(IViewHandler handler, IView view);
-
 		public static void MapWidth(IViewHandler handler, IView view)
 		{
-			UpdatingWidth(handler, view);
 			((NativeView?)handler.NativeView)?.UpdateWidth(view);
 		}
 
-		static partial void UpdatingHeight(IViewHandler handler, IView view);
-
 		public static void MapHeight(IViewHandler handler, IView view)
 		{
-			UpdatingHeight(handler, view);
 			((NativeView?)handler.NativeView)?.UpdateHeight(view);
 		}
 
@@ -164,6 +159,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler is ViewHandler viewHandler)
 				handler.HasContainer = viewHandler.NeedsContainer;
+		}
+
+		static partial void MappingFrame(IViewHandler handler, IView view);
+
+		public static void MapFrame(IViewHandler handler, IView view)
+		{
+			MappingFrame(handler, view);
 		}
 	}
 }
