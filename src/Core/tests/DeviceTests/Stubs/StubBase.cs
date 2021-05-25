@@ -16,6 +16,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Paint Background { get; set; }
 
+		public Paint BorderBrush { get; set; }
+
+		public double BorderWidth { get; set; }
+
+		public CornerRadius CornerRadius { get; set; }
+
 		public Rectangle Frame { get; set; }
 
 		public IViewHandler Handler { get; set; }
