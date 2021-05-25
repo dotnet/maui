@@ -1,10 +1,10 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "Maui", "Android", "iOS", "macOS", "Catalyst" ],
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI" ],
     "identity": "Microsoft.Maui.SingleProject",
-    "name": ".NET Maui Mobile Application",
-    "description": "A project for creating a .NET MAUI application for iOS, Android and macOS",
+    "name": ".NET MAUI App",
+    "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, and WinUI",
     "shortName": "maui",
     "tags": {
       "language": "C#",
@@ -13,7 +13,10 @@
     "sourceName": "MauiApp1",
     "preferNameDirectory": true,
     "primaryOutputs": [
-      { "path": "MauiApp1.csproj" }
+      { "path": "MauiApp1\\MauiApp1.csproj" },
+      { "path": "MauiApp1.WinUI3\\MauiApp1.WinUI3.csproj" },
+      { "path": "MauiApp1.WinUI3 (Package)\\MauiApp1.WinUI3 (Package).csproj" },
+      { "path": "MauiApp1.sln" }
     ],
     "symbols": {
       "applicationId": {

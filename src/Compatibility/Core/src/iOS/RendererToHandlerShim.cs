@@ -1,7 +1,7 @@
 using System;
-using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, UIKit.UIView>;
-using UIKit;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using UIKit;
+using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, UIKit.UIView>;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			base.UpdateValue(property);
 			if (property == "Frame")
 			{
-				SetFrame(VisualElementRenderer.Element.Bounds);
+				NativeArrange(VisualElementRenderer.Element.Bounds);
 			}
 		}
 	}

@@ -1,10 +1,10 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.Internals;
-using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
-using UIKit;
-using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Shapes;
+using UIKit;
 
 [assembly: ExportRenderer(typeof(BoxView), typeof(BoxRenderer))]
 [assembly: ExportRenderer(typeof(Entry), typeof(EntryRenderer))]
@@ -27,11 +27,11 @@ using Microsoft.Maui.Controls;
 [assembly: ExportRenderer(typeof(ActivityIndicator), typeof(ActivityIndicatorRenderer))]
 [assembly: ExportRenderer(typeof(Frame), typeof(FrameRenderer))]
 [assembly: ExportRenderer(typeof(ListView), typeof(ListViewRenderer))]
-[assembly: ExportRenderer (typeof (CollectionView), typeof (CollectionViewRenderer))]
+[assembly: ExportRenderer(typeof(CollectionView), typeof(CollectionViewRenderer))]
 [assembly: ExportRenderer(typeof(CarouselView), typeof(CarouselViewRenderer))]
 [assembly: ExportRenderer(typeof(IndicatorView), typeof(IndicatorViewRenderer))]
 [assembly: ExportRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer))]
-[assembly: ExportRenderer (typeof (CheckBox), typeof (CheckBoxRenderer))]
+[assembly: ExportRenderer(typeof(CheckBox), typeof(CheckBoxRenderer))]
 [assembly: ExportRenderer(typeof(Path), typeof(PathRenderer))]
 [assembly: ExportRenderer(typeof(Ellipse), typeof(EllipseRenderer))]
 [assembly: ExportRenderer(typeof(Line), typeof(LineRenderer))]
@@ -74,4 +74,4 @@ using Microsoft.Maui.Controls;
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Deserializer))]
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(ResourcesProvider))]
 [assembly: ResolutionGroupName("Xamarin")]
-[assembly: LinkerSafe]
+[assembly: AssemblyMetadata("IsTrimmable", "True")]

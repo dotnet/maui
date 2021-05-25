@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.Controls
 {
 	[TypeConverter(typeof(ImageSourceConverter))]
-	public abstract class ImageSource : Element
+	public abstract partial class ImageSource : Element
 	{
 		readonly object _synchandle = new object();
 		CancellationTokenSource _cancellationTokenSource;
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 
 		public virtual bool IsEmpty => false;
 
-		protected CancellationTokenSource CancellationTokenSource
+		private protected CancellationTokenSource CancellationTokenSource
 		{
 			get { return _cancellationTokenSource; }
 			private set
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls
 			return FromUri(uri);
 		}
 
-		protected void OnLoadingCompleted(bool cancelled)
+		private protected void OnLoadingCompleted(bool cancelled)
 		{
 			if (!IsLoading || _completionSource == null)
 				return;
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		protected void OnLoadingStarted()
+		private protected void OnLoadingStarted()
 		{
 			lock (_synchandle)
 			{

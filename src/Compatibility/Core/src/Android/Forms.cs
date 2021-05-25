@@ -62,7 +62,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool? s_isNougatOrNewer;
 		static bool? s_isOreoOrNewer;
 		static bool? s_isPieOrNewer;
-		static FontManager s_fontManager;
 
 		// One per process; does not change, suitable for loading resources (e.g., ResourceProvider)
 		internal static Context ApplicationContext { get; private set; } = global::Android.App.Application.Context;
@@ -154,9 +153,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return s_isPieOrNewer.Value;
 			}
 		}
-
-		internal static IFontManager FontManager =>
-			s_fontManager ??= new FontManager(Registrar.FontRegistrar);
 
 		public static float GetFontSizeNormal(Context context)
 		{
@@ -504,12 +500,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 					if (sdkVersion <= 10)
 					{
 						// legacy theme button pressed color
-						rc = Color.FromHex("#fffeaa0c");
+						rc = Color.FromArgb("#fffeaa0c");
 					}
 					else
 					{
 						// Holo dark light blue
-						rc = Color.FromHex("#ff33b5e5");
+						rc = Color.FromArgb("#ff33b5e5");
 					}
 				}
 			}
@@ -683,12 +679,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public void BeginInvokeOnMainThread(Action action)
 			{
-				if (_context.IsDesignerContext())
-				{
-					action();
-					return;
-				}
-
 				if (s_handler == null || s_handler.Looper != Looper.MainLooper)
 				{
 					s_handler = new Handler(Looper.MainLooper);
@@ -875,7 +865,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public IIsolatedStorageFile GetUserStoreForApplication()
 			{
-				return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
+				throw new NotImplementedException("GetUserStoreForApplication currently not available https://github.com/dotnet/runtime/issues/52332");
+				//return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
 			}
 
 			public bool IsInvokeRequired

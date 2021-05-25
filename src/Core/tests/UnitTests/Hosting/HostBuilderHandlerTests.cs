@@ -5,7 +5,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
 	public class HostBuilderHandlerTests
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.UnitTests
 			Assert.NotNull(host);
 			Assert.NotNull(host.Services);
 			Assert.NotNull(host.Handlers);
-			Assert.IsType<Hosting.Internal.MauiHandlersServiceProvider>(host.Handlers);
+			Assert.IsType<Maui.Hosting.Internal.MauiHandlersServiceProvider>(host.Handlers);
 			Assert.Equal(host.Handlers, host.Services.GetService<IMauiHandlersServiceProvider>());
 		}
 
@@ -137,6 +137,23 @@ namespace Microsoft.Maui.UnitTests
 			Assert.NotNull(specificHandler);
 			Assert.IsType<ButtonHandler>(defaultHandler);
 			Assert.IsType<ButtonHandlerStub>(specificHandler);
+		}
+
+		[Fact]
+		public void CanChangeHandlerRegistration()
+		{
+			var host = AppHost
+				.CreateDefaultBuilder()
+				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<ButtonStub, ButtonHandlerStub>())
+				.Build();
+
+			var specificHandler = host.Handlers.GetHandler(typeof(ButtonStub));
+			Assert.IsType<ButtonHandlerStub>(specificHandler);
+
+			host.Handlers.GetCollection().AddHandler<ButtonStub, AlternateButtonHandlerStub>();
+
+			var alternateHandler = host.Handlers.GetHandler(typeof(ButtonStub));
+			Assert.IsType<AlternateButtonHandlerStub>(alternateHandler);
 		}
 	}
 }

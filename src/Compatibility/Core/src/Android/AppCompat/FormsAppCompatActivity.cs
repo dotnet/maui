@@ -265,7 +265,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_powerSaveModeBroadcastReceiver = new PowerSaveModeBroadcastReceiver();
 			}
 
-			ContextExtensions.SetDesignerContext(_layout);
 			Profile.FrameEnd();
 		}
 

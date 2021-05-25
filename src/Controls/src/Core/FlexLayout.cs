@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	[ContentProperty(nameof(Children))]
 	public class FlexLayout : Layout<View>
 	{
 		public static readonly BindableProperty DirectionProperty =

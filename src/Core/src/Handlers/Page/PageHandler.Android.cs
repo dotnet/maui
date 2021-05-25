@@ -24,20 +24,32 @@ namespace Microsoft.Maui.Handlers
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
-
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 
 			NativeView.CrossPlatformMeasure = VirtualView.Measure;
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
+		}
+
+		void UpdateContent()
+		{
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+
 			NativeView.RemoveAllViews();
-			//var wrap = ViewGroup.LayoutParams.WrapContent;
-			NativeView.AddView(VirtualView.Content.ToNative(MauiContext)); // , new ViewGroup.LayoutParams(wrap, wrap));
+
+			if (VirtualView.Content != null)
+				NativeView.AddView(VirtualView.Content.ToNative(MauiContext));
 		}
 
 		public static void MapTitle(PageHandler handler, IPage page)
 		{
+		}
+
+		public static void MapContent(PageHandler handler, IPage page)
+		{
+			handler.UpdateContent();
 		}
 	}
 }

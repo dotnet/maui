@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
@@ -24,18 +25,18 @@ namespace Microsoft.Maui
 				nativeLabel.AttributedText = textAttr;
 		}
 
-		public static void UpdateFont(this UILabel nativeLabel, ITextStyle textStyle, IFontManager fontManager)
+		public static void UpdateFont(this UILabel nativeLabel, ITextStyle textStyle, IFontManager fontManager) =>
+			nativeLabel.UpdateFont(textStyle, fontManager, UIFont.LabelFontSize);
+
+		public static void UpdateFont(this UILabel nativeLabel, ITextStyle textStyle, IFontManager fontManager, double defaultSize)
 		{
-			var uiFont = fontManager.GetFont(textStyle.Font);
+			var uiFont = fontManager.GetFont(textStyle.Font, defaultSize);
 			nativeLabel.Font = uiFont;
 		}
 
 		public static void UpdateHorizontalTextAlignment(this UILabel nativeLabel, ILabel label)
 		{
-			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
-			// TODO ezhart Update this when FlowDirection is available 
-			// (or update the extension to take an ILabel instead of an alignment and work it out from there) 
-			nativeLabel.TextAlignment = label.HorizontalTextAlignment.ToNative(true);
+			nativeLabel.TextAlignment = label.HorizontalTextAlignment.ToNative(label.FlowDirection == FlowDirection.LeftToRight);
 		}
 
 		public static void UpdateLineBreakMode(this UILabel nativeLabel, ILabel label)

@@ -1,6 +1,8 @@
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using Android.Content;
+using Android.Content.Res;
 using Android.OS;
 using Android.Util;
 using Android.Views.InputMethods;
@@ -12,6 +14,7 @@ using AAttribute = Android.Resource.Attribute;
 using AColor = Android.Graphics.Color;
 using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
 using Size = Microsoft.Maui.Graphics.Size;
+
 namespace Microsoft.Maui
 {
 	public static class ContextExtensions
@@ -74,7 +77,7 @@ namespace Microsoft.Maui
 			return (int?)self?.ApplicationInfo?.TargetSdkVersion;
 		}
 
-		internal static double GetThemeAttributeDp(this Context self, int resource)
+		public static double GetThemeAttributeDp(this Context self, int resource)
 		{
 			using (var value = new TypedValue())
 			{
@@ -87,6 +90,20 @@ namespace Microsoft.Maui
 				var pixels = (double)TypedValue.ComplexToDimension(value.Data, self.Resources?.DisplayMetrics);
 
 				return self.FromPixels(pixels);
+			}
+		}
+
+		public static double GetThemeAttributePixels(this Context self, int resource)
+		{
+			using (var value = new TypedValue())
+			{
+				if (self == null || self.Theme == null)
+					return -1;
+
+				if (!self.Theme.ResolveAttribute(resource, value, true))
+					return -1;
+
+				return (double)TypedValue.ComplexToDimension(value.Data, self.Resources?.DisplayMetrics);
 			}
 		}
 
@@ -108,7 +125,6 @@ namespace Microsoft.Maui
 		{
 			return context.Theme.TryResolveAttribute(id);
 		}
-
 
 		internal static int GetThemeAttrColor(this Context context, int attr)
 		{
@@ -195,6 +211,26 @@ namespace Microsoft.Maui
 				return fa.SupportFragmentManager;
 
 			return null;
+		}
+
+		public static int GetDrawableId(this Context context, string name)
+		{
+			if (context.Resources == null || context.PackageName == null)
+				return 0;
+
+			return context.Resources.GetDrawableId(context.PackageName, name);
+		}
+
+		public static int GetDrawableId(this Resources resources, string packageName, string name)
+		{
+			if (string.IsNullOrWhiteSpace(name))
+				return 0;
+
+			var title = Path.GetFileNameWithoutExtension(name);
+
+			title = title.ToLowerInvariant();
+
+			return resources.GetIdentifier(title, "drawable", packageName);
 		}
 	}
 }

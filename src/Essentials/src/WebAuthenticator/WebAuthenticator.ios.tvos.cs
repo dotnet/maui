@@ -15,16 +15,16 @@ namespace Microsoft.Maui.Essentials
 	public static partial class WebAuthenticator
 	{
 #if __IOS__
-        [System.Runtime.InteropServices.DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Required for iOS Export")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Required for iOS Export")]
-        static extern void void_objc_msgSend_IntPtr(IntPtr receiver, IntPtr selector, IntPtr arg1);
+		[System.Runtime.InteropServices.DllImport(ObjCRuntime.Constants.ObjectiveCLibrary, EntryPoint = "objc_msgSend")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Required for iOS Export")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Required for iOS Export")]
+		static extern void void_objc_msgSend_IntPtr(IntPtr receiver, IntPtr selector, IntPtr arg1);
 
-        const int asWebAuthenticationSessionErrorCodeCanceledLogin = 1;
-        const string asWebAuthenticationSessionErrorDomain = "com.apple.AuthenticationServices.WebAuthenticationSession";
+		const int asWebAuthenticationSessionErrorCodeCanceledLogin = 1;
+		const string asWebAuthenticationSessionErrorDomain = "com.apple.AuthenticationServices.WebAuthenticationSession";
 
-        const int sfAuthenticationErrorCanceledLogin = 1;
-        const string sfAuthenticationErrorDomain = "com.apple.SafariServices.Authentication";
+		const int sfAuthenticationErrorCanceledLogin = 1;
+		const string sfAuthenticationErrorDomain = "com.apple.SafariServices.Authentication";
 #endif
 
 		static TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Essentials
 		static Uri redirectUri;
 
 #if __IOS__
-        static ASWebAuthenticationSession was;
-        static SFAuthenticationSession sf;
+		static ASWebAuthenticationSession was;
+		static SFAuthenticationSession sf;
 #endif
 
 		internal static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
@@ -50,64 +50,64 @@ namespace Microsoft.Maui.Essentials
 			var scheme = redirectUri.Scheme;
 
 #if __IOS__
-            static void AuthSessionCallback(NSUrl cbUrl, NSError error)
-            {
-                if (error == null)
-                    OpenUrl(cbUrl);
-                else if (error.Domain == asWebAuthenticationSessionErrorDomain && error.Code == asWebAuthenticationSessionErrorCodeCanceledLogin)
-                    tcsResponse.TrySetCanceled();
-                else if (error.Domain == sfAuthenticationErrorDomain && error.Code == sfAuthenticationErrorCanceledLogin)
-                    tcsResponse.TrySetCanceled();
-                else
-                    tcsResponse.TrySetException(new NSErrorException(error));
+			static void AuthSessionCallback(NSUrl cbUrl, NSError error)
+			{
+				if (error == null)
+					OpenUrl(cbUrl);
+				else if (error.Domain == asWebAuthenticationSessionErrorDomain && error.Code == asWebAuthenticationSessionErrorCodeCanceledLogin)
+					tcsResponse.TrySetCanceled();
+				else if (error.Domain == sfAuthenticationErrorDomain && error.Code == sfAuthenticationErrorCanceledLogin)
+					tcsResponse.TrySetCanceled();
+				else
+					tcsResponse.TrySetException(new NSErrorException(error));
 
-                was = null;
-                sf = null;
-            }
+				was = null;
+				sf = null;
+			}
 
-            if (UIDevice.CurrentDevice.CheckSystemVersion(12, 0))
-            {
-                was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
+			if (UIDevice.CurrentDevice.CheckSystemVersion(12, 0))
+			{
+				was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
 
-                if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
-                {
-                    var ctx = new ContextProvider(Platform.GetCurrentWindow());
-                    void_objc_msgSend_IntPtr(was.Handle, ObjCRuntime.Selector.GetHandle("setPresentationContextProvider:"), ctx.Handle);
-                }
+				if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+				{
+					var ctx = new ContextProvider(Platform.GetCurrentWindow());
+					void_objc_msgSend_IntPtr(was.Handle, ObjCRuntime.Selector.GetHandle("setPresentationContextProvider:"), ctx.Handle);
+				}
 
-                using (was)
-                {
-                    was.Start();
-                    return await tcsResponse.Task;
-                }
-            }
+				using (was)
+				{
+					was.Start();
+					return await tcsResponse.Task;
+				}
+			}
 
-            if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
-            {
-                sf = new SFAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
-                using (sf)
-                {
-                    sf.Start();
-                    return await tcsResponse.Task;
-                }
-            }
+			if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
+			{
+				sf = new SFAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
+				using (sf)
+				{
+					sf.Start();
+					return await tcsResponse.Task;
+				}
+			}
 
-            // This is only on iOS9+ but we only support 10+ in Essentials anyway
-            var controller = new SFSafariViewController(WebUtils.GetNativeUrl(url), false)
-            {
-                Delegate = new NativeSFSafariViewControllerDelegate
-                {
-                    DidFinishHandler = (svc) =>
-                    {
-                        // Cancel our task if it wasn't already marked as completed
-                        if (!(tcsResponse?.Task?.IsCompleted ?? true))
-                            tcsResponse.TrySetCanceled();
-                    }
-                },
-            };
+			// This is only on iOS9+ but we only support 10+ in Essentials anyway
+			var controller = new SFSafariViewController(WebUtils.GetNativeUrl(url), false)
+			{
+				Delegate = new NativeSFSafariViewControllerDelegate
+				{
+					DidFinishHandler = (svc) =>
+					{
+						// Cancel our task if it wasn't already marked as completed
+						if (!(tcsResponse?.Task?.IsCompleted ?? true))
+							tcsResponse.TrySetCanceled();
+					}
+				},
+			};
 
-            currentViewController = controller;
-            await Platform.GetCurrentUIViewController().PresentViewControllerAsync(controller, true);
+			currentViewController = controller;
+			await Platform.GetCurrentUIViewController().PresentViewControllerAsync(controller, true);
 #else
 			var opened = UIApplication.SharedApplication.OpenUrl(url);
 			if (!opened)
@@ -152,26 +152,26 @@ namespace Microsoft.Maui.Essentials
 		}
 
 #if __IOS__
-        class NativeSFSafariViewControllerDelegate : SFSafariViewControllerDelegate
-        {
-            public Action<SFSafariViewController> DidFinishHandler { get; set; }
+		class NativeSFSafariViewControllerDelegate : SFSafariViewControllerDelegate
+		{
+			public Action<SFSafariViewController> DidFinishHandler { get; set; }
 
-            public override void DidFinish(SFSafariViewController controller) =>
-                DidFinishHandler?.Invoke(controller);
-        }
+			public override void DidFinish(SFSafariViewController controller) =>
+				DidFinishHandler?.Invoke(controller);
+		}
 
-        [ObjCRuntime.Adopts("ASWebAuthenticationPresentationContextProviding")]
-        class ContextProvider : NSObject
-        {
-            public ContextProvider(UIWindow window) =>
-                Window = window;
+		[ObjCRuntime.Adopts("ASWebAuthenticationPresentationContextProviding")]
+		class ContextProvider : NSObject
+		{
+			public ContextProvider(UIWindow window) =>
+				Window = window;
 
-            public UIWindow Window { get; private set; }
+			public UIWindow Window { get; private set; }
 
-            [Export("presentationAnchorForWebAuthenticationSession:")]
-            public UIWindow GetPresentationAnchor(ASWebAuthenticationSession session)
-                => Window;
-        }
+			[Export("presentationAnchorForWebAuthenticationSession:")]
+			public UIWindow GetPresentationAnchor(ASWebAuthenticationSession session)
+				=> Window;
+		}
 #endif
 	}
 }

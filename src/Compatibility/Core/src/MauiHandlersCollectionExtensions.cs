@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -7,13 +8,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		public static IMauiHandlersCollection AddCompatibilityRenderer(this IMauiHandlersCollection handlersCollection, Type controlType, Type rendererType)
 		{
-			// register renderer with old registrar so it can get shimmed
-			// This will move to some extension method
-			Microsoft.Maui.Controls.Internals.Registrar.Registered.Register(
-				controlType,
-				rendererType);
+			FormsCompatBuilder.AddRenderer(controlType, rendererType);
 
+#if __ANDROID__ || __IOS__ || WINDOWS
 			handlersCollection.AddHandler(controlType, typeof(RendererToHandlerShim));
+#endif
 
 			return handlersCollection;
 		}
@@ -21,14 +20,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static IMauiHandlersCollection AddCompatibilityRenderer<TControlType, TMauiType, TRenderer>(this IMauiHandlersCollection handlersCollection)
 			where TMauiType : IFrameworkElement
 		{
-			// register renderer with old registrar so it can get shimmed
-			// This will move to some extension method
-			Controls.Internals.Registrar.Registered.Register(
-				typeof(TControlType),
-				typeof(TRenderer));
+			FormsCompatBuilder.AddRenderer(typeof(TControlType), typeof(TRenderer));
 
+#if __ANDROID__ || __IOS__ || WINDOWS
 			handlersCollection.AddHandler<TMauiType, RendererToHandlerShim>();
-
+#endif
 			return handlersCollection;
 		}
 

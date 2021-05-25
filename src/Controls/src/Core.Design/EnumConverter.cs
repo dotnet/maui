@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Microsoft.Maui.Controls.Core.Design
+namespace Microsoft.Maui.Controls.Design
 {
 	/// <summary>
 	/// Generic version of the <see cref="EnumConverter"/> for reuse.

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using UIKit;
 using SizeF = CoreGraphics.CGSize;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Slider;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

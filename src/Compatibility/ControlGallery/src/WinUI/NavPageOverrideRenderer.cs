@@ -1,10 +1,10 @@
-﻿using Microsoft.UI.Xaml.Media.Animation;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
+﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
-using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.UI.Xaml.Media.Animation;
 
 [assembly: ExportRenderer(typeof(NavPageOverrideUWP.CustomNavPageForOverride), typeof(NavPageOverrideRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 
 		protected override void SetupPageTransition(Transition transition, bool isAnimated, bool isPopping)
 		{
-			var newTransition = new EntranceThemeTransition { FromVerticalOffset = 0};
+			var newTransition = new EntranceThemeTransition { FromVerticalOffset = 0 };
 
 			if (isPopping)
 			{

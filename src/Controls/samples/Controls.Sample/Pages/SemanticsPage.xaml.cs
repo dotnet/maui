@@ -9,6 +9,18 @@ namespace Maui.Controls.Sample.Pages
 		public SemanticsPage()
 		{
 			InitializeComponent();
+			pushButton.Clicked += PushButton_Clicked;
+			popButton.Clicked += PopButton_Clicked;
+		}
+
+		private async void PopButton_Clicked(object sender, System.EventArgs e)
+		{
+			await Navigation.PopAsync();
+		}
+
+		private async void PushButton_Clicked(object sender, System.EventArgs e)
+		{
+			await Navigation.PushAsync(new SemanticsPage());
 		}
 	}
 }

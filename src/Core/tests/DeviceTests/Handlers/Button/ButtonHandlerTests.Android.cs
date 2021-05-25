@@ -134,7 +134,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		bool GetNativeIsBold(ButtonHandler buttonHandler) =>
-			GetNativeButton(buttonHandler).Typeface.IsBold;
+			GetNativeButton(buttonHandler).Typeface.GetFontWeight() == FontWeight.Bold;
 
 		bool GetNativeIsItalic(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).Typeface.IsItalic;

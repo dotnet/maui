@@ -4,17 +4,17 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
-using UIKit;
-using Microsoft.Maui.Controls.Compatibility.Internals;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
+using UIKit;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
 using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -215,18 +215,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			FindParentFlyoutPage();
 
 			var navPage = NavPage;
-
+			INavigationPageController navPageController = NavPage;
 			if (navPage.CurrentPage == null)
 			{
 				throw new InvalidOperationException(
 					"NavigationPage must have a root Page before being used. Either call PushAsync with a valid Page, or pass a Page to the constructor before usage.");
 			}
 
-			navPage.PushRequested += OnPushRequested;
-			navPage.PopRequested += OnPopRequested;
-			navPage.PopToRootRequested += OnPopToRootRequested;
-			navPage.RemovePageRequested += OnRemovedPageRequested;
-			navPage.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
+			navPageController.PushRequested += OnPushRequested;
+			navPageController.PopRequested += OnPopRequested;
+			navPageController.PopToRootRequested += OnPopToRootRequested;
+			navPageController.RemovePageRequested += OnRemovedPageRequested;
+			navPageController.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
 
 			UpdateBarBackground();
 			UpdateBarTextColor();
@@ -275,13 +275,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Current = null; // unhooks events
 
 				var navPage = NavPage;
+				INavigationPageController navPageController = NavPage;
 				navPage.PropertyChanged -= HandlePropertyChanged;
 
-				navPage.PushRequested -= OnPushRequested;
-				navPage.PopRequested -= OnPopRequested;
-				navPage.PopToRootRequested -= OnPopToRootRequested;
-				navPage.RemovePageRequested -= OnRemovedPageRequested;
-				navPage.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
+				navPageController.PushRequested -= OnPushRequested;
+				navPageController.PopRequested -= OnPopRequested;
+				navPageController.PopToRootRequested -= OnPopToRootRequested;
+				navPageController.RemovePageRequested -= OnRemovedPageRequested;
+				navPageController.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
 			}
 
 			base.Dispose(disposing);

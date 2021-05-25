@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -158,18 +159,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void UpdateRowHeight()
 		{
 			var rowHeight = Element.RowHeight;
-			if (Element.HasUnevenRows && rowHeight == -1) {
+			if (Element.HasUnevenRows && rowHeight == -1)
+			{
 				Control.RowHeight = UITableView.AutomaticDimension;
-			} else
+			}
+			else
 				Control.RowHeight = rowHeight <= 0 ? DefaultRowHeight : rowHeight;
 		}
 
 		void UpdateEstimatedRowHeight()
 		{
 			var rowHeight = Element.RowHeight;
-			if (Element.HasUnevenRows && rowHeight == -1) {
+			if (Element.HasUnevenRows && rowHeight == -1)
+			{
 				Control.EstimatedRowHeight = DefaultRowHeight;
-			} else {
+			}
+			else
+			{
 				Control.EstimatedRowHeight = 0;
 			}
 		}
