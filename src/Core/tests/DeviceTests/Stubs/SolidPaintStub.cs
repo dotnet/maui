@@ -18,10 +18,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				Frame = frame,
 			};
 #elif MONOANDROID || __ANDROID__
-		public Android.Graphics.Drawables.Drawable ToDrawable()
+		public Android.Graphics.Drawables.Drawable ToDrawable(Android.Content.Context context)
 		{
-			var drawable = new Microsoft.Maui.Graphics.MauiDrawable();
-			drawable.SetColor(Color.ToNative());
+			var drawable = new MauiDrawable(context);
+			drawable.SetBackgroundColor(Color.ToNative());
 			return drawable;
 		}
 #endif
