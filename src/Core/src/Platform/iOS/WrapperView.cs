@@ -21,24 +21,8 @@ namespace Microsoft.Maui
 
 		CAShapeLayer? Mask
 		{
-			get
-			{
-
-				if (Subviews.Length == 0)
-					return null;
-
-				var child = Subviews[0];
-
-				return child?.Layer.Mask as CAShapeLayer;
-			}
-			set
-			{
-				if (Subviews.Length != 0)
-				{
-					var child = Subviews[0];
-					child.Layer.Mask = value;
-				}
-			}
+			get => Layer.Mask as CAShapeLayer;
+			set => Layer.Mask = value;
 		}
 
 		public override void LayoutSubviews()
@@ -51,6 +35,9 @@ namespace Microsoft.Maui
 			var child = Subviews[0];
 
 			child.Frame = Bounds;
+
+			if (Mask != null)
+				Mask.Frame = Bounds;
 
 			SetClipShape();
 		}
