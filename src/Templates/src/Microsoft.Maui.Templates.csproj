@@ -5,7 +5,6 @@
     <PackageType>Template</PackageType>
     <PackageId>Microsoft.Maui.Templates</PackageId>
     <PackageVersion>6.0.100-preview.4.9991</PackageVersion>
-    <MicrosoftExtensionsPackageVersion>6.0.0-preview.4.21227.6</MicrosoftExtensionsPackageVersion>
     <Title>.NET MAUI Templates</Title>
     <Authors>Microsoft</Authors>
     <Description>Templates for .NET MAUI.</Description>
