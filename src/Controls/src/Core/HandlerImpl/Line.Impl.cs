@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Controls.Shapes2
 {
-	public class Line : ILine
+	public class Line : IShape
 	{
 		public Line()
 		{
@@ -24,5 +24,15 @@ namespace Microsoft.Maui.Controls.Shapes2
 		public double X2 { get; set; }
 
 		public double Y2 { get; set; }
+
+		public PathF PathForBounds(Graphics.Rectangle rect, float density = 1)
+		{
+			var path = new PathF();
+
+			path.MoveTo(density * (float)X1, density * (float)Y1);
+			path.LineTo(density * (float)X2, density * (float)Y2);
+
+			return path;
+		}
 	}
 }

@@ -51,7 +51,7 @@ namespace Microsoft.Maui
 					using (Android.Util.DisplayMetrics? metrics = Context?.Resources?.DisplayMetrics)
 						density = metrics != null ? metrics.Density : 1.0f;
 
-					var path = ClipShape.CreatePath(bounds, density);
+					var path = ClipShape.PathForBounds(bounds, density);
 					_currentPath = path?.AsAndroidPath();
 					_lastPathSize = bounds.Size;
 				}

@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes2
 {
-	public class Path : IPath
+	public class Path : IShape
 	{
 		public Path()
 		{
@@ -16,5 +16,8 @@ namespace Microsoft.Maui.Controls.Shapes2
 		}
 
 		public string? Data { get; set; }
+
+		public PathF PathForBounds(Graphics.Rectangle rect, float density = 1) =>
+			PathBuilder.Build(Data);
 	}
 }

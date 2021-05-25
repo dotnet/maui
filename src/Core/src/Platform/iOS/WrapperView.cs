@@ -82,7 +82,7 @@ namespace Microsoft.Maui
 				return;
 
 			_lastMaskSize = bounds.Size;
-			var path = _clipShape?.CreatePath(bounds);
+			var path = _clipShape?.PathForBounds(bounds);
 			mask.Path = path?.AsCGPath();
 		}
 	}
