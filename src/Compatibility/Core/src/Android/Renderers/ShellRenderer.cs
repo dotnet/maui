@@ -257,11 +257,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void SwitchFragment(FragmentManager manager, AView targetView, ShellItem newItem, bool animate = true)
 		{
 			Profile.FrameBegin();
-
-			Profile.FramePartition("IsDesignerContext");
-			if (AndroidContext.IsDesignerContext())
-				return;
-
 			Profile.FramePartition("CreateShellItemRenderer");
 			var previousRenderer = _currentRenderer;
 			_currentRenderer = CreateShellItemRenderer(newItem);

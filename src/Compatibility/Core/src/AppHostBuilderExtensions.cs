@@ -87,6 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var options = new InitializationOptions(MauiWinUIApplication.Current.LaunchActivatedEventArgs);
 #endif
 
+#if (__ANDROID__ || __IOS__ || WINDOWS)
 			options.Flags |= InitializationFlags.SkipRenderers;
 
 			Forms.Init(options);
@@ -107,6 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 						_handlers?.AddHandler(controlType, typeof(RendererToHandlerShim));
 					});
 			}
+#endif
 
 			// register renderer with old registrar so it can get shimmed
 			foreach (var (control, renderer) in PendingRenderers)
