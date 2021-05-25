@@ -15,8 +15,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Graphics-net
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Graphics.Text.Markdig-net6", "src\Microsoft.Maui.Graphics.Text.Markdig\Microsoft.Maui.Graphics.Text.Markdig-net6.csproj", "{B364BA53-2BA8-4844-8BD2-CF257A3C21F1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop-net6", "src\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop-net6.csproj", "{B3C8FA92-1B56-4053-8103-236BFBF71A54}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,10 +29,6 @@ Global
 		{B364BA53-2BA8-4844-8BD2-CF257A3C21F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B364BA53-2BA8-4844-8BD2-CF257A3C21F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B364BA53-2BA8-4844-8BD2-CF257A3C21F1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B3C8FA92-1B56-4053-8103-236BFBF71A54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B3C8FA92-1B56-4053-8103-236BFBF71A54}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B3C8FA92-1B56-4053-8103-236BFBF71A54}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B3C8FA92-1B56-4053-8103-236BFBF71A54}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -42,7 +36,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{E66999B3-9585-4EF3-A45C-97A2101AD612} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
 		{B364BA53-2BA8-4844-8BD2-CF257A3C21F1} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
-		{B3C8FA92-1B56-4053-8103-236BFBF71A54} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B07E734-6AE2-4A12-AD60-C072F3695854}
