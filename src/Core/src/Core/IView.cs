@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Represents a visual element that is used to place layouts and controls on the screen.
 	/// </summary>
-	public interface IView : IFrameworkElement, IArrangeable, IBackground, IOpacity, IFlowDirection
+	public interface IView : IFrameworkElement, IArrangeable, IVisual, IFlowLayout
 	{
 		/// <summary>
 		/// The Margin represents the distance between an view and its adjacent views.

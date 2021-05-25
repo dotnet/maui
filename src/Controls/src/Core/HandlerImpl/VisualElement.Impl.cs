@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		Paint IBackground.Background
+		Paint Maui.IVisual.Background
 		{
 			get
 			{
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls
 			return DesiredSize;
 		}
 
-		Maui.FlowDirection IFlowDirection.FlowDirection => FlowDirection.ToPlatformFlowDirection();
+		Maui.FlowDirection IFlowLayout.FlowDirection => FlowDirection.ToPlatformFlowDirection();
 
 		Semantics IFrameworkElement.Semantics
 		{

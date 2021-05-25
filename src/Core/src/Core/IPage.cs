@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// A View that occupies the entire screen.
 	/// </summary>
-	public interface IPage : IFrameworkElement, IArrangeable, IBackground, IOpacity, IFlowDirection
+	public interface IPage : IFrameworkElement, IArrangeable, IVisual, IFlowLayout
 	{
 		/// <summary>
 		/// Gets the view that contains the content of the Page.
@@ -46,23 +46,20 @@ namespace Microsoft.Maui
 		void InvalidateArrange();
 	}
 
-	public interface IBackground
+	public interface IVisual
 	{
 		/// <summary>
-		/// Gets the paint which will fill the background of a FrameworkElement.
+		/// Gets the paint which will fill the background.
 		/// </summary>
 		Paint? Background { get; }
-	}
 
-	public interface IOpacity
-	{
 		/// <summary>
 		/// Gets the opacity value applied to the view when it is rendered.
 		/// </summary>
 		double Opacity { get; }
 	}
 
-	public interface IFlowDirection 
+	public interface IFlowLayout 
 	{
 		/// <summary>
 		/// Direction in which the UI elements on the page are scanned by the eye
