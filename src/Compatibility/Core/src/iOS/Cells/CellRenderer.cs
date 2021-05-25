@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using Microsoft.Maui.Controls.Compatibility.Internals;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using UIKit;

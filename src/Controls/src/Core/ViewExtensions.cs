@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls
 			var navPage = element
 				.GetParentsPath()
 				.OfType<IView>()
-				.Where(x=> x.Handler?.MauiContext != null)
+				.Where(x => x.Handler?.MauiContext != null)
 				.FirstOrDefault();
 
 			return navPage?.Handler?.MauiContext;

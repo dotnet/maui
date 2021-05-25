@@ -18,7 +18,8 @@ namespace Microsoft.Maui.Handlers
 		public static PropertyMapper<IView> ViewMapper = new PropertyMapper<IView>
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
-			[nameof(IView.BackgroundColor)] = MapBackgroundColor,
+			[nameof(IView.Visibility)] = MapVisibility,
+			[nameof(IView.Background)] = MapBackground,
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
@@ -35,7 +36,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.AnchorY)] = MapAnchorY,
 			Actions =
 			{
-				[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+				[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure,
 			}
 		};
 
@@ -69,6 +71,10 @@ namespace Microsoft.Maui.Handlers
 		public IMauiContext? MauiContext { get; private set; }
 
 		public IServiceProvider? Services => MauiContext?.Services;
+
+		public virtual bool NeedsContainer { get; }
+
+		public object? ContainerView { get; private protected set; }
 
 		public object? NativeView { get; private protected set; }
 
@@ -126,9 +132,14 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateIsEnabled(view);
 		}
 
-		public static void MapBackgroundColor(IViewHandler handler, IView view)
+		public static void MapVisibility(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateBackgroundColor(view);
+			((NativeView?)handler.NativeView)?.UpdateVisibility(view);
+		}
+
+		public static void MapBackground(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateBackground(view);
 		}
 
 		public static void MapAutomationId(IViewHandler handler, IView view)
@@ -147,6 +158,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapInvalidateMeasure(IViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.InvalidateMeasure(view);
+		}
+
+		public static void MapContainerView(IViewHandler handler, IView view)
+		{
+			if (handler is ViewHandler viewHandler)
+				handler.HasContainer = viewHandler.NeedsContainer;
 		}
 	}
 }

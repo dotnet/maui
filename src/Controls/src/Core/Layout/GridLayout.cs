@@ -12,8 +12,8 @@ namespace Microsoft.Maui.Controls.Layout2
 	{
 		readonly Dictionary<IView, GridInfo> _viewInfo = new();
 
-		public static readonly BindableProperty ColumnDefinitionsProperty = BindableProperty.Create("ColumnDefinitions", 
-			typeof(ColumnDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null, 
+		public static readonly BindableProperty ColumnDefinitionsProperty = BindableProperty.Create("ColumnDefinitions",
+			typeof(ColumnDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
 			{
 				var colDef = new ColumnDefinitionCollection();
@@ -21,8 +21,8 @@ namespace Microsoft.Maui.Controls.Layout2
 				return colDef;
 			});
 
-		public static readonly BindableProperty RowDefinitionsProperty = BindableProperty.Create("RowDefinitions", 
-			typeof(RowDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null, 
+		public static readonly BindableProperty RowDefinitionsProperty = BindableProperty.Create("RowDefinitions",
+			typeof(RowDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
 			{
 				var rowDef = new RowDefinitionCollection();
@@ -38,16 +38,16 @@ namespace Microsoft.Maui.Controls.Layout2
 
 		#region Row/Column/Span Attached Properties
 
-		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row", 
+		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row",
 			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0);
 
-		public static readonly BindableProperty RowSpanProperty = BindableProperty.CreateAttached("RowSpan", 
+		public static readonly BindableProperty RowSpanProperty = BindableProperty.CreateAttached("RowSpan",
 			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1);
 
-		public static readonly BindableProperty ColumnProperty = BindableProperty.CreateAttached("Column", 
+		public static readonly BindableProperty ColumnProperty = BindableProperty.CreateAttached("Column",
 			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0);
 
-		public static readonly BindableProperty ColumnSpanProperty = BindableProperty.CreateAttached("ColumnSpan", 
+		public static readonly BindableProperty ColumnSpanProperty = BindableProperty.CreateAttached("ColumnSpan",
 			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1);
 
 		public static int GetColumn(BindableObject bindable)

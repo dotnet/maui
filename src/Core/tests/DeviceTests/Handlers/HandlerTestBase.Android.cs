@@ -195,5 +195,17 @@ namespace Microsoft.Maui.DeviceTests
 
 			return Math.Floor(nativeView.RotationY);
 		}
+
+		protected Visibility GetVisibility(IViewHandler viewHandler)
+		{
+			var nativeView = (View)viewHandler.NativeView;
+
+			if (nativeView.Visibility == ViewStates.Visible)
+				return Visibility.Visible;
+			else if (nativeView.Visibility == ViewStates.Gone)
+				return Visibility.Collapsed;
+			else
+				return Visibility.Hidden;
+		}
 	}
 }

@@ -10,7 +10,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		public bool IsEnabled { get; set; } = true;
 
-		public Color BackgroundColor { get; set; }
+		public Visibility Visibility { get; set; } = Visibility.Visible;
+
+		public double Opacity { get; set; } = 1.0d;
+
+		public Paint Background { get; set; }
 
 		public Rectangle Frame { get; set; }
 
@@ -18,11 +22,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IFrameworkElement Parent { get; set; }
 
-		public Size DesiredSize { get; set; } = new Size(20, 20);
+		public Size DesiredSize { get; set; } = new Size(50, 50);
 
-		public double Width { get; set; } = 20;
+		public double Width { get; set; } = 50;
 
-		public double Height { get; set; } = 20;
+		public double Height { get; set; } = 50;
 
 		public double TranslationX { get; set; }
 

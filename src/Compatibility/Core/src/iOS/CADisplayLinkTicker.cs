@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Threading;
 using CoreAnimation;
 using Foundation;
-using Microsoft.Maui.Controls.Compatibility.Internals;
 using Microsoft.Maui.Controls.Internals;
 using UIKit;
 

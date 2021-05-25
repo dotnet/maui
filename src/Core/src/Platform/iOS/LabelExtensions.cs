@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
@@ -24,9 +25,12 @@ namespace Microsoft.Maui
 				nativeLabel.AttributedText = textAttr;
 		}
 
-		public static void UpdateFont(this UILabel nativeLabel, ITextStyle textStyle, IFontManager fontManager)
+		public static void UpdateFont(this UILabel nativeLabel, ITextStyle textStyle, IFontManager fontManager) =>
+			nativeLabel.UpdateFont(textStyle, fontManager, UIFont.LabelFontSize);
+
+		public static void UpdateFont(this UILabel nativeLabel, ITextStyle textStyle, IFontManager fontManager, double defaultSize)
 		{
-			var uiFont = fontManager.GetFont(textStyle.Font);
+			var uiFont = fontManager.GetFont(textStyle.Font, defaultSize);
 			nativeLabel.Font = uiFont;
 		}
 

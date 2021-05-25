@@ -197,6 +197,10 @@
       <Project>{10553575-8e27-4e2c-9e88-90b015e80f1c}</Project>
       <Name>Compatibility.Android.AppLinks</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Core\src\Compatibility.csproj">
+      <Project>{8e86f0da-ed1c-409e-a7a9-df3e58498620}</Project>
+      <Name>Compatibility</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Core\tests\Android\Compatibility.Android.UnitTests.csproj">
       <Project>{a4c57790-71d1-467c-a69e-2bd84cb6666c}</Project>
       <Name>Compatibility.Android.UnitTests</Name>
@@ -211,10 +215,6 @@
     <ProjectReference Include="..\..\..\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj">
       <Project>{3b72465b-acae-43ae-9327-10f372fe5f80}</Project>
       <Name>Compatibility.Android.FormsViewGroup</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Core\src\Android\Compatibility.Android.csproj">
-      <Project>{0e16e70a-d6dd-4323-ad5d-363abff42d6a}</Project>
-      <Name>Compatibility.Android</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>

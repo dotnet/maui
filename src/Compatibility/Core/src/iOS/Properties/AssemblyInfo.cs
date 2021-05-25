@@ -1,7 +1,7 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Shapes;
 using UIKit;
@@ -74,4 +74,4 @@ using UIKit;
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Deserializer))]
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(ResourcesProvider))]
 [assembly: ResolutionGroupName("Xamarin")]
-[assembly: LinkerSafe]
+[assembly: AssemblyMetadata("IsTrimmable", "True")]

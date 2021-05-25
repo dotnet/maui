@@ -41,6 +41,12 @@ namespace Microsoft.Maui.Layouts
 			for (int n = 0; n < views.Count; n++)
 			{
 				var child = views[n];
+
+				if (child.Visibility == Visibility.Collapsed)
+				{
+					continue;
+				}
+
 				var measure = child.Measure(double.PositiveInfinity, heightConstraint);
 				totalRequestedWidth += measure.Width;
 				requestedHeight = Math.Max(requestedHeight, measure.Height);
@@ -59,6 +65,12 @@ namespace Microsoft.Maui.Layouts
 			for (int n = 0; n < views.Count; n++)
 			{
 				var child = views[n];
+
+				if (child.Visibility == Visibility.Collapsed)
+				{
+					continue;
+				}
+
 				xPosition += ArrangeChild(child, height, spacing, xPosition);
 			}
 		}
@@ -70,6 +82,12 @@ namespace Microsoft.Maui.Layouts
 			for (int n = views.Count - 1; n >= 0; n--)
 			{
 				var child = views[n];
+
+				if (child.Visibility == Visibility.Collapsed)
+				{
+					continue;
+				}
+
 				xPostition += ArrangeChild(child, height, spacing, xPostition);
 			}
 		}

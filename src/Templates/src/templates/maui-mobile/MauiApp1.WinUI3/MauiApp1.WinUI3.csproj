@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net6.0-windows10.0.19041</TargetFramework>
+		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+		<RootNamespace>MauiApp1.WinUI</RootNamespace>
+		<ApplicationManifest>Windows\app.manifest</ApplicationManifest>
+		<Platforms>x86;x64;arm64</Platforms>
+		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+		<EnableDefaultPageItems>False</EnableDefaultPageItems>
+		<EnableDefaultApplicationDefinition>False</EnableDefaultApplicationDefinition>
+		<StartupObject>MauiApp1.WinUI.Program</StartupObject>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.ProjectReunion" Version="[0.5.6]">
+			<IncludeAssets>build</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="MAUI_VERSION" />
+		<PackageReference Include="Microsoft.Maui.Resizetizer" Version="MAUI_VERSION" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.16" />
+		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.19041.16" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Manifest Include="$(ApplicationManifest)" />
+		<ApplicationDefinition Include="Windows\App.xaml">
+			<Generator>MSBuild:Compile</Generator>
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</ApplicationDefinition>
+		<Page Include="Windows\*.xaml" Exclude="Windows\App.xaml">
+			<Generator>MSBuild:Compile</Generator>
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</Page>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="..\MauiApp1\*.cs" Link="%(FileName)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Remove="Windows\*.xaml" />
+		<EmbeddedResource Include="..\MauiApp1\*.xaml" Link="%(FileName)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<MauiImage Include="..\MauiApp1\Resources\**\*.svg" Link="Resources\%(RecursiveDir)%(FileName)%(Extension)" />
+		<MauiFont Include="..\MauiApp1\Resources\Fonts\**\*.ttf" Link="Resources\Fonts\%(RecursiveDir)%(FileName)%(Extension)" />
+	</ItemGroup>
+
+</Project>

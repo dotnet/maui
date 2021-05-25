@@ -9,6 +9,5 @@ namespace Microsoft.Maui
 		/// Gets or sets the current Page displayed in the Window.
 		/// </summary>
 		IView View { get; set; }
-
 	}
 }

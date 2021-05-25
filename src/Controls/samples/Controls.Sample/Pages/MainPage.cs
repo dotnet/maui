@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.ViewModel;
@@ -10,6 +11,7 @@ using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.LifecycleEvents;
 using Debug = System.Diagnostics.Debug;
+using GradientStop = Microsoft.Maui.Controls.GradientStop;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -35,23 +37,43 @@ namespace Maui.Controls.Sample.Pages
 			NavigationPage.SetHasNavigationBar(this, false);
 
 			//SetupCompatibilityLayout();
+			//SetupVisibilityTest();
 		}
 
-		const string loremIpsum =
-				"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
-				"Quisque ut dolor metus. Duis vel iaculis mauris, sit amet finibus mi. " +
-				"Etiam congue ornare risus, in facilisis libero tempor eget. " +
-				"Phasellus mattis mollis libero ut semper. In sit amet sapien odio. " +
-				"Sed interdum ullamcorper dui eu rutrum. Vestibulum non sagittis justo. " +
-				"Cras rutrum scelerisque elit, et porta est lobortis ac. " +
-				"Pellentesque eu ornare tortor. Sed bibendum a nisl at laoreet.";
+		public class VisibilityLabel : Label, IFrameworkElement
+		{
+			private Visibility _visibility;
+
+			public void SetVisibility(Visibility visibility)
+			{
+				_visibility = visibility;
+				Handler?.UpdateValue(nameof(Visibility));
+			}
+
+			Visibility IFrameworkElement.Visibility
+			{
+				get
+				{
+					return _visibility;
+				}
+			}
+		}
+
+		const string LoremIpsum =
+			"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
+			"Quisque ut dolor metus. Duis vel iaculis mauris, sit amet finibus mi. " +
+			"Etiam congue ornare risus, in facilisis libero tempor eget. " +
+			"Phasellus mattis mollis libero ut semper. In sit amet sapien odio. " +
+			"Sed interdum ullamcorper dui eu rutrum. Vestibulum non sagittis justo. " +
+			"Cras rutrum scelerisque elit, et porta est lobortis ac. " +
+			"Pellentesque eu ornare tortor. Sed bibendum a nisl at laoreet.";
 
 		void SetupMauiLayout()
 		{
 			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Colors.AntiqueWhite };
 			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Colors.CornflowerBlue };
 
-			verticalStack.Add(CreateSampleGrid());
+			//verticalStack.Add(CreateSampleGrid());
 			verticalStack.Add(CreateResizingButton());
 
 			AddTextResizeDemo(verticalStack);
@@ -84,22 +106,39 @@ namespace Maui.Controls.Sample.Pages
 				}
 			);
 
-
-#if __ANDROID__
-			string fontFamily = "ionicons.ttf#";
-#elif WINDOWS
-			string fontFamily = "Assets/ionicons.ttf#ionicons";
-#else
-			string fontFamily = "Ionicons";
-#endif
-
-			verticalStack.Add(new Image { Source = new FontImageSource() { FontFamily = fontFamily, Glyph = '\uf2fe'.ToString() } });
 			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Colors.LightBlue });
-			verticalStack.Add(new Label { Text = loremIpsum });
-			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2 });
-			verticalStack.Add(new Label { Text = loremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
-			verticalStack.Add(new Label { Text = loremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
-			verticalStack.Add(new Label { Text = "This should have five times the line height! " + loremIpsum, LineHeight = 5, MaxLines = 2 });
+			verticalStack.Add(new Label { Text = LoremIpsum });
+			verticalStack.Add(new Label { Text = LoremIpsum, MaxLines = 2 });
+			verticalStack.Add(new Label { Text = LoremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
+			verticalStack.Add(new Label { Text = LoremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
+			verticalStack.Add(new Label { Text = "This should have five times the line height! " + LoremIpsum, LineHeight = 5, MaxLines = 2 });
+			verticalStack.Add(new Label
+			{
+				FontSize = 24,
+				Text = "LinearGradient Text",
+				Background = new LinearGradientBrush(
+				new GradientStopCollection
+				{
+ 					new GradientStop(Colors.Green, 0),
+ 					new GradientStop(Colors.Blue, 1)
+				},
+				new Point(0, 0),
+				new Point(1, 0))
+			});
+			verticalStack.Add(new Label
+			{
+				Text = "RadialGradient",
+				Padding = new Thickness(30),
+				Background = new RadialGradientBrush(
+ 				new GradientStopCollection
+ 				{
+ 					new GradientStop(Colors.DarkBlue, 0),
+ 					new GradientStop(Colors.Yellow, 0.6f),
+ 					new GradientStop(Colors.LightPink, 1)
+ 				},
+ 				new Point(0.5, 0.5),
+ 				0.3f)
+			});
 
 			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level2);
 
@@ -154,6 +193,8 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Button { Text = "CharacterSpacing" });
 			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
 
+			verticalStack.Add(new RedButton { Text = "Dynamically Registered" });
+
 			var checkbox = new CheckBox();
 			checkbox.CheckedChanged += (sender, e) =>
 			{
@@ -163,11 +204,17 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new CheckBox { BackgroundColor = Colors.LightPink });
 			verticalStack.Add(new CheckBox { IsChecked = true, Color = Colors.Aquamarine });
 
-			verticalStack.Add(new Editor());
+			var editor = new Editor();
+			editor.Completed += (sender, args) =>
+			{
+				Debug.WriteLine($"Editor Completed");
+			};
+
+			verticalStack.Add(editor);
 			verticalStack.Add(new Editor { Text = "Editor" });
 			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", MaxLength = 10 });
 			verticalStack.Add(new Editor { Text = "Predictive Text Off", IsTextPredictionEnabled = false });
-			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", FontSize = 10, FontFamily = "dokdo_regular" });
+			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", FontSize = 10, FontFamily = "Dokdo" });
 			verticalStack.Add(new Editor { Text = "ReadOnly Editor", IsReadOnly = true });
 
 
@@ -189,18 +236,23 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Text = "This should be text with character spacing", CharacterSpacing = 10 });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Numeric, Placeholder = "Numeric Entry" });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
+			verticalStack.Add(new Entry { Placeholder = "This is a blue text box", BackgroundColor = Colors.CornflowerBlue });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
 
-			var searchBar = new SearchBar();
-			searchBar.CharacterSpacing = 4;
-			searchBar.Text = "A search query";
+			var searchBar = new SearchBar
+			{
+				CharacterSpacing = 4,
+				Text = "A search query"
+			};
 			verticalStack.Add(searchBar);
 
-			var placeholderSearchBar = new SearchBar();
-			placeholderSearchBar.Placeholder = "Placeholder";
+			var placeholderSearchBar = new SearchBar
+			{
+				Placeholder = "Placeholder"
+			};
 			verticalStack.Add(placeholderSearchBar);
 
 			var monkeyList = new List<string>
@@ -237,7 +289,8 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new TimePicker());
 			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
 
-			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
+			verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
+			verticalStack.Add(CreateImagesGrid());
 
 			Content = new ScrollView
 			{
@@ -329,6 +382,78 @@ namespace Maui.Controls.Sample.Pages
 			Content = verticalStack;
 		}
 
+		IView CreateImagesGrid()
+		{
+			var layout = new Microsoft.Maui.Controls.Layout2.GridLayout { ColumnSpacing = 10, RowSpacing = 10, Margin = 10 };
+
+			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
+			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
+			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
+			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
+			layout.AddRowDefinition(new RowDefinition { Height = GridLength.Auto });
+			layout.AddRowDefinition(new RowDefinition { Height = new GridLength(120) });
+
+			layout.AddColumnDefinition(new ColumnDefinition { Width = new GridLength(120) });
+			layout.AddColumnDefinition(new ColumnDefinition { Width = new GridLength(120) });
+
+			var row = -1;
+
+			Add(new Label { Text = "App Bundle", WidthRequest = 150 }, row: (row += 2) - 1, col: 0, colSpan: 2);
+			Add(new Image { Source = "dotnet_bot.png" }, row: row, col: 0);
+			Add(new Image { Source = "animated_heart.gif", IsAnimationPlaying = true }, row: row, col: 1);
+
+			Add(new Label { Text = "File", WidthRequest = 150 }, row: (row += 2) - 1, col: 0, colSpan: 2);
+			Add(new Image { Source = CopyLocal("dotnet_bot.png") }, row: row, col: 0);
+			Add(new Image { Source = CopyLocal("animated_heart.gif"), IsAnimationPlaying = true }, row: row, col: 1);
+
+			Add(new Label { Text = "Font", WidthRequest = 150 }, row: (row += 2) - 1, col: 0, colSpan: 2);
+			Add(new Image { Source = new FontImageSource { FontFamily = "Ionicons", Glyph = "\uf2fe" }, BackgroundColor = Color.FromUint(0xFF512BD4), Aspect = Aspect.Center }, row: row, col: 0);
+			Add(new Image { Source = new FontImageSource { FontFamily = "Dokdo", Glyph = "M" }, BackgroundColor = Color.FromUint(0xFF512BD4), Aspect = Aspect.Center }, row: row, col: 1);
+
+			Add(new Label { Text = "URI", WidthRequest = 150 }, row: (row += 2) - 1, col: 0, colSpan: 2);
+			Add(new Image { Source = "https://raw.githubusercontent.com/dotnet-foundation/swag/05cc70d33fa8c310147b9bd70ae9e103a072cae0/dotnet-bot/dotnet-bot-pot.png" }, row: row, col: 0);
+			Add(new Image { Source = "https://raw.githubusercontent.com/mono/SkiaSharp/6753bfad91dce1894c69084555dab6494efa90eb/samples/Gallery/Shared/Media/animated-heart.gif", IsAnimationPlaying = true }, row: row, col: 1);
+
+			Add(new Label { Text = "Stream", WidthRequest = 150 }, row: (row += 2) - 1, col: 0, colSpan: 2);
+			Add(new Image { Source = ImageSource.FromStream(() => GetEmbedded("dotnet_bot.png")) }, row: row, col: 0);
+			Add(new Image { Source = ImageSource.FromStream(() => GetEmbedded("animated_heart.gif")), IsAnimationPlaying = true }, row: row, col: 1);
+
+			return layout;
+
+			void Add(IView view, int row = 0, int col = 0, int rowSpan = 1, int colSpan = 1)
+			{
+				layout.Add(view);
+				layout.SetRow(view, row);
+				layout.SetRowSpan(view, rowSpan);
+				layout.SetColumn(view, col);
+				layout.SetColumnSpan(view, colSpan);
+			}
+
+			string CopyLocal(string embeddedPath)
+			{
+				var path = Path.Combine(FileSystem.CacheDirectory, Guid.NewGuid().ToString("N"));
+
+				using var stream = GetEmbedded(embeddedPath);
+				using var file = File.Create(path);
+				stream.CopyTo(file);
+
+				return path;
+			}
+
+			Stream GetEmbedded(string embeddedPath)
+			{
+				var assembly = GetType().Assembly;
+				var name = assembly
+					.GetManifestResourceNames()
+					.First(n => n.EndsWith(embeddedPath, StringComparison.InvariantCultureIgnoreCase));
+				return assembly.GetManifestResourceStream(name);
+			}
+		}
+
 		IView CreateSampleGrid()
 		{
 			var layout = new Microsoft.Maui.Controls.Layout2.GridLayout() { ColumnSpacing = 0, RowSpacing = 0 };
@@ -400,9 +525,9 @@ namespace Maui.Controls.Sample.Pages
 			{
 				if (resizeTestLabel.Text == "Short Text")
 				{
-					resizeTestLabel.Text = loremIpsum;
-					explicitWidthTestLabel.Text = loremIpsum;
-					widthAndHeightTestLabel.Text = loremIpsum;
+					resizeTestLabel.Text = LoremIpsum;
+					explicitWidthTestLabel.Text = LoremIpsum;
+					widthAndHeightTestLabel.Text = LoremIpsum;
 				}
 				else
 				{
@@ -416,6 +541,51 @@ namespace Maui.Controls.Sample.Pages
 			layout.Add(resizeTestLabel);
 			layout.Add(widthAndHeightTestLabel);
 			layout.Add(explicitWidthTestLabel);
+		}
+
+		void SetupVisibilityTest()
+		{
+			var layout = new VerticalStackLayout() { BackgroundColor = Colors.BurlyWood };
+
+			var button1 = new Button { Text = "Controls", Margin = new Thickness(0, 40) };
+
+			var button2 = new Button { Text = "MAUI" };
+
+			var controlsLabel = new Label { Text = "Controls Label" };
+			controlsLabel.IsVisible = true;
+
+			var alwaysVisible = new Label { Text = "Always visible" };
+
+			var mauiLabel = new VisibilityLabel() { Text = "Core Label" };
+
+			button1.Clicked += (sender, args) =>
+			{
+				controlsLabel.IsVisible = !controlsLabel.IsVisible;
+			};
+
+			button2.Clicked += (sender, args) =>
+			{
+				switch ((mauiLabel as IFrameworkElement).Visibility)
+				{
+					case Visibility.Visible:
+						mauiLabel.SetVisibility(Visibility.Hidden);
+						break;
+					case Visibility.Hidden:
+						mauiLabel.SetVisibility(Visibility.Collapsed);
+						break;
+					case Visibility.Collapsed:
+						mauiLabel.SetVisibility(Visibility.Visible);
+						break;
+				}
+			};
+
+			layout.Add(button1);
+			layout.Add(button2);
+			layout.Add(controlsLabel);
+			layout.Add(mauiLabel);
+			layout.Add(alwaysVisible);
+
+			Content = layout;
 		}
 	}
 }

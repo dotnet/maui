@@ -87,6 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void ProgressBarOnValueChanged(object sender, RangeBaseValueChangedEventArgs rangeBaseValueChangedEventArgs)
 		{
 			((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);

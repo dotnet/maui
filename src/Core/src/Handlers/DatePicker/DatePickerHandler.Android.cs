@@ -1,11 +1,14 @@
 ﻿using System;
 using Android.App;
+using Android.Graphics.Drawables;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
+		static Drawable? DefaultBackground;
+
 		DatePickerDialog? _dialog;
 
 		protected override MauiDatePicker CreateNativeView()
@@ -22,6 +25,13 @@ namespace Microsoft.Maui.Handlers
 				_dialog = CreateDatePickerDialog(date.Value.Year, date.Value.Month, date.Value.Day);
 
 			return mauiDatePicker;
+		}
+
+		protected override void SetupDefaults(MauiDatePicker nativeView)
+		{
+			DefaultBackground = nativeView.Background;
+
+			base.SetupDefaults(nativeView);
 		}
 
 		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
@@ -47,6 +57,12 @@ namespace Microsoft.Maui.Handlers
 			}, year, month, day);
 
 			return dialog;
+		}
+
+		// This is a Android-specific mapping
+		public static void MapBackground(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.NativeView?.UpdateBackground(datePicker, DefaultBackground);
 		}
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
