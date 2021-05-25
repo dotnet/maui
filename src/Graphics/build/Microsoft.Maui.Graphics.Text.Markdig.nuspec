@@ -4,7 +4,7 @@
     <id>Microsoft.Maui.Graphics.Text.Markdig</id>
     <version>$version$</version>
     <title>Microsoft.Maui.Graphics.Text.Markdig</title>
-    <authors>Microsoft, Jon Lipsky</authors>
+    <authors>Microsoft</authors>
     <owners>Microsoft</owners>
     <requireLicenseAcceptance>True</requireLicenseAcceptance>
     <description>Markdown support for Microsoft.Maui.Graphics attributed text powered by Markdig</description>
