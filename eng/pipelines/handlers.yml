@@ -2,6 +2,8 @@ trigger:
   branches:
     include:
     - main
+    - release/*
+    - loc
   tags:
     include:
     - '*'
@@ -23,6 +25,7 @@ pr:
   branches:
     include:
     - main
+    - release/*
   paths:
     include:
     - '*'
@@ -46,16 +49,6 @@ schedules:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
-  - name: LogDirectory
-    value: $(Build.ArtifactStagingDirectory)/logs
-  - name: provisionator.xcode
-    value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
-  - name: provisionator.path
-    value: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-  - name: provisionator.extraArguments
-    value: '--v'
-  - name: DotNet.Path
-    value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
 
 parameters:
   - name: BuildEverything
@@ -129,6 +122,27 @@ stages:
           steps:
             - template: common/build-windows.yml
 
+  # - stage: windows_controlgallery
+  #   displayName: Build Windows ControlGallery
+  #   dependsOn: []
+  #   jobs:
+  #     - ${{ each BuildCondition in parameters.BuildConfigurations }}:
+  #       - job: win_hosted_${{ BuildCondition }}
+  #         workspace:
+  #           clean: all
+  #         displayName: Build Windows Phase (${{ BuildCondition }})
+  #         condition: or(
+  #           ${{ parameters.BuildEverything }},
+  #           ne(variables['Build.Reason'], 'PullRequest'),
+  #           eq('${{ BuildCondition }}', 'Release'))
+  #         timeoutInMinutes: 60
+  #         pool:
+  #           name: $(vs2019VmPool)
+  #           vmImage: $(vs2019VmImage)
+  #           demands: [ msbuild ]
+  #         steps:
+  #           - template: common/controlgallery-windows.yml
+
   - stage: build_osx
     displayName: iOS
     dependsOn: []
@@ -144,10 +158,6 @@ stages:
           demands:
             - sh
             - Xamarin.iOS
-        variables:
-          provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
-          provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-          provisionator.extraArguments : '--v'
         steps:
           - template: common/controlgallery-ios.yml
 
@@ -166,9 +176,6 @@ stages:
         variables:
           renderers: 'FAST'
           outputfolder: 'newRenderers'
-          provisionator.xcode : '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
-          provisionator.path : '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-          provisionator.extraArguments : '--v'
         steps:
           - template: common/controlgallery-android.yml
 
@@ -187,6 +194,25 @@ stages:
             vmImage: ${{ BuildPlatform.vmImage }}
           steps:
             - ${{ if eq(BuildPlatform.name, 'macos') }}:
+              - task: xamops.azdevex.provisionator-task.provisionator@1
+                displayName: 'Provision Xcode'
+                condition: ne(variables['REQUIRED_XCODE'], '')
+                inputs:
+                  provisioning_script: $(provisionator.xcode)
+
+              - task: xamops.azdevex.provisionator-task.provisionator@1
+                displayName: 'Provisionator'
+                condition: eq(variables['provisioning'], 'true')
+                inputs:
+                  provisioning_script: $(provisionator.xcode)
+                  provisioning_extra_args: $(provisionator.extraArguments)
+
+              - script: |
+                  echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
+                  echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
+                displayName: 'Setup SDK Paths'
+                condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
+
               - bash: |
                   set -x
                   mkdir -p ~/Library/Preferences/Xamarin
@@ -194,16 +220,37 @@ stages:
                   /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
                   cat ~/Library/Preferences/Xamarin/Settings.plist || true
                 displayName: configure vsmac xcode
-            - pwsh: ./eng/package.ps1 -configuration Release
+              
+              - script: echo '##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)'
+                displayName: set JI_JAVA_HOME
+
+            - ${{ if eq(BuildPlatform.name, 'windows') }}:
+              - task: xamops.azdevex.provisionator-task.provisionator@1
+                displayName: 'Provision VSWindows'
+                inputs:
+                  provisioning_script: $(provisionator.vs2019)
+
+            - script: dotnet tool restore
+              displayName: install dotnet tools
+            - script: dotnet cake --configuration=Release
               displayName: pack nugets
-              errorActionPreference: stop
             - task: CopyFiles@2
               displayName: 'Copy SignList.xml Files'
               inputs:
                 Contents: |
                   **/Microsoft.Maui.*.nupkg
                   **/Microsoft.Maui.*.snupkg
+                  **/Microsoft.AspNetCore.Components.WebView.Maui.*.nupkg
+                  **/Microsoft.AspNetCore.Components.WebView.Maui.*.snupkg
                   **/SignList.xml
+                TargetFolder: $(build.artifactstagingdirectory)
+                flattenFolders: true
+            - task: CopyFiles@2
+              displayName: 'Copy Bin Log Files'
+              condition: always()
+              inputs:
+                Contents: |
+                  **/*.binlog
                 TargetFolder: $(build.artifactstagingdirectory)
                 flattenFolders: true
             - task: PublishBuildArtifacts@1
@@ -232,6 +279,25 @@ stages:
               vmImage: ${{ BuildPlatform.vmImage }}
             steps:
               - ${{ if eq(BuildPlatform.name, 'macos') }}:
+                - task: xamops.azdevex.provisionator-task.provisionator@1
+                  displayName: 'Provision Xcode'
+                  condition: ne(variables['REQUIRED_XCODE'], '')
+                  inputs:
+                    provisioning_script: $(provisionator.xcode)
+
+                - task: xamops.azdevex.provisionator-task.provisionator@1
+                  displayName: 'Provisionator'
+                  condition: eq(variables['provisioning'], 'true')
+                  inputs:
+                    provisioning_script: $(provisionator.xcode)
+                    provisioning_extra_args: $(provisionator.extraArguments)
+
+                - script: |
+                    echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
+                    echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
+                  displayName: 'Setup SDK Paths'
+                  condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
+                
                 - bash: |
                     set -x
                     mkdir -p ~/Library/Preferences/Xamarin
@@ -239,8 +305,18 @@ stages:
                     /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
                     cat ~/Library/Preferences/Xamarin/Settings.plist || true
                   displayName: configure vsmac xcode
+                - script: echo '##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)'
+                  displayName: set JI_JAVA_HOME
+              
+              - ${{ if eq(BuildPlatform.name, 'windows') }}:
+                - task: xamops.azdevex.provisionator-task.provisionator@1
+                  displayName: 'Provision VSWindows'
+                  inputs:
+                    provisioning_script: $(provisionator.vs2019)
+
               - pwsh: |
                   & dotnet build src/DotNet/DotNet.csproj -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
+                  $env:PATH = (Join-Path '$(System.DefaultWorkingDirectory)' 'bin/dotnet') + [IO.Path]::PathSeparator + $env:PATH
                   & $(DotNet.Path) build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-buildtasks.binlog
                   & $(DotNet.Path) build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration).binlog
                 displayName: build samples
@@ -266,18 +342,25 @@ stages:
           android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
 
-  # only sign using the private server
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+          stages:
+  
+  - template: common/security_compliance.yml
+  - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
+  - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
+  - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
+ 
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # Sign only using the private server
     - stage: nuget_signing
       dependsOn: pack_net6
       displayName: Sign Nuget
       jobs:
         - template: sign-artifacts/jobs/v2.yml@xamarin-templates
           parameters:
+            signType: Real
             teamName: Maui
             usePipelineArtifactTasks: false
             targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
             signedArtifactName: nuget
             signedArtifactPath: signed
             displayName: Sign Phase
-            condition: and(succeeded(), ne(variables['signVmImage'], ''), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
+            condition: and(succeeded(), ne(variables['signVmImage'], ''), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))

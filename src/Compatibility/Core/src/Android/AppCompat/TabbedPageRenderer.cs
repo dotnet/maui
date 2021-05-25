@@ -14,6 +14,7 @@ using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -242,8 +243,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			base.OnElementChanged(e);
 
 			var activity = Context.GetActivity();
-			var isDesigner = Context.IsDesignerContext();
-			var themeContext = isDesigner ? Context : activity;
+			var themeContext = activity;
 
 			if (e.OldElement != null)
 				((IPageController)e.OldElement).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
@@ -297,7 +297,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					{
 						TabLayout tabs;
 
-						if (FormsAppCompatActivity.TabLayoutResource > 0 && !isDesigner)
+						if (FormsAppCompatActivity.TabLayoutResource > 0)
 							tabs = _tabLayout = activity.LayoutInflater.Inflate(FormsAppCompatActivity.TabLayoutResource, null).JavaCast<TabLayout>();
 						else
 							tabs = _tabLayout = new TabLayout(themeContext) { TabMode = TabLayout.ModeFixed, TabGravity = TabLayout.GravityFill };
@@ -325,11 +325,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				UpdateBarBackground();
 				UpdateBarTextColor();
 				UpdateItemIconColor();
-				if (!isDesigner)
-				{
-					UpdateSwipePaging();
-					UpdateOffscreenPageLimit();
-				}
+				UpdateSwipePaging();
+				UpdateOffscreenPageLimit();
 			}
 		}
 

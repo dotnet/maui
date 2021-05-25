@@ -9,12 +9,12 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Windows.UI.Text;
 using Microsoft.Maui.Controls.Compatibility.Platform.UAP;
-using Microsoft.Maui.Controls.Compatibility.Platform.UAP.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Label;
 using WRect = Windows.Foundation.Rect;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var run = new Run { Text = span.Text ?? string.Empty };
 
 			if (span.TextColor.IsNotDefault())
-				run.Foreground = span.TextColor.ToBrush();
+				run.Foreground = Maui.ColorExtensions.ToNative(span.TextColor);
 
 			if (!span.IsDefault())
 				run.ApplyFont(span);
@@ -190,6 +190,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 		}
 
+		[PortHandler]
 		void UpdateTextDecorations(TextBlock textBlock)
 		{
 			if (!Element.IsSet(Label.TextDecorationsProperty))
@@ -223,6 +224,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateAlign(TextBlock textBlock)
 		{
 			_perfectSizeValid = false;
@@ -246,7 +248,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Label label = Element;
 			if (label != null && label.TextColor.IsNotDefault())
 			{
-				textBlock.Foreground = label.TextColor.ToBrush();
+				textBlock.Foreground = Maui.ColorExtensions.ToNative(label.TextColor);
 			}
 			else
 			{
@@ -266,13 +268,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			if (label.IsDefault() && _isInitiallyDefault)
-				textBlock.ApplyFont(Font.SystemFontOfSize(NamedSize.Medium));
+				textBlock.ApplyFont(Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)));
 			else
 				textBlock.ApplyFont(label);
 
 			_fontApplied = true;
 		}
 
+		[PortHandler]
 		void UpdateLineBreakMode(TextBlock textBlock)
 		{
 			_perfectSizeValid = false;
@@ -283,6 +286,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			textBlock.UpdateLineBreakMode(Element.LineBreakMode);
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing(TextBlock textBlock)
 		{
 			textBlock.CharacterSpacing = Element.CharacterSpacing.ToEm();
@@ -383,6 +387,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateLineHeight(TextBlock textBlock)
 		{
 			if (textBlock == null)

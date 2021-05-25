@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			BindingContext = new FavoritesViewModel();
 
 			listView.SeparatorVisibility = SeparatorVisibility.Default;
-			listView.SeparatorColor = Color.FromHex("#ababab");
+			listView.SeparatorColor = Color.FromArgb("#ababab");
 
 			listView.ItemTapped += (sender, args) =>
 			{

@@ -106,52 +106,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (context == null)
 				return null;
 
-			if (context.IsDesignerContext())
-				return context;
-
 			if (context is AppCompatActivity activity)
-				return activity.SupportActionBar.ThemedContext;
+			{
+				if(activity.SupportActionBar != null)
+					return activity.SupportActionBar.ThemedContext;
+
+				return context;
+			}
 
 			if (context is ContextWrapper contextWrapper)
 				return contextWrapper.BaseContext.GetThemedContext();
 
 			return null;
-		}
-
-		static bool? _isDesignerContext;
-		internal static bool IsDesignerContext(this Context context)
-		{
-			if (_isDesignerContext.HasValue)
-				return _isDesignerContext.Value;
-
-			context.SetDesignerContext();
-			return _isDesignerContext.Value;
-		}
-
-		internal static void SetDesignerContext(this Context context)
-		{
-			if (_isDesignerContext.HasValue)
-				return;
-
-			if (context == null)
-				_isDesignerContext = false;
-			else if ($"{context}".Contains("com.android.layoutlib.bridge.android.BridgeContext"))
-				_isDesignerContext = true;
-			else
-				_isDesignerContext = false;
-		}
-
-		internal static void SetDesignerContext(global::Android.Views.View view)
-		{
-			_isDesignerContext = view.IsInEditMode;
-		}
-
-		internal static bool IsDesignerContext(this global::Android.Views.View view)
-		{
-			if (!_isDesignerContext.HasValue)
-				SetDesignerContext(view);
-
-			return _isDesignerContext.Value;
 		}
 
 		public static AFragmentManager GetFragmentManager(this Context context)

@@ -1,7 +1,6 @@
-#nullable enable
+﻿#nullable enable
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
-
 
 namespace Microsoft.Maui
 {
@@ -16,9 +15,19 @@ namespace Microsoft.Maui
 		bool IsEnabled { get; }
 
 		/// <summary>
-		/// Gets the color which will fill the background of a FrameworkElement.
+		/// Gets a value that determines whether this FrameworkElement should be part of the visual tree or not.
 		/// </summary>
-		Color BackgroundColor { get; }
+		Visibility Visibility { get; }
+
+		/// <summary>
+		/// Gets the opacity value applied to the view when it is rendered.
+		/// </summary>
+		double Opacity { get; }
+
+		/// <summary>
+		/// Gets the paint which will fill the background of a FrameworkElement.
+		/// </summary>
+		Paint? Background { get; }
 
 		/// <summary>
 		/// Gets the bounds of the FrameworkElement.
@@ -26,12 +35,12 @@ namespace Microsoft.Maui
 		Rectangle Frame { get; }
 
 		/// <summary>
-		/// Gets the current rendered width of this FrameworkElement. 
+		/// Gets the specified width of this FrameworkElement. 
 		/// </summary>
 		double Width { get; }
 
 		/// <summary>
-		/// Gets the current rendered height of this FrameworkElement. 
+		/// Gets the specified height of this FrameworkElement. 
 		/// </summary>
 		double Height { get; }
 
@@ -64,16 +73,6 @@ namespace Microsoft.Maui
 		/// Gets the current desired Size of this FrameworkElement. 
 		/// </summary>
 		Size DesiredSize { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the current size returned by layout measure is valid.
-		/// </summary>
-		bool IsMeasureValid { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the computed size and position of child elements in this element's layout are valid.
-		/// </summary>
-		bool IsArrangeValid { get; }
 
 		/// <summary>
 		/// Signals that the current measure value of this FrameworkElement is no longer valid and must be recomputed during the next measure pass.

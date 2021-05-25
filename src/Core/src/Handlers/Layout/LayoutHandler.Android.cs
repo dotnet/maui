@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformMeasure = VirtualView.Measure;
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
 
+			NativeView.RemoveAllViews();
 			foreach (var child in VirtualView.Children)
 			{
 				NativeView.AddView(child.ToNative(MauiContext));
@@ -56,6 +57,13 @@ namespace Microsoft.Maui.Handlers
 			{
 				NativeView.RemoveView(view);
 			}
+		}
+
+		protected override void DisconnectHandler(LayoutViewGroup nativeView)
+		{
+			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
+			NativeView?.RemoveAllViews();
+			base.DisconnectHandler(nativeView);
 		}
 	}
 }

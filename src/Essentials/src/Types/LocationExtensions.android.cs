@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Essentials
 				Accuracy = location.HasAccuracy ? location.Accuracy : default(float?),
 				VerticalAccuracy =
 #if __ANDROID_26__
-                    Platform.HasApiLevelO && location.HasVerticalAccuracy ? location.VerticalAccuracyMeters : default(float?),
+					Platform.HasApiLevelO && location.HasVerticalAccuracy ? location.VerticalAccuracyMeters : default(float?),
 #else
 					default(float?),
 #endif

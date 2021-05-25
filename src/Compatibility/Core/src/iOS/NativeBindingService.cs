@@ -1,8 +1,6 @@
-using System;
-using UIKit;
-using Microsoft.Maui.Controls.Compatibility.Internals;
-using Microsoft.Maui.Controls.Xaml.Internals;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml.Internals;
+using UIKit;
 
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.NativeBindingService))]
 

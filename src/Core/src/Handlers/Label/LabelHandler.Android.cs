@@ -31,8 +31,6 @@ namespace Microsoft.Maui.Handlers
 
 			LineSpacingAddDefault = nativeView.LineSpacingExtra;
 			LineSpacingMultDefault = nativeView.LineSpacingMultiplier;
-			nativeView.LayoutParameters = new ViewGroup.LayoutParams(
-				ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent);
 		}
 
 		public static void MapText(LabelHandler handler, ILabel label)

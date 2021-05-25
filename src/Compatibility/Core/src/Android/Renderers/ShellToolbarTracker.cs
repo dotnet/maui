@@ -14,6 +14,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ActionBarDrawerToggle = AndroidX.AppCompat.App.ActionBarDrawerToggle;
@@ -334,7 +335,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected virtual async void UpdateLeftBarButtonItem(Context context, Toolbar toolbar, DrawerLayout drawerLayout, Page page)
 		{
-			if (_drawerToggle == null && !context.IsDesignerContext())
+			if (_drawerToggle == null)
 			{
 				_drawerToggle = new ActionBarDrawerToggle(context.GetActivity(), drawerLayout, toolbar, R.String.Ok, R.String.Ok)
 				{

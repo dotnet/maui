@@ -4,6 +4,7 @@
     <FirstParty Include="Microsoft.Maui.dll" />
     <FirstParty Include="Microsoft.Maui.*.dll" />
     <FirstParty Include="FormsViewGroup.dll" />
+    <FirstParty Include="Microsoft.AspNetCore.Components.WebView.Maui.dll" />
     
     <!-- SkiaSharp -->
     <FirstParty Include="SkiaSharp*.dll" />

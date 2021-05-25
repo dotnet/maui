@@ -29,9 +29,9 @@ namespace Microsoft.Maui.Hosting
 		{
 			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
 			{
-				services.AddSingleton<IEmbeddedFontLoader, EmbeddedFontLoader>();
-				services.AddSingleton<IFontRegistrar>(provider => new FontRegistrar(provider.GetRequiredService<IEmbeddedFontLoader>()));
-				services.AddSingleton<IFontManager>(provider => new FontManager(provider.GetRequiredService<IFontRegistrar>()));
+				services.AddSingleton<IEmbeddedFontLoader>(svc => new EmbeddedFontLoader(svc.CreateLogger<EmbeddedFontLoader>()));
+				services.AddSingleton<IFontRegistrar>(svc => new FontRegistrar(svc.GetRequiredService<IEmbeddedFontLoader>(), svc.CreateLogger<FontRegistrar>()));
+				services.AddSingleton<IFontManager>(svc => new FontManager(svc.GetRequiredService<IFontRegistrar>(), svc.CreateLogger<FontManager>()));
 			}
 
 			public void Configure(HostBuilderContext context, IServiceProvider services)

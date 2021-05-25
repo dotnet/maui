@@ -1,4 +1,5 @@
 using System;
+using Android.Views;
 using Microsoft.Maui.Graphics;
 using IVisualElementRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.IVisualElementRenderer;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Android.Views.View>;
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return new RendererToHandlerShim();
 		}
 
-		public RendererToHandlerShim() : base(Handlers.ViewHandler.ViewMapper)
+		public RendererToHandlerShim() : base(ViewHandler.ViewMapper)
 		{
 		}
 
@@ -110,6 +111,17 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			return Platform.Android.AppCompat.Platform.GetNativeSize(
 				VisualElementRenderer, widthConstraint, heightConstraint);
+		}
+
+		public override void NativeArrange(Rectangle frame)
+		{
+			// This is a hack to force the shimmed control to actually do layout; without this, some controls won't actually
+			// call OnLayout after SetFrame if their sizes haven't changed (e.g., ScrollView)
+			// Luckily, measuring with MeasureSpecMode.Exactly is pretty fast, since it just returns the value you give it.
+			NativeView?.Measure(MeasureSpecMode.Exactly.MakeMeasureSpec((int)frame.Width),
+				MeasureSpecMode.Exactly.MakeMeasureSpec((int)frame.Height));
+
+			base.NativeArrange(frame);
 		}
 	}
 }

@@ -35,13 +35,12 @@ namespace Microsoft.Maui
 
 			var activationState = new ActivationState(mauiContext, args);
 			var window = Application.CreateWindow(activationState);
-			window.MauiContext = mauiContext;
 
-			var content = (window.Page as IView) ?? window.Page.Content;
+			var content = (window.View as IView);
 
 			var canvas = CreateRootContainer();
 
-			var nativeContent = content.ToNative(window.MauiContext);
+			var nativeContent = content.ToNative(mauiContext);
 
 			canvas.Children.Add(nativeContent);
 

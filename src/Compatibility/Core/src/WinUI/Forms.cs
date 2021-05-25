@@ -27,14 +27,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		const string LogFormat = "[{0}] {1}";
 		private static ApplicationExecutionState s_state;
-		private static IFontManager s_fontManager;
 
 		//TODO WINUI3 This is set by main page currently because
 		// it's only a single window
-		public static Window MainWindow { get; set; }
-
-		internal static IFontManager FontManager =>
-			s_fontManager ??= new FontManager(Registrar.FontRegistrar);
+		public static UI.Xaml.Window MainWindow { get; set; }
 
 		public static bool IsInitialized { get; private set; }
 		public static IMauiContext MauiContext { get; private set; }
@@ -66,15 +62,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 
 			var accent = (WSolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
-			KnownColor.SetAccent(accent.ToFormsColor());
+			KnownColor.SetAccent(accent.ToColor());
 
 			if (!IsInitialized)
 			{
-#if !UWP_16299
 				Log.Listeners.Add(new DelegateLogListener((c, m) => Debug.WriteLine(LogFormat, c, m)));
-#else
-				Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
-#endif
+
 			}
 
 			if (!UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))

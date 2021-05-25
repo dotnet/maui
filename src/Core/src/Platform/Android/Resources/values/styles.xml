@@ -13,6 +13,12 @@
     <style name="Maui.MainTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
     <style name="Maui.MainTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <!-- Splash theme -->
+    <style name="Maui.SplashTheme" parent="Maui.MainTheme.NoActionBar">
+        <item name="maui_splash">true</item>
+        <item name="android:windowBackground">@drawable/maui_splash</item>
+    </style>
+
     <!-- Themes for Xamarin.Forms backwards compatibility -->
     <style name="MainTheme" parent="Maui.MainTheme" />
     <style name="MainTheme.Base" parent="Maui.MainTheme" />

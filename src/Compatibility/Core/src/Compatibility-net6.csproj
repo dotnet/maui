@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility</AssemblyName>
     <Nullable>disable</Nullable>
@@ -15,7 +15,7 @@
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
-    <DefineConstants>$(DefineConstants);WINDOWS_UWP;WINDOWS</DefineConstants>
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
   </PropertyGroup>
 
@@ -75,17 +75,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Controls\src\Core\Crc64.cs">
-      <Link>Crc64.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\Controls\src\Core\StreamWrapper.cs">
-      <Link>StreamWrapper.cs</Link>
-    </Compile>
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />
+    <Compile Include="Forms.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
@@ -94,9 +89,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
-    <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\Microsoft.Maui.Controls.Compatibility.pri" Visible="False" Pack="True" PackagePath="runtimes\$(WindowsTargetFramework)\native" />
-    <None Include="bin\$(Configuration)\$(WindowsTargetFramework)\Microsoft.Maui.Controls.Compatibility\**\*.xbf" Visible="False" Pack="True" PackagePath="lib\$(WindowsTargetFramework)\Microsoft.Maui.Controls.Compatibility\%(RecursiveDir)%(FileName)%(Extension);runtimes\$(WindowsTargetFramework)\native\Microsoft.Maui.Controls.Compatibility\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 </Project>
