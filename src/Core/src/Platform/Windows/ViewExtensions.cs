@@ -42,11 +42,26 @@ namespace Microsoft.Maui
 				panel.UpdateBackground(view.Background);
 		}
 
-		public static void UpdateBorderBrush(this FrameworkElement nativeView, IView view) { }
+		public static void UpdateBorderBrush(this FrameworkElement nativeView, IView view) 
+		{
+			if (nativeView is Border wrapperView)
+				wrapperView.BorderBrush = view.BorderBrush?.ToNative();
+		}
 
-		public static void UpdateBorderWidth(this FrameworkElement nativeView, IView view) { }
+		public static void UpdateBorderWidth(this FrameworkElement nativeView, IView view)
+		{
+			if (nativeView is Border wrapperView)
+				wrapperView.BorderThickness = new UI.Xaml.Thickness(view.BorderWidth);
+		}
 
-		public static void UpdateCornerRadius(this FrameworkElement nativeView, IView view) { }
+		public static void UpdateCornerRadius(this FrameworkElement nativeView, IView view)
+		{
+			if (nativeView is Border wrapperView)
+			{
+				CornerRadius cornerRadius = view.CornerRadius;
+				wrapperView.CornerRadius = WinUIHelpers.CreateCornerRadius(cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight, cornerRadius.BottomRight);
+			}
+		}
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);

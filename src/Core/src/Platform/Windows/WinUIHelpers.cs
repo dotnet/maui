@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WThickness = Microsoft.UI.Xaml.Thickness;
+﻿using WThickness = Microsoft.UI.Xaml.Thickness;
 using WCornerRadius = Microsoft.UI.Xaml.CornerRadius;
 using WGridLength = Microsoft.UI.Xaml.GridLength;
 using UwpGridUnitType = Microsoft.UI.Xaml.GridUnitType;
 
-namespace Microsoft.Maui.Controls.Platform
+namespace Microsoft.Maui
 {
 	static class WinUIHelpers
 	{
@@ -33,6 +28,7 @@ namespace Microsoft.Maui.Controls.Platform
 				Bottom = all
 			};
 		}
+
 		public static WCornerRadius CreateCornerRadius(double left, double top, double right, double bottom)
 		{
 			return new WCornerRadius

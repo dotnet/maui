@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 {
 	public static class TestExtensions
     {
-        public static bool IsEmpty(this CornerRadius cornerRadius)
+        public static bool IsEmpty(this CornerRadius? cornerRadius)
         {
             return cornerRadius == null;
         }

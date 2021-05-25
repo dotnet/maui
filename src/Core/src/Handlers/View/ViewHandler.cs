@@ -65,7 +65,12 @@ namespace Microsoft.Maui.Handlers
 
 		public IServiceProvider? Services => MauiContext?.Services;
 
-		public virtual bool NeedsContainer { get; }
+		public virtual bool NeedsContainer
+#if WINDOWS
+			=> VirtualView?.BorderBrush != null || VirtualView?.BorderWidth > 0 || VirtualView?.CornerRadius != default(CornerRadius);
+#else
+			=> false;
+#endif
 
 		public object? ContainerView { get; private protected set; }
 
@@ -131,17 +136,32 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBorderBrush(IViewHandler handler, IView view)
 		{
+#if WINDOWS		
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateBorderBrush(view);
+#else
 			((NativeView?)handler.NativeView)?.UpdateBorderBrush(view);
+#endif
 		}
 
 		public static void MapBorderWidth(IViewHandler handler, IView view)
 		{
+#if WINDOWS
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateBorderWidth(view);
+#else
 			((NativeView?)handler.NativeView)?.UpdateBorderWidth(view);
+#endif
 		}
-
+		
 		public static void MapCornerRadius(IViewHandler handler, IView view)
 		{
+#if WINDOWS		
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateCornerRadius(view);
+#else
 			((NativeView?)handler.NativeView)?.UpdateCornerRadius(view);
+#endif
 		}
 
 		public static void MapAutomationId(IViewHandler handler, IView view)
