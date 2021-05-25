@@ -114,7 +114,7 @@ stages:
             - task: MSBuild@1
               displayName: 'Pack Win2D.WinUI'
               inputs:
-                solution: src\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.csproj
+                solution: src\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop-net6.csproj
                 configuration: ${{ BuildCondition }}
                 msbuildArguments: /verbosity:normal /t:Pack -p:PackageOutputPath=$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}
 
