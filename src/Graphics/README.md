@@ -1,5 +1,7 @@
 # Microsoft.Maui.Graphics
 
+![NuGet](https://badgen.net/nuget/v/Microsoft.Maui.Graphics)
+
 Microsoft.Maui.Graphics is a cross-platform graphics library for iOS, Android, Windows, macOS, Tizen and Linux completely in C#.  With this library you can use a common API to target multiple abstractions allowing you to share your drawing code between platforms, or mix and match graphics implentations within a singular application.
 
 # Applications
