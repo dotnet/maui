@@ -242,12 +242,15 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Text = "This should be text with character spacing", CharacterSpacing = 10 });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Numeric, Placeholder = "Numeric Entry" });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
+			verticalStack.Add(new Entry { Text = "This text should be alignment at bottom", VerticalTextAlignment = TextAlignment.End, HeightRequest = 80, BackgroundColor = Colors.Fuchsia });
+			verticalStack.Add(new Entry { Text = "This text should be alignment at top", VerticalTextAlignment = TextAlignment.Start, HeightRequest = 80, Background = new SolidColorBrush(Colors.CornflowerBlue) });
+			verticalStack.Add(new Entry { Text = "This text should be alignment at bottom", VerticalTextAlignment = TextAlignment.End, HeightRequest = 80 });
+			verticalStack.Add(new Entry { Text = "This text should be alignment at top", VerticalTextAlignment = TextAlignment.Start, HeightRequest = 80 });
 			verticalStack.Add(new Entry { Placeholder = "This is a blue text box", BackgroundColor = Colors.CornflowerBlue });
 
 			verticalStack.Add(CreateSampleCursorSelection());
 
 			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 });
-			verticalStack.Add(new Entry { Text = "This text should be alignment at bottom", VerticalTextAlignment = TextAlignment.End });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
