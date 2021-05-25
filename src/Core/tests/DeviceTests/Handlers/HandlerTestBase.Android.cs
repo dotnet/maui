@@ -118,17 +118,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.RotationY, rY);
 		}
 
-		protected THandler CreateHandler(IView view)
-		{
-			var handler = Activator.CreateInstance<THandler>();
-			handler.SetMauiContext(MauiContext);
-
-			handler.SetVirtualView(view);
-			view.Handler = handler;
-
-			return handler;
-		}
-
 		protected string GetAutomationId(IViewHandler viewHandler) =>
 			$"{((View)viewHandler.NativeView).GetTag(ViewExtensions.AutomationTagId)}";
 

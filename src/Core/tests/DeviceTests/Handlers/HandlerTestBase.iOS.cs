@@ -5,6 +5,7 @@ using CoreGraphics;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using UIKit;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -103,17 +104,6 @@ namespace Microsoft.Maui.DeviceTests
 			var expected = CATransform3D.MakeRotation(rotation * (float)Math.PI / 180.0f, 0, 0, 1);
 
 			expected.AssertEqual(transform);
-		}
-
-		protected THandler CreateHandler(IView view)
-		{
-			var handler = Activator.CreateInstance<THandler>();
-			handler.SetMauiContext(MauiContext);
-
-			handler.SetVirtualView(view);
-			view.Handler = handler;
-
-			return handler;
 		}
 
 		// TODO: this is all kinds of wrong
