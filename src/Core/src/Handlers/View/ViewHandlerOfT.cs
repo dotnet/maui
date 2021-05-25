@@ -24,9 +24,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Visibility)] = MapVisibility,
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
-			[nameof(IView.Background)] = MapBackground,
+			[nameof(IVisual.Background)] = MapBackground,
 			Actions = {
-					[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure
+					[nameof(IArrangeable.InvalidateMeasure)] = MapInvalidateMeasure
 				}
 		};
 

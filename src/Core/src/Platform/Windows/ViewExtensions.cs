@@ -32,14 +32,14 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateBackground(this FrameworkElement nativeView, IFrameworkElement view)
+		public static void UpdateBackground(this FrameworkElement nativeView, IVisual visual)
 		{
 			if (nativeView is Control control)
-				control.UpdateBackground(view.Background);
+				control.UpdateBackground(visual.Background);
 			else if (nativeView is Border border)
-				border.UpdateBackground(view.Background);
+				border.UpdateBackground(visual.Background);
 			else if (nativeView is Panel panel)
-				panel.UpdateBackground(view.Background);
+				panel.UpdateBackground(visual.Background);
 		}
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IFrameworkElement view) =>

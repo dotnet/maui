@@ -51,7 +51,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateBackground(this UIView nativeView, IView view)
+		public static void UpdateBackground(this UIView nativeView, IVisual visual)
 		{
 			if (nativeView == null)
 				return;
@@ -59,7 +59,7 @@ namespace Microsoft.Maui
 			// Remove previous background gradient layer if any
 			nativeView.RemoveBackgroundLayer();
 
-			var paint = view.Background;
+			var paint = visual.Background;
 
 			if (paint.IsNullOrEmpty())
 				return;

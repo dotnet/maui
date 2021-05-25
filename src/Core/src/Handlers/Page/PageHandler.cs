@@ -1,5 +1,14 @@
 ﻿#nullable enable
 using Microsoft.Maui.Graphics;
+#if __IOS__ || MACCATALYST
+using NativeView = UIKit.UIView;
+#elif MONOANDROID
+using NativeView = Android.Views.View;
+#elif WINDOWS
+using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using NativeView = System.Object;
+#endif
 
 namespace Microsoft.Maui.Handlers
 {
@@ -9,6 +18,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IPage.Title)] = MapTitle,
 			[nameof(IPage.Content)] = MapContent,
+			[nameof(IVisual.Background)] = MapBackground,
+			Actions = {
+					[nameof(IArrangeable.InvalidateMeasure)] = MapInvalidateMeasure
+				}
 		};
 
 		public PageHandler() : base(PageMapper)
@@ -24,6 +37,16 @@ namespace Microsoft.Maui.Handlers
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			return new Size(widthConstraint, heightConstraint);
+		}
+
+		public static void MapBackground(IFrameworkElementHandler handler, IPage page)
+		{
+			((NativeView?)handler.NativeView)?.UpdateBackground(page);
+		}
+
+		public static void MapInvalidateMeasure(IFrameworkElementHandler handler, IPage page)
+		{
+			((NativeView?)handler.NativeView)?.InvalidateMeasure(page);
 		}
 	}
 }

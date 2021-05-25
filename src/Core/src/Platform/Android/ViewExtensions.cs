@@ -31,9 +31,9 @@ namespace Microsoft.Maui
 			};
 		}
 
-		public static void UpdateBackground(this AView nativeView, IView view)
+		public static void UpdateBackground(this AView nativeView, IVisual visual)
 		{
-			if (view == null)
+			if (visual == null)
 				return;
 
 			// Remove previous background gradient if any
@@ -43,7 +43,7 @@ namespace Microsoft.Maui
 				mauiDrawable.Dispose();
 			}
 
-			var paint = view.Background;
+			var paint = visual.Background;
 
 			if (paint.IsNullOrEmpty())
 				return;
