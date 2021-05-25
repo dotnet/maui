@@ -4,7 +4,7 @@
     <id>Microsoft.Maui.Graphics</id>
     <version>$version$</version>
     <title>Microsoft.Maui.Graphics</title>
-    <authors>Microsoft, Jon Lipsky</authors>
+    <authors>Microsoft</authors>
     <owners>Microsoft</owners>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>A cross-platform rendering abstraction for dotnet.</description>
