@@ -31,7 +31,7 @@ namespace Microsoft.Maui
 			};
 		}
 
-		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackground = null)
+		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackgroundDrawable = null)
 		{
 			// Remove previous background gradient if any
 			if (nativeView.Background is MauiDrawable mauiDrawable)
@@ -43,9 +43,24 @@ namespace Microsoft.Maui
 			var paint = view.Background;
 
 			if (paint.IsNullOrEmpty())
-				nativeView.Background = defaultBackground;
+				nativeView.Background = defaultBackgroundDrawable;
 			else
-				nativeView.Background = paint!.ToDrawable();
+				nativeView.Background = paint!.ToDrawable(nativeView.Context);
+		}
+			
+		public static void UpdateBorderBrush(this AView nativeView, IView view)
+		{
+			nativeView.GetMauiDrawable()?.SetBorderBrush(view.BorderBrush);
+		}
+
+		public static void UpdateBorderWidth(this AView nativeView, IView view)
+		{
+			nativeView.GetMauiDrawable()?.SetBorderWidth(view.BorderWidth);
+		}
+
+		public static void UpdateCornerRadius(this AView nativeView, IView view)
+		{
+			nativeView.GetMauiDrawable()?.SetCornerRadius(view.CornerRadius);
 		}
 
 		public static bool GetClipToOutline(this AView view)
@@ -100,6 +115,14 @@ namespace Microsoft.Maui
 			{
 				nativeView.RequestLayout();
 			}
+		}
+
+		internal static MauiDrawable? GetMauiDrawable(this AView view)
+		{
+			if (view.Background is MauiDrawable mauiDrawable)
+				return mauiDrawable;
+
+			return null;
 		}
 	}
 }

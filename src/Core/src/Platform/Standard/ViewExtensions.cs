@@ -8,6 +8,12 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this object nativeView, IView view) { }
 
+		public static void UpdateBorderBrush(this object nativeView, IView view) { }
+
+		public static void UpdateBorderWidth(this object nativeView, IView view) { }
+
+		public static void UpdateCornerRadius(this object nativeView, IView view) { }
+
 		public static void UpdateAutomationId(this object nativeView, IView view) { }
 
 		public static void UpdateSemantics(this object nativeView, IView view) { }

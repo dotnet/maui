@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
-		public double BorderWidth
+		public new double BorderWidth
 		{
 			get { return (double)GetValue(BorderWidthProperty); }
 			set { SetValue(BorderWidthProperty, value); }
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(BorderColorProperty, value); }
 		}
 
-		public int CornerRadius
+		public new int CornerRadius
 		{
 			get { return (int)GetValue(CornerRadiusProperty); }
 			set { SetValue(CornerRadiusProperty, value); }

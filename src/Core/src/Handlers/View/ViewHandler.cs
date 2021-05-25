@@ -20,6 +20,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.Visibility)] = MapVisibility,
 			[nameof(IView.Background)] = MapBackground,
+			[nameof(IView.BorderBrush)] = MapBorderBrush,
+			[nameof(IView.BorderWidth)] = MapBorderWidth,
+			[nameof(IView.CornerRadius)] = MapCornerRadius,
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
@@ -124,6 +127,21 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(IViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateBackground(view);
+		}
+
+		public static void MapBorderBrush(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateBorderBrush(view);
+		}
+
+		public static void MapBorderWidth(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateBorderWidth(view);
+		}
+
+		public static void MapCornerRadius(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateCornerRadius(view);
 		}
 
 		public static void MapAutomationId(IViewHandler handler, IView view)

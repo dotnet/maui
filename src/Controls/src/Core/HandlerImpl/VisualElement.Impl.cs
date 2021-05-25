@@ -34,6 +34,12 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		public CornerRadius CornerRadius { get; set; }
+
+		public Paint BorderBrush { get; set; }
+
+		public double BorderWidth { get; set; }
+
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);

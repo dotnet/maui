@@ -288,6 +288,9 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
 			verticalStack.Add(CreateImagesGrid());
+		
+			verticalStack.Add(new Label { Background = new LinearGradientBrush(new GradientStopCollection { new GradientStop(Colors.Red, 0), new GradientStop(Colors.Orange, 1) }, new Point(0, 0), new Point(1, 0)), CornerRadius = new CornerRadius(12), BorderWidth = 2, BorderBrush = new LinearGradientBrush(new GradientStopCollection { new GradientStop(Colors.Green, 0), new GradientStop(Colors.Blue, 1) }, new Point(0, 0), new Point(1, 0)), Text = " I am just a Label " });
+			verticalStack.Add(new Label { Background = new SolidColorBrush(Colors.Green), CornerRadius = new CornerRadius(12, 0, 0, 24), BorderWidth = 5, BorderBrush = new SolidColorBrush(Colors.Red), Text = " Another Label " });
 
 			Content = new ScrollView
 			{

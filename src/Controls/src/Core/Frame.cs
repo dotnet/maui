@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(BorderElement.BorderColorProperty, value); }
 		}
 
-		public float CornerRadius
+		public new float CornerRadius
 		{
 			get { return (float)GetValue(CornerRadiusProperty); }
 			set { SetValue(CornerRadiusProperty, value); }

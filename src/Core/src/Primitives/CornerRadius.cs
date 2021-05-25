@@ -1,9 +1,8 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui
 {
 	[DebuggerDisplay("TopLeft={TopLeft}, TopRight={TopRight}, BottomLeft={BottomLeft}, BottomRight={BottomRight}")]
-	[TypeConverter(typeof(CornerRadiusTypeConverter))]
 	public struct CornerRadius
 	{
 		bool _isParameterized;

@@ -1,71 +1,72 @@
-﻿using Android.Graphics.Drawables;
+﻿using Android.Content;
+using Android.Graphics.Drawables;
 
 namespace Microsoft.Maui.Graphics
 {
 	public static partial class PaintExtensions
 	{
-		public static Drawable? ToDrawable(this Paint paint)
+		public static Drawable? ToDrawable(this Paint paint, Context? context)
 		{
 			if (paint is SolidPaint solidPaint)
-				return solidPaint.CreateDrawable();
+				return solidPaint.CreateDrawable(context);
 
 			if (paint is LinearGradientPaint linearGradientPaint)
-				return linearGradientPaint.CreateDrawable();
+				return linearGradientPaint.CreateDrawable(context);
 
 			if (paint is RadialGradientPaint radialGradientPaint)
-				return radialGradientPaint.CreateDrawable();
+				return radialGradientPaint.CreateDrawable(context);
 
 			if (paint is ImagePaint imagePaint)
-				return imagePaint.CreateDrawable();
+				return imagePaint.CreateDrawable(context);
 
 			if (paint is PatternPaint patternPaint)
-				return patternPaint.CreateDrawable();
+				return patternPaint.CreateDrawable(context);
 
 			return null;
 		}
 
-		public static Drawable? CreateDrawable(this SolidPaint solidPaint)
+		public static Drawable? CreateDrawable(this SolidPaint solidPaint, Context? context)
 		{
-			var drawable = new MauiDrawable();
-			drawable.SetPaint(solidPaint);
+			var drawable = new MauiDrawable(context);
+			drawable.SetBackground(solidPaint);
 
 			return drawable;
 		}
 
-		public static Drawable? CreateDrawable(this LinearGradientPaint linearGradientPaint)
+		public static Drawable? CreateDrawable(this LinearGradientPaint linearGradientPaint, Context? context)
 		{
 			if (!linearGradientPaint.IsValid())
 				return null;
 
-			var drawable = new MauiDrawable();
-			drawable.SetPaint(linearGradientPaint);
+			var drawable = new MauiDrawable(context);
+			drawable.SetBackground(linearGradientPaint);
 
 			return drawable;
 		}
 
-		public static Drawable? CreateDrawable(this RadialGradientPaint radialGradientPaint)
+		public static Drawable? CreateDrawable(this RadialGradientPaint radialGradientPaint, Context? context)
 		{
 			if (!radialGradientPaint.IsValid())
 				return null;
 
-			var drawable = new MauiDrawable();
-			drawable.SetPaint(radialGradientPaint);
+			var drawable = new MauiDrawable(context);
+			drawable.SetBackground(radialGradientPaint);
 
 			return drawable;
 		}
 
-		public static Drawable? CreateDrawable(this ImagePaint imagePaint)
+		public static Drawable? CreateDrawable(this ImagePaint imagePaint, Context? context)
 		{
-			var drawable = new MauiDrawable();
-			drawable.SetPaint(imagePaint);
+			var drawable = new MauiDrawable(context);
+			drawable.SetBackground(imagePaint);
 
 			return drawable;
 		}
 
-		public static Drawable? CreateDrawable(this PatternPaint patternPaint)
+		public static Drawable? CreateDrawable(this PatternPaint patternPaint, Context? context)
 		{
-			var drawable = new MauiDrawable();
-			drawable.SetPaint(patternPaint);
+			var drawable = new MauiDrawable(context);
+			drawable.SetBackground(patternPaint);
 
 			return drawable;
 		}

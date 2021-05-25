@@ -56,13 +56,13 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(BorderElement.BorderColorProperty, value); }
 		}
 
-		public int CornerRadius
+		public new int CornerRadius
 		{
 			get { return (int)GetValue(CornerRadiusProperty); }
 			set { SetValue(CornerRadiusProperty, value); }
 		}
 
-		public double BorderWidth
+		public new double BorderWidth
 		{
 			get { return (double)GetValue(BorderWidthProperty); }
 			set { SetValue(BorderWidthProperty, value); }

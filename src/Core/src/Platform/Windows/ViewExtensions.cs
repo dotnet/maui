@@ -42,6 +42,12 @@ namespace Microsoft.Maui
 				panel.UpdateBackground(view.Background);
 		}
 
+		public static void UpdateBorderBrush(this FrameworkElement nativeView, IView view) { }
+
+		public static void UpdateBorderWidth(this FrameworkElement nativeView, IView view) { }
+
+		public static void UpdateCornerRadius(this FrameworkElement nativeView, IView view) { }
+
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);
 
