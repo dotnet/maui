@@ -14,6 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
+    <ProjectReference Include="..\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics-net6.csproj" />
   </ItemGroup>
 </Project>
