@@ -18,7 +18,7 @@
     <NeutralLanguage>en</NeutralLanguage>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/dotnet/Microsoft.Maui.Graphics.git</RepositoryUrl>
-    <ProjectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics</ProjectUrl>
+    <PackageProjectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageVersion>0.0.1-alpha1</PackageVersion>
