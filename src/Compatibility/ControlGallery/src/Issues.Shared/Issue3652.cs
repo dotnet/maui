@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				new Command(() => MessagingCenter.Send(this, "Remove", this));
 		}
 
-#if UITEST && !__WINDOWS__
+#if UITEST && !WINDOWS
 		[Test]
 		public void TestRemovingContextMenuItems()
 		{

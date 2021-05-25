@@ -1,17 +1,18 @@
-﻿using Foundation;
-using UIKit;
-using WebKit;
-using RectangleF = CoreGraphics.CGRect;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Foundation;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
+using UIKit;
+using WebKit;
+using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -101,14 +102,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			HostPage != null &&
 			Services != null;
 
-		private string? HostPage { get; set; }
-		private ObservableCollection<RootComponent>? RootComponents { get; set; }
-		private new IServiceProvider? Services { get; set; }
-
 		private void StartWebViewCoreIfPossible()
 		{
 			if (!RequiredStartupPropertiesSet ||
-				false)//_webviewManager != null)
+				_webviewManager != null)
 			{
 				return;
 			}
@@ -117,17 +114,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				throw new InvalidOperationException($"Can't start {nameof(BlazorWebView)} without native web view instance.");
 			}
 
-			var resourceAssembly = RootComponents?[0]?.ComponentType?.Assembly;
-			if (resourceAssembly == null)
-			{
-				throw new InvalidOperationException($"Can't start {nameof(BlazorWebView)} without a component type assembly.");
-			}
+			var assetConfig = Services!.GetRequiredService<BlazorAssetsAssemblyConfiguration>()!;
 
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
-			var contentRootDir = Path.GetDirectoryName(HostPage) ?? string.Empty;
+			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
-			var fileProvider = new ManifestEmbeddedFileProvider(resourceAssembly, root: contentRootDir);
+
+			var fileProvider = new ManifestEmbeddedFileProvider(assetConfig.AssetsAssembly, root: contentRootDir);
 
 			_webviewManager = new IOSWebViewManager(this, NativeView, Services!, MauiDispatcher.Instance, fileProvider, hostPageRelativePath);
 			if (RootComponents != null)
@@ -139,24 +133,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 			}
 			_webviewManager.Navigate("/");
-		}
-
-		public static void MapHostPage(BlazorWebViewHandler handler, IBlazorWebView webView)
-		{
-			handler.HostPage = webView.HostPage;
-			handler.StartWebViewCoreIfPossible();
-		}
-
-		public static void MapRootComponents(BlazorWebViewHandler handler, IBlazorWebView webView)
-		{
-			handler.RootComponents = webView.RootComponents;
-			handler.StartWebViewCoreIfPossible();
-		}
-
-		public static void MapServices(BlazorWebViewHandler handler, IBlazorWebView webView)
-		{
-			handler.Services = webView.Services;
-			handler.StartWebViewCoreIfPossible();
 		}
 
 		private sealed class WebViewScriptMessageHandler : NSObject, IWKScriptMessageHandler
@@ -214,39 +190,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				{
 					statusCode = 200;
 					using var ms = new MemoryStream();
-					var uri = new Uri(url);
 
 					content.CopyTo(ms);
-
-					content.Position = 0;
-					var sr = new StreamReader(content);
-					var cc = sr.ReadToEnd();
-
 					content.Dispose();
 
-
-					var headersDict =
-						new Dictionary<string, string>(
-						headers
-							.Split(Environment.NewLine)
-							.Select(headerString =>
-								new KeyValuePair<string, string>(
-									headerString.Substring(0, headerString.IndexOf(':')),
-									headerString.Substring(headerString.IndexOf(':') + 2))));
-
-					contentType = headersDict["Content-Type"];
-					if (cc.StartsWith("<!DOCTYPE", StringComparison.Ordinal))
-					{
-						contentType = "text/html";
-					}
-					else if (cc.Contains("box-shadow", StringComparison.Ordinal))
-					{
-						contentType = "text/css";
-					}
-					else if (url.Contains(".js", StringComparison.Ordinal))
-					{
-						contentType = "application/javascript";
-					}
+					contentType = headers["Content-Type"];
 
 					return ms.ToArray();
 				}

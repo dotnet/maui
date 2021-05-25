@@ -1,13 +1,12 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting.Internal;
-using Microsoft.Maui.HotReload;
 
 namespace Microsoft.Maui.Hosting
 {
@@ -21,6 +20,7 @@ namespace Microsoft.Maui.Hosting
 			{ typeof(IDatePicker), typeof(DatePickerHandler) },
 			{ typeof(IEditor), typeof(EditorHandler) },
 			{ typeof(IEntry), typeof(EntryHandler) },
+			{ typeof(IImage), typeof(ImageHandler) },
 			{ typeof(ILabel), typeof(LabelHandler) },
 			{ typeof(ILayout), typeof(LayoutHandler) },
 			{ typeof(IPicker), typeof(PickerHandler) },
@@ -64,6 +64,13 @@ namespace Microsoft.Maui.Hosting
 			return builder;
 		}
 
+		public static IAppHostBuilder ConfigureServices<TBuilder>(this IAppHostBuilder builder)
+			where TBuilder : IMauiServiceBuilder, new()
+		{
+			builder.ConfigureServices<TBuilder>((_, services) => { });
+			return builder;
+		}
+
 		public static IAppHostBuilder ConfigureAppConfiguration(this IAppHostBuilder builder, Action<IConfigurationBuilder> configureDelegate)
 		{
 			builder.ConfigureAppConfiguration((_, config) => configureDelegate(config));
@@ -96,40 +103,23 @@ namespace Microsoft.Maui.Hosting
 			return builder;
 		}
 
-		public static IAppHostBuilder EnableHotReload(this IAppHostBuilder builder, string? ideIp = null, int idePort = 9988)
+		public static IAppHostBuilder UseMicrosoftExtensionsServiceProviderFactory(this IAppHostBuilder builder)
 		{
-			builder.ConfigureMauiHandlers((context, handlersCollection) =>
-			{
-				if (handlersCollection is IMauiServiceCollection mauiCollection)
-					MauiHotReloadHelper.Init(mauiCollection);
-				else
-					throw new NotSupportedException("Hot Reload only works with a IMauiServiceCollection");
-			});
-			Reloadify.Reload.Instance.ReplaceType = (d) =>
-			{
-				MauiHotReloadHelper.RegisterReplacedView(d.ClassName, d.Type);
-			};
-
-			Reloadify.Reload.Instance.FinishedReload = () =>
-			{
-				MauiHotReloadHelper.TriggerReload();
-			};
-			Task.Run(async () =>
-			{
-				try
-				{
-					var success = await Reloadify.Reload.Init(ideIp, idePort);
-					Console.WriteLine($"HotReload Initialize: {success}");
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine(ex);
-				}
-			});
+			builder.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory());
 			return builder;
 		}
 
-		class HandlerCollectionBuilder : MauiServiceCollection, IMauiHandlersCollection, IMauiServiceBuilder
+		// To use the Microsoft.Extensions.DependencyInjection ServiceCollection and not the MAUI one
+		class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
+		{
+			public ServiceCollection CreateBuilder(IServiceCollection services)
+				=> new ServiceCollection { services };
+
+			public IServiceProvider CreateServiceProvider(ServiceCollection containerBuilder)
+				=> containerBuilder.BuildServiceProvider();
+		}
+
+		class HandlerCollectionBuilder : MauiHandlersCollection, IMauiServiceBuilder
 		{
 			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
 			{

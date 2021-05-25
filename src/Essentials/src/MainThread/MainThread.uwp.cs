@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Essentials
 
 				return CoreApplication.MainView.CoreWindow.Dispatcher?.HasThreadAccess ?? false;
 #elif WINDOWS
-                return DispatcherQueue.GetForCurrentThread()?.HasThreadAccess ?? false;
+				return DispatcherQueue.GetForCurrentThread()?.HasThreadAccess ?? false;
 #endif
 			}
 		}
@@ -47,13 +47,13 @@ namespace Microsoft.Maui.Essentials
 				throw new InvalidOperationException("Unable to find main thread.");
 			dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => action()).WatchForError();
 #elif WINDOWS
-            var dispatcher = DispatcherQueue.GetForCurrentThread();
+			var dispatcher = DispatcherQueue.GetForCurrentThread();
 
-            if (dispatcher == null)
-                throw new InvalidOperationException("Unable to find main thread.");
+			if (dispatcher == null)
+				throw new InvalidOperationException("Unable to find main thread.");
 
-            if (!dispatcher.TryEnqueue(DispatcherQueuePriority.Normal, () => action()))
-                throw new InvalidOperationException("Unable to queue on the main thread.");
+			if (!dispatcher.TryEnqueue(DispatcherQueuePriority.Normal, () => action()))
+				throw new InvalidOperationException("Unable to queue on the main thread.");
 #endif
 		}
 	}

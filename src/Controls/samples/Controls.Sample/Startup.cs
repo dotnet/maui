@@ -1,53 +1,61 @@
-﻿using System;
+﻿#if NET6_0_OR_GREATER
+#define BLAZOR_ENABLED
+#endif
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModel;
-#if NET6_0_OR_GREATER
+#if BLAZOR_ENABLED
 using Microsoft.AspNetCore.Components.WebView.Maui;
 #endif
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Controls;
+using Maui.Controls.Sample.Controls;
 
 namespace Maui.Controls.Sample
 {
 	public class Startup : IStartup
 	{
-		enum PageType { Xaml, Semantics, Main, Blazor }
-		private PageType _pageType = PageType.Main;
+		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage, Shell }
+		private PageType _pageType = PageType.NavigationPage;
 
 		public readonly static bool UseXamlApp = true;
+		public readonly static bool UseFullDI = false;
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{
+			bool useFullDIAndBlazor = UseFullDI || _pageType == PageType.Blazor;
+
+			appBuilder
+				.UseFormsCompatibility()
+				.UseMauiControlsHandlers();
+
 			if (UseXamlApp)
-			{
-				// Use all the Forms features
-				appBuilder = appBuilder
-					.UseFormsCompatibility()
-					.UseMauiApp<XamlApp>();
-			}
+				appBuilder.UseMauiApp<XamlApp>();
 			else
-			{
-				// Use just the Forms renderers
-				appBuilder = appBuilder
-					.UseCompatibilityRenderers()
-					.UseMauiApp<MyApp>();
-			}
-#if DEBUG
+				appBuilder.UseMauiApp<MyApp>();
+
+			// Use a "third party" library that brings in a massive amount of controls
+			appBuilder.UseRed();
+
+#if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
 #endif
+			appBuilder.UseMauiControlsHandlers();
+
 			appBuilder
-#if NET6_0_OR_GREATER
-				.RegisterBlazorMauiWebView()
-#endif
 				.ConfigureAppConfiguration(config =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>
@@ -57,22 +65,53 @@ namespace Maui.Controls.Sample
 						{"Position:Name", "Dictionary_Name" },
 						{"Logging:LogLevel:Default", "Warning"}
 					});
-				})
-				.UseMauiServiceProviderFactory(true)
-				//.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
+				});
+
+			if (useFullDIAndBlazor)
+			{
+#if BLAZOR_ENABLED
+				appBuilder
+					.RegisterBlazorMauiWebView(typeof(Startup).Assembly);
+#endif
+				appBuilder.UseMicrosoftExtensionsServiceProviderFactory();
+			}
+			else
+			{
+				appBuilder.UseMauiServiceProviderFactory(constructorInjection: true);
+			}
+
+			appBuilder
 				.ConfigureServices(services =>
 				{
+					// The MAUI DI does not support generic argument resolution
+					if (useFullDIAndBlazor)
+					{
+						services.AddLogging(logging =>
+						{
+#if WINDOWS
+							logging.AddDebug();
+#else
+							logging.AddConsole();
+#endif
+						});
+					}
+
 					services.AddSingleton<ITextService, TextService>();
 					services.AddTransient<MainPageViewModel>();
-
+#if BLAZOR_ENABLED
+					if (useFullDIAndBlazor)
+						services.AddBlazorWebView();
+#endif
 					services.AddTransient(
-						serviceType: typeof(IPage),
+						serviceType: _pageType == PageType.Blazor ? typeof(Page) : typeof(IPage),
 						implementationType: _pageType switch
 						{
+							PageType.Shell => typeof(AppShell),
+							PageType.NavigationPage => typeof(NavPage),
 							PageType.Xaml => typeof(XamlPage),
 							PageType.Semantics => typeof(SemanticsPage),
 							PageType.Blazor =>
-#if NET6_0_OR_GREATER
+#if BLAZOR_ENABLED
 								typeof(BlazorPage),
 #else
 								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
@@ -81,24 +120,29 @@ namespace Maui.Controls.Sample
 							_ => throw new Exception(),
 						});
 
-					services.AddTransient<IWindow, Microsoft.Maui.Controls.Window>();
+					services.AddTransient<IWindow, Window>();
 				})
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
+					fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
+					fonts.AddFont("LobsterTwo-Bold.ttf", "Lobster Two Bold");
+					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
+					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
+					fonts.AddFont("ionicons.ttf", "Ionicons");
 				})
-				//.ConfigureEssentials(essentials =>
-				//{
-				//	essentials
-				//		.UseVersionTracking()
-				//		.UseMapServiceToken("YOUR-KEY-HERE")
-				//		.AddAppAction("test_action", "Test App Action")
-				//		.AddAppAction("second_action", "Second App Action")
-				//		.OnAppAction(appAction =>
-				//		{
-				//			Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
-				//		});
-				//})
+				.ConfigureEssentials(essentials =>
+				{
+					essentials
+						.UseVersionTracking()
+						.UseMapServiceToken("YOUR-KEY-HERE")
+						.AddAppAction("test_action", "Test App Action")
+						.AddAppAction("second_action", "Second App Action")
+						.OnAppAction(appAction =>
+						{
+							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
+						});
+				})
 				.ConfigureLifecycleEvents(events =>
 				{
 					events.AddEvent<Action<string>>("CustomEventName", value => LogEvent("CustomEventName"));
@@ -178,16 +222,6 @@ namespace Maui.Controls.Sample
 						return true;
 					}
 				});
-		}
-
-		// To use the Microsoft.Extensions.DependencyInjection ServiceCollection and not the MAUI one
-		class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
-		{
-			public ServiceCollection CreateBuilder(IServiceCollection services)
-				=> new ServiceCollection { services };
-
-			public IServiceProvider CreateServiceProvider(ServiceCollection containerBuilder)
-				=> containerBuilder.BuildServiceProvider();
 		}
 	}
 }

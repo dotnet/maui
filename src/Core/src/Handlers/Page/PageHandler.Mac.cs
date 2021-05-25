@@ -10,5 +10,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			return new NSView();
 		}
+
+		public static void MapTitle(PageHandler handler, IPage page)
+		{
+		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿#nullable enable
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -9,6 +10,18 @@ namespace Microsoft.Maui.Handlers
 			AutoMaximizeSuggestionArea = false,
 			QueryIcon = new SymbolIcon(Symbol.Find)
 		};
+
+		protected override void ConnectHandler(AutoSuggestBox nativeView)
+		{
+			nativeView.QuerySubmitted += OnQuerySubmitted;
+			nativeView.TextChanged += OnTextChanged;
+		}
+
+		protected override void DisconnectHandler(AutoSuggestBox nativeView)
+		{
+			nativeView.QuerySubmitted -= OnQuerySubmitted;
+			nativeView.TextChanged -= OnTextChanged;
+		}
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
 		{
@@ -42,5 +55,30 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
+
+		void OnQuerySubmitted(AutoSuggestBox? sender, AutoSuggestBoxQuerySubmittedEventArgs e)
+		{
+			if (VirtualView == null)
+				return;
+
+			// Modifies the text of the control if it does not match the query.
+			// This is possible because OnTextChanged is fired with a delay
+			if (e.QueryText != VirtualView.Text)
+				VirtualView.Text = e.QueryText;
+
+			VirtualView.SearchButtonPressed();
+		}
+
+		[PortHandler]
+		void OnTextChanged(AutoSuggestBox? sender, AutoSuggestBoxTextChangedEventArgs e)
+		{
+			if (e.Reason == AutoSuggestionBoxTextChangeReason.ProgrammaticChange)
+				return;
+
+			if (VirtualView == null || sender == null)
+				return;
+
+			VirtualView.Text = sender.Text;
+		}
 	}
 }

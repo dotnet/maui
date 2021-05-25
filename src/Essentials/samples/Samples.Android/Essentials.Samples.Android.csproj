@@ -60,9 +60,9 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Android\Compatibility.Android.csproj">
-      <Project>{0E16E70A-D6DD-4323-AD5D-363ABFF42D6A}</Project>
-      <Name>Compatibility.Android</Name>
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj">
+      <Project>{9faa9654-80e6-4664-9702-47998a04e8fe}</Project>
+      <Name>Compatibility</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>

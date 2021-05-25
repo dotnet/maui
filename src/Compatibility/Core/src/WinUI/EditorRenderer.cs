@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.InputView;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -156,11 +157,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			   () => Control.BackgroundFocusBrush, brush => Control.BackgroundFocusBrush = brush);
 		}
 
+		[PortHandler]
 		void OnLostFocus(object sender, RoutedEventArgs e)
 		{
 			ElementController.SendCompleted();
 		}
 
+		[PortHandler]
 		void UpdatePlaceholderText()
 		{
 			Control.PlaceholderText = Element.Placeholder ?? "";
@@ -275,6 +278,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
 		}
 	
+		[PortHandler]
 		void UpdateText()
 		{
 			string newText = _transformedText = Element.UpdateFormsText(Element.Text, Element.TextTransform);
@@ -304,6 +308,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.UpdateFlowDirection(Element);
 		}
 
+		[PortHandler]
 		void UpdateMaxLength()
 		{
 			Control.MaxLength = Element.MaxLength;
@@ -329,6 +334,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateIsReadOnly()
 		{
 			Control.IsReadOnly = Element.IsReadOnly;

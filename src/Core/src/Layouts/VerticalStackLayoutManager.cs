@@ -12,9 +12,7 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
-			var widthMeasureConstraint = ResolveConstraints(widthConstraint, Stack.Width);
-
-			var measure = Measure(widthMeasureConstraint, Stack.Spacing, Stack.Children);
+			var measure = Measure(widthConstraint, Stack.Spacing, Stack.Children);
 
 			var finalHeight = ResolveConstraints(heightConstraint, Stack.Height, measure.Height);
 
@@ -30,6 +28,11 @@ namespace Microsoft.Maui.Layouts
 
 			foreach (var child in views)
 			{
+				if (child.Visibility == Visibility.Collapsed)
+				{
+					continue;
+				}
+
 				var measure = child.Measure(widthConstraint, double.PositiveInfinity);
 				totalRequestedHeight += measure.Height;
 				requestedWidth = Math.Max(requestedWidth, measure.Width);
@@ -47,6 +50,11 @@ namespace Microsoft.Maui.Layouts
 
 			foreach (var child in views)
 			{
+				if (child.Visibility == Visibility.Collapsed)
+				{
+					continue;
+				}
+
 				var destination = new Rectangle(0, stackHeight, width, child.DesiredSize.Height);
 				child.Arrange(destination);
 				stackHeight += destination.Height + spacing;

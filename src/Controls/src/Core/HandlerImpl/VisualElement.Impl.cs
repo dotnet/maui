@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -10,7 +7,8 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class VisualElement : IFrameworkElement
 	{
-		private IViewHandler _handler;
+		Semantics _semantics;
+		IViewHandler _handler;
 
 		public Rectangle Frame => Bounds;
 
@@ -21,6 +19,18 @@ namespace Microsoft.Maui.Controls
 			{
 				_handler = value;
 				IsPlatformEnabled = _handler != null;
+			}
+		}
+
+		Paint IFrameworkElement.Background
+		{
+			get
+			{
+				if (!Brush.IsNullOrEmpty(Background))
+					return Background;
+				if (BackgroundColor.IsNotDefault())
+					return new SolidColorBrush(BackgroundColor);
+				return null;
 			}
 		}
 
@@ -44,12 +54,53 @@ namespace Microsoft.Maui.Controls
 			return ArrangeOverride(bounds);
 		}
 
+		// The CloseEnough methods will likely go away once we get rid of the cause (see comments below); if not, we'll
+		// add a proper extension method or add a compare method to MG with a tolerance parameter
+		bool CloseEnough(double a, double b)
+		{
+			const double tolerance = 0.0001;
+
+			return (Math.Abs(a - b) < tolerance);
+		}
+
+		bool CloseEnough(Rectangle currentBounds, Rectangle newBounds)
+		{
+			if (!CloseEnough(currentBounds.X, newBounds.X))
+			{
+				return false;
+			}
+
+			if (!CloseEnough(currentBounds.Y, newBounds.Y))
+			{
+				return false;
+			}
+
+			if (!CloseEnough(currentBounds.Width, newBounds.Width))
+			{
+				return false;
+			}
+
+			if (!CloseEnough(currentBounds.Height, newBounds.Height))
+			{
+				return false;
+			}
+
+			return true;
+		}
+
 		// ArrangeOverride provides a way to allow subclasses (e.g., Layout) to override Arrange even though
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
-			// Setting Bounds here is equivalent to setting the Frame
-			Bounds = this.ComputeFrame(bounds);
+			// We check the previous bounds here to avoid getting into a loop caused by the OnSizeAllocated override
+			// in View.cs; the arrange it forces ends up back here and if we have a margin, ComputeFrame will 
+			// keep applying it in a loop until the element disappears. Hopefully we can remove the OnSizeAllocated 
+			// hack at some point and avoid this extra check.
+			if (!CloseEnough(Bounds, bounds))
+			{
+				// Setting Bounds here is equivalent to setting the Frame
+				Bounds = this.ComputeFrame(bounds);
+			}
 
 			return Frame.Size;
 		}
@@ -66,9 +117,7 @@ namespace Microsoft.Maui.Controls
 
 		// InvalidateMeasureOverride provides a way to allow subclasses (e.g., Layout) to override InvalidateMeasure even though
 		// the interface has to be explicitly implemented to avoid conflict with the VisualElement.InvalidateMeasure method
-		protected virtual void InvalidateMeasureOverride()
-		{
-		}
+		protected virtual void InvalidateMeasureOverride() => Handler?.UpdateValue(nameof(IFrameworkElement.InvalidateMeasure));
 
 		void IFrameworkElement.InvalidateArrange()
 		{
@@ -91,8 +140,9 @@ namespace Microsoft.Maui.Controls
 		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => default;
 		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => default;
 
-		Maui.Semantics _semantics;
-		Maui.Semantics IFrameworkElement.Semantics
+		Visibility IFrameworkElement.Visibility => IsVisible.ToVisibility();
+
+		Semantics IFrameworkElement.Semantics
 		{
 			get => _semantics;
 		}
@@ -100,7 +150,7 @@ namespace Microsoft.Maui.Controls
 		// We don't want to initialize Semantics until someone explicitly 
 		// wants to modify some aspect of the semantics class
 		internal Semantics SetupSemantics() =>
-			_semantics ??= new Maui.Semantics();
+			_semantics ??= new Semantics();
 
 		double IFrameworkElement.Width => WidthRequest;
 		double IFrameworkElement.Height => HeightRequest;

@@ -802,6 +802,7 @@ namespace Microsoft.Maui.Controls
 				result.Request = new Size(result.Request.Width + margin.HorizontalThickness, result.Request.Height + margin.VerticalThickness);
 			}
 
+			DesiredSize = result.Request;
 			return result;
 		}
 
@@ -939,7 +940,15 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue) => InvalidateMeasureInternal(InvalidationTrigger.Undefined);
+		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue)
+		{
+			if (this is IFrameworkElement fe)
+			{
+				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Visibility));
+			}
+
+			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
+		}
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
 		{
@@ -1080,6 +1089,13 @@ namespace Microsoft.Maui.Controls
 			}
 
 			element.SelfConstraint = constraint;
+
+			if (element is IFrameworkElement fe)
+			{
+				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Width));
+				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Height));
+			}
+
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.SizeRequestChanged);
 		}
 

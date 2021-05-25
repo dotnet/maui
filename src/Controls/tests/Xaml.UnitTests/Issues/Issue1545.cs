@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.AreNotSame(cell0, cell1);
 			Assert.AreNotSame(cell0.View, cell1.View);
 			Assert.AreNotSame(((StackLayout)cell0.View).Children[0], ((StackLayout)cell1.View).Children[0]);
-			Assert.AreEqual(Color.FromHex("ff00aa"), ((StackLayout)cell1.View).Children[0].BackgroundColor);
+			Assert.AreEqual(Color.FromArgb("ff00aa"), ((StackLayout)cell1.View).Children[0].BackgroundColor);
 		}
 
 		[Test]

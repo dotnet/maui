@@ -12,9 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.UI.Xaml.Controls;
 using WWebView = Microsoft.UI.Xaml.Controls.WebView2;
-
-//TODO WINUI3
-//using WWebViewExecutionMode = Microsoft.UI.Xaml.Controls.WebViewExecutionMode;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

@@ -2,12 +2,13 @@ using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	public class CheckBoxRenderer : ViewRenderer<CheckBox, FormsCheckBox>
 	{
-		static WBrush _tintDefaultBrush = Colors.Blue.ToBrush();
+		static WBrush _tintDefaultBrush = Maui.ColorExtensions.ToNative(Colors.Blue);
 		bool _disposed = false;
 
 		protected virtual FormsCheckBox CreateNativeControl()

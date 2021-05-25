@@ -5,8 +5,7 @@ namespace Maui.Controls.Sample.SingleProject
 {
 	public class MainWindow : Window
 	{
-		static bool useBlazor = false;
-		public MainWindow() : base(useBlazor ? new BlazorPage() : new MainPage())
+		public MainWindow() : base(Startup.UseBlazor ? new BlazorPage() : new MainPage())
 		{
 		}
 	}

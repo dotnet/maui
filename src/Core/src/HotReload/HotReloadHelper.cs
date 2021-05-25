@@ -11,9 +11,9 @@ namespace Microsoft.Maui.HotReload
 {
 	public static class MauiHotReloadHelper
 	{
-		static IMauiServiceCollection? HandlerService;
+		static IMauiHandlersCollection? HandlerService;
 		//static IMauiHandlersServiceProvider? HandlerServiceProvider;
-		public static void Init(IMauiServiceCollection handlerService)
+		public static void Init(IMauiHandlersCollection handlerService)
 		{
 			HandlerService = handlerService;
 			//HandlerServiceProvider = new MauiHandlersServiceProvider(handlerService);
@@ -98,7 +98,22 @@ namespace Microsoft.Maui.HotReload
 			if (!IsEnabled)
 				return;
 
-			Console.WriteLine($"{oldViewType} - {newViewType}");
+			Action<MethodInfo> executeStaticMethod = (method) =>
+			{
+				try
+				{
+					method?.Invoke(null, null);
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"Error calling {method.Name} on type: {newViewType}");
+					Debug.WriteLine(ex);
+					//TODO: Notifiy that we couldnt execute OnHotReload for the Method;
+				}
+			};
+
+			var onHotReloadMethods = newViewType.GetOnHotReloadMethods();
+			onHotReloadMethods.ForEach(x => executeStaticMethod(x));
 
 			if (typeof(IHotReloadableView).IsAssignableFrom(newViewType))
 				replacedViews[oldViewType] = newViewType;
@@ -125,19 +140,7 @@ namespace Microsoft.Maui.HotReload
 					RegisterHandler(h, newViewType);
 				}
 			}
-			try
-			{
-				//Call static init if it exists on new classes!
-				var staticInit = newViewType.GetMethod("Init", BindingFlags.Static | BindingFlags.Public);
-				staticInit?.Invoke(null, null);
-			}
-			catch (Exception ex)
-			{
 
-				Debug.WriteLine($"Error calling Init on type: {newViewType}");
-				Debug.WriteLine(ex);
-				//TODO: Notifiy that we couldnt hot reload.
-			}
 		}
 
 
@@ -148,7 +151,7 @@ namespace Microsoft.Maui.HotReload
 			var newType = newHandler;
 			if (pair.Value.IsGenericType)
 				newType = pair.Value.GetGenericTypeDefinition().MakeGenericType(newHandler);
-			HandlerService.AddTransient(view, newType);
+			HandlerService.AddHandler(view, newType);
 		}
 
 		public static void TriggerReload()

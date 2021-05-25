@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SetContentView(_layout);
 
 			Profile.FramePartition("OnStateChanged");
-			Microsoft.Maui.Controls.Application.ClearCurrent();
+			Microsoft.Maui.Controls.Application.Current = null;
 
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnCreate;
@@ -265,7 +265,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_powerSaveModeBroadcastReceiver = new PowerSaveModeBroadcastReceiver();
 			}
 
-			ContextExtensions.SetDesignerContext(_layout);
 			Profile.FrameEnd();
 		}
 

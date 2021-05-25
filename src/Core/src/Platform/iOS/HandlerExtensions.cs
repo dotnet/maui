@@ -6,7 +6,14 @@ namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
-		public static UIViewController ToUIViewController(this IView view, IMauiContext context) => new ContainerViewController { CurrentView = view, Context = context };
+		public static UIViewController ToUIViewController(this IView view, IMauiContext context)
+		{
+			var nativeView = view.ToNative(context);
+			if (view?.Handler is INativeViewHandler nvh && nvh.ViewController != null)
+				return nvh.ViewController;
+
+			return new ContainerViewController { CurrentView = view, Context = context };
+		}
 
 		public static UIView ToNative(this IView view, IMauiContext context)
 		{
@@ -33,7 +40,7 @@ namespace Microsoft.Maui
 
 			handler.SetVirtualView(view);
 
-			if (handler.NativeView is not UIView result)
+			if (((INativeViewHandler)handler).NativeView is not UIView result)
 			{
 				throw new InvalidOperationException($"Unable to convert {view} to {typeof(UIView)}");
 			}

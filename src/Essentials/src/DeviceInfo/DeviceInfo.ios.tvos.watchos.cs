@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Essentials
 
 		static DevicePlatform GetPlatform() =>
 #if __IOS__
-            DevicePlatform.iOS;
+			DevicePlatform.iOS;
 #elif __TVOS__
             DevicePlatform.tvOS;
 #elif __WATCHOS__

@@ -108,7 +108,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_disposed || _renderer == null || _element == null || control == null)
 				return;
 
-			control.TitleLabel.LineBreakMode = _element.LineBreakMode switch {
+			control.TitleLabel.LineBreakMode = _element.LineBreakMode switch
+			{
 				LineBreakMode.NoWrap => UILineBreakMode.Clip,
 				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
 				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,

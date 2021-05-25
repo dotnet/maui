@@ -1,0 +1,76 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;$(NonNet6Platforms)</TargetFrameworks>
+    <RootNamespace>Microsoft.Maui.Controls.Compatibility</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Controls.Compatibility</AssemblyName>
+    <Nullable>disable</Nullable>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <AndroidRoot>Android\</AndroidRoot>
+    <iOSRoot>iOS\</iOSRoot>
+    <WindowsRoot>WinUI\</WindowsRoot>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
+  </PropertyGroup>
+
+  <!--<Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />-->
+
+
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) == true ">
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net.Http" />
+    <Compile Include="$(AndroidRoot)**\*.cs"></Compile>
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\bottomtablayout.axml" Link="Android\Resources\Layout\bottomtablayout.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\flyoutcontent.axml" Link="Android\Resources\Layout\flyoutcontent.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\rootlayout.axml" Link="Android\Resources\Layout\rootlayout.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\shellcontent.axml" Link="Android\Resources\Layout\shellcontent.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\tabbar.axml" Link="Android\Resources\Layout\tabbar.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\toolbar.axml" Link="Android\Resources\Layout\toolbar.axml" />
+
+
+    <AndroidResource Include="$(AndroidRoot)Resources\anim\enterfromleft.xml" Link="Android\Resources\anim\enterfromleft.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\anim\enterfromright.xml" Link="Android\Resources\anim\enterfromright.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoleft.xml" Link="Android\Resources\anim\exittoleft.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoright.xml" Link="Android\Resources\anim\exittoright.xml" />
+
+
+    <AndroidResource Include="$(AndroidRoot)Resources\values\styles.xml" Link="Android\Resources\values\styles.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\values\strings.xml" Link="Android\Resources\values\strings.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" Link="Android\Resources\values\attrs.xml" />
+    <ProjectReference Include="Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj" />
+
+    <Compile Remove="$(AndroidRoot)AppCompat\Resource.cs" />
+    <Compile Remove="$(AndroidRoot)bin\**\*.cs" />
+    <Compile Remove="$(AndroidRoot)obj\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
+    <Compile Include="$(iOSRoot)**\*.cs"></Compile>
+    <EmbeddedResource Include="$(iOSRoot)Resources\*.resx" />
+    <Compile Remove="$(iOSRoot)bin\**\*.cs" />
+    <Compile Remove="$(iOSRoot)obj\**\*.cs" />
+    <Reference Include="System" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="AppHostBuilderExtensions.cs" />
+    <Compile Include="MauiHandlersCollectionExtensions.cs" />
+    <Compile Include="Forms.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+  </ItemGroup>
+</Project>
