@@ -39,7 +39,6 @@ namespace Microsoft.Maui
 			void Update()
 			{
 				var shouldUpdate =
-					view is not IPage &&
 					width > 0 &&
 					height > 0 &&
 					view.Parent != null;
@@ -47,26 +46,9 @@ namespace Microsoft.Maui
 				if (!shouldUpdate)
 					return;
 
-				var target = new RectangleF(x, y, width, height);
+				const double epsilon = 0.001;
 
 				var transform = CATransform3D.Identity;
-
-				// Must reset transform prior to setting frame...
-				if (layer != null && originalAnchor != null && layer.AnchorPoint != originalAnchor)
-					layer.AnchorPoint = originalAnchor.Value;
-
-				if (layer != null)
-					layer.Transform = transform;
-
-				nativeView.Frame = target;
-
-				if (layer != null)
-					layer.LayoutSublayers();
-
-				if (layer != null)
-					layer.AnchorPoint = new PointF(anchorX, anchorY);
-
-				const double epsilon = 0.001;
 
 				// Position is relative to anchor point
 				if (Math.Abs(anchorX - .5) > epsilon)
@@ -96,14 +78,20 @@ namespace Microsoft.Maui
 				if (Foundation.NSThread.IsMain)
 				{
 					if (layer != null)
+					{
+						layer.AnchorPoint = new PointF(anchorX, anchorY);
 						layer.Transform = transform;
+					}
 				}
 				else
 				{
 					CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
 					{
 						if (layer != null)
+						{
+							layer.AnchorPoint = new PointF(anchorX, anchorY);
 							layer.Transform = transform;
+						}
 					});
 				}
 			}
