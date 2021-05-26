@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (_isSelectionEnabled)
 			{
-				OnViewHolderClicked(BindingAdapterPosition);
+				OnViewHolderClicked(AdapterPosition);
 			}
 		}
 
