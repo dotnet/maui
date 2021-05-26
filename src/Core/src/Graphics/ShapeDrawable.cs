@@ -24,7 +24,12 @@
 				rect = new RectangleF(dirtyRect.X + strokeThickness, dirtyRect.Y + strokeThickness, dirtyRect.Width - (strokeThickness * 2), dirtyRect.Height - (strokeThickness * 2));
 			}
 
-			PathF? path = CreatePath(rect);
+			IShape? shape = ShapeView?.Shape;
+
+			if (shape == null)
+				return;
+
+			PathF? path = shape.PathForBounds(rect);
 
 			if (path == null)
 				return;
@@ -33,31 +38,6 @@
 			DrawFillPath(canvas, rect, path);
 		}
 				
-		public PathF? CreatePath(RectangleF rect, float density = 1)
-		{
-			IShape? shape = ShapeView?.Shape;
-
-			if (shape is IEllipse)
-				return CreateEllipsePath(rect);
-
-			if (shape is ILine line)
-				return CreateLinePath(line, density);
-
-			if (shape is IPolygon polygon)
-				return CreatePolygonPath(polygon, density);
-
-			if (shape is IPolyline polyline)
-				return CreatePolylinePath(polyline, density);
-
-			if (shape is IPath path)
-				return CreatePathPath(path);
-
-			if (shape is IRectangle rectangle)
-				return CreateRectanglePath(rectangle, rect);
-
-			return null;
-		}
-
 		void DrawStrokePath(ICanvas canvas, RectangleF dirtyRect, PathF path)
 		{
 			if (ShapeView == null || ShapeView.Shape == null)
@@ -101,7 +81,7 @@
 			if (ShapeView == null || ShapeView.Shape == null)
 				return;
 
-			if (ShapeView.Shape is ILine || ShapeView.Shape is IPolyline)
+			if(!path.Closed)
 				return;
 
 			canvas.SaveState();
@@ -113,76 +93,6 @@
 			canvas.FillPath(path);
 
 			canvas.RestoreState();
-		}
-
-		PathF? CreateEllipsePath(RectangleF rect)
-		{
-			var path = new PathF();
-
-			path.AppendEllipse(rect);
-
-			return path;
-		}
-
-		PathF? CreateLinePath(ILine line, float density = 1)
-		{
-			var path = new PathF();
-
-			path.MoveTo(density * (float)line.X1, density * (float)line.Y1);
-			path.LineTo(density * (float)line.X2, density * (float)line.Y2);
-
-			return path;
-		}
-
-		PathF? CreatePolygonPath(IPolygon polygon, float density = 1)
-		{
-			var path = new PathF();
-
-			if (polygon.Points?.Count > 0)
-			{
-				path.MoveTo(density * (float)polygon.Points[0].X, density * (float)polygon.Points[0].Y);
-
-				for (int index = 1; index < polygon.Points.Count; index++)
-					path.LineTo(density * (float)polygon.Points[index].X, density * (float)polygon.Points[index].Y);
-
-				path.Close();
-			}
-
-			return path;
-		}
-
-		PathF? CreatePolylinePath(IPolyline polyline, float density = 1)
-		{
-			var path = new PathF();
-
-			if (polyline.Points?.Count > 0)
-			{
-				path.MoveTo(density * (float)polyline.Points[0].X, density * (float)polyline.Points[0].Y);
-
-				for (int index = 1; index < polyline.Points.Count; index++)
-					path.LineTo(density * (float)polyline.Points[index].X, density * (float)polyline.Points[index].Y);
-			}
-
-			return path;
-		}
-
-		PathF? CreatePathPath(IPath path)
-		{
-			return PathBuilder.Build(path.Data);
-		}
-
-		PathF? CreateRectanglePath(IRectangle rectangle, RectangleF rect)
-		{
-			var path = new PathF();
-
-			path.AppendRoundedRectangle(
-				rect,
-				(float)rectangle.CornerRadius.TopLeft,
-				(float)rectangle.CornerRadius.TopRight,
-				(float)rectangle.CornerRadius.BottomLeft,
-				(float)rectangle.CornerRadius.BottomRight);
-
-			return path;
 		}
 	}
 }
