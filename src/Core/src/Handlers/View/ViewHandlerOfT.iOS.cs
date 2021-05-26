@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Handlers
 		UIView? INativeViewHandler.NativeView => WrappedNativeView;
 		UIView? INativeViewHandler.ContainerView => ContainerView;
 
-		protected UIView? WrappedNativeView => ContainerView ?? (UIView?)NativeView;
+		protected new UIView? WrappedNativeView =>
+			(UIView?)base.WrappedNativeView;
 
 		public new WrapperView? ContainerView
 		{
