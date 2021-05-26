@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile("AssemblyInfo.cs", "Compile", "[assembly: Microsoft.Maui.Controls.Xaml.XamlCompilation (Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]"));
 
 			//Add a single CSS file
-			project.Add(AddFile("Foo.css", "EmbeddedResource", Css.Foo));
+			project.Add(AddFile("Foo.css", "MauiCss", Css.Foo));
 
 			return project;
 		}
@@ -263,7 +263,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			AssertExists(IOPath.Combine(intermediateDirectory, "Foo.css.g.cs"), nonEmpty: true);
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
@@ -312,22 +311,16 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Save(projectFile);
 			Build(projectFile);
 
-			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
-			var fooCssG = IOPath.Combine(intermediateDirectory, "Foo.css.g.cs");
 			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
-			AssertExists(fooCssG, nonEmpty: true);
 			AssertExists(xamlCStamp);
 
-			var expectdCssG = new FileInfo(fooCssG).LastWriteTimeUtc;
 			var expectedXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
 
 			//Build again
 			Build(projectFile);
 			AssertExists(xamlCStamp);
 
-			var actualCssG = new FileInfo(fooCssG).LastWriteTimeUtc;
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.AreEqual(expectdCssG, actualCssG, $"Timestamps should match for {fooCssG}.");
 			Assert.AreEqual(expectedXamlC, actualXamlC, $"Timestamps should match for {xamlCStamp}.");
 		}
 
@@ -346,7 +339,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
 			var fooCssG = IOPath.Combine(intermediateDirectory, "Foo.css.g.cs");
 			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
-			AssertExists(fooCssG, nonEmpty: true);
 			AssertExists(xamlCStamp);
 
 			//Clean
@@ -390,25 +382,17 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True");
 
 			var assembly = IOPath.Combine(intermediateDirectory, "test.dll");
-			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "Pages", "MainPage.xaml.g.cs");
-			var fooCssG = IOPath.Combine(intermediateDirectory, "Foo.css.g.cs");
 			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
 
 			//The assembly should not be compiled
 			AssertDoesNotExist(assembly);
-			AssertExists(fooCssG, nonEmpty: true);
 			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
-
-			var expectedCssG = new FileInfo(fooCssG).LastWriteTimeUtc;
 
 			//Build again, a full build
 			Build(projectFile);
 			AssertExists(assembly, nonEmpty: true);
-			AssertExists(fooCssG, nonEmpty: true);
 			AssertExists(xamlCStamp);
 
-			var actualCssG = new FileInfo(fooCssG).LastWriteTimeUtc;
-			Assert.AreEqual(expectedCssG, actualCssG, $"Timestamps should match for {fooCssG}.");
 		}
 
 		[Test]
@@ -420,13 +404,9 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Save(projectFile);
 			Build(projectFile);
 
-			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
-			var customViewXamlG = IOPath.Combine(intermediateDirectory, "CustomView.xaml.g.cs");
-			var fooCssG = IOPath.Combine(intermediateDirectory, "Foo.css.g.cs");
 			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
 			AssertExists(xamlCStamp);
 
-			var expectedCssG = new FileInfo(fooCssG).LastWriteTimeUtc;
 			var expectedXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
 
 			//Build again, after adding a file, this triggers a full XamlG and XamlC -- *not* CssG
@@ -435,10 +415,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 			AssertExists(xamlCStamp);
 
-			var actualCssG = new FileInfo(fooCssG).LastWriteTimeUtc;
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			var actualNewFile = new FileInfo(customViewXamlG).LastAccessTimeUtc;
-			Assert.AreEqual(expectedCssG, actualCssG, $"Timestamps should match for {fooCssG}.");
 			Assert.AreNotEqual(expectedXamlC, actualXamlC, $"Timestamps should *not* match for {xamlCStamp}.");
 		}
 

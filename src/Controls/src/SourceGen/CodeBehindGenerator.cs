@@ -51,8 +51,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 						if (!TryGenerateXamlCodeBehind(file, context, xmlnsDefinitionCache, out code))
 							continue;
 						break;
-					case "CSS":
-						code = GenerateCSSCodeBehind(file, context);
+					case "Css":
+						if (!TryGenerateCssCodeBehind(file, context, out code))
+							continue;
 						break;
 					default:
 						continue; //throw ??
@@ -336,10 +337,16 @@ namespace Microsoft.Maui.Controls.SourceGen
 			return null;
 		}
 
-		string GenerateCSSCodeBehind(AdditionalText file, GeneratorExecutionContext context)
+		bool TryGenerateCssCodeBehind(AdditionalText file, GeneratorExecutionContext context, out string? code)
 		{
-			return "foo";
-			//throw new NotImplementedException();
+			var sb = new StringBuilder();
+			var opt = context.AnalyzerConfigOptions.GetOptions(file);
+			if (   context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out string? manifestResourceName)
+			    && context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.TargetPath", out string? targetPath))
+			    sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{manifestResourceName}\", \"{targetPath.Replace('\\','/')}\", null)]");
+
+			code = sb.ToString();
+			return true;
 		}
 
 		public void Initialize(GeneratorInitializationContext context)
