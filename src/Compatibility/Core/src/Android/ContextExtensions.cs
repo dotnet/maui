@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (context is AppCompatActivity activity)
 			{
-				if(activity.SupportActionBar != null)
+				if (activity.SupportActionBar != null)
 					return activity.SupportActionBar.ThemedContext;
 
 				return context;
