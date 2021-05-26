@@ -77,46 +77,12 @@ stages:
               inputs:
                 versionSpec: 5.9.1
 
-            - task: DotNetCoreCLI@2
-              displayName: 'Install NET6'
-              inputs:
-                command: 'build'
-                projects: src\external\DotNet\DotNet.csproj
+            - script: dotnet tool restore
+              displayName: install dotnet tools
 
-            - task: NuGetCommand@2
-              displayName: 'Restore sln'
-              inputs:
-                command: 'restore'
-                restoreSolution: build\Build.Microsoft.Maui.Graphics.Windows.sln
-
-            - task: MSBuild@1
-              displayName: 'Build Graphics with MSBUILD'
-              inputs:
-                solution: build\Build.Microsoft.Maui.Graphics.Windows.sln
-                configuration: ${{ BuildCondition }}
-                msbuildArguments: /verbosity:normal /t:Build
-
-            - script: src\bin\dotnet\dotnet build build\Build.Microsoft.Maui.Graphics-net6.sln -p:Configuration=${{ BuildCondition }}
-              displayName: 'Build Graphics with NET6'
-
-            - task: NuGetCommand@2
-              displayName: 'Pack nupkg'
-              inputs:
-                command: 'pack'
-                packagesToPack: 'build/Microsoft.Maui.Graphics.nuspec'
-                packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
-                configuration: ${{ BuildCondition }}
-                basePath: '$(System.DefaultWorkingDirectory)'
-                versioningScheme : 'byEnvVar'
-                versionEnvVar: 'BUILD_BUILDNUMBER'
-            
+            - script: dotnet cake --configuration=Release
+              displayName: pack nugets
                 
-            - task: MSBuild@1
-              displayName: 'Pack Win2D.WinUI'
-              inputs:
-                solution: src\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop-net6.csproj
-                configuration: ${{ BuildCondition }}
-                msbuildArguments: /verbosity:normal /t:Pack -p:PackageOutputPath=$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}
 
             - task: CopyFiles@2
               displayName: 'Copy SignList.xml Files'
