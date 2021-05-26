@@ -1,11 +1,10 @@
-<Project Sdk="Microsoft.Build.NoTargets">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageType>Template</PackageType>
     <PackageId>Microsoft.Maui.Templates</PackageId>
-    <PackageVersion>6.0.100-preview.4.617</PackageVersion>
-    <MicrosoftExtensionsPackageVersion>6.0.0-preview.4.21227.6</MicrosoftExtensionsPackageVersion>
+    <PackageVersion>6.0.100-preview.4.9991</PackageVersion>
     <Title>.NET MAUI Templates</Title>
     <Authors>Microsoft</Authors>
     <Description>Templates for .NET MAUI.</Description>
@@ -15,64 +14,12 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <!-- This project has no .NET assemblies, so disable the warning for that -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
-    <!-- <_SolutionFile>maui-mobile/MauiApp1.in.sln</_SolutionFile>
-    <_SolutionFileDest>maui-mobile/MauiApp1.sln</_SolutionFileDest> -->
   </PropertyGroup>
 
-  <ItemGroup>
-    <_TemplateFile Include="maui-mobile/MauiApp1/MauiApp1.in.csproj" />
-    <_TemplateFile Include="maui-mobile/MauiApp1.WinUI3/MauiApp1.WinUI3.in.csproj" />
-    <_TemplateFile Include="maui-mobile/MauiApp1.WinUI3 (Package)/MauiApp1.WinUI3 (Package).in.wapproj" />
-    <_TemplateFile Include="maui-blazor/MauiApp1/MauiApp1.in.csproj" />
-    <_TemplateFile Include="maui-blazor/MauiApp1.WinUI3/MauiApp1.WinUI3.in.csproj" />
-    <_TemplateFile Include="maui-blazor/MauiApp1.WinUI3 (Package)/MauiApp1.WinUI3 (Package).in.wapproj" />
-  </ItemGroup>
 
   <ItemGroup>
-    <Content Include="**/*" Exclude="**/bin/**;**/obj/**;$(MSBuildProjectFile)*;$(_SolutionFile);@(_TemplateFile)" />
-    <Compile Remove="**/*" />
+    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**" />
+    <Compile Remove="**\*" />
   </ItemGroup>
-
-  <ItemGroup>
-    <_TemplateFile Update="@(_TemplateFile)">
-      <NewFileName>$(IntermediateOutputPath)\$([System.IO.Path]::GetDirectoryName('%(Identity)'))\$([System.IO.Path]::GetFileName('%(Identity)').Replace('.in',''))</NewFileName>
-      <ProjDirName>$([System.IO.Path]::GetDirectoryName('%(Identity)'))</ProjDirName>
-    </_TemplateFile>
-    
-  </ItemGroup>
-
-  <!-- Eventually replaced by eng/Versions.targets -->
-  <Target Name="SetVersions" />
-
-  <Target Name="_GenerateTemplateFile"
-      BeforeTargets="Build"
-      DependsOnTargets="SetVersions"
-      Inputs="$(MSBuildProjectFile);@(_TemplateFile);$(_SolutionFile)"
-      Outputs="%(_TemplateFile.NewFileName);$(_SolutionFileDest)">
-    <Copy
-        SourceFiles="@(_TemplateFile)"
-        DestinationFiles="%(_TemplateFile.NewFileName)"
-    />
-
-    <!-- <Copy
-      SourceFiles="$(_SolutionFile)"
-      DestinationFiles="$(IntermediateOutputPath)\$(_SolutionFileDest)" /> -->
-
-    <XmlPoke
-        XmlInputPath="%(_TemplateFile.NewFileName)"
-        Value="$(PackageVersion)"
-        Query="/Project/ItemGroup/PackageReference[@Version='MAUI_VERSION']/@Version"
-    />
-    <XmlPoke
-        XmlInputPath="%(_TemplateFile.NewFileName)"
-        Value="$(MicrosoftExtensionsPackageVersion)"
-        Query="/Project/ItemGroup/PackageReference[@Version='MICROSOFT_EXTENSIONS_VERSION']/@Version"
-    />
-    <ItemGroup>
-      <Content Include="%(_TemplateFile.NewFileName)" PackagePath="content/%(_TemplateFile.ProjDirName)" />
-      <!-- <Content Include="$(_SolutionFileDest)" Package="content/maui-mobile/" /> -->
-      <FileWrites Include="%(_TemplateFile.NewFileName);$(_SolutionFileDest)" />
-    </ItemGroup>
-  </Target>
 
 </Project>

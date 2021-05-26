@@ -1,17 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WThickness = Microsoft.UI.Xaml.Thickness;
+﻿using WThickness = Microsoft.UI.Xaml.Thickness;
 using WCornerRadius = Microsoft.UI.Xaml.CornerRadius;
 using WGridLength = Microsoft.UI.Xaml.GridLength;
 using UwpGridUnitType = Microsoft.UI.Xaml.GridUnitType;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui
 {
-	[PortHandler]
-	static class WinUIHelpers
+	internal static class WinUIHelpers
 	{
 		public static WThickness CreateThickness(double left, double top, double right, double bottom)
 		{
