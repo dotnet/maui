@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 		public static void UpdateBackground(this MauiButton nativeButton, IButton button, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			nativeButton.UpdateBackground(button.Background, defaultBrush);
 
-		public static void UpdateText(this Button nativeButton, IButton button) =>
+		public static void UpdateText(this MauiButton nativeButton, IButton button) =>
 			nativeButton.Content = button.Text;
 
 		public static void UpdateTextColor(this MauiButton nativeButton, IButton button, UI.Xaml.Media.Brush? defaultBrush = null) =>

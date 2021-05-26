@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateCharacterSpacing((int)button.CharacterSpacing);
+			handler.NativeView?.UpdateCharacterSpacing(button.CharacterSpacing);
 		}
 
 		public static void MapFont(ButtonHandler handler, IButton button)

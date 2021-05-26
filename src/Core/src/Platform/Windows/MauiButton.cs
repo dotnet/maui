@@ -87,10 +87,10 @@ namespace Microsoft.Maui
 				_rootGrid.CornerRadius = cornerRadius;
 		}
 
-		public void UpdateCharacterSpacing(int characterSpacing)
+		public void UpdateCharacterSpacing(double characterSpacing)
 		{
-			CharacterSpacing = characterSpacing;
-
+			CharacterSpacing = characterSpacing.ToEm();
+			
 			if (_contentPresenter != null)
 				_contentPresenter.CharacterSpacing = CharacterSpacing;
 
@@ -98,7 +98,6 @@ namespace Microsoft.Maui
 
 			if (textBlock != null)
 				textBlock.CharacterSpacing = CharacterSpacing;
-
 		}
 
 		public TextBlock? GetTextBlock(object content)
