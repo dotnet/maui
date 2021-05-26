@@ -124,6 +124,7 @@ stages:
 
   - stage: windows_cake_validation
     displayName: Windows Cake Validation
+    dependsOn: []
     jobs:
       - ${{ each BuildCondition in parameters.BuildConfigurations }}:
         - job: win_hosted_${{ BuildCondition }}
