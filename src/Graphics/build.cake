@@ -59,3 +59,11 @@ Task("Default").IsDependentOn("dotnet-pack");
 //////////////////////////////////////////////////////////////////////
 
 RunTarget(target);
+
+T GetBuildVariable<T>(string key, T defaultValue)
+{
+    // on MAC all environment variables are upper case regardless of how you specify them in devops
+    // And then Environment Variable check is case sensitive
+    T upperCaseReturnValue = Argument(key.ToUpper(), EnvironmentVariable(key.ToUpper(), defaultValue));
+    return Argument(key, EnvironmentVariable(key, upperCaseReturnValue));
+}
