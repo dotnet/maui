@@ -116,7 +116,7 @@ Task("VS-WINUI")
         {
             Configuration = configuration,
             ToolPath = FindMSBuild(),
-	        BinaryLogger = new MSBuildBinaryLogSettings
+            BinaryLogger = new MSBuildBinaryLogSettings
             {
                 Enabled  = true,
                 FileName = "artifacts/winui-buildtasks.binlog",
@@ -129,7 +129,7 @@ Task("VS-WINUI")
         {
             Configuration = configuration,
             ToolPath = FindMSBuild(),
-	        BinaryLogger = new MSBuildBinaryLogSettings
+            BinaryLogger = new MSBuildBinaryLogSettings
             {
                 Enabled  = true,
                 FileName = "artifacts/winui.binlog",
