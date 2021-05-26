@@ -142,8 +142,8 @@ stages:
             demands: [ msbuild ]
           steps:
             - powershell: |
-                  & dotnet build src\DotNet\DotNet.csproj -bl:${{ parameters.artifactsTargetFolder }}\$(BuildConfiguration)-dotnet.binlog
-                  & dotnet tool restore
+                  & dotnet build src/DotNet/DotNet.csproj -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
+                  $env:PATH = (Join-Path '$(System.DefaultWorkingDirectory)' 'bin/dotnet') + [IO.Path]::PathSeparator + $env:PATH
                   & dotnet cake --target=VS-WINUI
 
   # - stage: windows_controlgallery
