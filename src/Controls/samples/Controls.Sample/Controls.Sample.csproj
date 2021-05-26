@@ -13,21 +13,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) == true ">
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\iOS\Compatibility.iOS.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true ">
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Android\Compatibility.Android.csproj" />
-  </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="Resources\Embedded\*" />
+    <MauiAsset Include="Resources\Raw\*" Link="%(Filename)%(Extension)" />
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />

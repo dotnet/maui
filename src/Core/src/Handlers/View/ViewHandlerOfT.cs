@@ -1,10 +1,8 @@
 #nullable enable
 using System;
 using System.Runtime.CompilerServices;
-#if __IOS__
+#if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
-#elif __MACOS__
-using NativeView = AppKit.NSView;
 #elif MONOANDROID
 using NativeView = Android.Views.View;
 #elif WINDOWS
@@ -27,6 +25,12 @@ namespace Microsoft.Maui.Handlers
 		protected readonly PropertyMapper _defaultMapper;
 		protected PropertyMapper _mapper;
 		static bool HasSetDefaults;
+
+		[HotReload.OnHotReload]
+		static void OnHotReload()
+		{
+			HasSetDefaults = false;
+		}
 
 		protected ViewHandler(PropertyMapper mapper)
 		{

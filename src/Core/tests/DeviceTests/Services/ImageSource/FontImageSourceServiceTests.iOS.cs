@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task GetImageAsync(string colorHex)
 		{
-			var expectedColor = Color.FromHex(colorHex);
+			var expectedColor = Color.FromArgb(colorHex);
 
 			var host = new AppHostBuilder()
 				.ConfigureFonts()
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 			var imageSource = new FontImageSourceStub
 			{
 				Glyph = "X",
-				Font = Font.Default,
+				Font = Font.Default.WithSize(30),
 				Color = expectedColor,
 			};
 

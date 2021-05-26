@@ -24,5 +24,17 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected float GetOpacity(IViewHandler viewHandler) =>
 			((View)viewHandler.NativeView).Alpha;
+
+		protected Visibility GetVisibility(IViewHandler viewHandler)
+		{
+			var nativeView = (View)viewHandler.NativeView;
+
+			if (nativeView.Visibility == ViewStates.Visible)
+				return Visibility.Visible;
+			else if (nativeView.Visibility == ViewStates.Gone)
+				return Visibility.Collapsed;
+			else
+				return Visibility.Hidden;
+		}
 	}
 }

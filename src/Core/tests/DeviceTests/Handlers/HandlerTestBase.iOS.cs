@@ -20,5 +20,29 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected nfloat GetOpacity(IViewHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).Alpha;
+
+		protected Visibility GetVisibility(IViewHandler viewHandler)
+		{
+			var nativeView = (UIView)viewHandler.NativeView;
+
+			foreach (var constraint in nativeView.Constraints)
+			{
+				if (constraint is CollapseConstraint collapseConstraint)
+				{
+					// Active the collapse constraint; that will squish the view down to zero height
+					if (collapseConstraint.Active)
+					{
+						return Visibility.Collapsed;
+					}
+				}
+			}
+
+			if (nativeView.Hidden)
+			{
+				return Visibility.Hidden;
+			}
+
+			return Visibility.Visible;
+		}
 	}
 }

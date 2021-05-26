@@ -500,12 +500,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 					if (sdkVersion <= 10)
 					{
 						// legacy theme button pressed color
-						rc = Color.FromHex("#fffeaa0c");
+						rc = Color.FromArgb("#fffeaa0c");
 					}
 					else
 					{
 						// Holo dark light blue
-						rc = Color.FromHex("#ff33b5e5");
+						rc = Color.FromArgb("#ff33b5e5");
 					}
 				}
 			}
@@ -679,12 +679,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public void BeginInvokeOnMainThread(Action action)
 			{
-				if (_context.IsDesignerContext())
-				{
-					action();
-					return;
-				}
-
 				if (s_handler == null || s_handler.Looper != Looper.MainLooper)
 				{
 					s_handler = new Handler(Looper.MainLooper);
@@ -871,7 +865,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public IIsolatedStorageFile GetUserStoreForApplication()
 			{
-				return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
+				throw new NotImplementedException("GetUserStoreForApplication currently not available https://github.com/dotnet/runtime/issues/52332");
+				//return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
 			}
 
 			public bool IsInvokeRequired

@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 
 			handler.SetVirtualView(view);
 
-			if (handler.NativeView is not UIView result)
+			if (((INativeViewHandler)handler).NativeView is not UIView result)
 			{
 				throw new InvalidOperationException($"Unable to convert {view} to {typeof(UIView)}");
 			}

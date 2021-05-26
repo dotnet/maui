@@ -32,8 +32,11 @@ namespace Microsoft.Maui.DeviceTests
 			return Task.CompletedTask;
 		}
 
-		public static Task<UIImage> ToBitmap(this UIView view)
+		public static Task<UIImage> ToUIImage(this UIView view)
 		{
+			if (view.Superview is WrapperView wrapper)
+				view = wrapper;
+
 			var imageRect = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
 
 			UIGraphics.BeginImageContext(imageRect.Size);
@@ -132,43 +135,43 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<UIImage> AssertColorAtPoint(this UIView view, UIColor expectedColor, int x, int y)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
 		public static async Task<UIImage> AssertColorAtCenter(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtBottomLeft(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtBottomRight(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtTopLeft(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtTopRight(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertContainsColor(expectedColor);
 		}
 

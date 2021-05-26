@@ -4,6 +4,9 @@
 	{
 		public static PropertyMapper<IDatePicker, DatePickerHandler> DatePickerMapper = new PropertyMapper<IDatePicker, DatePickerHandler>(ViewHandler.ViewMapper)
 		{
+#if __ANDROID__
+			[nameof(IDatePicker.Background)] = MapBackground,
+#endif
 			[nameof(IDatePicker.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IDatePicker.Date)] = MapDate,
 			[nameof(IDatePicker.Font)] = MapFont,

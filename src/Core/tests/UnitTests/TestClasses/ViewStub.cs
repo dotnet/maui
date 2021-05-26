@@ -7,7 +7,7 @@ namespace Microsoft.Maui.UnitTests
 	{
 		public bool IsEnabled { get; set; }
 
-		public Color BackgroundColor { get; set; }
+		public Visibility Visibility { get; set; }
 
 		public double Opacity { get; set; }
 
@@ -37,14 +37,15 @@ namespace Microsoft.Maui.UnitTests
 
 		public LayoutAlignment VerticalLayoutAlignment { get; set; }
 
-		public Semantics Semantics { get; set; } = new Semantics();
+		public Semantics Semantics { get; set; }
+
+		public Paint Background { get; set; }
+
+		public Size Arrange(Rectangle bounds) => Size.Zero;
 
 		public void InvalidateArrange() { }
 
 		public void InvalidateMeasure() { }
-
-		public Size Arrange(Rectangle bounds) =>
-			Size.Zero;
 
 		public Size Measure(double widthConstraint, double heightConstraint) =>
 			Size.Zero;

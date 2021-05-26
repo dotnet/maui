@@ -12,6 +12,7 @@ using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -120,13 +121,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(Forms.GetTabletResources());
 			}
 
-			if (!current.Resources.ContainsKey(ShellRenderer.ShellStyle))
-			{
-				var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
-				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/WinUI/Shell/ShellStyles.xbf");
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
-			}
-
 			_container = new Canvas
 			{
 				Style = (Microsoft.UI.Xaml.Style)current.Resources["RootContainerStyle"]
@@ -139,7 +133,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			MessagingCenter.Subscribe(this, Page.BusySetSignalName, (Page sender, bool enabled) =>
 			{
 				Microsoft.UI.Xaml.Controls.ProgressBar indicator = GetBusyIndicator();
-				indicator.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+				indicator.Visibility = enabled ? WVisibility.Visible : WVisibility.Collapsed;
 			});
 
 			_toolbarTracker.CollectionChanged += OnToolbarItemsChanged;
@@ -317,7 +311,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				_busyIndicator = new Microsoft.UI.Xaml.Controls.ProgressBar
 				{
 					IsIndeterminate = true,
-					Visibility = Visibility.Collapsed,
+					Visibility = WVisibility.Collapsed,
 					VerticalAlignment = UI.Xaml.VerticalAlignment.Top
 				};
 

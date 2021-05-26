@@ -7,6 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	[ContentProperty(nameof(Children))]
 	public class StackLayout : Layout<View>, IElementConfiguration<StackLayout>, IFrameworkElement
 	{
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(StackOrientation), typeof(StackLayout), StackOrientation.Vertical,

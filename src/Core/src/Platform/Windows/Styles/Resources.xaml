@@ -5,6 +5,8 @@
 	x:Class="Microsoft.Maui.Resources">
 
     <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="MauiActivityIndicatorStyle.xaml" />
+        <ResourceDictionary Source="MauiButtonStyle.xaml" />
         <ResourceDictionary Source="MauiComboBoxStyle.xaml" />
         <ResourceDictionary Source="MauiTextBoxStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>

@@ -31,7 +31,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    
+    <DotNetOutputPath>$(MSBuildThisFileDirectory)bin/</DotNetOutputPath>
+    <DotNetTempDirectory>$(DotNetOutputPath)temp/</DotNetTempDirectory>
+    <DotNetDirectory>$(DotNetOutputPath)dotnet/</DotNetDirectory>
+    <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
+    <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
+    <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetPreviewVersionBand)/</DotNetSdkManifestsDirectory>
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
     <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\</_MauiBuildTasksLocation>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -51,10 +56,9 @@
   <PropertyGroup>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>Microsoft</Authors>
-    <Owners>microsoft</Owners>
     <NeutralLanguage>en</NeutralLanguage>
     <RepositoryUrl>https://github.com/dotnet/maui.git</RepositoryUrl>
-    <ProjectUrl>https://github.com/dotnet/maui</ProjectUrl>
+    <PackageProjectUrl>https://github.com/dotnet/maui</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageVersion>0.0.1-alpha1</PackageVersion>

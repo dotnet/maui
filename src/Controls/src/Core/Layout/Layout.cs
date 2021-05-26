@@ -7,6 +7,7 @@ using Microsoft.Maui.Layouts;
 // This is a temporary namespace until we rename everything and move the legacy layouts
 namespace Microsoft.Maui.Controls.Layout2
 {
+	[ContentProperty(nameof(Children))]
 	public abstract class Layout : View, Microsoft.Maui.ILayout, IEnumerable<IView>
 	{
 		ILayoutManager _layoutManager;
@@ -34,6 +35,12 @@ namespace Microsoft.Maui.Controls.Layout2
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
+			var margin = (this as IView)?.Margin ?? Thickness.Zero;
+
+			// Adjust the constraints to account for the margins
+			widthConstraint -= margin.HorizontalThickness;
+			heightConstraint -= margin.VerticalThickness;
+
 			var sizeWithoutMargins = LayoutManager.Measure(widthConstraint, heightConstraint);
 			DesiredSize = new Size(sizeWithoutMargins.Width + Margin.HorizontalThickness,
 				sizeWithoutMargins.Height + Margin.VerticalThickness);
@@ -65,7 +72,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			}
 		}
 
-		public void Add(IView child)
+		public virtual void Add(IView child)
 		{
 			if (child == null)
 				return;

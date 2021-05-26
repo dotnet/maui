@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
@@ -25,6 +26,10 @@ namespace Microsoft.Maui.DeviceTests
 				.ConfigureFonts((ctx, fonts) =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
+					fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
+					fonts.AddFont("LobsterTwo-Bold.ttf", "Lobster Two Bold");
+					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
+					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 				});
 
 			_host = appBuilder.Build();
@@ -57,6 +62,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			handler.SetVirtualView(view);
 			view.Handler = handler;
+
+			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
+			handler.NativeArrange(view.Frame);
 
 			return handler;
 		}
