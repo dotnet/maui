@@ -122,6 +122,28 @@ stages:
           steps:
             - template: common/build-windows.yml
 
+  - stage: windows_cake_validation
+    displayName: Windows Cake Validation
+    jobs:
+      - ${{ each BuildCondition in parameters.BuildConfigurations }}:
+        - job: win_hosted_${{ BuildCondition }}
+          workspace:
+            clean: all
+          displayName: Build Windows Phase (${{ BuildCondition }})
+          condition: or(
+            ${{ parameters.BuildEverything }},
+            ne(variables['Build.Reason'], 'PullRequest'),
+            eq('${{ BuildCondition }}', 'Release'))
+          timeoutInMinutes: 60
+          pool:
+            name: $(vs2019VmPool)
+            vmImage: $(vs2019VmImage)
+            demands: [ msbuild ]
+          steps:
+            - powershell: |
+                  & dotnet tool restore
+                  & dotnet cake --target=VS-WINUI-CI
+
   # - stage: windows_controlgallery
   #   displayName: Build Windows ControlGallery
   #   dependsOn: []
