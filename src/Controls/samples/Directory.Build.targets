@@ -7,9 +7,9 @@
   <Import Project="..\..\..\Directory.Build.targets" />
 
   <ItemGroup Condition="'$(BuildForNet6)' != 'true'">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\..\src\Controls\src\SourceGen\Controls.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\rc\Controls\src\SourceGen\Controls.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup Condition="'$(BuildForNet6)' == 'true'">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\..\src\Controls\src\SourceGen\Controls.SourceGen-net6.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Controls\src\SourceGen\Controls.SourceGen-net6.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>
