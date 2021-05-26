@@ -1,4 +1,5 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using Microsoft.Maui.Graphics;
 using UIKit;
 using SizeF = CoreGraphics.CGSize;
 
@@ -52,12 +53,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Control == null)
 				return;
 
-			Control.TrackTintColor = color != Color.Default ? color.ToUIColor() : null;
+			Control.TrackTintColor = color != null ? color.ToUIColor() : null;
 		}
 
 		void UpdateProgressColor()
 		{
-			Control.ProgressTintColor = Element.ProgressColor == Color.Default ? null : Element.ProgressColor.ToUIColor();
+			Control.ProgressTintColor = Element.ProgressColor == null ? null : Element.ProgressColor.ToUIColor();
 		}
 
 		[PortHandler]

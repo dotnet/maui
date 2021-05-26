@@ -5,6 +5,7 @@ using System.Net;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 

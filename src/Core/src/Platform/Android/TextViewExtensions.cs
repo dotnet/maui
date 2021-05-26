@@ -20,13 +20,9 @@ namespace Microsoft.Maui
 				textView.Text = newText;
 		}
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Color defaultColor)
+		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)
 		{
-			var textColor = textStyle.TextColor;
-			if (textColor.IsDefault)
-				textView.SetTextColor(defaultColor.ToNative());
-			else
-				textView.SetTextColor(textColor.ToNative());
+			textView.SetTextColor(textStyle.TextColor?.ToNative() ?? defaultColor.ToNative());
 		}
 
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle) =>
@@ -35,7 +31,7 @@ namespace Microsoft.Maui
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, ColorStateList? defaultColor)
 		{
 			var textColor = textStyle.TextColor;
-			if (textColor.IsDefault)
+			if (textColor == null)
 				textView.SetTextColor(defaultColor);
 			else
 				textView.SetTextColor(textColor.ToNative());
@@ -48,7 +44,7 @@ namespace Microsoft.Maui
 			var tf = fontManager.GetTypeface(font);
 			textView.Typeface = tf;
 
-			var sp = fontManager.GetScaledPixel(font);
+			var sp = fontManager.GetFontSize(font);
 			textView.SetTextSize(ComplexUnitType.Sp, sp);
 		}
 
@@ -67,7 +63,7 @@ namespace Microsoft.Maui
 			{
 				// But if RTL support is not available for some reason, we have to resort
 				// to gravity, because Android will simply ignore text alignment
-				textView.Gravity = text.HorizontalTextAlignment.ToHorizontalGravityFlags();
+				textView.Gravity = Android.Views.GravityFlags.Top | text.HorizontalTextAlignment.ToHorizontalGravityFlags();
 			}
 		}
 

@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppThemeGalleries
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppThemeGalleries
 {
 	public class AppThemeGallery : ContentPage
 	{
@@ -40,7 +42,7 @@
 			var button = sender as Button;
 
 			button.Text = "AppTheme Enabled!";
-			button.TextColor = Color.Black;
+			button.TextColor = Colors.Black;
 			button.IsEnabled = false;
 		}
 	}

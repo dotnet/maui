@@ -1,5 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -151,25 +152,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackgroundView()
 		{
-			Control.BackgroundView = Element.BackgroundColor == Color.Default ? _originalBackgroundView : null;
+			Control.BackgroundView = Element.BackgroundColor == null ? _originalBackgroundView : null;
 			Control.BackgroundView.UpdateBackground(Element.Background);
 		}
 
 		void UpdateRowHeight()
 		{
 			var rowHeight = Element.RowHeight;
-			if (Element.HasUnevenRows && rowHeight == -1) {
+			if (Element.HasUnevenRows && rowHeight == -1)
+			{
 				Control.RowHeight = UITableView.AutomaticDimension;
-			} else
+			}
+			else
 				Control.RowHeight = rowHeight <= 0 ? DefaultRowHeight : rowHeight;
 		}
 
 		void UpdateEstimatedRowHeight()
 		{
 			var rowHeight = Element.RowHeight;
-			if (Element.HasUnevenRows && rowHeight == -1) {
+			if (Element.HasUnevenRows && rowHeight == -1)
+			{
 				Control.EstimatedRowHeight = DefaultRowHeight;
-			} else {
+			}
+			else
+			{
 				Control.EstimatedRowHeight = 0;
 			}
 		}

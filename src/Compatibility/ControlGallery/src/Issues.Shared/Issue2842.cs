@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			grid.Children.Add(new Label { Text = "I am initially visible." }, 0, 0);
 
-			Label target = new Label { Text = "Success", AutomationId = "lblSuccess", IsVisible = false, TextColor = Color.Red };
+			Label target = new Label { Text = "Success", AutomationId = "lblSuccess", IsVisible = false, TextColor = Colors.Red };
 
 			grid.Children.Add(target, 0, 1);
 

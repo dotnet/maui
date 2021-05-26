@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -30,21 +31,21 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						new Button()
 						{
 							Text = "Replace Page2. It should be green",
-							TextColor = Color.White,
-							BackgroundColor = Color.Green,
+							TextColor = Colors.White,
+							BackgroundColor = Colors.Green,
 							Command =  new Command(() =>
 							{
-								var newPage = CreatePage("This is the new Page 2", Color.Green);
+								var newPage = CreatePage("This is the new Page 2", Colors.Green);
 								Children[1] = newPage;
 							})
 						}
 					}
 				},
-				BackgroundColor = Color.Blue
+				BackgroundColor = Colors.Blue
 			};
 			Children.Add(firstPage);
 
-			var secondPage = CreatePage("Page 2", Color.Red);
+			var secondPage = CreatePage("Page 2", Colors.Red);
 			Children.Add(secondPage);
 
 			CurrentPage = firstPage;

@@ -1,122 +1,264 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.Maui.Layouts;
 
 // This is a temporary namespace until we rename everything and move the legacy layouts
 namespace Microsoft.Maui.Controls.Layout2
 {
+	[ContentProperty(nameof(Children))]
 	public class GridLayout : Layout, IGridLayout
 	{
-		List<IGridRowDefinition> _rowDefinitions = new List<IGridRowDefinition>();
-		List<IGridColumnDefinition> _columnDefinitions = new List<IGridColumnDefinition>();
+		readonly Dictionary<IView, GridInfo> _viewInfo = new();
 
-		public IReadOnlyList<IGridRowDefinition> RowDefinitions => _rowDefinitions;
-		public IReadOnlyList<IGridColumnDefinition> ColumnDefinitions => _columnDefinitions;
+		public static readonly BindableProperty ColumnDefinitionsProperty = BindableProperty.Create("ColumnDefinitions",
+			typeof(ColumnDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
+			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
+			{
+				var colDef = new ColumnDefinitionCollection();
+				colDef.ItemSizeChanged += ((GridLayout)bindable).DefinitionsChanged;
+				return colDef;
+			});
 
-		public double RowSpacing { get; set; }
-		public double ColumnSpacing { get; set; }
+		public static readonly BindableProperty RowDefinitionsProperty = BindableProperty.Create("RowDefinitions",
+			typeof(RowDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
+			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
+			{
+				var rowDef = new RowDefinitionCollection();
+				rowDef.ItemSizeChanged += ((GridLayout)bindable).DefinitionsChanged;
+				return rowDef;
+			});
 
-		Dictionary<IView, GridInfo> _viewInfo = new Dictionary<IView, GridInfo>();
+		public static readonly BindableProperty RowSpacingProperty = BindableProperty.Create("RowSpacing", typeof(double),
+			typeof(GridLayout), 0d, propertyChanged: (bindable, oldValue, newValue) => ((GridLayout)bindable).InvalidateMeasure());
 
-		// TODO ezhart This needs to override Remove and clean up any row/column/span info for the removed child
+		public static readonly BindableProperty ColumnSpacingProperty = BindableProperty.Create("ColumnSpacing", typeof(double),
+			typeof(GridLayout), 0d, propertyChanged: (bindable, oldValue, newValue) => ((GridLayout)bindable).InvalidateMeasure());
+
+		#region Row/Column/Span Attached Properties
+
+		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row",
+			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0);
+
+		public static readonly BindableProperty RowSpanProperty = BindableProperty.CreateAttached("RowSpan",
+			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1);
+
+		public static readonly BindableProperty ColumnProperty = BindableProperty.CreateAttached("Column",
+			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0);
+
+		public static readonly BindableProperty ColumnSpanProperty = BindableProperty.CreateAttached("ColumnSpan",
+			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1);
+
+		public static int GetColumn(BindableObject bindable)
+		{
+			return (int)bindable.GetValue(ColumnProperty);
+		}
+
+		public static int GetColumnSpan(BindableObject bindable)
+		{
+			return (int)bindable.GetValue(ColumnSpanProperty);
+		}
+
+		public static int GetRow(BindableObject bindable)
+		{
+			return (int)bindable.GetValue(RowProperty);
+		}
+
+		public static int GetRowSpan(BindableObject bindable)
+		{
+			return (int)bindable.GetValue(RowSpanProperty);
+		}
+
+		public static void SetColumn(BindableObject bindable, int value)
+		{
+			bindable.SetValue(ColumnProperty, value);
+		}
+
+		public static void SetColumnSpan(BindableObject bindable, int value)
+		{
+			bindable.SetValue(ColumnSpanProperty, value);
+		}
+
+		public static void SetRow(BindableObject bindable, int value)
+		{
+			bindable.SetValue(RowProperty, value);
+		}
+
+		public static void SetRowSpan(BindableObject bindable, int value)
+		{
+			bindable.SetValue(RowSpanProperty, value);
+		}
+
+		#endregion
+
+		ReadOnlyCastingList<IGridRowDefinition, RowDefinition> _rowDefs;
+		ReadOnlyCastingList<IGridColumnDefinition, ColumnDefinition> _colDefs;
+		IReadOnlyList<IGridRowDefinition> IGridLayout.RowDefinitions => _rowDefs ??= new(RowDefinitions);
+		IReadOnlyList<IGridColumnDefinition> IGridLayout.ColumnDefinitions => _colDefs ??= new(ColumnDefinitions);
+
+		[TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
+		public ColumnDefinitionCollection ColumnDefinitions
+		{
+			get { return (ColumnDefinitionCollection)GetValue(ColumnDefinitionsProperty); }
+			set { SetValue(ColumnDefinitionsProperty, value); }
+		}
+
+		[TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
+		public RowDefinitionCollection RowDefinitions
+		{
+			get { return (RowDefinitionCollection)GetValue(RowDefinitionsProperty); }
+			set { SetValue(RowDefinitionsProperty, value); }
+		}
+
+		public double RowSpacing
+		{
+			get { return (double)GetValue(RowSpacingProperty); }
+			set { SetValue(RowSpacingProperty, value); }
+		}
+
+		public double ColumnSpacing
+		{
+			get { return (double)GetValue(ColumnSpacingProperty); }
+			set { SetValue(ColumnSpacingProperty, value); }
+		}
 
 		public int GetColumn(IView view)
 		{
-			if (_viewInfo.TryGetValue(view, out GridInfo gridInfo))
+			return view switch
 			{
-				return gridInfo.Col;
-			}
-
-			return 0;
+				BindableObject bo => (int)bo.GetValue(ColumnProperty),
+				_ => _viewInfo[view].Col,
+			};
 		}
 
 		public int GetColumnSpan(IView view)
 		{
-			if (_viewInfo.TryGetValue(view, out GridInfo gridInfo))
+			return view switch
 			{
-				return gridInfo.ColSpan;
-			}
-
-			return 1;
+				BindableObject bo => (int)bo.GetValue(ColumnSpanProperty),
+				_ => _viewInfo[view].ColSpan,
+			};
 		}
 
 		public int GetRow(IView view)
 		{
-			if (_viewInfo.TryGetValue(view, out GridInfo gridInfo))
+			return view switch
 			{
-				return gridInfo.Row;
-			}
-
-			return 0;
+				BindableObject bo => (int)bo.GetValue(RowProperty),
+				_ => _viewInfo[view].Row,
+			};
 		}
 
 		public int GetRowSpan(IView view)
 		{
-			if (_viewInfo.TryGetValue(view, out GridInfo gridInfo))
+			return view switch
 			{
-				return gridInfo.RowSpan;
-			}
-
-			return 1;
+				BindableObject bo => (int)bo.GetValue(RowSpanProperty),
+				_ => _viewInfo[view].RowSpan,
+			};
 		}
 
-		protected override ILayoutManager CreateLayoutManager() => new GridLayoutManager(this);
-
-		public void AddRowDefinition(IGridRowDefinition gridRowDefinition)
+		public void AddRowDefinition(RowDefinition gridRowDefinition)
 		{
-			_rowDefinitions.Add(gridRowDefinition);
+			RowDefinitions.Add(gridRowDefinition);
 		}
 
-		public void AddColumnDefinition(IGridColumnDefinition gridColumnDefinition)
+		public void AddColumnDefinition(ColumnDefinition gridColumnDefinition)
 		{
-			_columnDefinitions.Add(gridColumnDefinition);
+			ColumnDefinitions.Add(gridColumnDefinition);
 		}
 
 		public void SetRow(IView view, int row)
 		{
-			if (_viewInfo.TryGetValue(view, out GridInfo gridInfo))
+			switch (view)
 			{
-				gridInfo.Row = row;
-			}
-			else
-			{
-				_viewInfo[view] = new GridInfo { Row = row };
+				case BindableObject bo:
+					bo.SetValue(RowProperty, row);
+					break;
+				default:
+					_viewInfo[view].Row = row;
+					break;
 			}
 		}
 
 		public void SetRowSpan(IView view, int span)
 		{
-			if (_viewInfo.TryGetValue(view, out GridInfo gridInfo))
+			switch (view)
 			{
-				gridInfo.RowSpan = span;
-			}
-			else
-			{
-				_viewInfo[view] = new GridInfo { RowSpan = span };
+				case BindableObject bo:
+					bo.SetValue(RowSpanProperty, span);
+					break;
+				default:
+					_viewInfo[view].RowSpan = span;
+					break;
 			}
 		}
 
 		public void SetColumn(IView view, int col)
 		{
-			if (_viewInfo.TryGetValue(view, out GridInfo gridInfo))
+			switch (view)
 			{
-				gridInfo.Col = col;
-			}
-			else
-			{
-				_viewInfo[view] = new GridInfo { Col = col };
+				case BindableObject bo:
+					bo.SetValue(ColumnProperty, col);
+					break;
+				default:
+					_viewInfo[view].Col = col;
+					break;
 			}
 		}
 
 		public void SetColumnSpan(IView view, int span)
 		{
-			if (_viewInfo.TryGetValue(view, out GridInfo gridInfo))
+			switch (view)
 			{
-				gridInfo.ColSpan = span;
+				case BindableObject bo:
+					bo.SetValue(ColumnSpanProperty, span);
+					break;
+				default:
+					_viewInfo[view].ColSpan = span;
+					break;
 			}
-			else
+		}
+
+		public override void Add(IView child)
+		{
+			base.Add(child);
+
+			if (!(child is BindableObject))
 			{
-				_viewInfo[view] = new GridInfo { ColSpan = span };
+				_viewInfo[child] = new GridInfo();
 			}
+		}
+
+		public override void Remove(IView child)
+		{
+			_viewInfo.Remove(child);
+			base.Remove(child);
+		}
+
+		protected override ILayoutManager CreateLayoutManager() => new GridLayoutManager(this);
+
+		static void UpdateSizeChangedHandlers(BindableObject bindable, object oldValue, object newValue)
+		{
+			var gridLayout = (GridLayout)bindable;
+
+			if (oldValue is ColumnDefinitionCollection oldDefinition)
+			{
+				oldDefinition.ItemSizeChanged -= gridLayout.DefinitionsChanged;
+			}
+
+			if (newValue is ColumnDefinitionCollection newDefinition)
+			{
+				newDefinition.ItemSizeChanged += gridLayout.DefinitionsChanged;
+			}
+
+			gridLayout.DefinitionsChanged(bindable, EventArgs.Empty);
+		}
+
+		void DefinitionsChanged(object sender, EventArgs args)
+		{
+			InvalidateMeasure();
 		}
 
 		class GridInfo

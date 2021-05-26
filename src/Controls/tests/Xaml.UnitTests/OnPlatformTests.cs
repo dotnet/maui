@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 			var xaml = @"
 			<ContentPage 
-			xmlns=""http://xamarin.com/schemas/2014/forms""
+			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 			xmlns:scg=""clr-namespace:System.Collections.Generic;assembly=mscorlib"">
 				<OnPlatform x:TypeArguments=""View"">
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void UseTypeConverters()
 		{
 			var xaml = @"
-			<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+			<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
              xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
              Title=""Grid Demo Page"">
 			  <ContentPage.Padding>
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void TypeConverterAndDerivedTypes()
 		{
 			var xaml = @"
-			<Image xmlns=""http://xamarin.com/schemas/2014/forms""
+			<Image xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
              xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
 				<Image.Source>
 	                <OnPlatform x:TypeArguments=""ImageSource"">
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<StackLayout 
-			xmlns=""http://xamarin.com/schemas/2014/forms""
+			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
 				<StackLayout.Orientation>
 				<OnIdiom x:TypeArguments=""StackOrientation"">

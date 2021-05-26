@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var grid = new Grid
 			{
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				HeightRequest = 400,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				AutomationId = "MainGrid"
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var boxView = new BoxView
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
-				Color = Color.Yellow
+				Color = Colors.Yellow
 			};
 			Grid.SetRow(boxView, 0);
 
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var boxView2 = new BoxView
 			{
 				HorizontalOptions = LayoutOptions.FillAndExpand,
-				Color = Color.Yellow
+				Color = Colors.Yellow
 			};
 			Grid.SetRow(boxView2, 2);
 

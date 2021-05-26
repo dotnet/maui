@@ -1,10 +1,11 @@
-using CoreGraphics;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 
@@ -136,13 +137,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				((IShellSectionController)_currentSection).RemoveDisplayedPageObserver(this);
 
 
-			if(ShellItem != null)
+			if (ShellItem != null)
 				ShellItem.PropertyChanged -= OnElementPropertyChanged;
 
-			if(_context?.Shell is IShellController shellController)
+			if (_context?.Shell is IShellController shellController)
 				shellController.RemoveAppearanceObserver(this);
 
-			if(ShellItemController != null)
+			if (ShellItemController != null)
 				ShellItemController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 		}
 
@@ -313,7 +314,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			// now that they are applied we can set the enabled state of the TabBar items
 			for (int i = 4; i < viewControllersLength; i++)
 			{
-				if((i - 4) >= (moreNavigationCells.Length))
+				if ((i - 4) >= (moreNavigationCells.Length))
 				{
 					break;
 				}
@@ -330,7 +331,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 					cell.TextLabel.TextColor = Color.FromRgb(213, 213, 213).ToUIColor();
 				}
-				else if(!cell.UserInteractionEnabled)
+				else if (!cell.UserInteractionEnabled)
 				{
 					cell.UserInteractionEnabled = true;
 					cell.TextLabel.TextColor = _defaultMoreTextLabelTextColor;
@@ -339,7 +340,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			UITableViewCell[] GetMoreNavigationCells()
 			{
-				if(MoreNavigationController.TopViewController.View is UITableView uITableView)
+				if (MoreNavigationController.TopViewController.View is UITableView uITableView)
 					return uITableView.VisibleCells;
 
 				return new UITableViewCell[0];

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -36,13 +37,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 							HeightRequest = 100,
 							Content = new Label { Text = "Frame with shadow above green background" }
 						},
-						BackgroundColor = Color.Green
+						BackgroundColor = Colors.Green
 					},
 					new Frame()
 					{
 						HasShadow = true,
 						Margin = 10,
-						BackgroundColor = Color.Blue,
+						BackgroundColor = Colors.Blue,
 						HeightRequest = 100,
 						Content = new Label { Text = "Frame with shadow and background color" }
 					}

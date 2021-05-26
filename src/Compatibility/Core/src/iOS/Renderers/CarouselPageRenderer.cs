@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using UIKit;
-using Microsoft.Maui.Controls.Compatibility.Internals;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -270,7 +271,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (_ignoreNativeScrolling || SelectedIndex >= ElementController.LogicalChildren.Count)
 				return;
-						
+
 			var currentPage = (ContentPage)ElementController.LogicalChildren[SelectedIndex];
 			if (_previousPage != currentPage)
 			{
@@ -367,11 +368,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (bgImage != null)
 					View.BackgroundColor = UIColor.FromPatternImage(bgImage);
-				else if (Element.BackgroundColor.IsDefault)
+				else if (Element.BackgroundColor == null)
 					View.BackgroundColor = ColorExtensions.BackgroundColor;
 				else
 				{
-					if (Element.BackgroundColor.IsDefault)
+					if (Element.BackgroundColor == null)
 						View.BackgroundColor = UIColor.White;
 					else
 						View.BackgroundColor = Element.BackgroundColor.ToUIColor();

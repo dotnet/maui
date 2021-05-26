@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-
+using Rect = Microsoft.Maui.Graphics.Rectangle;
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.TypeConversion(typeof(Rect))]

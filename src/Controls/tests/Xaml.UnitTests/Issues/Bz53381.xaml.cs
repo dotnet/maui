@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assume.That(presenter, Is.Not.Null);
 				var grid = presenter.Content as Grid;
 				Assert.That(grid, Is.Not.Null);
-				Assert.That(grid.BackgroundColor, Is.EqualTo(Color.Green));
+				Assert.That(grid.BackgroundColor, Is.EqualTo(Colors.Green));
 			}
 		}
 	}

@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -17,14 +18,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var layout = new StackLayout
 			{
-				BackgroundColor = Color.FromHex("#dae1eb"),
+				BackgroundColor = Color.FromArgb("#dae1eb"),
 				Orientation = StackOrientation.Vertical,
 				Children = {
 					new Image {},
 					new Label {Text = "Lorem ipsum dolor" },
 					new Label {Text = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."},
-					new Button {BackgroundColor = Color.FromHex ("#fec240"), Text = "Create an account" },
-					new Button {BackgroundColor = Color.FromHex ("#04acdb"), Text = "Login" },
+					new Button {BackgroundColor = Color.FromArgb ("#fec240"), Text = "Create an account" },
+					new Button {BackgroundColor = Color.FromArgb ("#04acdb"), Text = "Login" },
 				}
 			};
 

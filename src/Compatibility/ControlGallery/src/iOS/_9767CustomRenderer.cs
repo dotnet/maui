@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Graphics;
 
 [assembly: ExportRenderer(typeof(Issue9767NavigationPage), typeof(_9767CustomRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			var gradientLayer = new CAGradientLayer
 			{
 				Bounds = NavigationBar.Bounds,
-				Colors = new CGColor[] { Color.Blue.ToCGColor(), Color.Purple.ToCGColor() },
+				Colors = new CGColor[] { Colors.Blue.ToCGColor(), Colors.Purple.ToCGColor() },
 				EndPoint = new CGPoint(0.0, 0.5),
 				StartPoint = new CGPoint(1.0, 0.5)
 			};

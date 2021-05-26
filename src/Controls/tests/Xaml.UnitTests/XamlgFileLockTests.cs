@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		string CreateXamlInputFile()
 		{
 			string xaml =
-				@"<ContentPage xmlns='http://xamarin.com/schemas/2014/forms' xmlns:x='http://schemas.microsoft.com/winfx/2009/xaml' x:Class='Test.MyPage'>
+				@"<ContentPage xmlns='http://schemas.microsoft.com/dotnet/2021/maui' xmlns:x='http://schemas.microsoft.com/winfx/2009/xaml' x:Class='Test.MyPage'>
 					<ContentPage.Content></ContentPage.Content> 
 				</ContentPage>";
 

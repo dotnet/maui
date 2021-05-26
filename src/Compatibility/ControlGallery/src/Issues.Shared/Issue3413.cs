@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var searchBar = new SearchBar
 			{
-				BackgroundColor = Color.Yellow,
+				BackgroundColor = Colors.Yellow,
 				Text = "i m on a vertical stacklayout",
 				AutomationId = "srb_vertical"
 			};
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var searchBar1 = new SearchBar
 			{
-				BackgroundColor = Color.Yellow,
+				BackgroundColor = Colors.Yellow,
 				Text = "i m on a horizontal stacklayout",
 				AutomationId = "srb_horizontal"
 			};
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var searchBar2 = new SearchBar
 			{
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				Text = "i m with expand",
 				HorizontalOptions = LayoutOptions.CenterAndExpand,
 				AutomationId = "srb_grid"

@@ -1,13 +1,12 @@
-using System;
+﻿using System;
 using System.ComponentModel;
-
-using System.Drawing;
 using CoreGraphics;
 using Foundation;
-using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
+using UIKit;
+using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -16,12 +15,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[Preserve(Conditional = true)]
 		public EntryRenderer()
 		{
-			Frame = new RectangleF(0, 20, 320, 40);
+			Frame = new CGRect(0, 20, 320, 40);
 		}
 
 		protected override UITextField CreateNativeControl()
 		{
-			var textField = new UITextField(RectangleF.Empty);
+			var textField = new UITextField(RectangleF.Zero);
 			textField.BorderStyle = UITextBorderStyle.RoundedRect;
 			textField.ClipsToBounds = true;
 			return textField;
@@ -245,6 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
+		[PortHandler("Still pending the code related to Focus.")]
 		protected virtual bool OnShouldReturn(UITextField view)
 		{
 			Control.ResignFirstResponder();
@@ -276,11 +276,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (_useLegacyColorManagement)
 			{
-				Control.TextColor = textColor.IsDefault || !Element.IsEnabled ? _defaultTextColor : textColor.ToUIColor();
+				Control.TextColor = textColor == null || !Element.IsEnabled ? _defaultTextColor : textColor.ToUIColor();
 			}
 			else
 			{
-				Control.TextColor = textColor.IsDefault ? _defaultTextColor : textColor.ToUIColor();
+				Control.TextColor = textColor == null ? _defaultTextColor : textColor.ToUIColor();
 			}
 		}
 
@@ -351,13 +351,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (_useLegacyColorManagement)
 			{
-				var color = targetColor.IsDefault || !Element.IsEnabled ? _defaultPlaceholderColor : targetColor;
+				var color = targetColor == null || !Element.IsEnabled ? _defaultPlaceholderColor : targetColor;
 				UpdateAttributedPlaceholder(formatted.ToAttributed(Element, color));
 			}
 			else
 			{
 				// Using VSM color management; take whatever is in Element.PlaceholderColor
-				var color = targetColor.IsDefault ? _defaultPlaceholderColor : targetColor;
+				var color = targetColor == null ? _defaultPlaceholderColor : targetColor;
 				UpdateAttributedPlaceholder(formatted.ToAttributed(Element, color));
 			}
 
@@ -376,7 +376,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Control.Text = text;
 		}
 
-		[PortHandler ("Partially ported ...")]
+		[PortHandler("Partially ported ...")]
 		void UpdateCharacterSpacing()
 		{
 			var textAttr = Control.AttributedText.WithCharacterSpacing(Element.CharacterSpacing);
@@ -516,7 +516,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Element.IsSet(Specifics.CursorColorProperty))
 			{
 				var color = Element.OnThisPlatform().GetCursorColor();
-				if (color == Color.Default)
+				if (color == null)
 					control.TintColor = _defaultCursorColor;
 				else
 					control.TintColor = color.ToUIColor();

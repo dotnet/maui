@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Microsoft.Maui.Graphics;
 using AToolbarPlacement = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ToolbarPlacement;
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
@@ -116,8 +117,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			tabbedPage.Children.Add(Issue1898PageOne);
 			tabbedPage.Children.Add(Issue1898PageTwo);
 
-			tabbedPage.On<Android>().Element.UnselectedTabColor = Color.Blue;
-			tabbedPage.On<Android>().Element.SelectedTabColor = Color.Green;
+			tabbedPage.On<Android>().Element.UnselectedTabColor = Colors.Blue;
+			tabbedPage.On<Android>().Element.SelectedTabColor = Colors.Green;
 			tabbedPage.On<Android>().SetToolbarPlacement(placement);
 			tabbedPage.On<WindowsOS>().SetHeaderIconsEnabled(true);
 		}

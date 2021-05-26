@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -19,12 +20,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		protected override void Init()
 		{
 			var instructions = new Label { Text = "Manual check that both Label 1 have the same size, if the 1st is bigger than this test failed." };
-			var label = new Label { Text = "Label 1", BackgroundColor = Color.Red };
+			var label = new Label { Text = "Label 1", BackgroundColor = Colors.Red };
 			AutomationProperties.SetHelpText(label, "The longer this label hit is, the worse the problem");
-			var image = new Image { Source = "bank.png", BackgroundColor = Color.Red };
+			var image = new Image { Source = "bank.png", BackgroundColor = Colors.Red };
 			AutomationProperties.SetHelpText(image, "The longer this image hint is, the worse the problem");
-			var image2 = new Image { Source = "bank.png", BackgroundColor = Color.Red };
-			var label2 = new Label { Text = "Label 1", BackgroundColor = Color.Red };
+			var image2 = new Image { Source = "bank.png", BackgroundColor = Colors.Red };
+			var label2 = new Label { Text = "Label 1", BackgroundColor = Colors.Red };
 			var horizontalLayout = new StackLayout
 			{
 				Orientation = StackOrientation.Horizontal,

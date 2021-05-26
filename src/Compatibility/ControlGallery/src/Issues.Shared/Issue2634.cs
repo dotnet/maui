@@ -3,6 +3,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -74,13 +75,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						new ColumnDefinition { Width = new GridLength (1, GridUnitType.Star)  },
 						new ColumnDefinition { Width = new GridLength (60, GridUnitType.Absolute)  }
 					},
-					BackgroundColor = Color.Transparent,
+					BackgroundColor = Colors.Transparent,
 					ColumnSpacing = 1,
 					RowSpacing = 1,
 					Padding = 0
 				};
-				Color textColor = Color.Blue;
-				Color dataColor = Color.Black;
+				Color textColor = Colors.Blue;
+				Color dataColor = Colors.Black;
 
 				var slFirstName = new StackLayout { Orientation = StackOrientation.Vertical };
 				var lblFirstNameLabel = new Label
@@ -216,7 +217,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				#endregion
 
 				string breakText = "_______________________________________________________________________________________________________________________________________________________________________________";
-				var lblBreakLine = new Label { LineBreakMode = LineBreakMode.NoWrap, TextColor = Color.Red };
+				var lblBreakLine = new Label { LineBreakMode = LineBreakMode.NoWrap, TextColor = Colors.Red };
 				lblBreakLine.Text = breakText;
 				addGrid.Children.Add(lblBreakLine, 0, 3, 2, 3);
 
@@ -280,7 +281,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						VerticalOptions = LayoutOptions.Center
 					};
 
-					Color txtColor = Color.Blue;
+					Color txtColor = Colors.Blue;
 
 					var fontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label));
 

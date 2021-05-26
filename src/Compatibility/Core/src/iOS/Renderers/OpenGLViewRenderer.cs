@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
+using CoreAnimation;
+using Foundation;
 using GLKit;
 using OpenGLES;
-using Foundation;
-using CoreAnimation;
 using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS

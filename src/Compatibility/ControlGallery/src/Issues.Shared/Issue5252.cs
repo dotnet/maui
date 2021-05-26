@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -34,8 +35,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "Toggle placeholder color",
 				Command = new Command(() =>
 				{
-					entry.PlaceholderColor = entry.PlaceholderColor.IsDefault ? Color.Red : (Color)Entry.PlaceholderColorProperty.DefaultValue;
-					editor.PlaceholderColor = editor.PlaceholderColor.IsDefault ? Color.Red : (Color)Editor.PlaceholderColorProperty.DefaultValue;
+					entry.PlaceholderColor = entry.PlaceholderColor == null ? Colors.Red : (Color)Entry.PlaceholderColorProperty.DefaultValue;
+					editor.PlaceholderColor = editor.PlaceholderColor == null ? Colors.Red : (Color)Editor.PlaceholderColorProperty.DefaultValue;
 				})
 			});
 

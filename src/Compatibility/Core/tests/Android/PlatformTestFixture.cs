@@ -7,6 +7,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CardView.Widget;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using AColor = Android.Graphics.Color;
 using AProgressBar = Android.Widget.ProgressBar;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 using Mono.Cecil.Cil;
 
 namespace Microsoft.Maui.Controls.XamlC
@@ -21,17 +22,18 @@ namespace Microsoft.Maui.Controls.XamlC
 
 				if (value.StartsWith("#", StringComparison.Ordinal))
 				{
-					var color = Color.FromHex(value);
-					yield return Instruction.Create(OpCodes.Ldc_R8, color.R);
-					yield return Instruction.Create(OpCodes.Ldc_R8, color.G);
-					yield return Instruction.Create(OpCodes.Ldc_R8, color.B);
-					yield return Instruction.Create(OpCodes.Ldc_R8, color.A);
+					var color = Color.FromArgb(value);
 
-					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui", "Microsoft.Maui", "Color"), parameterTypes: new[] {
-						("mscorlib", "System", "Double"),
-						("mscorlib", "System", "Double"),
-						("mscorlib", "System", "Double"),
-						("mscorlib", "System", "Double")}));
+					yield return Instruction.Create(OpCodes.Ldc_R4, color.Red);
+					yield return Instruction.Create(OpCodes.Ldc_R4, color.Green);
+					yield return Instruction.Create(OpCodes.Ldc_R4, color.Blue);
+					yield return Instruction.Create(OpCodes.Ldc_R4, color.Alpha);
+
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Color"), parameterTypes: new[] {
+						("mscorlib", "System", "Single"),
+						("mscorlib", "System", "Single"),
+						("mscorlib", "System", "Single"),
+						("mscorlib", "System", "Single")}));
 					yield break;
 				}
 				var parts = value.Split('.');
@@ -40,19 +42,29 @@ namespace Microsoft.Maui.Controls.XamlC
 					var color = parts[parts.Length - 1];
 					if (color == "lightgrey")
 						color = "lightgray";
-					var fieldReference = module.ImportFieldReference(("Microsoft.Maui", "Microsoft.Maui", "Color"),
+
+					if (color == "Default")
+					{
+						yield return Instruction.Create(OpCodes.Ldnull);
+						yield break;
+					}
+
+					var fieldReference = module.ImportFieldReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Colors"),
 																	 color,
 																	 isStatic: true,
 																	 caseSensitive: false);
+
 					if (fieldReference != null)
 					{
 						yield return Instruction.Create(OpCodes.Ldsfld, fieldReference);
 						yield break;
 					}
-					var propertyGetterReference = module.ImportPropertyGetterReference(("Microsoft.Maui", "Microsoft.Maui", "Color"),
+
+					var propertyGetterReference = module.ImportPropertyGetterReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Colors"),
 																					   color,
 																					   isStatic: true,
 																					   caseSensitive: false);
+
 					if (propertyGetterReference != null)
 					{
 						yield return Instruction.Create(OpCodes.Call, propertyGetterReference);

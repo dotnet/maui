@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -157,7 +158,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var rightSwipeItem = new SwipeItem
 			{
 				Text = "Right",
-				BackgroundColor = Color.Green,
+				BackgroundColor = Colors.Green,
 				Command = new Command(() =>
 				{
 					_leftCount++;
@@ -174,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var leftSwipeItem = new SwipeItem
 			{
 				Text = "Left",
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				Command = new Command(() =>
 				{
 					_rightCount++;
@@ -194,7 +195,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Content = new StackLayout
 				{
 					AutomationId = SwipeViewId,
-					BackgroundColor = Color.Coral,
+					BackgroundColor = Colors.Coral,
 					Children =
 					{
 						new Label

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries.WindowsPlatformSpecificsGalleryHelpers;
 
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
@@ -84,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 				VerticalOptions = LayoutOptions.Center
 			};
 			var adjustCollapseWidthEntry = new Entry { Text = page.On<WindowsOS>().CollapsedPaneWidth().ToString() };
-			var adjustCollapseWidthButton = new Button { Text = "Change", BackgroundColor = Color.Gray };
+			var adjustCollapseWidthButton = new Button { Text = "Change", BackgroundColor = Colors.Gray };
 			adjustCollapseWidthButton.Clicked += (sender, args) =>
 			{
 				double newWidth;

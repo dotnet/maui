@@ -2,10 +2,11 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	[ContentProperty("Content")]
+	[ContentProperty(nameof(Content))]
 	public class ScrollView : Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
 	{
 		#region IScrollViewController
@@ -275,6 +276,7 @@ namespace Microsoft.Maui.Controls
 
 			SizeRequest contentRequest = Content.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
 			contentRequest.Minimum = new Size(Math.Min(40, contentRequest.Minimum.Width), Math.Min(40, contentRequest.Minimum.Height));
+
 			return contentRequest;
 		}
 

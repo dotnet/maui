@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -17,8 +18,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 	public class Issue9694 : TestContentPage
 	{
-		readonly Color _customColor = Color.FromHex("#9999CCDD");
-		readonly Color _newCustomColor = Color.Purple;
+		readonly Color _customColor = Color.FromArgb("#9999CCDD");
+		readonly Color _newCustomColor = Colors.Purple;
 
 		public Issue9694()
 		{
@@ -28,8 +29,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var instructions = new Label
 			{
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "If there is no exception, the test has passed."
 			};
 
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var onColorSwitch = new Switch
 			{
-				OnColor = Color.Orange
+				OnColor = Colors.Orange
 			};
 
 			var switchLayout = new StackLayout

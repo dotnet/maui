@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -18,8 +19,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		protected override void Init()
 		{
-			BarBackgroundColor = Color.Blue;
-			BarTextColor = Color.White;
+			BarBackgroundColor = Colors.Blue;
+			BarTextColor = Colors.White;
 
 			PlatformConfiguration.iOSSpecific.NavigationPage.SetHideNavigationBarSeparator(this, true);
 
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			Title = "Issue 9456";
 
-			BackgroundColor = Color.Blue;
+			BackgroundColor = Colors.Blue;
 
 			var layout = new StackLayout
 			{
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var instructions = new Label
 			{
-				TextColor = Color.White,
+				TextColor = Colors.White,
 				Text = "If the NavigationBarSeparator is hidden, the test has passed."
 			};
 

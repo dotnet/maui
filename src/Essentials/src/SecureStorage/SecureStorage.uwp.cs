@@ -7,67 +7,67 @@ using Windows.Storage;
 
 namespace Microsoft.Maui.Essentials
 {
-    public partial class SecureStorage
-    {
-        static async Task<string> PlatformGetAsync(string key)
-        {
-            var settings = GetSettings(Alias);
+	public partial class SecureStorage
+	{
+		static async Task<string> PlatformGetAsync(string key)
+		{
+			var settings = GetSettings(Alias);
 
-            var encBytes = settings.Values[key] as byte[];
+			var encBytes = settings.Values[key] as byte[];
 
-            if (encBytes == null)
-                return null;
+			if (encBytes == null)
+				return null;
 
-            var provider = new DataProtectionProvider();
+			var provider = new DataProtectionProvider();
 
-            var buffer = await provider.UnprotectAsync(encBytes.AsBuffer());
+			var buffer = await provider.UnprotectAsync(encBytes.AsBuffer());
 
-            return Encoding.UTF8.GetString(buffer.ToArray());
-        }
+			return Encoding.UTF8.GetString(buffer.ToArray());
+		}
 
-        static async Task PlatformSetAsync(string key, string data)
-        {
-            var settings = GetSettings(Alias);
+		static async Task PlatformSetAsync(string key, string data)
+		{
+			var settings = GetSettings(Alias);
 
-            var bytes = Encoding.UTF8.GetBytes(data);
+			var bytes = Encoding.UTF8.GetBytes(data);
 
-            // LOCAL=user and LOCAL=machine do not require enterprise auth capability
-            var provider = new DataProtectionProvider("LOCAL=user");
+			// LOCAL=user and LOCAL=machine do not require enterprise auth capability
+			var provider = new DataProtectionProvider("LOCAL=user");
 
-            var buffer = await provider.ProtectAsync(bytes.AsBuffer());
+			var buffer = await provider.ProtectAsync(bytes.AsBuffer());
 
-            var encBytes = buffer.ToArray();
+			var encBytes = buffer.ToArray();
 
-            settings.Values[key] = encBytes;
-        }
+			settings.Values[key] = encBytes;
+		}
 
-        static bool PlatformRemove(string key)
-        {
-            var settings = GetSettings(Alias);
+		static bool PlatformRemove(string key)
+		{
+			var settings = GetSettings(Alias);
 
-            if (settings.Values.ContainsKey(key))
-            {
-                settings.Values.Remove(key);
-                return true;
-            }
+			if (settings.Values.ContainsKey(key))
+			{
+				settings.Values.Remove(key);
+				return true;
+			}
 
-            return false;
-        }
+			return false;
+		}
 
-        static void PlatformRemoveAll()
-        {
-            var settings = GetSettings(Alias);
+		static void PlatformRemoveAll()
+		{
+			var settings = GetSettings(Alias);
 
-            settings.Values.Clear();
-        }
+			settings.Values.Clear();
+		}
 
-        static ApplicationDataContainer GetSettings(string name)
-        {
-            var localSettings = ApplicationData.Current.LocalSettings;
+		static ApplicationDataContainer GetSettings(string name)
+		{
+			var localSettings = ApplicationData.Current.LocalSettings;
 
-            if (!localSettings.Containers.ContainsKey(name))
-                localSettings.CreateContainer(name, ApplicationDataCreateDisposition.Always);
-            return localSettings.Containers[name];
-        }
-    }
+			if (!localSettings.Containers.ContainsKey(name))
+				localSettings.CreateContainer(name, ApplicationDataCreateDisposition.Always);
+			return localSettings.Containers[name];
+		}
+	}
 }

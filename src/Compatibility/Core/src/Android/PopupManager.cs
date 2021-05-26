@@ -9,6 +9,7 @@ using Android.Widget;
 using Microsoft.Maui.Controls.Internals;
 using AppCompatActivity = AndroidX.AppCompat.App.AppCompatActivity;
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
+using AWindow = Android.Views.Window;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -487,7 +488,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					}
 				}
 
-				public Window Window => _useAppCompat ? _appcompatAlertDialog.Window : _legacyAlertDialog.Window;
+				public AWindow Window => _useAppCompat ? _appcompatAlertDialog.Window : _legacyAlertDialog.Window;
 
 				public void Show()
 				{

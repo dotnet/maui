@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
@@ -46,7 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 			{
 				ItemsLayout = itemsLayout,
 				ItemTemplate = itemTemplate,
-				BackgroundColor = Color.LightGray,
+				BackgroundColor = Colors.LightGray,
 				AutomationId = "TheCarouselView"
 			};
 
@@ -63,8 +64,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 			{
 				HorizontalOptions = LayoutOptions.Center,
 				Margin = new Thickness(12, 6, 12, 12),
-				IndicatorColor = Color.Gray,
-				SelectedIndicatorColor = Color.Black,
+				IndicatorColor = Colors.Gray,
+				SelectedIndicatorColor = Colors.Black,
 				IndicatorsShape = IndicatorShape.Square,
 				AutomationId = "TheIndicatorView",
 				Count = 5,
@@ -98,13 +99,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 				switch (selectedIndex)
 				{
 					case 0:
-						indicatorView.IndicatorColor = Color.Black;
+						indicatorView.IndicatorColor = Colors.Black;
 						break;
 					case 1:
-						indicatorView.IndicatorColor = Color.Blue;
+						indicatorView.IndicatorColor = Colors.Blue;
 						break;
 					case 2:
-						indicatorView.IndicatorColor = Color.Red;
+						indicatorView.IndicatorColor = Colors.Red;
 						break;
 				}
 			};
@@ -127,7 +128,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 			{
 				ItemsSource = templates,
 				WidthRequest = 150,
-				TextColor = Color.Black
+				TextColor = Colors.Black
 			};
 
 			templatePicker.SelectedIndexChanged += (s, e) =>
@@ -196,7 +197,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 				Text = "DEL First",
 				FontSize = 8,
 				AutomationId = "btnRemoveFirst",
-				BackgroundColor = Color.LightGray,
+				BackgroundColor = Colors.LightGray,
 				Padding = new Thickness(5),
 				Command = new Command(() =>
 				{
@@ -210,7 +211,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 				Text = "Prev",
 				FontSize = 8,
 				AutomationId = "btnPrev",
-				BackgroundColor = Color.LightGray,
+				BackgroundColor = Colors.LightGray,
 				Padding = new Thickness(5),
 				Command = new Command(() =>
 				{
@@ -226,7 +227,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 				Text = "Next",
 				FontSize = 8,
 				AutomationId = "btnNext",
-				BackgroundColor = Color.LightGray,
+				BackgroundColor = Colors.LightGray,
 				Padding = new Thickness(5),
 				Command = new Command(() =>
 				{
@@ -243,7 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 				Text = "DEL Last",
 				FontSize = 8,
 				AutomationId = "btnRemoveLast",
-				BackgroundColor = Color.LightGray,
+				BackgroundColor = Colors.LightGray,
 				Padding = new Thickness(5),
 				Command = new Command(() =>
 				{

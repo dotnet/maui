@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AppKit;
 using Foundation;
+using Microsoft.Maui.Graphics.Native;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Essentials
 			var window = Platform.GetCurrentWindow();
 			var view = window.ContentView;
 
-			var rect = request.PresentationSourceBounds.ToPlatformRectangle();
+			var rect = request.PresentationSourceBounds.AsCGRect();
 			rect.Y = view.Bounds.Height - rect.Bottom;
 
 			var picker = new NSSharingServicePicker(items.ToArray());

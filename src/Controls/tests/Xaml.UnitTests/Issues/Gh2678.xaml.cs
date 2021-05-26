@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -33,9 +34,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var layout = new Gh2678(useCompiledXaml);
 				var label = layout.label0;
-				Assert.That(label.BackgroundColor, Is.EqualTo(Color.Red));
+				Assert.That(label.BackgroundColor, Is.EqualTo(Colors.Red));
 				label.StyleClass = new List<string> { "two" };
-				Assert.That(label.BackgroundColor, Is.EqualTo(Color.Green));
+				Assert.That(label.BackgroundColor, Is.EqualTo(Colors.Green));
 			}
 		}
 	}

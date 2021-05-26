@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Opengl;
 using Javax.Microedition.Khronos.Opengles;
+using Microsoft.Maui.Graphics;
 using EGLConfig = Javax.Microedition.Khronos.Egl.EGLConfig;
 using Object = Java.Lang.Object;
 

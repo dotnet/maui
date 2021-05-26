@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			_disposed = true;
-			
+
 			if (disposing && Control != null)
 			{
 				Control.CheckedChanged -= OnControlCheckedChanged;

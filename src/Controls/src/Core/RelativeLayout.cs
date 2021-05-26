@@ -5,9 +5,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
+	[ContentProperty(nameof(Children))]
 	public class RelativeLayout : Layout<View>, IElementConfiguration<RelativeLayout>
 	{
 		public static readonly BindableProperty XConstraintProperty = BindableProperty.CreateAttached("XConstraint", typeof(Constraint), typeof(RelativeLayout), null, propertyChanged: ConstraintChanged);

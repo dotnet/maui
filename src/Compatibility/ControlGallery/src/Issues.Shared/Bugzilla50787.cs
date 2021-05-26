@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -49,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					new Label
 					{
 						Text = "As you push, a new page should slide in from the right. If you hit the back button or the navigation arrow, the previous animation should be reversed. Popping to root should slide in only the root page.",
-						TextColor = Color.White
+						TextColor = Colors.White
 					},
 					button,
 					button2

@@ -1,9 +1,10 @@
-using System.Text;
+﻿using System.Text;
 using Android.Graphics;
 using Android.Text;
 using Android.Text.Style;
 using Android.Util;
 using Android.Widget;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -39,16 +40,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				int end = start + text.Length;
 				c = end;
 
-				if (span.TextColor != Color.Default)
+				if (span.TextColor != null)
 				{
 					spannable.SetSpan(new ForegroundColorSpan(span.TextColor.ToAndroid()), start, end, SpanTypes.InclusiveExclusive);
 				}
-				else if (defaultForegroundColor != Color.Default)
+				else if (defaultForegroundColor != null)
 				{
 					spannable.SetSpan(new ForegroundColorSpan(defaultForegroundColor.ToAndroid()), start, end, SpanTypes.InclusiveExclusive);
 				}
 
-				if (span.BackgroundColor != Color.Default)
+				if (span.BackgroundColor != null)
 				{
 					spannable.SetSpan(new BackgroundColorSpan(span.BackgroundColor.ToAndroid()), start, end, SpanTypes.InclusiveExclusive);
 				}
@@ -101,7 +102,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			void Apply(Paint paint)
 			{
 				paint.SetTypeface(Font.ToTypeface());
-				float value = Font.ToScaledPixel();
+				float value = (float)Font.FontSize;
 				paint.TextSize = TypedValue.ApplyDimension(ComplexUnitType.Sp, value, TextView.Resources.DisplayMetrics);
 				if (Forms.IsLollipopOrNewer)
 				{

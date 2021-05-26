@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -44,8 +45,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var button = new Button
 			{
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "Quickly Double Tap This Button",
 				HeightRequest = 200,
 				HorizontalOptions = LayoutOptions.Center,

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -14,12 +14,16 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ActionBarDrawerToggle = AndroidX.AppCompat.App.ActionBarDrawerToggle;
 using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 using ATextView = global::Android.Widget.TextView;
 using AView = Android.Views.View;
+using Color = Microsoft.Maui.Graphics.Color;
 using LP = Android.Views.ViewGroup.LayoutParams;
+using Paint = Android.Graphics.Paint;
 using R = Android.Resource;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
@@ -52,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		ContainerView _titleViewContainer;
 		protected IShellContext ShellContext { get; private set; }
 		//assume the default
-		Color _tintColor = Color.Default;
+		Color _tintColor = null;
 		Toolbar _toolbar;
 		AppBarLayout _appBar;
 		float _appBarElevation;
@@ -331,7 +335,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected virtual async void UpdateLeftBarButtonItem(Context context, Toolbar toolbar, DrawerLayout drawerLayout, Page page)
 		{
-			if (_drawerToggle == null && !context.IsDesignerContext())
+			if (_drawerToggle == null)
 			{
 				_drawerToggle = new ActionBarDrawerToggle(context.GetActivity(), drawerLayout, toolbar, R.String.Ok, R.String.Ok)
 				{
@@ -353,8 +357,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			DrawerArrowDrawable icon = null;
 			bool defaultDrawerArrowDrawable = false;
 
-			var tintColor = Color.White;
-			if (TintColor != Color.Default)
+			var tintColor = Colors.White;
+			if (TintColor != null)
 				tintColor = TintColor;
 
 			if (image != null)
@@ -475,7 +479,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					using (var newDrawable = constant.NewDrawable())
 					using (var iconDrawable = newDrawable.Mutate())
 					{
-						iconDrawable.SetColorFilter(TintColor.ToAndroid(Color.White), FilterMode.SrcAtop);
+						iconDrawable.SetColorFilter(TintColor.ToAndroid(Colors.White), FilterMode.SrcAtop);
 						menuItem.SetIcon(iconDrawable);
 					}
 				}
@@ -574,7 +578,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					item.SetEnabled(SearchHandler.IsSearchEnabled);
 					item.SetIcon(Resource.Drawable.abc_ic_search_api_material);
 					using (var icon = item.Icon)
-						icon.SetColorFilter(TintColor.ToAndroid(Color.White), FilterMode.SrcAtop);
+						icon.SetColorFilter(TintColor.ToAndroid(Colors.White), FilterMode.SrcAtop);
 					item.SetShowAsAction(ShowAsAction.IfRoom | ShowAsAction.CollapseActionView);
 
 					if (_searchView.View.Parent != null)
@@ -626,7 +630,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					// we want the newly added button which will need layout
 					if (child.IsLayoutRequested)
 					{
-						button.SetColorFilter(TintColor.ToAndroid(Color.White), PorterDuff.Mode.SrcAtop);
+						button.SetColorFilter(TintColor.ToAndroid(Colors.White), PorterDuff.Mode.SrcAtop);
 					}
 
 					button.Dispose();
@@ -657,7 +661,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			public ImageSource IconBitmapSource { get; set; }
 			float _defaultSize;
 
-			Color _pressedBackgroundColor => TintColor.AddLuminosity(-.12);//<item name="highlight_alpha_material_light" format="float" type="dimen">0.12</item>
+			Color _pressedBackgroundColor => TintColor.AddLuminosity(-.12f);//<item name="highlight_alpha_material_light" format="float" type="dimen">0.12</item>
 
 			protected override void Dispose(bool disposing)
 			{

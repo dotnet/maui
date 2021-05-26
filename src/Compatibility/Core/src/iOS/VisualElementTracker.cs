@@ -1,10 +1,10 @@
 using System;
 using System.ComponentModel;
-using System.Drawing;
 using System.Threading;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 using UIKit;
@@ -266,7 +266,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 
 					// must reset transform prior to setting frame...
-					if(caLayer.AnchorPoint != _originalAnchor)
+					if (caLayer.AnchorPoint != _originalAnchor)
 						caLayer.AnchorPoint = _originalAnchor;
 
 					caLayer.Transform = transform;
@@ -489,6 +489,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				return true;
 
 			return false;
-		}	
+		}
 	}
 }

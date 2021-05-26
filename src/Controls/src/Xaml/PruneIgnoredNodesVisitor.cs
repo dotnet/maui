@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (UseDesignProperties) //if we're in design mode for this file
 				{
 					for (var i = 0; i < prefixes.Count; i++)
-						if (node.NamespaceResolver.LookupNamespace(prefixes[i]) == XamlParser.XFDesignUri)
+						if (node.NamespaceResolver.LookupNamespace(prefixes[i]) == XamlParser.MauiDesignUri)
 							prefixes.RemoveAt(i--);
 				}
 

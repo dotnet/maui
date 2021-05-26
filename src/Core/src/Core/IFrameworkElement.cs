@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Primitives;
+﻿#nullable enable
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui
 {
@@ -13,9 +15,19 @@ namespace Microsoft.Maui
 		bool IsEnabled { get; }
 
 		/// <summary>
-		/// Gets the color which will fill the background of a FrameworkElement.
+		/// Gets a value that determines whether this FrameworkElement should be part of the visual tree or not.
 		/// </summary>
-		Color BackgroundColor { get; }
+		Visibility Visibility { get; }
+
+		/// <summary>
+		/// Gets the opacity value applied to the view when it is rendered.
+		/// </summary>
+		double Opacity { get; }
+
+		/// <summary>
+		/// Gets the paint which will fill the background of a FrameworkElement.
+		/// </summary>
+		Paint? Background { get; }
 
 		/// <summary>
 		/// Gets the bounds of the FrameworkElement.
@@ -23,12 +35,12 @@ namespace Microsoft.Maui
 		Rectangle Frame { get; }
 
 		/// <summary>
-		/// Gets the current rendered width of this FrameworkElement. 
+		/// Gets the specified width of this FrameworkElement. 
 		/// </summary>
 		double Width { get; }
 
 		/// <summary>
-		/// Gets the current rendered height of this FrameworkElement. 
+		/// Gets the specified height of this FrameworkElement. 
 		/// </summary>
 		double Height { get; }
 
@@ -46,33 +58,24 @@ namespace Microsoft.Maui
 		/// Positions child elements and determines a size for an Element.
 		/// </summary>
 		/// <param name="bounds">The size that the parent computes for the child element.</param>
-		void Arrange(Rectangle bounds);
+		/// <returns>Return the actual arranged Size for this element.</returns>
+		Size Arrange(Rectangle bounds);
 
 		/// <summary>
 		/// Updates the size of an FrameworkElement.
 		/// </summary>
 		/// <param name="widthConstraint">The width that a parent element can allocate a child element.</param>
 		/// <param name="heightConstraint">The height that a parent element can allocate a child element.</param>
-		/// <returns>Return the rendered Size for this element.</returns>
+		/// <returns>Return the desired Size for this element.</returns>
 		Size Measure(double widthConstraint, double heightConstraint);
 
 		/// <summary>
-		/// Gets the current rendered Size of this FrameworkElement. 
+		/// Gets the current desired Size of this FrameworkElement. 
 		/// </summary>
 		Size DesiredSize { get; }
 
 		/// <summary>
-		/// Gets a value indicating whether the current size returned by layout measure is valid.
-		/// </summary>
-		bool IsMeasureValid { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the computed size and position of child elements in this element's layout are valid.
-		/// </summary>
-		bool IsArrangeValid { get; }
-
-		/// <summary>
-		/// Gets a value indicating whether the computed size and position of child elements in this element's layout are valid.
+		/// Signals that the current measure value of this FrameworkElement is no longer valid and must be recomputed during the next measure pass.
 		/// </summary>
 		void InvalidateMeasure();
 

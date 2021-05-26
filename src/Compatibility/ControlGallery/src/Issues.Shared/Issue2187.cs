@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			Label issueTestLabel1 = new Label
 			{
-				TextColor = Color.Red,
+				TextColor = Colors.Red,
 				HorizontalTextAlignment = TextAlignment.Center,
 				FontSize = 40,
 				Text = "\uf0c9"
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			Label issueTestLabel2 = new Label
 			{
-				TextColor = Color.Gray,
+				TextColor = Colors.Gray,
 				HorizontalTextAlignment = TextAlignment.Center,
 				FontSize = 40,
 				Text = "\uf0e9"
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			Label issueTestLabel3 = new Label
 			{
-				TextColor = Color.Red,
+				TextColor = Colors.Red,
 				HorizontalTextAlignment = TextAlignment.Center,
 				FontSize = 40,
 				Text = "Hello, I'm in Pick Ax font"
@@ -99,7 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			Span span = new Span()
 			{
-				TextColor = Color.Red,
+				TextColor = Colors.Red,
 				FontSize = 40,
 				Text = "Hello, I'm in Pick Ax font"
 			};
@@ -115,7 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			Span span1 = new Span()
 			{
-				TextColor = Color.Blue,
+				TextColor = Colors.Blue,
 				FontSize = 30,
 				Text = " - without font but blue"
 			};
@@ -133,7 +134,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			Button issueTestButton1 = new Button
 			{
-				TextColor = Color.Red,
+				TextColor = Colors.Red,
 				FontSize = 40,
 				Text = "Hello, I'm in Button - Pick Ax font"
 			};

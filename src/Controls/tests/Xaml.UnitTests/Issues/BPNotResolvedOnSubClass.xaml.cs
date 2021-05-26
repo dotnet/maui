@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -9,7 +10,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	public partial class BPNotResolvedOnSubClass : ContentPage
 	{
 		public static readonly BindableProperty ShadowColorProperty =
-			BindableProperty.CreateAttached("ShadowColor", typeof(Color), typeof(BPNotResolvedOnSubClass), Color.Default);
+			BindableProperty.CreateAttached("ShadowColor", typeof(Color), typeof(BPNotResolvedOnSubClass), null);
 
 		public static Color GetShadowColor(Element bindable) // Change to Element instead of BindableObject o make fail
 		{
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var button = new Button();
 				button.Style = style;
 
-				Assert.AreEqual(Color.FromHex("#dddddd"), button.GetValue(ShadowColorProperty));
+				Assert.AreEqual(Color.FromArgb("#dddddd"), button.GetValue(ShadowColorProperty));
 			}
 		}
 	}

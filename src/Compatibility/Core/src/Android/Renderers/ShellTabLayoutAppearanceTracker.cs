@@ -1,5 +1,7 @@
 using Android.Graphics.Drawables;
 using Google.Android.Material.Tabs;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

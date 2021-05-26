@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -144,17 +145,17 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			grid.Children.Add(new Label
 			{
 				Text = "Spanning 4 columns",
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 			}, 0, 4, 0, 1);
 			grid.Children.Add(new Label
 			{
 				Text = "Spanning 3 rows",
-				BackgroundColor = Color.Gray,
+				BackgroundColor = Colors.Gray,
 			}, 4, 5, 0, 3);
 			grid.Children.Add(new Label
 			{
 				Text = "a block 3x3",
-				BackgroundColor = Color.Green,
+				BackgroundColor = Colors.Green,
 			}, 1, 4, 1, 4);
 			layout.Children.Add(grid);
 
@@ -170,8 +171,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				}
 			};
 
-			grid.Children.Add(new BoxView { BackgroundColor = Color.Red });
-			grid.Children.Add(new BoxView { BackgroundColor = Color.Blue }, 1, 0);
+			grid.Children.Add(new BoxView { BackgroundColor = Colors.Red });
+			grid.Children.Add(new BoxView { BackgroundColor = Colors.Blue }, 1, 0);
 
 			layout.Children.Add(grid);
 			layout.Children.Add(new Button

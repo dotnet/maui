@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -58,15 +59,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Content = new ScrollView
 				{
 
-					BackgroundColor = Color.Red,
+					BackgroundColor = Colors.Red,
 
 					Content = new StackLayout
 					{
-						BackgroundColor = Color.BlueViolet,
+						BackgroundColor = Colors.BlueViolet,
 						Children = {
 							(Label = new Label {
 								Text = "this text should disappear after 1 sec",
-								BackgroundColor = Color.LightBlue,
+								BackgroundColor = Colors.LightBlue,
 								HorizontalOptions = LayoutOptions.StartAndExpand,
 							})
 						}

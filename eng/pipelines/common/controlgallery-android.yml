@@ -32,14 +32,14 @@ steps:
     inputs:
       targetType: 'filePath'
       filePath: 'build.sh'
-      arguments: --target cg-android --ANDROID_RENDERERS="$(renderers)" --GoogleMapsAPIKey="$(GoogleMapsAPIKey)" --BUILD_CONFIGURATION=$(BuildConfiguration)
+      arguments: --target cg-android --ANDROID_RENDERERS="$(renderers)" --GoogleMapsAPIKey="$(GoogleMapsAPIKey)" --configuration=$(BuildConfiguration)
 
   - task: Bash@3
     displayName: 'Build Android UITests'
     inputs:
       targetType: 'filePath'
       filePath: 'build.sh'
-      arguments: --target cg-android-build-tests --BUILD_CONFIGURATION=$(BuildConfiguration)
+      arguments: --target cg-android-build-tests --configuration=$(BuildConfiguration)
 
   - task: CopyFiles@2
     displayName: 'Copy Android Files for UITest'

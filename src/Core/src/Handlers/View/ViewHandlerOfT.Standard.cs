@@ -1,10 +1,10 @@
-using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ViewHandler<TVirtualView, TNativeView>
 	{
-		public override void SetFrame(Rectangle rect)
+		public override void NativeArrange(Rectangle rect)
 		{
 
 		}

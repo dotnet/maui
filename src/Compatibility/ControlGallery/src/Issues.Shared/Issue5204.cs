@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Children = {
 					new Image
 					{
-						BackgroundColor = Color.Black,
+						BackgroundColor = Colors.Black,
 						Source = "https://user-images.githubusercontent.com/10124814/53306353-27302b80-389d-11e9-98ce-690db32f1ee3.jpg"
 					}
 				}

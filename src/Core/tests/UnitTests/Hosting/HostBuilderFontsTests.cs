@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
 	public class HostBuilderFontsTests
@@ -40,12 +40,14 @@ namespace Microsoft.Maui.UnitTests
 
 			var registrar = host.Services.GetRequiredService<IFontRegistrar>();
 
-			Assert.True(registrar.TryGetFont(filename, out var path));
+			var path = registrar.GetFont(filename);
+			Assert.NotNull(path);
 			Assert.StartsWith(root, path);
 
 			if (alias != null)
 			{
-				Assert.True(registrar.TryGetFont(alias, out path));
+				path = registrar.GetFont(alias);
+				Assert.NotNull(path);
 				Assert.StartsWith(root, path);
 			}
 

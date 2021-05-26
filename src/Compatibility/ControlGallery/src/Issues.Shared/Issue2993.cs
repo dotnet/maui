@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Graphics;
 
 
 #if UITEST
@@ -26,14 +27,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		protected override void Init()
 		{
 			On<Android>().SetToolbarPlacement(PlatformConfiguration.AndroidSpecific.ToolbarPlacement.Bottom);
-			BarBackgroundColor = Color.Transparent;
+			BarBackgroundColor = Colors.Transparent;
 
 			Func<ContentPage> createPage = () =>
 			{
 				Grid grid = new Grid();
 				grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Star });
 				grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
-				grid.Children.Add(new Label() { Text = "Top Text", BackgroundColor = Color.Purple });
+				grid.Children.Add(new Label() { Text = "Top Text", BackgroundColor = Colors.Purple });
 				var bottomLabel = new Label() { Text = "Bottom Text" };
 				Grid.SetRow(bottomLabel, 1);
 				grid.Children.Add(bottomLabel);

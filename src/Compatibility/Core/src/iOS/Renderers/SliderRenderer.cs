@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using UIKit;
 using SizeF = CoreGraphics.CGSize;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Slider;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (Element != null)
 			{
-				if (Element.MinimumTrackColor == Color.Default)
+				if (Element.MinimumTrackColor == null)
 					Control.MinimumTrackTintColor = defaultmintrackcolor;
 				else
 					Control.MinimumTrackTintColor = Element.MinimumTrackColor.ToUIColor();
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (Element != null)
 			{
-				if (Element.MaximumTrackColor == Color.Default)
+				if (Element.MaximumTrackColor == null)
 					Control.MaximumTrackTintColor = defaultmaxtrackcolor;
 				else
 					Control.MaximumTrackTintColor = Element.MaximumTrackColor.ToUIColor();
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (Element != null)
 			{
-				if (Element.ThumbColor == Color.Default)
+				if (Element.ThumbColor == null)
 					Control.ThumbTintColor = defaultthumbcolor;
 				else
 					Control.ThumbTintColor = Element.ThumbColor.ToUIColor();

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var layout = new StackLayout();
 			var label = new Label { Text = "Click the box with left and right click" };
-			var box = new BoxView { BackgroundColor = Color.Red, WidthRequest = 100, HeightRequest = 100 };
+			var box = new BoxView { BackgroundColor = Colors.Red, WidthRequest = 100, HeightRequest = 100 };
 
 			var btn = new Button { Text = "Clear", Command = new Command(() => label.Text = "") };
 			var btnNormal = new Button
@@ -116,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			SetMenu(label, menu);
 			layout.Children.Add(label);
 
-			var box = new BoxView { Color = Color.Red, WidthRequest = 100, HeightRequest = 100 };
+			var box = new BoxView { Color = Colors.Red, WidthRequest = 100, HeightRequest = 100 };
 			var menuBox = new Menu();
 			AddMenu(4, true, 2, false, menuBox, true);
 			SetMenu(box, menuBox);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -13,19 +14,19 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Children = {
 					new StackLayout {
-						BackgroundColor = Color.Red,
+						BackgroundColor = Colors.Red,
 						Orientation = StackOrientation.Horizontal,
 						Children = {
 							new StackLayout {
-								BackgroundColor = Color.Gray,
+								BackgroundColor = Colors.Gray,
 								Children = {
-									new Label {Text = "LONG TEXT. LONG TEXT. LONG TEXT. LONG TEXT. LONG TEXT.", TextColor = Color.Olive},
+									new Label {Text = "LONG TEXT. LONG TEXT. LONG TEXT. LONG TEXT. LONG TEXT.", TextColor = Colors.Olive},
 								}
 							},
 							new Label {Text = "Some other text"}
 						}
 					},
-					new Label {Text = "Overlapped text.", TextColor = Color.Red}
+					new Label {Text = "Overlapped text.", TextColor = Colors.Red}
 				}
 			};
 

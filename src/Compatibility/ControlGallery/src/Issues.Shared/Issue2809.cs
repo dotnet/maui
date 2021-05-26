@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if __ANDROID__
 			//show secondary menu
 			RunningApp.TapOverflowMenuButton();
-#elif __WINDOWS__
+#elif WINDOWS
 			RunningApp.Tap ("MoreButton");
 #endif
 		}

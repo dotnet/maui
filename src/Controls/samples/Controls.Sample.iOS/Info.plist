@@ -19,8 +19,6 @@
 		<integer>1</integer>
 		<integer>2</integer>
 	</array>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>
@@ -42,5 +40,7 @@
 	<string>Assets.xcassets/appicon.appiconset</string>
 	<key>CFBundleName</key>
 	<string>Controls</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Access to your location is required for cool things to happen!</string>
 </dict>
 </plist>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using NativeView = UIKit.UIView;
 
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 			}
 
-			if (ImageButton.BorderColor != Color.Default)
+			if (ImageButton.BorderColor != null)
 				control.Layer.BorderColor = ImageButton.BorderColor.ToCGColor();
 
 			control.Layer.BorderWidth = Math.Max(0f, (float)ImageButton.BorderWidth);

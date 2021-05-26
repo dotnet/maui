@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Foundation;
-using UIKit;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
+using Microsoft.Maui.Graphics;
+using UIKit;
 using PageSpecific = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
+using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -102,7 +104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			get { return _disposed ? null : View; }
 		}
-		
+
 		public void SetElement(VisualElement element)
 		{
 			VisualElement oldElement = Element;
@@ -281,10 +283,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (_appeared)
 					Page.SendDisappearing();
-				
+
 				Element = null;
 			}
-				
+
 			_events?.Disconnect();
 			_packager?.Disconnect();
 			_tracker?.Disconnect();
@@ -531,12 +533,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						NativeView.UpdateBackground(Element.Background);
 					else
 					{
-						Color backgroundColor = Element.BackgroundColor;
-
-						if (backgroundColor.IsDefault)
-							NativeView.BackgroundColor = ColorExtensions.BackgroundColor;
-						else
-							NativeView.BackgroundColor = backgroundColor.ToUIColor();
+						NativeView.BackgroundColor = Element.BackgroundColor?.ToUIColor() ?? ColorExtensions.BackgroundColor;
 					}
 				}
 			});

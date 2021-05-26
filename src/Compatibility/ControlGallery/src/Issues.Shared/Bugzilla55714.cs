@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -19,8 +20,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var editor = new Editor
 			{
-				TextColor = Color.Yellow,
-				BackgroundColor = Color.Black
+				TextColor = Colors.Yellow,
+				BackgroundColor = Colors.Black
 			};
 
 			Content = new StackLayout
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					new Button
 					{
 						Text = "Change Editor text color to white",
-						Command = new Command(() => editor.TextColor = Color.White)
+						Command = new Command(() => editor.TextColor = Colors.White)
 					}
 				}
 			};
