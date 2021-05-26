@@ -142,6 +142,7 @@ stages:
             demands: [ msbuild ]
           steps:
             - powershell: |
+                  & dotnet cake --target=dotnet
                   $env:PATH = (Join-Path '$(System.DefaultWorkingDirectory)' 'bin/dotnet') + [IO.Path]::PathSeparator + $env:PATH
                   & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildCondition }}
 
