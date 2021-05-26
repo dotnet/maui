@@ -6,31 +6,33 @@
     <Nullable>disable</Nullable>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
     <_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
-  </PropertyGroup>
-  <PropertyGroup>
     <PackageId>Microsoft.Maui.Controls</PackageId>
+    <GitInfoReportImportance>high</GitInfoReportImportance>
   </PropertyGroup>
+
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+
   <ItemGroup>
     <Compile Remove="Internals\Legacy\**" />
     <EmbeddedResource Remove="Internals\Legacy\**" />
     <None Remove="Internals\Legacy\**" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
   </ItemGroup>
-  <PropertyGroup>
-    <GitInfoReportImportance>high</GitInfoReportImportance>
-  </PropertyGroup>
+
   <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
     <PropertyGroup>
       <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
     </PropertyGroup>
   </Target>
 
-
-  <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' ">
-    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);_MauiPackXamlDesignAssemblies</TargetsForTfmSpecificBuildOutput>
+  <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
+    <TargetsForTfmSpecificBuildOutput>
+      $(TargetsForTfmSpecificBuildOutput);
+      _MauiPackXamlDesignAssemblies
+    </TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
   <Target Name="_MauiPackXamlDesignAssemblies">
@@ -43,4 +45,5 @@
       </BuildOutputInPackage>
     </ItemGroup>
   </Target>
+
 </Project>
