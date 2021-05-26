@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class RectangleStub : IRectangle
+	public class RectangleStub : IShape
 	{
 		public RectangleStub()
 		{
@@ -15,5 +15,19 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public CornerRadius CornerRadius { get; set; }
+
+		public PathF PathForBounds(Rectangle rect, float density = 1)
+		{
+			var path = new PathF();
+
+			path.AppendRoundedRectangle(
+				rect,
+				(float)CornerRadius.TopLeft,
+				(float)CornerRadius.TopRight,
+				(float)CornerRadius.BottomLeft,
+				(float)CornerRadius.BottomRight);
+
+			return path;
+		}
 	}
 }

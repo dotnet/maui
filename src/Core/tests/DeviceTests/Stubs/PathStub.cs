@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class PathStub : IPath
+	public class PathStub : IShape
 	{
 		public PathStub()
 		{
@@ -16,5 +16,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public string? Data { get; set; }
+
+		PathF IShape.PathForBounds(Rectangle rect, float density) => PathBuilder.Build(Data);
+		
 	}
 }

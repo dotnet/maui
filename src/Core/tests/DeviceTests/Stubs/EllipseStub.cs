@@ -2,8 +2,14 @@
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class EllipseStub : IEllipse
+	public class EllipseStub : IShape
 	{
-		
+
+		PathF IShape.PathForBounds(Rectangle rect, float density)
+		{
+			var path = new PathF();
+			path.AppendEllipse(rect);
+			return path;
+		}
 	}
 }
