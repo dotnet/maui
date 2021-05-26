@@ -830,7 +830,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 							return OSAppTheme.Unspecified;
 					};
 #else
-                    return AppearanceIsDark() ? OSAppTheme.Dark : OSAppTheme.Light;
+					return AppearanceIsDark() ? OSAppTheme.Dark : OSAppTheme.Light;
 #endif
 				}
 			}
