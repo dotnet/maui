@@ -16,10 +16,9 @@ using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Sy
 #elif WINDOWS
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Microsoft.UI.Xaml.FrameworkElement>;
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
-using static Microsoft.Maui.Controls.Compatibility.Platform.UWP;
-using Microsoft.UI.Xaml;
-using Microsoft.Maui.Graphics;
+using static Microsoft.Maui.Controls.Compatibility.Platform.UWP.Platform;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 #endif
 
 namespace Microsoft.Maui.Controls.Compatibility

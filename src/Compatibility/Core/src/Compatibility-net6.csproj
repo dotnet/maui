@@ -78,6 +78,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="RendererToHandlerShim.cs" />
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />
     <Compile Include="Forms.cs" />

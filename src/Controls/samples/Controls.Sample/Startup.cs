@@ -52,6 +52,9 @@ namespace Maui.Controls.Sample
 #elif __IOS__
 					handlers.AddCompatibilityRenderer(typeof(CustomButton),
 						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
+#elif WINDOWS
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
 #endif
 				});
 

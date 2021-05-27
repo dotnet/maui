@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
-using Microsoft.Maui.Controls.Compatibility.Platform.UWP
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility
