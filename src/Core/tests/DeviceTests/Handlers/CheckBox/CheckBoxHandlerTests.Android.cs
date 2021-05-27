@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.DeviceTests

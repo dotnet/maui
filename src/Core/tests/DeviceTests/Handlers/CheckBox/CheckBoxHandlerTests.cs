@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -21,16 +22,16 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(checkBoxStub, () => checkBoxStub.IsChecked, GetNativeIsChecked, checkBoxStub.IsChecked);
 		}
 
-		[Fact(DisplayName = "Color Updates Correctly")]
-		public async Task ColorUpdatesCorrectly()
+		[Fact(DisplayName = "Foreground Updates Correctly")]
+		public async Task ForegroundUpdatesCorrectly()
 		{
 			var checkBoxStub = new CheckBoxStub()
 			{
-				Color = Color.Red,
+				Foreground = new SolidPaint(Colors.Red),
 				IsChecked = true
 			};
 
-			await ValidateColor(checkBoxStub, Color.Red, () => checkBoxStub.Color = Color.Red);
+			await ValidateColor(checkBoxStub, Colors.Red);
 		}
 	}
 }
