@@ -83,8 +83,7 @@ stages:
             #     & dotnet --list-sdks
             #   displayName: install .NET $(DotNetVersion)
             #   errorActionPreference: stop
-
-           
+       
 
             # - powershell: |
             #     & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
@@ -98,10 +97,9 @@ stages:
             - script: dotnet vs install enterprise preview +mobile --quiet
               displayName: install vs preview
 
-            - script: dotnet cake --configuration=Release
+            - script: dotnet cake --configuration=${{ BuildCondition }}
               displayName: pack nugets
                 
-
             - task: CopyFiles@2
               displayName: 'Copy SignList.xml Files'
               inputs:
