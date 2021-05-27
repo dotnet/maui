@@ -147,6 +147,7 @@ stages:
                 provisioning_script: $(provisionator.vs2019)
             - powershell: |
                   & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildCondition }}
+              displayName: 'Build WinUI SLN'
             - task: CopyFiles@2
               displayName: 'Copy Bin Log Files'
               condition: always()
