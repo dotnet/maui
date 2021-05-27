@@ -24,5 +24,11 @@ namespace Microsoft.Maui.Handlers
 		{ 
 			handler.NativeView?.UpdateValue(stepper); 
 		}
+
+		// This is a Windows-specific mapping
+		public static void MapBackground(StepperHandler handler, IStepper view)
+		{
+			handler.NativeView?.UpdateBackground(view);
+		}
 	}
 }

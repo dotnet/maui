@@ -31,6 +31,11 @@ namespace Microsoft.Maui
 		public static readonly DependencyProperty ButtonBackgroundColorProperty = 
 			DependencyProperty.Register(nameof(ButtonBackgroundColor), typeof(Color), typeof(MauiStepper), new PropertyMetadata(default(Color), OnButtonBackgroundColorChanged));
 
+		public static readonly DependencyProperty ButtonBackgroundProperty =
+			DependencyProperty.Register(nameof(ButtonBackgroundColor), typeof(WBrush), typeof(MauiStepper), new PropertyMetadata(default(WBrush), OnButtonBackgroundChanged));
+
+		
+
 		Button _plus;
 		Button _minus;
 		VisualStateCache _plusStateCache;
@@ -71,6 +76,12 @@ namespace Microsoft.Maui
 			set { SetValue(ButtonBackgroundColorProperty, value); }
 		}
 
+		public WBrush ButtonBackground
+		{
+			get { return (WBrush)GetValue(ButtonBackgroundProperty); }
+			set { SetValue(ButtonBackgroundProperty, value); }
+		}
+
 		public event EventHandler ValueChanged;
 
 		protected override void OnApplyTemplate()
@@ -86,13 +97,19 @@ namespace Microsoft.Maui
 				_minus.Click += OnMinusClicked;
 
 			UpdateEnabled(Value);
-			UpdateButtonBackgroundColor(ButtonBackgroundColor);
+			UpdateButtonBackground();
 		}
 
 		static void OnButtonBackgroundColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			var stepper = (MauiStepper)d;
 			stepper.UpdateButtonBackgroundColor(stepper.ButtonBackgroundColor);
+		}
+
+		static void OnButtonBackgroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			var stepper = (MauiStepper)d;
+			stepper.UpdateButtonBackground();
 		}
 
 		static void OnIncrementChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -213,6 +230,14 @@ namespace Microsoft.Maui
 			cache = null;
 		}
 
+		void UpdateButtonBackground()
+		{
+			if (_minus != null)
+				_minus.Background = ButtonBackground;
+			if (_plus != null)
+				_plus.Background = ButtonBackground;
+		}
+
 		void UpdateButtonBackgroundColor(Color value)
 		{
 			if (value == null)
@@ -220,13 +245,8 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			WBrush brush = value.ToNative();
-			_minus = GetTemplateChild("Minus") as Button;
-			_plus = GetTemplateChild("Plus") as Button;
-			if (_minus != null)
-				_minus.Background = brush;
-			if (_plus != null)
-				_plus.Background = brush;
+			ButtonBackground = value.ToNative();
+			UpdateButtonBackground();
 		}
 
 		void UpdateEnabled(double value)

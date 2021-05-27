@@ -8,6 +8,9 @@
 			[nameof(IStepper.Maximum)] = MapMaximum,
 			[nameof(IStepper.Minimum)] = MapMinimum,
 			[nameof(IStepper.Value)] = MapValue,
+#if WINDOWS
+			[nameof(IStepper.Background)] = MapBackground,
+#endif
 		};
 
 		public StepperHandler() : base(StepperMapper)
