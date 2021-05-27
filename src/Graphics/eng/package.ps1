@@ -3,8 +3,15 @@ param(
   [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
 )
 
+$OnWindows = $TRUE
 $ErrorActionPreference = "Stop"
 Write-Host $msbuild
+Write-Host $OnWindows
+
+if($IsWindows)
+{
+    $OnWindows = $IsWindows 
+}
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $sln = Join-Path $PSScriptRoot ../build/Build.Microsoft.Maui.Graphics-net6.sln
@@ -17,7 +24,7 @@ $csproj = Join-Path $PSScriptRoot ../build/DotNet/DotNet.csproj
 $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/
 $dotnet = (Get-Item $dotnet).FullName
 
-if ($IsWindows)
+if ($OnWindows)
 {
     # Modify global.json, so the IDE can load
     $globaljson = Join-Path $PSScriptRoot ../global.json
