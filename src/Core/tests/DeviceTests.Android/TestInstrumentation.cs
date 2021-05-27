@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Android.App;
@@ -7,6 +8,7 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.TestUtils;
 
 namespace Microsoft.Maui.DeviceTests
@@ -25,10 +27,17 @@ namespace Microsoft.Maui.DeviceTests
 			base.OnCreate(savedInstanceState);
 		}
 
-		public override IEnumerable<TestAssemblyInfo> GetTestAssemblies() =>
-			TestInstrumentation.TestAssemblies
-				.Distinct()
-				.Select(a => new TestAssemblyInfo(a, a.Location));
+		public override IEnumerable<TestAssemblyInfo> GetTestAssemblies()
+		{
+			foreach (var assembly in TestInstrumentation.TestAssemblies.Distinct())
+			{
+				// this is required to exist, but is not used
+				var path = Path.Combine(FileSystem.CacheDirectory, assembly.Location);
+				File.Create(path).Close();
+
+				yield return new TestAssemblyInfo(assembly, path);
+			}
+		}
 	}
 
 	[Instrumentation(Name = "com.microsoft.maui.devicetests.TestInstrumentation")]
