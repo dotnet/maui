@@ -31,9 +31,9 @@ if ($OnWindows)
     [xml] $xml = Get-Content (Join-Path $PSScriptRoot Versions.props)
     $json = Get-Content $globaljson | ConvertFrom-Json
     $json | Add-Member sdk (New-Object -TypeName PSObject) -Force
-    $json.sdk | Add-Member version $xml.Project.PropertyGroup.MicrosoftDotnetSdkInternalPackageVersion -Force
+    $json.sdk | Add-Member version ([string]$xml.Project.PropertyGroup.MicrosoftDotnetSdkInternalPackageVersion).Trim() -Force
     $json | ConvertTo-Json | Set-Content $globaljson
-
+ 
     # NOTE: I've not found a better way to do this
     # see: https://github.com/PowerShell/PowerShell/issues/3316
     $oldDOTNET_INSTALL_DIR=$env:DOTNET_INSTALL_DIR
