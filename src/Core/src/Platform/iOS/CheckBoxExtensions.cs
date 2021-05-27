@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui
 {
 	public static class CheckBoxExtensions
 	{
@@ -7,9 +9,13 @@
 			nativeCheckBox.IsChecked = check.IsChecked;
 		}
 
-		public static void UpdateColor(this MauiCheckBox nativeCheckBox, ICheckBox check)
+		public static void UpdateForeground(this MauiCheckBox nativeCheckBox, ICheckBox check)
 		{
-			nativeCheckBox.CheckBoxTintColor = check.Color;
+			// For the moment, we're only supporting solid color Paint for the iOS Checkbox
+			if (check.Foreground is SolidPaint solid)
+			{
+				nativeCheckBox.CheckBoxTintColor = solid.Color;
+			}
 		}
 	}
 }

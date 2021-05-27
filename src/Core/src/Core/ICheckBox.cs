@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a View which allows the user to select a binary choice.
@@ -11,8 +13,8 @@
 		bool IsChecked { get; set; }
 
 		/// <summary>
-		/// Gets the CheckBox Color.
+		/// Gets the CheckBox Foreground Paint.
 		/// </summary>
-		Color Color { get; }
+		Paint? Foreground { get; }
 	}
 }

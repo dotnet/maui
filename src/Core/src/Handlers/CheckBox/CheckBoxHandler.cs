@@ -8,7 +8,7 @@
 			[nameof(ICheckBox.Background)] = MapBackground,
 #endif
 			[nameof(ICheckBox.IsChecked)] = MapIsChecked,
-			[nameof(ICheckBox.Color)] = MapColor,
+			[nameof(ICheckBox.Foreground)] = MapForeground,
 		};
 
 		public CheckBoxHandler() : base(CheckBoxMapper)
@@ -19,11 +19,6 @@
 		public CheckBoxHandler(PropertyMapper mapper) : base(mapper ?? CheckBoxMapper)
 		{
 
-		}
-
-		public static void MapColor(CheckBoxHandler handler, ICheckBox check)
-		{
-			handler.TypedNativeView?.UpdateColor(check);
 		}
 	}
 }
