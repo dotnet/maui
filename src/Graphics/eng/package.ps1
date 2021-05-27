@@ -1,6 +1,6 @@
 param(
   [string] $configuration = 'Debug',
-  [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
+  [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\MSBuild.exe"
 )
 
 $ErrorActionPreference = "Stop"
@@ -53,6 +53,16 @@ if ($IsWindows)
 
         # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
         $env:PATH=($dotnet + [IO.Path]::PathSeparator + $env:PATH)
+
+            # Have to build the solution first so the xbf files are there for pack
+        & $msbuild $sln `
+            /p:configuration=$configuration `
+            /p:SymbolPackageFormat=snupkg `
+            /restore `
+            /t:build `
+            /p:Packing=true `
+            /bl:"$artifacts/maui-graphics-build-$configuration.binlog"
+        if (!$?) { throw "Build failed." }
 
         & $msbuild $sln `
             /p:configuration=$configuration `
