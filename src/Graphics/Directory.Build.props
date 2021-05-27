@@ -1,11 +1,19 @@
 <Project>
-  <Import Project="eng\Version.props" />
+  <Import Project="eng\Versions.props" />
   <PropertyGroup>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DotNetOutputPath>$(MSBuildThisFileDirectory)bin/</DotNetOutputPath>
+    <DotNetTempDirectory>$(DotNetOutputPath)temp/</DotNetTempDirectory>
+    <DotNetDirectory>$(DotNetOutputPath)dotnet/</DotNetDirectory>
+    <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
+    <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
+    <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetPreviewVersionBand)/</DotNetSdkManifestsDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>

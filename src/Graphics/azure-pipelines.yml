@@ -1,6 +1,10 @@
 variables:
-- name: BuildVersion
-  value: $[counter('release-counter', 1)]
+  BuildVersion: $[counter('release-counter', 1)]
+  IsRunningOnCI: true
+  DotNetVersion: 6.0.100-preview.4.21255.9
+  DotNet.Cli.Telemetry.OptOut: true
+  MauiCheck.Version: 0.4.1
+  MauiCheck.Manifest: https://raw.githubusercontent.com/Redth/dotnet-maui-check/main/manifests/maui-dev.manifest.json
 
 parameters:
   - name: BuildEverything
@@ -72,52 +76,30 @@ stages:
           pool:
             vmImage:  windows-latest
           steps:
-            - task: NuGetToolInstaller@1
-              displayName: 'Use NuGet 5.9.1'
-              inputs:
-                versionSpec: 5.9.1
+            # - powershell: |
+            #     $ProgressPreference = 'SilentlyContinue'
+            #     Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+            #     & .\dotnet-install.ps1 -Version $(DotNetVersion) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
+            #     & dotnet --list-sdks
+            #   displayName: install .NET $(DotNetVersion)
+            #   errorActionPreference: stop
+       
 
-            - task: DotNetCoreCLI@2
-              displayName: 'Install NET6'
-              inputs:
-                command: 'build'
-                projects: src\external\DotNet\DotNet.csproj
+            # - powershell: |
+            #     & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
+            #     & maui-check --ci --non-interactive --fix --skip androidsdk --skip xcode --skip vswin --skip vsmac --manifest $(MauiCheck.Manifest)
+            #   displayName: maui-check
+            #   errorActionPreference: stop
 
-            - task: NuGetCommand@2
-              displayName: 'Restore sln'
-              inputs:
-                command: 'restore'
-                restoreSolution: build\Build.Microsoft.Maui.Graphics.Windows.sln
+            - script: dotnet tool restore
+              displayName: install dotnet tools
 
-            - task: MSBuild@1
-              displayName: 'Build Graphics with MSBUILD'
-              inputs:
-                solution: build\Build.Microsoft.Maui.Graphics.Windows.sln
-                configuration: ${{ BuildCondition }}
-                msbuildArguments: /verbosity:normal /t:Build
+            - script: dotnet vs install enterprise preview +mobile --quiet
+              displayName: install vs preview
 
-            - script: src\bin\dotnet\dotnet build build\Build.Microsoft.Maui.Graphics-net6.sln -p:Configuration=${{ BuildCondition }}
-              displayName: 'Build Graphics with NET6'
-
-            - task: NuGetCommand@2
-              displayName: 'Pack nupkg'
-              inputs:
-                command: 'pack'
-                packagesToPack: 'build/Microsoft.Maui.Graphics.nuspec'
-                packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
-                configuration: ${{ BuildCondition }}
-                basePath: '$(System.DefaultWorkingDirectory)'
-                versioningScheme : 'byEnvVar'
-                versionEnvVar: 'BUILD_BUILDNUMBER'
-            
+            - script: dotnet cake --configuration=${{ BuildCondition }}
+              displayName: pack nugets
                 
-            - task: MSBuild@1
-              displayName: 'Pack Win2D.WinUI'
-              inputs:
-                solution: src\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.csproj
-                configuration: ${{ BuildCondition }}
-                msbuildArguments: /verbosity:normal /t:Pack -p:PackageOutputPath=$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}
-
             - task: CopyFiles@2
               displayName: 'Copy SignList.xml Files'
               inputs:
