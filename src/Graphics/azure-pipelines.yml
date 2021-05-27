@@ -84,8 +84,7 @@ stages:
             #   displayName: install .NET $(DotNetVersion)
             #   errorActionPreference: stop
 
-            # - script: dotnet vs install enterprise preview +mobile --quiet
-            #   displayName: install vs preview
+           
 
             # - powershell: |
             #     & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
@@ -96,6 +95,8 @@ stages:
             - script: dotnet tool restore
               displayName: install dotnet tools
 
+            - script: dotnet vs install enterprise preview +mobile --quiet
+              displayName: install vs preview
 
             - script: dotnet cake --configuration=Release
               displayName: pack nugets
