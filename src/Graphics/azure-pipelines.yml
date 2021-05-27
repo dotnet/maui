@@ -83,6 +83,13 @@ stages:
             - script: dotnet vs install enterprise preview +mobile --quiet
               displayName: install vs preview
 
+            - powershell: |
+                & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
+                & maui-check --ci --non-interactive --fix --skip androidsdk --skip xcode --skip vswin --skip vsmac --manifest $(MauiCheck.Manifest)
+              displayName: maui-check
+              errorActionPreference: stop
+
+
             - script: dotnet cake --configuration=Release
               displayName: pack nugets
                 
