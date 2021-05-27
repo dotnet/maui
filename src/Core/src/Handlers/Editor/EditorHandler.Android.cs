@@ -109,6 +109,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapKeyboard(EditorHandler handler, IEditor editor)
 		{
 			handler.NativeView?.UpdateKeyboard(editor);
+		}
 
 		void OnFocusedChange(bool hasFocus)
 		{
