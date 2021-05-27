@@ -36,7 +36,7 @@ stages:
                     platform: android
                     path: ${{ project.android }}
                     device: android-emulator-32_${{ api }}
-                    args: ${{ replace('true', project.net6, '--tfm=net6.0-android --dotnet=true') }}
+                    cakeArgs: ${{ replace('false', replace('true', project.net6, '--tfm=net6.0-android --dotnet=true'), '') }}
 
   - stage: ios_device_tests
     displayName: iOS Device Tests

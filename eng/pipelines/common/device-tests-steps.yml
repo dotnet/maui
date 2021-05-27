@@ -2,7 +2,7 @@ parameters:
   platform: '' # [ android, ios ]
   path: '' # path to csproj
   device: '' # the xharness device to use
-  args: '' # additional cake args
+  cakeArgs: '' # additional cake args
 
 steps:
   - checkout: self
@@ -52,19 +52,12 @@ steps:
       packageType: 'sdk'
 
   - pwsh: |
-      ./build.ps1 --target=BuildTasks --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
-    name: winbuild
+      ./build.ps1 --target=dotnet-buildtasks --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
     displayName: 'Build the MSBuild Tasks'
 
-  - ${{ if eq(parameters['platform'], 'android') }}:
-    - pwsh: |
-        ./build.ps1 -Script eng/devices/android.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs" ${{ parameters.args }}
-      displayName: $(Agent.JobName)
-
-  - ${{ if eq(parameters['platform'], 'ios') }}:
-    - pwsh: |
-        ./build.ps1 -Script eng/devices/ios.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs" ${{ parameters.args }}
-      displayName: $(Agent.JobName)
+  - pwsh: |
+      ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs" ${{ parameters.cakeArgs }}
+    displayName: $(Agent.JobName)
 
   - task: PublishTestResults@2
     displayName: Publish the $(System.PhaseName) test results
