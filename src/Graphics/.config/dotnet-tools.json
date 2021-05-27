@@ -19,6 +19,12 @@
       "commands": [
         "pwsh"
       ]
+    },
+    "dotnet-vs": {
+      "version": "1.0.0",
+      "commands": [
+        "vs"
+      ]
     }
   }
 }

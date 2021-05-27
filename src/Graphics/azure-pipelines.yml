@@ -80,6 +80,9 @@ stages:
             - script: dotnet tool restore
               displayName: install dotnet tools
 
+            - script: dotnet vs install pre sku:e +mobile --quiet
+              displayName: install vs preview
+
             - script: dotnet cake --configuration=Release
               displayName: pack nugets
                 
