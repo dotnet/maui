@@ -9,7 +9,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Windows.UI.Text;
 using Microsoft.Maui.Controls.Compatibility.Platform.UAP;
-using Microsoft.Maui.Controls.Compatibility.Platform.UAP.Extensions;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Label;
 using WRect = Windows.Foundation.Rect;
@@ -225,6 +224,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateAlign(TextBlock textBlock)
 		{
 			_perfectSizeValid = false;
@@ -268,13 +268,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			if (label.IsDefault() && _isInitiallyDefault)
-				textBlock.ApplyFont(Font.SystemFontOfSize(NamedSize.Medium));
+				textBlock.ApplyFont(Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)));
 			else
 				textBlock.ApplyFont(label);
 
 			_fontApplied = true;
 		}
 
+		[PortHandler]
 		void UpdateLineBreakMode(TextBlock textBlock)
 		{
 			_perfectSizeValid = false;
@@ -386,6 +387,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateLineHeight(TextBlock textBlock)
 		{
 			if (textBlock == null)

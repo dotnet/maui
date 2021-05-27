@@ -1,93 +1,128 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public class FontManager : IFontManager
 	{
-		readonly ConcurrentDictionary<(string family, float size, FontAttributes attributes), UIFont> _fonts =
-			new ConcurrentDictionary<(string family, float size, FontAttributes attributes), UIFont>();
+		// UIFontWeight[Constant] is internal in Xamarin.iOS but the convertion from
+		// the public (int-based) enum is not helpful in this case.
+		// -1.0 (Thin / 100) to 1.0 (Black / 900) with 0 being Regular (400)
+		// which is not quite the center, not are the constant values linear
+		static readonly (float value, FontWeight weight)[] FontWeightMap = new (float, FontWeight)[] {
+			(-0.80f, FontWeight.Ultralight),
+			(-0.60f, FontWeight.Thin),
+			(-0.40f, FontWeight.Light),
+			(0.0f, FontWeight.Regular),
+			(0.23f, FontWeight.Medium),
+			(0.30f, FontWeight.Semibold),
+			(0.40f, FontWeight.Bold),
+			(0.56f, FontWeight.Heavy),
+			(0.62f, FontWeight.Black)
+		};
 
+		readonly ConcurrentDictionary<Font, UIFont> _fonts = new();
 		readonly IFontRegistrar _fontRegistrar;
+		readonly ILogger<FontManager>? _logger;
 
 		UIFont? _defaultFont;
 
-		public FontManager(IFontRegistrar fontRegistrar)
+		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
 		{
 			_fontRegistrar = fontRegistrar;
+			_logger = logger;
 		}
 
 		public UIFont DefaultFont =>
-			_defaultFont ??= UIFont.SystemFontOfSize(12);
+			_defaultFont ??= UIFont.SystemFontOfSize(UIFont.SystemFontSize);
 
-		public UIFont GetFont(Font font)
+		public UIFont GetFont(Font font, double defaultFontSize = 0) =>
+			GetFont(font, defaultFontSize, CreateFont);
+
+		public double GetFontSize(Font font, double defaultFontSize = 0) =>
+			font.FontSize <= 0
+				? (defaultFontSize > 0 ? (float)defaultFontSize : DefaultFont.PointSize)
+				: (nfloat)font.FontSize;
+
+		static float GetWeightConstant(FontWeight self)
 		{
-			var size = (float)font.FontSize;
-			if (font.UseNamedSize)
+			foreach (var (value, weight) in FontWeightMap)
 			{
-				switch (font.NamedSize)
-				{
-					case NamedSize.Micro:
-						size = 12;
-						break;
-					case NamedSize.Small:
-						size = 14;
-						break;
-					case NamedSize.Medium:
-						size = 17; // as defined by iOS documentation
-						break;
-					case NamedSize.Large:
-						size = 22;
-						break;
-					default:
-						size = 17;
-						break;
-				}
+				if (self <= weight)
+					return value;
 			}
-
-			return GetFont(font.FontFamily, size, font.FontAttributes, CreateFont);
+			return 1.0f;
 		}
 
-		UIFont GetFont(string family, float size, FontAttributes attributes, Func<(string, float, FontAttributes), UIFont> factory)
+		UIFont GetFont(Font font, double defaultFont, Func<Font, UIFont> factory)
 		{
-			return _fonts.GetOrAdd((family, size, attributes), factory);
+			var size = GetFontSize(font, defaultFont);
+			if (size != font.FontSize)
+				font = font.WithSize(size);
+			return _fonts.GetOrAdd(font, factory);
 		}
 
-		UIFont CreateFont((string family, float size, FontAttributes attributes) fontKey)
+		static UIFontAttributes GetFontAttributes(Font font)
 		{
-			var (family, size, attributes) = fontKey;
-			var bold = (attributes & FontAttributes.Bold) != 0;
-			var italic = (attributes & FontAttributes.Italic) != 0;
+			var a = new UIFontAttributes
+			{
+				Traits = new UIFontTraits(),
+			};
+			var weight = font.Weight;
+			if (font.Weight == 0)
+				weight = FontWeight.Regular;
+			var traits = (UIFontDescriptorSymbolicTraits)0;
+			if (weight == FontWeight.Bold)
+				traits |= UIFontDescriptorSymbolicTraits.Bold;
+			else if (weight != FontWeight.Regular)
+			{
+				a.Traits = new UIFontTraits
+				{
+					Weight = GetWeightConstant(font.Weight),
+					Slant = font.FontSlant == FontSlant.Oblique ? 30.0f : 0.0f
+				};
+			}
+			if (font.FontSlant == FontSlant.Italic)
+				traits |= UIFontDescriptorSymbolicTraits.Italic;
+
+			a.Traits.SymbolicTrait = traits;
+			return a;
+		}
+
+		UIFont CreateFont(Font font)
+		{
+			var family = font.FontFamily;
+			var size = (nfloat)font.FontSize;
+
+			var hasAttributes =
+				font.Weight != FontWeight.Regular ||
+				font.FontSlant != FontSlant.Default;
 
 			if (family != null && family != DefaultFont.FamilyName)
 			{
 				try
 				{
 					UIFont? result = null;
+
 					if (UIFont.FamilyNames.Contains(family))
 					{
 						var descriptor = new UIFontDescriptor().CreateWithFamily(family);
+						if (hasAttributes)
+							descriptor = descriptor.CreateWithAttributes(GetFontAttributes(font));
 
-						if (bold || italic)
-						{
-							var traits = (UIFontDescriptorSymbolicTraits)0;
-							if (bold)
-								traits |= UIFontDescriptorSymbolicTraits.Bold;
-							if (italic)
-								traits |= UIFontDescriptorSymbolicTraits.Italic;
-
-							descriptor = descriptor.CreateWithTraits(traits);
-							result = UIFont.FromDescriptor(descriptor, size);
-							if (result != null)
-								return result;
-						}
+						result = UIFont.FromDescriptor(descriptor, size);
+						if (result != null)
+							return result;
 					}
 
 					var cleansedFont = CleanseFontName(family);
 					result = UIFont.FromName(cleansedFont, size);
+					if (result != null)
+						return result;
+
 					if (family.StartsWith(".SFUI", StringComparison.InvariantCultureIgnoreCase))
 					{
 						var fontWeight = family.Split('-').LastOrDefault();
@@ -95,36 +130,31 @@ namespace Microsoft.Maui
 						if (!string.IsNullOrWhiteSpace(fontWeight) && Enum.TryParse<UIFontWeight>(fontWeight, true, out var uIFontWeight))
 						{
 							result = UIFont.SystemFontOfSize(size, uIFontWeight);
-							return result;
+							if (result != null)
+								return result;
 						}
 
 						result = UIFont.SystemFontOfSize(size, UIFontWeight.Regular);
-						return result;
+						if (result != null)
+							return result;
 					}
-					if (result == null)
-						result = UIFont.FromName(family, size);
+
+					result = UIFont.FromName(family, size);
 					if (result != null)
 						return result;
 				}
-				catch
+				catch (Exception ex)
 				{
-					Debug.WriteLine("Could not load font named: {0}", family);
+					_logger?.LogWarning(ex, "Unable to load font '{Font}'.", family);
 				}
 			}
 
-			if (bold && italic)
+			if (hasAttributes)
 			{
 				var defaultFont = UIFont.SystemFontOfSize(size);
-
-				var descriptor = defaultFont.FontDescriptor.CreateWithTraits(UIFontDescriptorSymbolicTraits.Bold | UIFontDescriptorSymbolicTraits.Italic);
-				return UIFont.FromDescriptor(descriptor, 0);
+				var descriptor = defaultFont.FontDescriptor.CreateWithAttributes(GetFontAttributes(font));
+				return UIFont.FromDescriptor(descriptor, size);
 			}
-
-			if (italic)
-				return UIFont.ItalicSystemFontOfSize(size);
-
-			if (bold)
-				return UIFont.BoldSystemFontOfSize(size);
 
 			return UIFont.SystemFontOfSize(size);
 		}
@@ -132,26 +162,22 @@ namespace Microsoft.Maui
 		string? CleanseFontName(string fontName)
 		{
 			// First check Alias
-			var (hasFontAlias, fontPostScriptName) = _fontRegistrar.HasFont(fontName);
-			if (hasFontAlias)
+			if (_fontRegistrar.GetFont(fontName) is string fontPostScriptName)
 				return fontPostScriptName;
 
 			var fontFile = FontFile.FromString(fontName);
 
 			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
 			{
-				var (hasFont, filePath) = _fontRegistrar.HasFont(fontFile.FileNameWithExtension());
-				if (hasFont)
+				if (_fontRegistrar.GetFont(fontFile.FileNameWithExtension()) is string filePath)
 					return filePath ?? fontFile.PostScriptName;
 			}
 			else
 			{
 				foreach (var ext in FontFile.Extensions)
 				{
-
-					var formated = fontFile.FileNameWithExtension(ext);
-					var (hasFont, filePath) = _fontRegistrar.HasFont(formated);
-					if (hasFont)
+					var formatted = fontFile.FileNameWithExtension(ext);
+					if (_fontRegistrar.GetFont(formatted) is string filePath)
 						return filePath;
 				}
 			}

@@ -2,12 +2,15 @@
 using System.Collections.Specialized;
 using System.Linq;
 using Android.App;
+using Android.Graphics.Drawables;
 using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
+		static Drawable? DefaultBackground;
+
 		AlertDialog? _dialog;
 
 		protected override MauiPicker CreateNativeView() =>
@@ -18,9 +21,6 @@ namespace Microsoft.Maui.Handlers
 			nativeView.FocusChange += OnFocusChange;
 			nativeView.Click += OnClick;
 
-			if (VirtualView != null && VirtualView.Items is INotifyCollectionChanged notifyCollection)
-				notifyCollection.CollectionChanged += OnCollectionChanged;
-
 			base.ConnectHandler(nativeView);
 		}
 
@@ -29,11 +29,31 @@ namespace Microsoft.Maui.Handlers
 			nativeView.FocusChange -= OnFocusChange;
 			nativeView.Click -= OnClick;
 
-			if (VirtualView != null && VirtualView.Items is INotifyCollectionChanged notifyCollection)
-				notifyCollection.CollectionChanged -= OnCollectionChanged;
-
 			base.DisconnectHandler(nativeView);
 		}
+
+		protected override void SetupDefaults(MauiPicker nativeView)
+		{
+			DefaultBackground = nativeView.Background;
+
+			base.SetupDefaults(nativeView);
+		}
+
+		// This is a Android-specific mapping
+		public static void MapBackground(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateBackground(picker, DefaultBackground);
+		}
+
+		void Reload()
+		{
+			if (VirtualView == null || NativeView == null)
+				return;
+
+			NativeView.UpdatePicker(VirtualView);
+		}
+		public static void MapReload(PickerHandler handler, IPicker picker) => handler.Reload();
+
 		public static void MapTitle(PickerHandler handler, IPicker picker)
 		{
 			handler.NativeView?.UpdateTitle(picker);
@@ -94,7 +114,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					builder.SetTitle(VirtualView.Title ?? string.Empty);
 
-					string[] items = VirtualView.Items.ToArray();
+					string[] items = VirtualView.GetItemsAsArray();
 
 					builder.SetItems(items, (EventHandler<Android.Content.DialogClickEventArgs>)((s, e) =>
 					{
@@ -121,14 +141,6 @@ namespace Microsoft.Maui.Handlers
 
 				_dialog.Show();
 			}
-		}
-
-		void OnCollectionChanged(object? sender, EventArgs e)
-		{
-			if (VirtualView == null || NativeView == null)
-				return;
-
-			NativeView.UpdatePicker(VirtualView);
 		}
 	}
 }

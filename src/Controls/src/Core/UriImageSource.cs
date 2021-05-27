@@ -9,14 +9,15 @@ using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls
 {
-	public sealed class UriImageSource : ImageSource
+	public sealed partial class UriImageSource : ImageSource, IStreamImageSource
 	{
 		internal const string CacheName = "ImageLoaderCache";
 
 		public static readonly BindableProperty UriProperty = BindableProperty.Create("Uri", typeof(Uri), typeof(UriImageSource), default(Uri),
 			propertyChanged: (bindable, oldvalue, newvalue) => ((UriImageSource)bindable).OnUriChanged(), validateValue: (bindable, value) => value == null || ((Uri)value).IsAbsoluteUri);
 
-		static readonly Microsoft.Maui.Controls.Internals.IIsolatedStorageFile Store = Device.PlatformServices.GetUserStoreForApplication();
+		// https://github.com/dotnet/runtime/issues/52332
+		// static readonly Microsoft.Maui.Controls.Internals.IIsolatedStorageFile Store = Device.PlatformServices.GetUserStoreForApplication();
 
 		static readonly object s_syncHandle = new object();
 		static readonly Dictionary<string, LockingSemaphore> s_semaphores = new Dictionary<string, LockingSemaphore>();
@@ -27,8 +28,8 @@ namespace Microsoft.Maui.Controls
 
 		static UriImageSource()
 		{
-			if (!Store.GetDirectoryExistsAsync(CacheName).Result)
-				Store.CreateDirectoryAsync(CacheName).Wait();
+			/*if (!Store.GetDirectoryExistsAsync(CacheName).Result)
+				Store.CreateDirectoryAsync(CacheName).Wait();*/
 		}
 
 		public override bool IsEmpty => Uri == null;
@@ -49,7 +50,11 @@ namespace Microsoft.Maui.Controls
 
 		public bool CachingEnabled
 		{
-			get { return _cachingEnabled; }
+			get
+			{
+				return false;
+				//return _cachingEnabled; 
+			}
 			set
 			{
 				if (_cachingEnabled == value)
@@ -68,9 +73,11 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(UriProperty, value); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public async Task<Stream> GetStreamAsync(CancellationToken userToken = default(CancellationToken))
+		async Task<Stream> IStreamImageSource.GetStreamAsync(CancellationToken userToken)
 		{
+			if (IsEmpty)
+				return null;
+
 			OnLoadingStarted();
 			userToken.Register(CancellationTokenSource.Cancel);
 			Stream stream;
@@ -104,21 +111,22 @@ namespace Microsoft.Maui.Controls
 			return Device.PlatformServices.GetHash(uri.AbsoluteUri);
 		}
 
-		async Task<bool> GetHasLocallyCachedCopyAsync(string key, bool checkValidity = true)
+		Task<bool> GetHasLocallyCachedCopyAsync(string key, bool checkValidity = true)
 		{
-			DateTime now = DateTime.UtcNow;
-			DateTime? lastWriteTime = await GetLastWriteTimeUtcAsync(key).ConfigureAwait(false);
-			return lastWriteTime.HasValue && now - lastWriteTime.Value < CacheValidity;
+			return Task.FromResult(false);
+			//DateTime now = DateTime.UtcNow;
+			//DateTime? lastWriteTime = await GetLastWriteTimeUtcAsync(key).ConfigureAwait(false);
+			//return lastWriteTime.HasValue && now - lastWriteTime.Value < CacheValidity;
 		}
 
-		static async Task<DateTime?> GetLastWriteTimeUtcAsync(string key)
-		{
-			string path = IOPath.Combine(CacheName, key);
-			if (!await Store.GetFileExistsAsync(path).ConfigureAwait(false))
-				return null;
+		//static async Task<DateTime?> GetLastWriteTimeUtcAsync(string key)
+		//{
+		//	string path = IOPath.Combine(CacheName, key);
+		//	if (!await Store.GetFileExistsAsync(path).ConfigureAwait(false))
+		//		return null;
 
-			return (await Store.GetLastWriteTimeAsync(path).ConfigureAwait(false)).UtcDateTime;
-		}
+		//	return (await Store.GetLastWriteTimeAsync(path).ConfigureAwait(false)).UtcDateTime;
+		//}
 
 		async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken = default(CancellationToken))
 		{
@@ -147,31 +155,31 @@ namespace Microsoft.Maui.Controls
 
 		async Task<Stream> GetStreamAsyncUnchecked(string key, Uri uri, CancellationToken cancellationToken)
 		{
-			if (await GetHasLocallyCachedCopyAsync(key).ConfigureAwait(false))
-			{
-				var retry = 5;
-				while (retry >= 0)
-				{
-					int backoff;
-					try
-					{
-						Stream result = await Store.OpenFileAsync(IOPath.Combine(CacheName, key), FileMode.Open, FileAccess.Read).ConfigureAwait(false);
-						return result;
-					}
-					catch (IOException)
-					{
-						// iOS seems to not like 2 readers opening the file at the exact same time, back off for random amount of time
-						backoff = new Random().Next(1, 5);
-						retry--;
-					}
+			//if (await GetHasLocallyCachedCopyAsync(key).ConfigureAwait(false))
+			//{
+			//	var retry = 5;
+			//	while (retry >= 0)
+			//	{
+			//		int backoff;
+			//		try
+			//		{
+			//			Stream result = await Store.OpenFileAsync(IOPath.Combine(CacheName, key), FileMode.Open, FileAccess.Read).ConfigureAwait(false);
+			//			return result;
+			//		}
+			//		catch (IOException)
+			//		{
+			//			// iOS seems to not like 2 readers opening the file at the exact same time, back off for random amount of time
+			//			backoff = new Random().Next(1, 5);
+			//			retry--;
+			//		}
 
-					if (backoff > 0)
-					{
-						await Task.Delay(backoff);
-					}
-				}
-				return null;
-			}
+			//		if (backoff > 0)
+			//		{
+			//			await Task.Delay(backoff);
+			//		}
+			//	}
+			//	return null;
+			//}
 
 			Stream stream;
 			try
@@ -192,22 +200,24 @@ namespace Microsoft.Maui.Controls
 				return null;
 			}
 
-			try
-			{
-				Stream writeStream = await Store.OpenFileAsync(IOPath.Combine(CacheName, key), FileMode.Create, FileAccess.Write).ConfigureAwait(false);
-				await stream.CopyToAsync(writeStream, 16384, cancellationToken).ConfigureAwait(false);
-				if (writeStream != null)
-					writeStream.Dispose();
+			return stream;
 
-				stream.Dispose();
+			//try
+			//{
+			//	Stream writeStream = await Store.OpenFileAsync(IOPath.Combine(CacheName, key), FileMode.Create, FileAccess.Write).ConfigureAwait(false);
+			//	await stream.CopyToAsync(writeStream, 16384, cancellationToken).ConfigureAwait(false);
+			//	if (writeStream != null)
+			//		writeStream.Dispose();
 
-				return await Store.OpenFileAsync(IOPath.Combine(CacheName, key), FileMode.Open, FileAccess.Read).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
-				return null;
-			}
+			//	stream.Dispose();
+
+			//	return await Store.OpenFileAsync(IOPath.Combine(CacheName, key), FileMode.Open, FileAccess.Read).ConfigureAwait(false);
+			//}
+			//catch (Exception ex)
+			//{
+			//	Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
+			//	return null;
+			//}
 		}
 
 		async Task<Stream> GetStreamFromCacheAsync(Uri uri, CancellationToken cancellationToken)

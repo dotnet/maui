@@ -1729,589 +1729,340 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue13684.xaml.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10672.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11931.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1497.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1545.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1554.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1568.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1641.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1653.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1653v2.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1712.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1741.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1747.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1766.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2282.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2288.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2289.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2357.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2470.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8207.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6282.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2659.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2951.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2777.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue3086.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla27318.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla29107.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla26032.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla31967.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue3319.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla32447.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla38827.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla32842.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla39463.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla38416.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla39483.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla39378.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla45284.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla54977.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue4040.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8787.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9771.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)VisualControlsPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue4356.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7035.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7525.xaml">
-      <Generator>UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7886.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6932.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6932_emptyviewtemplate.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6932_emptyviewstring.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8417.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8557.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7813.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8638.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8779.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8781.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8782.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8326.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8449.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7924.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7856_1.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9734.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8767.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8778.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9646.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9735.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9305.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9588.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9326.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8689.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9417.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9906.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8958.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10679.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10735.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10477.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10875.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9827.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9711.xaml" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10166.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10422.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9990.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9774.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10024.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10348.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10333.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9555.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10865.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11190.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)RectTest.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11050.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10908.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11113.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11120.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11333.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11413.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11224.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11374.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11262.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11547.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8967.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11572.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11571.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11715.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11875.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11653.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11737.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11764.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11573.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11496.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11643.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11938.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11209.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11831.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11081.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12484.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12582.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12750.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12541.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12374.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11911.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11691.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12848.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12315.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12912.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12910.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12084.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12473.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12809.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11969.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11381.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10578.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10086.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8833.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue13136.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue13376.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12521.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12911.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue13436.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue13616.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue13684.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10672.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11931.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue1497.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue1545.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue1554.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue1568.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue1641.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue1653.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue1653v2.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue1712.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue1741.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue1747.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue1766.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue2282.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue2288.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue2289.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue2357.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue2470.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8207.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue6282.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue2659.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue2951.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue2777.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue3086.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla27318.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla29107.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla26032.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla31967.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue3319.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla32447.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla38827.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla32842.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla39463.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla38416.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla39483.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla39378.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla45284.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla54977.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue4040.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8787.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9771.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)VisualControlsPage.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue4356.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7035.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7525.xaml" />
+      <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7886.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue6932.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue6932_emptyviewtemplate.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue6932_emptyviewstring.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8417.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8557.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7813.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8638.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8779.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8781.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8782.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8326.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8449.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7924.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7856_1.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9734.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8767.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8778.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9646.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9735.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9305.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9588.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9326.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8689.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9417.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9906.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8958.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10679.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10735.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10477.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10875.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9827.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9711.xaml" />
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10166.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10422.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9990.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9774.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10024.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10348.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10333.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9555.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10865.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11190.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)RectTest.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11050.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10908.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11113.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11120.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11333.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11413.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11224.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11374.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11262.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11547.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8967.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11572.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11571.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11715.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11875.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11653.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11737.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11764.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11573.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11496.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11643.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11938.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11209.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11831.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11081.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12484.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12582.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12750.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12541.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12374.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11911.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11691.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12848.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12315.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12912.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12910.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12084.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12473.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12809.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11969.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11381.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10578.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10086.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8833.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue13136.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue13376.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12521.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12911.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue13436.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue13616.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue13684.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla27417Xaml.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla27417Xaml.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla23942.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla23942.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla39636.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla39636.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)PlatformSpecifics_iOSTranslucentNavBarX.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)PlatformSpecifics_iOSTranslucentNavBarX.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla42069_Page.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla42069_Page.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla51642.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla51642.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla45722Xaml0.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla45722Xaml0.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)GitHub1331.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)GitHub1331.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla60045.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla60045.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2625.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue2625.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Controls\" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2858.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue2858.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1588.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue1588.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla60787.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Bugzilla60787.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue3979.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue3979.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7167.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7167.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue4194.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue4194.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue4360.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue4360.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5057.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue5057.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5003.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue5003.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)CollectionViewBindingErrors.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)CollectionViewBindingErrors.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Github3847.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Github3847.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue4684.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue4684.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)_TemplateMarkup.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5801.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)A11yTabIndex.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)_TemplateMarkup.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue5801.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)A11yTabIndex.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5949_1.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue5949_1.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5949_2.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue5949_2.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue4992.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue4992.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6130.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue6130.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
     <Compile Update="$(MSBuildThisFileDirectory)Issue6130.xaml.cs">
@@ -2379,303 +2130,193 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1455.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5268.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue1455.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue5268.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5046.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue5046.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6644.xaml">
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Github5623.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue3798.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue6644.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Github5623.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue3798.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5749.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue5749.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5108.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue5108.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7357.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7357.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7519Xaml.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7519Xaml.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7621.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7621.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7512.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7512.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5354.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue5354.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue4459.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue4459.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7593.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7789.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7593.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7789.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7865.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7865.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7792.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7758.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7792.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7758.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7817.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7943.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7817.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7943.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7993.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7993.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7803.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7803.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue5577.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue5577.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8263.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8263.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7048.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7048.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8529_1.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8529_1.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6693.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue6693.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8508.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8508.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue4744.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue4744.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue3228.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue3228.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2172.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8902.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9682.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue2172.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8902.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9682.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6403.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9196.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue6403.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9196.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6184.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue6184.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8715.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9783.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8715.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9783.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue8308.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue6698View2.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue8308.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue6698View2.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue7242.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue7242.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Github9536.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10482.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue9279.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Github9536.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10482.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue9279.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11259.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11259.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11709.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11794.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11709.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11794.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue10897.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12344.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue10897.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12344.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2447.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue2448.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue12429.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue11853.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue2447.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue2448.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue12429.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue11853.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)ShellFlyoutItemIsVisible.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)ShellFlyoutItemIsVisible.xaml">
+    </MauiXaml>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue13437.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)VisualGallery.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)Issue13437.xaml">
+    </MauiXaml>
+    <MauiXaml Include="$(MSBuildThisFileDirectory)VisualGallery.xaml">
+    </MauiXaml>
   </ItemGroup>
 </Project>

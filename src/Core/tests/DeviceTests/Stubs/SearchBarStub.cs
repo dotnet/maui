@@ -25,5 +25,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public int MaxLength { get; set; }
 
 		public Keyboard Keyboard { get; set; }
+
+		public void SearchButtonPressed() { }
 	}
 }

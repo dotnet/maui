@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 			set => SetView(value);
 		}
 
-		public UIView? CurrentNativeView 
+		public UIView? CurrentNativeView
 			=> _pendingLoadedView ?? currentNativeView;
 
 		public IMauiContext? Context { get; set; }
@@ -29,6 +29,9 @@ namespace Microsoft.Maui
 			if (view == _view && !forceRefresh)
 				return;
 			_view = view;
+
+			if (view is IPage page)
+				Title = page.Title;
 
 			if (_view is IHotReloadableView ihr)
 			{
@@ -59,6 +62,8 @@ namespace Microsoft.Maui
 			currentNativeView = _pendingLoadedView ?? CreateNativeView(view);
 			_pendingLoadedView = null;
 			View!.AddSubview(currentNativeView);
+			if (view.Background == null)
+				View.BackgroundColor = UIColor.SystemBackgroundColor;
 		}
 
 		protected virtual UIView CreateNativeView(IView view)

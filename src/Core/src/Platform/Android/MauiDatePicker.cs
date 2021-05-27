@@ -50,6 +50,7 @@ namespace Microsoft.Maui
 			}
 		}
 
+
 		void Initialize()
 		{
 			DrawableCompat.Wrap(Background);

@@ -1,6 +1,6 @@
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Graphics;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 	public class ColorTests
 	{
 		[Test, Category("Color")]
-		public void PrimaryColorConversions() 
+		public void PrimaryColorConversions()
 		{
 			// 11:15, restate my assumptions...
 

@@ -1281,7 +1281,7 @@ namespace Microsoft.Maui.Controls
 			string constructorHint = null,
 			[CallerMemberName] string memberName = "")
 		{
-			ExperimentalFlags.VerifyFlagEnabled(nameof(Shell), ExperimentalFlags.ShellUWPExperimental);
+			// ExperimentalFlags.VerifyFlagEnabled(nameof(Shell), ExperimentalFlags.ShellUWPExperimental);
 		}
 
 		class NavigationImpl : NavigationProxy

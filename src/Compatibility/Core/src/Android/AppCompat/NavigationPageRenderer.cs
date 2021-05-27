@@ -17,6 +17,7 @@ using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.DrawerLayout.Widget;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 using static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
@@ -949,7 +950,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			if (isNavigated)
 			{
-				if (NavigationPage.GetHasBackButton(currentPage) && !Context.IsDesignerContext())
+				if (NavigationPage.GetHasBackButton(currentPage))
 				{
 					if (toggle != null)
 					{

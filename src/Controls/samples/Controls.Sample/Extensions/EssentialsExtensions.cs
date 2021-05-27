@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -119,14 +120,23 @@ namespace Microsoft.Maui.Essentials
 			public async void Configure(HostBuilderContext context, IServiceProvider services)
 			{
 #if WINDOWS
-				// Platform.MapServiceToken = _mapServiceToken;
+				Platform.MapServiceToken = _mapServiceToken;
 #elif __ANDROID__
 				SecureStorage.LegacyKeyHashFallback = _useLegaceSecureStorage;
 #endif
 
 				AppActions.OnAppAction += HandleOnAppAction;
 
-				await AppActions.SetAsync(_appActions);
+				try
+				{
+					await AppActions.SetAsync(_appActions);
+				}
+				catch (FeatureNotSupportedException ex)
+				{
+					services.GetService<ILoggerFactory>()?
+						.CreateLogger<IEssentialsBuilder>()?
+						.LogError(ex, "App Actions are not supported on this platform.");
+				}
 
 				if (_trackVersions)
 					VersionTracking.Track();

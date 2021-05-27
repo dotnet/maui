@@ -4,12 +4,12 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
-using ObjCRuntime;
-using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using RectangleF = CoreGraphics.CGRect;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
+using ObjCRuntime;
+using UIKit;
+using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -18,12 +18,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	{
 		readonly HashSet<string> enableActions;
 
-		public ReadOnlyField() {
+		public ReadOnlyField()
+		{
 			string[] actions = { "copy:", "select:", "selectAll:" };
-			enableActions = new HashSet<string> (actions);
+			enableActions = new HashSet<string>(actions);
 		}
 
-		public override bool CanPerform (Selector action, NSObject withSender)
+		public override bool CanPerform(Selector action, NSObject withSender)
 			=> enableActions.Contains(action.Name);
 	}
 
@@ -150,7 +151,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else if (e.PropertyName == Picker.TextColorProperty.PropertyName || e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateTextColor();
 			else if (e.PropertyName == Picker.FontAttributesProperty.PropertyName || e.PropertyName == Picker.FontFamilyProperty.PropertyName ||
-			         e.PropertyName == Picker.FontSizeProperty.PropertyName)
+					 e.PropertyName == Picker.FontSizeProperty.PropertyName)
 			{
 				UpdateFont();
 			}
@@ -206,9 +207,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 
 		[PortHandler]
-        protected internal virtual void UpdateFont()
+		protected internal virtual void UpdateFont()
 		{
-			Control.Font = Element.ToUIFont();			
+			Control.Font = Element.ToUIFont();
 		}
 
 		readonly Color _defaultPlaceholderColor = ColorExtensions.PlaceholderColor.ToColor();
@@ -236,7 +237,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateAttributedPlaceholder(Control.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing));
 		}
 
-		protected virtual void UpdateAttributedPlaceholder(NSAttributedString nsAttributedString) => 
+		protected virtual void UpdateAttributedPlaceholder(NSAttributedString nsAttributedString) =>
 			Control.AttributedPlaceholder = nsAttributedString;
 
 		[PortHandler]
@@ -291,7 +292,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		}
 		void UpdateVerticalTextAlignment()
 		{
-			Control.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();			
+			Control.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();
 		}
 
 		protected internal virtual void UpdateTextColor()
@@ -304,8 +305,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Control.TextColor = textColor.ToUIColor();
 
 			// HACK This forces the color to update; there's probably a more elegant way to make this happen
-			Control.Text = Control.Text;			
-		}		
+			Control.Text = Control.Text;
+		}
 
 		protected override void Dispose(bool disposing)
 		{
@@ -338,7 +339,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					Control.EditingChanged -= OnEditing;
 				}
 
-				if(Element != null)
+				if (Element != null)
 					((INotifyCollectionChanged)Element.Items).CollectionChanged -= RowsCollectionChanged;
 			}
 
@@ -388,7 +389,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					SelectedIndex = (int)row;
 				}
 
-				if(_renderer.Element.On<PlatformConfiguration.iOS>().UpdateMode() == UpdateMode.Immediately)
+				if (_renderer.Element.On<PlatformConfiguration.iOS>().UpdateMode() == UpdateMode.Immediately)
 					_renderer.UpdatePickerFromModel(this);
 			}
 

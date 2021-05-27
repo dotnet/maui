@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Platform;
@@ -38,7 +39,6 @@ using Rectangle = Microsoft.Maui.Controls.Shapes.Rectangle;
 [assembly: ExportRenderer(typeof(TableView), typeof(TableViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer))]
 [assembly: ExportRenderer(typeof(RefreshView), typeof(RefreshViewRenderer))]
-[assembly: ExportRenderer(typeof(Shell), typeof(ShellRenderer))]
 [assembly: ExportRenderer(typeof(Path), typeof(PathRenderer))]
 [assembly: ExportRenderer(typeof(Ellipse), typeof(EllipseRenderer))]
 [assembly: ExportRenderer(typeof(Line), typeof(LineRenderer))]
@@ -78,9 +78,7 @@ using Rectangle = Microsoft.Maui.Controls.Shapes.Rectangle;
 // WINUI3
 //[assembly: ExportRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer))]
 
-//Fonts
-// WINUI3
-//[assembly: ExportRenderer(typeof(EmbeddedFont), typeof(EmbeddedFontLoader))]
+[assembly: ExportRenderer(typeof(EmbeddedFont), typeof(EmbeddedFontLoader))]
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests")]

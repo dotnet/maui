@@ -1,7 +1,7 @@
 using System;
 using CoreGraphics;
-using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -23,15 +23,31 @@ namespace Microsoft.Maui
 			return base.SizeThatFits(crossPlatformSize.ToCGSize());
 		}
 
+		public IView? View { get; set; }
+
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
 
-			var width = Frame.Width;
-			var height = Frame.Height;
+			var bounds = Frame.ToRectangle();
+			if (View is ISafeAreaView sav && !sav.IgnoreSafeArea && RespondsToSafeArea())
+			{
+				var safe = SafeAreaInsets;
+				bounds.X += safe.Left;
+				bounds.Y += safe.Top;
+				bounds.Height -= safe.Top + safe.Bottom;
+				bounds.Width -= safe.Left + safe.Right;
+			}
 
-			CrossPlatformMeasure?.Invoke(width, height);
-			CrossPlatformArrange?.Invoke(Frame.ToRectangle());
+			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
+			CrossPlatformArrange?.Invoke(bounds);
+		}
+		static bool? respondsToSafeArea;
+		bool RespondsToSafeArea()
+		{
+			if (respondsToSafeArea.HasValue)
+				return respondsToSafeArea.Value;
+			return (bool)(respondsToSafeArea = this.RespondsToSelector(new Selector("safeAreaInsets")));
 		}
 
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
@@ -60,7 +76,7 @@ namespace Microsoft.Maui
 
 	public class PageViewController : ContainerViewController
 	{
-		public PageViewController(IPage page,IMauiContext mauiContext)
+		public PageViewController(IPage page, IMauiContext mauiContext)
 		{
 			CurrentView = page;
 			Context = mauiContext;
@@ -75,5 +91,4 @@ namespace Microsoft.Maui
 			};
 		}
 	}
-
 }

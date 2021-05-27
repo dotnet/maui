@@ -110,10 +110,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				var child = logicalChild as VisualElement;
 				if (child != null)
 				{
-					if (CompressedLayout.GetIsHeadless(child)) {
+					if (CompressedLayout.GetIsHeadless(child))
+					{
 						child.IsPlatformEnabled = true;
 						FillChildrenWithRenderers(child);
-					} else {
+					}
+					else
+					{
 						var renderer = GetFreeRenderer(child) ?? Platform.CreateRenderer(child);
 						Platform.SetRenderer(child, renderer);
 						_parent.NativeView.AddSubview(renderer.NativeView);
