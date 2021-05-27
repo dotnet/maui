@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Controls.Internals
 		// ApplyCore  100000 (w/o INPC, w/o unnapply)	: 20ms.
 		internal void ApplyCore(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget = false)
 		{
-			var isTSource = sourceObject != null && sourceObject is TSource;
+			var isTSource = sourceObject is TSource;
 			var mode = this.GetRealizedMode(property);
 			if ((mode == BindingMode.OneWay || mode == BindingMode.OneTime) && fromTarget)
 				return;
