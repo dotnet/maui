@@ -2,6 +2,7 @@ parameters:
   platform: '' # [ android, ios ]
   path: '' # path to csproj
   device: '' # the xharness device to use
+  net6: false # whether or not this is a net6 build
   cakeArgs: '' # additional cake args
 
 steps:
@@ -52,7 +53,7 @@ steps:
       packageType: 'sdk'
 
   - pwsh: |
-      ./build.ps1 --target=dotnet-buildtasks --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
+      ./build.ps1 --target=${{ replace(replace(parameters.net6, 'true', 'dotnet-buildtasks'), 'false', 'buildtasks') }} --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
     displayName: 'Build the MSBuild Tasks'
 
   - pwsh: |
