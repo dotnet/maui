@@ -12,7 +12,12 @@
       <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="0.5.0" />
       <PackageReference Include="Microsoft.Graphics.Win2D" Version="0.5.0.13" />
   </ItemGroup>
-
+ <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <PropertyGroup>
+      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
+    </PropertyGroup>
+  </Target>
+  
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics-net6.csproj" />
   </ItemGroup>
