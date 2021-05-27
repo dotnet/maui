@@ -9,6 +9,8 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE
 string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 
 // optional
+var USE_DOTNET = Argument("dotnet", false);
+var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK"));
 var BINLOG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? PROJECT + ".binlog");
 var TEST_APP = Argument("app", EnvironmentVariable("ANDROID_TEST_APP") ?? "");
 var TEST_APP_PACKAGE_NAME = Argument("package", EnvironmentVariable("ANDROID_TEST_APP_PACKAGE_NAME") ?? "");
@@ -133,18 +135,33 @@ Task("Build")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
 	.Does(() =>
 {
-	MSBuild(PROJECT.FullPath, c => {
-		c.Configuration = CONFIGURATION;
-		c.Restore = true;
-		c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
-		c.Targets.Clear();
-		c.Targets.Add("Build");
-		c.Targets.Add("SignAndroidPackage");
-		c.BinaryLogger = new MSBuildBinaryLogSettings {
-			Enabled = true,
-			FileName = BINLOG,
-		};
-	});
+	if (USE_DOTNET)
+	{
+		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+			Configuration = CONFIGURATION,
+			Framework = TARGET_FRAMEWORK,
+			ArgumentCustomization = args => args
+				.Append("/p:EmbedAssembliesIntoApk=true")
+				.Append("/bl:" + BINLOG),
+		});
+	}
+	else
+	{
+		MSBuild(PROJECT.FullPath, c => {
+			c.Configuration = CONFIGURATION;
+			c.Restore = true;
+			c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
+			if (!string.IsNullOrEmpty(TARGET_FRAMEWORK))
+				c.Properties["TargetFramework"] = new List<string> { TARGET_FRAMEWORK };
+			c.Targets.Clear();
+			c.Targets.Add("Build");
+			c.Targets.Add("SignAndroidPackage");
+			c.BinaryLogger = new MSBuildBinaryLogSettings {
+				Enabled = true,
+				FileName = BINLOG,
+			};
+		});
+	}
 });
 
 Task("Test")
@@ -154,7 +171,7 @@ Task("Test")
 	if (string.IsNullOrEmpty(TEST_APP)) {
 		if (string.IsNullOrEmpty(PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION).FullPath;
+		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).FullPath;
 		var apps = GetFiles(binDir + "/*-Signed.apk");
 		if (apps.Any()) {
 			TEST_APP = apps.FirstOrDefault().FullPath;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Android.App;
 using Android.Content.PM;
@@ -24,11 +25,10 @@ namespace Microsoft.Maui.DeviceTests
 			base.OnCreate(savedInstanceState);
 		}
 
-		public override IEnumerable<TestAssemblyInfo> GetTestAssemblies()
-		{
-			yield return new TestAssemblyInfo(Assembly.GetExecutingAssembly(), Assembly.GetExecutingAssembly().Location);
-			yield return new TestAssemblyInfo(typeof(SliderHandlerTests).Assembly, typeof(SliderHandlerTests).Assembly.Location);
-		}
+		public override IEnumerable<TestAssemblyInfo> GetTestAssemblies() =>
+			TestInstrumentation.TestAssemblies
+				.Distinct()
+				.Select(a => new TestAssemblyInfo(a, a.Location));
 	}
 
 	[Instrumentation(Name = "com.microsoft.maui.devicetests.TestInstrumentation")]
@@ -37,6 +37,15 @@ namespace Microsoft.Maui.DeviceTests
 		protected TestInstrumentation(IntPtr handle, JniHandleOwnership transfer)
 			: base(handle, transfer)
 		{
+		}
+
+		public static IEnumerable<Assembly> TestAssemblies
+		{
+			get
+			{
+				yield return Assembly.GetExecutingAssembly();
+				yield return typeof(SliderHandlerTests).Assembly;
+			}
 		}
 	}
 }
