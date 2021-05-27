@@ -76,16 +76,19 @@ stages:
           pool:
             vmImage:  windows-latest
           steps:
-            - task: NuGetToolInstaller@1
-              displayName: 'Use NuGet 5.9.1'
-              inputs:
-                versionSpec: 5.9.1
+            - powershell: |
+                $ProgressPreference = 'SilentlyContinue'
+                Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+                & .\dotnet-install.ps1 -Version $(DotNetVersion) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
+                & dotnet --list-sdks
+              displayName: install .NET $(DotNetVersion)
+              errorActionPreference: stop
 
             - script: dotnet tool restore
               displayName: install dotnet tools
 
-            - script: dotnet vs install enterprise preview +mobile --quiet
-              displayName: install vs preview
+            # - script: dotnet vs install enterprise preview +mobile --quiet
+            #   displayName: install vs preview
 
             - powershell: |
                 & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
