@@ -58,6 +58,8 @@ stages:
                   parameters:
                     platform: ios
                     path: ${{ project.ios }}
+                    cakeArgs: ${{ replace(replace(project.net6, 'true', '--tfm=net6.0-ios --dotnet=true'), 'false', '') }}
+                    net6: ${{ project.net6 }}
                     ${{ if eq(version, 'latest') }}:
                       device: ios-simulator-64
                     ${{ if ne(version, 'latest') }}:
