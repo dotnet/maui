@@ -243,14 +243,13 @@ stages:
               - script: echo '##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)'
                 displayName: set JI_JAVA_HOME
 
-            - ${{ if eq(BuildPlatform.name, 'windows') }}:
-              - task: xamops.azdevex.provisionator-task.provisionator@1
-                displayName: 'Provision VSWindows'
-                inputs:
-                  provisioning_script: $(provisionator.vs2019)
-
             - script: dotnet tool restore
               displayName: install dotnet tools
+
+            - ${{ if eq(BuildPlatform.name, 'windows') }}:
+              - script: dotnet vs update --quiet
+                displayName: Update VS
+
             - script: dotnet cake --configuration=Release
               displayName: pack nugets
             - task: CopyFiles@2
