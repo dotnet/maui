@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateProgressColor(this UIProgressView nativeProgressBar, IProgress progress)
 		{
-			nativeProgressBar.ProgressTintColor = progress.ProgressColor == Color.Default ? null : progress.ProgressColor.ToNative();
+			nativeProgressBar.ProgressTintColor = progress.ProgressColor?.ToNative();
 		}
 	}
 }

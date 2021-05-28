@@ -1,4 +1,5 @@
 ﻿using Android.Content.Res;
+using Microsoft.Maui.Graphics;
 using AProgressBar = Android.Widget.ProgressBar;
 
 namespace Microsoft.Maui
@@ -16,7 +17,7 @@ namespace Microsoft.Maui
         {
             Color color = progress.ProgressColor;
 
-            if (color.IsDefault)
+            if (color == null)
             {
                 (nativeProgressBar.Indeterminate ? nativeProgressBar.IndeterminateDrawable :
                     nativeProgressBar.ProgressDrawable)?.ClearColorFilter();
