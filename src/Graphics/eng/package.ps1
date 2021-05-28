@@ -14,7 +14,7 @@ if($IsWindows)
 }
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
-$sln = Join-Path $PSScriptRoot ../build/Build.Microsoft.Maui.Graphics-net6.sln
+$sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Graphics-net6.sln
 
 # Bootstrap ./bin/dotnet/
 $csproj = Join-Path $PSScriptRoot ../build/DotNet/DotNet.csproj
