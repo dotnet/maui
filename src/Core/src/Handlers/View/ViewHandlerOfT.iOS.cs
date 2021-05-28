@@ -26,7 +26,11 @@ namespace Microsoft.Maui.Handlers
 			if (nativeView == null)
 				return;
 
-			nativeView.Frame = rect.ToCGRect();
+			// We set Center and Bounds rather than Frame because Frame is undefined if the CALayer's transform is 
+			// anything other than the identity (https://developer.apple.com/documentation/uikit/uiview/1622459-transform)
+			nativeView.Center = new CoreGraphics.CGPoint(rect.Center.X, rect.Center.Y);
+			nativeView.Bounds = new CoreGraphics.CGRect(0, 0, rect.Width, rect.Height);
+
 			nativeView.UpdateBackgroundLayerFrame();
 		}
 
