@@ -94,7 +94,7 @@ stages:
             - script: dotnet tool restore
               displayName: install dotnet tools
 
-            - script: dotnet vs install preview Enterprise +core +mobile --quiet
+            - script: dotnet vs install preview Enterprise +core +mobile +desktop +uwp --quiet
               displayName: update vs
 
             - script: dotnet cake --configuration=${{ BuildCondition }}
