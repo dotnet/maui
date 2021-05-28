@@ -98,14 +98,25 @@ stages:
               displayName: update vs
 
             - script: dotnet cake --configuration=${{ BuildCondition }}
-              displayName: pack nugets
+              displayName: build net6 solutions
+
+            - task: NuGetCommand@2
+              displayName: 'Pack nupkg'
+              inputs:
+                command: 'pack'
+                packagesToPack: |
+                  build/Microsoft.Maui.Graphics.nuspec
+                  build/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.nuspec
+                packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
+                configuration: ${{ BuildCondition }}
+                basePath: '$(System.DefaultWorkingDirectory)'
+                versioningScheme : 'byEnvVar'
+                versionEnvVar: 'BUILD_BUILDNUMBER'
                 
             - task: CopyFiles@2
               displayName: 'Copy SignList.xml and Packages'
               inputs:
                 Contents: |
-                  **/Microsoft.Maui.*.nupkg
-                  **/Microsoft.Maui.*.snupkg
                   **/SignList.xml
                 TargetFolder: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
                 flattenFolders: true

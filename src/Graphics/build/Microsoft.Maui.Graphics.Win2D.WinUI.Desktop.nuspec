@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</id>
+    <version>$version$</version>
+    <title>Microsoft.Maui.Graphics.Win2D.WinUI</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Microsoft.Maui.Graphics for WinUI powered by Win2D</description>
+    <summary>Microsoft.Maui.Graphics for WinUI powered by Win2D</summary>
+    <projectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics</projectUrl>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <repository url="https://github.com/dotnet/Microsoft.Maui.Graphics.git" />
+    <license type="expression">MIT</license>
+    <language>C#</language>
+    <dependencies>
+      <group>
+        <dependency id="Microsoft.Maui.Graphics" version="$version$" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Graphics.Win2D" version="0.5.0.13" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.ProjectReunion" version="0.5.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="src/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop/bin/$configuration$/net5.0-windows10.0.19041.0/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.dll" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop/bin/$configuration$/net5.0-windows10.0.19041.0/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.pdb" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop/bin/$configuration$/net5.0-windows10.0.19041.0/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.pri" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.pri"/>
+
+    <file src="src/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop/bin/$configuration$/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.dll" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop/bin/$configuration$/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.pdb" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop/bin/$configuration$/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.pri" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.pri"/>
+  </files>
+</package>
