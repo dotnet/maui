@@ -1,4 +1,5 @@
 <Project>
+
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true'" Project="eng\Git.Build.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true' " Project="eng\Versions.targets" />
   <Import Project="eng\AndroidX.targets" />
@@ -9,6 +10,21 @@
     <PublishTrimmed Condition=" '$(TargetFramework)' == 'net6.0-ios' or '$(TargetFramework)' == 'net6.0-maccatalyst' ">false</PublishTrimmed>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(SingleProject)' == 'true'">
+    <!-- Required - Enable Launch Profiles for .NET 6 iOS/Android -->
+    <_KeepLaunchProfiles>true</_KeepLaunchProfiles>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(SingleProject)' == 'true'">
+    <!-- Required - Setup Single Project features -->
+    <ProjectCapability Include="MauiSingleProject" />
+
+    <!-- Optional - Enables a list of TFM's and device categories in the debug menu -->
+    <!-- This allows easily toggling of debug target TFM by selecting the platform -->
+    <!-- If removed, Top level debug targets show as a list of devices for the selected TFM -->
+    <ProjectCapability Include="XamarinStaticLaunchProfiles" />
+  </ItemGroup>
+
+  <!-- HACK: for windows -->
   <Target Name="Net6WinUIPackagingWorkaround" BeforeTargets="GetPackagingOutputs" Condition="$(TargetFramework.Contains('-windows')) == true AND '$(DisableEmbeddedXbf)' != 'true' ">
     <PropertyGroup>
       <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
@@ -16,4 +32,58 @@
       <_EmbedFileResfilePath>$(IntermediateOutputPath)$(AppxSubfolderWithFilesToBeEmbedded)\embed.resfiles</_EmbedFileResfilePath>
     </PropertyGroup>
   </Target>
+
+  <!-- HACK: Avoid the bad tasks for multitargeting -->
+  <Target Name="ValidateWinUIPlatform" />
+  <Target Name="BinPlaceBootstrapDll" />
+
+  <!-- HACK: inject the windows TFM into the builds of the app project -->
+  <Target Name="FixFrameworksBefore" BeforeTargets="SetProjectReferenceProperties" Condition="'$(ProjectExt)' == '.wapproj'">
+    <ItemGroup>
+      <_MSBuildProjectReferenceExistent
+        Update="@(_MSBuildProjectReferenceExistent)"
+        SetConfiguration="TargetFramework=$(AppProjectTargetFramework)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- HACK: overwrite the properties set by the AddProjectMetadata task as it was chacking the outer build -->
+  <Target Name="FixFrameworksAfter" AfterTargets="SetProjectReferenceProperties" Condition="'$(ProjectExt)' == '.wapproj'">
+    <ItemGroup>
+      <ProjectReferenceWithExtraMetadata Update="@(ProjectReferenceWithExtraMetadata)">
+        <ReferenceSourceTarget>ProjectReference</ReferenceSourceTarget>
+        <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
+        <TargetFramework>$(AppProjectTargetFramework)</TargetFramework>
+        <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
+        <AdditionalProperties>
+        </AdditionalProperties>
+        <TargetFileName>%(Filename).dll</TargetFileName>
+        <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+        <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+        <WindowsAppContainer>
+        </WindowsAppContainer>
+        <Private>false</Private>
+        <MsixConfiguration>Debug</MsixConfiguration>
+        <OutputItemType>
+        </OutputItemType>
+        <BuildReference>true</BuildReference>
+        <OutputType>WinExe</OutputType>
+        <MsbuildProjectExtensionsPath>%(Identity)..\obj\</MsbuildProjectExtensionsPath>
+        <RuntimeIdentifiers>win10-x86;win10-x86;win10-arm64</RuntimeIdentifiers>
+        <DependencyKind>Direct</DependencyKind>
+        <ProjectGuid></ProjectGuid>
+        <TargetFrameworkMoniker>.NETCoreApp,Version=v5.0</TargetFrameworkMoniker>
+        <Configuration>$(Configuration)</Configuration>
+        <AppxRecipeFilePath>%(Identity)..\bin\$(Configuration)\$(AppProjectTargetFramework)\%(Filename).dll.build.appxrecipe</AppxRecipeFilePath>
+        <ProjectName>%(Filename)</ProjectName>
+        <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
+        <AppxUploadRecipeFilePath>%(Identity)..\bin\$(Configuration)\$(AppProjectTargetFramework)\Upload\%(Filename).build.appxrecipe</AppxUploadRecipeFilePath>
+        <TargetPlatformMinVersion>$(TargetPlatformMinVersion)</TargetPlatformMinVersion>
+        <TargetName>%(Filename)</TargetName>
+        <TargetDir>%(Identity)..\bin\$(Configuration)\$(AppProjectTargetFramework)\</TargetDir>
+        <CrtSDKReferenceVersion></CrtSDKReferenceVersion>
+        <PlatformTarget>AnyCPU</PlatformTarget>
+      </ProjectReferenceWithExtraMetadata>
+    </ItemGroup>
+  </Target>
+
 </Project>
