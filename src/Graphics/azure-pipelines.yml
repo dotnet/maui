@@ -101,9 +101,12 @@ stages:
               displayName: pack nugets
                 
             - task: CopyFiles@2
-              displayName: 'Copy SignList.xml Files'
+              displayName: 'Copy SignList.xml and Packages'
               inputs:
-                Contents: eng/SignList.xml
+                Contents: |
+                  **/Microsoft.Maui.*.nupkg
+                  **/Microsoft.Maui.*.snupkg
+                  **/SignList.xml
                 TargetFolder: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
                 flattenFolders: true
 
