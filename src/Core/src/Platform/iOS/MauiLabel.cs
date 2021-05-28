@@ -9,8 +9,6 @@ namespace Microsoft.Maui.Platform.iOS
 	{
 		public UIEdgeInsets TextInsets { get; set; }
 
-		public CALayer? BackgroundLayer { get; set; }
-
 		public MauiLabel(CGRect frame) : base(frame)
 		{
 		}
@@ -19,21 +17,8 @@ namespace Microsoft.Maui.Platform.iOS
 		{
 		}
 
-		public override void DrawText(CGRect rect)
-		{
-			if (BackgroundLayer != null)
-			{
-				var context = UIGraphics.GetCurrentContext();
-				context.SaveState();
-
-				BackgroundLayer.Frame = Bounds;
-				BackgroundLayer.RenderInContext(context);
-
-				context.RestoreState();
-			}
-
+		public override void DrawText(CGRect rect) =>
 			base.DrawText(TextInsets.InsetRect(rect));
-		}
 
 		public override void InvalidateIntrinsicContentSize()
 		{

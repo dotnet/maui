@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Grad
 
 			try
 			{
-				return Color.FromHex(value[0].Equals('#') ? value : $"#{value}");
+				return Color.FromArgb(value[0].Equals('#') ? value : $"#{value}");
 			}
 			catch (Exception)
 			{

@@ -257,11 +257,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void SwitchFragment(FragmentManager manager, AView targetView, ShellItem newItem, bool animate = true)
 		{
 			Profile.FrameBegin();
-
-			Profile.FramePartition("IsDesignerContext");
-			if (AndroidContext.IsDesignerContext())
-				return;
-
 			Profile.FramePartition("CreateShellItemRenderer");
 			var previousRenderer = _currentRenderer;
 			_currentRenderer = CreateShellItemRenderer(newItem);
@@ -343,11 +338,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				AColor color;
 				if (appearance != null)
 				{
-					color = appearance.BackgroundColor.ToAndroid(Color.FromHex("#03A9F4"));
+					color = appearance.BackgroundColor.ToAndroid(Color.FromArgb("#03A9F4"));
 				}
 				else
 				{
-					color = Color.FromHex("#03A9F4").ToAndroid();
+					color = Color.FromArgb("#03A9F4").ToAndroid();
 				}
 
 				if (!(decorView.Background is SplitDrawable splitDrawable) ||

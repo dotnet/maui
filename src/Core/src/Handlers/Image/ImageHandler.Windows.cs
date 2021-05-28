@@ -5,19 +5,13 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ImageHandler : ViewHandler<IImage, FrameworkElement>
+	public partial class ImageHandler : ViewHandler<IImage, Image>
 	{
 		double _lastScale = 0.0;
 
-		protected Image? RealNativeView { get; set; }
+		protected override Image CreateNativeView() => new Image();
 
-		protected override FrameworkElement CreateNativeView()
-		{
-			RealNativeView = new Image();
-			return new Border { Child = RealNativeView };
-		}
-
-		protected override void ConnectHandler(FrameworkElement nativeView)
+		protected override void ConnectHandler(Image nativeView)
 		{
 			base.ConnectHandler(nativeView);
 
@@ -26,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Unloaded += OnNativeViewUnloaded;
 		}
 
-		protected override void DisconnectHandler(FrameworkElement nativeView)
+		protected override void DisconnectHandler(Image nativeView)
 		{
 			base.DisconnectHandler(nativeView);
 
@@ -40,24 +34,35 @@ namespace Microsoft.Maui.Handlers
 			_sourceManager.Reset();
 		}
 
+		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
+			base.NeedsContainer;
+
+		public static void MapBackground(ImageHandler handler, IImage image)
+		{
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+
+			handler.WrappedNativeView?.UpdateBackground(image);
+		}
+
 		public static void MapAspect(ImageHandler handler, IImage image) =>
-			handler.RealNativeView?.UpdateAspect(image);
+			handler.NativeView?.UpdateAspect(image);
 
 		public static void MapIsAnimationPlaying(ImageHandler handler, IImage image) =>
-			handler.RealNativeView?.UpdateIsAnimationPlaying(image);
+			handler.NativeView?.UpdateIsAnimationPlaying(image);
 
 		public static void MapSource(ImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
 		public static async Task MapSourceAsync(ImageHandler handler, IImage image)
 		{
-			if (handler.RealNativeView == null)
+			if (handler.NativeView == null)
 				return;
 
 			var token = handler._sourceManager.BeginLoad();
 
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-			var result = await handler.RealNativeView.UpdateSourceAsync(image, provider, token);
+			var result = await handler.NativeView.UpdateSourceAsync(image, provider, token);
 
 			handler._sourceManager.CompleteLoad(result);
 		}

@@ -173,6 +173,17 @@ namespace Microsoft.Maui.Controls
 			return navPage;
 		}
 
+		internal static IMauiContext FindMauiContextOnParent(this Element element)
+		{
+			var navPage = element
+				.GetParentsPath()
+				.OfType<IView>()
+				.Where(x => x.Handler?.MauiContext != null)
+				.FirstOrDefault();
+
+			return navPage?.Handler?.MauiContext;
+		}
+
 		internal static IEnumerable<Element> GetParentsPath(this Element self)
 		{
 			Element current = self;

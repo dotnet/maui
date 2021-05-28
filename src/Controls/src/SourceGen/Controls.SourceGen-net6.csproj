@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Microsoft.Maui.Controls.SourceGen</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Controls.SourceGen</RootNamespace>
+    <PackageId>Microsoft.Maui.Controls.SourceGen</PackageId>
+    <NoWarn>$(NoWarn);NU5128;</NoWarn>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)\Microsoft.Maui.Controls.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="$(OutputPath)\Microsoft.Maui.Controls.Xaml.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Controls.Core-net6.csproj" GeneratePathProperty="true" PrivateAssets="all" />
+    <ProjectReference Include="..\Xaml\Controls.Xaml-net6.csproj" GeneratePathProperty="true" PrivateAssets="all" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+  </PropertyGroup>
+
+  <Target Name="GetDependencyTargetPaths">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker Include="$(MSBuildThisFileDirectory)..\Xaml\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Xaml.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(MSBuildThisFileDirectory)..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.dll" IncludeRuntimeDependency="false" />
+    </ItemGroup>
+  </Target>
+
+</Project>

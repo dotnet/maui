@@ -1,13 +1,17 @@
 ﻿<controls:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                    xmlns:controls="clr-namespace:Maui.Controls.Sample.Controls"
+                   xmlns:layout="clr-namespace:Microsoft.Maui.Controls.Layout2;assembly=Microsoft.Maui.Controls"
                    x:Class="Maui.Controls.Sample.Pages.XamlPage">
 
-    <StackLayout>
+    <layout:GridLayout x:Name="MyLayout" Margin="40" BackgroundColor="LightGreen">
+
         <Label 
-               Text="Welcome to Microsoft MAUI!"
-               VerticalOptions="CenterAndExpand"
-               HorizontalOptions="CenterAndExpand" />
-    </StackLayout>
+               Text="Welcome to Microsoft MAUI!" 
+               BackgroundColor="LightBlue" Margin="10,20,10,20"/>
+
+        
+    </layout:GridLayout>
+
 
 </controls:BasePage>

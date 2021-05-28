@@ -6,9 +6,15 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override MauiLabel CreateNativeView() => new MauiLabel();
 
+		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
+			base.NeedsContainer;
+
 		public static void MapBackground(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateBackground(label);
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+
+			handler.WrappedNativeView?.UpdateBackground(label);
 		}
 
 		public static void MapText(LabelHandler handler, ILabel label)

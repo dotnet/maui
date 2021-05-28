@@ -1,4 +1,5 @@
-﻿using Maui.Controls.Sample.Controls;
+﻿using System.Diagnostics;
+using Maui.Controls.Sample.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Pages
@@ -9,6 +10,11 @@ namespace Maui.Controls.Sample.Pages
 		public XamlPage()
 		{
 			InitializeComponent();
+
+			foreach (var x in MyLayout)
+			{
+				Debug.WriteLine($"{x}");
+			}
 		}
 	}
 }

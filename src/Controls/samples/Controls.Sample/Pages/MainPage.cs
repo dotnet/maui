@@ -33,7 +33,6 @@ namespace Maui.Controls.Sample.Pages
 			BindingContext = _viewModel = viewModel;
 
 			SetupMauiLayout();
-
 			NavigationPage.SetHasNavigationBar(this, false);
 
 			//SetupCompatibilityLayout();
@@ -44,7 +43,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			private Visibility _visibility;
 
-			public void SetVisibility(Visibility visibility) 
+			public void SetVisibility(Visibility visibility)
 			{
 				_visibility = visibility;
 				Handler?.UpdateValue(nameof(Visibility));
@@ -52,9 +51,9 @@ namespace Maui.Controls.Sample.Pages
 
 			Visibility IFrameworkElement.Visibility
 			{
-				get 
+				get
 				{
-					return _visibility; 
+					return _visibility;
 				}
 			}
 		}
@@ -191,7 +190,8 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
 
 			verticalStack.Add(new RedButton { Text = "Dynamically Registered" });
-
+			verticalStack.Add(new CustomButton { Text = "Button Registered to Compat Renderer" });
+			
 			var checkbox = new CheckBox();
 			checkbox.CheckedChanged += (sender, e) =>
 			{
@@ -233,6 +233,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Text = "This should be text with character spacing", CharacterSpacing = 10 });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Numeric, Placeholder = "Numeric Entry" });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
+			verticalStack.Add(new Entry { Placeholder = "This is a blue text box", BackgroundColor = Colors.CornflowerBlue });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
@@ -526,7 +527,8 @@ namespace Maui.Controls.Sample.Pages
 
 			var mauiLabel = new VisibilityLabel() { Text = "Core Label" };
 
-			button1.Clicked += (sender, args) => {
+			button1.Clicked += (sender, args) =>
+			{
 				controlsLabel.IsVisible = !controlsLabel.IsVisible;
 			};
 

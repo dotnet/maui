@@ -111,7 +111,7 @@ In the DatePicker below, change the date to May 25, 1977. If the selection immed
 				picker.Items.Add(item);
 			}
 
-			cellWrapper.BackgroundColor = Color.FromHex("#eee");
+			cellWrapper.BackgroundColor = Color.FromArgb("#eee");
 			stack.Orientation = StackOrientation.Vertical;
 
 			stack.Children.Add(picker);

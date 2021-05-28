@@ -331,7 +331,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				{
 					var item = BindingContext as ListItem;
 					if (item != null && !string.IsNullOrEmpty(item.BackgroundColor))
-						View.BackgroundColor = Color.FromHex(item.BackgroundColor);
+						View.BackgroundColor = Color.FromArgb(item.BackgroundColor);
 				}
 			}
 
@@ -347,7 +347,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 						if (!string.IsNullOrWhiteSpace(item.TextColor))
 						{
-							transformedColor = Color.FromHex(item.TextColor);
+							transformedColor = Color.FromArgb(item.TextColor);
 
 							_mainLabel.TextColor = transformedColor;
 							_secondaryLabel.TextColor = transformedColor;
@@ -366,14 +366,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 						if (!string.IsNullOrWhiteSpace(item.BackgroundColor))
 						{
-							transformedColor = Color.FromHex(item.BackgroundColor);
+							transformedColor = Color.FromArgb(item.BackgroundColor);
 							View.BackgroundColor = transformedColor;
 						}
 
 						if (!string.IsNullOrWhiteSpace(item.CircleColor))
 						{
 							_statusCircle.Text = "\u25CF "; // ascii circle
-							_statusCircle.TextColor = Color.FromHex(item.CircleColor);
+							_statusCircle.TextColor = Color.FromArgb(item.CircleColor);
 							_statusCircle.FontSize = 30;
 						}
 					}

@@ -950,7 +950,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			if (isNavigated)
 			{
-				if (NavigationPage.GetHasBackButton(currentPage) && !Context.IsDesignerContext())
+				if (NavigationPage.GetHasBackButton(currentPage))
 				{
 					if (toggle != null)
 					{

@@ -120,6 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
 
+		[PortHandler]
 		void OnControlDateChanged(object sender, DatePickerValueChangedEventArgs e)
 		{
 			if (Element == null)
@@ -237,11 +238,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.UpdateFlowDirection(Element);
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			Control.CharacterSpacing = Element.CharacterSpacing.ToEm();
 		}
 
+		[PortHandler]
 		void UpdateFont()
 		{
 			if (Control == null)
@@ -275,12 +278,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_fontApplied = true;
 		}
 
+		[PortHandler]
 		void UpdateMaximumDate()
 		{
 			if (Element != null && Control != null)
 				Control.MaxYear = new DateTimeOffset(new DateTime(Element.MaximumDate.Ticks, DateTimeKind.Unspecified));			
 		}
 
+		[PortHandler]
 		void UpdateMinimumDate()
 		{
 			DateTime mindate = Element.MinimumDate;
