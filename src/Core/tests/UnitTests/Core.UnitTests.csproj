@@ -5,6 +5,8 @@
     <TargetFramework Condition="'$(BuildForNet6)' == 'true'">net6.0</TargetFramework>
     <AssemblyName>Microsoft.Maui.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
+    <!-- Solves: LifecycleEventsTests.cs(26,77): error CS8652: The feature 'inferred delegate type' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version. -->
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
