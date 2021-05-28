@@ -57,7 +57,7 @@ steps:
     displayName: 'Build the MSBuild Tasks'
 
   - pwsh: |
-      ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs" ${{ parameters.cakeArgs }}
+      ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs" ${{ replace(replace(parameters.net6, 'true', '--dotnet=true'), 'false', '') }} ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
 
   - task: PublishTestResults@2
