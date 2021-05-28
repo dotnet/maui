@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			typeof(Slider),
 			typeof(Stepper),
 			typeof(TimePicker),
+			typeof(Shell),
 		};
 
 		static readonly List<(Type Control, Type Renderer)> PendingRenderers = new();

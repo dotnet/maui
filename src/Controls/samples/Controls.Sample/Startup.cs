@@ -1,10 +1,14 @@
-﻿using System;
+﻿#if NET6_0_OR_GREATER
+#define BLAZOR_ENABLED
+#endif
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModel;
-#if NET6_0_OR_GREATER
+#if BLAZOR_ENABLED
 using Microsoft.AspNetCore.Components.WebView.Maui;
 #endif
 using Microsoft.Extensions.Configuration;
@@ -18,12 +22,13 @@ using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Controls;
+using Maui.Controls.Sample.Controls;
 
 namespace Maui.Controls.Sample
 {
 	public class Startup : IStartup
 	{
-		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage }
+		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage, Shell }
 		private PageType _pageType = PageType.NavigationPage;
 
 		public readonly static bool UseXamlApp = true;
@@ -31,6 +36,8 @@ namespace Maui.Controls.Sample
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{
+			bool useFullDIAndBlazor = UseFullDI || _pageType == PageType.Blazor;
+
 			appBuilder
 				.UseFormsCompatibility()
 				.UseMauiControlsHandlers();
@@ -40,18 +47,14 @@ namespace Maui.Controls.Sample
 			else
 				appBuilder.UseMauiApp<MyApp>();
 
-			if (UseFullDI)
-				appBuilder.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory());
-			else
-				appBuilder.UseMauiServiceProviderFactory(true);
+			// Use a "third party" library that brings in a massive amount of controls
+			appBuilder.UseRed();
 
 #if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
 #endif
+			appBuilder.UseMauiControlsHandlers();
 
-#if NET6_0_OR_GREATER
-			appBuilder.RegisterBlazorMauiWebView();
-#endif
 			appBuilder
 				.ConfigureAppConfiguration(config =>
 				{
@@ -62,11 +65,26 @@ namespace Maui.Controls.Sample
 						{"Position:Name", "Dictionary_Name" },
 						{"Logging:LogLevel:Default", "Warning"}
 					});
-				})
+				});
+
+			if (useFullDIAndBlazor)
+			{
+#if BLAZOR_ENABLED
+				appBuilder
+					.RegisterBlazorMauiWebView(typeof(Startup).Assembly);
+#endif
+				appBuilder.UseMicrosoftExtensionsServiceProviderFactory();
+			}
+			else
+			{
+				appBuilder.UseMauiServiceProviderFactory(constructorInjection: true);
+			}
+
+			appBuilder
 				.ConfigureServices(services =>
 				{
 					// The MAUI DI does not support generic argument resolution
-					if (UseFullDI)
+					if (useFullDIAndBlazor)
 					{
 						services.AddLogging(logging =>
 						{
@@ -80,16 +98,20 @@ namespace Maui.Controls.Sample
 
 					services.AddSingleton<ITextService, TextService>();
 					services.AddTransient<MainPageViewModel>();
-
+#if BLAZOR_ENABLED
+					if (useFullDIAndBlazor)
+						services.AddBlazorWebView();
+#endif
 					services.AddTransient(
-						serviceType: typeof(Page),
+						serviceType: _pageType == PageType.Blazor ? typeof(Page) : typeof(IPage),
 						implementationType: _pageType switch
 						{
+							PageType.Shell => typeof(AppShell),
 							PageType.NavigationPage => typeof(NavPage),
 							PageType.Xaml => typeof(XamlPage),
 							PageType.Semantics => typeof(SemanticsPage),
 							PageType.Blazor =>
-#if NET6_0_OR_GREATER
+#if BLAZOR_ENABLED
 								typeof(BlazorPage),
 #else
 								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
@@ -103,20 +125,24 @@ namespace Maui.Controls.Sample
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
+					fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
+					fonts.AddFont("LobsterTwo-Bold.ttf", "Lobster Two Bold");
+					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
+					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 					fonts.AddFont("ionicons.ttf", "Ionicons");
 				})
-				//.ConfigureEssentials(essentials =>
-				//{
-				//	essentials
-				//		.UseVersionTracking()
-				//		.UseMapServiceToken("YOUR-KEY-HERE")
-				//		.AddAppAction("test_action", "Test App Action")
-				//		.AddAppAction("second_action", "Second App Action")
-				//		.OnAppAction(appAction =>
-				//		{
-				//			Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
-				//		});
-				//})
+				.ConfigureEssentials(essentials =>
+				{
+					essentials
+						.UseVersionTracking()
+						.UseMapServiceToken("YOUR-KEY-HERE")
+						.AddAppAction("test_action", "Test App Action")
+						.AddAppAction("second_action", "Second App Action")
+						.OnAppAction(appAction =>
+						{
+							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
+						});
+				})
 				.ConfigureLifecycleEvents(events =>
 				{
 					events.AddEvent<Action<string>>("CustomEventName", value => LogEvent("CustomEventName"));
@@ -196,16 +222,6 @@ namespace Maui.Controls.Sample
 						return true;
 					}
 				});
-		}
-
-		// To use the Microsoft.Extensions.DependencyInjection ServiceCollection and not the MAUI one
-		class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
-		{
-			public ServiceCollection CreateBuilder(IServiceCollection services)
-				=> new ServiceCollection { services };
-
-			public IServiceProvider CreateServiceProvider(ServiceCollection containerBuilder)
-				=> containerBuilder.BuildServiceProvider();
 		}
 	}
 }

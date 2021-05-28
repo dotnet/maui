@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					firedAttributesChanged = true;
 			};
 
-			button.Font = Font.OfSize("Testing123", size).WithAttributes(attributes);
+			button.Font = Font.OfSize("Testing123", Device.GetNamedSize(size, typeof(Label), true)).WithAttributes(attributes);
 
 			Assert.AreEqual(Device.GetNamedSize(size, typeof(Label), true), button.FontSize);
 			Assert.AreEqual(attributes, button.FontAttributes);
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var button = new Button();
 
 			button.FontAttributes = FontAttributes.Italic | FontAttributes.Bold;
-			Assert.AreEqual(button.Font, Font.SystemFontOfSize(button.FontSize, FontAttributes.Bold | FontAttributes.Italic));
+			Assert.AreEqual(button.Font, Font.SystemFontOfSize(button.FontSize, FontWeight.Bold, FontSlant.Italic));
 		}
 
 		[Test]

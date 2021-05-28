@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\Embedded\*" />
+    <MauiAsset Include="Resources\Raw\*" Link="%(Filename)%(Extension)" />
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
@@ -38,4 +39,7 @@
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 
+  <ItemGroup Condition="$(DefineConstants.Contains('GTK')) == true ">
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Gtk\Compatibility.Gtk.csproj"/>
+  </ItemGroup>
 </Project>

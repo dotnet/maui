@@ -1,16 +1,15 @@
-﻿using System.Threading.Tasks;
-using Android.Graphics.Drawables;
+﻿using System;
+using System.Threading.Tasks;
 using Android.Widget;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class StepperHandlerTests
 	{
 		LinearLayout GetNativeStepper(StepperHandler stepperHandler) =>
-			(LinearLayout)stepperHandler.NativeView;
+			stepperHandler.NativeView;
 
 		double GetNativeValue(StepperHandler stepperHandler)
 		{
@@ -45,10 +44,14 @@ namespace Microsoft.Maui.DeviceTests
 			return 0;
 		}
 
-		async Task ValidateNativeBackgroundColor(IStepper stepper, Color color)
+		Task ValidateHasColor(IStepper stepper, Color color, Action action = null)
 		{
-			var expected = await GetValueAsync(stepper, handler => ((ColorDrawable)GetNativeStepper(handler).Background).Color.ToColor());
-			Assert.Equal(expected, color);
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeStepper = GetNativeStepper(CreateHandler(stepper));
+				action?.Invoke();
+				nativeStepper.AssertContainsColor(color);
+			});
 		}
 	}
 }

@@ -18,6 +18,7 @@ using Microsoft.Maui.Controls.Internals;
 using WCompositeTransform = Microsoft.UI.Xaml.Media.CompositeTransform;
 using WScaleTransform = Microsoft.UI.Xaml.Media.ScaleTransform;
 using Microsoft.Maui.Graphics;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -778,9 +779,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateRotation(view, frameworkElement);
 		}
 
+		[PortHandler]
 		static void UpdateVisibility(VisualElement view, FrameworkElement frameworkElement)
 		{
-			frameworkElement.Visibility = view.IsVisible ? Visibility.Visible : Visibility.Collapsed;
+			frameworkElement.Visibility = view.IsVisible ? WVisibility.Visible : WVisibility.Collapsed;
 		}
 
 		void UpdateDragAndDropGestureRecognizers()
