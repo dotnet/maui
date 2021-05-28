@@ -12,6 +12,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.CardView.Widget;
 using Java.Lang;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
+using Microsoft.Maui.Controls.Platform;
 using AColor = Android.Graphics.Color;
 using AImageButton = Android.Widget.ImageButton;
 using ASupportDrawable = AndroidX.AppCompat.Graphics.Drawable;

@@ -3,8 +3,10 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageDownload Include="Microsoft.NET.Workload.Android"     Version="[$(MicrosoftAndroidSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.MacCatalyst" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.iOS"         Version="[$(MicrosoftiOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-$(DotNetPreviewVersionBand)"     Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-$(DotNetPreviewVersionBand)" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-$(DotNetPreviewVersionBand)"         Version="[$(MicrosoftiOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-$(DotNetPreviewVersionBand)"        Version="[$(MicrosofttvOSSdkPackageVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-$(DotNetPreviewVersionBand)"       Version="[$(MicrosoftmacOSSdkPackageVersion)]" />
   </ItemGroup>
 </Project>

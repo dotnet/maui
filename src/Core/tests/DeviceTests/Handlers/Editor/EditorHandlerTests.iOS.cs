@@ -88,5 +88,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
+
+		Color GetNativeTextColor(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).TextColor.ToColor();
 	}
 }

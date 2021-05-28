@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<local:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery" x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue5749" xmlns:control="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues">
+<local:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery" x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue5749" xmlns:control="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues">
     <StackLayout Padding="0,20,20,0">
         <control:CustomHorizontalListview Orientation="Horizontal" x:Name="listViewHorizontal" AutomationId="listViewHorizontal">
             <control:CustomHorizontalListview.ItemTemplate>

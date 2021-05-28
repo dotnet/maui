@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Handlers;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
 
@@ -36,16 +37,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SetElement(null, view);
 
 			renderer.View.SetCameraDistance(3600);
+			_attachTracker = AttachTracker.Instance;
+			renderer.View.AddOnAttachStateChangeListener(_attachTracker);
 
-			if (!_context.IsDesignerContext())
-			{
-				_attachTracker = AttachTracker.Instance;
-				renderer.View.AddOnAttachStateChangeListener(_attachTracker);
-			}
-			else
-			{
-				_attachTracker = new AttachTracker();
-			}
 		}
 
 		public void Dispose()
@@ -94,8 +88,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var width = Math.Max(0, (int)_context.ToPixels(view.Width));
 			var height = Math.Max(0, (int)_context.ToPixels(view.Height));
 
-			var formsViewGroup = aview as FormsViewGroup;
-			if (formsViewGroup == null)
+
+			if (aview is FormsViewGroup formsViewGroup)
+			{
+				Performance.Start(reference, "MeasureAndLayout");
+				formsViewGroup.MeasureAndLayout(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.Exactly), x, y, x + width, y + height);
+				Performance.Stop(reference, "MeasureAndLayout");
+			}
+			else if (aview is LayoutViewGroup && width == 0 && height == 0)
+			{
+				// Nothing to do here; just chill.
+			}
+			else
 			{
 				Performance.Start(reference, "Measure");
 				aview.Measure(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
@@ -104,12 +108,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				Performance.Start(reference, "Layout");
 				aview.Layout(x, y, x + width, y + height);
 				Performance.Stop(reference, "Layout");
-			}
-			else
-			{
-				Performance.Start(reference, "MeasureAndLayout");
-				formsViewGroup.MeasureAndLayout(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.Exactly), x, y, x + width, y + height);
-				Performance.Stop(reference, "MeasureAndLayout");
 			}
 
 			// If we're running sufficiently new Android, we have to make sure to update the ClipBounds to
@@ -327,6 +325,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aView?.Invalidate();
 		}
 
+		[PortHandler]
 		void UpdateIsVisible()
 		{
 			VisualElement view = _renderer.Element;

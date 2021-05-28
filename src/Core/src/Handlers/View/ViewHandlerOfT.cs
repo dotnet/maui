@@ -1,9 +1,8 @@
 #nullable enable
 using System;
-#if __IOS__
+using System.Runtime.CompilerServices;
+#if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
-#elif __MACOS__
-using NativeView = AppKit.NSView;
 #elif MONOANDROID
 using NativeView = Android.Views.View;
 #elif WINDOWS
@@ -27,6 +26,12 @@ namespace Microsoft.Maui.Handlers
 		protected PropertyMapper _mapper;
 		static bool HasSetDefaults;
 
+		[HotReload.OnHotReload]
+		static void OnHotReload()
+		{
+			HasSetDefaults = false;
+		}
+
 		protected ViewHandler(PropertyMapper mapper)
 		{
 			_ = mapper ?? throw new ArgumentNullException(nameof(mapper));
@@ -42,9 +47,18 @@ namespace Microsoft.Maui.Handlers
 			private set => base.NativeView = value;
 		}
 
+		protected TNativeView NativeViewValidation([CallerMemberName] string callerName = "")
+		{
+			_ = NativeView ?? throw new InvalidOperationException($"NativeView cannot be null here: {callerName}");
+			return NativeView;
+		}
+
 		public override void SetVirtualView(IView view)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
+
+			if (VirtualView == view)
+				return;
 
 			if (VirtualView?.Handler != null)
 				VirtualView.Handler = null;
@@ -53,6 +67,9 @@ namespace Microsoft.Maui.Handlers
 
 			VirtualView = (TVirtualView)view;
 			NativeView ??= CreateNativeView();
+
+			if (VirtualView != null && VirtualView.Handler != this)
+				VirtualView.Handler = this;
 
 			if (setupNativeView && NativeView != null)
 			{
@@ -113,11 +130,20 @@ namespace Microsoft.Maui.Handlers
 	public abstract partial class ViewHandler<TVirtualView> : ViewHandler
 		where TVirtualView : class, IView
 	{
+		internal ViewHandler()
+		{
+		}
+
 		public new TVirtualView? VirtualView
 		{
 			get => (TVirtualView?)base.VirtualView;
 			private protected set => base.VirtualView = value;
 		}
-	}
 
+		protected TVirtualView VirtualViewWithValidation([CallerMemberName] string callerName = "")
+		{
+			_ = VirtualView ?? throw new InvalidOperationException($"VirtualView cannot be null here: {callerName}");
+			return VirtualView;
+		}
+	}
 }

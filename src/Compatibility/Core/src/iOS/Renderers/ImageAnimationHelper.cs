@@ -208,9 +208,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			FormsCAKeyFrameAnimation animation = null;
 
-			if (imageSource?.Uri != null)
+			if (imageSource is IStreamImageSource streamImageSource)
 			{
-				using (var streamImage = await imageSource.GetStreamAsync(cancelationToken).ConfigureAwait(false))
+				using (var streamImage = await streamImageSource.GetStreamAsync(cancelationToken).ConfigureAwait(false))
 				{
 					if (streamImage != null)
 					{

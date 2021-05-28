@@ -9,10 +9,13 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SwitchHandlerTests
 	{
+		void SetIsOn(SwitchHandler switchHandler, bool value) =>
+			GetNativeSwitch(switchHandler).Checked = value;
+
 		ASwitch GetNativeSwitch(SwitchHandler switchHandler) =>
 			(ASwitch)switchHandler.NativeView;
 
-		bool GetNativeIsChecked(SwitchHandler switchHandler) =>
+		bool GetNativeIsOn(SwitchHandler switchHandler) =>
 			GetNativeSwitch(switchHandler).Checked;
 
 		Task ValidateTrackColor(ISwitch switchStub, Color color, Action action = null) =>

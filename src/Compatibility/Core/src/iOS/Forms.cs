@@ -39,11 +39,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static bool IsInitialized { get; private set; }
 
-		static IFontManager s_fontManager;
-
-		internal static IFontManager FontManager =>
-			s_fontManager ??= new FontManager(Microsoft.Maui.Controls.Internals.Registrar.FontRegistrar);
-
 #if __MOBILE__
 		static bool? s_isiOS9OrNewer;
 		static bool? s_isiOS10OrNewer;
@@ -202,7 +197,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				// Only need to do this once
 				Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
 			}
-			
+
 #if __MOBILE__
 			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
 			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
@@ -835,7 +830,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 							return OSAppTheme.Unspecified;
 					};
 #else
-                    return AppearanceIsDark() ? OSAppTheme.Dark : OSAppTheme.Light;
+					return AppearanceIsDark() ? OSAppTheme.Dark : OSAppTheme.Light;
 #endif
 				}
 			}

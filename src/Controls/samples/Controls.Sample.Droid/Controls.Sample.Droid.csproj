@@ -73,19 +73,19 @@
     <None Include="Properties\AndroidManifest.xml" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\values\colors.xml" />
-    <AndroidResource Include="Resources\values\dimens.xml" />
     <AndroidResource Include="Resources\values\strings.xml" />
-    <AndroidResource Include="Resources\values\styles.xml" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
-    <PackageReference Include="Microsoft.Maui.Graphics" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj">
+      <Project>{8e86f0da-ed1c-409e-a7a9-df3e58498620}</Project>
+      <Name>Compatibility</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj">
       <Project>{8cb95d25-8442-42bc-82be-319d21138549}</Project>
       <Name>Essentials</Name>
@@ -93,10 +93,6 @@
     <ProjectReference Include="..\..\src\Core\Controls.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
       <Name>Controls.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Android\Compatibility.Android.csproj">
-      <Project>{0e16e70a-d6dd-4323-ad5d-363abff42d6a}</Project>
-      <Name>Compatibility.Android</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Core\src\Core.csproj">
       <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>

@@ -56,6 +56,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			return new LoopListSource(itemsSource, loop);
 		}
-		
+
 	}
 }

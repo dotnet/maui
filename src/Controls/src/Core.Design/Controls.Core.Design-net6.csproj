@@ -1,41 +1,38 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net6.0</TargetFrameworks>
-		<AssemblyName>Microsoft.Maui.Controls.Core.Design</AssemblyName>
+		<TargetFrameworks>net472</TargetFrameworks>
+		<AssemblyName>Microsoft.Maui.Controls.DesignTools</AssemblyName>
 		<EnableDefaultCompileItems>False</EnableDefaultCompileItems>
+		<IsPackable>False</IsPackable>
+		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
 	</PropertyGroup>
-	<PropertyGroup>
-		<PackageId>Microsoft.Maui.Controls.Core.Design</PackageId>
-	</PropertyGroup>
-	<ItemGroup Condition=" '$(OS)' != 'Unix' ">
-		<Reference Include="Microsoft.Windows.Design.Extensibility, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-			<SpecificVersion>True</SpecificVersion>
-		</Reference>
+	<ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' ">
+		<Reference Include="System.Xaml" />
 		<Compile Include="AttributeTableBuilder.cs" />
+		<Compile Include="ColorDesignTypeConverter.cs" />
 		<Compile Include="EnumConverter.cs" />
 		<Compile Include="NonExclusiveEnumConverter.cs" />
 		<Compile Include="Properties\AssemblyInfo.cs" />
 		<Compile Include="RegisterMetadata.cs" />
 		<Compile Include="VisualDesignTypeConverter.cs" />
+		<Compile Include="ItemsLayoutDesignTypeConverter.cs" />
+		<Compile Include="KeyboardDesignTypeConverter.cs" />
+		<Compile Include="EasingDesignTypeConverter.cs" />
+		<Compile Include="KnownValuesDesignTypeConverter.cs" />
+		<Compile Include="LayoutOptionsDesignTypeConverter.cs" />
+		<Compile Include="LinearItemsLayoutDesignTypeConverter.cs" />
+		<Compile Include="FontSizeDesignTypeConverter.cs" />
+		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility">
+			<Version>16.9.31025.104</Version>
+		</PackageReference>
 	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-		<ProjectReference Include="..\Core\Controls.Core.csproj">
-			<GenerateDesignMetadata>true</GenerateDesignMetadata>
-			<Private>False</Private>
-		</ProjectReference>
-	</ItemGroup>
+
 	<!-- The IDE will look for a top level assembly resource called 'Microsoft.Maui.toolbox.xml' to -->
 	<!-- load the toolbox metadata from.                                                           -->
 	<ItemGroup>
 		<EmbeddedResource Include="toolbox\Microsoft.Maui.toolbox.xml">
 			<LogicalName>Microsoft.Maui.toolbox.xml</LogicalName>
 		</EmbeddedResource>
-	</ItemGroup>
-	<ItemGroup>
-		<Compile Include="ItemsLayoutDesignTypeConverter.cs" />
-		<Compile Include="KeyboardDesignTypeConverter.cs" />
-		<Compile Include="EasingDesignTypeConverter.cs" />
 	</ItemGroup>
 
 	<!-- Ensure that all images in the 'mac' and 'win' subdirectories are included as embedded resources -->

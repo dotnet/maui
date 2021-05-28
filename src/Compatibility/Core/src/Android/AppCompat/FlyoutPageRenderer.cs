@@ -10,8 +10,10 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
+	using global::Android.Graphics.Drawables;
 	using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 	using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
+	using Microsoft.Maui.Controls.Platform;
 	using Microsoft.Maui.Graphics;
 
 	public class FlyoutPageRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener, IManageFragments, ILifeCycleState
@@ -415,17 +417,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void UpdateBackgroundColor(Page view)
 		{
 			Color backgroundColor = view.BackgroundColor;
-			if (backgroundColor == null)
+			if (backgroundColor != null)
 				SetBackgroundColor(backgroundColor.ToAndroid());
 		}
 
 		void UpdateBackgroundImage(Page view)
 		{
-			_ = this.ApplyDrawableAsync(view, Page.BackgroundImageSourceProperty, Context, drawable =>
+			this.ApplyDrawableAsync(view, Page.BackgroundImageSourceProperty, Context,
+				(Drawable drawable) =>
 			{
 				if (drawable != null)
 					this.SetBackground(drawable);
-			});
+			}).FireAndForget(e => Internals.Log.Warning(nameof(FlyoutPageRenderer), $"{e}"));
 		}
 
 		void UpdateDetail()

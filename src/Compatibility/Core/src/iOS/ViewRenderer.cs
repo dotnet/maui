@@ -4,6 +4,7 @@ using System.ComponentModel;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 #if __MOBILE__
 using UIKit;
@@ -137,7 +138,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (Control != null && e.OldElement != null && e.OldElement.BackgroundColor != e.NewElement.BackgroundColor || e.NewElement.BackgroundColor != null)
 					SetBackgroundColor(e.NewElement.BackgroundColor);
 
-				if(Control != null && e.OldElement != null && e.OldElement.Background != e.NewElement.Background)
+				if (Control != null && e.OldElement != null && e.OldElement.Background != e.NewElement.Background)
 					SetBackground(e.NewElement.Background);
 
 				e.NewElement.FocusChangeRequested += ViewOnFocusChangeRequested;
@@ -301,7 +302,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			if (Control == null)
 				return;
-				
+
 #if __MOBILE__
 			focusRequestArgs.Result = focusRequestArgs.Focus ? Control.BecomeFirstResponder() : Control.ResignFirstResponder();
 #else

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.XamlC
 		{
 			INode valueNode = null;
 			if (!((IElementNode)node).Properties.TryGetValue(new XmlName("", "Value"), out valueNode) &&
-				!((IElementNode)node).Properties.TryGetValue(new XmlName(XamlParser.XFUri, "Value"), out valueNode) &&
+				!((IElementNode)node).Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Value"), out valueNode) &&
 				((IElementNode)node).CollectionItems.Count == 1)
 				valueNode = ((IElementNode)node).CollectionItems[0];
 

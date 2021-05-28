@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_useLegacyColorManagement = useLegacyColorManagement;
 		}
 
+		[PortHandler]
 		public void UpdateTextColor(TextView control, Color color, Action<ColorStateList> setColor = null)
 		{
 			if (color == _currentTextColor)

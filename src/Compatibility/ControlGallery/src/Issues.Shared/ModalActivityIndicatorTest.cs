@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					view: new BoxView
 					{
 						Opacity = .4,
-						BackgroundColor = Color.FromHex("#ccc")
+						BackgroundColor = Color.FromArgb("#ccc")
 					},
 					widthConstraint: Microsoft.Maui.Controls.Constraint.RelativeToParent((parent) =>
 					{

@@ -1,10 +1,17 @@
+using System.Collections.Generic;
+
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	class ApplicationStub : IApplication
 	{
-		public IWindow CreateWindow(IActivationState activationState)
+		List<IWindow> _windows = new List<IWindow>();
+		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
+
+		public IWindow CreateWindow(IActivationState state)
 		{
-			return new WindowStub();
+			_windows.Add(new WindowStub());
+
+			return _windows[0];
 		}
 	}
 }

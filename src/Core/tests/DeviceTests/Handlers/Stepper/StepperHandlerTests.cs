@@ -46,15 +46,15 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(stepper, () => stepper.Minimum, GetNativeMinimum, stepper.Minimum);
 		}
 
-		[Fact(DisplayName = "Background Color Initializes Correctly")]
-		public async Task BackgroundColorInitializesCorrectly()
+		[Fact(DisplayName = "Background Initializes Correctly")]
+		public async Task BackgroundInitializesCorrectly()
 		{
 			var stepper = new StepperStub()
 			{
-				BackgroundColor = Colors.Red
+				Background = new SolidPaintStub(Colors.Red)
 			};
 
-			await ValidateNativeBackgroundColor(stepper, Colors.Red);
+			await ValidateHasColor(stepper, Colors.Red);
 		}
 	}
 }

@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void CreateFromXaml()
 		{
 			var xaml = @"
-				<ContentView xmlns=""http://xamarin.com/schemas/2014/forms""
+				<ContentView xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 							 xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 						 	 x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.FOO"">
 					<Label Text=""Foo""  x:Name=""label""/>
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void CreateFromXamlDoesntFailOnMissingEventHandler()
 		{
 			var xaml = @"
-				<Button xmlns=""http://xamarin.com/schemas/2014/forms""
+				<Button xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 						Clicked=""handleClick"">
 				</Button>";

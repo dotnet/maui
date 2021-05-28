@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.CustomAttributes;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 		void SelectTest(string testName)
 		{
-#if __WINDOWS__
+#if WINDOWS
 			App.ScrollDownTo(testName);
 #else
 			App.ScrollForElement($"* marked:'{testName}'",
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			string target = "Detail 99";
 
-#if __WINDOWS__
+#if WINDOWS
 			App.ScrollDownTo(target, CellTestContainerId, timeout: TimeSpan.FromMinutes(1));
 #else
 			App.ScrollForElement($"* marked:'{target}'",
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			string target = "Detail 12";
 
-#if __WINDOWS__
+#if WINDOWS
 			App.ScrollDownTo(target, CellTestContainerId, timeout: TimeSpan.FromMinutes(1));
 #else
 			App.ScrollForElement($"* marked:'{target}'",
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			string target = "Detail 99";
 
-#if __WINDOWS__
+#if WINDOWS
 			App.ScrollDownTo(target, CellTestContainerId, timeout: TimeSpan.FromMinutes(3));
 #else
 			var scrollBounds = App.Query(q => q.Marked(CellTestContainerId)).First().Rect;
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			App.Screenshot("All ImageCells are present");
 
-#if !__WINDOWS__
+#if !WINDOWS
 			var numberOfImages = App.Query(q => q.Raw(PlatformViews.Image)).Length;
 			// Check that there are images present. In Android, 
 			// have to make sure that there are more than 2 for navigation.
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			string target = "Detail 12";
 
-#if __WINDOWS__
+#if WINDOWS
 			App.ScrollDownTo(target, CellTestContainerId, timeout: TimeSpan.FromMinutes(1));
 #else
 			App.ScrollForElement($"* marked:'{target}'",
@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			App.Screenshot("All ImageCells are present");
 
-#if !__WINDOWS__
+#if !WINDOWS
 			var numberOfImages = App.Query(q => q.Raw(PlatformViews.Image)).Length;
 			// Check that there are images present. In Android, 
 			// have to make sure that there are more than 2 for navigation.
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			string target = "Label 99";
 
-#if __WINDOWS__
+#if WINDOWS
 			App.ScrollDownTo(target, CellTestContainerId, timeout: TimeSpan.FromMinutes(1));
 #else
 			App.ScrollForElement($"* marked:'{target}'",
@@ -252,7 +252,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			string target = "text 32";
 
-#if __WINDOWS__
+#if WINDOWS
 			App.ScrollDownTo(target, CellTestContainerId, timeout: TimeSpan.FromMinutes(1));
 #else
 			App.ScrollForElement($"* marked:'{target}'",
@@ -281,7 +281,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			string target = "Label 99";
 
-#if __WINDOWS__
+#if WINDOWS
 			App.ScrollDownTo(target, CellTestContainerId, timeout: TimeSpan.FromMinutes(3));
 #else
 			App.ScrollForElement($"* marked:'{target}'",
@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			string target = "Text 32";
 
-#if __WINDOWS__
+#if WINDOWS
 			App.ScrollDownTo(target, CellTestContainerId, timeout: TimeSpan.FromMinutes(1));
 #else
 			App.ScrollForElement($"* marked:'{target}'",
@@ -329,7 +329,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			string target = "Enter text";
 
-#if __WINDOWS__
+#if WINDOWS
 			App.ScrollDownTo(target, CellTestContainerId, timeout: TimeSpan.FromMinutes(1));
 #else
 			App.ScrollForElement($"* marked:'{target}'",
@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			App.Screenshot("Before clicking Entry");
 
-#if !__IOS__ && !__WINDOWS__
+#if !__IOS__ && !WINDOWS
 			App.Tap(PlatformQueries.EntryCellWithPlaceholder("I am a placeholder"));
 			App.EnterText(PlatformQueries.EntryCellWithPlaceholder("I am a placeholder"), "Hi");
 			App.Screenshot("Entered Text");

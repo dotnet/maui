@@ -15,10 +15,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var switchStub = new SwitchStub()
 			{
-				IsToggled = true
+				IsOn = true
 			};
 
-			await ValidatePropertyInitValue(switchStub, () => switchStub.IsToggled, GetNativeIsChecked, switchStub.IsToggled);
+			await ValidatePropertyInitValue(switchStub, () => switchStub.IsOn, GetNativeIsOn, switchStub.IsOn);
 		}
 
 		[Theory(DisplayName = "Track Color Initializes Correctly")]
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var switchStub = new SwitchStub()
 			{
-				IsToggled = isToggled,
+				IsOn = isToggled,
 				TrackColor = Colors.Red
 			};
 
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var switchStub = new SwitchStub()
 			{
-				IsToggled = true
+				IsOn = true
 			};
 
 			await ValidateTrackColor(switchStub, Colors.Red, () => switchStub.TrackColor = Colors.Red);
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var switchStub = new SwitchStub()
 			{
-				IsToggled = true,
+				IsOn = true,
 				ThumbColor = Colors.Blue
 			};
 
@@ -63,10 +63,33 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var switchStub = new SwitchStub()
 			{
-				IsToggled = true
+				IsOn = true
 			};
 
 			await ValidateThumbColor(switchStub, Colors.Red, () => switchStub.ThumbColor = Colors.Red);
+		}
+
+		[Fact(DisplayName = "Updating Native Is On property updates Virtual View"
+#if __IOS__
+			  ,Skip = "iOS doesn't throw ValueChanged events when changing property via code."
+#endif
+			)]
+		public async Task NativeIsOnPropagatesToVirtual()
+		{
+			var switchStub = new SwitchStub()
+			{
+				IsOn = false
+			};
+
+			bool isOn = false;
+			switchStub.IsOnDelegate += () =>
+			{
+				isOn = switchStub.IsOn;
+			};
+
+			await SetValueAsync(switchStub, true, SetIsOn);
+
+			Assert.True(isOn);
 		}
 	}
 }

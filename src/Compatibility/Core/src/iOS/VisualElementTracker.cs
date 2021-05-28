@@ -266,7 +266,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 
 					// must reset transform prior to setting frame...
-					if(caLayer.AnchorPoint != _originalAnchor)
+					if (caLayer.AnchorPoint != _originalAnchor)
 						caLayer.AnchorPoint = _originalAnchor;
 
 					caLayer.Transform = transform;
@@ -489,6 +489,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				return true;
 
 			return false;
-		}	
+		}
 	}
 }

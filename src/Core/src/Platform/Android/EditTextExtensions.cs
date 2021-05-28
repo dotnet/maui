@@ -31,6 +31,7 @@ namespace Microsoft.Maui
 		public static void UpdateTextColor(this AppCompatEditText editText, ITextStyle entry, ColorStateList? defaultColor)
 		{
 			var textColor = entry.TextColor;
+
 			if (textColor == null)
 			{
 				editText.SetTextColor(defaultColor);
