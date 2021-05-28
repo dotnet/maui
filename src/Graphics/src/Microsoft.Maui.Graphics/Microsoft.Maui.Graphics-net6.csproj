@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows</TargetFrameworks>
       <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
       <PublishRepositoryUrl>true</PublishRepositoryUrl>
       <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
@@ -19,20 +19,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Point.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Size.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Rectangle.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Insets.cs">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
 
   <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
