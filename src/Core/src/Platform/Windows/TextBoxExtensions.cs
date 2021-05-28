@@ -30,7 +30,12 @@ namespace Microsoft.Maui
 			textBox.ForegroundFocusBrush = brush;
 		}
 
-		public static void UpdatePlaceholder(this MauiTextBox textBox, IEditor editor)
+		public static void UpdateReturnType(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.InputScope = entry.ReturnType.ToNative();
+    }
+
+    public static void UpdatePlaceholder(this MauiTextBox textBox, IEditor editor)
 		{
 			textBox.PlaceholderText = editor.Placeholder ?? string.Empty;
 		}

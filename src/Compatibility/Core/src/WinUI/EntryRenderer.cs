@@ -344,6 +344,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateReturnType()
 		{
 			if (Control == null || Element == null)
