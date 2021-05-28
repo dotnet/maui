@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using UIKit;
 using Xunit;
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Title Color Initializes Correctly")]
 		public async Task TitleColorInitializesCorrectly()
 		{
-			var xplatTitleColor = Color.CadetBlue;
+			var xplatTitleColor = Colors.CadetBlue;
 
 			var picker = new PickerStub
 			{

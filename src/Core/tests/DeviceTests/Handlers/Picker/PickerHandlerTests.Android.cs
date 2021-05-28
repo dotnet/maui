@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 using AColor = Android.Graphics.Color;
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 			var picker = new PickerStub
 			{
 				Title = "Select an Item",
-				TitleColor = Color.CadetBlue
+				TitleColor = Colors.CadetBlue
 			};
 
 			await ValidatePropertyInitValue(picker, () => picker.TitleColor, GetNativeTitleColor, picker.TitleColor);
