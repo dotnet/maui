@@ -26,8 +26,17 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.1931" GeneratePathProperty="true" ExcludeAssets="all" />
+    <!-- <PackageReference Include="System.Drawing.Common" Version="5.0.0" GeneratePathProperty="true" ExcludeAssets="all" />
+    <PackageReference Include="System.Security.Permissions" Version="5.0.0" />
+    <PackageReference Include="System.Threading.AccessControl" Version="5.0.0" />
+    <PackageReference Include="System.CodeDom" Version="5.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="5.0.0" />
+    <PackageReference Include="System.Diagnostics.EventLog" Version="5.0.0" />
+    <PackageReference Include="System.IO.Ports" Version="5.0.0" /> -->
     <Reference Condition="$(TargetFramework.Contains('-android'))" Include="$(PkgXamarin_Forms)\lib\MonoAndroid10.0\*.dll" />
     <Reference Condition="$(TargetFramework.Contains('-ios'))" Include="$(PkgXamarin_Forms)\lib\Xamarin.iOS10\*.dll" />
+    <!-- <Reference Include="$(PkgSystem_Drawing_Common)\lib\netstandard2.0\*.dll" /> -->
   </ItemGroup>
   <ItemGroup>
     <!-- xunit.runner.devices is using the fallback -->
