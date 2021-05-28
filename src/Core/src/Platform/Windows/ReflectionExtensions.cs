@@ -1,15 +1,13 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.Maui
 {
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static class ReflectionExtensions
+	internal static class ReflectionExtensions
 	{
 		public static FieldInfo? GetField(this Type type, Func<FieldInfo, bool> predicate)
 		{
@@ -34,7 +32,6 @@ namespace Microsoft.Maui
 		public static PropertyInfo? GetProperty(this Type type, string name)
 		{
 			Type? t = type;
-
 			while (t != null)
 			{
 				TypeInfo ti = t.GetTypeInfo();
@@ -59,10 +56,10 @@ namespace Microsoft.Maui
 				return assembly.GetCustomAttributes(attrType).ToArray();
 #endif
 			}
-			catch (global::System.IO.FileNotFoundException)
+			catch (FileNotFoundException)
 			{
 				// Sometimes the previewer doesn't actually have everything required for these loads to work
-				Debug.WriteLine("Could not load assembly: {0} for Attribute {1} | Some renderers may not be loaded", assembly.FullName, attrType.FullName);
+				// TODO: Register the exception in the Log when we have the Logger ported
 			}
 
 			return null;
@@ -86,14 +83,11 @@ namespace Microsoft.Maui
 		static IEnumerable<T> GetParts<T>(Type type, Func<TypeInfo, IEnumerable<T>> selector)
 		{
 			Type? t = type;
-
 			while (t != null)
 			{
 				TypeInfo ti = t.GetTypeInfo();
-
 				foreach (T f in selector(ti))
 					yield return f;
-
 				t = ti.BaseType;
 			}
 		}

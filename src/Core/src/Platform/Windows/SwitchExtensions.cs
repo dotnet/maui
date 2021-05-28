@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Graphics;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
 
