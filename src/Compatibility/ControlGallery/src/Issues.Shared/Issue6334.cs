@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		protected override void Init()
 		{
-			BackgroundColor = Color.Blue;
+			BackgroundColor = Colors.Blue;
 			var effect = Effect.Resolve($"{Issues.Effects.ResolutionGroupName}.{EffectName}");
 
 			Effects.Add(effect);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -14,6 +14,7 @@ using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 using UIKit;
@@ -37,11 +38,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		internal static IMauiContext MauiContext { get; private set; }
 
 		public static bool IsInitialized { get; private set; }
-
-		static IFontManager s_fontManager;
-
-		internal static IFontManager FontManager =>
-			s_fontManager ??= new FontManager(Microsoft.Maui.Controls.Internals.Registrar.FontRegistrar);
 
 #if __MOBILE__
 		static bool? s_isiOS9OrNewer;
@@ -194,8 +190,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Microsoft.Maui.Controls.Internals.Registrar.RegisterRendererToHandlerShim(RendererToHandlerShim.CreateShim);
 
-			//TODO: MAUI Accent Color?
-			Color.SetAccent(Color.FromRgba(50, 79, 133, 255));
+			Application.AccentColor = Color.FromRgba(50, 79, 133, 255);
 
 			if (!IsInitialized)
 			{
@@ -426,7 +421,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 				// If not iOS 13, but 11+ we can only get the named colors
 				if (!IsiOS13OrNewer && IsiOS11OrNewer)
-					return (resultColor = UIColor.FromName(name)) == null ? Color.Default : resultColor.ToColor();
+					return (resultColor = UIColor.FromName(name)) == null ? null : resultColor.ToColor();
 
 				// If iOS 13+ check all dynamic colors too
 				switch (name)
@@ -506,7 +501,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 
 				if (resultColor == null)
-					return Color.Default;
+					return null;
 
 				return resultColor.ToColor();
 #elif __MACOS__
@@ -677,11 +672,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 
 				if (resultColor == null)
-					return Color.Default;
+					return null;
 
 				return resultColor.ToColor(NSColorSpace.GenericRGBColorSpace);
 #else
-				return Color.Default;
+				return null;
 #endif
 			}
 
@@ -835,7 +830,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 							return OSAppTheme.Unspecified;
 					};
 #else
-                    return AppearanceIsDark() ? OSAppTheme.Dark : OSAppTheme.Light;
+					return AppearanceIsDark() ? OSAppTheme.Dark : OSAppTheme.Light;
 #endif
 				}
 			}

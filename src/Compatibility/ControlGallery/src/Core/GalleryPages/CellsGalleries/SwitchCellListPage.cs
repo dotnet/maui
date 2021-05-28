@@ -1,5 +1,6 @@
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				{
 					Label = "Label " + i,
 					SwitchOn = i % 2 == 0 ? false : true,
-					OnColor = i % 2 == 0 ? Color.Firebrick : Color.GreenYellow
+					OnColor = i % 2 == 0 ? Colors.Firebrick : Colors.GreenYellow
 				}),
 				ItemTemplate = dataTemplate
 			};

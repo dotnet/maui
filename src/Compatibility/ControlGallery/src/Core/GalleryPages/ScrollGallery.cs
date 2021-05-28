@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var btn2 = new Button { Text = "Center" };
 			var btn3 = new Button { Text = "End" };
 			var btn7 = new Button { Text = "Toggle Scroll Bar Visibility", WidthRequest = 120 };
-			var btn6 = new Button { Text = "MakeVisible", HorizontalOptions = LayoutOptions.CenterAndExpand, BackgroundColor = Color.Accent };
+			var btn6 = new Button { Text = "MakeVisible", HorizontalOptions = LayoutOptions.CenterAndExpand };
 			var btn8 = new Button { Text = "Toggle Orientation", WidthRequest = 120 };
 			var btn9 = new Button { Text = "Default Scroll Bar Visibility", WidthRequest = 120 };
 
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			_scrollview = new ScrollView
 			{
 				AutomationId = "thescroller",
-				BackgroundColor = Color.Aqua,
+				BackgroundColor = Colors.Aqua,
 				Content = grid
 			};
 			root.Children.Add(_scrollview);
@@ -200,8 +201,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				if (i == 50)
 				{
 					newButton.Text = "the scrollto button";
-					newButton.BackgroundColor = Color.Yellow;
-					newButton.TextColor = Color.Black;
+					newButton.BackgroundColor = Colors.Yellow;
+					newButton.TextColor = Colors.Black;
 					_toNavigateTo = newButton;
 				}
 				if (i == 51)

@@ -3,6 +3,7 @@ using CoreGraphics;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
+using Microsoft.Maui.Graphics;
 #if __MOBILE__
 using UIKit;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (Forms.IsiOS13OrNewer)
 					return UIColor.SecondaryLabelColor;
 
-				return new Color(.32, .4, .57).ToUIColor();
+				return new Color(.32f, .4f, .57f).ToUIColor();
 			}
 		}
 
@@ -228,7 +229,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #if __MOBILE__
 			return color.ToUIColor().CGColor;
 #else
-            return color.ToNSColor().CGColor;
+			return color.ToNSColor().CGColor;
 #endif
 		}
 
@@ -257,7 +258,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			color.GetRgba(out red, out green, out blue, out alpha);
 #endif
-			return new Color(red, green, blue, alpha);
+			return new Color((float)red, (float)green, (float)blue, (float)alpha);
 		}
 
 #if __MACOS__
@@ -272,45 +273,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #if __MOBILE__
 		public static UIColor ToUIColor(this Color color)
 		{
-			return new UIColor((float)color.R, (float)color.G, (float)color.B, (float)color.A);
+			return new UIColor(color.Red, color.Green, color.Blue, color.Alpha);
 		}
 
 		public static UIColor ToUIColor(this Color color, Color defaultColor)
-		{
-			if (color.IsDefault)
-				return defaultColor.ToUIColor();
-
-			return color.ToUIColor();
-		}
+			=> color?.ToUIColor() ?? defaultColor?.ToUIColor();
 
 		public static UIColor ToUIColor(this Color color, UIColor defaultColor)
-		{
-			if (color.IsDefault)
-				return defaultColor;
-
-			return color.ToUIColor();
-		}
+			=> color?.ToUIColor() ?? defaultColor;
 #else
 		public static NSColor ToNSColor(this Color color)
 		{
-			return NSColor.FromRgba((float)color.R, (float)color.G, (float)color.B, (float)color.A);
+			return NSColor.FromRgba((float)color.Red, (float)color.Green, (float)color.Blue, (float)color.Alpha);
 		}
 
 		public static NSColor ToNSColor(this Color color, Color defaultColor)
-		{
-			if (color.IsDefault)
-				return defaultColor.ToNSColor();
-
-			return color.ToNSColor();
-		}
+			=> color?.ToNSColor() ?? defaultColor?.ToNSColor();
 
 		public static NSColor ToNSColor(this Color color, NSColor defaultColor)
-		{
-			if (color.IsDefault)
-				return defaultColor;
-
-			return color.ToNSColor();
-		}
+			=> color?.ToNSColor() ?? defaultColor;
 #endif
 	}
 

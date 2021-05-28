@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -32,14 +33,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var instructions = new Label
 			{
 				Padding = 12,
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "Reduce the Window size to a minimum, without exceptions the test has passed."
 			};
 
 			var path = new Path
 			{
-				BackgroundColor = Color.LightGray,
+				BackgroundColor = Colors.LightGray,
 				Stroke = Brush.Black,
 				Fill = Brush.Blue,
 				StrokeThickness = 4,

@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -28,14 +29,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var instructions = new Label
 			{
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "Swipe left and right several times and verify that the layout is always correct."
 			};
 
 			var leftSwipeItem = new SwipeItem
 			{
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				IconImageSource = "calculator.png",
 				Text = "Delete"
 			};
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var rightSwipeItem = new SwipeItem
 			{
-				BackgroundColor = Color.LightGoldenrodYellow,
+				BackgroundColor = Colors.LightGoldenrodYellow,
 				IconImageSource = "calculator.png",
 				Text = "Edit"
 			};
@@ -59,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var swipeContent = new Grid
 			{
-				BackgroundColor = Color.Gray
+				BackgroundColor = Colors.Gray
 			};
 
 			var swipeLabel = new Label

@@ -3,11 +3,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
 using Android.Provider;
-#if __ANDROID_29__
 using AndroidX.Core.Content.PM;
-#else
-using Android.Support.V4.Content.PM;
-#endif
 
 namespace Microsoft.Maui.Essentials
 {
@@ -39,7 +35,7 @@ namespace Microsoft.Maui.Essentials
 			using (var info = pm.GetPackageInfo(packageName, PackageInfoFlags.MetaData))
 			{
 #if __ANDROID_28__
-                return PackageInfoCompat.GetLongVersionCode(info).ToString(CultureInfo.InvariantCulture);
+				return PackageInfoCompat.GetLongVersionCode(info).ToString(CultureInfo.InvariantCulture);
 #else
 #pragma warning disable CS0618 // Type or member is obsolete
 				return info.VersionCode.ToString(CultureInfo.InvariantCulture);
@@ -60,8 +56,8 @@ namespace Microsoft.Maui.Essentials
 			var flags = ActivityFlags.NewTask | ActivityFlags.NoHistory | ActivityFlags.ExcludeFromRecents;
 
 #if __ANDROID_24__
-            if (Platform.HasApiLevelN)
-                flags |= ActivityFlags.LaunchAdjacent;
+			if (Platform.HasApiLevelN)
+				flags |= ActivityFlags.LaunchAdjacent;
 #endif
 			settingsIntent.SetFlags(flags);
 

@@ -1,0 +1,12 @@
+<ResourceDictionary
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	x:Class="Microsoft.Maui.Controls.Platform.Resources">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="MauiControlsPageControlStyle.xaml" />
+        <ResourceDictionary Source="ShellPageWrapper.xaml" />
+        <ResourceDictionary Source="ShellStyles.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+	
+</ResourceDictionary>

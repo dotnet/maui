@@ -12,13 +12,13 @@ using Windows.UI.Xaml;
 
 namespace Microsoft.Maui.Essentials
 {
-    public static partial class Screenshot
-    {
-        internal static bool PlatformIsCaptureSupported =>
-            true;
+	public static partial class Screenshot
+	{
+		internal static bool PlatformIsCaptureSupported =>
+			true;
 
-        static Task<ScreenshotResult> PlatformCaptureAsync()
-        {
+		static Task<ScreenshotResult> PlatformCaptureAsync()
+		{
 			throw new NotImplementedException("WINUI");
 			//var element = Window.Current?.Content as FrameworkElement;
 			//if (element == null)
@@ -39,34 +39,34 @@ namespace Microsoft.Maui.Essentials
 
 			//return new ScreenshotResult(width, height, pixels);
 		}
-    }
+	}
 
-    public partial class ScreenshotResult
-    {
-        readonly byte[] bytes;
+	public partial class ScreenshotResult
+	{
+		readonly byte[] bytes;
 
-        public ScreenshotResult(int width, int height, IBuffer pixels)
-        {
-            Width = width;
-            Height = height;
-            bytes = pixels?.ToArray() ?? throw new ArgumentNullException(nameof(pixels));
-        }
+		public ScreenshotResult(int width, int height, IBuffer pixels)
+		{
+			Width = width;
+			Height = height;
+			bytes = pixels?.ToArray() ?? throw new ArgumentNullException(nameof(pixels));
+		}
 
-        internal async Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format)
-        {
-            var f = format switch
-            {
-                ScreenshotFormat.Jpeg => BitmapEncoder.JpegEncoderId,
-                _ => BitmapEncoder.PngEncoderId
-            };
+		internal async Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format)
+		{
+			var f = format switch
+			{
+				ScreenshotFormat.Jpeg => BitmapEncoder.JpegEncoderId,
+				_ => BitmapEncoder.PngEncoderId
+			};
 
-            var ms = new InMemoryRandomAccessStream();
+			var ms = new InMemoryRandomAccessStream();
 
-            var encoder = await BitmapEncoder.CreateAsync(f, ms).AsTask().ConfigureAwait(false);
-            encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint)Width, (uint)Height, 96, 96, bytes);
-            await encoder.FlushAsync().AsTask().ConfigureAwait(false);
+			var encoder = await BitmapEncoder.CreateAsync(f, ms).AsTask().ConfigureAwait(false);
+			encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint)Width, (uint)Height, 96, 96, bytes);
+			await encoder.FlushAsync().AsTask().ConfigureAwait(false);
 
-            return ms.AsStreamForRead();
-        }
-    }
+			return ms.AsStreamForRead();
+		}
+	}
 }

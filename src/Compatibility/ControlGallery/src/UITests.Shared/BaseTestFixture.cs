@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using NUnit.Framework;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 #if __ANDROID__
 			App.Invoke("Reset");
 #endif
-#if __WINDOWS__
+#if WINDOWS
 			WindowsTestBase.Reset();
 #endif
 		}

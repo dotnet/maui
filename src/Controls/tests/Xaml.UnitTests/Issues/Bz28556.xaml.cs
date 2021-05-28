@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -26,29 +27,29 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var layout = new Bz28556(useCompiledXaml);
 
-				Assert.AreEqual(Color.Yellow, layout.entry.TextColor);
-				Assert.AreEqual(Color.Green, layout.entry.BackgroundColor);
+				Assert.AreEqual(Colors.Yellow, layout.entry.TextColor);
+				Assert.AreEqual(Colors.Green, layout.entry.BackgroundColor);
 
-				Assert.AreEqual(Color.Red, layout.disableEntry.TextColor);
-				Assert.AreEqual(Color.Purple, layout.disableEntry.BackgroundColor);
+				Assert.AreEqual(Colors.Red, layout.disableEntry.TextColor);
+				Assert.AreEqual(Colors.Purple, layout.disableEntry.BackgroundColor);
 
 				layout.entry.IsEnabled = false;
 				layout.disableEntry.IsEnabled = true;
 
-				Assert.AreEqual(Color.Yellow, layout.disableEntry.TextColor);
-				Assert.AreEqual(Color.Green, layout.disableEntry.BackgroundColor);
+				Assert.AreEqual(Colors.Yellow, layout.disableEntry.TextColor);
+				Assert.AreEqual(Colors.Green, layout.disableEntry.BackgroundColor);
 
-				Assert.AreEqual(Color.Red, layout.entry.TextColor);
-				Assert.AreEqual(Color.Purple, layout.entry.BackgroundColor);
+				Assert.AreEqual(Colors.Red, layout.entry.TextColor);
+				Assert.AreEqual(Colors.Purple, layout.entry.BackgroundColor);
 
 				layout.entry.IsEnabled = true;
 				layout.disableEntry.IsEnabled = false;
 
-				Assert.AreEqual(Color.Yellow, layout.entry.TextColor);
-				Assert.AreEqual(Color.Green, layout.entry.BackgroundColor);
+				Assert.AreEqual(Colors.Yellow, layout.entry.TextColor);
+				Assert.AreEqual(Colors.Green, layout.entry.BackgroundColor);
 
-				Assert.AreEqual(Color.Red, layout.disableEntry.TextColor);
-				Assert.AreEqual(Color.Purple, layout.disableEntry.BackgroundColor);
+				Assert.AreEqual(Colors.Red, layout.disableEntry.TextColor);
+				Assert.AreEqual(Colors.Purple, layout.disableEntry.BackgroundColor);
 			}
 		}
 	}

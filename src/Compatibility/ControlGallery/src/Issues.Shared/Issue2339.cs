@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-#if __WINDOWS__
+#if WINDOWS
 		[Ignore("Focus Behavior is different on UWP")]
 #endif
 		public void FocusAndUnFocusMultipleTimes()

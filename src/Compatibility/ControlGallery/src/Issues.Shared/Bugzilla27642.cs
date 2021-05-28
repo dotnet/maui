@@ -2,6 +2,7 @@
 using System.Text;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
@@ -92,7 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			public View1A()
 			{
 
-				BackgroundColor = Color.Olive;
+				BackgroundColor = Colors.Olive;
 				var scrollView = new ScrollView();
 				var sb = new StringBuilder();
 				for (var i = 0; i < 100; i++)
@@ -113,7 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			public View1B()
 			{
-				BackgroundColor = Color.Navy;
+				BackgroundColor = Colors.Navy;
 			}
 
 			public override void Activating()
@@ -136,7 +137,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			public View2()
 			{
-				BackgroundColor = Color.Teal;
+				BackgroundColor = Colors.Teal;
 				Content = new Label { Text = "View 2", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, HorizontalTextAlignment = TextAlignment.Center, };
 			}
 		}
@@ -146,7 +147,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			public ErrorView(Exception ex)
 			{
-				BackgroundColor = Color.Maroon;
+				BackgroundColor = Colors.Maroon;
 				Content = new ScrollView { Content = new Label { Text = ex.ToString() } };
 			}
 		}

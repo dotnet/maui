@@ -1,8 +1,9 @@
 using System;
 using CoreGraphics;
 using Foundation;
-using UIKit;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return preferredAttributes;
 		}
 
-		CGSize UpdateCellSize() 
+		CGSize UpdateCellSize()
 		{
 			// Measure this cell (including the Forms element) if there is no constrained size
 			var size = ConstrainedSize == default ? Measure() : ConstrainedSize;

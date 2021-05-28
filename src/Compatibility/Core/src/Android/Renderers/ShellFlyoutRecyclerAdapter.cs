@@ -6,8 +6,11 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
+using Color = Microsoft.Maui.Graphics.Color;
 using LP = Android.Views.ViewGroup.LayoutParams;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -188,7 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			};
 
 			var bar = new AView(parent.Context);
-			bar.SetBackgroundColor(Color.Black.MultiplyAlpha(0.14).ToAndroid());
+			bar.SetBackgroundColor(Colors.Black.MultiplyAlpha(0.14f).ToAndroid());
 			bar.LayoutParameters = new LP(LP.MatchParent, (int)parent.Context.ToPixels(1));
 			linearLayout.AddView(bar);
 

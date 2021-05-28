@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries
 {
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Grad
 				"#ff0080", "#ff0040", "#ff0000"
 			};
 
-			BindableLayout.SetItemsSource(ColorsLayout, colors.Select(x => new ColorSource(Color.FromHex(x))));
+			BindableLayout.SetItemsSource(ColorsLayout, colors.Select(x => new ColorSource(Color.FromArgb(x))));
 		}
 
 		public ColorSource SelectedColorSource { get; set; }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -15,9 +16,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			_listView = new ListView
 			{
-				BackgroundColor = Color.Transparent,
+				BackgroundColor = Colors.Transparent,
 				IsPullToRefreshEnabled = true,
-				RefreshControlColor = Color.Cyan
+				RefreshControlColor = Colors.Cyan
 			};
 			_listView.Refreshing += HandleListViewRefreshing;
 			Content = new StackLayout()

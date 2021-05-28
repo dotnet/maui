@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					Children = {
 						new Label { Text = "Hello" },
 						new AbsoluteLayout {
-							BackgroundColor = Color.Red,
+							BackgroundColor = Colors.Red,
 							VerticalOptions = LayoutOptions.FillAndExpand,
 							HorizontalOptions = LayoutOptions.FillAndExpand
 						},

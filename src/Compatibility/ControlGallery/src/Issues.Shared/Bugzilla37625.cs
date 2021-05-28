@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			while (retry-- >= 0)
 			{
 				var imageUri = new Uri("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Microsoft.Maui.Controls.ControlGallery.Android/Assets/WebImages/XamarinLogo.png");
-				Content = new Image() { Source = new UriImageSource() { Uri = imageUri }, BackgroundColor = Color.Black, AutomationId = "success" };
+				Content = new Image() { Source = new UriImageSource() { Uri = imageUri }, BackgroundColor = Colors.Black, AutomationId = "success" };
 
 				await Task.Delay(50);
 			}

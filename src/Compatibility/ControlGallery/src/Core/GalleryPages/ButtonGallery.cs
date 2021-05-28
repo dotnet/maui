@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -8,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			//ShellAppearance.SetNavBarVisible(this, false);
 			Shell.SetSearchHandler(this, new SearchHandler() { SearchBoxVisibility = SearchBoxVisibility.Collapsible });
-			BackgroundColor = new Color(0.9);
+			BackgroundColor = new Color(0.9f);
 
 			var normal = new Button { Text = "Normal Button" };
 			normal.Effects.Add(Effect.Resolve($"{Issues.Effects.ResolutionGroupName}.BorderEffect"));
@@ -46,21 +47,21 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					break;
 			}
 
-			var font = Font.OfSize(fontName, NamedSize.Medium);
+			var font = Font.OfSize(fontName, Device.GetNamedSize(NamedSize.Medium, typeof(Button), false));
 
 			var themedButton = new Button
 			{
 				Text = "Accent Button",
-				BackgroundColor = Color.Accent,
-				TextColor = Color.White,
+				//BackgroundColor = Colors.Accent,
+				TextColor = Colors.White,
 				ClassId = "AccentButton",
 				Font = font
 			};
 			var borderButton = new Button
 			{
 				Text = "Border Button",
-				BorderColor = Color.Black,
-				BackgroundColor = Color.Purple,
+				BorderColor = Colors.Black,
+				BackgroundColor = Colors.Purple,
 				BorderWidth = 5,
 				CornerRadius = 5
 			};
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var busy = new Button { Text = "Toggle Busy" };
 			var alert = new Button { Text = "Alert" };
 			var alertSingle = new Button { Text = "Alert Single" };
-			var image = new Button { Text = "Image Button", ImageSource = new FileImageSource { File = "bank.png" }, BackgroundColor = Color.Blue.WithLuminosity(.8) };
+			var image = new Button { Text = "Image Button", ImageSource = new FileImageSource { File = "bank.png" }, BackgroundColor = Colors.Blue.WithLuminosity(.8f) };
 			AutomationProperties.SetName(image, "Image Automation Name");
 			var gif = new Button { ImageSource = "GifOne.gif" };
 			var automation = new Button { Text = "Display Name" };
@@ -103,11 +104,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				alert.Text = result ? "Accepted" : "Cancelled";
 			};
 
-			borderButton.Clicked += (sender, args) => borderButton.BackgroundColor = Color.Default;
+			borderButton.Clicked += (sender, args) => borderButton.BackgroundColor = null;
 
 			Content = new ScrollView
 			{
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				Content = new StackLayout
 				{
 					Padding = new Size(20, 20),
@@ -126,9 +127,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 						transparent,
 						themedButton,
 						borderButton,
-						new Button {Text = "Thin Border", BorderWidth = 1, BackgroundColor=Color.White, BorderColor = Color.Black, TextColor = Color.Black},
-						new Button {Text = "Thinner Border", BorderWidth = .5, BackgroundColor=Color.White, BorderColor = Color.Black, TextColor = Color.Black},
-						new Button {Text = "BorderWidth == 0", BorderWidth = 0, BackgroundColor=Color.White, BorderColor = Color.Black, TextColor = Color.Black},
+						new Button {Text = "Thin Border", BorderWidth = 1, BackgroundColor=Colors.White, BorderColor = Colors.Black, TextColor = Colors.Black},
+						new Button {Text = "Thinner Border", BorderWidth = .5, BackgroundColor=Colors.White, BorderColor = Colors.Black, TextColor = Colors.Black},
+						new Button {Text = "BorderWidth == 0", BorderWidth = 0, BackgroundColor=Colors.White, BorderColor = Colors.Black, TextColor = Colors.Black},
 						timer,
 						busy,
 						alert,

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
@@ -14,6 +13,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using IOPath = System.IO.Path;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Size = Microsoft.Maui.Graphics.Size;
 
 [assembly: Dependency(typeof(TestCloudService))]
 [assembly: Dependency(typeof(CacheService))]
@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			int width = (int)sl.Width;
 			int heightCustomLabelView = 100;
 
-			var uilabel = new UILabel(new RectangleF(0, 0, width, heightCustomLabelView))
+			var uilabel = new UILabel(new CGRect(0, 0, width, heightCustomLabelView))
 			{
 				MinimumFontSize = 14f,
 				Lines = 0,
@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			kvoSlider.SetBinding(nameof(kvoSlider.KVOValue), new Binding("Age", BindingMode.TwoWay));
 			sl?.Children.Add(kvoSlider);
 
-			var uiView = new UIView(new RectangleF(0, 0, width, heightCustomLabelView));
+			var uiView = new UIView(new CGRect(0, 0, width, heightCustomLabelView));
 			uiView.Add(uilabel);
 			sl?.Children.Add(uiView);
 			sl?.Children.Add(uibuttonColor.ToView());
@@ -421,8 +421,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (value is Color)
-				return ((Color)value).ToUIColor();
+			if (value is Graphics.Color)
+				return ((Graphics.Color)value).ToUIColor();
 			return value;
 		}
 

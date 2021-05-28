@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.SwipeViewGalleries
 {
@@ -64,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			var deleteSwipeItem = new SwipeItem
 			{
-				BackgroundColor = Color.FromHex(colors[swipeItemBackgroundColorPicker.SelectedIndex]),
+				BackgroundColor = Color.FromArgb(colors[swipeItemBackgroundColorPicker.SelectedIndex]),
 				IconImageSource = swipeItemIconPicker.SelectedItem.ToString(),
 				Text = swipeItemTextEntry.Text
 			};
@@ -80,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			var swipeContent = new Grid
 			{
-				BackgroundColor = Color.Gray
+				BackgroundColor = Colors.Gray
 			};
 
 			var swipeLabel = new Label
@@ -109,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Swip
 
 			swipeItemBackgroundColorPicker.SelectedIndexChanged += (sender, e) =>
 			{
-				deleteSwipeItem.BackgroundColor = Color.FromHex(colors[swipeItemBackgroundColorPicker.SelectedIndex]);
+				deleteSwipeItem.BackgroundColor = Color.FromArgb(colors[swipeItemBackgroundColorPicker.SelectedIndex]);
 			};
 
 			swipeItemIconPicker.SelectedIndexChanged += (sender, e) =>

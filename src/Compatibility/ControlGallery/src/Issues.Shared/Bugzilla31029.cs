@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			btn.Clicked += (sender, e) =>
 			{
-				var source = GenerateBmp(60, 60, Color.Red);
+				var source = GenerateBmp(60, 60, Colors.Red);
 				generatedImage.Source = source;
 
 			};
@@ -51,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				for (int j = 0; j < cols; j++)
 				{
-					bmpMaker.SetPixel(i, j, Color.White);
+					bmpMaker.SetPixel(i, j, Colors.White);
 				}
 			}
 			//draw a square
@@ -113,10 +114,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		public void SetPixel(int row, int col, Color color)
 		{
-			SetPixel(row, col, (int)(255 * color.R),
-				(int)(255 * color.G),
-				(int)(255 * color.B),
-				(int)(255 * color.A));
+			SetPixel(row, col, (int)(255 * color.Red),
+				(int)(255 * color.Green),
+				(int)(255 * color.Blue),
+				(int)(255 * color.Alpha));
 		}
 
 		public void SetPixel(int row, int col, int r, int g, int b, int a = 255)

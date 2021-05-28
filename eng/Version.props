@@ -1,9 +1,0 @@
-<Project>
-  <!--Package versions-->
-  <PropertyGroup>
-    <MicrosoftNETSdkPackageVersion>6.0.100-preview.3.21202.5</MicrosoftNETSdkPackageVersion>
-    <MicrosoftAndroidSdkPackageVersion>11.0.200-preview.3.196</MicrosoftAndroidSdkPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>14.3.100-preview.3.471</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>14.4.100-preview.3.1326</MicrosoftiOSSdkPackageVersion>
-  </PropertyGroup>
-</Project>

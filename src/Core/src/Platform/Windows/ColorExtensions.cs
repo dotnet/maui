@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using Windows.UI;
 using Microsoft.UI;
@@ -17,24 +18,29 @@ namespace Microsoft.Maui
 			return contrastingColor;
 		}
 
-		public static Color ToColor(this Windows.UI.Color color)
+		public static Graphics.Color ToColor(this Windows.UI.Color color)
 		{
-			return Color.FromRgba(color.R, color.G, color.B, color.A);
+			return Graphics.Color.FromRgba(color.R, color.G, color.B, color.A);
 		}
 
-		public static Color ToColor(this WSolidColorBrush solidColorBrush)
+		public static Graphics.Color ToColor(this WSolidColorBrush solidColorBrush)
 		{
 			return solidColorBrush.Color.ToColor();
 		}
 
-		public static WBrush ToNative(this Color color)
+		public static bool IsDefault(this Graphics.Color? color) 
+		{
+			return color == null;
+		}
+
+		public static WBrush ToNative(this Graphics.Color color)
 		{
 			return new WSolidColorBrush(color.ToWindowsColor());
 		}
 
-		public static Windows.UI.Color ToWindowsColor(this Color color)
+		public static Windows.UI.Color ToWindowsColor(this Graphics.Color color)
 		{
-			return Windows.UI.Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
+			return Windows.UI.Color.FromArgb((byte)(color.Alpha * 255), (byte)(color.Red * 255), (byte)(color.Green * 255), (byte)(color.Blue * 255));
 		}
 	}
 }

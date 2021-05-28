@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -611,7 +612,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			page.BindingContext = new { Text = "Binding" };
 
 			// setup title view
-			StackLayout layout = new StackLayout() { BackgroundColor = Color.White };
+			StackLayout layout = new StackLayout() { BackgroundColor = Colors.White };
 			Label label = new Label();
 			label.SetBinding(Label.TextProperty, "Text");
 			layout.Children.Add(label);
@@ -630,7 +631,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(CreateShellItem(page));
 
 			// setup title view
-			StackLayout titleView = new StackLayout() { BackgroundColor = Color.White };
+			StackLayout titleView = new StackLayout() { BackgroundColor = Colors.White };
 			Button button = new Button();
 			titleView.Children.Add(button);
 			Shell.SetTitleView(page, titleView);
@@ -652,7 +653,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(CreateShellItem(page));
 
 			// setup title view
-			StackLayout titleView = new StackLayout() { BackgroundColor = Color.White };
+			StackLayout titleView = new StackLayout() { BackgroundColor = Colors.White };
 			Button button = new Button();
 			titleView.Children.Add(button);
 			Shell.SetTitleView(page, titleView);
@@ -674,7 +675,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 
 			// setup title view
-			StackLayout flyoutView = new StackLayout() { BackgroundColor = Color.White };
+			StackLayout flyoutView = new StackLayout() { BackgroundColor = Colors.White };
 			Button button = new Button();
 			flyoutView.Children.Add(button);
 			shell.SetValue(Shell.FlyoutHeaderProperty, flyoutView);
@@ -694,7 +695,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.BindingContext = new { Text = "Binding" };
 
 			// setup title view
-			StackLayout flyoutView = new StackLayout() { BackgroundColor = Color.White };
+			StackLayout flyoutView = new StackLayout() { BackgroundColor = Colors.White };
 			Label label = new Label();
 			label.SetBinding(Label.TextProperty, "Text");
 			flyoutView.Children.Add(label);
@@ -740,7 +741,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			page.BindingContext = new { Text = "Binding" };
 
 			// setup title view
-			StackLayout layout = new StackLayout() { BackgroundColor = Color.White };
+			StackLayout layout = new StackLayout() { BackgroundColor = Colors.White };
 			Label label = new Label();
 			label.SetBinding(Label.TextProperty, "Text");
 			layout.Children.Add(label);
@@ -759,7 +760,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(CreateShellItem(page));
 
 			// setup title view
-			StackLayout layout = new StackLayout() { BackgroundColor = Color.White };
+			StackLayout layout = new StackLayout() { BackgroundColor = Colors.White };
 			Label label = new Label();
 			label.SetBinding(Label.TextProperty, "Text");
 			layout.Children.Add(label);

@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.IO;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
@@ -30,9 +31,9 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			Assume.That(style, Is.Not.Null);
 
 			var ve = new VisualElement();
-			Assume.That(ve.BackgroundColor, Is.EqualTo(Color.Default));
+			Assume.That(ve.BackgroundColor, Is.EqualTo(null));
 			style.Apply(ve);
-			Assert.That(ve.BackgroundColor, Is.EqualTo(Color.Red));
+			Assert.That(ve.BackgroundColor, Is.EqualTo(Colors.Red));
 		}
 
 		[Test]
@@ -42,11 +43,11 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
 			Assume.That(style, Is.Not.Null);
 
-			var ve = new VisualElement() { BackgroundColor = Color.Pink };
-			Assume.That(ve.BackgroundColor, Is.EqualTo(Color.Pink));
+			var ve = new VisualElement() { BackgroundColor = Colors.Pink };
+			Assume.That(ve.BackgroundColor, Is.EqualTo(Colors.Pink));
 
 			style.Apply(ve);
-			Assert.That(ve.BackgroundColor, Is.EqualTo(Color.Pink));
+			Assert.That(ve.BackgroundColor, Is.EqualTo(Colors.Pink));
 		}
 
 		[Test]
@@ -65,14 +66,14 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 				}
 			};
 
-			Assume.That(layout.BackgroundColor, Is.EqualTo(Color.Default));
-			Assume.That(label.BackgroundColor, Is.EqualTo(Color.Default));
-			Assume.That(label.TextColor, Is.EqualTo(Color.Default));
+			Assume.That(layout.BackgroundColor, Is.EqualTo(null));
+			Assume.That(label.BackgroundColor, Is.EqualTo(null));
+			Assume.That(label.TextColor, Is.EqualTo(null));
 
 			style.Apply(layout);
-			Assert.That(layout.BackgroundColor, Is.EqualTo(Color.Red));
-			Assert.That(label.BackgroundColor, Is.EqualTo(Color.Default));
-			Assert.That(label.TextColor, Is.EqualTo(Color.Lime));
+			Assert.That(layout.BackgroundColor, Is.EqualTo(Colors.Red));
+			Assert.That(label.BackgroundColor, Is.EqualTo(null));
+			Assert.That(label.TextColor, Is.EqualTo(Colors.Lime));
 		}
 
 		[Test]
@@ -83,7 +84,7 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			Assume.That(style, Is.Not.Null);
 
 			var layout = new StackLayout();
-			Assert.That(layout.GetValue(TextElement.TextColorProperty), Is.EqualTo(Color.Default));
+			Assert.That(layout.GetValue(TextElement.TextColorProperty), Is.EqualTo(null));
 		}
 
 		[Test]
@@ -96,7 +97,7 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 				Content = new Label()
 			};
 			app.MainPage = page;
-			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Color.Red));
+			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Colors.Red));
 		}
 
 		[Test]
@@ -110,8 +111,8 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			};
 			page.Resources.Add(StyleSheet.FromString("label{ color: red; }"));
 			app.MainPage = page;
-			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Color.Red));
-			Assert.That((page.Content as Label).BackgroundColor, Is.EqualTo(Color.Blue));
+			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Colors.Red));
+			Assert.That((page.Content as Label).BackgroundColor, Is.EqualTo(Colors.Blue));
 		}
 
 		[Test]
@@ -124,11 +125,11 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			};
 			page.Resources.Add(StyleSheet.FromString("label{ color: red; }"));
 			app.MainPage = page;
-			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Color.Red));
+			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Colors.Red));
 
 			app.Resources.Add(StyleSheet.FromString("label{ color: white; background-color: blue; }"));
-			Assert.That((page.Content as Label).BackgroundColor, Is.EqualTo(Color.Blue));
-			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Color.Red));
+			Assert.That((page.Content as Label).BackgroundColor, Is.EqualTo(Colors.Blue));
+			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Colors.Red));
 		}
 
 		[Test]
@@ -145,7 +146,7 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			};
 			page.Resources.Add(StyleSheet.FromString("label{ color: red; }"));
 			app.MainPage = page;
-			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Color.Yellow));
+			Assert.That((page.Content as Label).TextColor, Is.EqualTo(Colors.Yellow));
 		}
 
 	}

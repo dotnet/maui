@@ -1,6 +1,6 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -9,16 +9,18 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Label)]
 	public partial class LabelHandlerTests : HandlerTestBase<LabelHandler, LabelStub>
 	{
-		[Fact(DisplayName = "Background Color Initializes Correctly")]
-		public async Task BackgroundColorInitializesCorrectly()
+		[Fact(DisplayName = "Background Initializes Correctly")]
+		public async Task BackgroundInitializesCorrectly()
 		{
+			var brush = new SolidPaintStub(Colors.Blue);
+
 			var label = new LabelStub()
 			{
-				BackgroundColor = Color.Blue,
+				Background = brush,
 				Text = "Test"
 			};
 
-			await ValidateNativeBackgroundColor(label, Color.Blue);
+			await ValidateHasColor(label, Colors.Blue);
 		}
 
 		[Fact(DisplayName = "Text Initializes Correctly")]
@@ -38,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				TextColor = Color.Red
+				TextColor = Colors.Red
 			};
 
 			await ValidatePropertyInitValue(label, () => label.TextColor, GetNativeTextColor, label.TextColor);
@@ -61,20 +63,20 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontAttributes.None, false, false)]
-		[InlineData(FontAttributes.Bold, true, false)]
-		[InlineData(FontAttributes.Italic, false, true)]
-		[InlineData(FontAttributes.Bold | FontAttributes.Italic, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontAttributes attributes, bool isBold, bool isItalic)
+		[InlineData(FontWeight.Regular, false, false)]
+		[InlineData(FontWeight.Bold, true, false)]
+		[InlineData(FontWeight.Regular, false, true)]
+		[InlineData(FontWeight.Bold, true, true)]
+		public async Task FontAttributesInitializeCorrectly(FontWeight weight, bool isBold, bool isItalic)
 		{
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				Font = Font.OfSize("Arial", 10).WithAttributes(attributes)
+				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
 			};
 
-			await ValidatePropertyInitValue(label, () => label.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(label, () => label.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(label, () => label.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
+			await ValidatePropertyInitValue(label, () => label.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
@@ -165,6 +167,49 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeHorizontalTextAlignment,
 				nameof(ILabel.Font),
 				() => label.Font = Font.SystemFontOfSize(newSize));
+		}
+
+		[Theory(DisplayName = "Font Family and Weight Initializes Correctly")]
+		[InlineData(null, FontWeight.Regular, FontSlant.Default)]
+		[InlineData(null, FontWeight.Regular, FontSlant.Italic)]
+		[InlineData(null, FontWeight.Bold, FontSlant.Default)]
+		[InlineData(null, FontWeight.Bold, FontSlant.Italic)]
+		[InlineData("Lobster Two", FontWeight.Regular, FontSlant.Default)]
+		[InlineData("Lobster Two", FontWeight.Regular, FontSlant.Italic)]
+		[InlineData("Lobster Two", FontWeight.Bold, FontSlant.Default)]
+		[InlineData("Lobster Two", FontWeight.Bold, FontSlant.Italic)]
+#if !__IOS__
+		// iOS cannot force a font to be bold like all other OS
+		[InlineData("Dokdo", FontWeight.Regular, FontSlant.Default)]
+		[InlineData("Dokdo", FontWeight.Regular, FontSlant.Italic)]
+		[InlineData("Dokdo", FontWeight.Bold, FontSlant.Default)]
+		[InlineData("Dokdo", FontWeight.Bold, FontSlant.Italic)]
+#endif
+#if __ANDROID__
+		// "monospace" is a special font name on Android
+		[InlineData("monospace", FontWeight.Regular, FontSlant.Default)]
+		[InlineData("monospace", FontWeight.Regular, FontSlant.Italic)]
+		[InlineData("monospace", FontWeight.Bold, FontSlant.Default)]
+		[InlineData("monospace", FontWeight.Bold, FontSlant.Italic)]
+#endif
+		public async Task FontFamilyAndAttributesInitializesCorrectly(string family, FontWeight weight, FontSlant slant)
+		{
+			var label = new LabelStub
+			{
+				Text = "Test",
+				Font = Font.OfSize(family, 30, weight, slant)
+			};
+
+			var (isBold, isItalic) = await GetValueAsync(label, (handler) =>
+			{
+				var isBold = GetNativeIsBold(handler);
+				var isItalic = GetNativeIsItalic(handler);
+
+				return (isBold, isItalic);
+			});
+
+			Assert.Equal(weight == FontWeight.Bold, isBold);
+			Assert.Equal(slant == FontSlant.Italic, isItalic);
 		}
 
 		[Theory(DisplayName = "Updating Text Does Not Affect HorizontalTextAlignment")]

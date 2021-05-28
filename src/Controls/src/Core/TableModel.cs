@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Internals
 {
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		public virtual Color GetSectionTextColor(int section)
 		{
-			return Color.Default;
+			return null;
 		}
 
 		public event EventHandler<EventArg<object>> ItemLongPressed;

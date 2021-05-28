@@ -1,3 +1,4 @@
+#nullable enable
 namespace Microsoft.Maui
 {
 	public partial class Semantics

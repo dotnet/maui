@@ -1,15 +1,17 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Foundation;
-using UIKit;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
+using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.ListView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -133,7 +135,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					var backgroundColor = solidColorBrush.Color;
 
-					if (backgroundColor == Color.Default)
+					if (backgroundColor == null)
 						_backgroundUIView.BackgroundColor = UIColor.White;
 					else
 						_backgroundUIView.BackgroundColor = backgroundColor.ToUIColor();
@@ -292,7 +294,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateRowHeight();
 
 				Control.Source = _dataSource = e.NewElement.HasUnevenRows ? new UnevenListViewDataSource(e.NewElement, _tableViewController) : new ListViewDataSource(e.NewElement, _tableViewController);
-			
+
 				UpdateHeader();
 				UpdateFooter();
 				UpdatePullToRefreshEnabled();
@@ -774,7 +776,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var color = Element.RefreshControlColor;
 
 			if (_tableViewController != null)
-				_tableViewController.UpdateRefreshControlColor(color == Color.Default ? null : color.ToUIColor());
+				_tableViewController.UpdateRefreshControlColor(color == null ? null : color.ToUIColor());
 		}
 
 		void UpdateVerticalScrollBarVisibility()
@@ -1514,7 +1516,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public void SetTableViewCell(UITableViewCell value)
 		{
-			if (ReferenceEquals(_tableViewCell, value)) return;
+			if (ReferenceEquals(_tableViewCell, value))
+				return;
 			_tableViewCell?.RemoveFromSuperview();
 			_tableViewCell = value;
 			AddSubview(value);
@@ -1575,7 +1578,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 						if (_refresh == null || _disposed)
 							return;
 
-						if( _isStartRefreshingPending)
+						if (_isStartRefreshingPending)
 							StartRefreshing();
 
 

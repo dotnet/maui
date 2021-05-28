@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -10,13 +11,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		protected override void Init()
 		{
 			// Initialize ui here instead of ctor
-			BackgroundColor = Color.Gray;
+			BackgroundColor = Colors.Gray;
 			var contentGrid = new Grid
 			{
 				AutomationId = "IssuePageGrid",
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.Center,
-				BackgroundColor = Color.Maroon,
+				BackgroundColor = Colors.Maroon,
 				RowSpacing = 0,
 				RowDefinitions = new RowDefinitionCollection()
 				{
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 			};
 			contentGrid.AddChild(new Image() { Source = "photo.jpg", AutomationId = "IssuePageImage" }, 0, 0);
-			contentGrid.AddChild(new Label() { Text = "test message", BackgroundColor = Color.Blue }, 0, 1);
+			contentGrid.AddChild(new Label() { Text = "test message", BackgroundColor = Colors.Blue }, 0, 1);
 			Content = contentGrid;
 		}
 	}

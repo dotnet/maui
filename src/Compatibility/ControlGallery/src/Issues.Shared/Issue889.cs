@@ -2,6 +2,7 @@
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -94,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var tabOne = new ContentPage
 			{
 				Title = "Tab 1 Title",
-				BackgroundColor = Color.FromHex("#666"),
+				BackgroundColor = Color.FromArgb("#666"),
 				Content = new StackLayout
 				{
 					Children = {
@@ -109,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var tabTwo = new ContentPage
 			{
 				Title = "Tab 2 Title",
-				BackgroundColor = Color.FromHex("#BBB"),
+				BackgroundColor = Color.FromArgb("#BBB"),
 				Content = new StackLayout
 				{
 					Children = {
@@ -133,13 +134,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		public NestedNavTabPageOneLevel()
 		{
 			Title = "One pushed";
-			BackgroundColor = Color.FromHex("#999");
+			BackgroundColor = Color.FromArgb("#999");
 
 			Content = new StackLayout
 			{
 				Children = {
 					new Label {
-						TextColor = Color.Red,
+						TextColor = Colors.Red,
 						Text = "I have been pushed"
 					}
 				}

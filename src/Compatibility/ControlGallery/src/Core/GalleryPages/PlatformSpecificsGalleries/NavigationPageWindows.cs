@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {
@@ -9,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 			PushAsync(CreateRoot(restore));
 			WindowsPlatformSpecificsGalleryHelpers.AddToolBarItems(this);
 
-			BarBackgroundColor = Color.FromHex("6495ED");
+			BarBackgroundColor = Color.FromArgb("6495ED");
 		}
 
 		ContentPage CreateRoot(ICommand restore)

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -67,19 +68,19 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				{
 					Name = "Card 1",
 					Desc = "Card Holder Name 1",
-					Color = Color.Yellow
+					Color = Colors.Yellow
 				},
 				new Issue13616Model
 				{
 					Name = "Card 2",
 					Desc = "Card Holder Name 2",
-					Color = Color.Orange
+					Color = Colors.Orange
 				},
 				new Issue13616Model
 				{
 					Name = "Card 3",
 					Desc = "Card Holder Name 3",
-					Color = Color.Red
+					Color = Colors.Red
 				}
 			};
 		}
@@ -106,7 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Name = "Card " + _i,
 				Desc = "Card Holder Name " + _i,
-				Color = Color.Blue
+				Color = Colors.Blue
 			});
 			Items = new ObservableCollection<Issue13616Model>(tempList);
 			_i++;

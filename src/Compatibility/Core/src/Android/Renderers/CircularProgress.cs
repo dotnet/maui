@@ -6,8 +6,10 @@ using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Util;
 using Android.Views;
+using Microsoft.Maui.Controls.Platform;
 using AColor = Android.Graphics.Color;
 using AProgressBar = Android.Widget.ProgressBar;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -41,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public void SetColor(Color color)
 		{
-			var progress = color.IsDefault ? DefaultColor : color.ToAndroid();
+			var progress = color?.ToAndroid() ?? DefaultColor;
 
 			if (Forms.IsLollipopOrNewer)
 			{
@@ -63,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					backgroundDrawable.UpdateBackground(brush, Height, Width);
 				else
 				{
-					_backgroudColor = color.IsDefault ? AColor.Transparent : color.ToAndroid();
+					_backgroudColor = color?.ToAndroid() ?? AColor.Transparent;
 					backgroundDrawable.SetColor(_backgroudColor);
 				}
 

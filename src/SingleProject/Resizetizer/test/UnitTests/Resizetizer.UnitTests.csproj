@@ -26,4 +26,8 @@
     <None Include="images\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="resources\*" LogicalName="%(FileName)%(Extension)" />
+  </ItemGroup>
+
 </Project>

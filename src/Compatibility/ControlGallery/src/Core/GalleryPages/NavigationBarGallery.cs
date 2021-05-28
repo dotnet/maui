@@ -1,9 +1,10 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			{
 				searchBar,
 				new ActivityIndicator{ IsRunning = true },
-				new BoxView{ BackgroundColor = Color.Red },
+				new BoxView{ BackgroundColor = Colors.Red },
 				new Button{ Text = "Button!"},
 				new DatePicker{},
 				new Editor{ Text = "Editor"},
@@ -66,9 +67,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 							Text = "Change BarTextColor",
 							Command = new Command (() => {
 								if (toggleBarTextColor % 2 == 0) {
-									rootNavPage.BarTextColor = Color.Teal;
+									rootNavPage.BarTextColor = Colors.Teal;
 								} else {
-									rootNavPage.BarTextColor = Color.Default;
+									rootNavPage.BarTextColor = null;
 								}
 								toggleBarTextColor++;
 							})
@@ -77,9 +78,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 							Text = "Change BarBackgroundColor",
 							Command = new Command (() => {
 								if (toggleBarBackgroundColor % 2 == 0) {
-									rootNavPage.BarBackgroundColor = Color.Navy;
+									rootNavPage.BarBackgroundColor = Colors.Navy;
 								} else {
-									rootNavPage.BarBackgroundColor = Color.Default;
+									rootNavPage.BarBackgroundColor = null;
 								}
 								toggleBarBackgroundColor++;
 
@@ -88,15 +89,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 						new Button {
 							Text = "Change Both to default",
 							Command = new Command (() => {
-								rootNavPage.BarTextColor = Color.Default;
-								rootNavPage.BarBackgroundColor = Color.Default;
+								rootNavPage.BarTextColor = null;
+								rootNavPage.BarBackgroundColor = null;
 							})
 						},
 						new Button {
 							Text = "Black background, white text",
 							Command = new Command (() => {
-								rootNavPage.BarTextColor = Color.White;
-								rootNavPage.BarBackgroundColor = Color.Black;
+								rootNavPage.BarTextColor = Colors.White;
+								rootNavPage.BarBackgroundColor = Colors.Black;
 							})
 						},
 						new Button {
@@ -203,7 +204,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var titleView = new StackLayout
 			{
 				Children = { control },
-				BackgroundColor = Color.FromHex("#ccc"),
+				BackgroundColor = Color.FromArgb("#ccc"),
 				Margin = new Thickness(15, 0),
 			};
 			return titleView;
@@ -221,7 +222,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			{
 				filtereditems = new ObservableCollection<string>(items);
 
-				search = new SearchBar { BackgroundColor = Color.Cornsilk, HorizontalOptions = LayoutOptions.FillAndExpand, Margin = new Thickness(10, 0) };
+				search = new SearchBar { BackgroundColor = Colors.Cornsilk, HorizontalOptions = LayoutOptions.FillAndExpand, Margin = new Thickness(10, 0) };
 				search.Effects.Add(Effect.Resolve($"{Issues.Effects.ResolutionGroupName}.SearchbarEffect"));
 				search.TextChanged += Search_TextChanged;
 
@@ -230,8 +231,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					ItemsSource = filtereditems
 				};
 
-				parent.BarBackgroundColor = Color.Cornsilk;
-				parent.BarTextColor = Color.Orange;
+				parent.BarBackgroundColor = Colors.Cornsilk;
+				parent.BarTextColor = Colors.Orange;
 				NavigationPage.SetBackButtonTitle(parent, "");
 
 				switch (Device.RuntimePlatform)
@@ -257,7 +258,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			void ToggleContent(NavigationPage parent)
 			{
-				StackLayout topStack = new StackLayout { Children = { button }, BackgroundColor = Color.Cornsilk };
+				StackLayout topStack = new StackLayout { Children = { button }, BackgroundColor = Colors.Cornsilk };
 				StackLayout layout = new StackLayout { Children = { topStack, list } };
 
 				if (_extended)

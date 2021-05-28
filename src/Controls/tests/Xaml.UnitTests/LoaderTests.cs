@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<View
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustomView"" 
 				x:Name=""customView"" 
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<StackLayout 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
 					<StackLayout.Children>
 						<Label x:Name=""label0"" Text=""Foo""/>
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<Label 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				Text=""Foo""
 				UnknownProperty=""Bar""
 			    />";
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<Label 
-			xmlns=""http://xamarin.com/schemas/2014/forms""
+			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			Text=""Foo""
 			/>";
 
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<Label 
-			xmlns=""http://xamarin.com/schemas/2014/forms""
+			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			Text=""{Binding Path=labeltext}""
 			/>";
 
@@ -180,7 +180,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<View 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustomView"" 
 				Name=""customView"" 
@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<StackLayout 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
 					<StackLayout.Children>
 						<Label x:Name=""label0"" Text=""{Binding text}""/>
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<ContentPage 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
 					<ContentPage.Resources>
@@ -263,7 +263,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<StackLayout 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
 					<StackLayout.Children>
 						<Grid x:Name=""grid0"">
@@ -286,7 +286,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<StackLayout 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
 					<StackLayout.Children>
 						<CustomView />
@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<Label 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
 					<Label.Resources>
@@ -323,7 +323,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<Label 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
 					<Label.Resources>
@@ -341,7 +341,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<ContentView
-				  xmlns=""http://xamarin.com/schemas/2014/forms""
+				  xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				  xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
 				  <ContentView.Resources>
                     <ResourceDictionary>
@@ -360,9 +360,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void MissingStaticResourceShouldThrow()
 		{
-			var xaml = @"<Label xmlns=""http://xamarin.com/schemas/2014/forms"" Text=""{StaticResource foo}""/>";
+			var xaml = @"<Label xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" Text=""{StaticResource foo}""/>";
 			var label = new Label();
-			Assert.Throws(new XamlParseExceptionConstraint(1, 54), () => label.LoadFromXaml(xaml));
+			Assert.Throws(new XamlParseExceptionConstraint(1, 62), () => label.LoadFromXaml(xaml));
 		}
 
 		public class CustView : Button
@@ -398,7 +398,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Application.Current = new MyApp();
 			var xaml = @"
 				<ContentView
-				  xmlns=""http://xamarin.com/schemas/2014/forms""
+				  xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				  xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
 				  <ContentView.Resources>
                     <ResourceDictionary>
@@ -426,7 +426,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<Button 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustView"" Clicked=""onButtonClicked"" />
 				</Button>";
@@ -442,7 +442,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<View 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustView"" Clicked=""missingMethod"" />
 				</View>";
@@ -455,7 +455,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<View 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustView"" Clicked=""wrongSignature"" />
 				</View>";
@@ -480,7 +480,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<Entry
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				x:Class=""Microsoft.Maui.Controls.Xaml.UnitTests.CustEntry"" TextChanged=""onValueChanged"" />
 			</Entry>";
@@ -492,7 +492,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 			<ContentPage
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
 				<ContentPage.Resources>
 					<ResourceDictionary>
@@ -511,7 +511,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<Image 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				IsOpaque=""true""/>";
 
@@ -526,7 +526,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<View 
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				Grid.Column=""1"">
 					<Grid.Row>2</Grid.Row>
@@ -542,7 +542,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//If this looks very similar to Vernacular, well... it's on purpose :)
 			var xaml = @"
 				<Label
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" 
 				local:Catalog.Message=""foobar""/>";
@@ -555,7 +555,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<Label
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" 
 				local:Catalog.Message=""{Binding .}""/>";
@@ -569,7 +569,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<local:CustomView
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" >
 					<Label x:Name=""contentview""/>
@@ -584,7 +584,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void TestCollectionContentProperties()
 		{
 			var xaml = @"
-				<StackLayout xmlns=""http://xamarin.com/schemas/2014/forms"">
+				<StackLayout xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"">
 					<Label Text=""Foo""/>
 					<Label Text=""Bar""/>
 				</StackLayout>";
@@ -598,7 +598,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void TestCollectionContentPropertiesWithSingleElement()
 		{
 			var xaml = @"
-				<StackLayout xmlns=""http://xamarin.com/schemas/2014/forms"">
+				<StackLayout xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"">
 					<Label Text=""Foo""/>
 				</StackLayout>";
 			var layout = new StackLayout().LoadFromXaml(xaml);
@@ -611,7 +611,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<ContentPage
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
 				<Grid.Row>1</Grid.Row>
 				<Label Text=""foo""></Label>
@@ -643,7 +643,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<local:ViewWithChildrenContent
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" >
 					<local:ViewWithChildrenContent.Children>
@@ -666,7 +666,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<local:ViewWithChildrenContent
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" >
 					<Label x:Name=""child0""/>
@@ -685,7 +685,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<local:ViewWithChildrenContent
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" >
 					<local:ViewWithChildrenContent.Children>
@@ -707,7 +707,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<local:ViewWithChildrenContent
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" >
 					<Label x:Name=""child0""/>
@@ -724,7 +724,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<ContentPage
-				    xmlns=""http://xamarin.com/schemas/2014/forms""
+				    xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" 
 				    x:Class=""Resources"">
 				    <ContentPage.Resources>
@@ -747,7 +747,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<local:CustomView
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" 
 				MockFlags=""Bar""
@@ -762,7 +762,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<local:CustomView
-				xmlns=""http://xamarin.com/schemas/2014/forms""
+				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"" 
 				MockFlags=""Baz,Bar""
@@ -775,7 +775,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void StyleWithoutTargetTypeThrows()
 		{
 			var xaml = @"
-				<Label xmlns=""http://xamarin.com/schemas/2014/forms"">
+				<Label xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"">
 					<Label.Style>
 						<Style>
 							<Setter Property=""Text"" Value=""Foo"" />
@@ -790,7 +790,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void BindingIsResolvedAsBindingExtension()
 		// https://github.com/xamarin/Microsoft.Maui.Controls/issues/3606#issuecomment-422377338
 		{
-			var bindingType = XamlParser.GetElementType(new XmlType("http://xamarin.com/schemas/2014/forms", "Binding", null), null, null, out var ex);
+			var bindingType = XamlParser.GetElementType(new XmlType("http://schemas.microsoft.com/dotnet/2021/maui", "Binding", null), null, null, out var ex);
 			Assert.That(ex, Is.Null);
 			Assert.That(bindingType, Is.EqualTo(typeof(BindingExtension)));
 			var module = ModuleDefinition.CreateModule("foo", new ModuleParameters()
@@ -798,7 +798,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				AssemblyResolver = new MockAssemblyResolver(),
 				Kind = ModuleKind.Dll,
 			});
-			var bindingTypeRef = new XmlType("http://xamarin.com/schemas/2014/forms", "Binding", null).GetTypeReference(module, null);
+			var bindingTypeRef = new XmlType("http://schemas.microsoft.com/dotnet/2021/maui", "Binding", null).GetTypeReference(module, null);
 			Assert.That(bindingType.FullName, Is.EqualTo("Microsoft.Maui.Controls.Xaml.BindingExtension"));
 		}
 	}

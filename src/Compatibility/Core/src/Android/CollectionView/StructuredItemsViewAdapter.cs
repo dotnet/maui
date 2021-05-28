@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
+using Microsoft.Maui.Graphics;
 using ViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android

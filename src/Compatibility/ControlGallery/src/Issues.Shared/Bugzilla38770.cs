@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -25,20 +26,20 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var red = new BoxView
 			{
-				BackgroundColor = Color.Red,
+				BackgroundColor = Colors.Red,
 				WidthRequest = 50,
 				HeightRequest = 50,
 				TranslationX = 25
 			};
 			var green = new BoxView
 			{
-				BackgroundColor = Color.Green,
+				BackgroundColor = Colors.Green,
 				WidthRequest = 50,
 				HeightRequest = 50
 			};
 			var blue = new BoxView
 			{
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				WidthRequest = 50,
 				HeightRequest = 50,
 				TranslationX = -25
@@ -172,7 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			_colorsPositionLabel.FormattedText.Spans.Clear();
 			for (var i = 0; i < _boxStack.Children.Count; i++)
 			{
-				if (_boxStack.Children[i].BackgroundColor.R > 0)
+				if (_boxStack.Children[i].BackgroundColor.Red > 0)
 				{
 					_colorsPositionLabel.FormattedText.Spans.Add(new Span()
 					{
@@ -181,7 +182,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					continue;
 				}
 
-				if (_boxStack.Children[i].BackgroundColor.G > 0)
+				if (_boxStack.Children[i].BackgroundColor.Green > 0)
 				{
 					_colorsPositionLabel.FormattedText.Spans.Add(new Span()
 					{

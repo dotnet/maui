@@ -3,6 +3,7 @@ using System.Linq;
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -24,10 +25,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					new Button
 					{
 						HeightRequest = 100,
-						BackgroundColor = Color.Red,
+						BackgroundColor = Colors.Red,
 						FontSize = 25,
 						FontAttributes = FontAttributes.Bold,
-						TextColor = Color.Black,
+						TextColor = Colors.Black,
 						Text = "Click Me and wait at least 5 sec [No crash expected]",
 						Command = new Command(() => {
 							Navigation.PushAsync(new ContentPage());

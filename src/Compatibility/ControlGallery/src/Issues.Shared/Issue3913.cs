@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			Margin = new Thickness(5),
 			Text = "Hello from Xamarin Forms",
-			BackgroundColor = Color.Red,
+			BackgroundColor = Colors.Red,
 			VerticalOptions = LayoutOptions.StartAndExpand,
 			HeightRequest = 100,
 			HorizontalOptions = LayoutOptions.Fill

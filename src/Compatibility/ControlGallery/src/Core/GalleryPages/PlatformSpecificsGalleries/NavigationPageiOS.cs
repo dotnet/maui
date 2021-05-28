@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {
@@ -8,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 	{
 		public NavigationPageiOS(Page root, ICommand restore) : base(root)
 		{
-			BackgroundColor = Color.Pink;
+			BackgroundColor = Colors.Pink;
 			On<iOS>().EnableTranslucentNavigationBar();
 			CurrentPage.On<iOS>().SetPreferredStatusBarUpdateAnimation(UIStatusBarAnimation.Fade);
 		}

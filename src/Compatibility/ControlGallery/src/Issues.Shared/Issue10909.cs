@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -27,8 +28,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Padding = 12,
 				Text = "If pressing the buttons opens the popup of both DatePicker and TimePicker, the test has passed.",
-				BackgroundColor = Color.Black,
-				TextColor = Color.White
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White
 			};
 
 			var datePickerFocusButton = new Button

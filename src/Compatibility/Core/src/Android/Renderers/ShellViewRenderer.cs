@@ -4,6 +4,8 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Google.Android.Material.AppBar;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 

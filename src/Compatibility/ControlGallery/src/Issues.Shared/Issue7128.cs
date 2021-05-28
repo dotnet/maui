@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -75,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var image = new Image { Aspect = Aspect.AspectFill };
 			image.SetBinding(Image.SourceProperty, new Binding("Url"));
 
-			var label = new Label { Margin = 10, BackgroundColor = Color.Red, HorizontalOptions = LayoutOptions.Fill };
+			var label = new Label { Margin = 10, BackgroundColor = Colors.Red, HorizontalOptions = LayoutOptions.Fill };
 			label.SetBinding(Label.TextProperty, new Binding("Text"));
 
 			layout.Children.Add(image);

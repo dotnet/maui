@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 {
@@ -172,7 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 			grid.Children.Add(MakeButton("Add TitleView",
 					() => Shell.SetTitleView(this, new Label
 					{
-						BackgroundColor = Color.Purple,
+						BackgroundColor = Colors.Purple,
 						Margin = new Thickness(5, 10),
 						Text = "TITLE VIEW"
 					})),
@@ -234,7 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 			async () =>
 			{
 				var page = (Page)Activator.CreateInstance(GetType());
-				Shell.SetForegroundColor(page, Color.Pink);
+				Shell.SetForegroundColor(page, Colors.Pink);
 				Shell.SetBackButtonBehavior(page, new BackButtonBehavior()
 				{
 					//IconOverride = "calculator.png",
@@ -277,7 +278,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 				() => Shell.Current.FlyoutBackgroundImage = ImageSource.FromFile("photo.jpg")),
 			0, 18);
 			grid.Children.Add(MakeButton("bg color",
-				() => Shell.Current.FlyoutBackgroundColor = Color.DarkGreen),
+				() => Shell.Current.FlyoutBackgroundColor = Colors.DarkGreen),
 			1, 18);
 			grid.Children.Add(MakeButton("bg brush",
 				() => Shell.Current.FlyoutBackground = new LinearGradientBrush
@@ -286,8 +287,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 					EndPoint = new Point(1, 0),
 					GradientStops = new GradientStopCollection
 					{
-						new GradientStop { Color = Color.Orange, Offset = 0.2f },
-						new GradientStop { Color = Color.OrangeRed, Offset = 0.8f }
+						new GradientStop { Color = Colors.Orange, Offset = 0.2f },
+						new GradientStop { Color = Colors.OrangeRed, Offset = 0.8f }
 					}
 				}),
 			2, 18);
@@ -332,9 +333,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 							linearGradientBrush.StartPoint = new Point(0, 0);
 							linearGradientBrush.EndPoint = new Point(1, 1);
 
-							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromHex("#8A2387"), 0.1f));
-							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromHex("#E94057"), 0.6f));
-							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromHex("#F27121"), 1.0f));
+							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb("#8A2387"), 0.1f));
+							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb("#E94057"), 0.6f));
+							linearGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb("#F27121"), 1.0f));
 
 							nextBrush = linearGradientBrush;
 						}
@@ -492,10 +493,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 		{
 			var searchHandler = new CustomSearchHandler();
 
-			searchHandler.BackgroundColor = Color.Orange;
-			searchHandler.CancelButtonColor = Color.Pink;
-			searchHandler.TextColor = Color.White;
-			searchHandler.PlaceholderColor = Color.Yellow;
+			searchHandler.BackgroundColor = Colors.Orange;
+			searchHandler.CancelButtonColor = Colors.Pink;
+			searchHandler.TextColor = Colors.White;
+			searchHandler.PlaceholderColor = Colors.Yellow;
 			searchHandler.HorizontalTextAlignment = TextAlignment.Center;
 			searchHandler.ShowsResults = true;
 
@@ -531,7 +532,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class UpdatesPage : BasePage
 	{
-		public UpdatesPage() : base("Available Updates", Color.Default)
+		public UpdatesPage() : base("Available Updates", null)
 		{
 			AddSearchHandler("Search Updates", SearchBoxVisibility.Collapsible);
 		}
@@ -540,7 +541,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class InstalledPage : BasePage
 	{
-		public InstalledPage() : base("Installed Items", Color.Default)
+		public InstalledPage() : base("Installed Items", null)
 		{
 			AddSearchHandler("Search Installed", SearchBoxVisibility.Collapsible);
 		}
@@ -549,7 +550,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class LibraryPage : BasePage
 	{
-		public LibraryPage() : base("My Library", Color.Default)
+		public LibraryPage() : base("My Library", null)
 		{
 			AddSearchHandler("Search Apps", SearchBoxVisibility.Collapsible);
 		}
@@ -558,19 +559,19 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class NotificationsPage : BasePage
 	{
-		public NotificationsPage() : base("Notifications", Color.Default) { }
+		public NotificationsPage() : base("Notifications", null) { }
 	}
 
 	[Preserve(AllMembers = true)]
 	public class SubscriptionsPage : BasePage
 	{
-		public SubscriptionsPage() : base("My Subscriptions", Color.Default) { }
+		public SubscriptionsPage() : base("My Subscriptions", null) { }
 	}
 
 	[Preserve(AllMembers = true)]
 	public class HomePage : BasePage
 	{
-		public HomePage() : base("Store Home", Color.Black)
+		public HomePage() : base("Store Home", Colors.Black)
 		{
 			AddSearchHandler("Search Apps", SearchBoxVisibility.Expanded);
 		}
@@ -579,7 +580,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class GamesPage : BasePage
 	{
-		public GamesPage() : base("Games", Color.Black)
+		public GamesPage() : base("Games", Colors.Black)
 		{
 			AddSearchHandler("Search Games", SearchBoxVisibility.Expanded);
 		}
@@ -588,7 +589,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class MoviesPage : BasePage
 	{
-		public MoviesPage() : base("Hot Movies", Color.Default)
+		public MoviesPage() : base("Hot Movies", null)
 		{
 			AddSearchHandler("Search Movies", SearchBoxVisibility.Expanded);
 		}
@@ -597,7 +598,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class BooksPage : BasePage
 	{
-		public BooksPage() : base("Bookstore", Color.Default)
+		public BooksPage() : base("Bookstore", null)
 		{
 			AddSearchHandler("Search Books", SearchBoxVisibility.Expanded);
 		}
@@ -606,7 +607,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class MusicPage : BasePage
 	{
-		public MusicPage() : base("Music", Color.Default)
+		public MusicPage() : base("Music", null)
 		{
 			AddSearchHandler("Search Music", SearchBoxVisibility.Expanded);
 		}
@@ -615,7 +616,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class NewsPage : BasePage
 	{
-		public NewsPage() : base("Newspapers", Color.Default)
+		public NewsPage() : base("Newspapers", null)
 		{
 			AddSearchHandler("Search Papers", SearchBoxVisibility.Expanded);
 		}
@@ -624,19 +625,19 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 	[Preserve(AllMembers = true)]
 	public class AccountsPage : BasePage
 	{
-		public AccountsPage() : base("Account Items", Color.Default) { }
+		public AccountsPage() : base("Account Items", null) { }
 	}
 
 	[Preserve(AllMembers = true)]
 	public class WishlistPage : BasePage
 	{
-		public WishlistPage() : base("My Wishlist", Color.Default) { }
+		public WishlistPage() : base("My Wishlist", null) { }
 	}
 
 	[Preserve(AllMembers = true)]
 	public class SettingsPage : BasePage
 	{
-		public SettingsPage() : base("Settings", Color.Default) { }
+		public SettingsPage() : base("Settings", null) { }
 	}
 
 }

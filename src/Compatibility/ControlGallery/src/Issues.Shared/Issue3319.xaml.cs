@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			BindingContext = new FavoritesViewModel();
 
 			listView.SeparatorVisibility = SeparatorVisibility.Default;
-			listView.SeparatorColor = Color.FromHex("#ababab");
+			listView.SeparatorColor = Color.FromArgb("#ababab");
 
 			listView.ItemTapped += (sender, args) =>
 			{

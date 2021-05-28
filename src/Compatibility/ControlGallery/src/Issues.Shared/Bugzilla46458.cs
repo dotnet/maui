@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var parentGrid = new Grid
 			{
-				BackgroundColor = Color.Yellow
+				BackgroundColor = Colors.Yellow
 			};
 			parentGrid.RowDefinitions.Add(new RowDefinition());
 			parentGrid.RowDefinitions.Add(new RowDefinition());
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var grid = new Grid
 			{
 				IsEnabled = false,
-				BackgroundColor = Color.Red
+				BackgroundColor = Colors.Red
 			};
 
 			grid.RowDefinitions.Add(new RowDefinition());
@@ -62,8 +63,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				WidthRequest = 250,
 				HeightRequest = 50,
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "Click",
 				HorizontalOptions = LayoutOptions.Center,
 				Command = new Command(() => { label.Text = "Fail"; }),
@@ -79,8 +80,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				WidthRequest = 250,
 				HeightRequest = 50,
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "Test transparency",
 				HorizontalOptions = LayoutOptions.Center,
 				AutomationId = "button1"

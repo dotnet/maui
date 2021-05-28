@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 

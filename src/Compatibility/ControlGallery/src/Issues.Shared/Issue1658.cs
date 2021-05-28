@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Text;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 
 #if UITEST
@@ -46,14 +47,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					{
 						WidthRequest = 30,
 						HeightRequest = 30,
-						Color = Color.Red,
+						Color = Colors.Red,
 						AutomationId = "ColorBox"
 					};
 
 					var gr = new TapGestureRecognizer();
 					gr.Command = new Command(() =>
 					{
-						box.Color = box.Color == Color.Red ? Color.Yellow : Color.Red;
+						box.Color = box.Color == Colors.Red ? Colors.Yellow : Colors.Red;
 					});
 					box.GestureRecognizers.Add(gr);
 					cells.View = new StackLayout()

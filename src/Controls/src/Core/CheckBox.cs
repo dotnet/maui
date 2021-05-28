@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -50,11 +51,11 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		Color IBorderElement.BorderColor => Color.Transparent;
+		Color IBorderElement.BorderColor => Colors.Transparent;
 		int IBorderElement.CornerRadius => 0;
 		double IBorderElement.BorderWidth => 0;
 		int IBorderElement.CornerRadiusDefaultValue => 0;
-		Color IBorderElement.BorderColorDefaultValue => Color.Transparent;
+		Color IBorderElement.BorderColorDefaultValue => Colors.Transparent;
 		double IBorderElement.BorderWidthDefaultValue => 0;
 		bool IBorderElement.IsCornerRadiusSet() => false;
 		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);

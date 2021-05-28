@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework Condition=" '$(OS)' == 'Windows_NT' ">net5.0-windows10.0.18362.0</TargetFramework>
+    <TargetFramework Condition=" '$(OS)' != 'Windows_NT' ">netstandard2.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
+    <RootNamespace>Microsoft.Maui.Controls.Compatibility.UAP</RootNamespace>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS;UWP_16299;UWP_18362;UWP_17134</DefineConstants>
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(OS)' != 'Windows_NT'">
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(OS)' == 'Windows_NT'">
+    <PackageReference Include="Microsoft.WinUI" Version="3.0.0-preview3.201113.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj">
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml.csproj">
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\AppHostBuilderExtensions.cs" Link="AppHostBuilderExtensions.cs" />
+    <Compile Include="..\MauiHandlersCollectionExtensions.cs" Link="MauiHandlersCollectionExtensions.cs" />
+  </ItemGroup>
+
+</Project>

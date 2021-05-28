@@ -5,10 +5,15 @@ namespace Maui.Controls.Sample.Controls
 {
 	public class BasePage : ContentPage, IPage
 	{
-		IView IPage.View
+
+		protected override void OnAppearing()
 		{
-			get => Content;
-			set => Content = (View)value;
+			System.Diagnostics.Debug.WriteLine($"OnAppearing: {this}");
+		}
+
+		protected override void OnDisappearing()
+		{
+			System.Diagnostics.Debug.WriteLine($"OnDisappearing: {this}");
 		}
 	}
 }

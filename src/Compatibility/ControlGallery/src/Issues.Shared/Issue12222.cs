@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var backgroundButton = new Button
 			{
 				HeightRequest = 60,
-				BackgroundColor = Color.OrangeRed,
+				BackgroundColor = Colors.OrangeRed,
 				Text = "Button"
 			};
 
@@ -65,8 +66,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var borderButton = new Button
 			{
 				HeightRequest = 60,
-				BackgroundColor = Color.OrangeRed,
-				BorderColor = Color.YellowGreen,
+				BackgroundColor = Colors.OrangeRed,
+				BorderColor = Colors.YellowGreen,
 				BorderWidth = 2,
 				Text = "Button"
 			};

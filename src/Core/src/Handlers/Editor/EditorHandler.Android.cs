@@ -1,15 +1,19 @@
-﻿using System;
-using Android.Content.Res;
+﻿using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
-using Microsoft.Extensions.DependencyInjection;
+using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler : ViewHandler<IEditor, AppCompatEditText>
 	{
+		static ColorStateList? DefaultTextColors { get; set; }
 		static ColorStateList? DefaultPlaceholderTextColors { get; set; }
+		static Drawable? DefaultBackground;
+
+		EditorFocusChangeListener FocusChangeListener { get; } = new EditorFocusChangeListener();
 
 		protected override AppCompatEditText CreateNativeView()
 		{
@@ -26,15 +30,43 @@ namespace Microsoft.Maui.Handlers
 			return editText;
 		}
 
+		protected override void ConnectHandler(AppCompatEditText nativeView)
+		{
+			FocusChangeListener.Handler = this;
+
+			nativeView.OnFocusChangeListener = FocusChangeListener;
+		}
+
+		protected override void DisconnectHandler(AppCompatEditText nativeView)
+		{
+			nativeView.OnFocusChangeListener = null;
+
+			FocusChangeListener.Handler = null;
+		}
+
 		protected override void SetupDefaults(AppCompatEditText nativeView)
 		{
 			base.SetupDefaults(nativeView);
+
+			DefaultTextColors = nativeView.TextColors;
 			DefaultPlaceholderTextColors = nativeView.HintTextColors;
+			DefaultBackground = nativeView.Background;
+		}
+
+		// This is a Android-specific mapping
+		public static void MapBackground(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateBackground(editor, DefaultBackground);
 		}
 
 		public static void MapText(EditorHandler handler, IEditor editor)
 		{
 			handler.NativeView?.UpdateText(editor);
+		}
+
+		public static void MapTextColor(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateTextColor(editor, DefaultTextColors);
 		}
 
 		public static void MapPlaceholder(EditorHandler handler, IEditor editor)
@@ -74,7 +106,20 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(editor, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(EditorHandler handler, IEditor editor) { }
+		void OnFocusedChange(bool hasFocus)
+		{
+			if (!hasFocus)
+				VirtualView?.Completed();
+		}
+
+		class EditorFocusChangeListener : Java.Lang.Object, IOnFocusChangeListener
+		{
+			public EditorHandler? Handler { get; set; }
+
+			public void OnFocusChange(View? v, bool hasFocus)
+			{
+				Handler?.OnFocusedChange(hasFocus);
+			}
+		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -24,6 +25,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			layout.Add(button);
 			page.Content = layout;
+			(page as IFrameworkElement).Measure(100, 100);
 			(page as IFrameworkElement).Arrange(new Rectangle(0, 0, 100, 100));
 
 			Assert.AreEqual(expectedSize, button.Bounds.Size);
@@ -75,6 +77,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			(contentPage as IFrameworkElement).Measure(expectedSize.Width, expectedSize.Height);
 			(contentPage as IFrameworkElement).Arrange(rect);
 			Assert.AreEqual(expectedSize, button.Bounds.Size);
+		}
+
+		[Test]
+		public void GridInsideStackLayout()
+		{
+			ContentPage contentPage = new ContentPage();
+			var stackLayout = new StackLayout() { IsPlatformEnabled = true };
+			var grid = new Grid() { IsPlatformEnabled = true, HeightRequest = 50 };
+			var label = new Label() { IsPlatformEnabled = true };
+			var expectedSize = new Size(50, 50);
+
+			var view = Substitute.For<IViewHandler>();
+			view.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
+			label.Handler = view;
+
+			stackLayout.Add(grid);
+			grid.Children.Add(label);
+			contentPage.Content = stackLayout;
+
+			var rect = new Rectangle(0, 0, 50, 100);
+			(contentPage as IFrameworkElement).Measure(expectedSize.Width, expectedSize.Height);
+			(contentPage as IFrameworkElement).Arrange(rect);
+
+			// This simulates the arrange call that happens from the native LayoutViewGroup
+			(grid as IFrameworkElement).Arrange(rect);
+
+			Assert.AreEqual(expectedSize, grid.Bounds.Size);
 		}
 	}
 }

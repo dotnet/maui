@@ -1,12 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using Microsoft.Maui.Controls.Compatibility.Internals;
 using CoreAnimation;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 #if __MOBILE__
 using UIKit;
@@ -264,7 +265,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			if (element != null)
 			{
-				if (element.BackgroundColor != Color.Default || (oldElement != null && element.BackgroundColor != oldElement.BackgroundColor))
+				if (element.BackgroundColor != null || (oldElement != null && element.BackgroundColor != oldElement.BackgroundColor))
 					SetBackgroundColor(element.BackgroundColor);
 
 				if (element.Background != null && (!element.Background.IsEmpty || (oldElement != null && element.Background != oldElement.Background)))
@@ -467,7 +468,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		protected virtual void SetBackgroundColor(Color color)
 		{
-			if (color == Color.Default)
+			if (color == null)
 #if __MOBILE__
 
 				BackgroundColor = _defaultColor;

@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
-using UIKit;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
+using UIKit;
 using PlatformElement = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement;
-
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (layer != null)
 			{
-				layer.ShadowColor = Color.Transparent.ToCGColor();
+				layer.ShadowColor = Colors.Transparent.ToCGColor();
 				layer.ShadowOpacity = 0;
 			}
 		}

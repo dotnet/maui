@@ -12,7 +12,8 @@ namespace Microsoft.Maui
 
 		public static void UpdateTextColor(this UIButton nativeButton, IButton button, UIColor? buttonTextColorDefaultNormal, UIColor? buttonTextColorDefaultHighlighted, UIColor? buttonTextColorDefaultDisabled)
 		{
-			if (button.TextColor == Color.Default)
+
+			if (button.TextColor == null)
 			{
 				nativeButton.SetTitleColor(buttonTextColorDefaultNormal, UIControlState.Normal);
 				nativeButton.SetTitleColor(buttonTextColorDefaultHighlighted, UIControlState.Highlighted);
@@ -37,7 +38,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateFont(this UIButton nativeButton, ITextStyle textStyle, IFontManager fontManager)
 		{
-			nativeButton.TitleLabel.UpdateFont(textStyle, fontManager);
+			nativeButton.TitleLabel.UpdateFont(textStyle, fontManager, UIFont.ButtonFontSize);
 		}
 
 		public static void UpdatePadding(this UIButton nativeButton, IButton button)

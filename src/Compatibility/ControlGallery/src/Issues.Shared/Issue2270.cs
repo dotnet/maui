@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Text = "Load Data",
 				BorderWidth = 1,
-				BorderColor = Color.Gray,
+				BorderColor = Colors.Gray,
 			};
 			btn.SetBinding(Button.CommandProperty, "LoadDataCommand");
 

@@ -1,7 +1,9 @@
+#nullable enable
 namespace Microsoft.Maui
 {
 	public interface IEmbeddedFontLoader
 	{
-		(bool success, string? filePath) LoadFont(EmbeddedFont font);
+		// TODO: this should be async as it involves copying files
+		string? LoadFont(EmbeddedFont font);
 	}
 }

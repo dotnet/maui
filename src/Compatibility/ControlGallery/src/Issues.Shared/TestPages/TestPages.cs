@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.CustomAttributes;
 using NUnit.Framework.Interfaces;
 using IOPath = System.IO.Path;
@@ -54,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			Xamarin.UITest.Desktop.TestAgent.Start();
 			app = InitializeMacOSApp();
 
-#elif __WINDOWS__
+#elif WINDOWS
 			app = InitializeUWPApp();
 #endif
 			if (app == null)
@@ -143,7 +144,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		}
 #endif
 
-#if __WINDOWS__
+#if WINDOWS
 		static IApp InitializeUWPApp()
 		{
 			return WindowsTestBase.ConfigureApp();
@@ -169,7 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			int maxAttempts = 2;
 			int attempts = 0;
 
-#if __WINDOWS__
+#if WINDOWS
 			bool attemptOneRestart = false;
 			bool waitNoElementAttempt = false;
 #endif
@@ -194,7 +195,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				}
 #endif
 
-#if __WINDOWS__
+#if WINDOWS
 					// Windows doens't have an 'invoke' option right now for us to do the more direct navigation
 					// we're using for Android/iOS
 					// So we're just going to use the 'Reset' method to bounce the app to the opening screen
@@ -222,7 +223,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					app.WaitForElement(q => q.Raw("* marked:'SearchButton'"));
 					app.Tap(q => q.Raw("* marked:'SearchButton'"));
 
-#if __WINDOWS__
+#if WINDOWS
 					try
 					{
 						if (!waitNoElementAttempt)
@@ -242,7 +243,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					if (!app.RestartIfAppIsClosed())
 						return;
 				}
-#if __WINDOWS__
+#if WINDOWS
 				catch (Exception we)
 				when (we.IsWindowClosedException() && !attemptOneRestart)
 				{
@@ -572,7 +573,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	public abstract class TestShell : Shell
 	{
 		protected const string FlyoutIconAutomationId = "OK";
-#if __IOS__ || __WINDOWS__
+#if __IOS__ || WINDOWS
 		protected const string BackButtonAutomationId = "Back";
 #else
 		protected const string BackButtonAutomationId = "OK";
@@ -827,7 +828,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		public void TapInFlyout(string text, string flyoutIcon = FlyoutIconAutomationId, bool usingSwipe = false, string timeoutMessage = null, bool makeSureFlyoutStaysOpen = false)
 		{
 			timeoutMessage = timeoutMessage ?? text;
-#if __WINDOWS__
+#if WINDOWS
 			RunningApp.WaitForElement(flyoutIcon);
 #endif
 

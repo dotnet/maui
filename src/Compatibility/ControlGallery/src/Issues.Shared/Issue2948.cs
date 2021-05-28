@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -84,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				{
 					HeightRequest = 300,
 					HorizontalOptions = LayoutOptions.End,
-					BackgroundColor = Color.Pink,
+					BackgroundColor = Colors.Pink,
 					AutomationId = "btnOnDetail"
 				};
 
@@ -117,23 +118,23 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 							grid,
 							new BoxView {
 								HeightRequest = 100,
-								Color = Color.Red,
+								Color = Colors.Red,
 							},
 							new BoxView {
 								HeightRequest = 200,
-								Color = Color.Green,
+								Color = Colors.Green,
 							},
 							new BoxView {
 								HeightRequest = 300,
-								Color = Color.Red,
+								Color = Colors.Red,
 							},
 							new BoxView {
 								HeightRequest = 400,
-								Color = Color.Green,
+								Color = Colors.Green,
 							},
 							new BoxView {
 								HeightRequest = 500,
-								Color = Color.Red,
+								Color = Colors.Red,
 							}
 						}
 					},
@@ -151,7 +152,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 				ItemsSource = data;
 				VerticalOptions = LayoutOptions.FillAndExpand;
-				BackgroundColor = Color.Transparent;
+				BackgroundColor = Colors.Transparent;
 
 				var cell = new DataTemplate(typeof(ImageCell));
 				cell.SetBinding(TextCell.TextProperty, "Title");
@@ -169,7 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			public MenuPage()
 			{
 				Title = "Menu";
-				BackgroundColor = Color.FromHex("333333");
+				BackgroundColor = Color.FromArgb("333333");
 
 				Menu = new MenuListView();
 
@@ -178,7 +179,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					Padding = new Thickness(10, 36, 0, 5),
 					Content = new Label
 					{
-						TextColor = Color.FromHex("AAAAAA"),
+						TextColor = Color.FromArgb("AAAAAA"),
 						Text = "MENU",
 					}
 				};

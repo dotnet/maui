@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	[ContentProperty("Detail")]
+	[ContentProperty(nameof(Detail))]
 	public class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>
 	{
 		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create(nameof(IsGestureEnabled), typeof(bool), typeof(FlyoutPage), true);
@@ -254,6 +255,7 @@ namespace Microsoft.Maui.Controls
 	}
 
 	[Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
+	[ContentProperty(nameof(Detail))]
 	public class MasterDetailPage : FlyoutPage, IMasterDetailPageController
 	{
 		public static readonly BindableProperty MasterBehaviorProperty = BindableProperty.Create(nameof(MasterBehavior), typeof(MasterBehavior), typeof(MasterDetailPage), default(MasterBehavior),

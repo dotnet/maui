@@ -1,7 +1,9 @@
-﻿<controls:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+﻿<controls:BasePage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                    xmlns:controls="clr-namespace:Maui.Controls.Sample.Controls"
-                   x:Class="Maui.Controls.Sample.Pages.SemanticsPage">
+                   x:Class="Maui.Controls.Sample.Pages.SemanticsPage"
+                   Title="Semantics Page"
+                   BackgroundColor="White">
 
     <ScrollView Margin="15,20">
         <VerticalStackLayout>
@@ -38,6 +40,7 @@
             <Button
                 Text="Button text TH"
                 FontSize="14"
+                x:Name="pushButton"
                 HorizontalOptions="Center"
                 WidthRequest="200"
                 SemanticProperties.Hint="Hint text"/>
@@ -47,6 +50,7 @@
                 FontSize="14"
                 HorizontalOptions="CenterAndExpand"
                 WidthRequest="200"
+                x:Name="popButton"
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
 

@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
-
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 	public abstract class Layout<T> : Layout, Microsoft.Maui.ILayout, IViewContainer<T> where T : View
 	{
 		// TODO ezhart We should look for a way to optimize this a bit
-		IReadOnlyList<Microsoft.Maui.IView> Microsoft.Maui.ILayout.Children => _children.ToList<Microsoft.Maui.IView>().AsReadOnly();
+		IReadOnlyList<Microsoft.Maui.IView> Microsoft.Maui.IContainer.Children => Children.ToList();
 
 		readonly ElementCollection<T> _children;
 
@@ -64,8 +64,10 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement, Microsoft.Maui.IContainer
 	{
+		IReadOnlyList<Microsoft.Maui.IView> Microsoft.Maui.IContainer.Children => InternalChildren.OfType<IView>().ToList();
+
 		public static readonly BindableProperty IsClippedToBoundsProperty =
 			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false);
 
@@ -217,11 +219,7 @@ namespace Microsoft.Maui.Controls
 
 		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
 		{
-			if (!IsMeasureValid)
-#pragma warning disable CS0618 // Type or member is obsolete	
-				DesiredSize = OnSizeRequest(widthConstraint, heightConstraint).Request;
-#pragma warning restore CS0618 // Type or member is obsolete	
-			IsMeasureValid = true;
+			DesiredSize = OnMeasure(widthConstraint, heightConstraint).Request;
 			return DesiredSize;
 		}
 
@@ -506,6 +504,19 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 			return true;
+		}
+
+		protected override void InvalidateMeasureOverride()
+		{
+			base.InvalidateMeasureOverride();
+
+			foreach (var child in LogicalChildren)
+			{
+				if (child is IFrameworkElement fe)
+				{
+					fe.InvalidateMeasure();
+				}
+			}
 		}
 	}
 }

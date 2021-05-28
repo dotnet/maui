@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using IOPath = System.IO.Path;
 
 #if UITEST
@@ -28,8 +29,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var instructions = new Label
 			{
-				BackgroundColor = Color.Black,
-				TextColor = Color.White,
+				BackgroundColor = Colors.Black,
+				TextColor = Colors.White,
 				Text = "Press the DownloadFile button and then the Animate button. Verify that the gif is downloaded and animate without problems."
 			};
 
@@ -73,13 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			var bytes = await DownloadImageAsync(imageUrl);
 
-			string path;
-
-#if WINDOWS_UWP
-			path = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
-#else
-			path = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-#endif
+			string path = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 			SecondImageSource = IOPath.Combine(path, "Issue8821.gif");
 			File.WriteAllBytes(SecondImageSource, bytes);
 
