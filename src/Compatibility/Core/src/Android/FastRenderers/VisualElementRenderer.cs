@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			_effectControlProvider.RegisterEffect(effect);
 		}
 
+		[PortHandler]
 		void UpdateFlowDirection()
 		{
 			if (_disposed)

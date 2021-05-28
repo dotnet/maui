@@ -73,6 +73,19 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateFlowDirection(this UIView nativeView, IView view)
+		{
+			UISemanticContentAttribute updateValue = nativeView.SemanticContentAttribute;
+
+			if (view.FlowDirection.IsRightToLeft())
+				updateValue = UISemanticContentAttribute.ForceRightToLeft;
+			else if (view.FlowDirection.IsLeftToRight())
+				updateValue = UISemanticContentAttribute.ForceLeftToRight;
+
+			if (updateValue != nativeView.SemanticContentAttribute)
+				nativeView.SemanticContentAttribute = updateValue;
+		}
+
 		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
 			nativeView.AccessibilityIdentifier = view.AutomationId;
 

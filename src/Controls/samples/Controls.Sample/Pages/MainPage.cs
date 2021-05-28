@@ -108,6 +108,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = LoremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
 			verticalStack.Add(new Label { Text = LoremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
 			verticalStack.Add(new Label { Text = "This should have five times the line height! " + LoremIpsum, LineHeight = 5, MaxLines = 2 });
+			verticalStack.Add(new Label { FlowDirection = Microsoft.Maui.Controls.FlowDirection.RightToLeft, Text = "RightToLeft FlowDirection" });
 			verticalStack.Add(new Label
 			{
 				FontSize = 24,
@@ -135,6 +136,7 @@ namespace Maui.Controls.Sample.Pages
  				new Point(0.5, 0.5),
  				0.3f)
 			});
+			verticalStack.Add(new Label { FlowDirection = Microsoft.Maui.Controls.FlowDirection.RightToLeft, Text = "RightToLeft FlowDirection" });
 
 			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level2);
 

@@ -3,6 +3,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 
 namespace Microsoft.Maui
 {
@@ -40,6 +41,24 @@ namespace Microsoft.Maui
 				border.UpdateBackground(view.Background);
 			else if (nativeView is Panel panel)
 				panel.UpdateBackground(view.Background);
+		}
+
+		// TODO ezhart Do we need all three of these? 
+		public static void UpdateBackgroundColor(this Control nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
+			nativeControl.Background = color?.ToNative() ?? defaultBrush ?? nativeControl.Background;
+
+		public static void UpdateBackgroundColor(this Border nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
+			nativeControl.Background = color?.ToNative() ?? defaultBrush ?? nativeControl.Background;
+
+		public static void UpdateBackgroundColor(this Panel nativeControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
+			nativeControl.Background = color?.ToNative() ?? defaultBrush ?? nativeControl.Background;
+
+		public static void UpdateFlowDirection(this FrameworkElement nativeView, IView view)
+		{
+			if (view.FlowDirection.IsRightToLeft())
+				nativeView.FlowDirection = WFlowDirection.RightToLeft;
+			else if (view.FlowDirection.IsLeftToRight())
+				nativeView.FlowDirection = WFlowDirection.LeftToRight;
 		}
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>

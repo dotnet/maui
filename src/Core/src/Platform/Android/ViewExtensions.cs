@@ -1,7 +1,10 @@
 using Android.Graphics.Drawables;
 using Android.Views;
+using Android.Widget;
 using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
+using ALayoutDirection = Android.Views.LayoutDirection;
+using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -46,6 +49,24 @@ namespace Microsoft.Maui
 				nativeView.Background = defaultBackground;
 			else
 				nativeView.Background = paint!.ToDrawable();
+		}
+
+		public static void UpdateFlowDirection(this AView nativeView, IView view)
+		{
+			if (view.FlowDirection.IsRightToLeft())
+			{
+				nativeView.LayoutDirection = ALayoutDirection.Rtl;
+
+				if (nativeView is TextView textView)
+					textView.TextDirection = ATextDirection.Rtl;
+			}
+			else if (view.FlowDirection.IsLeftToRight())
+			{
+				nativeView.LayoutDirection = ALayoutDirection.Ltr;
+
+				if (nativeView is TextView textView)
+					textView.TextDirection = ATextDirection.Ltr;
+			}
 		}
 
 		public static bool GetClipToOutline(this AView view)

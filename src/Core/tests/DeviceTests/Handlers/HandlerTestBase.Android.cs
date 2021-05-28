@@ -7,6 +7,16 @@ namespace Microsoft.Maui.DeviceTests
 		protected string GetAutomationId(IViewHandler viewHandler) =>
 			$"{((View)viewHandler.NativeView).GetTag(ViewExtensions.AutomationTagId)}";
 
+		protected FlowDirection GetFlowDirection(IViewHandler viewHandler)
+		{
+			var nativeView = (View)viewHandler.NativeView;
+
+			if (nativeView.LayoutDirection == LayoutDirection.Rtl)
+				return FlowDirection.RightToLeft;
+
+			return FlowDirection.LeftToRight;
+		}
+
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
 			((View)viewHandler.NativeView).ContentDescription;
 

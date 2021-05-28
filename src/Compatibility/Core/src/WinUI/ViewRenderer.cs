@@ -92,6 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				Control.SetValue(Microsoft.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, _defaultAutomationPropertiesLabeledBy);
 		}
 
+		[PortHandler]
 		void UpdateFlowDirection()
 		{
 			Control.UpdateFlowDirection(Element);
