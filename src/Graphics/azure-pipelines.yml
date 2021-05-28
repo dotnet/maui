@@ -94,8 +94,8 @@ stages:
             - script: dotnet tool restore
               displayName: install dotnet tools
 
-            - script: dotnet vs update --quiet
-              displayName: install vs preview
+            - script: dotnet vs update
+              displayName: update vs
 
             - script: dotnet cake --configuration=${{ BuildCondition }}
               displayName: pack nugets
