@@ -9,7 +9,7 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?
 // optional
 var USE_DOTNET = Argument("dotnet", false);
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
-var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? "net6.0-ios");
+var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net6.0-ios" : ""));
 var BINLOG = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? PROJECT + ".binlog");
 var TEST_APP = Argument("app", EnvironmentVariable("IOS_TEST_APP") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("IOS_TEST_RESULTS") ?? "");
