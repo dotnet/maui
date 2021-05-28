@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a View that show progress as a horizontal bar that is filled to a percentage 
