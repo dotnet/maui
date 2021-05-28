@@ -1,11 +1,10 @@
 #if __MOBILE__
-using UIKit;
 using Microsoft.Maui.Controls.Internals;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
 
-using Microsoft.Maui.Controls.Compatibility.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif

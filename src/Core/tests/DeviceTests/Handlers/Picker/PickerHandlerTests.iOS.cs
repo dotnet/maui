@@ -74,6 +74,9 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsItalic(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
 
+		UITextAlignment GetNativeHorizontalTextAlignment(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).TextAlignment;
+
 		UIColor GetNativeTitleColor(PickerHandler pickerHandler)
 		{
 			var mauiPicker = GetNativePicker(pickerHandler);

@@ -10,6 +10,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 
@@ -55,14 +56,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Profile.FrameBegin();
 
 			var context = shellContext.AndroidContext;
-
-			// Android designer can't load fragments or resources from layouts
-			if (context.IsDesignerContext())
-			{
-				_rootView = new FrameLayout(context);
-				return;
-			}
-
 			var coordinator = (ViewGroup)LayoutInflater.FromContext(context).Inflate(Resource.Layout.flyoutcontent, null);
 
 			Profile.FramePartition("Find AppBar");
@@ -344,7 +337,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (_defaultBackgroundColor == null)
 					_defaultBackgroundColor = _rootView.Background;
 
-				_rootView.Background = color.IsDefault ? _defaultBackgroundColor : new ColorDrawable(color.ToAndroid());
+				_rootView.Background = color == null ? _defaultBackgroundColor : new ColorDrawable(color.ToAndroid());
 			}
 			else
 				_rootView.UpdateBackground(brush);

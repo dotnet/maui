@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -28,10 +29,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var layout = new Gh6996(useCompiledXaml);
 				Image image = layout.image;
 				var fis = image.Source as FontImageSource;
-				Assert.That(fis.Color, Is.EqualTo(Color.Orange));
+				Assert.That(fis.Color, Is.EqualTo(Colors.Orange));
 
 				layout.Resources["imcolor"] = layout.Resources["notBlue"];
-				Assert.That(fis.Color, Is.EqualTo(Color.Lime));
+				Assert.That(fis.Color, Is.EqualTo(Colors.Lime));
 			}
 		}
 	}

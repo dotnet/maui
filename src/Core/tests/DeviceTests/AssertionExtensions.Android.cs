@@ -47,11 +47,23 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static async Task<Bitmap> ToBitmap(this AView view)
+		public static Task AttachAndRun(this AView view, Action action) =>
+			view.AttachAndRun(() =>
+			{
+				action();
+				return true;
+			});
+
+		public static async Task<T> AttachAndRun<T>(this AView view, Func<T> action)
 		{
-			var layout = new FrameLayout(view.Context);
-			layout.LayoutParameters = new FrameLayout.LayoutParams(500, 500);
-			view.LayoutParameters = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WrapContent, FrameLayout.LayoutParams.WrapContent)
+			if (view.Parent is WrapperView wrapper)
+				view = wrapper;
+
+			var layout = new FrameLayout(view.Context)
+			{
+				LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
+			};
+			view.LayoutParameters = new FrameLayout.LayoutParams(view.Width, view.Height)
 			{
 				Gravity = GravityFlags.Center
 			};
@@ -59,28 +71,43 @@ namespace Microsoft.Maui.DeviceTests
 			var act = view.Context.GetActivity();
 			var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content);
 
-			rootView.AddView(layout);
-
 			layout.AddView(view);
-			layout.Measure(500, 500);
-			layout.Layout(0, 0, 500, 500);
+			rootView.AddView(layout);
 
 			await Task.Delay(100);
 
-			var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888);
-			using (var canvas = new Canvas(bitmap))
+			try
 			{
-				view.Draw(canvas);
+				var result = action();
+				return result;
 			}
-
-			rootView.RemoveView(layout);
-
-			return bitmap;
+			finally
+			{
+				rootView.RemoveView(layout);
+				layout.RemoveView(view);
+			}
 		}
+
+		public static Task<Bitmap> ToBitmap(this AView view) =>
+			view.AttachAndRun(() =>
+			{
+				if (view.Parent is WrapperView wrapper)
+					view = wrapper;
+
+				var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888);
+				using (var canvas = new Canvas(bitmap))
+				{
+					view.Draw(canvas);
+				}
+				return bitmap;
+			});
 
 		public static Bitmap AssertColorAtPoint(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{
-			Assert.Equal(bitmap.ColorAtPoint(x, y), expectedColor);
+			var actualColor = bitmap.ColorAtPoint(x, y);
+
+			if (!actualColor.IsEquivalent(expectedColor))
+				Assert.Equal(expectedColor, actualColor);
 
 			return bitmap;
 		}
@@ -110,18 +137,13 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Task<Bitmap> AssertContainsColor(this AView view, Maui.Color expectedColor) =>
-			AssertContainsColor(view, expectedColor.ToNative());
-
-		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor)
+		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
-
-			for (int x = 1; x < view.Width; x++)
+			for (int x = 0; x < bitmap.Width; x++)
 			{
-				for (int y = 1; y < view.Height; y++)
+				for (int y = 0; y < bitmap.Height; y++)
 				{
-					if (bitmap.ColorAtPoint(x, y, true) == expectedColor)
+					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(expectedColor))
 					{
 						return bitmap;
 					}
@@ -132,12 +154,19 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
+		public static Task<Bitmap> AssertContainsColor(this AView view, Maui.Graphics.Color expectedColor) =>
+			AssertContainsColor(view, expectedColor.ToNative());
+
+		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor)
+		{
+			var bitmap = await view.ToBitmap();
+			return AssertContainsColor(bitmap, expectedColor);
+		}
+
 		public static async Task<Bitmap> AssertColorAtPoint(this AView view, AColor expectedColor, int x, int y)
 		{
 			var bitmap = await view.ToBitmap();
-			Assert.Equal(bitmap.ColorAtPoint(x, y), expectedColor);
-
-			return bitmap;
+			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
 		public static async Task<Bitmap> AssertColorAtCenter(this AView view, AColor expectedColor)
@@ -181,5 +210,10 @@ namespace Microsoft.Maui.DeviceTests
 				LineBreakMode.MiddleTruncation => TextUtils.TruncateAt.Middle,
 				_ => throw new ArgumentOutOfRangeException(nameof(mode))
 			};
+
+		public static FontWeight GetFontWeight(this Typeface typeface) =>
+			NativeVersion.IsAtLeast(28)
+				? (FontWeight)typeface.Weight
+				: typeface.IsBold ? FontWeight.Bold : FontWeight.Regular;
 	}
 }

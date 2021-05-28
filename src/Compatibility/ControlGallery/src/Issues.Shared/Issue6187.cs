@@ -5,6 +5,7 @@ using System.Data;
 using System.Text;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 
 #if UITEST
@@ -30,9 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Entry entry = new Entry
 			{
 				Placeholder = "Placeholder text...",
-				PlaceholderColor = Color.Green,
+				PlaceholderColor = Colors.Green,
 				Text = "Typed Text ",
-				TextColor = Color.Red
+				TextColor = Colors.Red
 			};
 
 			Label label = new Label

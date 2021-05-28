@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		protected override void Init()
 		{
-			SelectedTabColor = Color.Purple;
+			SelectedTabColor = Colors.Purple;
 			Device.StartTimer(TimeSpan.FromSeconds(2), () =>
 			{
 				Children.Add(new ContentPage
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			});
 		}
 
-#if UITEST && __WINDOWS__
+#if UITEST && WINDOWS
 		[Test]
 		public void Issue6323Test()
 		{

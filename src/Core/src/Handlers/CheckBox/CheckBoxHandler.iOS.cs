@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -31,6 +32,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
 		{
 			handler.NativeView?.UpdateIsChecked(check);
+		}
+
+		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
+		{
+			handler.NativeView?.UpdateForeground(check);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)

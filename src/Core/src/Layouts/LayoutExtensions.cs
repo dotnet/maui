@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Layouts
@@ -20,10 +21,6 @@ namespace Microsoft.Maui.Layouts
 			widthConstraint -= margin.HorizontalThickness;
 			heightConstraint -= margin.VerticalThickness;
 
-			// Determine whether the external constraints or the requested size values will determine the measurements
-			widthConstraint = LayoutManager.ResolveConstraints(widthConstraint, frameworkElement.Width);
-			heightConstraint = LayoutManager.ResolveConstraints(heightConstraint, frameworkElement.Height);
-
 			// Ask the handler to do the actual measuring								
 			var measureWithMargins = frameworkElement.Handler.GetDesiredSize(widthConstraint, heightConstraint);
 
@@ -36,13 +33,25 @@ namespace Microsoft.Maui.Layouts
 		{
 			Thickness margin = frameworkElement.GetMargin();
 
-			var frameWidth = frameworkElement.HorizontalLayoutAlignment == LayoutAlignment.Fill
-				? Math.Max(0, bounds.Width - margin.HorizontalThickness)
-				: frameworkElement.DesiredSize.Width;
+			// Normally the frame's width will be the element's desired width
+			var frameWidth = frameworkElement.DesiredSize.Width;
 
-			var frameHeight = frameworkElement.VerticalLayoutAlignment == LayoutAlignment.Fill
-				? Math.Max(0, bounds.Height - margin.VerticalThickness)
-				: frameworkElement.DesiredSize.Height;
+			// But, if the element is set to fill horizontally and it doesn't have an explicitly set width,
+			// the frame width will be large enough to fill the space
+			if (frameworkElement.HorizontalLayoutAlignment == LayoutAlignment.Fill && frameworkElement.Width == -1)
+			{
+				frameWidth = Math.Max(0, bounds.Width - margin.HorizontalThickness);
+			}
+
+			// Normally the frame's height will be the element's desired height
+			var frameHeight = frameworkElement.DesiredSize.Height;
+
+			// But, if the element is set to fill vertically and it doesn't have an explicitly set height,
+			// the frame height will be large enough to fill the space
+			if (frameworkElement.VerticalLayoutAlignment == LayoutAlignment.Fill && frameworkElement.Height == -1)
+			{
+				frameHeight = Math.Max(0, bounds.Height - margin.VerticalThickness);
+			}
 
 			var frameX = AlignHorizontal(frameworkElement, bounds, margin);
 			var frameY = AlignVertical(frameworkElement, bounds, margin);

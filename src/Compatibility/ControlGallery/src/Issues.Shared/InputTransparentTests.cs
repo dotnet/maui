@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -104,9 +105,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			layout.RowDefinitions.Add(new RowDefinition());
 
 			var abs = new AbsoluteLayout();
-			var box = new BoxView { Color = Color.BlanchedAlmond };
+			var box = new BoxView { Color = Colors.BlanchedAlmond };
 
-			var label = new Label { BackgroundColor = Color.Chocolate, Text = "Start", Margin = 5 };
+			var label = new Label { BackgroundColor = Colors.Chocolate, Text = "Start", Margin = 5 };
 
 			var taps = 0;
 
@@ -180,7 +181,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Grid.SetColumn(col2, 1);
 
 			col1.Children.Add(MenuButton(nameof(Image), () => new Image { Source = ImageSource.FromFile("oasis.jpg") }));
-			col1.Children.Add(MenuButton(nameof(Frame), () => new Frame { BackgroundColor = Color.DarkGoldenrod }));
+			col1.Children.Add(MenuButton(nameof(Frame), () => new Frame { BackgroundColor = Colors.DarkGoldenrod }));
 			col1.Children.Add(MenuButton(nameof(Entry), () => new Entry()));
 			col1.Children.Add(MenuButton(nameof(Editor), () => new Editor()));
 			col1.Children.Add(MenuButton(nameof(Button), () => new Button { Text = "Test" }));
@@ -198,7 +199,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			col2.Children.Add(MenuButton(nameof(Slider), () => new Slider()));
 			col2.Children.Add(MenuButton(nameof(Switch), () => new Switch()));
 			col2.Children.Add(MenuButton(nameof(Stepper), () => new Stepper()));
-			col2.Children.Add(MenuButton(nameof(BoxView), () => new BoxView { BackgroundColor = Color.DarkMagenta, WidthRequest = 100, HeightRequest = 100 }));
+			col2.Children.Add(MenuButton(nameof(BoxView), () => new BoxView { BackgroundColor = Colors.DarkMagenta, WidthRequest = 100, HeightRequest = 100 }));
 
 			return new ContentPage { Content = layout };
 		}

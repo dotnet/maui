@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -33,13 +34,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				Text = "mdp",
 				Command = new Command(async () =>
 				{
-					var newNav = new NavigationPage { Title = "Hello 1 nav", BarBackgroundColor = Color.Pink, BarTextColor = Color.Blue };
+					var newNav = new NavigationPage { Title = "Hello 1 nav", BarBackgroundColor = Colors.Pink, BarTextColor = Colors.Blue };
 					var mdp = new FlyoutPage();
 					await newNav.PushAsync(GetPage(newNav));
 					mdp.Flyout = new ContentPage
 					{
 						Title = "Flyout",
-						BackgroundColor = Color.Red,
+						BackgroundColor = Colors.Red,
 						Content = new Button
 						{
 							Text = "new",
@@ -71,8 +72,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				Text = "change nav",
 				Command = new Command(() =>
 				{
-					(Parent as NavigationPage).BarBackgroundColor = Color.Blue;
-					(Parent as NavigationPage).BarTextColor = Color.Pink;
+					(Parent as NavigationPage).BarBackgroundColor = Colors.Blue;
+					(Parent as NavigationPage).BarTextColor = Colors.Pink;
 				})
 			};
 
@@ -93,8 +94,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				Text = "change nav",
 				Command = new Command(() =>
 				{
-					navTab.BarBackgroundColor = Color.Blue;
-					navTab.BarTextColor = Color.Pink;
+					navTab.BarBackgroundColor = Colors.Blue;
+					navTab.BarTextColor = Colors.Pink;
 				})
 			};
 			var btn3 = new Button

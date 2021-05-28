@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 						}
 						return new FontImageSource
 						{
-							Color = Color.Black,
+							Color = Colors.Black,
 							FontFamily = fontFamily,
 							Glyph = "\uf233",
 							Size = 24,

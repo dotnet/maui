@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Diagnostics;
 
@@ -52,7 +53,7 @@ namespace Microsoft.Maui
 
 		public override bool Equals(object? obj)
 		{
-			return obj != null && obj is GridLength && Equals((GridLength)obj);
+			return obj is GridLength && Equals((GridLength)obj);
 		}
 
 		bool Equals(GridLength other)

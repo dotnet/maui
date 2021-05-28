@@ -6,6 +6,7 @@ using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 using AColor = Android.Graphics.Color;
@@ -183,7 +184,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		bool GetNativeIsBold(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Typeface.IsBold;
+			GetNativeEntry(entryHandler).Typeface.GetFontWeight() == FontWeight.Bold;
 
 		bool GetNativeIsItalic(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Typeface.IsItalic;

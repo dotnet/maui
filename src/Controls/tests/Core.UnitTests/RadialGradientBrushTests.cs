@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -25,8 +26,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var gradientStops = new GradientStopCollection
 			{
-				new GradientStop { Color = Color.Red, Offset = 0.1f },
-				new GradientStop { Color = Color.Orange, Offset = 0.8f }
+				new GradientStop { Color = Colors.Red, Offset = 0.1f },
+				new GradientStop { Color = Colors.Orange, Offset = 0.8f }
 			};
 
 			RadialGradientBrush radialGradientBrush = new RadialGradientBrush(gradientStops, new Point(0, 0), 10);
@@ -49,8 +50,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Radius = 10,
 				GradientStops = new GradientStopCollection
 				{
-					new GradientStop { Color = Color.Orange, Offset = 0.1f },
-					new GradientStop { Color = Color.Red, Offset = 0.8f }
+					new GradientStop { Color = Colors.Orange, Offset = 0.1f },
+					new GradientStop { Color = Colors.Red, Offset = 0.8f }
 				}
 			};
 
@@ -72,8 +73,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Radius = 10,
 				GradientStops = new GradientStopCollection
 				{
-					new GradientStop { Color = Color.Orange, Offset = 0.1f },
-					new GradientStop { Color = Color.Red, Offset = 0.8f }
+					new GradientStop { Color = Colors.Orange, Offset = 0.1f },
+					new GradientStop { Color = Colors.Red, Offset = 0.8f }
 				}
 			};
 
@@ -96,7 +97,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				GradientStops = new GradientStopCollection
 				{
-					new GradientStop { Color = Color.Red, }
+					new GradientStop { Color = Colors.Red, }
 				},
 				Radius = 20
 			};
@@ -111,8 +112,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				GradientStops = new GradientStopCollection
 				{
-					new GradientStop { Color = Color.Red, Offset = 0.1f },
-					new GradientStop { Color = Color.Blue, Offset = 1.0f }
+					new GradientStop { Color = Colors.Red, Offset = 0.1f },
+					new GradientStop { Color = Colors.Blue, Offset = 1.0f }
 				},
 				Radius = 20
 			};

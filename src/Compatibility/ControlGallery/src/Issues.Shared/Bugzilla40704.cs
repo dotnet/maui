@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -109,11 +110,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			public GroupHeaderViewCell()
 			{
 				Height = 40;
-				var grd = new Grid { BackgroundColor = Color.Aqua, Padding = new Thickness(5, 10) };
+				var grd = new Grid { BackgroundColor = Colors.Aqua, Padding = new Thickness(5, 10) };
 				tapGesture = new TapGestureRecognizer();
 				tapGesture.Tapped += HeaderCell_OnTapped;
 				grd.GestureRecognizers.Add(tapGesture);
-				var lbl = new Label { VerticalOptions = LayoutOptions.Center, HorizontalOptions = LayoutOptions.FillAndExpand, TextColor = Color.Black, FontSize = 16 };
+				var lbl = new Label { VerticalOptions = LayoutOptions.Center, HorizontalOptions = LayoutOptions.FillAndExpand, TextColor = Colors.Black, FontSize = 16 };
 				lbl.SetBinding(Label.TextProperty, new Binding("Title"));
 
 				grd.Children.Add(lbl);
@@ -138,8 +139,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			public ItemTestViewCell()
 			{
 
-				var grd = new Grid { BackgroundColor = Color.Yellow };
-				var lbl = new Label { HorizontalOptions = LayoutOptions.FillAndExpand, TextColor = Color.Black, FontSize = 16, LineBreakMode = LineBreakMode.WordWrap };
+				var grd = new Grid { BackgroundColor = Colors.Yellow };
+				var lbl = new Label { HorizontalOptions = LayoutOptions.FillAndExpand, TextColor = Colors.Black, FontSize = 16, LineBreakMode = LineBreakMode.WordWrap };
 				lbl.SetBinding(Label.TextProperty, new Binding("Description"));
 				grd.Children.Add(lbl);
 				View = grd;

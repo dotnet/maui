@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {

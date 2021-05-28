@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -38,11 +39,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Padding = 10,
 						Children =
 						{
-							new Label { HeightRequest = 50, BackgroundColor = Color.Coral, Text = "Long click each cell. Input views should not display context actions."},
-							new Editor { HeightRequest = 50, BackgroundColor = Color.Bisque, Text = "Editor"},
-							new Entry { HeightRequest = 50, BackgroundColor = Color.Aqua, Text = "Entry"},
-							new SearchBar { HeightRequest = 50, BackgroundColor = Color.CornflowerBlue, Text = "SearchBar"},
-							new Grid { HeightRequest = 50, BackgroundColor = Color.PaleVioletRed}
+							new Label { HeightRequest = 50, BackgroundColor = Colors.Coral, Text = "Long click each cell. Input views should not display context actions."},
+							new Editor { HeightRequest = 50, BackgroundColor = Colors.Bisque, Text = "Editor"},
+							new Entry { HeightRequest = 50, BackgroundColor = Colors.Aqua, Text = "Entry"},
+							new SearchBar { HeightRequest = 50, BackgroundColor = Colors.CornflowerBlue, Text = "SearchBar"},
+							new Grid { HeightRequest = 50, BackgroundColor = Colors.PaleVioletRed}
 						}
 					}
 				})

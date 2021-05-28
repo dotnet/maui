@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 			};
 			Label label;
-			grid.Children.Add(label = new Label { BackgroundColor = Color.Lime });
+			grid.Children.Add(label = new Label { BackgroundColor = Colors.Lime });
 			label.SetBinding(Label.TextProperty, "FirstName");
 
 			grid.Children.Add(label = new Label(), 0, 1);

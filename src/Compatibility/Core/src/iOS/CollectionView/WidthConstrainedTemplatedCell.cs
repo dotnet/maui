@@ -1,5 +1,6 @@
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return (false, size);
 			}
 
-			var desiredBounds = VisualElementRenderer.Element.Measure(bounds.Width, double.PositiveInfinity, 
+			var desiredBounds = VisualElementRenderer.Element.Measure(bounds.Width, double.PositiveInfinity,
 				MeasureFlags.IncludeMargins);
 
 			if (desiredBounds.Request.Height == currentSize.Height)

@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -57,10 +58,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var slider = new SliderStub()
 			{
-				ThumbColor = Color.Purple
+				ThumbColor = Colors.Purple
 			};
 
-			await ValidateNativeThumbColor(slider, Color.Purple);
+			await ValidateNativeThumbColor(slider, Colors.Purple);
 		}
 
 #if !__ANDROID__ // Android native control behavior works differently; see SliderHandlerTests.Android.cs

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -26,8 +27,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			stackLayout.Children.Add(new Switch()
 			{
-				ThumbColor = Color.Red,
-				OnColor = Color.Yellow,
+				ThumbColor = Colors.Red,
+				OnColor = Colors.Yellow,
 				AutomationId = switchId
 			});
 

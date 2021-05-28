@@ -1,130 +1,100 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using Android.Graphics;
+using Microsoft.Extensions.Logging;
 using AApplication = Android.App.Application;
 
 namespace Microsoft.Maui
 {
 	public class FontManager : IFontManager
 	{
-		readonly ConcurrentDictionary<(string fontFamily, FontAttributes fontAttributes), Typeface?> _typefaces =
-			new ConcurrentDictionary<(string fontFamily, FontAttributes fontAttributes), Typeface?>();
+		static readonly string[] FontFolders = new[]
+		{
+			"",
+			"Fonts/",
+			"fonts/",
+		};
 
+		readonly ConcurrentDictionary<(string fontFamilyName, FontWeight weight, bool italic), Typeface?> _typefaces = new();
 		readonly IFontRegistrar _fontRegistrar;
+		readonly ILogger<FontManager>? _logger;
 
 		Typeface? _defaultTypeface;
 
-		public FontManager(IFontRegistrar fontRegistrar)
+		public FontManager(IFontRegistrar fontRegistrar, ILogger<FontManager>? logger = null)
 		{
 			_fontRegistrar = fontRegistrar;
+			_logger = logger;
 		}
 
 		public Typeface DefaultTypeface => _defaultTypeface ??= Typeface.Default!;
 
 		public Typeface? GetTypeface(Font font)
 		{
-			if (font.IsDefault || (font.FontAttributes == FontAttributes.None && string.IsNullOrEmpty(font.FontFamily)))
+			if (font == Font.Default || (font.Weight == FontWeight.Regular && string.IsNullOrEmpty(font.FontFamily) && font.FontSlant == FontSlant.Default))
 				return DefaultTypeface;
 
-			return _typefaces.GetOrAdd((font.FontFamily, font.FontAttributes), CreateTypeface);
+			return _typefaces.GetOrAdd((font.FontFamily, font.Weight, font.FontSlant != FontSlant.Default), CreateTypeface);
 		}
 
-		public float GetScaledPixel(Font font)
+		public float GetFontSize(Font font, float defaultFontSize = 0) =>
+			font.FontSize <= 0
+				? (defaultFontSize > 0 ? defaultFontSize : 14f)
+				: (float)font.FontSize;
+
+
+		Typeface? GetFromAssets(string fontName)
 		{
-			if (font.IsDefault)
-				return 14;
-
-			if (font.UseNamedSize)
-			{
-				switch (font.NamedSize)
-				{
-					case NamedSize.Micro:
-						return 10;
-
-					case NamedSize.Small:
-						return 12;
-
-					case NamedSize.Default:
-					case NamedSize.Medium:
-						return 14;
-
-					case NamedSize.Large:
-						return 18;
-				}
-			}
-
-			return (float)font.FontSize;
-		}
-
-		(bool success, Typeface? typeface) TryGetFromAssets(string fontName)
-		{
-			//First check Alias
-			var (hasFontAlias, fontPostScriptName) = _fontRegistrar.HasFont(fontName);
-			if (hasFontAlias)
-				return (true, Typeface.CreateFromFile(fontPostScriptName));
+			// First check Alias
+			if (_fontRegistrar.GetFont(fontName) is string fontPostScriptName)
+				return Typeface.CreateFromFile(fontPostScriptName);
 
 			var isAssetFont = IsAssetFontFamily(fontName);
 			if (isAssetFont)
-			{
 				return LoadTypefaceFromAsset(fontName);
-			}
 
-			var folders = new[]
-			{
-				"",
-				"Fonts/",
-				"fonts/",
-			};
-
-			//copied text
+			// copied text
 			var fontFile = FontFile.FromString(fontName);
 
 			if (!string.IsNullOrWhiteSpace(fontFile.Extension))
 			{
-				var (hasFont, fontPath) = _fontRegistrar.HasFont(fontFile.FileNameWithExtension());
-				if (hasFont)
-				{
-					return (true, Typeface.CreateFromFile(fontPath));
-				}
+				if (_fontRegistrar.GetFont(fontFile.FileNameWithExtension()) is string fontPath)
+					return Typeface.CreateFromFile(fontPath);
 			}
 			else
 			{
 				foreach (var ext in FontFile.Extensions)
 				{
-					var formated = fontFile.FileNameWithExtension(ext);
-					var (hasFont, fontPath) = _fontRegistrar.HasFont(formated);
-					if (hasFont)
-					{
-						return (true, Typeface.CreateFromFile(fontPath));
-					}
+					var formatted = fontFile.FileNameWithExtension(ext);
+					if (_fontRegistrar.GetFont(formatted) is string fontPath)
+						return Typeface.CreateFromFile(fontPath);
 
-					foreach (var folder in folders)
+					foreach (var folder in FontFolders)
 					{
-						formated = $"{folder}{fontFile.FileNameWithExtension()}#{fontFile.PostScriptName}";
-						var result = LoadTypefaceFromAsset(formated);
-						if (result.success)
+						formatted = $"{folder}{fontFile.FileNameWithExtension()}#{fontFile.PostScriptName}";
+						var result = LoadTypefaceFromAsset(formatted, false);
+						if (result != null)
 							return result;
 					}
-
 				}
 			}
 
-			return (false, null);
+			return null;
 		}
 
-		(bool success, Typeface? typeface) LoadTypefaceFromAsset(string fontfamily)
+		Typeface? LoadTypefaceFromAsset(string fontfamily, bool warning = true)
 		{
 			try
 			{
-				var result = Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(fontfamily));
-				return (true, result);
+				return Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(fontfamily));
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(ex);
-				return (false, null);
+				if (warning)
+					_logger?.LogWarning(ex, "Unable to load font '{Font}' from assets.", fontfamily);
 			}
+
+			return null;
 		}
 
 		bool IsAssetFontFamily(string name)
@@ -132,48 +102,46 @@ namespace Microsoft.Maui
 			return name != null && (name.Contains(".ttf#") || name.Contains(".otf#"));
 		}
 
-		Typeface? CreateTypeface((string fontFamily, FontAttributes fontAttributes) familyAttributePair)
+		Typeface? CreateTypeface((string fontFamilyName, FontWeight weight, bool italic) fontData)
 		{
-			var (fontFamily, fontAttributes) = familyAttributePair;
+			var (fontFamily, weight, italic) = fontData;
 			fontFamily ??= string.Empty;
+			var style = ToTypefaceStyle(weight, italic);
 
-			Typeface? result;
+			var result = Typeface.Default;
 
-			if (string.IsNullOrWhiteSpace(fontFamily))
+			if (!string.IsNullOrWhiteSpace(fontFamily))
 			{
-				var style = ToTypefaceStyle(fontAttributes);
-				result = Typeface.Create(Typeface.Default, style);
-			}
-			else if (IsAssetFontFamily(fontFamily))
-			{
-				result = Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(fontFamily));
-			}
-			else
-			{
-				fontFamily ??= string.Empty;
-				var (success, typeface) = TryGetFromAssets(fontFamily);
-				if (success)
+				if (IsAssetFontFamily(fontFamily))
 				{
-					return typeface;
+					result = Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(fontFamily));
 				}
 				else
 				{
-					var style = ToTypefaceStyle(fontAttributes);
-					return Typeface.Create(fontFamily, style);
+					if (GetFromAssets(fontFamily) is Typeface typeface)
+						result = typeface;
+					else
+						result = Typeface.Create(fontFamily, style);
 				}
 			}
+
+			if (NativeVersion.IsAtLeast(28))
+				result = Typeface.Create(result, (int)weight, italic);
+			else
+				result = Typeface.Create(result, style);
 
 			return result;
 		}
 
-		TypefaceStyle ToTypefaceStyle(FontAttributes attrs)
+		TypefaceStyle ToTypefaceStyle(FontWeight weight, bool italic)
 		{
 			var style = TypefaceStyle.Normal;
-			if ((attrs & (FontAttributes.Bold | FontAttributes.Italic)) == (FontAttributes.Bold | FontAttributes.Italic))
+			var bold = weight >= FontWeight.Bold;
+			if (bold && italic)
 				style = TypefaceStyle.BoldItalic;
-			else if ((attrs & FontAttributes.Bold) != 0)
+			else if (bold)
 				style = TypefaceStyle.Bold;
-			else if ((attrs & FontAttributes.Italic) != 0)
+			else if (italic)
 				style = TypefaceStyle.Italic;
 			return style;
 		}

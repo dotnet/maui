@@ -1,6 +1,19 @@
 <Project>
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true'" Project="eng\Git.Build.targets" />
-  <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true' " Project="eng\Version.targets" />
+  <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true' " Project="eng\Versions.targets" />
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\Microsoft.Extensions.targets" />
+
+  <!-- Temporarily disable the linker for net6.0-ios and net6.0-maccatalyst until we get machine pools with Big Sur and Xcode 12.5 is stable -->
+  <PropertyGroup>
+    <PublishTrimmed Condition=" '$(TargetFramework)' == 'net6.0-ios' or '$(TargetFramework)' == 'net6.0-maccatalyst' ">false</PublishTrimmed>
+  </PropertyGroup>
+
+  <Target Name="Net6WinUIPackagingWorkaround" BeforeTargets="GetPackagingOutputs" Condition="$(TargetFramework.Contains('-windows')) == true AND '$(DisableEmbeddedXbf)' != 'true' ">
+    <PropertyGroup>
+      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
+      <_SupportEmbedFileResources>true</_SupportEmbedFileResources>
+      <_EmbedFileResfilePath>$(IntermediateOutputPath)$(AppxSubfolderWithFilesToBeEmbedded)\embed.resfiles</_EmbedFileResfilePath>
+    </PropertyGroup>
+  </Target>
 </Project>

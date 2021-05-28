@@ -1,3 +1,4 @@
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var pinkStyle = new Style(typeof(Span))
 			{
 				Setters = {
-					new Setter { Property = Span.TextColorProperty, Value = Color.Pink },
+					new Setter { Property = Span.TextColorProperty, Value = Colors.Pink },
 				},
 				Class = "pink",
 				ApplyToDerivedTypes = true,
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = label
 			};
 
-			Assert.AreEqual(Color.Pink, span.TextColor);
+			Assert.AreEqual(Colors.Pink, span.TextColor);
 		}
 
 		[Test]

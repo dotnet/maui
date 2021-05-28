@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			public GroupHeaderTemplate()
 			{
-				var label = new Label { BackgroundColor = Color.Red };
+				var label = new Label { BackgroundColor = Colors.Red };
 				label.SetBinding(Label.TextProperty, "Key");
 				View = label;
 			}
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			public GroupItemTemplate()
 			{
-				var label = new Label { BackgroundColor = Color.Green };
+				var label = new Label { BackgroundColor = Colors.Green };
 				label.SetBinding(Label.TextProperty, "Name");
 				View = label;
 			}
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			public ItemTemplate()
 			{
-				var label = new Label { BackgroundColor = Color.Green, HorizontalOptions = LayoutOptions.CenterAndExpand };
+				var label = new Label { BackgroundColor = Colors.Green, HorizontalOptions = LayoutOptions.CenterAndExpand };
 				label.SetBinding(Label.TextProperty, "Name");
 				View = label;
 			}
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			public ItemTemplate2()
 			{
-				var label = new Label { BackgroundColor = Color.Green };
+				var label = new Label { BackgroundColor = Colors.Green };
 				label.SetBinding(Label.TextProperty, "Name");
 				var container = new StackLayout() { HorizontalOptions = LayoutOptions.FillAndExpand };
 				container.Children.Add(label);

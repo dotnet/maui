@@ -1,8 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+//using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
+using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
+using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
 namespace Microsoft.Maui.Controls
 {
@@ -197,7 +201,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create("Opacity", typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
 
-		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create("BackgroundColor", typeof(Color), typeof(VisualElement), Color.Default);
+		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create("BackgroundColor", typeof(Color), typeof(VisualElement), null);
 
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
 			propertyChanging: (bindable, oldvalue, newvalue) =>
@@ -798,6 +802,7 @@ namespace Microsoft.Maui.Controls
 				result.Request = new Size(result.Request.Width + margin.HorizontalThickness, result.Request.Height + margin.VerticalThickness);
 			}
 
+			DesiredSize = result.Request;
 			return result;
 		}
 
@@ -888,23 +893,10 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(trigger);
 		}
 
-		bool _stopTheRecursion;
 		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_measureCache.Clear();
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
-
-			// Framework Element parts are already invalid
-			// This is a bit awkward because we could have invalidations coming from old bits
-			// to here first and new bits going to IFrameworkElement.InvalidateMeasure
-			// first and each one needs to call the other so this short circuits the ping pong
-
-			if (IsMeasureValid && !_stopTheRecursion)
-			{
-				_stopTheRecursion = true;
-				((IFrameworkElement)this).InvalidateMeasure();
-				_stopTheRecursion = false;
-			}
 		}
 
 		void IVisualElementController.InvalidateMeasure(InvalidationTrigger trigger) => InvalidateMeasureInternal(trigger);
@@ -948,7 +940,15 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue) => InvalidateMeasureInternal(InvalidationTrigger.Undefined);
+		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue)
+		{
+			if (this is IFrameworkElement fe)
+			{
+				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Visibility));
+			}
+
+			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
+		}
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
 		{
@@ -1089,6 +1089,13 @@ namespace Microsoft.Maui.Controls
 			}
 
 			element.SelfConstraint = constraint;
+
+			if (element is IFrameworkElement fe)
+			{
+				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Width));
+				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Height));
+			}
+
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.SizeRequestChanged);
 		}
 

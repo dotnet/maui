@@ -1,5 +1,6 @@
 using System;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				ReMeasure();
 				return true;
 			}
-			
+
 			return false;
 		}
 
@@ -64,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void ReMeasure()
 		{
-			if(Height != null && MatchHeight)
+			if (Height != null && MatchHeight)
 			{
 				MeasuredHeight = Height.Value;
 			}

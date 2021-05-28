@@ -23,14 +23,14 @@
 
 	<ItemGroup>
 		<PackageReference Include="Mono.Cecil" Version="0.11.3" PrivateAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="System.CodeDom" Version="4.7.0" Condition="'$(TargetFramework)' == 'netstandard2.0'" GeneratePathProperty="true" />
-		<PackageReference Include="System.CodeDom" Version="6.0.0-preview.2.21110.7" PrivateAssets="all" Condition="'$(TargetFramework)' == 'net6.0'" />
+		<PackageReference Include="System.CodeDom" GeneratePathProperty="true" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+		<PackageReference Include="System.CodeDom" PrivateAssets="all" Condition="'$(TargetFramework)' == 'net6.0'" />
 		<PackageReference Include="Microsoft.Build" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Maui.Graphics" GeneratePathProperty="true" />
 		<!-- <PackageReference Include="StrongNamer" Version="0.2.5" PrivateAssets="all" GeneratePathProperty="true" /> -->
-		<PackageReference Include="XliffTasks" Version="1.0.0-beta.21110.1" PrivateAssets="all" />
 	</ItemGroup>
 
 	<PropertyGroup>
@@ -51,20 +51,17 @@
 		<None Include="..\..\..\..\.nuspec\Microsoft.Maui.Controls.DefaultItems.props" Visible="False" Pack="True" PackagePath="buildTransitive" />
 		<None Include="..\..\..\..\.nuspec\Microsoft.Maui.Controls.DefaultItems.targets" Visible="False" Pack="True" PackagePath="buildTransitive" />
 
+		<None Include="$(PkgMicrosoft_Maui_Graphics)\lib\netstandard2.0\Microsoft.Maui.Graphics.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Mdb.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Pdb.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Rocks.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
-    <None Include="$(PkgSystem_CodeDom)\lib\netstandard2.0\System.CodeDom.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
+		<None Include="$(PkgSystem_CodeDom)\lib\netstandard2.0\System.CodeDom.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 
 		<None Include="..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 		<None Include="..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 		<None Include="..\Xaml\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Xaml.dll" Visible="False" Pack="True" PackagePath="buildTransitive" />
 	</ItemGroup>
-
-	<PropertyGroup>
-		 <UpdateXlfOnBuild Condition="'$(CI)' != 'true'">true</UpdateXlfOnBuild>
-	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Controls.Core-net6.csproj" PrivateAssets="all" />

@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -19,11 +20,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var layout = new StackLayout();
 			var box = new BoxView();
-			box.Color = Color.Aqua;
+			box.Color = Colors.Aqua;
 
 			box.On<iOS>().SetIsShadowEnabled(true);
 			box.On<iOS>().SetShadowOffset(new Size(10, 10));
-			box.On<iOS>().SetShadowColor(Color.Purple);
+			box.On<iOS>().SetShadowColor(Colors.Purple);
 
 			box.WidthRequest = box.HeightRequest = 100;
 

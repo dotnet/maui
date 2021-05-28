@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			element.HeightRequest = 50;
 			element.WidthRequest = 100;
-			element.BorderColor = Color.Olive;
+			element.BorderColor = Colors.Olive;
 		}
 
 		readonly Random _randomValue = new Random();
@@ -28,14 +29,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			var viewContainer = new StateViewContainer<Frame>(Test.Frame.Content, new Frame
 			{
-				BorderColor = Color.Teal,
+				BorderColor = Colors.Teal,
 				Content = new Label { Text = "I am a frame" }
 			});
 			viewContainer.StateChangeButton.Command = new Command(() => viewContainer.View.Content = new Label { Text = "Different content" });
 
 			var cornerRadiusContainer = new StateViewContainer<Frame>(Test.Frame.CornerRadius, new Frame
 			{
-				BorderColor = Color.Teal,
+				BorderColor = Colors.Teal,
 				CornerRadius = 25
 			});
 			cornerRadiusContainer.StateChangeButton.Command = new Command(() => cornerRadiusContainer.View.CornerRadius = _randomValue.Next(0, 25));

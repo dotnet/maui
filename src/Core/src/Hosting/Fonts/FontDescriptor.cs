@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿#nullable enable
+using System.Reflection;
 
 namespace Microsoft.Maui.Hosting
 {

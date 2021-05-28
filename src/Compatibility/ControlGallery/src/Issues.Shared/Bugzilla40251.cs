@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -106,7 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.Center,
 					Text = "Button",
-					BackgroundColor = Color.Black,
+					BackgroundColor = Colors.Black,
 					WidthRequest = 250,
 					HeightRequest = 50
 				}

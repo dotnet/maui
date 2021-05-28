@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			textChangedContainer.View.TextChanged += (sender, args) => textChangedContainer.EventFired();
 			var placeholderContainer = new ViewContainer<Editor>(Test.Editor.Placeholder, new Editor { Placeholder = "Placeholder" });
 
-			var placeholderColorContainer = new ViewContainer<Editor>(Test.Editor.PlaceholderColor, new Editor { Placeholder = "I should have red placeholder", PlaceholderColor = Color.Red });
+			var placeholderColorContainer = new ViewContainer<Editor>(Test.Editor.PlaceholderColor, new Editor { Placeholder = "I should have red placeholder", PlaceholderColor = Colors.Red });
 			var textFontAttributesContainer = new ViewContainer<Editor>(Test.Editor.FontAttributes, new Editor { Text = "I have italic text", FontAttributes = FontAttributes.Italic });
 			var textFamilyContainer1 = new ViewContainer<Editor>(Test.Editor.FontFamily, new Editor { Text = "I have Comic Sans text in Win & Android", FontFamily = "Comic Sans MS" });
 			var textFamilyContainer2 = new ViewContainer<Editor>(Test.Editor.FontFamily, new Editor { Text = "I have bold Chalkboard text in iOS", FontFamily = "ChalkboardSE-Regular", FontAttributes = FontAttributes.Bold });
@@ -32,10 +33,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var textFontSizeLargeContainer = new ViewContainer<Editor>(Test.Editor.FontSize, new Editor { Text = "I have size 48 (huge) text", FontSize = 48, Placeholder = "This is a placeholder" });
 
 			var textColorContainer = new ViewContainer<Editor>(Test.Editor.TextColor,
-				new Editor { Text = "I should have red text", TextColor = Color.Red });
+				new Editor { Text = "I should have red text", TextColor = Colors.Red });
 
 			var textColorDisabledContainer = new ViewContainer<Editor>(Test.Editor.TextColor,
-				new Editor { Text = "I should have the default disabled text color", TextColor = Color.Red, IsEnabled = false });
+				new Editor { Text = "I should have the default disabled text color", TextColor = Colors.Red, IsEnabled = false });
 
 			var keyboardContainer = new ViewContainer<Editor>(Test.InputView.Keyboard,
 				new Editor { Keyboard = Keyboard.Numeric });

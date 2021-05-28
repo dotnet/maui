@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					var label = new Label();
 
 					var trigger = new DataTrigger(typeof(Label)) { Binding = new Binding(nameof(ItemViewModel.Pink)), Value = true };
-					trigger.Setters.Add(new Setter { Value = Color.Magenta, Property = Label.TextColorProperty });
+					trigger.Setters.Add(new Setter { Value = Colors.Magenta, Property = Label.TextColorProperty });
 					label.Triggers.Add(trigger);
 
 					label.SetBinding(Label.TextProperty, nameof(ItemViewModel.Id));
@@ -79,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					});
 
 				stackLayout.Children.Remove(instructions);
-				instructions.TextColor = Color.Green;
+				instructions.TextColor = Colors.Green;
 				stackLayout.Children.Insert(0, instructions);
 			};
 		}

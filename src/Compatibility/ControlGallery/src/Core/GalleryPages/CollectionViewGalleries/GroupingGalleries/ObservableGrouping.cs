@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.GroupingGalleries
 {
@@ -210,7 +211,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 				{
 					FontSize = 16,
 					FontAttributes = FontAttributes.Bold,
-					BackgroundColor = Color.LightGreen
+					BackgroundColor = Colors.LightGreen
 
 				};
 
@@ -229,7 +230,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Coll
 				var label = new Label()
 				{
 					Margin = new Thickness(0, 0, 0, 15),
-					BackgroundColor = Color.LightBlue
+					BackgroundColor = Colors.LightBlue
 				};
 
 				label.SetBinding(Label.TextProperty, new Binding("Count", stringFormat: "Total members: {0:D}"));

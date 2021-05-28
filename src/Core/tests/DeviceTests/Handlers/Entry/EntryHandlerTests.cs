@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 			var entry = new EntryStub()
 			{
 				Text = "Test",
-				TextColor = Color.Yellow
+				TextColor = Colors.Yellow
 			};
 
 			await ValidatePropertyInitValue(entry, () => entry.TextColor, GetNativeTextColor, entry.TextColor);
@@ -177,20 +178,20 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontAttributes.None, false, false)]
-		[InlineData(FontAttributes.Bold, true, false)]
-		[InlineData(FontAttributes.Italic, false, true)]
-		[InlineData(FontAttributes.Bold | FontAttributes.Italic, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontAttributes attributes, bool isBold, bool isItalic)
+		[InlineData(FontWeight.Regular, false, false)]
+		[InlineData(FontWeight.Bold, true, false)]
+		[InlineData(FontWeight.Regular, false, true)]
+		[InlineData(FontWeight.Bold, true, true)]
+		public async Task FontAttributesInitializeCorrectly(FontWeight weight, bool isBold, bool isItalic)
 		{
 			var entry = new EntryStub()
 			{
 				Text = "Test",
-				Font = Font.OfSize("Arial", 10).WithAttributes(attributes)
+				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
 			};
 
-			await ValidatePropertyInitValue(entry, () => entry.Font.FontAttributes.HasFlag(FontAttributes.Bold), GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(entry, () => entry.Font.FontAttributes.HasFlag(FontAttributes.Italic), GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(entry, () => entry.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
+			await ValidatePropertyInitValue(entry, () => entry.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
 
 		[Theory(DisplayName = "Validates clear button visibility.")]

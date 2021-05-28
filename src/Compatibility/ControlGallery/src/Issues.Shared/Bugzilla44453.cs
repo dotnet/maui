@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -42,8 +43,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 			Detail = new NavigationPage(content)
 			{
-				BarBackgroundColor = Color.Green,
-				BarTextColor = Color.White
+				BarBackgroundColor = Colors.Green,
+				BarTextColor = Colors.White
 			};
 
 			Detail.ToolbarItems.Add(new ToolbarItem("Test Secondary Item", null, delegate

@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Maps
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Controls.Maps
 			nameof(FillColor),
 			typeof(Color),
 			typeof(Circle),
-			Color.Default);
+			null);
 
 		public Position Center
 		{

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Content = new ScrollView()
 				{
 					HeightRequest = 2000,
-					BackgroundColor = Color.Green,
+					BackgroundColor = Colors.Green,
 					Content = scrollViewContent,
 					AutomationId = "LayoutContainer"
 				},

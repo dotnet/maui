@@ -3,6 +3,7 @@ using System.Diagnostics;
 
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -46,7 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				AutomationId = ViewAutomationId,
 				HeightRequest = 200,
 				WidthRequest = 200,
-				BackgroundColor = Color.Aqua,
+				BackgroundColor = Colors.Aqua,
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill
 			};

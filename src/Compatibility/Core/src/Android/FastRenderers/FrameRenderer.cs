@@ -6,8 +6,11 @@ using Android.Graphics.Drawables;
 using Android.Views;
 using AndroidX.CardView.Widget;
 using AndroidX.Core.View;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 {
@@ -276,7 +279,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				return;
 
 			Color bgColor = Element.BackgroundColor;
-			_backgroundDrawable.SetColor(bgColor.IsDefault ? AColor.White : bgColor.ToAndroid());
+			_backgroundDrawable.SetColor(bgColor?.ToAndroid() ?? AColor.White);
 		}
 
 		void UpdateBackground()
@@ -316,7 +319,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 			Color borderColor = Element.BorderColor;
 
-			if (borderColor.IsDefault)
+			if (borderColor == null)
 				_backgroundDrawable.SetStroke(0, AColor.Transparent);
 			else
 				_backgroundDrawable.SetStroke(3, borderColor.ToAndroid());

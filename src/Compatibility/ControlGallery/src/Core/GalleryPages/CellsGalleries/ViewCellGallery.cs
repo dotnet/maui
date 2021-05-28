@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -83,7 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				ItemsSource = Enumerable.Range(0, albums.Length).Select(i => new UrlImageViewCellListPageModel
 				{
 					Text = "Text " + i,
-					TextColor = i % 2 == 0 ? Color.Red : Color.Blue,
+					TextColor = i % 2 == 0 ? Colors.Red : Colors.Blue,
 					Image = albums[i]
 				}),
 				ItemTemplate = dataTemplate

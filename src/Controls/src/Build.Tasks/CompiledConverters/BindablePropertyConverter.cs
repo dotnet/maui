@@ -34,11 +34,11 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (parts.Length == 1)
 			{
 				var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
-				if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri
+				if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.MauiUri
 					&& ((node.Parent as ElementNode)?.XmlType.Name == nameof(Setter)
 						|| (node.Parent as ElementNode)?.XmlType.Name == nameof(PropertyCondition)))
 				{
-					if (parent.XmlType.NamespaceUri == XamlParser.XFUri &&
+					if (parent.XmlType.NamespaceUri == XamlParser.MauiUri &&
 						(parent.XmlType.Name == nameof(Trigger)
 						 || parent.XmlType.Name == nameof(DataTrigger)
 						 || parent.XmlType.Name == nameof(MultiTrigger)
@@ -50,12 +50,12 @@ namespace Microsoft.Maui.Controls.XamlC
 						else if (ttnode is IElementNode)
 							typeName = ((ttnode as IElementNode).CollectionItems.FirstOrDefault() as ValueNode)?.Value as string ?? ((ttnode as IElementNode).Properties[new XmlName("", "TypeName")] as ValueNode)?.Value as string;
 					}
-					else if (parent.XmlType.NamespaceUri == XamlParser.XFUri && parent.XmlType.Name == nameof(VisualState))
+					else if (parent.XmlType.NamespaceUri == XamlParser.MauiUri && parent.XmlType.Name == nameof(VisualState))
 					{
 						typeName = FindTypeNameForVisualState(parent, node);
 					}
 				}
-				else if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri && (node.Parent as ElementNode)?.XmlType.Name == nameof(Trigger))
+				else if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.MauiUri && (node.Parent as ElementNode)?.XmlType.Name == nameof(Trigger))
 					typeName = ((node.Parent as ElementNode).Properties[new XmlName("", "TargetType")] as ValueNode).Value as string;
 				propertyName = parts[0];
 			}
@@ -85,19 +85,19 @@ namespace Microsoft.Maui.Controls.XamlC
 			//1. parent is VisualState, don't check that
 
 			//2. check that the VS is in a VSG
-			if (!(parent.Parent is IElementNode target) || target.XmlType.NamespaceUri != XamlParser.XFUri || target.XmlType.Name != nameof(VisualStateGroup))
+			if (!(parent.Parent is IElementNode target) || target.XmlType.NamespaceUri != XamlParser.MauiUri || target.XmlType.Name != nameof(VisualStateGroup))
 				throw new XamlParseException($"Expected {nameof(VisualStateGroup)} but found {parent.Parent}", lineInfo);
 
 			//3. if the VSG is in a VSGL, skip that as it could be implicit
 			if (target.Parent is ListNode
-				|| ((target.Parent as IElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri
+				|| ((target.Parent as IElementNode)?.XmlType.NamespaceUri == XamlParser.MauiUri
 				   && (target.Parent as IElementNode)?.XmlType.Name == nameof(VisualStateGroupList)))
 				target = target.Parent.Parent as IElementNode;
 			else
 				target = target.Parent as IElementNode;
 
 			//4. target is now a Setter in a Style, or a VE
-			if (target.XmlType.NamespaceUri == XamlParser.XFUri && target.XmlType.Name == nameof(Setter))
+			if (target.XmlType.NamespaceUri == XamlParser.MauiUri && target.XmlType.Name == nameof(Setter))
 				return ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
 			else
 				return target.XmlType.Name;

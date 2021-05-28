@@ -1,10 +1,6 @@
 using System;
-
-#if __IOS__ || IOS || MACCATALYST
+using System.Linq;
 using NativeView = UIKit.UIView;
-#else
-using NativeView = AppKit.NSView;
-#endif
 
 namespace Microsoft.Maui.Handlers
 {
@@ -34,8 +30,13 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
+			NativeView.View = view;
 			NativeView.CrossPlatformMeasure = VirtualView.Measure;
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
+
+			//Cleanup the old view when reused
+			var oldChildren = NativeView.Subviews.ToList();
+			oldChildren.ForEach(x => x.RemoveFromSuperview());
 
 			foreach (var child in VirtualView.Children)
 			{
@@ -62,6 +63,17 @@ namespace Microsoft.Maui.Handlers
 			{
 				nativeView.RemoveFromSuperview();
 				NativeView.SetNeedsLayout();
+			}
+		}
+
+		protected override void DisconnectHandler(LayoutView nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+			var subViews = nativeView.Subviews;
+
+			foreach (var subView in subViews)
+			{
+				subView.RemoveFromSuperview();
 			}
 		}
 	}

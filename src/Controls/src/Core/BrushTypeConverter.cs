@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -46,7 +47,7 @@ namespace Microsoft.Maui.Controls
 				return new SolidColorBrush(color);
 			}
 
-			return new SolidColorBrush(Color.Default);
+			return new SolidColorBrush(null);
 		}
 
 		public override string ConvertToInvariantString(object value) => throw new NotSupportedException();

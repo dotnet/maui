@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 {
@@ -273,7 +274,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 		{
 			var colors = ((string)parameter).Split((';'));
 			var isSelected = (bool)value;
-			return (isSelected) ? Color.FromHex(colors[0]) : Color.FromHex(colors[1]);
+			return (isSelected) ? Color.FromArgb(colors[0]) : Color.FromArgb(colors[1]);
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

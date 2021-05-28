@@ -14,9 +14,10 @@
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Android\Compatibility.Android.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Compatibility.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Graphics" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />

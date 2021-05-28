@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 #if UITEST
 using NUnit.Framework;
 
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		static object CreateBoxView()
 		{
-			var boxView1 = new BoxView { HeightRequest = 100, Color = new Color(0.55, 0.23, 0.147) };
+			var boxView1 = new BoxView { HeightRequest = 100, Color = new Color(0.55f, 0.23f, 0.147f) };
 			var setter1 = new Setter { Property = BoxView.ColorProperty, Value = "#FF2879DD" };
 			var trigger1 = new DataTrigger(typeof(BoxView)) { Binding = new Binding("Subject"), Value = 65 };
 			trigger1.Setters.Add(setter1);

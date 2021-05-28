@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Hosting.Internal;
 using Xunit;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
 	public class HostBuilderHandlerTests
@@ -14,8 +13,8 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanBuildAHost()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = AppHost
+				.CreateDefaultBuilder()
 				.Build();
 
 			Assert.NotNull(host);
@@ -24,22 +23,22 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanGetIMauiHandlersServiceProviderFromServices()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = AppHost
+				.CreateDefaultBuilder()
 				.Build();
 
 			Assert.NotNull(host);
 			Assert.NotNull(host.Services);
 			Assert.NotNull(host.Handlers);
-			Assert.IsType<MauiHandlersServiceProvider>(host.Handlers);
+			Assert.IsType<Maui.Hosting.Internal.MauiHandlersServiceProvider>(host.Handlers);
 			Assert.Equal(host.Handlers, host.Services.GetService<IMauiHandlersServiceProvider>());
 		}
 
 		[Fact]
 		public void CanRegisterAndGetHandlerUsingType()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = AppHost
+				.CreateDefaultBuilder()
 				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<IViewStub, ViewHandlerStub>())
 				.Build();
 
@@ -52,8 +51,8 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanRegisterAndGetHandler()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = AppHost
+				.CreateDefaultBuilder()
 				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<IViewStub, ViewHandlerStub>())
 				.Build();
 
@@ -66,8 +65,8 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanRegisterAndGetHandlerWithType()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = AppHost
+				.CreateDefaultBuilder()
 				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler(typeof(IViewStub), typeof(ViewHandlerStub)))
 				.Build();
 
@@ -85,8 +84,8 @@ namespace Microsoft.Maui.UnitTests
 				{ typeof(IViewStub), typeof(ViewHandlerStub) }
 			};
 
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = AppHost
+				.CreateDefaultBuilder()
 				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandlers(dic))
 				.Build();
 
@@ -99,8 +98,8 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanRegisterAndGetHandlerForConcreteType()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = AppHost
+				.CreateDefaultBuilder()
 				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<IViewStub, ViewHandlerStub>())
 				.Build();
 
@@ -113,8 +112,8 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void DefaultHandlersAreRegistered()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = AppHost
+				.CreateDefaultBuilder()
 				.Build();
 
 			var handler = host.Handlers.GetHandler(typeof(IButton));
@@ -126,8 +125,8 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void CanSpecifyHandler()
 		{
-			var host = AppHostBuilder
-				.CreateDefaultAppBuilder()
+			var host = AppHost
+				.CreateDefaultBuilder()
 				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<ButtonStub, ButtonHandlerStub>())
 				.Build();
 
@@ -138,6 +137,23 @@ namespace Microsoft.Maui.UnitTests
 			Assert.NotNull(specificHandler);
 			Assert.IsType<ButtonHandler>(defaultHandler);
 			Assert.IsType<ButtonHandlerStub>(specificHandler);
+		}
+
+		[Fact]
+		public void CanChangeHandlerRegistration()
+		{
+			var host = AppHost
+				.CreateDefaultBuilder()
+				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<ButtonStub, ButtonHandlerStub>())
+				.Build();
+
+			var specificHandler = host.Handlers.GetHandler(typeof(ButtonStub));
+			Assert.IsType<ButtonHandlerStub>(specificHandler);
+
+			host.Handlers.GetCollection().AddHandler<ButtonStub, AlternateButtonHandlerStub>();
+
+			var alternateHandler = host.Handlers.GetHandler(typeof(ButtonStub));
+			Assert.IsType<AlternateButtonHandlerStub>(alternateHandler);
 		}
 	}
 }

@@ -3,6 +3,7 @@ using Android.Text;
 using Android.Text.Style;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -55,7 +56,7 @@ namespace Microsoft.Maui
 
 		public static Java.Lang.ICharSequence GetTitle(Color titleColor, string title)
 		{
-			if (titleColor == Color.Default)
+			if (titleColor == null)
 				return new Java.Lang.String(title);
 
 			var spannableTitle = new SpannableString(title ?? string.Empty);

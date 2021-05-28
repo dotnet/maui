@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -17,9 +18,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		protected override void Init()
 		{
-			BarBackgroundColor = Color.FromHex("#61a60e");
-			BarTextColor = Color.FromHex("#ffffff");
-			BackgroundColor = Color.FromHex("#61a60e");
+			BarBackgroundColor = Color.FromArgb("#61a60e");
+			BarTextColor = Color.FromArgb("#ffffff");
+			BackgroundColor = Color.FromArgb("#61a60e");
 
 			var page = new ContentPage { Title = "Page 1", Content = new Button { Text = "Pop", Command = new Command(async () => await Navigation.PopModalAsync()) } };
 			var page2 = new ContentPage { Title = "Page 2" };
@@ -35,13 +36,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-			BarTextColor = Color.White;
+			BarTextColor = Colors.White;
 			Children.RemoveAt(1);
 			Children.Insert(1, new ContentPage { Title = "Page5", IconImageSource = "Loyalty.png" });
 
 			Children.RemoveAt(3);
 			Children.Insert(2, new ContentPage { Title = "Page6", IconImageSource = "Gift.png" });
-			BarTextColor = Color.White;
+			BarTextColor = Colors.White;
 		}
 
 #if UITEST

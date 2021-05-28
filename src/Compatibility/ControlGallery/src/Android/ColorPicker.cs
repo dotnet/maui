@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Views;
 using Android.Widget;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Graphics;
 using Droid = Android;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 		public ColorPickerView(Context context, int minWidth, int minHeight) : base(context)
 		{
-			SelectedColor = Color.Black.ToAndroid();
+			SelectedColor = Colors.Black.ToAndroid();
 
 			SetMinimumHeight(minHeight);
 			SetMinimumWidth(minWidth);

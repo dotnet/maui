@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -73,9 +74,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 			};
 
-			grid.AddChild(new Grid { BackgroundColor = Color.Green }, 0, 0);
+			grid.AddChild(new Grid { BackgroundColor = Colors.Green }, 0, 0);
 			grid.AddChild(stackLayoutWithButton, 0, 1);
-			grid.AddChild(new Grid { BackgroundColor = Color.Green }, 0, 2);
+			grid.AddChild(new Grid { BackgroundColor = Colors.Green }, 0, 2);
 
 			Content = grid;
 

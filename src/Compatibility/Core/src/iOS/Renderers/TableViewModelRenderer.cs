@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Foundation;
 using UIKit;
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				var sectionHeaderTextColor = View.Model.GetSectionTextColor((int)section);
 
-				if (sectionHeaderTextColor != Color.Default)
+				if (sectionHeaderTextColor != null)
 				{
 					header.TextLabel.TextColor = sectionHeaderTextColor.ToUIColor();
 				}
@@ -149,9 +149,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var cell = View.Model.GetCell(indexPath.Section, indexPath.Row);
 			var h = cell.Height;
 
-			if (View.RowHeight == -1 && h == -1 && cell is ViewCell) {
+			if (View.RowHeight == -1 && h == -1 && cell is ViewCell)
+			{
 				return UITableView.AutomaticDimension;
-			} else if (h == -1)
+			}
+			else if (h == -1)
 				return tableView.RowHeight;
 			return (nfloat)h;
 		}

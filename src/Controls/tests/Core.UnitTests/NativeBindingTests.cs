@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -419,7 +420,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(null, nativeView.Foo);
 			Assert.AreEqual(0, nativeView.Bar);
 			var vm = new MockVMForNativeBinding();
-			vm.CColor = Color.Red;
+			vm.CColor = Colors.Red;
 			var converter = new MockCustomColorConverter();
 			nativeView.SetBinding("SelectedColor", new Binding("CColor", converter: converter));
 			nativeView.SetBindingContext(vm);
@@ -434,13 +435,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(0, nativeView.Bar);
 			var inpc = new MockINPC();
 			var vm = new MockVMForNativeBinding();
-			vm.CColor = Color.Red;
+			vm.CColor = Colors.Red;
 			var converter = new MockCustomColorConverter();
 			nativeView.SetBinding("SelectedColor", new Binding("CColor", BindingMode.TwoWay, converter), inpc);
 			nativeView.SetBindingContext(vm);
 			Assert.AreEqual(vm.CColor, nativeView.SelectedColor.FormsColor);
 
-			var newFormsColor = Color.Blue;
+			var newFormsColor = Colors.Blue;
 			var newColor = new MockNativeColor(newFormsColor);
 			nativeView.SelectedColor = newColor;
 			inpc.FireINPC(nativeView, nameof(nativeView.SelectedColor));
@@ -461,7 +462,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					Assert.Fail("Probable loop detected");
 			};
 
-			var vm = new MockVMForNativeBinding { CColor = Color.Red };
+			var vm = new MockVMForNativeBinding { CColor = Colors.Red };
 
 			nativeView.SetBinding("SelectedColor", new Binding("CColor", BindingMode.TwoWay, new MockCustomColorConverter()), "SelectedColorChanged");
 			nativeView.SetBindingContext(vm);

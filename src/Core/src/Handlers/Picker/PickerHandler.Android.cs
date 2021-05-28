@@ -5,12 +5,16 @@ using Android.App;
 using Android.Content.Res;
 using Android.Text;
 using Android.Text.Style;
+using Android.Graphics.Drawables;
 using AResource = Android.Resource;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
+		static Drawable? DefaultBackground;
+
 		AlertDialog? _dialog;
 
 		static ColorStateList? DefaultTitleColors { get; set; }
@@ -23,9 +27,6 @@ namespace Microsoft.Maui.Handlers
 			nativeView.FocusChange += OnFocusChange;
 			nativeView.Click += OnClick;
 
-			if (VirtualView != null && VirtualView.Items is INotifyCollectionChanged notifyCollection)
-				notifyCollection.CollectionChanged += OnCollectionChanged;
-
 			base.ConnectHandler(nativeView);
 		}
 
@@ -34,9 +35,6 @@ namespace Microsoft.Maui.Handlers
 			nativeView.FocusChange -= OnFocusChange;
 			nativeView.Click -= OnClick;
 
-			if (VirtualView != null && VirtualView.Items is INotifyCollectionChanged notifyCollection)
-				notifyCollection.CollectionChanged -= OnCollectionChanged;
-
 			base.DisconnectHandler(nativeView);
 		}
 
@@ -44,8 +42,24 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetupDefaults(nativeView);
 
+			DefaultBackground = nativeView.Background;
 			DefaultTitleColors = nativeView.HintTextColors;
 		}
+
+		// This is a Android-specific mapping
+		public static void MapBackground(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateBackground(picker, DefaultBackground);
+		}
+
+		void Reload()
+		{
+			if (VirtualView == null || NativeView == null)
+				return;
+
+			NativeView.UpdatePicker(VirtualView);
+		}
+		public static void MapReload(PickerHandler handler, IPicker picker) => handler.Reload();
 
 		public static void MapTitle(PickerHandler handler, IPicker picker)
 		{
@@ -72,6 +86,13 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.NativeView?.UpdateFont(picker, fontManager);
+		}
+
+		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
+		{
+			var nativePicker = handler.NativeView;
+			var hasRtlSupport = nativePicker?.Context!.HasRtlSupport() ?? false;
+			nativePicker?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment, hasRtlSupport);
 		}
 
 		[MissingMapper]
@@ -103,7 +124,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				using (var builder = new AlertDialog.Builder(Context))
 				{
-					if (VirtualView.TitleColor == Color.Default)
+					if (VirtualView.TitleColor == null)
 					{
 						builder.SetTitle(VirtualView.Title ?? string.Empty);
 					}
@@ -114,7 +135,7 @@ namespace Microsoft.Maui.Handlers
 						builder.SetTitle(title);
 					}
 
-					string[] items = VirtualView.Items.ToArray();
+					string[] items = VirtualView.GetItemsAsArray();
 
 					builder.SetItems(items, (s, e) =>
 					{
@@ -141,14 +162,6 @@ namespace Microsoft.Maui.Handlers
 
 				_dialog.Show();
 			}
-		}
-
-		void OnCollectionChanged(object? sender, EventArgs e)
-		{
-			if (VirtualView == null || NativeView == null)
-				return;
-
-			NativeView.UpdatePicker(VirtualView);
 		}
 	}
 }

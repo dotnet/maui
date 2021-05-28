@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Text = "RTL normal text",
 						FlowDirection = FlowDirection.RightToLeft,
 
-						BackgroundColor = Color.Red,
+						BackgroundColor = Colors.Red,
 						HeightRequest = 100,
 						LineBreakMode = LineBreakMode.WordWrap,
 						Margin = 20,
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						FontAttributes = FontAttributes.Bold,
 						FontSize = 20,
 						LineHeight = 3,
-						TextColor = Color.Blue,
+						TextColor = Colors.Blue,
 						TextTransform = TextTransform.Uppercase,
 						TextType = TextType.Html,
 						HorizontalTextAlignment = TextAlignment.Start
@@ -63,7 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						FormattedText = formattedString,
 						FlowDirection = FlowDirection.RightToLeft,
 
-						BackgroundColor = Color.Yellow,
+						BackgroundColor = Colors.Yellow,
 						HeightRequest = 100,
 						LineBreakMode = LineBreakMode.WordWrap,
 						Margin = 20,
@@ -75,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						FontAttributes = FontAttributes.Bold,
 						FontSize = 20,
 						LineHeight = 3,
-						TextColor = Color.Blue,
+						TextColor = Colors.Blue,
 						TextTransform = TextTransform.Uppercase,
 						HorizontalTextAlignment = TextAlignment.Start
 					}

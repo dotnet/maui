@@ -3,7 +3,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Xunit;
 
-namespace Microsoft.Maui.UnitTests
+namespace Microsoft.Maui.UnitTests.LifecycleEvents
 {
 	[Category(TestCategory.Core, TestCategory.Lifecycle)]
 	public class LifecycleEventsTests

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			Content = _stack = new StackLayout { Padding = new Size(20, 20) };
 
 			//BackgroundColor = new Color (0.5, 0.5, 0.5);
-			BackgroundColor = Color.FromHex("#8a2be2");
+			BackgroundColor = Color.FromArgb("#8a2be2");
 			//BackgroundColor = Color.Aqua;
 
 			var frame = new Frame

@@ -15,9 +15,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var xaml = @"
 				<ContentPage
-						xmlns=""http://xamarin.com/schemas/2014/forms""
+						xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 						xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-						xmlns:d=""http://xamarin.com/schemas/2014/forms/design""
+						xmlns:d=""http://schemas.microsoft.com/dotnet/2021/maui/design""
 						xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006""
 						mc:Ignorable=""d"">
 					<Label  d:Text=""Bar"" Text=""Foo"" x:Name=""label"" />

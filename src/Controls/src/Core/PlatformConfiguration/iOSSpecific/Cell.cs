@@ -1,10 +1,11 @@
-namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
+﻿namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
+	using Microsoft.Maui.Graphics;
 	using FormsElement = Maui.Controls.Cell;
 
 	public static class Cell
 	{
-		public static readonly BindableProperty DefaultBackgroundColorProperty = BindableProperty.Create(nameof(DefaultBackgroundColor), typeof(Color), typeof(Cell), Color.Default);
+		public static readonly BindableProperty DefaultBackgroundColorProperty = BindableProperty.Create(nameof(DefaultBackgroundColor), typeof(Color), typeof(Cell), null);
 
 		public static Color GetDefaultBackgroundColor(BindableObject element)
 			=> (Color)element.GetValue(DefaultBackgroundColorProperty);

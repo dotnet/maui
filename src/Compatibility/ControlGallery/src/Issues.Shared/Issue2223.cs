@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using NUnit.Framework;
@@ -31,8 +32,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					{
 						HeightRequest = 80,
 						FontSize = 40,
-						BackgroundColor = Color.LightBlue,
-						TextColor = Color.Black,
+						BackgroundColor = Colors.LightBlue,
+						TextColor = Colors.Black,
 						Text = "Click me to change IsPassword of the entry",
 						Command = new Command(() => checkEntry.IsPassword = !checkEntry.IsPassword)
 					}

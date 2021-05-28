@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 {
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 
 			var gifImage = new Image
 			{
-				BackgroundColor = Color.LightGray,
+				BackgroundColor = Colors.LightGray,
 				Source = itemsSource[0]
 			};
 

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -128,14 +129,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			normalState.Setters.Add(new Setter
 			{
 				Property = Label.BackgroundColorProperty,
-				Value = Color.Red,
+				Value = Colors.Red,
 				TargetName = "FlyoutItemLabel"
 			});
 
 			selectedState.Setters.Add(new Setter
 			{
 				Property = Label.BackgroundColorProperty,
-				Value = Color.Green,
+				Value = Colors.Green,
 				TargetName = "FlyoutItemLabel"
 			});
 
@@ -161,9 +162,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var grid = GetFlyoutItemDataTemplateElement<Grid>(shell, shellItem);
 			var label = grid.LogicalChildren.OfType<Label>().First();
 
-			Assert.AreEqual(Color.Red, label.BackgroundColor);
+			Assert.AreEqual(Colors.Red, label.BackgroundColor);
 			Assert.IsTrue(VisualStateManager.GoToState(grid, "Selected"));
-			Assert.AreEqual(Color.Green, label.BackgroundColor);
+			Assert.AreEqual(Colors.Green, label.BackgroundColor);
 		}
 
 

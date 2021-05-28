@@ -11,6 +11,10 @@ namespace Microsoft.Maui
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
 
+			//This is how MVU works. It collapses views down
+			if (view is IReplaceableView ir)
+				view = ir.ReplacedView;
+
 			var handler = view.Handler;
 
 			if (handler == null)
@@ -27,7 +31,7 @@ namespace Microsoft.Maui
 
 			handler.SetVirtualView(view);
 
-			if (!(handler.NativeView is FrameworkElement result))
+			if (((INativeViewHandler)handler).NativeView is not FrameworkElement result)
 			{
 				throw new InvalidOperationException($"Unable to convert {view} to {typeof(FrameworkElement)}");
 			}

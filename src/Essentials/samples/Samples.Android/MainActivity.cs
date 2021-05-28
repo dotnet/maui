@@ -4,6 +4,7 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Android.Widget;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Samples.View;
 
 namespace Samples.Droid
@@ -12,7 +13,7 @@ namespace Samples.Droid
     [IntentFilter(
         new[] { Microsoft.Maui.Essentials.Platform.Intent.ActionAppAction },
         Categories = new[] { Intent.CategoryDefault })]
-    public class MainActivity : Xamarin.Forms.Platform.Android.FormsAppCompatActivity
+    public class MainActivity : FormsAppCompatActivity
     {
         static App formsApp;
 
@@ -24,8 +25,7 @@ namespace Samples.Droid
             base.OnCreate(bundle);
 
             Microsoft.Maui.Essentials.Platform.Init(this, bundle);
-            Xamarin.Forms.Forms.Init(this, bundle);
-            Xamarin.Forms.FormsMaterial.Init(this, bundle);
+            Microsoft.Maui.Controls.Compatibility.Forms.Init(this, bundle);
 
             Microsoft.Maui.Essentials.Platform.ActivityStateChanged += Platform_ActivityStateChanged;
 

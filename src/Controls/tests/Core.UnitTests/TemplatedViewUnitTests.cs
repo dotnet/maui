@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void GetContentViewTemplateChildShouldWork()
 		{
 			var xaml = @"<ContentView
-					xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 					x:Class=""Microsoft.Maui.Controls.Core.UnitTests.MyTestContentView"">
                        <ContentView.ControlTemplate>
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void GetContentPageTemplateChildShouldWork()
 		{
 			var xaml = @"<ContentPage
-					xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 					x:Class=""Microsoft.Maui.Controls.Core.UnitTests.MyTestContentPage"">
                        <ContentPage.ControlTemplate>
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void OnContentViewApplyTemplateShouldBeCalled()
 		{
 			var xaml = @"<ContentView
-					xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 					x:Class=""Microsoft.Maui.Controls.Core.UnitTests.MyTestContentView"">
                        <ContentView.ControlTemplate>
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void OnContentPageApplyTemplateShouldBeCalled()
 		{
 			var xaml = @"<ContentPage
-					xmlns=""http://xamarin.com/schemas/2014/forms""
+					xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
 					x:Class=""Microsoft.Maui.Controls.Core.UnitTests.MyTestContentPage"">
                        <ContentPage.ControlTemplate>

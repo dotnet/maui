@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -10,10 +9,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 using WebKit;
-using Microsoft.Maui.Controls.Internals;
 using PreserveAttribute = Foundation.PreserveAttribute;
 using Uri = System.Uri;
 
@@ -43,9 +43,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 
 		[Preserve(Conditional = true)]
-		public WkWebViewRenderer(WKWebViewConfiguration config) : base(RectangleF.Empty, config)
+		public WkWebViewRenderer(WKWebViewConfiguration config) : base(CoreGraphics.CGRect.Empty, config)
 		{
-		
+
 		}
 
 		// https://developer.apple.com/forums/thread/99674
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			try
 			{
-				
+
 				var uri = new Uri(url);
 
 				var safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);

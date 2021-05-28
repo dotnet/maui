@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var collectionView = new CollectionView
 			{
-				Footer = new BoxView { BackgroundColor = Color.Red, HeightRequest = 53 }
+				Footer = new BoxView { BackgroundColor = Colors.Red, HeightRequest = 53 }
 			};
 
 			collectionView.SetBinding(ItemsView.ItemsSourceProperty, nameof(_11311ViewModel.ScoreCollectionList));

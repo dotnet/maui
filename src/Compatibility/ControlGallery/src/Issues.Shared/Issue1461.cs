@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -231,13 +232,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						new Label {
 							Text = "Flyout Label",
 							AutomationId = "Master_Label",
-							BackgroundColor = Color.Gray
+							BackgroundColor = Colors.Gray
 						},
 						btn
 					},
-						BackgroundColor = Color.WhiteSmoke
+						BackgroundColor = Colors.WhiteSmoke
 					},
-				BackgroundColor = Color.Gray
+				BackgroundColor = Colors.Gray
 			};
 
 			if (initState.HasValue)

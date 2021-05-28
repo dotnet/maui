@@ -1,9 +1,13 @@
-﻿namespace Microsoft.Maui.Handlers
+﻿#nullable enable
+namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler
 	{
 		public static PropertyMapper<ISearchBar, SearchBarHandler> SearchBarMapper = new PropertyMapper<ISearchBar, SearchBarHandler>(ViewHandler.ViewMapper)
 		{
+#if __ANDROID__
+			[nameof(ISearchBar.Background)] = MapBackground,
+#endif
 			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ISearchBar.Font)] = MapFont,
 			[nameof(ISearchBar.HorizontalTextAlignment)] = MapHorizontalTextAlignment,

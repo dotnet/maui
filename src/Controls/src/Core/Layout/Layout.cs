@@ -1,10 +1,13 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 // This is a temporary namespace until we rename everything and move the legacy layouts
 namespace Microsoft.Maui.Controls.Layout2
 {
+	[ContentProperty(nameof(Children))]
 	public abstract class Layout : View, Microsoft.Maui.ILayout, IEnumerable<IView>
 	{
 		ILayoutManager _layoutManager;
@@ -32,74 +35,67 @@ namespace Microsoft.Maui.Controls.Layout2
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (IsMeasureValid)
-			{
-				return DesiredSize;
-			}
+			var margin = (this as IView)?.Margin ?? Thickness.Zero;
+
+			// Adjust the constraints to account for the margins
+			widthConstraint -= margin.HorizontalThickness;
+			heightConstraint -= margin.VerticalThickness;
 
 			var sizeWithoutMargins = LayoutManager.Measure(widthConstraint, heightConstraint);
 			DesiredSize = new Size(sizeWithoutMargins.Width + Margin.HorizontalThickness,
 				sizeWithoutMargins.Height + Margin.VerticalThickness);
 
-			IsMeasureValid = true;
 			return DesiredSize;
 		}
 
-		protected override void ArrangeOverride(Rectangle bounds)
+		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			if (!IsMeasureValid)
-			{
-				return;
-			}
-
-			if (IsArrangeValid)
-			{
-				return;
-			}
-
-			Arrange(bounds);
+			base.ArrangeOverride(bounds);
 
 			LayoutManager.ArrangeChildren(Frame);
-			IsArrangeValid = true;
-			Handler?.SetFrame(Frame);
+
+			foreach (var child in Children)
+			{
+				child.Handler?.NativeArrange(child.Frame);
+			}
+
+			return Frame.Size;
 		}
 
 		protected override void InvalidateMeasureOverride()
 		{
-			base.InvalidateMeasure();
+			base.InvalidateMeasureOverride();
 
 			foreach (var child in Children)
 			{
-				child.InvalidateArrange();
+				child.InvalidateMeasure();
 			}
 		}
 
-		public void Add(IView child)
+		public virtual void Add(IView child)
 		{
 			if (child == null)
 				return;
 
 			_children.Add(child);
 
-			// TODO MAUI
-			if (child is Element ve)
-				ve.Parent = this;
+			if (child is Element element)
+				element.Parent = this;
 
 			InvalidateMeasure();
 
 			LayoutHandler?.Add(child);
 		}
 
-		public void Remove(IView child)
+		public virtual void Remove(IView child)
 		{
 			if (child == null)
 				return;
 
 			_children.Remove(child);
 
-			// TODO MAUI
-			if (child is Element ve)
-				ve.Parent = null;
+			if (child is Element element)
+				element.Parent = null;
 
 			InvalidateMeasure();
 

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Microsoft.Maui.Graphics;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 

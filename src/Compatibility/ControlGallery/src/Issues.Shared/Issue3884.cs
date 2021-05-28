@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Microsoft.Maui.Controls.Compatibility.UITests;
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				AutomationId = "TestReady",
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
-				BackgroundColor = Color.Blue,
+				BackgroundColor = Colors.Blue,
 				HeightRequest = 100,
 				WidthRequest = 100,
 				CornerRadius = 50

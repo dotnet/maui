@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -55,7 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					AutomationId = "bxvHello",
 					WidthRequest = 40,
 					HeightRequest = 40,
-					BackgroundColor = Color.Red
+					BackgroundColor = Colors.Red
 				});
 				rootLayout.Children.Add(new Button { AutomationId = "btnHello", Text = "Hello" });
 				rootLayout.Children.Add(new DatePicker { AutomationId = "dtPicker", Date = DateTime.Parse("01/01/2014") });

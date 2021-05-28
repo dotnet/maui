@@ -4,6 +4,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
 using AColor = Android.Graphics.Color;
+using ATextAlignment = Android.Views.TextAlignment;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -93,10 +94,13 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		bool GetNativeIsBold(PickerHandler pickerHandler) =>
-			GetNativePicker(pickerHandler).Typeface.IsBold;
+			GetNativePicker(pickerHandler).Typeface.GetFontWeight() == FontWeight.Bold;
 
 		bool GetNativeIsItalic(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Typeface.IsItalic;
+
+		ATextAlignment GetNativeHorizontalTextAlignment(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).TextAlignment;
 
 		Color GetNativeTitleColor(PickerHandler pickerHandler)
 		{

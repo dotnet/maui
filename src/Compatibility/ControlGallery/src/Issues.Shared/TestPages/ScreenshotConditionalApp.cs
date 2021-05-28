@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		public AppResult WaitForFirstElement(string marked, string timeoutMessage = "Timed out waiting for element...",
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
 		{
-#if __WINDOWS__
+#if WINDOWS
 			return (_app as WinDriverApp).WaitForFirstElement(marked, timeoutMessage, timeout, retryFrequency);
 #else
 			return _app.WaitForElement(marked, timeoutMessage, timeout, retryFrequency).FirstOrDefault();
@@ -463,7 +463,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			get { return _app.TestServer; }
 		}
 
-#if __WINDOWS__
+#if WINDOWS
 		public string ReadDatePicker(string marked)
 		{
 			return ((WinDriverApp)_app).ReadDatePicker(marked).ToString();
@@ -490,7 +490,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			UITestHelper.MarkTestInconclusiveIfNoInternetConnectionIsPresent(testType, _app);
 
-#if __WINDOWS__
+#if WINDOWS
 			RestartIfAppIsClosed();
 #endif
 

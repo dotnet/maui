@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
@@ -9,9 +9,12 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using AAttribute = Android.Resource.Attribute;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -197,7 +200,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected virtual ColorStateList GetColorStateList()
 		{
-			var tintColor = Element.Color == Color.Default ? Color.Accent.ToAndroid() : Element.Color.ToAndroid();
+			var tintColor = Element.Color == null ? Application.AccentColor.ToAndroid() : Element.Color.ToAndroid();
 
 			var list = new ColorStateList(
 					_checkedStates,
@@ -215,7 +218,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		[PortHandler]
 		void UpdateBackgroundColor()
 		{
-			if (Element.BackgroundColor == Color.Default)
+			if (Element.BackgroundColor == null)
 				SetBackgroundColor(AColor.Transparent);
 			else
 				SetBackgroundColor(Element.BackgroundColor.ToAndroid());

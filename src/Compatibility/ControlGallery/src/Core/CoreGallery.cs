@@ -21,6 +21,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			toCrashButton.Clicked += (sender, args) =>
 			{
 				if (toggle)
-					Detail = new ContentPage { BackgroundColor = Color.Green, };
+					Detail = new ContentPage { BackgroundColor = Colors.Green, };
 				else
 					Detail = detailPage;
 
@@ -88,13 +89,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			AutomationId = "NavigationPageRoot";
 
-			BarBackgroundColor = Color.Maroon;
-			BarTextColor = Color.Yellow;
+			BarBackgroundColor = Colors.Maroon;
+			BarTextColor = Colors.Yellow;
 
 			Device.StartTimer(TimeSpan.FromSeconds(2), () =>
 			{
-				BarBackgroundColor = Color.Default;
-				BarTextColor = Color.Default;
+				BarBackgroundColor = null;
+				BarTextColor = null;
 
 				return false;
 			});
@@ -109,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	{
 		protected override void Init()
 		{
-			On<Android>().SetToolbarPlacement(ToolbarPlacement.Bottom);
+			On<PlatformConfiguration.Android>().SetToolbarPlacement(ToolbarPlacement.Bottom);
 			base.Init();
 		}
 	}
@@ -134,13 +135,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			Device.StartTimer(TimeSpan.FromSeconds(6), () =>
 			{
-				BarBackgroundColor = Color.Maroon;
-				BarTextColor = Color.Yellow;
+				BarBackgroundColor = Colors.Maroon;
+				BarTextColor = Colors.Yellow;
 
 				Device.StartTimer(TimeSpan.FromSeconds(6), () =>
 				{
-					BarBackgroundColor = Color.Default;
-					BarTextColor = Color.Default;
+					BarBackgroundColor = null;
+					BarTextColor = null;
 
 					return false;
 				});
@@ -154,8 +155,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			{
 				Title = "Rubriques",
 				IconImageSource = "coffee.png",
-				BarBackgroundColor = Color.Blue,
-				BarTextColor = Color.Aqua
+				BarBackgroundColor = Colors.Blue,
+				BarTextColor = Colors.Aqua
 			});
 
 			Children.Add(new NavigationPage(new Page())
@@ -168,7 +169,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				Title = "Bookmarks",
 			});
 
-			if (On<Android>().GetMaxItemCount() > 5)
+			if (On<PlatformConfiguration.Android>().GetMaxItemCount() > 5)
 			{
 				Children.Add(new NavigationPage(new Page { Title = "Alertes" })
 				{

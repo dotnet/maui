@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using NSubstitute;
 using Xunit;
@@ -47,12 +48,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			if (rows == null)
 			{
-				var rowDef = Substitute.For<IGridRowDefinition>();
-				rowDef.Height.Returns(GridLength.Auto);
-				var rowDefs = new List<IGridRowDefinition>
-				{
-					rowDef
-				};
+				var rowDefs = new List<IGridRowDefinition>();
 				grid.RowDefinitions.Returns(rowDefs);
 			}
 			else
@@ -65,7 +61,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			if (cols == null)
 			{
-				var colDefs = CreateTestColumns("auto");
+				var colDefs = new List<IGridColumnDefinition>();
 				grid.ColumnDefinitions.Returns(colDefs);
 			}
 			else
@@ -149,7 +145,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
-			// We expect that the only child of the grid will be given its full size
+			// No rows/columns were specified, so the implied */* is used; we're measuring with infinity, so
+			// we expect that the view will be arranged at its measured size
 			AssertArranged(view, 0, 0, 100, 100);
 		}
 
@@ -597,7 +594,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view1, 0, 30, 50, 50);
 		}
 
-
 		[Category(GridAbsoluteSizing)]
 		[Fact(DisplayName = "Empty absolute rows/columns still affect Grid size")]
 		public void EmptyAbsoluteRowsAndColumnsAffectSize()
@@ -683,6 +679,392 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// The item in the second row starts at x = 80 because the auto column before it had to distribute
 			// all the extra space into column 0; column 1 is absolute, so no tinkering with it to make stuff fit
 			AssertArranged(view1, 80, 100, 20, 10);
+		}
+
+		[Category(GridSpan)]
+		[Fact]
+		public void CanSpanAbsoluteColumns()
+		{
+			var grid = CreateGridLayout(rows: "auto", columns: "100,100");
+			var view0 = CreateTestView(new Size(150, 100));
+			AddChildren(grid, view0);
+			SetLocation(grid, view0, colSpan: 2);
+			var manager = new GridLayoutManager(grid);
+
+			manager.Measure(200, 100);
+			manager.ArrangeChildren(new Rectangle(0, 0, 200, 100));
+
+			// View should be arranged to span both columns (200 points)
+			AssertArranged(view0, 0, 0, 200, 100);
+		}
+
+		[Category(GridSpan)]
+		[Fact]
+		public void CanSpanAbsoluteRows()
+		{
+			var grid = CreateGridLayout(rows: "100,100", columns: "auto");
+			var view0 = CreateTestView(new Size(100, 150));
+
+			AddChildren(grid, view0);
+			SetLocation(grid, view0, rowSpan: 2);
+			var manager = new GridLayoutManager(grid);
+
+			manager.Measure(100, 200);
+			manager.ArrangeChildren(new Rectangle(0, 0, 100, 200));
+
+			// View should be arranged to span both rows (200 points)
+			AssertArranged(view0, 0, 0, 100, 200);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact(DisplayName = "Single star column consumes all horizontal space")]
+		public void SingleStarColumn()
+		{
+			var screenWidth = 400;
+			var screenHeight = 600;
+
+			var grid = CreateGridLayout(rows: "auto", columns: $"*");
+			var view0 = CreateTestView(new Size(100, 100));
+
+			AddChildren(grid, view0);
+			SetLocation(grid, view0);
+
+			MeasureAndArrange(grid, screenWidth, screenHeight);
+
+			// Row height is auto, so it gets the height of the view
+			// Column is *, so it should get the whole width
+			AssertArranged(view0, 0, 0, screenWidth, 100);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact]
+		public void SingleWeightedStarColumn()
+		{
+			var screenWidth = 400;
+			var screenHeight = 600;
+
+			var grid = CreateGridLayout(rows: "auto", columns: $"3*");
+			var view0 = CreateTestView(new Size(100, 100));
+
+			AddChildren(grid, view0);
+			SetLocation(grid, view0);
+
+			MeasureAndArrange(grid, screenWidth, screenHeight);
+
+			// Row height is auto, so it gets the height of the view
+			// The column is 3*, but it's the only column, so it should get the full width
+			AssertArranged(view0, 0, 0, screenWidth, 100);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact(DisplayName = "Multiple star columns consume equal space")]
+		public void MultipleStarColumns()
+		{
+			var screenWidth = 300;
+			var screenHeight = 600;
+			var viewSize = new Size(50, 50);
+
+			var grid = CreateGridLayout(rows: "auto", columns: $"*,*,*");
+			var view0 = CreateTestView(viewSize);
+			var view1 = CreateTestView(viewSize);
+			var view2 = CreateTestView(viewSize);
+
+			AddChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+
+			MeasureAndArrange(grid, screenWidth, screenHeight);
+
+			// Row height is auto, so it gets the height of the view
+			// Columns are *,*,*, so each view should be arranged at 1/3 the width
+			var expectedWidth = screenWidth / 3;
+			var expectedHeight = viewSize.Height;
+			AssertArranged(view0, 0, 0, expectedWidth, expectedHeight);
+			AssertArranged(view1, expectedWidth, 0, expectedWidth, expectedHeight);
+			AssertArranged(view2, expectedWidth * 2, 0, expectedWidth, expectedHeight);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact(DisplayName = "Weighted star column gets proportional space")]
+		public void WeightedStarColumn()
+		{
+			var screenWidth = 300;
+			var screenHeight = 600;
+			var viewSize = new Size(50, 50);
+
+			var grid = CreateGridLayout(rows: "auto", columns: $"*,2*");
+			var view0 = CreateTestView(viewSize);
+			var view1 = CreateTestView(viewSize);
+
+			AddChildren(grid, view0, view1);
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, col: 1);
+
+			MeasureAndArrange(grid, screenWidth, screenHeight);
+
+			// Row height is auto, so it gets the height of the view
+			// First column should get 1/3 of the width, second should get 2/3
+			var expectedWidth0 = screenWidth / 3;
+			var expectedWidth1 = expectedWidth0 * 2;
+			var expectedHeight = viewSize.Height;
+			AssertArranged(view0, 0, 0, expectedWidth0, expectedHeight);
+			AssertArranged(view1, expectedWidth0, 0, expectedWidth1, expectedHeight);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact(DisplayName = "Totally empty star columns measured at infinite width have zero width")]
+		public void EmptyStarColumnInfiniteWidthMeasure()
+		{
+			var grid = CreateGridLayout(rows: "auto", columns: $"*");
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(0, measuredSize.Width);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact(DisplayName = "Single star column with a view measured at infinite width gets width of the view")]
+		public void StarColumnWithViewInfiniteWidthMeasure()
+		{
+			var grid = CreateGridLayout(rows: "auto", columns: $"*");
+			var view0 = CreateTestView(new Size(100, 50));
+
+			AddChildren(grid, view0);
+			SetLocation(grid, view0);
+
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(100, measuredSize.Width);
+			Assert.Equal(50, measuredSize.Height);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact(DisplayName = "Multiple star columns with views measured at infinite width get the width of the widest view")]
+		public void MultipleStarColumnsWithViewsInfiniteWidthMeasure()
+		{
+			var grid = CreateGridLayout(rows: "auto", columns: $"*,*,*");
+			var view0 = CreateTestView(new Size(50, 50));
+			var view1 = CreateTestView(new Size(75, 50));
+			var view2 = CreateTestView(new Size(50, 50));
+
+			AddChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			// Row height is auto, so it gets the height of the tallest view
+			// The widest view has width 75, so we expect all three * columns to have 75 width
+			var expectedWidth = 75;
+			AssertArranged(view0, 0, 0, expectedWidth, 50);
+			AssertArranged(view1, expectedWidth, 0, expectedWidth, 50);
+			AssertArranged(view2, expectedWidth * 2, 0, expectedWidth, 50);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact(DisplayName = "Single star row consumes all vertical space")]
+		public void SingleStarRow()
+		{
+			var screenWidth = 400;
+			var screenHeight = 600;
+
+			var grid = CreateGridLayout(rows: "*", columns: "auto");
+			var view0 = CreateTestView(new Size(100, 100));
+
+			AddChildren(grid, view0);
+			SetLocation(grid, view0);
+
+			MeasureAndArrange(grid, screenWidth, screenHeight);
+
+			// Column width is auto, so it gets the width of the view
+			// Row is *, so it should get the whole height
+			AssertArranged(view0, 0, 0, 100, screenHeight);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact]
+		public void SingleWeightedStarRow()
+		{
+			var screenWidth = 400;
+			var screenHeight = 600;
+
+			var grid = CreateGridLayout(rows: "3*", columns: "auto");
+			var view0 = CreateTestView(new Size(100, 100));
+
+			AddChildren(grid, view0);
+			SetLocation(grid, view0);
+
+			MeasureAndArrange(grid, screenWidth, screenHeight);
+
+			// Column width is auto, so it gets the width of the view
+			// The row is 3*, but it's the only row, so it should get the full height
+			AssertArranged(view0, 0, 0, 100, screenHeight);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact(DisplayName = "Multiple star rows consume equal space")]
+		public void MultipleStarRows()
+		{
+			var screenWidth = 300;
+			var screenHeight = 600;
+			var viewSize = new Size(50, 50);
+
+			var grid = CreateGridLayout(rows: "*,*,*", columns: "auto");
+			var view0 = CreateTestView(viewSize);
+			var view1 = CreateTestView(viewSize);
+			var view2 = CreateTestView(viewSize);
+
+			AddChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, row: 1);
+			SetLocation(grid, view2, row: 2);
+
+			MeasureAndArrange(grid, screenWidth, screenHeight);
+
+			// Column width is auto, so it gets the width of the view
+			// Rows are *,*,*, so each view should be arranged at 1/3 the height
+			var expectedHeight = screenHeight / 3;
+			var expectedWidth = viewSize.Width;
+			AssertArranged(view0, 0, 0, expectedWidth, expectedHeight);
+			AssertArranged(view1, 0, expectedHeight, expectedWidth, expectedHeight);
+			AssertArranged(view2, 0, expectedHeight * 2, expectedWidth, expectedHeight);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact(DisplayName = "Weighted star row gets proportional space")]
+		public void WeightedStarRow()
+		{
+			var screenWidth = 300;
+			var screenHeight = 600;
+			var viewSize = new Size(50, 50);
+
+			var grid = CreateGridLayout(rows: "*,2*", columns: "auto");
+			var view0 = CreateTestView(viewSize);
+			var view1 = CreateTestView(viewSize);
+
+			AddChildren(grid, view0, view1);
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, row: 1);
+
+			MeasureAndArrange(grid, screenWidth, screenHeight);
+
+			// Column width is auto, so it gets the width of the view
+			// First row should get 1/3 of the height, second should get 2/3
+			var expectedHeight0 = screenHeight / 3;
+			var expectedHeight1 = expectedHeight0 * 2;
+			var expectedWidth = viewSize.Width;
+			AssertArranged(view0, 0, 0, expectedWidth, expectedHeight0);
+			AssertArranged(view1, 0, expectedHeight0, expectedWidth, expectedHeight1);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact(DisplayName = "Totally empty star rows measured at infinite height have zero height")]
+		public void EmptyStarRowInfiniteHeightMeasure()
+		{
+			var grid = CreateGridLayout(rows: "*", columns: $"auto");
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(0, measuredSize.Height);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact(DisplayName = "Single star row with a view measured at infinite height gets height of the view")]
+		public void StarRowWithViewInfiniteHeightMeasure()
+		{
+			var grid = CreateGridLayout(rows: "*", columns: $"auto");
+			var view0 = CreateTestView(new Size(100, 50));
+
+			AddChildren(grid, view0);
+			SetLocation(grid, view0);
+
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(100, measuredSize.Width);
+			Assert.Equal(50, measuredSize.Height);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact(DisplayName = "Multiple star rows with views measured at infinite height get the height of the tallest view")]
+		public void MultipleStarRowsWithViewsInfiniteHeightMeasure()
+		{
+			var grid = CreateGridLayout(rows: "*,*,*", columns: "auto");
+			var view0 = CreateTestView(new Size(50, 50));
+			var view1 = CreateTestView(new Size(50, 75));
+			var view2 = CreateTestView(new Size(50, 50));
+
+			AddChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, row: 1);
+			SetLocation(grid, view2, row: 2);
+
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			// Column width is auto, so it gets the width of the widest view
+			// The tallest view has height 75, so we expect all three * rows to have 75 height
+			var expectedHeight = 75;
+			AssertArranged(view0, 0, 0, 50, expectedHeight);
+			AssertArranged(view1, 0, expectedHeight, 50, expectedHeight);
+			AssertArranged(view2, 0, expectedHeight * 2, 50, expectedHeight);
+		}
+
+		[Category(GridAbsoluteSizing)]
+		[Category(GridStarSizing)]
+		[Fact]
+		public void MixStarsAndExplicitSizes()
+		{
+			var screenWidth = 300;
+			var screenHeight = 600;
+			var viewSize = new Size(50, 50);
+
+			var grid = CreateGridLayout(rows: "auto", columns: $"3*,100,*");
+			var view0 = CreateTestView(viewSize);
+			var view1 = CreateTestView(viewSize);
+			var view2 = CreateTestView(viewSize);
+
+			AddChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+
+			MeasureAndArrange(grid, screenWidth, screenHeight);
+
+			// Row height is auto, so it gets the height of the view
+			// Columns are 3*,100,* 
+			// So we expect the center column to be 100, leaving 500 for the stars
+			// 3/4 of that goes to the first column, so 375; the remaining 125 is the last column
+			var expectedStarWidth = (screenWidth - 100) / 4;
+			var expectedHeight = viewSize.Height;
+
+			AssertArranged(view0, 0, 0, expectedStarWidth * 3, expectedHeight);
+			AssertArranged(view1, expectedStarWidth * 3, 0, 100, expectedHeight);
+			AssertArranged(view2, (expectedStarWidth * 3) + 100, 0, expectedStarWidth, expectedHeight);
+		}
+
+		[Fact]
+		public void UsesImpliedRowAndColumnIfNothingDefined()
+		{
+			var grid = CreateGridLayout();
+			var view0 = CreateTestView(new Size(100, 100));
+			AddChildren(grid, view0);
+			SetLocation(grid, view0);
+
+			// Using 300,300 - the implied row/column are GridLength.Star
+			MeasureAndArrange(grid, 300, 300);
+
+			// Since it's using GridLength.Star, we expect the view to be arranged at the full size of the grid
+			AssertArranged(view0, 0, 0, 300, 300);
 		}
 	}
 }
