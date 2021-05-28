@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#0000FF")]
 		public async Task ProgressColorInitializesCorrectly(string colorHex)
 		{
-			Color progressColor = Color.FromHex(colorHex);
+			Color progressColor = Color.FromArgb(colorHex);
 
 			var progressBar = new ProgressBarStub()
 			{
