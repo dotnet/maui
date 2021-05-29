@@ -191,7 +191,7 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new RedButton { Text = "Dynamically Registered" });
 			verticalStack.Add(new CustomButton { Text = "Button Registered to Compat Renderer" });
-			
+
 			var checkbox = new CheckBox();
 			checkbox.CheckedChanged += (sender, e) =>
 			{
