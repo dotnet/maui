@@ -14,7 +14,16 @@ namespace Microsoft.Maui.Handlers
 	{
 		bool _disposedValue;
 
-		EvasObject? INativeViewHandler.NativeView => (EvasObject?)base.NativeView;
+		EvasObject? INativeViewHandler.NativeView => WrappedNativeView;
+		EvasObject? INativeViewHandler.ContainerView => ContainerView;
+
+		protected new EvasObject? WrappedNativeView => (EvasObject?)base.WrappedNativeView;
+
+		public new WrapperView? ContainerView
+		{
+			get => (WrapperView?)base.ContainerView;
+			protected set => base.ContainerView = value;
+		}
 
 		public void SetParent(INativeViewHandler parent) => Parent = parent;
 
@@ -31,7 +40,9 @@ namespace Microsoft.Maui.Handlers
 
 		public override void NativeArrange(Rectangle frame)
 		{
-			if (NativeView == null || VirtualView == null)
+			var nativeView = WrappedNativeView;
+
+			if (nativeView == null)
 				return;
 
 			if (frame.Width < 0 || frame.Height < 0)
@@ -45,15 +56,17 @@ namespace Microsoft.Maui.Handlers
 
 			var updatedGeometry = new Rectangle(ComputeAbsolutePoint(frame), new Size(frame.Width, frame.Height)).ToEFLPixel();
 
-			if (NativeView.Geometry != updatedGeometry)
+			if (nativeView.Geometry != updatedGeometry)
 			{
-				NativeView.Geometry = updatedGeometry;
+				nativeView.Geometry = updatedGeometry;
 			}
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (NativeView == null)
+			var nativeView = WrappedNativeView;
+
+			if (nativeView == null || VirtualView == null)
 			{
 				return Size.Zero;
 			}
@@ -72,7 +85,7 @@ namespace Microsoft.Maui.Handlers
 				availableHeight = int.MaxValue;
 
 			Size measured;
-			var nativeViewMeasurable = NativeView as IMeasurable;
+			var nativeViewMeasurable = nativeView as IMeasurable;
 			if (nativeViewMeasurable != null)
 			{
 				measured = nativeViewMeasurable.Measure(availableWidth, availableHeight).ToDP();
@@ -92,20 +105,24 @@ namespace Microsoft.Maui.Handlers
 
 		public virtual ERect GetNativeContentGeometry()
 		{
-			if (NativeView == null)
+			var nativeView = WrappedNativeView;
+
+			if (nativeView == null)
 			{
 				return new ERect();
 			}
-			return NativeView.Geometry;
+			return nativeView.Geometry;
 		}
 
 		protected virtual Size Measure(double availableWidth, double availableHeight)
 		{
-			if (NativeView == null)
+			var nativeView = WrappedNativeView;
+
+			if (nativeView == null)
 			{
 				return new Size(0, 0);
 			}
-			return new ESize(NativeView.MinimumWidth, NativeView.MinimumHeight).ToDP();
+			return new ESize(nativeView.MinimumWidth, nativeView.MinimumHeight).ToDP();
 		}
 
 		protected virtual double ComputeAbsoluteX(Rectangle frame)
@@ -154,10 +171,10 @@ namespace Microsoft.Maui.Handlers
 				if (disposing)
 				{
 					// Dispose managed state (managed objects)
-					if (NativeView != null)
+					if (WrappedNativeView != null)
 					{
-						DisconnectHandler(NativeView);
-						NativeView.Unrealize();
+						DisconnectHandler(WrappedNativeView);
+						WrappedNativeView.Unrealize();
 					}
 				}
 
@@ -229,14 +246,14 @@ namespace Microsoft.Maui.Handlers
 
 		protected override Size MinimumSize()
 		{
-			if (NativeView == null)
+			if (WrappedNativeView == null)
 			{
 				return base.MinimumSize();
 			}
 
-			if (NativeView is IMeasurable im)
+			if (WrappedNativeView is IMeasurable im)
 			{
-				return im.Measure(NativeView.MinimumWidth, NativeView.MinimumHeight).ToDP();
+				return im.Measure(WrappedNativeView.MinimumWidth, WrappedNativeView.MinimumHeight).ToDP();
 			}
 			else
 			{

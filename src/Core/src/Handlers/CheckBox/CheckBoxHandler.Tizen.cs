@@ -9,17 +9,24 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(Check nativeView)
 		{
-			nativeView!.StateChanged += OnStateChanged;
+			base.ConnectHandler(nativeView);
+			nativeView.StateChanged += OnStateChanged;
 		}
 
 		protected override void DisconnectHandler(Check nativeView)
 		{
-			nativeView!.StateChanged -= OnStateChanged;
+			base.DisconnectHandler(nativeView);
+			nativeView.StateChanged -= OnStateChanged;
 		}
 
 		public static void MapIsChecked(CheckBoxHandler handler, ICheckBox check)
 		{
 			handler.NativeView?.UpdateIsChecked(check);
+		}
+
+		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
+		{
+			handler.NativeView?.UpdateForeground(check);
 		}
 
 		void OnStateChanged(object? sender, EventArgs e)

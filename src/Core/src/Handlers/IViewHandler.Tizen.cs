@@ -8,6 +8,8 @@ namespace Microsoft.Maui
 	{
 		new EvasObject? NativeView { get; }
 
+		new EvasObject? ContainerView { get; }
+
 		void SetParent(INativeViewHandler parent);
 
 		INativeViewHandler? Parent { get; }

@@ -3,12 +3,14 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>tizen40</TargetFramework>
+    <!--<DisableImplicitFrameworkReferences>True</DisableImplicitFrameworkReferences>-->
+    <!--<TargetIdentifier>Tizen</TargetIdentifier>-->
     <RootNamespace>Maui.Controls.Sample.Tizen</RootNamespace>
     <AssemblyName>Maui.Controls.Sample.Tizen</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Tizen\Compatibility.Tizen.csproj" />
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
