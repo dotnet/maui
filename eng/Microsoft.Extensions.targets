@@ -1,20 +1,22 @@
 <Project>
   <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' == 'true'">
-    <_MicrosoftHostingVersion>6.0.0-preview.4.21222.10</_MicrosoftHostingVersion>
+    <_MicrosoftHostingVersion>6.0.0-preview.4.21253.7</_MicrosoftHostingVersion>
     <_MicrosoftDependencyInjectionVersion>$(_MicrosoftHostingVersion)</_MicrosoftDependencyInjectionVersion>
-    <_MicrosoftFileProvidersVersion>6.0.0-preview.3.21201.13</_MicrosoftFileProvidersVersion>
+    <_MicrosoftFileProvidersVersion>6.0.0-preview.4.21253.5</_MicrosoftFileProvidersVersion>
+    <_MicrosoftSystemCodeDomVersion>6.0.0-preview.4.21253.7</_MicrosoftSystemCodeDomVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' != 'true'">
     <_MicrosoftHostingVersion>5.0.0</_MicrosoftHostingVersion>
     <_MicrosoftDependencyInjectionVersion>5.0.1</_MicrosoftDependencyInjectionVersion>
     <_MicrosoftFileProvidersVersion>5.0.6</_MicrosoftFileProvidersVersion>
+    <_MicrosoftSystemCodeDomVersion>4.7.0</_MicrosoftSystemCodeDomVersion>
   </PropertyGroup>
   <PropertyGroup>
     <_MicrosoftProjectReunionVersion>0.5.0</_MicrosoftProjectReunionVersion>
     <_MicrosoftGraphicsWin2DVersion>0.5.0.13</_MicrosoftGraphicsWin2DVersion>
     <_MicrosoftMauiGraphics>6.0.100-preview.4.134</_MicrosoftMauiGraphics>
+    <_MicrosoftAspNetCoreVersion>6.0.0-preview.4.21253.5</_MicrosoftAspNetCoreVersion>
     <_XamarinAndroidGlideVersion>4.11.0.1</_XamarinAndroidGlideVersion>
-    <_MicrosoftAspNetCoreVersion>6.0.0-preview.4.21227.6</_MicrosoftAspNetCoreVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
     <!-- Debugger workaround -->
@@ -85,12 +87,19 @@
         Version="$(_MicrosoftAspNetCoreVersion)"
     />
     <PackageReference
+        Update="Microsoft.AspNetCore.Components.Web"
+        Version="$(_MicrosoftAspNetCoreVersion)" />
+    <PackageReference
         Update="Microsoft.Extensions.FileProviders.Embedded"
         Version="$(_MicrosoftAspNetCoreVersion)"
     />
     <PackageReference
         Update="Microsoft.JSInterop"
         Version="$(_MicrosoftAspNetCoreVersion)"
+    />
+    <PackageReference
+        Update="System.CodeDom"
+        Version="$(_MicrosoftSystemCodeDomVersion)"
     />
   </ItemGroup>
 </Project>

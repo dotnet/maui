@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
@@ -61,6 +62,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			handler.SetVirtualView(view);
 			view.Handler = handler;
+
+			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
+			handler.NativeArrange(view.Frame);
 
 			return handler;
 		}

@@ -7,10 +7,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 	public class GridLayoutTests
 	{
 		[Test]
-		public void RemovedViewsHaveNoRowColumnInfo()
+		public void RemovedMauiViewsHaveNoRowColumnInfo()
 		{
 			var gl = new GridLayout();
-			var view = new Label();
+			var view = NSubstitute.Substitute.For<IView>();
 
 			gl.Add(view);
 			gl.SetRow(view, 2);
@@ -33,6 +33,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		{
 			var gl = new GridLayout();
 			var view = new Label();
+
+			gl.Add(view);
+			Assert.AreEqual(0, gl.GetRow(view));
+			Assert.AreEqual(0, gl.GetColumn(view));
+			Assert.AreEqual(1, gl.GetRowSpan(view));
+			Assert.AreEqual(1, gl.GetColumnSpan(view));
+		}
+
+		[Test]
+		public void AddedMauiViewGetsDefaultRowAndColumn()
+		{
+			var gl = new GridLayout();
+			var view = NSubstitute.Substitute.For<IView>();
 
 			gl.Add(view);
 			Assert.AreEqual(0, gl.GetRow(view));

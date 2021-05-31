@@ -56,9 +56,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<T> AttachAndRun<T>(this AView view, Func<T> action)
 		{
-			var layout = new FrameLayout(view.Context);
-			layout.LayoutParameters = new FrameLayout.LayoutParams(500, 500);
-			view.LayoutParameters = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WrapContent, FrameLayout.LayoutParams.WrapContent)
+			if (view.Parent is WrapperView wrapper)
+				view = wrapper;
+
+			var layout = new FrameLayout(view.Context)
+			{
+				LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
+			};
+			view.LayoutParameters = new FrameLayout.LayoutParams(view.Width, view.Height)
 			{
 				Gravity = GravityFlags.Center
 			};
@@ -66,11 +71,8 @@ namespace Microsoft.Maui.DeviceTests
 			var act = view.Context.GetActivity();
 			var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content);
 
-			rootView.AddView(layout);
-
 			layout.AddView(view);
-			layout.Measure(500, 500);
-			layout.Layout(0, 0, 500, 500);
+			rootView.AddView(layout);
 
 			await Task.Delay(100);
 
@@ -89,6 +91,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task<Bitmap> ToBitmap(this AView view) =>
 			view.AttachAndRun(() =>
 			{
+				if (view.Parent is WrapperView wrapper)
+					view = wrapper;
+
 				var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888);
 				using (var canvas = new Canvas(bitmap))
 				{

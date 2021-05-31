@@ -1,4 +1,3 @@
-
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
 	<!--
@@ -16,4 +15,12 @@
 		<_IsHotRestartDefined>$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants.Trim())', '(^|;)HOTRESTART($|;)'))</_IsHotRestartDefined>
 		<DefineConstants Condition="!$(_IsHotRestartDefined) And '$(IsHotRestartBuild)' == 'true'">HOTRESTART;$(DefineConstants)</DefineConstants>
 	</PropertyGroup>
+
+  <ItemGroup>
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenKind" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ManifestResourceName" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="TargetPath" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ItemSpec" />
+  </ItemGroup>
+  
 </Project>

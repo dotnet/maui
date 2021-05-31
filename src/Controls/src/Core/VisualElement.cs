@@ -802,6 +802,7 @@ namespace Microsoft.Maui.Controls
 				result.Request = new Size(result.Request.Width + margin.HorizontalThickness, result.Request.Height + margin.VerticalThickness);
 			}
 
+			DesiredSize = result.Request;
 			return result;
 		}
 

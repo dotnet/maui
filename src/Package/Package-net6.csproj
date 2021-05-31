@@ -21,6 +21,7 @@
 		<ProjectReference Include="..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
 		<ProjectReference Include="..\Essentials\src\Essentials-net6.csproj" />
 		<ProjectReference Include="..\SingleProject\Resizetizer\src\Resizetizer.csproj" />
+		<ProjectReference Include="..\Controls\src\SourceGen\Controls.SourceGen-net6.csproj"/>
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
