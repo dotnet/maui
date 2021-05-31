@@ -16,8 +16,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Paint Background { get; set; }
 
-		public double Opacity { get; set; } = 1.0d;
-
 		public Rectangle Frame { get; set; }
 
 		public IViewHandler Handler { get; set; }

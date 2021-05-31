@@ -16,8 +16,6 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public Paint Background { get; set; }
 
-		public double Opacity { get; set; }
-
 		public Rectangle Frame { get; set; } = new Rectangle(0, 0, 20, 20);
 
 		public IViewHandler Handler { get; set; }
