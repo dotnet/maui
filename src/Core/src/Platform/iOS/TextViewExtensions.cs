@@ -40,10 +40,12 @@ namespace Microsoft.Maui
 				textView.AttributedText = newText;
 		}
 
-		public static void UpdatePredictiveText(this UITextView textView, IEditor editor)
+		public static void UpdateIsTextPredictionEnabled(this UITextView textView, IEditor editor)
 		{
-			textView.AutocorrectionType = editor.IsTextPredictionEnabled
-				? UITextAutocorrectionType.Yes : UITextAutocorrectionType.No;
+			if (editor.IsTextPredictionEnabled)
+				textView.AutocorrectionType = UITextAutocorrectionType.Yes;
+			else
+				textView.AutocorrectionType = UITextAutocorrectionType.No;
 		}
 
 		public static void UpdateFont(this UITextView textView, ITextStyle textStyle, IFontManager fontManager)
@@ -64,14 +66,7 @@ namespace Microsoft.Maui
 			textView.ApplyKeyboard(keyboard);
 
 			if (keyboard is not CustomKeyboard)
-			{
-				// TODO: IsSpellCheckEnabled handling must be here.
-
-				if (!editor.IsTextPredictionEnabled)
-				{
-					textView.AutocorrectionType = UITextAutocorrectionType.No;
-				}
-			}
+				textView.UpdateIsTextPredictionEnabled(editor);
 
 			textView.ReloadInputViews();
 		}

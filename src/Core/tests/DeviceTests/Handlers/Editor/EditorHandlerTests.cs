@@ -196,7 +196,12 @@ namespace Microsoft.Maui.DeviceTests
 				IsTextPredictionEnabled = isEnabled
 			};
 
-			await ValidatePropertyInitValue(editor, () => editor.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
+			var nativeIsTextPredictionEnabled = await GetValueAsync(editor, handler =>
+			{
+				return GetNativeIsTextPredictionEnabled(handler);
+			});
+
+			Assert.Equal(isEnabled, nativeIsTextPredictionEnabled);
 		}
 
 		[Theory(DisplayName = "IsTextPredictionEnabled Updates Correctly")]

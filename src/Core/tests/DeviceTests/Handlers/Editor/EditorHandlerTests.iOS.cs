@@ -63,7 +63,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
-			(MauiTextView)editorHandler.NativeView;
+			editorHandler.NativeView;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;

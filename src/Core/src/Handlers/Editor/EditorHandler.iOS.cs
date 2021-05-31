@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdatePredictiveText(editor);
+			handler.NativeView?.UpdateIsTextPredictionEnabled(editor);
 		}
 
 		public static void MapFormatting(EditorHandler handler, IEditor editor)
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(editor, fontManager);
 		}
 
-		void OnChanged(object? sender, System.EventArgs e) => OnTextChanged();
+		void OnChanged(object? sender, EventArgs e) => OnTextChanged();
 
 		void OnTextChanged()
 		{
