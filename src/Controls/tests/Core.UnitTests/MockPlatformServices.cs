@@ -83,9 +83,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				case "SystemBlue":
 					return Color.FromRgb(0, 122, 255);
 				case "SystemChromeHighColor":
-					return Color.FromHex("#FF767676");
+					return Color.FromArgb("#FF767676");
 				case "HoloBlueBright":
-					return Color.FromHex("#ff00ddff");
+					return Color.FromArgb("#ff00ddff");
 				default:
 					return null;
 			}

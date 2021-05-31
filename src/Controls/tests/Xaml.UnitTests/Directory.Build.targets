@@ -2,4 +2,11 @@
   <Import Project="..\..\..\..\Directory.Build.targets" />
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll')" />
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
+
+  <ItemGroup Condition="'$(BuildForNet6)' != 'true'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\SourceGen\Controls.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(BuildForNet6)' == 'true'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\SourceGen\Controls.SourceGen-net6.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
 </Project>

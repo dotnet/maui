@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	[ContentProperty("Content")]
+	[ContentProperty(nameof(Content))]
 	public class ScrollView : Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
 	{
 		#region IScrollViewController

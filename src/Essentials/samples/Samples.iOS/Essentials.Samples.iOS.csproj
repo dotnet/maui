@@ -84,11 +84,9 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\iOS\Compatibility.iOS.csproj">
-      <Project>{271193c1-6e7c-429c-a36d-3f1be5267231}</Project>
-      <Name>Compatibility.iOS</Name>
-      <IsAppExtension>false</IsAppExtension>
-      <IsWatchApp>false</IsWatchApp>
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj">
+      <Project>{9faa9654-80e6-4664-9702-47998a04e8fe}</Project>
+      <Name>Compatibility</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>

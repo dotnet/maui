@@ -5,7 +5,7 @@ using UwpGridUnitType = Microsoft.UI.Xaml.GridUnitType;
 
 namespace Microsoft.Maui
 {
-	static class WinUIHelpers
+	internal static class WinUIHelpers
 	{
 		public static WThickness CreateThickness(double left, double top, double right, double bottom)
 		{

@@ -3,10 +3,9 @@
 
   <PropertyGroup>
 
-    <BuildForWinUI Condition="'$(SolutionFileName)' == 'Microsoft.Maui.WinUI.sln'">true</BuildForWinUI>
-    <BuildForAndroid Condition="'$(SolutionFileName)' == 'Microsoft.Maui.Droid.sln'">true</BuildForAndroid>
-    
-    <BuildForNet6 Condition="'$(SolutionFileName)' == 'Microsoft.Maui-net6.sln' or '$(BuildForWinUI)' == 'true'">true</BuildForNet6>
+    <BuildForWinUI Condition="'$(SolutionFileName)' == 'Microsoft.Maui.WinUI.sln' AND '$(Packing)' == ''">true</BuildForWinUI>
+    <BuildForAndroid Condition="'$(SolutionFileName)' == 'Microsoft.Maui.Droid.sln' AND '$(Packing)' == ''">true</BuildForAndroid>
+    <BuildForNet6 Condition="'$(Packing)' == 'true' OR $(SolutionFileName.Contains('net6')) == true OR '$(BuildForWinUI)' == 'true' OR '$(BuildForAndroid)' == 'true'">true</BuildForNet6>
     <MauiPlatforms>net6.0-ios;net6.0-maccatalyst;net6.0-android</MauiPlatforms>
     <WindowsTargetFramework Condition="'$(WindowsTargetFramework)' == ''">net6.0-windows10.0.18362</WindowsTargetFramework>
     <MauiPlatforms Condition="'$(Packing)' == 'true'">$(MauiPlatforms);$(WindowsTargetFramework)</MauiPlatforms>
@@ -56,10 +55,9 @@
   <PropertyGroup>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>Microsoft</Authors>
-    <Owners>microsoft</Owners>
     <NeutralLanguage>en</NeutralLanguage>
     <RepositoryUrl>https://github.com/dotnet/maui.git</RepositoryUrl>
-    <ProjectUrl>https://github.com/dotnet/maui</ProjectUrl>
+    <PackageProjectUrl>https://github.com/dotnet/maui</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageVersion>0.0.1-alpha1</PackageVersion>

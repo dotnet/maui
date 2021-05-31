@@ -33,7 +33,6 @@ namespace Maui.Controls.Sample.Pages
 			BindingContext = _viewModel = viewModel;
 
 			SetupMauiLayout();
-
 			NavigationPage.SetHasNavigationBar(this, false);
 
 			//SetupCompatibilityLayout();
@@ -191,7 +190,8 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
 
 			verticalStack.Add(new RedButton { Text = "Dynamically Registered" });
-
+			verticalStack.Add(new CustomButton { Text = "Button Registered to Compat Renderer" });
+			
 			var checkbox = new CheckBox();
 			checkbox.CheckedChanged += (sender, e) =>
 			{
