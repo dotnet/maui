@@ -293,9 +293,13 @@ namespace Maui.Controls.Sample.Pages
 			{
 				HeightRequest = 120,
 				WidthRequest = 120,
+				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalTextAlignment = TextAlignment.Center,
 				Background = new SolidColorBrush(Colors.Purple),
 				Text = "Clip",
-				ClipShape = new Microsoft.Maui.Controls.Shapes2.Ellipse()//Path("M15.997986,0L19.777008,11.620999 32,11.620999 22.109009,18.807002 25.888,30.432 15.997986,23.245997 6.1109924,30.432 9.8840027,18.807002 0,11.620999 12.222992,11.620999z")
+				TextColor = Colors.White,
+				FontSize = 24,
+				ClipShape = new Microsoft.Maui.Controls.Shapes2.Ellipse()
 			});
 
 			Content = new ScrollView
