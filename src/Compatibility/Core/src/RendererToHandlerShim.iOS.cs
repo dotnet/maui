@@ -7,7 +7,7 @@ using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
-    public partial class RendererToHandlerShim
+	public partial class RendererToHandlerShim
 	{
 		protected override NativeView CreateNativeView()
 		{
