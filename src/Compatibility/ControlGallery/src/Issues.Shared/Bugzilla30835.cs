@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				IconImageSource = "bank.png";
 				Title = "Carsousel Memory Bug";
-				BackgroundColor = Color.FromHex("#000000");
+				BackgroundColor = Color.FromArgb("#000000");
 
 				Menu = new MenuListView();
 
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					Padding = new Thickness(10, 36, 0, 5),
 					Content = new Label
 					{
-						TextColor = Color.FromHex("#FFFFFF"),
+						TextColor = Color.FromArgb("#FFFFFF"),
 						Text = "Carsousel Memory Bug",
 					}
 				};

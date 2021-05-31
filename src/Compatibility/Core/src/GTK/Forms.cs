@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.SetFlags(s_flags);
 			Device.PlatformServices = new GtkPlatformServices();
 			Device.Info = new GtkDeviceInfo();
-			Color.SetAccent(Color.FromHex("#3498DB"));
+			Color.SetAccent(Color.FromArgb("#3498DB"));
 			ExpressionSearch.Default = new GtkExpressionSearch();
 
 			Registrar.RegisterAll(new[]

@@ -413,6 +413,8 @@ namespace Microsoft.Maui.Controls
 				Y = value.Y;
 				SetSize(value.Width, value.Height);
 				BatchCommit();
+
+				Handler?.UpdateValue(nameof(IFrameworkElement.Frame));
 			}
 		}
 
@@ -802,6 +804,7 @@ namespace Microsoft.Maui.Controls
 				result.Request = new Size(result.Request.Width + margin.HorizontalThickness, result.Request.Height + margin.VerticalThickness);
 			}
 
+			DesiredSize = result.Request;
 			return result;
 		}
 

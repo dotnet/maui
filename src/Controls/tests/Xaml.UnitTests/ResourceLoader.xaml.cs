@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void XamlLoadingUsesResourceLoader(bool useCompiledXaml)
 			{
 				var layout = new ResourceLoader(useCompiledXaml);
-				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
+				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromArgb("#368F95")));
 
 #pragma warning disable CS0618 // Type or member is obsolete
 				Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider = (asmName, path) =>
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void XamlLoadingUsesResourceProvider2([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new ResourceLoader(useCompiledXaml);
-				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
+				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromArgb("#368F95")));
 				object instance = null;
 				Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2 = (rlq) =>
 				{
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void XamlLoadingUsesResourceProvider2WithDesignProperties([Values(false, true)] bool useCompiledXaml)
 			{
 				var layout = new ResourceLoader(useCompiledXaml);
-				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
+				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromArgb("#368F95")));
 
 				Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2 = (rlq) =>
 				{
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void RDLoadingUsesResourceLoader(bool useCompiledXaml)
 			{
 				var layout = new ResourceLoader(useCompiledXaml);
-				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
+				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromArgb("#368F95")));
 
 #pragma warning disable CS0618 // Type or member is obsolete
 				Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider = (asmName, path) =>
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				};
 				layout = new ResourceLoader(useCompiledXaml);
 
-				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#36FF95")));
+				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromArgb("#36FF95")));
 			}
 		}
 	}

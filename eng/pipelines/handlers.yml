@@ -122,26 +122,47 @@ stages:
           steps:
             - template: common/build-windows.yml
 
-  # - stage: windows_controlgallery
-  #   displayName: Build Windows ControlGallery
-  #   dependsOn: []
-  #   jobs:
-  #     - ${{ each BuildCondition in parameters.BuildConfigurations }}:
-  #       - job: win_hosted_${{ BuildCondition }}
-  #         workspace:
-  #           clean: all
-  #         displayName: Build Windows Phase (${{ BuildCondition }})
-  #         condition: or(
-  #           ${{ parameters.BuildEverything }},
-  #           ne(variables['Build.Reason'], 'PullRequest'),
-  #           eq('${{ BuildCondition }}', 'Release'))
-  #         timeoutInMinutes: 60
-  #         pool:
-  #           name: $(vs2019VmPool)
-  #           vmImage: $(vs2019VmImage)
-  #           demands: [ msbuild ]
-  #         steps:
-  #           - template: common/controlgallery-windows.yml
+  - stage: windows_cake_validation
+    displayName: Windows Cake Validation
+    dependsOn: []
+    jobs:
+      - ${{ each BuildCondition in parameters.BuildConfigurations }}:
+        - job: win_hosted_${{ BuildCondition }}
+          workspace:
+            clean: all
+          displayName: Build Windows Phase (${{ BuildCondition }})
+          condition: or(
+            ${{ parameters.BuildEverything }},
+            ne(variables['Build.Reason'], 'PullRequest'),
+            eq('${{ BuildCondition }}', 'Release'))
+          timeoutInMinutes: 60
+          pool:
+            name: $(vs2019VmPool)
+            vmImage: $(vs2019VmImage)
+            demands: [ msbuild ]
+          steps:
+            - task: xamops.azdevex.provisionator-task.provisionator@1
+              displayName: 'Provision VSWindows'
+              inputs:
+                provisioning_script: $(provisionator.vs2019)
+            - script: dotnet tool restore
+              displayName: install dotnet tools
+            - powershell: |
+                  & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildCondition }}
+              displayName: 'Build WinUI SLN'
+            - task: CopyFiles@2
+              displayName: 'Copy Bin Log Files'
+              condition: always()
+              inputs:
+                Contents: |
+                  **/*.binlog
+                TargetFolder: $(build.artifactstagingdirectory)
+                flattenFolders: true
+            - task: PublishBuildArtifacts@1
+              condition: always()
+              displayName: publish artifacts
+              inputs:
+                ArtifactName: win_build_cake
 
   - stage: build_osx
     displayName: iOS

@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			View = new StackLayout
 			{
 				Padding = new Thickness(8, 0),
-				BackgroundColor = Color.FromHex("#999999"),
+				BackgroundColor = Color.FromArgb("#999999"),
 				Orientation = StackOrientation.Horizontal,
 				Children = { title },
 			};

@@ -8,6 +8,7 @@ using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[PortHandler]
 	public class FormsButton : Microsoft.UI.Xaml.Controls.Button
 	{
 		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),

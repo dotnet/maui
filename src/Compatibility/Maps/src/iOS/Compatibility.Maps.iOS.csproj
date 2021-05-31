@@ -66,11 +66,9 @@
       <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Core\src\iOS\Compatibility.iOS.csproj">
-      <Project>{271193c1-6e7c-429c-a36d-3f1be5267231}</Project>
-      <Name>Compatibility.iOS</Name>
-      <IsAppExtension>false</IsAppExtension>
-      <IsWatchApp>false</IsWatchApp>
+    <ProjectReference Include="..\..\..\Core\src\Compatibility.csproj">
+      <Project>{8e86f0da-ed1c-409e-a7a9-df3e58498620}</Project>
+      <Name>Compatibility</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	[ContentProperty("Root")]
+	[ContentProperty(nameof(Root))]
 	public class TableView : View, ITableViewController, IElementConfiguration<TableView>
 	{
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create("RowHeight", typeof(int), typeof(TableView), -1);
