@@ -29,6 +29,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateForeground(check);
 		}
 
+		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
+		{
+			handler.NativeView?.UpdateForeground(check);
+		}
+
 		void OnStateChanged(object? sender, EventArgs e)
 		{
 			if (VirtualView == null)

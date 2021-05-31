@@ -18,5 +18,14 @@ namespace Microsoft.Maui.Platform
 				platformCheck.Color = solid.Color.ToPlatformEFL();
 			}
 		}
+
+		public static void UpdateForeground(this Check nativeCheck, ICheckBox check)
+		{
+			// For the moment, we're only supporting solid color Paint
+			if (check.Foreground is SolidPaint solid)
+			{
+				nativeCheck.Color = solid.Color.ToNativeEFL();
+			}
+		}
 	}
 }
