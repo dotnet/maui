@@ -6,7 +6,7 @@
     <title>Microsoft.Maui.Graphics.Text.Markdig</title>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
-    <requireLicenseAcceptance>True</requireLicenseAcceptance>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>Markdown support for Microsoft.Maui.Graphics attributed text powered by Markdig</description>
     <summary>Markdown support for Microsoft.Maui.Graphics attributed text powered by Markdig</summary>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
