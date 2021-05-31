@@ -10,6 +10,7 @@ using UwpGridUnitType = Microsoft.UI.Xaml.GridUnitType;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[PortHandler]
 	static class WinUIHelpers
 	{
 		public static WThickness CreateThickness(double left, double top, double right, double bottom)

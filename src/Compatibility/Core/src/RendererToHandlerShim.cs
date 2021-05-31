@@ -1,14 +1,35 @@
 using System;
-using Android.Views;
-using Microsoft.Maui.Graphics;
+#if __ANDROID__
+using static Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform;
+using NativeView = Android.Views.View;
 using IVisualElementRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.IVisualElementRenderer;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Android.Views.View>;
 using VisualElementChangedEventArgs = Microsoft.Maui.Controls.Compatibility.Platform.Android.VisualElementChangedEventArgs;
+#elif __IOS__ || MACCATALYST
+using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform;
+using NativeView = UIKit.UIView;
+using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, UIKit.UIView>;
+#elif NETSTANDARD
+using NativeView = System.Object;
+using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, System.Object>;
+#elif WINDOWS
+using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Microsoft.UI.Xaml.FrameworkElement>;
+using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using static Microsoft.Maui.Controls.Compatibility.Platform.UWP.Platform;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+#endif
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
-	public class RendererToHandlerShim : ViewHandler
+	public partial class RendererToHandlerShim : ViewHandler
 	{
+		public RendererToHandlerShim() : base(ViewHandler.ViewMapper)
+		{
+		}
+
+#if __ANDROID__ || __IOS__ || WINDOWS
 		internal IVisualElementRenderer VisualElementRenderer { get; private set; }
 
 		public static IViewHandler CreateShim(object renderer)
@@ -22,10 +43,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return new RendererToHandlerShim();
 		}
 
-		public RendererToHandlerShim() : base(ViewHandler.ViewMapper)
-		{
-		}
-
 		public RendererToHandlerShim(IVisualElementRenderer visualElementRenderer) : this()
 		{
 			if (visualElementRenderer != null)
@@ -35,7 +52,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public void SetupRenderer(IVisualElementRenderer visualElementRenderer)
 		{
 			VisualElementRenderer = visualElementRenderer;
-			VisualElementRenderer.ElementChanged += OnElementChanged;
 
 			if (VisualElementRenderer.Element is IView view)
 			{
@@ -44,6 +60,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 			else if (VisualElementRenderer.Element != null)
 				throw new Exception($"{VisualElementRenderer.Element} must implement: {nameof(Microsoft.Maui.IView)}");
+
+			VisualElementRenderer.ElementChanged += OnElementChanged;
 		}
 
 		void OnElementChanged(object sender, VisualElementChangedEventArgs e)
@@ -60,20 +78,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 				throw new Exception($"{e.NewElement} must implement: {nameof(Microsoft.Maui.IView)}");
 		}
 
-		protected override global::Android.Views.View CreateNativeView()
-		{
-			return VisualElementRenderer.View;
-		}
-
-		protected override void ConnectHandler(global::Android.Views.View nativeView)
+		protected override void ConnectHandler(NativeView nativeView)
 		{
 			base.ConnectHandler(nativeView);
 			VirtualView.Handler = this;
 		}
 
-		protected override void DisconnectHandler(global::Android.Views.View nativeView)
+		protected override void DisconnectHandler(NativeView nativeView)
 		{
-			Platform.Android.AppCompat.Platform.SetRenderer(
+			SetRenderer(
 				VisualElementRenderer.Element,
 				null);
 
@@ -85,13 +98,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public override void SetVirtualView(IView view)
 		{
-			if (VisualElementRenderer == null && Context != null)
+			if (VisualElementRenderer == null)
 			{
-				var renderer = Internals.Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(view, Context)
-										   ?? new Platform.Android.AppCompat.Platform.DefaultRenderer(Context);
-
-				SetupRenderer(renderer);
+				SetupRenderer(CreateRenderer(view));
 			}
+
+			SetRenderer(
+				(VisualElement)view,
+				VisualElementRenderer);
 
 			if (VisualElementRenderer.Element != view)
 			{
@@ -101,27 +115,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				base.SetVirtualView(view);
 			}
-
-			Platform.Android.AppCompat.Platform.SetRenderer(
-				VisualElementRenderer.Element,
-				VisualElementRenderer);
 		}
-
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+#else
+		protected override NativeView CreateNativeView()
 		{
-			return Platform.Android.AppCompat.Platform.GetNativeSize(
-				VisualElementRenderer, widthConstraint, heightConstraint);
+			throw new NotImplementedException();
 		}
-
-		public override void NativeArrange(Rectangle frame)
-		{
-			// This is a hack to force the shimmed control to actually do layout; without this, some controls won't actually
-			// call OnLayout after SetFrame if their sizes haven't changed (e.g., ScrollView)
-			// Luckily, measuring with MeasureSpecMode.Exactly is pretty fast, since it just returns the value you give it.
-			NativeView?.Measure(MeasureSpecMode.Exactly.MakeMeasureSpec((int)frame.Width),
-				MeasureSpecMode.Exactly.MakeMeasureSpec((int)frame.Height));
-
-			base.NativeArrange(frame);
-		}
+#endif
 	}
 }

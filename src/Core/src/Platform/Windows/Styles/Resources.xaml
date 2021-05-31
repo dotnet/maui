@@ -6,8 +6,11 @@
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="MauiActivityIndicatorStyle.xaml" />
+        <ResourceDictionary Source="MauiButtonStyle.xaml" />
         <ResourceDictionary Source="MauiComboBoxStyle.xaml" />
+        <ResourceDictionary Source="MauiStepperStyle.xaml" />
         <ResourceDictionary Source="MauiTextBoxStyle.xaml" />
+        <ResourceDictionary Source="MauiCheckBoxStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
      
     <uwp:ColorConverter x:Key="ColorConverter" />
