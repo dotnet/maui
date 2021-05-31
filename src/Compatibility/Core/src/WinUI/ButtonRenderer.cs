@@ -8,7 +8,6 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WStretch = Microsoft.UI.Xaml.Media.Stretch;
 using WThickness = Microsoft.UI.Xaml.Thickness;
-using Microsoft.Maui.Controls.Compatibility.Platform.UAP.Extensions;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
 
@@ -302,7 +301,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Element.Font == Font.Default && !_fontApplied)
 				return;
 
-			Font fontToApply = Element.Font == Font.Default ? Font.SystemFontOfSize(NamedSize.Medium) : Element.Font;
+			Font fontToApply = Element.Font == Font.Default ? Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)) : Element.Font;
 
 			Control.ApplyFont(fontToApply);
 			_fontApplied = true;

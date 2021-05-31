@@ -19,7 +19,8 @@
 ## Maui.sln
 
 ### SDKS required
-- Install the SDKs listed here https://github.com/xamarin/net6-samples
+
+- Install the SDKs listed here https://github.com/dotnet/maui-samples
 
 - And/or run the following
 
@@ -30,7 +31,8 @@ dotnet tool install Cake.Tool -g
 ### Running
 
 #### IDE
-- If you have Visual Studio 16.9 P4 installed you can open `Maui.sln` and run it from there.
+
+- If you have Visual Studio 16.9 P4 or newer installed you can open `Maui.sln` and run it from there.
 
 #### .NET 6
 
@@ -50,7 +52,7 @@ dotnet build src\DotNet\DotNet.csproj
 # Builds the rest of Maui
 .\bin\dotnet\dotnet build Microsoft.Maui-net6.sln
 # (Windows-only) to launch Visual Studio
-.\eng\dogfood.ps1
+dotnet cake --target=VS-DOGFOOD
 ```
 
 To build & run .NET 6 sample apps, you will also need to use `.\bin\dotnet\dotnet`:
@@ -67,6 +69,10 @@ Try out a "single project", you will need the `-f` switch to choose the platform
 ```
 
 ## Current News
+
+[May 25, 2021 - Announcing .NET MAUI Preview 4](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-4/)
+
+[May 24, 2021 - Azure DevOps Podcast - Interview with David Ortinau](http://azuredevopspodcast.clear-measure.com/david-ortinau-on-multi-platform-app-development-using-net-maui-episode-142)
 
 [April 21, 2021 - WinUI Community Live Stream](https://youtu.be/SyLXctia1B0?t=777)
 

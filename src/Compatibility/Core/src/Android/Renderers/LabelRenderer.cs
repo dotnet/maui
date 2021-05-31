@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_lastTypeface = newTypeface;
 			}
 
-			float newTextSize = f.ToScaledPixel();
+			float newTextSize = (float)f.FontSize;
 			if (newTextSize != _lastTextSize)
 			{
 				_view.SetTextSize(ComplexUnitType.Sp, newTextSize);

@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using CoreAnimation;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Essentials;
 using UIKit;
 using Xunit;
 using Xunit.Sdk;
@@ -25,8 +26,18 @@ namespace Microsoft.Maui.DeviceTests
 			return $"{message}. This is what it looked like:<img>{imageAsString}</img>";
 		}
 
-		public static Task<UIImage> ToBitmap(this UIView view)
+		// TODO: attach this view to the UI if anything breaks
+		public static Task AttachAndRun(this UIView view, Action action)
 		{
+			action();
+			return Task.CompletedTask;
+		}
+
+		public static Task<UIImage> ToUIImage(this UIView view)
+		{
+			if (view.Superview is WrapperView wrapper)
+				view = wrapper;
+
 			var imageRect = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
 
 			UIGraphics.BeginImageContext(imageRect.Size);
@@ -44,27 +55,39 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var pixel = bitmap.GetPixel(x, y);
 
-			// Returned pixel data is B, G, R, A (ARGB little endian byte order)
-			var color = new UIColor(pixel[2] / 255.0f, pixel[1] / 255.0f, pixel[0] / 255.0f, pixel[3] / 255.0f);
+			var color = new UIColor(
+				pixel[0] / 255.0f,
+				pixel[1] / 255.0f,
+				pixel[2] / 255.0f,
+				pixel[3] / 255.0f);
 
 			return color;
 		}
 
 		public static byte[] GetPixel(this UIImage bitmap, int x, int y)
 		{
-			var cgImage = bitmap.CGImage.WithColorSpace(CGColorSpace.CreateDeviceRGB());
+			var cgImage = bitmap.CGImage;
+			var width = cgImage.Width;
+			var height = cgImage.Height;
+			var colorSpace = CGColorSpace.CreateDeviceRGB();
+			var bitsPerComponent = 8;
+			var bytesPerRow = 4 * width;
+			var componentCount = 4;
 
-			// Grab the raw image data
-			var nsData = cgImage.DataProvider.CopyData();
+			var dataBytes = new byte[width * height * componentCount];
 
-			// Copy the data into a buffer
-			var dataBytes = new byte[nsData.Length];
-			System.Runtime.InteropServices.Marshal.Copy(nsData.Bytes, dataBytes, 0, (int)nsData.Length);
+			using var context = new CGBitmapContext(
+				dataBytes,
+				width, height,
+				bitsPerComponent, bytesPerRow,
+				colorSpace,
+				CGBitmapFlags.ByteOrder32Big | CGBitmapFlags.PremultipliedLast);
 
-			// Figure out where the pixel we care about is
-			var pixelLocation = (cgImage.BytesPerRow * y) + (4 * x);
+			context.DrawImage(new CGRect(0, 0, width, height), cgImage);
 
-			var pixel = new byte[4]
+			var pixelLocation = (bytesPerRow * y) + componentCount * x;
+
+			var pixel = new byte[]
 			{
 				dataBytes[pixelLocation],
 				dataBytes[pixelLocation + 1],
@@ -77,25 +100,12 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static UIImage AssertColorAtPoint(this UIImage bitmap, UIColor expectedColor, int x, int y)
 		{
-			try
-			{
-				var cap = bitmap.ColorAtPoint(x, y);
+			var cap = bitmap.ColorAtPoint(x, y);
 
-				if (!ColorComparison.ARGBEquivalent(cap, expectedColor))
-				{
-					System.Diagnostics.Debug.WriteLine("Here");
-				}
-
+			if (!ColorComparison.ARGBEquivalent(cap, expectedColor))
 				Assert.Equal(cap, expectedColor, new ColorComparison());
 
-				return bitmap;
-			}
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine(ex);
-			}
-
-			return null;
+			return bitmap;
 		}
 
 		public static UIImage AssertColorAtCenter(this UIImage bitmap, UIColor expectedColor)
@@ -126,43 +136,43 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<UIImage> AssertColorAtPoint(this UIView view, UIColor expectedColor, int x, int y)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
 		public static async Task<UIImage> AssertColorAtCenter(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtBottomLeft(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtBottomRight(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtTopLeft(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtTopRight(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertContainsColor(expectedColor);
 		}
 
@@ -187,16 +197,16 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static UILineBreakMode ToNative(this LineBreakMode mode) =>
-		mode switch
-		{
-			LineBreakMode.NoWrap => UILineBreakMode.Clip,
-			LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
-			LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
-			LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
-			LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
-			LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
-			_ => throw new ArgumentOutOfRangeException(nameof(mode))
-		};
+			mode switch
+			{
+				LineBreakMode.NoWrap => UILineBreakMode.Clip,
+				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
+				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
+				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
+				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+				_ => throw new ArgumentOutOfRangeException(nameof(mode))
+			};
 
 		public static double GetCharacterSpacing(this NSAttributedString text)
 		{
@@ -223,6 +233,26 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				throw new XunitException("Label does not have the UnderlineStyle attribute");
 			}
+		}
+
+		public static void AssertEqual(this CATransform3D expected, CATransform3D actual, int precision = 4)
+		{
+			Assert.Equal((double)expected.m11, (double)actual.m11, precision);
+			Assert.Equal((double)expected.m12, (double)actual.m12, precision);
+			Assert.Equal((double)expected.m13, (double)actual.m13, precision);
+			Assert.Equal((double)expected.m14, (double)actual.m14, precision);
+			Assert.Equal((double)expected.m21, (double)actual.m21, precision);
+			Assert.Equal((double)expected.m22, (double)actual.m22, precision);
+			Assert.Equal((double)expected.m23, (double)actual.m23, precision);
+			Assert.Equal((double)expected.m24, (double)actual.m24, precision);
+			Assert.Equal((double)expected.m31, (double)actual.m31, precision);
+			Assert.Equal((double)expected.m32, (double)actual.m32, precision);
+			Assert.Equal((double)expected.m33, (double)actual.m33, precision);
+			Assert.Equal((double)expected.m34, (double)actual.m34, precision);
+			Assert.Equal((double)expected.m41, (double)actual.m41, precision);
+			Assert.Equal((double)expected.m42, (double)actual.m42, precision);
+			Assert.Equal((double)expected.m43, (double)actual.m43, precision);
+			Assert.Equal((double)expected.m44, (double)actual.m44, precision);
 		}
 	}
 }

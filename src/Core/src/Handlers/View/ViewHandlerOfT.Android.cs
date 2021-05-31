@@ -1,19 +1,36 @@
+using System;
+using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Views;
-using AndroidX.Core.View;
-using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler<TVirtualView, TNativeView> : INativeViewHandler
 	{
-		View? INativeViewHandler.NativeView => (View?)base.NativeView;
+		View? INativeViewHandler.NativeView => WrappedNativeView;
+		View? INativeViewHandler.ContainerView => ContainerView;
+
+		protected new View? WrappedNativeView =>
+			(View?)base.WrappedNativeView;
+
+		public new WrapperView? ContainerView
+		{
+			get => (WrapperView?)base.ContainerView;
+			protected set => base.ContainerView = value;
+		}
+
 		public Context? Context => MauiContext?.Context;
 
-		public override void SetFrame(Rectangle frame)
+		protected Context ContextWithValidation([CallerMemberName] string callerName = "")
 		{
-			var nativeView = NativeView;
+			_ = Context ?? throw new InvalidOperationException($"Context cannot be null here: {callerName}");
+			return Context;
+		}
+
+		public override void NativeArrange(Rectangle frame)
+		{
+			var nativeView = WrappedNativeView;
 
 			if (nativeView == null)
 				return;
@@ -37,7 +54,9 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (NativeView == null || VirtualView == null || Context == null)
+			var nativeView = WrappedNativeView;
+
+			if (nativeView == null || VirtualView == null || Context == null)
 			{
 				return Size.Zero;
 			}
@@ -46,10 +65,10 @@ namespace Microsoft.Maui.Handlers
 			var widthSpec = CreateMeasureSpec(widthConstraint, VirtualView.Width);
 			var heightSpec = CreateMeasureSpec(heightConstraint, VirtualView.Height);
 
-			NativeView.Measure(widthSpec, heightSpec);
+			nativeView.Measure(widthSpec, heightSpec);
 
 			// Convert back to xplat sizes for the return value
-			return Context.FromPixels(NativeView.MeasuredWidth, NativeView.MeasuredHeight);
+			return Context.FromPixels(nativeView.MeasuredWidth, nativeView.MeasuredHeight);
 		}
 
 		int CreateMeasureSpec(double constraint, double explicitSize)
@@ -77,12 +96,40 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void SetupContainer()
 		{
+			if (Context == null || NativeView == null || ContainerView != null)
+				return;
 
+			var oldParent = (ViewGroup?)NativeView.Parent;
+
+			var oldIndex = oldParent?.IndexOfChild(NativeView);
+			oldParent?.RemoveView(NativeView);
+
+			ContainerView ??= new WrapperView(Context);
+			ContainerView.AddView(NativeView);
+
+			if (oldIndex is int idx && idx >= 0)
+				oldParent?.AddView(ContainerView, idx);
+			else
+				oldParent?.AddView(ContainerView);
 		}
 
 		protected override void RemoveContainer()
 		{
+			if (Context == null || NativeView == null || ContainerView == null || NativeView.Parent != ContainerView)
+				return;
 
+			var oldParent = (ViewGroup?)ContainerView.Parent;
+
+			var oldIndex = oldParent?.IndexOfChild(ContainerView);
+			oldParent?.RemoveView(ContainerView);
+
+			ContainerView.RemoveAllViews();
+			ContainerView = null;
+
+			if (oldIndex is int idx && idx >= 0)
+				oldParent?.AddView(NativeView, idx);
+			else
+				oldParent?.AddView(NativeView);
 		}
 	}
 }

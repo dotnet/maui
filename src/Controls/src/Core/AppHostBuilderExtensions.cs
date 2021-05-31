@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		static readonly Dictionary<Type, Type> DefaultMauiControlHandlers = new Dictionary<Type, Type>
 		{
 			{ typeof(NavigationPage), typeof(NavigationPageHandler) },
+			{ typeof(Shell), typeof(ShellHandler) },
 		};
 
 		public static IAppHostBuilder UseMauiControlsHandlers(this IAppHostBuilder builder)
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			if (!UI.Xaml.Application.Current.Resources.ContainsKey("MauiControlsPageControlStyle"))
 			{
 				var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
-				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls/Maui/Platform/Windows/Styles/Resources.xbf");
+				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
 				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
 			}
 #endif

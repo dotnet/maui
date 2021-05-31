@@ -174,6 +174,33 @@ namespace Microsoft.Maui.DeviceTests
 			attributedText.AssertHasUnderline();
 		}
 
+		[Theory(DisplayName = "HorizontalTextAlignment adjusts for FlowDirection")]
+		[InlineData(TextAlignment.Start, FlowDirection.LeftToRight, UITextAlignment.Left)]
+		[InlineData(TextAlignment.End, FlowDirection.LeftToRight, UITextAlignment.Right)]
+		[InlineData(TextAlignment.Start, FlowDirection.RightToLeft, UITextAlignment.Right)]
+		[InlineData(TextAlignment.End, FlowDirection.RightToLeft, UITextAlignment.Left)]
+		public async Task HorizontalTextAlignmentAdjustsForFlowDirection(TextAlignment alignment, FlowDirection flowDirection, UITextAlignment expected)
+		{
+			var label = new LabelStub
+			{
+				Text = "This is TEXT!",
+				HorizontalTextAlignment = alignment,
+				FlowDirection = flowDirection
+			};
+
+
+			var values = await GetValueAsync(label, (handler) =>
+			{
+				return new
+				{
+					ViewValue = label.HorizontalTextAlignment,
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(expected, values.NativeViewValue);
+		}
+
 		UILabel GetNativeLabel(LabelHandler labelHandler) =>
 			(UILabel)labelHandler.NativeView;
 
@@ -214,14 +241,6 @@ namespace Microsoft.Maui.DeviceTests
 		UITextAlignment GetNativeHorizontalTextAlignment(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).TextAlignment;
 
-		Task ValidateNativeBackgroundColor(ILabel label, Color color)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				return GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
-			});
-		}
-
 		UILineBreakMode GetNativeLineBreakMode(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).LineBreakMode;
 
@@ -238,6 +257,16 @@ namespace Microsoft.Maui.DeviceTests
 				return new nfloat(-1.0f);
 
 			return paragraphStyle.LineHeightMultiple;
+		}
+
+		Task ValidateHasColor(ILabel label, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeLabel = GetNativeLabel(CreateHandler(label));
+				action?.Invoke();
+				nativeLabel.AssertContainsColor(color);
+			});
 		}
 	}
 }

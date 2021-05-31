@@ -186,6 +186,17 @@ namespace Microsoft.Maui.Controls
 		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => HorizontalOptions.ToCore();
 		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => VerticalOptions.ToCore();
 
+		protected override void OnSizeAllocated(double width, double height)
+		{
+			base.OnSizeAllocated(width, height);
+
+			if (width >= 0 && height >= 0)
+			{
+				// This is a temporary measure to keep the old layouts working 
+				Handler?.NativeArrange(Bounds);
+			}
+		}
+
 		#endregion
 
 		#region HotReload

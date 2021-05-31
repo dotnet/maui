@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (imageLoader?.Uri == null)
 				return null;
 
-			Stream streamImage = await imageLoader.GetStreamAsync(cancellationToken);
+			Stream streamImage = await ((IStreamImageSource)imageLoader).GetStreamAsync(cancellationToken);
 
 			if (streamImage == null || !streamImage.CanRead)
 			{

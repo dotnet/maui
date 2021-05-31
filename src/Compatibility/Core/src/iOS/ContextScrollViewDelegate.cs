@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			s_scrollViewBeingScrolled = new WeakReference<UIScrollView>(scrollView);
-			
+
 			if (!IsOpen)
 				SetButtonsShowing(true);
 
@@ -202,8 +202,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return false;
 
 			UIScrollView scrollViewBeingScrolled;
-			if (!s_scrollViewBeingScrolled.TryGetTarget(out scrollViewBeingScrolled) 
-				|| ReferenceEquals(scrollViewBeingScrolled, scrollView) 
+			if (!s_scrollViewBeingScrolled.TryGetTarget(out scrollViewBeingScrolled)
+				|| ReferenceEquals(scrollViewBeingScrolled, scrollView)
 				|| !ReferenceEquals(((ContextScrollViewDelegate)scrollViewBeingScrolled.Delegate)?._table, ((ContextScrollViewDelegate)scrollView.Delegate)?._table))
 				return false;
 

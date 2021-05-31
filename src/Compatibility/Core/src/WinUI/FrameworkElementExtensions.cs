@@ -13,6 +13,7 @@ using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
+	[PortHandler]
 	internal static class FrameworkElementExtensions
 	{
 		static readonly Lazy<ConcurrentDictionary<Type, DependencyProperty>> ForegroundProperties =

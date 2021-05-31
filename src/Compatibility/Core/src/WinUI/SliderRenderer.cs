@@ -228,16 +228,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
 
+		[PortHandler]
 		void OnNativeValueChanged(object sender, RangeBaseValueChangedEventArgs e)
 		{
 			((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, e.NewValue);
 		}
 
+		[PortHandler]
 		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
 		{
 			((ISliderController)Element)?.SendDragStarted();
 		}
 
+		[PortHandler]
 		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
 			((ISliderController)Element)?.SendDragCompleted();
