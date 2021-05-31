@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
-
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 
