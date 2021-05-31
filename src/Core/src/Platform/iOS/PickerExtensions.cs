@@ -25,6 +25,9 @@ namespace Microsoft.Maui
 
 			var titleColor = picker.TitleColor;
 
+			if (titleColor == null)
+				return;
+
 			nativePicker.UpdateAttributedPlaceholder(new NSAttributedString(title, null, titleColor.ToNative()));
 		}
 

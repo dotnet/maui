@@ -105,7 +105,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		Color GetNativeTitleColor(PickerHandler pickerHandler)
 		{
-			var currentTextColorInt = GetNativePicker(pickerHandler).CurrentTextColor;
+			var currentTextColorInt = GetNativePicker(pickerHandler).CurrentHintTextColor;
 			var currentTextColor = new AColor(currentTextColorInt);
 			return currentTextColor.ToColor();
 		}
