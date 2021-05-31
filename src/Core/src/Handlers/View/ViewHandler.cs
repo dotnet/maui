@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.AnchorY)] = MapAnchorY,
 			Actions =
 			{
-				[nameof(ViewHandler.ContainerView)] = MapContainerView,
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 				[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure,
 				[nameof(IFrameworkElement.Frame)] = MapFrame,
 			}
