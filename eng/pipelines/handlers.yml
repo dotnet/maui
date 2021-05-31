@@ -145,6 +145,8 @@ stages:
               displayName: 'Provision VSWindows'
               inputs:
                 provisioning_script: $(provisionator.vs2019)
+            - script: dotnet tool restore
+              displayName: install dotnet tools
             - powershell: |
                   & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildCondition }}
               displayName: 'Build WinUI SLN'
