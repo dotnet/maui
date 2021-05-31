@@ -10,7 +10,8 @@ namespace Microsoft.Maui.Handlers
 		FrameworkElement? INativeViewHandler.NativeView => WrappedNativeView;
 		FrameworkElement? INativeViewHandler.ContainerView => ContainerView;
 
-		protected FrameworkElement? WrappedNativeView => ContainerView ?? (FrameworkElement?)NativeView;
+		protected new FrameworkElement? WrappedNativeView =>
+			(FrameworkElement?)base.WrappedNativeView;
 
 		public new Border? ContainerView
 		{

@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			"case", "catch", "char", "checked", "class", "const", "continue",
 			"decimal", "default", "delegate", "do", "double",
 			"else", "enum", "event", "explicit", "extern",
-			"false", "finally", "fixed", "float", "for", "foreach", 
+			"false", "finally", "fixed", "float", "for", "foreach",
 			"goto",
 			"if", "implicit", "in", "int", "interface", "internal", "is",
 			"lock", "long", "namespace", "new", "null",
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 					continue;
 				if (!context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.TargetPath", out string? name))
 					name = file.Path;
-				name = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(name))? "" : Path.GetDirectoryName(name) + Path.DirectorySeparatorChar )}{Path.GetFileNameWithoutExtension(name)}.{kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
+				name = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(name)) ? "" : Path.GetDirectoryName(name) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(name)}.{kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
 				context.AddSource(name, SourceText.From(code, Encoding.UTF8));
 			}
 		}
@@ -104,9 +104,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 				var sb = new StringBuilder();
 				var opt = context.AnalyzerConfigOptions.GetOptions(file);
-				if (   context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out string? manifestResourceName)
+				if (context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out string? manifestResourceName)
 					&& context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.TargetPath", out string? targetPath))
-					sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{manifestResourceName}\", \"{targetPath.Replace('\\','/')}\", {(rootType == null ? "null" : "typeof(global::"+rootClrNamespace+"."+rootType+")")})]");
+					sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{manifestResourceName}\", \"{targetPath.Replace('\\', '/')}\", {(rootType == null ? "null" : "typeof(global::" + rootClrNamespace + "." + rootType + ")")})]");
 				if (XamlResourceIdOnly)
 				{
 					code = sb.ToString();
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 				sb.AppendLine($"\tpublic partial class {rootType} : {baseType}");
 				sb.AppendLine("\t{");
-				
+
 				//optional default ctor
 				if (generateDefaultCtor)
 				{
@@ -144,8 +144,8 @@ namespace Microsoft.Maui.Controls.SourceGen
 					foreach ((var fname, var ftype, var faccess) in namedFields)
 					{
 						sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
-						
-						sb.AppendLine($"\t\t{faccess} {ftype} {(_CSharpKeywords.Contains(fname) ? "@"+fname: fname)};");
+
+						sb.AppendLine($"\t\t{faccess} {ftype} {(_CSharpKeywords.Contains(fname) ? "@" + fname : fname)};");
 						sb.AppendLine();
 					}
 
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 				if (namedFields != null)
 					foreach ((var fname, var ftype, var faccess) in namedFields)
 						sb.AppendLine($"\t\t\t{(_CSharpKeywords.Contains(fname) ? "@" + fname : fname)} = global::Microsoft.Maui.Controls.NameScopeExtensions.FindByName<{ftype}>(this, \"{fname}\");");
-						
+
 				sb.AppendLine("\t\t}");
 				sb.AppendLine("\t}");
 				sb.AppendLine("}");
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			}
 		}
 
-		bool TryParseXaml(TextReader xaml, GeneratorExecutionContext context, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string,string,string)>? namedFields)
+		bool TryParseXaml(TextReader xaml, GeneratorExecutionContext context, IList<XmlnsDefinitionAttribute> xmlnsDefinitionCache, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields)
 		{
 			rootType = null;
 			rootClrNamespace = null;
@@ -266,7 +266,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 										  : null);
 
 				var accessModifier = fieldModifier?.ToLowerInvariant().Replace("notpublic", "internal") ?? "private"; //notpublic is WPF for internal
-				if (!new []{ "private", "public", "internal", "protected"}.Contains(accessModifier)) //quick validation
+				if (!new[] { "private", "public", "internal", "protected" }.Contains(accessModifier)) //quick validation
 					accessModifier = "private";
 				yield return (name ?? "", GetTypeName(xmlType, context, xmlnsDefinitionCache), accessModifier);
 			}
@@ -283,7 +283,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 				// It's an external, non-built-in namespace URL.
 				returnType = GetTypeNameFromCustomNamespace(xmlType, context, xmlnsDefinitionCache);
 			}
-			
+
 			if (xmlType.TypeArguments != null)
 				returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, context, xmlnsDefinitionCache)))}>";
 
@@ -341,9 +341,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 		{
 			var sb = new StringBuilder();
 			var opt = context.AnalyzerConfigOptions.GetOptions(file);
-			if (   context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out string? manifestResourceName)
-			    && context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.TargetPath", out string? targetPath))
-			    sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{manifestResourceName}\", \"{targetPath.Replace('\\','/')}\", null)]");
+			if (context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out string? manifestResourceName)
+				&& context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.TargetPath", out string? targetPath))
+				sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{manifestResourceName}\", \"{targetPath.Replace('\\', '/')}\", null)]");
 
 			code = sb.ToString();
 			return true;
@@ -351,10 +351,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 		public void Initialize(GeneratorInitializationContext context)
 		{
-//#if DEBUG
-//			if (!Debugger.IsAttached)
-//				Debugger.Launch();
-//#endif
+			//#if DEBUG
+			//			if (!Debugger.IsAttached)
+			//				Debugger.Launch();
+			//#endif
 		}
 	}
 }

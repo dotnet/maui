@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			self.SetBinding(property, new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath(path), Converter = converter });
 		}
 
+		[PortHandler]
 		internal static InputScopeNameValue GetKeyboardButtonType(this ReturnType returnType)
 		{
 			switch (returnType)
@@ -55,6 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		internal static InputScope ToInputScope(this ReturnType returnType)
 		{
 			var scopeName = new InputScopeName()

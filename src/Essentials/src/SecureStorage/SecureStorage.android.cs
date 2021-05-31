@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Essentials
 		internal static string Md5Hash(string input)
 		{
 			var hash = new StringBuilder();
-			var md5provider = new System.Security.Cryptography.MD5CryptoServiceProvider();
+			var md5provider = System.Security.Cryptography.MD5.Create();
 			var bytes = md5provider.ComputeHash(Encoding.UTF8.GetBytes(input));
 
 			for (var i = 0; i < bytes.Length; i++)
