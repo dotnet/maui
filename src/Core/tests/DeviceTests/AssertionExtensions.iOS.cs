@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -196,16 +197,16 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static UILineBreakMode ToNative(this LineBreakMode mode) =>
-		mode switch
-		{
-			LineBreakMode.NoWrap => UILineBreakMode.Clip,
-			LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
-			LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
-			LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
-			LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
-			LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
-			_ => throw new ArgumentOutOfRangeException(nameof(mode))
-		};
+			mode switch
+			{
+				LineBreakMode.NoWrap => UILineBreakMode.Clip,
+				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
+				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
+				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
+				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+				_ => throw new ArgumentOutOfRangeException(nameof(mode))
+			};
 
 		public static double GetCharacterSpacing(this NSAttributedString text)
 		{
@@ -232,6 +233,26 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				throw new XunitException("Label does not have the UnderlineStyle attribute");
 			}
+		}
+
+		public static void AssertEqual(this CATransform3D expected, CATransform3D actual, int precision = 4)
+		{
+			Assert.Equal((double)expected.m11, (double)actual.m11, precision);
+			Assert.Equal((double)expected.m12, (double)actual.m12, precision);
+			Assert.Equal((double)expected.m13, (double)actual.m13, precision);
+			Assert.Equal((double)expected.m14, (double)actual.m14, precision);
+			Assert.Equal((double)expected.m21, (double)actual.m21, precision);
+			Assert.Equal((double)expected.m22, (double)actual.m22, precision);
+			Assert.Equal((double)expected.m23, (double)actual.m23, precision);
+			Assert.Equal((double)expected.m24, (double)actual.m24, precision);
+			Assert.Equal((double)expected.m31, (double)actual.m31, precision);
+			Assert.Equal((double)expected.m32, (double)actual.m32, precision);
+			Assert.Equal((double)expected.m33, (double)actual.m33, precision);
+			Assert.Equal((double)expected.m34, (double)actual.m34, precision);
+			Assert.Equal((double)expected.m41, (double)actual.m41, precision);
+			Assert.Equal((double)expected.m42, (double)actual.m42, precision);
+			Assert.Equal((double)expected.m43, (double)actual.m43, precision);
+			Assert.Equal((double)expected.m44, (double)actual.m44, precision);
 		}
 	}
 }
