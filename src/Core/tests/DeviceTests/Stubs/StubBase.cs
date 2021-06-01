@@ -16,8 +16,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Paint Background { get; set; }
 
-		public double Opacity { get; set; } = 1.0d;
-
 		public Rectangle Frame { get; set; }
 
 		public IViewHandler Handler { get; set; }
@@ -29,6 +27,26 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public double Width { get; set; } = 50;
 
 		public double Height { get; set; } = 50;
+
+		public double TranslationX { get; set; }
+
+		public double TranslationY { get; set; }
+
+		public double Scale { get; set; } = 1d;
+
+		public double ScaleX { get; set; } = 1d;
+
+		public double ScaleY { get; set; } = 1d;
+
+		public double Rotation { get; set; }
+
+		public double RotationX { get; set; }
+
+		public double RotationY { get; set; }
+
+		public double AnchorX { get; set; } = .5d;
+
+		public double AnchorY { get; set; } = .5d;
 
 		public Thickness Margin { get; set; }
 

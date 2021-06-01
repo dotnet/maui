@@ -413,6 +413,8 @@ namespace Microsoft.Maui.Controls
 				Y = value.Y;
 				SetSize(value.Width, value.Height);
 				BatchCommit();
+
+				Handler?.UpdateValue(nameof(IFrameworkElement.Frame));
 			}
 		}
 
