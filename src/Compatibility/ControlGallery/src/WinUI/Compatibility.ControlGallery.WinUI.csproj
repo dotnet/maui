@@ -25,10 +25,9 @@
 
   <ItemGroup Condition=" '$(OS)' == 'Windows_NT'">
     <PackageReference Include="Microsoft.ProjectReunion" />
-    <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
-    <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps-net6.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />

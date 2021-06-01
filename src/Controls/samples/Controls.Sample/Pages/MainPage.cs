@@ -72,7 +72,7 @@ namespace Maui.Controls.Sample.Pages
 			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Colors.AntiqueWhite };
 			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Colors.CornflowerBlue };
 
-			//verticalStack.Add(CreateSampleGrid());
+			verticalStack.Add(CreateSampleGrid());
 			verticalStack.Add(CreateResizingButton());
 
 			AddTextResizeDemo(verticalStack);
