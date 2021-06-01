@@ -45,22 +45,46 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			Assert.Equal(0, count);
 		}
 
-		[Fact(DisplayName = "DisconnectHandler removes child from native layout")]
-		public async Task DisconnectHandlerRemovesChildFromNativeLayout()
+		[Fact(DisplayName = "Assign New Handler To Layout")]
+		public async Task AssignNewHandlerToLayout()
 		{
 			var layout = new LayoutStub();
 			var slider = new SliderStub();
 			layout.Add(slider);
 
+			await CreateHandlerAsync(layout);
+			layout.Handler = null;
 			var handler = await CreateHandlerAsync(layout);
+			Assert.Equal(handler, layout.Handler);
+		}
 
-			var count = await InvokeOnMainThreadAsync(() =>
-			{
-				layout.Handler.DisconnectHandler();
-				return GetNativeChildCount(handler);
-			});
 
-			Assert.Equal(0, count);
+		[Fact]
+		public async Task SwitchHandlerInMiddleOfTree()
+		{
+			var root = new LayoutStub();
+			var middle = new LayoutStub();
+			var leaf = new SliderStub();
+
+			root.Add(middle);
+			middle.Add(leaf);
+
+			var rootHandler = await CreateHandlerAsync(root);
+			var middleHandler = middle.Handler;
+
+			Assert.Same(rootHandler.NativeView, GetNativeParent(middleHandler as INativeViewHandler));
+			Assert.Same(middleHandler.NativeView, GetNativeParent(leaf.Handler as INativeViewHandler));
+
+			// Change the middle handler
+			middle.Handler = null;
+			middleHandler = await CreateHandlerAsync(middle);
+			
+			// Check our assumptions
+			Assert.Equal(1, GetNativeChildCount(rootHandler));
+			Assert.Equal(1, GetNativeChildCount(middleHandler as LayoutHandler));
+
+			Assert.Same(rootHandler.NativeView, GetNativeParent(middleHandler as INativeViewHandler));
+			Assert.Same(middleHandler.NativeView, GetNativeParent(leaf.Handler as INativeViewHandler));
 		}
 	}
 }

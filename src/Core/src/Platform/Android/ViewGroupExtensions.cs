@@ -6,6 +6,20 @@ namespace Microsoft.Maui
 {
 	public static class ViewGroupExtensions
 	{
+		public static void AddView(this AViewGroup self, IView view, IMauiContext mauiContext)
+		{
+			var nativeView = view.ToNative(mauiContext);
+			nativeView.RemoveFromParent();
+			self.AddView(nativeView);
+		}
+
+		public static void InsertView(this AViewGroup self, IView view, int index, IMauiContext mauiContext)
+		{
+			var nativeView = view.ToNative(mauiContext);
+			nativeView.RemoveFromParent();
+			self.AddView(nativeView, index);
+		}
+
 		public static IEnumerable<T> GetChildrenOfType<T>(this AViewGroup self) where T : AView
 		{
 			for (var i = 0; i < self.ChildCount; i++)

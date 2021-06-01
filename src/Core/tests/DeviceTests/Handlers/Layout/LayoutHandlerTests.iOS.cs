@@ -9,5 +9,11 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 		{
 			return (layoutHandler.NativeView as UIView).Subviews.Length;
 		}
+
+
+		object GetNativeParent(INativeViewHandler layoutHandler)
+		{
+			return layoutHandler.NativeView?.Superview;
+		}
 	}
 }
