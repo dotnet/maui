@@ -76,6 +76,8 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(CreateResizingButton());
 
 			AddTextResizeDemo(verticalStack);
+			verticalStack.Add(CreateTransformations());
+			verticalStack.Add(CreateAnimations());
 
 			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
 			var label = new Label { Text = "End-aligned text", BackgroundColor = Colors.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
@@ -95,6 +97,8 @@ namespace Maui.Controls.Sample.Pages
 				new Button
 				{
 					Text = "Push a Page",
+					Rotation = 15,
+					Scale = 1.5,
 					Command = new Command(async () =>
 					{
 						await Navigation.PushAsync(new SemanticsPage());
@@ -191,7 +195,7 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new RedButton { Text = "Dynamically Registered" });
 			verticalStack.Add(new CustomButton { Text = "Button Registered to Compat Renderer" });
-			
+
 			var checkbox = new CheckBox();
 			checkbox.CheckedChanged += (sender, e) =>
 			{
@@ -213,7 +217,6 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Editor { Text = "Predictive Text Off", IsTextPredictionEnabled = false });
 			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", FontSize = 10, FontFamily = "Dokdo" });
 			verticalStack.Add(new Editor { Text = "ReadOnly Editor", IsReadOnly = true });
-
 
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>
@@ -263,7 +266,7 @@ namespace Maui.Controls.Sample.Pages
 				"Japanese Macaque"
 			};
 
-			var picker = new Picker { Title = "Select a monkey", FontFamily = "Dokdo", HorizontalTextAlignment = TextAlignment.Center };
+			var picker = new Picker { Title = "Select a monkey", TitleColor = Colors.Red, FontFamily = "Dokdo", HorizontalTextAlignment = TextAlignment.Center };
 
 			picker.ItemsSource = monkeyList;
 			verticalStack.Add(picker);
@@ -480,6 +483,52 @@ namespace Maui.Controls.Sample.Pages
 			layout.BackgroundColor = Colors.Chartreuse;
 
 			return layout;
+		}
+
+		IView CreateTransformations()
+		{
+			var label = new Button
+			{
+				BackgroundColor = Colors.Red,
+				TextColor = Colors.White,
+				Text = "Transformations",
+			};
+
+			var rotationSlider = new Slider
+			{
+				Minimum = -360,
+				Maximum = 360
+			};
+
+			rotationSlider.ValueChanged += (sender, e) => label.Rotation = e.NewValue;
+
+			var verticalStack = new VerticalStackLayout
+			{
+				rotationSlider,
+				label,
+			};
+
+			return verticalStack;
+		}
+
+		IView CreateAnimations()
+		{
+			var image = new Image { Source = "dotnet_bot.png", VerticalOptions = LayoutOptions.CenterAndExpand };
+			var animateButton = new Button { Text = "Animate", VerticalOptions = LayoutOptions.End };
+
+			animateButton.Clicked += async (sender, args) =>
+			{
+				await image.RotateTo(360, 2000);
+				image.Rotation = 0;
+			};
+
+			var verticalStack = new VerticalStackLayout
+			{
+				image,
+				animateButton,
+			};
+
+			return verticalStack;
 		}
 
 		void AddTextResizeDemo(Microsoft.Maui.ILayout layout)

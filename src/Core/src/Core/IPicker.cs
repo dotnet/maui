@@ -1,6 +1,5 @@
 ﻿#nullable enable
-using System.Collections;
-using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
@@ -13,6 +12,11 @@ namespace Microsoft.Maui
 		/// Gets the title for the Picker.
 		/// </summary>
 		string Title { get; }
+
+		/// <summary>
+		/// Gets the color for the Picker title.
+		/// </summary>
+		Color TitleColor { get; }
 
 		/// <summary>
 		/// Gets the index of the selected item of the picker.

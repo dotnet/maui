@@ -16,12 +16,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiTimePicker nativeView)
 		{
+			base.ConnectHandler(nativeView);
+
 			if (nativeView != null)
 				nativeView.ValueChanged += OnValueChanged;
 		}
 
 		protected override void DisconnectHandler(MauiTimePicker nativeView)
 		{
+			base.DisconnectHandler(nativeView);
+
 			if (nativeView != null)
 			{
 				nativeView.RemoveFromSuperview();

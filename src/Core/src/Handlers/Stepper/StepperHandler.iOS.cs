@@ -13,11 +13,15 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UIStepper nativeView)
 		{
+			base.ConnectHandler(nativeView);
+
 			nativeView.ValueChanged += OnValueChanged;
 		}
 
 		protected override void DisconnectHandler(UIStepper nativeView)
 		{
+			base.DisconnectHandler(nativeView);
+
 			nativeView.ValueChanged -= OnValueChanged;
 		}
 
