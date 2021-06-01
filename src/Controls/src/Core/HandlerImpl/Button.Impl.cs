@@ -1,7 +1,11 @@
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Controls
 {
 	public partial class Button : IButton
 	{
+		public Paint Foreground { get; set; }
+
 		void IButton.Clicked()
 		{
 			(this as IButtonController).SendClicked();

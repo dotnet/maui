@@ -7,7 +7,7 @@ namespace Microsoft.Maui.UnitTests
 	{
 		public string Text { get; set; }
 
-		public Color TextColor { get; set; }
+		public Paint Foreground { get; set; }
 
 		public double CharacterSpacing { get; set; }
 

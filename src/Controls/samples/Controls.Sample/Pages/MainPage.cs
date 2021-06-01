@@ -115,6 +115,19 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label
 			{
 				FontSize = 24,
+				Text = "Foreground",
+				Foreground = new LinearGradientBrush(
+					new GradientStopCollection
+					{
+						new GradientStop(Colors.Purple, 0),
+ 						new GradientStop(Colors.GreenYellow, 1)
+					},
+					new Point(0, 0),
+					new Point(1, 0))
+			});
+			verticalStack.Add(new Label
+			{
+				FontSize = 24,
 				Text = "LinearGradient Text",
 				Background = new LinearGradientBrush(
 				new GradientStopCollection
@@ -190,6 +203,18 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(horizontalStack);
 
+			verticalStack.Add(new Button
+			{
+				Text = "Button Foreground",
+				Foreground = new LinearGradientBrush(	
+					new GradientStopCollection
+					{
+						new GradientStop(Colors.OrangeRed, 0),
+						new GradientStop(Colors.MediumVioletRed, 1)
+					},
+					new Point(0, 0),
+					new Point(1, 0))
+			});
 			verticalStack.Add(new Button { Text = "CharacterSpacing" });
 			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
 
@@ -213,11 +238,19 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(editor);
 			verticalStack.Add(new Editor { Text = "Editor" });
+			verticalStack.Add(new Editor { Text = "Editor Foreground", Foreground = new LinearGradientBrush(	
+				new GradientStopCollection
+				{
+					new GradientStop(Colors.Teal, 0),
+ 					new GradientStop(Colors.AliceBlue, 1)
+				},
+				new Point(0, 0),
+				new Point(1, 0))
+			});
 			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", MaxLength = 10 });
 			verticalStack.Add(new Editor { Text = "Predictive Text Off", IsTextPredictionEnabled = false });
 			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", FontSize = 10, FontFamily = "Dokdo" });
 			verticalStack.Add(new Editor { Text = "ReadOnly Editor", IsReadOnly = true });
-
 
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>
@@ -229,6 +262,18 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(entry);
 			verticalStack.Add(new Entry { Text = "Entry", TextColor = Colors.DarkRed, FontFamily = "Dokdo", MaxLength = -1, Margin = entryMargin });
+			verticalStack.Add(new Entry
+			{
+				Text = "Entry Foreground",
+				Foreground = new LinearGradientBrush(
+					new GradientStopCollection
+					{		
+						new GradientStop(Colors.Teal, 0),
+						new GradientStop(Colors.AliceBlue, 1)
+					},
+					new Point(0, 0),
+					new Point(1, 0))
+			});
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Colors.Black, Placeholder = "Pasword Entry", Margin = entryMargin });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text", Margin = entryMargin });
