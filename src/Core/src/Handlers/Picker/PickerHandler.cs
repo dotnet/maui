@@ -12,6 +12,7 @@
 			[nameof(IPicker.SelectedIndex)] = MapSelectedIndex,
 			[nameof(IPicker.TextColor)] = MapTextColor,
 			[nameof(IPicker.Title)] = MapTitle,
+			[nameof(IPicker.TitleColor)] = MapTitleColor,
 			[nameof(IPicker.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			Actions =
 			{

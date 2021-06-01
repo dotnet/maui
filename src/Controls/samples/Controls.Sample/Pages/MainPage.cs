@@ -218,7 +218,6 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", FontSize = 10, FontFamily = "Dokdo" });
 			verticalStack.Add(new Editor { Text = "ReadOnly Editor", IsReadOnly = true });
 
-
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>
 			{
@@ -267,7 +266,7 @@ namespace Maui.Controls.Sample.Pages
 				"Japanese Macaque"
 			};
 
-			var picker = new Picker { Title = "Select a monkey", FontFamily = "Dokdo", HorizontalTextAlignment = TextAlignment.Center };
+			var picker = new Picker { Title = "Select a monkey", TitleColor = Colors.Red, FontFamily = "Dokdo", HorizontalTextAlignment = TextAlignment.Center };
 
 			picker.ItemsSource = monkeyList;
 			verticalStack.Add(picker);
