@@ -15,12 +15,12 @@ namespace Microsoft.Maui
 
 			nativeComboBox.DataContext = picker;
 		}
-		public static void UpdateTextColor(this MauiComboBox nativeComboBox, IPicker picker)
+		public static void UpdateForeground(this MauiComboBox nativeComboBox, IPicker picker)
 		{
-			nativeComboBox.UpdateTextColor(picker, null);
+			nativeComboBox.UpdateForeground(picker, null);
 		}
 
-		public static void UpdateTextColor(this MauiComboBox nativeComboBox, IPicker picker, WBrush? defaultForeground)
+		public static void UpdateForeground(this MauiComboBox nativeComboBox, IPicker picker, WBrush? defaultForeground)
 		{
 			Color color = picker.TextColor;
 			if (color.IsDefault() && defaultForeground == null)

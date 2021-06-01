@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Android.Text;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,7 +7,6 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
-using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -102,11 +102,14 @@ namespace Microsoft.Maui.DeviceTests
 			return textView.TextSize / textView.Resources.DisplayMetrics.Density;
 		}
 
-		Color GetNativeTextColor(EditorHandler editorHandler)
+		Task ValidateHasColor(IEditor editor, Color color, Action action = null)
 		{
-			int currentTextColorInt = GetNativeEditor(editorHandler).CurrentTextColor;
-			AColor currentTextColor = new AColor(currentTextColorInt);
-			return currentTextColor.ToColor();
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeEditor = GetNativeEditor(CreateHandler(editor));
+				action?.Invoke();
+				nativeEditor.AssertContainsColor(color);
+			});
 		}
 	}
 }

@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapTextColor(PickerHandler handler, IPicker view) { }
+		public static void MapForeground(PickerHandler handler, IPicker view) { }
 
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{

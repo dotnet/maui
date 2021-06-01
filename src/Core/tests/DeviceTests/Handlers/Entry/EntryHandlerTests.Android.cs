@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Text;
@@ -9,7 +10,6 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
-using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -94,20 +94,13 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
-			(AppCompatEditText)entryHandler.NativeView;
+			entryHandler.NativeView;
 
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
 
 		void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
-
-		Color GetNativeTextColor(EntryHandler entryHandler)
-		{
-			int currentTextColorInt = GetNativeEntry(entryHandler).CurrentTextColor;
-			AColor currentTextColor = new AColor(currentTextColorInt);
-			return currentTextColor.ToColor();
-		}
 
 		bool GetNativeIsPassword(EntryHandler entryHandler)
 		{
@@ -134,7 +127,7 @@ namespace Microsoft.Maui.DeviceTests
 			var inputTypes = editText.InputType;
 
 			return editText.KeyListener is NumberKeyListener
-				&& (inputTypes.HasFlag(InputTypes.NumberFlagDecimal) && inputTypes.HasFlag(InputTypes.ClassNumber) && inputTypes.HasFlag(InputTypes.NumberFlagSigned));
+				&& inputTypes.HasFlag(InputTypes.NumberFlagDecimal) && inputTypes.HasFlag(InputTypes.ClassNumber) && inputTypes.HasFlag(InputTypes.NumberFlagSigned);
 		}
 
 		bool GetNativeIsChatKeyboard(EntryHandler entryHandler)
@@ -249,6 +242,16 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return -1;
+		}
+
+		Task ValidateHasColor(IEntry entry, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeEntry = GetNativeEntry(CreateHandler(entry));
+				action?.Invoke();
+				nativeEntry.AssertContainsColor(color);
+			});
 		}
 	}
 }

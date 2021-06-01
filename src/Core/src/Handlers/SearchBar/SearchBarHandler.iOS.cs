@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapForeground(IViewHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }

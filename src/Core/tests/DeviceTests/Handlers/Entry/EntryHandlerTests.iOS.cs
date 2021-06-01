@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -118,16 +119,13 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		UITextField GetNativeEntry(EntryHandler entryHandler) =>
-			(UITextField)entryHandler.NativeView;
+			entryHandler.NativeView;
 
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
 
 		void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
-
-		Color GetNativeTextColor(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).TextColor.ToColor();
 
 		bool GetNativeIsPassword(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).SecureTextEntry;
@@ -188,5 +186,15 @@ namespace Microsoft.Maui.DeviceTests
 
 		UIReturnKeyType GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ReturnKeyType;
+
+		Task ValidateHasColor(IEntry entry, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeEntry = GetNativeEntry(CreateHandler(entry));
+				action?.Invoke();
+				nativeEntry.AssertContainsColor(color);
+			});
+		}
 	}
 }

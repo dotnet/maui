@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -80,8 +81,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(20, insets.Bottom);
 		}
 
-
-
 		[Fact(DisplayName = "Default Accessibility Traits Don't Change")]
 		[InlineData()]
 		public async Task ValidateDefaultAccessibilityTraits()
@@ -103,15 +102,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(UIAccessibilityTrait.Button, trait);
 		}
 
-
 		UIButton GetNativeButton(ButtonHandler buttonHandler) =>
-			(UIButton)buttonHandler.NativeView;
+			buttonHandler.NativeView;
 
 		string GetNativeText(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).CurrentTitle;
-
-		Color GetNativeTextColor(ButtonHandler buttonHandler) =>
-			GetNativeButton(buttonHandler).CurrentTitleColor.ToColor();
 
 		Task PerformClick(IButton button)
 		{
@@ -137,6 +132,16 @@ namespace Microsoft.Maui.DeviceTests
 			var attributedText = button.TitleLabel.AttributedText;
 
 			return attributedText.GetCharacterSpacing();
+		}
+
+		Task ValidateHasColor(IButton button, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeButton = GetNativeButton(CreateHandler(button));
+				action?.Invoke();
+				nativeButton.AssertContainsColor(color);
+			});
 		}
 	}
 }

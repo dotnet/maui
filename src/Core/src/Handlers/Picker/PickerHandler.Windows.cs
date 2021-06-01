@@ -66,9 +66,9 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(picker, fontManager);
 		}
 
-		public static void MapTextColor(PickerHandler handler, IPicker picker)
+		public static void MapForeground(PickerHandler handler, IPicker picker)
 		{
-			handler.NativeView?.UpdateTextColor(picker, handler._defaultForeground);
+			handler.NativeView?.UpdateForeground(picker, handler._defaultForeground);
 		}
 
 		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)

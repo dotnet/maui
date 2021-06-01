@@ -58,8 +58,8 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateIsReadOnly(editor);
 		}
 
-		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
-			handler.NativeView?.UpdateTextColor(editor);
+		public static void MapForeground(EditorHandler handler, IEditor editor) =>
+			handler.NativeView?.UpdateForeground(editor);
 		
 		void OnLostFocus(object? sender, RoutedEventArgs e)
 		{

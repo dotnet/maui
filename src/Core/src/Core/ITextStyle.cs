@@ -8,9 +8,9 @@ namespace Microsoft.Maui
 	public interface ITextStyle
 	{
 		/// <summary>
-		/// Gets the text color.
+		/// Gets the Paint used to draw the text.
 		/// </summary>
-		Color TextColor { get; }
+		Paint? Foreground { get; }
 
 		/// <summary>
 		/// Gets the font family, style and size of the font.

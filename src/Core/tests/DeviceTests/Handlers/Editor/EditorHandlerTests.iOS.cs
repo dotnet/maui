@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -63,7 +64,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
-			(MauiTextView)editorHandler.NativeView;
+			editorHandler.NativeView;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
@@ -89,7 +90,14 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
 
-		Color GetNativeTextColor(EditorHandler editorHandler) =>
-			GetNativeEditor(editorHandler).TextColor.ToColor();
+		Task ValidateHasColor(IEditor editor, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeEditor = GetNativeEditor(CreateHandler(editor));
+				action?.Invoke();
+				nativeEditor.AssertContainsColor(color);
+			});
+		}
 	}
 }

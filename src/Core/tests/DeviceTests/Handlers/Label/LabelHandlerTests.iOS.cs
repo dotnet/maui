@@ -188,7 +188,6 @@ namespace Microsoft.Maui.DeviceTests
 				FlowDirection = flowDirection
 			};
 
-
 			var values = await GetValueAsync(label, (handler) =>
 			{
 				return new
@@ -202,13 +201,10 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		UILabel GetNativeLabel(LabelHandler labelHandler) =>
-			(UILabel)labelHandler.NativeView;
+			labelHandler.NativeView;
 
 		string GetNativeText(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Text;
-
-		Color GetNativeTextColor(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).TextColor.ToColor();
 
 		double GetNativeUnscaledFontSize(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Font.PointSize;

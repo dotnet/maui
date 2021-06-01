@@ -8,12 +8,6 @@ namespace Microsoft.Maui
 {
 	public static class EditTextExtensions
 	{
-		static readonly int[][] ColorStates =
-		{
-			new[] { Android.Resource.Attribute.StateEnabled },
-			new[] { -Android.Resource.Attribute.StateEnabled }
-		};
-
 		public static void UpdateText(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.UpdateText(entry.Text);
@@ -28,24 +22,10 @@ namespace Microsoft.Maui
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
-		public static void UpdateTextColor(this AppCompatEditText editText, ITextStyle entry, ColorStateList? defaultColor)
+		public static void UpdateForeground(this AppCompatEditText editText, ITextStyle entry, ColorStateList? defaultColor)
 		{
-			var textColor = entry.TextColor;
-
-			if (textColor == null)
-			{
-				editText.SetTextColor(defaultColor);
-			}
-			else
-			{
-				var androidColor = textColor.ToNative();
-
-				if (!editText.TextColors.IsOneColor(ColorStates, androidColor))
-				{
-					var acolor = androidColor.ToArgb();
-					editText.SetTextColor(new ColorStateList(ColorStates, new[] { acolor, acolor }));
-				}
-			}
+			var foreground = entry.Foreground;
+			editText.SetForeground(foreground, defaultColor);
 		}
 
 		public static void UpdateIsPassword(this AppCompatEditText editText, IEntry entry)

@@ -47,9 +47,9 @@ namespace Microsoft.Maui.Handlers
 			MapFormatting(handler, editor);
 		}
 
-		public static void MapTextColor(EditorHandler handler, IEditor editor)
+		public static void MapForeground(EditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdateTextColor(editor);
+			handler.NativeView?.UpdateForeground(editor);
 		}
 
 		public static void MapPlaceholder(EditorHandler handler, IEditor editor)

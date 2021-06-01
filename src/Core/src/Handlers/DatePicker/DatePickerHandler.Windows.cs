@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapForeground(DatePickerHandler handler, IDatePicker datePicker) { }
 
 		void OnControlDateChanged(object? sender, DatePickerValueChangedEventArgs e)
 		{

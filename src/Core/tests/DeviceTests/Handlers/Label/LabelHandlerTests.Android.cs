@@ -129,9 +129,6 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).Text;
 
-		Color GetNativeTextColor(LabelHandler labelHandler) =>
-			((uint)GetNativeLabel(labelHandler).CurrentTextColor).ToColor();
-
 		double GetNativeUnscaledFontSize(LabelHandler labelHandler)
 		{
 			var textView = GetNativeLabel(labelHandler);

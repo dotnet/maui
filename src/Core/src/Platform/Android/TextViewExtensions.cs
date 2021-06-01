@@ -9,32 +9,35 @@ namespace Microsoft.Maui
 	public static class TextViewExtensions
 	{
 		public static void UpdateText(this TextView textView, ILabel label) =>
-			UpdateText(textView, label.Text);
+			UpdateText(textView, label.Text, label.Foreground);
 
-		public static void UpdateText(this TextView textView, string newText)
+		public static void UpdateText(this TextView textView, string newText, Graphics.Paint? foreground = null)
 		{
 			newText ??= string.Empty;
 			var oldText = textView.Text ?? string.Empty;
 
 			if (oldText != newText)
 				textView.Text = newText;
+
+			if (foreground != null)
+				textView.SetForeground(foreground);
 		}
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)
+		public static void UpdateForeground(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)
 		{
-			textView.SetTextColor(textStyle.TextColor?.ToNative() ?? defaultColor.ToNative());
+			var foreground = textStyle.Foreground;
+
+			textView.SetForeground(foreground, defaultColor);
 		}
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle) =>
-			textView.UpdateTextColor(textStyle, textView.TextColors);
+		public static void UpdateForeground(this TextView textView, ITextStyle textStyle) =>
+			textView.UpdateForeground(textStyle, textView.TextColors);
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, ColorStateList? defaultColor)
+		public static void UpdateForeground(this TextView textView, ITextStyle textStyle, ColorStateList? defaultColor)
 		{
-			var textColor = textStyle.TextColor;
-			if (textColor == null)
-				textView.SetTextColor(defaultColor);
-			else
-				textView.SetTextColor(textColor.ToNative());
+			var foreground = textStyle.Foreground;
+
+			textView.SetForeground(foreground, defaultColor);
 		}
 
 		public static void UpdateFont(this TextView textView, ITextStyle textStyle, IFontManager fontManager)
