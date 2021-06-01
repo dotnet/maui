@@ -62,6 +62,32 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
 		}
 
+		[Fact(DisplayName = "Horizontal TextAlignment Updates Correctly")]
+		public async Task HorizontalTextAlignmentInitializesCorrectly()
+		{
+			var xplatHorizontalTextAlignment = TextAlignment.End;
+
+			var editorStub = new EditorStub()
+			{
+				Text = "Test",
+				HorizontalTextAlignment = xplatHorizontalTextAlignment
+			};
+
+			UITextAlignment expectedValue = UITextAlignment.Right;
+
+			var values = await GetValueAsync(editorStub, (handler) =>
+			{
+				return new
+				{
+					ViewValue = editorStub.HorizontalTextAlignment,
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
 		MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
 			(MauiTextView)editorHandler.NativeView;
 
@@ -91,5 +117,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		Color GetNativeTextColor(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).TextColor.ToColor();
+
+		UITextAlignment GetNativeHorizontalTextAlignment(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).TextAlignment;
 	}
 }

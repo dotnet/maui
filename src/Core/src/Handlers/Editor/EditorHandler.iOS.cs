@@ -137,5 +137,10 @@ namespace Microsoft.Maui.Handlers
 			// TODO: Update IsFocused property
 			VirtualView.Completed();
 		}
+
+		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
+		}
 	}
 }

@@ -139,6 +139,9 @@ namespace Maui.Controls.Sample.Pages
  				new Point(0.5, 0.5),
  				0.3f)
 			});
+      verticalStack.Add(new Editor { Text = "Start", HorizontalTextAlignment = TextAlignment.Start });
+			verticalStack.Add(new Editor { Text = "End", HorizontalTextAlignment = TextAlignment.End });
+			verticalStack.Add(new Editor { Text = "Center", HorizontalTextAlignment = TextAlignment.Center });
 
 			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level2);
 
