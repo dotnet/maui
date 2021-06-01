@@ -1,8 +1,12 @@
 #nullable enable
+using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 
 namespace Microsoft.Maui
 {
@@ -34,7 +38,27 @@ namespace Microsoft.Maui
 
 		public static void UpdateClipShape(this FrameworkElement nativeView, IView view)
 		{
-			// TODO: Update by including a reference to Microsoft.Maui.Graphics.Xaml.UWP
+			var clipShape = view.ClipShape;
+
+			if (clipShape == null)
+				return;
+
+			if (Application.Current is not MauiWinUIApplication app)
+				return;
+
+			var compositor = app.MainWindow.Compositor;
+			var visual = ElementCompositionPreview.GetElementVisual(nativeView);
+
+			var pathSize = new Rectangle(0, 0, view.Width, view.Height);
+			var clipPath = view.ClipShape?.PathForBounds(pathSize);
+			var device = CanvasDevice.GetSharedDevice();
+			var geometry = clipPath.AsPath(device);
+
+			var path = new CompositionPath(geometry);
+			var pathGeometry = compositor.CreatePathGeometry(path);
+			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
+
+			visual.Clip = geometricClip;
 		}
 
 		public static void UpdateBackground(this FrameworkElement nativeView, IView view)

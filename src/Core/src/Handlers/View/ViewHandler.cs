@@ -148,7 +148,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapClipShape(IViewHandler handler, IView view)
 		{
 			var clipShape = view.ClipShape;
-
+#if WINDOWS
+			((NativeView?)handler.ContainerView)?.UpdateClipShape(view);
+#else
 			if (clipShape != null)
 				handler.HasContainer = true;
 			else
@@ -156,9 +158,7 @@ namespace Microsoft.Maui.Handlers
 				if (handler is ViewHandler viewHandler)
 					handler.HasContainer = viewHandler.NeedsContainer;
 			}
-#if WINDOWS			
-			((NativeView?)handler.ContainerView)?.UpdateClipShape(view);
-#else
+
 			((WrapperView?)handler.ContainerView)?.UpdateClipShape(view);
 #endif
 		}
@@ -187,6 +187,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFrame(ViewHandler handler, IView view)
 		{
 			MappingFrame(handler, view);
+#if WINDOWS
+			MapClipShape(handler, view);
+#endif
 		}
 	}
 }
