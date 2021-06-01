@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateIsEnabled(this FrameworkElement nativeView, IView view) =>
 			(nativeView as Control)?.UpdateIsEnabled(view.IsEnabled);
-		
+
 		public static void UpdateVisibility(this FrameworkElement nativeView, IView view)
 		{
 			double opacity = view.Opacity;
@@ -32,6 +32,11 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateOpacity(this FrameworkElement nativeView, IView view)
+		{
+			nativeView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
+		}
+
 		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
 		{
 			if (nativeView is Control control)
@@ -44,11 +49,6 @@ namespace Microsoft.Maui
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);
-		
-		public static void UpdateOpacity(this FrameworkElement nativeView, IView view)
-		{
-			nativeView.Opacity = view.Opacity;
-		}
 
 		public static void UpdateSemantics(this FrameworkElement nativeView, IView view)
 		{
@@ -77,7 +77,7 @@ namespace Microsoft.Maui
 				nativeControl.SetValue(property, value);
 		}
 
-		public static void InvalidateMeasure(this FrameworkElement nativeView, IView view) 
+		public static void InvalidateMeasure(this FrameworkElement nativeView, IView view)
 		{
 			nativeView.InvalidateMeasure();
 		}
