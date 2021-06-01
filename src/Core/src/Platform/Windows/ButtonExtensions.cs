@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 			nativeButton.Content = button.Text;
 
 		public static void UpdateForeground(this MauiButton nativeButton, IButton button, UI.Xaml.Media.Brush? defaultBrush = null) =>
-			nativeButton.UpdateForegroundColor(button.TextColor, defaultBrush);
+			nativeButton.UpdateForeground(button.Foreground, defaultBrush);
 
 		public static void UpdateCharacterSpacing(this MauiButton nativeButton, IButton button) =>
 			nativeButton.UpdateCharacterSpacing((int)button.CharacterSpacing);

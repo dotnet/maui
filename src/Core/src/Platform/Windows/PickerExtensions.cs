@@ -22,11 +22,12 @@ namespace Microsoft.Maui
 
 		public static void UpdateForeground(this MauiComboBox nativeComboBox, IPicker picker, WBrush? defaultForeground)
 		{
-			Color color = picker.TextColor;
-			if (color.IsDefault() && defaultForeground == null)
+			Paint? foreground = picker.Foreground;
+
+			if (foreground == null && defaultForeground == null)
 				return;
 
-			nativeComboBox.Foreground = color.IsDefault() ? (defaultForeground ?? color.ToNative()) : color.ToNative();
+			nativeComboBox.Foreground = foreground == null ? (defaultForeground ?? foreground?.ToNative()) : foreground.ToNative();
 		}
 
 		public static void UpdateSelectedIndex(this MauiComboBox nativeComboBox, IPicker picker)
