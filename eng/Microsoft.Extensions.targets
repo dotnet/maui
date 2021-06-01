@@ -14,8 +14,8 @@
   <PropertyGroup>
     <_MicrosoftProjectReunionVersion>0.5.0</_MicrosoftProjectReunionVersion>
     <_MicrosoftGraphicsWin2DVersion>0.5.0.13</_MicrosoftGraphicsWin2DVersion>
-    <_MicrosoftMauiGraphics>6.0.100-preview.5.209</_MicrosoftMauiGraphics>
-    <_MicrosoftMauiGraphicsWin2D>6.0.100-preview.5.209</_MicrosoftMauiGraphicsWin2D>
+    <_MicrosoftMauiGraphics>6.0.100-preview.5.213</_MicrosoftMauiGraphics>
+    <_MicrosoftMauiGraphicsWin2D>6.0.100-preview.5.213</_MicrosoftMauiGraphicsWin2D>
     <_MicrosoftAspNetCoreVersion>6.0.0-preview.4.21253.5</_MicrosoftAspNetCoreVersion>
     <_XamarinAndroidGlideVersion>4.11.0.1</_XamarinAndroidGlideVersion>
   </PropertyGroup>
