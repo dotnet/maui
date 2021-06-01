@@ -2,12 +2,15 @@
 using System.Collections.Specialized;
 using System.Linq;
 using Android.App;
+using Android.Graphics.Drawables;
 using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
+		static Drawable? DefaultBackground;
+
 		AlertDialog? _dialog;
 
 		protected override MauiPicker CreateNativeView() =>
@@ -28,6 +31,20 @@ namespace Microsoft.Maui.Handlers
 
 			base.DisconnectHandler(nativeView);
 		}
+
+		protected override void SetupDefaults(MauiPicker nativeView)
+		{
+			DefaultBackground = nativeView.Background;
+
+			base.SetupDefaults(nativeView);
+		}
+
+		// This is a Android-specific mapping
+		public static void MapBackground(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateBackground(picker, DefaultBackground);
+		}
+
 		void Reload()
 		{
 			if (VirtualView == null || NativeView == null)

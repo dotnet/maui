@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -32,8 +33,11 @@ namespace Microsoft.Maui.DeviceTests
 			return Task.CompletedTask;
 		}
 
-		public static Task<UIImage> ToBitmap(this UIView view)
+		public static Task<UIImage> ToUIImage(this UIView view)
 		{
+			if (view.Superview is WrapperView wrapper)
+				view = wrapper;
+
 			var imageRect = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
 
 			UIGraphics.BeginImageContext(imageRect.Size);
@@ -132,43 +136,43 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<UIImage> AssertColorAtPoint(this UIView view, UIColor expectedColor, int x, int y)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
 		public static async Task<UIImage> AssertColorAtCenter(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtBottomLeft(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtBottomRight(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtTopLeft(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertColorAtTopRight(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
 		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToUIImage();
 			return bitmap.AssertContainsColor(expectedColor);
 		}
 
@@ -193,16 +197,16 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static UILineBreakMode ToNative(this LineBreakMode mode) =>
-		mode switch
-		{
-			LineBreakMode.NoWrap => UILineBreakMode.Clip,
-			LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
-			LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
-			LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
-			LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
-			LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
-			_ => throw new ArgumentOutOfRangeException(nameof(mode))
-		};
+			mode switch
+			{
+				LineBreakMode.NoWrap => UILineBreakMode.Clip,
+				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
+				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
+				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
+				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+				_ => throw new ArgumentOutOfRangeException(nameof(mode))
+			};
 
 		public static double GetCharacterSpacing(this NSAttributedString text)
 		{
@@ -229,6 +233,26 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				throw new XunitException("Label does not have the UnderlineStyle attribute");
 			}
+		}
+
+		public static void AssertEqual(this CATransform3D expected, CATransform3D actual, int precision = 4)
+		{
+			Assert.Equal((double)expected.m11, (double)actual.m11, precision);
+			Assert.Equal((double)expected.m12, (double)actual.m12, precision);
+			Assert.Equal((double)expected.m13, (double)actual.m13, precision);
+			Assert.Equal((double)expected.m14, (double)actual.m14, precision);
+			Assert.Equal((double)expected.m21, (double)actual.m21, precision);
+			Assert.Equal((double)expected.m22, (double)actual.m22, precision);
+			Assert.Equal((double)expected.m23, (double)actual.m23, precision);
+			Assert.Equal((double)expected.m24, (double)actual.m24, precision);
+			Assert.Equal((double)expected.m31, (double)actual.m31, precision);
+			Assert.Equal((double)expected.m32, (double)actual.m32, precision);
+			Assert.Equal((double)expected.m33, (double)actual.m33, precision);
+			Assert.Equal((double)expected.m34, (double)actual.m34, precision);
+			Assert.Equal((double)expected.m41, (double)actual.m41, precision);
+			Assert.Equal((double)expected.m42, (double)actual.m42, precision);
+			Assert.Equal((double)expected.m43, (double)actual.m43, precision);
+			Assert.Equal((double)expected.m44, (double)actual.m44, precision);
 		}
 	}
 }

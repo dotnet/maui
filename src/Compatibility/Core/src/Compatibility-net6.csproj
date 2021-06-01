@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility</AssemblyName>
     <Nullable>disable</Nullable>
@@ -40,6 +40,7 @@
     </Page>
     <Page Remove="$(WindowsRoot)TabbedPageStyle.xaml" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
+    <Compile Include="RendererToHandlerShim.Windows.cs" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
@@ -66,17 +67,21 @@
     <Compile Remove="$(AndroidRoot)AppCompat\Resource.cs" />
     <Compile Remove="$(AndroidRoot)bin\**\*.cs" />
     <Compile Remove="$(AndroidRoot)obj\**\*.cs" />
+    <Compile Include="RendererToHandlerShim.Android.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' OR '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
     <Compile Include="$(iOSRoot)**\*.cs"></Compile>
     <EmbeddedResource Include="$(iOSRoot)Resources\*.resx" />
     <Compile Remove="$(iOSRoot)bin\**\*.cs" />
     <Compile Remove="$(iOSRoot)obj\**\*.cs" />
+    <Compile Include="RendererToHandlerShim.iOS.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="RendererToHandlerShim.cs" />
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />
+    <Compile Include="Forms.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
 

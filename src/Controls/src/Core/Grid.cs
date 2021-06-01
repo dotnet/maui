@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	[ContentProperty(nameof(Children))]
 	public partial class Grid : Layout<View>, IGridController, IElementConfiguration<Grid>, IGridLayout
 	{
 		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row", typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0);

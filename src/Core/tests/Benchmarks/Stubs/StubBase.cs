@@ -18,6 +18,26 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public Rectangle Frame { get; set; } = new Rectangle(0, 0, 20, 20);
 
+		public double TranslationX { get; set; }
+
+		public double TranslationY { get; set; }
+
+		public double Scale { get; set; }
+
+		public double ScaleX { get; set; }
+
+		public double ScaleY { get; set; }
+
+		public double Rotation { get; set; }
+
+		public double RotationX { get; set; }
+
+		public double RotationY { get; set; }
+
+		public double AnchorX { get; set; }
+
+		public double AnchorY { get; set; }
+
 		public IViewHandler Handler { get; set; }
 
 		public IFrameworkElement Parent { get; set; }

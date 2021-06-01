@@ -374,6 +374,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateNativeControl()
 		{
 			Performance.Start(out string reference);

@@ -1,6 +1,6 @@
 param(
   [string] $configuration = 'Debug',
-  [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\MSBuild.exe"
+  [string] $msbuild
 )
 
 $ErrorActionPreference = "Stop"
@@ -20,12 +20,25 @@ $dotnet = (Get-Item $dotnet).FullName
 
 if ($IsWindows)
 {
+    if (-not $msbuild)
+    {
+        # If MSBuild path isn't specified, use the standard location of 'vswhere' to determine an appropriate MSBuild to use.
+        # Learn more about VSWhere here: https://github.com/microsoft/vswhere/wiki/Find-MSBuild
+        $msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -prerelease -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+
+        if (-not $msbuild)
+        {
+            throw 'Could not locate MSBuild automatically. Set the $msbuild parameter of this script to provide a location.'
+        }
+        Write-Host "Found MSBuild at ${msbuild}"
+    }
+
     # Modify global.json, so the IDE can load
     $globaljson = Join-Path $PSScriptRoot ../global.json
     [xml] $xml = Get-Content (Join-Path $PSScriptRoot Versions.props)
     $json = Get-Content $globaljson | ConvertFrom-Json
     $json | Add-Member sdk (New-Object -TypeName PSObject) -Force
-    $json.sdk | Add-Member version $xml.Project.PropertyGroup.MicrosoftDotnetSdkInternalPackageVersion -Force
+    $json.sdk | Add-Member version ([string]$xml.Project.PropertyGroup.MicrosoftDotnetSdkInternalPackageVersion).Trim() -Force
     $json | ConvertTo-Json | Set-Content $globaljson
 
     # NOTE: I've not found a better way to do this

@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var layout = new MergedResourceDictionaries(useCompiledXaml);
 				Assert.That(layout.label0.Text, Is.EqualTo("Foo"));
 				Assert.That(layout.label0.TextColor, Is.EqualTo(Colors.Pink));
-				Assert.That(layout.label0.BackgroundColor, Is.EqualTo(Color.FromHex("#111")));
+				Assert.That(layout.label0.BackgroundColor, Is.EqualTo(Color.FromArgb("#111")));
 			}
 		}
 	}
