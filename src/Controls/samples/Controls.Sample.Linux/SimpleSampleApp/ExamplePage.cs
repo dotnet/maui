@@ -18,8 +18,7 @@ namespace Maui.SimpleSampleApp
 		readonly MainPageViewModel _viewModel;
 
 		const string LoremIpsum =
-			"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " ;
-		const string LoremIpsum2 =			
+			"Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
 			"Quisque ut dolor metus. Duis vel iaculis mauris, sit amet finibus mi. " +
 			"Etiam congue ornare risus, in facilisis libero tempor eget. " +
 			"Phasellus mattis mollis libero ut semper. In sit amet sapien odio. " +
@@ -611,8 +610,7 @@ namespace Maui.SimpleSampleApp
 
 			verticalStack.Add(new Image()
 			{
-				Source =
-					new UriImageSource() { Uri = new System.Uri("dotnet_bot.png") }
+				Source = "dotnet_bot.png"
 			});
 
 			Content = verticalStack;
