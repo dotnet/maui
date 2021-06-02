@@ -94,15 +94,55 @@ Task("VS-NET6")
         StartVisualStudioForDotNet6();
     });
 
-Task("VS-WINUI")
-    .Description("Provisions .NET 6 and launches an instance of Visual Studio with WinUI projects.")
+Task("VS-WINUI-CI")
+    .Description("Validates that WinUI can build with the cake scripts.")
     .IsDependentOn("Clean")
     .IsDependentOn("dotnet")
-    .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
+        RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln", settings => ((MSBuildSettings)settings).WithProperty("BuildForWinUI", "true"));
         RunMSBuildWithLocalDotNet("./Microsoft.Maui.WinUI.sln");
-        StartVisualStudioForDotNet6("./Microsoft.Maui.WinUI.sln");
+    });
+
+Task("VS-WINUI")
+    .Description("Provisions .NET 6 and launches an instance of Visual Studio with WinUI projects.")
+        .IsDependentOn("Clean")
+    //  .IsDependentOn("dotnet") WINUI currently can't launch application with local dotnet 
+    //  .IsDependentOn("dotnet-buildtasks")
+    .Does(() =>
+    {
+        string sln = "./Microsoft.Maui.WinUI.sln";
+        var msbuildSettings = new MSBuildSettings
+        {
+            Configuration = configuration,
+            ToolPath = FindMSBuild(),
+            BinaryLogger = new MSBuildBinaryLogSettings
+            {
+                Enabled  = true,
+                FileName = "artifacts/winui-buildtasks.binlog",
+            }
+        }.WithRestore().WithProperty("BuildForWinUI", "true");
+
+	    MSBuild("./Microsoft.Maui.BuildTasks-net6.sln", msbuildSettings);
+
+	    msbuildSettings = new MSBuildSettings
+        {
+            Configuration = configuration,
+            ToolPath = FindMSBuild(),
+            BinaryLogger = new MSBuildBinaryLogSettings
+            {
+                Enabled  = true,
+                FileName = "artifacts/winui.binlog",
+            }
+        }.WithRestore();
+
+        MSBuild(sln, msbuildSettings);
+
+        var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, });
+        if (vsLatest == null)
+            throw new Exception("Unable to find Visual Studio!");
+        
+        StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
     });
 
 Task("VS-ANDROID")
@@ -178,7 +218,9 @@ void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null)
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var binlog = $"artifacts/{name}-{configuration}.binlog";
 
-    // If we're not on Windows, just use ./bin/dotnet/dotnet, that's it
+    SetDotNetEnvironmentVariables();
+
+    // If we're not on Windows, use ./bin/dotnet/dotnet
     if (!IsRunningOnWindows())
     {
         var dotnetBuildSettings = new DotNetCoreMSBuildSettings
@@ -202,8 +244,7 @@ void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null)
         return;
     }
 
-    // Otherwise we need to set env variables and run MSBuild
-    SetDotNetEnvironmentVariables();
+    // Otherwise we need to run MSBuild for WinUI support
     var msbuildSettings = new MSBuildSettings
         {
             Configuration = configuration,

@@ -23,7 +23,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Mono.Cecil" Version="0.11.3" PrivateAssets="all" GeneratePathProperty="true" />
-		<PackageReference Include="System.CodeDom" Version="4.7.0" PrivateAssets="all" GeneratePathProperty="true" />
+		<PackageReference Include="System.CodeDom" GeneratePathProperty="true" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+		<PackageReference Include="System.CodeDom" PrivateAssets="all" Condition="'$(TargetFramework)' == 'net6.0'" />
 		<PackageReference Include="Microsoft.Build" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" PrivateAssets="all" />

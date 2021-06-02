@@ -8,6 +8,7 @@
 			[nameof(ICheckBox.Background)] = MapBackground,
 #endif
 			[nameof(ICheckBox.IsChecked)] = MapIsChecked,
+			[nameof(ICheckBox.Foreground)] = MapForeground,
 		};
 
 		public CheckBoxHandler() : base(CheckBoxMapper)

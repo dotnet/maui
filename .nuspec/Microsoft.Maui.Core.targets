@@ -13,6 +13,7 @@
     </ItemGroup>
     <ItemGroup Condition="$(OutputType) == 'WinExe'">
       <EmbeddedResource Remove="**\*.xaml"></EmbeddedResource>
+      <MauiXaml Remove="**\*.xaml"></MauiXaml>
       <Compile Remove="**\*.xaml"></Compile>
     </ItemGroup>
   </Target>

@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Text = "PushAsync to next page",
 				AutomationId = "btnNext",
-				BackgroundColor = Color.FromHex("#ecf0f1"),
+				BackgroundColor = Color.FromArgb("#ecf0f1"),
 				TextColor = Colors.Black
 			};
 			rootContentPageButton.Clicked += async (sender, args) =>
@@ -47,20 +47,20 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Content = rootContentPageLayout;
 
 			Title = "RootPage";
-			BackgroundColor = Color.FromHex("#2c3e50");
+			BackgroundColor = Color.FromArgb("#2c3e50");
 
 			//MASTER PAGE
 			MasterPage = new ContentPage()
 			{
 				Title = "Flyout",
-				BackgroundColor = Color.FromHex("#1abc9c")
+				BackgroundColor = Color.FromArgb("#1abc9c")
 			};
 			var masterPageLayout = new StackLayout();
 			var masterPageButton = new Button()
 			{
 				Text = "Pop Modal and Pop Root",
 				AutomationId = "btnPop",
-				BackgroundColor = Color.FromHex("#ecf0f1"),
+				BackgroundColor = Color.FromArgb("#ecf0f1"),
 				TextColor = Colors.Black
 			};
 			masterPageButton.Clicked += async (sender, args) =>
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			DetailPage = new NavigationPage(new ContentPage()
 			{
 				Title = "RootNavigationDetailPage",
-				BackgroundColor = Color.FromHex("#2980b9"),
+				BackgroundColor = Color.FromArgb("#2980b9"),
 				Content = new Button
 				{
 					Text = "PopModal",
@@ -99,14 +99,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			FirstContentPage = new ContentPage()
 			{
 				Title = "First Content Page",
-				BackgroundColor = Color.FromHex("#e74c3c")
+				BackgroundColor = Color.FromArgb("#e74c3c")
 			};
 			var firstContentPageLayout = new StackLayout();
 			var firstContentPageButton = new Button()
 			{
 				Text = "Push Modal To Flyout-Detail Page",
 				AutomationId = "btnPushModal",
-				BackgroundColor = Color.FromHex("#ecf0f1"),
+				BackgroundColor = Color.FromArgb("#ecf0f1"),
 				TextColor = Colors.Black
 			};
 			firstContentPageButton.Clicked += async (sender, args) =>

@@ -2,13 +2,22 @@
 using System.Collections.Specialized;
 using System.Linq;
 using Android.App;
+using Android.Content.Res;
+using Android.Text;
+using Android.Text.Style;
+using Android.Graphics.Drawables;
 using AResource = Android.Resource;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
+		static Drawable? DefaultBackground;
+
 		AlertDialog? _dialog;
+
+		static ColorStateList? DefaultTitleColors { get; set; }
 
 		protected override MauiPicker CreateNativeView() =>
 			new MauiPicker(Context);
@@ -28,6 +37,21 @@ namespace Microsoft.Maui.Handlers
 
 			base.DisconnectHandler(nativeView);
 		}
+
+		protected override void SetupDefaults(MauiPicker nativeView)
+		{
+			base.SetupDefaults(nativeView);
+
+			DefaultBackground = nativeView.Background;
+			DefaultTitleColors = nativeView.HintTextColors;
+		}
+
+		// This is a Android-specific mapping
+		public static void MapBackground(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateBackground(picker, DefaultBackground);
+		}
+
 		void Reload()
 		{
 			if (VirtualView == null || NativeView == null)
@@ -40,6 +64,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTitle(PickerHandler handler, IPicker picker)
 		{
 			handler.NativeView?.UpdateTitle(picker);
+		}
+
+		public static void MapTitleColor(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateTitleColor(picker, DefaultTitleColors);
 		}
 
 		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
@@ -95,16 +124,25 @@ namespace Microsoft.Maui.Handlers
 			{
 				using (var builder = new AlertDialog.Builder(Context))
 				{
-					builder.SetTitle(VirtualView.Title ?? string.Empty);
+					if (VirtualView.TitleColor == null)
+					{
+						builder.SetTitle(VirtualView.Title ?? string.Empty);
+					}
+					else
+					{
+						var title = new SpannableString(VirtualView.Title ?? string.Empty);
+						title.SetSpan(new ForegroundColorSpan(VirtualView.TitleColor.ToNative()), 0, title.Length(), SpanTypes.ExclusiveExclusive);
+						builder.SetTitle(title);
+					}
 
 					string[] items = VirtualView.GetItemsAsArray();
 
-					builder.SetItems(items, (EventHandler<Android.Content.DialogClickEventArgs>)((s, e) =>
+					builder.SetItems(items, (s, e) =>
 					{
 						var selectedIndex = e.Which;
 						VirtualView.SelectedIndex = selectedIndex;
 						base.NativeView?.UpdatePicker(VirtualView);
-					}));
+					});
 
 					builder.SetNegativeButton(AResource.String.Cancel, (o, args) => { });
 

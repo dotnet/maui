@@ -33,7 +33,6 @@ namespace Maui.Controls.Sample.Pages
 			BindingContext = _viewModel = viewModel;
 
 			SetupMauiLayout();
-
 			NavigationPage.SetHasNavigationBar(this, false);
 
 			//SetupCompatibilityLayout();
@@ -44,7 +43,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			private Visibility _visibility;
 
-			public void SetVisibility(Visibility visibility) 
+			public void SetVisibility(Visibility visibility)
 			{
 				_visibility = visibility;
 				Handler?.UpdateValue(nameof(Visibility));
@@ -52,9 +51,9 @@ namespace Maui.Controls.Sample.Pages
 
 			Visibility IFrameworkElement.Visibility
 			{
-				get 
+				get
 				{
-					return _visibility; 
+					return _visibility;
 				}
 			}
 		}
@@ -77,6 +76,8 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(CreateResizingButton());
 
 			AddTextResizeDemo(verticalStack);
+			verticalStack.Add(CreateTransformations());
+			verticalStack.Add(CreateAnimations());
 
 			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
 			var label = new Label { Text = "End-aligned text", BackgroundColor = Colors.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
@@ -96,6 +97,8 @@ namespace Maui.Controls.Sample.Pages
 				new Button
 				{
 					Text = "Push a Page",
+					Rotation = 15,
+					Scale = 1.5,
 					Command = new Command(async () =>
 					{
 						await Navigation.PushAsync(new SemanticsPage());
@@ -191,6 +194,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
 
 			verticalStack.Add(new RedButton { Text = "Dynamically Registered" });
+			verticalStack.Add(new CustomButton { Text = "Button Registered to Compat Renderer" });
 
 			var checkbox = new CheckBox();
 			checkbox.CheckedChanged += (sender, e) =>
@@ -214,7 +218,6 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", FontSize = 10, FontFamily = "Dokdo" });
 			verticalStack.Add(new Editor { Text = "ReadOnly Editor", IsReadOnly = true });
 
-
 			var entry = new Entry();
 			entry.TextChanged += (sender, e) =>
 			{
@@ -233,7 +236,10 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Text = "This should be text with character spacing", CharacterSpacing = 10 });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Numeric, Placeholder = "Numeric Entry" });
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
+			verticalStack.Add(new Entry { Placeholder = "This is a blue text box", BackgroundColor = Colors.CornflowerBlue });
 
+			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 }); ;
+			
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
@@ -262,7 +268,7 @@ namespace Maui.Controls.Sample.Pages
 				"Japanese Macaque"
 			};
 
-			var picker = new Picker { Title = "Select a monkey", FontFamily = "Dokdo", HorizontalTextAlignment = TextAlignment.Center };
+			var picker = new Picker { Title = "Select a monkey", TitleColor = Colors.Red, FontFamily = "Dokdo", HorizontalTextAlignment = TextAlignment.Center };
 
 			picker.ItemsSource = monkeyList;
 			verticalStack.Add(picker);
@@ -399,6 +405,7 @@ namespace Maui.Controls.Sample.Pages
 			var row = -1;
 
 			Add(new Label { Text = "App Bundle", WidthRequest = 150 }, row: (row += 2) - 1, col: 0, colSpan: 2);
+
 			Add(new Image { Source = "dotnet_bot.png" }, row: row, col: 0);
 			Add(new Image { Source = "animated_heart.gif", IsAnimationPlaying = true }, row: row, col: 1);
 
@@ -481,6 +488,52 @@ namespace Maui.Controls.Sample.Pages
 			return layout;
 		}
 
+		IView CreateTransformations()
+		{
+			var label = new Button
+			{
+				BackgroundColor = Colors.Red,
+				TextColor = Colors.White,
+				Text = "Transformations",
+			};
+
+			var rotationSlider = new Slider
+			{
+				Minimum = -360,
+				Maximum = 360
+			};
+
+			rotationSlider.ValueChanged += (sender, e) => label.Rotation = e.NewValue;
+
+			var verticalStack = new VerticalStackLayout
+			{
+				rotationSlider,
+				label,
+			};
+
+			return verticalStack;
+		}
+
+		IView CreateAnimations()
+		{
+			var image = new Image { Source = "dotnet_bot.png", VerticalOptions = LayoutOptions.CenterAndExpand };
+			var animateButton = new Button { Text = "Animate", VerticalOptions = LayoutOptions.End };
+
+			animateButton.Clicked += async (sender, args) =>
+			{
+				await image.RotateTo(360, 2000);
+				image.Rotation = 0;
+			};
+
+			var verticalStack = new VerticalStackLayout
+			{
+				image,
+				animateButton,
+			};
+
+			return verticalStack;
+		}
+
 		void AddTextResizeDemo(Microsoft.Maui.ILayout layout)
 		{
 			var resizeTestButton = new Button { Text = "Resize Test" };
@@ -510,7 +563,7 @@ namespace Maui.Controls.Sample.Pages
 			layout.Add(widthAndHeightTestLabel);
 			layout.Add(explicitWidthTestLabel);
 		}
-
+    
 		void SetupVisibilityTest()
 		{
 			var layout = new VerticalStackLayout() { BackgroundColor = Colors.BurlyWood };
@@ -526,7 +579,8 @@ namespace Maui.Controls.Sample.Pages
 
 			var mauiLabel = new VisibilityLabel() { Text = "Core Label" };
 
-			button1.Clicked += (sender, args) => {
+			button1.Clicked += (sender, args) =>
+			{
 				controlsLabel.IsVisible = !controlsLabel.IsVisible;
 			};
 
@@ -553,6 +607,17 @@ namespace Maui.Controls.Sample.Pages
 			layout.Add(alwaysVisible);
 
 			Content = layout;
-		}
+		}		
+    
+    class TestDrawable : IDrawable
+		{
+			public void Draw(ICanvas canvas, RectangleF dirtyRect)
+			{
+				canvas.SaveState();
+				canvas.FillColor = Colors.Red;
+				canvas.FillRoundedRectangle(0, 0, 200, 50, 10);
+				canvas.RestoreState();
+			}
+    }
 	}
 }

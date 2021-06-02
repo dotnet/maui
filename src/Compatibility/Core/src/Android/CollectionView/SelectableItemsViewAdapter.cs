@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			for (int i = 0; i < _currentViewHolders.Count; i++)
 			{
-				if (_currentViewHolders[i].BindingAdapterPosition == position)
+				if (_currentViewHolders[i].AdapterPosition == position)
 				{
 					_currentViewHolders[i].IsSelected = true;
 					return;
