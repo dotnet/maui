@@ -130,10 +130,6 @@ namespace Microsoft.Maui.Layouts
 			switch (frameworkElement.VerticalLayoutAlignment)
 			{
 				case LayoutAlignment.Fill:
-
-					frameY = startY + margin.Top;
-					break;
-
 				case LayoutAlignment.Start:
 
 					frameY = startY + margin.Top;
