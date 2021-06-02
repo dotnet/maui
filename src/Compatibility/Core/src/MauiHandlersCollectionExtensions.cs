@@ -18,25 +18,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return handlersCollection;
 		}
 
-		public static IMauiHandlersCollection TryAddCompatibilityRenderer<TControlType, TMauiType, TRenderer>(this IMauiHandlersCollection handlersCollection)
-			where TMauiType : IFrameworkElement
-		{
-			FormsCompatBuilder.AddRenderer(typeof(TControlType), typeof(TRenderer));
-
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
-			handlersCollection.TryAddHandler<TMauiType, RendererToHandlerShim>();
-#endif
-			return handlersCollection;
-		}
-
-		public static IMauiHandlersCollection TryAddCompatibilityRenderer<TControlType, TRenderer>(this IMauiHandlersCollection handlersCollection)
-			where TControlType : IFrameworkElement
-		{
-			handlersCollection.TryAddCompatibilityRenderer<TControlType, TControlType, TRenderer>();
-
-			return handlersCollection;
-		}
-
 		public static IMauiHandlersCollection AddCompatibilityRenderer(this IMauiHandlersCollection handlersCollection, Type controlType, Type rendererType)
 		{
 			FormsCompatBuilder.AddRenderer(controlType, rendererType);

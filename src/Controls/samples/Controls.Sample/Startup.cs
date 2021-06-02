@@ -36,16 +36,6 @@ namespace Maui.Controls.Sample
 
 		public readonly static bool UseXamlApp = true;
 		public readonly static bool UseFullDI = false;
-		public void Configurej(IAppHostBuilder appBuilder)
-		{
-			appBuilder
-				.UseMauiControlsApp<XamlApp>()
-				.ConfigureServices(services =>
-				{
-					services.AddSingleton<ITextService, TextService>();
-				})
-				.UseMauiServiceProviderFactory(constructorInjection: true);
-		}
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{

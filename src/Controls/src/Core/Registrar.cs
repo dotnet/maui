@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
@@ -391,9 +390,6 @@ namespace Microsoft.Maui.Controls.Internals
 
 					var length = attributes.Length;
 
-					StringBuilder namespaces = new StringBuilder();
-					StringBuilder renderers = new StringBuilder();
-
 					for (var i = 0; i < length; i++)
 					{
 						var a = attributes[i];
@@ -406,17 +402,11 @@ namespace Microsoft.Maui.Controls.Internals
 						{
 							if (attribute.ShouldRegister())
 							{
-								namespaces.AppendLine($"using {attribute.TargetType.Name} = {attribute.TargetType.FullName};");
-								renderers.AppendLine($"handlers.TryAddCompatibilityRenderer(typeof({attribute.HandlerType.Name}), typeof({attribute.TargetType.Name}));");
-
 								Registered.Register(attribute.HandlerType, attribute.TargetType, attribute.SupportedVisuals, attribute.Priority);
 								viewRegistered?.Invoke(attribute.HandlerType);
 							}
 						}
 					}
-
-					System.Diagnostics.Debug.WriteLine(namespaces.ToString());
-					System.Diagnostics.Debug.WriteLine(renderers.ToString());
 				}
 
 				object[] effectAttributes = assembly.GetCustomAttributesSafe(typeof(ExportEffectAttribute));

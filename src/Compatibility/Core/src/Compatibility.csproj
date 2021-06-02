@@ -60,10 +60,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="AppHostBuilderExtensions.Controls.cs">
-      <SubType>Code</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Compile>
+    <Compile Include="AppHostBuilderExtensions.Controls.cs" />
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />
     <Compile Include="Forms.cs" />

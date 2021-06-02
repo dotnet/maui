@@ -105,7 +105,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 								return;
 						}
 
-						System.Diagnostics.Debug.WriteLine($"controlType: {controlType}");
 						_handlers?.TryAddHandler(controlType, typeof(RendererToHandlerShim));
 					});
 			}
