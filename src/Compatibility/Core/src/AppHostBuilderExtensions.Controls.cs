@@ -12,6 +12,11 @@ using LabelRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.Fas
 using ImageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ImageRenderer;
 using ButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ButtonRenderer;
 #elif WINDOWS
+using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.BoxViewBorderRenderer;
+using CellRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.TextCellRenderer;
+using Deserializer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsSerializer;
+using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
 #elif __IOS__
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using WebViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.WkWebViewRenderer;
@@ -96,15 +101,17 @@ namespace Microsoft.Maui.Controls
 					handlers.TryAddCompatibilityRenderer(typeof(ScrollView), typeof(ScrollViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ActivityIndicator), typeof(ActivityIndicatorRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CheckBox), typeof(CheckBoxRenderer));
+#if !WINDOWS
 					handlers.TryAddCompatibilityRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(Shell), typeof(ShellRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer));
+#endif
 					handlers.TryAddCompatibilityRenderer(typeof(NavigationPage), typeof(NavigationPageRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CarouselPage), typeof(CarouselPageRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Page), typeof(PageRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(FlyoutPage), typeof(FlyoutPageRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(RefreshView), typeof(RefreshViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Shell), typeof(ShellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Cell), typeof(CellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ImageCell), typeof(ImageCellRenderer));
@@ -113,7 +120,7 @@ namespace Microsoft.Maui.Controls
 					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
 
-	#if __IOS__ || MACCATALYST
+#if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
 
