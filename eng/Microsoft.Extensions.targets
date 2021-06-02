@@ -33,6 +33,9 @@
         Version="$(_MicrosoftMauiGraphicsWin2D)" 
     />
     <PackageReference
+        Update="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
+        Version="$(_MicrosoftMauiGraphicsWin2D)" />
+    <PackageReference
         Update="Microsoft.Extensions.Configuration"
         Version="$(_MicrosoftHostingVersion)"
     />
