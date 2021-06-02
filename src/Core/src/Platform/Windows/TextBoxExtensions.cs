@@ -35,9 +35,9 @@ namespace Microsoft.Maui
 		public static void UpdateReturnType(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.InputScope = entry.ReturnType.ToNative();
-    }
+		}
 
-    public static void UpdatePlaceholder(this MauiTextBox textBox, IEditor editor)
+		public static void UpdatePlaceholder(this MauiTextBox textBox, IEditor editor)
 		{
 			textBox.PlaceholderText = editor.Placeholder ?? string.Empty;
 		}
@@ -47,7 +47,7 @@ namespace Microsoft.Maui
 			textBox.PlaceholderText = entry.Placeholder ?? string.Empty;
 		}
 
-		public static void UpdateFont(this MauiTextBox nativeControl, IText text, IFontManager fontManager) =>		
+		public static void UpdateFont(this MauiTextBox nativeControl, IText text, IFontManager fontManager) =>
 			nativeControl.UpdateFont(text.Font, fontManager);
 
 		public static void UpdateFont(this MauiTextBox nativeControl, Font font, IFontManager fontManager)

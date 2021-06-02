@@ -4,6 +4,7 @@
 	xmlns:uwp="using:Microsoft.Maui">
 
 	<uwp:TextAlignmentToHorizontalAlignmentConverter x:Key="AlignmentConverter" />
+    
 	<Style x:Key="MauiTextBoxStyle" TargetType="uwp:MauiTextBox">
 		<Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
 		<Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
@@ -239,4 +240,5 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
+    
 </ResourceDictionary> 

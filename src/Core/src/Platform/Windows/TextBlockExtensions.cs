@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
@@ -22,7 +23,7 @@ namespace Microsoft.Maui
 			nativeControl.Text = text.Text;
 
 		public static void UpdateForeground(this TextBlock nativeControl, IText text) =>
-			nativeControl.UpdateProperty(TextBlock.ForegroundProperty, text.Foreground);
+			nativeControl.UpdateProperty(TextBlock.ForegroundProperty, text.Foreground?.ToNative());
 
 		public static void UpdatePadding(this TextBlock nativeControl, ILabel label) =>
 			nativeControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToNative());

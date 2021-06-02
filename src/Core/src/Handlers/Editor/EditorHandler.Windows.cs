@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapForeground(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateForeground(editor);
-		
+
 		void OnLostFocus(object? sender, RoutedEventArgs e)
 		{
 			VirtualView?.Completed();

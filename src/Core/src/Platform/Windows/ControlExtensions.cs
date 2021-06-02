@@ -26,8 +26,8 @@ namespace Microsoft.Maui
 		public static void UpdateBackground(this Panel nativeControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			nativeControl.UpdateProperty(Panel.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToNative());
 
-		public static void UpdateForeground(this Control nativeControl, Paint? foreground, UI.Xaml.Media.Brush? defaultBrush = null)
-			=> nativeControl.Foreground = foreground?.ToNative() ?? defaultBrush ?? nativeControl.Foreground;
+		public static void UpdateForeground(this Control nativeControl, Paint? foreground, UI.Xaml.Media.Brush? defaultBrush = null) =>
+			nativeControl.UpdateProperty(Control.ForegroundProperty, foreground.IsNullOrEmpty() ? defaultBrush : foreground?.ToNative());
 
 		public static void UpdatePadding(this Control nativeControl, Thickness padding, UI.Xaml.Thickness? defaultThickness = null)
 		{

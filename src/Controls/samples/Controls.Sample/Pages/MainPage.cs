@@ -115,7 +115,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label
 			{
 				FontSize = 24,
-				Text = "Foreground",
+				Text = "Label Foreground",
 				Foreground = new LinearGradientBrush(
 					new GradientStopCollection
 					{
@@ -267,7 +267,7 @@ namespace Maui.Controls.Sample.Pages
 				Text = "Entry Foreground",
 				Foreground = new LinearGradientBrush(
 					new GradientStopCollection
-					{		
+					{
 						new GradientStop(Colors.Teal, 0),
 						new GradientStop(Colors.AliceBlue, 1)
 					},
@@ -297,7 +297,16 @@ namespace Maui.Controls.Sample.Pages
 
 			var placeholderSearchBar = new SearchBar
 			{
-				Placeholder = "Placeholder"
+				Foreground = new LinearGradientBrush(
+					new GradientStopCollection
+					{
+						new GradientStop(Colors.HotPink, 0),
+ 						new GradientStop(Colors.PaleVioletRed, 1)
+					},
+					new Point(0, 0),
+					new Point(1, 0)),
+				Placeholder = "Placeholder",
+				Text = "SearchBar Foreground"
 			};
 			verticalStack.Add(placeholderSearchBar);
 

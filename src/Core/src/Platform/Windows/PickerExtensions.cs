@@ -41,8 +41,8 @@ namespace Microsoft.Maui
 		}
 
 		public static void UpdateFont(this MauiComboBox nativeComboBox, IPicker picker, IFontManager fontManager) =>
-			nativeComboBox.UpdateFont(picker.Font, fontManager); 
-		
+			nativeComboBox.UpdateFont(picker.Font, fontManager);
+
 		public static void UpdateHorizontalTextAlignment(this MauiComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.HorizontalContentAlignment = picker.HorizontalTextAlignment.ToNativeHorizontalAlignment();

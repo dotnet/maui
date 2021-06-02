@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdatePlaceholder(searchBar);
 		}
-			
+
 		[MissingMapper]
 		public static void MapHorizontalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
 
@@ -44,8 +44,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateCharacterSpacing(searchBar);
 		}
 
-		[MissingMapper]
-		public static void MapForeground(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapForeground(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateForeground(searchBar);
+		}
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }

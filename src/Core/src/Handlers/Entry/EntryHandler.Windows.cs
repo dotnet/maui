@@ -24,8 +24,10 @@ using Windows.System;
 			handler.NativeView?.UpdateText(entry);
 		}
 
-		[MissingMapper]
-		public static void MapForeground(IViewHandler handler, IEntry entry) { }
+		public static void MapForeground(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateForeground(entry);
+		}
 
 		[MissingMapper]
 		public static void MapIsPassword(IViewHandler handler, IEntry entry) { }
