@@ -227,7 +227,7 @@ namespace Maui.Controls.Sample.Pages
 			var entryMargin = new Thickness(10, 0);
 
 			verticalStack.Add(entry);
-			verticalStack.Add(new Entry { Text = "Entry", TextColor = Colors.DarkRed, FontFamily = "Dokdo", MaxLength = -1, Margin = entryMargin });
+			verticalStack.Add(new Entry { Text = "Entry with custom Font", TextColor = Colors.DarkRed, FontFamily = "Dokdo", MaxLength = -1, Margin = entryMargin });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Colors.Black, Placeholder = "Pasword Entry", Margin = entryMargin });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text", Margin = entryMargin });
