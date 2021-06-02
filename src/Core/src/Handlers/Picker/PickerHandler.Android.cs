@@ -3,11 +3,11 @@ using System.Collections.Specialized;
 using System.Linq;
 using Android.App;
 using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
-using Android.Graphics.Drawables;
-using AResource = Android.Resource;
 using Microsoft.Maui.Graphics;
+using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers
 {
