@@ -1,23 +1,24 @@
 #nullable enable
+using System;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SliderHandler : ViewHandler<ISlider, Slider>
+	public partial class SliderHandler : ViewHandler<ISlider, MauiSlider>
 	{
 		static Brush? DefaultForegroundColor;
 		static Brush? DefaultBackgroundColor;
-		
+		static Brush? DefaultThumbColor;
+
 		PointerEventHandler? _pointerPressedHandler;
 		PointerEventHandler? _pointerReleasedHandler;
 
-		protected override Slider CreateNativeView()
+		protected override MauiSlider CreateNativeView()
 		{
-			var slider = new Slider
+			var slider = new MauiSlider
 			{
 				IsThumbToolTipEnabled = false
 			};
@@ -25,9 +26,10 @@ namespace Microsoft.Maui.Handlers
 			return slider;
 		}
 
-		protected override void ConnectHandler(Slider nativeView)
+		protected override void ConnectHandler(MauiSlider nativeView)
 		{
 			nativeView.ValueChanged += OnNativeValueChanged;
+			nativeView.Ready += OnNativeViewReady;
 
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
@@ -37,9 +39,10 @@ namespace Microsoft.Maui.Handlers
 			nativeView.AddHandler(UIElement.PointerCanceledEvent, _pointerReleasedHandler, true);
 		}
 
-		protected override void DisconnectHandler(Slider nativeView)
+		protected override void DisconnectHandler(MauiSlider nativeView)
 		{
 			nativeView.ValueChanged -= OnNativeValueChanged;
+			nativeView.Ready -= OnNativeViewReady;
 
 			nativeView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
 			nativeView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
@@ -49,10 +52,11 @@ namespace Microsoft.Maui.Handlers
 			_pointerReleasedHandler = null;
 		}
 
-		protected override void SetupDefaults(Slider nativeView)
+		protected override void SetupDefaults(MauiSlider nativeView)
 		{
 			DefaultForegroundColor = nativeView.Foreground;
 			DefaultBackgroundColor = nativeView.Background;
+			DefaultThumbColor = nativeView.Thumb?.Background;
 		}
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)
@@ -80,8 +84,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateMaximumTrackColor(slider, DefaultBackgroundColor);
 		}
 
-		[MissingMapper]
-		public static void MapThumbColor(SliderHandler handler, ISlider slider) { }
+		public static void MapThumbColor(SliderHandler handler, ISlider slider)
+		{
+			handler.NativeView?.UpdateThumbColor(slider, DefaultThumbColor);
+		}
 
 		void OnNativeValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
 		{
@@ -97,6 +103,12 @@ namespace Microsoft.Maui.Handlers
 		void OnPointerReleased(object? sender, PointerRoutedEventArgs e)
 		{
 			VirtualView?.DragCompleted();
+		}
+
+		void OnNativeViewReady(object? sender, EventArgs e)
+		{
+			if (VirtualView != null)
+				NativeView?.UpdateThumbColor(VirtualView, DefaultThumbColor);
 		}
 	}
 }

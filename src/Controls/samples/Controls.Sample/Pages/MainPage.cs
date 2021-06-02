@@ -275,6 +275,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(picker);
 
 			verticalStack.Add(new Slider());
+			verticalStack.Add(new Slider { Minimum = 0, Maximum = 10, Value = 5, MinimumTrackColor = Colors.Red, MaximumTrackColor = Colors.Orange, ThumbColor = Colors.Green });
 
 			verticalStack.Add(new Stepper());
 			verticalStack.Add(new Stepper { BackgroundColor = Colors.IndianRed });
@@ -371,6 +372,8 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(horizontalStack);
 			verticalStack.Add(new Slider());
+			verticalStack.Add(new Slider { Minimum = 0, Maximum = 10, Value = 5, MinimumTrackColor = Colors.Red, MaximumTrackColor = Colors.Orange, ThumbColor = Colors.Green });
+
 			verticalStack.Add(new Switch());
 			verticalStack.Add(new Switch() { OnColor = Colors.Green });
 			verticalStack.Add(new Switch() { ThumbColor = Colors.Yellow });
