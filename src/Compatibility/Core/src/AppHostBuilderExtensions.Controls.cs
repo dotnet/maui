@@ -119,20 +119,16 @@ namespace Microsoft.Maui.Controls
 					handlers.TryAddCompatibilityRenderer(typeof(TextCell), typeof(TextCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
-
-#if __IOS__ || MACCATALYST
-					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
-#endif
-
-#endif
-
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 					DependencyService.Register<Xaml.ResourcesLoader>();
 					DependencyService.Register<NativeBindingService>();
 					DependencyService.Register<NativeValueConverterService>();
 					DependencyService.Register<Deserializer>();
 					DependencyService.Register<ResourcesProvider>();
 					DependencyService.Register<Xaml.ValueConverterProvider>();
+#endif
+
+#if __IOS__ || MACCATALYST
+					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
 				})
 				.ConfigureServices(ConfigureNativeServices);
