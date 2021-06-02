@@ -115,11 +115,11 @@ namespace Microsoft.Maui.Controls
 
 	#if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
-	#endif
+#endif
 
 #endif
 
-#if __ANDROID__
+#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 					DependencyService.Register<Xaml.ResourcesLoader>();
 					DependencyService.Register<NativeBindingService>();
 					DependencyService.Register<NativeValueConverterService>();
