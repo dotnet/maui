@@ -44,5 +44,23 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			Assert.Equal(0, count);
 		}
+
+		[Fact(DisplayName = "DisconnectHandler removes child from native layout")]
+		public async Task DisconnectHandlerRemovesChildFromNativeLayout()
+		{
+			var layout = new LayoutStub();
+			var slider = new SliderStub();
+			layout.Add(slider);
+
+			var handler = await CreateHandlerAsync(layout);
+
+			var count = await InvokeOnMainThreadAsync(() =>
+			{
+				layout.Handler.DisconnectHandler();
+				return GetNativeChildCount(handler);
+			});
+
+			Assert.Equal(0, count);
+		}
 	}
 }

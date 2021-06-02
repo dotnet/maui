@@ -28,6 +28,26 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public double Height { get; set; } = 50;
 
+		public double TranslationX { get; set; }
+
+		public double TranslationY { get; set; }
+
+		public double Scale { get; set; } = 1d;
+
+		public double ScaleX { get; set; } = 1d;
+
+		public double ScaleY { get; set; } = 1d;
+
+		public double Rotation { get; set; }
+
+		public double RotationX { get; set; }
+
+		public double RotationY { get; set; }
+
+		public double AnchorX { get; set; } = .5d;
+
+		public double AnchorY { get; set; } = .5d;
+
 		public Thickness Margin { get; set; }
 
 		public string AutomationId { get; set; }

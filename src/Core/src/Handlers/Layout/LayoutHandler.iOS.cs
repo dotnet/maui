@@ -65,5 +65,16 @@ namespace Microsoft.Maui.Handlers
 				NativeView.SetNeedsLayout();
 			}
 		}
+
+		protected override void DisconnectHandler(LayoutView nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+			var subViews = nativeView.Subviews;
+
+			foreach (var subView in subViews)
+			{
+				subView.RemoveFromSuperview();
+			}
+		}
 	}
 }

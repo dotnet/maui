@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using UIKit;
 using Xunit;
@@ -7,8 +9,34 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class PickerHandlerTests
 	{
+		[Fact(DisplayName = "Title Color Initializes Correctly")]
+		public async Task TitleColorInitializesCorrectly()
+		{
+			var xplatTitleColor = Colors.CadetBlue;
+
+			var picker = new PickerStub
+			{
+				Title = "Select an Item",
+				TitleColor = xplatTitleColor
+			};
+
+			var expectedValue = xplatTitleColor.ToNative();
+
+			var values = await GetValueAsync(picker, (handler) =>
+			{
+				return new
+				{
+					ViewValue = picker.TitleColor,
+					NativeViewValue = GetNativeTitleColor(handler)
+				};
+			});
+
+			Assert.Equal(xplatTitleColor, values.ViewValue);
+			Assert.Equal(expectedValue, values.NativeViewValue);
+		}
+
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
-			(MauiPicker)pickerHandler.NativeView;
+			pickerHandler.NativeView;
 
 		string GetNativeTitle(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Text;
@@ -49,5 +77,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		UITextAlignment GetNativeHorizontalTextAlignment(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).TextAlignment;
+
+		UIColor GetNativeTitleColor(PickerHandler pickerHandler)
+		{
+			var mauiPicker = GetNativePicker(pickerHandler);
+			return mauiPicker.AttributedPlaceholder.GetForegroundColor();
+		}
 	}
 }

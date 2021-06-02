@@ -37,16 +37,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SetElement(null, view);
 
 			renderer.View.SetCameraDistance(3600);
+			_attachTracker = AttachTracker.Instance;
+			renderer.View.AddOnAttachStateChangeListener(_attachTracker);
 
-			if (!_context.IsDesignerContext())
-			{
-				_attachTracker = AttachTracker.Instance;
-				renderer.View.AddOnAttachStateChangeListener(_attachTracker);
-			}
-			else
-			{
-				_attachTracker = new AttachTracker();
-			}
 		}
 
 		public void Dispose()
@@ -267,6 +260,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		void UpdateAnchorX()
 		{
 			VisualElement view = _renderer.Element;
@@ -278,6 +272,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				aview.PivotX = target;
 		}
 
+		[PortHandler]
 		void UpdateAnchorY()
 		{
 			VisualElement view = _renderer.Element;
@@ -389,6 +384,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Performance.Stop(reference);
 		}
 
+		[PortHandler]
 		void UpdateOpacity()
 		{
 			Performance.Start(out string reference);
@@ -401,6 +397,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Performance.Stop(reference);
 		}
 
+		[PortHandler]
 		void UpdateRotation()
 		{
 			VisualElement view = _renderer.Element;
@@ -409,6 +406,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aview.Rotation = (float)view.Rotation;
 		}
 
+		[PortHandler]
 		void UpdateRotationX()
 		{
 			VisualElement view = _renderer.Element;
@@ -417,6 +415,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aview.RotationX = (float)view.RotationX;
 		}
 
+		[PortHandler]
 		void UpdateRotationY()
 		{
 			VisualElement view = _renderer.Element;
@@ -425,6 +424,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aview.RotationY = (float)view.RotationY;
 		}
 
+		[PortHandler]
 		void UpdateScale()
 		{
 			VisualElement view = _renderer.Element;
@@ -434,6 +434,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aview.ScaleY = (float)view.Scale * (float)view.ScaleY;
 		}
 
+		[PortHandler]
 		void UpdateTranslationX()
 		{
 			VisualElement view = _renderer.Element;
@@ -442,6 +443,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			aview.TranslationX = _context.ToPixels(view.TranslationX);
 		}
 
+		[PortHandler]
 		void UpdateTranslationY()
 		{
 			VisualElement view = _renderer.Element;

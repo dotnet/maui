@@ -48,6 +48,11 @@ namespace Microsoft.Maui
 				nativeView.Background = paint!.ToDrawable();
 		}
 
+		public static void UpdateOpacity(this AView nativeView, IView view)
+		{
+			nativeView.Alpha = (float)view.Opacity;
+		}
+
 		public static bool GetClipToOutline(this AView view)
 		{
 			return view.ClipToOutline;

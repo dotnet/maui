@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <!-- Required - Enable Launch Profiles for .NET 6 iOS/Android -->
+    <_KeepLaunchProfiles>true</_KeepLaunchProfiles>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Required - Setup Single Project features -->
+    <ProjectCapability Include="MauiSingleProject" />
+
+    <!-- Optional - Enables a list of TFM's and device categories in the debug menu -->
+    <!-- This allows easily toggling of debug target TFM by selecting the platform -->
+    <!-- If removed, Top level debug targets show as a list of devices for the selected TFM -->
+    <ProjectCapability Include="XamarinStaticLaunchProfiles" />
+  </ItemGroup>
+</Project>

@@ -21,12 +21,13 @@
 		<ProjectReference Include="..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
 		<ProjectReference Include="..\Essentials\src\Essentials-net6.csproj" />
 		<ProjectReference Include="..\SingleProject\Resizetizer\src\Resizetizer.csproj" />
+		<ProjectReference Include="..\Controls\src\SourceGen\Controls.SourceGen-net6.csproj"/>
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
 		<ProjectReference Include="..\Compatibility\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup-net6.csproj" />
 	</ItemGroup>
-	<ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' Or '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
+	<ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' Or '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst'  Or '$(TargetPlatformIdentifier)' == 'windows' ">
 		<ProjectReference Include="..\Compatibility\Core\src\Compatibility-net6.csproj" />
 	</ItemGroup>
 

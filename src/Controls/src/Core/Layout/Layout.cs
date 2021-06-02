@@ -7,6 +7,7 @@ using Microsoft.Maui.Layouts;
 // This is a temporary namespace until we rename everything and move the legacy layouts
 namespace Microsoft.Maui.Controls.Layout2
 {
+	[ContentProperty(nameof(Children))]
 	public abstract class Layout : View, Microsoft.Maui.ILayout, IEnumerable<IView>
 	{
 		ILayoutManager _layoutManager;

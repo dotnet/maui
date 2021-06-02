@@ -711,11 +711,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return false;
 		}
 
+		[PortHandler]
 		static void UpdateOpacity(VisualElement view, FrameworkElement frameworkElement)
 		{
 			frameworkElement.Opacity = view.Opacity;
 		}
 
+		[PortHandler]
 		static void UpdateRotation(VisualElement view, FrameworkElement frameworkElement)
 		{
 			double anchorX = view.AnchorX;
@@ -769,6 +771,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		static void UpdateScaleAndRotation(VisualElement view, FrameworkElement frameworkElement)
 		{
 			double anchorX = view.AnchorX;
