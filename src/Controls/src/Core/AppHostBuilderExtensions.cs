@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(DatePicker), typeof(DatePickerHandler) },
 			{ typeof(Editor), typeof(EditorHandler) },
 			{ typeof(Entry), typeof(EntryHandler) },
+			{ typeof(GraphicsView), typeof(GraphicsViewHandler) },
 			{ typeof(Image), typeof(ImageHandler) },
 			{ typeof(Label), typeof(LabelHandler) },
 			{ typeof(Layout), typeof(LayoutHandler) },
