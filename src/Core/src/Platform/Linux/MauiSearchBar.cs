@@ -10,7 +10,8 @@ namespace Microsoft.Maui
 		public MauiSearchBar() : base()
 		{
 			Entry = new Entry(string.Empty);
-			ConnectEntry(Entry);
+			Child = Entry;
+			SearchModeEnabled = true;
 		}
 
 		public Gtk.Entry Entry { get; }
