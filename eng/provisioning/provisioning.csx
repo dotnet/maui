@@ -58,6 +58,11 @@ if (IsMac)
 		}
 	}
 
+    // Workaround for 16.10 bug: https://github.com/xamarin/xamarin-android-tools/pull/120
+    Item ("Xamarin.Android", "11.2.2.1")
+      .Condition (FxVersionDiffers)
+      .Source (xa => $"https://dl.xamarin.com/MonoforAndroid/Mac/xamarin.android-{xa.Version}.pkg");
+
 	async System.Threading.Tasks.Task ResolveUrl (string url)
 	{
 		// When downloading a package using the xamci we have to use the following code to 
