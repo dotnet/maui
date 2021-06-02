@@ -2,6 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
+	// https://developer.gnome.org/gtk3/stable/GtkProgressBar.html
 	public partial class ProgressBarHandler : ViewHandler<IProgress, ProgressBar>
 	{
 		protected override ProgressBar CreateNativeView()

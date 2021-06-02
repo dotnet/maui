@@ -6,8 +6,9 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateProgress(this ProgressBar nativeProgressBar, IProgress progress)
 		{
-			nativeProgressBar.PulseStep = progress.Progress;
-			nativeProgressBar.TooltipText = string.Format("{0}%", progress.Progress * 100);
+			// https://developer.gnome.org/gtk3/stable/GtkProgressBar.html#gtk-progress-bar-set-fraction
+			nativeProgressBar.Fraction = progress.Progress;
+			nativeProgressBar.TooltipText = $"{progress.Progress * 100}%";
 		}
 	}
 }
