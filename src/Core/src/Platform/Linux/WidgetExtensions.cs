@@ -109,7 +109,7 @@ namespace Microsoft.Maui
 			if (rect != nativeView.Allocation.ToRectangle())
 			{
 				nativeView.SizeAllocate(rect.ToNative());
-				nativeView.QueueResize();
+				nativeView.QueueAllocate();
 			}
 		}
 
