@@ -16,9 +16,9 @@ namespace Microsoft.Maui
 		{
 			nativeSlider.Value = slider.Value;
 		}
-		public static void UpdateIncrement(this SpinButton nativeSlider, IRange slider)
+		public static void UpdateIncrement(this SpinButton nativeSlider, IStepper slider)
 		{
-			nativeSlider.SetIncrements(slider.Value,1);
+			nativeSlider.SetIncrements(slider.Interval,1);
 		}
 	}
 }

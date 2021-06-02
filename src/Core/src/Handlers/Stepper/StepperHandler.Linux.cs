@@ -3,13 +3,15 @@ using Gtk;
 
 namespace Microsoft.Maui.Handlers
 {
+	
+	// https://developer.gnome.org/gtk3/stable/GtkSpinButton.html
 	public partial class StepperHandler : ViewHandler<IStepper, SpinButton>
 	{
 		protected override SpinButton CreateNativeView()
 		{
 			// var adjustment = new Adjustment(0, 0, 1, 1, 1, 1);
 			// return new SpinButton(adjustment, 1, 1);
-			return new SpinButton(0, 1, .1);
+			return new SpinButton(0, 1, .1) { Numeric = true, ClimbRate = 0.1};
 		}
 
 		protected override void ConnectHandler(SpinButton nativeView)
