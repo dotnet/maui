@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformVirtualView = () => VirtualView;
 
 			NativeView.ClearChildren();
+
 			foreach (var child in VirtualView.Children)
 			{
 				if (child.ToNative(MauiContext) is { } nativeChild)
@@ -67,13 +68,6 @@ namespace Microsoft.Maui.Handlers
 				NativeView.Remove(nativeChild);
 
 			NativeView.QueueAllocate();
-		}
-
-		public override void NativeArrange(Rectangle rect)
-		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
-
-			NativeView.NativeArrange(rect);
 		}
 
 	}
