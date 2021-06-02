@@ -31,6 +31,9 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
+		[MissingMapper]
+		public static void MapForeground(CheckBoxHandler handler, ICheckBox check) { }
+
 	}
 
 }

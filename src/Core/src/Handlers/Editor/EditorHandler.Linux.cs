@@ -85,6 +85,8 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) { }
 
+		[MissingMapper]
+		public static void MapKeyboard(EditorHandler handler, IEditor editor) { }
 	}
 
 }

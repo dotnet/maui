@@ -38,6 +38,8 @@ namespace Microsoft.Maui
 		{
 			
 		}
+		
+		public static void UpdateOpacity(this Widget nativeView, IView view) { }
 
 	}
 
