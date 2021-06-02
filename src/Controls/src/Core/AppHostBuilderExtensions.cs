@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Page), typeof(PageHandler) }
 		};
 
-		internal static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
+		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
 			=> handlersCollection.AddHandlers(DefaultMauiControlHandlers);
 	}
 }
