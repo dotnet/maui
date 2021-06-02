@@ -13,7 +13,9 @@ namespace Microsoft.Maui.Controls.Hosting
 		static readonly Dictionary<Type, Type> DefaultMauiControlHandlers = new Dictionary<Type, Type>
 		{
 			{ typeof(NavigationPage), typeof(NavigationPageHandler) },
-			//{ typeof(Shell), typeof(ShellHandler) },
+#if !WINDOWS
+			{ typeof(Shell), typeof(ShellHandler) },
+#endif
 			{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
 			{ typeof(Button), typeof(ButtonHandler) },
 			{ typeof(CheckBox), typeof(CheckBoxHandler) },
