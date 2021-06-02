@@ -238,8 +238,9 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
 			verticalStack.Add(new Entry { Placeholder = "This is a blue text box", BackgroundColor = Colors.CornflowerBlue });
 
-			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 }); ;
-			
+			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 });
+			;
+
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
@@ -563,7 +564,7 @@ namespace Maui.Controls.Sample.Pages
 			layout.Add(widthAndHeightTestLabel);
 			layout.Add(explicitWidthTestLabel);
 		}
-    
+
 		void SetupVisibilityTest()
 		{
 			var layout = new VerticalStackLayout() { BackgroundColor = Colors.BurlyWood };
@@ -607,9 +608,9 @@ namespace Maui.Controls.Sample.Pages
 			layout.Add(alwaysVisible);
 
 			Content = layout;
-		}		
-    
-    class TestDrawable : IDrawable
+		}
+
+		class TestDrawable : IDrawable
 		{
 			public void Draw(ICanvas canvas, RectangleF dirtyRect)
 			{
@@ -618,6 +619,6 @@ namespace Maui.Controls.Sample.Pages
 				canvas.FillRoundedRectangle(0, 0, 200, 50, 10);
 				canvas.RestoreState();
 			}
-    }
+		}
 	}
 }
