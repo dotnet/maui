@@ -1,4 +1,4 @@
-﻿espace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
 	public static class TextBoxExtensions
 	{
