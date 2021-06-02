@@ -36,17 +36,16 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView is not { } virtualView)
 				return default;
 
-			var (baseWidth, baseHeight) = base.GetDesiredSize(widthConstraint, heightConstraint);
 			int width = -1;
-			int height = 1;
+			int height = -1;
 
 			var widthConstrained = !double.IsPositiveInfinity(widthConstraint);
 			var heightConstrained = !double.IsPositiveInfinity(heightConstraint);
 
+			var hMargin = nativeView.MarginStart + nativeView.MarginEnd;
+			var vMargin = nativeView.MarginTop + nativeView.MarginBottom;
+
 			// try use layout from Label: not working
-			// var SharedTextLayout = new Microsoft.Maui.Graphics.Native.Gtk.TextLayout(NativeGraphicsService.Instance.SharedContext);
-			// SharedTextLayout.SetLayout(nativeView.Layout);
-			// ...
 
 			lock (SharedTextLayout)
 			{
@@ -57,18 +56,36 @@ namespace Microsoft.Maui.Handlers
 				SharedTextLayout.LineBreakMode = virtualView.LineBreakMode.GetLineBreakMode();
 
 				SharedTextLayout.HeightForWidth = !heightConstrained;
-				var constraint = SharedTextLayout.HeightForWidth ? widthConstraint : heightConstraint;
-				(width, height) = SharedTextLayout.GetPixelSize(NativeView.Text, double.IsInfinity(constraint) ? -1 : constraint);
 
+				var constraint = Math.Max(SharedTextLayout.HeightForWidth ? widthConstraint + virtualView.Margin.HorizontalThickness - hMargin : heightConstraint + virtualView.Margin.VerticalThickness - vMargin,
+					1);
+
+				var lh = 0;
+				var layout = SharedTextLayout.GetLayout();
+				layout.Ellipsize = nativeView.Ellipsize;
+				layout.Spacing = nativeView.Layout.Spacing;
+
+				if (!heightConstrained && nativeView.Lines > 0)
+				{
+					lh = (int)layout.GetLineHeigth(false) * nativeView.Lines;
+					layout.Height = lh;
+
+				}
+				else
+				{
+					layout.Height = -1;
+				}
+
+				(width, height) = layout.GetPixelSize(NativeView.Text, double.IsInfinity(constraint) ? -1 : constraint, SharedTextLayout.HeightForWidth);
+
+				if (!heightConstrained && nativeView.Lines > 0)
+				{
+					height = Math.Min((int)lh.ScaledFromPango(), height);
+				}
 			}
 
-			var inkRect = new Pango.Rectangle();
-			var logicalRect = new Pango.Rectangle();
-			nativeView.Layout.GetLineReadonly(0).GetExtents(ref inkRect, ref logicalRect);
-			var lineHeigh = logicalRect.Height.ScaledFromPango();
-
-			width += nativeView.MarginStart + nativeView.MarginEnd;
-			height += nativeView.MarginTop + nativeView.MarginBottom;
+			width += hMargin;
+			height += vMargin;
 
 			return new Size(width, height);
 
@@ -123,6 +140,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			// there is no LineHeight for label in gtk3:
 			// https://gitlab.gnome.org/GNOME/gtk/-/issues/2379
+
+			if (handler.NativeView is not { } nativeView)
+				return;
+
+			if (handler.VirtualView is not { } virtualView)
+				return;
+
+			if (label.LineHeight > 1)
+				// should be: https://developer.gnome.org/pango/1.46/pango-Layout-Objects.html#pango-layout-set-line-spacing
+				// see: https://github.com/GtkSharp/GtkSharp/issues/258
+				nativeView.Layout.Spacing = (int)label.LineHeight.ScaledToPango();
+
 		}
 
 	}

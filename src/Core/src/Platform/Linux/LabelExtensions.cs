@@ -17,6 +17,19 @@ namespace Microsoft.Maui
 		public static void UpdateMaxLines(this Label nativeLabel, ILabel label)
 		{
 			nativeLabel.Lines = label.MaxLines;
+			nativeLabel.AdjustMaxLines();
+
+		}
+
+		public static void AdjustMaxLines(this Label nativeLabel)
+		{
+			if (nativeLabel.Lines > 0)
+			{
+				nativeLabel.LineWrap = true;
+
+				if (nativeLabel.Ellipsize == EllipsizeMode.None)
+					nativeLabel.Ellipsize = EllipsizeMode.End;
+			}
 		}
 
 		public static Microsoft.Maui.Graphics.Extras.LineBreakMode GetLineBreakMode(this LineBreakMode lineBreakMode) =>
@@ -30,6 +43,7 @@ namespace Microsoft.Maui
 				LineBreakMode.MiddleTruncation => Graphics.Extras.LineBreakMode.MiddleTruncation,
 				_ => throw new ArgumentOutOfRangeException()
 			};
+
 		public static Maui.Graphics.HorizontalAlignment GetHorizontalAlignment(this TextAlignment alignment) =>
 			alignment switch
 			{
@@ -39,14 +53,15 @@ namespace Microsoft.Maui
 				TextAlignment.End => Graphics.HorizontalAlignment.Right,
 				_ => throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null)
 			};
+
 		public static Microsoft.Maui.Graphics.Extras.LineBreakMode GetLineBreakMode(this Label nativeLabel)
 		{
 			var res = nativeLabel.Ellipsize switch
 			{
 				EllipsizeMode.None => Graphics.Extras.LineBreakMode.None,
-				EllipsizeMode.Start => Graphics.Extras.LineBreakMode.Start |Graphics.Extras.LineBreakMode.Elipsis,
-				EllipsizeMode.Middle => Graphics.Extras.LineBreakMode.Center |Graphics.Extras.LineBreakMode.Elipsis,
-				EllipsizeMode.End => Graphics.Extras.LineBreakMode.End |Graphics.Extras.LineBreakMode.Elipsis,
+				EllipsizeMode.Start => Graphics.Extras.LineBreakMode.Start | Graphics.Extras.LineBreakMode.Elipsis,
+				EllipsizeMode.Middle => Graphics.Extras.LineBreakMode.Center | Graphics.Extras.LineBreakMode.Elipsis,
+				EllipsizeMode.End => Graphics.Extras.LineBreakMode.End | Graphics.Extras.LineBreakMode.Elipsis,
 				_ => throw new ArgumentOutOfRangeException()
 			};
 
@@ -71,38 +86,41 @@ namespace Microsoft.Maui
 			switch (label.LineBreakMode)
 			{
 				case LineBreakMode.NoWrap:
-					nativeLabel.LineWrap = false;
+					nativeLabel.LineWrap = label.MaxLines > 0;
 					nativeLabel.Ellipsize = Pango.EllipsizeMode.None;
 
 					break;
 				case LineBreakMode.WordWrap:
 					nativeLabel.LineWrap = true;
+					nativeLabel.Wrap = true;
+
 					nativeLabel.LineWrapMode = Pango.WrapMode.Word;
 					nativeLabel.Ellipsize = Pango.EllipsizeMode.None;
 
 					break;
 				case LineBreakMode.CharacterWrap:
 					nativeLabel.LineWrap = true;
+					nativeLabel.Wrap = true;
 					nativeLabel.LineWrapMode = Pango.WrapMode.Char;
 					nativeLabel.Ellipsize = Pango.EllipsizeMode.None;
 
 					break;
 				case LineBreakMode.HeadTruncation:
-					nativeLabel.LineWrap = false;
+					nativeLabel.LineWrap = true;
 					nativeLabel.Wrap = true;
 					nativeLabel.LineWrapMode = Pango.WrapMode.Word;
 					nativeLabel.Ellipsize = Pango.EllipsizeMode.Start;
 
 					break;
 				case LineBreakMode.TailTruncation:
-					nativeLabel.LineWrap = false;
+					nativeLabel.LineWrap = true;
 					nativeLabel.LineWrapMode = Pango.WrapMode.Word;
 					nativeLabel.Wrap = true;
 					nativeLabel.Ellipsize = Pango.EllipsizeMode.End;
 
 					break;
 				case LineBreakMode.MiddleTruncation:
-					nativeLabel.LineWrap = false;
+					nativeLabel.LineWrap = true;
 					nativeLabel.Wrap = true;
 					nativeLabel.LineWrapMode = Pango.WrapMode.Word;
 					nativeLabel.Ellipsize = Pango.EllipsizeMode.Middle;
@@ -111,6 +129,7 @@ namespace Microsoft.Maui
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+			nativeLabel.AdjustMaxLines();
 		}
 
 		public static void UpdateTextAlignment(this Label nativeLabel, ILabel label)
