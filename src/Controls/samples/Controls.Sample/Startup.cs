@@ -36,14 +36,27 @@ namespace Maui.Controls.Sample
 
 		public readonly static bool UseXamlApp = true;
 		public readonly static bool UseFullDI = false;
+		public void Configurej(IAppHostBuilder appBuilder)
+		{
+			appBuilder
+				.UseMauiControlsApp<XamlApp>()
+				.ConfigureServices(services =>
+				{
+					services.AddSingleton<ITextService, TextService>();
+				})
+				.UseMauiServiceProviderFactory(constructorInjection: true);
+		}
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{
 			bool useFullDIAndBlazor = UseFullDI || _pageType == PageType.Blazor;
 
+			if (UseXamlApp)
+				appBuilder.UseMauiControlsApp<XamlApp>();
+			else
+				appBuilder.UseMauiControlsApp<MyApp>();
+
 			appBuilder
-				.UseFormsCompatibility()
-				.UseMauiControlsHandlers()
 				.ConfigureMauiHandlers(handlers =>
 				{
 #if __ANDROID__
@@ -58,10 +71,6 @@ namespace Maui.Controls.Sample
 #endif
 				});
 
-			if (UseXamlApp)
-				appBuilder.UseMauiApp<XamlApp>();
-			else
-				appBuilder.UseMauiApp<MyApp>();
 
 			// Use a "third party" library that brings in a massive amount of controls
 			appBuilder.UseRed();
@@ -69,7 +78,6 @@ namespace Maui.Controls.Sample
 #if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
 #endif
-			appBuilder.UseMauiControlsHandlers();
 
 			appBuilder
 				.ConfigureAppConfiguration(config =>

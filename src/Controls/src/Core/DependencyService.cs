@@ -90,6 +90,14 @@ namespace Microsoft.Maui.Controls
 		static Type FindImplementor(Type target) =>
 			DependencyTypes.FirstOrDefault(t => target.IsAssignableFrom(t));
 
+		// Once we get essentials/cg converted to using startup.cs
+		// we will delete the initialize code from here and just use
+		// explicit assembly registration via startup code
+		internal static void SetToInitialized()
+		{
+			s_initialized = true;
+		}
+
 		static void Initialize()
 		{
 			if (s_initialized)
@@ -133,6 +141,7 @@ namespace Microsoft.Maui.Controls
 						DependencyAttribute attribute = (DependencyAttribute)attributes[i];
 						if (!DependencyTypes.Contains(attribute.Implementor))
 						{
+							System.Diagnostics.Debug.WriteLine($"Dependency Service: {attribute.Implementor}");
 							DependencyTypes.Add(attribute.Implementor);
 						}
 					}

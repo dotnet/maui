@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
@@ -329,8 +330,13 @@ namespace Microsoft.Maui.Controls.Internals
 			for (var i = 0; i < exportEffectsLength; i++)
 			{
 				var effect = effectAttributes[i];
-				Effects[resolutionName + "." + effect.Id] = effect.Type;
+				RegisterEffect(resolutionName, effect.Id, effect.Type);
 			}
+		}
+
+		public static void RegisterEffect(string resolutionName, string id, Type effectType)
+		{
+			Effects[resolutionName + "." + id] = effectType;
 		}
 
 		public static void RegisterAll(Type[] attrTypes)
@@ -384,6 +390,10 @@ namespace Microsoft.Maui.Controls.Internals
 						continue;
 
 					var length = attributes.Length;
+
+					StringBuilder namespaces = new StringBuilder();
+					StringBuilder renderers = new StringBuilder();
+
 					for (var i = 0; i < length; i++)
 					{
 						var a = attributes[i];
@@ -396,11 +406,17 @@ namespace Microsoft.Maui.Controls.Internals
 						{
 							if (attribute.ShouldRegister())
 							{
+								namespaces.AppendLine($"using {attribute.TargetType.Name} = {attribute.TargetType.FullName};");
+								renderers.AppendLine($"handlers.TryAddCompatibilityRenderer(typeof({attribute.HandlerType.Name}), typeof({attribute.TargetType.Name}));");
+
 								Registered.Register(attribute.HandlerType, attribute.TargetType, attribute.SupportedVisuals, attribute.Priority);
 								viewRegistered?.Invoke(attribute.HandlerType);
 							}
 						}
 					}
+
+					System.Diagnostics.Debug.WriteLine(namespaces.ToString());
+					System.Diagnostics.Debug.WriteLine(renderers.ToString());
 				}
 
 				object[] effectAttributes = assembly.GetCustomAttributesSafe(typeof(ExportEffectAttribute));
