@@ -38,17 +38,20 @@ steps:
       provisioning_script: $(provisionator.path)
       provisioning_extra_args: $(provisionator.extraArguments)
 
-  - pwsh: |
-      ./build.ps1 --target provision --TeamProject="$(System.TeamProject)"
-    displayName: 'Cake Provision'
-    condition: eq(variables['provisioningCake'], 'true')
-
   - task: UseDotNet@2
     displayName: 'Install .net core $(DOTNET_VERSION)'
     condition: ne(variables['DOTNET_VERSION'], '')
     inputs:
       version: $(DOTNET_VERSION)
       packageType: 'sdk'
+
+  - script: dotnet tool restore
+    displayName: install dotnet tools
+
+  - pwsh: |
+      ./build.ps1 --target provision --TeamProject="$(System.TeamProject)"
+    displayName: 'Cake Provision'
+    condition: eq(variables['provisioningCake'], 'true')
 
   - pwsh: |
       ./build.ps1 --target=BuildTasks --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
