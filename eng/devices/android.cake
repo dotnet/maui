@@ -28,10 +28,9 @@ var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT
 if (string.IsNullOrEmpty(ANDROID_SDK_ROOT)) {
 	if(!string.IsNullOrEmpty(EnvironmentVariable("ANDROIDSDK")))
 	{
-		ANDROID_SDK_ROOT = EnvironmentVariable("ANDROIDSDK").Replace("/tools/android","");
+		ANDROID_SDK_ROOT = EnvironmentVariable("ANDROIDSDK").Replace("/tools/android","")
 	}
-	else 
-	{
+	else {
 		throw new Exception("Environment variable 'ANDROID_SDK_ROOT' or 'ANDROID_HOME' must be set to the Android SDK root.");
 	}
 }
