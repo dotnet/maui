@@ -18,7 +18,7 @@ steps:
       echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
       echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
     displayName: 'Setup SDK Paths'
-    condition: eq('${{ parameters.vmImage }}', 'Azure Pipelines')
+    condition: ne(variables['androidTestsVmPool'], 'Azure Pipelines')
   
   - ${{ if eq(parameters['platform'], 'ios') }}:
     - task: InstallAppleCertificate@2
