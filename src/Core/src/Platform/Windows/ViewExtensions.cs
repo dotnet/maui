@@ -39,6 +39,11 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateOpacity(this FrameworkElement nativeView, IView view)
+		{
+			nativeView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
+		}
+
 		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
 		{
 			if (nativeView is Control control)

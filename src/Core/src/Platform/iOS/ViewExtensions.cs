@@ -73,6 +73,11 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateOpacity(this UIView nativeView, IView view)
+		{
+			nativeView.Alpha = (float)view.Opacity;
+		}
+
 		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
 			nativeView.AccessibilityIdentifier = view.AutomationId;
 

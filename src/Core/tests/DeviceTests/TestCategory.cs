@@ -8,6 +8,7 @@
 		public const string DatePicker = "DatePicker";
 		public const string Editor = "Editor";
 		public const string Entry = "Entry";
+		public const string GraphicsView = "GraphicsView";
 		public const string Image = "Image";
 		public const string ImageSource = "ImageSource";
 		public const string Label = "Label";

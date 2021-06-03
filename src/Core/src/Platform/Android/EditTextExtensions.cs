@@ -148,6 +148,11 @@ namespace Microsoft.Maui
 			editText.SetInputType(entry);
 		}
 
+		public static void UpdateKeyboard(this AppCompatEditText editText, IEditor editor)
+		{
+			editText.SetInputType(editor);
+		}
+
 		public static void UpdateIsReadOnly(this AppCompatEditText editText, IEditor editor)
 		{
 			bool isReadOnly = !editor.IsReadOnly;
@@ -198,6 +203,37 @@ namespace Microsoft.Maui
 		public static void UpdateReturnType(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.ImeOptions = entry.ReturnType.ToNative();
+		}
+
+		internal static void SetInputType(this AppCompatEditText editText, IEditor editor)
+		{
+			if (editor.IsReadOnly)
+			{
+				editText.InputType = InputTypes.Null;
+			}
+			else
+			{
+				var keyboard = editor.Keyboard;
+				var nativeInputTypeToUpdate = keyboard.ToInputType();
+
+				if (keyboard is not CustomKeyboard)
+				{
+					// TODO: IsSpellCheckEnabled handling must be here.
+
+					if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+					{
+						if (!editor.IsTextPredictionEnabled)
+							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
+					}
+				}
+
+				if (keyboard == Keyboard.Numeric)
+				{
+					editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
+				}
+
+				editText.InputType = nativeInputTypeToUpdate;
+			}
 		}
 
 		internal static void SetInputType(this AppCompatEditText editText, IEntry entry)

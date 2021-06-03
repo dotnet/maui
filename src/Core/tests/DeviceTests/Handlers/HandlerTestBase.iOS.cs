@@ -135,6 +135,9 @@ namespace Microsoft.Maui.DeviceTests
 			((UIView)viewHandler.NativeView).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header)
 				? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
 
+		protected nfloat GetOpacity(IViewHandler viewHandler) =>
+			((UIView)viewHandler.NativeView).Alpha;
+
 		protected Visibility GetVisibility(IViewHandler viewHandler)
 		{
 			var nativeView = (UIView)viewHandler.NativeView;

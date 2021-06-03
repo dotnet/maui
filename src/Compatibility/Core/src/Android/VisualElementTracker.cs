@@ -384,6 +384,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Performance.Stop(reference);
 		}
 
+		[PortHandler]
 		void UpdateOpacity()
 		{
 			Performance.Start(out string reference);
