@@ -111,10 +111,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.ProjectReunion" Version="[0.5.6]">
+    <PackageReference Include="Microsoft.ProjectReunion" Version="0.8.0-preview">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[0.5.6]">
+    <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="0.8.0-preview">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
   </ItemGroup>
