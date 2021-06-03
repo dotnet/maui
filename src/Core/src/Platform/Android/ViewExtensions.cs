@@ -137,6 +137,8 @@ namespace Microsoft.Maui
 				{
 					info.ContentDescription = desc;
 
+					if (host is EditText)
+						info.Text = desc + ", " + ((EditText)host).Text;
 				}
 			}
 		}
