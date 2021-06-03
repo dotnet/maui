@@ -726,7 +726,12 @@ Task("BuildTasks")
     .Description($"Build {BUILD_TASKS_PROJ}")
     .Does(() =>
 {
-    MSBuild(BUILD_TASKS_PROJ, GetMSBuildSettings().WithRestore());
+    var msbuildSettings = GetMSBuildSettings().WithRestore();
+    msbuildSettings.BinaryLogger = new MSBuildBinaryLogSettings {
+        FileName = $"{artifactStagingDirectory}/Maui.BuildTasks-{configuration}.binlog"
+    };
+
+    MSBuild(BUILD_TASKS_PROJ, msbuildSettings);
 });
 
 Task("Build")
