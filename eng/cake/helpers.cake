@@ -38,5 +38,6 @@ void ValidateAndroidSDK()
         Environment.SetEnvironmentVariable("ANDROID_SDK_ROOT", "~/Library/Developer/Xamarin/android-sdk-macosx");
         Environment.SetEnvironmentVariable("ANDROID_HOME", "~/Library/Developer/Xamarin/android-sdk-macosx");
         Environment.SetEnvironmentVariable("JAVA_HOME", "~/Library/Developer/Xamarin/jdk/microsoft_dist_openjdk_1.8.0.40");
+        Environment.SetEnvironmentVariable("JAVA_HOME", "~/Library/Developer/Xamarin/jdk/microsoft_dist_openjdk_1.8.0.40", EnvironmentVariableTarget.User);        
     }
 }
