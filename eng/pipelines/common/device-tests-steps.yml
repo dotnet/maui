@@ -20,7 +20,6 @@ steps:
       echo "##vso[task.setvariable variable=JAVA_HOME]/Users/builder/Library/Developer/Xamarin/jdk/microsoft_dist_openjdk_1.8.0.40/"
       echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]/Users/builder/Library/Developer/Xamarin/android-sdk-macosx/"
     displayName: 'Setup SDK Paths'
-    displayName: 'Setup SDK Paths'
     condition: or(and(ne(variables['androidTestsVmPool'], 'Azure Pipelines'), ne('${{ parameters.platform }}', 'android')), and(ne(variables['iosTestsVmPool'], 'Azure Pipelines'), ne('${{ parameters.platform }}', 'ios')))
   
   - ${{ if eq(parameters['platform'], 'ios') }}:
