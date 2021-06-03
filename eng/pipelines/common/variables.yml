@@ -38,3 +38,7 @@ variables:
   value: '--v'
 - name: DotNet.Path
   value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
+- name: ANDROID_SDK_MAC
+  value: https://aka.ms/xamarin-android-commercial-d16-9-macos
+- name: ANDROID_SDK_WINDOWS
+  value: https://aka.ms/xamarin-android-commercial-d16-9-macos
