@@ -9,6 +9,9 @@ if (IsMac)
 	ForceJavaCleanup();
 	OpenJDK ("1.8.0-40");
 
+    Item ("OpenJDK11", "11.0.11.9.1")
+          .Source (xm => $"https://aka.ms/download-jdk/microsoft-jdk-11.0.11.9.1-macos-x64.pkg");
+    
 	string releaseChannel = Environment.GetEnvironmentVariable ("CHANNEL");
 	Console.WriteLine ("ANDROID_SDK_MAC: {0}", Environment.GetEnvironmentVariable ("ANDROID_SDK_MAC"));
 	Console.WriteLine ("IOS_SDK_MAC: {0}", Environment.GetEnvironmentVariable ("IOS_SDK_MAC"));
