@@ -21,6 +21,7 @@
 		<AndroidVersionCode>1</AndroidVersionCode>
 
 		<UseInterpreter Condition="$(TargetFramework.Contains('-android'))">True</UseInterpreter>
+		<StartupObject Condition="$(TargetFramework.Contains('-windows'))">MauiApp1.WinUI.Program</StartupObject>
 	</PropertyGroup>
 
 	<ItemGroup>
