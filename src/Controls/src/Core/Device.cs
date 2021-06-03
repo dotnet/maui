@@ -66,10 +66,11 @@ namespace Microsoft.Maui.Controls
 					throw new InvalidOperationException("You must call Microsoft.Maui.Controls.Forms.Init(); prior to using this property.");
 				return s_platformServices;
 			}
-			set 
-			{ 
+			set
+			{
 				s_platformServices = value;
-				Application.Current?.PlatformServicesSet();
+				if (s_platformServices != null)
+					Application.Current?.PlatformServicesSet();
 			}
 		}
 
