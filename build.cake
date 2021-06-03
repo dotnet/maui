@@ -728,7 +728,8 @@ Task("BuildTasks")
 {
     var msbuildSettings = GetMSBuildSettings().WithRestore();
     msbuildSettings.BinaryLogger = new MSBuildBinaryLogSettings {
-        FileName = $"{artifactStagingDirectory}/Maui.BuildTasks-{configuration}.binlog"
+        Enabled  = true,
+        FileName = $"{artifactStagingDirectory}/Maui.BuildTasks-{configuration}.binlog",
     };
 
     MSBuild(BUILD_TASKS_PROJ, msbuildSettings);
