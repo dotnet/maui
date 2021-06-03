@@ -7,29 +7,28 @@ steps:
   - checkout: self
     clean: true
 
-  - ${{ if eq(parameters['platform'], 'ios') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@1
-      displayName: 'Provision Xcode'
-      condition: ne(variables['REQUIRED_XCODE'], '')
-      inputs:
-        provisioning_script: $(provisionator.xcode)
+  - task: xamops.azdevex.provisionator-task.provisionator@1
+    displayName: 'Provision Xcode'
+    condition: ne(variables['REQUIRED_XCODE'], '')
+    inputs:
+      provisioning_script: $(provisionator.xcode)
 
-    - script: |
-        echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
-        echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
-      displayName: 'Setup SDK Paths'
-      condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
+  - script: |
+      echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
+      echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
+    displayName: 'Setup SDK Paths'
+    condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
 
-    - task: InstallAppleCertificate@2
-      displayName: 'Install an Apple certificate'
-      inputs:
-        certSecureFile: 'Maui.p12'
-        certPwd: $(P12password)
+  - task: InstallAppleCertificate@2
+    displayName: 'Install an Apple certificate'
+    inputs:
+      certSecureFile: 'Maui.p12'
+      certPwd: $(P12password)
 
-    - task: InstallAppleProvisioningProfile@1
-      displayName: 'Install an Apple provisioning profile'
-      inputs:
-        provProfileSecureFile: 'Maui_iOS_Provisioning.mobileprovision'
+  - task: InstallAppleProvisioningProfile@1
+    displayName: 'Install an Apple provisioning profile'
+    inputs:
+      provProfileSecureFile: 'Maui_iOS_Provisioning.mobileprovision'
 
   - task: xamops.azdevex.provisionator-task.provisionator@1
     displayName: 'Provisionator'
