@@ -25,6 +25,8 @@ bool DEVICE_BOOT_WAIT = Argument("wait", true);
 
 // set up env
 var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT") ?? EnvironmentVariable("ANDROID_HOME"));
+PrintEnvironmentVariables();
+
 if (string.IsNullOrEmpty(ANDROID_SDK_ROOT)) {
 	throw new Exception("Environment variable 'ANDROID_SDK_ROOT' or 'ANDROID_HOME' must be set to the Android SDK root.");
 }
@@ -217,3 +219,24 @@ Task("Test")
 });
 
 RunTarget(TARGET);
+
+
+public void PrintEnvironmentVariables()
+{
+    var envVars = EnvironmentVariables();
+
+    string path;
+    if (envVars.TryGetValue("PATH", out path))
+    {
+        Information("Path: {0}", path);
+    }
+
+    foreach(var envVar in envVars)
+    {
+        Information(
+            "Key: {0}\tValue: \"{1}\"",
+            envVar.Key,
+            envVar.Value
+            );
+    };
+}
