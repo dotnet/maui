@@ -35,7 +35,6 @@ stages:
                     platform: android
                     path: ${{ project.android }}
                     device: android-emulator-32_${{ api }}
-                    vmImage: ${{ parameters.androidVmImage }}
 
   - stage: ios_device_tests
     displayName: iOS Device Tests
@@ -50,7 +49,6 @@ stages:
               displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
               pool:
                 name: ${{ parameters.iosVmPool }}
-                vmImage: ${{ parameters.iosVmImage }}
               steps:
                 - template: device-tests-steps.yml
                   parameters:
