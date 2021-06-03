@@ -54,7 +54,7 @@ steps:
     condition: eq(variables['provisioningCake'], 'true')
 
   - pwsh: |
-      ./build.ps1 --target=BuildTasks --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)/binlogs"
+      ./build.ps1 --target=BuildTasks --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)/binlogs" --verbosity=diagnostic
     name: winbuild
     displayName: 'Build the MSBuild Tasks'
 
