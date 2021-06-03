@@ -252,23 +252,7 @@ namespace Microsoft.Maui.Layouts
 				ResolveStarColumns();
 				ResolveStarRows();
 
-				foreach (var cell in _cells)
-				{
-					double width = 0;
-					double height = 0;
-
-					for (int n = cell.Row; n < cell.Row + cell.RowSpan; n++)
-					{
-						height += _rows[n].Size;
-					}
-
-					for (int n = cell.Column; n < cell.Column + cell.ColumnSpan; n++)
-					{
-						width += _columns[n].Size;
-					}
-
-					_children[cell.ViewIndex].Measure(width, height);
-				}
+				EnsureFinalMeasure();
 			}
 
 			void TrackSpan(Span span)
@@ -436,13 +420,34 @@ namespace Microsoft.Maui.Layouts
 				ResolveStars(_columns, availableSpace, cellCheck, getDimension);
 			}
 
-			private void ResolveStarRows()
+			void ResolveStarRows()
 			{
 				var availableSpace = _gridHeightConstraint - GridHeight();
 				static bool cellCheck(Cell cell) => cell.IsRowSpanStar;
 				static double getDimension(Size size) => size.Height;
 
 				ResolveStars(_rows, availableSpace, cellCheck, getDimension);
+			}
+
+			void EnsureFinalMeasure() 
+			{
+				foreach (var cell in _cells)
+				{
+					double width = 0;
+					double height = 0;
+
+					for (int n = cell.Row; n < cell.Row + cell.RowSpan; n++)
+					{
+						height += _rows[n].Size;
+					}
+
+					for (int n = cell.Column; n < cell.Column + cell.ColumnSpan; n++)
+					{
+						width += _columns[n].Size;
+					}
+
+					_children[cell.ViewIndex].Measure(width, height);
+				}
 			}
 		}
 
