@@ -141,7 +141,6 @@ namespace Microsoft.Maui.Controls
 						DependencyAttribute attribute = (DependencyAttribute)attributes[i];
 						if (!DependencyTypes.Contains(attribute.Implementor))
 						{
-							System.Diagnostics.Debug.WriteLine($"Dependency Service: {attribute.Implementor}");
 							DependencyTypes.Add(attribute.Implementor);
 						}
 					}
