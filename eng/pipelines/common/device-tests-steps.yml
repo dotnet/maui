@@ -54,18 +54,18 @@ steps:
     condition: eq(variables['provisioningCake'], 'true')
 
   - pwsh: |
-      ./build.ps1 --target=BuildTasks --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
+      ./build.ps1 --target=BuildTasks --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)/binlogs"
     name: winbuild
     displayName: 'Build the MSBuild Tasks'
 
   - ${{ if eq(parameters['platform'], 'android') }}:
     - pwsh: |
-        ./build.ps1 -Script eng/devices/android.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs"
+        ./build.ps1 -Script eng/devices/android.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(Build.ArtifactStagingDirectory)/testlogs"
       displayName: $(Agent.JobName)
 
   - ${{ if eq(parameters['platform'], 'ios') }}:
     - pwsh: |
-        ./build.ps1 -Script eng/devices/ios.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs"
+        ./build.ps1 -Script eng/devices/ios.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(Build.ArtifactStagingDirectory)/testlogs"
       displayName: $(Agent.JobName)
 
   - task: PublishTestResults@2
@@ -73,7 +73,7 @@ steps:
     condition: always()
     inputs:
       testResultsFormat: xUnit
-      testResultsFiles: 'output/testlogs/**/TestResults.xml'
+      testResultsFiles: '$(Build.ArtifactStagingDirectory)/testlogs/**/TestResults.xml'
       testRunTitle: '$(System.PhaseName)'
 
   - task: PublishBuildArtifacts@1
@@ -81,4 +81,4 @@ steps:
     condition: always()
     inputs:
       artifactName: $(System.PhaseName)
-      pathToPublish: 'output/testlogs'
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
