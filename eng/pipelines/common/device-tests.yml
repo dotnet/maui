@@ -29,6 +29,7 @@ stages:
                 vmImage: ${{ parameters.androidVmImage }}
               variables:
                 ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
+                REQUIRED_XCODE: DEVICETESTS_REQUIRED_XCODE
               steps:
                 - template: device-tests-steps.yml
                   parameters:
@@ -50,6 +51,8 @@ stages:
               pool:
                 name: ${{ parameters.iosVmPool }}
                 vmImage: ${{ parameters.iosVmImage }}
+              variables:
+                REQUIRED_XCODE: DEVICETESTS_REQUIRED_XCODE
               steps:
                 - template: device-tests-steps.yml
                   parameters:
