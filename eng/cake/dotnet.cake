@@ -160,6 +160,25 @@ Task("VS-ANDROID")
         StartVisualStudioForDotNet6("./Microsoft.Maui.Droid.sln");
     });
 
+Task("SAMPLE-ANDROID")
+    .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .Does(() =>
+    {
+        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj", deployAndRun:true);
+    });
+
+Task("SAMPLE-IOS")
+    .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .Does(() =>
+    {
+        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj", deployAndRun:true);
+    });
+
+
 string FindMSBuild()
 {
     if (IsRunningOnWindows())
@@ -213,7 +232,7 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
 }
 
 // NOTE: this method works as long as the DotNet target has already run
-void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null)
+void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null, bool deployAndRun = false)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var binlog = $"artifacts/{name}-{configuration}.binlog";
@@ -221,7 +240,7 @@ void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null)
     SetDotNetEnvironmentVariables();
 
     // If we're not on Windows, use ./bin/dotnet/dotnet
-    if (!IsRunningOnWindows())
+    if (!IsRunningOnWindows() || deployAndRun)
     {
         var dotnetBuildSettings = new DotNetCoreMSBuildSettings
         {
@@ -240,6 +259,7 @@ void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null)
                 Configuration = configuration,
                 ToolPath = dotnetPath,
                 MSBuildSettings = dotnetBuildSettings,
+                ArgumentCustomization = args=> { if(deployAndRun) { args.Append("-t:Run"); } return args; }
             });
         return;
     }
