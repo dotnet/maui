@@ -161,7 +161,7 @@ Task("VS-ANDROID")
     });
 
 Task("SAMPLE-ANDROID")
-    .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
+    .Description("Provisions .NET 6 and launches Android Sample.")
     .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
@@ -170,12 +170,21 @@ Task("SAMPLE-ANDROID")
     });
 
 Task("SAMPLE-IOS")
-    .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
+    .Description("Provisions .NET 6 and launches launches iOS Sample.")
     .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
         RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj", deployAndRun:true);
+    });
+
+Task("SAMPLE-MAC")
+    .Description("Provisions .NET 6 and launches Mac Catalyst Sample.")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .Does(() =>
+    {
+        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj", deployAndRun:true);
     });
 
 

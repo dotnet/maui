@@ -341,6 +341,7 @@ stages:
                   & $(DotNet.Path) build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-buildtasks.binlog
                   & $(DotNet.Path) build src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-android.binlog
                   & $(DotNet.Path) build src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-iOS.binlog
+                  & $(DotNet.Path) build src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-MacCatalyst.binlog
                   & $(DotNet.Path) build src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-SingleProject.binlog
                   & $(DotNet.Path) build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration).binlog
                 displayName: build samples
