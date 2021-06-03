@@ -30,16 +30,15 @@ T GetBuildVariable<T>(string key, T defaultValue)
     return Argument(key, EnvironmentVariable(key, upperCaseReturnValue));
 }
 
-void ValidateAndroidSDK()
+string GetAndroidSDKPath()
 {
     var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT") ?? EnvironmentVariable("ANDROID_HOME"));
 
     if (string.IsNullOrEmpty(ANDROID_SDK_ROOT)) {
-        Environment.SetEnvironmentVariable("ANDROID_SDK_ROOT", "~/Library/Developer/Xamarin/android-sdk-macosx");
-        Environment.SetEnvironmentVariable("ANDROID_HOME", "~/Library/Developer/Xamarin/android-sdk-macosx");
-        Environment.SetEnvironmentVariable("JAVA_HOME", "~/Library/Developer/Xamarin/jdk/microsoft_dist_openjdk_1.8.0.40");
-        Environment.SetEnvironmentVariable("JAVA_HOME", "~/Library/Developer/Xamarin/jdk/microsoft_dist_openjdk_1.8.0.40", EnvironmentVariableTarget.User);        
+        throw new Exception("Environment variable 'ANDROID_SDK_ROOT' or 'ANDROID_HOME' must be set to the Android SDK root.");    
     }
+
+    return ANDROID_SDK_ROOT;
 }
 
 public void PrintEnvironmentVariables()

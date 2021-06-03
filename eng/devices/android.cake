@@ -25,9 +25,7 @@ bool DEVICE_BOOT = Argument("boot", true);
 bool DEVICE_BOOT_WAIT = Argument("wait", true);
 
 // set up env
-ValidateAndroidSDK();
-
-var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT") ?? EnvironmentVariable("ANDROID_HOME"));
+var ANDROID_SDK_ROOT = GetAndroidSDKPath();
 
 if (string.IsNullOrEmpty(ANDROID_SDK_ROOT)) {
 	throw new Exception("Environment variable 'ANDROID_SDK_ROOT' or 'ANDROID_HOME' must be set to the Android SDK root.");
