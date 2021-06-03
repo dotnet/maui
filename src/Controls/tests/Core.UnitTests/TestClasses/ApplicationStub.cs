@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Controls.Core
+namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	class ApplicationStub : IApplication
 	{

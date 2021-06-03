@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using NUnit;
 using NUnit.Framework;
