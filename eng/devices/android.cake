@@ -24,7 +24,7 @@ bool DEVICE_BOOT = Argument("boot", true);
 bool DEVICE_BOOT_WAIT = Argument("wait", true);
 
 // set up env
-var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT") ?? EnvironmentVariable("ANDROID_HOME"));
+var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT") ?? EnvironmentVariable("ANDROID_HOME")) ?? "~/Library/Developer/Xamarin/android-sdk-macosx";
 PrintEnvironmentVariables();
 
 if (string.IsNullOrEmpty(ANDROID_SDK_ROOT)) {
