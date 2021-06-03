@@ -63,4 +63,17 @@
     />
   </ItemGroup>
 
+  <!-- Windows -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' ">
+    <Manifest Include="$(ApplicationManifest)" />
+    <ApplicationDefinition Include="$(WindowsProjectFolder)\App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </ApplicationDefinition>
+    <Page Include="$(WindowsProjectFolder)\*.xaml" Exclude="@(ApplicationDefinition)">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+  </ItemGroup>
+
 </Project>

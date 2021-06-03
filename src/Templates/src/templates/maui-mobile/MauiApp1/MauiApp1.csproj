@@ -3,7 +3,10 @@
 	<PropertyGroup>
 		<!-- iOS, Android, MacCatalyst -->
 		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
+		<TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks>
 		<OutputType>Exe</OutputType>
+		<OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
+		<TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
 		<SingleProject>true</SingleProject>
 		<RootNamespace>MauiApp1</RootNamespace>
 
@@ -17,7 +20,7 @@
 		<ApplicationVersion>1.0</ApplicationVersion>
 		<AndroidVersionCode>1</AndroidVersionCode>
 
-		<UseInterpreter Condition="'$(TargetFramework)' == 'net6.0-android'">True</UseInterpreter>
+		<UseInterpreter Condition="$(TargetFramework.Contains('-android'))">True</UseInterpreter>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -38,16 +41,22 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
+		<PackageReference Include="Microsoft.Maui" Version="6.0.100-preview.4.*" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="6.0.100-preview.4.*" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="6.0.100-preview.4.*" />
 	</ItemGroup>
 
 	<PropertyGroup>
-		<InvariantGlobalization Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">true</InvariantGlobalization>
-		<RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>
-		<RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
+		<InvariantGlobalization Condition="$(TargetFramework.Contains('-maccatalyst'))">true</InvariantGlobalization>
+		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64</RuntimeIdentifier>
+		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
 	</PropertyGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0-android'">
+	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
 		<AndroidEnvironment Include="Android\AndroidEnvironment.txt" />
+	</ItemGroup>
+	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.16" />
+		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.19041.16" />
 	</ItemGroup>
 
 </Project>

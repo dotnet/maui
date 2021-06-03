@@ -12,12 +12,20 @@
     <iOSProjectFolder Condition=" '$(iOSProjectFolder)' == '' ">iOS\</iOSProjectFolder>
     <IPhoneResourcePrefix Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'ios' ">$(iOSProjectFolder)Resources</IPhoneResourcePrefix>
     <_SingleProjectiOSExcludes>$(iOSProjectFolder)/**/.*/**</_SingleProjectiOSExcludes>
-
     <!-- MacCatalyst -->
     <EnableDefaultMacCatalystItems>false</EnableDefaultMacCatalystItems>
     <MacCatalystProjectFolder Condition=" '$(MacCatalystProjectFolder)' == '' ">MacCatalyst\</MacCatalystProjectFolder>
     <IPhoneResourcePrefix Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'maccatalyst' ">$(MacCatalystProjectFolder)Resources</IPhoneResourcePrefix>
     <_SingleProjectMacCatalystExcludes>$(MacCatalystProjectFolder)/**/.*/**</_SingleProjectMacCatalystExcludes>
+    <!-- Windows -->
+    <!-- <EnableDefaultMacCatalystItems>false</EnableDefaultMacCatalystItems> -->
+    <WindowsProjectFolder Condition=" '$(WindowsProjectFolder)' == '' ">Windows\</WindowsProjectFolder>
+    <ApplicationManifest Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">$(WindowsProjectFolder)app.manifest</ApplicationManifest>
+    <RuntimeIdentifiers Condition=" '$(RuntimeIdentifiers)' == '' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <EnableDefaultPageItems Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">False</EnableDefaultPageItems>
+    <EnableDefaultApplicationDefinition Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">False</EnableDefaultApplicationDefinition>
+    <StartupObject Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">$(RootNamespace).Program</StartupObject>
+    <_SingleProjectWindowsExcludes>$(WindowsProjectFolder)/**/.*/**</_SingleProjectWindowsExcludes>
   </PropertyGroup>
 
   <!-- Removals -->
@@ -33,6 +41,10 @@
     <Compile
         Condition=" '$(TargetPlatformIdentifier)' != 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' "
         Remove="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)"
+    />
+    <Compile
+        Condition=" '$(TargetPlatformIdentifier)' != 'windows' and '$(WindowsProjectFolder)' != '' "
+        Remove="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)"
     />
   </ItemGroup>
 
