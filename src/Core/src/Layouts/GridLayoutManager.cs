@@ -218,7 +218,6 @@ namespace Microsoft.Maui.Layouts
 					if (cell.IsColumnSpanAuto || cell.IsRowSpanAuto)
 					{
 						var measure = _children[cell.ViewIndex].Measure(availableWidth, availableHeight);
-						//cell.IsMeasured = true;
 
 						if (cell.IsColumnSpanAuto)
 						{
@@ -255,11 +254,6 @@ namespace Microsoft.Maui.Layouts
 
 				foreach (var cell in _cells)
 				{
-					//if (cell.IsMeasured)
-					//{
-					//	continue;
-					//}
-
 					double width = 0;
 					double height = 0;
 
@@ -274,8 +268,6 @@ namespace Microsoft.Maui.Layouts
 					}
 
 					_children[cell.ViewIndex].Measure(width, height);
-
-					//cell.IsMeasured = true;
 				}
 			}
 
@@ -484,7 +476,6 @@ namespace Microsoft.Maui.Layouts
 			public int Column { get; }
 			public int RowSpan { get; }
 			public int ColumnSpan { get; }
-			//public bool IsMeasured { get; set; }
 
 			public GridLengthType ColumnGridLengthType { get; }
 			public GridLengthType RowGridLengthType { get; }
