@@ -35,7 +35,6 @@ PowerShell:
 // ARGUMENTS
 //////////////////////////////////////////////////////////////////////
 
-PrintEnvironmentVariables();
 string agentName = EnvironmentVariable("AGENT_NAME", "");
 bool isCIBuild = !String.IsNullOrWhiteSpace(agentName);
 string artifactStagingDirectory = EnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY", ".");
