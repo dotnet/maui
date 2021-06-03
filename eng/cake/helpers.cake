@@ -32,7 +32,6 @@ T GetBuildVariable<T>(string key, T defaultValue)
 
 void ValidateAndroidSDK()
 {
-    PrintEnvironmentVariables();
     var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT") ?? EnvironmentVariable("ANDROID_HOME"));
 
     if (string.IsNullOrEmpty(ANDROID_SDK_ROOT)) {
@@ -41,8 +40,6 @@ void ValidateAndroidSDK()
         Environment.SetEnvironmentVariable("JAVA_HOME", "~/Library/Developer/Xamarin/jdk/microsoft_dist_openjdk_1.8.0.40");
         Environment.SetEnvironmentVariable("JAVA_HOME", "~/Library/Developer/Xamarin/jdk/microsoft_dist_openjdk_1.8.0.40", EnvironmentVariableTarget.User);        
     }
-    
-    PrintEnvironmentVariables();
 }
 
 public void PrintEnvironmentVariables()
