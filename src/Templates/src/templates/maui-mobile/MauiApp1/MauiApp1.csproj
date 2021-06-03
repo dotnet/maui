@@ -4,7 +4,7 @@
 		<!-- iOS, Android, MacCatalyst -->
 		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
 		<!-- Windows -->
-		<TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks>
+		<TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net6.0-windows10.0.19041;$(TargetFrameworks)</TargetFrameworks>
 		<OutputType>Exe</OutputType>
 		<OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
 		<TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
@@ -20,6 +20,10 @@
 		<!-- Versions -->
 		<ApplicationVersion>1.0</ApplicationVersion>
 		<AndroidVersionCode>1</AndroidVersionCode>
+
+		<!-- WINDOWS -->
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+		<WindowsPackageType>MSIX</WindowsPackageType>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -51,7 +55,7 @@
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
 		<UseInterpreter Condition="$(TargetFramework.Contains('-android'))">True</UseInterpreter>
 		<StartupObject Condition="$(TargetFramework.Contains('-windows'))">MauiApp1.WinUI.Program</StartupObject>
-		<RuntimeIdentifiers Condition="$(TargetFramework.Contains('-windows'))">win10-x86;win10-x86;win10-arm64</RuntimeIdentifiers>
+		<RuntimeIdentifiers Condition="$(TargetFramework.Contains('-windows'))">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
 	</PropertyGroup>
 	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
 		<AndroidEnvironment Include="Android\AndroidEnvironment.txt" />
@@ -59,6 +63,10 @@
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
 		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.16" />
 		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.19041.16" />
+		<AppxManifest Include="Windows\Package.appxmanifest">
+			<SubType>Designer</SubType>
+		</AppxManifest>
+		<Content Include="Windows\Images\**" />
 	</ItemGroup>
 
 </Project>
