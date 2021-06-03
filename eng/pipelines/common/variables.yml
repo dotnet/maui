@@ -39,6 +39,5 @@ variables:
 - name: DotNet.Path
   value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
 - name: ANDROID_SDK_MAC
-  value: https://aka.ms/xamarin-android-commercial-d16-9-macos
-- name: ANDROID_SDK_WINDOWS
-  value: https://aka.ms/xamarin-android-commercial-d16-9-windows
+  value: https://download.visualstudio.microsoft.com/download/pr/414d1675-ca0b-4b5b-8a4e-26b693883581/152d34244a330744a035175cbc8b0d04/xamarin.android-11.3.0.1.pkg
+
