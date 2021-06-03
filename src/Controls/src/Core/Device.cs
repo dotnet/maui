@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls
 			set 
 			{ 
 				s_platformServices = value;
-				Application.Current.PlatformServicesSet();
+				Application.Current?.PlatformServicesSet();
 			}
 		}
 
