@@ -225,7 +225,7 @@ stages:
                 displayName: 'Provisionator'
                 condition: eq(variables['provisioning'], 'true')
                 inputs:
-                  provisioning_script: $(provisionator.xcode)
+                  provisioning_script: $(provisionator.path)
                   provisioning_extra_args: $(provisionator.extraArguments)
 
               - script: |
@@ -310,7 +310,7 @@ stages:
                   displayName: 'Provisionator'
                   condition: eq(variables['provisioning'], 'true')
                   inputs:
-                    provisioning_script: $(provisionator.xcode)
+                    provisioning_script: $(provisionator.path)
                     provisioning_extra_args: $(provisionator.extraArguments)
 
                 - script: |
