@@ -27,9 +27,6 @@ bool DEVICE_BOOT_WAIT = Argument("wait", true);
 // set up env
 var ANDROID_SDK_ROOT = GetAndroidSDKPath();
 
-if (string.IsNullOrEmpty(ANDROID_SDK_ROOT)) {
-	throw new Exception("Environment variable 'ANDROID_SDK_ROOT' or 'ANDROID_HOME' must be set to the Android SDK root.");
-}
 System.Environment.SetEnvironmentVariable("PATH",
 	$"{ANDROID_SDK_ROOT}/tools/bin" + System.IO.Path.PathSeparator +
 	$"{ANDROID_SDK_ROOT}/platform-tools" + System.IO.Path.PathSeparator +
