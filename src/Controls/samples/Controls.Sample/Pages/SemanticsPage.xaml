@@ -56,7 +56,7 @@
                 SemanticProperties.Hint="Hint text"/>
 
             <Entry
-                Text="Entry text, iOS:DTH, Android:TH"
+                Text="Entry text, DTH"
                 FontSize="14"
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text" />
@@ -67,7 +67,7 @@
                 SemanticProperties.Hint="Hint text"/>
 
             <Editor
-                Text="Editor text, iOS:DTH, Android:TH"
+                Text="Editor text, DTH"
                 FontSize="14"
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
@@ -78,14 +78,14 @@
                 SemanticProperties.Hint="Hint text"/>
             
             <SearchBar
-                Text="Search bar text, iOS:T, Android:DH?"
+                Text="Search bar text, iOS:T, Android:DTH?"
                 Placeholder="Placeholder text"
                 PlaceholderColor="DodgerBlue"
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
 
             <Label
-                Text="The next 3 controls read out iOS:DTH, Android:TH"
+                Text="The next 3 controls read out DTH"
                 TextColor="RoyalBlue"
                 FontAttributes="Bold"
                 FontSize="16"
