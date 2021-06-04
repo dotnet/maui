@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Resizetizer
 				// App Icon - ipad
 				new DpiPath(IosAppIconPath, 2.0m, "76x76@2x", new SKSize(76, 76), new [] { "ipad" }),
 				new DpiPath(IosAppIconPath, 2.0m, "83.5x83.5@2x", new SKSize(83.5f, 83.5f), new [] { "ipad" }),
-				
+
 				// App Store
 				new DpiPath(IosAppIconPath, 1.0m, "ItunesArtwork", new SKSize(1024, 1024), new [] { "ios-marketing" }),
 			};
@@ -116,28 +116,35 @@ namespace Microsoft.Maui.Resizetizer
 				new DpiPath(UwpAppIconPath, 1.50m, "StoreLogo.scale-150", new SKSize(50, 50)),
 				new DpiPath(UwpAppIconPath, 2.00m, "StoreLogo.scale-200", new SKSize(50, 50)),
 				new DpiPath(UwpAppIconPath, 4.00m, "StoreLogo.scale-400", new SKSize(50, 50)),
-				
+
 				// Small Tile
 				new DpiPath(UwpAppIconPath, 1.00m, "SmallTile.scale-100", new SKSize(71, 71)),
 				new DpiPath(UwpAppIconPath, 1.25m, "SmallTile.scale-125", new SKSize(71, 71)),
 				new DpiPath(UwpAppIconPath, 1.50m, "SmallTile.scale-150", new SKSize(71, 71)),
 				new DpiPath(UwpAppIconPath, 2.00m, "SmallTile.scale-200", new SKSize(71, 71)),
 				new DpiPath(UwpAppIconPath, 4.00m, "SmallTile.scale-400", new SKSize(71, 71)),
-				
+
 				// Medium Tile
 				new DpiPath(UwpAppIconPath, 1.00m, "MediumTile.scale-100", new SKSize(150, 150)),
 				new DpiPath(UwpAppIconPath, 1.25m, "MediumTile.scale-125", new SKSize(150, 150)),
 				new DpiPath(UwpAppIconPath, 1.50m, "MediumTile.scale-150", new SKSize(150, 150)),
 				new DpiPath(UwpAppIconPath, 2.00m, "MediumTile.scale-200", new SKSize(150, 150)),
 				new DpiPath(UwpAppIconPath, 4.00m, "MediumTile.scale-400", new SKSize(150, 150)),
-				
+
+				// Wide Tile
+				new DpiPath(UwpAppIconPath, 1.00m, "WideTile.scale-100", new SKSize(310, 150)),
+				new DpiPath(UwpAppIconPath, 1.25m, "WideTile.scale-125", new SKSize(310, 150)),
+				new DpiPath(UwpAppIconPath, 1.50m, "WideTile.scale-150", new SKSize(310, 150)),
+				new DpiPath(UwpAppIconPath, 2.00m, "WideTile.scale-200", new SKSize(310, 150)),
+				new DpiPath(UwpAppIconPath, 4.00m, "WideTile.scale-400", new SKSize(310, 150)),
+
 				// Large Tile
 				new DpiPath(UwpAppIconPath, 1.00m, "LargeTile.scale-100", new SKSize(310, 310)),
 				new DpiPath(UwpAppIconPath, 1.25m, "LargeTile.scale-125", new SKSize(310, 310)),
 				new DpiPath(UwpAppIconPath, 1.50m, "LargeTile.scale-150", new SKSize(310, 310)),
 				new DpiPath(UwpAppIconPath, 2.00m, "LargeTile.scale-200", new SKSize(310, 310)),
 				new DpiPath(UwpAppIconPath, 4.00m, "LargeTile.scale-400", new SKSize(310, 310)),
-				
+
 				// Badge
 				new DpiPath(UwpAppIconPath, 1.00m, "Badge.scale-100", new SKSize(24, 24)),
 				new DpiPath(UwpAppIconPath, 1.25m, "Badge.scale-125", new SKSize(24, 24)),
@@ -145,7 +152,6 @@ namespace Microsoft.Maui.Resizetizer
 				new DpiPath(UwpAppIconPath, 2.00m, "Badge.scale-200", new SKSize(24, 24)),
 				new DpiPath(UwpAppIconPath, 4.00m, "Badge.scale-400", new SKSize(24, 24)),
 
-				// TODO: wide tile
 				// TODO: logo variants (targetsize, altform-unplated, altform-lightunplated)
 			};
 
