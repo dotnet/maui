@@ -92,7 +92,7 @@
                 Margin="0,10"/>
 
             <Picker
-                Title="Select a monkey, iOS:DTH, Android:TH"
+                Title="Select a monkey, DTH"
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text">
                 <Picker.ItemsSource>
