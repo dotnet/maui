@@ -32,6 +32,8 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			try
 			{
+				Directory.CreateDirectory(IntermediateOutputPath);
+
 				var plistFilename = Path.Combine(IntermediateOutputPath, PlistName ?? "PartialInfo.plist");
 
 				using (var f = File.CreateText(plistFilename))
