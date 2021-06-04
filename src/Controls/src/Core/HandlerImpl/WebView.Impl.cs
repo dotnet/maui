@@ -2,6 +2,6 @@
 {
 	public partial class WebView : IWebView
 	{
-
+		IWebViewSource IWebView.Source => Source;
 	}
 }

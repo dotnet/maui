@@ -8,6 +8,6 @@
 		/// <summary>
 		/// Provide the data for a WebView.
 		/// </summary>
-		IWebViewSource Source { get; set; }
+		IWebViewSource Source { get; }
 	}
 }
