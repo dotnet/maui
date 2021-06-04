@@ -26,11 +26,10 @@ using FlyoutPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Ph
 using RadioButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
 #endif
 
-using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Controls.Shapes;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls.Hosting
 {
 	public static class AppHostBuilderExtensions
 	{
