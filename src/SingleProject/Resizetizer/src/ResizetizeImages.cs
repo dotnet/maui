@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				// Add DPI info to the itemspec so we can use it in the targets
 				attr.Add("_ResizetizerDpiPath", img.Dpi.Path);
-				attr.Add("_ResizetizerDpiScale", img.Dpi.Scale.ToString());
+				attr.Add("_ResizetizerDpiScale", img.Dpi.Scale.ToString("0.0"));
 
 				copiedResources.Add(new TaskItem(itemSpec, attr));
 			}
