@@ -37,4 +37,17 @@
   <Target Name="ValidateWinUIPlatform" />
   <Target Name="BinPlaceBootstrapDll" />
 
+  <!-- HACK: fix a bad path or something -->
+  <Target Name="_Prep_ComputeProcessXamlFilesBefore" BeforeTargets="Prep_ComputeProcessXamlFiles" Condition="$(TargetFramework.Contains('-windows'))">
+    <PropertyGroup>
+      <_OldOutputPath>$(OutputPath)</_OldOutputPath>
+      <OutputPath>$(OutputPath)\$(RootNamespace)</OutputPath>
+    </PropertyGroup>
+  </Target>
+  <Target Name="_Prep_ComputeProcessXamlFilesAfter" AfterTargets="Prep_ComputeProcessXamlFiles" Condition="$(TargetFramework.Contains('-windows'))">
+    <PropertyGroup>
+      <OutputPath>$(_OldOutputPath)</OutputPath>
+    </PropertyGroup>
+  </Target>
+
 </Project>
