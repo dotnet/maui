@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void UseMauiAppRegistersApp()
 		{
 			var host = new AppHostBuilder()
-				.UseMauiControlsApp<ApplicationStub>()
+				.UseMauiApp<ApplicationStub>()
 				.Build();
 
 			var app = (ApplicationStub)host.Services.GetRequiredService<IApplication>();
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void UseMauiAppRegistersAppWithFactory()
 		{
 			var host = new AppHostBuilder()
-				.UseMauiControlsApp(services => new ApplicationStub { Property = "Factory" })
+				.UseMauiApp(services => new ApplicationStub { Property = "Factory" })
 				.Build();
 
 			var app = (ApplicationStub)host.Services.GetRequiredService<IApplication>();
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void UseMauiAppRegistersSingleton()
 		{
 			var host = new AppHostBuilder()
-				.UseMauiControlsApp<ApplicationStub>()
+				.UseMauiApp<ApplicationStub>()
 				.Build();
 
 			var app1 = host.Services.GetRequiredService<IApplication>();

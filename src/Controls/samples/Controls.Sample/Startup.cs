@@ -42,9 +42,9 @@ namespace Maui.Controls.Sample
 			bool useFullDIAndBlazor = UseFullDI || _pageType == PageType.Blazor;
 
 			if (UseXamlApp)
-				appBuilder.UseMauiControlsApp<XamlApp>();
+				appBuilder.UseMauiApp<XamlApp>();
 			else
-				appBuilder.UseMauiControlsApp<MyApp>();
+				appBuilder.UseMauiApp<MyApp>();
 
 			appBuilder
 				.ConfigureMauiHandlers(handlers =>

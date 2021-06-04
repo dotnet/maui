@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void DefaultHandlersAreRegistered()
 		{
 			var host = new AppHostBuilder()
-				.UseMauiControlsApp<ApplicationStub>()
+				.UseMauiApp<ApplicationStub>()
 				.Build();
 
 			var handler = host.Handlers.GetHandler(typeof(Button));
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void CanSpecifyHandler()
 		{
 			var host = new AppHostBuilder()
-				.UseMauiControlsApp<ApplicationStub>()
+				.UseMauiApp<ApplicationStub>()
 				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<Button, ButtonHandlerStub>())
 				.Build();
 

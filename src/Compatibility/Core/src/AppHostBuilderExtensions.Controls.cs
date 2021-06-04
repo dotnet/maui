@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Hosting
 {
 	public static class AppHostBuilderExtensions
 	{
-		public static IAppHostBuilder UseMauiControlsApp<TApp>(this IAppHostBuilder builder)
+		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder)
 			where TApp : class, IApplication
 		{
 			builder.ConfigureServices((context, collection) =>
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			return builder;
 		}
 
-		public static IAppHostBuilder UseMauiControlsApp<TApp>(this IAppHostBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
+		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
 			where TApp : class, IApplication
 		{
 			builder.ConfigureServices((context, collection) =>
