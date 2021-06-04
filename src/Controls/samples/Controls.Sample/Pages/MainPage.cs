@@ -191,7 +191,7 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new RedButton { Text = "Dynamically Registered" });
 			verticalStack.Add(new CustomButton { Text = "Button Registered to Compat Renderer" });
-			
+
 			var checkbox = new CheckBox();
 			checkbox.CheckedChanged += (sender, e) =>
 			{
@@ -286,10 +286,11 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new TimePicker());
 			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
 
-			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
-					
 			verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
 			verticalStack.Add(CreateImagesGrid());
+
+			verticalStack.Add(new WebView { HeightRequest = 200, WidthRequest = 200, Source = new UrlWebViewSource { Url = "https://github.com/dotnet/maui" } });
+			verticalStack.Add(new WebView { HeightRequest = 200, WidthRequest = 200, Source = new HtmlWebViewSource { Html = @"<html><body><h1>.NET MAUI</h1><p>Welcome to WebView.</p></body></html>" } });
 
 			Content = new ScrollView
 			{

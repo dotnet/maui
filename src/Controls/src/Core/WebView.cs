@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>
 	{
-		public static readonly BindableProperty SourceProperty = BindableProperty.Create("Source", typeof(WebViewSource), typeof(WebView), default(WebViewSource),
+		public static readonly BindableProperty SourceProperty = BindableProperty.Create("Source", typeof(IWebViewSource), typeof(WebView), default(WebViewSource),
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
 				var source = oldvalue as WebViewSource;
@@ -76,9 +76,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		[TypeConverter(typeof(WebViewSourceTypeConverter))]
-		public WebViewSource Source
+		public IWebViewSource Source
 		{
-			get { return (WebViewSource)GetValue(SourceProperty); }
+			get { return (IWebViewSource)GetValue(SourceProperty); }
 			set { SetValue(SourceProperty, value); }
 		}
 
@@ -133,10 +133,10 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnBindingContextChanged();
 
-			WebViewSource source = Source;
+			IWebViewSource source = Source;
 			if (source != null)
 			{
-				SetInheritedBindingContext(source, BindingContext);
+				SetInheritedBindingContext(source as WebViewSource, BindingContext);
 			}
 		}
 
@@ -144,9 +144,9 @@ namespace Microsoft.Maui.Controls
 		{
 			if (propertyName == "BindingContext")
 			{
-				WebViewSource source = Source;
+				IWebViewSource source = Source;
 				if (source != null)
-					SetInheritedBindingContext(source, BindingContext);
+					SetInheritedBindingContext(source as WebViewSource, BindingContext);
 			}
 
 			base.OnPropertyChanged(propertyName);
