@@ -245,19 +245,10 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
 
-			var searchBar = new SearchBar
-			{
-				CharacterSpacing = 4,
-				Text = "A search query"
-			};
-			verticalStack.Add(searchBar);
-
-			var placeholderSearchBar = new SearchBar
-			{
-				Placeholder = "Placeholder"
-			};
-			verticalStack.Add(placeholderSearchBar);
-
+			verticalStack.Add(new SearchBar { CharacterSpacing = 4, Text = "A search query" });
+			verticalStack.Add(new SearchBar { Placeholder = "Placeholder" });
+			verticalStack.Add(new SearchBar { HorizontalTextAlignment = TextAlignment.End, Text = "SearchBar HorizontalTextAlignment" });
+		
 			var monkeyList = new List<string>
 			{
 				"Baboon",
