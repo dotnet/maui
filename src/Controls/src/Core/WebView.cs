@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls
 			WebViewSource source = Source;
 			if (source != null)
 			{
-				SetInheritedBindingContext(source as WebViewSource, BindingContext);
+				SetInheritedBindingContext(source, BindingContext);
 			}
 		}
 
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls
 			{
 				WebViewSource source = Source;
 				if (source != null)
-					SetInheritedBindingContext(source as WebViewSource, BindingContext);
+					SetInheritedBindingContext(source, BindingContext);
 			}
 
 			base.OnPropertyChanged(propertyName);
