@@ -269,7 +269,7 @@ namespace Maui.Controls.Sample.Pages
 				"Japanese Macaque"
 			};
 
-			var picker = new Picker { Title = "Select a monkey", TitleColor = Colors.Red, FontFamily = "Dokdo", HorizontalTextAlignment = TextAlignment.Center };
+			var picker = new Picker { Title = "Select a monkey", TitleColor = Colors.Red, FontFamily = "Dokdo", VerticalTextAlignment = TextAlignment.Start , HorizontalTextAlignment = TextAlignment.End, HeightRequest=120 };
 
 			picker.ItemsSource = monkeyList;
 			verticalStack.Add(picker);

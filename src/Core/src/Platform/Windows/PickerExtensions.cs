@@ -46,5 +46,10 @@ namespace Microsoft.Maui
 		{
 			nativeComboBox.HorizontalContentAlignment = picker.HorizontalTextAlignment.ToNativeHorizontalAlignment();
 		}
+
+		public static void UpdateVerticalTextAlignment(this MauiComboBox nativeComboBox, IPicker picker)
+		{
+			nativeComboBox.VerticalContentAlignment = picker.VerticalTextAlignment.ToNativeVerticalAlignment();
+		}
 	}
 }
