@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Hosting;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls.Hosting;
 
 namespace Maui.Controls.Sample.SingleProject
 {
@@ -13,9 +14,8 @@ namespace Maui.Controls.Sample.SingleProject
 		public void Configure(IAppHostBuilder appBuilder)
 		{
 			appBuilder
-				.UseFormsCompatibility()
 				.RegisterBlazorMauiWebView(typeof(Startup).Assembly)
-				.UseMauiApp<MyApp>();
+				.UseMauiControlsApp<MyApp>();
 
 			if (UseBlazor)
             {
