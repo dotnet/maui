@@ -16,10 +16,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var webView = new WebViewStub()
 			{
-				Source = new UrlWebViewSource { Url = urlSource }
+				Source = new UrlWebViewSourceStub { Url = urlSource }
 			};
 
-			var url = ((UrlWebViewSource)webView.Source).Url;
+			var url = ((UrlWebViewSourceStub)webView.Source).Url;
 
 			await InvokeOnMainThreadAsync(() => ValidatePropertyInitValue(webView, () => url, GetNativeSource, url));
 		}
