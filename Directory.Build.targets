@@ -10,6 +10,14 @@
     <PublishTrimmed Condition=" '$(TargetFramework)' == 'net6.0-ios' or '$(TargetFramework)' == 'net6.0-maccatalyst' ">false</PublishTrimmed>
   </PropertyGroup>
 
+  <Target Name="Net6WinUIPackagingWorkaround" BeforeTargets="GetPackagingOutputs" Condition="$(TargetFramework.Contains('-windows')) == true AND '$(DisableEmbeddedXbf)' != 'true' ">
+    <PropertyGroup>
+      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
+      <_SupportEmbedFileResources>true</_SupportEmbedFileResources>
+      <_EmbedFileResfilePath>$(IntermediateOutputPath)$(AppxSubfolderWithFilesToBeEmbedded)\embed.resfiles</_EmbedFileResfilePath>
+    </PropertyGroup>
+  </Target>
+
   <PropertyGroup Condition="'$(SingleProject)' == 'true'">
     <!-- Required - Enable Launch Profiles for .NET 6 iOS/Android -->
     <_KeepLaunchProfiles>true</_KeepLaunchProfiles>
