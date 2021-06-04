@@ -20,10 +20,6 @@
 		<!-- Versions -->
 		<ApplicationVersion>1.0</ApplicationVersion>
 		<AndroidVersionCode>1</AndroidVersionCode>
-
-		<!-- WINDOWS -->
-		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-		<WindowsPackageType>MSIX</WindowsPackageType>
 	</PropertyGroup>
 
 	<ItemGroup>
