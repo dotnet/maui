@@ -1,5 +1,6 @@
 #nullable enable
 using Microsoft.UI.Xaml;
+using System.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
@@ -103,6 +104,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			VirtualView?.UpdateText(NativeView.Text);
 		}
+		
+		public static void MapTextAutoSize(EditorHandler handler, IEditor editor)
+        {
+
+        }
 
 		void OnLostFocus(object? sender, RoutedEventArgs e)
 		{

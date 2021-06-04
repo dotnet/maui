@@ -5,6 +5,7 @@ using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using Android.Widget;
 
 namespace Microsoft.Maui
 {
@@ -236,6 +237,18 @@ namespace Microsoft.Maui
 			editText.ImeOptions = entry.ReturnType.ToNative();
 		}
 
+		public static void UpdateAutoSize(this AppCompatEditText editText, IEditor editor)
+		{
+			if(editor.AutoSize == EditorAutoSizeOption.Disabled)
+			{
+				editText.SetAutoSizeTextTypeWithDefaults(AutoSizeTextType.None);
+			}
+			else
+			{
+				editText.SetAutoSizeTextTypeWithDefaults(AutoSizeTextType.Uniform);
+			}
+		}
+		
 		[PortHandler]
 		public static void UpdateCursorPosition(this AppCompatEditText editText, IEntry entry)
 		{

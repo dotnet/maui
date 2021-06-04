@@ -67,6 +67,18 @@ namespace Microsoft.Maui
 			textView.UserInteractionEnabled = !editor.IsReadOnly;
 		}
 
+		public static void UpdateAutoSize(this UITextView textView, IEditor editor)
+		{
+			if(editor.AutoSize== EditorAutoSizeOption.Disabled)
+			{
+				textView.ScrollEnabled = true;
+			}
+			else
+			{
+				textView.ScrollEnabled = false;
+			}
+		}
+		
 		public static void UpdateKeyboard(this UITextView textView, IEditor editor)
 		{
 			var keyboard = editor.Keyboard;

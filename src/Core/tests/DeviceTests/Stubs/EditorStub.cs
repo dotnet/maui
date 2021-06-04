@@ -34,6 +34,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public TextAlignment HorizontalTextAlignment { get; set; }
 
 		public TextAlignment VerticalTextAlignment { get; set; }
+		
+		public EditorAutoSizeOption AutoSize { get; set; }
 
 		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
 

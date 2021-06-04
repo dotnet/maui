@@ -59,7 +59,7 @@ namespace Microsoft.Maui
 		{
 			textBox.PlaceholderText = editor.Placeholder ?? string.Empty;
 		}
-
+		
 		public static void UpdatePlaceholder(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.PlaceholderText = entry.Placeholder ?? string.Empty;
@@ -163,6 +163,18 @@ namespace Microsoft.Maui
 		public static void UpdateVerticalTextAlignment(this MauiTextBox textBox, ITextAlignment textAlignment)
 		{
 			textBox.VerticalAlignment = textAlignment.VerticalTextAlignment.ToNativeVerticalAlignment();
+		}
+		
+		public static void UpdateAutoSize(this MauiTextBox textBox, IEditor editor)
+		{
+			if (editor.AutoSize == EditorAutoSizeOption.Disabled)
+			{
+				textBox.AcceptsReturn = false;
+			}
+			else
+			{
+				textBox.AcceptsReturn = true;
+			}
 		}
 	}
 }
