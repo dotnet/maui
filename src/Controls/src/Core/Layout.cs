@@ -138,14 +138,6 @@ namespace Microsoft.Maui.Controls
 
 		public static void LayoutChildIntoBoundingRegion(VisualElement child, Rectangle region)
 		{
-			if (child is IFrameworkElement fe)
-			{
-				// The MAUI stuff doesn't need all the layout alignment and margin stuff below;
-				// that's all handled in Core
-				fe.Arrange(region);
-				return;
-			}
-
 			bool isRightToLeft = false;
 			if (child.Parent is IFlowDirectionController parent && (isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer && parent.EffectiveFlowDirection.IsRightToLeft()))
 				region = new Rectangle(parent.Width - region.Right, region.Y, region.Width, region.Height);
