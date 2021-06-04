@@ -98,20 +98,21 @@ namespace Microsoft.Maui.Resizetizer
 			var sourceNominalHeight = (int)(BaseSize?.Height ?? originalSize.Height);
 
 			// Find the actual size of the image
-			var sourceActualWidth = (decimal)originalSize.Width;
-			var sourceActualHeight = (decimal)originalSize.Height;
+			var sourceActualWidth = (double)originalSize.Width;
+			var sourceActualHeight = (double)originalSize.Height;
 
 			// Figure out what the ratio to convert the actual image size to the nominal size is
 			var nominalRatio = Math.Max(sourceNominalWidth / sourceActualWidth, sourceNominalHeight / sourceActualHeight);
 
 			// Multiply nominal ratio by the resize ratio to get our final ratio we actually adjust by
-			var adjustRatio = nominalRatio * resizeRatio;
+			var adjustRatio = nominalRatio * (double)resizeRatio;
 
 			// Figure out our scaled width and height to make a new canvas for
 			var scaledWidth = sourceActualWidth * adjustRatio;
 			var scaledHeight = sourceActualHeight * adjustRatio;
+			var scaledSize = new SKSizeI((int)Math.Round(scaledWidth), (int)Math.Round(scaledHeight));
 
-			return (new SKSizeI((int)scaledWidth, (int)scaledHeight), (float)adjustRatio);
+			return (scaledSize, (float)adjustRatio);
 		}
 	}
 }

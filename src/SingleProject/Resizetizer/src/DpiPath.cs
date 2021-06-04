@@ -100,6 +100,16 @@ namespace Microsoft.Maui.Resizetizer
 				new DpiPath(UwpAppIconPath, 4.00m, ".scale-400"),
 			};
 
+		public static DpiPath[] UwpSplashScreen
+			=> new[]
+			{
+				new DpiPath(UwpAppIconPath, 1.00m, "SplashScreen.scale-100", new SKSize(620, 300)),
+				new DpiPath(UwpAppIconPath, 1.25m, "SplashScreen.scale-125", new SKSize(620, 300)),
+				new DpiPath(UwpAppIconPath, 1.50m, "SplashScreen.scale-150", new SKSize(620, 300)),
+				new DpiPath(UwpAppIconPath, 2.00m, "SplashScreen.scale-200", new SKSize(620, 300)),
+				new DpiPath(UwpAppIconPath, 4.00m, "SplashScreen.scale-400", new SKSize(620, 300)),
+			};
+
 		public static DpiPath[] UwpAppIcon
 			=> new[]
 			{
