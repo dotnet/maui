@@ -5,6 +5,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using NUnit;
 using NUnit.Framework;
+using Microsoft.Maui.Controls.Hosting;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
