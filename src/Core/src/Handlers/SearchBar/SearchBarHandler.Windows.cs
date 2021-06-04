@@ -35,6 +35,9 @@ namespace Microsoft.Maui.Handlers
 			
 		[MissingMapper]
 		public static void MapHorizontalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
+		
+    [MissingMapper]
+		public static void MapVerticalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
 		public static void MapFont(IViewHandler handler, ISearchBar searchBar) { }

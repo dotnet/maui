@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 		static Drawable? DefaultBackground;
 
 		EditText? _editText;
+
 		public EditText? QueryEditor => _editText;
 
 		protected override SearchView CreateNativeView()
@@ -56,6 +57,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
+		}
+
+		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.TypedNativeView?.UpdateVerticalTextAlignment(searchBar, handler._editText);
 		}
 
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)

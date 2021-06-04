@@ -9,5 +9,10 @@ namespace Microsoft.Maui
 		/// Gets the horizontal text alignment.
 		/// </summary>
 		TextAlignment HorizontalTextAlignment { get; }
+
+		/// <summary>
+		/// Gets the vertical text alignment.
+		/// </summary>
+		TextAlignment VerticalTextAlignment { get; }
 	}
 }
