@@ -35,5 +35,6 @@
 
   <!-- HACK: Prevent the Platform checks -->
   <Target Name="ValidateWinUIPlatform" />
+  <Target Name="BinPlaceBootstrapDll" />
 
 </Project>
