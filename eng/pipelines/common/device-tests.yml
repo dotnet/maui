@@ -54,7 +54,6 @@ stages:
                   parameters:
                     platform: ios
                     path: ${{ project.ios }}
-                    vmImage: ${{ parameters.iosVmImage }}
                     ${{ if eq(version, 'latest') }}:
                       device: ios-simulator-64
                     ${{ if ne(version, 'latest') }}:
