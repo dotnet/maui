@@ -21,7 +21,7 @@
 		<ApplicationVersion>1.0</ApplicationVersion>
 		<AndroidVersionCode>1</AndroidVersionCode>
 
-		<!-- Settings for VS -->
+		<!-- Required - Enable Single Project for WinUI -->
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 		<WindowsPackageType>MSIX</WindowsPackageType>
 	</PropertyGroup>
