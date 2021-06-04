@@ -5,6 +5,7 @@ using CoreGraphics;
 using Microsoft.Maui.Controls.Shapes;
 using Shape = Microsoft.Maui.Controls.Shapes.Shape;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 #if __MOBILE__
 using UIKit;

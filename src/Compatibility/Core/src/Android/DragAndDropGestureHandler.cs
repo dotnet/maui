@@ -10,7 +10,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	internal class DragAndDropGestureHandler : Java.Lang.Object, AView.IOnDragListener
+	class DragAndDropGestureHandler : Java.Lang.Object, AView.IOnDragListener
 	{
 		bool _isDisposed;
 		CustomLocalStateData _currentCustomLocalStateData;

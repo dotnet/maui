@@ -5,6 +5,7 @@ using AndroidX.AppCompat.View.Menu;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
