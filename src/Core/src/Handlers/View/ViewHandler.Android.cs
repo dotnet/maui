@@ -1,4 +1,5 @@
-﻿using Android.Widget;
+﻿using Android.Views;
+using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using NativeView = Android.Views.View;
@@ -82,10 +83,23 @@ namespace Microsoft.Maui.Handlers
 				viewHandler.AccessibilityDelegate == null &&
 				ViewCompat.GetAccessibilityDelegate(handler.NativeView as NativeView) == null)
 			{
-				if (!string.IsNullOrEmpty(view.Semantics.Hint))
+				if (!string.IsNullOrWhiteSpace(view.Semantics.Hint) || !string.IsNullOrWhiteSpace(view.Semantics.Description))
 				{
-					viewHandler.AccessibilityDelegate = new MauiAccessibilityDelegate() { Handler = viewHandler };
-					ViewCompat.SetAccessibilityDelegate(handler.NativeView as NativeView, viewHandler.AccessibilityDelegate);
+					if (viewHandler.AccessibilityDelegate == null)
+					{
+						viewHandler.AccessibilityDelegate = new MauiAccessibilityDelegate() { Handler = viewHandler };
+						ViewCompat.SetAccessibilityDelegate(handler.NativeView as NativeView, viewHandler.AccessibilityDelegate);
+					}
+				}
+				else if (viewHandler.AccessibilityDelegate != null)
+				{
+					viewHandler.AccessibilityDelegate = null;
+					ViewCompat.SetAccessibilityDelegate((handler.NativeView as NativeView)!, null);
+				}
+
+				if (viewHandler.AccessibilityDelegate != null)
+				{
+					(handler.NativeView as NativeView)!.ImportantForAccessibility = ImportantForAccessibility.Yes;
 				}
 			}
 		}
@@ -93,18 +107,29 @@ namespace Microsoft.Maui.Handlers
 		public void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)
 		{
 			var semantics = VirtualView?.Semantics;
+
 			if (semantics == null)
 				return;
 
 			if (info == null)
 				return;
 
-			if (!string.IsNullOrEmpty(semantics.Hint))
+			var hint = semantics.Hint;
+			if (!string.IsNullOrEmpty(hint))
 			{
-				info.HintText = semantics.Hint;
+				info.HintText = hint;
 
 				if (host is EditText)
 					info.ShowingHintText = false;
+			}
+
+			var desc = semantics.Description;
+			if (!string.IsNullOrEmpty(desc))
+			{
+				info.ContentDescription = desc;
+
+				if (host is EditText)
+					info.Text = desc + ", " + ((EditText)host).Text;
 			}
 		}
 

@@ -12,7 +12,6 @@ namespace Microsoft.Maui
 	{
 		const int DefaultAutomationTagId = -1;
 		public static int AutomationTagId { get; set; } = DefaultAutomationTagId;
-		static SemanticAccessibilityDelegate? semanticAccessibilityDelegate;
 
 		public static void UpdateIsEnabled(this AView nativeView, IView view)
 		{
@@ -79,68 +78,6 @@ namespace Microsoft.Maui
 				return;
 
 			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
-
-			if (!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description))
-			{
-				if (semanticAccessibilityDelegate == null)
-				{
-					semanticAccessibilityDelegate = new SemanticAccessibilityDelegate(view);
-					ViewCompat.SetAccessibilityDelegate(nativeView, semanticAccessibilityDelegate);
-				}
-			}
-			else if (semanticAccessibilityDelegate != null)
-			{
-				semanticAccessibilityDelegate = null;
-				ViewCompat.SetAccessibilityDelegate(nativeView, null);
-			}
-
-			if (semanticAccessibilityDelegate != null)
-			{
-				semanticAccessibilityDelegate.View = view;
-				nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
-			}
-
-		}
-
-		class SemanticAccessibilityDelegate : AccessibilityDelegateCompat
-		{
-			public IView View { get; set; }
-
-			public SemanticAccessibilityDelegate(IView view)
-			{
-				View = view;
-			}
-
-			public override void OnInitializeAccessibilityNodeInfo(AView host, AccessibilityNodeInfoCompat info)
-			{
-				base.OnInitializeAccessibilityNodeInfo(host, info);
-
-				if (View == null)
-					return;
-
-				if (info == null)
-					return;
-
-				var semantics = View.Semantics;
-
-				var hint = semantics.Hint;
-				if (!string.IsNullOrEmpty(hint))
-				{
-					info.HintText = hint;
-
-					if (host is EditText)
-						info.ShowingHintText = false;
-				}
-
-				var desc = semantics.Description;
-				if (!string.IsNullOrEmpty(desc))
-				{
-					info.ContentDescription = desc;
-
-					if (host is EditText)
-						info.Text = desc + ", " + ((EditText)host).Text;
-				}
-			}
 		}
 
 		public static void InvalidateMeasure(this AView nativeView, IView view)
