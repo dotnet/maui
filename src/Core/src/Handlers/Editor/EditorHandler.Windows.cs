@@ -1,5 +1,6 @@
 #nullable enable
 using Microsoft.UI.Xaml;
+using System.ComponentModel;
 using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
@@ -82,6 +83,11 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapKeyboard(EditorHandler handler, IEditor editor) { }
 		
+		public static void MapTextAutoSize(EditorHandler handler, IEditor editor)
+        {
+
+        }
+
 		void OnLostFocus(object? sender, RoutedEventArgs e)
 		{
 			VirtualView?.Completed();

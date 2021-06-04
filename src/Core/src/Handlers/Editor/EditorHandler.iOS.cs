@@ -97,7 +97,12 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(editor, fontManager);
 		}
 
-		void OnChanged(object? sender, EventArgs e) => OnTextChanged();
+		public static void MapTextAutoSize(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateAutoSize(editor);
+		}
+
+		void OnChanged(object? sender, System.EventArgs e) => OnTextChanged();
 
 		void OnTextChanged()
 		{
