@@ -14,7 +14,7 @@
   <Properties>
     <DisplayName>MauiApp1</DisplayName>
     <PublisherDisplayName>Microsoft</PublisherDisplayName>
-    <Logo>Windows\Images\StoreLogo.png</Logo>
+    <Logo>Assets\appiconStoreLogo.png</Logo>
   </Properties>
 
   <Dependencies>
@@ -34,9 +34,13 @@
         DisplayName="MauiApp1"
         Description="MauiApp1"
         BackgroundColor="transparent"
-        Square150x150Logo="Windows\Images\Square150x150Logo.png"
-        Square44x44Logo="Windows\Images\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Windows\Images\Wide310x150Logo.png"  Square71x71Logo="Windows\Images\SmallTile.png" Square310x310Logo="Windows\Images\LargeTile.png" ShortName="W21">
+        Square150x150Logo="Assets\appiconMediumTile.png"
+        Square44x44Logo="Assets\appiconLogo.png">
+        <uap:DefaultTile
+          Wide310x150Logo="Windows\Images\Wide310x150Logo.png"
+          Square71x71Logo="Assets\appiconSmallTile.png"
+          Square310x310Logo="Assets\appiconLargeTile.png"
+          ShortName="MauiApp1">
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="square150x150Logo"/>
             <uap:ShowOn Tile="wide310x150Logo"/>
@@ -50,4 +54,5 @@
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
   </Capabilities>
+
 </Package>
