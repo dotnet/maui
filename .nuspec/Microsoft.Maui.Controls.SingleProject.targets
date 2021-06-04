@@ -26,8 +26,6 @@
     <EnableDefaultApplicationDefinition Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">False</EnableDefaultApplicationDefinition>
     <_SingleProjectWindowsExcludes>$(WindowsProjectFolder)/**/.*/**</_SingleProjectWindowsExcludes>
     <OutputType Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' and '$(OutputType)' == 'Exe' And '$(MSBuildRuntime)' == 'Full' And $([MSBuild]::IsOSPlatform('windows'))">WinExe</OutputType>
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <WindowsPackageType>MSIX</WindowsPackageType>
   </PropertyGroup>
 
   <!-- Removals -->

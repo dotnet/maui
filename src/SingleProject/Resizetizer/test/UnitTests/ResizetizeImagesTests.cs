@@ -951,6 +951,38 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileSize($"Assets/{outputName}MediumTile.scale-100.png", 150, 150);
 				AssertFileSize($"Assets/{outputName}MediumTile.scale-150.png", 225, 225);
 			}
+
+			[Theory]
+			[InlineData("dotnet_logo", "dotnet_background")]
+			public void AppIconWithBackgroundSucceedsWithVectors(string fg, string bg)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{bg}.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["ForegroundFile"] = $"images/{fg}.svg",
+						["Color"] = $"#512BD4",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"Assets/{bg}Logo.scale-100.png", 44, 44);
+				AssertFileSize($"Assets/{bg}Logo.scale-125.png", 55, 55);
+				AssertFileSize($"Assets/{bg}Logo.scale-200.png", 88, 88);
+
+				AssertFileSize($"Assets/{bg}StoreLogo.scale-100.png", 50, 50);
+				AssertFileSize($"Assets/{bg}StoreLogo.scale-200.png", 100, 100);
+
+				AssertFileSize($"Assets/{bg}MediumTile.scale-100.png", 150, 150);
+				AssertFileSize($"Assets/{bg}MediumTile.scale-150.png", 225, 225);
+
+				AssertFileSize($"Assets/{bg}WideTile.scale-100.png", 310, 150);
+				AssertFileSize($"Assets/{bg}WideTile.scale-200.png", 620, 300);
+			}
 		}
 	}
 }

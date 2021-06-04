@@ -20,6 +20,10 @@
 		<!-- Versions -->
 		<ApplicationVersion>1.0</ApplicationVersion>
 		<AndroidVersionCode>1</AndroidVersionCode>
+
+		<!-- Settings for VS -->
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+		<WindowsPackageType>MSIX</WindowsPackageType>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -27,7 +31,8 @@
 		<MauiImage
 			Include="Resources\appicon.svg"
 			ForegroundFile="Resources\appiconfg.svg"
-			IsAppIcon="true" />
+			IsAppIcon="true"
+			Color="#512BD4" />
 
 		<!-- Splash Screen -->
 		<MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />

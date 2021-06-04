@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
 {
@@ -221,6 +222,7 @@ namespace Microsoft.Maui.Resizetizer
 					info.Resize = rz;
 
 				info.TintColor = Utils.ParseColorString(image.GetMetadata("TintColor"));
+				info.Color = Utils.ParseColorString(image.GetMetadata("Color"));
 
 				if (bool.TryParse(image.GetMetadata("IsAppIcon"), out var iai))
 					info.IsAppIcon = iai;

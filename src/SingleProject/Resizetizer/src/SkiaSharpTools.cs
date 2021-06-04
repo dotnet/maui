@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Resizetizer
 		public string Filename { get; }
 
 		public SKSize? BaseSize { get; }
+
 		public ILogger Logger { get; }
 
 		public SKPaint Paint { get; }
@@ -84,7 +85,9 @@ namespace Microsoft.Maui.Resizetizer
 
 		(SKSizeI, float) GetScaledSize(SKSize originalSize, decimal scale, SKSize absoluteSize)
 		{
-			var ratio = (decimal)absoluteSize.Width / (decimal)originalSize.Width;
+			var ratio = Math.Min(
+				(decimal)absoluteSize.Width / (decimal)originalSize.Width,
+				(decimal)absoluteSize.Height / (decimal)originalSize.Height);
 
 			return GetScaledSize(originalSize, ratio * scale);
 		}
