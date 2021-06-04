@@ -290,6 +290,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new DatePicker { FontSize = 24 });
 
 			verticalStack.Add(new TimePicker());
+			verticalStack.Add(new TimePicker { TextColor = Colors.LightGreen });
 			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
 
 			verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
