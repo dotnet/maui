@@ -33,34 +33,8 @@
     </PropertyGroup>
   </Target>
 
-  <!-- HACK: remove the xaml for either win or non-win -->
-  <Target Name="_RemoveIncompatibleXamlFiles" BeforeTargets="BeforeBuild" Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <ItemGroup Condition="$(OutputType) != 'WinExe'">
-      <Page Remove="**/*.xaml">
-      </Page>
-    </ItemGroup>
-    <ItemGroup Condition="$(OutputType) == 'WinExe'">
-      <EmbeddedResource Remove="**\*.xaml"></EmbeddedResource>
-      <MauiXaml Remove="**\*.xaml"></MauiXaml>
-      <Compile Remove="**\*.xaml"></Compile>
-    </ItemGroup>
-  </Target>
-
   <!-- HACK: Prevent the Platform checks -->
   <Target Name="ValidateWinUIPlatform" />
   <Target Name="BinPlaceBootstrapDll" />
-
-  <!-- HACK: fix a bad path or something -->
-  <Target Name="_Prep_ComputeProcessXamlFilesBefore" BeforeTargets="Prep_ComputeProcessXamlFiles" Condition="$(TargetFramework.Contains('-windows'))">
-    <PropertyGroup>
-      <_OldOutputPath>$(OutputPath)</_OldOutputPath>
-      <OutputPath>$(OutputPath)\$(RootNamespace)</OutputPath>
-    </PropertyGroup>
-  </Target>
-  <Target Name="_Prep_ComputeProcessXamlFilesAfter" AfterTargets="Prep_ComputeProcessXamlFiles" Condition="$(TargetFramework.Contains('-windows'))">
-    <PropertyGroup>
-      <OutputPath>$(_OldOutputPath)</OutputPath>
-    </PropertyGroup>
-  </Target>
 
 </Project>
