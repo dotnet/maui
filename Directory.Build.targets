@@ -33,70 +33,7 @@
     </PropertyGroup>
   </Target>
 
-  <!-- HACK: Avoid the bad tasks for multitargeting -->
+  <!-- HACK: Prevent the Platform checks -->
   <Target Name="ValidateWinUIPlatform" />
-  <Target Name="BinPlaceBootstrapDll" />
-
-  <!-- HACK: fix a bad path or something -->
-  <Target Name="_Prep_ComputeProcessXamlFilesBefore" BeforeTargets="Prep_ComputeProcessXamlFiles" Condition="$(TargetFramework.Contains('-windows'))">
-    <PropertyGroup>
-      <_OldOutputPath>$(OutputPath)</_OldOutputPath>
-      <OutputPath>$(OutputPath)\$(RootNamespace)</OutputPath>
-    </PropertyGroup>
-  </Target>
-  <Target Name="_Prep_ComputeProcessXamlFilesAfter" AfterTargets="Prep_ComputeProcessXamlFiles" Condition="$(TargetFramework.Contains('-windows'))">
-    <PropertyGroup>
-      <OutputPath>$(_OldOutputPath)</OutputPath>
-    </PropertyGroup>
-  </Target>
-
-  <!-- HACK: inject the windows TFM into the builds of the app project -->
-  <Target Name="FixFrameworksBefore" BeforeTargets="SetProjectReferenceProperties" Condition="'$(ProjectExt)' == '.wapproj'">
-    <ItemGroup>
-      <_MSBuildProjectReferenceExistent
-        Update="@(_MSBuildProjectReferenceExistent)"
-        SetConfiguration="TargetFramework=$(AppProjectTargetFramework)" />
-    </ItemGroup>
-  </Target>
-
-  <!-- HACK: overwrite the properties set by the AddProjectMetadata task as it was chacking the outer build -->
-  <Target Name="FixFrameworksAfter" AfterTargets="SetProjectReferenceProperties" Condition="'$(ProjectExt)' == '.wapproj'">
-    <ItemGroup>
-      <ProjectReferenceWithExtraMetadata Update="@(ProjectReferenceWithExtraMetadata)">
-        <ReferenceSourceTarget>ProjectReference</ReferenceSourceTarget>
-        <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
-        <TargetFramework>$(AppProjectTargetFramework)</TargetFramework>
-        <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
-        <AdditionalProperties>
-        </AdditionalProperties>
-        <TargetFileName>%(Filename).dll</TargetFileName>
-        <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-        <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
-        <WindowsAppContainer>
-        </WindowsAppContainer>
-        <Private>false</Private>
-        <MsixConfiguration>Debug</MsixConfiguration>
-        <OutputItemType>
-        </OutputItemType>
-        <BuildReference>true</BuildReference>
-        <OutputType>WinExe</OutputType>
-        <MsbuildProjectExtensionsPath>%(Identity)..\obj\</MsbuildProjectExtensionsPath>
-        <RuntimeIdentifiers>win10-x86;win10-x86;win10-arm64</RuntimeIdentifiers>
-        <DependencyKind>Direct</DependencyKind>
-        <ProjectGuid></ProjectGuid>
-        <TargetFrameworkMoniker>.NETCoreApp,Version=v5.0</TargetFrameworkMoniker>
-        <Configuration>$(Configuration)</Configuration>
-        <AppxRecipeFilePath>%(Identity)..\bin\$(Configuration)\$(AppProjectTargetFramework)\%(Filename).dll.build.appxrecipe</AppxRecipeFilePath>
-        <ProjectName>%(Filename)</ProjectName>
-        <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
-        <AppxUploadRecipeFilePath>%(Identity)..\bin\$(Configuration)\$(AppProjectTargetFramework)\Upload\%(Filename).build.appxrecipe</AppxUploadRecipeFilePath>
-        <TargetPlatformMinVersion>$(TargetPlatformMinVersion)</TargetPlatformMinVersion>
-        <TargetName>%(Filename)</TargetName>
-        <TargetDir>%(Identity)..\bin\$(Configuration)\$(AppProjectTargetFramework)\</TargetDir>
-        <CrtSDKReferenceVersion></CrtSDKReferenceVersion>
-        <PlatformTarget>AnyCPU</PlatformTarget>
-      </ProjectReferenceWithExtraMetadata>
-    </ItemGroup>
-  </Target>
 
 </Project>
