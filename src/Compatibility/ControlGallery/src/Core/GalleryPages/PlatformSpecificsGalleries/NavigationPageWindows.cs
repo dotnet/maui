@@ -1,4 +1,4 @@
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries

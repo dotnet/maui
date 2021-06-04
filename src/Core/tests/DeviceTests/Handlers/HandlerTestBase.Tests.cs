@@ -17,6 +17,22 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.AutomationId, id);
 		}
 
+		[Theory(DisplayName = "Opacity is set correctly")]
+		[InlineData(0)]
+		[InlineData(0.25)]
+		[InlineData(0.5)]
+		[InlineData(0.75)]
+		[InlineData(1)]
+		public async Task SetOpacity(double opacity)
+		{
+			var view = new TStub
+			{
+				Opacity = opacity
+			};
+			var id = await GetValueAsync(view, handler => GetOpacity(handler));
+			Assert.Equal(view.Opacity, id);
+		}
+
 		[Theory(DisplayName = "Visibility is set correctly")]
 		[InlineData(Visibility.Collapsed)]
 		[InlineData(Visibility.Hidden)]

@@ -17,11 +17,15 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UISwitch nativeView)
 		{
+			base.ConnectHandler(nativeView);
+
 			nativeView.ValueChanged += OnControlValueChanged;
 		}
 
 		protected override void DisconnectHandler(UISwitch nativeView)
 		{
+			base.DisconnectHandler(nativeView);
+
 			nativeView.ValueChanged -= OnControlValueChanged;
 		}
 

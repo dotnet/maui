@@ -49,6 +49,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateTitle(picker);
 		}
 
+		public static void MapTitleColor(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateTitle(picker);
+		}
+
 		public static void MapSelectedIndex(PickerHandler handler, IPicker picker)
 		{
 			handler.NativeView?.UpdateSelectedIndex(picker);

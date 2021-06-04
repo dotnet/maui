@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml;
