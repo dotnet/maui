@@ -33,6 +33,19 @@
     </PropertyGroup>
   </Target>
 
+  <!-- HACK: remove the xaml for either win or non-win -->
+  <Target Name="_RemoveIncompatibleXamlFiles" BeforeTargets="BeforeBuild" Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <ItemGroup Condition="$(OutputType) != 'WinExe'">
+      <Page Remove="**/*.xaml">
+      </Page>
+    </ItemGroup>
+    <ItemGroup Condition="$(OutputType) == 'WinExe'">
+      <EmbeddedResource Remove="**\*.xaml"></EmbeddedResource>
+      <MauiXaml Remove="**\*.xaml"></MauiXaml>
+      <Compile Remove="**\*.xaml"></Compile>
+    </ItemGroup>
+  </Target>
+
   <!-- HACK: Prevent the Platform checks -->
   <Target Name="ValidateWinUIPlatform" />
   <Target Name="BinPlaceBootstrapDll" />
