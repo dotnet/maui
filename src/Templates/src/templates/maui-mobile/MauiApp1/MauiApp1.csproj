@@ -57,11 +57,11 @@
 		<AndroidEnvironment Include="Android\AndroidEnvironment.txt" />
 	</ItemGroup>
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+		<PackageReference Include="Microsoft.ProjectReunion" Version="0.8.0-preview" />
+		<PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="0.8.0-preview" />
+		<PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="0.8.0-preview" />
 		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.16" />
 		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.19041.16" />
-		<AppxManifest Include="Windows\Package.appxmanifest">
-			<SubType>Designer</SubType>
-		</AppxManifest>
 		<Content Include="Windows\Images\**" />
 	</ItemGroup>
 

@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "MauiApp1": {
+      "commandName": "AppContainer"
+    }
+  }
+}

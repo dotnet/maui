@@ -24,15 +24,6 @@
     <ProjectCapability Include="XamarinStaticLaunchProfiles" />
   </ItemGroup>
 
-  <!-- HACK: for windows -->
-  <Target Name="Net6WinUIPackagingWorkaround" BeforeTargets="GetPackagingOutputs" Condition="$(TargetFramework.Contains('-windows')) == true AND '$(DisableEmbeddedXbf)' != 'true' ">
-    <PropertyGroup>
-      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-      <_SupportEmbedFileResources>true</_SupportEmbedFileResources>
-      <_EmbedFileResfilePath>$(IntermediateOutputPath)$(AppxSubfolderWithFilesToBeEmbedded)\embed.resfiles</_EmbedFileResfilePath>
-    </PropertyGroup>
-  </Target>
-
   <!-- HACK: Prevent the Platform checks -->
   <Target Name="ValidateWinUIPlatform" />
   <Target Name="BinPlaceBootstrapDll" />

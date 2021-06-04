@@ -66,24 +66,25 @@
   <!-- Windows -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' ">
     <Manifest Include="$(ApplicationManifest)" />
+    <AppxManifest Include="$(PackageManifest)" />
     <ApplicationDefinition
-      Condition="Exists('$(WindowsProjectFolder)App.xaml')"
-      Include="$(WindowsProjectFolder)App.xaml"
-      Link="%(FileName)%(Extension)">
+        Condition="Exists('$(WindowsProjectFolder)App.xaml')"
+        Include="$(WindowsProjectFolder)App.xaml"
+        Link="%(FileName)%(Extension)">
       <Generator>MSBuild:Compile</Generator>
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </ApplicationDefinition>
     <ApplicationDefinition
-      Condition="Exists('$(WindowsProjectFolder)\Application.xaml')"
-      Include="$(WindowsProjectFolder)Application.xaml"
-      Link="%(FileName)%(Extension)">
+        Condition="Exists('$(WindowsProjectFolder)\Application.xaml')"
+        Include="$(WindowsProjectFolder)Application.xaml"
+        Link="%(FileName)%(Extension)">
       <Generator>MSBuild:Compile</Generator>
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </ApplicationDefinition>
     <Page
-      Include="$(WindowsProjectFolder)**/*.xaml"
-      Exclude="$(_SingleProjectWindowsExcludes);@(ApplicationDefinition)"
-      Link="%(RecursiveDir)%(FileName)%(Extension)">
+        Include="$(WindowsProjectFolder)**/*.xaml"
+        Exclude="$(_SingleProjectWindowsExcludes);@(ApplicationDefinition)"
+        Link="%(RecursiveDir)%(FileName)%(Extension)">
       <Generator>MSBuild:Compile</Generator>
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
