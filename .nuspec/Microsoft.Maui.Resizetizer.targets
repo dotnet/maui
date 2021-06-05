@@ -321,7 +321,7 @@
             MauiSplashScreen="@(MauiSplashScreen)"
         />
         <ItemGroup Condition="'$(_ResizetizerIsUWPApp)' == 'True' Or '$(_ResizetizerIsWinUIApp)' == 'True'">
-            <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)\*" />
+            <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
             <ContentWithTargetPath Include="@(_MauiSplashAssets)">
                 <TargetPath>Assets\%(_MauiSplashAssets.Filename)%(_MauiSplashAssets.Extension)</TargetPath>
             </ContentWithTargetPath>
