@@ -24,12 +24,6 @@
 		<Folder Include="Diagnostics\" />
 	</ItemGroup>
 
-	<Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
-		<PropertyGroup>
-			<TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-		</PropertyGroup>
-	</Target>
-
     <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
 	<TargetsForTfmSpecificBuildOutput>
 	    $(TargetsForTfmSpecificBuildOutput);

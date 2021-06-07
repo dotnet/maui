@@ -19,11 +19,6 @@
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
   </PropertyGroup>
 
-  <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PropertyGroup>
-      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-    </PropertyGroup>
-  </Target>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <PackageReference Include="Microsoft.ProjectReunion" />
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
