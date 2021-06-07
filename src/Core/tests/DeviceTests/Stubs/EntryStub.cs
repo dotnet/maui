@@ -31,6 +31,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
 
+		public TextAlignment VerticalTextAlignment { get; set; }
+
 		public ReturnType ReturnType { get; set; }
 
 		public ClearButtonVisibility ClearButtonVisibility { get; set; }

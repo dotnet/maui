@@ -15,6 +15,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Font Font { get; set; }
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
+		public TextAlignment VerticalTextAlignment { get; set; }
 
 		public LineBreakMode LineBreakMode { get; set; } = LineBreakMode.WordWrap;
 

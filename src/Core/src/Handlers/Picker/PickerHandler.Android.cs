@@ -95,6 +95,11 @@ namespace Microsoft.Maui.Handlers
 			nativePicker?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment, hasRtlSupport);
 		}
 
+		public static void MapVerticalTextAlignment(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
+		}
+
 		[MissingMapper]
 		public static void MapTextColor(PickerHandler handler, IPicker view) { }
 
