@@ -15,4 +15,10 @@
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Controls.Sample\Resources\Embedded\dotnet_bot.png">
+      <Link>dotnet_bot.png</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
