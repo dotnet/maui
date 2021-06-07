@@ -1190,26 +1190,6 @@ AppleSimulator GetIosSimulator()
     return iosSimulators.First (s => s.Name == IOS_SIM_NAME && s.Runtime == IOS_SIM_RUNTIME);
 }
 
-public void PrintEnvironmentVariables()
-{
-    var envVars = EnvironmentVariables();
-
-    string path;
-    if (envVars.TryGetValue("PATH", out path))
-    {
-        Information("Path: {0}", path);
-    }
-
-    foreach(var envVar in envVars)
-    {
-        Information(
-            "Key: {0}\tValue: \"{1}\"",
-            envVar.Key,
-            envVar.Value
-            );
-    };
-}
-
 public void SetEnvironmentVariable(string key, string value, ICakeContext context)
 {
     var buildSystem = context.BuildSystem();
