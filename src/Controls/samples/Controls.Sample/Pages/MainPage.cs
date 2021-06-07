@@ -286,6 +286,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Switch() { OnColor = Colors.Green, ThumbColor = Colors.Yellow });
 
 			verticalStack.Add(new DatePicker());
+			verticalStack.Add(new DatePicker { TextColor = Colors.OrangeRed });
 			verticalStack.Add(new DatePicker { CharacterSpacing = 6 });
 			verticalStack.Add(new DatePicker { FontSize = 24 });
 
