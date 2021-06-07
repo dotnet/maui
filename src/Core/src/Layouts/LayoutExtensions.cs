@@ -108,14 +108,14 @@ namespace Microsoft.Maui.Layouts
 
 				case LayoutAlignment.Center:
 
-					frameX = (boundsWidth - desiredWidth) / 2;
+					frameX = startX + ((boundsWidth - desiredWidth) / 2);
 					var marginOffset = (startMargin - endMargin) / 2;
 					frameX += marginOffset;
 
 					break;
 				case LayoutAlignment.End:
 
-					frameX = boundsWidth - endMargin - desiredWidth;
+					frameX = startX + boundsWidth - endMargin - desiredWidth;
 					break;
 			}
 
@@ -125,29 +125,26 @@ namespace Microsoft.Maui.Layouts
 		static double AlignVertical(IFrameworkElement frameworkElement, Rectangle bounds, Thickness margin)
 		{
 			double frameY = 0;
+			var startY = bounds.Y;
 
 			switch (frameworkElement.VerticalLayoutAlignment)
 			{
 				case LayoutAlignment.Fill:
-
-					frameY = bounds.Y + margin.Top;
-					break;
-
 				case LayoutAlignment.Start:
 
-					frameY = bounds.Y + margin.Top;
+					frameY = startY + margin.Top;
 					break;
 
 				case LayoutAlignment.Center:
 
-					frameY = (bounds.Height - frameworkElement.DesiredSize.Height) / 2;
+					frameY = startY + ((bounds.Height - frameworkElement.DesiredSize.Height) / 2);
 					var offset = (margin.Top - margin.Bottom) / 2;
 					frameY += offset;
 					break;
 
 				case LayoutAlignment.End:
 
-					frameY = bounds.Height - margin.Bottom - frameworkElement.DesiredSize.Height;
+					frameY = startY + bounds.Height - margin.Bottom - frameworkElement.DesiredSize.Height;
 					break;
 			}
 

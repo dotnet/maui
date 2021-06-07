@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(Button), typeof(CustomRenderer40251))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS

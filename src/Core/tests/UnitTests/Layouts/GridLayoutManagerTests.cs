@@ -199,6 +199,13 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Assuming no constraints on space
 			MeasureAndArrange(grid, double.PositiveInfinity, double.NegativeInfinity);
 
+			// Verify that the views are getting measured at all, and that they're being measured at 
+			// the appropriate sizes
+			view0.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(10));
+			view1.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(10));
+			view2.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(30));
+			view3.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(30));
+
 			AssertArranged(view0, 0, 0, 100, 10);
 
 			// Since the first column is 100 wide, we expect the view in the second column to start at x = 100
@@ -781,6 +788,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Columns are *,*,*, so each view should be arranged at 1/3 the width
 			var expectedWidth = screenWidth / 3;
 			var expectedHeight = viewSize.Height;
+
+			// Make sure that the views in the columns are actually getting measured at the column width,
+			// and not just at the width of the whole grid
+			view1.Received().Measure(Arg.Is<double>(expectedWidth), Arg.Any<double>());
+			view2.Received().Measure(Arg.Is<double>(expectedWidth), Arg.Any<double>());
+
 			AssertArranged(view0, 0, 0, expectedWidth, expectedHeight);
 			AssertArranged(view1, expectedWidth, 0, expectedWidth, expectedHeight);
 			AssertArranged(view2, expectedWidth * 2, 0, expectedWidth, expectedHeight);

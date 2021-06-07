@@ -227,7 +227,7 @@ namespace Maui.Controls.Sample.Pages
 			var entryMargin = new Thickness(10, 0);
 
 			verticalStack.Add(entry);
-			verticalStack.Add(new Entry { Text = "Entry", TextColor = Colors.DarkRed, FontFamily = "Dokdo", MaxLength = -1, Margin = entryMargin });
+			verticalStack.Add(new Entry { Text = "Entry with custom Font", TextColor = Colors.DarkRed, FontFamily = "Dokdo", MaxLength = -1, Margin = entryMargin });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Colors.Black, Placeholder = "Pasword Entry", Margin = entryMargin });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text", Margin = entryMargin });
@@ -245,18 +245,10 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
 
-			var searchBar = new SearchBar
-			{
-				CharacterSpacing = 4,
-				Text = "A search query"
-			};
-			verticalStack.Add(searchBar);
-
-			var placeholderSearchBar = new SearchBar
-			{
-				Placeholder = "Placeholder"
-			};
-			verticalStack.Add(placeholderSearchBar);
+			verticalStack.Add(new SearchBar { CharacterSpacing = 4, Text = "A search query" });
+			verticalStack.Add(new SearchBar { Placeholder = "Placeholder" });
+			verticalStack.Add(new SearchBar { HorizontalTextAlignment = TextAlignment.End, Text = "SearchBar HorizontalTextAlignment" });
+			verticalStack.Add(new SearchBar { Text = "SearchBar MaxLength", MaxLength = 50 });
 
 			var monkeyList = new List<string>
 			{
@@ -286,10 +278,12 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Switch() { OnColor = Colors.Green, ThumbColor = Colors.Yellow });
 
 			verticalStack.Add(new DatePicker());
+			verticalStack.Add(new DatePicker { TextColor = Colors.OrangeRed });
 			verticalStack.Add(new DatePicker { CharacterSpacing = 6 });
 			verticalStack.Add(new DatePicker { FontSize = 24 });
 
 			verticalStack.Add(new TimePicker());
+			verticalStack.Add(new TimePicker { TextColor = Colors.LightGreen });
 			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
 
 			verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
