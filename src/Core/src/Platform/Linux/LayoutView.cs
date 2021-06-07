@@ -153,7 +153,8 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			virtualView.Arrange(allocation.ToRectangle());
+			virtualView.InvalidateArrange();
+			virtualView.Arrange(new Rectangle(allocation.X, allocation.Y, allocation.Width, allocation.Height));
 
 			foreach (var cr in _children.ToArray())
 			{
@@ -164,7 +165,10 @@ namespace Microsoft.Maui
 				if (r.IsEmpty)
 					continue;
 
-				w.SizeAllocate(new Gdk.Rectangle(allocation.X + (int)r.X, allocation.Y + (int)r.Y, (int)r.Width, (int)r.Height));
+				var cAlloc = new Gdk.Rectangle(allocation.X + (int)r.X, allocation.Y + (int)r.Y, (int)r.Width, (int)r.Height);
+
+				// if (cAlloc != w.Allocation) // it's allways needed to implicit arrange children:
+				w.SizeAllocate(cAlloc);
 			}
 		}
 
@@ -241,11 +245,12 @@ namespace Microsoft.Maui
 			var withFactor = widthHandled && widthConstrained && widthConstraint > 1 ? widthConstraint / AllocatedWidth : 1;
 			var heigthFactor = heightHandled && heightConstrained && heightConstraint > 1 ? heightConstraint / AllocatedHeight : 1;
 
-			if ((virtualView.Frame.Size.Width == widthConstraint || !widthConstrained) && (virtualView.Frame.Size.Height == heightConstraint || !heightConstrained))
-			{
-				return new Size(widthConstraint, heightConstraint);
-			}
+			// if ((virtualView.Frame.Size.Width == widthConstraint ) && (virtualView.Frame.Size.Height == heightConstraint ))
+			// {
+			// 	return virtualView.Frame.Size;
+			// }
 
+			virtualView.InvalidateMeasure();
 			var size1 = virtualView.Measure(widthConstraint, heightConstraint);
 
 			return new SizeRequest(size1, size1);
@@ -253,49 +258,64 @@ namespace Microsoft.Maui
 
 		int ToSize(double it) => double.IsPositiveInfinity(it) ? 0 : (int)it;
 
-		protected override void OnGetPreferredWidthForHeight(int height, out int minimumWidth, out int naturalWidth)
+		int? lastHeight;
+		int? lastWidth;
+
+		protected override void OnAdjustSizeRequest(Orientation orientation, out int minimumSize, out int naturalSize)
 		{
-			base.OnGetPreferredWidthForHeight(height, out minimumWidth, out naturalWidth);
-			var constraint = IsReallocating && Allocation.Width > 1 ? Allocation.Width : double.PositiveInfinity;
-			var c1 = WidthRequest > 0 ? WidthRequest : 0;
-			var sizeRequest = GetSizeRequest(c1, height, SizeRequestMode.WidthForHeight);
+			base.OnAdjustSizeRequest(orientation, out minimumSize, out naturalSize);
 
-			minimumWidth = Math.Max(WidthRequest, ToSize(sizeRequest.Minimum.Width));
-			naturalWidth = Math.Max(WidthRequest, ToSize(sizeRequest.Request.Width));
-		}
-
-		protected override void OnGetPreferredHeightForWidth(int width, out int minimumHeight, out int naturalHeight)
-		{
-			base.OnGetPreferredHeightForWidth(width, out minimumHeight, out naturalHeight);
-			var constraint = IsReallocating && Allocation.Height > 1 ? Allocation.Height : double.PositiveInfinity;
-			var c1 = HeightRequest > 0 ? HeightRequest : 0;
-			var sizeRequest = GetSizeRequest(width, constraint, SizeRequestMode.HeightForWidth);
-
-			minimumHeight = Math.Max(HeightRequest, ToSize(sizeRequest.Minimum.Height));
-			naturalHeight = Math.Max(HeightRequest, ToSize(sizeRequest.Request.Height));
-		}
-
-		#region adoptions
-
-		public void NativeArrange(Rectangle rect)
-		{
-			var nativeView = this;
-			var virtualView = VirtualView;
-
-			if (nativeView == null || virtualView == null)
-				return;
-
-			if (rect.Width < 0 || rect.Height < 0)
-				return;
-
-			if (rect != virtualView.Frame)
+			if (orientation == Orientation.Vertical && minimumSize != lastHeight)
 			{
-				nativeView.SizeAllocate(rect.ToNative());
-				nativeView.QueueResize();
+				;
+			}
+
+			if (orientation == Orientation.Horizontal && minimumSize != lastWidth)
+			{
+				;
 			}
 		}
 
-		#endregion
+		protected override void OnGetPreferredHeight(out int minimumHeight, out int naturalHeight)
+		{
+			SizeRequest size;
+
+			if (RequestMode == SizeRequestMode.HeightForWidth)
+			{
+				OnGetPreferredWidth(out var minimumWidth, out var naturalWidth);
+				lastWidth = lastWidth.HasValue ? Math.Min(minimumWidth, lastWidth.Value) : minimumWidth;
+				size = GetSizeRequest(minimumWidth, double.PositiveInfinity, SizeRequestMode.HeightForWidth);
+			}
+			else
+			{
+				size = GetSizeRequest(double.PositiveInfinity, 0, SizeRequestMode.WidthForHeight);
+			}
+
+			minimumHeight = Math.Max(HeightRequest, ToSize(size.Minimum.Height));
+			naturalHeight = Math.Max(HeightRequest, ToSize(size.Request.Height));
+			lastHeight = lastHeight.HasValue ? Math.Min(minimumHeight, lastHeight.Value) : minimumHeight;
+		}
+
+		protected override void OnGetPreferredWidth(out int minimumWidth, out int naturalWidth)
+		{
+			SizeRequest size;
+
+			if (RequestMode == SizeRequestMode.HeightForWidth)
+			{
+				size = GetSizeRequest(0, double.PositiveInfinity, SizeRequestMode.HeightForWidth);
+			}
+			else
+			{
+				GetPreferredHeight(out var minimumHeight, out var naturalHeight);
+				lastHeight = minimumHeight;
+				size = GetSizeRequest(0, minimumHeight, SizeRequestMode.WidthForHeight);
+			}
+
+			minimumWidth = Math.Max(WidthRequest, ToSize(size.Minimum.Width));
+			naturalWidth = Math.Max(WidthRequest, ToSize(size.Request.Width));
+			lastWidth = lastWidth.HasValue ? Math.Min(minimumWidth, lastWidth.Value) : minimumWidth;
+
+		}
 
 	}
 

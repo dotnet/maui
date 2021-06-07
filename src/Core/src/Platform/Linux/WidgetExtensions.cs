@@ -18,12 +18,14 @@ namespace Microsoft.Maui
 			{
 				case Visibility.Hidden:
 					nativeView.Visible = false;
+
 					break;
 				case Visibility.Visible:
 					nativeView.Visible = true;
+
 					break;
 				case Visibility.Collapsed:
-					
+
 					break;
 				default:
 					throw new ArgumentOutOfRangeException(nameof(visibility), visibility, null);
@@ -40,7 +42,7 @@ namespace Microsoft.Maui
 
 			if (widthConstraint < 0 || heightConstraint < 0)
 				return Size.Zero;
-			
+
 			var widthConstrained = !double.IsPositiveInfinity(widthConstraint);
 			var heightConstrained = !double.IsPositiveInfinity(heightConstraint);
 
@@ -127,6 +129,7 @@ namespace Microsoft.Maui
 			if (widthRequest != -1 && widthRequest != nativeView.WidthRequest && widthRequest != nativeView.AllocatedWidth)
 			{
 				nativeView.WidthRequest = widthRequest;
+				nativeView.QueueResize();
 			}
 
 		}
@@ -138,6 +141,7 @@ namespace Microsoft.Maui
 			if (heightRequest != -1 && heightRequest != nativeView.HeightRequest && heightRequest != nativeView.AllocatedHeight)
 			{
 				nativeView.HeightRequest = heightRequest;
+				nativeView.QueueResize();
 			}
 
 		}
