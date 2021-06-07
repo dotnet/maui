@@ -18,5 +18,13 @@ namespace Microsoft.Maui
 		{
 			nativeControl.Text = searchBar.Text;
 		}
+
+		public static void UpdateHorizontalTextAlignment(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiTextBox? queryTextBox)
+		{
+			if (queryTextBox == null)
+				return;
+
+			queryTextBox.TextAlignment = searchBar.HorizontalTextAlignment.ToNative();
+		}
 	}
 }
