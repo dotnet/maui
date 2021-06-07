@@ -1,10 +1,10 @@
 using System;
+using Microsoft.Maui.Controls.Platform;
 #if __ANDROID__
 using static Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform;
 using NativeView = Android.Views.View;
 using IVisualElementRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.IVisualElementRenderer;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Android.Views.View>;
-using VisualElementChangedEventArgs = Microsoft.Maui.Controls.Compatibility.Platform.Android.VisualElementChangedEventArgs;
 #elif __IOS__ || MACCATALYST
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform;
 using NativeView = UIKit.UIView;
@@ -17,7 +17,6 @@ using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Sy
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Microsoft.UI.Xaml.FrameworkElement>;
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
 using static Microsoft.Maui.Controls.Compatibility.Platform.UWP.Platform;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 #endif
 

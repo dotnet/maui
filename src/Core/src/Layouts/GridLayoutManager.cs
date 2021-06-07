@@ -429,7 +429,7 @@ namespace Microsoft.Maui.Layouts
 				ResolveStars(_rows, availableSpace, cellCheck, getDimension);
 			}
 
-			void EnsureFinalMeasure() 
+			void EnsureFinalMeasure()
 			{
 				foreach (var cell in _cells)
 				{

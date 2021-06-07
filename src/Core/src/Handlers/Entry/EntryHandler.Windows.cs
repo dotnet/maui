@@ -24,8 +24,10 @@ using Windows.System;
 			handler.NativeView?.UpdateText(entry);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(IViewHandler handler, IEntry entry) { }
+		public static void MapTextColor(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateTextColor(entry);
+		}
 
 		[MissingMapper]
 		public static void MapIsPassword(IViewHandler handler, IEntry entry) { }

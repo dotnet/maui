@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Compatibility;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(CustomHorizontalListview), typeof(HorizontalListviewRendererAndroid))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
