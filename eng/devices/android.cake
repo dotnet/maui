@@ -1,5 +1,6 @@
 #addin nuget:?package=Cake.Android.Adb&version=3.2.0
 #addin nuget:?package=Cake.Android.AvdManager&version=2.2.0
+#load "../cake/helpers.cake"
 
 string TARGET = Argument("target", "Test");
 
@@ -24,10 +25,8 @@ bool DEVICE_BOOT = Argument("boot", true);
 bool DEVICE_BOOT_WAIT = Argument("wait", true);
 
 // set up env
-var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT") ?? EnvironmentVariable("ANDROID_HOME"));
-if (string.IsNullOrEmpty(ANDROID_SDK_ROOT)) {
-	throw new Exception("Environment variable 'ANDROID_SDK_ROOT' or 'ANDROID_HOME' must be set to the Android SDK root.");
-}
+var ANDROID_SDK_ROOT = GetAndroidSDKPath();
+
 System.Environment.SetEnvironmentVariable("PATH",
 	$"{ANDROID_SDK_ROOT}/tools/bin" + System.IO.Path.PathSeparator +
 	$"{ANDROID_SDK_ROOT}/platform-tools" + System.IO.Path.PathSeparator +
