@@ -46,8 +46,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="MAUI_VERSION" />
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="MAUI_VERSION" />
 	</ItemGroup>
 
 	<PropertyGroup>
