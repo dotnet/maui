@@ -13,7 +13,7 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView>,
+	public abstract partial class ViewHandler<TVirtualView, TNativeView> : ViewHandler,
 		IViewHandler
 		where TVirtualView : class, IView
 #if !NETSTANDARD || IOS || ANDROID || WINDOWS
@@ -125,14 +125,7 @@ namespace Microsoft.Maui.Handlers
 			=> _mapper?.UpdateProperty(this, VirtualView, property);
 
 		protected virtual void SetupDefaults(TNativeView nativeView) { }
-	}
 
-	public abstract partial class ViewHandler<TVirtualView> : ViewHandler
-		where TVirtualView : class, IView
-	{
-		internal ViewHandler()
-		{
-		}
 
 		public new TVirtualView? VirtualView
 		{

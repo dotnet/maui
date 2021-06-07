@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Android.Views;
+using Microsoft.Maui.Controls.Platform;
 using ALayoutChangeEventArgs = Android.Views.View.LayoutChangeEventArgs;
 using AView = Android.Views.View;
 
