@@ -13,11 +13,48 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
+		<!-- App Icon -->
+		<MauiImage
+			Include="..\MauiApp1\Resources\appicon.svg"
+			Link="Resources\appicon.svg"
+			ForegroundFile="Resources\appiconfg.svg"
+			IsAppIcon="true"
+			Color="#512BD4" />
+
+		<!-- Splash Screen -->
+		<MauiSplashScreen
+			Include="..\MauiApp1\Resources\appiconfg.svg"
+			Link="Resources\appiconfg.svg"
+			Color="#512BD4" />
+
+		<!-- Images -->
+		<MauiImage
+			Include="..\MauiApp1\Resources\Images\*"
+			Link="Resources\Images\%(Filename)%(Extension)" />
+
+		<!-- Custom Fonts -->
+		<MauiFont
+			Include="..\MauiApp1\Resources\Fonts\*"
+			Link="Resources\Fonts\%(Filename)%(Extension)" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\MauiApp1\MauiApp1.csproj" />
+		<Compile
+			Include="..\MauiApp1\**\*.cs"
+			Exclude="..\MauiApp1\bin\**;..\MauiApp1\obj\**;..\MauiApp1\Android\**;..\MauiApp1\iOS\**;..\MauiApp1\MacCatalyst\**"
+			Link="%(RecursiveDir)%(Filename)%(Extension)"/>
+		<EmbeddedResource
+			Include="..\MauiApp1\**\*.xaml"
+			Exclude="..\MauiApp1\bin\**;..\MauiApp1\obj\**"
+			Link="%(RecursiveDir)%(FileName)%(Extension)" />
+		<MauiXaml
+			Include="..\MauiApp1\**\*.xaml"
+			Exclude="..\MauiApp1\bin\**;..\MauiApp1\obj\**"
+			Link="%(RecursiveDir)%(FileName)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
 	</ItemGroup>
 
 	<PropertyGroup>
