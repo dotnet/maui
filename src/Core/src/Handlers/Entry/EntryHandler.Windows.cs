@@ -53,8 +53,12 @@ using Windows.System;
 			handler.NativeView?.UpdateIsReadOnly(entry);
 		}
 
-		[MissingMapper]
-		public static void MapFont(IViewHandler handler, IEntry entry) { }
+		public static void MapFont(EntryHandler handler, IEntry entry)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.NativeView?.UpdateFont(entry, fontManager);
+		}
 
 		public static void MapReturnType(EntryHandler handler, IEntry entry)
 		{
@@ -88,5 +92,11 @@ using Windows.System;
 
 			VirtualView?.Completed();
 		}
+
+		[MissingMapper]
+		public static void MapCursorPosition(IViewHandler handler, IEntry entry) { }
+
+		[MissingMapper]
+		public static void MapSelectionLength(IViewHandler handler, IEntry entry) { }
 	}
 }

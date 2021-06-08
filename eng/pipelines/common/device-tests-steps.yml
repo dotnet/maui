@@ -16,7 +16,6 @@ steps:
   - script: |
       echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
       echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
-      echo "##vso[task.setvariable variable=JAVA_HOME]/Users/builder/Library/Developer/Xamarin/jdk/microsoft_dist_openjdk_1.8.0.40/"
     displayName: 'Setup SDK Paths'
     condition: or(and(ne(variables['androidTestsVmPool'], 'Azure Pipelines'), ne('${{ parameters.platform }}', 'android')), and(ne(variables['iosTestsVmPool'], 'Azure Pipelines'), ne('${{ parameters.platform }}', 'ios')))
   

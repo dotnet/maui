@@ -70,5 +70,8 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
+
+		[MissingMapper]
+		public static void MapCancelButtonColor(IViewHandler handler, ISearchBar searchBar) { }
 	}
 }

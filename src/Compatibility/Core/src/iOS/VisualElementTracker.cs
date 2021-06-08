@@ -4,8 +4,8 @@ using System.Threading;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
 using UIKit;
