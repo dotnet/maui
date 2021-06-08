@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 {
 	internal static class BrushHelpers
 	{
-		public static void UpdateColor(Color color, ref Brush? defaultbrush, Func<Brush> getter, Action<Brush> setter)
+		public static void UpdateColor(Color? color, ref Brush? defaultbrush, Func<Brush> getter, Action<Brush> setter)
 		{
 			if (color == null)
 			{

@@ -188,5 +188,25 @@ namespace Microsoft.Maui.DeviceTests
 
 		UIReturnKeyType GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ReturnKeyType;
+
+		int GetNativeCursorPosition(EntryHandler entryHandler)
+		{
+			var textField = GetNativeEntry(entryHandler);
+
+			if (textField != null && textField.SelectedTextRange != null)
+				return (int)textField.GetOffsetFromPosition(textField.BeginningOfDocument, textField.SelectedTextRange.Start);
+
+			return -1;
+		}
+
+		int GetNativeSelectionLength(EntryHandler entryHandler)
+		{
+			var textField = GetNativeEntry(entryHandler);
+
+			if (textField != null && textField.SelectedTextRange != null)
+				return (int)textField.GetOffsetFromPosition(textField.SelectedTextRange.Start, textField.SelectedTextRange.End);
+
+			return -1;
+		}
 	}
 }
