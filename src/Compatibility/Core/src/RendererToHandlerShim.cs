@@ -24,7 +24,39 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public partial class RendererToHandlerShim : ViewHandler
 	{
-		public RendererToHandlerShim() : base(ViewHandler.ViewMapper)
+		public static PropertyMapper<IView, ViewHandler> ShimMapper = new PropertyMapper<IView, ViewHandler>(ViewHandler.ViewMapper)
+		{
+			[nameof(IView.AutomationId)] = MapAutomationId,
+			[nameof(IView.Visibility)] = MapVisibility,
+			[nameof(IView.Background)] = MapIgnore,
+			[nameof(IView.Width)] = MapWidth,
+			[nameof(IView.Height)] = MapHeight,
+			[nameof(IView.IsEnabled)] = MapIgnore,
+			[nameof(IView.Opacity)] = MapIgnore,
+			[nameof(IView.Semantics)] = MapSemantics,
+			[nameof(IView.TranslationX)] = MapIgnore,
+			[nameof(IView.TranslationY)] = MapIgnore,
+			[nameof(IView.Scale)] = MapIgnore,
+			[nameof(IView.ScaleX)] = MapIgnore,
+			[nameof(IView.ScaleY)] = MapIgnore,
+			[nameof(IView.Rotation)] = MapIgnore,
+			[nameof(IView.RotationX)] = MapIgnore,
+			[nameof(IView.RotationY)] = MapIgnore,
+			[nameof(IView.AnchorX)] = MapIgnore,
+			[nameof(IView.AnchorY)] = MapIgnore,
+			Actions =
+			{
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+				[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure,
+				[nameof(IFrameworkElement.Frame)] = MapFrame,
+			}
+		};
+
+		static void MapIgnore(ViewHandler arg1, IView arg2)
+		{
+		}
+
+		public RendererToHandlerShim() : base(ShimMapper)
 		{
 		}
 
@@ -55,7 +87,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (VisualElementRenderer.Element is IView view)
 			{
 				view.Handler = this;
-				SetVirtualView(view);
+
+				if (VirtualView != view)
+					SetVirtualView(view);
 			}
 			else if (VisualElementRenderer.Element != null)
 				throw new Exception($"{VisualElementRenderer.Element} must implement: {nameof(Microsoft.Maui.IView)}");
@@ -71,7 +105,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (e.NewElement is IView newView)
 			{
 				newView.Handler = this;
-				this.SetVirtualView(newView);
+
+				if (VirtualView != newView)
+					this.SetVirtualView(newView);
 			}
 			else if (e.NewElement != null)
 				throw new Exception($"{e.NewElement} must implement: {nameof(Microsoft.Maui.IView)}");
@@ -110,7 +146,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				VisualElementRenderer.SetElement((VisualElement)view);
 			}
-			else
+			else if(view != VirtualView)
 			{
 				base.SetVirtualView(view);
 			}

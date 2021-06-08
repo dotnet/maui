@@ -35,6 +35,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				var view = bindable as VisualElement;
 				if (view != null)
 					view.IsPlatformEnabled = newvalue != null;
+
+				if (view.Handler == null && newvalue is IVisualElementRenderer ver)
+					view.Handler = new RendererToHandlerShim(ver);
+
 			});
 
 		public Platform(Context context) : this(context, false)
