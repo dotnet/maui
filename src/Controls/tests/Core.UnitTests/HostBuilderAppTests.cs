@@ -1,39 +1,40 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Core;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using Xunit;
+using NUnit;
+using NUnit.Framework;
+using Microsoft.Maui.Controls.Hosting;
 
-namespace Microsoft.Maui.UnitTests.Hosting
+namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[Category(TestCategory.Core, TestCategory.Hosting)]
+	[TestFixture]
 	public class HostBuilderAppTests
 	{
-		[Fact]
+		[Test]
 		public void UseMauiAppRegistersApp()
 		{
 			var host = new AppHostBuilder()
 				.UseMauiApp<ApplicationStub>()
 				.Build();
 
-			var app = host.Services.GetRequiredService<IApplication>();
-
-			var stub = Assert.IsType<ApplicationStub>(app);
-			Assert.Equal("Default", stub.Property);
+			var app = (ApplicationStub)host.Services.GetRequiredService<IApplication>();
+			Assert.AreEqual("Default", app.Property);
 		}
 
-		[Fact]
+		[Test]
 		public void UseMauiAppRegistersAppWithFactory()
 		{
 			var host = new AppHostBuilder()
 				.UseMauiApp(services => new ApplicationStub { Property = "Factory" })
 				.Build();
 
-			var app = host.Services.GetRequiredService<IApplication>();
-
-			var stub = Assert.IsType<ApplicationStub>(app);
-			Assert.Equal("Factory", stub.Property);
+			var app = (ApplicationStub)host.Services.GetRequiredService<IApplication>();
+			Assert.AreEqual("Factory", app.Property);
 		}
 
-		[Fact]
+		[Test]
 		public void UseMauiAppRegistersSingleton()
 		{
 			var host = new AppHostBuilder()
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			var app1 = host.Services.GetRequiredService<IApplication>();
 			var app2 = host.Services.GetRequiredService<IApplication>();
 
-			Assert.Equal(app1, app2);
+			Assert.AreEqual(app1, app2);
 		}
 	}
 }
