@@ -1,10 +1,13 @@
-﻿#nullable enable
+#nullable enable
 using Microsoft.UI.Xaml.Controls;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, TimePicker>
 	{
+		WBrush? _defaultForeground;
+
 		protected override TimePicker CreateNativeView() => new TimePicker();
 
 		protected override void ConnectHandler(TimePicker nativeView)
@@ -17,7 +20,14 @@ namespace Microsoft.Maui.Handlers
 			nativeView.TimeChanged -= OnControlTimeChanged;
 		}
 
-		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
+    protected override void SetupDefaults(TimePicker nativeView)
+		{
+			_defaultForeground = nativeView.Foreground;
+
+			base.SetupDefaults(nativeView);
+		}
+
+	  public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.NativeView?.UpdateTime(timePicker);
 		}
@@ -39,9 +49,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(timePicker, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker) { }
-
+    public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.NativeView?.UpdateTextColor(timePicker, handler._defaultForeground);
+		}
+    
 		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)
 		{
 			if (VirtualView != null)
@@ -49,6 +61,6 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.Time = e.NewTime;
 				VirtualView.InvalidateMeasure();
 			}
-		}
+    }
 	}
 }

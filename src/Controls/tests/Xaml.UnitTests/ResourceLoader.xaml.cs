@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;

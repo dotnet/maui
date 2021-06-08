@@ -225,7 +225,7 @@ stages:
                 displayName: 'Provisionator'
                 condition: eq(variables['provisioning'], 'true')
                 inputs:
-                  provisioning_script: $(provisionator.xcode)
+                  provisioning_script: $(provisionator.path)
                   provisioning_extra_args: $(provisionator.extraArguments)
 
               - script: |
@@ -310,7 +310,7 @@ stages:
                   displayName: 'Provisionator'
                   condition: eq(variables['provisioning'], 'true')
                   inputs:
-                    provisioning_script: $(provisionator.xcode)
+                    provisioning_script: $(provisionator.path)
                     provisioning_extra_args: $(provisionator.extraArguments)
 
                 - script: |
@@ -339,6 +339,10 @@ stages:
                   & dotnet build src/DotNet/DotNet.csproj -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
                   $env:PATH = (Join-Path '$(System.DefaultWorkingDirectory)' 'bin/dotnet') + [IO.Path]::PathSeparator + $env:PATH
                   & $(DotNet.Path) build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-buildtasks.binlog
+                  & $(DotNet.Path) build src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-android.binlog
+                  & $(DotNet.Path) build src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-iOS.binlog
+                  & $(DotNet.Path) build src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-MacCatalyst.binlog
+                  & $(DotNet.Path) build src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-SingleProject.binlog
                   & $(DotNet.Path) build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration).binlog
                 displayName: build samples
                 errorActionPreference: stop

@@ -1,4 +1,6 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml.Controls;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui
 {
@@ -25,5 +27,11 @@ namespace Microsoft.Maui
 
 		public static void UpdateFont(this TimePicker nativeTimePicker, ITimePicker timePicker, IFontManager fontManager) =>
 			nativeTimePicker.UpdateFont(timePicker.Font, fontManager);
+	
+		public static void UpdateTextColor(this TimePicker nativeTimePicker, ITimePicker timePicker,WBrush? defaultForeground)
+		{
+			Color textColor = timePicker.TextColor;
+			nativeTimePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToNative()) : textColor.ToNative();
+		}
 	}
 }

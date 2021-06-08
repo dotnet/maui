@@ -711,6 +711,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return false;
 		}
 
+		[PortHandler]
 		static void UpdateOpacity(VisualElement view, FrameworkElement frameworkElement)
 		{
 			frameworkElement.Opacity = view.Opacity;

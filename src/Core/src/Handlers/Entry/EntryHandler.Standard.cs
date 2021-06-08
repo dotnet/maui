@@ -19,5 +19,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapReturnType(IViewHandler handler, IEntry entry) { }
 		public static void MapClearButtonVisibility(IViewHandler handler, IEntry entry) { }
 		public static void MapCharacterSpacing(IViewHandler handler, IEntry entry) { }
+		public static void MapCursorPosition(IViewHandler handler, IEntry entry) { }
+		public static void MapSelectionLength(IViewHandler handler, IEntry entry) { }
 	}
 }

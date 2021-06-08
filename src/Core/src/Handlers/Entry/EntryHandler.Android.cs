@@ -135,6 +135,16 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateCharacterSpacing(entry);
 		}
 
+		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateCursorPosition(entry);
+		}
+
+		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateSelectionLength(entry);
+		}
+
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateClearButtonVisibility(entry, ClearButtonDrawable);
