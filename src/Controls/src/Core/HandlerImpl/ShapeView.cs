@@ -1,7 +1,7 @@
 ﻿#nullable enable
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Shapes2
+namespace Microsoft.Maui.Controls.Shapes
 {
 	public class ShapeView : View, IShapeView
 	{
