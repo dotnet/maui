@@ -7,14 +7,14 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="919dc1f9-17a9-48b3-81f8-0b8016bdfbf7"
-    Publisher="CN=shane"
+    Name="8B51DC95-6D07-4C39-BC6C-3BFE96E8A7EA"
+    Publisher="CN=User Name"
     Version="1.0.0.0" />
 
   <Properties>
     <DisplayName>MauiApp1</DisplayName>
     <PublisherDisplayName>Microsoft</PublisherDisplayName>
-    <Logo>Images\StoreLogo.png</Logo>
+    <Logo>Assets\appiconStoreLogo.png</Logo>
   </Properties>
 
   <Dependencies>
@@ -34,10 +34,19 @@
         DisplayName="MauiApp1"
         Description="MauiApp1"
         BackgroundColor="transparent"
-        Square150x150Logo="Images\Square150x150Logo.png"
-        Square44x44Logo="Images\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png"  Square71x71Logo="Images\SmallTile.png" Square310x310Logo="Images\LargeTile.png" ShortName="W21"/>
-        <uap:SplashScreen Image="Images\SplashScreen.png" />
+        Square150x150Logo="Assets\appiconMediumTile.png"
+        Square44x44Logo="Assets\appiconLogo.png">
+        <uap:DefaultTile
+          Wide310x150Logo="Assets\appiconWideTile.png"
+          Square71x71Logo="Assets\appiconSmallTile.png"
+          Square310x310Logo="Assets\appiconLargeTile.png"
+          ShortName="MauiApp1">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo"/>
+            <uap:ShowOn Tile="wide310x150Logo"/>
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile >
+        <uap:SplashScreen Image="Assets\appiconfgSplashScreen.png" />
       </uap:VisualElements>
     </Application>
   </Applications>
@@ -45,4 +54,5 @@
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
   </Capabilities>
+
 </Package>
