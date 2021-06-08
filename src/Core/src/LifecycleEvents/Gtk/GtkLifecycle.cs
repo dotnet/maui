@@ -4,7 +4,7 @@ using GLib;
 namespace Microsoft.Maui.LifecycleEvents
 {
 
-	public static class LinuxLifecycle
+	public static class GtkLifecycle
 	{
 
 		public delegate void OnStartup(Gtk.Application application, EventArgs args);

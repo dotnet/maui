@@ -38,24 +38,24 @@ namespace Microsoft.Maui
 
 			StartupMainWindow();
 
-			Services.InvokeLifecycleEvents<LinuxLifecycle.OnStartup>(del => del(CurrentGtkApplication, args));
+			Services.InvokeLifecycleEvents<GtkLifecycle.OnStartup>(del => del(CurrentGtkApplication, args));
 		}
 
 		protected void OnOpened(object o, GLib.OpenedArgs args)
 		{
-			Services?.InvokeLifecycleEvents<LinuxLifecycle.OnOpened>(del => del(CurrentGtkApplication, args));
+			Services?.InvokeLifecycleEvents<GtkLifecycle.OnOpened>(del => del(CurrentGtkApplication, args));
 		}
 
 		protected void OnActivated(object sender, EventArgs args)
 		{
 			StartupLauch(sender, args);
 
-			Services?.InvokeLifecycleEvents<LinuxLifecycle.OnApplicationActivated>(del => del(CurrentGtkApplication, args));
+			Services?.InvokeLifecycleEvents<GtkLifecycle.OnApplicationActivated>(del => del(CurrentGtkApplication, args));
 		}
 
 		protected void OnShutdown(object sender, EventArgs args)
 		{
-			Services?.InvokeLifecycleEvents<LinuxLifecycle.OnShutdown>(del => del(CurrentGtkApplication, args));
+			Services?.InvokeLifecycleEvents<GtkLifecycle.OnShutdown>(del => del(CurrentGtkApplication, args));
 
 			MauiGtkApplication.DispatchPendingEvents();
 
@@ -123,7 +123,7 @@ namespace Microsoft.Maui
 
 			MainWindow.Present();
 
-			Services?.InvokeLifecycleEvents<LinuxLifecycle.OnLaunched>(del => del(CurrentGtkApplication, args));
+			Services?.InvokeLifecycleEvents<GtkLifecycle.OnLaunched>(del => del(CurrentGtkApplication, args));
 		}
 
 		void StartupMainWindow()

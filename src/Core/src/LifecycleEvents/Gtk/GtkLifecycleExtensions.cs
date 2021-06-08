@@ -2,18 +2,18 @@ using System;
 
 namespace Microsoft.Maui.LifecycleEvents
 {
-	public static class LinuxLifecycleExtensions
+	public static class GtkLifecycleExtensions
 	{
-		public static ILifecycleBuilder AddWindows(this ILifecycleBuilder builder, Action<ILinuxLifecycleBuilder> configureDelegate)
+		public static ILifecycleBuilder AddGtk(this ILifecycleBuilder builder, Action<IGtkLifecycleBuilder> configureDelegate)
 		{
-			var windows = new LifecycleBuilder(builder);
+			var lifecycleBuilder = new LifecycleBuilder(builder);
 
-			configureDelegate?.Invoke(windows);
+			configureDelegate?.Invoke(lifecycleBuilder);
 
 			return builder;
 		}
 
-		class LifecycleBuilder : ILinuxLifecycleBuilder
+		class LifecycleBuilder : IGtkLifecycleBuilder
 		{
 			readonly ILifecycleBuilder _builder;
 
