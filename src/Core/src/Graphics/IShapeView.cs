@@ -11,6 +11,11 @@
 		IShape? Shape { get; }
 
 		/// <summary>
+		/// Determines how a Shape's contents are stretched to fill the view's layout space.
+		/// </summary>
+		Aspect? Aspect { get; }
+
+		/// <summary>
 		/// Indicates the brush used to paint the shape's interior.
 		/// </summary>
 		Paint? Fill { get; }

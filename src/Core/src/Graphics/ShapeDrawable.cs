@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Graphics
+﻿using System;
+
+namespace Microsoft.Maui.Graphics
 {
 	public class ShapeDrawable : IDrawable
 	{
@@ -33,6 +35,51 @@
 
 			if (path == null)
 				return;
+
+			// Scale the path if needed depending on specified aspect
+			var aspect = ShapeView?.Aspect;
+
+			if (aspect.HasValue)
+			{
+				var viewWidth = (float)(ShapeView?.Width ?? 0);
+				var viewHeight = (float)(ShapeView?.Height ?? 0);
+
+				// TODO: Calculate path's bounds to get a width and height
+				var pathWidth = 0f;
+				var pathHeight = 0f;
+
+				// If one dimension is 0, we have nothing to display anyway
+				if (pathWidth > 0 && pathHeight > 0)
+				{
+					if (aspect == Aspect.Fill)
+					{
+						var scaleX = viewWidth / pathWidth;
+						var scaleY = viewHeight / pathHeight;
+						
+						path.Transform(AffineTransform.GetScaleInstance(scaleX, scaleY));
+					}
+					else if (aspect == Aspect.AspectFill)
+					{
+						var scaleX = viewWidth / pathWidth;
+						var scaleY = viewHeight / pathHeight;
+						var scaleDimension = Math.Max(scaleX, scaleY);
+
+						path.Transform(AffineTransform.GetScaleInstance(scaleDimension, scaleDimension));
+					}
+					else if (aspect == Aspect.AspectFit)
+					{
+						var scaleX = viewWidth / pathWidth;
+						var scaleY = viewHeight / pathHeight;
+						var scaleDimension = Math.Min(scaleX, scaleY);
+
+						path.Transform(AffineTransform.GetScaleInstance(scaleDimension, scaleDimension));
+					}
+					else if (aspect == Aspect.Center)
+					{
+						// TODO: Calculate move
+					}
+				}
+			}
 
 			DrawStrokePath(canvas, rect, path);
 			DrawFillPath(canvas, rect, path);

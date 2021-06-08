@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public static readonly BindableProperty ShapeProperty =
 			BindableProperty.Create(nameof(Shape), typeof(IShape), typeof(ShapeView), null);
+
+		public static readonly BindableProperty AspectProperty =
+			BindableProperty.Create(nameof(Aspect), typeof(Aspect), typeof(ShapeView), null);
 		
 		public static readonly BindableProperty FillProperty =
 			BindableProperty.Create(nameof(Fill), typeof(Paint), typeof(ShapeView), null);
@@ -46,6 +49,12 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			set { SetValue(ShapeProperty, value); }
 			get { return (IShape?)GetValue(ShapeProperty); }
+		}
+
+		public Aspect? Aspect
+		{
+			set { SetValue(AspectProperty, value); }
+			get { return (Aspect?)GetValue(AspectProperty); }
 		}
 
 		public Paint? Fill
