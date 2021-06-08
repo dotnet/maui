@@ -8,7 +8,7 @@ Write-Host $msbuild
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
-$blazorWebViewSln = Join-Path $PSScriptRoot ../BlazorWebView.sln
+$blazorWebViewSln = Join-Path $PSScriptRoot ../BlazorWebView-net6.sln
 $slnTasks = Join-Path $PSScriptRoot ../Microsoft.Maui.BuildTasks-net6.sln
 
 # Bootstrap ./bin/dotnet/
