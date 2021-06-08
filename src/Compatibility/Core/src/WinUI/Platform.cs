@@ -25,8 +25,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			typeof(IVisualElementRenderer), typeof(Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer),
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
-				if (bindable is IView view && view.Handler == null && newvalue is IVisualElementRenderer ver)
-					view.Handler = new RendererToHandlerShim(ver);
+				if (bindable is IView view)
+				{
+					if (view.Handler == null && newvalue is IVisualElementRenderer ver)
+						view.Handler = new RendererToHandlerShim(ver);
+					else if (newvalue == null && view.Handler != null)
+						view.Handler = null;
+				}
 			});
 
 		public static IVisualElementRenderer GetRenderer(VisualElement element)
