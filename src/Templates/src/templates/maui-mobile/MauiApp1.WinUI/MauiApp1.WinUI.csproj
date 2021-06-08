@@ -17,7 +17,7 @@
 		<MauiImage
 			Include="..\MauiApp1\Resources\appicon.svg"
 			Link="Resources\appicon.svg"
-			ForegroundFile="Resources\appiconfg.svg"
+			ForegroundFile="..\MauiApp1\Resources\appiconfg.svg"
 			IsAppIcon="true"
 			Color="#512BD4" />
 
