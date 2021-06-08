@@ -26,18 +26,27 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
+		public override void NativeArrange(Graphics.Rectangle frame)
+		{
+			// empty on purpose
+		}
+
 		void UpdateContent()
 		{
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Children.Add(VirtualView.Content.ToNative(MauiContext, false));
-			// TODO : Fix me later
-			//if (VirtualView.Content.Handler is INativeViewHandler thandler)
-			//{
-			//	thandler?.SetParent(this);
-			//}
+			NativeView.Children.Clear();
+			_contentHandler?.Dispose();
+			_contentHandler = null;
+
+			NativeView.Children.Add(VirtualView.Content.ToNative(MauiContext));
+			if (VirtualView.Content.Handler is INativeViewHandler thandler)
+			{
+				thandler?.SetParent(this);
+				_contentHandler = thandler;
+			}
 		}
 	}
 }

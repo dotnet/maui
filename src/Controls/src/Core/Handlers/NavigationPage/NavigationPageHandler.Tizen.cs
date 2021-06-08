@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Controls.Internals;
 using ElmSharp;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Handlers;
 using Tizen.UIExtensions.ElmSharp;
-
 using TButton = Tizen.UIExtensions.ElmSharp.Button;
 using TSpan = Tizen.UIExtensions.Common.Span;
 using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
@@ -15,7 +13,7 @@ using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
 namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class NavigationPageHandler :
-		EViewHandler<NavigationPage, Naviframe>
+		ViewHandler<NavigationPage, Naviframe>
 	{
 		readonly List<Widget> _naviItemContentPartList = new List<Widget>();
 		TaskCompletionSource<bool> _currentTaskSource = null;
@@ -252,9 +250,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		EvasObject CreateNavItem(Page page)
 		{
-			//TODO: Fix me
-			EvasObject nativeView = (EvasObject)page.Handler.NativeView;
-			return nativeView;
+			return page.ToNative(MauiContext);
 		}
 	}
 }
