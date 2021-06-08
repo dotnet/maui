@@ -26,14 +26,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		public static PropertyMapper<IView, ViewHandler> ShimMapper = new PropertyMapper<IView, ViewHandler>(ViewHandler.ViewMapper)
 		{
-			[nameof(IView.AutomationId)] = MapAutomationId,
-			[nameof(IView.Visibility)] = MapVisibility,
+			// These properties are already being handled by the shimmed renderer
 			[nameof(IView.Background)] = MapIgnore,
-			[nameof(IView.Width)] = MapWidth,
-			[nameof(IView.Height)] = MapHeight,
 			[nameof(IView.IsEnabled)] = MapIgnore,
 			[nameof(IView.Opacity)] = MapIgnore,
-			[nameof(IView.Semantics)] = MapSemantics,
 			[nameof(IView.TranslationX)] = MapIgnore,
 			[nameof(IView.TranslationY)] = MapIgnore,
 			[nameof(IView.Scale)] = MapIgnore,
@@ -43,17 +39,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 			[nameof(IView.RotationX)] = MapIgnore,
 			[nameof(IView.RotationY)] = MapIgnore,
 			[nameof(IView.AnchorX)] = MapIgnore,
-			[nameof(IView.AnchorY)] = MapIgnore,
-			Actions =
-			{
-				[nameof(IViewHandler.ContainerView)] = MapContainerView,
-				[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure,
-				[nameof(IFrameworkElement.Frame)] = MapFrame,
-			}
+			[nameof(IView.AnchorY)] = MapIgnore
 		};
 
 		static void MapIgnore(ViewHandler arg1, IView arg2)
 		{
+			// These are properties that are already being handled by the shimmed renderer
+			// So if we also process these properties on the ViewHandler then we might get competing results
 		}
 
 		public RendererToHandlerShim() : base(ShimMapper)
