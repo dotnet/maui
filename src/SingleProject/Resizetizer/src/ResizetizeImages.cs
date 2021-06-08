@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -101,7 +102,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				// Add DPI info to the itemspec so we can use it in the targets
 				attr.Add("_ResizetizerDpiPath", img.Dpi.Path);
-				attr.Add("_ResizetizerDpiScale", img.Dpi.Scale.ToString("0.0"));
+				attr.Add("_ResizetizerDpiScale", img.Dpi.Scale.ToString("0.0", CultureInfo.InvariantCulture));
 
 				copiedResources.Add(new TaskItem(itemSpec, attr));
 			}
