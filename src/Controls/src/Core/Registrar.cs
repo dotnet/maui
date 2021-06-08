@@ -329,8 +329,13 @@ namespace Microsoft.Maui.Controls.Internals
 			for (var i = 0; i < exportEffectsLength; i++)
 			{
 				var effect = effectAttributes[i];
-				Effects[resolutionName + "." + effect.Id] = effect.Type;
+				RegisterEffect(resolutionName, effect.Id, effect.Type);
 			}
+		}
+
+		public static void RegisterEffect(string resolutionName, string id, Type effectType)
+		{
+			Effects[resolutionName + "." + id] = effectType;
 		}
 
 		public static void RegisterAll(Type[] attrTypes)
@@ -384,6 +389,7 @@ namespace Microsoft.Maui.Controls.Internals
 						continue;
 
 					var length = attributes.Length;
+
 					for (var i = 0; i < length; i++)
 					{
 						var a = attributes[i];
