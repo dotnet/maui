@@ -46,11 +46,11 @@
     <Compile Remove="**\*.uwp.cs" />
     <None Include="**\*.uwp.cs" />
   </ItemGroup>
-  <ItemGroup Condition="$(DefineConstants.Contains('LINUX')) != true ">
-    <Compile Remove="**\*.Linux.cs" />
-    <None Include="**\*.Linux.cs" />
-    <Compile Remove="**\Linux\*.cs" />
-    <None Include="**\Linux\*.cs" />
+  <ItemGroup Condition="$(DefineConstants.Contains('GTK')) != true ">
+    <Compile Remove="**\*.Gtk.cs" />
+    <None Include="**\*.Gtk.cs" />
+    <Compile Remove="**\Gtk\*.cs" />
+    <None Include="**\Gtk\*.cs" />
   </ItemGroup>
   <PropertyGroup>
     <!-- Windows -->
