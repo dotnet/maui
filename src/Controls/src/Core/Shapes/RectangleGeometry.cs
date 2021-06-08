@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (Rect)GetValue(RectProperty); }
 		}
 
-		public override void AppendToPath(Graphics.PathF path)
+		public override void AppendPath(Graphics.PathF path)
 		{
 			path.AppendRectangle(Rect);
 		}

@@ -98,11 +98,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			InvalidateGeometryRequested?.Invoke(this, EventArgs.Empty);
 		}
 
-		public override void AppendToPath(Graphics.PathF path)
+		public override void AppendPath(Graphics.PathF path)
 		{
 			foreach (var c in Children)
 			{
-				c.AppendToPath(path);
+				c.AppendPath(path);
 			}
 		}
 	}

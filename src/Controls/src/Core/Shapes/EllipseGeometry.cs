@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (double)GetValue(RadiusYProperty); }
 		}
 
-		public override void AppendToPath(PathF path)
+		public override void AppendPath(PathF path)
 		{
 			path.AppendEllipse((float)Center.X, (float)Center.Y, (float)RadiusX * 2f, (float)RadiusY * 2f);
 		}

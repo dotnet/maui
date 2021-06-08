@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (FillRule)GetValue(FillRuleProperty); }
 		}
 
-		public override void AppendToPath(PathF path)
+		public override void AppendPath(PathF path)
 		{
 			foreach (var f in Figures)
 			{
