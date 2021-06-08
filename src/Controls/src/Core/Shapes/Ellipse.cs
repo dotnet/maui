@@ -1,11 +1,22 @@
 
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public sealed class Ellipse : Shape
+	public sealed class Ellipse : Shape, IShape
 	{
-		public Ellipse()
+		public Ellipse() : base()
 		{
 			Aspect = Stretch.Fill;
+		}
+
+		public PathF PathForBounds(Graphics.Rectangle rect)
+		{
+			var path = new PathF();
+
+			path.AppendEllipse(rect);
+
+			return path.AsScaledPath((float)Width / (float)rect.Width);
 		}
 	}
 }

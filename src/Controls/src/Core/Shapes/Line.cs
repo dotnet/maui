@@ -1,8 +1,22 @@
 
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public sealed class Line : Shape
+	public sealed class Line : Shape, IShape
 	{
+		public Line() : base()
+		{
+		}
+
+		public Line(double x1, double y1, double x2, double y2) : this()
+		{
+			X1 = x1;
+			Y1 = y1;
+			X2 = x2;
+			Y2 = y2;
+		}
+
 		public static readonly BindableProperty X1Property =
 			BindableProperty.Create(nameof(X1), typeof(double), typeof(Line), 0.0d);
 
@@ -37,6 +51,16 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			set { SetValue(Y2Property, value); }
 			get { return (double)GetValue(Y2Property); }
+		}
+
+		public PathF PathForBounds(Graphics.Rectangle rect)
+		{
+			var path = new PathF();
+
+			path.MoveTo((float)X1, (float)Y1);
+			path.LineTo((float)X2, (float)Y2);
+
+			return path.AsScaledPath((float)Width / (float)rect.Width);
 		}
 	}
 }

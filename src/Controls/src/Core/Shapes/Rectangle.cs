@@ -1,9 +1,11 @@
 
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public sealed class Rectangle : Shape
+	public sealed class Rectangle : Shape, IShape
 	{
-		public Rectangle()
+		public Rectangle() : base()
 		{
 			Aspect = Stretch.Fill;
 		}
@@ -24,6 +26,15 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			set { SetValue(RadiusYProperty, value); }
 			get { return (double)GetValue(RadiusYProperty); }
+		}
+
+		public PathF PathForBounds(Graphics.Rectangle rect)
+		{
+			var path = new PathF();
+
+			path.AppendRoundedRectangle(rect, (float)RadiusY + (float)RadiusX);
+				
+			return path;
 		}
 	}
 }
