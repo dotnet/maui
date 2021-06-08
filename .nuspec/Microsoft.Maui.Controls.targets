@@ -81,8 +81,8 @@
     </AssignTargetPath>
     
     <ItemGroup>
-      <AdditionalFiles Include="@(_MauiXamlWithTargetPath)" ManifestResourceName="%(ManifestResourceName)" TargetPath="%(TargetPath)" ItemSpec="%(OriginalItemSpec)" GenKind="Xaml"/>
-      <AdditionalFiles Include="@(_MauiCssWithTargetPath)" ManifestResourceName="%(ManifestResourceName)" TargetPath="%(TargetPath)" ItemSpec="%(OriginalItemSpec)" GenKind="Css"/>
+      <AdditionalFiles Include="@(_MauiXamlWithTargetPath -> '%(FullPath)')" ManifestResourceName="%(ManifestResourceName)" TargetPath="%(TargetPath)" ItemSpec="%(OriginalItemSpec)" GenKind="Xaml"/>
+      <AdditionalFiles Include="@(_MauiCssWithTargetPath -> '%(FullPath)')" ManifestResourceName="%(ManifestResourceName)" TargetPath="%(TargetPath)" ItemSpec="%(OriginalItemSpec)" GenKind="Css"/>
       <_MauiXamlWithResourceNames Remove="@(_MauiXamlWithResourceNames)" />
       <_MauiXamlWithTargetPath Remove="@(_MauiXamlWithTargetPath)" />
       <_MauiCssWithResourceNames Remove="@(_MauiCssWithResourceNames)" />
