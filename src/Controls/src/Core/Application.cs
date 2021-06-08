@@ -29,7 +29,10 @@ namespace Microsoft.Maui.Controls
 			SystemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
 			SystemResources.ValuesChanged += OnParentResourcesChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
-			// Initialize this value, when the app loads
+		}
+
+		internal void PlatformServicesSet()
+		{
 			_lastAppTheme = RequestedTheme;
 		}
 
