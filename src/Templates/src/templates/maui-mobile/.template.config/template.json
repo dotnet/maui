@@ -14,7 +14,8 @@
     "sourceName": "MauiApp1",
     "preferNameDirectory": true,
     "guids": [
-      "07CD65EF-6238-4365-AF5D-F6D433967F48"
+      "07CD65EF-6238-4365-AF5D-F6D433967F48",
+      "202C61B5-A2D9-4817-8020-731D9F855561"
     ],
     "symbols": {
       "applicationId": {
