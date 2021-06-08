@@ -195,7 +195,26 @@
                 FontSize="14"
                 SemanticProperties.HeadingLevel="Level3"/>
 
+            <VerticalStackLayout SemanticProperties.Description="Layout description text">
+                <Label
+                    Text="Label in StackLayout with semantic desription"
+                    FontSize="14"/>
+                <Label
+                    Text="Label in StackLayout with semantic desription"
+                    FontSize="14"/>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout SemanticProperties.Description="Layout description text">
+                <Label
+                    Text="Label in StackLayout with semantic desription"
+                    FontSize="14"/>
+                <Button
+                    Text="Button in StackLayout with semantic desription"
+                    FontSize="14"/>
+            </VerticalStackLayout>
+
         </VerticalStackLayout>
+
     </ScrollView>
 
 </controls:BasePage>
