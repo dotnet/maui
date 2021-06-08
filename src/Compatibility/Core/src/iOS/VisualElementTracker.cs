@@ -4,6 +4,7 @@ using System.Threading;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
@@ -374,6 +375,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateNativeControl()
 		{
 			Performance.Start(out string reference);

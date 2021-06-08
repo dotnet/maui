@@ -21,6 +21,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiTextField nativeView)
 		{
+			base.ConnectHandler(nativeView);
+
 			nativeView.ShouldReturn = OnShouldReturn;
 			nativeView.EditingChanged += OnEditingChanged;
 			nativeView.EditingDidEnd += OnEditingEnded;
@@ -30,6 +32,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiTextField nativeView)
 		{
+			base.DisconnectHandler(nativeView);
+
 			nativeView.EditingChanged -= OnEditingChanged;
 			nativeView.EditingDidEnd -= OnEditingEnded;
 			nativeView.TextPropertySet -= OnTextPropertySet;
@@ -116,6 +120,16 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateCharacterSpacing(entry);
+		}
+
+		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateCursorPosition(entry);
+		}
+
+		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateSelectionLength(entry);
 		}
 
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)

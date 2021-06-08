@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using AColor = Android.Graphics.Color;
 using ATextAlignment = Android.Views.TextAlignment;
 
 namespace Microsoft.Maui.DeviceTests
@@ -18,6 +20,18 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(picker, () => picker.Title, GetNativeTitle, picker.Title);
+		}
+
+		[Fact(DisplayName = "Title Color Initializes Correctly")]
+		public async Task TitleColorInitializesCorrectly()
+		{
+			var picker = new PickerStub
+			{
+				Title = "Select an Item",
+				TitleColor = Colors.CadetBlue
+			};
+
+			await ValidatePropertyInitValue(picker, () => picker.TitleColor, GetNativeTitleColor, picker.TitleColor);
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
@@ -57,7 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		MauiPicker GetNativePicker(PickerHandler pickerHandler) =>
-			(MauiPicker)pickerHandler.NativeView;
+			pickerHandler.NativeView;
 
 		string GetNativeTitle(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).Hint;
@@ -88,5 +102,12 @@ namespace Microsoft.Maui.DeviceTests
 
 		ATextAlignment GetNativeHorizontalTextAlignment(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).TextAlignment;
+
+		Color GetNativeTitleColor(PickerHandler pickerHandler)
+		{
+			var currentTextColorInt = GetNativePicker(pickerHandler).CurrentHintTextColor;
+			var currentTextColor = new AColor(currentTextColorInt);
+			return currentTextColor.ToColor();
+		}
 	}
 }

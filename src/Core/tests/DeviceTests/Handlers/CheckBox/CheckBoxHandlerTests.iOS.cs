@@ -14,15 +14,15 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsChecked(CheckBoxHandler checkBoxHandler) =>
 			GetNativeCheckBox(checkBoxHandler).IsChecked;
 
-        async Task ValidateColor(ICheckBox checkBoxStub, Color color, Action action = null)
-        {
-            var expected = await GetValueAsync(checkBoxStub, handler =>
-            {
-                var native = GetNativeCheckBox(handler);
-                action?.Invoke();
-                return native.CheckBoxTintColor;
-            });
-            Assert.Equal(expected, color);
-        }
-    }
+		async Task ValidateColor(ICheckBox checkBoxStub, Color color, Action action = null)
+		{
+			var expected = await GetValueAsync(checkBoxStub, handler =>
+			{
+				var native = GetNativeCheckBox(handler);
+				action?.Invoke();
+				return native.CheckBoxTintColor;
+			});
+			Assert.Equal(expected, color);
+		}
+	}
 }

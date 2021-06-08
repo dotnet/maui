@@ -26,6 +26,9 @@ using Maui.Controls.Sample.Controls;
 
 namespace Maui.Controls.Sample
 {
+
+	public class CustomButton : Button { }
+
 	public class Startup : IStartup
 	{
 		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage, Shell }
@@ -40,7 +43,20 @@ namespace Maui.Controls.Sample
 
 			appBuilder
 				.UseFormsCompatibility()
-				.UseMauiControlsHandlers();
+				.UseMauiControlsHandlers()
+				.ConfigureMauiHandlers(handlers =>
+				{
+#if __ANDROID__
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer));
+#elif __IOS__
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
+#elif WINDOWS
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
+#endif
+				});
 
 			if (UseXamlApp)
 				appBuilder.UseMauiApp<XamlApp>();
