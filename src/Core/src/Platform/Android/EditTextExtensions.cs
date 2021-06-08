@@ -6,6 +6,7 @@ using Android.Text;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using Android.Widget;
+using Android.Util;
 
 namespace Microsoft.Maui
 {
@@ -309,6 +310,20 @@ namespace Microsoft.Maui
 				entry.SelectionLength = newSelectionLength;
 			return end;
 		}
+		
+
+		public static void UpdateAutoSize(this AppCompatEditText editText, IEditor editor)
+		{
+			if(editor.AutoSize == EditorAutoSizeOption.Disabled)
+			{				
+				editText.SetAutoSizeTextTypeWithDefaults(AutoSizeTextType.None);
+			}
+			else
+			{
+				editText.SetAutoSizeTextTypeUniformWithConfiguration(editText.AutoSizeMinTextSize, editText.AutoSizeMaxTextSize, editText.AutoSizeStepGranularity, (int)ComplexUnitType.Sp);
+			}
+		}
+
 
 		internal static void SetInputType(this AppCompatEditText editText, ITextInput textInput)
 		{

@@ -213,5 +213,12 @@ namespace Microsoft.Maui.DeviceTests
 				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
 				nativeEditor.SpellCheckingType == UITextSpellCheckingType.No;
 		}
+
+		EditorAutoSizeOption GetNativeAutoSize(EditorHandler editorHandler)
+		{
+			var nativeEditor = GetNativeEditor(editorHandler);
+
+			return nativeEditor.ScrollEnabled ? EditorAutoSizeOption.TextChanges : EditorAutoSizeOption.Disabled;
+		}
 	}
 }
