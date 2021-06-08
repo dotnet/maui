@@ -238,8 +238,9 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
 			verticalStack.Add(new Entry { Placeholder = "This is a blue text box", BackgroundColor = Colors.CornflowerBlue });
 
-			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 });
-			;
+			verticalStack.Add(CreateSampleCursorSelection());
+
+			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 });			
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
@@ -483,6 +484,41 @@ namespace Maui.Controls.Sample.Pages
 			return layout;
 		}
 
+		IView CreateSampleCursorSelection()
+		{
+			var layout = new Microsoft.Maui.Controls.Layout2.GridLayout() { ColumnSpacing = 5, RowSpacing = 8, BackgroundColor = Colors.LightGreen };
+
+			layout.AddRowDefinition(new RowDefinition() { Height = new GridLength(50) });
+
+			layout.AddColumnDefinition(new ColumnDefinition() { Width = new GridLength(150) });
+			layout.AddColumnDefinition(new ColumnDefinition() { Width = new GridLength(80) });
+			layout.AddColumnDefinition(new ColumnDefinition() { Width = new GridLength(80) });
+
+			Entry targetEntry = new() { Placeholder = "Selectable Text" };
+			Entry forPosition = new() { Keyboard = Keyboard.Numeric, Placeholder = "CursorPos" };
+			forPosition.TextChanged += (sender, args) =>
+			{
+				if (!int.TryParse(args.NewTextValue, out int newPos))
+					return;
+				targetEntry.CursorPosition = newPos;
+			};
+
+			Entry forSelectionLen = new() { Keyboard = Keyboard.Numeric, Placeholder = "SelectionLen" };
+			forSelectionLen.TextChanged += (sender, args) =>
+			{
+				if (!int.TryParse(args.NewTextValue, out int newSelectionLen))
+					return;
+				targetEntry.SelectionLength = newSelectionLen;
+			};
+
+			layout.Add(targetEntry);
+			layout.Add(forPosition);
+			layout.SetColumn(forPosition, 1);
+			layout.Add(forSelectionLen);
+			layout.SetColumn(forSelectionLen, 2);
+
+			return layout;
+    }
 		IView CreateTransformations()
 		{
 			var label = new Button
