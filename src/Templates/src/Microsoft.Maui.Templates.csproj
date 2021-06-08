@@ -13,6 +13,7 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <!-- This project has no .NET assemblies, so disable the warning for that -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <BeforePack>_UpdateTemplateVersions</BeforePack>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +24,7 @@
   <!-- Eventually replaced by eng/Version.targets -->
   <Target Name="SetVersions" />
 
-  <Target Name="_UpdateTemplateVersions" BeforeTargets="GenerateNuspec" DependsOnTargets="SetVersions">
+  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions">
     <PropertyGroup>
       <PackageReferenceVersion Condition="'$(PackageReferenceVersion)' == ''">$(PackageVersion)</PackageReferenceVersion>
     </PropertyGroup>
