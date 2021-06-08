@@ -43,11 +43,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (double)GetValue(RadiusYProperty); }
 		}
 
-		public override PathF PathForBounds(Graphics.Rectangle rect)
+		public override void AppendToPath(PathF path)
 		{
-			var path = new PathF();
 			path.AppendEllipse((float)Center.X, (float)Center.Y, (float)RadiusX * 2f, (float)RadiusY * 2f);
-			return path;
 		}
 	}
 }

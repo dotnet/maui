@@ -17,8 +17,11 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public PathF PathForBounds(Graphics.Rectangle rect)
 		{
-			return Data.PathForBounds(new Graphics.Rectangle(0, 0, Width, Height))
-				.AsScaledPath((float)Width / (float)rect.Width);
+			var path = new PathF();
+
+			Data.AppendToPath(path);
+
+			return path.AsScaledPath((float)Width / (float)rect.Width);
 		}
 
 		public static readonly BindableProperty DataProperty =

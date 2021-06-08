@@ -40,14 +40,10 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (FillRule)GetValue(FillRuleProperty); }
 		}
 
-		public override Graphics.PathF PathForBounds(Graphics.Rectangle rect)
+		public override void AppendToPath(PathF path)
 		{
-			var path = new Graphics.PathF();
-
 			foreach (var f in Figures)
 			{
-				path.Open();
-
 				foreach (var s in f.Segments)
 				{
 					if (s is ArcSegment arcSegment)
@@ -65,11 +61,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					else if (s is QuadraticBezierSegment quadraticBezierSegment)
 						AddQuad(path, quadraticBezierSegment);
 				}
-
-				path.Close();
 			}
-
-			return path;
 		}
 
 		void AddArc(PathF path, ArcSegment arcSegment)
