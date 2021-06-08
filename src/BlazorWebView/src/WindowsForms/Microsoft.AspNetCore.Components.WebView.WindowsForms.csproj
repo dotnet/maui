@@ -8,7 +8,6 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <Description>Build Windows Forms applications with Blazor and WebView2.</Description>
     <UseWindowsForms>true</UseWindowsForms>
-    <IsShippingPackage>true</IsShippingPackage>
     <Nullable>disable</Nullable>
   </PropertyGroup>
 

@@ -8,7 +8,6 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <Description>Build WPF applications with Blazor and WebView2.</Description>
     <UseWPF>true</UseWPF>
-    <IsShippingPackage>true</IsShippingPackage>
     <Nullable>disable</Nullable>
   </PropertyGroup>
 

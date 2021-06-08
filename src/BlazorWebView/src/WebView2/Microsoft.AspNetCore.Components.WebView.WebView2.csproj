@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Description>WebView2 wrappers for BlazorWebView components on Windows.</Description>
-    <IsShippingPackage>true</IsShippingPackage>
     <Nullable>disable</Nullable>
   </PropertyGroup>
 

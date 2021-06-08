@@ -5,8 +5,7 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <OutputType>WinExe</OutputType>
     <UseWindowsForms>true</UseWindowsForms>
-    <IsShippingPackage>false</IsShippingPackage>
-    <TargetLatestDotNetRuntime>false</TargetLatestDotNetRuntime>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
