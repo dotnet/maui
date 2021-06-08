@@ -3,7 +3,7 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class CheckBoxHandler : EViewHandler<ICheckBox, Check>
+	public partial class CheckBoxHandler : ViewHandler<ICheckBox, Check>
 	{
 		protected override Check CreateNativeView() => new Check(NativeParent);
 

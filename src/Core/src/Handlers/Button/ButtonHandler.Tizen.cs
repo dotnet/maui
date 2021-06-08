@@ -3,7 +3,7 @@ using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : EViewHandler<IButton, Button>
+	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
 		protected override Button CreateNativeView() => new Button(NativeParent);
 

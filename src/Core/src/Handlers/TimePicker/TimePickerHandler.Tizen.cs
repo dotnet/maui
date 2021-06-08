@@ -7,7 +7,7 @@ using EcoreMainloop = ElmSharp.EcoreMainloop;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class TimePickerHandler : EViewHandler<ITimePicker, TEntry>
+	public partial class TimePickerHandler : ViewHandler<ITimePicker, TEntry>
 	{
 		const string DialogTitle = "Choose Time";
 		Lazy<IDateTimeDialog>? _lazyDialog;

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public VisualElement Element { get; private set; }
 
-		public EvasObject NativeView => (EvasObject)ViewHandler.NativeView;
+		public EvasObject NativeView => ((INativeViewHandler)ViewHandler).NativeView;
 
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
@@ -49,7 +49,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			ViewHandler.SetVirtualView((IView)element);
 			((IView)element).Handler = ViewHandler;
 
+			Platform.SetRenderer(element, this);
+
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
+
+			(ViewHandler as INativeViewHandler)?.SetParent(new MockParentHandler(element.RealParent as VisualElement));
 		}
 
 		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
@@ -82,5 +86,76 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			return NativeView.Geometry;
 		}
+
+		class MockParentHandler : INativeViewHandler
+		{
+
+			public MockParentHandler(VisualElement parent)
+			{
+				RealParent = parent;
+			}
+
+			VisualElement RealParent { get; }
+			IVisualElementRenderer Renderer => Platform.GetRenderer(RealParent);
+			public EvasObject NativeView => Renderer.NativeView;
+
+			public EvasObject ContainerView => NativeView;
+
+			public INativeViewHandler Parent => null;
+
+			public IView VirtualView => Renderer.Element as IView;
+
+			public IMauiContext MauiContext => null;
+
+			object IViewHandler.NativeView => NativeView;
+
+			object IViewHandler.ContainerView => NativeView;
+
+			bool HasContainer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+			bool IViewHandler.HasContainer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+			public void DisconnectHandler() { }
+
+			public void Dispose()
+			{
+				throw new NotImplementedException();
+			}
+
+			public Size GetDesiredSize(double widthConstraint, double heightConstraint)
+			{
+				throw new NotImplementedException();
+			}
+
+			public ERect GetNativeContentGeometry()
+			{
+				return Renderer.GetNativeContentGeometry();
+			}
+
+			public void NativeArrange(Rectangle frame)
+			{
+				throw new NotImplementedException();
+			}
+
+			public void SetMauiContext(IMauiContext mauiContext)
+			{
+				throw new NotImplementedException();
+			}
+
+			public void SetParent(INativeViewHandler parent)
+			{
+				throw new NotImplementedException();
+			}
+
+			public void SetVirtualView(IView view)
+			{
+				throw new NotImplementedException();
+			}
+
+			public void UpdateValue(string property)
+			{
+				throw new NotImplementedException();
+			}
+		}
+
 	}
 }

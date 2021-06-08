@@ -392,7 +392,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		public static void Init(IActivationState activationState) => Init(activationState.Context.Context.CurrentApplication);
+		public static void Init(IActivationState activationState) => Init(activationState.Context);
 
 		public static void Init(CoreApplication application) => Init(new MauiContext(CoreUIAppContext.GetInstance(application)));
 

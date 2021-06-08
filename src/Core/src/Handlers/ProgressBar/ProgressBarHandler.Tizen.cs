@@ -4,7 +4,7 @@ using EProgressBar = ElmSharp.ProgressBar;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ProgressBarHandler : EViewHandler<IProgress, EProgressBar>
+	public partial class ProgressBarHandler : ViewHandler<IProgress, EProgressBar>
 	{
 		protected virtual EColor DefaultColor => ThemeConstants.ProgressBar.ColorClass.Default;
 

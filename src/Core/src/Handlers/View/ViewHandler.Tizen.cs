@@ -1,4 +1,6 @@
-﻿using NativeView = ElmSharp.EvasObject;
+﻿using System;
+using ElmSharp;
+using NativeView = ElmSharp.EvasObject;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -62,6 +64,56 @@ namespace Microsoft.Maui.Handlers
 		internal static void UpdateTransformation(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.WrappedNativeView)?.UpdateTransformation(view);
+		}
+
+		protected virtual void OnNativeViewDeleted()
+		{
+		}
+
+		protected virtual void OnFocused()
+		{
+		}
+
+		protected virtual void OnUnfocused()
+		{
+		}
+
+		protected void OnFocused(object? sender, EventArgs e)
+		{
+			OnFocused();
+		}
+
+		protected void OnUnfocused(object? sender, EventArgs e)
+		{
+			OnUnfocused();
+		}
+
+		partial void ConnectingHandler(NativeView? nativeView)
+		{
+			if (nativeView == null)
+				return;
+
+
+			nativeView.Deleted += OnNativeViewDeleted;
+
+			if (nativeView is Widget widget)
+			{
+				widget.Focused += OnFocused;
+				widget.Unfocused += OnUnfocused;
+			}
+		}
+
+		partial void DisconnectingHandler(NativeView? nativeView)
+		{
+			if (nativeView == null)
+				return;
+
+			nativeView.Deleted -= OnNativeViewDeleted;
+		}
+
+		void OnNativeViewDeleted(object? sender, EventArgs e)
+		{
+			OnNativeViewDeleted();
 		}
 	}
 }

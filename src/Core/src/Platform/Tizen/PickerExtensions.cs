@@ -13,7 +13,7 @@ namespace Microsoft.Maui
 		internal static void UpdatePicker(this Entry nativePicker, IPicker picker)
 		{
 			if (picker.SelectedIndex == -1 || picker.SelectedIndex >= picker.GetCount())
-				nativePicker.Text = null;
+				nativePicker.Text = string.Empty;
 			else
 				nativePicker.Text = picker.GetItem(picker.SelectedIndex);
 		}

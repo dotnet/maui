@@ -145,6 +145,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnContentLayoutUpdated(object sender, Native.LayoutEventArgs e)
 		{
+			// It is workaround,
+			// in some case, before set a size of ScrollView, if content of content was filled with sized items,
+			// after size of ScrollView was updated, a content position was moved to somewhere.
+			if (Element.Content != null)
+			{
+				Platform.GetRenderer(Element.Content)?.NativeView?.Move(e.Geometry.X, e.Geometry.Y);
+			}
 			UpdateContentSize();
 		}
 

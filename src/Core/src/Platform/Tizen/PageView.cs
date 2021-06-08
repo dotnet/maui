@@ -9,8 +9,5 @@ namespace Microsoft.Maui
 		public PageView(ElmSharp.EvasObject parent) : base(parent)
 		{
 		}
-
-		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
 	}
 }

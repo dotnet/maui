@@ -2,7 +2,7 @@ using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : EViewHandler<ILabel, Label>
+	public partial class LabelHandler : ViewHandler<ILabel, Label>
 	{
 		protected override Label CreateNativeView() => new Label(NativeParent);
 

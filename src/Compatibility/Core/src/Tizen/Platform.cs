@@ -80,6 +80,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					renderer = ver;
 				else if (handler is INativeViewHandler vh)
 				{
+					if (element.Parent is IView view && view.Handler is INativeViewHandler nvh)
+					{
+						vh.SetParent(nvh);
+					}
 					renderer = new HandlerToRendererShim(vh);
 				}
 			}

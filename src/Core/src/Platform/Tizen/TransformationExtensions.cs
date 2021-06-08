@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using ElmSharp;
 using ERect = ElmSharp.Rect;
@@ -7,7 +8,7 @@ namespace Microsoft.Maui
 {
 	public static class TransformationExtensions
 	{
-		static bool _movedCallbackEnabled = false;
+		static Dictionary<EvasObject, Action> s_movedHandlers = new Dictionary<EvasObject, Action>();
 
 		public static void UpdateTransformation(this EvasObject nativeView, IView? view)
 		{
@@ -25,27 +26,32 @@ namespace Microsoft.Maui
 			view.ApplyTranslation(map, geometry, ref changed);
 
 			nativeView.IsMapEnabled = changed;
+
 			if (changed)
 			{
-				nativeView.EvasMap = map;
-				if (!_movedCallbackEnabled)
+				if (!s_movedHandlers.ContainsKey(nativeView))
 				{
-					_movedCallbackEnabled = true;
+					// not registered moved handler
+					s_movedHandlers[nativeView] = () => nativeView.UpdateTransformation(view);
 					nativeView.Moved += OnMoved;
 				}
 			}
 			else
 			{
-				if (_movedCallbackEnabled)
+				if (s_movedHandlers.ContainsKey(nativeView))
 				{
-					_movedCallbackEnabled = false;
+					// need to unregister moved handler
 					nativeView.Moved -= OnMoved;
+					s_movedHandlers.Remove(nativeView);
 				}
 			}
+		}
 
-			void OnMoved(object? sender, EventArgs e)
+		static void OnMoved(object? sender, EventArgs e)
+		{
+			if (sender is EvasObject nativeView)
 			{
-				nativeView.UpdateTransformation(view);
+				s_movedHandlers[nativeView].Invoke();
 			}
 		}
 

@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using NativeView = ElmSharp.EvasObject;
+using ERect = ElmSharp.Rect;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -22,6 +23,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				NativeArrange(VisualElementRenderer.Element.Bounds);
 			}
+		}
+
+		public override ERect GetNativeContentGeometry()
+		{
+			return VisualElementRenderer?.GetNativeContentGeometry() ?? new ERect();
 		}
 
 		//public static IViewHandler CreateShim(object renderer)

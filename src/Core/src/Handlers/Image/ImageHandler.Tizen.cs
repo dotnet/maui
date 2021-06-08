@@ -5,7 +5,7 @@ using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ImageHandler : EViewHandler<IImage, Image>
+	public partial class ImageHandler : ViewHandler<IImage, Image>
 	{
 		protected override Image CreateNativeView() => new Image(NativeParent);
 

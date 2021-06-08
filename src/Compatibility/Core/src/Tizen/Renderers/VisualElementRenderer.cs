@@ -713,16 +713,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		static double ComputeAbsoluteX(VisualElement e)
 		{
 			var parentX = 0.0;
-			if (e.RealParent is VisualElement ve)
+			if (e.RealParent is VisualElement parent)
 			{
 				if (CompressedLayout.GetIsHeadless(e.RealParent))
 				{
-					parentX = ComputeAbsoluteX(ve);
+					parentX = ComputeAbsoluteX(parent);
 				}
 				else
 				{
-					if (e.Handler is INativeViewHandler nativeHandler)
+					if (parent.Handler is INativeViewHandler nativeHandler)
 					{
+
 						parentX = nativeHandler.GetNativeContentGeometry().X.ToScaledDP();
 					}
 					else
@@ -737,15 +738,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		static double ComputeAbsoluteY(VisualElement e)
 		{
 			var parentY = 0.0;
-			if (e.RealParent is VisualElement ve)
+			if (e.RealParent is VisualElement parent)
 			{
 				if (CompressedLayout.GetIsHeadless(e.RealParent))
 				{
-					parentY = ComputeAbsoluteY(ve);
+					parentY = ComputeAbsoluteY(parent);
 				}
 				else
 				{
-					if (e.Handler is INativeViewHandler nativeHandler)
+					if (parent.Handler is INativeViewHandler nativeHandler)
 					{
 						parentY = nativeHandler.GetNativeContentGeometry().Y.ToScaledDP();
 					}

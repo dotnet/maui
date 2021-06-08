@@ -1,5 +1,7 @@
 ﻿using ElmSharp;
 using ElmSharp.Accessible;
+using Microsoft.Maui.Graphics;
+using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui
 {
@@ -37,7 +39,17 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this EvasObject nativeView, IView view)
 		{
-			//TODO: Need to implement
+			if (nativeView is IBackgroundCanvas canvas)
+			{
+				canvas.BackgroundCanvas.Drawable = view.Background?.ToDrawable() ?? null;
+			}
+			else
+			{
+				if (view.Background is SolidPaint paint)
+				{
+					nativeView.UpdateBackgroundColor(paint.Color.ToNative());
+				}
+			}
 		}
 
 		public static void UpdateAutomationId(this EvasObject nativeView, IView view)

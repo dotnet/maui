@@ -9,7 +9,7 @@ using ListItem = ElmSharp.ListItem;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PickerHandler : EViewHandler<IPicker, TEntry>
+	public partial class PickerHandler : ViewHandler<IPicker, TEntry>
 	{
 		List? _list;
 		Dialog? _dialog;

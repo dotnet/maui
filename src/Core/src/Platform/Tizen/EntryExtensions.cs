@@ -61,7 +61,7 @@ namespace Microsoft.Maui
 
 		public static void UpdatePlaceholder(this Entry nativeEntry, ITextInput entry)
 		{
-			nativeEntry.Placeholder = entry.Placeholder;
+			nativeEntry.Placeholder = entry.Placeholder ?? string.Empty;
 		}
 
 		public static void UpdateIsReadOnly(this Entry nativeEntry, ITextInput entry)
@@ -81,7 +81,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaxLength(this Entry nativeEntry, ITextInput entry)
 		{
-			if (nativeEntry.Text.Length > entry.MaxLength)
+			if (entry.MaxLength > 0 && nativeEntry.Text.Length > entry.MaxLength)
 				nativeEntry.Text = nativeEntry.Text.Substring(0, entry.MaxLength);
 		}
 

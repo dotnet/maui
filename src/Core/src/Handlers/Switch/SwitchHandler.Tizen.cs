@@ -3,7 +3,7 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwitchHandler : EViewHandler<ISwitch, Check>
+	public partial class SwitchHandler : ViewHandler<ISwitch, Check>
 	{
 		protected override Check CreateNativeView() => new Check(NativeParent);
 

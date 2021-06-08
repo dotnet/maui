@@ -3,7 +3,7 @@ using ElmSharp;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : EViewHandler<IStepper, Spinner>
+	public partial class StepperHandler : ViewHandler<IStepper, Spinner>
 	{
 		protected override Spinner CreateNativeView() => new Spinner(NativeParent) { IsEditable = false };
 

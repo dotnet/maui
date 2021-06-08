@@ -5,7 +5,7 @@ using InputPanelReturnKeyType = ElmSharp.InputPanelReturnKeyType;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SearchBarHandler : EViewHandler<ISearchBar, SearchBar>
+	public partial class SearchBarHandler : ViewHandler<ISearchBar, SearchBar>
 	{
 		protected override SearchBar CreateNativeView()
 		{

@@ -1,12 +1,11 @@
 ﻿using System;
 using ElmSharp;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
-		public static EvasObject ToNative(this IView view, IMauiContext context, bool isRoot = true)
+		public static EvasObject ToNative(this IView view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
@@ -25,21 +24,13 @@ namespace Microsoft.Maui
 					throw new Exception($"Handler not found for view {view}");
 
 				handler.SetMauiContext(context);
-
+				handler.SetVirtualView(view);
 				view.Handler = handler;
 			}
 
-			handler.SetVirtualView(view);
-
-			if (!(handler.NativeView is EvasObject result))
+			if (((INativeViewHandler)handler).NativeView is not EvasObject result)
 			{
 				throw new InvalidOperationException($"Unable to convert {view} to {typeof(EvasObject)}");
-			}
-
-			// Root content view should register to LayoutUpdated() callback.
-			if (isRoot && handler is LayoutHandler layoutHandler)
-			{
-				layoutHandler.RegisterOnLayoutUpdated();
 			}
 
 			return result;

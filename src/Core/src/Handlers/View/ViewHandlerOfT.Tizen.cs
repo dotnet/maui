@@ -1,12 +1,12 @@
 using System;
-using Tizen.UIExtensions.Common;
 using ElmSharp;
-
+using Tizen.UIExtensions.Common;
+using Tizen.UIExtensions.ElmSharp;
+using ERect = ElmSharp.Rect;
+using ESize = ElmSharp.Size;
+using Point = Microsoft.Maui.Graphics.Point;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 using Size = Microsoft.Maui.Graphics.Size;
-using Point = Microsoft.Maui.Graphics.Point;
-using ESize = ElmSharp.Size;
-using ERect = ElmSharp.Rect;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -40,6 +40,9 @@ namespace Microsoft.Maui.Handlers
 
 		public override void NativeArrange(Rectangle frame)
 		{
+			if (NativeParent == null)
+				return;
+
 			var nativeView = WrappedNativeView;
 
 			if (nativeView == null)
@@ -51,15 +54,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			if (NativeParent == null)
-				return;
-
-			var updatedGeometry = new Rectangle(ComputeAbsolutePoint(frame), new Size(frame.Width, frame.Height)).ToEFLPixel();
-
-			if (nativeView.Geometry != updatedGeometry)
-			{
-				nativeView.Geometry = updatedGeometry;
-			}
+			nativeView.UpdateBounds(new Rectangle(ComputeAbsolutePoint(frame), new Size(frame.Width, frame.Height)).ToPixel());
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -100,7 +95,15 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual Size MinimumSize()
 		{
-			return new ESize(NativeView!.MinimumWidth, NativeView!.MinimumHeight).ToDP();
+
+			if (WrappedNativeView is IMeasurable im)
+			{
+				return im.Measure(WrappedNativeView.MinimumWidth, WrappedNativeView.MinimumHeight).ToDP();
+			}
+			else
+			{
+				return new ESize(NativeView!.MinimumWidth, NativeView!.MinimumHeight).ToDP();
+			}
 		}
 
 		public virtual ERect GetNativeContentGeometry()
@@ -156,12 +159,32 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void SetupContainer()
 		{
+			var parent = Parent?.NativeView as IContainable<EvasObject>;
+			parent?.Children.Remove(NativeView!);
 
+			ContainerView ??= new WrapperView(NativeParent!);
+			ContainerView.Show();
+			ContainerView.Content = NativeView;
+
+			parent?.Children?.Add(ContainerView);
 		}
 
 		protected override void RemoveContainer()
 		{
+			var parent = Parent?.NativeView as IContainable<EvasObject>;
+			parent?.Children.Remove(ContainerView!);
 
+			ContainerView!.Content = null;
+			ContainerView?.Unrealize();
+			ContainerView = null;
+
+			parent?.Children.Add(NativeView!);
+		}
+
+		protected override void OnNativeViewDeleted()
+		{
+			NativeView = null;
+			Dispose();
 		}
 
 		protected virtual void Dispose(bool disposing)
@@ -188,77 +211,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			Dispose(disposing: true);
 			GC.SuppressFinalize(this);
-		}
-	}
-
-	public abstract class EViewHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView, TNativeView>
-		where TVirtualView : class, IView
-		where TNativeView : EvasObject
-	{
-		protected EViewHandler(PropertyMapper mapper) : base(mapper)
-		{
-		}
-
-		protected virtual void OnNativeViewDeleted(object? sender, EventArgs e)
-		{
-			Dispose();
-		}
-
-		protected virtual void OnMoved(object? sender, EventArgs e)
-		{
-		}
-
-		protected virtual void OnFocused(object? sender, EventArgs e)
-		{
-		}
-
-		protected virtual void OnUnfocused(object? sender, EventArgs e)
-		{
-		}
-
-		protected override void ConnectHandler(TNativeView nativeView)
-		{
-			base.ConnectHandler(nativeView);
-			
-			nativeView.Deleted += OnNativeViewDeleted;
-			nativeView.Moved += OnMoved;
-
-			if (nativeView is Widget widget)
-			{
-				widget.Focused += OnFocused;
-				widget.Unfocused += OnUnfocused;
-			}
-		}
-
-		protected override void DisconnectHandler(TNativeView nativeView)
-		{
-			base.DisconnectHandler(nativeView);
-
-			nativeView.Moved -= OnMoved;
-			nativeView.Deleted -= OnNativeViewDeleted;
-
-			if (nativeView is Widget widget)
-			{
-				widget.Focused -= OnFocused;
-				widget.Unfocused -= OnUnfocused;
-			}
-		}
-
-		protected override Size MinimumSize()
-		{
-			if (WrappedNativeView == null)
-			{
-				return base.MinimumSize();
-			}
-
-			if (WrappedNativeView is IMeasurable im)
-			{
-				return im.Measure(WrappedNativeView.MinimumWidth, WrappedNativeView.MinimumHeight).ToDP();
-			}
-			else
-			{
-				return base.MinimumSize();
-			}
 		}
 	}
 }

@@ -4,7 +4,7 @@ using EEntry = ElmSharp.Entry;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class EntryHandler : EViewHandler<IEntry, Entry>
+	public partial class EntryHandler : ViewHandler<IEntry, Entry>
 	{
 		protected override Entry CreateNativeView()
 		{

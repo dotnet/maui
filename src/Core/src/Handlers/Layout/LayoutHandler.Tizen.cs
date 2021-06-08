@@ -1,26 +1,24 @@
 ﻿using System;
 using ElmSharp;
 using Tizen.UIExtensions.Common;
+using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LayoutHandler : EViewHandler<ILayout, LayoutCanvas>
+	public partial class LayoutHandler : ViewHandler<ILayout, Canvas>
 	{
-		bool _layoutUpdatedRegistered = false;
+		Graphics.Rectangle _arrangeCache;
 
-		public void RegisterOnLayoutUpdated()
+		public override bool NeedsContainer => VirtualView?.Background != null ||
+			base.NeedsContainer;
+
+		public static void MapBackground(LayoutHandler handler, ILayout layout)
 		{
-			if (!_layoutUpdatedRegistered)
-			{
-				if (NativeView!= null)
-				{
-					NativeView.LayoutUpdated += OnLayoutUpdated;		
-				}
-				_layoutUpdatedRegistered = true;
-			}
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.WrappedNativeView?.UpdateBackground(layout);
 		}
 
-		protected override LayoutCanvas CreateNativeView()
+		protected override Canvas CreateNativeView()
 		{
 			if (VirtualView == null)
 			{
@@ -32,11 +30,8 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
 			}
 
-			var view = new LayoutCanvas(NativeParent)
-			{
-				CrossPlatformMeasure = VirtualView.Measure,
-				CrossPlatformArrange = VirtualView.Arrange
-			};
+			var view = new Canvas(NativeParent);
+
 			view.Show();
 			return view;
 		}
@@ -49,13 +44,11 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.CrossPlatformMeasure = VirtualView.Measure;
-			NativeView.CrossPlatformArrange = VirtualView.Arrange;
-			NativeView.Clear();
+			NativeView.Children.Clear();
 
 			foreach (var child in VirtualView.Children)
 			{
-				NativeView.Children.Add(child.ToNative(MauiContext, false));
+				NativeView.Children.Add(child.ToNative(MauiContext));
 				if (child.Handler is INativeViewHandler thandler)
 				{
 					thandler?.SetParent(this);
@@ -69,13 +62,21 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Children.Add(child.ToNative(MauiContext, false));
+			_arrangeCache = default(Graphics.Rectangle);
+
+			NativeView.Children.Add(child.ToNative(MauiContext));
+			if (child.Handler is INativeViewHandler thandler)
+			{
+				thandler?.SetParent(this);
+			}
 		}
 
 		public void Remove(IView child)
 		{
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+
+			_arrangeCache = default(Graphics.Rectangle);
 
 			if (child.Handler is INativeViewHandler thandler && thandler.NativeView is EvasObject nativeView)
 			{
@@ -84,16 +85,35 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		protected override void ConnectHandler(Canvas nativeView)
+		{
+			base.ConnectHandler(nativeView);
+			nativeView.LayoutUpdated += OnLayoutUpdated;
+		}
+
+		protected override void DisconnectHandler(Canvas nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+			nativeView.LayoutUpdated -= OnLayoutUpdated;
+		}
+
 		protected void OnLayoutUpdated(object? sender, LayoutEventArgs e)
 		{
 			if (VirtualView != null && NativeView != null)
 			{
 				var nativeGeometry = NativeView.Geometry.ToDP();
-				if (nativeGeometry.Width > 0 && nativeGeometry.Height > 0 )
+				if (_arrangeCache == nativeGeometry)
+					return;
+
+				_arrangeCache = nativeGeometry;
+
+				if (nativeGeometry.Width > 0 && nativeGeometry.Height > 0)
 				{
 					VirtualView.InvalidateMeasure();
 					VirtualView.InvalidateArrange();
 					VirtualView.Measure(nativeGeometry.Width, nativeGeometry.Height);
+					nativeGeometry.X = VirtualView.Frame.X;
+					nativeGeometry.Y = VirtualView.Frame.Y;
 					VirtualView.Arrange(nativeGeometry);
 				}
 			}
