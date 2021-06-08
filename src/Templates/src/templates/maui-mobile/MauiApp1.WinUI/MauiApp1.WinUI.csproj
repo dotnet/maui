@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net6.0-windows10.0.19041</TargetFrameworks>
+		<OutputType>WinExe</OutputType>
+		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+		<SingleProject>true</SingleProject>
+		<RootNamespace>MauiApp1</RootNamespace>
+
+		<!-- Required - Enable Single Project for WinUI -->
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+		<WindowsPackageType>MSIX</WindowsPackageType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\MauiApp1\MauiApp1.csproj" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<StartupObject>MauiApp1.WinUI.Program</StartupObject>
+		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.ProjectReunion" Version="PROJECT_REUNION_VERSION" />
+		<PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="PROJECT_REUNION_VERSION" />
+		<PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="PROJECT_REUNION_VERSION" />
+		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="WINDOWS_SDK_VERSION" />
+		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="WINDOWS_SDK_VERSION" />
+	</ItemGroup>
+
+</Project>

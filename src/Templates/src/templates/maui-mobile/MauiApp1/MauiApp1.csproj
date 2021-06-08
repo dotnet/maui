@@ -4,9 +4,9 @@
 		<!-- iOS, Android, MacCatalyst -->
 		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
 		<!-- Windows -->
-		<TargetFrameworks Condition="$(OS.Contains('Windows'))">net6.0-windows10.0.19041;$(TargetFrameworks)</TargetFrameworks>
+		<TargetFrameworks Condition="$(OS.Contains('Windows'))">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks>
 		<OutputType>Exe</OutputType>
-		<OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
+		<OutputType Condition="$(TargetFramework.Contains('-windows'))">Library</OutputType>
 		<TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
 		<SingleProject>true</SingleProject>
 		<RootNamespace>MauiApp1</RootNamespace>
@@ -20,10 +20,6 @@
 		<!-- Versions -->
 		<ApplicationVersion>1.0</ApplicationVersion>
 		<AndroidVersionCode>1</AndroidVersionCode>
-
-		<!-- Required - Enable Single Project for WinUI -->
-		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-		<WindowsPackageType>MSIX</WindowsPackageType>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -53,18 +49,9 @@
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64</RuntimeIdentifier>
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
 		<UseInterpreter Condition="$(TargetFramework.Contains('-android'))">True</UseInterpreter>
-		<StartupObject Condition="$(TargetFramework.Contains('-windows'))">MauiApp1.WinUI.Program</StartupObject>
-		<RuntimeIdentifiers Condition="$(TargetFramework.Contains('-windows'))">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
 	</PropertyGroup>
 	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
 		<AndroidEnvironment Include="Android\AndroidEnvironment.txt" />
-	</ItemGroup>
-	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-		<PackageReference Include="Microsoft.ProjectReunion" Version="PROJECT_REUNION_VERSION" />
-		<PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="PROJECT_REUNION_VERSION" />
-		<PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="PROJECT_REUNION_VERSION" />
-		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="WINDOWS_SDK_VERSION" />
-		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="WINDOWS_SDK_VERSION" />
 	</ItemGroup>
 
 </Project>
