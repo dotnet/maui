@@ -42,5 +42,12 @@ namespace Microsoft.Maui.Controls.Shapes
 			set { SetValue(RadiusYProperty, value); }
 			get { return (double)GetValue(RadiusYProperty); }
 		}
+
+		public override PathF PathForBounds(Graphics.Rectangle rect)
+		{
+			var path = new PathF();
+			path.AppendEllipse(rect);
+			return path;
+		}
 	}
 }

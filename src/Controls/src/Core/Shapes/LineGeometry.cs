@@ -32,5 +32,13 @@ namespace Microsoft.Maui.Controls.Shapes
 			set { SetValue(EndPointProperty, value); }
 			get { return (Point)GetValue(EndPointProperty); }
 		}
+
+		public override PathF PathForBounds(Graphics.Rectangle rect)
+		{
+			var path = new PathF();
+			path.Move((float)StartPoint.X, (float)StartPoint.Y);
+			path.LineTo((float)EndPoint.X, (float)EndPoint.Y);
+			return path;
+		}
 	}
 }

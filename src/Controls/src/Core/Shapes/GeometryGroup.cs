@@ -97,5 +97,17 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			InvalidateGeometryRequested?.Invoke(this, EventArgs.Empty);
 		}
+
+		public override Graphics.PathF PathForBounds(Graphics.Rectangle rect)
+		{
+			var path = new Graphics.PathF();
+			foreach (var c in Children)
+			{
+				// TODO: Combine c.PathForBounds(rect) with main path
+				var p = c.PathForBounds(rect);
+			}
+
+			return path;
+		}
 	}
 }
