@@ -38,6 +38,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 				if (view.Handler == null && newvalue is IVisualElementRenderer ver)
 					view.Handler = new RendererToHandlerShim(ver);
+				else if (view.Handler != null && newvalue == null)
+					view.Handler = null;
 
 			});
 
