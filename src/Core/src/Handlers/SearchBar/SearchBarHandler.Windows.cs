@@ -5,20 +5,25 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, AutoSuggestBox>
 	{
+		MauiTextBox? _queryTextBox;
+
 		protected override AutoSuggestBox CreateNativeView() => new AutoSuggestBox
 		{
 			AutoMaximizeSuggestionArea = false,
-			QueryIcon = new SymbolIcon(Symbol.Find)
+			QueryIcon = new SymbolIcon(Symbol.Find),
+			Style = UI.Xaml.Application.Current.Resources["MauiAutoSuggestBoxStyle"] as UI.Xaml.Style
 		};
 
 		protected override void ConnectHandler(AutoSuggestBox nativeView)
 		{
+			nativeView.Loaded += OnLoaded;
 			nativeView.QuerySubmitted += OnQuerySubmitted;
 			nativeView.TextChanged += OnTextChanged;
 		}
 
 		protected override void DisconnectHandler(AutoSuggestBox nativeView)
 		{
+			nativeView.Loaded -= OnLoaded;
 			nativeView.QuerySubmitted -= OnQuerySubmitted;
 			nativeView.TextChanged -= OnTextChanged;
 		}
@@ -32,9 +37,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdatePlaceholder(searchBar);
 		}
-			
-		[MissingMapper]
-		public static void MapHorizontalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
+
+		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateHorizontalTextAlignment(searchBar, handler._queryTextBox);
+		}
 
 		[MissingMapper]
 		public static void MapFont(IViewHandler handler, ISearchBar searchBar) { }
@@ -50,11 +57,24 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapMaxLength(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateMaxLength(searchBar, handler._queryTextBox);
+		}
 
 		[MissingMapper]
 		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
+
+		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			_queryTextBox = NativeView?.GetFirstDescendant<MauiTextBox>();
+
+			if (VirtualView != null)
+			{
+				NativeView?.UpdateHorizontalTextAlignment(VirtualView, _queryTextBox);
+				NativeView?.UpdateMaxLength(VirtualView, _queryTextBox);
+			}
+		}
 
 		void OnQuerySubmitted(AutoSuggestBox? sender, AutoSuggestBoxQuerySubmittedEventArgs e)
 		{
@@ -69,7 +89,6 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.SearchButtonPressed();
 		}
 
-		[PortHandler]
 		void OnTextChanged(AutoSuggestBox? sender, AutoSuggestBoxTextChangedEventArgs e)
 		{
 			if (e.Reason == AutoSuggestionBoxTextChangeReason.ProgrammaticChange)

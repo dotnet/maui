@@ -6,20 +6,20 @@ parameters:
 steps:
   - checkout: self
     clean: true
+  
+  - task: xamops.azdevex.provisionator-task.provisionator@1
+    displayName: 'Provision Xcode'
+    condition: ne(variables['REQUIRED_XCODE'], '')
+    inputs:
+      provisioning_script: $(provisionator.xcode)
 
+  - script: |
+      echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
+      echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
+    displayName: 'Setup SDK Paths'
+    condition: or(and(ne(variables['androidTestsVmPool'], 'Azure Pipelines'), ne('${{ parameters.platform }}', 'android')), and(ne(variables['iosTestsVmPool'], 'Azure Pipelines'), ne('${{ parameters.platform }}', 'ios')))
+  
   - ${{ if eq(parameters['platform'], 'ios') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@1
-      displayName: 'Provision Xcode'
-      condition: ne(variables['REQUIRED_XCODE'], '')
-      inputs:
-        provisioning_script: $(provisionator.xcode)
-
-    - script: |
-        echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
-        echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
-      displayName: 'Setup SDK Paths'
-      condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
-
     - task: InstallAppleCertificate@2
       displayName: 'Install an Apple certificate'
       inputs:
@@ -38,17 +38,20 @@ steps:
       provisioning_script: $(provisionator.path)
       provisioning_extra_args: $(provisionator.extraArguments)
 
-  - pwsh: |
-      ./build.ps1 --target provision --TeamProject="$(System.TeamProject)"
-    displayName: 'Cake Provision'
-    condition: eq(variables['provisioningCake'], 'true')
-
   - task: UseDotNet@2
     displayName: 'Install .net core $(DOTNET_VERSION)'
     condition: ne(variables['DOTNET_VERSION'], '')
     inputs:
       version: $(DOTNET_VERSION)
       packageType: 'sdk'
+
+  - script: dotnet tool restore
+    displayName: install dotnet tools
+
+  - pwsh: |
+      ./build.ps1 --target provision --TeamProject="$(System.TeamProject)"
+    displayName: 'Cake Provision'
+    condition: eq(variables['provisioningCake'], 'true')
 
   - pwsh: |
       ./build.ps1 --target=BuildTasks --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"

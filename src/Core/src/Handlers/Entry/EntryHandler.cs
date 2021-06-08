@@ -21,6 +21,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.ReturnType)] = MapReturnType,
 			[nameof(IEntry.Text)] = MapText,
 			[nameof(IEntry.TextColor)] = MapTextColor,
+			[nameof(IEntry.CursorPosition)] = MapCursorPosition,
+			[nameof(IEntry.SelectionLength)] = MapSelectionLength
 		};
 
 		public EntryHandler() : base(EntryMapper)
