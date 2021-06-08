@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Android.Text;
 using Android.Text.Method;
+using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -157,6 +158,13 @@ namespace Microsoft.Maui.DeviceTests
 			var inputTypes = textView.InputType;
 
 			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+		}
+
+		EditorAutoSizeOption GetNativeAutoSize(EditorHandler editorHandler)
+		{
+			var textView = GetNativeEditor(editorHandler);
+
+			return textView.AutoSizeTextType == AutoSizeTextType.None ?  EditorAutoSizeOption.Disabled : EditorAutoSizeOption.TextChanges ;
 		}
 	}
 }
