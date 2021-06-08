@@ -1,10 +1,13 @@
 ﻿#nullable enable
 using Microsoft.UI.Xaml.Controls;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, DatePicker>
 	{
+		WBrush? _defaultForeground;
+
 		protected override DatePicker CreateNativeView() => new DatePicker();
 
 		protected override void ConnectHandler(DatePicker nativeView)
@@ -15,6 +18,13 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(DatePicker nativeView)
 		{
 			nativeView.DateChanged -= OnControlDateChanged;
+		}
+
+		protected override void SetupDefaults(DatePicker nativeView)
+		{
+			_defaultForeground = nativeView.Foreground;
+
+			base.SetupDefaults(nativeView);
 		}
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
@@ -49,8 +59,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(datePicker, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultForeground);
+		}
 
 		void OnControlDateChanged(object? sender, DatePickerValueChangedEventArgs e)
 		{

@@ -21,7 +21,6 @@ namespace Microsoft.Maui
 			if (handler?.MauiContext != null &&
 				handler.MauiContext != context)
 			{
-				view.Handler = null;
 				handler = null;
 			}
 

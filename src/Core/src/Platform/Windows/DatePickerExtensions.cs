@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui
 {
@@ -51,6 +53,12 @@ namespace Microsoft.Maui
 
 		public static void UpdateFont(this DatePicker nativeDatePicker, IDatePicker datePicker, IFontManager fontManager) =>
 			nativeDatePicker.UpdateFont(datePicker.Font, fontManager);
+
+		public static void UpdateTextColor(this DatePicker nativeDatePicker, IDatePicker datePicker, WBrush? defaultForeground)
+		{
+			Color textColor = datePicker.TextColor;
+			nativeDatePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToNative()) : textColor.ToNative();
+		}
 
 		internal static void UpdateDay(this DatePicker nativeDatePicker, IDatePicker datePicker)
 		{
