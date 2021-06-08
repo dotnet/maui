@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			var path = new PathF();
 
-			path.AppendEllipse(rect);
+			path.AppendEllipse(0f, 0f, (float)Width, (float)Height);
 
 			return path.AsScaledPath((float)Width / (float)rect.Width);
 		}
