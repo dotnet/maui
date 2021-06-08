@@ -9,25 +9,22 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
         }
 
-        public RectangleStub(CornerRadius cornerRadius) : this()
+        public RectangleStub(double radiusX, double radiusY) : this()
         {
-            CornerRadius = cornerRadius;
-        }
+			RadiusX = radiusX;
+			RadiusY = radiusY;
+		}
 
-        public CornerRadius CornerRadius { get; set; }
+        public double RadiusX { get; set; }
+		public double RadiusY { get; set; }
 
-        public PathF PathForBounds(Graphics.Rectangle rect, float density = 1)
-        {
-            var path = new PathF();
+		public PathF PathForBounds(Rectangle rect)
+		{
+			var path = new PathF();
 
-            path.AppendRoundedRectangle(
-                rect,
-                (float)CornerRadius.TopLeft,
-                (float)CornerRadius.TopRight,
-                (float)CornerRadius.BottomLeft,
-                (float)CornerRadius.BottomRight);
+			path.AppendRoundedRectangle(rect, (float)RadiusY + (float)RadiusX);
 
-            return path;
-        }
-    }
+			return path;
+		}
+	}
 }

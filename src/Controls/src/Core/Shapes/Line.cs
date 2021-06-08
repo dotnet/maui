@@ -1,9 +1,6 @@
-
-using Microsoft.Maui.Graphics;
-
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public sealed class Line : Shape, IShape
+	public sealed partial class Line : Shape
 	{
 		public Line() : base()
 		{
@@ -51,16 +48,6 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			set { SetValue(Y2Property, value); }
 			get { return (double)GetValue(Y2Property); }
-		}
-
-		public PathF PathForBounds(Graphics.Rectangle rect)
-		{
-			var path = new PathF();
-
-			path.MoveTo((float)X1, (float)Y1);
-			path.LineTo((float)X2, (float)Y2);
-
-			return path.AsScaledPath((float)Width / (float)rect.Width);
 		}
 	}
 }

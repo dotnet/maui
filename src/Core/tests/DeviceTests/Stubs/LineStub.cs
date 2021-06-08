@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class LineStub : IShape
+	public class LineStub : StubBase, IShape
     {
         public LineStub()
         {
@@ -25,14 +25,14 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
         public double Y2 { get; set; }
 
-        public PathF PathForBounds(Rectangle rect, float density = 1)
-        {
-            var path = new PathF();
+		public PathF PathForBounds(Rectangle rect)
+		{
+			var path = new PathF();
 
-            path.MoveTo(density * (float)X1, density * (float)Y1);
-            path.LineTo(density * (float)X2, density * (float)Y2);
+			path.MoveTo((float)X1, (float)Y1);
+			path.LineTo((float)X2, (float)Y2);
 
-            return path;
-        }
-    }
+			return path.AsScaledPath((float)Width / (float)rect.Width);
+		}
+	}
 }

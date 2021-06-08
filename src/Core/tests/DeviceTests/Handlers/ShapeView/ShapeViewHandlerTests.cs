@@ -81,21 +81,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidateNativeFill(polygon, Colors.Lime);
 		}
-
-		[Fact(DisplayName = "Path Initializes Correctly")]
-		public async Task PathInitializesCorrectly()
-		{
-			var path = new ShapeViewStub()
-			{
-				Shape = new PathStub { Data = "M15.999996,0L31.999999,13.000001 15.999996,26.199999 0,13.000001z" },
-				Fill = new SolidPaintStub(Colors.Coral),
-				Stroke = Colors.Black,
-				StrokeThickness = 1,
-				Height = 50,
-				Width = 50
-			};
-
-			await ValidateNativeFill(path, Colors.Coral);
-		}
 	}
 }

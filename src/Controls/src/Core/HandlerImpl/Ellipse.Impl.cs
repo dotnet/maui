@@ -1,10 +1,10 @@
 ﻿using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.DeviceTests.Stubs
+namespace Microsoft.Maui.Controls.Shapes
 {
-	public class EllipseStub : StubBase, IShape
-    {
-		public PathF PathForBounds(Rectangle rect)
+	public partial class Ellipse : IShape
+	{
+		public PathF PathForBounds(Graphics.Rectangle rect)
 		{
 			var path = new PathF();
 

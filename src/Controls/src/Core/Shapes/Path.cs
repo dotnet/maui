@@ -1,10 +1,8 @@
-using System;
 using System.ComponentModel;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public class Path : Shape, IShape
+	public sealed partial class Path : Shape
 	{
 		public Path() : base()
 		{
@@ -13,15 +11,6 @@ namespace Microsoft.Maui.Controls.Shapes
 		public Path(Geometry data) : this()
 		{
 			Data = data;
-		}
-
-		public PathF PathForBounds(Graphics.Rectangle rect)
-		{
-			var path = new PathF();
-
-			Data.AppendToPath(path);
-
-			return path.AsScaledPath((float)Width / (float)rect.Width);
 		}
 
 		public static readonly BindableProperty DataProperty =
