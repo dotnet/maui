@@ -249,6 +249,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new SearchBar { Placeholder = "Placeholder" });
 			verticalStack.Add(new SearchBar { HorizontalTextAlignment = TextAlignment.End, Text = "SearchBar HorizontalTextAlignment" });
 			verticalStack.Add(new SearchBar { Text = "SearchBar MaxLength", MaxLength = 50 });
+			verticalStack.Add(new SearchBar { Text = "SearchBar CancelButtonColor", CancelButtonColor = Colors.IndianRed });
 
 			var monkeyList = new List<string>
 			{
