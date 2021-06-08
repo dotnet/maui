@@ -29,7 +29,7 @@
 			if (shape == null)
 				return;
 
-			PathF? path = shape.PathForBounds(rect);
+			PathF? path = shape.GetPath();
 
 			if (path == null)
 				return;

@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	public partial class Polygon : IShape
 	{
-		public PathF PathForBounds(Graphics.Rectangle rect)
+		public PathF GetPath()
 		{
 			var path = new PathF();
 
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Shapes
 				path.Close();
 			}
 
-			return path.AsScaledPath((float)Width / (float)rect.Width);
+			return path;
 		}
 	}
 }

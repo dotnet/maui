@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	public partial class Polyline : IShape
 	{
-		public PathF PathForBounds(Graphics.Rectangle rect)
+		public PathF GetPath()
 		{
 			var path = new PathF();
 
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					path.LineTo((float)Points[index].X, (float)Points[index].Y);
 			}
 
-			return path.AsScaledPath((float)Width / (float)rect.Width);
+			return path;
 		}
 	}
 }

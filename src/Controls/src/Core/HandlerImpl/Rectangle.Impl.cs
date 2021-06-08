@@ -4,11 +4,11 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	public partial class Rectangle : IShape
 	{
-		public PathF PathForBounds(Graphics.Rectangle rect)
+		public PathF GetPath()
 		{
 			var path = new PathF();
 
-			path.AppendRoundedRectangle(rect, (float)RadiusY + (float)RadiusX);
+			path.AppendRoundedRectangle(0f, 0f, (float)Width, (float)Height, (float)RadiusY + (float)RadiusX);
 
 			return path;
 		}
