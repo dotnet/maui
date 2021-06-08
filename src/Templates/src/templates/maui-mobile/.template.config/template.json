@@ -47,7 +47,7 @@
         "type": "parameter",
         "dataType": "string",
         "replaces": "MAUI_VERSION",
-        "defaultValue": "6.0.100-preview.4.*"
+        "defaultValue": "MAUI_VERSION_VALUE"
       }
     },
     "defaultName": "MauiApp1"

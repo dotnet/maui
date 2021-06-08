@@ -4,7 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageType>Template</PackageType>
     <PackageId>Microsoft.Maui.Templates</PackageId>
-    <PackageVersion>6.0.100-preview.4.9991</PackageVersion>
     <Title>.NET MAUI Templates</Title>
     <Authors>Microsoft</Authors>
     <Description>Templates for .NET MAUI.</Description>
@@ -16,10 +15,33 @@
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
-
   <ItemGroup>
     <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**" />
     <Compile Remove="**\*" />
   </ItemGroup>
+
+  <!-- Eventually replaced by eng/Version.targets -->
+  <Target Name="SetVersions" />
+
+  <Target Name="_UpdateTemplateVersions" BeforeTargets="GenerateNuspec" DependsOnTargets="SetVersions">
+    <PropertyGroup>
+      <PackageReferenceVersion Condition="'$(PackageReferenceVersion)' == ''">$(PackageVersion)</PackageReferenceVersion>
+    </PropertyGroup>
+    <ItemGroup>
+      <_TemplateJsonFile Include="templates\*\.template.config\template.json" />
+      <_TemplateJsonFileWithContent
+          Include="@(_TemplateJsonFile)"
+          Contents="$([System.IO.File]::ReadAllText('%(FullPath)').Replace('MAUI_VERSION_VALUE', '$(PackageReferenceVersion)'))" />
+    </ItemGroup>
+    <WriteLinesToFile
+        File="@(_TemplateJsonFileWithContent -> '$(IntermediateOutputPath)%(Identity)')"
+        Lines="%(Contents)"
+        Overwrite="true" />
+    <ItemGroup>
+      <FileWrites Include="@(_TemplateJsonFile -> '$(IntermediateOutputPath)%(Identity)')" />
+      <Content Remove="@(_TemplateJsonFile)" />
+      <Content Include="@(_TemplateJsonFile -> '$(IntermediateOutputPath)%(Identity)')" PackagePath="%(Identity)" Pack="true" />
+    </ItemGroup>
+  </Target>
 
 </Project>
