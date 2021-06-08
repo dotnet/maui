@@ -92,16 +92,16 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Even margin
 			margin = new Thickness(10);
-			yield return new object[] { LayoutAlignment.Start, margin, 10, 80 };
-			yield return new object[] { LayoutAlignment.Center, margin, 100, 80 };
-			yield return new object[] { LayoutAlignment.End, margin, 190, 80 };
+			yield return new object[] { LayoutAlignment.Start, point, margin, 10, 80 };
+			yield return new object[] { LayoutAlignment.Center, point, margin, 100, 80 };
+			yield return new object[] { LayoutAlignment.End, point, margin, 190, 80 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 10, 280 };
 
 			// Lopsided margin
 			margin = new Thickness(5, 5, 10, 10);
-			yield return new object[] { LayoutAlignment.Start, margin, 5, 85 };
-			yield return new object[] { LayoutAlignment.Center, margin, 97.5, 85 };
-			yield return new object[] { LayoutAlignment.End, margin, 190, 85 };
+			yield return new object[] { LayoutAlignment.Start, point, margin, 5, 85 };
+			yield return new object[] { LayoutAlignment.Center, point, margin, 97.5, 85 };
+			yield return new object[] { LayoutAlignment.End, point, margin, 190, 85 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 5, 285 };
 
 			// X and Y offsets (e.g., GridLayout columns and rows)
@@ -173,16 +173,16 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Even margin
 			margin = new Thickness(10);
-			yield return new object[] { LayoutAlignment.Start, margin, 190, 80 };
-			yield return new object[] { LayoutAlignment.Center, margin, 100, 80 };
-			yield return new object[] { LayoutAlignment.End, margin, 10, 80 };
+			yield return new object[] { LayoutAlignment.Start, point, margin, 190, 80 };
+			yield return new object[] { LayoutAlignment.Center, point, margin, 100, 80 };
+			yield return new object[] { LayoutAlignment.End, point, margin, 10, 80 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 10, 280 };
 
 			// Lopsided margin
 			margin = new Thickness(5, 5, 10, 10);
-			yield return new object[] { LayoutAlignment.Start, margin, 195, 85 };
-			yield return new object[] { LayoutAlignment.Center, margin, 102.5, 85 };
-			yield return new object[] { LayoutAlignment.End, margin, 10, 85 };
+			yield return new object[] { LayoutAlignment.Start, point, margin, 195, 85 };
+			yield return new object[] { LayoutAlignment.Center, point, margin, 102.5, 85 };
+			yield return new object[] { LayoutAlignment.End, point, margin, 10, 85 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 10, 285 };
 
 			// X and Y offsets (e.g., GridLayout columns and rows)
