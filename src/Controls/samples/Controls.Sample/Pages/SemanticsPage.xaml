@@ -78,7 +78,7 @@
                 SemanticProperties.Hint="Hint text"/>
             
             <SearchBar
-                Text="Search bar text, iOS:T, Android:DTH?"
+                Text="Search bar text, DH (Android reads T when focus is on entry)"
                 Placeholder="Placeholder text"
                 PlaceholderColor="DodgerBlue"
                 SemanticProperties.Description="Description text"
