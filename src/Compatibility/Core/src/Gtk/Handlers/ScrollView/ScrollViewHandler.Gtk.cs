@@ -138,8 +138,17 @@ namespace Microsoft.Maui.Handlers.ScrollView
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			if (VirtualView.Content != null)
-				NativeView.Child = VirtualView.Content.ToNative(MauiContext);
+			var nativeContent = VirtualView.Content.ToNative(MauiContext);
+			var child = NativeView.Child;
+
+			// check if nativeContent is set as child of Viewport:
+			if (child is Gtk.Viewport vp && vp != nativeContent)
+			{
+				child = vp.Child;
+			}
+
+			if (child != nativeContent)
+				NativeView.Child = nativeContent;
 		}
 
 		protected override void ConnectHandler(GtkScrollView nativeView)
