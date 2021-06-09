@@ -15,9 +15,8 @@ namespace Microsoft.Maui
 		Stream GetNativeFontStream(string filename, string? alias)
 		{
 			// TODO: check other folders as well
-
 			var resDirPath = Tizen.Applications.Application.Current.DirectoryInfo.Resource;
-			var fontPath = Path.Combine(resDirPath, filename);
+			var fontPath = Path.Combine(resDirPath, "fonts", filename);
 			if (File.Exists(fontPath))
 				return File.OpenRead(fontPath);
 

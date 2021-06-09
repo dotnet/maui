@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using ElmSharp;
+using Tizen.Common;
 using IOPath = System.IO.Path;
 using TApplication = Tizen.Applications.Application;
 
@@ -22,8 +23,9 @@ namespace Microsoft.Maui
 			}
 
 			var filePath = IOPath.Combine(FontCacheDirectory.FullName, font.FontName!);
+			var name = IOPath.GetFileNameWithoutExtension(filePath);
 			if (File.Exists(filePath))
-				return filePath;
+				return name;
 			try
 			{
 				using (var fileStream = File.Create(filePath))
@@ -34,13 +36,11 @@ namespace Microsoft.Maui
 					font.ResourceStream.CopyTo(fileStream);
 				}
 
-				//TODO: should include below
-				//if (DotnetUtil.TizenAPIVersion > 5)
-				//{
-				//	FontExtensions.FontReinit();
-				//}
-
-				return filePath;
+				if (DotnetUtil.TizenAPIVersion > 5)
+				{
+					Utility.FontReinit();
+				}
+				return name;
 			}
 			catch (Exception ex)
 			{
