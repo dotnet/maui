@@ -2,7 +2,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
-{ 
+{
 	class HandlersContextStub : IMauiContext
 	{
 		IServiceProvider _services;
