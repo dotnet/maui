@@ -46,7 +46,9 @@ steps:
       echo "##vso[task.prependpath]$(DotNet.Path)"
     displayName: install .NET
 
-  - script: dotnet tool restore
+  - script: |
+      echo $PATH
+      dotnet tool restore
     displayName: install dotnet tools
 
   - pwsh: |
