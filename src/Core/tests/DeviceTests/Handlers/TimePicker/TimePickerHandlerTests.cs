@@ -10,7 +10,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class TimePickerHandlerTests : HandlerTestBase<TimePickerHandler, TimePickerStub>
 	{
 		[Fact(DisplayName = "Time Initializes Correctly")]
-		public async Task IsToggledInitializesCorrectly()
+		public async Task TimeInitializesCorrectly()
 		{
 			var timePicker = new TimePickerStub();
 
