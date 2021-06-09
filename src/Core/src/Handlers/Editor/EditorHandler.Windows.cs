@@ -9,6 +9,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			AcceptsReturn = true,
 			TextWrapping = TextWrapping.Wrap,
+			Style = Application.Current.Resources["MauiTextBoxStyle"] as Style,
+			UpdateVerticalAlignmentOnLoad = false,
 			VerticalContentAlignment = VerticalAlignment.Top
 		};
 
