@@ -70,6 +70,11 @@ namespace Microsoft.Maui.Handlers
 			NativeView.QueueAllocate();
 		}
 
+		public override void NativeArrange(Rectangle rect)
+		{
+			NativeView?.Arrange(rect);
+		}
+
 	}
 
 }
