@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Controls
 			{ typeof(Thickness), typeof(ThicknessTypeConverter) },
 			{ typeof(Point), typeof(PointTypeConverter) },
 			{ typeof(PointCollection), typeof(PointCollectionConverter) },
+			{ typeof(DoubleCollection), typeof(DoubleCollectionConverter) },
 		};
 
 		public static readonly TypeConverterAttribute Default = new TypeConverterAttribute();

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public static readonly BindableProperty FillRuleProperty =
 			BindableProperty.Create(nameof(FillRule), typeof(FillRule), typeof(Polygon), FillRule.EvenOdd);
-		
+
 		public PointCollection Points
 		{
 			set { SetValue(PointsProperty, value); }
