@@ -21,11 +21,6 @@ steps:
     displayName: 'Setup SDK Paths'
     condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
 
-  - script: |
-      dotnet build src/DotNet/DotNet.csproj -bl:$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)-dotnet.binlog
-      echo "##vso[task.prependpath]$(DotNet.Dir)"
-    displayName: install .NET
-
   - task: Bash@3
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
@@ -33,6 +28,13 @@ steps:
       targetType: 'filePath'
       filePath: 'build.sh'
       arguments: --target provision --TeamProject="$(System.TeamProject)"
+
+  - task: UseDotNet@2
+    displayName: 'Install .net core $(DOTNET_VERSION)'
+    condition: ne(variables['DOTNET_VERSION'], '')
+    inputs:
+      version: $(DOTNET_VERSION)
+      packageType: 'sdk'
 
   - task: InstallAppleCertificate@2
     displayName: 'Install an Apple certificate'

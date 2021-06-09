@@ -8,12 +8,7 @@ steps:
     inputs:
       provisioning_script: $(provisionator.path)
       provisioning_extra_args: $(provisionator.extraArguments)
-
-  - script: |
-      dotnet build src/DotNet/DotNet.csproj -bl:$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)-dotnet.binlog
-      echo "##vso[task.prependpath]$(DotNet.Dir)"
-    displayName: install .NET
-
+  
   - task: Bash@3
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
@@ -22,6 +17,13 @@ steps:
       filePath: 'build.sh'
       arguments: --target provision --TeamProject="$(System.TeamProject)"
 
+  - task: UseDotNet@2
+    displayName: 'Install .net core $(DOTNET_VERSION)'
+    condition: ne(variables['DOTNET_VERSION'], '')
+    inputs:
+      version: $(DOTNET_VERSION)
+      packageType: 'sdk'
+  
   # - script: '/bin/bash -c "sudo $AGENT_HOMEDIRECTORY/scripts/select-xamarin-sdk.sh ${{ parameters.monoVersion }}"'
   #   displayName: 'Select MONO ${{ parameters.monoVersion }}'
   
