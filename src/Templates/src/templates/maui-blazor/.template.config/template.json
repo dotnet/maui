@@ -15,13 +15,12 @@
     "preferNameDirectory": true,
     "primaryOutputs": [
       { "path": "MauiApp1/MauiApp1.csproj" },
-      { "path": "MauiApp1.WinUI3/MauiApp1.WinUI3.csproj" },
-      { "path": "MauiApp1.WinUI3 (Package)/MauiApp1.WinUI3 (Package).csproj" }
+      { "path": "MauiApp1.WinUI/MauiApp1.WinUI.csproj" }
     ],
     "guids": [
       "07CD65EF-6238-4365-AF5D-F6D433967F48",
       "202C61B5-A2D9-4817-8020-731D9F855561",
-      "A88FCF8C-EC35-4623-B126-C591EEF99C70"
+      "8B51DC95-6D07-4C39-BC6C-3BFE96E8A7EA"
     ],
     "symbols": {
       "applicationId": {
@@ -36,11 +35,23 @@
         "replaces": "MICROSOFT_EXTENSIONS_VERSION",
         "defaultValue": "6.0.0-preview.4.*"
       },
+      "projectReunionVersion": {
+        "type": "parameter",
+        "dataType": "string",
+        "replaces": "PROJECT_REUNION_VERSION",
+        "defaultValue": "0.8.0-preview"
+      },
+      "windowsSdkVersion": {
+        "type": "parameter",
+        "dataType": "string",
+        "replaces": "WINDOWS_SDK_VERSION",
+        "defaultValue": "10.0.19041.16"
+      },
       "mauiVersion": {
         "type": "parameter",
         "dataType": "string",
         "replaces": "MAUI_VERSION",
-        "defaultValue": "6.0.100-preview.4.*"
+        "defaultValue": "MAUI_VERSION_VALUE"
       }
     },
     "defaultName": "MauiApp1"
