@@ -8,16 +8,16 @@ namespace Microsoft.Maui
 {
 	public static class ImageViewExtensions
 	{
-		public static void Clear(this Gtk.Image imageView)
+		public static void Clear(this ImageView imageView)
 		{
 			
 		}
 
-		public static void UpdateAspect(this Gtk.Image imageView, IImage image)
+		public static void UpdateAspect(this ImageView imageView, IImage image)
 		{
 		}
 
-		public static void UpdateIsAnimationPlaying(this Gtk.Image imageView, IImageSourcePart image)
+		public static void UpdateIsAnimationPlaying(this ImageView imageView, IImageSourcePart image)
 		{
 			if (image.IsAnimationPlaying)
 			{
@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static async Task<IImageSourceServiceResult<Gdk.Pixbuf>?> UpdateSourceAsync(this Gtk.Image imageView, IImageSourcePart image, IImageSourceServiceProvider services, CancellationToken cancellationToken = default)
+		public static async Task<IImageSourceServiceResult<Gdk.Pixbuf>?> UpdateSourceAsync(this ImageView imageView, IImageSourcePart image, IImageSourceServiceProvider services, CancellationToken cancellationToken = default)
 		{
 			imageView.Clear();
 
@@ -57,7 +57,7 @@ namespace Microsoft.Maui
 				// only set the image if we are still on the same one
 				if (applied)
 				{
-					imageView.Pixbuf = uiImage;
+					imageView.Image = uiImage;
 
 					imageView.UpdateIsAnimationPlaying(image);
 				}
