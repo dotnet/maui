@@ -97,8 +97,8 @@ namespace Microsoft.Maui.Graphics
 			canvas.StrokeSize = strokeThickness;
 
 			// Set Stroke
-			var stroke = ShapeView.Stroke;
-			canvas.StrokeColor = stroke;
+			var stroke = ShapeView.Stroke?.ToColor();
+			canvas.StrokeColor = stroke ?? Colors.Transparent; //TODO: Fix default color
 
 			// Set StrokeLineCap
 			var strokeLineCap = ShapeView.StrokeLineCap;
