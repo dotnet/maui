@@ -37,8 +37,10 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapPlaceholderColor(IViewHandler handler, IEditor editor) { }
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(IViewHandler handler, IEditor editor) { }
+		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateCharacterSpacing(editor);
+		}
 
 		public static void MapMaxLength(EditorHandler handler, IEditor editor)
 		{

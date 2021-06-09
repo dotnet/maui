@@ -30,6 +30,11 @@ namespace Microsoft.Maui
 			textBox.ForegroundFocusBrush = brush;
 		}
 
+		public static void UpdateCharacterSpacing(this MauiTextBox textBox, ITextStyle textStyle)
+		{
+			textBox.CharacterSpacing = textStyle.CharacterSpacing.ToEm();
+		}
+		
 		public static void UpdateCharacterSpacing(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.CharacterSpacing = entry.CharacterSpacing.ToEm();
