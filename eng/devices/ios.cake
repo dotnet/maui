@@ -28,6 +28,21 @@ Information("Build Configuration: {0}", CONFIGURATION);
 Setup(context =>
 {
 	Cleanup();
+
+	var version = "14_4";
+	if (TEST_DEVICE.IndexOf("_") is int idx && idx > 0)
+		version = TEST_DEVICE.Substring(idx + 1).Replace(".", "_");
+
+	var id = $"com.apple.pkg.iPhoneSimulatorSDK{version}";
+
+	var settings = new DotNetCoreToolSettings {
+		DiagnosticOutput = true,
+		ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
+			$"--simulator=\"{id}\" " +
+			$"--verbosity=\"Debug\" ")
+	};
+
+	DotNetCoreTool("tool", settings);
 });
 
 Teardown(context =>
@@ -122,7 +137,7 @@ Task("Test")
 
 	var settings = new DotNetCoreToolSettings {
 		DiagnosticOutput = true,
-		ArgumentCustomization = args=>args.Append("run xharness apple test " +
+		ArgumentCustomization = args => args.Append("run xharness apple test " +
 		$"--app=\"{TEST_APP}\" " +
 		$"--targets=\"{TEST_DEVICE}\" " +
 		$"--output-directory=\"{TEST_RESULTS}\" " +
