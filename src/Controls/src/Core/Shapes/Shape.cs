@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -127,7 +128,8 @@ namespace Microsoft.Maui.Controls.Shapes
 				_ => LineJoin.Round
 			};
 
-		public float[] StrokeDashPattern => StrokeDashPattern;
+		public float[] StrokeDashPattern
+			=> StrokeDashArray?.Select(a => (float)a)?.ToArray();
 
 		float IShapeView.StrokeMiterLimit => (float)StrokeMiterLimit;
 

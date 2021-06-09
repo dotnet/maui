@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		public static implicit operator PointCollection(Point[] d) => new(d);
+		public static implicit operator PointCollection(Point[] d)
+			=> d == null ? new() : new(d);
 	}
 }
