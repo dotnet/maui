@@ -340,8 +340,8 @@ stages:
                   inputs:
                     provisioning_script: $(provisionator.vs2019)
 
-              - script: |
-                  dotnet build src/DotNet/DotNet.csproj -bl:$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)-dotnet.binlog
+              - pwsh: |
+                  & dotnet build src/DotNet/DotNet.csproj -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
                   echo "##vso[task.prependpath]$(DotNet.Dir)"
                 displayName: install .NET
 
