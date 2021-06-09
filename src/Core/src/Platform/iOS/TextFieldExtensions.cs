@@ -53,7 +53,7 @@ namespace Microsoft.Maui
 			if (newText != null && textField.AttributedText != newText)
 				textField.AttributedText = newText;
 		}
-
+				
 		public static void UpdatePlaceholder(this UITextField textField, IEntry entry)
 		{
 			textField.Placeholder = entry.Placeholder;

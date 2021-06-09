@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using UIKit;
 
@@ -17,6 +18,26 @@ namespace Microsoft.Maui.Handlers
 			_editor = searchBar.FindDescendantView<UITextField>();
 
 			return searchBar;
+		}
+
+		protected override void ConnectHandler(UISearchBar nativeView)
+		{
+			nativeView.CancelButtonClicked += OnCancelClicked;
+			nativeView.SearchButtonClicked += OnSearchButtonClicked;
+			nativeView.TextChanged += OnTextChanged;
+			nativeView.ShouldChangeTextInRange += ShouldChangeText;
+
+			base.ConnectHandler(nativeView);
+		}
+
+		protected override void DisconnectHandler(UISearchBar nativeView)
+		{
+			nativeView.CancelButtonClicked -= OnCancelClicked;
+			nativeView.SearchButtonClicked -= OnSearchButtonClicked;
+			nativeView.TextChanged -= OnTextChanged;
+			nativeView.ShouldChangeTextInRange -= ShouldChangeText;
+
+			base.DisconnectHandler(nativeView);
 		}
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
@@ -57,6 +78,9 @@ namespace Microsoft.Maui.Handlers
 			// Setting any of those may have removed text alignment settings,
 			// so we need to make sure those are applied, too
 			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
+
+			// We also update MaxLength which depends on the text
+			handler.NativeView?.UpdateMaxLength(searchBar);
 		}
 
 		[MissingMapper]
@@ -65,13 +89,41 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapMaxLength(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateMaxLength(searchBar);
+		}
 
 		[MissingMapper]
 		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
 		public static void MapCancelButtonColor(IViewHandler handler, ISearchBar searchBar) { }
+
+		void OnCancelClicked(object? sender, EventArgs args)
+		{
+			if (VirtualView != null)
+				VirtualView.Text = string.Empty;
+
+			NativeView?.ResignFirstResponder();
+		}
+
+		void OnSearchButtonClicked(object? sender, EventArgs e)
+		{
+			VirtualView?.SearchButtonPressed();
+			NativeView?.ResignFirstResponder();
+		}
+
+		void OnTextChanged(object? sender, UISearchBarTextChangedEventArgs a)
+		{
+			if (VirtualView != null)
+				VirtualView.Text = a.SearchText;
+		}
+
+		bool ShouldChangeText(UISearchBar searchBar, NSRange range, string text)
+		{
+			var newLength = searchBar?.Text?.Length + text.Length - range.Length;
+			return newLength <= VirtualView?.MaxLength;
+		}
 	}
 }

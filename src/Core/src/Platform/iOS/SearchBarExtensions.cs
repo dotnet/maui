@@ -22,10 +22,24 @@ namespace Microsoft.Maui
 		public static void UpdateFont(this UISearchBar uiSearchBar, ITextStyle textStyle, IFontManager fontManager, UITextField? textField)
 		{
 			textField ??= uiSearchBar.FindDescendantView<UITextField>();
+
 			if (textField == null)
 				return;
 
 			textField.UpdateFont(textStyle, fontManager);
+		}
+
+		public static void UpdateMaxLength(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			var maxLength = searchBar.MaxLength;
+
+			if (maxLength == -1)
+				maxLength = int.MaxValue;
+
+			var currentControlText = uiSearchBar.Text;
+
+			if (currentControlText?.Length > maxLength)
+				uiSearchBar.Text = currentControlText.Substring(0, maxLength);
 		}
 	}
 }

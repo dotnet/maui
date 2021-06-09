@@ -85,5 +85,26 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
+
+		[Theory(DisplayName = "MaxLength Initializes Correctly")]
+		[InlineData(2)]
+		[InlineData(5)]
+		[InlineData(8)]
+		[InlineData(10)]
+		public async Task MaxLengthInitializesCorrectly(int maxLength)
+		{
+			const string text = "Lorem ipsum dolor sit amet";
+			var expectedText = text.Substring(0, maxLength);
+
+			var searchBar = new SearchBarStub()
+			{
+				MaxLength = maxLength,
+				Text = text
+			};
+
+			var nativeText = await GetValueAsync(searchBar, GetNativeText);
+
+			Assert.Equal(expectedText, nativeText);
+		}
 	}
 }

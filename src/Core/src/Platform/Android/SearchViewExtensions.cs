@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Android.Text;
 using Android.Widget;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -23,6 +25,36 @@ namespace Microsoft.Maui
 				return;
 
 			editText.UpdateFont(searchBar, fontManager);
+		}
+
+		public static void UpdateMaxLength(this SearchView searchView, ISearchBar searchBar)
+		{
+			searchView.UpdateMaxLength(searchBar, null);
+		}
+
+		public static void UpdateMaxLength(this SearchView searchView, ISearchBar searchBar, EditText? editText)
+		{
+			editText ??= searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+
+			var currentFilters = new List<IInputFilter>(editText?.GetFilters() ?? new IInputFilter[0]);
+
+			for (var i = 0; i < currentFilters.Count; i++)
+			{
+				if (currentFilters[i] is InputFilterLengthFilter)
+				{
+					currentFilters.RemoveAt(i);
+					break;
+				}
+			}
+
+			currentFilters.Add(new InputFilterLengthFilter(searchBar.MaxLength));
+
+			editText?.SetFilters(currentFilters.ToArray());
+
+			var currentControlText = searchView.Query;
+
+			if (currentControlText.Length > searchBar.MaxLength)
+				searchView.SetQuery(currentControlText.Substring(0, searchBar.MaxLength), false);
 		}
 	}
 }
