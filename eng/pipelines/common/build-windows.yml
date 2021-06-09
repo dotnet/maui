@@ -17,7 +17,7 @@ steps:
       provisioning_extra_args: $(provisionator.extraArguments)
 
   - powershell: |
-      & dotnet build src/DotNet/DotNet.csproj -bl:$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)-dotnet.binlog
+      & dotnet build src\DotNet\DotNet.csproj -bl:${{ parameters.artifactsTargetFolder }}\$(BuildConfiguration)-dotnet.binlog
       echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: install .NET
 
