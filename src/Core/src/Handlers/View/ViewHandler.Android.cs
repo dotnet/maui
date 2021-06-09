@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
@@ -123,23 +124,38 @@ namespace Microsoft.Maui.Handlers
 			if (info == null)
 				return;
 
-			var hint = semantics.Hint;
-			if (!string.IsNullOrEmpty(hint))
-			{
-				info.HintText = hint;
-
-				if (host is EditText)
-					info.ShowingHintText = false;
-			}
+			string? newText = null;
 
 			var desc = semantics.Description;
 			if (!string.IsNullOrEmpty(desc))
 			{
-				info.ContentDescription = desc;
-
+				// Edit Text fields won't read anything for the content description
 				if (host is EditText)
-					info.Text = desc + ", " + ((EditText)host).Text;
+					newText = $"{desc}, {((EditText)host).Text}";
+				else
+					info.ContentDescription = desc;
 			}
+
+			var hint = semantics.Hint;
+			if (!string.IsNullOrEmpty(hint))
+			{
+				// info HintText won't read anything back when using TalkBack
+				if (NativeVersion.IsAtLeast(26))
+				{
+					info.HintText = hint;
+
+					if (host is EditText)
+						info.ShowingHintText = false;
+				}
+				else if (host is TextView tv)
+				{
+					newText = newText ?? tv.Text;
+					newText = $"{newText}, {hint}";
+				}
+			}
+
+			if (!String.IsNullOrWhiteSpace(newText))
+				info.Text = newText;
 		}
 
 		class MauiAccessibilityDelegate : AccessibilityDelegateCompat
