@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	public partial class Path : IShape
 	{
-		public PathF GetPath()
+		public override PathF GetPath()
 		{
 			var path = new PathF();
 

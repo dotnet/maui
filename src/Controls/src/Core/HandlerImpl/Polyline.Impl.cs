@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	public partial class Polyline : IShape
 	{
-		public PathF GetPath()
+		public override PathF GetPath()
 		{
 			var path = new PathF();
 
