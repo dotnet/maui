@@ -83,5 +83,8 @@ namespace Microsoft.Maui.DeviceTests
 			var mauiPicker = GetNativePicker(pickerHandler);
 			return mauiPicker.AttributedPlaceholder.GetForegroundColor();
 		}
+
+		UIControlContentVerticalAlignment GetNativeVerticalTextAlignment(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).VerticalAlignment;
 	}
 }
