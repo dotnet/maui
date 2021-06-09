@@ -151,7 +151,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Editor { Text = "Editor TextColor", TextColor = Colors.Olive });
 			verticalStack.Add(new Editor { Text = "Editor using CharacterSpacing", CharacterSpacing = 10 });
 			verticalStack.Add(new Editor { Placeholder = "This is an editor placeholder." });
-			verticalStack.Add(new Editor { Placeholder = "Green Text Color Editor", TextColor = Colors.Green });
+			verticalStack.Add(new Editor { Placeholder = "Editor PlaceholderColor", PlaceholderColor = Colors.Green });
 
 			var paddingButton = new Button
 			{
