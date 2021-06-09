@@ -49,6 +49,8 @@ schedules:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
+  - name: REQUIRED_XCODE
+    value: 12.5
 
 parameters:
   - name: BuildEverything
