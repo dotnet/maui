@@ -42,6 +42,7 @@ steps:
 
   - script: |
       dotnet build src/DotNet/DotNet.csproj -bl:$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)-dotnet.binlog
+      echo "$(DotNet.Path)"
       echo "##vso[task.prependpath]$(DotNet.Path)"
     displayName: install .NET
 
