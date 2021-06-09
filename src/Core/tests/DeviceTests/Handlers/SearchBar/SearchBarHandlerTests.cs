@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -40,6 +41,18 @@ namespace Microsoft.Maui.DeviceTests
 				},
 				setValue,
 				unsetValue);
+		}
+
+		[Fact(DisplayName = "TextColor Initializes Correctly")]
+		public async Task TextColorInitializesCorrectly()
+		{
+			var searchBar = new SearchBarStub
+			{
+				Text = "TextColor",
+				TextColor = Colors.Red
+			};
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.TextColor, GetNativeTextColor, searchBar.TextColor);
 		}
 
 		[Fact(DisplayName = "Placeholder Initializes Correctly")]

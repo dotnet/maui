@@ -7,7 +7,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, UISearchBar>
 	{
+		static UIColor? DefaultTextColor;
+
 		UITextField? _editor;
+
 		public UITextField? QueryEditor => _editor;
 
 		protected override UISearchBar CreateNativeView()
@@ -17,6 +20,13 @@ namespace Microsoft.Maui.Handlers
 			_editor = searchBar.FindDescendantView<UITextField>();
 
 			return searchBar;
+		}
+
+		protected override void SetupDefaults(UISearchBar nativeView)
+		{
+			DefaultTextColor = QueryEditor?.TextColor;
+
+			base.SetupDefaults(nativeView);
 		}
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
@@ -59,8 +69,10 @@ namespace Microsoft.Maui.Handlers
 			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.QueryEditor?.UpdateTextColor(searchBar, DefaultTextColor);
+		}
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
