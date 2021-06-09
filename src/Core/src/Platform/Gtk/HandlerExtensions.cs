@@ -1,4 +1,4 @@
-﻿using Gtk;
+using Gtk;
 using System;
 
 namespace Microsoft.Maui
@@ -35,5 +35,7 @@ namespace Microsoft.Maui
 
 			return result;
 		}
+
 	}
+
 }

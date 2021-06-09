@@ -5,6 +5,8 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Handlers
 {
 
+	// https://developer.gnome.org/gtk3/stable/GtkTextView.html 
+	
 	public partial class EditorHandler : ViewHandler<IEditor, TextView>
 	{
 
