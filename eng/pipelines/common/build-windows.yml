@@ -18,7 +18,6 @@ steps:
 
   - powershell: |
       & dotnet build src\DotNet\DotNet.csproj -bl:${{ parameters.artifactsTargetFolder }}\$(BuildConfiguration)-dotnet.binlog
-      echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: install .NET
 
   - powershell: |
