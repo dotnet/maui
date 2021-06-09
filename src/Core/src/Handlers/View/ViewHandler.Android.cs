@@ -78,28 +78,37 @@ namespace Microsoft.Maui.Handlers
 
 		static partial void MappingSemantics(ViewHandler handler, IView view)
 		{
+			if (handler.NativeView == null)
+				return;
+
 			if (view.Semantics != null &&
 				handler is ViewHandler viewHandler &&
 				viewHandler.AccessibilityDelegate == null &&
 				ViewCompat.GetAccessibilityDelegate(handler.NativeView as NativeView) == null)
 			{
+				if (handler.NativeView is not NativeView nativeView)
+					return;
+
+				if (nativeView is AndroidX.AppCompat.Widget.SearchView sv)
+					nativeView = sv.FindViewById(Resource.Id.search_button)!;
+
 				if (!string.IsNullOrWhiteSpace(view.Semantics.Hint) || !string.IsNullOrWhiteSpace(view.Semantics.Description))
 				{
 					if (viewHandler.AccessibilityDelegate == null)
 					{
 						viewHandler.AccessibilityDelegate = new MauiAccessibilityDelegate() { Handler = viewHandler };
-						ViewCompat.SetAccessibilityDelegate(handler.NativeView as NativeView, viewHandler.AccessibilityDelegate);
+						ViewCompat.SetAccessibilityDelegate(nativeView, viewHandler.AccessibilityDelegate);
 					}
 				}
 				else if (viewHandler.AccessibilityDelegate != null)
 				{
 					viewHandler.AccessibilityDelegate = null;
-					ViewCompat.SetAccessibilityDelegate((handler.NativeView as NativeView)!, null);
+					ViewCompat.SetAccessibilityDelegate(nativeView, null);
 				}
 
 				if (viewHandler.AccessibilityDelegate != null)
 				{
-					(handler.NativeView as NativeView)!.ImportantForAccessibility = ImportantForAccessibility.Yes;
+					nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
 				}
 			}
 		}
