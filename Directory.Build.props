@@ -12,9 +12,9 @@
     <MauiPlatforms Condition="'$(BuildForAndroid)' == 'true'">net6.0-android</MauiPlatforms>
 
     <!-- This is used to easily build for a specific target to make the IDE work a bit better  -->   
-    <MauiLinuxTargets>net5</MauiLinuxTargets>
-    <NonNet6Platforms>$(MauiLinuxTargets)</NonNet6Platforms>
-    <NonNet6EssentialsPlatforms>netstandard2.0;netstandard2.1;MonoAndroid10.0</NonNet6EssentialsPlatforms>
+    <MauiGtkTargets>net5</MauiGtkTargets>
+    <NonNet6Platforms>$(MauiGtkTargets)</NonNet6Platforms>
+    <NonNet6EssentialsPlatforms>netstandard2.0;netstandard2.1</NonNet6EssentialsPlatforms>
     <NonNet6EssentialsPlatforms Condition=" '$(OS)' == 'Windows_NT'">$(NonNet6EssentialsPlatforms);uap10.0.16299;</NonNet6EssentialsPlatforms>
 
     <BuildNonNet6ForiOS>false</BuildNonNet6ForiOS>

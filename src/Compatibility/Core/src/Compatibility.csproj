@@ -10,7 +10,7 @@
     <WindowsRoot>WinUI\</WindowsRoot>
     <GtkRoot>Gtk\</GtkRoot>
   </PropertyGroup>
-  <PropertyGroup Condition="$(MauiLinuxTargets.Contains($(TargetFramework))) == true ">
+  <PropertyGroup Condition="$(MauiGtkTargets.Contains($(TargetFramework))) == true ">
     <DefineConstants>$(DefineConstants);LINUX;GTK</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>

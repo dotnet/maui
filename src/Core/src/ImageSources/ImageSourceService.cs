@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 			IImageSource imageSource,
 			float scale = 1,
 			CancellationToken cancellationToken = default);
-#elif LINUX
+#elif GTK
 		public abstract Task<IImageSourceServiceResult<Gdk.Pixbuf>?> GetImageAsync(
 			IImageSource imageSource,
 			float scale = 1,

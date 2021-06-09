@@ -5,7 +5,7 @@ using System;
 using NativeView = UIKit.UIView;
 #elif MONOANDROID
 using NativeView = Android.Views.View;
-#elif LINUX
+#elif GTK
 using NativeView = Gtk.Widget;
 #elif WINDOWS
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
