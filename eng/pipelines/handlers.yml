@@ -256,9 +256,9 @@ stages:
                 echo "##vso[task.prependpath]$(DotNet.Dir)"
               displayName: install .NET
 
-            - script: dotnet tool restore
+            - script: $(DotNet.Path) tool restore
               displayName: install dotnet tools
-            - script: dotnet cake --configuration=Release
+            - script: $(DotNet.Path) cake --configuration=Release
               displayName: pack nugets
             - task: CopyFiles@2
               displayName: 'Copy SignList.xml Files'
