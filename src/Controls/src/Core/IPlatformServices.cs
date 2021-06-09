@@ -18,8 +18,6 @@ namespace Microsoft.Maui.Controls.Internals
 
 		Ticker CreateTicker();
 
-		Assembly[] GetAssemblies();
-
 		string GetHash(string input);
 
 		[Obsolete("GetMD5Hash is obsolete as of version 4.7.0")]

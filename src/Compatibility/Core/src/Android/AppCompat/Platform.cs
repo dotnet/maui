@@ -35,6 +35,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				var view = bindable as VisualElement;
 				if (view != null)
 					view.IsPlatformEnabled = newvalue != null;
+
+				if (view.Handler == null && newvalue is IVisualElementRenderer ver)
+					view.Handler = new RendererToHandlerShim(ver);
+				else if (view.Handler != null && newvalue == null)
+					view.Handler = null;
+
 			});
 
 		public Platform(Context context) : this(context, false)
@@ -352,7 +358,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 		internal static IVisualElementRenderer CreateRenderer(VisualElement element, AndroidX.Fragment.App.FragmentManager fragmentManager, Context context)
 		{
-			IVisualElementRenderer renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element, context) ?? new DefaultRenderer(context);
+			IVisualElementRenderer renderer = CreateRenderer(element, context);
 
 			var managesFragments = renderer as IManageFragments;
 			managesFragments?.SetFragmentManager(fragmentManager);

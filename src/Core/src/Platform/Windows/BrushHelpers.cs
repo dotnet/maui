@@ -1,13 +1,13 @@
 ﻿#nullable enable
 using System;
 using Microsoft.Maui.Graphics;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui
 {
 	internal static class BrushHelpers
 	{
-		public static void UpdateColor(Color color, ref WBrush? defaultbrush, Func<WBrush?> getter, Action<WBrush?> setter)
+		public static void UpdateColor(Color? color, ref Brush? defaultbrush, Func<Brush?> getter, Action<Brush?> setter)
 		{
 			if (color == null)
 			{
@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 			setter(color.ToNative());
 		}
 
-		public static void UpdateBrush(Paint paint, ref WBrush? defaultbrush, Func<WBrush?> getter, Action<WBrush?> setter)
+		public static void UpdateBrush(Paint paint, ref Brush? defaultbrush, Func<Brush?> getter, Action<Brush?> setter)
 		{
 			if (paint == null)
 			{

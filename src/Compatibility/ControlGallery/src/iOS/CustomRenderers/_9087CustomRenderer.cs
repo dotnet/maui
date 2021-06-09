@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers;
 using Microsoft.Maui.Controls.Compatibility;
 using static Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue9087;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(_9087Label), typeof(_9087CustomRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers
