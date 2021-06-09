@@ -33,7 +33,4 @@
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 
-  <ItemGroup Condition="$(DefineConstants.Contains('GTK')) == true ">
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Gtk\Compatibility.Gtk.csproj"/>
-  </ItemGroup>
 </Project>
