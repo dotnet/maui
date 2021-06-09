@@ -14,6 +14,9 @@ namespace Microsoft.Maui.Resizetizer
 		public ITaskItem[] MauiSplashScreen { get; set; }
 
 		[Required]
+		public string ManifestFile { get; set; }
+
+		[Required]
 		public string IntermediateOutputPath { get; set; }
 
 		public ILogger Logger { get; private set; }
@@ -108,7 +111,7 @@ namespace Microsoft.Maui.Resizetizer
 		public void UpdateManifest()
 		{
 			XmlDocument doc = new XmlDocument();
-			var xmlPath = Environment.CurrentDirectory + "\\tizen-manifest.xml";
+			var xmlPath = Path.Combine(Environment.CurrentDirectory, ManifestFile);
 			try
 			{
 				doc.Load(xmlPath);

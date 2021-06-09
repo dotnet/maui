@@ -480,12 +480,10 @@
 
         <!-- WPF -->
         <ItemGroup Condition="'$(_ResizetizerIsWPFApp)' == 'True'">
-
             <Resource Include="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''">
                 <LogicalName>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</LogicalName>
                 <Link>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</Link>
             </Resource>
-
         </ItemGroup>
 
         <!-- Tizen -->
