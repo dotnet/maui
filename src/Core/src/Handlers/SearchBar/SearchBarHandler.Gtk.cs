@@ -52,20 +52,32 @@ namespace Microsoft.Maui.Handlers
 			handler.MapFont(handler.NativeView?.Entry, searchBar);
 		}
 
-		[MissingMapper]
-		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar) { }
+		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			if (handler.NativeView?.Entry is { } nativeView)
+				nativeView.Alignment = searchBar.HorizontalTextAlignment.ToXyAlign();
+		}
+
+		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.Entry?.UpdateTextColor(searchBar.TextColor);
+
+		}
+
+		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			if (handler.NativeView?.Entry is { } nativeView)
+				nativeView.MaxLength = searchBar.MaxLength;
+		}
 
 		[MissingMapper]
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
-		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar) { }
-
-		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar) { }
-
+		
 		[MissingMapper]
-		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar) { }
+		public static void MapCancelButtonColor(IViewHandler handler, ISearchBar searchBar) { }
 
 	}
 

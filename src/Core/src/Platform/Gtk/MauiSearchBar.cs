@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 
 		public MauiSearchBar() : base()
 		{
-			Entry = new Entry(string.Empty);
+			Entry = new (string.Empty);
 			Child = Entry;
 			SearchModeEnabled = true;
 		}
