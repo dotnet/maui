@@ -255,8 +255,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var editText = GetNativeEntry(entryHandler);
 
-			if (editText != null)			
-				return editText.SelectionEnd;			
+			if (editText != null)
+				return editText.SelectionEnd;
 
 			return -1;
 		}

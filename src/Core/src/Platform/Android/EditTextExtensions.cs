@@ -220,8 +220,8 @@ namespace Microsoft.Maui
 				UpdateCursorSelection(editText, entry);
 		}
 
-	
-		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */	
+
+		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
 		static void UpdateCursorSelection(AppCompatEditText editText, IEntry entry)
 		{
 			if (!entry.IsReadOnly)// && editText.HasFocus)// || editText.RequestFocus()))//&& editText.RequestFocus())
@@ -266,7 +266,7 @@ namespace Microsoft.Maui
 			if (newSelectionLength != selectionLength)
 				entry.SelectionLength = newSelectionLength;
 			return end;
-    }
+		}
 		internal static void SetInputType(this AppCompatEditText editText, IEditor editor)
 		{
 			if (editor.IsReadOnly)

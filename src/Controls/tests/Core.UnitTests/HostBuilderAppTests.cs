@@ -1,11 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using NUnit;
 using NUnit.Framework;
-using Microsoft.Maui.Controls.Hosting;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
