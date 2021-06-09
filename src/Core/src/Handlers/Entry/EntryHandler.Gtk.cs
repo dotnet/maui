@@ -4,6 +4,8 @@ using Gtk;
 namespace Microsoft.Maui.Handlers
 {
 
+	// https://developer.gnome.org/gtk3/stable/GtkEntry.html
+
 	public partial class EntryHandler : ViewHandler<IEntry, Entry>
 	{
 
@@ -15,11 +17,76 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(Entry nativeView)
 		{
 			nativeView.Changed += OnNativeViewChanged;
+			nativeView.MotionNotifyEvent += OnNativeViewMotionNotified;
+			nativeView.MoveCursor += OnNativeViewCursorMoved;
+			nativeView.ButtonPressEvent += OnNativeViewOnButtonPressed;
+			nativeView.ButtonReleaseEvent += OnNativeViewOnButtonReleased;
 		}
 
 		protected override void DisconnectHandler(Entry nativeView)
 		{
 			nativeView.Changed -= OnNativeViewChanged;
+			nativeView.MotionNotifyEvent -= OnNativeViewMotionNotified;
+			nativeView.MoveCursor -= OnNativeViewCursorMoved;
+			nativeView.ButtonPressEvent -= OnNativeViewOnButtonPressed;
+			nativeView.ButtonReleaseEvent -= OnNativeViewOnButtonReleased;
+		}
+
+		(int start, int end) _selectionCache;
+		bool _isMouseSelection;
+
+		void HandleSelectionChanged()
+		{
+			if (NativeView is not { } nativeView || VirtualView is not { } virtualView)
+				return;
+
+			var actual = nativeView.GetSelection();
+
+			if (actual != _selectionCache)
+			{
+				virtualView.OnSelectionLengthChanged(actual);
+				_selectionCache = actual;
+			}
+		}
+
+		void OnNativeViewCursorMoved(object sender, MoveCursorArgs args)
+		{
+			if (sender != NativeView)
+				return;
+
+			NativeView.OnCursorPositionChanged(VirtualView);
+			HandleSelectionChanged();
+		}
+
+		void OnNativeViewMotionNotified(object sender, MotionNotifyEventArgs args)
+		{
+			if (sender != NativeView)
+				return;
+
+			if (_isMouseSelection)
+				HandleSelectionChanged();
+
+		}
+
+		void OnNativeViewOnButtonPressed(object sender, Gtk.ButtonPressEventArgs args)
+		{
+			if (sender != NativeView)
+				return;
+
+			if (args.Event.Button == 1)
+			{
+				HandleSelectionChanged();
+				_isMouseSelection = true;
+			}
+		}
+
+		void OnNativeViewOnButtonReleased(object o, Gtk.ButtonReleaseEventArgs args)
+		{
+			if (args.Event.Button == 1)
+			{
+				HandleSelectionChanged();
+				_isMouseSelection = false;
+			}
 		}
 
 		protected void OnNativeViewChanged(object? sender, EventArgs e)
@@ -27,7 +94,8 @@ namespace Microsoft.Maui.Handlers
 			if (sender != NativeView)
 				return;
 
-			NativeView?.OnTextChanged(VirtualView);
+			if (NativeView?.OnTextChanged(VirtualView) ?? false)
+				HandleSelectionChanged();
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry)
@@ -74,6 +142,16 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFont(EntryHandler handler, IEntry entry)
 		{
 			handler.MapFont(entry);
+		}
+
+		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateCursorPosition(entry);
+		}
+
+		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateSelectionLength(entry);
 		}
 
 		[MissingMapper]
