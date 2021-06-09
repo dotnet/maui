@@ -213,6 +213,8 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
+          variables:
+            REQUIRED_XCODE: 12.5
           steps:
             - ${{ if eq(BuildPlatform.name, 'macos') }}:
               - task: xamops.azdevex.provisionator-task.provisionator@1
