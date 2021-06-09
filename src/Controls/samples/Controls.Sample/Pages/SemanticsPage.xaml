@@ -197,19 +197,19 @@
 
             <VerticalStackLayout SemanticProperties.Description="Layout description text">
                 <Label
-                    Text="Label in StackLayout with semantic desription"
+                    Text="Label in StackLayout with semantic description"
                     FontSize="14"/>
                 <Label
-                    Text="Label in StackLayout with semantic desription"
+                    Text="Label in StackLayout with semantic description"
                     FontSize="14"/>
             </VerticalStackLayout>
 
             <VerticalStackLayout SemanticProperties.Description="Layout description text">
                 <Label
-                    Text="Label in StackLayout with semantic desription"
+                    Text="Label in StackLayout with semantic description"
                     FontSize="14"/>
                 <Button
-                    Text="Button in StackLayout with semantic desription"
+                    Text="Button in StackLayout with semantic description"
                     FontSize="14"/>
             </VerticalStackLayout>
 
