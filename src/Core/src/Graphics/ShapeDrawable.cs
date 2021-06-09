@@ -45,20 +45,20 @@ namespace Microsoft.Maui.Graphics
 				var viewHeight = (float)(ShapeView?.Height ?? 0);
 
 				// TODO: Calculate path's bounds to get a width and height
-				var pathWidth = 0f;
-				var pathHeight = 0f;
+				var pathWidth = viewWidth;// 0f;
+				var pathHeight = viewHeight;// 0f;
 
 				// If one dimension is 0, we have nothing to display anyway
 				if (pathWidth > 0 && pathHeight > 0)
 				{
-					if (aspect == Aspect.Fill)
+					if (aspect == PathAspect.Stretch)
 					{
 						var scaleX = viewWidth / pathWidth;
 						var scaleY = viewHeight / pathHeight;
 						
 						path.Transform(AffineTransform.GetScaleInstance(scaleX, scaleY));
 					}
-					else if (aspect == Aspect.AspectFill)
+					else if (aspect == PathAspect.AspectFill)
 					{
 						var scaleX = viewWidth / pathWidth;
 						var scaleY = viewHeight / pathHeight;
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Graphics
 
 						path.Transform(AffineTransform.GetScaleInstance(scaleDimension, scaleDimension));
 					}
-					else if (aspect == Aspect.AspectFit)
+					else if (aspect == PathAspect.AspectFit)
 					{
 						var scaleX = viewWidth / pathWidth;
 						var scaleY = viewHeight / pathHeight;
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Graphics
 
 						path.Transform(AffineTransform.GetScaleInstance(scaleDimension, scaleDimension));
 					}
-					else if (aspect == Aspect.Center)
+					else if (aspect == PathAspect.Center)
 					{
 						// TODO: Calculate move
 					}
