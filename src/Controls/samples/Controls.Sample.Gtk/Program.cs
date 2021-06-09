@@ -5,7 +5,7 @@ using Maui.SimpleSampleApp;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 
-namespace Controls.Sample.Linux
+namespace Controls.Sample.Gtk
 {
 
 	class Program

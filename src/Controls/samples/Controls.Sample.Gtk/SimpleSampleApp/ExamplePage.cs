@@ -25,14 +25,14 @@ namespace Maui.SimpleSampleApp
 			"Sed interdum ullamcorper dui eu rutrum. Vestibulum non sagittis justo. " +
 			"Cras rutrum scelerisque elit, et porta est lobortis ac. " +
 			"Pellentesque eu ornare tortor. Sed bibendum a nisl at laoreet.";
-		
+
 		public ExamplePage(IServiceProvider services, MainPageViewModel viewModel)
 		{
 			_services = services;
 			BindingContext = _viewModel = viewModel;
-			
+
 			// SetupMauiLayoutLayouts();
-			
+
 			// SetupMauiLayoutSimple();
 			SetupMauiLayout();
 			// SetupCompatibilityLayout();
@@ -54,8 +54,8 @@ namespace Maui.SimpleSampleApp
 						Margin = new Thickness(i),
 						LineBreakMode = LineBreakMode.TailTruncation,
 						MaxLines = i
-
 					};
+
 					l.Add(label);
 				}
 			}
@@ -65,20 +65,23 @@ namespace Maui.SimpleSampleApp
 				Spacing = 5,
 				BackgroundColor = Colors.WhiteSmoke,
 			};
+
 			var verticalStack2 = new VerticalStackLayout()
 			{
 				Spacing = 5,
 				BackgroundColor = Colors.LightYellow,
 			};
+
 			Fill(verticalStack2, nameof(verticalStack2), 4, Colors.Coral);
-			
+
 			var horizontalStack1 = new HorizontalStackLayout()
 			{
 				Spacing = 5,
 				BackgroundColor = Colors.NavajoWhite,
 			};
+
 			Fill(horizontalStack1, nameof(horizontalStack1), 4, Colors.Aquamarine);
-			
+
 			verticalStack1.Add(verticalStack2);
 			verticalStack1.Add(horizontalStack1);
 
@@ -87,6 +90,7 @@ namespace Maui.SimpleSampleApp
 				Spacing = 5,
 				BackgroundColor = Colors.Lime,
 			};
+
 			verticalStack3.Add(new Label
 			{
 				HorizontalTextAlignment = TextAlignment.Center,
@@ -94,8 +98,9 @@ namespace Maui.SimpleSampleApp
 				Margin = new Thickness(2),
 				LineBreakMode = LineBreakMode.TailTruncation,
 				MaxLines = 2,
-				Text =  LoremIpsum
+				Text = LoremIpsum
 			});
+
 			verticalStack1.Add(verticalStack3);
 			Content = verticalStack1;
 
@@ -187,7 +192,6 @@ namespace Maui.SimpleSampleApp
 
 		void SetupMauiLayout()
 		{
-
 
 			var verticalStack = new VerticalStackLayout()
 			{
@@ -533,6 +537,13 @@ namespace Maui.SimpleSampleApp
 				ThumbColor = Colors.Yellow
 			});
 
+			verticalStack.Add(new GraphicsView
+			{
+				Drawable = new TestDrawable(),
+				HeightRequest = 50,
+				WidthRequest = 200
+			});
+
 			verticalStack.Add(new DatePicker());
 			verticalStack.Add(new DatePicker { CharacterSpacing = 6 });
 			verticalStack.Add(new DatePicker { FontSize = 24 });
@@ -605,13 +616,17 @@ namespace Maui.SimpleSampleApp
 				ThumbColor = Colors.Yellow
 			});
 
+			verticalStack.Add(new GraphicsView
+			{
+				Drawable = new TestDrawable(),
+				HeightRequest = 50,
+				WidthRequest = 200
+			});
+
 			verticalStack.Add(new DatePicker());
 			verticalStack.Add(new TimePicker());
 
-			verticalStack.Add(new Image()
-			{
-				Source = "dotnet_bot.png"
-			});
+			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
 
 			Content = verticalStack;
 		}
@@ -671,6 +686,22 @@ namespace Maui.SimpleSampleApp
 			layout.BackgroundColor = Colors.Chartreuse;
 
 			return layout;
+		}
+
+	}
+
+	class TestDrawable : IDrawable
+	{
+
+		public void Draw(ICanvas canvas, RectangleF dirtyRect)
+		{
+			canvas.SaveState();
+			canvas.FillColor = Colors.Red;
+			canvas.FillRoundedRectangle(0, 0, 200, 50, 10);
+			canvas.FontColor = Colors.Yellow;
+			canvas.FontSize = 10;
+			canvas.DrawString("Drawable", 100, 10, HorizontalAlignment.Center);
+			canvas.RestoreState();
 		}
 
 	}

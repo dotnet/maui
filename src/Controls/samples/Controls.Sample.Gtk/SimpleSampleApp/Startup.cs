@@ -7,14 +7,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Window = Microsoft.Maui.Controls.Window;
 
 namespace Maui.SimpleSampleApp
 {
+
 	public class Startup : IStartup
 	{
+
 		public readonly static bool UseSemanticsPage = false;
 		public readonly static bool UseXamlPage = false;
 		public readonly static bool UseXamlApp = true;
@@ -32,24 +35,24 @@ namespace Maui.SimpleSampleApp
 			{
 				// Use just the Forms renderers
 				appBuilder = appBuilder
-					.UseCompatibilityRenderers()
-					.UseMauiApp<SimpleSampleMauiApp>();
+				   .UseCompatibilityRenderers()
+				   .UseMauiApp<SimpleSampleMauiApp>();
 			}
 
 			appBuilder
-				.ConfigureAppConfiguration(config =>
+			   .ConfigureAppConfiguration(config =>
 				{
 					config.AddInMemoryCollection(new Dictionary<string, string>
 					{
-						{"MyKey", "Dictionary MyKey Value"},
-						{":Title", "Dictionary_Title"},
-						{"Position:Name", "Dictionary_Name" },
-						{"Logging:LogLevel:Default", "Warning"}
+						{ "MyKey", "Dictionary MyKey Value" },
+						{ ":Title", "Dictionary_Title" },
+						{ "Position:Name", "Dictionary_Name" },
+						{ "Logging:LogLevel:Default", "Warning" }
 					});
 				})
-				.UseMauiServiceProviderFactory(true)
+			   .UseMauiServiceProviderFactory(true)
 				//.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
-				.ConfigureServices(services =>
+			   .ConfigureServices(services =>
 				{
 					services.AddSingleton<ITextService, TextService>();
 					services.AddTransient<MainPageViewModel>();
@@ -59,11 +62,11 @@ namespace Maui.SimpleSampleApp
 					// else if (UseSemanticsPage)
 					// 	services.AddTransient<IPage, SemanticsPage>();
 					// else
-						services.AddTransient<IPage, ExamplePage>();
+					services.AddTransient<IPage, ExamplePage>();
 
 					services.AddTransient<IWindow, Window>();
 				})
-				.ConfigureFonts(fonts =>
+			   .ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
 				})
@@ -79,30 +82,27 @@ namespace Maui.SimpleSampleApp
 				// 			Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
 				// 		});
 				// })
-				.ConfigureLifecycleEvents(events =>
+			   .ConfigureLifecycleEvents(events =>
 				{
 					events.AddEvent<Action<string>>("CustomEventName", value => LogEvent("CustomEventName"));
 
 					// Log everything in this one
-					events.AddWindows(windows => windows
-						.OnActivated((a, b) => LogEvent(nameof(LinuxLifecycle.OnApplicationActivated)))
-						.OnClosed((a, b) => LogEvent(nameof(LinuxLifecycle.OnHidden)))
-						.OnLaunched((a, b) => LogEvent(nameof(LinuxLifecycle.OnLaunched)))
-						.OnVisibilityChanged((a, b) =>
+					events.AddGtk(windows => windows
+					   .OnActivated((a, b) => LogEvent(nameof(GtkLifecycle.OnApplicationActivated)))
+					   .OnClosed((a, b) => LogEvent(nameof(GtkLifecycle.OnHidden)))
+					   .OnLaunched((a, b) => LogEvent(nameof(GtkLifecycle.OnLaunched)))
+					   .OnVisibilityChanged((a, b) => LogEvent(nameof(GtkLifecycle.OnVisibilityChanged)))
+					   .OnShown((a, b) =>
 						{
-							LogEvent(nameof(LinuxLifecycle.OnVisibilityChanged));
-
-							if (b.Event.State == VisibilityState.Unobscured)
-							{
-								if (a.AllocatedWidth < 2)
-									a.WidthRequest = 200;
-							}
-						}
-						));
+							LogEvent(nameof(GtkLifecycle.OnShown));
+							a.Maximize();
+						})
+					);
 
 					static bool LogEvent(string eventName, string type = null)
 					{
 						Debug.WriteLine($"Lifecycle event: {eventName}{(type == null ? "" : $" ({type})")}");
+
 						return true;
 					}
 				});
@@ -111,11 +111,15 @@ namespace Maui.SimpleSampleApp
 		// To use the Microsoft.Extensions.DependencyInjection ServiceCollection and not the MAUI one
 		class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
 		{
+
 			public ServiceCollection CreateBuilder(IServiceCollection services)
 				=> new ServiceCollection { services };
 
 			public IServiceProvider CreateServiceProvider(ServiceCollection containerBuilder)
 				=> containerBuilder.BuildServiceProvider();
+
 		}
+
 	}
+
 }
