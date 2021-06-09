@@ -109,6 +109,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		// Once we get essentials/cg converted to using startup.cs
+		// we will delete all the renderer code inside this file
+		internal static void RenderersRegistered()
+		{
+			IsInitializedRenderers = true;
+		}
 
 		internal static bool RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden
 		{

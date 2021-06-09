@@ -240,7 +240,7 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(CreateSampleCursorSelection());
 
-			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 });			
+			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
@@ -519,7 +519,7 @@ namespace Maui.Controls.Sample.Pages
 			layout.SetColumn(forSelectionLen, 2);
 
 			return layout;
-    }
+		}
 		IView CreateTransformations()
 		{
 			var label = new Button

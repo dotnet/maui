@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 		}
 
-#if __ANDROID__ || __IOS__ || WINDOWS
+#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 		internal IVisualElementRenderer VisualElementRenderer { get; private set; }
 
 		public static IViewHandler CreateShim(object renderer)

@@ -6,11 +6,23 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public static class MauiHandlersCollectionExtensions
 	{
+		public static IMauiHandlersCollection TryAddCompatibilityRenderer(this IMauiHandlersCollection handlersCollection, Type controlType, Type rendererType)
+		{
+			// This will eventually get copied to the all the other adds once we get rid of FormsCompatBuilder
+			Internals.Registrar.Registered.Register(controlType, rendererType);
+
+#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
+			handlersCollection.TryAddHandler(controlType, typeof(RendererToHandlerShim));
+#endif
+
+			return handlersCollection;
+		}
+
 		public static IMauiHandlersCollection AddCompatibilityRenderer(this IMauiHandlersCollection handlersCollection, Type controlType, Type rendererType)
 		{
 			FormsCompatBuilder.AddRenderer(controlType, rendererType);
 
-#if __ANDROID__ || __IOS__ || WINDOWS
+#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 			handlersCollection.AddHandler(controlType, typeof(RendererToHandlerShim));
 #endif
 
@@ -22,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			FormsCompatBuilder.AddRenderer(typeof(TControlType), typeof(TRenderer));
 
-#if __ANDROID__ || __IOS__ || WINDOWS
+#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 			handlersCollection.AddHandler<TMauiType, RendererToHandlerShim>();
 #endif
 			return handlersCollection;
