@@ -11,7 +11,10 @@ steps:
   
   - task: xamops.azdevex.provisionator-task.provisionator@1
     displayName: 'Provision Xcode'
-    condition: ne(variables['REQUIRED_XCODE'], '')
+    condition: ne(variables['DEVICETESTS_REQUIRED_XCODE'], '')
+    variables:
+      REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+      PublishTrimmed: True
     inputs:
       provisioning_script: $(provisionator.xcode)
 
