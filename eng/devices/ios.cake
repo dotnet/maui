@@ -30,6 +30,7 @@ Setup(context =>
 	Cleanup();
 
 	var settings = new DotNetCoreToolSettings {
+		ToolPath = DOTNET_PATH,
 		DiagnosticOutput = true,
 		ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
 			$"\"{TEST_DEVICE}\" " +

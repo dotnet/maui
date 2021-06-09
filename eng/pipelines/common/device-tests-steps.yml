@@ -40,12 +40,10 @@ steps:
       provisioning_script: $(provisionator.path)
       provisioning_extra_args: $(provisionator.extraArguments)
 
-  - task: UseDotNet@2
-    displayName: 'Install .net core $(DOTNET_VERSION)'
-    condition: ne(variables['DOTNET_VERSION'], '')
-    inputs:
-      version: $(DOTNET_VERSION)
-      packageType: 'sdk'
+  - script: |
+      dotnet build src\DotNet\DotNet.csproj -bl:$(Build.ArtifactStagingDirectory)\$(BuildConfiguration)-dotnet.binlog
+      echo "##vso[task.prependpath]$(DotNet.Path)"
+    displayName: install .NET
 
   - script: dotnet tool restore
     displayName: install dotnet tools
