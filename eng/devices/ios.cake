@@ -29,16 +29,10 @@ Setup(context =>
 {
 	Cleanup();
 
-	var version = "14_4";
-	if (TEST_DEVICE.IndexOf("_") is int idx && idx > 0)
-		version = TEST_DEVICE.Substring(idx + 1).Replace(".", "_");
-
-	var id = $"com.apple.pkg.iPhoneSimulatorSDK{version}";
-
 	var settings = new DotNetCoreToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
-			$"--simulator=\"{id}\" " +
+			$"\"{TEST_DEVICE}\" " +
 			$"--verbosity=\"Debug\" ")
 	};
 
