@@ -8,39 +8,45 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	internal class WinUIWebView2Wrapper : IWebView2Wrapper
 	{
-		private readonly WebView2Control _webView2;
-		private bool _hasInitialized;
+		private readonly WinUICoreWebView2Wrapper _coreWebView2Wrapper;
 
 		public WinUIWebView2Wrapper(WebView2Control webView2)
 		{
-			_webView2 = webView2 ?? throw new ArgumentNullException(nameof(webView2));
+			if (webView2 is null)
+			{
+				throw new ArgumentNullException(nameof(webView2));
+			}
+
+			WebView2 = webView2;
+			_coreWebView2Wrapper = new WinUICoreWebView2Wrapper(this);
 		}
 
-		public CoreWebView2 CoreWebView2 => _webView2.CoreWebView2;
+		public ICoreWebView2Wrapper CoreWebView2 => _coreWebView2Wrapper;
 
 		public Uri Source
 		{
-			get => _webView2.Source;
-			set => _webView2.Source = value;
+			get => WebView2.Source;
+			set => WebView2.Source = value;
 		}
 
-		public event EventHandler<CoreWebView2AcceleratorKeyPressedEventArgs> AcceleratorKeyPressed
+		public WebView2Control WebView2 { get; }
+
+		public CoreWebView2Environment? Environment { get; set; }
+
+		public Action AddAcceleratorKeyPressedHandler(EventHandler<ICoreWebView2AcceleratorKeyPressedEventArgsWrapper> eventHandler)
 		{
-			add => throw new NotSupportedException(); //_webView2.AcceleratorKeyPressed += value;
-			remove => throw new NotSupportedException(); //_webView2.AcceleratorKeyPressed -= value;
+			// This event is not supported in WinUI, so we ignore it
+			return () => { };
 		}
 
-		public Task EnsureCoreWebView2Async(CoreWebView2Environment? environment = null)
+		public async Task CreateEnvironmentAsync()
 		{
-			if (_hasInitialized)
-			{
-				// We don't want people to think they can set more than one environment
-				throw new InvalidOperationException($"{nameof(EnsureCoreWebView2Async)} may only be called once per control.");
-			}
+			Environment = await CoreWebView2Environment.CreateAsync();
+		}
 
-			_hasInitialized = true;
-			// TODO: We don't pass in the 'environment' parameter here because it seems WinUI doesn't support that
-			return _webView2.EnsureCoreWebView2Async().AsTask();
+		public Task EnsureCoreWebView2Async()
+		{
+			return WebView2.EnsureCoreWebView2Async().AsTask();
 		}
 	}
 }

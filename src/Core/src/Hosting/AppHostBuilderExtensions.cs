@@ -12,27 +12,6 @@ namespace Microsoft.Maui.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{
-		static readonly Dictionary<Type, Type> DefaultMauiHandlers = new Dictionary<Type, Type>
-		{
-			{ typeof(IActivityIndicator), typeof(ActivityIndicatorHandler) },
-			{ typeof(IButton), typeof(ButtonHandler) },
-			{ typeof(ICheckBox), typeof(CheckBoxHandler) },
-			{ typeof(IDatePicker), typeof(DatePickerHandler) },
-			{ typeof(IEditor), typeof(EditorHandler) },
-			{ typeof(IEntry), typeof(EntryHandler) },
-			{ typeof(IImage), typeof(ImageHandler) },
-			{ typeof(ILabel), typeof(LabelHandler) },
-			{ typeof(ILayout), typeof(LayoutHandler) },
-			{ typeof(IPicker), typeof(PickerHandler) },
-			{ typeof(IProgress), typeof(ProgressBarHandler) },
-			{ typeof(ISearchBar), typeof(SearchBarHandler) },
-			{ typeof(ISlider), typeof(SliderHandler) },
-			{ typeof(IStepper), typeof(StepperHandler) },
-			{ typeof(ISwitch), typeof(SwitchHandler) },
-			{ typeof(ITimePicker), typeof(TimePickerHandler) },
-			{ typeof(IPage), typeof(PageHandler) },
-		};
-
 		public static IAppHostBuilder ConfigureMauiHandlers(this IAppHostBuilder builder, Action<IMauiHandlersCollection> configureDelegate)
 		{
 			builder.ConfigureServices<HandlerCollectionBuilder>((_, handlers) => configureDelegate(handlers));
@@ -42,12 +21,6 @@ namespace Microsoft.Maui.Hosting
 		public static IAppHostBuilder ConfigureMauiHandlers(this IAppHostBuilder builder, Action<HostBuilderContext, IMauiHandlersCollection> configureDelegate)
 		{
 			builder.ConfigureServices<HandlerCollectionBuilder>(configureDelegate);
-			return builder;
-		}
-
-		public static IAppHostBuilder UseMauiHandlers(this IAppHostBuilder builder)
-		{
-			builder.ConfigureMauiHandlers((_, handlersCollection) => handlersCollection.AddHandlers(DefaultMauiHandlers));
 			return builder;
 		}
 
@@ -74,26 +47,6 @@ namespace Microsoft.Maui.Hosting
 		public static IAppHostBuilder ConfigureAppConfiguration(this IAppHostBuilder builder, Action<IConfigurationBuilder> configureDelegate)
 		{
 			builder.ConfigureAppConfiguration((_, config) => configureDelegate(config));
-			return builder;
-		}
-
-		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder)
-			where TApp : class, IApplication
-		{
-			builder.ConfigureServices((context, collection) =>
-			{
-				collection.AddSingleton<IApplication, TApp>();
-			});
-			return builder;
-		}
-
-		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
-			where TApp : class, IApplication
-		{
-			builder.ConfigureServices((context, collection) =>
-			{
-				collection.AddSingleton<IApplication>(implementationFactory);
-			});
 			return builder;
 		}
 

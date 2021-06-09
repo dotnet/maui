@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net47</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
     <RootNamespace>Microsoft.Maui.Controls.Xaml.UnitTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Xaml.UnitTests</AssemblyName>
     <WarningLevel>4</WarningLevel>
@@ -20,10 +20,10 @@
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
     <PackageReference Include="Mono.Cecil" Version="0.11.3" />
     <PackageReference Include="System.CodeDom" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Build" Version="15.9.20" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" />
+    <PackageReference Include="Microsoft.Build" Version="16.9.0" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.9.0" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.9.0" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.9.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core.csproj" />

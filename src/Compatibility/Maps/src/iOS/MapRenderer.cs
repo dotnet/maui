@@ -10,6 +10,7 @@ using ObjCRuntime;
 using RectangleF = CoreGraphics.CGRect;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 #if __MOBILE__
 using UIKit;

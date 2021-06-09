@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui
 {
@@ -9,11 +11,53 @@ namespace Microsoft.Maui
 		public static void UpdateDate(this DatePicker nativeDatePicker, IDatePicker datePicker)
 		{
 			var date = datePicker.Date;
-			nativeDatePicker.Date = new DateTimeOffset(new DateTime(date.Ticks, DateTimeKind.Unspecified));
+			nativeDatePicker.UpdateDate(date);
 
 			nativeDatePicker.UpdateDay(datePicker);
 			nativeDatePicker.UpdateMonth(datePicker);
 			nativeDatePicker.UpdateYear(datePicker);
+		}
+
+		public static void UpdateDate(this DatePicker nativeDatePicker, DateTime dateTime)
+		{
+			nativeDatePicker.Date = new DateTimeOffset(new DateTime(dateTime.Ticks, DateTimeKind.Unspecified));
+		}
+	
+		public static void UpdateMinimumDate(this DatePicker nativeDatePicker, IDatePicker datePicker)
+		{
+			DateTime mindate = datePicker.MinimumDate;
+
+			try
+			{
+				nativeDatePicker.MinYear = new DateTimeOffset(new DateTime(datePicker.MinimumDate.Ticks, DateTimeKind.Unspecified));
+			}
+			catch (ArgumentOutOfRangeException)
+			{
+				// This will be thrown when mindate equals DateTime.MinValue and the UTC offset is positive
+				// because the resulting DateTimeOffset.UtcDateTime will be out of range. In that case let's
+				// specify the Kind as UTC so there is no offset.
+				mindate = DateTime.SpecifyKind(mindate, DateTimeKind.Utc);
+				nativeDatePicker.MinYear = new DateTimeOffset(mindate);
+			}
+		}
+
+		public static void UpdateMaximumDate(this DatePicker nativeDatePicker, IDatePicker datePicker)
+		{
+			nativeDatePicker.MaxYear = new DateTimeOffset(new DateTime(datePicker.MaximumDate.Ticks, DateTimeKind.Unspecified));
+		}
+
+		public static void UpdateCharacterSpacing(this DatePicker nativeDatePicker, IDatePicker datePicker)
+		{
+			nativeDatePicker.CharacterSpacing = datePicker.CharacterSpacing.ToEm();
+		}
+
+		public static void UpdateFont(this DatePicker nativeDatePicker, IDatePicker datePicker, IFontManager fontManager) =>
+			nativeDatePicker.UpdateFont(datePicker.Font, fontManager);
+
+		public static void UpdateTextColor(this DatePicker nativeDatePicker, IDatePicker datePicker, WBrush? defaultForeground)
+		{
+			Color textColor = datePicker.TextColor;
+			nativeDatePicker.Foreground = textColor == null ? (defaultForeground ?? textColor?.ToNative()) : textColor.ToNative();
 		}
 
 		internal static void UpdateDay(this DatePicker nativeDatePicker, IDatePicker datePicker)

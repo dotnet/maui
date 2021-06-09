@@ -19,30 +19,31 @@
 ## Maui.sln
 
 ### SDKS required
-- Install the SDKs listed here https://github.com/dotnet/net6-mobile-samples
 
-- And/or run the following
-
-```
-dotnet tool install Cake.Tool -g
-```
+- Install the SDKs listed here https://github.com/dotnet/maui-samples
 
 ### Running
 
 #### IDE
-- If you have Visual Studio 16.9 P4 installed you can open `Maui.sln` and run it from there.
+
+- If you have Visual Studio 16.9 P4 or newer installed you can open `Maui.sln` and run it from there.
 
 #### .NET 6
 
 You can run a `Cake` target to bootstrap .NET 6 in `bin\dotnet` and launch Visual Studio:
 
 ```dotnetcli
+dotnet tool restore
 dotnet cake --target=VS-NET6
 ```
-_NOTE: VS Mac is not yet supported._
+_NOTES:_
+- _VS Mac is not yet supported._
+- _If the IDE doesn't show any android devices try unloading and reloading the `Sample.Droid-net6` project._
 
 You can also run commands individually:
 ```dotnetcli
+# install local tools required to build (cake, pwsh, etc..)
+dotnet tool restore
 # Provision .NET 6 in bin\dotnet
 dotnet build src\DotNet\DotNet.csproj
 # Builds Maui MSBuild tasks
@@ -67,6 +68,10 @@ Try out a "single project", you will need the `-f` switch to choose the platform
 ```
 
 ## Current News
+
+[May 25, 2021 - Announcing .NET MAUI Preview 4](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-4/)
+
+[May 24, 2021 - Azure DevOps Podcast - Interview with David Ortinau](http://azuredevopspodcast.clear-measure.com/david-ortinau-on-multi-platform-app-development-using-net-maui-episode-142)
 
 [April 21, 2021 - WinUI Community Live Stream](https://youtu.be/SyLXctia1B0?t=777)
 

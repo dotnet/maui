@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Handlers
 
 		static ColorStateList? DefaultTextColors { get; set; }
 		static Drawable? ClearButtonDrawable { get; set; }
+		static Drawable? DefaultBackground;
 
 		protected override AppCompatEditText CreateNativeView()
 		{
@@ -28,8 +29,8 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// Returns the default 'X' char drawable in the AppCompatEditText.
-		protected virtual Drawable GetClearButtonDrawable()
-			=> ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
+		protected virtual Drawable GetClearButtonDrawable() =>
+			ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
 
 		protected override void ConnectHandler(AppCompatEditText nativeView)
 		{
@@ -63,6 +64,13 @@ namespace Microsoft.Maui.Handlers
 
 			ClearButtonDrawable = GetClearButtonDrawable();
 			DefaultTextColors = nativeView.TextColors;
+			DefaultBackground = nativeView.Background;
+		}
+
+		// This is a Android-specific mapping
+		public static void MapBackground(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateBackground(entry, DefaultBackground);
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry)
@@ -125,6 +133,16 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateCharacterSpacing(entry);
+		}
+
+		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateCursorPosition(entry);
+		}
+
+		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateSelectionLength(entry);
 		}
 
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)

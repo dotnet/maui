@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using CoreAnimation;
+using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -8,9 +10,6 @@ namespace Microsoft.Maui
 	public static class ViewExtensions
 	{
 		const string BackgroundLayerName = "MauiBackgroundLayer";
-
-		public static UIColor? GetBackgroundColor(this UIView view)
-			=> view?.BackgroundColor;
 
 		public static void UpdateIsEnabled(this UIView nativeView, IView view)
 		{
@@ -74,6 +73,11 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateOpacity(this UIView nativeView, IView view)
+		{
+			nativeView.Alpha = (float)view.Opacity;
+		}
+
 		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
 			nativeView.AccessibilityIdentifier = view.AutomationId;
 
@@ -119,7 +123,7 @@ namespace Microsoft.Maui
 
 			var layer = view.Layer;
 
-			if (layer == null || layer.Sublayers == null)
+			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
 				return;
 
 			foreach (var sublayer in layer.Sublayers)
@@ -165,6 +169,14 @@ namespace Microsoft.Maui
 			// Handling of the default (-1) width/height will be taken care of by GetDesiredSize
 			var currentFrame = nativeView.Frame;
 			nativeView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
+		}
+
+		public static int IndexOfSubview(this UIView nativeView, UIView subview)
+		{
+			if (nativeView.Subviews.Length == 0)
+				return -1;
+
+			return Array.IndexOf(nativeView.Subviews, subview);
 		}
 
 		internal static void Collapse(this UIView view)

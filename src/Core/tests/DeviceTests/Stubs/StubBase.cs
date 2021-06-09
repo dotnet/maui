@@ -22,11 +22,31 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IFrameworkElement Parent { get; set; }
 
-		public Size DesiredSize { get; set; } = new Size(20, 20);
+		public Size DesiredSize { get; set; } = new Size(50, 50);
 
-		public double Width { get; set; } = 20;
+		public double Width { get; set; } = 50;
 
-		public double Height { get; set; } = 20;
+		public double Height { get; set; } = 50;
+
+		public double TranslationX { get; set; }
+
+		public double TranslationY { get; set; }
+
+		public double Scale { get; set; } = 1d;
+
+		public double ScaleX { get; set; } = 1d;
+
+		public double ScaleY { get; set; } = 1d;
+
+		public double Rotation { get; set; }
+
+		public double RotationX { get; set; }
+
+		public double RotationY { get; set; }
+
+		public double AnchorX { get; set; } = .5d;
+
+		public double AnchorY { get; set; } = .5d;
 
 		public Thickness Margin { get; set; }
 

@@ -9,6 +9,8 @@ using Microsoft.Maui.Controls.Internals;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Loader")]// Microsoft.Maui.Controls.Loader.dll Microsoft.Maui.Controls.Xaml.XamlLoader.Load(object, string), kzu@microsoft.com
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.HotReload.Forms")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.HotReload.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.SourceGen")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility")]
 [assembly: Preserve]
 
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "Microsoft.Maui.Controls.Xaml")]

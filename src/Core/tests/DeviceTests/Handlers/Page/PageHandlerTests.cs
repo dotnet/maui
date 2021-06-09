@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Page)]
 	public partial class PageHandlerTests : HandlerTestBase<PageHandler, PageStub>
 	{
-		[Fact(DisplayName = "Title Initializes Correctly")]
+		[Fact(DisplayName = "Content Initializes Correctly")]
 		public async Task ContentInitializes()
 		{
 			var slider = new SliderStub();
@@ -18,22 +18,35 @@ namespace Microsoft.Maui.DeviceTests
 				Content = slider
 			};
 
-			await CreateHandlerAsync(page);
-			Assert.Equal(slider.Handler.NativeView, GetNativePageContent(page));
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(page);
+
+				var nativeView = GetNativePageContent(handler);
+
+				Assert.Equal(slider.Handler.NativeView, nativeView);
+			});
 		}
 
-		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
+		[Fact(DisplayName = "Content Updates Correctly")]
 		public async Task ContentUpdates()
 		{
 			var slider = new SliderStub();
 			var page = new PageStub
 			{
-				Content = new SliderStub()
+				Content = new ButtonStub()
 			};
 
-			await CreateHandlerAsync(page);
-			await InvokeOnMainThreadAsync(() => page.Content = slider);
-			Assert.Equal(slider.Handler.NativeView, GetNativePageContent(page));
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(page);
+
+				page.Content = slider;
+
+				var nativeView = GetNativePageContent(handler);
+
+				Assert.Equal(slider.Handler.NativeView, nativeView);
+			});
 		}
 	}
 }

@@ -1,6 +1,6 @@
 <Project>
   <!-- Linux -->
-  <PropertyGroup Condition="$(MauiLinuxTargets.Contains($(TargetFramework))) == true ">
+  <PropertyGroup Condition="$(MauiGtkTargets.Contains($(TargetFramework))) == true ">
     <DefineConstants>$(DefineConstants);LINUX;GTK</DefineConstants>
   </PropertyGroup>
   
@@ -46,11 +46,11 @@
     <Compile Remove="**\*.uwp.cs" />
     <None Include="**\*.uwp.cs" />
   </ItemGroup>
-  <ItemGroup Condition="$(DefineConstants.Contains('LINUX')) != true ">
-    <Compile Remove="**\*.Linux.cs" />
-    <None Include="**\*.Linux.cs" />
-    <Compile Remove="**\Linux\*.cs" />
-    <None Include="**\Linux\*.cs" />
+  <ItemGroup Condition="$(DefineConstants.Contains('GTK')) != true ">
+    <Compile Remove="**\*.Gtk.cs" />
+    <None Include="**\*.Gtk.cs" />
+    <Compile Remove="**\Gtk\*.cs" />
+    <None Include="**\Gtk\*.cs" />
   </ItemGroup>
   <PropertyGroup>
     <!-- Windows -->
@@ -106,6 +106,7 @@
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
+    <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
   </ItemGroup>
   <ItemGroup Condition="$(DefineConstants.Contains('GTK')) == true ">
     <PackageReference Include="GtkSharp" Version="3.24.24.34" />

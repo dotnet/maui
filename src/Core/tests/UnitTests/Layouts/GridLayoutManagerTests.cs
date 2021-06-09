@@ -48,12 +48,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			if (rows == null)
 			{
-				var rowDef = Substitute.For<IGridRowDefinition>();
-				rowDef.Height.Returns(GridLength.Auto);
-				var rowDefs = new List<IGridRowDefinition>
-				{
-					rowDef
-				};
+				var rowDefs = new List<IGridRowDefinition>();
 				grid.RowDefinitions.Returns(rowDefs);
 			}
 			else
@@ -66,7 +61,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			if (cols == null)
 			{
-				var colDefs = CreateTestColumns("auto");
+				var colDefs = new List<IGridColumnDefinition>();
 				grid.ColumnDefinitions.Returns(colDefs);
 			}
 			else
@@ -150,7 +145,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
 
-			// We expect that the only child of the grid will be given its full size
+			// No rows/columns were specified, so the implied */* is used; we're measuring with infinity, so
+			// we expect that the view will be arranged at its measured size
 			AssertArranged(view, 0, 0, 100, 100);
 		}
 
@@ -202,6 +198,13 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Assuming no constraints on space
 			MeasureAndArrange(grid, double.PositiveInfinity, double.NegativeInfinity);
+
+			// Verify that the views are getting measured at all, and that they're being measured at 
+			// the appropriate sizes
+			view0.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(10));
+			view1.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(10));
+			view2.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(30));
+			view3.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(30));
 
 			AssertArranged(view0, 0, 0, 100, 10);
 
@@ -785,6 +788,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Columns are *,*,*, so each view should be arranged at 1/3 the width
 			var expectedWidth = screenWidth / 3;
 			var expectedHeight = viewSize.Height;
+
+			// Make sure that the views in the columns are actually getting measured at the column width,
+			// and not just at the width of the whole grid
+			view1.Received().Measure(Arg.Is<double>(expectedWidth), Arg.Any<double>());
+			view2.Received().Measure(Arg.Is<double>(expectedWidth), Arg.Any<double>());
+
 			AssertArranged(view0, 0, 0, expectedWidth, expectedHeight);
 			AssertArranged(view1, expectedWidth, 0, expectedWidth, expectedHeight);
 			AssertArranged(view2, expectedWidth * 2, 0, expectedWidth, expectedHeight);
@@ -1054,6 +1063,21 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view0, 0, 0, expectedStarWidth * 3, expectedHeight);
 			AssertArranged(view1, expectedStarWidth * 3, 0, 100, expectedHeight);
 			AssertArranged(view2, (expectedStarWidth * 3) + 100, 0, expectedStarWidth, expectedHeight);
+		}
+
+		[Fact]
+		public void UsesImpliedRowAndColumnIfNothingDefined()
+		{
+			var grid = CreateGridLayout();
+			var view0 = CreateTestView(new Size(100, 100));
+			AddChildren(grid, view0);
+			SetLocation(grid, view0);
+
+			// Using 300,300 - the implied row/column are GridLength.Star
+			MeasureAndArrange(grid, 300, 300);
+
+			// Since it's using GridLength.Star, we expect the view to be arranged at the full size of the grid
+			AssertArranged(view0, 0, 0, 300, 300);
 		}
 	}
 }

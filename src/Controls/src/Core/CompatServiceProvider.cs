@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls
 		static IServiceProvider? _serviceProvider;
 		static IEmbeddedFontLoader? _embeddedFontLoader;
 
+		// TODO MAUI This create seems wrong
 		public static IServiceProvider ServiceProvider => _serviceProvider ??= CreateCompatServiceProvider();
 
 		public static IFontRegistrar FontRegistrar => ServiceProvider.GetRequiredService<IFontRegistrar>();
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Controls
 
 		public static void SetServiceProvider(IServiceProvider services)
 		{
-			if (_serviceProvider != null)
+			if (_serviceProvider != null && services != _serviceProvider)
 				throw new InvalidOperationException("The service provider can only be set once.");
 
 			_serviceProvider = services;

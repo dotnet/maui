@@ -24,5 +24,9 @@
 		/// Occurs when the user finalizes the text in an entry with the return key.
 		/// </summary>
 		void Completed();
+
+		int CursorPosition { get; set; }
+
+		int SelectionLength { get; set; }
 	}
 }

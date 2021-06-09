@@ -26,6 +26,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Build.Tasks", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resizetizer", "src\SingleProject\Resizetizer\src\Resizetizer.csproj", "{3E1D0DED-6B13-42C8-AA15-2EDFD8ECE80C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen", "src\Controls\src\SourceGen\Controls.SourceGen.csproj", "{A33C2BD2-293C-4890-91C0-4665BC6E2AD3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{3E1D0DED-6B13-42C8-AA15-2EDFD8ECE80C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E1D0DED-6B13-42C8-AA15-2EDFD8ECE80C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E1D0DED-6B13-42C8-AA15-2EDFD8ECE80C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A33C2BD2-293C-4890-91C0-4665BC6E2AD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A33C2BD2-293C-4890-91C0-4665BC6E2AD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A33C2BD2-293C-4890-91C0-4665BC6E2AD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A33C2BD2-293C-4890-91C0-4665BC6E2AD3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

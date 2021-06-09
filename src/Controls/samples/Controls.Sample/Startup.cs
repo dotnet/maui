@@ -26,6 +26,9 @@ using Maui.Controls.Sample.Controls;
 
 namespace Maui.Controls.Sample
 {
+
+	public class CustomButton : Button { }
+
 	public class Startup : IStartup
 	{
 		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage, Shell }
@@ -38,14 +41,26 @@ namespace Maui.Controls.Sample
 		{
 			bool useFullDIAndBlazor = UseFullDI || _pageType == PageType.Blazor;
 
-			appBuilder
-				.UseFormsCompatibility()
-				.UseMauiControlsHandlers();
-
 			if (UseXamlApp)
 				appBuilder.UseMauiApp<XamlApp>();
 			else
 				appBuilder.UseMauiApp<MyApp>();
+
+			appBuilder
+				.ConfigureMauiHandlers(handlers =>
+				{
+#if __ANDROID__
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer));
+#elif __IOS__
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
+#elif WINDOWS
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
+#endif
+				});
+
 
 			// Use a "third party" library that brings in a massive amount of controls
 			appBuilder.UseRed();
@@ -53,7 +68,6 @@ namespace Maui.Controls.Sample
 #if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
 #endif
-			appBuilder.UseMauiControlsHandlers();
 
 			appBuilder
 				.ConfigureAppConfiguration(config =>

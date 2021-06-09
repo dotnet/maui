@@ -5,6 +5,7 @@ using CoreGraphics;
 using Microsoft.Maui.Controls.Shapes;
 using Shape = Microsoft.Maui.Controls.Shapes.Shape;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 #if __MOBILE__
 using UIKit;
@@ -207,7 +208,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #if __MOBILE__
 	: UIView
 #else
-    : NSView
+	: NSView
 #endif
 	{
 		public ShapeView()
@@ -215,7 +216,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #if __MOBILE__
 			BackgroundColor = UIColor.Clear;
 #else
-            WantsLayer = true;
+			WantsLayer = true;
 #endif
 			ShapeLayer = new ShapeLayer();
 			Layer.AddSublayer(ShapeLayer);
@@ -229,7 +230,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		}
 
 #if !__MOBILE__
-        public override bool IsFlipped => true;
+		public override bool IsFlipped => true;
 #endif
 	}
 
@@ -263,7 +264,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #if __MOBILE__
 			ContentsScale = UIScreen.MainScreen.Scale;
 #else
-            ContentsScale = NSScreen.MainScreen.BackingScaleFactor;
+			ContentsScale = NSScreen.MainScreen.BackingScaleFactor;
 #endif
 			_fillMode = false;
 			_stretch = Stretch.None;
@@ -498,7 +499,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #if __MOBILE__
 					UIColor.Clear.CGColor;
 #else
-                    NSColor.Clear.CGColor;
+					NSColor.Clear.CGColor;
 #endif
 				if (_fill is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
 					fillColor = solidColorBrush.Color.ToCGColor();
@@ -521,7 +522,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #if __MOBILE__
 					UIColor.Clear.CGColor;
 #else
-                    NSColor.Clear.CGColor;
+					NSColor.Clear.CGColor;
 #endif
 				if (_stroke is SolidColorBrush solidColorBrush && solidColorBrush.Color != null)
 					strokeColor = solidColorBrush.Color.ToCGColor();

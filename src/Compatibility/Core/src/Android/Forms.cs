@@ -251,6 +251,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		static bool IsInitializedRenderers;
 
+		// Once we get essentials/cg converted to using startup.cs
+		// we will delete all the renderer code inside this file
+		internal static void RenderersRegistered()
+		{
+			IsInitializedRenderers = true;
+		}
 
 		internal static void RegisterCompatRenderers(
 			Assembly[] assemblies,
@@ -500,12 +506,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 					if (sdkVersion <= 10)
 					{
 						// legacy theme button pressed color
-						rc = Color.FromHex("#fffeaa0c");
+						rc = Color.FromArgb("#fffeaa0c");
 					}
 					else
 					{
 						// Holo dark light blue
-						rc = Color.FromHex("#ff33b5e5");
+						rc = Color.FromArgb("#ff33b5e5");
 					}
 				}
 			}
@@ -679,12 +685,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public void BeginInvokeOnMainThread(Action action)
 			{
-				if (_context.IsDesignerContext())
-				{
-					action();
-					return;
-				}
-
 				if (s_handler == null || s_handler.Looper != Looper.MainLooper)
 				{
 					s_handler = new Handler(Looper.MainLooper);

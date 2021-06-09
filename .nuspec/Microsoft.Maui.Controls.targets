@@ -1,15 +1,11 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.XamlGTask" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.dll" />
-	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.CssGTask" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.dll" />
 	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.XamlCTask" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.dll" />
 
 	<PropertyGroup>
 		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
-		<_DefaultXamlItemsEnabled>False</_DefaultXamlItemsEnabled>
 		<EnableDefaultCssItems Condition="'$(EnableDefaultCssItems)'==''">True</EnableDefaultCssItems>
-		<_DefaultCssItemsEnabled>False</_DefaultCssItemsEnabled>
 		<!-- The WINUI check for this only runs when there is an empty string so I just convert false to an empty string to fall in line with our other properties -->
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'==''">true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'=='false'"></SkipMicrosoftUIXamlCheckTargetPlatformVersion>
@@ -19,6 +15,8 @@
 
 	<ItemGroup>
 		<ProjectCapability Include="Maui" Condition="'$(_ExcludeMauiProjectCapability)' != 'true'" />
+		<AvailableItemName Include="MauiXaml" />
+		<AvailableItemName Include="MauiCss" />
 	</ItemGroup>
 
 	<!-- Check Tasks ABI and other validations -->
@@ -48,50 +46,64 @@
 			Text="Microsoft.Maui requires .NETFramework >= v4.6.1. You have '$(TargetFrameworkVersion)'" />
 	</Target>
 
-	<!-- XamlG -->
-	<Target
-		Name="UpdateDesignTimeXaml"
-		DependsOnTargets="XamlG"/>
 
-	<PropertyGroup>
-		<CoreCompileDependsOn>
-			XamlG;
-			$(CoreCompileDependsOn);
-		</CoreCompileDependsOn>
-	</PropertyGroup>
+  <!-- Inject MauiXaml and MauiCss as AdditionalFiles for partial type generation-->  
+  <Target Name="_MauiInjectXamlCssAdditionalFiles"
+          BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun" 
+          DependsOnTargets="$(CreateManifestResourceNamesDependsOn)">
+    <ItemGroup>
+      <_MauiXamlWithResourceNames Remove="@(_MauiXamlWithResourceNames)" />
+      <_MauiXamlWithTargetPath Remove="@(_MauiXamlWithTargetPath)" />
+      <_MauiCssWithResourceNames Remove="@(_MauiCssWithResourceNames)" />
+      <_MauiCssWithTargetPath Remove="@(_MauiCssWithTargetPath)" />
+    </ItemGroup>
+          
+    <CreateCSharpManifestResourceName
+              ResourceFiles="@(MauiXaml)"
+              RootNamespace="$(RootNamespace)"
+              UseDependentUponConvention="$(EmbeddedResourceUseDependentUponConvention)">
+      <Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="_MauiXamlWithResourceNames" />
+    </CreateCSharpManifestResourceName>
+    
+    <CreateCSharpManifestResourceName
+              ResourceFiles="@(MauiCss)"
+              RootNamespace="$(RootNamespace)"
+              UseDependentUponConvention="$(EmbeddedResourceUseDependentUponConvention)">
+      <Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="_MauiCssWithResourceNames" />
+    </CreateCSharpManifestResourceName>
+    
+    <AssignTargetPath Files="@(_MauiXamlWithResourceNames)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="_MauiXamlWithTargetPath" />
+    </AssignTargetPath>
+    
+    <AssignTargetPath Files="@(_MauiCssWithResourceNames)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="_MauiCssWithTargetPath" />
+    </AssignTargetPath>
+    
+    <ItemGroup>
+      <AdditionalFiles Include="@(_MauiXamlWithTargetPath)" ManifestResourceName="%(ManifestResourceName)" TargetPath="%(TargetPath)" ItemSpec="%(OriginalItemSpec)" GenKind="Xaml"/>
+      <AdditionalFiles Include="@(_MauiCssWithTargetPath)" ManifestResourceName="%(ManifestResourceName)" TargetPath="%(TargetPath)" ItemSpec="%(OriginalItemSpec)" GenKind="Css"/>
+      <_MauiXamlWithResourceNames Remove="@(_MauiXamlWithResourceNames)" />
+      <_MauiXamlWithTargetPath Remove="@(_MauiXamlWithTargetPath)" />
+      <_MauiCssWithResourceNames Remove="@(_MauiCssWithResourceNames)" />
+      <_MauiCssWithTargetPath Remove="@(_MauiCssWithTargetPath)" />
+    </ItemGroup>
+  </Target>
 
-	<Target
-		Name="_FindXamlGFiles"
-		DependsOnTargets="PrepareResourceNames">
-		<ItemGroup>
-			<_XamlGInputs
-				Include="@(EmbeddedResource)"
-				Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs' AND '%(TargetPath)' != ''" />
-			<_XamlGOutputs
-				Include="@(_XamlGInputs->'$(IntermediateOutputPath)%(TargetPath).g.cs')" />
-		</ItemGroup>
-	</Target>
 
-	<Target
-		Name="XamlG"
-		BeforeTargets="BeforeCompile"
-		DependsOnTargets="_FindXamlGFiles; PrepareResourceNames; AfterResolveReferences"
-		Inputs="@(_XamlGInputs)"
-		Outputs="@(_XamlGOutputs)">
-		<PropertyGroup>
-			<ReferencedAssemblies>@(ReferencePath)</ReferencedAssemblies>
-		</PropertyGroup>
-		<XamlGTask
-			XamlFiles="@(_XamlGInputs)"
-			OutputFiles="@(_XamlGOutputs)"
-			Language="$(Language)"
-			References = "$(ReferencedAssemblies)"
-			AssemblyName="$(AssemblyName)" />
-		<ItemGroup>
-			<FileWrites Include="@(_XamlGOutputs)" />
-			<Compile Include="@(_XamlGOutputs)" />
-		</ItemGroup>
-	</Target>
+  <!-- re-add MauiXaml and MauiCss as EmbeddedResources -->
+  <PropertyGroup>
+    <PrepareResourcesDependsOn>
+      _MauiAddXamlEmbeddedResources;
+      $(PrepareResourcesDependsOn);
+    </PrepareResourcesDependsOn>
+  </PropertyGroup>
+  <Target Name="_MauiAddXamlEmbeddedResources">
+    <ItemGroup>
+      <EmbeddedResource Include="@(MauiXaml)" />
+      <EmbeddedResource Include="@(MauiCss)" />
+    </ItemGroup>
+  </Target>
 
 	<!-- XamlC -->
 	<PropertyGroup>
@@ -103,12 +115,12 @@
 
 	<Target Name="XamlC"
 		AfterTargets="AfterCompile"
-		DependsOnTargets="_FindXamlGFiles"
 		Inputs="$(IntermediateOutputPath)$(TargetFileName)"
 		Outputs="$(IntermediateOutputPath)XamlC.stamp"
-		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(_XamlGInputs->Count())' != '0' ">
+		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != ''">
 	    <PropertyGroup>
 		<_MauiXamlCValidateOnly>$(MauiXamlCValidateOnly)</_MauiXamlCValidateOnly>
+		<_MauiXamlCValidateOnly Condition="'$(Configuration)' != 'Release' AND '$(_MauiForceXamlCForDebug)' != 'True'">True</_MauiXamlCValidateOnly>
 		<_MauiXamlCValidateOnly Condition="'$(BuildingForLiveUnitTesting)' == 'True' ">True</_MauiXamlCValidateOnly>
 	    </PropertyGroup>
 		<XamlCTask
@@ -123,33 +135,6 @@
 		<ItemGroup>
 			<FileWrites Include="$(IntermediateOutputPath)XamlC.stamp" />
 		</ItemGroup>
-	</Target>
-
-	<!-- CssG -->
-	<PropertyGroup>
-		<CoreCompileDependsOn>
-			CssG;
-			$(CoreCompileDependsOn);
-		</CoreCompileDependsOn>
-	</PropertyGroup>
-
-	<Target Name="_FindCSSFiles" DependsOnTargets="PrepareResourceNames">
-		<ItemGroup>
- 			<_CSSInputs Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.css' AND '$(DefaultLanguageSourceExtension)' == '.cs' AND '%(TargetPath)' != ''" />
- 			<_CSSOutputs Include="@(_CSSInputs->'$(IntermediateOutputPath)%(TargetPath).g.cs')" />
- 		</ItemGroup>
-	</Target>
-
-	<Target Name="CssG" BeforeTargets="BeforeCompile" DependsOnTargets="_FindCSSFiles" Inputs="@(_CSSInputs)" Outputs="@(_CSSOutputs)">
-		<CssGTask
-			CSSFiles="@(_CSSInputs)"
-			OutputFiles="@(_CSSOutputs)"
-			Language = "$(Language)"
-			AssemblyName = "$(AssemblyName)" />
-		<ItemGroup>
- 			<FileWrites Include="@(_CSSOutputs)" />
- 			<Compile Include="@(_CSSOutputs)" />
- 		</ItemGroup>
 	</Target>
   
  <!-- 

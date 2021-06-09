@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls
 
 		public override bool Equals(object obj)
 		{
-			return obj != null && obj is Accelerator && Equals((Accelerator)obj);
+			return obj is Accelerator && Equals((Accelerator)obj);
 		}
 
 		bool Equals(Accelerator other)

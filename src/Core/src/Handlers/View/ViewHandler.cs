@@ -5,7 +5,7 @@ using System;
 using NativeView = UIKit.UIView;
 #elif MONOANDROID
 using NativeView = Android.Views.View;
-#elif LINUX
+#elif GTK
 using NativeView = Gtk.Widget;
 #elif WINDOWS
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ViewHandler : IViewHandler
 	{
-		public static PropertyMapper<IView> ViewMapper = new PropertyMapper<IView>
+		public static PropertyMapper<IView, ViewHandler> ViewMapper = new PropertyMapper<IView, ViewHandler>
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.Visibility)] = MapVisibility,
@@ -25,10 +25,24 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
+			[nameof(IView.Opacity)] = MapOpacity,
 			[nameof(IView.Semantics)] = MapSemantics,
-			Actions = {
-					[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure
-				}
+			[nameof(IView.TranslationX)] = MapTranslationX,
+			[nameof(IView.TranslationY)] = MapTranslationY,
+			[nameof(IView.Scale)] = MapScale,
+			[nameof(IView.ScaleX)] = MapScaleX,
+			[nameof(IView.ScaleY)] = MapScaleY,
+			[nameof(IView.Rotation)] = MapRotation,
+			[nameof(IView.RotationX)] = MapRotationX,
+			[nameof(IView.RotationY)] = MapRotationY,
+			[nameof(IView.AnchorX)] = MapAnchorX,
+			[nameof(IView.AnchorY)] = MapAnchorY,
+			Actions =
+			{
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+				[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure,
+				[nameof(IFrameworkElement.Frame)] = MapFrame,
+			}
 		};
 
 		internal ViewHandler()
@@ -62,7 +76,13 @@ namespace Microsoft.Maui.Handlers
 
 		public IServiceProvider? Services => MauiContext?.Services;
 
+		public virtual bool NeedsContainer { get; }
+
+		public object? ContainerView { get; private protected set; }
+
 		public object? NativeView { get; private protected set; }
+
+		protected object? WrappedNativeView => ContainerView ?? NativeView;
 
 		public IView? VirtualView { get; private protected set; }
 
@@ -78,8 +98,11 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract void NativeArrange(Rectangle frame);
 
+		partial void ConnectingHandler(NativeView? nativeView);
+
 		private protected void ConnectHandler(NativeView? nativeView)
 		{
+			ConnectingHandler(nativeView);
 		}
 
 		partial void DisconnectingHandler(NativeView? nativeView);
@@ -94,47 +117,65 @@ namespace Microsoft.Maui.Handlers
 			VirtualView = null;
 		}
 
-		public static void MapWidth(IViewHandler handler, IView view)
+		public static void MapWidth(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateWidth(view);
 		}
 
-		public static void MapHeight(IViewHandler handler, IView view)
+		public static void MapHeight(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateHeight(view);
 		}
 
-		public static void MapIsEnabled(IViewHandler handler, IView view)
+		public static void MapIsEnabled(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateIsEnabled(view);
 		}
 
-		public static void MapVisibility(IViewHandler handler, IView view)
+		public static void MapVisibility(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateVisibility(view);
 		}
 
-		public static void MapBackground(IViewHandler handler, IView view)
+		public static void MapBackground(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateBackground(view);
 		}
 
-		public static void MapAutomationId(IViewHandler handler, IView view)
+		public static void MapOpacity(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateOpacity(view);
+		}
+
+		public static void MapAutomationId(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateAutomationId(view);
 		}
 
-		static partial void MappingSemantics(IViewHandler handler, IView view);
+		static partial void MappingSemantics(ViewHandler handler, IView view);
 
-		public static void MapSemantics(IViewHandler handler, IView view)
+		public static void MapSemantics(ViewHandler handler, IView view)
 		{
 			MappingSemantics(handler, view);
 			((NativeView?)handler.NativeView)?.UpdateSemantics(view);
 		}
 
-		public static void MapInvalidateMeasure(IViewHandler handler, IView view)
+		public static void MapInvalidateMeasure(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.InvalidateMeasure(view);
+		}
+
+		public static void MapContainerView(ViewHandler handler, IView view)
+		{
+			if (handler is ViewHandler viewHandler)
+				handler.HasContainer = viewHandler.NeedsContainer;
+		}
+
+		static partial void MappingFrame(ViewHandler handler, IView view);
+
+		public static void MapFrame(ViewHandler handler, IView view)
+		{
+			MappingFrame(handler, view);
 		}
 	}
 }
