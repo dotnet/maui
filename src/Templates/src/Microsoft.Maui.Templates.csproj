@@ -41,7 +41,7 @@
     <ItemGroup>
       <FileWrites Include="@(_TemplateJsonFile -> '$(IntermediateOutputPath)%(Identity)')" />
       <Content Remove="@(_TemplateJsonFile)" />
-      <Content Include="@(_TemplateJsonFile -> '$(IntermediateOutputPath)%(Identity)')" PackagePath="%(Identity)" Pack="true" />
+      <Content Include="@(_TemplateJsonFile -> '$(IntermediateOutputPath)%(Identity)')" PackagePath="$(ContentTargetFolders)\%(Identity)" Pack="true" />
     </ItemGroup>
   </Target>
 
