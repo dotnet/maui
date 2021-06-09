@@ -49,36 +49,42 @@ namespace Microsoft.Maui.Handlers
 
 			lock (SharedTextLayout)
 			{
-				SharedTextLayout.FontFamily = virtualView.Font.FontFamily;
+				SharedTextLayout.FontDescription = nativeView.GetPangoFontDescription();
+
 				SharedTextLayout.TextFlow = TextFlow.ClipBounds;
-				SharedTextLayout.PangoFontSize = virtualView.Font.FontSize.ScaledToPango();
 				SharedTextLayout.HorizontalAlignment = virtualView.HorizontalTextAlignment.GetHorizontalAlignment();
 				SharedTextLayout.LineBreakMode = virtualView.LineBreakMode.GetLineBreakMode();
 
-				SharedTextLayout.HeightForWidth = !heightConstrained;
+				var heightForWidth = !heightConstrained;
 
-				var constraint = Math.Max(SharedTextLayout.HeightForWidth ? widthConstraint + virtualView.Margin.HorizontalThickness - hMargin : heightConstraint + virtualView.Margin.VerticalThickness - vMargin,
+				var constraint = Math.Max(heightForWidth ? widthConstraint - hMargin : heightConstraint - vMargin,
 					1);
 
-				var lh = 0;
+				var lh = 0d;
 				var layout = SharedTextLayout.GetLayout();
+				layout.Height = -1;
+				layout.Width = -1;
 				layout.Ellipsize = nativeView.Ellipsize;
 				layout.Spacing = nativeView.Layout.Spacing;
+				layout.SetText(nativeView.Text);
 
-				if (!heightConstrained && nativeView.Lines > 0)
+				if (!heightConstrained)
 				{
-					lh = (int)layout.GetLineHeigth(false) * nativeView.Lines;
-					layout.Height = lh;
-
+					if (nativeView.Lines > 0)
+					{
+						lh = layout.GetLineHeigth(nativeView.Lines, false);
+						layout.Height = (int)lh;
+					}
 				}
-				else
+
+				if (!heightForWidth && heightConstrained && widthConstrained)
 				{
-					layout.Height = -1;
+					layout.Width = Math.Max((widthConstraint - hMargin).ScaledToPango(), -1);
 				}
 
-				(width, height) = layout.GetPixelSize(NativeView.Text, double.IsInfinity(constraint) ? -1 : constraint, SharedTextLayout.HeightForWidth);
+				(width, height) = layout.GetPixelSize(nativeView.Text, constraint, heightForWidth);
 
-				if (!heightConstrained && nativeView.Lines > 0)
+				if (lh > 0)
 				{
 					height = Math.Min((int)lh.ScaledFromPango(), height);
 				}
