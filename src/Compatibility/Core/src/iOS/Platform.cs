@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (view != null)
 					view.IsPlatformEnabled = newvalue != null;
 
-				if (view is IView mauiView)
+				if (bindable is IView mauiView)
 				{
 					if (mauiView.Handler == null && newvalue is IVisualElementRenderer ver)
 						mauiView.Handler = new RendererToHandlerShim(ver);
