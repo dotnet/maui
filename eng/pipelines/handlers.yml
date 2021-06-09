@@ -251,6 +251,11 @@ stages:
                 inputs:
                   provisioning_script: $(provisionator.vs2019)
 
+            - script: |
+                dotnet build src/DotNet/DotNet.csproj -bl:$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)-dotnet.binlog
+                echo "##vso[task.prependpath]$(DotNet.Dir)"
+              displayName: install .NET
+
             - script: dotnet tool restore
               displayName: install dotnet tools
             - script: dotnet cake --configuration=Release
