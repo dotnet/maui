@@ -42,13 +42,10 @@ steps:
 
   - script: |
       dotnet build src/DotNet/DotNet.csproj -bl:$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)-dotnet.binlog
-      echo "$(DotNet.Path)"
-      echo "##vso[task.prependpath]$(DotNet.Path)"
+      echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: install .NET
 
-  - script: |
-      echo $PATH
-      dotnet tool restore
+  - script: dotnet tool restore
     displayName: install dotnet tools
 
   - pwsh: |
