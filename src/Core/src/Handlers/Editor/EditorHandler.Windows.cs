@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			AcceptsReturn = true,
 			TextWrapping = TextWrapping.Wrap,
+			Style = Application.Current.Resources["MauiTextBoxStyle"] as Style,
+			UpdateVerticalAlignmentOnLoad = false,
 			VerticalContentAlignment = VerticalAlignment.Top
 		};
 
@@ -49,8 +51,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdatePlaceholderColor(editor, handler._placeholderDefaultBrush, handler._defaultPlaceholderColorFocusBrush);
 		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(IViewHandler handler, IEditor editor) { }
+		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateCharacterSpacing(editor);
+		}
 
 		public static void MapMaxLength(EditorHandler handler, IEditor editor)
 		{

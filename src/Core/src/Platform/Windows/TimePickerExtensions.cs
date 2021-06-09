@@ -19,6 +19,14 @@ namespace Microsoft.Maui
 				nativeTimePicker.ClockIdentifier = "12HourClock";
 			}
 		}
+
+		public static void UpdateCharacterSpacing(this TimePicker nativeTimePicker, ITimePicker timePicker)
+		{
+			nativeTimePicker.CharacterSpacing = timePicker.CharacterSpacing.ToEm();
+		}
+
+		public static void UpdateFont(this TimePicker nativeTimePicker, ITimePicker timePicker, IFontManager fontManager) =>
+			nativeTimePicker.UpdateFont(timePicker.Font, fontManager);
 	
 		public static void UpdateTextColor(this TimePicker nativeTimePicker, ITimePicker timePicker,WBrush? defaultForeground)
 		{

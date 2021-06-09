@@ -28,6 +28,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var view = bindable as VisualElement;
 				if (view != null)
 					view.IsPlatformEnabled = newvalue != null;
+
+				if (view.Handler == null && newvalue is IVisualElementRenderer ver)
+					view.Handler = new RendererToHandlerShim(ver);
+				else if (view.Handler != null && newvalue == null)
+					view.Handler = null;
 			});
 
 		readonly int _alertPadding = 10;
