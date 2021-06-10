@@ -93,6 +93,9 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdatePadding(button, DefaultPadding);
 		}
 
+		[MissingMapper]
+		public static void MapImageSource(IViewHandler handler, IButton button) { }
+
 		bool OnTouch(IButton? button, AView? v, MotionEvent? e)
 		{
 			switch (e?.ActionMasked)

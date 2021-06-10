@@ -195,6 +195,7 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(new Button { Text = "CharacterSpacing" });
 			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
+			verticalStack.Add(new Button { ImageSource = "dotnet_bot.png", Text = "ImageSource Button" });
 
 			verticalStack.Add(new RedButton { Text = "Dynamically Registered" });
 			verticalStack.Add(new CustomButton { Text = "Button Registered to Compat Renderer" });

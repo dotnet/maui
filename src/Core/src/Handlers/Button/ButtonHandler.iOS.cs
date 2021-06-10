@@ -81,6 +81,9 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateCharacterSpacing(button);
 		}
 
+		[MissingMapper]
+		public static void MapImageSource(IViewHandler handler, IButton button) { }
+
 		void SetControlPropertiesFromProxy()
 		{
 			if (NativeView == null)
