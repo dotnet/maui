@@ -8,6 +8,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, UISearchBar>
 	{
+		UIColor? _cancelButtonTextColorDefaultDisabled;
+		UIColor? _cancelButtonTextColorDefaultHighlighted;
+		UIColor? _cancelButtonTextColorDefaultNormal;
+
 		UITextField? _editor;
 		public UITextField? QueryEditor => _editor;
 
@@ -38,6 +42,20 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ShouldChangeTextInRange -= ShouldChangeText;
 
 			base.DisconnectHandler(nativeView);
+    }
+    
+		protected override void SetupDefaults(UISearchBar nativeView)
+		{
+			var cancelButton = nativeView.FindDescendantView<UIButton>();
+
+			if (cancelButton != null)
+			{
+				_cancelButtonTextColorDefaultNormal = cancelButton.TitleColor(UIControlState.Normal);
+				_cancelButtonTextColorDefaultHighlighted = cancelButton.TitleColor(UIControlState.Highlighted);
+				_cancelButtonTextColorDefaultDisabled = cancelButton.TitleColor(UIControlState.Disabled);
+			}
+
+			base.SetupDefaults(nativeView);
 		}
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
@@ -97,9 +115,11 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapCancelButtonColor(IViewHandler handler, ISearchBar searchBar) { }
-
+    public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateCancelButton(searchBar, handler._cancelButtonTextColorDefaultNormal, handler._cancelButtonTextColorDefaultHighlighted, handler._cancelButtonTextColorDefaultDisabled);
+    }
+    
 		void OnCancelClicked(object? sender, EventArgs args)
 		{
 			if (VirtualView != null)

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -105,6 +106,17 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeText = await GetValueAsync(searchBar, GetNativeText);
 
 			Assert.Equal(expectedText, nativeText);
+    }
+      
+		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
+		public async Task CancelButtonColorInitializeCorrectly()
+		{
+			var searchBar = new SearchBarStub()
+			{
+				CancelButtonColor = Colors.MediumPurple
+			};
+
+			await ValidateHasColor(searchBar, Colors.MediumPurple, () => searchBar.CancelButtonColor = Colors.MediumPurple);
 		}
 	}
 }

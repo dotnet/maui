@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -676,6 +674,314 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileContains($"Assets.xcassets/{outputName}.appiconset/Contents.json",
 					$"\"filename\": \"{outputName}20x20@2x.png\"",
 					$"\"size\": \"20x20\",");
+			}
+		}
+
+		public class ExecuteForWindows : ExecuteForApp
+		{
+			public ExecuteForWindows()
+				: base("Windows")
+			{
+			}
+
+			ResizetizeImages GetNewTask(params ITaskItem[] items) =>
+				GetNewTask("uwp", items);
+
+			[Fact]
+			public void NoItemsSucceed()
+			{
+				var task = GetNewTask();
+
+				var success = task.Execute();
+
+				Assert.True(success);
+			}
+
+			[Fact]
+			public void NullItemsSucceed()
+			{
+				var task = GetNewTask(null);
+
+				var success = task.Execute();
+
+				Assert.True(success);
+			}
+
+			[Fact]
+			public void NonExistantFileFails()
+			{
+				var items = new[]
+				{
+					new TaskItem("non-existant.png"),
+				};
+
+				var task = GetNewTask(items);
+
+				var success = task.Execute();
+
+				Assert.False(success);
+			}
+
+			[Fact]
+			public void ValidFileSucceeds()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.png"),
+				};
+
+				var task = GetNewTask(items);
+
+				var success = task.Execute();
+
+				Assert.True(success);
+			}
+
+			[Fact]
+			public void SingleImageWithOnlyPathSucceeds()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.png"),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize("Assets/camera.scale-100.png", 1792, 1792);
+				AssertFileSize("Assets/camera.scale-200.png", 3584, 3584);
+			}
+
+			[Fact]
+			public void TwoImagesWithOnlyPathSucceed()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera_color.png"),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize("Assets/camera.scale-100.png", 1792, 1792);
+				AssertFileSize("Assets/camera_color.scale-100.png", 256, 256);
+
+				AssertFileSize("Assets/camera.scale-200.png", 3584, 3584);
+				AssertFileSize("Assets/camera_color.scale-200.png", 512, 512);
+			}
+
+			[Fact]
+			public void ImageWithOnlyPathHasMetadata()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.png"),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				var copied = task.CopiedResources;
+				Assert.Equal(items.Length * DpiPath.Uwp.Length, copied.Length);
+
+				var mdpi = GetCopiedResource(task, "camera.scale-100.png");
+				Assert.Equal("Assets", mdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("1.0", mdpi.GetMetadata("_ResizetizerDpiScale"));
+
+				var xhdpi = GetCopiedResource(task, "camera.scale-200.png");
+				Assert.Equal("Assets", xhdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("2.0", xhdpi.GetMetadata("_ResizetizerDpiScale"));
+			}
+
+			[Fact]
+			public void TwoImagesWithOnlyPathHasMetadata()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.png"),
+					new TaskItem("images/camera_color.png"),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				var copied = task.CopiedResources;
+				Assert.Equal(items.Length * DpiPath.Uwp.Length, copied.Length);
+
+				var mdpi = GetCopiedResource(task, "camera.scale-100.png");
+				Assert.Equal("Assets", mdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("1.0", mdpi.GetMetadata("_ResizetizerDpiScale"));
+
+				var xhdpi = GetCopiedResource(task, "camera.scale-200.png");
+				Assert.Equal("Assets", xhdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("2.0", xhdpi.GetMetadata("_ResizetizerDpiScale"));
+
+				mdpi = GetCopiedResource(task, "camera_color.scale-100.png");
+				Assert.Equal("Assets", mdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("1.0", mdpi.GetMetadata("_ResizetizerDpiScale"));
+
+				xhdpi = GetCopiedResource(task, "camera_color.scale-200.png");
+				Assert.Equal("Assets", xhdpi.GetMetadata("_ResizetizerDpiPath"));
+				Assert.Equal("2.0", xhdpi.GetMetadata("_ResizetizerDpiScale"));
+			}
+
+			[Theory]
+			[InlineData(null, "camera")]
+			[InlineData("", "camera")]
+			[InlineData("camera", "camera")]
+			[InlineData("camera.png", "camera")]
+			[InlineData("folder/camera.png", "camera")]
+			[InlineData("the_alias", "the_alias")]
+			[InlineData("the_alias.png", "the_alias")]
+			[InlineData("folder/the_alias.png", "the_alias")]
+			public void SingleImageWithBaseSizeSucceeds(string alias, string outputName)
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.png", new Dictionary<string, string>
+					{
+						["BaseSize"] = "44",
+						["Link"] = alias,
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"Assets/{outputName}.scale-100.png", 44, 44);
+				AssertFileSize($"Assets/{outputName}.scale-200.png", 88, 88);
+			}
+
+			[Theory]
+			[InlineData("camera", null, "camera")]
+			[InlineData("camera", "", "camera")]
+			[InlineData("camera", "camera", "camera")]
+			[InlineData("camera", "camera.png", "camera")]
+			[InlineData("camera", "folder/camera.png", "camera")]
+			[InlineData("camera", "the_alias", "the_alias")]
+			[InlineData("camera", "the_alias.png", "the_alias")]
+			[InlineData("camera", "folder/the_alias.png", "the_alias")]
+			[InlineData("camera_color", null, "camera_color")]
+			[InlineData("camera_color", "", "camera_color")]
+			[InlineData("camera_color", "camera_color", "camera_color")]
+			[InlineData("camera_color", "camera_color.png", "camera_color")]
+			[InlineData("camera_color", "folder/camera_color.png", "camera_color")]
+			[InlineData("camera_color", "the_alias", "the_alias")]
+			[InlineData("camera_color", "the_alias.png", "the_alias")]
+			[InlineData("camera_color", "folder/the_alias.png", "the_alias")]
+			public void SingleRasterAppIconWithOnlyPathSucceedsWithoutVectors(string name, string alias, string outputName)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{name}.png", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = alias,
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"Assets/{outputName}Logo.scale-100.png", 44, 44);
+				AssertFileSize($"Assets/{outputName}Logo.scale-125.png", 55, 55);
+				AssertFileSize($"Assets/{outputName}Logo.scale-200.png", 88, 88);
+
+				AssertFileSize($"Assets/{outputName}StoreLogo.scale-100.png", 50, 50);
+				AssertFileSize($"Assets/{outputName}StoreLogo.scale-200.png", 100, 100);
+
+				AssertFileSize($"Assets/{outputName}MediumTile.scale-100.png", 150, 150);
+				AssertFileSize($"Assets/{outputName}MediumTile.scale-150.png", 225, 225);
+			}
+
+			[Theory]
+			[InlineData("appicon", null, "appicon")]
+			[InlineData("appicon", "", "appicon")]
+			[InlineData("appicon", "appicon", "appicon")]
+			[InlineData("appicon", "appicon.png", "appicon")]
+			[InlineData("appicon", "folder/appicon.png", "appicon")]
+			[InlineData("appicon", "the_alias", "the_alias")]
+			[InlineData("appicon", "the_alias.png", "the_alias")]
+			[InlineData("appicon", "folder/the_alias.png", "the_alias")]
+			[InlineData("camera", null, "camera")]
+			[InlineData("camera", "", "camera")]
+			[InlineData("camera", "camera", "camera")]
+			[InlineData("camera", "camera.png", "camera")]
+			[InlineData("camera", "folder/camera.png", "camera")]
+			[InlineData("camera", "the_alias", "the_alias")]
+			[InlineData("camera", "the_alias.png", "the_alias")]
+			[InlineData("camera", "folder/the_alias.png", "the_alias")]
+			[InlineData("camera_color", null, "camera_color")]
+			[InlineData("camera_color", "", "camera_color")]
+			[InlineData("camera_color", "camera_color", "camera_color")]
+			[InlineData("camera_color", "camera_color.png", "camera_color")]
+			[InlineData("camera_color", "folder/camera_color.png", "camera_color")]
+			[InlineData("camera_color", "the_alias", "the_alias")]
+			[InlineData("camera_color", "the_alias.png", "the_alias")]
+			[InlineData("camera_color", "folder/the_alias.png", "the_alias")]
+			public void SingleVectorAppIconWithOnlyPathSucceedsWithVectors(string name, string alias, string outputName)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{name}.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = alias,
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"Assets/{outputName}Logo.scale-100.png", 44, 44);
+				AssertFileSize($"Assets/{outputName}Logo.scale-125.png", 55, 55);
+				AssertFileSize($"Assets/{outputName}Logo.scale-200.png", 88, 88);
+
+				AssertFileSize($"Assets/{outputName}StoreLogo.scale-100.png", 50, 50);
+				AssertFileSize($"Assets/{outputName}StoreLogo.scale-200.png", 100, 100);
+
+				AssertFileSize($"Assets/{outputName}MediumTile.scale-100.png", 150, 150);
+				AssertFileSize($"Assets/{outputName}MediumTile.scale-150.png", 225, 225);
+			}
+
+			[Theory]
+			[InlineData("dotnet_logo", "dotnet_background")]
+			public void AppIconWithBackgroundSucceedsWithVectors(string fg, string bg)
+			{
+				var items = new[]
+				{
+					new TaskItem($"images/{bg}.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["ForegroundFile"] = $"images/{fg}.svg",
+						["Color"] = $"#512BD4",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success);
+
+				AssertFileSize($"Assets/{bg}Logo.scale-100.png", 44, 44);
+				AssertFileSize($"Assets/{bg}Logo.scale-125.png", 55, 55);
+				AssertFileSize($"Assets/{bg}Logo.scale-200.png", 88, 88);
+
+				AssertFileSize($"Assets/{bg}StoreLogo.scale-100.png", 50, 50);
+				AssertFileSize($"Assets/{bg}StoreLogo.scale-200.png", 100, 100);
+
+				AssertFileSize($"Assets/{bg}MediumTile.scale-100.png", 150, 150);
+				AssertFileSize($"Assets/{bg}MediumTile.scale-150.png", 225, 225);
+
+				AssertFileSize($"Assets/{bg}WideTile.scale-100.png", 310, 150);
+				AssertFileSize($"Assets/{bg}WideTile.scale-200.png", 620, 300);
 			}
 		}
 	}

@@ -1,0 +1,79 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFrameworks>net6.0-windows10.0.19041</TargetFrameworks>
+		<OutputType>WinExe</OutputType>
+		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+		<SingleProject>true</SingleProject>
+		<RootNamespace>MauiApp1</RootNamespace>
+
+		<!-- Required - Enable Single Project for WinUI -->
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+		<WindowsPackageType>MSIX</WindowsPackageType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- App Icon -->
+		<MauiImage
+			Include="..\MauiApp1\Resources\appicon.svg"
+			Link="Resources\appicon.svg"
+			ForegroundFile="..\MauiApp1\Resources\appiconfg.svg"
+			IsAppIcon="true"
+			Color="#512BD4" />
+
+		<!-- Splash Screen -->
+		<MauiSplashScreen
+			Include="..\MauiApp1\Resources\appiconfg.svg"
+			Link="Resources\appiconfg.svg"
+			Color="#512BD4" />
+
+		<!-- Images -->
+		<MauiImage
+			Include="..\MauiApp1\Resources\Images\*"
+			Link="Resources\Images\%(Filename)%(Extension)" />
+
+		<!-- Custom Fonts -->
+		<MauiFont
+			Include="..\MauiApp1\Resources\Fonts\*"
+			Link="Resources\Fonts\%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile
+			Include="..\MauiApp1\**\*.cs"
+			Exclude="..\MauiApp1\bin\**;..\MauiApp1\obj\**;..\MauiApp1\Android\**;..\MauiApp1\iOS\**;..\MauiApp1\MacCatalyst\**"
+			Link="%(RecursiveDir)%(Filename)%(Extension)"/>
+		<MauiXaml
+			Include="..\MauiApp1\**\*.xaml"
+			Exclude="..\MauiApp1\bin\**;..\MauiApp1\obj\**"
+			Link="%(RecursiveDir)%(FileName)%(Extension)" />
+		<_ThisProjectStaticWebAsset
+			Include="..\MauiApp1\wwwroot\**"
+			Link="wwwroot\%(RecursiveDir)%(Filename)%(Extension)"
+			RelativePath="%(RecursiveDir)%(Filename)%(Extension)" />
+		<None Include="@(_ThisProjectStaticWebAsset)"/>
+		<RazorComponent
+			Include="..\MauiApp1\**\*.razor"
+			Exclude="..\MauiApp1\bin\**;..\MauiApp1\obj\**"
+			Link="%(RecursiveDir)%(Filename)%(Extension)"/>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="MAUI_VERSION" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="MICROSOFT_EXTENSIONS_VERSION" />
+		<PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<StartupObject>MauiApp1.WinUI.Program</StartupObject>
+		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.ProjectReunion" Version="PROJECT_REUNION_VERSION" />
+		<PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="PROJECT_REUNION_VERSION" />
+		<PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="PROJECT_REUNION_VERSION" />
+		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="WINDOWS_SDK_VERSION" />
+		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="WINDOWS_SDK_VERSION" />
+	</ItemGroup>
+
+</Project>

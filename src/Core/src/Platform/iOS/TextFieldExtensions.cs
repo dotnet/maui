@@ -154,7 +154,7 @@ namespace Microsoft.Maui
 				entry.SelectionLength = newSelectionLength;
 
 			return end;
-		}		
+		}
 
 		public static void UpdateClearButtonVisibility(this UITextField textField, IEntry entry)
 		{

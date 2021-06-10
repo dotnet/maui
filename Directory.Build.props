@@ -26,6 +26,9 @@
     <NonNet6EssentialsPlatforms Condition="'$(BuildNonNet6ForAndroid)' == 'true'">netstandard2.0;netstandard2.1;MonoAndroid10.0</NonNet6EssentialsPlatforms>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
+    <!-- HACK: WinUI seems to have issues without this -->
+    <GenerateLibraryLayout>true</GenerateLibraryLayout>
+
   </PropertyGroup>
 
   <PropertyGroup>
@@ -47,6 +50,7 @@
     <Product>Microsoft MAUI</Product>
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
     <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == '' and $(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+    <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
   </PropertyGroup>
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>
