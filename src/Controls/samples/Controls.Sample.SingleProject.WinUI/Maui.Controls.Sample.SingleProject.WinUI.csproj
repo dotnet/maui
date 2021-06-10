@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0-windows10.0.19041</TargetFrameworks>
+    <OutputType>WinExe</OutputType>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <SingleProject>true</SingleProject>
+    <RootNamespace>Maui.Controls.Sample.SingleProject</RootNamespace>
+
+    <!-- Required - Enable Single Project for WinUI -->
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>MSIX</WindowsPackageType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiImage
+        Include="..\Controls.Sample.SingleProject\Resources\AppIcons\appicon.svg"
+        ForegroundFile="..\Controls.Sample.SingleProject\Resources\AppIcons\appicon_foreground.svg"
+        Link="Resources\AppIcons\appicon.svg"
+        IsAppIcon="true"
+        Color="#512BD4" />
+    <MauiAsset
+        Include="..\Controls.Sample.SingleProject\Resources\Raw\*"
+        Link="%(Filename)%(Extension)" />
+    <MauiSplashScreen
+        Include="..\Controls.Sample.SingleProject\Resources\AppIcons\appicon_foreground.svg"
+        Link="Resources\AppIcons\appicon_foreground.svg"
+        Color="#FF69B4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile
+        Include="..\Controls.Sample.SingleProject\**\*.cs"
+        Exclude="..\Controls.Sample.SingleProject\bin\**;..\Controls.Sample.SingleProject\obj\**;..\Controls.Sample.SingleProject\Platforms\**"
+        Link="%(RecursiveDir)%(Filename)%(Extension)"/>
+    <MauiXaml
+        Include="..\Controls.Sample.SingleProject\**\*.xaml"
+        Exclude="..\Controls.Sample.SingleProject\bin\**;..\Controls.Sample.SingleProject\obj\**"
+        Link="%(RecursiveDir)%(FileName)%(Extension)" />
+    <_ThisProjectStaticWebAsset
+        Include="..\Controls.Sample.SingleProject\wwwroot\**"
+        Link="wwwroot\%(RecursiveDir)%(Filename)%(Extension)"
+        RelativePath="%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="@(_ThisProjectStaticWebAsset)"/>
+    <RazorComponent
+        Include="..\Controls.Sample.SingleProject\**\*.razor"
+        Exclude="..\Controls.Sample.SingleProject\bin\**;..\Controls.Sample.SingleProject\obj\**"
+        Link="%(RecursiveDir)%(Filename)%(Extension)"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml-net6.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ProjectReunion" />
+    <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
+    <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.16" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.19041.16" />
+  </ItemGroup>
+
+</Project>

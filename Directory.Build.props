@@ -27,7 +27,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
     <!-- HACK: WinUI seems to have issues without this -->
-    <GenerateLibraryLayout>true</GenerateLibraryLayout>
+    <GenerateLibraryLayout Condition="'$(OutputType)' != 'Exe' and '$(OutputType)' != 'WinExe'">true</GenerateLibraryLayout>
 
   </PropertyGroup>
 
