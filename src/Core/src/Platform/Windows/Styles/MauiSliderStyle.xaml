@@ -26,7 +26,7 @@
                                             <Border Background="{TemplateBinding Background}"
                                                 BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                                CornerRadius="4" />
+                                                CornerRadius="12" />
                                         </ControlTemplate>
                                     </Setter.Value>
                                 </Setter>
@@ -187,7 +187,7 @@
                                     Style="{StaticResource SliderThumbStyle}"
                                     DataContext="{TemplateBinding Value}"
                                     Height="24"
-                                    Width="8"
+                                    Width="24"
                                     Grid.Row="0"
                                     Grid.RowSpan="3"
                                     Grid.Column="1"
@@ -252,7 +252,7 @@
                                     Style="{StaticResource SliderThumbStyle}"
                                     DataContext="{TemplateBinding Value}"
                                     Width="24"
-                                    Height="8"
+                                    Height="24"
                                     Grid.Row="1"
                                     Grid.Column="0"
                                     Grid.ColumnSpan="3"
