@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 
@@ -142,6 +143,52 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			if (brush != null)
 				brush.Parent = this;
+		}
+
+
+		PathF IShape.PathForBounds(Graphics.Rectangle bounds)
+		{
+			var path = GetPath();
+
+			// Scale the path if needed depending on specified aspect
+			if (Aspect != Stretch.None)
+			{
+				var pathWidth = (float)Width;
+				var pathHeight = (float)Height;
+
+				var viewWidth = (float)bounds.Width;// 0f;
+				var viewHeight = (float)bounds.Height;// 0f;
+
+				// If one dimension is 0, we have nothing to display anyway
+				if (pathWidth > 0 && pathHeight > 0)
+				{
+					if (Aspect == Stretch.Fill)
+					{
+						var scaleX = viewWidth / pathWidth;
+						var scaleY = viewHeight / pathHeight;
+
+						path.Transform(AffineTransform.GetScaleInstance(scaleX, scaleY));
+					}
+					else if (Aspect == Stretch.UniformToFill)
+					{
+						var scaleX = viewWidth / pathWidth;
+						var scaleY = viewHeight / pathHeight;
+						var scaleDimension = Math.Max(scaleX, scaleY);
+
+						path.Transform(AffineTransform.GetScaleInstance(scaleDimension, scaleDimension));
+					}
+					else if (Aspect == Stretch.Uniform)
+					{
+						var scaleX = viewWidth / pathWidth;
+						var scaleY = viewHeight / pathHeight;
+						var scaleDimension = Math.Min(scaleX, scaleY);
+
+						path.Transform(AffineTransform.GetScaleInstance(scaleDimension, scaleDimension));
+					}
+				}
+			}
+
+			return path;
 		}
 	}
 }

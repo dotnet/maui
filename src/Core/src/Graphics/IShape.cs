@@ -6,6 +6,6 @@
     /// </summary>
     public interface IShape
     {
-        PathF GetPath();
+        PathF PathForBounds(Rectangle bounds);
     }
 }

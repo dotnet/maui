@@ -31,55 +31,10 @@ namespace Microsoft.Maui.Graphics
 			if (shape == null)
 				return;
 
-			PathF? path = shape.GetPath();
-
+			PathF? path = shape.PathForBounds(ShapeView?.Frame ?? new Rectangle());
+ 
 			if (path == null)
 				return;
-
-			// Scale the path if needed depending on specified aspect
-			var aspect = ShapeView?.Aspect;
-
-			if (aspect.HasValue)
-			{
-				var viewWidth = (float)(ShapeView?.Width ?? 0);
-				var viewHeight = (float)(ShapeView?.Height ?? 0);
-
-				// TODO: Calculate path's bounds to get a width and height
-				var pathWidth = viewWidth;// 0f;
-				var pathHeight = viewHeight;// 0f;
-
-				// If one dimension is 0, we have nothing to display anyway
-				if (pathWidth > 0 && pathHeight > 0)
-				{
-					if (aspect == PathAspect.Stretch)
-					{
-						var scaleX = viewWidth / pathWidth;
-						var scaleY = viewHeight / pathHeight;
-						
-						path.Transform(AffineTransform.GetScaleInstance(scaleX, scaleY));
-					}
-					else if (aspect == PathAspect.AspectFill)
-					{
-						var scaleX = viewWidth / pathWidth;
-						var scaleY = viewHeight / pathHeight;
-						var scaleDimension = Math.Max(scaleX, scaleY);
-
-						path.Transform(AffineTransform.GetScaleInstance(scaleDimension, scaleDimension));
-					}
-					else if (aspect == PathAspect.AspectFit)
-					{
-						var scaleX = viewWidth / pathWidth;
-						var scaleY = viewHeight / pathHeight;
-						var scaleDimension = Math.Min(scaleX, scaleY);
-
-						path.Transform(AffineTransform.GetScaleInstance(scaleDimension, scaleDimension));
-					}
-					else if (aspect == PathAspect.Center)
-					{
-						// TODO: Calculate move
-					}
-				}
-			}
 
 			DrawStrokePath(canvas, rect, path);
 			DrawFillPath(canvas, rect, path);
