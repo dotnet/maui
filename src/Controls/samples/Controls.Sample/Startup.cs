@@ -31,7 +31,7 @@ namespace Maui.Controls.Sample
 
 	public class Startup : IStartup
 	{
-		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage, Shell }
+		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage, Shell, TabbedPage }
 		private PageType _pageType = PageType.NavigationPage;
 
 		public readonly static bool UseXamlApp = true;
@@ -124,6 +124,7 @@ namespace Maui.Controls.Sample
 							PageType.NavigationPage => typeof(NavPage),
 							PageType.Xaml => typeof(XamlPage),
 							PageType.Semantics => typeof(SemanticsPage),
+							PageType.TabbedPage => typeof(TabPage),
 							PageType.Blazor =>
 #if BLAZOR_ENABLED
 								typeof(BlazorPage),
