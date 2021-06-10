@@ -12,7 +12,10 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Time Initializes Correctly")]
 		public async Task TimeInitializesCorrectly()
 		{
-			var timePicker = new TimePickerStub();
+			var timePicker = new TimePickerStub
+			{
+				Format = "HH:mm"
+			};
 
 			var time = new TimeSpan(17, 0, 0);
 
