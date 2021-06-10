@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISlider.Minimum)] = MapMinimum,
 			[nameof(ISlider.MinimumTrackColor)] = MapMinimumTrackColor,
 			[nameof(ISlider.ThumbColor)] = MapThumbColor,
+			[nameof(ISlider.ThumbImageSource)] = MapThumbImageSource,
 			[nameof(ISlider.Value)] = MapValue,
 		};
 

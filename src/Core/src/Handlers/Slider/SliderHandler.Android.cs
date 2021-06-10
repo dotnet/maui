@@ -74,6 +74,9 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateThumbColor(slider, DefaultThumbColorFilter);
 		}
 
+		[MissingMapper]
+		public static void MapThumbImageSource(SliderHandler handler, ISlider slider) { }
+
 		void OnProgressChanged(SeekBar seekBar, int progress, bool fromUser)
 		{
 			if (VirtualView == null || !fromUser)

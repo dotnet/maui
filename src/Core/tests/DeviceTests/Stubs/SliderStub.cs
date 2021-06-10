@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
@@ -19,6 +18,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Color MinimumTrackColor { get; set; }
 		public Color MaximumTrackColor { get; set; }
 		public Color ThumbColor { get; set; }
+		public IImageSource ThumbImageSource { get; set; }
 
 		public void DragStarted() { }
 		public void DragCompleted() { }
