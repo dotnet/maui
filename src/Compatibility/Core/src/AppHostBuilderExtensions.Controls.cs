@@ -94,6 +94,13 @@ namespace Microsoft.Maui.Controls.Hosting
 #elif __IOS__
 				events.AddiOS(iOS =>
 				{
+					iOS.WillFinishLaunching((x, y) =>
+					{
+						MauiContext mauiContext = new MauiContext(MauiUIApplicationDelegate.Current.Services);
+						Forms.Init(new ActivationState(mauiContext), new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
+						return true;
+					});
+
 					iOS.FinishedLaunching((x,y) =>
 					{
 						// This calls Init again so that the MauiContext that's part of
@@ -230,12 +237,6 @@ namespace Microsoft.Maui.Controls.Hosting
 				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
 				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
 			}
-#elif __IOS__
-			// Services on iOS are set inside FinishedLaunching so we don't have a life cycle hook to grab these before
-			// we need Forms.Init to get called
-			// The second call to Forms.Init inside the FinishedLaunching Life cycle will setup the proper MauiContext
-			MauiContext mauiContext = new MauiContext();
-			Forms.Init(new ActivationState(mauiContext), new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
 #endif
 		}
 	}
