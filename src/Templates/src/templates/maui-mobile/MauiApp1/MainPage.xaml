@@ -1,7 +1,6 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="MauiApp1.MainPage"
-             BackgroundColor="{DynamicResource PageBackgroundColor}">
+             x:Class="MauiApp1.MainPage">
 
     <ScrollView Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
         <StackLayout>
@@ -13,7 +12,7 @@
                     FontSize="32"
                     HorizontalOptions="CenterAndExpand" />
 
-                <Label Text="Welcome to .NET Multi-platform App UI"
+                <Label Text="Welcome to .NET MAUI"
                     Grid.Row="1"
                     SemanticProperties.Hint="Counts the number of times you click" 
                     FontSize="16"

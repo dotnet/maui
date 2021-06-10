@@ -14,6 +14,7 @@ namespace MauiApp1
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+					fonts.AddFont("OpenSans-SemiBold.ttf", "OpenSansRegularSemiBold");
 				});
 		}
 	}
