@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, UISearchBar>
 	{
-		static UIColor? DefaultTextColor;
+		UIColor? _defaultTextColor;
 
 		UIColor? _cancelButtonTextColorDefaultDisabled;
 		UIColor? _cancelButtonTextColorDefaultHighlighted;
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void SetupDefaults(UISearchBar nativeView)
 		{
-			DefaultTextColor = QueryEditor?.TextColor;
+			_defaultTextColor = QueryEditor?.TextColor;
 
 			var cancelButton = nativeView.FindDescendantView<UIButton>();
 
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.QueryEditor?.UpdateTextColor(searchBar, DefaultTextColor);
+			handler.QueryEditor?.UpdateTextColor(searchBar, handler._defaultTextColor);
 		}
 
 		[MissingMapper]
