@@ -9,15 +9,14 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			var path = new PathF();
 
-			float x = (float)StrokeThickness;
-			float y = (float)StrokeThickness;
-			float w = (float)(Width - StrokeThickness * 2);
-			float h = (float)(Height - StrokeThickness * 2);
+			float x = (float)StrokeThickness / 2;
+			float y = (float)StrokeThickness / 2;
+			float w = (float)(Width - StrokeThickness);
+			float h = (float)(Height - StrokeThickness);
 			float cornerRadius = (float)Math.Max(RadiusX, RadiusY);
 
 			// TODO: Create specific Path taking into account RadiusX and RadiusY
 			path.AppendRoundedRectangle(x, y, w, h, cornerRadius);
-
 			return path;
 		}
 	}

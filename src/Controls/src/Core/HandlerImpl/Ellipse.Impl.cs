@@ -7,11 +7,11 @@ namespace Microsoft.Maui.Controls.Shapes
 		public override PathF GetPath()
 		{
 			var path = new PathF();
-			
-			float x = (float)StrokeThickness;
-			float y = (float)StrokeThickness;
-			float w = (float)(Width - StrokeThickness * 2);
-			float h = (float)(Height - StrokeThickness * 2);
+
+			float x = (float)StrokeThickness / 2;
+			float y = (float)StrokeThickness / 2;
+			float w = (float)(Width - StrokeThickness);
+			float h = (float)(Height - StrokeThickness);
 
 			path.AppendEllipse(x, y, w, h);
 

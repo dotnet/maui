@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Microsoft.Maui.Graphics
+﻿namespace Microsoft.Maui.Graphics
 {
 	public class ShapeDrawable : IDrawable
 	{
@@ -20,26 +18,20 @@ namespace Microsoft.Maui.Graphics
 		{
 			var rect = dirtyRect;
 
-			if (ShapeView != null)
-			{
-				float strokeThickness = (float)ShapeView.StrokeThickness;
-				rect = new RectangleF(dirtyRect.X + strokeThickness, dirtyRect.Y + strokeThickness, dirtyRect.Width - (strokeThickness * 2), dirtyRect.Height - (strokeThickness * 2));
-			}
-
 			IShape? shape = ShapeView?.Shape;
 
 			if (shape == null)
 				return;
 
-			PathF? path = shape.PathForBounds(ShapeView?.Frame ?? new Rectangle());
- 
+			PathF? path = shape.PathForBounds(rect);
+
 			if (path == null)
 				return;
 
 			DrawStrokePath(canvas, rect, path);
 			DrawFillPath(canvas, rect, path);
 		}
-				
+
 		void DrawStrokePath(ICanvas canvas, RectangleF dirtyRect, PathF path)
 		{
 			if (ShapeView == null || ShapeView.Shape == null)
@@ -52,8 +44,11 @@ namespace Microsoft.Maui.Graphics
 			canvas.StrokeSize = strokeThickness;
 
 			// Set Stroke
-			var stroke = ShapeView.Stroke?.ToColor();
-			canvas.StrokeColor = stroke ?? Colors.Transparent; //TODO: Fix default color
+			var stroke = ShapeView.Stroke;
+
+			// TODO: Add Paint support for Stroke in Microsoft.Maui.Graphics.
+			if (stroke is SolidPaint solidPaint)
+				canvas.StrokeColor = solidPaint.Color;
 
 			// Set StrokeLineCap
 			var strokeLineCap = ShapeView.StrokeLineCap;
@@ -73,8 +68,6 @@ namespace Microsoft.Maui.Graphics
 
 			canvas.DrawPath(path);
 
-			canvas.RestoreState();
-
 			canvas.SaveState();
 		}
 
@@ -83,7 +76,7 @@ namespace Microsoft.Maui.Graphics
 			if (ShapeView == null || ShapeView.Shape == null)
 				return;
 
-			if(!path.Closed)
+			if (!path.Closed)
 				return;
 
 			canvas.SaveState();
