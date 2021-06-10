@@ -47,7 +47,7 @@ steps:
 
   - script: |
       dotnet tool restore
-      dotnet tool upgrade microsoft.dotnet.xharness.cli --version $(XHARNESS_VERSION)
+      dotnet tool update microsoft.dotnet.xharness.cli --version $(XHARNESS_VERSION)
     displayName: install dotnet tools
 
   - pwsh: |
