@@ -28,6 +28,7 @@
 
     <!-- HACK: WinUI seems to have issues without this -->
     <GenerateLibraryLayout Condition="'$(OutputType)' != 'Exe' and '$(OutputType)' != 'WinExe'">true</GenerateLibraryLayout>
+    <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
 
   </PropertyGroup>
 
