@@ -5,7 +5,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class SliderStub : StubBase, ISlider
 	{
-		private double _value;
+		double _value;
 
 		public double Minimum { get; set; }
 		public double Maximum { get; set; }
