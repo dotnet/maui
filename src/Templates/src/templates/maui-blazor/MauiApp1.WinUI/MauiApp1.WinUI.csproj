@@ -41,7 +41,7 @@
 	<ItemGroup>
 		<Compile
 			Include="..\MauiApp1\**\*.cs"
-			Exclude="..\MauiApp1\bin\**;..\MauiApp1\obj\**;..\MauiApp1\Android\**;..\MauiApp1\iOS\**;..\MauiApp1\MacCatalyst\**"
+			Exclude="..\MauiApp1\bin\**;..\MauiApp1\obj\**;..\MauiApp1\Platforms\**"
 			Link="%(RecursiveDir)%(Filename)%(Extension)"/>
 		<MauiXaml
 			Include="..\MauiApp1\**\*.xaml"
