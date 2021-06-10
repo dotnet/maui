@@ -13,12 +13,14 @@ namespace Microsoft.Maui.UnitTests
 
 		public Thickness Padding { get; set; }
 
+		public Font Font { get; set; }
+
+		public IImageSource ImageSource { get; set; }
+
 		public void Clicked() { }
 
 		public void Pressed() { }
 
 		public void Released() { }
-
-		public Font Font { get; set; }
 	}
 }
