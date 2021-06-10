@@ -125,6 +125,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			string? newText = null;
+			string? newContentDescription = null;
 
 			var desc = semantics.Description;
 			if (!string.IsNullOrEmpty(desc))
@@ -133,13 +134,13 @@ namespace Microsoft.Maui.Handlers
 				if (host is EditText)
 					newText = $"{desc}, {((EditText)host).Text}";
 				else
-					info.ContentDescription = desc;
+					newContentDescription = desc;
 			}
 
 			var hint = semantics.Hint;
 			if (!string.IsNullOrEmpty(hint))
 			{
-				// info HintText won't read anything back when using TalkBack
+				// info HintText won't read anything back when using TalkBack pre API 26
 				if (NativeVersion.IsAtLeast(26))
 				{
 					info.HintText = hint;
@@ -147,12 +148,31 @@ namespace Microsoft.Maui.Handlers
 					if (host is EditText)
 						info.ShowingHintText = false;
 				}
-				else if (host is TextView tv)
+				else
 				{
-					newText = newText ?? tv.Text;
-					newText = $"{newText}, {hint}";
+					if (host is TextView tv)
+					{
+						newText = newText ?? tv.Text;
+						newText = $"{newText}, {hint}";
+					}
+					else
+					{
+						if (newContentDescription != null)
+						{
+							newText = $"{newContentDescription}, {hint}";
+						}
+						else
+						{
+							newText = $"{hint}";
+						}
+					}
+
+					newContentDescription = null;
 				}
 			}
+
+			if (!String.IsNullOrWhiteSpace(newContentDescription))
+				info.ContentDescription = newContentDescription;
 
 			if (!String.IsNullOrWhiteSpace(newText))
 				info.Text = newText;
