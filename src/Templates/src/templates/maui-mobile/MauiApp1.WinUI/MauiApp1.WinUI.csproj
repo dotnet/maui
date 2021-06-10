@@ -53,10 +53,6 @@
 		<PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
 	</ItemGroup>
 
-	<PropertyGroup>
-		<StartupObject>MauiApp1.WinUI.Program</StartupObject>
-		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
-	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.ProjectReunion" Version="PROJECT_REUNION_VERSION" />
 		<PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="PROJECT_REUNION_VERSION" />
