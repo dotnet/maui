@@ -1,6 +1,8 @@
 using Android.Graphics.Drawables;
 using Android.Views;
+using Android.Widget;
 using AndroidX.Core.View;
+using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -80,7 +82,6 @@ namespace Microsoft.Maui
 			if (semantics == null)
 				return;
 
-			nativeView.ContentDescription = semantics.Description;
 			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
 		}
 
