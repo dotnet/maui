@@ -47,4 +47,6 @@ namespace Microsoft.Maui.Controls.Platform
 		static void DetermineTruncatedTextWrapping(TextBlock textBlock) =>
 			textBlock.TextWrapping = textBlock.MaxLines > 1 ? TextWrapping.Wrap : TextWrapping.NoWrap;
 	}
+
+
 }

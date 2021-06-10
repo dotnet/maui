@@ -11,32 +11,7 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateText(this TextView textView, ILabel label)
 		{
-			textView.UpdateText(label.Text, label.TextType);
-		}
-
-		public static void UpdateText(this TextView textView, string newText, TextType textType = TextType.Text)
-		{
-			newText ??= string.Empty;
-			var oldText = textView.Text ?? string.Empty;
-
-			if (oldText == newText)
-				return;
-
-			switch (textType)
-			{
-				case TextType.Html:
-					if (NativeVersion.IsAtLeast(24))
-						textView.SetText(Html.FromHtml(newText, FromHtmlOptions.ModeCompact), BufferType.Spannable);
-					else
-#pragma warning disable CS0618 // Type or member is obsolete
-						textView.SetText(Html.FromHtml(newText), BufferType.Spannable);
-#pragma warning restore CS0618 // Type or member is obsolete
-					break;
-
-				default:
-					textView.Text = newText;
-					break;
-			}
+			textView.Text = label.Text;
 		}
 
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)

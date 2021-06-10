@@ -7,20 +7,6 @@ namespace Microsoft.Maui
 {
 	public static class LabelExtensions
 	{
-		public static void UpdateText(this UILabel nativeLabel, ILabel label)
-		{
-			switch (label.TextType)
-			{
-				case TextType.Html:
-					nativeLabel.UpdateTextHtml(label);
-					break;
-
-				default:
-					nativeLabel.UpdateTextPlainText(label);
-					break;
-			}
-		}
-				
 		public static void UpdateTextColor(this UILabel nativeLabel, ITextStyle textStyle, UIColor? defaultColor = null)
 		{
 			// Default value of color documented to be black in iOS docs
@@ -71,9 +57,6 @@ namespace Microsoft.Maui
 
 		public static void UpdateTextDecorations(this UILabel nativeLabel, ILabel label)
 		{
-			if (label?.TextType != TextType.Text)
-				return;
-
 			var modAttrText = nativeLabel.AttributedText?.WithDecorations(label.TextDecorations);
 
 			if (modAttrText != null)

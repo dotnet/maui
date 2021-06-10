@@ -21,9 +21,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(LabelHandler handler, ILabel label) =>
 			handler.NativeView?.UpdateText(label);
 
-		public static void MapTextType(LabelHandler handler, ILabel label) =>
-			handler.NativeView?.UpdateText(label);
-
 		public static void MapTextColor(LabelHandler handler, ILabel label) =>
 			handler.NativeView?.UpdateTextColor(label);
 
