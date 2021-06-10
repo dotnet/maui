@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -130,6 +131,16 @@ namespace Microsoft.Maui.DeviceTests
 				return false;
 
 			return textField.Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
+		}
+
+		Task ValidateHasColor(ISearchBar searchBar, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeSearchBar = GetNativeSearchBar(CreateHandler(searchBar));
+				action?.Invoke();
+				nativeSearchBar.AssertContainsColor(color);
+			});
 		}
 	}
 }

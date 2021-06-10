@@ -98,5 +98,16 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
+
+		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
+		public async Task CancelButtonColorInitializeCorrectly()
+		{
+			var searchBar = new SearchBarStub()
+			{
+				CancelButtonColor = Colors.MediumPurple
+			};
+
+			await ValidateHasColor(searchBar, Colors.MediumPurple, () => searchBar.CancelButtonColor = Colors.MediumPurple);
+		}
 	}
 }

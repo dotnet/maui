@@ -148,8 +148,11 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(visibleClearButtonEntry);
 			verticalStack.Add(hiddenClearButtonEntry);
 
+			verticalStack.Add(new Editor { Text = "Editor TextColor", TextColor = Colors.Olive });
+			verticalStack.Add(new Editor { Text = "Editor using CharacterSpacing", CharacterSpacing = 10 });
 			verticalStack.Add(new Editor { Placeholder = "This is an editor placeholder." });
-			verticalStack.Add(new Editor { Placeholder = "Green Text Color.", TextColor = Colors.Green });
+			verticalStack.Add(new Editor { Placeholder = "Editor PlaceholderColor", PlaceholderColor = Colors.Green });
+
 			var paddingButton = new Button
 			{
 				Padding = new Thickness(40),
@@ -240,7 +243,7 @@ namespace Maui.Controls.Sample.Pages
 
 			verticalStack.Add(CreateSampleCursorSelection());
 
-			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 });			
+			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 });
 
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
@@ -519,7 +522,7 @@ namespace Maui.Controls.Sample.Pages
 			layout.SetColumn(forSelectionLen, 2);
 
 			return layout;
-    }
+		}
 		IView CreateTransformations()
 		{
 			var label = new Button
