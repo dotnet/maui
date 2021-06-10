@@ -91,6 +91,63 @@ namespace Microsoft.Maui.Controls.Hosting
 								   }
 							   }
 						   }));
+#elif __IOS__
+				events.AddiOS(iOS =>
+				{
+					iOS.WillFinishLaunching((x, y) =>
+					{
+						MauiContext mauiContext = new MauiContext(MauiUIApplicationDelegate.Current.Services);
+						Forms.Init(new ActivationState(mauiContext), new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
+						return true;
+					});
+
+					iOS.FinishedLaunching((x,y) =>
+					{
+						// This calls Init again so that the MauiContext that's part of
+						// Forms.Init matches the rest of the maui application
+						var mauiApp = MauiUIApplicationDelegate.Current.Application;
+						if (mauiApp.Windows.Count > 0)
+						{
+							var window = mauiApp.Windows[0];
+							var mauiContext = window.Handler?.MauiContext ?? window.View.Handler?.MauiContext;
+
+							if (mauiContext != null)
+							{
+								Forms.Init(new ActivationState(mauiContext));
+							}
+						}
+						return true;
+					});
+				});
+#elif WINDOWS
+				events.AddWindows(windows => windows
+							.OnLaunching((_, args) =>
+							{								
+								// We need to call Forms.Init so the Window and Root Page can new up successfully
+								// The dispatcher that's inside of Forms.Init needs to be setup before the initial 
+								// window and root page start creating
+								// Inside OnLaunched we grab the MauiContext that's on the window so we can have the correct
+								// MauiContext inside Forms
+								MauiContext mauiContext = new MauiContext(MauiWinUIApplication.Current.Services);
+								ActivationState state = new ActivationState(mauiContext, args);
+								Forms.Init(state, new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
+							})
+						   .OnLaunched((_, args) =>
+						   {
+							   // This calls Init again so that the MauiContext that's part of
+							   // Forms.Init matches the rest of the maui application
+							   var mauiApp = MauiWinUIApplication.Current.Application;
+							   if (mauiApp.Windows.Count > 0)
+							   {
+								   var window = mauiApp.Windows[0];
+								   var mauiContext = window.Handler?.MauiContext ?? window.View.Handler?.MauiContext;
+
+								   if (mauiContext != null)
+								   {
+									   Forms.Init(new ActivationState(mauiContext, args));
+								   }
+							   }
+						   }));
 #endif
 			});
 
