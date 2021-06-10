@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Layouts
 				// then we want the width of the entire bounds
 				consumedWidth = bounds.Width;
 			}
-			
+
 			// And the actual frame width needs to subtract the margins
 			var frameWidth = Math.Max(0, consumedWidth - margin.HorizontalThickness);
 
