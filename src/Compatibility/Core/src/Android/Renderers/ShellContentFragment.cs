@@ -15,12 +15,27 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
 	public class ShellContentFragment : Fragment, AndroidAnimation.IAnimationListener, IShellObservableFragment, IAppearanceObserver
 	{
+		// AndroidX.Fragment packaged stopped calling CreateAnimation for every call
+		// of creating a fragment
+		bool _isAnimating = false;
+
 		#region IAnimationListener
 
 		void AndroidAnimation.IAnimationListener.OnAnimationEnd(AndroidAnimation animation)
 		{
 			View?.SetLayerType(LayerType.None, null);
 			AnimationFinished?.Invoke(this, EventArgs.Empty);
+			_isAnimating = false;
+		}
+
+		public override void OnResume()
+		{
+			base.OnResume();
+			if (!_isAnimating)
+			{
+				View?.SetLayerType(LayerType.None, null);
+				AnimationFinished?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		void AndroidAnimation.IAnimationListener.OnAnimationRepeat(AndroidAnimation animation)
@@ -75,6 +90,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public override AndroidAnimation OnCreateAnimation(int transit, bool enter, int nextAnim)
 		{
 			var result = base.OnCreateAnimation(transit, enter, nextAnim);
+			_isAnimating = true;
 
 			if (result == null && nextAnim != 0)
 			{

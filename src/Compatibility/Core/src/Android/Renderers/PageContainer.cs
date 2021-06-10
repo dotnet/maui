@@ -41,6 +41,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				// things here for PageViewGroup (the backing View for MAUI pages) and calling Layout. We'll skip calling it for any other types,
 				// because we don't want to interfere with un-shimmed legacy renderers.
 
+				if (Child.Element.Parent is IPageController ipc && !ipc.ContainerArea.IsEmpty)
+				{
+					(l, t, r, b) = Context.ToPixels(ipc.ContainerArea);
+				}
+				
 				pageViewGroup.Layout(l, t, r, b);
 			}
 		}
