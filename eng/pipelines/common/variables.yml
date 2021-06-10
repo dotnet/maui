@@ -40,3 +40,5 @@ variables:
   value: $(System.DefaultWorkingDirectory)/bin/dotnet
 - name: DotNet.Path
   value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
+- name: XHARNESS_VERSION
+  value: 1.0.0-prerelease.21307.1

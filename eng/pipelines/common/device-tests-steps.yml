@@ -45,7 +45,9 @@ steps:
       echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: install .NET
 
-  - script: dotnet tool restore
+  - script: |
+      dotnet tool restore
+      dotnet tool install microsoft.dotnet.xharness.cli --version $(XHARNESS_VERSION)
     displayName: install dotnet tools
 
   - pwsh: |
