@@ -5,6 +5,7 @@ using AndroidX.AppCompat.View.Menu;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -42,6 +43,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public void SetElement(VisualElement element)
 		{
+			if (element == Element)
+				return;
+
 			var oldElement = Element;
 			if (oldElement != null)
 			{
@@ -55,8 +59,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Element = element;
 
-			ViewHandler.SetVirtualView((IView)element);
 			((IView)element).Handler = ViewHandler;
+
+			if (ViewHandler.VirtualView != element)
+				ViewHandler.SetVirtualView((IView)element);
 
 			if (Tracker == null)
 			{

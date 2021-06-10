@@ -16,7 +16,7 @@
     "guids": [
       "07CD65EF-6238-4365-AF5D-F6D433967F48",
       "202C61B5-A2D9-4817-8020-731D9F855561",
-      "A88FCF8C-EC35-4623-B126-C591EEF99C70"
+      "919dc1f9-17a9-48b3-81f8-0b8016bdfbf7"
     ],
     "symbols": {
       "applicationId": {
@@ -31,11 +31,23 @@
         "replaces": "MICROSOFT_EXTENSIONS_VERSION",
         "defaultValue": "6.0.0-preview.4.*"
       },
+      "projectReunionVersion": {
+        "type": "parameter",
+        "dataType": "string",
+        "replaces": "PROJECT_REUNION_VERSION",
+        "defaultValue": "0.8.0-preview"
+      },
+      "windowsSdkVersion": {
+        "type": "parameter",
+        "dataType": "string",
+        "replaces": "WINDOWS_SDK_VERSION",
+        "defaultValue": "10.0.19041.16"
+      },
       "mauiVersion": {
         "type": "parameter",
         "dataType": "string",
         "replaces": "MAUI_VERSION",
-        "defaultValue": "6.0.100-preview.4.*"
+        "defaultValue": "MAUI_VERSION_VALUE"
       }
     },
     "defaultName": "MauiApp1"

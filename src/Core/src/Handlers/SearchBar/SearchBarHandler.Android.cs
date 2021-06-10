@@ -74,5 +74,10 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
+
+		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateCancelButtonColor(searchBar);
+		}
 	}
 }

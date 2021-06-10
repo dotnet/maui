@@ -148,8 +148,11 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(visibleClearButtonEntry);
 			verticalStack.Add(hiddenClearButtonEntry);
 
+			verticalStack.Add(new Editor { Text = "Editor TextColor", TextColor = Colors.Olive });
+			verticalStack.Add(new Editor { Text = "Editor using CharacterSpacing", CharacterSpacing = 10 });
 			verticalStack.Add(new Editor { Placeholder = "This is an editor placeholder." });
-			verticalStack.Add(new Editor { Placeholder = "Green Text Color.", TextColor = Colors.Green });
+			verticalStack.Add(new Editor { Placeholder = "Editor PlaceholderColor", PlaceholderColor = Colors.Green });
+
 			var paddingButton = new Button
 			{
 				Padding = new Thickness(40),
@@ -227,7 +230,7 @@ namespace Maui.Controls.Sample.Pages
 			var entryMargin = new Thickness(10, 0);
 
 			verticalStack.Add(entry);
-			verticalStack.Add(new Entry { Text = "Entry", TextColor = Colors.DarkRed, FontFamily = "Dokdo", MaxLength = -1, Margin = entryMargin });
+			verticalStack.Add(new Entry { Text = "Entry with custom Font", TextColor = Colors.DarkRed, FontFamily = "Dokdo", MaxLength = -1, Margin = entryMargin });
 			verticalStack.Add(new Entry { IsPassword = true, TextColor = Colors.Black, Placeholder = "Pasword Entry", Margin = entryMargin });
 			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
 			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text", Margin = entryMargin });
@@ -238,24 +241,19 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
 			verticalStack.Add(new Entry { Placeholder = "This is a blue text box", BackgroundColor = Colors.CornflowerBlue });
 
-			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 }); ;
-			
+			verticalStack.Add(CreateSampleCursorSelection());
+
+			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 });
+
 			verticalStack.Add(new ProgressBar { Progress = 0.5 });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
 
-			var searchBar = new SearchBar
-			{
-				CharacterSpacing = 4,
-				Text = "A search query"
-			};
-			verticalStack.Add(searchBar);
-
-			var placeholderSearchBar = new SearchBar
-			{
-				Placeholder = "Placeholder"
-			};
-			verticalStack.Add(placeholderSearchBar);
+			verticalStack.Add(new SearchBar { CharacterSpacing = 4, Text = "A search query" });
+			verticalStack.Add(new SearchBar { Placeholder = "Placeholder" });
+			verticalStack.Add(new SearchBar { HorizontalTextAlignment = TextAlignment.End, Text = "SearchBar HorizontalTextAlignment" });
+			verticalStack.Add(new SearchBar { Text = "SearchBar MaxLength", MaxLength = 50 });
+			verticalStack.Add(new SearchBar { Text = "SearchBar CancelButtonColor", CancelButtonColor = Colors.IndianRed });
 
 			var monkeyList = new List<string>
 			{
@@ -285,10 +283,12 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Switch() { OnColor = Colors.Green, ThumbColor = Colors.Yellow });
 
 			verticalStack.Add(new DatePicker());
+			verticalStack.Add(new DatePicker { TextColor = Colors.OrangeRed });
 			verticalStack.Add(new DatePicker { CharacterSpacing = 6 });
 			verticalStack.Add(new DatePicker { FontSize = 24 });
 
 			verticalStack.Add(new TimePicker());
+			verticalStack.Add(new TimePicker { TextColor = Colors.LightGreen });
 			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
 
 			verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
@@ -488,6 +488,41 @@ namespace Maui.Controls.Sample.Pages
 			return layout;
 		}
 
+		IView CreateSampleCursorSelection()
+		{
+			var layout = new Microsoft.Maui.Controls.Layout2.GridLayout() { ColumnSpacing = 5, RowSpacing = 8, BackgroundColor = Colors.LightGreen };
+
+			layout.AddRowDefinition(new RowDefinition() { Height = new GridLength(50) });
+
+			layout.AddColumnDefinition(new ColumnDefinition() { Width = new GridLength(150) });
+			layout.AddColumnDefinition(new ColumnDefinition() { Width = new GridLength(80) });
+			layout.AddColumnDefinition(new ColumnDefinition() { Width = new GridLength(80) });
+
+			Entry targetEntry = new() { Placeholder = "Selectable Text" };
+			Entry forPosition = new() { Keyboard = Keyboard.Numeric, Placeholder = "CursorPos" };
+			forPosition.TextChanged += (sender, args) =>
+			{
+				if (!int.TryParse(args.NewTextValue, out int newPos))
+					return;
+				targetEntry.CursorPosition = newPos;
+			};
+
+			Entry forSelectionLen = new() { Keyboard = Keyboard.Numeric, Placeholder = "SelectionLen" };
+			forSelectionLen.TextChanged += (sender, args) =>
+			{
+				if (!int.TryParse(args.NewTextValue, out int newSelectionLen))
+					return;
+				targetEntry.SelectionLength = newSelectionLen;
+			};
+
+			layout.Add(targetEntry);
+			layout.Add(forPosition);
+			layout.SetColumn(forPosition, 1);
+			layout.Add(forSelectionLen);
+			layout.SetColumn(forSelectionLen, 2);
+
+			return layout;
+		}
 		IView CreateTransformations()
 		{
 			var label = new Button
@@ -563,7 +598,7 @@ namespace Maui.Controls.Sample.Pages
 			layout.Add(widthAndHeightTestLabel);
 			layout.Add(explicitWidthTestLabel);
 		}
-    
+
 		void SetupVisibilityTest()
 		{
 			var layout = new VerticalStackLayout() { BackgroundColor = Colors.BurlyWood };
@@ -607,9 +642,9 @@ namespace Maui.Controls.Sample.Pages
 			layout.Add(alwaysVisible);
 
 			Content = layout;
-		}		
-    
-    class TestDrawable : IDrawable
+		}
+
+		class TestDrawable : IDrawable
 		{
 			public void Draw(ICanvas canvas, RectangleF dirtyRect)
 			{
@@ -618,6 +653,6 @@ namespace Maui.Controls.Sample.Pages
 				canvas.FillRoundedRectangle(0, 0, 200, 50, 10);
 				canvas.RestoreState();
 			}
-    }
+		}
 	}
 }
