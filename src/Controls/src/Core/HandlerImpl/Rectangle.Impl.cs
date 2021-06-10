@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
@@ -8,7 +9,14 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			var path = new PathF();
 
-			path.AppendRoundedRectangle(0f, 0f, (float)Width, (float)Height, (float)RadiusY + (float)RadiusX);
+			float x = (float)StrokeThickness;
+			float y = (float)StrokeThickness;
+			float w = (float)(Width - StrokeThickness * 2);
+			float h = (float)(Height - StrokeThickness * 2);
+			float cornerRadius = (float)Math.Max(RadiusX, RadiusY);
+
+			// TODO: Create specific Path taking into account RadiusX and RadiusY
+			path.AppendRoundedRectangle(x, y, w, h, cornerRadius);
 
 			return path;
 		}

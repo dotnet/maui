@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Handlers
 		public static PropertyMapper<IShapeView, ShapeViewHandler> ShapeViewMapper = new PropertyMapper<IShapeView, ShapeViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IShapeView.Shape)] = MapShape,
+			[nameof(IShapeView.Aspect)] = MapAspect,
 			[nameof(IShapeView.Fill)] = MapFill,
 			[nameof(IShapeView.Stroke)] = MapStroke,
 			[nameof(IShapeView.StrokeThickness)] = MapStrokeThickness,

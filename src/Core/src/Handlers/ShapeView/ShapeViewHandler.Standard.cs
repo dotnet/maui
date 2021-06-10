@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 		protected override object CreateNativeView() => throw new NotImplementedException();
 
 		public static void MapShape(IViewHandler handler, IShapeView shapeView) { }
+		public static void MapAspect(IViewHandler handler, IShapeView shapeView) { }
 		public static void MapFill(IViewHandler handler, IShapeView shapeView) { }
 		public static void MapStroke(IViewHandler handler, IShapeView shapeView) { }
 		public static void MapStrokeThickness(IViewHandler handler, IShapeView shapeView) { }

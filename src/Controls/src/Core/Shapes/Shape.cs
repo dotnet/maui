@@ -156,8 +156,8 @@ namespace Microsoft.Maui.Controls.Shapes
 				var pathWidth = (float)Width;
 				var pathHeight = (float)Height;
 
-				var viewWidth = (float)bounds.Width;// 0f;
-				var viewHeight = (float)bounds.Height;// 0f;
+				var viewWidth = (float)bounds.Width;
+				var viewHeight = (float)bounds.Height;
 
 				// If one dimension is 0, we have nothing to display anyway
 				if (pathWidth > 0 && pathHeight > 0)
