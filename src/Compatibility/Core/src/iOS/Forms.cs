@@ -187,8 +187,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static void Init(InitializationOptions options) =>
 			SetupInit(new MauiContext(), options);
 
-		public static void Init(IActivationState activationState) =>
-			SetupInit(activationState.Context);
+		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
+			SetupInit(activationState.Context, options);
 
 		static void SetupInit(IMauiContext context, InitializationOptions? maybeOptions = null)
 		{
