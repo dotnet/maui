@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -20,7 +19,6 @@ namespace Microsoft.Maui.Controls
 
 		IAppIndexingProvider _appIndexProvider;
 		ReadOnlyCollection<Element> _logicalChildren;
-		Page _mainPage;
 
 		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
@@ -62,7 +60,13 @@ namespace Microsoft.Maui.Controls
 
 		public Page MainPage
 		{
-			get => _mainPage ?? Windows.FirstOrDefault()?.View as Page;
+			get
+			{
+				if (Windows.Count == 0)
+					return null;
+
+				return Windows[0].Page;
+			}
 			set
 			{
 				if (value == null)
@@ -80,20 +84,25 @@ namespace Microsoft.Maui.Controls
 
 				if (Windows.Count == 0)
 				{
-					// just set the value, the next call of CreateWindow will use this
+					// there are no windows, so add a new window
 
-					_mainPage = value;
+					AddWindow(new Window(value));
 				}
 				else
 				{
 					// find the best window and replace the page
 
-					var theWindow =
-						Windows.FirstOrDefault(w => w.View == previousPage) ??
-						Windows[0];
+					var theWindow = Windows[0];
+					foreach (var window in Windows)
+					{
+						if (window.Page == previousPage)
+						{
+							theWindow = window;
+							break;
+						}
+					}
 
-					_mainPage = value;
-					theWindow.View = value;
+					theWindow.Page = value;
 				}
 
 				if (previousPage != null)
