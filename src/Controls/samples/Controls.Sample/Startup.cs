@@ -116,6 +116,9 @@ namespace Maui.Controls.Sample
 					if (useFullDIAndBlazor)
 						services.AddBlazorWebView();
 #endif
+
+					services.AddTransient(typeof(NavPage));
+
 					services.AddTransient(
 						serviceType: _pageType == PageType.Blazor ? typeof(Page) : typeof(IPage),
 						implementationType: _pageType switch

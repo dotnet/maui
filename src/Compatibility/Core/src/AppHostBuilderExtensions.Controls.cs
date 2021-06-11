@@ -75,6 +75,17 @@ namespace Microsoft.Maui.Controls.Hosting
 						ActivationState state = new ActivationState(mauiContext);
 						Forms.Init(new ActivationState(mauiContext), new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
 					})
+					.OnCreate((a, b) =>
+					{
+						// This just gets Forms Compat bits setup with what it needs
+						// to initialize the first view. MauiContext hasn't been initialized at this point
+						// so we setup one that will look exactly the same just
+						// to make legacy Forms bits happy
+						var services = MauiApplication.Current.Services;
+						MauiContext mauiContext = new MauiContext(services, a);
+						ActivationState state = new ActivationState(mauiContext);
+						Forms.Init(new ActivationState(mauiContext), new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
+					})
 					.OnPostCreate((_,b) =>
 					{
 						// This calls Init again so that the MauiContext that's part of
