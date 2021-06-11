@@ -8,7 +8,10 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IPage.Title)] = MapTitle,
 			[nameof(IPage.Content)] = MapContent,
 #if __IOS__
-			[nameof(IPage.Background)] = MapBackground,
+			Actions =
+			{
+				[nameof(IFrameworkElement.Frame)] = MapFrame,
+			}
 #endif
 		};
 

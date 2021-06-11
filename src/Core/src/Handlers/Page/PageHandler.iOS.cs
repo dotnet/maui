@@ -57,9 +57,10 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateContent();
 		}
 
-		public static void MapBackground(PageHandler handler, IView view)
+		public static void MapFrame(PageHandler handler, IView view)
 		{
-			handler.NativeView?.UpdateBackground(view);
+			ViewHandler.MapFrame(handler, view);
+			handler.NativeView?.UpdateBackgroundLayerFrame();
 		}
 	}
 }
