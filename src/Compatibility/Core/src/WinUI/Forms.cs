@@ -26,34 +26,33 @@ namespace Microsoft.Maui.Controls.Compatibility
 	public static partial class Forms
 	{
 		const string LogFormat = "[{0}] {1}";
-		private static ApplicationExecutionState s_state;
 
 		//TODO WINUI3 This is set by main page currently because
 		// it's only a single window
 		public static UI.Xaml.Window MainWindow { get; set; }
 
 		public static bool IsInitialized { get; private set; }
+		static bool WinUIResourcesAdded { get; set; }
+
 		public static IMauiContext MauiContext { get; private set; }
 
-		public static void Init(IActivationState state)
+		public static void Init(IActivationState state, InitializationOptions? options = null)
 		{
-			SetupInit(state.Context, state.LaunchActivatedEventArgs, null, null);
+			SetupInit(state.Context, null, maybeOptions: options);
 		}
 
 		public static void Init(
-			UI.Xaml.LaunchActivatedEventArgs launchActivatedEventArgs,
 			WindowsBasePage mainWindow,
 			IEnumerable<Assembly> rendererAssemblies = null)
 		{
-			SetupInit(new MauiContext(), launchActivatedEventArgs, mainWindow, rendererAssemblies);
+			SetupInit(new MauiContext(), mainWindow, rendererAssemblies);
 		}
 
 		public static void Init(InitializationOptions options) =>
-			SetupInit(new MauiContext(), options.LaunchActivatedEventArgs, null, null, options);
+			SetupInit(new MauiContext(), null, null, options);
 
 		static void SetupInit(
 			IMauiContext mauiContext,
-			UI.Xaml.LaunchActivatedEventArgs launchActivatedEventArgs,
 			WindowsBasePage mainWindow,
 			IEnumerable<Assembly> rendererAssemblies = null,
 			InitializationOptions? maybeOptions = null)
@@ -77,7 +76,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			try
 			{
-				UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new UI.Xaml.Controls.XamlControlsResources());
+				if (!WinUIResourcesAdded)
+				{
+					WinUIResourcesAdded = true;
+					UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new UI.Xaml.Controls.XamlControlsResources());
+				}
 			}
 			catch
 			{
@@ -123,7 +126,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			ExpressionSearch.Default = new WindowsExpressionSearch();
 
 			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
-			s_state = launchActivatedEventArgs.UWPLaunchActivatedEventArgs.PreviousExecutionState;
 
 			var dispatcher = mainWindow?.DispatcherQueue ?? System.DispatcherQueue.GetForCurrentThread();
 
@@ -151,6 +153,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		static bool IsInitializedRenderers;
 
+		// Once we get essentials/cg converted to using startup.cs
+		// we will delete all the renderer code inside this file
+		internal static void RenderersRegistered()
+		{
+			IsInitializedRenderers = true;
+		}
 		internal static void RegisterCompatRenderers()
 		{
 			if (IsInitializedRenderers)

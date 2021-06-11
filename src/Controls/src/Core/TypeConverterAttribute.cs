@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
 namespace Microsoft.Maui.Controls
 {
@@ -46,6 +47,7 @@ namespace Microsoft.Maui.Controls
 		};
 
 		internal static Dictionary<Type, Type> KnownConverters = new Dictionary<Type, Type> {
+			{ typeof(CornerRadius), typeof(CornerRadiusTypeConverter) },
 			{ typeof(Color), typeof(ColorTypeConverter) },
 			{ typeof(CornerRadius), typeof(CornerRadiusTypeConverter) },
 			{ typeof(Font), typeof(FontTypeConverter) },
@@ -55,6 +57,7 @@ namespace Microsoft.Maui.Controls
 			{ typeof(Thickness), typeof(ThicknessTypeConverter) },
 			{ typeof(Point), typeof(PointTypeConverter) },
 			{ typeof(PointCollection), typeof(PointCollectionConverter) },
+			{ typeof(DoubleCollection), typeof(DoubleCollectionConverter) },
 		};
 
 		public static readonly TypeConverterAttribute Default = new TypeConverterAttribute();

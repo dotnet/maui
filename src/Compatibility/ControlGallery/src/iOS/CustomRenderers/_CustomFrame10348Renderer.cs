@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(CustomFrame10348), typeof(_CustomFrame10348Renderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers

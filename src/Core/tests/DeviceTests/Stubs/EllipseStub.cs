@@ -2,14 +2,15 @@
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class EllipseStub : IShape
-	{
-
-		PathF IShape.PathForBounds(Rectangle rect, float density)
+	public class EllipseStub : StubBase, IShape
+    {
+		public PathF PathForBounds(Rectangle rect)
 		{
 			var path = new PathF();
-			path.AppendEllipse(rect);
-			return path;
+
+			path.AppendEllipse(0f, 0f, (float)Width, (float)Height);
+
+			return path.AsScaledPath((float)Width / (float)rect.Width);
 		}
 	}
 }

@@ -1,23 +1,16 @@
-﻿#nullable enable
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Shapes2
+namespace Microsoft.Maui.Controls.Shapes
 {
-	public class Path : IShape
+	public partial class Path : IShape
 	{
-		public Path()
+		public override PathF GetPath()
 		{
+			var path = new PathF();
 
+			Data.AppendPath(path);
+
+			return path;
 		}
-
-		public Path(string? data)
-		{
-			Data = data;
-		}
-
-		public string? Data { get; set; }
-
-		public PathF PathForBounds(Graphics.Rectangle rect, float density = 1) =>
-			PathBuilder.Build(Data);
 	}
 }

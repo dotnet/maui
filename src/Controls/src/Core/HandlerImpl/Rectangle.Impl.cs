@@ -1,32 +1,22 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Shapes2
+namespace Microsoft.Maui.Controls.Shapes
 {
-	public class Rectangle : IShape
+	public partial class Rectangle : IShape
 	{
-		public Rectangle()
-		{
-
-		}
-
-		public Rectangle(CornerRadius cornerRadius) : this()
-		{
-			CornerRadius = cornerRadius;
-		}
-
-		public CornerRadius CornerRadius { get; set; }
-
-		public PathF PathForBounds(Graphics.Rectangle rect, float density = 1)
+		public override PathF GetPath()
 		{
 			var path = new PathF();
 
-			path.AppendRoundedRectangle(
-				rect,
-				(float)CornerRadius.TopLeft,
-				(float)CornerRadius.TopRight,
-				(float)CornerRadius.BottomLeft,
-				(float)CornerRadius.BottomRight);
+			float x = (float)StrokeThickness / 2;
+			float y = (float)StrokeThickness / 2;
+			float w = (float)(Width - StrokeThickness);
+			float h = (float)(Height - StrokeThickness);
+			float cornerRadius = (float)Math.Max(RadiusX, RadiusY);
 
+			// TODO: Create specific Path taking into account RadiusX and RadiusY
+			path.AppendRoundedRectangle(x, y, w, h, cornerRadius);
 			return path;
 		}
 	}

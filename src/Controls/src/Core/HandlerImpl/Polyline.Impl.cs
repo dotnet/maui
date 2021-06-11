@@ -1,32 +1,19 @@
-﻿#nullable enable
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Shapes2
+namespace Microsoft.Maui.Controls.Shapes
 {
-	public class Polyline : IShape
+	public partial class Polyline : IShape
 	{
-		public Polyline()
-		{
-
-		}
-
-		public Polyline(PointCollection? points)
-		{
-			Points = points;
-		}
-
-		public PointCollection? Points { get; set; }
-
-		public PathF PathForBounds(Graphics.Rectangle rect, float density = 1)
+		public override PathF GetPath()
 		{
 			var path = new PathF();
 
 			if (Points?.Count > 0)
 			{
-				path.MoveTo(density * (float)Points[0].X, density * (float)Points[0].Y);
+				path.MoveTo((float)Points[0].X, (float)Points[0].Y);
 
 				for (int index = 1; index < Points.Count; index++)
-					path.LineTo(density * (float)Points[index].X, density * (float)Points[index].Y);
+					path.LineTo((float)Points[index].X, (float)Points[index].Y);
 			}
 
 			return path;

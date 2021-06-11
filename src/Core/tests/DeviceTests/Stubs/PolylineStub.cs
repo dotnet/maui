@@ -3,33 +3,33 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class PolylineStub : IShape
+	public class PolylineStub : StubBase, IShape
 	{
-		public PolylineStub()
-		{
+        public PolylineStub()
+        {
 
-		}
+        }
 
-		public PolylineStub(PointCollection? points)
-		{
-			Points = points;
-		}
+        public PolylineStub(PointCollectionStub? points)
+        {
+            Points = points;
+        }
 
-		public PointCollection? Points { get; set; }
+        public PointCollectionStub? Points { get; set; }
 
-		PathF IShape.PathForBounds(Rectangle rect, float density)
+		public PathF PathForBounds(Rectangle rect)
 		{
 			var path = new PathF();
 
 			if (Points?.Count > 0)
 			{
-				path.MoveTo(density * (float)Points[0].X, density * (float)Points[0].Y);
+				path.MoveTo((float)Points[0].X, (float)Points[0].Y);
 
 				for (int index = 1; index < Points.Count; index++)
-					path.LineTo(density * (float)Points[index].X, density * (float)Points[index].Y);
+					path.LineTo((float)Points[index].X, (float)Points[index].Y);
 			}
 
-			return path;
+			return path.AsScaledPath((float)Width / (float)rect.Width);
 		}
 	}
 }

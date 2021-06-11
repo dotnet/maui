@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting.Internal;
 
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Hosting
 			{ typeof(IPicker), typeof(PickerHandler) },
 			{ typeof(IProgress), typeof(ProgressBarHandler) },
 			{ typeof(ISearchBar), typeof(SearchBarHandler) },
+			{ typeof(IShapeView), typeof(ShapeViewHandler) },
 			{ typeof(ISlider), typeof(SliderHandler) },
 			{ typeof(IStepper), typeof(StepperHandler) },
 			{ typeof(ISwitch), typeof(SwitchHandler) },
@@ -43,12 +45,6 @@ namespace Microsoft.Maui.Hosting
 		public static IAppHostBuilder ConfigureMauiHandlers(this IAppHostBuilder builder, Action<HostBuilderContext, IMauiHandlersCollection> configureDelegate)
 		{
 			builder.ConfigureServices<HandlerCollectionBuilder>(configureDelegate);
-			return builder;
-		}
-
-		public static IAppHostBuilder UseMauiHandlers(this IAppHostBuilder builder)
-		{
-			builder.ConfigureMauiHandlers((_, handlersCollection) => handlersCollection.AddHandlers(DefaultMauiHandlers));
 			return builder;
 		}
 
@@ -75,26 +71,6 @@ namespace Microsoft.Maui.Hosting
 		public static IAppHostBuilder ConfigureAppConfiguration(this IAppHostBuilder builder, Action<IConfigurationBuilder> configureDelegate)
 		{
 			builder.ConfigureAppConfiguration((_, config) => configureDelegate(config));
-			return builder;
-		}
-
-		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder)
-			where TApp : class, IApplication
-		{
-			builder.ConfigureServices((context, collection) =>
-			{
-				collection.AddSingleton<IApplication, TApp>();
-			});
-			return builder;
-		}
-
-		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
-			where TApp : class, IApplication
-		{
-			builder.ConfigureServices((context, collection) =>
-			{
-				collection.AddSingleton<IApplication>(implementationFactory);
-			});
 			return builder;
 		}
 

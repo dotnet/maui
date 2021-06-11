@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Widget;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using ARect = Android.Graphics.Rect;
 using AScaleType = Android.Widget.ImageView.ScaleType;
 using AViewCompat = AndroidX.Core.View.ViewCompat;

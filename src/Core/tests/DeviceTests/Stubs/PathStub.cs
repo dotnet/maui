@@ -3,21 +3,30 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class PathStub : IShape
+	public class GeometryStub
 	{
-		public PathStub()
+		public void AppendToPath(PathF path)
 		{
 
 		}
+	}
 
-		public PathStub(string? data)
+	public class PathStub : StubBase, IShape
+    {
+        public PathStub()
+        {
+
+        }
+
+        public GeometryStub? Data { get; set; }
+
+		public PathF PathForBounds(Rectangle rect)
 		{
-			Data = data;
+			var path = new PathF();
+
+			Data?.AppendToPath(path);
+
+			return path.AsScaledPath((float)Width / (float)rect.Width);
 		}
-
-		public string? Data { get; set; }
-
-		PathF IShape.PathForBounds(Rectangle rect, float density) => PathBuilder.Build(Data);
-		
 	}
 }

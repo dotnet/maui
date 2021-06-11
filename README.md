@@ -22,12 +22,6 @@
 
 - Install the SDKs listed here https://github.com/dotnet/maui-samples
 
-- And/or run the following
-
-```
-dotnet tool install Cake.Tool -g
-```
-
 ### Running
 
 #### IDE
@@ -39,12 +33,17 @@ dotnet tool install Cake.Tool -g
 You can run a `Cake` target to bootstrap .NET 6 in `bin\dotnet` and launch Visual Studio:
 
 ```dotnetcli
+dotnet tool restore
 dotnet cake --target=VS-NET6
 ```
-_NOTE: VS Mac is not yet supported._
+_NOTES:_
+- _VS Mac is not yet supported._
+- _If the IDE doesn't show any android devices try unloading and reloading the `Sample.Droid-net6` project._
 
 You can also run commands individually:
 ```dotnetcli
+# install local tools required to build (cake, pwsh, etc..)
+dotnet tool restore
 # Provision .NET 6 in bin\dotnet
 dotnet build src\DotNet\DotNet.csproj
 # Builds Maui MSBuild tasks
@@ -67,6 +66,8 @@ Try out a "single project", you will need the `-f` switch to choose the platform
 .\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-android
 .\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-ios
 ```
+
+To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://github.com/dotnet/maui/wiki/Blazor-Desktop) wiki topic.
 
 ## Current News
 

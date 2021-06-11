@@ -1,14 +1,19 @@
 ﻿using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Shapes2
+namespace Microsoft.Maui.Controls.Shapes
 {
-	public class Ellipse : IShape
+	public partial class Ellipse : IShape
 	{
-		public PathF PathForBounds(Graphics.Rectangle rect, float density = 1)
+		public override PathF GetPath()
 		{
 			var path = new PathF();
 
-			path.AppendEllipse(rect);
+			float x = (float)StrokeThickness / 2;
+			float y = (float)StrokeThickness / 2;
+			float w = (float)(Width - StrokeThickness);
+			float h = (float)(Height - StrokeThickness);
+
+			path.AppendEllipse(x, y, w, h);
 
 			return path;
 		}

@@ -1,4 +1,6 @@
-﻿using Android.Widget;
+﻿using System;
+using Android.Views;
+using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using NativeView = Android.Views.View;
@@ -77,15 +79,37 @@ namespace Microsoft.Maui.Handlers
 
 		static partial void MappingSemantics(ViewHandler handler, IView view)
 		{
+			if (handler.NativeView == null)
+				return;
+
 			if (view.Semantics != null &&
 				handler is ViewHandler viewHandler &&
 				viewHandler.AccessibilityDelegate == null &&
 				ViewCompat.GetAccessibilityDelegate(handler.NativeView as NativeView) == null)
 			{
-				if (!string.IsNullOrEmpty(view.Semantics.Hint))
+				if (handler.NativeView is not NativeView nativeView)
+					return;
+
+				if (nativeView is AndroidX.AppCompat.Widget.SearchView sv)
+					nativeView = sv.FindViewById(Resource.Id.search_button)!;
+
+				if (!string.IsNullOrWhiteSpace(view.Semantics.Hint) || !string.IsNullOrWhiteSpace(view.Semantics.Description))
 				{
-					viewHandler.AccessibilityDelegate = new MauiAccessibilityDelegate() { Handler = viewHandler };
-					ViewCompat.SetAccessibilityDelegate(handler.NativeView as NativeView, viewHandler.AccessibilityDelegate);
+					if (viewHandler.AccessibilityDelegate == null)
+					{
+						viewHandler.AccessibilityDelegate = new MauiAccessibilityDelegate() { Handler = viewHandler };
+						ViewCompat.SetAccessibilityDelegate(nativeView, viewHandler.AccessibilityDelegate);
+					}
+				}
+				else if (viewHandler.AccessibilityDelegate != null)
+				{
+					viewHandler.AccessibilityDelegate = null;
+					ViewCompat.SetAccessibilityDelegate(nativeView, null);
+				}
+
+				if (viewHandler.AccessibilityDelegate != null)
+				{
+					nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
 				}
 			}
 		}
@@ -93,19 +117,65 @@ namespace Microsoft.Maui.Handlers
 		public void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)
 		{
 			var semantics = VirtualView?.Semantics;
+
 			if (semantics == null)
 				return;
 
 			if (info == null)
 				return;
 
-			if (!string.IsNullOrEmpty(semantics.Hint))
-			{
-				info.HintText = semantics.Hint;
+			string? newText = null;
+			string? newContentDescription = null;
 
+			var desc = semantics.Description;
+			if (!string.IsNullOrEmpty(desc))
+			{
+				// Edit Text fields won't read anything for the content description
 				if (host is EditText)
-					info.ShowingHintText = false;
+					newText = $"{desc}, {((EditText)host).Text}";
+				else
+					newContentDescription = desc;
 			}
+
+			var hint = semantics.Hint;
+			if (!string.IsNullOrEmpty(hint))
+			{
+				// info HintText won't read anything back when using TalkBack pre API 26
+				if (NativeVersion.IsAtLeast(26))
+				{
+					info.HintText = hint;
+
+					if (host is EditText)
+						info.ShowingHintText = false;
+				}
+				else
+				{
+					if (host is TextView tv)
+					{
+						newText = newText ?? tv.Text;
+						newText = $"{newText}, {hint}";
+					}
+					else
+					{
+						if (newContentDescription != null)
+						{
+							newText = $"{newContentDescription}, {hint}";
+						}
+						else
+						{
+							newText = $"{hint}";
+						}
+					}
+
+					newContentDescription = null;
+				}
+			}
+
+			if (!String.IsNullOrWhiteSpace(newContentDescription))
+				info.ContentDescription = newContentDescription;
+
+			if (!String.IsNullOrWhiteSpace(newText))
+				info.Text = newText;
 		}
 
 		class MauiAccessibilityDelegate : AccessibilityDelegateCompat

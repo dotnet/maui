@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 		{
 			nativePicker.AttributedPlaceholder = nsAttributedString;
 		}
-	
+
 		internal static void UpdatePicker(this MauiPicker nativePicker, IPicker picker)
 		{
 			var selectedIndex = picker.SelectedIndex;
