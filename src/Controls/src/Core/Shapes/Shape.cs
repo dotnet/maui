@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 
@@ -99,11 +98,12 @@ namespace Microsoft.Maui.Controls.Shapes
 		IShape IShapeView.Shape => this;
 
 		PathAspect IShapeView.Aspect
-			=> Aspect switch {
+			=> Aspect switch
+			{
 				Stretch.Fill => PathAspect.Stretch,
 				Stretch.Uniform => PathAspect.AspectFit,
 				Stretch.UniformToFill => PathAspect.AspectFill,
-				Stretch.None => PathAspect.Center,
+				Stretch.None => PathAspect.None,
 				_ => PathAspect.None
 			};
 
@@ -145,50 +145,12 @@ namespace Microsoft.Maui.Controls.Shapes
 				brush.Parent = this;
 		}
 
-
 		PathF IShape.PathForBounds(Graphics.Rectangle bounds)
 		{
-			var path = GetPath();
+			// TODO: Apply the necessary transformations (scale, translate, etc) after add in Microsost.Maui.Graphics
+			// the possibility of get the PathF Bounds.
 
-			// Scale the path if needed depending on specified aspect
-			if (Aspect != Stretch.None)
-			{
-				var pathWidth = (float)Width;
-				var pathHeight = (float)Height;
-
-				var viewWidth = (float)bounds.Width;
-				var viewHeight = (float)bounds.Height;
-
-				// If one dimension is 0, we have nothing to display anyway
-				if (pathWidth > 0 && pathHeight > 0)
-				{
-					if (Aspect == Stretch.Fill)
-					{
-						var scaleX = viewWidth / pathWidth;
-						var scaleY = viewHeight / pathHeight;
-
-						path.Transform(AffineTransform.GetScaleInstance(scaleX, scaleY));
-					}
-					else if (Aspect == Stretch.UniformToFill)
-					{
-						var scaleX = viewWidth / pathWidth;
-						var scaleY = viewHeight / pathHeight;
-						var scaleDimension = Math.Max(scaleX, scaleY);
-
-						path.Transform(AffineTransform.GetScaleInstance(scaleDimension, scaleDimension));
-					}
-					else if (Aspect == Stretch.Uniform)
-					{
-						var scaleX = viewWidth / pathWidth;
-						var scaleY = viewHeight / pathHeight;
-						var scaleDimension = Math.Min(scaleX, scaleY);
-
-						path.Transform(AffineTransform.GetScaleInstance(scaleDimension, scaleDimension));
-					}
-				}
-			}
-
-			return path;
+			return GetPath();
 		}
 	}
 }
