@@ -25,7 +25,6 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(GraphicsView), typeof(GraphicsViewHandler) },
 			{ typeof(Image), typeof(ImageHandler) },
 			{ typeof(Label), typeof(LabelHandler) },
-			{ typeof(Layout), typeof(LayoutHandler) },
 			{ typeof(Layout2.Layout), typeof(LayoutHandler) },
 			{ typeof(Picker), typeof(PickerHandler) },
 			{ typeof(ProgressBar), typeof(ProgressBarHandler) },
@@ -41,6 +40,11 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Shapes.Polygon), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Polyline), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Rectangle), typeof(ShapeViewHandler) },
+
+			#if !WINDOWS
+			{ typeof(Layout), typeof(LayoutHandler) },
+			#endif
+
 		};
 
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
