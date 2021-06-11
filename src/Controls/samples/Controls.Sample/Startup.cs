@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample
 	public class Startup : IStartup
 	{
 		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage, Shell, TabbedPage }
-		private PageType _pageType = PageType.Xaml;
+		private PageType _pageType = PageType.NavigationPage;
 
 		public readonly static bool UseXamlApp = true;
 		public readonly static bool UseFullDI = false;
@@ -116,9 +116,6 @@ namespace Maui.Controls.Sample
 					if (useFullDIAndBlazor)
 						services.AddBlazorWebView();
 #endif
-
-					services.AddTransient(typeof(NavPage));
-
 					services.AddTransient(
 						serviceType: _pageType == PageType.Blazor ? typeof(Page) : typeof(IPage),
 						implementationType: _pageType switch
