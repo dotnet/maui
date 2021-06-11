@@ -197,6 +197,8 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Shell), typeof(ShellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer));
+#else
+					handlers.TryAddCompatibilityRenderer(typeof(Element), typeof(DefaultRenderer));
 #endif
 					handlers.TryAddCompatibilityRenderer(typeof(NavigationPage), typeof(NavigationPageRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CarouselPage), typeof(CarouselPageRenderer));
