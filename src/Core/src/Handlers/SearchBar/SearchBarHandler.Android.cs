@@ -63,8 +63,10 @@ namespace Microsoft.Maui.Handlers
 			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.QueryEditor?.UpdateTextColor(searchBar);
+		}
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }

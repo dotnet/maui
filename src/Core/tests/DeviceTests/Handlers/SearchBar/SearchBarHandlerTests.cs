@@ -43,6 +43,18 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
+		[Fact(DisplayName = "TextColor Initializes Correctly")]
+		public async Task TextColorInitializesCorrectly()
+		{
+			var searchBar = new SearchBarStub
+			{
+				Text = "TextColor",
+				TextColor = Colors.Red
+			};
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.TextColor, GetNativeTextColor, searchBar.TextColor);
+		}
+
 		[Fact(DisplayName = "Placeholder Initializes Correctly")]
 		public async Task PlaceholderInitializesCorrectly()
 		{
