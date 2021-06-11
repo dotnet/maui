@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			Application = Services.GetRequiredService<IApplication>();	
+			Application = Services.GetRequiredService<IApplication>();
 
 			var mauiContext = new MauiContext(Services);
 
