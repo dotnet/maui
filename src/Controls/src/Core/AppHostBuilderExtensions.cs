@@ -45,9 +45,6 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Layout), typeof(LayoutHandler) },
 			#endif
 
-			// Set LayoutHandler as default Handler,
-			{ typeof(Element), typeof(LayoutHandler) },
-
 		};
 
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
