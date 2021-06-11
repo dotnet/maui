@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||
-			VirtualView?.ClipShape != null ||
+			VirtualView?.Clip != null ||
 			base.NeedsContainer;
 
 		public static void MapBackground(ImageHandler handler, IImage image)

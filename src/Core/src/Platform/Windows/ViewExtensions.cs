@@ -42,11 +42,11 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateClipShape(this FrameworkElement nativeView, IView view)
+		public static void UpdateClip(this FrameworkElement nativeView, IView view)
 		{
-			var clipShape = view.ClipShape;
+			var clipGeometry = view.Clip;
 
-			if (clipShape == null)
+			if (clipGeometry == null)
 				return;
 
 			if (Application.Current is not MauiWinUIApplication app)
@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 			var visual = ElementCompositionPreview.GetElementVisual(nativeView);
 
 			var pathSize = new Rectangle(0, 0, view.Width, view.Height);
-			var clipPath = view.ClipShape?.PathForBounds(pathSize);
+			var clipPath = clipGeometry.PathForBounds(pathSize);
 			var device = CanvasDevice.GetSharedDevice();
 			var geometry = clipPath.AsPath(device);
 

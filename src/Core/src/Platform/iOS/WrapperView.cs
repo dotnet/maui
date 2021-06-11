@@ -39,7 +39,7 @@ namespace Microsoft.Maui
 			if (Mask != null)
 				Mask.Frame = Bounds;
 
-			SetClipShape();
+			SetClip();
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
@@ -59,7 +59,7 @@ namespace Microsoft.Maui
 			Superview?.SetNeedsLayout();
 		}
 
-		partial void ClipShapeChanged()
+		partial void ClipChanged()
 		{
 			_lastMaskSize = SizeF.Zero;
 
@@ -67,11 +67,11 @@ namespace Microsoft.Maui
 				return;
 		}
 
-		void SetClipShape()
+		void SetClip()
 		{
 			var mask = Mask;
 
-			if (mask == null && ClipShape == null)
+			if (mask == null && Clip == null)
 				return;
 
 			mask ??= Mask = new CAShapeLayer();
@@ -82,7 +82,7 @@ namespace Microsoft.Maui
 				return;
 
 			_lastMaskSize = bounds.Size;
-			var path = _clipShape?.PathForBounds(bounds);
+			var path = _clip?.PathForBounds(bounds);
 			mask.Path = path?.AsCGPath();
 		}
 	}

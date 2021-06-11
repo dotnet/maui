@@ -35,9 +35,9 @@ namespace Microsoft.Maui
 		Semantics Semantics { get; }
 
 		/// <summary>
-		/// Gets the shape used to define the outline of the contents of a View.
+		/// Gets the Path used to define the outline of the contents of a View.
 		/// </summary>
-		IShape? ClipShape { get; }
+		IGeometry? Clip { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether this FrameworkElement is enabled in the user interface. 

@@ -4,21 +4,21 @@ namespace Microsoft.Maui
 {
 	public partial class WrapperView
 	{
-		IShape? _clipShape;
+		IGeometry? _clip;
 
-		public IShape? ClipShape
+		public IGeometry? Clip
 		{
-			get => _clipShape;
+			get => _clip;
 			set
 			{
-				if (_clipShape == value)
+				if (_clip == value)
 					return;
 
-				_clipShape = value;
-				ClipShapeChanged();
+				_clip = value;
+				ClipChanged();
 			}
 		}
 
-		partial void ClipShapeChanged();
+		partial void ClipChanged();
 	}
 }

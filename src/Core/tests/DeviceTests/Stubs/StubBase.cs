@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IViewHandler Handler { get; set; }
 
-		public IShape ClipShape { get; set; }
+		public IGeometry Clip { get; set; }
 
 		public IFrameworkElement Parent { get; set; }
 

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;
 
-		public IShape ClipShape { get; set; }
+		public IGeometry Clip { get; set; }
 
 		public double Opacity { get; set; } = 1.0d;
 

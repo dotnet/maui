@@ -41,17 +41,13 @@ namespace Microsoft.Maui
 
 		protected override void DispatchDraw(Canvas? canvas)
 		{
-			if (canvas != null && ClipShape != null)
+			if (canvas != null && Clip != null)
 			{
 				var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
+
 				if (_lastPathSize != bounds.Size || _currentPath == null)
 				{
-					float density;
-
-					using (Android.Util.DisplayMetrics? metrics = Context?.Resources?.DisplayMetrics)
-						density = metrics != null ? metrics.Density : 1.0f;
-
-					var path = ClipShape.PathForBounds(bounds, density);
+					var path = Clip.PathForBounds(bounds);
 					_currentPath = path?.AsAndroidPath();
 					_lastPathSize = bounds.Size;
 				}

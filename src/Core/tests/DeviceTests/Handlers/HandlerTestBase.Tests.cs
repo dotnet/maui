@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -104,7 +105,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var view = new TStub
 			{
-				ClipShape = new EllipseStub()
+				Height = 100,
+				Width = 100,
+				Background = new SolidPaintStub(Colors.Red),
+				Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50)
 			};
 
 			var handler = await CreateHandlerAsync(view);

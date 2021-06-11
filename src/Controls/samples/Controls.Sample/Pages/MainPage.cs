@@ -308,7 +308,7 @@ namespace Maui.Controls.Sample.Pages
 				Text = "Clip",
 				TextColor = Colors.White,
 				FontSize = 24,
-				ClipShape = new Microsoft.Maui.Controls.Shapes2.Ellipse()
+				Clip = new EllipseGeometry(new Point(60, 60), 60, 60)
 			});
 
 			Content = new ScrollView

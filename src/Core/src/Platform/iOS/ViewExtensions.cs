@@ -80,9 +80,9 @@ namespace Microsoft.Maui
 		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
 			nativeView.AccessibilityIdentifier = view.AutomationId;
 
-		public static void UpdateClipShape(this WrapperView nativeView, IView view)
+		public static void UpdateClip(this WrapperView nativeView, IView view)
 		{
-			nativeView.ClipShape = view.ClipShape;
+			nativeView.Clip = view.Clip;
 		}
 
 		public static void UpdateSemantics(this UIView nativeView, IView view)
