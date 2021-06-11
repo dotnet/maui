@@ -9,6 +9,7 @@ using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AMatrix = Android.Graphics.Matrix;
 using APath = Android.Graphics.Path;
+using AShapeDrawable = Android.Graphics.Drawables.ShapeDrawable;
 using AView = Android.Views.View;
 using Paint = Android.Graphics.Paint;
 using Shape = Microsoft.Maui.Controls.Shapes.Shape;
@@ -183,7 +184,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 	public class ShapeView : AView
 	{
-		readonly ShapeDrawable _drawable;
+		readonly AShapeDrawable _drawable;
 		protected float _density;
 
 		APath _path;
@@ -206,7 +207,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public ShapeView(Context context) : base(context)
 		{
-			_drawable = new ShapeDrawable(null);
+			_drawable = new AShapeDrawable(null);
 			_drawable.Paint.AntiAlias = true;
 
 			_density = Resources.DisplayMetrics.Density;

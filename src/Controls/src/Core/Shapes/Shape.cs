@@ -1,10 +1,15 @@
+using System.Linq;
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public abstract class Shape : View
+	public abstract partial class Shape : View, IShapeView, IShape
 	{
 		public Shape()
 		{
 		}
+
+		public abstract PathF GetPath();
 
 		public static readonly BindableProperty FillProperty =
 			BindableProperty.Create(nameof(Fill), typeof(Brush), typeof(Shape), null,
@@ -90,6 +95,45 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (Stretch)GetValue(AspectProperty); }
 		}
 
+		IShape IShapeView.Shape => this;
+
+		PathAspect IShapeView.Aspect
+			=> Aspect switch
+			{
+				Stretch.Fill => PathAspect.Stretch,
+				Stretch.Uniform => PathAspect.AspectFit,
+				Stretch.UniformToFill => PathAspect.AspectFill,
+				Stretch.None => PathAspect.None,
+				_ => PathAspect.None
+			};
+
+		Paint IShapeView.Fill => Fill;
+
+		Paint IShapeView.Stroke => Stroke;
+
+		LineCap IShapeView.StrokeLineCap =>
+			StrokeLineCap switch
+			{
+				PenLineCap.Flat => LineCap.Butt,
+				PenLineCap.Round => LineCap.Round,
+				PenLineCap.Square => LineCap.Square,
+				_ => LineCap.Butt
+			};
+
+		LineJoin IShapeView.StrokeLineJoin =>
+			StrokeLineJoin switch
+			{
+				PenLineJoin.Round => LineJoin.Round,
+				PenLineJoin.Bevel => LineJoin.Bevel,
+				PenLineJoin.Miter => LineJoin.Miter,
+				_ => LineJoin.Round
+			};
+
+		public float[] StrokeDashPattern
+			=> StrokeDashArray?.Select(a => (float)a)?.ToArray();
+
+		float IShapeView.StrokeMiterLimit => (float)StrokeMiterLimit;
+
 		static void OnBrushChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			((Shape)bindable).UpdateBrushParent((Brush)newValue);
@@ -99,6 +143,14 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			if (brush != null)
 				brush.Parent = this;
+		}
+
+		PathF IShape.PathForBounds(Graphics.Rectangle bounds)
+		{
+			// TODO: Apply the necessary transformations (scale, translate, etc) after add in Microsost.Maui.Graphics
+			// the possibility of get the PathF Bounds.
+
+			return GetPath();
 		}
 	}
 }

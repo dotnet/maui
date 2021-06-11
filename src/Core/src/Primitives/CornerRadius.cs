@@ -1,9 +1,9 @@
+﻿#nullable enable
 using System.Diagnostics;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui
 {
 	[DebuggerDisplay("TopLeft={TopLeft}, TopRight={TopRight}, BottomLeft={BottomLeft}, BottomRight={BottomRight}")]
-	[TypeConverter(typeof(CornerRadiusTypeConverter))]
 	public struct CornerRadius
 	{
 		bool _isParameterized;
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls
 			return TopLeft == other.TopLeft && TopRight == other.TopRight && BottomLeft == other.BottomLeft && BottomRight == other.BottomRight;
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (ReferenceEquals(null, obj))
 				return false;
