@@ -41,11 +41,13 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Shapes.Polyline), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Rectangle), typeof(ShapeViewHandler) },
 
-			// Set LayoutHandler as default Handler
-#if !WINDOWS
+			#if !WINDOWS
 			{ typeof(Layout), typeof(LayoutHandler) },
-			{ typeof(Element), typeof(LayoutHandler) }
-#endif
+			#endif
+
+			// Set LayoutHandler as default Handler,
+			{ typeof(Element), typeof(LayoutHandler) },
+
 		};
 
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
