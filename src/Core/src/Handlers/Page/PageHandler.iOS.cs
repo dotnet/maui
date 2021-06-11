@@ -56,5 +56,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.UpdateContent();
 		}
+
+		public static void MapBackground(PageHandler handler, IView view)
+		{
+			handler.NativeView?.UpdateBackground(view);
+		}
 	}
 }
