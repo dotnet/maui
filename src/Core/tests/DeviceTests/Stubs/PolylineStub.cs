@@ -10,12 +10,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
         }
 
-        public PolylineStub(PointCollection? points)
+        public PolylineStub(PointCollectionStub? points)
         {
             Points = points;
         }
 
-        public PointCollection? Points { get; set; }
+        public PointCollectionStub? Points { get; set; }
 
 		public PathF PathForBounds(Rectangle rect)
 		{

@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 			var line = new ShapeViewStub()
 			{
 				Shape = new LineStub { X1 = 0, Y1 = 0, X2 = 90, Y2 = 45 },
-				Stroke = Colors.Purple,
+				Stroke = new SolidPaintStub(Colors.Purple),
 				StrokeThickness = 4,
 				Height = 50,
 				Width = 100
@@ -56,8 +56,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var polyline = new ShapeViewStub()
 			{
-				Shape = new PolylineStub { Points = new PointCollection() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } },
-				Stroke = Colors.Green,
+				Shape = new PolylineStub { Points = new PointCollectionStub() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } },
+				Stroke = new SolidPaintStub(Colors.Green),
 				StrokeThickness = 4,
 				Height = 50,
 				Width = 100
@@ -71,9 +71,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var polygon = new ShapeViewStub()
 			{
-				Shape = new PolygonStub { Points = new PointCollection() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } },
+				Shape = new PolygonStub { Points = new PointCollectionStub() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } },
 				Fill = new SolidPaintStub(Colors.Lime),
-				Stroke = Colors.Black,
+				Stroke = new SolidPaintStub(Colors.Black),
 				StrokeThickness = 4,
 				Height = 50,
 				Width = 100

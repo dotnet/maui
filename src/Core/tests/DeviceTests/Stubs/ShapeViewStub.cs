@@ -7,9 +7,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		public IShape? Shape { get; set; }
 
+		public PathAspect Aspect { get; set; }
+
 		public Paint? Fill { get; set; }
 
-		public Color? Stroke { get; set; }
+		public Paint? Stroke { get; set; }
 
 		public double StrokeThickness { get; set; }
 
