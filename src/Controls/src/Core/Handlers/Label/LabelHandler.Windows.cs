@@ -7,6 +7,6 @@ namespace Microsoft.Maui.Controls.Handlers
 	public partial class LabelHandler : Microsoft.Maui.Handlers.LabelHandler
 	{
 		public static void MapTextType(LabelHandler handler, Label label) =>
-				handler.NativeView?.UpdateText(label);
+			Platform.TextBlockExtensions.UpdateText(handler.NativeView, label);
 	}
 }

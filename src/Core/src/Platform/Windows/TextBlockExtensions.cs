@@ -23,16 +23,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateText(this TextBlock nativeControl, ILabel label)
 		{
-			switch (label.TextType)
-			{
-				case TextType.Html:
-					nativeControl.UpdateTextHtml(label);
-					break;
-
-				default:
-					nativeControl.UpdateTextPlainText(label);
-					break;
-			}
+			nativeControl.UpdateTextPlainText(label);
 		}
 		
 		public static void UpdateTextColor(this TextBlock nativeControl, IText text) =>
