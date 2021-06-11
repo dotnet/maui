@@ -47,8 +47,8 @@
 			var stroke = ShapeView.Stroke;
 
 			// TODO: Add Paint support for Stroke in Microsoft.Maui.Graphics.
-			if (stroke is SolidPaint solidPaint)
-				canvas.StrokeColor = solidPaint.Color;
+			// For now, only support a solid color.
+			canvas.StrokeColor = stroke.ToColor();
 
 			// Set StrokeLineCap
 			var strokeLineCap = ShapeView.StrokeLineCap;
