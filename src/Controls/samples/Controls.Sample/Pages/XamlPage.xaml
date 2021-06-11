@@ -2,7 +2,9 @@
                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                    xmlns:controls="clr-namespace:Maui.Controls.Sample.Controls"
                    xmlns:layout="clr-namespace:Microsoft.Maui.Controls.Layout2;assembly=Microsoft.Maui.Controls"
-                   x:Class="Maui.Controls.Sample.Pages.XamlPage">
+                   x:Class="Maui.Controls.Sample.Pages.XamlPage"
+                   BackgroundColor="#512bdf"
+                   >
 
     <ScrollView Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
         <StackLayout>
