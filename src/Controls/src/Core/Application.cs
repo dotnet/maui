@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -19,6 +20,7 @@ namespace Microsoft.Maui.Controls
 
 		IAppIndexingProvider _appIndexProvider;
 		ReadOnlyCollection<Element> _logicalChildren;
+		Page _mainPage;
 
 		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
@@ -58,81 +60,48 @@ namespace Microsoft.Maui.Controls
 
 		public static Application Current { get; set; }
 
-		// TODO MAUI. What should this be?
 		public Page MainPage
 		{
-			get
-			{
-				if (Windows.Count == 0)
-					return null;
-
-				return Windows[0].View as Page;
-			}
+			get => _mainPage ?? Windows.FirstOrDefault()?.View as Page;
 			set
 			{
 				if (value == null)
-					throw new ArgumentNullException("value");
+					throw new ArgumentNullException(nameof(value));
 
 				if (MainPage == value)
 					return;
 
+				OnPropertyChanging();
+
+				var previousPage = MainPage;
+
+				if (previousPage != null)
+					previousPage.Parent = null;
+
 				if (Windows.Count == 0)
 				{
-					OnPropertyChanging();
-					AddWindow(new Window(value));
-					OnPropertyChanged();
+					// just set the value, the next call of CreateWindow will use this
+
+					_mainPage = value;
 				}
 				else
 				{
-					var mainPage = MainPage;
+					// find the best window and replace the page
 
-					if (mainPage == value)
-						return;
+					var theWindow =
+						Windows.FirstOrDefault(w => w.View == previousPage) ??
+						Windows[0];
 
-					OnPropertyChanging();
-					if (mainPage != null)
-						mainPage.Parent = null;
-
-					Windows[0].View = (IView)value;
-
-					if (mainPage != null)
-						mainPage.NavigationProxy.Inner = NavigationProxy;
-
-					OnPropertyChanged();
+					_mainPage = value;
+					theWindow.View = value;
 				}
+
+				if (previousPage != null)
+					previousPage.NavigationProxy.Inner = NavigationProxy;
+
+				OnPropertyChanged();
 			}
 		}
-
-		//public Page MainPage
-		//{
-		//	get { return _mainPage; }
-		//	set
-		//	{
-		//		if (value == null)
-		//			throw new ArgumentNullException("value");
-
-		//		if (_mainPage == value)
-		//			return;
-
-		//		OnPropertyChanging();
-		//		if (_mainPage != null)
-		//		{
-		//			InternalChildren.Remove(_mainPage);
-		//			_mainPage.Parent = null;
-		//		}
-
-		//		_mainPage = value;
-
-		//		if (_mainPage != null)
-		//		{
-		//			_mainPage.Parent = this;
-		//			_mainPage.NavigationProxy.Inner = NavigationProxy;
-		//			InternalChildren.Add(_mainPage);
-		//		}
-
-		//		OnPropertyChanged();
-		//	}
-		//}
 
 		public IDictionary<string, object> Properties
 		{

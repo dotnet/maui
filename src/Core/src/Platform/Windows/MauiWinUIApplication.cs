@@ -29,8 +29,10 @@ namespace Microsoft.Maui
 				.Build();
 
 			Services = host.Services;
-			Application = Services.GetRequiredService<IApplication>();
+
 			Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
+
+			Application = Services.GetRequiredService<IApplication>();
 
 			var mauiContext = new MauiContext(Services);
 

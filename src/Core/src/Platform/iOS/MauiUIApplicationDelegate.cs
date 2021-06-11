@@ -25,6 +25,7 @@ namespace Microsoft.Maui
 			Services = host.Services;
 
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
+
 			return true;
 		}
 

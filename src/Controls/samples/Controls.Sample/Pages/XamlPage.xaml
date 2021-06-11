@@ -6,11 +6,9 @@
 
     <layout:GridLayout x:Name="MyLayout" Margin="40" BackgroundColor="LightGreen">
 
-        <Label 
-               Text="Welcome to Microsoft MAUI!" 
-               BackgroundColor="LightBlue" Margin="10,20,10,20"/>
+        <Button Text="HELLO" Clicked="OnClick" />
 
-        
+
     </layout:GridLayout>
 
 

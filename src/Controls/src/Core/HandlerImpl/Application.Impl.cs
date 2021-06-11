@@ -34,7 +34,10 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual IWindow CreateWindow(IActivationState activationState)
 		{
-			throw new NotImplementedException();
+			if (MainPage is Page page)
+				return new Window(page);
+
+			throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
 		}
 	}
 }
