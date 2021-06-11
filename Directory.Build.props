@@ -2,7 +2,7 @@
   <Import Project="eng\Versions.props" />
 
   <PropertyGroup>
-    <BuildForWinUI Condition="'$(SolutionFileName)' == 'Microsoft.Maui.WinUI.sln' AND '$(Packing)' == ''">true</BuildForWinUI>
+    <BuildForWinUI Condition=" ('$(SolutionFileName)' == 'Microsoft.Maui.WinUI.sln' OR '$(SolutionFileName)' == 'BlazorWindows-net6.sln') AND '$(Packing)' == ''">true</BuildForWinUI>
     <BuildForAndroid Condition="'$(SolutionFileName)' == 'Microsoft.Maui.Droid.sln' AND '$(Packing)' == ''">true</BuildForAndroid>
     <BuildForNet6 Condition="'$(Packing)' == 'true' OR $(MSBuildProjectFile.Contains('SingleProject')) == true  OR $(MSBuildProjectFile.Contains('net6')) == true OR $(SolutionFileName.Contains('net6')) == true OR '$(BuildForWinUI)' == 'true' OR '$(BuildForAndroid)' == 'true'">true</BuildForNet6>
     <MauiPlatforms>net6.0-ios;net6.0-maccatalyst;net6.0-android</MauiPlatforms>
@@ -28,6 +28,7 @@
 
     <!-- HACK: WinUI seems to have issues without this -->
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
+    <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
 
   </PropertyGroup>
 

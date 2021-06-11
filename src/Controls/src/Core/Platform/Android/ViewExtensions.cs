@@ -15,15 +15,6 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class ViewExtensions
 	{
-		public static void RemoveFromParent(this AView view)
-		{
-			if (view == null)
-				return;
-			if (view.Parent == null)
-				return;
-			((ViewGroup)view.Parent).RemoveView(view);
-		}
-
 		public static void SetBackground(this AView view, Drawable drawable)
 		{
 

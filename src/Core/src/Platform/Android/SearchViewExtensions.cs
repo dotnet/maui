@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 				return;
 
 			var searchCloseButtonIdentifier = Resource.Id.search_close_btn;
-		
+
 			if (searchCloseButtonIdentifier > 0)
 			{
 				var image = searchView.FindViewById<ImageView>(searchCloseButtonIdentifier);

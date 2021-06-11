@@ -27,7 +27,12 @@
   <ItemGroup>
     <PackageReference
         Update="Microsoft.Maui.Graphics"
-        Version="$(_MicrosoftMauiGraphics)" />
+        Version="$(_MicrosoftMauiGraphics)" 
+    />
+    <PackageReference
+         Update="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
+         Version="$(_MicrosoftMauiGraphicsWin2D)"
+    />
     <PackageReference
         Update="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
         Version="$(_MicrosoftMauiGraphicsWin2D)" />

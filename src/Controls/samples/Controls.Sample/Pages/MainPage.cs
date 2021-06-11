@@ -7,10 +7,12 @@ using Maui.Controls.Sample.ViewModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.LifecycleEvents;
 using Debug = System.Diagnostics.Debug;
+using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
 using GradientStop = Microsoft.Maui.Controls.GradientStop;
 
 namespace Maui.Controls.Sample.Pages
@@ -78,6 +80,7 @@ namespace Maui.Controls.Sample.Pages
 			AddTextResizeDemo(verticalStack);
 			verticalStack.Add(CreateTransformations());
 			verticalStack.Add(CreateAnimations());
+			verticalStack.Add(CreateShapes());
 
 			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
 			var label = new Label { Text = "End-aligned text", BackgroundColor = Colors.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
@@ -119,8 +122,8 @@ namespace Maui.Controls.Sample.Pages
 				Background = new LinearGradientBrush(
 				new GradientStopCollection
 				{
- 					new GradientStop(Colors.Green, 0),
- 					new GradientStop(Colors.Blue, 1)
+						new GradientStop(Colors.Green, 0),
+						new GradientStop(Colors.Blue, 1)
 				},
 				new Point(0, 0),
 				new Point(1, 0))
@@ -130,14 +133,14 @@ namespace Maui.Controls.Sample.Pages
 				Text = "RadialGradient",
 				Padding = new Thickness(30),
 				Background = new RadialGradientBrush(
- 				new GradientStopCollection
- 				{
- 					new GradientStop(Colors.DarkBlue, 0),
- 					new GradientStop(Colors.Yellow, 0.6f),
- 					new GradientStop(Colors.LightPink, 1)
- 				},
- 				new Point(0.5, 0.5),
- 				0.3f)
+					new GradientStopCollection
+					{
+						new GradientStop(Colors.DarkBlue, 0),
+						new GradientStop(Colors.Yellow, 0.6f),
+						new GradientStop(Colors.LightPink, 1)
+					},
+					new Point(0.5, 0.5),
+					0.3f)
 			});
 
 			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level2);
@@ -249,7 +252,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
 			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
 
-			verticalStack.Add(new SearchBar { CharacterSpacing = 4, Text = "A search query" });
+			verticalStack.Add(new SearchBar { CharacterSpacing = 4, Text = "A search query", TextColor = Colors.Orange });
 			verticalStack.Add(new SearchBar { Placeholder = "Placeholder" });
 			verticalStack.Add(new SearchBar { HorizontalTextAlignment = TextAlignment.End, Text = "SearchBar HorizontalTextAlignment" });
 			verticalStack.Add(new SearchBar { Text = "SearchBar MaxLength", MaxLength = 50 });
@@ -272,6 +275,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(picker);
 
 			verticalStack.Add(new Slider());
+			verticalStack.Add(new Slider { ThumbImageSource = "dotnet_bot.png" });
 
 			verticalStack.Add(new Stepper());
 			verticalStack.Add(new Stepper { BackgroundColor = Colors.IndianRed });
@@ -438,7 +442,7 @@ namespace Maui.Controls.Sample.Pages
 
 			string CopyLocal(string embeddedPath)
 			{
-				var path = Path.Combine(FileSystem.CacheDirectory, Guid.NewGuid().ToString("N"));
+				var path = System.IO.Path.Combine(FileSystem.CacheDirectory, Guid.NewGuid().ToString("N"));
 
 				using var stream = GetEmbedded(embeddedPath);
 				using var file = File.Create(path);
@@ -523,6 +527,7 @@ namespace Maui.Controls.Sample.Pages
 
 			return layout;
 		}
+
 		IView CreateTransformations()
 		{
 			var label = new Button
@@ -564,6 +569,33 @@ namespace Maui.Controls.Sample.Pages
 			{
 				image,
 				animateButton,
+			};
+
+			return verticalStack;
+		}
+
+		IView CreateShapes()
+		{
+			var ellipse = new Ellipse { Fill = new SolidColorBrush(Colors.Red), Stroke = new SolidColorBrush(Colors.Blue), StrokeThickness = 4, HeightRequest = 120, WidthRequest = 200 };
+
+			var line = new Line { X1 = 0, Y1 = 0, X2 = 80, Y2 = 90, Fill = new SolidColorBrush(Colors.Red), Stroke = new SolidColorBrush(Colors.Green), StrokeThickness = 4, StrokeDashArray = new double[] { 2, 2 }, HeightRequest = 200, WidthRequest = 200 };
+			Geometry pathData = (Geometry)new PathGeometryConverter().ConvertFromInvariantString("M15.999996,0L31.999999,13.000001 15.999996,26.199999 0,13.000001z");
+			var path = new Microsoft.Maui.Controls.Shapes.Path { Data = pathData, Fill = new SolidColorBrush(Colors.Pink), Stroke = new SolidColorBrush(Colors.Red), StrokeThickness = 1, HeightRequest = 100, WidthRequest = 100 };
+
+			var polyline = new Polyline { Points = new[] { new Point(10, 10), new Point(100, 50), new Point(50, 90) }, Stroke = new SolidColorBrush(Colors.Black), StrokeThickness = 2, StrokeDashArray = new double[] { 1, 1, 1, 1 }, HeightRequest = 100, WidthRequest = 100 };
+
+			var polygon = new Polygon { Points = new[] { new Point(10, 10), new Point(100, 50), new Point(50, 90) }, Fill = new SolidColorBrush(Colors.LightBlue), Stroke = new SolidColorBrush(Colors.Black), StrokeThickness = 2, StrokeDashArray = new double[] { 2, 2 }, HeightRequest = 100, WidthRequest = 100 };
+
+			var rectangle = new Microsoft.Maui.Controls.Shapes.Rectangle { RadiusX = 12, RadiusY = 6, Fill = new LinearGradientBrush(new GradientStopCollection { new GradientStop(Colors.Green, 0), new GradientStop(Colors.Blue, 1) }, new Point(0, 0), new Point(1, 0)), Stroke = new SolidColorBrush(Colors.Purple), StrokeThickness = 8, StrokeDashArray = new float[] { 2, 2 }, HeightRequest = 120, WidthRequest = 200 };
+
+			var verticalStack = new VerticalStackLayout
+			{
+				ellipse,
+				line,
+				path,
+				polyline,
+				polygon,
+				rectangle
 			};
 
 			return verticalStack;

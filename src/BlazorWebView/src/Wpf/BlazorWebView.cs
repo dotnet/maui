@@ -67,6 +67,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             };
         }
 
+		/// <summary>
+		/// Returns the inner <see cref="WebView2Control"/> used by this control.
+		/// </summary>
+		/// <remarks>
+		/// Directly using some functionality of the inner web view can cause unexpected results because its behavior
+		/// is controlled by the <see cref="BlazorWebView"/> that is hosting it.
+		/// </remarks>
+		[Browsable(false)]
+		public WebView2Control WebView => _webview;
+
         /// <summary>
         /// Path to the host page within the application's static files. For example, <code>wwwroot\index.html</code>.
         /// This property must be set to a valid value for the Blazor components to start.

@@ -11,7 +11,8 @@ namespace Microsoft.Maui
 	public class MauiUIApplicationDelegate<TStartup> : MauiUIApplicationDelegate
 		where TStartup : IStartup, new()
 	{
-		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
+
+		public override bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			var startup = new TStartup();
 
@@ -22,6 +23,13 @@ namespace Microsoft.Maui
 				.Build();
 
 			Services = host.Services;
+
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
+			return true;
+		}
+
+		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
+		{
 			Application = Services.GetRequiredService<IApplication>();
 
 			var mauiContext = new MauiContext(Services);

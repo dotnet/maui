@@ -31,5 +31,10 @@ namespace BlazorWinFormsApp
                 text: $"Current counter value is: {_appState.Counter}",
                 caption: "Counter");
         }
-    }
+
+		private void _webViewActionButton_Click(object sender, EventArgs e)
+		{
+			blazorWebView1.WebView.CoreWebView2.ExecuteScriptAsync("alert('hello from native UI')");
+		}
+	}
 }
