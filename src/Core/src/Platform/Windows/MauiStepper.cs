@@ -15,31 +15,16 @@ namespace Microsoft.Maui
 {
 	public class MauiStepper : Control
 	{
-		public static readonly DependencyProperty ValueProperty = 
-			DependencyProperty.Register("Value", typeof(double), typeof(MauiStepper), new PropertyMetadata(default(double), OnValueChanged));
-
-		public static readonly DependencyProperty MaximumProperty = 
-			DependencyProperty.Register("Maximum", typeof(double), typeof(MauiStepper), new PropertyMetadata(default(double), OnMaxMinChanged));
-
-		public static readonly DependencyProperty MinimumProperty = 
-			DependencyProperty.Register("Minimum", typeof(double), typeof(MauiStepper), new PropertyMetadata(default(double), OnMaxMinChanged));
-
-		public static readonly DependencyProperty IncrementProperty = 
-			DependencyProperty.Register("Increment", typeof(double), typeof(MauiStepper),
-				new PropertyMetadata(default(double), OnIncrementChanged));
-
-		public static readonly DependencyProperty ButtonBackgroundColorProperty = 
-			DependencyProperty.Register(nameof(ButtonBackgroundColor), typeof(Color), typeof(MauiStepper), new PropertyMetadata(default(Color), OnButtonBackgroundColorChanged));
-
-		public static readonly DependencyProperty ButtonBackgroundProperty =
-			DependencyProperty.Register(nameof(ButtonBackgroundColor), typeof(WBrush), typeof(MauiStepper), new PropertyMetadata(default(WBrush), OnButtonBackgroundChanged));
-
-		
-
 		Button _plus;
 		Button _minus;
 		VisualStateCache _plusStateCache;
 		VisualStateCache _minusStateCache;
+		double _increment;
+		double _value;
+		double _maximum;
+		double _minimum;
+		Color _buttonBackgroundColor;
+		WBrush _buttonBackground;
 
 		public MauiStepper()
 		{
@@ -48,38 +33,63 @@ namespace Microsoft.Maui
 
 		public double Increment
 		{
-			get { return (double)GetValue(IncrementProperty); }
-			set { SetValue(IncrementProperty, value); }
+			get => _increment;
+			set
+			{
+				_increment = value;
+				UpdateEnabled(Value);
+			}
 		}
 
 		public double Maximum
 		{
-			get { return (double)GetValue(MaximumProperty); }
-			set { SetValue(MaximumProperty, value); }
+			get => _maximum;
+			set
+			{
+				_maximum = value;
+				UpdateEnabled(Value);
+			}
 		}
 
 		public double Minimum
 		{
-			get { return (double)GetValue(MinimumProperty); }
-			set { SetValue(MinimumProperty, value); }
+			get => _minimum;
+			set
+			{
+				_minimum = value;
+				UpdateEnabled(Value);
+			}
 		}
 
 		public double Value
 		{
-			get { return (double)GetValue(ValueProperty); }
-			set { SetValue(ValueProperty, value); }
+			get => _value;
+			set
+			{
+				_value = value;
+				UpdateEnabled(value);
+				ValueChanged?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		public Color ButtonBackgroundColor
 		{
-			get { return (Color)GetValue(ButtonBackgroundColorProperty); }
-			set { SetValue(ButtonBackgroundColorProperty, value); }
+			get => _buttonBackgroundColor;
+			set
+			{
+				_buttonBackgroundColor = value;
+				UpdateButtonBackgroundColor(value);
+			}
 		}
 
 		public WBrush ButtonBackground
 		{
-			get { return (WBrush)GetValue(ButtonBackgroundProperty); }
-			set { SetValue(ButtonBackgroundProperty, value); }
+			get => _buttonBackground;
+			set
+			{
+				_buttonBackground = value;
+				UpdateButtonBackground();
+			}
 		}
 
 		public event EventHandler ValueChanged;
@@ -100,30 +110,6 @@ namespace Microsoft.Maui
 			UpdateButtonBackground();
 		}
 
-		static void OnButtonBackgroundColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			var stepper = (MauiStepper)d;
-			stepper.UpdateButtonBackgroundColor(stepper.ButtonBackgroundColor);
-		}
-
-		static void OnButtonBackgroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			var stepper = (MauiStepper)d;
-			stepper.UpdateButtonBackground();
-		}
-
-		static void OnIncrementChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			var stepper = (MauiStepper)d;
-			stepper.UpdateEnabled(stepper.Value);
-		}
-
-		static void OnMaxMinChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			var stepper = (MauiStepper)d;
-			stepper.UpdateEnabled(stepper.Value);
-		}
-
 		void OnMinusClicked(object sender, RoutedEventArgs e)
 		{
 			UpdateValue(-Increment);
@@ -132,14 +118,6 @@ namespace Microsoft.Maui
 		void OnPlusClicked(object sender, RoutedEventArgs e)
 		{
 			UpdateValue(+Increment);
-		}
-
-		static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			var stepper = (MauiStepper)d;
-			stepper.UpdateEnabled((double)e.NewValue);
-
-			stepper.ValueChanged?.Invoke(d, EventArgs.Empty);
 		}
 
 		VisualStateCache PseudoDisable(Control control)
