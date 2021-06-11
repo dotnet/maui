@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Entry), typeof(EntryHandler) },
 			{ typeof(GraphicsView), typeof(GraphicsViewHandler) },
 			{ typeof(Image), typeof(ImageHandler) },
-			{ typeof(Label), typeof(LabelHandler) },
+			{ typeof(Label), typeof(Microsoft.Maui.Controls.Handlers.LabelHandler) },
 			{ typeof(Layout), typeof(LayoutHandler) },
 			{ typeof(Picker), typeof(PickerHandler) },
 			{ typeof(ProgressBar), typeof(ProgressBarHandler) },

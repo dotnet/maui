@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Controls.Core.Platform.Android.Extensions;
 
-namespace Controls.Core.Handlers
+namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class LabelHandler : Microsoft.Maui.Handlers.LabelHandler
 	{

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Controls.Core.Handlers.Shell
+namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class LabelHandler : Microsoft.Maui.Handlers.LabelHandler
 	{

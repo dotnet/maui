@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
-namespace Controls.Core.Handlers
+namespace Microsoft.Maui.Controls.Handlers
 { 
 	public partial class LabelHandler : Microsoft.Maui.Handlers.LabelHandler
 	{

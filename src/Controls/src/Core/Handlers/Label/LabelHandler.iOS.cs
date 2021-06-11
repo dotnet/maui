@@ -5,7 +5,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Controls.Core.Platform.iOS.Extensions;
 
-namespace Controls.Core.Handlers
+namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class LabelHandler : Microsoft.Maui.Handlers.LabelHandler
 	{
