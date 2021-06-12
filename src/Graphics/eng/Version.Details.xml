@@ -1,12 +1,12 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="6.0.100-preview.5.21275.1" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="6.0.100-preview.5.21302.13" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>74b69d2926768f9f8c9d3e70381a754dc3ea4c7e</Sha>
+      <Sha>d6380bcae783600a01a9c8a6a151bb6a66c777b0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="30.0.100-preview.5.19">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="30.0.100-preview.5.28">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>c527d1e1a177459420452be2e49d1cb1cd94e033</Sha>
+      <Sha>5d6745e112c7c7605b64a82fed778cdead99bc85</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="14.5.100-preview.5.884">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
