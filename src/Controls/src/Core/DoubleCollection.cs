@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public static implicit operator DoubleCollection(double[] d)
-			=> d == null? new() : new(d);
+			=> d == null ? new() : new(d);
 
 		public static implicit operator DoubleCollection(float[] f)
 			=> f == null ? new() : new(Array.ConvertAll(f, x => (double)x));

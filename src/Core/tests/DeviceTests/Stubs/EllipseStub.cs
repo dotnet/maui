@@ -3,7 +3,7 @@
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class EllipseStub : StubBase, IShape
-    {
+	{
 		public PathF PathForBounds(Rectangle rect)
 		{
 			var path = new PathF();
