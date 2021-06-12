@@ -2,16 +2,49 @@
                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                    xmlns:controls="clr-namespace:Maui.Controls.Sample.Controls"
                    xmlns:layout="clr-namespace:Microsoft.Maui.Controls.Layout2;assembly=Microsoft.Maui.Controls"
-                   x:Class="Maui.Controls.Sample.Pages.XamlPage">
+                   x:Class="Maui.Controls.Sample.Pages.XamlPage"
+                   BackgroundColor="#512bdf"
+                   >
 
-    <layout:GridLayout x:Name="MyLayout" Margin="40" BackgroundColor="LightGreen">
+    <ScrollView Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
+        <StackLayout>
+            <Grid RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,*">
 
-        <Label 
-               Text="Welcome to Microsoft MAUI!" 
-               BackgroundColor="LightBlue" Margin="10,20,10,20"/>
+                <Label Text="Hello, World!"
+                    Grid.Row="0"
+                    SemanticProperties.HeadingLevel="Level1"
+                    FontSize="32"
+                    HorizontalOptions="CenterAndExpand" />
 
-        
-    </layout:GridLayout>
+                <Label Text="Welcome to .NET Multi-platform App UI"
+                    Grid.Row="1"
+                    SemanticProperties.Hint="Counts the number of times you click" 
+                    FontSize="16"
+                    HorizontalOptions="CenterAndExpand" />
+
+                <Label Text="Current count: 0"
+                    Grid.Row="2"
+                    SemanticProperties.Hint="Counts the number of times you click"
+                    FontSize="18"
+                    FontAttributes="Bold"
+                    x:Name="CounterLabel"
+                    HorizontalOptions="Center" />
+
+                <Button Text="Click me"
+                    Grid.Row="3"
+                    SemanticProperties.Hint="Counts the number of times you click"
+                    Clicked="OnCounterClicked"
+                    HorizontalOptions="Center" />
+
+                <Image Grid.Row="4"
+                    Source="dotnet_bot.png"
+                    SemanticProperties.Description="Cute dotnet bot waving hi to you!"
+                    WidthRequest="300"
+                    HorizontalOptions="Center" />
+
+            </Grid>
+        </StackLayout>
+    </ScrollView>
 
 
 </controls:BasePage>
