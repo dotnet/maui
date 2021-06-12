@@ -1,5 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Name="_RemoveIncompatibleXamlFiles" BeforeTargets="BeforeBuild" Condition="$(TargetFramework.Contains('-windows')) == true and '$(SingleProject)' != 'true'">
+  <Target Name="_RemoveIncompatibleXamlFiles" BeforeTargets="BeforeBuild" Condition="'$(MauiRemoveIncompatibleXaml)' != 'false' and $(TargetFramework.Contains('-windows')) == true and '$(SingleProject)' != 'true'">
     <!-- assume all xaml files in a non-WinExe are MAUI xaml, so remove WinUI xaml -->
     <ItemGroup Condition=" '$(OutputType)' != 'WinExe' ">
       <Page Remove="**/*.xaml" />
