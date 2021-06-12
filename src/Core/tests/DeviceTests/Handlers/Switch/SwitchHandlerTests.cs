@@ -46,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateTrackColor(switchStub, Colors.Red, () => switchStub.TrackColor = Colors.Red);
 		}
 
-		[Fact(DisplayName = "ThumbColor Initializes Correctly")]
+		[Fact(DisplayName = "ThumbColor Initializes Correctly", Skip = "There seems to be an issue, so disable for now: https://github.com/dotnet/maui/issues/1275")]
 		public async Task ThumbColorInitializesCorrectly()
 		{
 			var switchStub = new SwitchStub()
