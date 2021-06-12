@@ -31,8 +31,7 @@
     <AndroidLinkMode>None</AndroidLinkMode>
     <BundleAssemblies>false</BundleAssemblies>
     <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
-    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
-    <AotAssemblies>false</AotAssemblies>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>   
     <EnableLLVM>false</EnableLLVM>
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
   </PropertyGroup>
