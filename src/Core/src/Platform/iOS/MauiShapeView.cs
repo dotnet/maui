@@ -3,11 +3,11 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-    public class MauiShapeView : NativeGraphicsView
-    {
-        public MauiShapeView()
-        {
-            BackgroundColor = UIColor.Clear;
-        }
-    }
+	public class MauiShapeView : NativeGraphicsView
+	{
+		public MauiShapeView()
+		{
+			BackgroundColor = UIColor.Clear;
+		}
+	}
 }
