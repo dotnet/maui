@@ -50,21 +50,21 @@ namespace Microsoft.Maui
 
 		public static async Task UpdateThumbImageSourceAsync(this MauiSlider nativeSlider, ISlider slider, IImageSourceServiceProvider? provider)
 		{
-			var thumbImage = slider.ThumbImageSource;
+			var thumbImageSource = slider.ThumbImageSource;
 
-			if (thumbImage == null)
+			if (thumbImageSource == null)
 			{
 				nativeSlider.ThumbImageSource = null;
 				return;
 			}
 
-			if (provider == null)
-				return;
+			if (provider != null && thumbImageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(thumbImage);
+				var thumbImageSource = await service.GetImageSourceAsync(thumbImage);
 
-			var service = provider.GetRequiredImageSourceService(thumbImage);
-			var thumbImageSource = await service.GetImageSourceAsync(thumbImage);
-
-			nativeSlider.ThumbImageSource = thumbImageSource?.Value;
+				nativeSlider.ThumbImageSource = thumbImageSource?.Value;
+			}
 		}
 	}
 }
