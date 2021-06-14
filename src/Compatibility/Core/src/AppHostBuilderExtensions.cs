@@ -247,7 +247,9 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			public void Configure(HostBuilderContext context, IServiceProvider services)
 			{
+#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 				CompatServiceProvider.SetServiceProvider(services);
+#endif
 			}
 
 			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
