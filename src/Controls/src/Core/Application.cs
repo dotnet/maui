@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 		{
 			SetCurrentApplication(this);
 			NavigationProxy = new NavigationImpl(this);
-			_systemResources = new Lazy(() => {
+			_systemResources = new Lazy<IResourceDictionary>(() => {
 				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
 				systemResources.ValuesChanged += OnParentResourcesChanged;
 				return systemResources;
