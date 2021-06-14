@@ -24,5 +24,9 @@
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>e5d12ecc90cad2b588e454ebec36556658981b28</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0-preview.4.21253.7">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha />
+    </Dependency>
   </ProductDependencies>
 </Dependencies>

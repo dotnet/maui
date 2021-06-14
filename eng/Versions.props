@@ -7,6 +7,7 @@
     <MicrosoftiOSSdkPackageVersion>14.5.100-preview.5.894</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>14.5.100-preview.5.894</MicrosofttvOSSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>11.3.100-preview.5.894</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftExtensionsHostingAbstractionsPackageVersion></MicrosoftExtensionsHostingAbstractionsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Trim all characters after first `-` or `+` is encountered. -->
