@@ -356,7 +356,7 @@ stages:
     parameters:
       ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
         androidApiLevels: [ 30, 29, 21 ]
-        iosVersions: [ 'latest' ]
+        iosVersions: [ '14.4' ]
       projects:
         - name: essentials
           desc: Essentials
@@ -366,14 +366,17 @@ stages:
           desc: Core
           android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
+        - name: core_net6
+          desc: Core .NET 6
+          android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests-net6.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests-net6.csproj
+          net6: true
 
-          stages:
-  
   - template: common/security_compliance.yml
   - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
   - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
   - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
- 
+
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # Sign only using the private server
     - stage: nuget_signing
       dependsOn: pack_net6

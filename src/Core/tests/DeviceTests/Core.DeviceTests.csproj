@@ -20,5 +20,4 @@
     <MauiImage Include="Images\*" />
     <MauiImage Update="Images\*.gif" Resize="false" />
   </ItemGroup>
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
 </Project>
