@@ -36,10 +36,12 @@ namespace Microsoft.Maui
 					font.ResourceStream.CopyTo(fileStream);
 				}
 
+#if __TIZEN__
 				if (DotnetUtil.TizenAPIVersion > 5)
 				{
 					Utility.FontReinit();
 				}
+#endif
 				return name;
 			}
 			catch (Exception ex)

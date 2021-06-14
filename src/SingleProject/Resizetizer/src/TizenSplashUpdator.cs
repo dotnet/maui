@@ -14,10 +14,9 @@ namespace Microsoft.Maui.Resizetizer
 		public ITaskItem[] MauiSplashScreen { get; set; }
 
 		[Required]
-		public string ManifestFile { get; set; }
-
-		[Required]
 		public string IntermediateOutputPath { get; set; }
+
+		public string ManifestFile { get; set; } = "tizen-manifest.xml";
 
 		public ILogger Logger { get; private set; }
 
