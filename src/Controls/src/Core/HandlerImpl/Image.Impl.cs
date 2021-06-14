@@ -1,8 +1,18 @@
+using Microsoft.Maui.Controls.Internals;
+
 namespace Microsoft.Maui.Controls
 {
 	public partial class Image : IImage
 	{
 		IImageSource IImageSourcePart.Source => Source;
+
+		public void Refresh()
+		{
+			InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
+			var l = this.FindParentOfType<Layout>();
+			l.ForceLayout();
+			//(this as IView).InvalidateMeasure();
+		}
 
 		void IImageSourcePart.UpdateIsLoading(bool isLoading) =>
 			IsLoading = isLoading;

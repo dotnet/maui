@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 										?? new DefaultRenderer();
 		}
 
+		// TODO ezhart 2021-06-18 This is almost certainly unnecessary; review it along with the OnBatchCommitted method in HandlerToRendererShim
 		public override void UpdateValue(string property)
 		{
 			base.UpdateValue(property);

@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 			return (Math.Abs(a - b) < tolerance);
 		}
 
-		bool CloseEnough(Rectangle currentBounds, Rectangle newBounds)
+		protected bool CloseEnough(Rectangle currentBounds, Rectangle newBounds)
 		{
 			if (!CloseEnough(currentBounds.X, newBounds.X))
 			{
@@ -91,16 +91,7 @@ namespace Microsoft.Maui.Controls
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
-			// We check the previous bounds here to avoid getting into a loop caused by the OnSizeAllocated override
-			// in View.cs; the arrange it forces ends up back here and if we have a margin, ComputeFrame will 
-			// keep applying it in a loop until the element disappears. Hopefully we can remove the OnSizeAllocated 
-			// hack at some point and avoid this extra check.
-			if (!CloseEnough(Bounds, bounds))
-			{
-				// Setting Bounds here is equivalent to setting the Frame
-				Bounds = this.ComputeFrame(bounds);
-			}
-
+			Bounds = this.ComputeFrame(bounds);
 			return Frame.Size;
 		}
 

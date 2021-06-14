@@ -9,6 +9,8 @@ namespace Microsoft.Maui
 		Aspect Aspect { get; }
 
 		bool IsOpaque { get; }
+
+		void Refresh();
 	}
 
 	public interface IImageSourcePart
