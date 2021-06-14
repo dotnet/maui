@@ -1,9 +1,9 @@
 <Project>
   <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' == 'true'">
-    <_MicrosoftHostingVersion>6.0.0-preview.4.21253.7</_MicrosoftHostingVersion>
+    <_MicrosoftHostingVersion>6.0.0-preview.5.21301.5</_MicrosoftHostingVersion>
     <_MicrosoftDependencyInjectionVersion>$(_MicrosoftHostingVersion)</_MicrosoftDependencyInjectionVersion>
-    <_MicrosoftFileProvidersVersion>6.0.0-preview.4.21253.5</_MicrosoftFileProvidersVersion>
-    <_MicrosoftSystemCodeDomVersion>6.0.0-preview.4.21253.7</_MicrosoftSystemCodeDomVersion>
+    <_MicrosoftFileProvidersVersion>6.0.0-preview.5.21301.5</_MicrosoftFileProvidersVersion>
+    <_MicrosoftSystemCodeDomVersion>6.0.0-preview.5.21301.5</_MicrosoftSystemCodeDomVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' != 'true'">
     <_MicrosoftHostingVersion>5.0.0</_MicrosoftHostingVersion>
@@ -16,7 +16,7 @@
     <_MicrosoftGraphicsWin2DVersion>0.5.0.13</_MicrosoftGraphicsWin2DVersion>
     <_MicrosoftMauiGraphics>6.0.100-preview.5.229</_MicrosoftMauiGraphics>
     <_MicrosoftMauiGraphicsWin2D>6.0.100-preview.5.229</_MicrosoftMauiGraphicsWin2D>
-    <_MicrosoftAspNetCoreVersion>6.0.0-preview.4.21253.5</_MicrosoftAspNetCoreVersion>
+    <_MicrosoftAspNetCoreVersion>6.0.0-preview.5.21301.17</_MicrosoftAspNetCoreVersion>
     <_MicrosoftWebWebView2Version>1.0.705.50</_MicrosoftWebWebView2Version>
     <_XamarinAndroidGlideVersion>4.11.0.1</_XamarinAndroidGlideVersion>
   </PropertyGroup>
