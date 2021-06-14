@@ -60,10 +60,10 @@ namespace Microsoft.Maui
 
 			if (provider != null && thumbImageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(thumbImage);
-				var thumbImageSource = await service.GetImageSourceAsync(thumbImage);
+				var service = provider.GetRequiredImageSourceService(thumbImageSource);
+				var nativeThumbImageSource = await service.GetImageSourceAsync(thumbImageSource);
 
-				nativeSlider.ThumbImageSource = thumbImageSource?.Value;
+				nativeSlider.ThumbImageSource = nativeThumbImageSource?.Value;
 			}
 		}
 	}
