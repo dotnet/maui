@@ -218,28 +218,46 @@ namespace Microsoft.Maui.Controls.Hosting
 					DependencyService.Register<Deserializer>();
 					DependencyService.Register<ResourcesProvider>();
 					DependencyService.Register<Xaml.ValueConverterProvider>();
+
+					// Shimmed renderers go directly to the registrar to load Image Handlers
+					Internals.Registrar.Registered.Register(typeof(FileImageSource), typeof(FileImageSourceHandler));
+					Internals.Registrar.Registered.Register(typeof(StreamImageSource), typeof(StreamImagesourceHandler));
+					Internals.Registrar.Registered.Register(typeof(UriImageSource), typeof(ImageLoaderSourceHandler));
+					Internals.Registrar.Registered.Register(typeof(FontImageSource), typeof(FontImageSourceHandler));
+
+
+					Internals.Registrar.Registered.Register(typeof(Microsoft.Maui.EmbeddedFont), typeof(Microsoft.Maui.EmbeddedFontLoader));
+
 #endif
 
 #if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
 				})
-				.ConfigureServices(ConfigureNativeServices);
+				.ConfigureServices<MauiCompatBuilder>();
 
 
 			return builder;
 		}
 
-		static void ConfigureNativeServices(HostBuilderContext arg1, IServiceCollection arg2)
+		class MauiCompatBuilder : IMauiServiceBuilder
 		{
-#if WINDOWS
-			if (!UI.Xaml.Application.Current.Resources.ContainsKey("MauiControlsPageControlStyle"))
+			public void Configure(HostBuilderContext context, IServiceProvider services)
 			{
-				var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
-				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
+				CompatServiceProvider.SetServiceProvider(services);
 			}
+
+			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
+			{
+#if WINDOWS
+				if (!UI.Xaml.Application.Current.Resources.ContainsKey("MauiControlsPageControlStyle"))
+				{
+					var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
+					myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
+					Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
+				}
 #endif
+			}
 		}
 	}
 }
