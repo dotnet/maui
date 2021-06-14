@@ -59,5 +59,8 @@ stages:
                   parameters:
                     platform: ios
                     path: ${{ project.ios }}
-                    device: ios-simulator-64_${{ version }}
+                    ${{ if eq(version, 'latest') }}:
+                      device: ios-simulator-64
+                    ${{ if ne(version, 'latest') }}:
+                      device: ios-simulator-64_${{ version }}
                     net6: ${{ project.net6 }}
