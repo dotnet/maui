@@ -113,4 +113,13 @@
         Version="$(_MicrosoftWebWebView2Version)"
     />
   </ItemGroup>
+
+  <!-- Workaround for https://github.com/dotnet/sdk/issues/18148 where an analyzer from a new version of a package
+       is not found in the older version of that same package. So we just remove usage of the analyzer entirely
+       because we don't use it in this repo.  -->
+  <Target Name="RemoveLoggingAnalyzer" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="%(FileName) == 'Microsoft.Extensions.Logging.Generators'" />
+    </ItemGroup>
+  </Target>
 </Project>
