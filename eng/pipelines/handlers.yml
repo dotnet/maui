@@ -369,7 +369,8 @@ stages:
         - name: core_net6
           desc: Core .NET 6
           android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests-net6.csproj
-          ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests-net6.csproj
+          ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+            ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests-net6.csproj
           net6: true
 
   - template: common/security_compliance.yml
