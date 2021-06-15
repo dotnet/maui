@@ -7,6 +7,7 @@
     <MicrosoftiOSSdkPackageVersion>14.5.100-preview.5.894</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>14.5.100-preview.5.894</MicrosofttvOSSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>11.3.100-preview.5.894</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>6.0.0-preview.6.21306.1</MicrosoftNETCoreAppRefPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Trim all characters after first `-` or `+` is encountered. -->

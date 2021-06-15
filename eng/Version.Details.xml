@@ -4,6 +4,10 @@
       <Uri>https://github.com/dotnet/installer</Uri>
       <Sha>abb57b4610404b011c76ca8ea1d7ab40c58991d4</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="6.0.0-preview.6.21306.1" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>5b8e1780ad7740e632c285bc2af13a8d0b20c5a9</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Android.Sdk.Windows" Version="30.0.100-ci.main.38">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
       <Sha>6f532314cdf888a18bc0e1b33f4c0cf47339f91b</Sha>
