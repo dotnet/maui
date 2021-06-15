@@ -7,6 +7,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IPage.Title)] = MapTitle,
 			[nameof(IPage.Content)] = MapContent,
+#if __IOS__
+			Actions =
+			{
+				[nameof(IFrameworkElement.Frame)] = MapFrame,
+			}
+#endif
 		};
 
 		public PageHandler() : base(PageMapper)

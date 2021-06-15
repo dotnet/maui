@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Maui.Controls.Sample.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -10,11 +11,13 @@ namespace Maui.Controls.Sample.Pages
 		public XamlPage()
 		{
 			InitializeComponent();
+		}
 
-			foreach (var x in MyLayout)
-			{
-				Debug.WriteLine($"{x}");
-			}
+		int count = 0;
+		private void OnCounterClicked(object sender, EventArgs e)
+		{
+			count++;
+			CounterLabel.Text = $"Current count: {count}";
 		}
 	}
 }

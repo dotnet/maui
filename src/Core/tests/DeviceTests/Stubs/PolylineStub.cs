@@ -5,17 +5,17 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class PolylineStub : StubBase, IShape
 	{
-        public PolylineStub()
-        {
+		public PolylineStub()
+		{
 
-        }
+		}
 
-        public PolylineStub(PointCollectionStub? points)
-        {
-            Points = points;
-        }
+		public PolylineStub(PointCollectionStub? points)
+		{
+			Points = points;
+		}
 
-        public PointCollectionStub? Points { get; set; }
+		public PointCollectionStub? Points { get; set; }
 
 		public PathF PathForBounds(Rectangle rect)
 		{
