@@ -76,10 +76,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>ec3e0b276b159ab24946f17f2b89d00862488a6a</Sha>
     </Dependency>
-      <Dependency Name="Microsoft.Web.WebView" Version="6.0.0-preview.5.21301.5" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>ec3e0b276b159ab24946f17f2b89d00862488a6a</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="6.0.0-preview.5.21301.4" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>4ea8d20879e487ebbc7ad74527c56736a47b8ea2</Sha>
