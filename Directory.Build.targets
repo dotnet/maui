@@ -6,7 +6,7 @@
   <Import Project="eng\Microsoft.Extensions.targets" />
 
   <!-- Temporarily disable the linker for net6.0-ios and net6.0-maccatalyst until we get machine pools with Big Sur and Xcode 12.5 is stable -->
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(CI)' == 'true' and ('$(REQUIRED_XCODE)' == '' or '$(REQUIRED_XCODE)' &lt; '12.5') ">
     <PublishTrimmed Condition=" '$(TargetFramework)' == 'net6.0-ios' or '$(TargetFramework)' == 'net6.0-maccatalyst' ">false</PublishTrimmed>
   </PropertyGroup>
 

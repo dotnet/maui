@@ -29,7 +29,7 @@
         "type": "parameter",
         "dataType": "string",
         "replaces": "MICROSOFT_EXTENSIONS_VERSION",
-        "defaultValue": "6.0.0-preview.4.*"
+        "defaultValue": "6.0.0-preview.5.*"
       },
       "projectReunionVersion": {
         "type": "parameter",

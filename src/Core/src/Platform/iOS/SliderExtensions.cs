@@ -67,11 +67,14 @@ namespace Microsoft.Maui
 		{
 			var thumbImageSource = slider.ThumbImageSource;
 
-			var service = provider.GetRequiredImageSourceService(thumbImageSource);
-			var result = await service.GetImageAsync(thumbImageSource);
-			var thumbImage = result?.Value;
+			if (thumbImageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(thumbImageSource);
+				var result = await service.GetImageAsync(thumbImageSource);
+				var thumbImage = result?.Value;
 
-			uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);
+				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);
+			}
 		}
 	}
 }
