@@ -17,8 +17,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				BackgroundColor = Color.ToCGColor(),
 				Frame = frame,
 			};
-#elif MONOANDROID || __ANDROID__
-		public Android.Graphics.Drawables.Drawable ToDrawable(Android.Content.Context context)
+#elif __ANDROID__
+		public Android.Graphics.Drawables.Drawable ToDrawable()
 		{
 			var drawable = new MauiDrawable(context);
 			drawable.SetBackgroundColor(Color.ToNative());

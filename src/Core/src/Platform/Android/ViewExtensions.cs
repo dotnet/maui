@@ -1,6 +1,8 @@
 using Android.Graphics.Drawables;
 using Android.Views;
+using Android.Widget;
 using AndroidX.Core.View;
+using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -63,6 +65,11 @@ namespace Microsoft.Maui
 			nativeView.GetMauiDrawable()?.SetCornerRadius(view.CornerRadius);
 		}
 
+		public static void UpdateOpacity(this AView nativeView, IView view)
+		{
+			nativeView.Alpha = (float)view.Opacity;
+		}
+
 		public static bool GetClipToOutline(this AView view)
 		{
 			return view.ClipToOutline;
@@ -90,7 +97,6 @@ namespace Microsoft.Maui
 			if (semantics == null)
 				return;
 
-			nativeView.ContentDescription = semantics.Description;
 			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
 		}
 
@@ -117,7 +123,16 @@ namespace Microsoft.Maui
 			}
 		}
 
-		internal static MauiDrawable? GetMauiDrawable(this AView view)
+		public static void RemoveFromParent(this AView view)
+		{
+			if (view == null)
+				return;
+			if (view.Parent == null)
+				return;
+			((ViewGroup)view.Parent).RemoveView(view);
+		}		
+    
+    internal static MauiDrawable? GetMauiDrawable(this AView view)
 		{
 			if (view.Background is MauiDrawable mauiDrawable)
 				return mauiDrawable;

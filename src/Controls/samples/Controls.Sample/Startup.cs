@@ -31,7 +31,7 @@ namespace Maui.Controls.Sample
 
 	public class Startup : IStartup
 	{
-		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage, Shell }
+		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage, Shell, TabbedPage }
 		private PageType _pageType = PageType.NavigationPage;
 
 		public readonly static bool UseXamlApp = true;
@@ -41,9 +41,12 @@ namespace Maui.Controls.Sample
 		{
 			bool useFullDIAndBlazor = UseFullDI || _pageType == PageType.Blazor;
 
+			if (UseXamlApp)
+				appBuilder.UseMauiApp<XamlApp>();
+			else
+				appBuilder.UseMauiApp<MyApp>();
+
 			appBuilder
-				.UseFormsCompatibility()
-				.UseMauiControlsHandlers()
 				.ConfigureMauiHandlers(handlers =>
 				{
 #if __ANDROID__
@@ -58,10 +61,6 @@ namespace Maui.Controls.Sample
 #endif
 				});
 
-			if (UseXamlApp)
-				appBuilder.UseMauiApp<XamlApp>();
-			else
-				appBuilder.UseMauiApp<MyApp>();
 
 			// Use a "third party" library that brings in a massive amount of controls
 			appBuilder.UseRed();
@@ -69,7 +68,6 @@ namespace Maui.Controls.Sample
 #if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
 #endif
-			appBuilder.UseMauiControlsHandlers();
 
 			appBuilder
 				.ConfigureAppConfiguration(config =>
@@ -126,6 +124,7 @@ namespace Maui.Controls.Sample
 							PageType.NavigationPage => typeof(NavPage),
 							PageType.Xaml => typeof(XamlPage),
 							PageType.Semantics => typeof(SemanticsPage),
+							PageType.TabbedPage => typeof(TabPage),
 							PageType.Blazor =>
 #if BLAZOR_ENABLED
 								typeof(BlazorPage),

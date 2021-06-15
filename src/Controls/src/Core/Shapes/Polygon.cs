@@ -1,8 +1,16 @@
-
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public sealed class Polygon : Shape
+	public sealed partial class Polygon : Shape
 	{
+		public Polygon() : base()
+		{
+		}
+
+		public Polygon(PointCollection points) : this()
+		{
+			Points = points;
+		}
+
 		public static readonly BindableProperty PointsProperty =
 			BindableProperty.Create(nameof(Points), typeof(PointCollection), typeof(Polygon), null, defaultValueCreator: bindable => new PointCollection());
 

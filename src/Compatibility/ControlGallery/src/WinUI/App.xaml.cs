@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			}
 
 			m_window = new MainPage();
-			Maui.Controls.Compatibility.Forms.Init(e, m_window as MainPage);
+			Maui.Controls.Compatibility.Forms.Init(m_window as MainPage);
 		}
 
 		/// <summary>

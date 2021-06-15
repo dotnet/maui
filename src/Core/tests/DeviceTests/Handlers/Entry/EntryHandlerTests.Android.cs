@@ -250,5 +250,25 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		int GetNativeCursorPosition(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+
+			if (editText != null)
+				return editText.SelectionEnd;
+
+			return -1;
+		}
+
+		int GetNativeSelectionLength(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+
+			if (editText != null)
+				return editText.SelectionEnd - editText.SelectionStart;
+
+			return -1;
+		}
 	}
 }

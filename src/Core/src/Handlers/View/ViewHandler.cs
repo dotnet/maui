@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
+			[nameof(IView.Opacity)] = MapOpacity,
 			[nameof(IView.Semantics)] = MapSemantics,
 			[nameof(IView.TranslationX)] = MapTranslationX,
 			[nameof(IView.TranslationY)] = MapTranslationY,
@@ -175,6 +176,11 @@ namespace Microsoft.Maui.Handlers
 #else
 			((NativeView?)handler.NativeView)?.UpdateCornerRadius(view);
 #endif
+		}
+
+		public static void MapOpacity(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateOpacity(view);
 		}
 
 		public static void MapAutomationId(ViewHandler handler, IView view)

@@ -69,6 +69,11 @@ namespace Microsoft.Maui
 			nativeView.UpdateBackgroundLayer(view);
 		}
 
+		public static void UpdateOpacity(this UIView nativeView, IView view)
+		{
+			nativeView.Alpha = (float)view.Opacity;
+		}
+
 		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
 			nativeView.AccessibilityIdentifier = view.AutomationId;
 
@@ -81,6 +86,10 @@ namespace Microsoft.Maui
 
 			nativeView.AccessibilityLabel = semantics.Description;
 			nativeView.AccessibilityHint = semantics.Hint;
+
+			// UIControl elements automatically have IsAccessibilityElement set to true
+			if (nativeView is not UIControl && (!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description)))
+				nativeView.IsAccessibilityElement = true;
 
 			if (semantics.IsHeading)
 				nativeView.AccessibilityTraits |= UIAccessibilityTrait.Header;

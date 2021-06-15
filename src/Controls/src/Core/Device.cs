@@ -66,7 +66,12 @@ namespace Microsoft.Maui.Controls
 					throw new InvalidOperationException("You must call Microsoft.Maui.Controls.Forms.Init(); prior to using this property.");
 				return s_platformServices;
 			}
-			set { s_platformServices = value; }
+			set
+			{
+				s_platformServices = value;
+				if (s_platformServices != null)
+					Application.Current?.PlatformServicesSet();
+			}
 		}
 
 		public static IPlatformInvalidate PlatformInvalidator { get; set; }
@@ -165,7 +170,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static Assembly[] GetAssemblies()
 		{
-			return PlatformServices.GetAssemblies();
+			return AppDomain.CurrentDomain.GetAssemblies();
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

@@ -46,7 +46,6 @@ using Microsoft.Maui.Controls.Shapes;
 [assembly: ExportRenderer(typeof(CarouselPage), typeof(CarouselPageRenderer))]
 [assembly: ExportRenderer(typeof(Page), typeof(PageRenderer))]
 [assembly: ExportRenderer(typeof(FlyoutPage), typeof(FlyoutPageRenderer))]
-[assembly: ExportRenderer(typeof(FlyoutPage), typeof(FlyoutPage))]
 [assembly: ExportRenderer(typeof(RefreshView), typeof(RefreshViewRenderer))]
 
 

@@ -16,6 +16,8 @@ namespace Microsoft.Maui
 
 		public static void UpdateAutomationId(this object nativeView, IView view) { }
 
+		public static void UpdateOpacity(this object nativeView, IView view) { }
+
 		public static void UpdateSemantics(this object nativeView, IView view) { }
 
 		public static void UpdateTranslationX(this object nativeView, IView view) { }

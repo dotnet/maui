@@ -27,7 +27,7 @@
 	<ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
 		<ProjectReference Include="..\Compatibility\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup-net6.csproj" />
 	</ItemGroup>
-	<ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' Or '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
+	<ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' Or '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst'  Or '$(TargetPlatformIdentifier)' == 'windows' ">
 		<ProjectReference Include="..\Compatibility\Core\src\Compatibility-net6.csproj" />
 	</ItemGroup>
 
