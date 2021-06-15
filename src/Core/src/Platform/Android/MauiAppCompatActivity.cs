@@ -1,11 +1,7 @@
 using System;
 using Android.OS;
-using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
-using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Navigation.UI;
-using Google.Android.Material.AppBar;
 
 namespace Microsoft.Maui
 {
@@ -57,18 +53,26 @@ namespace Microsoft.Maui
 				window = mauiApp.CreateWindow(state);
 			}
 
+			PopupManager.Subscribe(this, mauiContext);
+
 			SetContentView(window.View.ToNative(mauiContext));
 
 			//TODO MAUI
 			// Allow users to customize the toolbarid?
-			bool? windowActionBar;
-			if (Theme.TryResolveAttribute(Resource.Attribute.windowActionBar, out windowActionBar) &&
+			if (Theme.TryResolveAttribute(Resource.Attribute.windowActionBar, out var windowActionBar) &&
 				windowActionBar == false)
 			{
 				var toolbar = FindViewById<Toolbar>(Resource.Id.maui_toolbar);
 				if (toolbar != null)
 					SetSupportActionBar(toolbar);
 			}
+		}
+
+		protected override void OnDestroy()
+		{
+			base.OnDestroy();
+
+			PopupManager.Unsubscribe(this);
 		}
 	}
 }

@@ -1,9 +1,10 @@
+﻿#nullable disable
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Controls.Internals
+namespace Microsoft.Maui
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ActionSheetArguments

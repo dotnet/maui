@@ -25,12 +25,15 @@ namespace Microsoft.Maui
 			Services = host.Services;
 
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
+
 			return true;
 		}
 
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			Application = Services.GetRequiredService<IApplication>();
+
+			PopupManager.Subscribe(application);
 
 			var mauiContext = new MauiContext(Services);
 
@@ -92,6 +95,8 @@ namespace Microsoft.Maui
 
 		public override void WillTerminate(UIApplication application)
 		{
+			PopupManager.Unsubscribe(application);
+
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillTerminate>(del => del(application));
 		}
 

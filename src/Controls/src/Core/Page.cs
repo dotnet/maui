@@ -13,13 +13,13 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement
 	{
-		public const string BusySetSignalName = "Microsoft.Maui.Controls.BusySet";
+		public const string BusySetSignalName = AlertConstants.BusySetSignalName;
 
-		public const string AlertSignalName = "Microsoft.Maui.Controls.SendAlert";
+		public const string AlertSignalName = AlertConstants.AlertSignalName;
 
-		public const string PromptSignalName = "Microsoft.Maui.Controls.SendPrompt";
+		public const string PromptSignalName = AlertConstants.PromptSignalName;
 
-		public const string ActionSheetSignalName = "Microsoft.Maui.Controls.ShowActionSheet";
+		public const string ActionSheetSignalName = AlertConstants.ActionSheetSignalName;
 
 		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create("IgnoresContainerArea", typeof(bool), typeof(Page), false);
 
@@ -165,9 +165,9 @@ namespace Microsoft.Maui.Controls
 			args.FlowDirection = flowDirection;
 
 			if (IsPlatformEnabled)
-				MessagingCenter.Send(this, ActionSheetSignalName, args);
+				MessagingCenter.Send((IPage)this, ActionSheetSignalName, args);
 			else
-				_pendingActions.Add(() => MessagingCenter.Send(this, ActionSheetSignalName, args));
+				_pendingActions.Add(() => MessagingCenter.Send((IPage)this, ActionSheetSignalName, args));
 
 			return args.Result.Task;
 		}
@@ -196,9 +196,9 @@ namespace Microsoft.Maui.Controls
 			args.FlowDirection = flowDirection;
 
 			if (IsPlatformEnabled)
-				MessagingCenter.Send(this, AlertSignalName, args);
+				MessagingCenter.Send((IPage)this, AlertSignalName, args);
 			else
-				_pendingActions.Add(() => MessagingCenter.Send(this, AlertSignalName, args));
+				_pendingActions.Add(() => MessagingCenter.Send((IPage)this, AlertSignalName, args));
 
 			return args.Result.Task;
 		}
@@ -208,9 +208,9 @@ namespace Microsoft.Maui.Controls
 			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
 
 			if (IsPlatformEnabled)
-				MessagingCenter.Send(this, PromptSignalName, args);
+				MessagingCenter.Send((IPage)this, PromptSignalName, args);
 			else
-				_pendingActions.Add(() => MessagingCenter.Send(this, PromptSignalName, args));
+				_pendingActions.Add(() => MessagingCenter.Send((IPage)this, PromptSignalName, args));
 
 			return args.Result.Task;
 		}

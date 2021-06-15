@@ -3,10 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Media;
+using Windows.UI.Core.Preview;
 
 namespace Microsoft.Maui
 {
@@ -37,7 +35,7 @@ namespace Microsoft.Maui
 			var activationState = new ActivationState(mauiContext, args);
 			var window = Application.CreateWindow(activationState);
 
-			var content = (window.View as IView);
+			var content = window.View;
 
 			var canvas = CreateRootContainer();
 
@@ -46,6 +44,8 @@ namespace Microsoft.Maui
 			canvas.Children.Add(nativeContent);
 
 			MainWindow.Content = canvas;
+
+			PopupManager.Subscribe(this, mauiContext);
 
 			Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 
@@ -66,7 +66,14 @@ namespace Microsoft.Maui
 				nativeContent.Height = canvas.ActualHeight;
 			};
 
+			//SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += OnCloseRequested;
+
 			MainWindow.Activate();
+		}
+
+		void OnCloseRequested(object? sender, SystemNavigationCloseRequestedPreviewEventArgs e)
+		{
+			PopupManager.Unsubscribe(this);
 		}
 
 		Canvas CreateRootContainer()

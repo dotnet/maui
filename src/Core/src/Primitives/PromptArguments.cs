@@ -1,7 +1,8 @@
+﻿#nullable disable
 using System.ComponentModel;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Controls.Internals
+namespace Microsoft.Maui
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class PromptArguments
