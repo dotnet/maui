@@ -34,6 +34,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = Context.GetFragmentManager());
 
+		ViewGroup ViewGroup => ((IVisualElementRenderer)this).View as ViewGroup;
+
 		void IManageFragments.SetFragmentManager(FragmentManager childFragmentManager)
 		{
 			if (_fragmentManager == null)
