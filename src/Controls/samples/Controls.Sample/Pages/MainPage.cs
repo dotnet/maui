@@ -275,6 +275,7 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(picker);
 
 			verticalStack.Add(new Slider());
+			verticalStack.Add(new Slider { MinimumTrackColor = Colors.Orange, MaximumTrackColor = Colors.Purple, ThumbColor = Colors.GreenYellow });
 			verticalStack.Add(new Slider { ThumbImageSource = "dotnet_bot.png" });
 
 			verticalStack.Add(new Stepper());

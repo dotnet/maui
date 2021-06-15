@@ -76,17 +76,16 @@ namespace Microsoft.Maui
 			if (context == null)
 				return;
 
-			Drawable? thumbDrawable = null;
 			var thumbImageSource = slider.ThumbImageSource;
 
 			if (thumbImageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var result = await service.GetDrawableAsync(thumbImageSource, context);
-				thumbDrawable = result?.Value;
-			}
+				Drawable? thumbDrawable = result?.Value;
 
-			seekBar.SetThumb(thumbDrawable ?? defaultThumb);
+				seekBar.SetThumb(thumbDrawable ?? defaultThumb);
+			}
 		}
 	}
 }
