@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler<SliderHandler>(slider);
-				await Task.Delay(100);
+				await Task.Delay(1000);
 				await handler.NativeView.AssertContainsColor(Colors.Red);
 			});
 		}
