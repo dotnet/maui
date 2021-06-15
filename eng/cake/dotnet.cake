@@ -96,8 +96,8 @@ Task("VS-NET6")
 
 Task("VS-WINUI-CI")
     .Description("Validates that WinUI can build with the cake scripts.")
-    //.IsDependentOn("Clean")
-   // .IsDependentOn("dotnet")
+    .IsDependentOn("Clean")
+    .IsDependentOn("dotnet")
     .Does(() =>
     {
         RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln", settings => ((MSBuildSettings)settings).WithProperty("BuildForWinUI", "true"));
