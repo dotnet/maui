@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui
@@ -56,6 +57,25 @@ namespace Microsoft.Maui
 
 			BrushHelpers.UpdateColor(slider.ThumbColor, ref defaultThumbColor,
 				() => thumb.Background, brush => thumb.Background = brush);
+    }
+    
+		public static async Task UpdateThumbImageSourceAsync(this MauiSlider nativeSlider, ISlider slider, IImageSourceServiceProvider? provider)
+		{
+			var thumbImage = slider.ThumbImageSource;
+
+			if (thumbImage == null)
+			{
+				nativeSlider.ThumbImageSource = null;
+				return;
+			}
+
+			if (provider == null)
+				return;
+
+			var service = provider.GetRequiredImageSourceService(thumbImage);
+			var thumbImageSource = await service.GetImageSourceAsync(thumbImage);
+
+			nativeSlider.ThumbImageSource = thumbImageSource?.Value;
 		}
 	}
 }

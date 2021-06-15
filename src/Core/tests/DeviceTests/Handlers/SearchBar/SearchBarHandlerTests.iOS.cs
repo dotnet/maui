@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using UIKit;
 using Xunit;
@@ -65,6 +67,17 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Text;
 
+		Color GetNativeTextColor(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return Colors.Transparent;
+
+			return textField.TextColor.ToColor();
+		}
+
 		string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Placeholder;
 
@@ -118,6 +131,16 @@ namespace Microsoft.Maui.DeviceTests
 				return false;
 
 			return textField.Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
+		}
+
+		Task ValidateHasColor(ISearchBar searchBar, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeSearchBar = GetNativeSearchBar(CreateHandler(searchBar));
+				action?.Invoke();
+				nativeSearchBar.AssertContainsColor(color);
+			});
 		}
 	}
 }

@@ -19,10 +19,32 @@ namespace Microsoft.Maui
 		public static void UpdateFont(this SearchView searchView, ISearchBar searchBar, IFontManager fontManager, EditText? editText = null)
 		{
 			editText ??= searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+
 			if (editText == null)
 				return;
 
 			editText.UpdateFont(searchBar, fontManager);
+		}
+
+		public static void UpdateCancelButtonColor(this SearchView searchView, ISearchBar searchBar)
+		{
+			if (searchView.Resources == null)
+				return;
+
+			var searchCloseButtonIdentifier = Resource.Id.search_close_btn;
+
+			if (searchCloseButtonIdentifier > 0)
+			{
+				var image = searchView.FindViewById<ImageView>(searchCloseButtonIdentifier);
+
+				if (image != null && image.Drawable != null)
+				{
+					if (searchBar.CancelButtonColor != null)
+						image.Drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
+					else
+						image.Drawable.ClearColorFilter();
+				}
+			}
 		}
 	}
 }

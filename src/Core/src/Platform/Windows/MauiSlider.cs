@@ -20,8 +20,7 @@ namespace Microsoft.Maui
 		public static readonly DependencyProperty ThumbImageSourceProperty =
 			DependencyProperty.Register(nameof(ThumbImageSource), typeof(WImageSource),
 				typeof(MauiSlider), new PropertyMetadata(null, PropertyChangedCallback));
-
-
+        
 		static void PropertyChangedCallback(DependencyObject dependencyObject,
 			DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
 		{

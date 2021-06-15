@@ -36,10 +36,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				if (view != null)
 					view.IsPlatformEnabled = newvalue != null;
 
-				if (view.Handler == null && newvalue is IVisualElementRenderer ver)
-					view.Handler = new RendererToHandlerShim(ver);
-				else if (view.Handler != null && newvalue == null)
-					view.Handler = null;
+				if (bindable is IView mauiView)
+				{
+					if (mauiView.Handler == null && newvalue is IVisualElementRenderer ver)
+						mauiView.Handler = new RendererToHandlerShim(ver);
+					else if (mauiView.Handler != null && newvalue == null)
+						mauiView.Handler = null;
+				}
 
 			});
 

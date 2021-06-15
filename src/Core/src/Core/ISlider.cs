@@ -23,6 +23,11 @@ namespace Microsoft.Maui
 		Color ThumbColor { get; }
 
 		/// <summary>
+		/// Gets the image to use for the slider thumb button.
+		/// </summary>
+		IImageSource ThumbImageSource { get; }
+
+		/// <summary>
 		/// Notify when drag starts.
 		/// </summary>
 		void DragStarted();

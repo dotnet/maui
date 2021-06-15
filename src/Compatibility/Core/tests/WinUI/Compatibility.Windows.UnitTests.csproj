@@ -30,11 +30,6 @@
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\src\Compatibility-net6.csproj" />
   </ItemGroup>
-  <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PropertyGroup>
-      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-    </PropertyGroup>
-  </Target>
 </Project>
 
 <!--<?xml version="1.0" encoding="utf-8"?>

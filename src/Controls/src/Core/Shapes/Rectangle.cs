@@ -1,9 +1,8 @@
-
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public sealed class Rectangle : Shape
+	public sealed partial class Rectangle : Shape
 	{
-		public Rectangle()
+		public Rectangle() : base()
 		{
 			Aspect = Stretch.Fill;
 		}
