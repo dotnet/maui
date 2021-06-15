@@ -10,18 +10,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public class HandlerToRendererShim : IVisualElementRenderer
 	{
-		public HandlerToRendererShim(IViewHandler vh)
+		public HandlerToRendererShim(INativeViewHandler vh)
 		{
 			ViewHandler = vh;
 		}
 
-		IViewHandler ViewHandler { get; }
+		INativeViewHandler ViewHandler { get; }
 
 		public VisualElement Element { get; private set; }
 
-		public FrameworkElement NativeView => (FrameworkElement)ViewHandler.NativeView;
-
-		public FrameworkElement ContainerElement => (FrameworkElement)ViewHandler.NativeView;
+		public FrameworkElement ContainerElement => ViewHandler.ContainerView ?? ViewHandler.NativeView;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
