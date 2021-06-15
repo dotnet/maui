@@ -175,17 +175,17 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
-
             if (disposing)
             {
-                _webviewManager?.Dispose();
-                _webview?.Dispose();
+				// Dispose this component's contents before calling base.Dispose() because that will dispose the WebView2 control, likely
+				// preventing user-written disposal logic from working (because it might try to use Blazor stuff, which wouldn't work anymore).
+				_webviewManager?.Dispose();
             }
-        }
+			base.Dispose(disposing);
+		}
 
-        /// <inheritdoc />
-        protected override ControlCollection CreateControlsInstance()
+		/// <inheritdoc />
+		protected override ControlCollection CreateControlsInstance()
         {
             return new BlazorWebViewControlCollection(this);
         }

@@ -84,33 +84,6 @@
         VersionBand="$(DotNetPreviewVersionBand)"
     />
 
-    <!-- In order to support older MSBuild versions, change the version string to an integer -->
-    <ReplaceText
-        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.android/WorkloadManifest.json"
-        OldValue="&quot;version&quot;: &quot;$(MicrosoftAndroidSdkWindowsPackageVersion)&quot;"
-        NewValue="&quot;version&quot;: 6"
-    />
-    <ReplaceText
-        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.maccatalyst/WorkloadManifest.json"
-        OldValue="&quot;version&quot;: &quot;$(MicrosoftMacCatalystSdkPackageVersion)&quot;"
-        NewValue="&quot;version&quot;: 6"
-    />
-    <ReplaceText
-        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.ios/WorkloadManifest.json"
-        OldValue="&quot;version&quot;: &quot;$(MicrosoftiOSSdkPackageVersion)&quot;"
-        NewValue="&quot;version&quot;: 6"
-    />
-    <ReplaceText
-        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.tvos/WorkloadManifest.json"
-        OldValue="&quot;version&quot;: &quot;$(MicrosofttvOSSdkPackageVersion)&quot;"
-        NewValue="&quot;version&quot;: 6"
-    />
-    <ReplaceText
-        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.macos/WorkloadManifest.json"
-        OldValue="&quot;version&quot;: &quot;$(MicrosoftmacOSSdkPackageVersion)&quot;"
-        NewValue="&quot;version&quot;: 6"
-    />
-
     <Touch Files="$(DotNetSdkManifestsDirectory).stamp" AlwaysCreate="true" />
   </Target>
 
@@ -147,25 +120,6 @@
               Log.LogMessage($"Copying {file} to {destination}");
               File.Copy(file, destination, overwrite: true);
           }
-        ]]>
-      </Code>
-    </Task>
-  </UsingTask>
-  <UsingTask TaskName="ReplaceText"
-      TaskFactory="RoslynCodeTaskFactory"
-      AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <Input ParameterType="System.String" Required="true" />
-      <OldValue ParameterType="System.String" Required="true" />
-      <NewValue ParameterType="System.String" Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System.IO" />
-      <Using Namespace="System.Text.RegularExpressions" />
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-          var regex = new Regex(Regex.Escape(OldValue));
-          File.WriteAllText(Input, regex.Replace(File.ReadAllText(Input), NewValue, count: 1));
         ]]>
       </Code>
     </Task>

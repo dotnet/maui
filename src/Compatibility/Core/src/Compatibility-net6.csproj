@@ -73,7 +73,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="AppHostBuilderExtensions.Controls.cs" />
     <Compile Include="RendererToHandlerShim.cs" />
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />
