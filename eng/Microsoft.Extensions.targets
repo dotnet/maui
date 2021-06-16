@@ -1,11 +1,14 @@
 <Project>
-  <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' == 'true'">
+  <PropertyGroup>
+    <_UseNet6Packages Condition=" '$(TargetFramework.Contains(net6.0))' == 'true' or '$(PackageType)' == 'DotnetPlatform' ">true</_UseNet6Packages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(_UseNet6Packages)' == 'true' ">
     <_MicrosoftHostingVersion>6.0.0-preview.5.21301.5</_MicrosoftHostingVersion>
     <_MicrosoftDependencyInjectionVersion>$(_MicrosoftHostingVersion)</_MicrosoftDependencyInjectionVersion>
     <_MicrosoftFileProvidersVersion>6.0.0-preview.5.21301.5</_MicrosoftFileProvidersVersion>
     <_MicrosoftSystemCodeDomVersion>6.0.0-preview.5.21301.5</_MicrosoftSystemCodeDomVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' != 'true'">
+  <PropertyGroup Condition=" '$(_UseNet6Packages)' != 'true' ">
     <_MicrosoftHostingVersion>5.0.0</_MicrosoftHostingVersion>
     <_MicrosoftDependencyInjectionVersion>5.0.1</_MicrosoftDependencyInjectionVersion>
     <_MicrosoftFileProvidersVersion>5.0.6</_MicrosoftFileProvidersVersion>
@@ -25,6 +28,10 @@
     <MtouchExtraArgs>$(MtouchExtraArgs) --setenv:MONO_THREADS_SUSPEND=preemptive</MtouchExtraArgs>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference
+        Update="Reloadify3000"
+        Version="1.0.6"
+    />
     <PackageReference
         Update="Microsoft.Maui.Graphics"
         Version="$(_MicrosoftMauiGraphics)" 

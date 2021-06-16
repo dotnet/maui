@@ -7,13 +7,13 @@
     <Title>.NET MAUI Templates</Title>
     <Authors>Microsoft</Authors>
     <Description>Templates for .NET MAUI.</Description>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
     <ContentTargetFolders>content</ContentTargetFolders>
     <!-- This project has no .NET assemblies, so disable the warning for that -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
-    <BeforePack>_UpdateTemplateVersions</BeforePack>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,28 +21,15 @@
     <Compile Remove="**\*" />
   </ItemGroup>
 
-  <!-- Eventually replaced by eng/Version.targets -->
-  <Target Name="SetVersions" />
-
-  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions">
-    <PropertyGroup>
-      <PackageReferenceVersion Condition="'$(PackageReferenceVersion)' == ''">$(PackageVersion)</PackageReferenceVersion>
-    </PropertyGroup>
+  <Target Name="_CopyToTemplatePacks" AfterTargets="Pack">
     <ItemGroup>
-      <_TemplateJsonFile Include="templates\*\.template.config\template.json" />
-      <_TemplateJsonFileWithContent
-          Include="@(_TemplateJsonFile)"
-          Contents="$([System.IO.File]::ReadAllText('%(FullPath)').Replace('MAUI_VERSION_VALUE', '$(PackageReferenceVersion)'))" />
+      <_PackagesToCopy Include="$(PackageOutputPath)/$(PackageId).*.nupkg" />
     </ItemGroup>
-    <WriteLinesToFile
-        File="@(_TemplateJsonFileWithContent -> '$(IntermediateOutputPath)%(Identity)')"
-        Lines="%(Contents)"
-        Overwrite="true" />
-    <ItemGroup>
-      <FileWrites Include="@(_TemplateJsonFile -> '$(IntermediateOutputPath)%(Identity)')" />
-      <Content Remove="@(_TemplateJsonFile)" />
-      <Content Include="@(_TemplateJsonFile -> '$(IntermediateOutputPath)%(Identity)')" PackagePath="$(ContentTargetFolders)\%(Identity)" Pack="true" />
-    </ItemGroup>
+    <Copy
+        SourceFiles="@(_PackagesToCopy)"
+        DestinationFolder="$(DotNetTemplatePacksDirectory)"
+        SkipUnchangedFiles="true"
+    />
   </Target>
 
 </Project>
