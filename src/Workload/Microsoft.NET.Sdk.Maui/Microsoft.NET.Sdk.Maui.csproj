@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <Import Project="../Shared/Common.targets" />
+
+  <PropertyGroup>
+    <PackageId>$(PackageId).Manifest-$(DotNetPreviewVersionBand)</PackageId>
+  </PropertyGroup>
+
+  <Import Project="$(MauiRootDirectory)eng/ReplaceText.targets" />
+
+  <ItemGroup>
+    <None Update="WorkloadManifest.targets" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="data" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Microsoft.Maui.*/*.csproj" />
+  </ItemGroup>
+
+  <!-- Eventually replaced by eng/Version.targets -->
+  <Target Name="SetVersions" />
+
+  <Target Name="_GenerateWorkloadManifest" BeforeTargets="Build;AssignTargetPaths" DependsOnTargets="SetVersions" Inputs="$(MSBuildProjectFile);WorkloadManifest.in.json" Outputs="$(IntermediateOutputPath)WorkloadManifest.json">
+    <ReplaceText Input="WorkloadManifest.in.json" Output="$(IntermediateOutputPath)WorkloadManifest.json" OldValue="@VERSION@" NewValue="$(PackageVersion)" />
+    <ItemGroup>
+      <None Include="$(IntermediateOutputPath)WorkloadManifest.json" Link="WorkloadManifest.json" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="data" Visible="false" />
+      <FileWrites Include="$(IntermediateOutputPath)WorkloadManifest.json" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CopyManifest" AfterTargets="Build">
+    <ItemGroup>
+      <_Files Include="$(OutputPath)WorkloadManifest.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_Files)" DestinationFolder="$(DotNetSdkManifestsDirectory)$(MSBuildProjectName.ToLowerInvariant())" />
+  </Target>
+
+</Project>

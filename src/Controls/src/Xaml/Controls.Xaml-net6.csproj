@@ -3,8 +3,9 @@
 		<TargetFrameworks>netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
 		<AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
 		<RootNamespace>Microsoft.Maui.Controls.Xaml</RootNamespace>
+		<IsPackable>false</IsPackable>
 		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
-		<NoWarn>$(NoWarn);CA2200;NU5128</NoWarn>
+		<NoWarn>$(NoWarn);CA2200</NoWarn>
 		<PackageId>Microsoft.Maui.Controls.Xaml</PackageId>
 	</PropertyGroup>
 

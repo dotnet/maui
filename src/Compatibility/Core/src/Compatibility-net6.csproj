@@ -8,9 +8,7 @@
     <AndroidRoot>Android\</AndroidRoot>
     <iOSRoot>iOS\</iOSRoot>
     <WindowsRoot>WinUI\</WindowsRoot>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
