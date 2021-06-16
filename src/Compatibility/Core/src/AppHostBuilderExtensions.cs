@@ -11,6 +11,7 @@ using FrameRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.Fas
 using LabelRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.LabelRenderer;
 using ImageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ImageRenderer;
 using ButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ButtonRenderer;
+using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform.DefaultRenderer;
 #elif WINDOWS
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.BoxViewBorderRenderer;
@@ -19,6 +20,7 @@ using Deserializer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsS
 using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
 using StreamImagesourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.UWP.StreamImageSourceHandler;
 using ImageLoaderSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.UWP.UriImageSourceHandler;
+using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.DefaultRenderer;
 
 #elif __IOS__
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
@@ -218,6 +220,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
 
 					// This is for Layouts that currently don't work when assigned to LayoutHandler
+					handlers.TryAddCompatibilityRenderer(typeof(ContentView), typeof(DefaultRenderer));
 #if __IOS__
 					handlers.TryAddCompatibilityRenderer(typeof(AbsoluteLayout), typeof(DefaultRenderer));
 #endif

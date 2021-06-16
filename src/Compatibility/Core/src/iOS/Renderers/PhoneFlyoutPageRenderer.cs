@@ -121,6 +121,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			base.ViewDidLayoutSubviews();
 
+
+			// TODO MAUI: Is this correct?
+			if (Element.Width == -1 && Element.Height == -1)
+				Element.Layout(new Rectangle(Element.X, Element.Y, View.Bounds.Width, View.Bounds.Height));
+
 			LayoutChildren(false);
 		}
 
