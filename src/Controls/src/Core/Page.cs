@@ -413,9 +413,9 @@ namespace Microsoft.Maui.Controls
 			if (IsBusy)
 			{
 				if (IsPlatformEnabled)
-					MessagingCenter.Send(this, BusySetSignalName, true);
+					MessagingCenter.Send((IPage)this, BusySetSignalName, true);
 				else
-					_pendingActions.Add(() => MessagingCenter.Send(this, BusySetSignalName, true));
+					_pendingActions.Add(() => MessagingCenter.Send((IPage)this, BusySetSignalName, true));
 			}
 
 			OnAppearing();
@@ -436,7 +436,7 @@ namespace Microsoft.Maui.Controls
 			_hasAppeared = false;
 
 			if (IsBusy)
-				MessagingCenter.Send(this, BusySetSignalName, false);
+				MessagingCenter.Send((IPage)this, BusySetSignalName, false);
 
 			var pageContainer = this as IPageContainer<Page>;
 			pageContainer?.CurrentPage?.SendDisappearing();
@@ -493,7 +493,7 @@ namespace Microsoft.Maui.Controls
 			if (!_hasAppeared)
 				return;
 
-			MessagingCenter.Send(this, BusySetSignalName, IsBusy);
+			MessagingCenter.Send((IPage)this, BusySetSignalName, IsBusy);
 		}
 
 		void OnToolbarItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
