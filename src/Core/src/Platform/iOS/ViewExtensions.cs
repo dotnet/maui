@@ -73,8 +73,7 @@ namespace Microsoft.Maui
 
 				return;
 			}
-
-			if (paint is GradientPaint gradientPaint)
+			else if (paint is GradientPaint gradientPaint)
 			{
 				var backgroundLayer = gradientPaint?.ToCALayer(nativeView.Bounds);
 
