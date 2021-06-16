@@ -639,7 +639,8 @@ namespace Maui.Controls.Sample.Pages
 
 			simplePromptButton.Clicked += async (sender, args) =>
 			{
-				await DisplayPromptAsync("Question 1", "What's your name?");
+				string action = await DisplayPromptAsync("Question 1", "What's your name?");
+				Debug.WriteLine("Action: " + action);
 			};
 
 			var verticalStack = new VerticalStackLayout
