@@ -8,9 +8,9 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui
 {
-	internal static class PopupManager
+	internal static class AlertManager
 	{
-		static readonly List<PopupRequestHelper> Subscriptions = new List<PopupRequestHelper>();
+		static readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
 
 		internal static void Subscribe(Application application, MauiContext mauiContext)
 		{
@@ -19,25 +19,26 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			Subscriptions.Add(new PopupRequestHelper(application, mauiContext));
+			Subscriptions.Add(new AlertRequestHelper(application, mauiContext));
 		}
 
 		internal static void Unsubscribe(Application application)
 		{
 			var toRemove = Subscriptions.Where(s => s.Application == application).ToList();
 
-			foreach (PopupRequestHelper popupRequestHelper in toRemove)
+			foreach (AlertRequestHelper alertRequestHelper in toRemove)
 			{
-				popupRequestHelper.Dispose();
-				Subscriptions.Remove(popupRequestHelper);
+				alertRequestHelper.Dispose();
+				Subscriptions.Remove(alertRequestHelper);
 			}
 		}
 
-		internal sealed class PopupRequestHelper : IDisposable
+		internal sealed class AlertRequestHelper : IDisposable
 		{
 			static Task<bool> CurrentAlert;
+			static Task<string> CurrentPrompt;
 
-			internal PopupRequestHelper(Application application, MauiContext mauiContext)
+			internal AlertRequestHelper(Application application, MauiContext mauiContext)
 			{
 				Application = application;
 				MauiContext = mauiContext;
@@ -61,7 +62,7 @@ namespace Microsoft.Maui
 
 			void OnPageBusy(IPage sender, bool enabled)
 			{
-
+				// TODO: Wrap the pages in a Canvas, and dynamically add a ProgressBar
 			}
 
 			async void OnAlertRequested(IPage sender, AlertArguments arguments)
@@ -69,10 +70,11 @@ namespace Microsoft.Maui
 				string content = arguments.Message ?? string.Empty;
 				string title = arguments.Title ?? string.Empty;
 
-				var alertDialog = new ContentDialog
+				var alertDialog = new AlertDialog
 				{
 					Content = content,
-					Title = title
+					Title = title,
+					VerticalScrollBarVisibility = ScrollBarVisibility.Auto
 				};
 
 				if (arguments.FlowDirection == FlowDirection.RightToLeft)
@@ -109,15 +111,82 @@ namespace Microsoft.Maui
 				CurrentAlert = null;
 			}
 
-			void OnPromptRequested(IPage sender, PromptArguments arguments)
+			async void OnPromptRequested(IPage sender, PromptArguments arguments)
 			{
+				var promptDialog = new PromptDialog
+				{
+					Title = arguments.Title ?? string.Empty,
+					Message = arguments.Message ?? string.Empty,
+					Input = arguments.InitialValue ?? string.Empty,
+					Placeholder = arguments.Placeholder ?? string.Empty,
+					MaxLength = arguments.MaxLength >= 0 ? arguments.MaxLength : 0,
+					// TODO: Implement InputScope property after port the keyboardExtensions
+				};
 
+				if (arguments.Cancel != null)
+					promptDialog.SecondaryButtonText = arguments.Cancel;
 
+				if (arguments.Accept != null)
+					promptDialog.PrimaryButtonText = arguments.Accept;
+
+				var currentAlert = CurrentPrompt;
+
+				while (currentAlert != null)
+				{
+					await currentAlert;
+					currentAlert = CurrentPrompt;
+				}
+				
+				// This is a temporary workaround
+				var nativePage = sender.ToNative(MauiContext);
+				promptDialog.XamlRoot = nativePage.XamlRoot;
+
+				CurrentPrompt = ShowPrompt(promptDialog);
+				arguments.SetResult(await CurrentPrompt.ConfigureAwait(false));
+				CurrentPrompt = null;
 			}
 
 			void OnActionSheetRequested(IPage sender, ActionSheetArguments arguments)
 			{
+				bool userDidSelect = false;
 
+				if (arguments.FlowDirection == FlowDirection.MatchParent)
+				{
+					// TODO: Check EffectiveFlowDirection
+				}
+
+				var actionSheetContent = new ActionSheetContent(arguments);
+
+				var actionSheet = new Flyout
+				{
+					Placement = UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Full,
+					Content = actionSheetContent
+				};
+
+				actionSheetContent.OptionSelected += (s, e) =>
+				{
+					userDidSelect = true;
+					actionSheet.Hide();
+				};
+
+				actionSheet.Closed += (s, e) =>
+				{
+					if (!userDidSelect)
+						arguments.SetResult(null);
+				};
+
+				try
+				{
+					var pageParent = sender.ToNative(MauiContext).Parent as FrameworkElement;
+
+					if (pageParent != null)
+						actionSheet.ShowAt(pageParent);
+				}
+				catch (ArgumentException) // If the page is not in the visual tree
+				{
+					if (Window.Current.Content is FrameworkElement mainPage)
+						actionSheet.ShowAt(mainPage);
+				}
 			}
 
 			static async Task<bool> ShowAlert(ContentDialog alert)
@@ -125,6 +194,16 @@ namespace Microsoft.Maui
 				ContentDialogResult result = await alert.ShowAsync();
 
 				return result == ContentDialogResult.Primary;
+			}
+
+			static async Task<string> ShowPrompt(PromptDialog prompt)
+			{
+				ContentDialogResult result = await prompt.ShowAsync();
+
+				if (result == ContentDialogResult.Primary)
+					return prompt.Input;
+
+				return null;
 			}
 		}
 	}

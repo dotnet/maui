@@ -72,231 +72,232 @@ namespace Maui.Controls.Sample.Pages
 		void SetupMauiLayout()
 		{
 			var verticalStack = new VerticalStackLayout() { Spacing = 5, BackgroundColor = Colors.AntiqueWhite };
-			var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Colors.CornflowerBlue };
+			//var horizontalStack = new HorizontalStackLayout() { Spacing = 2, BackgroundColor = Colors.CornflowerBlue };
 
 			//verticalStack.Add(CreateSampleGrid());
-			verticalStack.Add(CreateResizingButton());
+			//verticalStack.Add(CreateResizingButton());
 
-			AddTextResizeDemo(verticalStack);
-			verticalStack.Add(CreateTransformations());
-			verticalStack.Add(CreateAnimations());
-			verticalStack.Add(CreateShapes());
+			//AddTextResizeDemo(verticalStack);
+			//verticalStack.Add(CreateTransformations());
+			//verticalStack.Add(CreateAnimations());
+			//verticalStack.Add(CreateShapes());
+			verticalStack.Add(CreateAlerts());
 
-			verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
-			var label = new Label { Text = "End-aligned text", BackgroundColor = Colors.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
-			label.Margin = new Thickness(15, 10, 20, 15);
+			//verticalStack.Add(new Label { Text = " ", Padding = new Thickness(10) });
+			//var label = new Label { Text = "End-aligned text", BackgroundColor = Colors.Fuchsia, HorizontalTextAlignment = TextAlignment.End };
+			//label.Margin = new Thickness(15, 10, 20, 15);
 
-			SemanticProperties.SetHint(label, "Hint Text");
-			SemanticProperties.SetDescription(label, "Description Text");
+			//SemanticProperties.SetHint(label, "Hint Text");
+			//SemanticProperties.SetDescription(label, "Description Text");
 
-			verticalStack.Add(label);
-			verticalStack.Add(new Label { Text = "This should be BIG text!", FontSize = 24, HorizontalOptions = LayoutOptions.End });
+			//verticalStack.Add(label);
+			//verticalStack.Add(new Label { Text = "This should be BIG text!", FontSize = 24, HorizontalOptions = LayoutOptions.End });
 
-			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level1);
-			verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center });
-			verticalStack.Add(new Label { Text = "This should have character spacing!", CharacterSpacing = 3 });
-			verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
-			verticalStack.Add(
-				new Button
-				{
-					Text = "Push a Page",
-					Rotation = 15,
-					Scale = 1.5,
-					Command = new Command(async () =>
-					{
-						await Navigation.PushAsync(new SemanticsPage());
-					})
-				}
-			);
+			//SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level1);
+			//verticalStack.Add(new Label { Text = "This should be BOLD text!", FontAttributes = FontAttributes.Bold, HorizontalOptions = LayoutOptions.Center });
+			//verticalStack.Add(new Label { Text = "This should have character spacing!", CharacterSpacing = 3 });
+			//verticalStack.Add(new Label { Text = "This should be a CUSTOM font!", FontFamily = "Dokdo" });
+			//verticalStack.Add(
+			//	new Button
+			//	{
+			//		Text = "Push a Page",
+			//		Rotation = 15,
+			//		Scale = 1.5,
+			//		Command = new Command(async () =>
+			//		{
+			//			await Navigation.PushAsync(new SemanticsPage());
+			//		})
+			//	}
+			//);
 
-			verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Colors.LightBlue });
-			verticalStack.Add(new Label { Text = LoremIpsum });
-			verticalStack.Add(new Label { Text = LoremIpsum, MaxLines = 2 });
-			verticalStack.Add(new Label { Text = LoremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
-			verticalStack.Add(new Label { Text = LoremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
-			verticalStack.Add(new Label { Text = "This should have five times the line height! " + LoremIpsum, LineHeight = 5, MaxLines = 2 });
-			verticalStack.Add(new Label
-			{
-				FontSize = 24,
-				Text = "LinearGradient Text",
-				Background = new LinearGradientBrush(
-				new GradientStopCollection
-				{
-						new GradientStop(Colors.Green, 0),
-						new GradientStop(Colors.Blue, 1)
-				},
-				new Point(0, 0),
-				new Point(1, 0))
-			});
-			verticalStack.Add(new Label
-			{
-				Text = "RadialGradient",
-				Padding = new Thickness(30),
-				Background = new RadialGradientBrush(
-					new GradientStopCollection
-					{
-						new GradientStop(Colors.DarkBlue, 0),
-						new GradientStop(Colors.Yellow, 0.6f),
-						new GradientStop(Colors.LightPink, 1)
-					},
-					new Point(0.5, 0.5),
-					0.3f)
-			});
+			//verticalStack.Add(new Label { Text = "This should have padding", Padding = new Thickness(40), BackgroundColor = Colors.LightBlue });
+			//verticalStack.Add(new Label { Text = LoremIpsum });
+			//verticalStack.Add(new Label { Text = LoremIpsum, MaxLines = 2 });
+			//verticalStack.Add(new Label { Text = LoremIpsum, LineBreakMode = LineBreakMode.TailTruncation });
+			//verticalStack.Add(new Label { Text = LoremIpsum, MaxLines = 2, LineBreakMode = LineBreakMode.TailTruncation });
+			//verticalStack.Add(new Label { Text = "This should have five times the line height! " + LoremIpsum, LineHeight = 5, MaxLines = 2 });
+			//verticalStack.Add(new Label
+			//{
+			//	FontSize = 24,
+			//	Text = "LinearGradient Text",
+			//	Background = new LinearGradientBrush(
+			//	new GradientStopCollection
+			//	{
+			//			new GradientStop(Colors.Green, 0),
+			//			new GradientStop(Colors.Blue, 1)
+			//	},
+			//	new Point(0, 0),
+			//	new Point(1, 0))
+			//});
+			//verticalStack.Add(new Label
+			//{
+			//	Text = "RadialGradient",
+			//	Padding = new Thickness(30),
+			//	Background = new RadialGradientBrush(
+			//		new GradientStopCollection
+			//		{
+			//			new GradientStop(Colors.DarkBlue, 0),
+			//			new GradientStop(Colors.Yellow, 0.6f),
+			//			new GradientStop(Colors.LightPink, 1)
+			//		},
+			//		new Point(0.5, 0.5),
+			//		0.3f)
+			//});
 
-			SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level2);
+			//SemanticProperties.SetHeadingLevel((BindableObject)verticalStack.Children.Last(), SemanticHeadingLevel.Level2);
 
-			var visibleClearButtonEntry = new Entry() { ClearButtonVisibility = ClearButtonVisibility.WhileEditing, Placeholder = "This Entry will show clear button if has input." };
-			var hiddenClearButtonEntry = new Entry() { ClearButtonVisibility = ClearButtonVisibility.Never, Placeholder = "This Entry will not..." };
+			//var visibleClearButtonEntry = new Entry() { ClearButtonVisibility = ClearButtonVisibility.WhileEditing, Placeholder = "This Entry will show clear button if has input." };
+			//var hiddenClearButtonEntry = new Entry() { ClearButtonVisibility = ClearButtonVisibility.Never, Placeholder = "This Entry will not..." };
 
-			verticalStack.Add(visibleClearButtonEntry);
-			verticalStack.Add(hiddenClearButtonEntry);
+			//verticalStack.Add(visibleClearButtonEntry);
+			//verticalStack.Add(hiddenClearButtonEntry);
 
-			verticalStack.Add(new Editor { Text = "Editor TextColor", TextColor = Colors.Olive });
-			verticalStack.Add(new Editor { Text = "Editor using CharacterSpacing", CharacterSpacing = 10 });
-			verticalStack.Add(new Editor { Placeholder = "This is an editor placeholder." });
-			verticalStack.Add(new Editor { Placeholder = "Editor PlaceholderColor", PlaceholderColor = Colors.Green });
+			//verticalStack.Add(new Editor { Text = "Editor TextColor", TextColor = Colors.Olive });
+			//verticalStack.Add(new Editor { Text = "Editor using CharacterSpacing", CharacterSpacing = 10 });
+			//verticalStack.Add(new Editor { Placeholder = "This is an editor placeholder." });
+			//verticalStack.Add(new Editor { Placeholder = "Editor PlaceholderColor", PlaceholderColor = Colors.Green });
 
-			var paddingButton = new Button
-			{
-				Padding = new Thickness(40),
-				Text = "This button has a padding!!",
-				BackgroundColor = Colors.Purple,
-			};
+			//var paddingButton = new Button
+			//{
+			//	Padding = new Thickness(40),
+			//	Text = "This button has a padding!!",
+			//	BackgroundColor = Colors.Purple,
+			//};
 
-			verticalStack.Add(paddingButton);
+			//verticalStack.Add(paddingButton);
 
-			var underlineLabel = new Label { Text = "underline", TextDecorations = TextDecorations.Underline };
-			verticalStack.Add(underlineLabel);
+			//var underlineLabel = new Label { Text = "underline", TextDecorations = TextDecorations.Underline };
+			//verticalStack.Add(underlineLabel);
 
-			verticalStack.Add(new ActivityIndicator());
-			verticalStack.Add(new ActivityIndicator { Color = Colors.Red, IsRunning = true });
+			//verticalStack.Add(new ActivityIndicator());
+			//verticalStack.Add(new ActivityIndicator { Color = Colors.Red, IsRunning = true });
 
-			var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
-			button.Clicked += async (sender, e) =>
-			{
-				var events = _services.GetRequiredService<ILifecycleEventService>();
-				events.InvokeEvents<Action<string>>("CustomEventName", action => action("VALUE"));
+			//var button = new Button() { Text = _viewModel.Text, WidthRequest = 200 };
+			//button.Clicked += async (sender, e) =>
+			//{
+			//	var events = _services.GetRequiredService<ILifecycleEventService>();
+			//	events.InvokeEvents<Action<string>>("CustomEventName", action => action("VALUE"));
 
-				var location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Lowest));
-				Debug.WriteLine($"I tracked you down to {location.Latitude}, {location.Longitude}! You can't hide!");
-			};
+			//	var location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Lowest));
+			//	Debug.WriteLine($"I tracked you down to {location.Latitude}, {location.Longitude}! You can't hide!");
+			//};
 
-			var button2 = new Button()
-			{
-				TextColor = Colors.Green,
-				Text = "Hello I'm a button",
-				//	BackgroundColor = Color.Purple,
-				Margin = new Thickness(12)
-			};
+			//var button2 = new Button()
+			//{
+			//	TextColor = Colors.Green,
+			//	Text = "Hello I'm a button",
+			//	BackgroundColor = Color.Purple,
+			//	Margin = new Thickness(12)
+			//};
 
-			horizontalStack.Add(button);
-			horizontalStack.Add(button2);
+			//horizontalStack.Add(button);
+			//horizontalStack.Add(button2);
 
-			horizontalStack.Add(new Label { Text = "And these buttons are in a HorizontalStackLayout", VerticalOptions = LayoutOptions.Center });
+			//horizontalStack.Add(new Label { Text = "And these buttons are in a HorizontalStackLayout", VerticalOptions = LayoutOptions.Center });
 
-			verticalStack.Add(horizontalStack);
+			//verticalStack.Add(horizontalStack);
 
-			verticalStack.Add(new Button { Text = "CharacterSpacing" });
-			verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
+			//verticalStack.Add(new Button { Text = "CharacterSpacing" });
+			//verticalStack.Add(new Button { CharacterSpacing = 8, Text = "CharacterSpacing" });
 
-			verticalStack.Add(new RedButton { Text = "Dynamically Registered" });
-			verticalStack.Add(new CustomButton { Text = "Button Registered to Compat Renderer" });
+			//verticalStack.Add(new RedButton { Text = "Dynamically Registered" });
+			//verticalStack.Add(new CustomButton { Text = "Button Registered to Compat Renderer" });
 
-			var checkbox = new CheckBox();
-			checkbox.CheckedChanged += (sender, e) =>
-			{
-				Debug.WriteLine($"Checked Changed to '{e.Value}'");
-			};
-			verticalStack.Add(checkbox);
-			verticalStack.Add(new CheckBox { BackgroundColor = Colors.LightPink });
-			verticalStack.Add(new CheckBox { IsChecked = true, Color = Colors.Aquamarine });
+			//var checkbox = new CheckBox();
+			//checkbox.CheckedChanged += (sender, e) =>
+			//{
+			//	Debug.WriteLine($"Checked Changed to '{e.Value}'");
+			//};
+			//verticalStack.Add(checkbox);
+			//verticalStack.Add(new CheckBox { BackgroundColor = Colors.LightPink });
+			//verticalStack.Add(new CheckBox { IsChecked = true, Color = Colors.Aquamarine });
 
-			var editor = new Editor();
-			editor.Completed += (sender, args) =>
-			{
-				Debug.WriteLine($"Editor Completed");
-			};
+			//var editor = new Editor();
+			//editor.Completed += (sender, args) =>
+			//{
+			//	Debug.WriteLine($"Editor Completed");
+			//};
 
-			verticalStack.Add(editor);
-			verticalStack.Add(new Editor { Text = "Editor" });
-			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", MaxLength = 10 });
-			verticalStack.Add(new Editor { Text = "Predictive Text Off", IsTextPredictionEnabled = false });
-			verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", FontSize = 10, FontFamily = "Dokdo" });
-			verticalStack.Add(new Editor { Text = "ReadOnly Editor", IsReadOnly = true });
+			//verticalStack.Add(editor);
+			//verticalStack.Add(new Editor { Text = "Editor" });
+			//verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", MaxLength = 10 });
+			//verticalStack.Add(new Editor { Text = "Predictive Text Off", IsTextPredictionEnabled = false });
+			//verticalStack.Add(new Editor { Text = "Lorem ipsum dolor sit amet", FontSize = 10, FontFamily = "Dokdo" });
+			//verticalStack.Add(new Editor { Text = "ReadOnly Editor", IsReadOnly = true });
 
-			var entry = new Entry();
-			entry.TextChanged += (sender, e) =>
-			{
-				Debug.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
-			};
+			//var entry = new Entry();
+			//entry.TextChanged += (sender, e) =>
+			//{
+			//	Debug.WriteLine($"Text Changed from '{e.OldTextValue}' to '{e.NewTextValue}'");
+			//};
 
-			var entryMargin = new Thickness(10, 0);
+			//var entryMargin = new Thickness(10, 0);
 
-			verticalStack.Add(entry);
-			verticalStack.Add(new Entry { Text = "Entry with custom Font", TextColor = Colors.DarkRed, FontFamily = "Dokdo", MaxLength = -1, Margin = entryMargin });
-			verticalStack.Add(new Entry { IsPassword = true, TextColor = Colors.Black, Placeholder = "Pasword Entry", Margin = entryMargin });
-			verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
-			verticalStack.Add(new Entry { Placeholder = "This should be placeholder text", Margin = entryMargin });
-			verticalStack.Add(new Entry { Text = "This should be read only property", IsReadOnly = true, Margin = entryMargin });
-			verticalStack.Add(new Entry { MaxLength = 5, Placeholder = "MaxLength text", Margin = entryMargin });
-			verticalStack.Add(new Entry { Text = "This should be text with character spacing", CharacterSpacing = 10 });
-			verticalStack.Add(new Entry { Keyboard = Keyboard.Numeric, Placeholder = "Numeric Entry" });
-			verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
-			verticalStack.Add(new Entry { Placeholder = "This is a blue text box", BackgroundColor = Colors.CornflowerBlue });
+			//verticalStack.Add(entry);
+			//verticalStack.Add(new Entry { Text = "Entry with custom Font", TextColor = Colors.DarkRed, FontFamily = "Dokdo", MaxLength = -1, Margin = entryMargin });
+			//verticalStack.Add(new Entry { IsPassword = true, TextColor = Colors.Black, Placeholder = "Pasword Entry", Margin = entryMargin });
+			//verticalStack.Add(new Entry { IsTextPredictionEnabled = false });
+			//verticalStack.Add(new Entry { Placeholder = "This should be placeholder text", Margin = entryMargin });
+			//verticalStack.Add(new Entry { Text = "This should be read only property", IsReadOnly = true, Margin = entryMargin });
+			//verticalStack.Add(new Entry { MaxLength = 5, Placeholder = "MaxLength text", Margin = entryMargin });
+			//verticalStack.Add(new Entry { Text = "This should be text with character spacing", CharacterSpacing = 10 });
+			//verticalStack.Add(new Entry { Keyboard = Keyboard.Numeric, Placeholder = "Numeric Entry" });
+			//verticalStack.Add(new Entry { Keyboard = Keyboard.Email, Placeholder = "Email Entry" });
+			//verticalStack.Add(new Entry { Placeholder = "This is a blue text box", BackgroundColor = Colors.CornflowerBlue });
 
-			verticalStack.Add(CreateSampleCursorSelection());
+			//verticalStack.Add(CreateSampleCursorSelection());
 
-			verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 });
+			//verticalStack.Add(new GraphicsView { Drawable = new TestDrawable(), HeightRequest = 50, WidthRequest = 200 });
 
-			verticalStack.Add(new ProgressBar { Progress = 0.5 });
-			verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
-			verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
+			//verticalStack.Add(new ProgressBar { Progress = 0.5 });
+			//verticalStack.Add(new ProgressBar { Progress = 0.5, BackgroundColor = Colors.LightCoral });
+			//verticalStack.Add(new ProgressBar { Progress = 0.5, ProgressColor = Colors.Purple });
 
-			verticalStack.Add(new SearchBar { CharacterSpacing = 4, Text = "A search query", TextColor = Colors.Orange });
-			verticalStack.Add(new SearchBar { Placeholder = "Placeholder" });
-			verticalStack.Add(new SearchBar { HorizontalTextAlignment = TextAlignment.End, Text = "SearchBar HorizontalTextAlignment" });
-			verticalStack.Add(new SearchBar { Text = "SearchBar MaxLength", MaxLength = 50 });
-			verticalStack.Add(new SearchBar { Text = "SearchBar CancelButtonColor", CancelButtonColor = Colors.IndianRed });
+			//verticalStack.Add(new SearchBar { CharacterSpacing = 4, Text = "A search query", TextColor = Colors.Orange });
+			//verticalStack.Add(new SearchBar { Placeholder = "Placeholder" });
+			//verticalStack.Add(new SearchBar { HorizontalTextAlignment = TextAlignment.End, Text = "SearchBar HorizontalTextAlignment" });
+			//verticalStack.Add(new SearchBar { Text = "SearchBar MaxLength", MaxLength = 50 });
+			//verticalStack.Add(new SearchBar { Text = "SearchBar CancelButtonColor", CancelButtonColor = Colors.IndianRed });
 
-			var monkeyList = new List<string>
-			{
-				"Baboon",
-				"Capuchin Monkey",
-				"Blue Monkey",
-				"Squirrel Monkey",
-				"Golden Lion Tamarin",
-				"Howler Monkey",
-				"Japanese Macaque"
-			};
+			//var monkeyList = new List<string>
+			//{
+			//	"Baboon",
+			//	"Capuchin Monkey",
+			//	"Blue Monkey",
+			//	"Squirrel Monkey",
+			//	"Golden Lion Tamarin",
+			//	"Howler Monkey",
+			//	"Japanese Macaque"
+			//};
 
-			var picker = new Picker { Title = "Select a monkey", TitleColor = Colors.Red, FontFamily = "Dokdo", HorizontalTextAlignment = TextAlignment.Center };
+			//var picker = new Picker { Title = "Select a monkey", TitleColor = Colors.Red, FontFamily = "Dokdo", HorizontalTextAlignment = TextAlignment.Center };
 
-			picker.ItemsSource = monkeyList;
-			verticalStack.Add(picker);
+			//picker.ItemsSource = monkeyList;
+			//verticalStack.Add(picker);
 
-			verticalStack.Add(new Slider());
-			verticalStack.Add(new Slider { ThumbImageSource = "dotnet_bot.png" });
+			//verticalStack.Add(new Slider());
+			//verticalStack.Add(new Slider { ThumbImageSource = "dotnet_bot.png" });
 
-			verticalStack.Add(new Stepper());
-			verticalStack.Add(new Stepper { BackgroundColor = Colors.IndianRed });
-			verticalStack.Add(new Stepper { Minimum = 0, Maximum = 10, Value = 5 });
+			//verticalStack.Add(new Stepper());
+			//verticalStack.Add(new Stepper { BackgroundColor = Colors.IndianRed });
+			//verticalStack.Add(new Stepper { Minimum = 0, Maximum = 10, Value = 5 });
 
-			verticalStack.Add(new Switch());
-			verticalStack.Add(new Switch() { OnColor = Colors.Green });
-			verticalStack.Add(new Switch() { ThumbColor = Colors.Yellow });
-			verticalStack.Add(new Switch() { OnColor = Colors.Green, ThumbColor = Colors.Yellow });
+			//verticalStack.Add(new Switch());
+			//verticalStack.Add(new Switch() { OnColor = Colors.Green });
+			//verticalStack.Add(new Switch() { ThumbColor = Colors.Yellow });
+			//verticalStack.Add(new Switch() { OnColor = Colors.Green, ThumbColor = Colors.Yellow });
 
-			verticalStack.Add(new DatePicker());
-			verticalStack.Add(new DatePicker { TextColor = Colors.OrangeRed });
-			verticalStack.Add(new DatePicker { CharacterSpacing = 6 });
-			verticalStack.Add(new DatePicker { FontSize = 24 });
+			//verticalStack.Add(new DatePicker());
+			//verticalStack.Add(new DatePicker { TextColor = Colors.OrangeRed });
+			//verticalStack.Add(new DatePicker { CharacterSpacing = 6 });
+			//verticalStack.Add(new DatePicker { FontSize = 24 });
 
-			verticalStack.Add(new TimePicker());
-			verticalStack.Add(new TimePicker { TextColor = Colors.LightGreen });
-			verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
+			//verticalStack.Add(new TimePicker());
+			//verticalStack.Add(new TimePicker { TextColor = Colors.LightGreen });
+			//verticalStack.Add(new TimePicker { Time = TimeSpan.FromHours(8), CharacterSpacing = 6 });
 
-			verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
-			verticalStack.Add(CreateImagesGrid());
+			//verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
+			//verticalStack.Add(CreateImagesGrid());
 
 			Content = new ScrollView
 			{
@@ -601,6 +602,58 @@ namespace Maui.Controls.Sample.Pages
 			return verticalStack;
 		}
 
+		IView CreateAlerts()
+		{
+			var simpleAlertButton = new Button { Text ="Simple Alert"};
+
+			simpleAlertButton.Clicked += async (sender, args) =>
+			{
+				await DisplayAlert("Alert", "You have been alerted", "OK");
+			};
+
+			var yesNoAlertButton = new Button { Text = "Yes/No Alert" };
+
+			yesNoAlertButton.Clicked += async (sender, args) =>
+			{
+				bool answer = await DisplayAlert("Question?", "Would you like to play a game", "Yes", "No");
+				Debug.WriteLine("Answer: " + answer);
+			};
+
+			var simpleActionSheetButton = new Button { Text = "Simple ActionSheet" };
+
+			simpleActionSheetButton.Clicked += async (sender, args) =>
+			{
+				string action = await DisplayActionSheet("ActionSheet: Send to?", "Cancel", null, "Email", "Twitter", "Facebook");
+				Debug.WriteLine("Action: " + action);
+			};
+
+			var cancelDeleteActionSheetButton = new Button { Text = "Cancel/Delete ActionSheet" };
+
+			cancelDeleteActionSheetButton.Clicked += async (sender, args) =>
+			{
+				string action = await DisplayActionSheet("ActionSheet: SavePhoto?", "Cancel", "Delete", "Photo Roll", "Email");
+				Debug.WriteLine("Action: " + action);
+			};
+
+			var simplePromptButton = new Button { Text = "Simple Prompt" };
+
+			simplePromptButton.Clicked += async (sender, args) =>
+			{
+				await DisplayPromptAsync("Question 1", "What's your name?");
+			};
+
+			var verticalStack = new VerticalStackLayout
+			{
+				simpleAlertButton,
+				yesNoAlertButton,
+				simpleActionSheetButton,
+				cancelDeleteActionSheetButton,
+				simplePromptButton
+			};
+
+			return verticalStack;
+		}
+			
 		void AddTextResizeDemo(Microsoft.Maui.ILayout layout)
 		{
 			var resizeTestButton = new Button { Text = "Resize Test" };

@@ -9,9 +9,9 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	internal static class PopupManager
+	internal static class AlertManager
 	{
-		static readonly List<PopupRequestHelper> Subscriptions = new List<PopupRequestHelper>();
+		static readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
 
 		internal static void Subscribe(UIApplication application)
 		{
@@ -20,26 +20,27 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			Subscriptions.Add(new PopupRequestHelper(application));
+			Subscriptions.Add(new AlertRequestHelper(application));
 		}
 
 		internal static void Unsubscribe(UIApplication context)
 		{
 			var toRemove = Subscriptions.Where(s => s.Application == context).ToList();
 
-			foreach (PopupRequestHelper popupRequestHelper in toRemove)
+			foreach (AlertRequestHelper alertRequestHelper in toRemove)
 			{
-				popupRequestHelper.Dispose();
-				Subscriptions.Remove(popupRequestHelper);
+				alertRequestHelper.Dispose();
+				Subscriptions.Remove(alertRequestHelper);
 			}
 		}
-		internal sealed class PopupRequestHelper : IDisposable
+
+		internal sealed class AlertRequestHelper : IDisposable
 		{
 			const float AlertPadding = 10.0f;
 
 			int _busyCount;
 
-			internal PopupRequestHelper(UIApplication application)
+			internal AlertRequestHelper(UIApplication application)
 			{
 				Application = application;
 

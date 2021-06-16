@@ -33,7 +33,7 @@ namespace Microsoft.Maui
 		{
 			Application = Services.GetRequiredService<IApplication>();
 
-			PopupManager.Subscribe(application);
+			AlertManager.Subscribe(application);
 
 			var mauiContext = new MauiContext(Services);
 
@@ -95,7 +95,7 @@ namespace Microsoft.Maui
 
 		public override void WillTerminate(UIApplication application)
 		{
-			PopupManager.Unsubscribe(application);
+			AlertManager.Unsubscribe(application);
 
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillTerminate>(del => del(application));
 		}

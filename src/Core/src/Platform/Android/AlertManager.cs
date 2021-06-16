@@ -13,9 +13,9 @@ using AWindow = Android.Views.Window;
 
 namespace Microsoft.Maui
 {
-	internal static class PopupManager
+	internal static class AlertManager
 	{
-		static readonly List<PopupRequestHelper> Subscriptions = new List<PopupRequestHelper>();
+		static readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
 
 		internal static void Subscribe(Activity context, MauiContext mauiContext)
 		{
@@ -24,17 +24,17 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			Subscriptions.Add(new PopupRequestHelper(context, mauiContext));
+			Subscriptions.Add(new AlertRequestHelper(context, mauiContext));
 		}
 
 		internal static void Unsubscribe(Activity context)
 		{
 			var toRemove = Subscriptions.Where(s => s.Activity == context).ToList();
 
-			foreach (PopupRequestHelper popupRequestHelper in toRemove)
+			foreach (AlertRequestHelper alertRequestHelper in toRemove)
 			{
-				popupRequestHelper.Dispose();
-				Subscriptions.Remove(popupRequestHelper);
+				alertRequestHelper.Dispose();
+				Subscriptions.Remove(alertRequestHelper);
 			}
 		}
 
@@ -43,12 +43,12 @@ namespace Microsoft.Maui
 			Subscriptions.FirstOrDefault(s => s.Activity == context)?.ResetBusyCount();
 		}
 
-		internal sealed class PopupRequestHelper : IDisposable
+		internal sealed class AlertRequestHelper : IDisposable
 		{
 			int _busyCount;
 			bool? _supportsProgress;
 
-			internal PopupRequestHelper(Activity context, MauiContext mauiContext)
+			internal AlertRequestHelper(Activity context, MauiContext mauiContext)
 			{
 				Activity = context;
 				MauiContext = mauiContext;

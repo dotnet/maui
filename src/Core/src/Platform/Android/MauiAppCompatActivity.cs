@@ -53,7 +53,7 @@ namespace Microsoft.Maui
 				window = mauiApp.CreateWindow(state);
 			}
 
-			PopupManager.Subscribe(this, mauiContext);
+			AlertManager.Subscribe(this, mauiContext);
 
 			SetContentView(window.View.ToNative(mauiContext));
 
@@ -72,7 +72,7 @@ namespace Microsoft.Maui
 		{
 			base.OnDestroy();
 
-			PopupManager.Unsubscribe(this);
+			AlertManager.Unsubscribe(this);
 		}
 	}
 }
