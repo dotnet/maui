@@ -27,6 +27,7 @@ using NavigationPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iO
 using TabbedPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.TabbedRenderer;
 using FlyoutPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.PhoneFlyoutPageRenderer;
 using RadioButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
+using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
 #endif
 
 using Microsoft.Maui.Hosting;
@@ -215,6 +216,13 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(TextCell), typeof(TextCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
+
+					// This is for Layouts that currently don't work when assigned to LayoutHandler
+#if __IOS__
+					handlers.TryAddCompatibilityRenderer(typeof(AbsoluteLayout), typeof(DefaultRenderer));
+#endif
+
+
 					DependencyService.Register<Xaml.ResourcesLoader>();
 					DependencyService.Register<NativeBindingService>();
 					DependencyService.Register<NativeValueConverterService>();
