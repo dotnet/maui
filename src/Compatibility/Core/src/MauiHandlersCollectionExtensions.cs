@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -60,20 +59,17 @@ namespace Microsoft.Maui.Controls.Compatibility
 					typeof(ExportRendererAttribute),
 					typeof(ExportCellAttribute),
 				}, default(InitializationFlags),
-				(controlType) =>
+				(result) =>
 				{
-					handlersCollection?.TryAddHandler(controlType, typeof(RendererToHandlerShim));
+					handlersCollection?.TryAddHandler(result.target, typeof(RendererToHandlerShim));
 				});
-
-
-			DependencyService.ScanAssemblies(assemblies);
 #endif
 
 
 			return handlersCollection;
 		}
 
-		public static IFontCollection AddFonts(this IFontCollection fontCollection, params global::System.Reflection.Assembly[] assemblies)
+		public static IFontCollection AddCompatibilityFonts(this IFontCollection fontCollection, params global::System.Reflection.Assembly[] assemblies)
 		{
 			Internals.Registrar.RegisterAll(
 				assemblies,
@@ -86,8 +82,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return fontCollection;
 		}
 
-		public static IImageSourceServiceCollection AddServices(this IImageSourceServiceCollection services, params global::System.Reflection.Assembly[] assemblies)
+		public static IImageSourceServiceCollection AddCompatibilityServices(this IImageSourceServiceCollection services, params global::System.Reflection.Assembly[] assemblies)
 		{
+
+#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 			Internals.Registrar.RegisterAll(
 				assemblies,
 				null,
@@ -95,8 +93,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					typeof(ExportImageSourceHandlerAttribute)
 				}, default(InitializationFlags),
-				null);
-
+				(result) =>
+				{
+					// TODO MAUI: need to fill in registration of a service
+					// that can map legacy image handlers to new image service structures
+				});
+#endif
 			return services;
 		}
 	}

@@ -114,11 +114,11 @@ namespace Microsoft.Maui.Controls
 					assemblies = assemblies.Union(Internals.Registrar.ExtraAssemblies).ToArray();
 				}
 
-				Register(assemblies);
+				Initialize(assemblies);
 			}
 		}
 
-		internal static void ScanAssemblies(Assembly[] assemblies)
+		public static void Register(Assembly[] assemblies)
 		{
 			lock (s_initializeLock)
 			{
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public static void Register(Assembly[] assemblies)
+		internal static void Initialize(Assembly[] assemblies)
 		{
 			if (s_initialized)
 				return;
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls
 				if (s_initialized)
 					return;
 
-				ScanAssemblies(assemblies);
+				Register(assemblies);
 
 				s_initialized = true;
 			}

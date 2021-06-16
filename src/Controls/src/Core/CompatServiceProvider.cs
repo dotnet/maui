@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Hosting.Internal;
@@ -10,26 +12,13 @@ namespace Microsoft.Maui.Controls
 	static class CompatServiceProvider
 	{
 		static IServiceProvider? _serviceProvider;
-		static IEmbeddedFontLoader? _embeddedFontLoader;
 
-		// TODO MAUI This create seems wrong
 		public static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("ServiceProvider has not been initialized");
-
-		public static IFontRegistrar FontRegistrar => ServiceProvider.GetRequiredService<IFontRegistrar>();
 
 		public static IFontManager FontManager => ServiceProvider.GetRequiredService<IFontManager>();
 
-		public static ILoggerFactory LoggerFactory => ServiceProvider.GetRequiredService<ILoggerFactory>();
-
-		public static void SetFontLoader(Type loaderType)
-		{
-			if (_embeddedFontLoader != null)
-				return;
-
-			_embeddedFontLoader = (IEmbeddedFontLoader)Activator.CreateInstance(loaderType)!;
-			if (FontRegistrar is FontRegistrar fr)
-				fr.SetFontLoader(_embeddedFontLoader);
-		}
+		static List<(string filename, string? alias, Assembly assembly)> pendingFonts =
+			new List<(string filename, string? alias, Assembly assembly)>();
 
 		public static void SetServiceProvider(IServiceProvider services)
 		{
@@ -37,7 +26,33 @@ namespace Microsoft.Maui.Controls
 				throw new InvalidOperationException("The service provider can only be set once.");
 
 			_serviceProvider = services;
-			_embeddedFontLoader = _serviceProvider.GetService<IEmbeddedFontLoader>();
+
+			lock (pendingFonts)
+			{
+				foreach (var pendingFont in pendingFonts)
+				{
+					RegisterFont(pendingFont.filename, pendingFont.alias, pendingFont.assembly);
+				}
+
+				pendingFonts.Clear();
+			}
 		}
+
+		public static void RegisterFont(string filename, string? alias, Assembly assembly)
+		{
+			if (_serviceProvider == null)
+			{
+				lock (pendingFonts)
+				{
+					pendingFonts.Add((filename, alias, assembly));
+				}
+
+				return;
+			}
+
+			IFontRegistrar _fontRegistrar = ServiceProvider.GetRequiredService<IFontRegistrar>();
+			_fontRegistrar.Register(filename, alias, assembly);
+		}
+
 	}
 }

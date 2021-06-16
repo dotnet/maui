@@ -376,7 +376,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
-			detailRenderer.ViewController.View.Superview.BackgroundColor = Microsoft.Maui.Graphics.Colors.Black.ToUIColor();
+			if (detailRenderer.ViewController.View.Superview != null)
+				detailRenderer.ViewController.View.Superview.BackgroundColor = Microsoft.Maui.Graphics.Colors.Black.ToUIColor();
 
 			ToggleAccessibilityElementsHidden();
 		}
@@ -402,7 +403,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
 			if (((FlyoutPage)Element).Detail != null)
-				return (UIViewController)Platform.GetRenderer(((FlyoutPage)Element).Detail);
+				return Platform.GetRenderer(((FlyoutPage)Element).Detail).ViewController;
 			else
 				return base.ChildViewControllerForStatusBarHidden();
 		}
@@ -412,7 +413,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			get
 			{
 				if (((FlyoutPage)Element).Detail != null)
-					return (UIViewController)Platform.GetRenderer(((FlyoutPage)Element).Detail);
+					return Platform.GetRenderer(((FlyoutPage)Element).Detail).ViewController;
 				else
 					return base.ChildViewControllerForStatusBarHidden();
 			}

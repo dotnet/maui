@@ -44,7 +44,7 @@
     <Compile Remove="$(AndroidRoot)AppCompat\Resource.cs" />
     <Compile Remove="$(AndroidRoot)bin\**\*.cs" />
     <Compile Remove="$(AndroidRoot)obj\**\*.cs" />
-    <Compile Include="RendererToHandlerShim.Android.cs" />
+    <Compile Include="*.Android.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
     <Compile Include="$(iOSRoot)**\*.cs"></Compile>
@@ -56,7 +56,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http" />
-    <Compile Include="RendererToHandlerShim.iOS.cs" />
+    <Compile Include="*.iOS.cs" />
   </ItemGroup>
 
   <ItemGroup>

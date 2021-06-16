@@ -15,17 +15,12 @@ namespace Microsoft.Maui
 		readonly Dictionary<string, string?> _fontLookupCache = new();
 		readonly ILogger<FontRegistrar>? _logger;
 
-		IEmbeddedFontLoader? _fontLoader;
+		IEmbeddedFontLoader _fontLoader;
 
-		public FontRegistrar(IEmbeddedFontLoader? fontLoader = null, ILogger<FontRegistrar>? logger = null)
+		public FontRegistrar(IEmbeddedFontLoader fontLoader, ILogger<FontRegistrar>? logger = null)
 		{
 			_fontLoader = fontLoader;
 			_logger = logger;
-		}
-
-		public void SetFontLoader(IEmbeddedFontLoader? fontLoader)
-		{
-			_fontLoader = fontLoader;
 		}
 
 		public void Register(string filename, string? alias, Assembly assembly)

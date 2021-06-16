@@ -33,11 +33,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			_testCloudService = DependencyService.Get<ITestCloudService>();
 
-			SetMainPage(CreateDefaultMainPage());
-
 			//TestMainPageSwitches();
 
 			//SetMainPage(new ImageSourcesGallery());
+		}
+
+		protected override IWindow CreateWindow(IActivationState activationState)
+		{
+			return new Window(CreateDefaultMainPage());
 		}
 
 		protected override void OnStart()
