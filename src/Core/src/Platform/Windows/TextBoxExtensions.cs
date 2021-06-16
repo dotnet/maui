@@ -48,6 +48,11 @@ namespace Microsoft.Maui
 			textBox.InputScope = entry.ReturnType.ToNative();
 		}
 
+		public static void UpdateClearButtonVisibility(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.ClearButtonVisible = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing;
+		}
+
 		public static void UpdatePlaceholder(this MauiTextBox textBox, IEditor editor)
 		{
 			textBox.PlaceholderText = editor.Placeholder ?? string.Empty;
