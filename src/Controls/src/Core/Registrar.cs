@@ -434,7 +434,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 			RegisterStylesheets(flags);
 			Profile.FramePartition("DependencyService.Initialize");
-			DependencyService.Initialize(assemblies);
+			DependencyService.Register(assemblies);
 
 			Profile.FrameEnd();
 		}

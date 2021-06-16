@@ -46,5 +46,58 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			return handlersCollection;
 		}
+
+		public static IMauiHandlersCollection AddCompatibilityRenderers(this IMauiHandlersCollection handlersCollection, params global::System.Reflection.Assembly[] assemblies)
+		{
+
+#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
+
+			Internals.Registrar.RegisterAll(
+				assemblies,
+				null,
+				new[] 
+				{
+					typeof(ExportRendererAttribute),
+					typeof(ExportCellAttribute),
+				}, default(InitializationFlags),
+				(controlType) =>
+				{
+					handlersCollection?.TryAddHandler(controlType, typeof(RendererToHandlerShim));
+				});
+
+
+			DependencyService.ScanAssemblies(assemblies);
+#endif
+
+
+			return handlersCollection;
+		}
+
+		public static IFontCollection AddFonts(this IFontCollection fontCollection, params global::System.Reflection.Assembly[] assemblies)
+		{
+			Internals.Registrar.RegisterAll(
+				assemblies,
+				null,
+				new[]
+				{
+					typeof(ExportFontAttribute)
+				}, default(InitializationFlags),
+				null);
+			return fontCollection;
+		}
+
+		public static IImageSourceServiceCollection AddServices(this IImageSourceServiceCollection services, params global::System.Reflection.Assembly[] assemblies)
+		{
+			Internals.Registrar.RegisterAll(
+				assemblies,
+				null,
+				new[]
+				{
+					typeof(ExportImageSourceHandlerAttribute)
+				}, default(InitializationFlags),
+				null);
+
+			return services;
+		}
 	}
 }

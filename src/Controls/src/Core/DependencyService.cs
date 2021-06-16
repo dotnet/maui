@@ -114,20 +114,14 @@ namespace Microsoft.Maui.Controls
 					assemblies = assemblies.Union(Internals.Registrar.ExtraAssemblies).ToArray();
 				}
 
-				Initialize(assemblies);
+				Register(assemblies);
 			}
 		}
 
-		internal static void Initialize(Assembly[] assemblies)
+		internal static void ScanAssemblies(Assembly[] assemblies)
 		{
-			if (s_initialized)
-				return;
-
 			lock (s_initializeLock)
 			{
-				if (s_initialized)
-					return;
-
 				// Don't use LINQ for performance reasons
 				// Naive implementation can easily take over a second to run
 				foreach (Assembly assembly in assemblies)
@@ -145,6 +139,20 @@ namespace Microsoft.Maui.Controls
 						}
 					}
 				}
+			}
+		}
+
+		public static void Register(Assembly[] assemblies)
+		{
+			if (s_initialized)
+				return;
+
+			lock (s_initializeLock)
+			{
+				if (s_initialized)
+					return;
+
+				ScanAssemblies(assemblies);
 
 				s_initialized = true;
 			}

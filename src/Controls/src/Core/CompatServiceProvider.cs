@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		static IEmbeddedFontLoader? _embeddedFontLoader;
 
 		// TODO MAUI This create seems wrong
-		public static IServiceProvider ServiceProvider => _serviceProvider ??= CreateCompatServiceProvider();
+		public static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("ServiceProvider has not been initialized");
 
 		public static IFontRegistrar FontRegistrar => ServiceProvider.GetRequiredService<IFontRegistrar>();
 
@@ -38,19 +38,6 @@ namespace Microsoft.Maui.Controls
 
 			_serviceProvider = services;
 			_embeddedFontLoader = _serviceProvider.GetService<IEmbeddedFontLoader>();
-		}
-
-		static IServiceProvider CreateCompatServiceProvider()
-		{
-			var collection = new MauiServiceCollection();
-
-			collection.AddSingleton<ILoggerFactory, FallbackLoggerFactory>();
-			collection.AddSingleton<IFontRegistrar>(svc => new FontRegistrar(_embeddedFontLoader, svc.CreateLogger<FontRegistrar>()));
-			collection.AddSingleton<IFontManager>(svc => new FontManager(svc.GetRequiredService<IFontRegistrar>(), svc.CreateLogger<FontManager>()));
-
-			var provider = new MauiServiceProvider(collection, false);
-
-			return provider;
 		}
 	}
 }
