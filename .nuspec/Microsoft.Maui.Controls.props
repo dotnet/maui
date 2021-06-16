@@ -9,7 +9,7 @@
 	The actual item groups are in a separate conditionally-imported file as they use constructs that
 	are not compatible with older MSBuild versions.
 	-->
-	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.DefaultItems.props" Condition="'$(MSBuildSDKsPath)'!=''" />
+	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.DefaultItems.props" Condition="'$(UsingMicrosoftMauiControlsSdk)' != 'true' and '$(MSBuildSDKsPath)' != ''" />
 
 	<PropertyGroup>
 		<_IsHotRestartDefined>$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants.Trim())', '(^|;)HOTRESTART($|;)'))</_IsHotRestartDefined>

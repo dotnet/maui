@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <Import Project="../Shared/Common.targets" />
+  <Import Project="../Shared/Frameworks.targets" />
+
+  <PropertyGroup>
+    <OutputPath Condition=" '$(MauiPlatformName)' != '' ">$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
+  </PropertyGroup>
+
+  <!-- Android-only files -->
+  <ItemGroup Condition=" '$(MauiPlatformName)' == 'android' ">
+    <_AndroidFiles Include="$(MauiRootDirectory)src/Core/src/bin/$(Configuration)/net6.0-android/Microsoft.Maui.aar" />
+    <None Include="@(_AndroidFiles)" FullTfm="net6.0-android30.0" Tfm="net6.0-android" Profile="Android" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Core/src/bin/$(Configuration)/%(Tfm)/ref/Microsoft.Maui.dll')" />
+    <None Update="@(None)" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="ref/%(FullTfm)/%(FileName)%(Extension)" />
+    <_PackageFiles Include="@(None)" PackagePath="ref/%(FullTfm)" TargetPath="ref/%(FullTfm)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(MauiPlatformName)' == '' ">
+    <ProjectReference Include="$(MauiRootDirectory)src/Core/src/Core-net6.csproj" />
+  </ItemGroup>
+
+</Project>
