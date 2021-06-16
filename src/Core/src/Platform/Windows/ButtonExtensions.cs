@@ -15,9 +15,6 @@ namespace Microsoft.Maui
 		public static void UpdateBackground(this MauiButton nativeButton, IButton button, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			nativeButton.UpdateBackground(button.Background, defaultBrush);
 
-		public static void UpdateText(this MauiButton nativeButton, IButton button) =>
-			nativeButton.Content = button.Text;
-
 		public static void UpdateTextColor(this MauiButton nativeButton, IButton button, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			nativeButton.UpdateForegroundColor(button.TextColor, defaultBrush);
 
@@ -30,7 +27,7 @@ namespace Microsoft.Maui
 		public static void UpdateFont(this MauiButton nativeButton, IButton button, IFontManager fontManager) =>
 			nativeButton.UpdateFont(button.Font, fontManager);
 
-		public static async Task UpdateImageSourceAsync(this MauiButton nativeButton, IButton button, IImageSourceServiceProvider? provider)
+		public static async Task UpdateContentAsync(this MauiButton nativeButton, IButton button, IImageSourceServiceProvider? provider)
 		{
 			var imageSource = button.ImageSource;
 			var text = button.Text;
