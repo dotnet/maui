@@ -34,7 +34,7 @@
 
   <PropertyGroup>
     <MauiRootDirectory>$(MSBuildThisFileDirectory)</MauiRootDirectory>
-    <MauiNuSpecDirectory>$(MSBuildThisFileDirectory).nuspec/</MauiNuSp
+    <MauiNuSpecDirectory>$(MSBuildThisFileDirectory).nuspec/</MauiNuSpecDirectory>
     <DotNetOutputPath>$(MSBuildThisFileDirectory)bin/</DotNetOutputPath>
     <DotNetTempDirectory>$(DotNetOutputPath)temp/</DotNetTempDirectory>
     <DotNetDirectory>$(DotNetOutputPath)dotnet/</DotNetDirectory>
