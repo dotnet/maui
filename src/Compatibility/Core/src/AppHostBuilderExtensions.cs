@@ -27,6 +27,9 @@ using NavigationPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iO
 using TabbedPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.TabbedRenderer;
 using FlyoutPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.PhoneFlyoutPageRenderer;
 using RadioButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
+#elif GTK
+using Microsoft.Maui.Controls.Compatibility.Platform.Gtk;
+using ScrollViewHandler = Microsoft.Maui.Handlers.ScrollView.ScrollViewHandler;
 #endif
 
 using Microsoft.Maui.Hosting;
@@ -236,6 +239,12 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
+#if GTK
+					handlers.AddHandler<ScrollView, ScrollViewHandler>();
+					DependencyService.Register<NativeBindingService>();
+					DependencyService.Register<NativeValueConverterService>();
+
+#endif
 				})
 				.ConfigureServices<MauiCompatBuilder>();
 
@@ -247,7 +256,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			public void Configure(HostBuilderContext context, IServiceProvider services)
 			{
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
+#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST || GTK
 				CompatServiceProvider.SetServiceProvider(services);
 #endif
 			}

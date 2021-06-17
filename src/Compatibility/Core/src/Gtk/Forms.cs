@@ -13,14 +13,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.PlatformServices = gtkServices;
 		}
 
-		internal static void RegisterCompatRenderers(
-			Assembly[] assemblies,
-			Assembly defaultRendererAssembly,
-			Action<Type> viewRegistered)
-		{
-			;
-		}
-
 	}
 
 }
