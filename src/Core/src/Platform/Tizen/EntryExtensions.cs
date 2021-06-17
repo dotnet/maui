@@ -24,6 +24,12 @@ namespace Microsoft.Maui
 			nativeEntry.HorizontalTextAlignment = entry.HorizontalTextAlignment.ToNative();
 		}
 
+		public static void UpdateVerticalTextAlignment(this Entry nativeEntry, ITextAlignment entry)
+		{
+			nativeEntry.SetVerticalTextAlignment(entry.VerticalTextAlignment.ToNativeDouble());
+			nativeEntry.SetVerticalPlaceHolderTextAlignment(entry.VerticalTextAlignment.ToNativeDouble());
+		}
+
 		public static void UpdateIsPassword(this Entry nativeEntry, IEntry entry)
 		{
 			nativeEntry.IsPassword = entry.IsPassword;
