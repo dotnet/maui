@@ -22,6 +22,7 @@
     <MicrosoftJSInteropPackageVersion>6.0.0-preview.6.21306.3</MicrosoftJSInteropPackageVersion>
     <MicrosoftAspNetCoreAppRuntimewinx64Version>6.0.0-preview.6.21306.3</MicrosoftAspNetCoreAppRuntimewinx64Version>
     <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.0-preview.6.21305.3</MicrosoftWindowsDesktopAppRuntimewinx64Version>
+    <SystemCodeDomPackageVersion>6.0.0-preview.6.21307.1</SystemCodeDomPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Trim all characters after first `-` or `+` is encountered. -->

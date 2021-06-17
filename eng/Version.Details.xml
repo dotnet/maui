@@ -84,5 +84,9 @@
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>074d8b7e48017a9e582255910099a9430489f6f0</Sha>
     </Dependency>
+    <Dependency Name="System.CodeDom" Version="6.0.0-preview.6.21307.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>1d2aa13ffc256a8c3f645de9c4d0f1d4f3296711</Sha>
+    </Dependency>
   </ProductDependencies>
 </Dependencies>
