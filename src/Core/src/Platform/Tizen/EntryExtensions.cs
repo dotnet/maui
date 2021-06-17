@@ -141,6 +141,51 @@ namespace Microsoft.Maui.Platform
 			return end;
 		}
 
+		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
+		[PortHandler]
+		public static void UpdateSelectionLength(this Entry nativeEntry, IEntry entry)
+		{
+			var start = GetSelectionStart(nativeEntry, entry);
+			var end = GetSelectionEnd(nativeEntry, entry, start);
+			var selectionLength = end - start;
+
+			if (selectionLength != entry.SelectionLength)
+				entry.SelectionLength = selectionLength;
+
+			if (selectionLength > 0)
+			{
+				nativeEntry.SetSelectionRegion(start, end);
+			}
+			else
+			{
+				nativeEntry.CursorPosition = entry.CursorPosition;
+			}
+		}
+
+		static int GetSelectionStart(Entry nativeEntry, IEntry entry)
+		{
+			var start = entry.Text?.Length ?? 0;
+			var cursorPosition = entry.CursorPosition;
+
+			if (entry.CursorPosition > 0)
+				start = Math.Min(start, cursorPosition);
+
+			if (start != cursorPosition)
+				entry.CursorPosition = start;
+
+			return start;
+		}
+
+		static int GetSelectionEnd(Entry nativeEntry, IEntry entry, int start)
+		{
+			var end = start;
+
+			if (entry.SelectionLength > 0)
+				end = Math.Min((start + entry.SelectionLength), entry.Text?.Length ?? 0);
+
+			return end;
+		}
+
 		public static InputPanelReturnKeyType ToInputPanelReturnKeyType(this ReturnType returnType)
 		{
 			switch (returnType)

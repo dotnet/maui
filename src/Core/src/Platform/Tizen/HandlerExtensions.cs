@@ -16,6 +16,12 @@ namespace Microsoft.Maui
 
 			var handler = view.Handler;
 
+			if (handler?.MauiContext != null &&
+				handler.MauiContext != context)
+			{
+				handler = null;
+			}
+
 			if (handler == null)
 			{
 				handler = context.Handlers.GetHandler(view.GetType());
@@ -24,9 +30,12 @@ namespace Microsoft.Maui
 					throw new Exception($"Handler not found for view {view}");
 
 				handler.SetMauiContext(context);
-				handler.SetVirtualView(view);
 				view.Handler = handler;
 			}
+
+			if (handler.VirtualView != view)
+				handler.SetVirtualView(view);
+
 
 			if (((INativeViewHandler)handler).NativeView is not EvasObject result)
 			{

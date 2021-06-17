@@ -113,6 +113,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateSelectionLength(editor);
 		}
 
+		public static void MapKeyboard(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateKeyboard(editor);
+		}
+
 		[MissingMapper]
 		public static void MapCharacterSpacing(IEditorHandler handler, IEditor editor) { }
 

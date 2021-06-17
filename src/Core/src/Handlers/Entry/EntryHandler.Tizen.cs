@@ -1,5 +1,6 @@
 ﻿using System;
 using Tizen.UIExtensions.ElmSharp;
+using SmartEvent = ElmSharp.SmartEvent;
 using EEntry = ElmSharp.Entry;
 
 namespace Microsoft.Maui.Handlers
@@ -155,6 +156,21 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateKeyboard(entry);
 		}
 
+		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateSelectionLength(entry);
+		}
+
+		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateSelectionLength(entry);
+		}
+
+		public static void MapKeyboard(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateKeyboard(editor);
+		}
+
 		[MissingMapper]
 		public static void MapCharacterSpacing(IEntryHandler handler, IEntry entry) { }
 
@@ -205,6 +221,37 @@ namespace Microsoft.Maui.Handlers
 			{
 				VirtualView.SelectionLength = 0;
 				VirtualView.CursorPosition = PlatformView.CursorPosition;
+			}
+		}
+
+		void OnCursorChanged(object? sender, EventArgs e)
+		{
+			if (VirtualView == null || NativeView == null)
+				return;
+
+			var position = NativeView.CursorPosition;
+
+			NativeView.GetSelectRegion(out int start, out int end);
+
+			if (start > -1)
+			{
+				position = (start < end) ? start : end;
+				var selectionLength = Math.Abs(end - start);
+				VirtualView.SelectionLength = selectionLength;
+			}
+
+			VirtualView.CursorPosition = position;
+		}
+
+		void OnSelectionCleared(object sender, EventArgs e)
+		{
+			if (VirtualView == null || NativeView == null)
+				return;
+
+			if (NativeView.IsFocused)
+			{
+				VirtualView.SelectionLength = 0;
+				VirtualView.CursorPosition = NativeView.CursorPosition;
 			}
 		}
 
