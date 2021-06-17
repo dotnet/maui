@@ -72,11 +72,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public OSAppTheme RequestedTheme { get; set; }
 
-#pragma warning disable 1998
 		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-#pragma warning restore 1998
+
 		{
-			throw new NotImplementedException();
+			using var client = new System.Net.Http.HttpClient();
+
+			// Do not remove this await otherwise the client will dispose before
+			// the stream even starts
+			var result = await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
+
+			return result;
 
 		}
 
