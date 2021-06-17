@@ -4,6 +4,8 @@ using Gtk;
 namespace Microsoft.Maui.Handlers
 {
 
+	// https://developer.gnome.org/gtk3/stable/GtkCheckButton.html
+	
 	public partial class CheckBoxHandler : ViewHandler<ICheckBox, CheckButton>
 	{
 
@@ -31,8 +33,10 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		[MissingMapper]
-		public static void MapForeground(CheckBoxHandler handler, ICheckBox check) { }
+		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
+		{
+			handler.NativeView?.UpdateForeground(check.Foreground);
+		}
 
 	}
 

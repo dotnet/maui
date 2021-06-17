@@ -164,7 +164,41 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry) { }
 
 		[MissingMapper]
-		public static void MapKeyboard(EntryHandler handler, IEntry entry) { }
+		public static void MapKeyboard(EntryHandler handler, IEntry entry)
+		{
+			if (handler.NativeView is not { } nativeView)
+				return;
+
+			// https://developer.gnome.org/gtk3/stable/GtkEntry.html#gtk-entry-set-input-purpose
+			// seems not to work
+			switch (entry.Keyboard)
+			{
+				case EmailKeyboard:
+					nativeView.InputPurpose = InputPurpose.Email;
+
+					break;
+				case NumericKeyboard:
+					nativeView.InputPurpose = InputPurpose.Number;
+
+					break;
+				case TelephoneKeyboard:
+					nativeView.InputPurpose = InputPurpose.Phone;
+
+					break;
+				case TextKeyboard:
+					nativeView.InputPurpose = InputPurpose.FreeForm;
+
+					break;
+				case UrlKeyboard:
+					nativeView.InputPurpose = InputPurpose.Url;
+
+					break;
+				default:
+					nativeView.InputPurpose = nativeView.InputPurpose;
+
+					break;
+			}
+		}
 
 	}
 
