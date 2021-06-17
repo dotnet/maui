@@ -13,6 +13,9 @@ using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, UI
 #elif NETSTANDARD
 using NativeView = System.Object;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, System.Object>;
+#elif GTK
+using NativeView = Gtk.Widget;
+using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Gtk.Widget>;
 #elif WINDOWS
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Microsoft.UI.Xaml.FrameworkElement>;
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
