@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 
 	// https://developer.gnome.org/gtk3/stable/GtkComboBox.html
-	
+
 	public partial class PickerHandler : ViewHandler<IPicker, ComboBox>
 	{
 
@@ -34,15 +34,15 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(ComboBox nativeView)
 		{
 			base.ConnectHandler(nativeView);
-			
+
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 
-			NativeView.Changed +=OnNativeViewChanged;
+			NativeView.Changed += OnNativeViewChanged;
 		}
 
 		void OnNativeViewChanged(object? sender, EventArgs args)
 		{
-			if (sender is ComboBox nativeView && VirtualView is {} virtualView)
+			if (sender is ComboBox nativeView && VirtualView is { } virtualView)
 			{
 				virtualView.SelectedIndex = nativeView.Active;
 			}
@@ -51,10 +51,10 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(ComboBox nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			
+
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 
-			NativeView.Changed -=OnNativeViewChanged;
+			NativeView.Changed -= OnNativeViewChanged;
 		}
 
 		public static void SetValues(ComboBox nativeView, IPicker virtualView)
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Handlers
 				nativeView.Active = view.SelectedIndex;
 			}
 		}
-		
+
 		public static void MapReload(PickerHandler handler, IPicker picker)
 		{
 			var nativeView = handler.NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
@@ -96,22 +96,25 @@ namespace Microsoft.Maui.Handlers
 			handler.MapFont(view);
 
 		}
-		
-		[MissingMapper]
-		public static void MapCharacterSpacing(PickerHandler handler, IPicker view) { }
-		
-		[MissingMapper]
-		public static void MapTitle(PickerHandler handler, IPicker view) { }
-		
-		[MissingMapper]
-		public static void MapTextColor(PickerHandler handler, IPicker view) { }
 
 		[MissingMapper]
-		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker view) { }
-		
+		public static void MapCharacterSpacing(PickerHandler handler, IPicker view) { }
+
+		[MissingMapper]
+		public static void MapTitle(PickerHandler handler, IPicker view) { }
+
+		public static void MapTextColor(PickerHandler handler, IPicker view)
+		{
+			handler.NativeView.UpdateTextColor(view?.TextColor);
+		}
+
+		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker view)
+		{
+			handler.NativeView.UpdateHorizontalTextAlignment(view.HorizontalTextAlignment);
+		}
+
 		[MissingMapper]
 		public static void MapTitleColor(PickerHandler handler, IPicker view) { }
-		
 
 	}
 
