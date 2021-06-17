@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public IServiceProvider Services => _services;
 
-		public IMauiHandlersServiceProvider Handlers => _handlersServiceProvider;
+		public IMauiHandlersServiceProvider Handlers => _handlersServiceProvider; 
+		
+		public TargetIdiom Idiom => TargetIdiom.Phone;
 	}
 }

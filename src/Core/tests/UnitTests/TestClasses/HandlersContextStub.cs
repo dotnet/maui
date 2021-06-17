@@ -15,6 +15,8 @@ namespace Microsoft.Maui.UnitTests
 
 		public IServiceProvider Services => _services;
 
-		public IMauiHandlersServiceProvider Handlers => _mauiHandlersServiceProvider;
+		public IMauiHandlersServiceProvider Handlers => _mauiHandlersServiceProvider; 
+		
+		public TargetIdiom Idiom => TargetIdiom.Phone;
 	}
 }

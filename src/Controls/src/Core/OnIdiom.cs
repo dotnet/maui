@@ -72,7 +72,9 @@ namespace Microsoft.Maui.Controls
 
 		public static implicit operator T(OnIdiom<T> onIdiom)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			switch (Device.Idiom)
+#pragma warning restore CS0618 // Type or member is obsolete
 			{
 				default:
 				case TargetIdiom.Phone:

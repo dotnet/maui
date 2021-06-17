@@ -18,5 +18,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 #if __ANDROID__
 		public Android.Content.Context Context => Platform.DefaultContext;
 #endif
+
+		public TargetIdiom Idiom => TargetIdiom.Phone;
 	}
 }

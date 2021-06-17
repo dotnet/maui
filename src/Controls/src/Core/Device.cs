@@ -25,11 +25,15 @@ namespace Microsoft.Maui.Controls
 
 		static IPlatformServices s_platformServices;
 
+		[Obsolete]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetIdiom(TargetIdiom value) => Idiom = value;
+
+		[Obsolete("Device.Idiom is obsolete. Please use MauiContext.Idiom instead")]
 		public static TargetIdiom Idiom { get; internal set; }
 
 		//TODO: Why are there two of these? This is never used...?
+		[Obsolete]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
 

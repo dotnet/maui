@@ -127,7 +127,9 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (Device.Idiom == TargetIdiom.Phone)
+				var mauiContext = this.FindMauiContextOnParent();
+
+				if (mauiContext.Idiom == TargetIdiom.Phone)
 					return false;
 
 				FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
@@ -143,7 +145,9 @@ namespace Microsoft.Maui.Controls
 
 		public virtual bool ShouldShowToolbarButton()
 		{
-			if (Device.Idiom == TargetIdiom.Phone)
+			var mauiContext = this.FindMauiContextOnParent();
+
+			if (mauiContext.Idiom == TargetIdiom.Phone)
 				return true;
 
 			FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;

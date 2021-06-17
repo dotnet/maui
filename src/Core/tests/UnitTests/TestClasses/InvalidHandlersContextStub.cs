@@ -10,6 +10,8 @@ namespace Microsoft.Maui.UnitTests
 
 		public IServiceProvider Services => null!;
 
-		public IMauiHandlersServiceProvider Handlers => null!;
+		public IMauiHandlersServiceProvider Handlers => null!; 
+		
+		public TargetIdiom Idiom => TargetIdiom.Unsupported;
 	}
 }
