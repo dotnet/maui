@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <Import Project="../Shared/Common.targets" />
+  <Import Project="../Shared/FrameworkList.targets" />
+
+  <PropertyGroup>
+    <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration"          GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection"    GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions"   GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"   GeneratePathProperty="true" />
+    <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Configuration)/lib/netstandard2.0/Microsoft.Extensions.Configuration.dll" />
+    <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_DependencyInjection)/lib/netstandard2.1/Microsoft.Extensions.DependencyInjection.dll" />
+    <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Hosting_Abstractions)/lib/netstandard2.1/Microsoft.Extensions.Hosting.Abstractions.dll" />
+    <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_FileProviders_Embedded)/lib/netstandard2.0/Microsoft.Extensions.FileProviders.Embedded.dll" />
+    <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Logging_Abstractions)/lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll" />
+    <None Include="@(_ExtensionsFiles)" FullTfm="@(_TargetPlatform->'%(FullTfm)')" Tfm="@(_TargetPlatform->'%(Tfm)')" Profile="@(_TargetPlatform->'%(Profile)')" />
+    <None Update="@(None)" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="lib/net6.0/%(FileName)%(Extension)" />
+    <_PackageFiles Include="@(None)" PackagePath="lib/net6.0" TargetPath="lib/net6.0" />
+  </ItemGroup>
+
+</Project>

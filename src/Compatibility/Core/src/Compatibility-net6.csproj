@@ -8,9 +8,7 @@
     <AndroidRoot>Android\</AndroidRoot>
     <iOSRoot>iOS\</iOSRoot>
     <WindowsRoot>WinUI\</WindowsRoot>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
@@ -73,7 +71,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="AppHostBuilderExtensions.Controls.cs" />
     <Compile Include="RendererToHandlerShim.cs" />
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />

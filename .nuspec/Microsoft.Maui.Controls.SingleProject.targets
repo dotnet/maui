@@ -29,32 +29,31 @@
 
   <!-- Removals -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' ">
-    <Compile
+    <!-- Remove all source from other platforms -->
+    <_MauiCompileToRemove
         Condition=" '$(TargetPlatformIdentifier)' != 'android' and '$(AndroidProjectFolder)' != '' "
-        Remove="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)"
-    />
-    <Compile
+        Include="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+    <_MauiCompileToRemove
         Condition=" '$(TargetPlatformIdentifier)' != 'ios' and '$(iOSProjectFolder)' != '' "
-        Remove="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)"
-    />
-    <Compile
+        Include="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+    <_MauiCompileToRemove
         Condition=" '$(TargetPlatformIdentifier)' != 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' "
-        Remove="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)"
-    />
-    <Compile
+        Include="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+    <_MauiCompileToRemove
         Condition=" '$(TargetPlatformIdentifier)' != 'windows' and '$(WindowsProjectFolder)' != '' "
-        Remove="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)"
-    />
+        Include="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+    <Compile Remove="@(_MauiCompileToRemove)" />
+    <None Include="@(_MauiCompileToRemove)" />
+    <_MauiCompileToRemove Remove="@(_MauiCompileToRemove)" />
 
     <!-- Remove all Windows (WinUI) XAML Files from the Windows folder -->
-    <EmbeddedResource
-      Condition="'$(WindowsProjectFolder)' != ''"
-      Remove="$(WindowsProjectFolder)**/*.xaml" />
-
-    <MauiXaml
-      Condition="'$(WindowsProjectFolder)' != ''"
-      Remove="$(WindowsProjectFolder)**/*.xaml" />
-
+    <_MauiXamlToRemove
+        Condition="'$(WindowsProjectFolder)' != ''"
+        Include="$(WindowsProjectFolder)**/*.xaml" />
+    <EmbeddedResource Remove="@(_MauiXamlToRemove)" />
+    <MauiXaml Remove="@(_MauiXamlToRemove)" />
+    <None Include="@(_MauiXamlToRemove)" />
+    <_MauiXamlToRemove Remove="@(_MauiXamlToRemove)" />
   </ItemGroup>
 
   <!-- IDE capabilities -->

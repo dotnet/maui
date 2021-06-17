@@ -1,0 +1,216 @@
+{
+  "version": "@VERSION@",
+  "workloads": {
+    "maui": {
+      "description": ".NET MAUI SDK for all platforms",
+      "extends": [ 
+        "maui-mobile",
+        "maui-desktop"
+      ]
+    },
+    "maui-mobile": {
+      "description": ".NET MAUI SDK for Mobile",
+      "extends": [ 
+        "maui-android",
+        "maui-ios"
+      ]
+    },
+    "maui-desktop": {
+      "description": ".NET MAUI SDK for Desktop",
+      "extends": [ 
+        "maui-maccatalyst",
+        "maui-windows"
+      ]
+    },
+    "maui-core": {
+      "description": ".NET MAUI SDK Core Packages",
+      "packs": [
+          "Microsoft.AspNetCore.Components.WebView.Maui",
+          "Microsoft.Maui.Dependencies",
+          "Microsoft.Maui.Controls.Sdk",
+          "Microsoft.Maui.Extensions",
+          "Microsoft.Maui.Resizetizer.Sdk",
+          "Microsoft.Maui.Templates"
+      ]
+    },
+    "maui-android": {
+      "description": ".NET MAUI SDK for Android",
+      "extends": [ 
+        "maui-core",
+        "microsoft-android-sdk-full"
+      ],
+      "packs": [
+          "Microsoft.Maui.Core.Ref.android",
+          "Microsoft.Maui.Core.Runtime.android",
+          "Microsoft.Maui.Controls.Ref.android",
+          "Microsoft.Maui.Controls.Runtime.android",
+          "Microsoft.Maui.Essentials.Ref.android",
+          "Microsoft.Maui.Essentials.Runtime.android"
+      ]
+    },
+    "maui-maccatalyst": {
+      "description": ".NET MAUI SDK for Mac Catalyst",
+      "extends": [ 
+        "maui-core",
+        "microsoft-maccatalyst-sdk-full"
+      ],
+      "packs": [
+          "Microsoft.Maui.Core.Ref.maccatalyst",
+          "Microsoft.Maui.Core.Runtime.maccatalyst",
+          "Microsoft.Maui.Controls.Ref.maccatalyst",
+          "Microsoft.Maui.Controls.Runtime.maccatalyst",
+          "Microsoft.Maui.Essentials.Ref.maccatalyst",
+          "Microsoft.Maui.Essentials.Runtime.maccatalyst"
+      ]
+    },
+    "maui-ios": {
+      "description": ".NET MAUI SDK for iOS",
+      "extends": [ 
+        "maui-core",
+        "microsoft-ios-sdk-full"
+      ],
+      "packs": [
+          "Microsoft.Maui.Core.Ref.ios",
+          "Microsoft.Maui.Core.Runtime.ios",
+          "Microsoft.Maui.Controls.Ref.ios",
+          "Microsoft.Maui.Controls.Runtime.ios",
+          "Microsoft.Maui.Essentials.Ref.ios",
+          "Microsoft.Maui.Essentials.Runtime.ios"
+      ]
+    },
+    "maui-windows": {
+      "description": ".NET MAUI SDK for Windows",
+      "extends": [ "maui-core" ],
+      "packs": [
+          "Microsoft.Maui.Core.Ref.windows",
+          "Microsoft.Maui.Core.Runtime.windows",
+          "Microsoft.Maui.Controls.Ref.windows",
+          "Microsoft.Maui.Controls.Runtime.windows",
+          "Microsoft.Maui.Essentials.Ref.windows",
+          "Microsoft.Maui.Essentials.Runtime.windows"
+      ]
+    }
+  },
+  "packs": {
+    "Microsoft.AspNetCore.Components.WebView.Maui": {
+      "kind": "library",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Ref.android": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Ref.maccatalyst": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Ref.ios": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Ref.windows": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Runtime.android": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Runtime.maccatalyst": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Runtime.ios": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Runtime.windows": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Ref.android": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Ref.maccatalyst": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Ref.ios": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Ref.windows": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Runtime.android": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Runtime.maccatalyst": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Runtime.ios": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Runtime.windows": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Dependencies": {
+      "kind": "library",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Essentials.Ref.android": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Essentials.Ref.maccatalyst": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Essentials.Ref.ios": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Essentials.Ref.windows": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Essentials.Runtime.android": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Essentials.Runtime.maccatalyst": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Essentials.Runtime.ios": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Essentials.Runtime.windows": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Extensions": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Sdk": {
+      "kind": "sdk",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Resizetizer.Sdk": {
+      "kind": "sdk",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Templates": {
+      "kind": "template",
+      "version": "@VERSION@"
+    }
+  }
+}

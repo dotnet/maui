@@ -91,6 +91,9 @@ Task("VS-NET6")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
+        // VS has trouble building all the references correctly so this makes sure everything is built
+        // and we're ready to go right when VS launches
+        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample-net6.csproj");
         StartVisualStudioForDotNet6();
     });
 
@@ -138,7 +141,8 @@ Task("VS-WINUI")
 
         MSBuild(sln, msbuildSettings);
 
-        var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, });
+        var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, Version = "[\"16.0\",\"17.0\"]"});
+
         if (vsLatest == null)
             throw new Exception("Unable to find Visual Studio!");
         
@@ -157,6 +161,9 @@ Task("VS-ANDROID")
             ToolPath = dotnetPath
         });
 
+        // VS has trouble building all the references correctly so this makes sure everything is built
+        // and we're ready to go right when VS launches
+        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample-net6.csproj");
         StartVisualStudioForDotNet6("./Microsoft.Maui.Droid.sln");
     });
 
