@@ -8,18 +8,20 @@
     <MicrosoftiOSSdkPackageVersion>15.0.100-ci.main.25</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>15.0.100-ci.main.25</MicrosofttvOSSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>12.0.100-ci.main.25</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftExtensionsHostingAbstractionsVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsHostingAbstractionsVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsDependencyInjectionVersion>
-    <MicrosoftExtensionsConfigurationVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsConfigurationVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingDebugVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsLoggingDebugVersion>
-    <MicrosoftExtensionsFileProvidersEmbeddedVersion>6.0.0-preview.6.21306.3</MicrosoftExtensionsFileProvidersEmbeddedVersion>
-    <MicrosoftAspNetCoreAuthorizationVersion>6.0.0-preview.6.21306.3</MicrosoftAspNetCoreAuthorizationVersion>
-    <MicrosoftAspNetCoreComponentsWebViewVersion>6.0.0-preview.6.21306.3</MicrosoftAspNetCoreComponentsWebViewVersion>
-    <MicrosoftAspNetCoreComponentsWebVersion>6.0.0-preview.6.21306.3</MicrosoftAspNetCoreComponentsWebVersion>
-    <MicrosoftJSInteropVersion>6.0.0-preview.6.21306.3</MicrosoftJSInteropVersion>
+    <MicrosoftExtensionsHostingAbstractionsPackageVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>6.0.0-preview.6.21306.3</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.0-preview.6.21306.3</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.0-preview.6.21306.3</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.0-preview.6.21306.3</MicrosoftAspNetCoreComponentsWebPackageVersion>
+    <MicrosoftJSInteropPackageVersion>6.0.0-preview.6.21306.3</MicrosoftJSInteropPackageVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64Version>6.0.0-preview.6.21306.3</MicrosoftAspNetCoreAppRuntimewinx64Version>
+    <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.0-preview.6.21305.3</MicrosoftWindowsDesktopAppRuntimewinx64Version>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Trim all characters after first `-` or `+` is encountered. -->
