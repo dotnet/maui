@@ -4,6 +4,7 @@
   <Import Project="../Shared/Frameworks.targets" />
 
   <PropertyGroup>
+    <Description>.NET MAUI Core targeting pack</Description>
     <OutputPath Condition=" '$(MauiPlatformName)' != '' ">$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
   </PropertyGroup>
 
