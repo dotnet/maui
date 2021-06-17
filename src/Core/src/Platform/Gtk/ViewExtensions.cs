@@ -12,17 +12,18 @@ namespace Microsoft.Maui
 		public static void UpdateAutomationId(this Widget nativeView, IView view)
 		{ }
 
-		[PortHandler("implement drawing of other paints than solidpaint")]
 		public static void UpdateBackground(this Widget nativeView, IView view)
 		{
 			var color = view.Background?.BackgroundColor;
 
-			if (view.Background is SolidPaint solidPaint)
+			if (view.Background is { } paint)
 			{
-				color = solidPaint.Color;
+				color = paint.ToColor();
 			}
 
-			if (color == null)
+			var css = view.Background.CssImage();
+
+			if (color == null && css == null)
 				return;
 
 			switch (nativeView)
@@ -37,21 +38,29 @@ namespace Microsoft.Maui
 
 					break;
 				default:
-					nativeView.SetBackgroundColor(color);
+					if (css != null)
+					{
+						nativeView.SetStyleImage(css, "background-image");
+					}
+					else
+					{
+						nativeView.SetBackgroundColor(color);
+					}
 
 					break;
 			}
 
 		}
-		
+
 		public static void UpdateForeground(this Widget nativeView, Paint? paint)
 		{
-			var color = paint?.ForegroundColor;
+			if (paint == null)
+				return;
 
-			if (paint is SolidPaint solidPaint)
-			{
-				color = solidPaint.Color;
-			}
+			var color = paint.ForegroundColor;
+
+			if (paint.ToColor() is { } cp)
+				color = cp;
 
 			if (color == null)
 				return;
@@ -65,9 +74,10 @@ namespace Microsoft.Maui
 				case CheckButton:
 					// no effect as check is an icon
 					nativeView.SetColor(color, "color", "check");
+
 					break;
 				case ComboBox box:
-					 box.GetCellRendererText().SetForeground(color);
+					box.GetCellRendererText().SetForeground(color);
 
 					break;
 				default:
@@ -77,6 +87,7 @@ namespace Microsoft.Maui
 			}
 
 		}
+
 		public static void UpdateIsEnabled(this Widget nativeView, IView view) =>
 			nativeView?.UpdateIsEnabled(view.IsEnabled);
 

@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 
 	// https://developer.gnome.org/gtk3/stable/GtkScale.html
-	
+
 	public partial class SliderHandler : ViewHandler<ISlider, Scale>
 	{
 
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 
 					var css = p.CssImage();
 					// not working:
-					nativeView.SetStyleImage(css, nativeView.CssMainNode(), "background-image", "contents > trough > slider");
+					nativeView.SetStyleImage(css, "background-image", "contents > trough > slider");
 
 				})
 			   .FireAndForget(handler);

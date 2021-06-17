@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 	public static class WidgetColorExtensions
 	{
 
-		public static void SetBackgroundColor(this Gtk.Widget widget, Graphics.Color color)
+		public static void SetBackgroundColor(this Gtk.Widget widget, Graphics.Color? color)
 		{
 			if (color == null)
 				return;
