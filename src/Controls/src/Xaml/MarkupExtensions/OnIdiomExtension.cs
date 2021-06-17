@@ -101,7 +101,9 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		object GetValue()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			switch (Device.Idiom)
+#pragma warning restore CS0618 // Type or member is obsolete
 			{
 				case TargetIdiom.Phone:
 					return Phone ?? Default;
