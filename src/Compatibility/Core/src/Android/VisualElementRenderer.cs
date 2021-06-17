@@ -198,7 +198,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return control?.Focusable == true ? control : null;
 		}
 
-		public ViewGroup ViewGroup => this;
 		AView IVisualElementRenderer.View => this;
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
