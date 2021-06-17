@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Controls
 	public partial class Application : IApplication
 	{
 		List<IWindow> _windows = new List<IWindow>();
+
 		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
 
 		IWindow IApplication.CreateWindow(IActivationState activationState)
