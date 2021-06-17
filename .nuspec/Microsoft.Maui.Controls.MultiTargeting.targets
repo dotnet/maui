@@ -1,6 +1,6 @@
 <Project>
   <!-- Linux -->
-  <PropertyGroup Condition="$(MauiGtkTargets.Contains($(TargetFramework))) == true ">
+  <PropertyGroup Condition="$(MauiGtkTargets.Contains($(TargetFramework))) == true AND $(TargetFramework.StartsWith('MonoAndroid')) != true">
     <DefineConstants>$(DefineConstants);LINUX;GTK</DefineConstants>
   </PropertyGroup>
   

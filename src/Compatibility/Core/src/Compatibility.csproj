@@ -10,7 +10,7 @@
     <WindowsRoot>WinUI\</WindowsRoot>
     <GtkRoot>Gtk\</GtkRoot>
   </PropertyGroup>
-  <PropertyGroup Condition="$(MauiGtkTargets.Contains($(TargetFramework))) == true ">
+  <PropertyGroup Condition="$(MauiGtkTargets.Contains($(TargetFramework))) == true AND $(TargetFramework.StartsWith('MonoAndroid')) != true ">
     <DefineConstants>$(DefineConstants);LINUX;GTK</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
@@ -62,7 +62,7 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup Condition="$(DefineConstants.Contains('GTK')) == true ">
-    <Compile Include="$(GtkRoot)**\*.cs"></Compile>
+    <Compile Include="$(GtkRoot)**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net48' ">
     <Reference Include="System.Net.Http"/>
