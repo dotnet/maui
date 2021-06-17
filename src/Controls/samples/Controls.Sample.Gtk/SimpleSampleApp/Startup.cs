@@ -35,7 +35,6 @@ namespace Maui.SimpleSampleApp
 			{
 				// Use just the Forms renderers
 				appBuilder = appBuilder
-				   .UseCompatibilityRenderers()
 				   .UseMauiApp<SimpleSampleMauiApp>();
 			}
 
