@@ -55,7 +55,7 @@ namespace Microsoft.Maui
 
 			AlertManager.Subscribe(this, mauiContext);
 
-			SetContentView(window.View.ToNative(mauiContext));
+			SetContentView(window.View.ToContainerView(mauiContext));
 
 			//TODO MAUI
 			// Allow users to customize the toolbarid?

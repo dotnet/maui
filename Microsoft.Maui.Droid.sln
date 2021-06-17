@@ -38,8 +38,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SingleProject", "SingleProj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resizetizer", "src\SingleProject\Resizetizer\src\Resizetizer.csproj", "{9909F93F-C085-4F76-B92A-5D8C516BF47D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Package-net6", "src\Package\Package-net6.csproj", "{5BEB3326-79B4-438C-BF65-274202F387EC}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml-net6", "src\Controls\src\Xaml\Controls.Xaml-net6.csproj", "{CC3D4667-D94E-4276-9311-6439BFD075E4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Templates", "src\Templates\src\Microsoft.Maui.Templates.csproj", "{DAAC2822-63B6-4DE0-83AE-04873CD2F364}"
@@ -109,10 +107,6 @@ Global
 		{9909F93F-C085-4F76-B92A-5D8C516BF47D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9909F93F-C085-4F76-B92A-5D8C516BF47D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9909F93F-C085-4F76-B92A-5D8C516BF47D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5BEB3326-79B4-438C-BF65-274202F387EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5BEB3326-79B4-438C-BF65-274202F387EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5BEB3326-79B4-438C-BF65-274202F387EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5BEB3326-79B4-438C-BF65-274202F387EC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CC3D4667-D94E-4276-9311-6439BFD075E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CC3D4667-D94E-4276-9311-6439BFD075E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC3D4667-D94E-4276-9311-6439BFD075E4}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -4,9 +4,8 @@
     <RootNamespace>Microsoft.Maui.Controls</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
     <Nullable>disable</Nullable>
-    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <IsPackable>false</IsPackable>
     <_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' And '$(MSBuildRuntimeType)' == 'Full'">True</_MauiDesignDllBuild>
-    <PackageId>Microsoft.Maui.Controls</PackageId>
     <GitInfoReportImportance>high</GitInfoReportImportance>
   </PropertyGroup>
 

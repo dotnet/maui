@@ -9,18 +9,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public class HandlerToRendererShim : IVisualElementRenderer
 	{
-		public HandlerToRendererShim(IViewHandler vh)
+		public HandlerToRendererShim(INativeViewHandler vh)
 		{
 			ViewHandler = vh;
 		}
 
-		IViewHandler ViewHandler { get; }
+		INativeViewHandler ViewHandler { get; }
 
 		public VisualElement Element { get; private set; }
 
-		public UIView NativeView => (UIView)ViewHandler.NativeView;
+		public UIView NativeView => ViewHandler.ContainerView ?? ViewHandler.NativeView;
 
-		public UIViewController ViewController => (ViewHandler as INativeViewHandler)?.ViewController;
+		public UIViewController ViewController => ViewHandler.ViewController;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;

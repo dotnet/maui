@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <EnableDefaultMauiItems Condition=" '$(EnableDefaultMauiItems)' == '' ">$(EnableDefaultItems)</EnableDefaultMauiItems>
+    <EnableDefaultXamlItems Condition=" '$(EnableDefaultXamlItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultXamlItems>
+    <EnableDefaultCssItems  Condition=" '$(EnableDefaultCssItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultCssItems>
+    <EnableDefaultEmbeddedResourceItems Condition=" '$(EnableDefaultEmbeddedResourceItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultEmbeddedResourceItems>
+  </PropertyGroup>
+  <Import Project="../targets/Microsoft.Maui.Controls.targets" />
+  <ItemGroup Condition=" '$(DisableMauiAnalyzers)' != 'true' ">
+    <Analyzer Include="$(MSBuildThisFileDirectory)../targets/Microsoft.Maui.Controls.dll" />
+    <Analyzer Include="$(MSBuildThisFileDirectory)../targets/Microsoft.Maui.Controls.Xaml.dll" />
+    <Analyzer Include="$(MSBuildThisFileDirectory)../targets/Microsoft.Maui.Controls.SourceGen.dll" />
+  </ItemGroup>
+</Project>
