@@ -22,7 +22,7 @@
     <_MicrosoftExtensionsLoggingAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</_MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <_MicrosoftExtensionsLoggingPackageVersion>$(_MicrosoftHostingVersion)</_MicrosoftExtensionsLoggingPackageVersion>
     <_MicrosoftExtensionsLoggingConsolePackageVersion>$(_MicrosoftHostingVersion)</_MicrosoftExtensionsLoggingConsolePackageVersion>
-    <_MicrosoftExtensionsLoggingDebugPackageVersion>$(MicrosoftExten_MicrosoftHostingVersionsionsLoggingDebugPackageVersion)</_MicrosoftExtensionsLoggingDebugPackageVersion>
+    <_MicrosoftExtensionsLoggingDebugPackageVersion>$(_MicrosoftHostingVersion)</_MicrosoftExtensionsLoggingDebugPackageVersion>
     <_MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>5.0.6</_MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
   </PropertyGroup>
    <!-- Microsoft.Maui.Graphics related Packages -->
