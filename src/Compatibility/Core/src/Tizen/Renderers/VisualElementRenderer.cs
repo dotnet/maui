@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using ElmSharp;
 using ElmSharp.Accessible;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using Size = Microsoft.Maui.Graphics.Size;

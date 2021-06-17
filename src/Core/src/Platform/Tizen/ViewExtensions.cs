@@ -52,6 +52,14 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateOpacity(this EvasObject nativeView, IView view)
+		{
+			if (nativeView is Widget widget)
+			{
+				widget.Opacity = (int)(view.Opacity * 255.0);
+			}
+		}
+
 		public static void UpdateAutomationId(this EvasObject nativeView, IView view)
 		{
 			{

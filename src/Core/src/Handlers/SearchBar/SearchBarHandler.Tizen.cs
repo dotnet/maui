@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Activated += OnActivated;
 			nativeView.TextChanged += OnTextChanged;
 			nativeView.PrependMarkUpFilter(MaxLengthFilter);
+			nativeView.EntryLayoutFocused += OnFocused;
+			nativeView.EntryLayoutUnfocused += OnUnfocused;
 
 		}
 
@@ -29,6 +31,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.Activated -= OnActivated;
 			nativeView.TextChanged -= OnTextChanged;
+			nativeView.EntryLayoutFocused -= OnFocused;
+			nativeView.EntryLayoutUnfocused -= OnUnfocused;
 		}
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
@@ -88,6 +92,11 @@ namespace Microsoft.Maui.Handlers
 			// so we need to make sure those are applied, too
 			handler.NativeView?.UpdateMaxLength(searchBar);
 			handler.NativeView?.UpdateHorizontalTextAlignment(searchBar);
+		}
+
+		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateCancelButtonColor(searchBar);
 		}
 
 		[MissingMapper]

@@ -1,30 +1,31 @@
 ﻿using System;
 using Tizen.UIExtensions.Common;
+using Tizen.UIExtensions.ElmSharp;
 using NativeView = ElmSharp.EvasObject;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, PageView>, INativeViewHandler
+	public partial class PageHandler : ViewHandler<IPage, Page>, INativeViewHandler
 	{
 		INativeViewHandler? _contentHandler;
 
-		protected override PageView CreateNativeView()
+		protected override Page CreateNativeView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
 			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
 
-			var view = new PageView(NativeParent);
+			var view = new Page(NativeParent);
 			view.Show();
 			return view;
 		}
 
-		protected override void ConnectHandler(PageView nativeView)
+		protected override void ConnectHandler(Page nativeView)
 		{
 			base.ConnectHandler(nativeView);
 			nativeView.LayoutUpdated += OnLayoutUpdated;
 		}
 
-		protected override void DisconnectHandler(PageView nativeView)
+		protected override void DisconnectHandler(Page nativeView)
 		{
 			base.DisconnectHandler(nativeView);
 			nativeView.LayoutUpdated -= OnLayoutUpdated;

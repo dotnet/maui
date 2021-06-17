@@ -82,6 +82,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateMaxLength(editor);
 		}
 
+		public static void MapKeyboard(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateKeyboard(editor);
+		}
+
 		[MissingMapper]
 		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor) { }
 

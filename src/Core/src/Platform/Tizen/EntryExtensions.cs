@@ -1,4 +1,6 @@
-﻿using Tizen.UIExtensions.Common;
+﻿using System;
+using System.Runtime.InteropServices;
+using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
 using InputPanelReturnKeyType = ElmSharp.InputPanelReturnKeyType;
 using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
@@ -85,6 +87,51 @@ namespace Microsoft.Maui
 				nativeEntry.Text = nativeEntry.Text.Substring(0, entry.MaxLength);
 		}
 
+		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
+		[PortHandler]
+		public static void UpdateSelectionLength(this Entry nativeEntry, IEntry entry)
+		{
+			var start = GetSelectionStart(nativeEntry, entry);
+			var end = GetSelectionEnd(nativeEntry, entry, start);
+			var selectionLength = end - start;
+
+			if (selectionLength != entry.SelectionLength)
+				entry.SelectionLength = selectionLength;
+
+			if (selectionLength > 0)
+			{
+				nativeEntry.SetSelectionRegion(start, end);
+			}
+			else
+			{
+				nativeEntry.CursorPosition = entry.CursorPosition;
+			}
+		}
+
+		static int GetSelectionStart(Entry nativeEntry, IEntry entry)
+		{
+			var start = entry.Text?.Length ?? 0;
+			var cursorPosition = entry.CursorPosition;
+
+			if (entry.CursorPosition > 0)
+				start = Math.Min(start, cursorPosition);
+
+			if (start != cursorPosition)
+				entry.CursorPosition = start;
+
+			return start;
+		}
+
+		static int GetSelectionEnd(Entry nativeEntry, IEntry entry, int start)
+		{
+			var end = start;
+
+			if (entry.SelectionLength > 0)
+				end = Math.Min((start + entry.SelectionLength), entry.Text?.Length ?? 0);
+
+			return end;
+		}
+
 		public static InputPanelReturnKeyType ToInputPanelReturnKeyType(this ReturnType returnType)
 		{
 			switch (returnType)
@@ -147,5 +194,13 @@ namespace Microsoft.Maui
 					return 0.5d;
 			}
 		}
+
+		public static void GetSelectRegion(this Entry entry, out int start, out int end)
+		{
+			elm_entry_select_region_get(entry.RealHandle, out start, out end);
+		}
+
+		[DllImport("libelementary.so.1")]
+		static extern void elm_entry_select_region_get(IntPtr obj, out int start, out int end);
 	}
 }

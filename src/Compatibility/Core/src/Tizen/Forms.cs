@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static bool UseFastLayout { get; private set; }
 
-		public static DisplayResolutionUnit DisplayResolutionUnit { get; private set; }
+		public static DisplayResolutionUnit DisplayResolutionUnit { get; private set; } = DisplayResolutionUnit.Pixel();
 
 		public static int ScreenDPI => s_dpi.Value;
 
@@ -394,11 +394,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static void Init(IActivationState activationState) => Init(activationState.Context);
 
+		public static void Init(IActivationState activationState, InitializationOptions options) => Init(activationState.Context, options);
+
 		public static void Init(CoreApplication application) => Init(new MauiContext(CoreUIAppContext.GetInstance(application)));
 
-		public static void Init(IMauiContext context)
+		public static void Init(IMauiContext context, InitializationOptions options = null)
 		{
-			SetupInit(context);
+			SetupInit(context, options);
 		}
 
 		public static void Init(CoreApplication application, bool useDeviceIndependentPixel)
@@ -463,6 +465,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 				s_platformType = PlatformType.Lightweight;
 
 			IsInitialized = true;
+		}
+
+		// Once we get essentials/cg converted to using startup.cs
+		// we will delete all the renderer code inside this file
+		internal static void RenderersRegistered()
+		{
+			IsInitializedRenderers = true;
 		}
 
 		internal static void RegisterCompatRenderers(InitializationOptions options)

@@ -7,6 +7,9 @@ namespace Microsoft.Maui
 		public static void UpdateTitle(this Entry nativePicker, IPicker picker) =>
 			UpdatePicker(nativePicker, picker);
 
+		public static void UpdateTitleColor(this Entry nativePicker, IPicker picker) =>
+			nativePicker.PlaceholderColor = picker.TitleColor.ToNative();
+
 		public static void UpdateSelectedIndex(this Entry nativePicker, IPicker picker) =>
 			UpdatePicker(nativePicker, picker);
 

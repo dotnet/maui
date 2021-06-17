@@ -10,9 +10,9 @@ namespace Microsoft.Maui
 
 	public class MauiApplication<TStartup> : MauiApplication where TStartup : IStartup, new()
 	{
-		protected override void OnCreate()
+		protected override void OnPreCreate()
 		{
-			base.OnCreate();
+			base.OnPreCreate();
 
 			var startup = new TStartup();
 
@@ -25,14 +25,35 @@ namespace Microsoft.Maui
 			Services = host.Services;
 			Application = Services.GetRequiredService<IApplication>();
 
-			var context = CoreUIAppContext.GetInstance(this);
-			var mauiContext = new MauiContext(Services, context);
+			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
+		}
 
-			var activationState = new ActivationState(mauiContext);
-			var window = Application.CreateWindow(activationState);
+		protected override void OnCreate()
+		{
+			base.OnCreate();
+
+			var services = MauiApplication.Current.Services;
+			var mauiApp = MauiApplication.Current.Application;
+
+			MauiContext mauiContext;
+			IWindow window;
+
+			var context = CoreUIAppContext.GetInstance(this);
+
+			// TODO Fix once we have multiple windows
+			if (mauiApp.Windows.Count > 0)
+			{
+				window = mauiApp.Windows[0];
+				mauiContext = new MauiContext(services, context);
+			}
+			else
+			{
+				mauiContext = new MauiContext(services, context);
+				ActivationState state = new ActivationState(mauiContext);
+				window = mauiApp.CreateWindow(state);
+			}
 
 			var page = window.View;
-
 			context.SetContent(page.ToNative(mauiContext));
 
 			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
@@ -72,12 +93,6 @@ namespace Microsoft.Maui
 		{
 			base.OnPause();
 			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnPause>(del => del(this));
-		}
-
-		protected override void OnPreCreate()
-		{
-			base.OnPreCreate();
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
 		}
 
 		protected override void OnRegionFormatChanged(RegionFormatChangedEventArgs e)

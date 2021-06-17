@@ -1,11 +1,13 @@
 ﻿using System;
 using Tizen.UIExtensions.ElmSharp;
+using SmartEvent = ElmSharp.SmartEvent;
 using EEntry = ElmSharp.Entry;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, Entry>
 	{
+
 		protected override Entry CreateNativeView()
 		{
 			return new EditfieldEntry(NativeParent)
@@ -17,14 +19,37 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(Entry nativeView)
 		{
 			nativeView.Activated += OnCompleted;
+			nativeView.CursorChanged += OnCursorChanged;
+
+			// In order to know when the selection is cleared, "selecton,cleared" event has been used.
+			// Because CursorChanged event is still invoked with the selected text when an user clears selection. It is an known issue in EFL.
+			SmartEvent selectionCleared = new SmartEvent(nativeView, nativeView.RealHandle, ThemeConstants.Entry.Signals.SelectionCleared);
+			selectionCleared.On += OnSelectionCleared;
+
 			nativeView.TextChanged += OnTextChanged;
+			nativeView.EntryLayoutFocused += OnFocused;
+			nativeView.EntryLayoutUnfocused += OnUnfocused;
+
 			nativeView.PrependMarkUpFilter(MaxLengthFilter);
+
+			// TODO: Fix me later
+			// An initial CursorPosition is set after layouting to avoid timing issue when the EditField entry is initialized.
+			//if (VirtualView != null)
+			//{
+			//	MainThread.BeginInvokeOnMainThread(() =>
+			//	{
+			//		nativeView.UpdateSelectionLength(VirtualView);
+			//	});
+			//}
 		}
 
 		protected override void DisconnectHandler(Entry nativeView)
 		{
 			nativeView.Activated -= OnCompleted;
+			nativeView.CursorChanged -= OnCursorChanged;
 			nativeView.TextChanged -= OnTextChanged;
+			nativeView.EntryLayoutFocused -= OnFocused;
+			nativeView.EntryLayoutUnfocused -= OnUnfocused;
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry)
@@ -101,6 +126,21 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateHorizontalTextAlignment(entry);
 		}
 
+		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateSelectionLength(entry);
+		}
+
+		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateSelectionLength(entry);
+		}
+
+		public static void MapKeyboard(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateKeyboard(editor);
+		}
+
 		[MissingMapper]
 		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry) { }
 
@@ -121,6 +161,37 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			VirtualView.Text = NativeView.Text;
+		}
+
+		void OnCursorChanged(object? sender, EventArgs e)
+		{
+			if (VirtualView == null || NativeView == null)
+				return;
+
+			var position = NativeView.CursorPosition;
+
+			NativeView.GetSelectRegion(out int start, out int end);
+
+			if (start > -1)
+			{
+				position = (start < end) ? start : end;
+				var selectionLength = Math.Abs(end - start);
+				VirtualView.SelectionLength = selectionLength;
+			}
+
+			VirtualView.CursorPosition = position;
+		}
+
+		void OnSelectionCleared(object sender, EventArgs e)
+		{
+			if (VirtualView == null || NativeView == null)
+				return;
+
+			if (NativeView.IsFocused)
+			{
+				VirtualView.SelectionLength = 0;
+				VirtualView.CursorPosition = NativeView.CursorPosition;
+			}
 		}
 
 		void OnCompleted(object? sender, EventArgs e)

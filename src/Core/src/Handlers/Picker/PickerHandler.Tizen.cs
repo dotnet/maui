@@ -64,6 +64,11 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapReload(PickerHandler handler, IPicker picker) => handler.Reload();
 
+		public static void MapTitleColor(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateTitleColor(picker);
+		}
+
 		public static void MapFont(PickerHandler handler, IPicker picker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
