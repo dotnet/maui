@@ -165,7 +165,6 @@ namespace Microsoft.Maui.Controls.Hosting
 
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 
-					Forms.RenderersRegistered();
 					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Entry), typeof(EntryRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Editor), typeof(EditorRenderer));
