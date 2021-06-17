@@ -4,6 +4,7 @@
   <Import Project="../Shared/FrameworkList.targets" />
 
   <PropertyGroup>
+    <Description>Microsoft.Extensions dependencies for .NET MAUI</Description>
     <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
   </PropertyGroup>
 

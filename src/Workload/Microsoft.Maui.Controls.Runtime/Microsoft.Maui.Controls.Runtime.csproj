@@ -3,6 +3,10 @@
   <Import Project="../Shared/Common.targets" />
   <Import Project="../Shared/Frameworks.targets" />
 
+  <PropertyGroup>
+    <Description>.NET MAUI Controls runtime pack</Description>
+  </PropertyGroup>
+
   <!-- Android-only files -->
   <ItemGroup Condition=" '$(MauiPlatformName)' == 'android' ">
     <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Core/src/Android.FormsViewGroup/bin/$(Configuration)/net6.0-android/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.dll" />
