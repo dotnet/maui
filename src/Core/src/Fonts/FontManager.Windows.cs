@@ -142,7 +142,10 @@ namespace Microsoft.Maui
 					using (var fontSet = new CanvasFontSet(fontUri))
 					{
 						if (fontSet.Fonts.Count != 0)
-							return fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName).FirstOrDefault().Value;
+						{
+							var props = fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName);
+							return props.Length == 0 ? null : props[0].Value;
+						}
 					}
 				}
 
