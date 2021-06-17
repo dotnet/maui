@@ -308,7 +308,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void BusyNotSentWhenNotVisible()
 		{
 			var sent = false;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) => sent = true);
+			MessagingCenter.Subscribe<IPage, bool>(this, Page.BusySetSignalName, (p, b) => sent = true);
 
 			new ContentPage { IsBusy = true };
 
@@ -319,7 +319,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void BusySentWhenBusyPageAppears()
 		{
 			var sent = false;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) =>
+			MessagingCenter.Subscribe<IPage, bool>(this, Page.BusySetSignalName, (p, b) =>
 			{
 				Assert.That(b, Is.True);
 				sent = true;
@@ -341,7 +341,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			((IPageController)page).SendAppearing();
 
 			var sent = false;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) =>
+			MessagingCenter.Subscribe<IPage, bool>(this, Page.BusySetSignalName, (p, b) =>
 			{
 				Assert.That(b, Is.False);
 				sent = true;
@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void BusySentWhenVisiblePageSetToBusy()
 		{
 			var sent = false;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) => sent = true);
+			MessagingCenter.Subscribe<IPage, bool>(this, Page.BusySetSignalName, (p, b) => sent = true);
 
 			var page = new ContentPage();
 			((IPageController)page).SendAppearing();
@@ -374,7 +374,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage() { IsPlatformEnabled = true };
 
 			AlertArguments args = null;
-			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments e) => args = e);
+			MessagingCenter.Subscribe(this, Page.AlertSignalName, (IPage sender, AlertArguments e) => args = e);
 
 			var task = page.DisplayAlert("Title", "Message", "Accept", "Cancel");
 
@@ -397,7 +397,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage() { IsPlatformEnabled = true };
 
 			ActionSheetArguments args = null;
-			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments e) => args = e);
+			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (IPage sender, ActionSheetArguments e) => args = e);
 
 			var task = page.DisplayActionSheet("Title", "Cancel", "Destruction", "Other 1", "Other 2");
 
