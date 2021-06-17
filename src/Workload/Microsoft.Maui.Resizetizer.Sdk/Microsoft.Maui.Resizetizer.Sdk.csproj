@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <Import Project="../Shared/Common.targets" />
+  <Import Project="$(MauiRootDirectory)src/SingleProject/Resizetizer/src/ResizetizerPackages.projitems" />
+
+  <PropertyGroup>
+    <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Default @(None) items go in the root of the .nupkg -->
+    <None Update="@(None)" PackagePath="" />
+    <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Resizetizer.targets" />
+    <_Files Include="$(MauiRootDirectory)src\SingleProject\Resizetizer\src\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Resizetizer.dll" />
+    <_Files Include="$(PkgSystem_Memory)\lib\netstandard2.0\System.Memory.dll" />
+    <_Files Include="$(PkgSystem_Buffers)\lib\netstandard2.0\System.Buffers.dll" />
+    <_Files Include="$(PkgSystem_Numerics_Vectors)\lib\netstandard2.0\System.Numerics.Vectors.dll" />
+    <_Files Include="$(PkgSystem_Runtime_CompilerServices_Unsafe)\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" />
+    <_Files Include="$(PkgSystem_ObjectModel)\lib\netstandard1.3\System.ObjectModel.dll" />
+    <_Files Include="$(PkgSvg_Custom)\lib\net461\Svg.Custom.dll" />
+    <_Files Include="$(PkgSvg_Picture)\lib\net461\Svg.Picture.dll" />
+    <_Files Include="$(PkgSvg_Skia)\lib\net461\Svg.Skia.dll" />
+    <_Files Include="$(PkgFizzler)\lib\netstandard2.0\Fizzler.dll" />
+    <_Files Include="$(PkgSystem_IO_UnmanagedMemoryStream)\lib\netstandard1.3\System.IO.UnmanagedMemoryStream.dll" />
+    <_Files Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll" />
+    <_Files Include="$(PkgSkiaSharp)\runtimes\osx\native\libSkiaSharp.dylib" />
+    <_Files Include="$(PkgSkiaSharp)\runtimes\win-x86\native\libSkiaSharp.dll"   Arch="x86/" />
+    <_Files Include="$(PkgSkiaSharp)\runtimes\win-x64\native\libSkiaSharp.dll"   Arch="x64/" />
+    <_Files Include="$(PkgSkiaSharp)\runtimes\win-arm64\native\libSkiaSharp.dll" Arch="arm64/" />
+    <_Files Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-arm\native\libSkiaSharp.so"      Arch="arm/" />
+    <_Files Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-arm64\native\libSkiaSharp.so"    Arch="arm64/" />
+    <_Files Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-musl-x64\native\libSkiaSharp.so" Arch="musl-x64/" />
+    <_Files Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-x64\native\libSkiaSharp.so"      Arch="x64/" />
+    <_Files Include="$(PkgSkiaSharp_HarfBuzz)\lib\net462\SkiaSharp.HarfBuzz.dll" />
+    <_Files Include="$(PkgHarfBuzzSharp)\lib\net462\HarfBuzzSharp.dll" />
+    <_Files Include="$(PkgHarfBuzzSharp)\runtimes\osx\native\libHarfBuzzSharp.dylib" />
+    <_Files Include="$(PkgHarfBuzzSharp)\runtimes\win-x86\native\libHarfBuzzSharp.dll"   Arch="x86/" />
+    <_Files Include="$(PkgHarfBuzzSharp)\runtimes\win-x64\native\libHarfBuzzSharp.dll"   Arch="x64/" />
+    <_Files Include="$(PkgHarfBuzzSharp)\runtimes\win-arm64\native\libHarfBuzzSharp.dll" Arch="arm64/" />
+    <_Files Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-arm\native\libHarfBuzzSharp.so"      Arch="arm/" />
+    <_Files Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-arm64\native\libHarfBuzzSharp.so"    Arch="arm64/" />
+    <_Files Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-musl-x64\native\libHarfBuzzSharp.so" Arch="musl-x64/" />
+    <_Files Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-x64\native\libHarfBuzzSharp.so"      Arch="x64/" />
+    <_Files Include="$(PkgSvg2VectorDrawable_Net)\lib\netstandard2.0\Svg2VectorDrawable.Net.dll" />
+    <_Files Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" />
+    <None Include="@(_Files)" PackagePath="targets/%(Arch)" Link="targets/%(Arch)%(FileName)%(Extension)" Visible="false" />
+    <None Update="@(None)" CopyToOutputDirectory="PreserveNewest" Pack="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(MauiRootDirectory)src/SingleProject/Resizetizer/src/Resizetizer.csproj" />
+  </ItemGroup>
+
+</Project>

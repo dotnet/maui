@@ -1,3 +1,8 @@
+<!--
+  NOTE: this file is only used by projects in the dotnet/maui repo directly.
+  AutoImport.props should be used by the .NET 6 workload when $(UseMaui) is true.
+-->
+
 <!-- "Single Project" support - all <ItemGroup/>'s must check if $(EnableDefaultItems) and $(SingleProject) are true -->
 <Project>
 
