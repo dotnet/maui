@@ -43,7 +43,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void IVisualElementRenderer.UpdateLayout() => _tracker?.UpdateLayout();
 		VisualElement IVisualElementRenderer.Element => Element;
 		AView IVisualElementRenderer.View => this;
-		ViewGroup IVisualElementRenderer.ViewGroup => null;
 		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;
 		bool IDisposedState.IsDisposed => ((IImageRendererController)this).IsDisposed;
 
