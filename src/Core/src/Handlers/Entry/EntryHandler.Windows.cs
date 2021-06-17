@@ -34,6 +34,9 @@ using Windows.System;
 
 		[MissingMapper]
 		public static void MapHorizontalTextAlignment(IViewHandler handler, IEntry entry) { }
+		
+		[MissingMapper]
+		public static void MapVerticalTextAlignment(IViewHandler handler, IEntry entry) { }
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, IEntry entry) { }
