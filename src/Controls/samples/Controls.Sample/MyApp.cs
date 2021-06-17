@@ -1,16 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Maui.Controls.Sample.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample
 {
-	public class MyApp : IApplication
+	public class MyApp : Application
 	{
-		readonly List<IWindow> _windows = new();
-
 		public MyApp(IServiceProvider services, ITextService textService, IImageSourceServiceConfiguration imageConfig)
 		{
 			Services = services;
@@ -18,15 +16,11 @@ namespace Maui.Controls.Sample
 			imageConfig.SetImageDirectory("Assets");
 		}
 
-		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
-
 		public IServiceProvider Services { get; }
 
-		public IWindow CreateWindow(IActivationState activationState)
+		protected override IWindow CreateWindow(IActivationState activationState)
 		{
-			var window = Services.GetRequiredService<IWindow>();
-			_windows.Add(window);
-			return window;
+			return Services.GetRequiredService<IWindow>();
 		}
 	}
 }
