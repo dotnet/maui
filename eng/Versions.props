@@ -2,12 +2,24 @@
   <!--Package versions-->
   <PropertyGroup>
     <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-preview.6.21313.2</MicrosoftDotnetSdkInternalPackageVersion>
-    <MicrosoftNETCoreAppRefPackageVersion>6.0.0-preview.6.21306.1</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>6.0.0-preview.6.21307.1</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftAndroidSdkWindowsPackageVersion>30.0.100-ci.main.40</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>15.0.100-ci.main.25</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>15.0.100-ci.main.25</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>15.0.100-ci.main.25</MicrosofttvOSSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>12.0.100-ci.main.25</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftExtensionsHostingAbstractions>12.0.100-ci.main.25</MicrosoftExtensionsHostingAbstractions>
+    <MicrosoftExtensionsDependencyInjection>12.0.100-ci.main.25</MicrosoftExtensionsDependencyInjection>
+    <MicrosoftExtensionsConfiguration>12.0.100-ci.main.25</MicrosoftExtensionsConfiguration>
+    <MicrosoftExtensionsLoggingAbstractions>12.0.100-ci.main.25</MicrosoftExtensionsLoggingAbstractions>
+    <MicrosoftExtensionsLogging>12.0.100-ci.main.25</MicrosoftExtensionsLogging>
+    <MicrosoftExtensionsLoggingConsole>12.0.100-ci.main.25</MicrosoftExtensionsLoggingConsole>
+    <MicrosoftExtensionsLoggingDebug>12.0.100-ci.main.25</MicrosoftExtensionsLoggingDebug>
+    <MicrosoftExtensionsFileProvidersEmbedded>12.0.100-ci.main.25</MicrosoftExtensionsFileProvidersEmbedded>
+    <MicrosoftAspNetCoreAuthorization>12.0.100-ci.main.25</MicrosoftAspNetCoreAuthorization>
+    <MicrosoftAspNetCoreComponentsWebView>12.0.100-ci.main.25</MicrosoftAspNetCoreComponentsWebView>
+    <MicrosoftAspNetCoreComponentsWeb>12.0.100-ci.main.25</MicrosoftAspNetCoreComponentsWeb>
+    <MicrosoftJSInterop>12.0.100-ci.main.25</MicrosoftJSInterop>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Trim all characters after first `-` or `+` is encountered. -->
