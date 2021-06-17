@@ -23,6 +23,7 @@
       _DownloadDotNetInstallScript;
       _InstallDotNet;
       _AcquireWorkloads;
+      _InstallMonoWorkload;
       _AcquirePacks;
     </_ProvisionDependsOn>
   </PropertyGroup>
@@ -162,6 +163,13 @@
     />
 
     <Touch Files="$(DotNetSdkManifestsDirectory).stamp" AlwaysCreate="true" />
+  </Target>
+
+  <Target Name="_InstallMonoWorkload">
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload install microsoft-net-runtime-android --skip-manifest-update --verbosity diag"
+        WorkingDirectory="$(MauiRootDirectory)"
+    />
   </Target>
 
   <Target Name="_AcquirePacks"
