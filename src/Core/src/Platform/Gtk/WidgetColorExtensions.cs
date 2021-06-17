@@ -1,5 +1,6 @@
 using System;
 using Gtk;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native.Gtk;
 
 namespace Microsoft.Maui
@@ -23,9 +24,9 @@ namespace Microsoft.Maui
 
 		public static void SetBackgroundColor(this Gtk.Widget widget, Gtk.StateFlags state, Graphics.Color color)
 		{
-#pragma warning disable 612
-			widget.OverrideBackgroundColor(state, color.ToGdkRgba());
-#pragma warning restore 612
+			var nativeColor = color.ToGdkRgba();
+
+			widget.SetColor(nativeColor, "background-color");
 		}
 
 		public static Graphics.Color GetBackgroundColor(this Gtk.Widget widget)
@@ -60,32 +61,68 @@ namespace Microsoft.Maui
 			return widget.StyleContext.GetColor(state).ToColor();
 		}
 
-		public static void SetForegroundColor(this Gtk.Widget widget, Gtk.StateType state, Graphics.Color color)
+		public static void SetForegroundColor(this Gtk.Widget widget, Gtk.StateType state, Graphics.Color? color)
 		{
 			widget.SetForegroundColor(state.ToStateFlag(), color);
 		}
 
-		public static void SetForegroundColor(this Gtk.Widget widget, Gtk.StateFlags state, Graphics.Color color)
+		public static void SetStyleColor(this Gtk.Widget widget, Color? color, string mainNode, string attr, string? subNode = null)
 		{
 			if (color == null)
 				return;
-#pragma warning disable 612
-			widget.OverrideColor(state, color.ToGdkRgba());
-#pragma warning restore 612
+
+			widget.SetStyleColor(color.ToGdkRgba(), mainNode, attr, subNode);
 		}
 
-		public static void SetForegroundColor(this Gtk.Widget widget, Graphics.Color color)
+		public static void SetStyleColor(this Gtk.Widget widget, Gdk.RGBA color, string mainNode, string attr, string? subNode = null)
+		{
+			using var p = new Gtk.CssProvider();
+
+			subNode = subNode != null ? $" > {subNode} " : subNode;
+
+			p.LoadFromData($"{mainNode}{subNode}{{{attr}:{color.ToString()}}}");
+			widget.StyleContext.AddProvider(p, Gtk.StyleProviderPriority.User);
+		}
+
+		public static void SetColor(this Gtk.Widget widget, Color? color, string attr, string? subNode = null)
+		{
+			if (color == null)
+				return;
+
+			widget.SetColor(color.ToGdkRgba(), attr, subNode);
+		}
+
+		public static void SetColor(this Gtk.Widget widget, Gdk.RGBA color, string attr, string? subNode = null)
+		{
+			var mainNode = widget.CssMainNode();
+			widget.SetStyleColor(color, mainNode, attr, subNode);
+		}
+
+		public static void SetForegroundColor(this Gtk.Widget widget, Gtk.StateFlags state, Color? color)
+		{
+			if (color == null)
+				return;
+
+			var nativeColor = color.ToGdkRgba();
+
+			if (nativeColor.Equals(widget.StyleContext.GetColor(state)))
+				return;
+
+			widget.SetColor(nativeColor, "color");
+		}
+
+		public static void SetForegroundColor(this Gtk.Widget widget, Color? color)
 		{
 			widget.SetForegroundColor(Gtk.StateType.Normal, color);
 		}
 
-		public static void UpdateTextColor(this Gtk.Widget widget, Graphics.Color textColor)
+		public static void UpdateTextColor(this Gtk.Widget widget, Graphics.Color? textColor)
 		{
 			if (textColor == null)
 				return;
 
 			widget.SetForegroundColor(textColor);
-			widget.SetForegroundColor(Gtk.StateFlags.Prelight, textColor);
+			// widget.SetForegroundColor(Gtk.StateFlags.Prelight, textColor);
 		}
 
 		public static Gtk.StateFlags ToStateFlag(this Gtk.StateType state)
