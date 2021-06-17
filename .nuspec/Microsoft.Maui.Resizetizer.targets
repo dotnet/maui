@@ -522,7 +522,7 @@
         <!-- Tizen - Move splash images to a specific location -->
         <TizenSplashUpdator
             Condition="'$(_ResizetizerIsTizenApp)' == 'True'"
-            IntermediateOutputPath="$(ResizetizerIntermediateOutputPath)"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
             ManifestFile="$(TizenManifestFile)"
             MauiSplashScreen="@(MauiSplashScreen)" />
 
@@ -597,7 +597,7 @@
 
         <!-- Tizen -->
         <PropertyGroup>
-            <ResizetizerIntermediateOutputAbsolutePath>$([System.IO.Path]::GetFullPath('$(ResizetizerIntermediateOutputPath)'))</ResizetizerIntermediateOutputAbsolutePath>
+            <ResizetizerIntermediateOutputAbsolutePath>$([System.IO.Path]::GetFullPath('$(_MauiIntermediateImages)'))</ResizetizerIntermediateOutputAbsolutePath>
         </PropertyGroup>
         <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
             <TizenTpkUserIncludeFiles Include="$(ResizetizerIntermediateOutputAbsolutePath)res\res.xml" TizenTpkSubDir="res\" />
