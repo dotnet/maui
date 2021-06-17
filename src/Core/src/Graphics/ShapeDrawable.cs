@@ -68,7 +68,7 @@
 
 			canvas.DrawPath(path);
 
-			canvas.SaveState();
+			canvas.RestoreState();
 		}
 
 		void DrawFillPath(ICanvas canvas, RectangleF dirtyRect, PathF path)
