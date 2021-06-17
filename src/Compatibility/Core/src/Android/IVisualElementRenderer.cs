@@ -13,10 +13,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		VisualElementTracker Tracker { get; }
 
-		[Obsolete("ViewGroup is obsolete as of version 2.3.5. Please use View instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		ViewGroup ViewGroup { get; }
-
 		AView View { get; }
 
 		event EventHandler<VisualElementChangedEventArgs> ElementChanged;

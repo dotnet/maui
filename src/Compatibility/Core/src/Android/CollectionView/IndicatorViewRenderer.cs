@@ -43,8 +43,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public VisualElementTracker Tracker => _visualElementTracker;
 
-		public ViewGroup ViewGroup => null;
-
 		public AView View => this;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
