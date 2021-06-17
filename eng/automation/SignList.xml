@@ -37,6 +37,7 @@
     <Skip Include="NuGet.*.dll" />
     <Skip Include="Mono.*.dll" />
     <Skip Include="Microsoft.Build.*.dll" />
+    <Skip Include="Microsoft.Extensions.*.dll" />
   </ItemGroup>
 
 </Project>

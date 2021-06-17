@@ -256,13 +256,11 @@ stages:
             - script: dotnet cake --configuration=Release
               displayName: pack nugets
             - task: CopyFiles@2
-              displayName: 'Copy SignList.xml Files'
+              condition: always()
+              displayName: 'Copy files to staging'
               inputs:
                 Contents: |
-                  **/Microsoft.Maui.*.nupkg
-                  **/Microsoft.Maui.*.snupkg
-                  **/Microsoft.AspNetCore.Components.WebView.*.nupkg
-                  **/Microsoft.AspNetCore.Components.WebView.*.snupkg
+                  artifacts/*nupkg
                   **/SignList.xml
                 TargetFolder: $(build.artifactstagingdirectory)
                 flattenFolders: true
@@ -281,15 +279,15 @@ stages:
                 ArtifactName: ${{ BuildPlatform.artifact }}
 
   - stage: build_net6
-    displayName: Build .NET 6
-    dependsOn: []
+    displayName: .NET 6 Samples
+    dependsOn: pack_net6
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildCondition in parameters.BuildConfigurations }}:
           - job: build_net6_${{ BuildPlatform.name }}_${{ BuildCondition }}
             workspace:
               clean: all
-            displayName: Build .NET 6 (${{ BuildPlatform.name }} | ${{ BuildCondition }})
+            displayName: .NET 6 Samples (${{ BuildPlatform.name }} | ${{ BuildCondition }})
             timeoutInMinutes: 120
             condition: or(
               ${{ parameters.BuildEverything }},
@@ -328,22 +326,19 @@ stages:
                   displayName: configure vsmac xcode
                 - script: echo '##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)'
                   displayName: set JI_JAVA_HOME
-              
-              - ${{ if eq(BuildPlatform.name, 'windows') }}:
-                - task: xamops.azdevex.provisionator-task.provisionator@1
-                  displayName: 'Provision VSWindows'
-                  inputs:
-                    provisioning_script: $(provisionator.vs2019)
+
+              - task: DownloadPipelineArtifact@2
+                displayName: download nuget 
+                inputs:
+                  artifact: nuget
+                  patterns: '**/*.nupkg'
+                  path: $(System.DefaultWorkingDirectory)/artifacts
 
               - pwsh: |
-                  & dotnet build src/DotNet/DotNet.csproj -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
+                  & dotnet build src/DotNet/DotNet.csproj -p:InstallWorkloadPacks=false -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
                   $env:PATH = (Join-Path '$(System.DefaultWorkingDirectory)' 'bin/dotnet') + [IO.Path]::PathSeparator + $env:PATH
-                  & $(DotNet.Path) build Microsoft.Maui.BuildTasks-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-buildtasks.binlog
-                  & $(DotNet.Path) build src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-android.binlog
-                  & $(DotNet.Path) build src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-iOS.binlog
-                  & $(DotNet.Path) build src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-MacCatalyst.binlog
-                  & $(DotNet.Path) build src/Controls/samples/Controls.Sample.SingleProject/Maui.Controls.Sample.SingleProject.csproj -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-SingleProject.binlog
-                  & $(DotNet.Path) build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration).binlog
+                  & $(DotNet.Path) build src/DotNet/DotNet.csproj -t:Install -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet-install.binlog
+                  & $(DotNet.Path) build Microsoft.Maui.Samples-net6.slnf -c $(BuildConfiguration) -p:UseWorkload=true -bl:$(LogDirectory)/$(BuildConfiguration)-samples.binlog
                 displayName: build samples
                 errorActionPreference: stop
               - task: PublishBuildArtifacts@1

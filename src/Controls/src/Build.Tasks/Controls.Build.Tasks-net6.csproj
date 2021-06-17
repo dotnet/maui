@@ -19,6 +19,7 @@
 		<StrongNamerKeyFile>..\..\..\..\eng\microsoft.maui.controls.snk</StrongNamerKeyFile>
 		<DefineConstants Condition=" '$(_DisableStrongNamer)' != 'True' ">$(DefineConstants);STRONG_NAME</DefineConstants> -->
 		<IsTrimmable>false</IsTrimmable>
+		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -32,13 +33,6 @@
 		<PackageReference Include="Microsoft.Maui.Graphics" GeneratePathProperty="true" />
 		<!-- <PackageReference Include="StrongNamer" Version="0.2.5" PrivateAssets="all" GeneratePathProperty="true" /> -->
 	</ItemGroup>
-
-	<PropertyGroup>
-		<PackageId>Microsoft.Maui.Controls.Build.Tasks</PackageId>
-		<IncludeBuildOutput>False</IncludeBuildOutput>
-		<NoWarn>$(NoWarn);NU5100;NU5128;</NoWarn>
-		<IncludeSymbols>False</IncludeSymbols>
-	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="$(TargetPath)" Visible="False" Pack="True" PackagePath="buildTransitive" />

@@ -306,6 +306,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.UpdateTextAlignment(Element.HorizontalTextAlignment, Element.VerticalTextAlignment);
 		}
 
+		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
 			EditText.UpdateTextAlignment(Element.HorizontalTextAlignment, Element.VerticalTextAlignment);
