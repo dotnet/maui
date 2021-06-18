@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\.nuspec\Microsoft.Maui.Core.props" />
+  <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
+
+  <PropertyGroup>
+    <!--<TargetFrameworks>net6.0-android</TargetFrameworks>-->
+    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
+    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+    <SingleProject>true</SingleProject>
+    <RootNamespace>Microsoft.Maui.TestUtils</RootNamespace>
+    <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests.Runner</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.runner.utility" Version="2.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\Essentials\src\Essentials-net6.csproj" />
+    <ProjectReference Include="..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
+    <ProjectReference Include="..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\Controls\src\SourceGen\Controls.SourceGen-net6.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.targets" />
+  <Import Project="..\..\..\.nuspec\Microsoft.Maui.Core.targets" />
+
+  <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+
+</Project>

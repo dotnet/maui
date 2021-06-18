@@ -118,5 +118,4 @@
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
 </Project>

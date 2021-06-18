@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Core.props" />
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
+
+  <PropertyGroup>
+    <!--<TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>-->
+    <!--<TargetFrameworks>net6.0-ios;net6.0-maccatalyst;net6.0-android</TargetFrameworks>-->
+    <TargetFrameworks>net6.0-android</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+    <SingleProject>true</SingleProject>
+    <RootNamespace>Microsoft.Maui.Core.DeviceTests</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Core.DeviceTests</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ApplicationTitle>Core Tests</ApplicationTitle>
+    <ApplicationId>com.companyname.microsoft.maui.core.devicetests</ApplicationId>
+    <ApplicationVersion>1.0</ApplicationVersion>
+    <AndroidVersionCode>1</AndroidVersionCode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiImage Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" IsAppIcon="true" Color="#512BD4" />
+    <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />
+    <MauiImage Include="Resources\Images\*" />
+    <MauiFont Include="Resources\Fonts\*" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <InvariantGlobalization Condition="$(TargetFramework.Contains('-maccatalyst'))">true</InvariantGlobalization>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AndroidEnvironment Include="Android\environment.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.4.1" />
+
+    <ProjectReference Include="..\..\..\TestUtils\DeviceTests.Runner\TestUtils.DeviceTests.Runner.csproj" />
+    <!--<ProjectReference Include="..\..\..\TestUtils\DeviceTests.Runner.SourceGen\TestUtils.DeviceTests.Runner.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\SourceGen\Controls.SourceGen-net6.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.targets" />
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Core.targets" />
+
+</Project>
