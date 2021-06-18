@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Handlers
 
 		void IViewHandler.DisconnectHandler()
 		{
-			if (NativeView != null && VirtualView != null)
+			if (base.NativeView != null && base.VirtualView != null)
 				DisconnectHandler(NativeView);
 		}
 
