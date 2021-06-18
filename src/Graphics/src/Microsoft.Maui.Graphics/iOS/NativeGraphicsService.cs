@@ -171,5 +171,19 @@ namespace Microsoft.Maui.Graphics.Native
 		{
 			return new NativeBitmapExportContext(width, height, displayScale);
 		}
+
+		public RectangleF GetPathBounds(PathF path)
+		{
+			var nativePath = path.NativePath as CGPath;
+
+			if (nativePath == null)
+			{
+				nativePath = path.AsCGPath();
+				path.NativePath = nativePath;
+			}
+
+			var bounds = nativePath.PathBoundingBox;
+			return bounds.AsRectangleF();
+		}
 	}
 }

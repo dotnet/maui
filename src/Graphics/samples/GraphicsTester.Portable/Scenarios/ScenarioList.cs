@@ -24,6 +24,7 @@ namespace GraphicsTester.Scenarios
 						new ArcScenario1(true),
 						new ArcScenario2(),
 						new DrawPaths(),
+						new DrawFlattenedPaths(),
 						new DrawImages(),
 						new DrawTextAtPoint(),
 						new DrawTextRotatedAtPoint(),

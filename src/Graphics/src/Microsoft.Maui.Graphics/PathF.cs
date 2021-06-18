@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace Microsoft.Maui.Graphics
 {
@@ -13,6 +15,7 @@ namespace Microsoft.Maui.Graphics
 		private readonly List<bool> _subPathsClosed;
 
 		private object _nativePath;
+		private RectangleF? _cachedBounds;
 
 		private PathF(List<PointF> points, List<float> arcSizes, List<bool> arcClockwise, List<PathOperation> operations, int subPathCount)
 		{
@@ -78,7 +81,7 @@ namespace Microsoft.Maui.Graphics
 			get
 			{
 				if (_operations.Count > 0)
-					return _operations[_operations.Count - 1] == PathOperation.Close;
+					return _operations[_operations.Count-1] == PathOperation.Close;
 
 				return false;
 			}
@@ -118,7 +121,7 @@ namespace Microsoft.Maui.Graphics
 			get
 			{
 				if (_points != null && _points.Count > 0)
-					return _points[_points.Count - 1];
+					return _points[_points.Count-1];
 
 				return default;
 			}
@@ -177,7 +180,7 @@ namespace Microsoft.Maui.Graphics
 							operationsCount--;
 						}
 
-						if (_operations[_operations.Count - 1] == PathOperation.Close)
+						if (_operations[_operations.Count-1] == PathOperation.Close)
 						{
 							operationsCount--;
 						}
@@ -240,11 +243,11 @@ namespace Microsoft.Maui.Graphics
 			return MoveTo(new PointF(x, y));
 		}
 
-		public PathF MoveTo(PointF aPoint)
+		public PathF MoveTo(PointF point)
 		{
 			_subPathCount++;
 			_subPathsClosed.Add(false);
-			_points.Add(aPoint);
+			_points.Add(point);
 			_operations.Add(PathOperation.Move);
 			Invalidate();
 			return this;
@@ -264,7 +267,7 @@ namespace Microsoft.Maui.Graphics
 
 		public void Open()
 		{
-			if (_operations[_operations.Count - 1] == PathOperation.Close)
+			if (_operations[_operations.Count-1] == PathOperation.Close)
 			{
 				_subPathsClosed.RemoveAt(_subPathCount - 1);
 				_subPathsClosed.Add(false);
@@ -674,14 +677,14 @@ namespace Microsoft.Maui.Graphics
 			_subPathCount = 0;
 			_subPathsClosed.Clear();
 
-			foreach (var vCommand in _operations)
+			foreach (var operation in _operations)
 			{
-				if (vCommand == PathOperation.Move)
+				if (operation == PathOperation.Move)
 				{
 					_subPathCount++;
 					_subPathsClosed.Add(false);
 				}
-				else if (vCommand == PathOperation.Close)
+				else if (operation == PathOperation.Close)
 				{
 					_subPathsClosed.RemoveAt(_subPathCount);
 					_subPathsClosed.Add(true);
@@ -778,7 +781,7 @@ namespace Microsoft.Maui.Graphics
 								{
 									if (points.Length > 0)
 									{
-										_points[pointIndex] = (PointF) points[points.Length - 1];
+										_points[pointIndex] = (PointF) points[points.Length-1];
 										for (var i = 0; i < points.Length; i++)
 										{
 											_points.RemoveAt(pointIndex + 1);
@@ -927,50 +930,50 @@ namespace Microsoft.Maui.Graphics
 
 		public List<PathF> Separate()
 		{
-			var vPaths = new List<PathF>();
+			var paths = new List<PathF>();
 			if (_points == null || _operations == null)
-				return vPaths;
+				return paths;
 
-			PathF vPath = null;
+			PathF path = null;
 
 			// ReSharper disable PossibleNullReferenceException
 			var i = 0;
 			var a = 0;
 			var c = 0;
 
-			foreach (var vType in _operations)
+			foreach (var operation in _operations)
 			{
-				if (vType == PathOperation.Move)
+				if (operation == PathOperation.Move)
 				{
-					vPath = new PathF();
-					vPaths.Add(vPath);
-					vPath.MoveTo(_points[i++]);
+					path = new PathF();
+					paths.Add(path);
+					path.MoveTo(_points[i++]);
 				}
-				else if (vType == PathOperation.Line)
+				else if (operation == PathOperation.Line)
 				{
-					vPath.LineTo(_points[i++]);
+					path.LineTo(_points[i++]);
 				}
-				else if (vType == PathOperation.Quad)
+				else if (operation == PathOperation.Quad)
 				{
-					vPath.QuadTo(_points[i++], _points[i++]);
+					path.QuadTo(_points[i++], _points[i++]);
 				}
-				else if (vType == PathOperation.Cubic)
+				else if (operation == PathOperation.Cubic)
 				{
-					vPath.CurveTo(_points[i++], _points[i++], _points[i++]);
+					path.CurveTo(_points[i++], _points[i++], _points[i++]);
 				}
-				else if (vType == PathOperation.Arc)
+				else if (operation == PathOperation.Arc)
 				{
-					vPath.AddArc(_points[i++], _points[i++], _arcAngles[a++], _arcAngles[a++], _arcClockwise[c++]);
+					path.AddArc(_points[i++], _points[i++], _arcAngles[a++], _arcAngles[a++], _arcClockwise[c++]);
 				}
-				else if (vType == PathOperation.Close)
+				else if (operation == PathOperation.Close)
 				{
-					vPath.Close();
-					vPath = null;
+					path.Close();
+					path = null;
 				}
 			}
 			// ReSharper restore PossibleNullReferenceException
 
-			return vPaths;
+			return paths;
 		}
 
 		public PathF Reverse()
@@ -1099,26 +1102,26 @@ namespace Microsoft.Maui.Graphics
 		{
 			cornerRadius = ClampCornerRadius(cornerRadius, w, h);
 
-			var minx = x;
-			var miny = y;
-			var maxx = minx + w;
-			var maxy = miny + h;
+			var minX = x;
+			var minY = y;
+			var maxX = minX + w;
+			var maxY = minY + h;
 
 			var handleOffset = cornerRadius * .55f;
 			var cornerOffset = cornerRadius - handleOffset;
 
-			MoveTo(new PointF(minx, miny + cornerRadius));
-			CurveTo(new PointF(minx, miny + cornerOffset), new PointF(minx + cornerOffset, miny), new PointF(minx + cornerRadius, miny));
-			LineTo(new PointF(maxx - cornerRadius, miny));
-			CurveTo(new PointF(maxx - cornerOffset, miny), new PointF(maxx, miny + cornerOffset), new PointF(maxx, miny + cornerRadius));
-			LineTo(new PointF(maxx, maxy - cornerRadius));
-			CurveTo(new PointF(maxx, maxy - cornerOffset), new PointF(maxx - cornerOffset, maxy), new PointF(maxx - cornerRadius, maxy));
-			LineTo(new PointF(minx + cornerRadius, maxy));
-			CurveTo(new PointF(minx + cornerOffset, maxy), new PointF(minx, maxy - cornerOffset), new PointF(minx, maxy - cornerRadius));
+			MoveTo(new PointF(minX, minY + cornerRadius));
+			CurveTo(new PointF(minX, minY + cornerOffset), new PointF(minX + cornerOffset, minY), new PointF(minX + cornerRadius, minY));
+			LineTo(new PointF(maxX - cornerRadius, minY));
+			CurveTo(new PointF(maxX - cornerOffset, minY), new PointF(maxX, minY + cornerOffset), new PointF(maxX, minY + cornerRadius));
+			LineTo(new PointF(maxX, maxY - cornerRadius));
+			CurveTo(new PointF(maxX, maxY - cornerOffset), new PointF(maxX - cornerOffset, maxY), new PointF(maxX - cornerRadius, maxY));
+			LineTo(new PointF(minX + cornerRadius, maxY));
+			CurveTo(new PointF(minX + cornerOffset, maxY), new PointF(minX, maxY - cornerOffset), new PointF(minX, maxY - cornerRadius));
 
 			if (includeLast)
 			{
-				LineTo(new PointF(minx, miny + cornerRadius));
+				LineTo(new PointF(minX, minY + cornerRadius));
 			}
 
 			Close();
@@ -1136,28 +1139,28 @@ namespace Microsoft.Maui.Graphics
 			bottomLeftCornerRadius = ClampCornerRadius(bottomLeftCornerRadius, w, h);
 			bottomRightCornerRadius = ClampCornerRadius(bottomRightCornerRadius, w, h);
 
-			var minx = x;
-			var miny = y;
-			var maxx = minx + w;
-			var maxy = miny + h;
+			var minX = x;
+			var minY = y;
+			var maxX = minX + w;
+			var maxY = minY + h;
 
 			var topLeftCornerOffset = topLeftCornerRadius - (topLeftCornerRadius * .55f);
 			var topRightCornerOffset = topRightCornerRadius - (topRightCornerRadius * .55f);
 			var bottomLeftCornerOffset = bottomLeftCornerRadius - (bottomLeftCornerRadius * .55f);
 			var bottomRightCornerOffset = bottomRightCornerRadius - (bottomRightCornerRadius * .55f);
 
-			MoveTo(new PointF(minx, miny + topLeftCornerRadius));
-			CurveTo(new PointF(minx, miny + topLeftCornerOffset), new PointF(minx + topLeftCornerOffset, miny), new PointF(minx + topLeftCornerRadius, miny));
-			LineTo(new PointF(maxx - topRightCornerRadius, miny));
-			CurveTo(new PointF(maxx - topRightCornerOffset, miny), new PointF(maxx, miny + topRightCornerOffset), new PointF(maxx, miny + topRightCornerRadius));
-			LineTo(new PointF(maxx, maxy - bottomRightCornerRadius));
-			CurveTo(new PointF(maxx, maxy - bottomRightCornerOffset), new PointF(maxx - bottomRightCornerOffset, maxy), new PointF(maxx - bottomRightCornerRadius, maxy));
-			LineTo(new PointF(minx + bottomLeftCornerRadius, maxy));
-			CurveTo(new PointF(minx + bottomLeftCornerOffset, maxy), new PointF(minx, maxy - bottomLeftCornerOffset), new PointF(minx, maxy - bottomLeftCornerRadius));
+			MoveTo(new PointF(minX, minY + topLeftCornerRadius));
+			CurveTo(new PointF(minX, minY + topLeftCornerOffset), new PointF(minX + topLeftCornerOffset, minY), new PointF(minX + topLeftCornerRadius, minY));
+			LineTo(new PointF(maxX - topRightCornerRadius, minY));
+			CurveTo(new PointF(maxX - topRightCornerOffset, minY), new PointF(maxX, minY + topRightCornerOffset), new PointF(maxX, minY + topRightCornerRadius));
+			LineTo(new PointF(maxX, maxY - bottomRightCornerRadius));
+			CurveTo(new PointF(maxX, maxY - bottomRightCornerOffset), new PointF(maxX - bottomRightCornerOffset, maxY), new PointF(maxX - bottomRightCornerRadius, maxY));
+			LineTo(new PointF(minX + bottomLeftCornerRadius, maxY));
+			CurveTo(new PointF(minX + bottomLeftCornerOffset, maxY), new PointF(minX, maxY - bottomLeftCornerOffset), new PointF(minX, maxY - bottomLeftCornerRadius));
 
 			if (includeLast)
 			{
-				LineTo(new PointF(minx, miny + topLeftCornerRadius));
+				LineTo(new PointF(minX, minY + topLeftCornerRadius));
 			}
 
 			Close();
@@ -1196,6 +1199,7 @@ namespace Microsoft.Maui.Graphics
 
 		public void Invalidate()
 		{
+			_cachedBounds = null;
 			ReleaseNative();
 		}
 
@@ -1328,6 +1332,214 @@ namespace Microsoft.Maui.Graphics
 			}
 
 			return true;
+		}
+
+		public RectangleF Bounds
+		{
+			get
+			{
+				if (_cachedBounds != null)
+					return (RectangleF)_cachedBounds;
+
+				var currentService = GraphicsPlatform.CurrentService;
+				if (currentService != null)
+					_cachedBounds = currentService.GetPathBounds(this);
+				else
+					return GetBoundsByFlattening();
+
+				return (RectangleF)_cachedBounds;
+			}
+		}
+
+		public RectangleF GetBoundsByFlattening(float flatness = 0.001f)
+		{
+			if (_cachedBounds != null)
+				return (RectangleF)_cachedBounds;
+
+			var path = GetFlattenedPath(flatness, true);
+
+			float l = 0f;
+			float t = 0f;
+			float r = l;
+			float b = t;
+
+			// Make sure the path actually has points in it.
+			if (path != null && path.Count > 0)
+			{
+				l = path[0].X;
+				t = path[0].Y;
+				r = l;
+				b = t;
+
+				for (int i = 1; i < path.Count; i++)
+				{
+					var point = path[i];
+					if (point.X < l) l = point.X;
+					if (point.Y < t) t = point.Y;
+					if (point.X > r) r = point.X;
+					if (point.Y > b) b = point.Y;
+				}
+			}
+
+			_cachedBounds = new RectangleF(l, t, r - l, b - t);
+			return (RectangleF)_cachedBounds;
+		}
+
+		public PathF GetFlattenedPath(float flatness = .001f, bool includeSubPaths = false)
+		{
+			var flattenedPath = new PathF();
+			List<PointF> flattenedPoints = null;
+			List<PointF> curvePoints = null;
+			bool foundClosed = false;
+			var pointIndex = 0;
+			int arcAngleIndex = 0;
+			int arcClockwiseIndex = 0;
+
+			for (var i = 0; i < _operations.Count && !foundClosed; i++)
+			{
+				var operation = _operations[i];
+				switch (operation)
+				{
+					case PathOperation.Move:
+						flattenedPath.MoveTo(_points[pointIndex++]);
+						break;
+					case PathOperation.Line:
+						flattenedPath.LineTo(_points[pointIndex++]);
+						break;
+					case PathOperation.Quad:
+						flattenedPoints ??= new List<PointF>();
+						flattenedPoints.Clear();
+						curvePoints ??= new List<PointF>();
+						curvePoints.Clear();
+						QuadToCubic(pointIndex, curvePoints);
+						FlattenCubicSegment(0, flatness, curvePoints, flattenedPoints);
+						foreach (var point in flattenedPoints)
+							flattenedPath.LineTo(point);
+						pointIndex += 2;
+						break;
+					case PathOperation.Cubic:
+						flattenedPoints ??= new List<PointF>();
+						flattenedPoints.Clear();
+						FlattenCubicSegment(pointIndex-1, flatness, _points, flattenedPoints);
+						foreach (var point in flattenedPoints)
+							flattenedPath.LineTo(point);
+						pointIndex += 3;
+						break;
+					case PathOperation.Arc:
+						var topLeft = _points[pointIndex++];
+						var bottomRight = _points[pointIndex++];
+						float startAngle = GetArcAngle(arcAngleIndex++);
+						float endAngle = GetArcAngle(arcAngleIndex++);
+						var clockwise = GetArcClockwise(arcClockwiseIndex++);
+						var flattenedArcPath = FlattenArc(topLeft, bottomRight, startAngle, endAngle, clockwise, flatness);
+						foreach (var point in flattenedArcPath.Points)
+							flattenedPath.LineTo(point);
+						break;
+					case PathOperation.Close:
+						flattenedPath.Close();
+						if (!includeSubPaths)
+						{
+							foundClosed = true;
+						}
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
+				}
+			}
+
+			return flattenedPath;
+		}
+
+		private PathF FlattenArc(PointF topLeft, PointF bottomRight, float startAngle, float endAngle, bool clockwise, float flattness)
+		{
+			var arcFlattener = new ArcFlattener(topLeft.X, topLeft.Y, bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y, startAngle, endAngle, clockwise);
+			var flattenedPath = arcFlattener.CreateFlattenedPath(flattness);
+			return flattenedPath.GetFlattenedPath();
+		}
+
+		private void QuadToCubic(int pointIndex, List<PointF> curvePoints)
+		{
+			var startPoint = _points[pointIndex - 1];
+			var quadControlPoint = _points[pointIndex];
+			var endPoint = _points[pointIndex + 1];
+
+			var controlPoint1 = new PointF(startPoint.X + 2.0f * (quadControlPoint.X - startPoint.X) / 3.0f, startPoint.Y + 2.0f * (quadControlPoint.Y - startPoint.Y) / 3.0f);
+			var controlPoint2 = new PointF(endPoint.X + 2.0f * (quadControlPoint.X - endPoint.X) / 3.0f, endPoint.Y + 2.0f * (quadControlPoint.Y - endPoint.Y) / 3.0f);
+
+			curvePoints.Add(startPoint);
+			curvePoints.Add(controlPoint1);
+			curvePoints.Add(controlPoint2);
+			curvePoints.Add(endPoint);
+		}
+
+		private void FlattenCubicSegment(int index, double flatness, List<PointF> curvePoints, List<PointF> flattenedPoints)
+        {
+            int i, k;
+            var numberOfPoints = 1;
+            var vectors = new Vector2[4];
+
+            double rCurve = 0;
+
+            for (i = index + 1; i <= index + 2; i++)
+            {
+                vectors[0] = (GetPointAsVector(curvePoints, i - 1) + GetPointAsVector(curvePoints, i + 1)) * 0.5f - GetPointAsVector(curvePoints, i);
+
+                double r = vectors[0].Length();
+
+                if (r > rCurve)
+                    rCurve = r;
+            }
+
+            if (rCurve <= 0.5 * flatness)  
+            {
+                var vector = GetPointAsVector(curvePoints, index + 3);
+                flattenedPoints.Add(new Point(vector.X, vector.Y));
+                return;
+            }
+
+            numberOfPoints = (int)(Math.Sqrt(rCurve / flatness)) + 3;
+            if (numberOfPoints > 1000)
+                numberOfPoints = 1000; 
+
+            var d = 1.0f / numberOfPoints;
+
+            vectors[0] = GetPointAsVector(curvePoints, index);
+            for (i = 1; i <= 3; i++)
+            {
+                vectors[i] = DeCasteljau(curvePoints, index, i * d);
+                flattenedPoints.Add(new Point(vectors[i].X, vectors[i].Y));
+            }
+
+            for (i = 1; i <= 3; i++)
+                for (k = 0; k <= (3 - i); k++)
+                    vectors[k] = vectors[k + 1] - vectors[k];
+
+            for (i = 4; i <= numberOfPoints; i++)
+            {
+                for (k = 1; k <= 3; k++)
+                    vectors[k] += vectors[k - 1];
+
+                flattenedPoints.Add(new Point(vectors[3].X, vectors[3].Y));
+            }
+        }
+
+		private Vector2 DeCasteljau(List<PointF> curvePoints, int index, float t)
+		{
+			var s = 1.0f - t;
+
+			var vector0 = s * GetPointAsVector(curvePoints, index) + t * GetPointAsVector(curvePoints, index + 1);
+			var vector1 = s * GetPointAsVector(curvePoints, index + 1) + t * GetPointAsVector(curvePoints, index + 2);
+			var vector2 = s * GetPointAsVector(curvePoints, index + 2) + t * GetPointAsVector(curvePoints, index + 3);
+
+			vector0 = s * vector0 + t * vector1;
+			vector1 = s * vector1 + t * vector2;
+			return s * vector0 + t * vector1;
+		}
+
+		private Vector2 GetPointAsVector(List<PointF> curvePoints, int index)
+		{
+			var point = curvePoints[index];
+			return new Vector2(point.X, point.Y);
 		}
 	}
 }

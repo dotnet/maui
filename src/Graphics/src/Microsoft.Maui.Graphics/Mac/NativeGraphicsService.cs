@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using AppKit;
 using CoreGraphics;
@@ -17,13 +16,13 @@ namespace Microsoft.Maui.Graphics.Native
 
 		private NativeGraphicsService()
 		{
-			var vFont = NSFont.SystemFontOfSize(NSFont.SystemFontSize);
-			_systemFontName = vFont.FontName;
-			vFont.Dispose();
+			var systemFont = NSFont.SystemFontOfSize(NSFont.SystemFontSize);
+			_systemFontName = systemFont.FontName;
+			systemFont.Dispose();
 
-			var vBoldFont = NSFont.BoldSystemFontOfSize(NSFont.SystemFontSize);
-			_boldSystemFontName = vBoldFont.FontName;
-			vBoldFont.Dispose();
+			var boldSystemFont = NSFont.BoldSystemFontOfSize(NSFont.SystemFontSize);
+			_boldSystemFontName = boldSystemFont.FontName;
+			boldSystemFont.Dispose();
 		}
 
 		public IImage LoadImageFromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
@@ -39,124 +38,8 @@ namespace Microsoft.Maui.Graphics.Native
 			return new NativeImage(image);
 		}
 
-		#region GraphicsPlatform Members
-
 		public string SystemFontName => _systemFontName;
 		public string BoldSystemFontName => _boldSystemFontName;
-
-		public string GetFont(string aFontName, bool aBold, bool aItalic)
-		{
-			if (NativeFontRegistry.Instance.IsCustomFont(aFontName))
-			{
-				return aFontName;
-			}
-
-			try
-			{
-				var vFontName = aFontName ?? _systemFontName;
-				var vFont = NSFont.FromFontName(vFontName, NSFont.SystemFontSize);
-
-				var vTraits = NSFontManager.SharedFontManager.AvailableMembersOfFontFamily(vFontName);
-				var names = new List<string>();
-				var values = new List<string>();
-
-				Array.ForEach(
-					vTraits,
-					vSubarray =>
-					{
-						var vArray = (NSArray) ObjCRuntime.Runtime.GetNSObject(vSubarray.Handle);
-						var vValue = (NSString) ObjCRuntime.Runtime.GetNSObject(vArray.ValueAt(0));
-						var vName = (NSString) ObjCRuntime.Runtime.GetNSObject(vArray.ValueAt(1));
-
-						names.Add(vName.ToString());
-						values.Add(vValue.ToString());
-					});
-
-				vFont.Dispose();
-
-				for (var i = 0; i < names.Count; i++)
-				{
-					var vStyle = names[i];
-					var vName = values[i];
-
-					var vIsBold = vStyle.Contains("Bold");
-					var vIsItalic = vStyle.Contains("Italic");
-
-					if (vIsBold == aBold && vIsItalic == aItalic)
-					{
-						return vName;
-					}
-				}
-			}
-			catch (Exception exc)
-			{
-#if DEBUG
-				Logger.Debug(exc);
-#endif
-			}
-
-			return aFontName;
-		}
-
-		public string GetFontName(string aFontName)
-		{
-			if (NativeFontRegistry.Instance.IsCustomFont(aFontName))
-			{
-				return aFontName;
-			}
-
-			try
-			{
-				var vFontName = aFontName ?? _systemFontName;
-				var vFont = NSFont.FromFontName(vFontName, NSFont.SystemFontSize);
-				var vName = vFont.FamilyName;
-				vFont.Dispose();
-				return vName;
-			}
-			catch (Exception exc)
-			{
-#if DEBUG
-				Logger.Debug(exc);
-#endif
-				return aFontName;
-			}
-		}
-
-		public string GetFontWeight(string aFontName)
-		{
-			var vFontName = aFontName ?? _systemFontName;
-			var vFont = new CTFont(vFontName, NSFont.SystemFontSize);
-			var vStyle = vFont.GetName(CTFontNameKey.Style);
-			vFont.Dispose();
-
-			if (vStyle != null)
-			{
-				if (vStyle.Contains("Bold"))
-				{
-					return "bold";
-				}
-			}
-
-			return "normal";
-		}
-
-		public string GetFontStyle(string aFontName)
-		{
-			var vFontName = aFontName ?? _systemFontName;
-			var vFont = new CTFont(vFontName, NSFont.SystemFontSize);
-			var vStyle = vFont.GetName(CTFontNameKey.Style);
-			vFont.Dispose();
-
-			if (vStyle != null)
-			{
-				if (vStyle.Contains("Italic"))
-				{
-					return "italic";
-				}
-			}
-
-			return "normal";
-		}
 
 		public SizeF GetStringSize(string value, string fontName, float fontSize)
 		{
@@ -172,69 +55,64 @@ namespace Microsoft.Maui.Graphics.Native
 			return size.AsSizeF();
 		}
 
-		public SizeF GetStringSize(string aString, string aFontName, float aFontSize, HorizontalAlignment aHorizontalAlignment, VerticalAlignment aVerticalAlignment)
+		public SizeF GetStringSize(string value, string fontName, float fontSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
 		{
-			var fontSize = aFontSize;
+			var actualFontSize = fontSize;
 			float factor = 1;
-			while (fontSize > 10)
+			while (actualFontSize > 10)
 			{
-				fontSize /= 10;
+				actualFontSize /= 10;
 				factor *= 10;
 			}
 
-			var vPath = new CGPath();
-			vPath.AddRect(new CGRect(0, 0, 512, 512));
-			vPath.CloseSubpath();
+			var path = new CGPath();
+			path.AddRect(new CGRect(0, 0, 512, 512));
+			path.CloseSubpath();
 
-			var vAttributedString = new NSMutableAttributedString(aString);
+			var attributedString = new NSMutableAttributedString(value);
 
-			var vAttributes = new CTStringAttributes();
+			var attributes = new CTStringAttributes();
 
 			// Load the font
-			var vFont = NativeFontService.Instance.LoadFont(aFontName ?? _systemFontName, (float) fontSize);
-			vAttributes.Font = vFont;
+			var font = NativeFontService.Instance.LoadFont(fontName ?? _systemFontName, (float) actualFontSize);
+			attributes.Font = font;
 
 			// Set the horizontal alignment
-			var vParagraphSettings = new CTParagraphStyleSettings();
-			switch (aHorizontalAlignment)
+			var paragraphSettings = new CTParagraphStyleSettings();
+			switch (horizontalAlignment)
 			{
 				case HorizontalAlignment.Left:
-					vParagraphSettings.Alignment = CTTextAlignment.Left;
+					paragraphSettings.Alignment = CTTextAlignment.Left;
 					break;
 				case HorizontalAlignment.Center:
-					vParagraphSettings.Alignment = CTTextAlignment.Center;
+					paragraphSettings.Alignment = CTTextAlignment.Center;
 					break;
 				case HorizontalAlignment.Right:
-					vParagraphSettings.Alignment = CTTextAlignment.Right;
+					paragraphSettings.Alignment = CTTextAlignment.Right;
 					break;
 				case HorizontalAlignment.Justified:
-					vParagraphSettings.Alignment = CTTextAlignment.Justified;
+					paragraphSettings.Alignment = CTTextAlignment.Justified;
 					break;
 			}
 
-			var vParagraphStyle = new CTParagraphStyle(vParagraphSettings);
-			vAttributes.ParagraphStyle = vParagraphStyle;
+			var paragraphStyle = new CTParagraphStyle(paragraphSettings);
+			attributes.ParagraphStyle = paragraphStyle;
 
 			// Set the attributes for the complete length of the string
-			vAttributedString.SetAttributes(vAttributes, new NSRange(0, aString.Length));
+			attributedString.SetAttributes(attributes, new NSRange(0, value.Length));
 
 			// Create the framesetter with the attributed string.
-			var vFrameSetter = new CTFramesetter(vAttributedString);
+			var frameSetter = new CTFramesetter(attributedString);
 
-			var textBounds = GetTextSize(vFrameSetter, vPath);
-			//Logger.Debug("{0} {1}",vSize,aString);
+			var textBounds = GetTextSize(frameSetter, path);
 
-			vFrameSetter.Dispose();
-			vAttributedString.Dispose();
-			vParagraphStyle.Dispose();
-			//vFont.Dispose();
-			vPath.Dispose();
+			frameSetter.Dispose();
+			attributedString.Dispose();
+			paragraphStyle.Dispose();
+			path.Dispose();
 
 			textBounds.Width *= factor;
 			textBounds.Height *= factor;
-
-			//vSize.Width = Math.Ceiling(vSize.Width);
-			//vSize.Height = Math.Ceiling(vSize.Height);
 
 			return textBounds.Size;
 		}
@@ -294,23 +172,6 @@ namespace Microsoft.Maui.Graphics.Native
 
 			var bounds = nativePath.PathBoundingBox;
 			return bounds.AsRectangleF();
-		}
-
-		public RectangleF GetPathBoundsWhenRotated(PointF centerOfRotation, PathF path, float angle)
-		{
-			var nativePath = path.AsRotatedCGPath(centerOfRotation, 1, 1f, angle);
-			var bounds = nativePath.PathBoundingBox;
-			nativePath.Dispose();
-			return bounds.AsRectangleF();
-		}
-
-		#endregion
-
-		public CTFont LoadFont(ITextAttributes aTextAttributes)
-		{
-			return aTextAttributes.FontName == null
-				? NativeFontService.Instance.LoadFont(_systemFontName, (float) aTextAttributes.FontSize)
-				: NativeFontService.Instance.LoadFont(aTextAttributes.FontName, (float) aTextAttributes.FontSize);
 		}
 
 		public BitmapExportContext CreateBitmapExportContext(int width, int height, float displayScale = 1)

@@ -11,6 +11,11 @@ namespace Microsoft.Maui.Graphics.Native
 		private static string _systemFontName;
 		private static string _boldSystemFontName;
 
+		public RectangleF GetPathBounds(PathF path)
+		{
+			return path.GetBoundsByFlattening();
+		}
+
 		public IImage LoadImageFromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
 			var bitmap = BitmapFactory.DecodeStream(stream);

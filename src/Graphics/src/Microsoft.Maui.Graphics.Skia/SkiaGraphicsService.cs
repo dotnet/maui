@@ -88,5 +88,10 @@ namespace Microsoft.Maui.Graphics.Skia
 		{
 			return new SkiaBitmapExportContext(width, height, displayScale, 72, false);
 		}
+
+		public RectangleF GetPathBounds(PathF path)
+		{
+			return path.GetBoundsByFlattening();
+		}
 	}
 }
