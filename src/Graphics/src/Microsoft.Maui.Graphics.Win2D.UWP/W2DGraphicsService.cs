@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 			return null;
 		}
 
-		public EWRectangle GetPathBounds(EWPath path)
+		public RectangleF GetPathBounds(PathF path)
         {
             return path.GetBoundsByFlattening();
         }

@@ -133,10 +133,8 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			return new DXBitmapExportContext(width, height, displayScale, 72, false);
 		}
 
-		public EWRectangle GetPathBounds(EWPath path)
+		public RectangleF GetPathBounds(PathF path)
         {
-            if (path == null) return null;
-
             if (path.NativePath is PathGeometry nativePath)
             {
                 return nativePath.GetBounds().AsEWRectangle();
