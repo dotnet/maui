@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Hosting
 				{
 					iOS.WillFinishLaunching((x, y) =>
 					{
-						MauiContext mauiContext = new MauiContext(MauiUIApplicationDelegate.Current.Services);
+						MauiContext mauiContext = new MauiContext(MauiUIApplicationDelegate.Current.Services, new UIKit.UIWindow());
 						Forms.Init(new ActivationState(mauiContext), new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
 						return true;
 					});
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Hosting
 								// window and root page start creating
 								// Inside OnLaunched we grab the MauiContext that's on the window so we can have the correct
 								// MauiContext inside Forms
-								MauiContext mauiContext = new MauiContext(MauiWinUIApplication.Current.Services);
+								MauiContext mauiContext = new MauiContext(MauiWinUIApplication.Current.Services, new UI.Xaml.Window());
 								ActivationState state = new ActivationState(mauiContext, args);
 								Forms.Init(state, new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
 							})
