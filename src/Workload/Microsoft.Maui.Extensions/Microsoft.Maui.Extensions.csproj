@@ -17,6 +17,7 @@
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"   GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Extensions.Primitives"             GeneratePathProperty="true" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Configuration)/lib/netstandard2.0/Microsoft.Extensions.Configuration.dll" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Configuration)/lib/netstandard2.0/Microsoft.Extensions.Configuration.xml" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Configuration_Abstractions)/lib/netstandard2.0/Microsoft.Extensions.Configuration.Abstractions.dll" />
@@ -33,6 +34,8 @@
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_FileProviders_Embedded)/lib/netstandard2.0/Microsoft.Extensions.FileProviders.Embedded.xml" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Logging_Abstractions)/lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Logging_Abstractions)/lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.xml" />
+    <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Primitives)/lib/netstandard2.0/Microsoft.Extensions.Primitives.dll" />
+    <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Primitives)/lib/netstandard2.0/Microsoft.Extensions.Primitives.xml" />
     <None Include="@(_ExtensionsFiles)" FullTfm="@(_TargetPlatform->'%(FullTfm)')" Tfm="@(_TargetPlatform->'%(Tfm)')" Profile="@(_TargetPlatform->'%(Profile)')" />
     <None Update="@(None)" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="lib/net6.0/%(FileName)%(Extension)" />
     <_PackageFiles Include="@(None)" PackagePath="lib/net6.0" TargetPath="lib/net6.0" />
