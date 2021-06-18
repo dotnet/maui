@@ -258,29 +258,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			IsInitializedRenderers = true;
 		}
 
-		internal static void RegisterCompatRenderers(
-			Assembly[] assemblies,
-			Assembly defaultRendererAssembly,
-			Action<Type> viewRegistered)
-		{
-			if (IsInitializedRenderers)
-				return;
-
-			IsInitializedRenderers = true;
-
-			// Only need to do this once
-			Registrar.RegisterAll(
-				assemblies,
-				defaultRendererAssembly,
-				new[] {
-						typeof(ExportRendererAttribute),
-						typeof(ExportCellAttribute),
-						typeof(ExportImageSourceHandlerAttribute),
-						typeof(ExportFontAttribute)
-					}, default(InitializationFlags),
-				viewRegistered);
-		}
-
 		internal static void RegisterCompatRenderers(InitializationOptions? maybeOptions)
 		{
 			if (!IsInitializedRenderers)
