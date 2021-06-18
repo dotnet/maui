@@ -6,10 +6,14 @@
   <PropertyGroup>
     <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.Core.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Core.DeviceTests</AssemblyName>
+
+    <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
+    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>MSIX</WindowsPackageType>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,6 +28,7 @@
     <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />
     <MauiImage Include="Resources\Images\*" />
     <MauiFont Include="Resources\Fonts\*" />
+    <MauiImage Update="Resources\Images\*.gif" Resize="false" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -38,6 +43,8 @@
 
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21165.2" />
+    <ProjectReference Include="..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests-net6.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\DeviceTests.Runner\TestUtils.DeviceTests.Runner.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\DeviceTests.Runner.SourceGen\TestUtils.DeviceTests.Runner.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
@@ -57,6 +64,28 @@
     <CompilerVisibleProperty Include="RootNamespace" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IsMauiSplashScreen" />
     <AdditionalFiles Include="@(MauiSplashScreen)" IsMauiSplashScreen="True" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="@(Compile)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
+    <Compile Remove="**\*.Android.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.Contains('-ios')) and !$(TargetFramework.Contains('-maccatalyst'))">
+    <Compile Remove="**\*.iOS.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.Contains('-windows'))">
+    <Compile Remove="**\*.Windows.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="Microsoft.ProjectReunion" />
+    <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
+    <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.16" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.19041.16" />
   </ItemGroup>
 
 </Project>

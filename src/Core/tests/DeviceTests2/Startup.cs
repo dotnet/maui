@@ -1,5 +1,5 @@
 ﻿using Microsoft.Maui.Hosting;
-using Xunit;
+using Microsoft.Maui.LifecycleEvents;
 using Xunit.Runners;
 
 namespace Microsoft.Maui.Core.DeviceTests
@@ -9,29 +9,19 @@ namespace Microsoft.Maui.Core.DeviceTests
 		public void Configure(IAppHostBuilder appBuilder)
 		{
 			appBuilder
+				.ConfigureLifecycleEvents(life =>
+				{
+#if __ANDROID__
+					life.AddAndroid(android =>
+					{
+						android.OnCreate((a, b) => Maui.DeviceTests.Platform.Init(a));
+					});
+#endif
+				})
 				.ConfigureTestRunner(new TestRunnerOptions
 				{
 					Assemblies = { typeof(Startup).Assembly }
 				});
-		}
-	}
-
-	public class TheTest
-	{
-		[Fact]
-		public void SuccessTest()
-		{
-		}
-
-		[Fact(Skip = "skipping!")]
-		public void SkipTest()
-		{
-		}
-
-		[Fact]
-		public void FailTest()
-		{
-			throw new System.Exception("Failed!");
 		}
 	}
 }

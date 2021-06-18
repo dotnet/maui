@@ -30,6 +30,7 @@
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
 
+    <DefineConstants Condition="$(TargetFramework.Contains('-windows'))">$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
