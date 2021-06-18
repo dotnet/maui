@@ -69,19 +69,36 @@ namespace Microsoft.Maui.Graphics
             return new PointF((float)x2, (float)y2);
         }
 
+        private static PointF GetCenter(PointF point1, PointF point2)
+        {
+            var x = (point1.X + point2.X) / 2;
+            var y = (point1.Y + point2.Y) / 2;
+            return new PointF(x, y);
+        }
+
         public PathF CreateFlattenedPath(
             float flatness = .5f)
         {
             var found = false;
             var n = 1;
+            PointF? endPoint = null;
             while ((!found) && (n < 1024))
             {
                 var candidate = 1f / (float)n;
-                var point = GetPointOnArc(candidate);
-                if (Geometry.GetDistance(_startPoint.X, _startPoint.Y, point.X, point.Y) <= flatness)
+                var midPointOnArc = GetPointOnArc(candidate / 2);
+                if (endPoint == null)
+                    endPoint = GetPointOnArc(candidate);
+                var midPointOnLine = GetCenter(_startPoint, (PointF)endPoint);
+                if (Geometry.GetDistance(midPointOnArc.X, midPointOnArc.Y, midPointOnLine.X, midPointOnLine.Y) <= flatness)
+                {
                     found = true;
+                    n = n << 1;
+                }
                 else
+                {
+                    endPoint = midPointOnArc;
                     n++;
+                }
             }
 
             var path = new PathF();
