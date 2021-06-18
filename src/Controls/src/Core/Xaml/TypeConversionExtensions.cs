@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (converterTypeName == null)
 					return null;
 				var convertertype = Type.GetType(converterTypeName);
-				return (TypeConverter)Activator.CreateInstance(convertertype);
+				return (TypeConverter)FastActivator.CreateInstance(convertertype);
 			};
 
 			return ConvertTo(value, toType, getConverter, serviceProvider, out exception);
@@ -67,11 +67,11 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (minfoRetriever != null && (memberInfo = minfoRetriever()) != null)
 					converterTypeName = memberInfo.CustomAttributes.GetTypeConverterTypeName() ?? converterTypeName;
 				if (converterTypeName == null && TypeConverterAttribute.KnownConverters.TryGetValue(toType, out var convertertype))
-					return Activator.CreateInstance(convertertype);
+					return FastActivator.CreateInstance(convertertype);
 				if (converterTypeName == null)
 					return null;
 				convertertype = Type.GetType(converterTypeName);
-				return Activator.CreateInstance(convertertype);
+				return FastActivator.CreateInstance(convertertype);
 			};
 
 			return ConvertTo(value, toType, getConverter, serviceProvider, out exception);
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					throw exception;
 				return ret;
 			}
-			Func<object> getConverter = () => Activator.CreateInstance(convertertype);
+			Func<object> getConverter = () => FastActivator.CreateInstance(convertertype);
 			ret = value.ConvertTo(toType, getConverter, serviceProvider, out exception);
 			if (exception != null)
 				throw exception;

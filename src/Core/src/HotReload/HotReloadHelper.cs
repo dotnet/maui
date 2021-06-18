@@ -63,7 +63,7 @@ namespace Microsoft.Maui.HotReload
 			try
 			{
 				//TODO: Add in a way to use IoC and DI
-				var newView = (IView)(parameters?.Length > 0 ? Activator.CreateInstance(newViewType, args: parameters) : Activator.CreateInstance(newViewType))!;
+				var newView = (IView)(parameters?.Length > 0 ? Activator.CreateInstance(newViewType, args: parameters) : FastActivator.CreateInstance(newViewType))!;
 				TransferState(view, newView);
 				return newView;
 			}

@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Internals
 				}
 			}
 
-			return Activator.CreateInstance(type);
+			return FastActivator.CreateInstance(type);
 		}
 	}
 }

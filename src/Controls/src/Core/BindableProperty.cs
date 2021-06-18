@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentException($"Not a valid type of BindingMode. Property: {returnType} {declaringType.Name}.{propertyName}. Default binding mode: {defaultBindingMode}", nameof(defaultBindingMode));
 
 			if (defaultValue == null && Nullable.GetUnderlyingType(returnType) == null && returnType.GetTypeInfo().IsValueType)
-				defaultValue = Activator.CreateInstance(returnType);
+				defaultValue = FastActivator.CreateInstance(returnType);
 
 			if (defaultValue != null && !returnType.IsInstanceOfType(defaultValue))
 				throw new ArgumentException($"Default value did not match return type. Property: {returnType} {declaringType.Name}.{propertyName} Default value type: {defaultValue.GetType().Name}, ", nameof(defaultValue));

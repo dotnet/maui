@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			if (enumerable != null)
 			{
-				var values = (IList)Activator.CreateInstance(ListType.MakeGenericType(serviceType))!;
+				var values = (IList)FastActivator.CreateInstance(ListType.MakeGenericType(serviceType))!;
 
 				foreach (var descriptor in enumerable)
 				{
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Hosting.Internal
 				if (_constructorInjection)
 					return CreateInstance(item.ImplementationType);
 				else
-					return Activator.CreateInstance(item.ImplementationType);
+					return FastActivator.CreateInstance(item.ImplementationType);
 			}
 
 			if (item.ImplementationInstance != null)

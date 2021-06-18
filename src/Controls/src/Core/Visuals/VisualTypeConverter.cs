@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls
 		{
 			try
 			{
-				return (IVisual)Activator.CreateInstance(visualType);
+				return (IVisual)FastActivator.CreateInstance(visualType);
 			}
 			catch
 			{

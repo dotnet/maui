@@ -49,13 +49,13 @@ namespace Microsoft.Maui.Controls
 					{
 						if (dependencyImplementation.GlobalInstance == null)
 						{
-							dependencyImplementation.GlobalInstance = Activator.CreateInstance(dependencyImplementation.ImplementorType);
+							dependencyImplementation.GlobalInstance = FastActivator.CreateInstance(dependencyImplementation.ImplementorType);
 						}
 					}
 				}
 				return (T)dependencyImplementation.GlobalInstance;
 			}
-			return (T)Activator.CreateInstance(dependencyImplementation.ImplementorType);
+			return (T)FastActivator.CreateInstance(dependencyImplementation.ImplementorType);
 		}
 
 		public static void Register<T>() where T : class

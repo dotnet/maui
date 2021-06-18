@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 			if (_embeddedFontLoader != null)
 				return;
 
-			_embeddedFontLoader = (IEmbeddedFontLoader)Activator.CreateInstance(loaderType)!;
+			_embeddedFontLoader = (IEmbeddedFontLoader)FastActivator.CreateInstance(loaderType)!;
 			if (FontRegistrar is FontRegistrar fr)
 				fr.SetFontLoader(_embeddedFontLoader);
 		}

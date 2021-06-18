@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls
 				// okay maybe its a type, we'll try that just to be nice to the user
 				var type = Type.GetType(route);
 				if (type != null)
-					result = Activator.CreateInstance(type) as Element;
+					result = FastActivator.CreateInstance(type) as Element;
 			}
 
 			if (result != null)
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Controls
 
 			public override Element GetOrCreate()
 			{
-				return (Element)Activator.CreateInstance(_type);
+				return (Element)FastActivator.CreateInstance(_type);
 			}
 			public override bool Equals(object obj)
 			{

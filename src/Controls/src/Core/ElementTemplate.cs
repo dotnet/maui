@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 
 			_canRecycle = true;
 
-			LoadTemplate = () => Activator.CreateInstance(type);
+			LoadTemplate = () => FastActivator.CreateInstance(type);
 		}
 
 		internal ElementTemplate(Func<object> loadTemplate) : this()
