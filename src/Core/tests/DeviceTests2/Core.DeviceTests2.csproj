@@ -5,8 +5,7 @@
 
   <PropertyGroup>
     <!--<TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>-->
-    <!--<TargetFrameworks>net6.0-ios;net6.0-maccatalyst;net6.0-android</TargetFrameworks>-->
-    <TargetFrameworks>net6.0-android</TargetFrameworks>
+    <TargetFrameworks>net6.0-ios;net6.0-maccatalyst;net6.0-android</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     <SingleProject>true</SingleProject>
@@ -40,9 +39,8 @@
 
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.4.1" />
-
     <ProjectReference Include="..\..\..\TestUtils\DeviceTests.Runner\TestUtils.DeviceTests.Runner.csproj" />
-    <!--<ProjectReference Include="..\..\..\TestUtils\DeviceTests.Runner.SourceGen\TestUtils.DeviceTests.Runner.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
+    <ProjectReference Include="..\..\..\TestUtils\DeviceTests.Runner.SourceGen\TestUtils.DeviceTests.Runner.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,5 +53,11 @@
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.targets" />
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Core.targets" />
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="RootNamespace" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IsMauiSplashScreen" />
+    <AdditionalFiles Include="@(MauiSplashScreen)" IsMauiSplashScreen="True" />
+  </ItemGroup>
 
 </Project>
