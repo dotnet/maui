@@ -5,6 +5,7 @@ using System.Reflection;
 
 namespace Microsoft.Maui
 {
+	// https://devblogs.microsoft.com/premier-developer/dissecting-the-new-constraint-in-c-a-perfect-example-of-a-leaky-abstraction/
 	public static class FastActivator
 	{
 		public static T CreateInstance<T>() where T : new()
