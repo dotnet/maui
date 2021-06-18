@@ -45,8 +45,20 @@
         Version="$(_MicrosoftHostingVersion)"
     />
     <PackageReference
+        Update="Microsoft.Extensions.Configuration.Abstractions"
+        Version="$(_MicrosoftHostingVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
         Version="$(_MicrosoftDependencyInjectionVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.DependencyInjection.Abstractions"
+        Version="$(_MicrosoftDependencyInjectionVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.FileProviders.Abstractions"
+        Version="$(_MicrosoftFileProvidersVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.FileProviders.Embedded"

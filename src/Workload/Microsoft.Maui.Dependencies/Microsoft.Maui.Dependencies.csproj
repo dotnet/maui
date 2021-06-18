@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <PackageId>$(MSBuildProjectName)</PackageId>
+    <Description>.NET MAUI NuGet dependencies pack</Description>
     <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <GenerateDependencyFile>false</GenerateDependencyFile>
