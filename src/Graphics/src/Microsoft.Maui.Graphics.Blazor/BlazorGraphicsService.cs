@@ -10,6 +10,11 @@ namespace Microsoft.Maui.Graphics.Blazor
 			return new List<PathF>();
 		}
 
+		public RectangleF GetPathBounds(PathF path)
+		{
+			return path.GetBoundsByFlattening();
+		}
+		
 		public SizeF GetStringSize(string value, string fontName, float textSize)
 		{
 			return new SizeF(value.Length * 10, textSize + 2);

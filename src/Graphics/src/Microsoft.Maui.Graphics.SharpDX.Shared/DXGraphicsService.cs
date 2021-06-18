@@ -132,5 +132,31 @@ namespace Microsoft.Maui.Graphics.SharpDX
 		{
 			return new DXBitmapExportContext(width, height, displayScale, 72, false);
 		}
+
+		public EWRectangle GetPathBounds(EWPath path)
+        {
+            if (path == null) return null;
+
+            if (path.NativePath is PathGeometry nativePath)
+            {
+                return nativePath.GetBounds().AsEWRectangle();
+            }
+
+            if (CurrentFactory.Value != null && path.Closed)
+            {
+                if (CurrentFactory.Value != SharedFactory)
+                {
+                    nativePath = path.AsDxPath(CurrentFactory.Value);
+                    if (nativePath != null)
+                    {
+                        path.NativePath = nativePath;
+                        return nativePath.GetBounds().AsEWRectangle();
+                    }
+                }
+            }
+
+            var bounds = path.GetBoundsByFlattening();
+            return bounds;
+        }
 	}
 }
