@@ -15,6 +15,10 @@ namespace Microsoft.Maui
 			_context = new WeakReference<Context>(context ?? throw new ArgumentNullException(nameof(context)));
 		}
 
+		public MauiContext(Context context) : this()
+		{
+		}
+
 		public Context? Context
 		{
 			get
