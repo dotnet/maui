@@ -53,40 +53,6 @@ namespace Microsoft.Maui.Controls
 			return ArrangeOverride(bounds);
 		}
 
-		// The CloseEnough methods will likely go away once we get rid of the cause (see comments below); if not, we'll
-		// add a proper extension method or add a compare method to MG with a tolerance parameter
-		bool CloseEnough(double a, double b)
-		{
-			const double tolerance = 0.0001;
-
-			return (Math.Abs(a - b) < tolerance);
-		}
-
-		protected bool CloseEnough(Rectangle currentBounds, Rectangle newBounds)
-		{
-			if (!CloseEnough(currentBounds.X, newBounds.X))
-			{
-				return false;
-			}
-
-			if (!CloseEnough(currentBounds.Y, newBounds.Y))
-			{
-				return false;
-			}
-
-			if (!CloseEnough(currentBounds.Width, newBounds.Width))
-			{
-				return false;
-			}
-
-			if (!CloseEnough(currentBounds.Height, newBounds.Height))
-			{
-				return false;
-			}
-
-			return true;
-		}
-
 		// ArrangeOverride provides a way to allow subclasses (e.g., Layout) to override Arrange even though
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
 		protected virtual Size ArrangeOverride(Rectangle bounds)
