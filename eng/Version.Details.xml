@@ -32,6 +32,10 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>30e2d2265545c006c5feba3ebfdf39f7e2db3730</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="6.0.0-preview.6.21307.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>1d2aa13ffc256a8c3f645de9c4d0f1d4f3296711</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0-preview.6.21307.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>1d2aa13ffc256a8c3f645de9c4d0f1d4f3296711</Sha>

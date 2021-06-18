@@ -8,6 +8,7 @@
     <MicrosoftiOSSdkPackageVersion>15.0.100-ci.main.37</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>15.0.100-ci.main.37</MicrosofttvOSSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>12.0.100-ci.main.37</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftExtensionsHostingAbstractionsPackageVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsHostingAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>6.0.0-preview.6.21307.1</MicrosoftExtensionsDependencyInjectionPackageVersion>

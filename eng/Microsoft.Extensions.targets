@@ -5,6 +5,7 @@
   <PropertyGroup Condition=" '$(_UseNet6Packages)' != 'true' ">
     <_MicrosoftHostingVersion>5.0.0</_MicrosoftHostingVersion>
     <SystemCodeDomPackageVersion>4.7.0</SystemCodeDomPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>(_MicrosoftHostingVersion)</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftExtensionsHostingAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsHostingAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.1</MicrosoftExtensionsDependencyInjectionPackageVersion>
@@ -95,7 +96,7 @@
     />
     <PackageReference
         Update="Microsoft.Extensions.Primitives"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsPrimitivesPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.ProjectReunion"
