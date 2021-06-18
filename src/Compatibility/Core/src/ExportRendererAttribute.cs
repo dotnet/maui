@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
+namespace Microsoft.Maui.Controls.Compatibility
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public sealed class ExportRendererAttribute : HandlerAttribute

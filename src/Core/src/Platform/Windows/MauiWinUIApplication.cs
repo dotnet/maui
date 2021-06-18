@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 			Application = Services.GetRequiredService<IApplication>();
 			Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
-			var mauiContext = new MauiContext(Services);
+			var mauiContext = new MauiContext(Services, MainWindow);
 
 			var activationState = new ActivationState(mauiContext, args);
 			var window = Application.CreateWindow(activationState);

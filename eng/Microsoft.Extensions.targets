@@ -85,6 +85,10 @@
         Version="$(_MicrosoftHostingVersion)"
     />
     <PackageReference
+        Update="Microsoft.Extensions.Primitives"
+        Version="$(_MicrosoftHostingVersion)"
+    />
+    <PackageReference
         Update="Microsoft.ProjectReunion"
         Version="$(_MicrosoftProjectReunionVersion)"
     />
