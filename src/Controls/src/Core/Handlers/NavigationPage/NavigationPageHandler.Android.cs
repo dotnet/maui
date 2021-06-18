@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			base.ConnectHandler(nativeView);
 
-			INavigationPageController navController = VirtualViewWithValidation();
+			INavigationPageController navController = VirtualView;
 			navController.PushRequested += OnPushed;
 			navController.PopRequested += OnPopped;
 			var inflater = NavHost.NavController.NavInflater;
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected override void DisconnectHandler(AView nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			var navController = (INavigationPageController)VirtualViewWithValidation();
+			var navController = (INavigationPageController)VirtualView;
 			navController.PushRequested -= OnPushed;
 			navController.PopRequested -= OnPopped;
 		}
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		internal void OnPop()
 		{
-			VirtualViewWithValidation()
+			VirtualView
 				.Navigation
 				.PopAsync()
 				.FireAndForget((e) =>
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			//bool isNavigated = NavigationPageController.StackDepth > 1;
 			//bar.NavigationIcon = null;
-			var navPage = VirtualViewWithValidation();
+			var navPage = VirtualView;
 
 			//if (isNavigated)
 			//{
