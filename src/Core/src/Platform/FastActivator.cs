@@ -1,7 +1,9 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Emit;
 
 namespace Microsoft.Maui
 {
@@ -65,50 +67,50 @@ namespace Microsoft.Maui
 			Expression<Func<T>> expr = () => new T();
 			NewExpression newExpr = (NewExpression)expr.Body;
 
-			var method = new System.Reflection.Emit.DynamicMethod(
+			var method = new DynamicMethod(
 				name: "lambda",
 				returnType: newExpr.Type,
-				parameterTypes: new Type[0],
+				parameterTypes: Array.Empty<Type>(),
 				m: typeof(DynamicModuleLambdaCompiler).Module,
 				skipVisibility: true);
 
-			System.Reflection.Emit.ILGenerator ilGen = method.GetILGenerator();
+			ILGenerator ilGen = method.GetILGenerator();
 			
 			if (newExpr.Constructor != null)
 			{
-				ilGen.Emit(System.Reflection.Emit.OpCodes.Newobj, newExpr.Constructor);
+				ilGen.Emit(OpCodes.Newobj, newExpr.Constructor);
 			}
 			else
 			{
-				System.Reflection.Emit.LocalBuilder temp = ilGen.DeclareLocal(newExpr.Type);
-				ilGen.Emit(System.Reflection.Emit.OpCodes.Ldloca, temp);
-				ilGen.Emit(System.Reflection.Emit.OpCodes.Initobj, newExpr.Type);
-				ilGen.Emit(System.Reflection.Emit.OpCodes.Ldloc, temp);
+				LocalBuilder temp = ilGen.DeclareLocal(newExpr.Type);
+				ilGen.Emit(OpCodes.Ldloca, temp);
+				ilGen.Emit(OpCodes.Initobj, newExpr.Type);
+				ilGen.Emit(OpCodes.Ldloc, temp);
 			}
 
-			ilGen.Emit(System.Reflection.Emit.OpCodes.Ret);
+			ilGen.Emit(OpCodes.Ret);
 
 			return (Func<T>)method.CreateDelegate(typeof(Func<T>));
 		}
 
 		public static Func<object> GenerateValueTypeFactory(Type valueType)
 		{
-			var method = new System.Reflection.Emit.DynamicMethod(
+			var method = new DynamicMethod(
 				name: "lambda",
 				returnType: typeof(object),
-				parameterTypes: new Type[0],
+				parameterTypes: Array.Empty<Type>(),
 				m: typeof(DynamicModuleLambdaCompiler).Module,
 				skipVisibility: true);
 
-			System.Reflection.Emit.ILGenerator ilGen = method.GetILGenerator();
+			ILGenerator ilGen = method.GetILGenerator();
 
-			System.Reflection.Emit.LocalBuilder temp = ilGen.DeclareLocal(valueType);
-			ilGen.Emit(System.Reflection.Emit.OpCodes.Ldloca, temp);
-			ilGen.Emit(System.Reflection.Emit.OpCodes.Initobj, valueType);
-			ilGen.Emit(System.Reflection.Emit.OpCodes.Ldloc, temp);
-			ilGen.Emit(System.Reflection.Emit.OpCodes.Box, valueType);
+			LocalBuilder temp = ilGen.DeclareLocal(valueType);
+			ilGen.Emit(OpCodes.Ldloca, temp);
+			ilGen.Emit(OpCodes.Initobj, valueType);
+			ilGen.Emit(OpCodes.Ldloc, temp);
+			ilGen.Emit(OpCodes.Box, valueType);
 
-			ilGen.Emit(System.Reflection.Emit.OpCodes.Ret);
+			ilGen.Emit(OpCodes.Ret);
 
 			return (Func<object>)method.CreateDelegate(typeof(Func<object>));
 		}
