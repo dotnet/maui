@@ -4,6 +4,7 @@
   <Import Project="$(MauiRootDirectory)src/SingleProject/Resizetizer/src/ResizetizerPackages.projitems" />
 
   <PropertyGroup>
+    <Description>.NET MAUI SDK support for images, fonts, etc. Enabled via &lt;UseMauiAssets&gt;true&lt;/UseMauiAssets&gt;.</Description>
     <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
   </PropertyGroup>
 

@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <PackageId>$(PackageId).Manifest-$(DotNetPreviewVersionBand)</PackageId>
+    <Description>.NET MAUI workload manifest</Description>
   </PropertyGroup>
 
   <Import Project="$(MauiRootDirectory)eng/ReplaceText.targets" />
