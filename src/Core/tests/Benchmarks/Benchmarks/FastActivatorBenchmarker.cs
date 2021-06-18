@@ -19,13 +19,13 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		}
 
 		[Benchmark]
-		public object RegisterHandlerUsingFastActivator1()
+		public object CreateInstanceUsingUsingFastActivator1()
 		{
 			return FastActivator.CreateInstance<ButtonStub>();
 		}
 
 		[Benchmark]
-		public object RegisterHandlerUsingFastActivator2()
+		public object CreateInstanceUsingUsingFastActivator2()
 		{
 			return FastActivator.CreateInstance(typeof(ButtonStub));
 		}
