@@ -36,7 +36,15 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>1d2aa13ffc256a8c3f645de9c4d0f1d4f3296711</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0-preview.6.21307.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>1d2aa13ffc256a8c3f645de9c4d0f1d4f3296711</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.6.21307.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>1d2aa13ffc256a8c3f645de9c4d0f1d4f3296711</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0-preview.6.21307.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>1d2aa13ffc256a8c3f645de9c4d0f1d4f3296711</Sha>
     </Dependency>
@@ -57,6 +65,10 @@
       <Sha>1d2aa13ffc256a8c3f645de9c4d0f1d4f3296711</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="6.0.0-preview.6.21307.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>1d2aa13ffc256a8c3f645de9c4d0f1d4f3296711</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="6.0.0-preview.6.21307.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>1d2aa13ffc256a8c3f645de9c4d0f1d4f3296711</Sha>
     </Dependency>

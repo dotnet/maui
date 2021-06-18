@@ -5,24 +5,30 @@
   <PropertyGroup Condition=" '$(_UseNet6Packages)' == 'true' ">
     <_MicrosoftSystemCodeDomVersion>$(SystemCodeDomPackageVersion)</_MicrosoftSystemCodeDomVersion>
     <_MicrosoftExtensionsHostingAbstractionsPackageVersion>$(MicrosoftExtensionsHostingAbstractionsPackageVersion)</_MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <_MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)</_MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <_MicrosoftExtensionsDependencyInjectionPackageVersion>$(MicrosoftExtensionsDependencyInjectionPackageVersion)</_MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <_MicrosoftExtensionsConfigurationAbstractionsPackageVersion>$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)</_MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
     <_MicrosoftExtensionsConfigurationPackageVersion>$(MicrosoftExtensionsConfigurationPackageVersion)</_MicrosoftExtensionsConfigurationPackageVersion>
     <_MicrosoftExtensionsLoggingAbstractionsPackageVersion>$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)</_MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <_MicrosoftExtensionsLoggingPackageVersion>$(MicrosoftExtensionsLoggingPackageVersion)</_MicrosoftExtensionsLoggingPackageVersion>
     <_MicrosoftExtensionsLoggingConsolePackageVersion>$(MicrosoftExtensionsLoggingConsolePackageVersion)</_MicrosoftExtensionsLoggingConsolePackageVersion>
     <_MicrosoftExtensionsLoggingDebugPackageVersion>$(MicrosoftExtensionsLoggingDebugPackageVersion)</_MicrosoftExtensionsLoggingDebugPackageVersion>
+    <_MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)</_MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <_MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)</_MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(_UseNet6Packages)' != 'true' ">
     <_MicrosoftHostingVersion>5.0.0</_MicrosoftHostingVersion>
     <_MicrosoftSystemCodeDomVersion>4.7.0</_MicrosoftSystemCodeDomVersion>
     <_MicrosoftExtensionsHostingAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</_MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <_MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</_MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <_MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.1</_MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <_MicrosoftExtensionsConfigurationAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</_MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
     <_MicrosoftExtensionsConfigurationPackageVersion>$(_MicrosoftHostingVersion)</_MicrosoftExtensionsConfigurationPackageVersion>
     <_MicrosoftExtensionsLoggingAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</_MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <_MicrosoftExtensionsLoggingPackageVersion>$(_MicrosoftHostingVersion)</_MicrosoftExtensionsLoggingPackageVersion>
     <_MicrosoftExtensionsLoggingConsolePackageVersion>$(_MicrosoftHostingVersion)</_MicrosoftExtensionsLoggingConsolePackageVersion>
     <_MicrosoftExtensionsLoggingDebugPackageVersion>$(_MicrosoftHostingVersion)</_MicrosoftExtensionsLoggingDebugPackageVersion>
+     <_MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</_MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <_MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>5.0.6</_MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
   </PropertyGroup>
    <!-- Microsoft.Maui.Graphics related Packages -->
@@ -63,7 +69,7 @@
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration.Abstractions"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(_MicrosoftExtensionsConfigurationAbstractionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
@@ -71,11 +77,11 @@
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection.Abstractions"
-        Version="$(_MicrosoftDependencyInjectionVersion)"
+        Version="$(_MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.FileProviders.Abstractions"
-        Version="$(_MicrosoftFileProvidersVersion)"
+        Version="$(_MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.FileProviders.Embedded"
