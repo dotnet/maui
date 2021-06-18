@@ -4,8 +4,7 @@
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
 
   <PropertyGroup>
-    <!--<TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>-->
-    <TargetFrameworks>net6.0-ios;net6.0-maccatalyst;net6.0-android</TargetFrameworks>
+    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     <SingleProject>true</SingleProject>
