@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 #if __ANDROID__
 		global::Android.Content.Context? Context { get; }
 #elif __IOS__
-
+		UIKit.UIWindow? Window { get; }
 #endif
 	}
 }
