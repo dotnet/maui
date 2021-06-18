@@ -8,6 +8,10 @@ namespace MauiProfilingApp
 		public MainPage()
 		{
 			InitializeComponent();
+
+			label.Text = $"IntPtr.Size == " + IntPtr.Size;
+			Console.WriteLine($"IntPtr.Size == " + IntPtr.Size);
+			Console.WriteLine($"DOTNET_DiagnosticPorts == " + Environment.GetEnvironmentVariable("DOTNET_DiagnosticPorts"));
 		}
 	}
 }

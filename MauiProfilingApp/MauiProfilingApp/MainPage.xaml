@@ -3,4 +3,6 @@
              x:Class="MauiProfilingApp.MainPage"
              BackgroundColor="White">
 
+    <Label x:Name="label" FontSize="60" />
+
 </ContentPage>
