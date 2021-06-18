@@ -1,3 +1,8 @@
 <Project>
-
+    <PropertyGroup Condition=" '$(Enable64BitBuild)' != 'True' ">
+        <RuntimeIdentifiers>android-arm;android-x86</RuntimeIdentifiers>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Enable64BitBuild)' == 'True' ">
+        <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
+    </PropertyGroup>
 </Project>
