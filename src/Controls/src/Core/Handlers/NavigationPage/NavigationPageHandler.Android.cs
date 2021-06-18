@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override AView CreateNativeView()
 		{
-			LayoutInflater? li = LayoutInflater.From(ContextWithValidation());
+			LayoutInflater? li = LayoutInflater.From(Context);
 			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
 
 			var view = li.Inflate(Resource.Layout.navigationlayout, null).JavaCast<NavigationLayout>();
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override void ConnectHandler(AView nativeView)
 		{
-			var fragmentManager = ContextWithValidation().GetFragmentManager();
+			var fragmentManager = Context.GetFragmentManager();
 			_ = fragmentManager ?? throw new InvalidOperationException($"GetFragmentManager returned null");
 			_ = VirtualView ?? throw new InvalidOperationException($"VirtualView cannot be null");
 
