@@ -51,11 +51,11 @@
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
-        Version="$(_MicrosoftExtensionsConfigurationPackageVersion)"
+        Version="$(MicrosoftExtensionsConfigurationPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration.Abstractions"
-        Version="$(_MicrosoftExtensionsConfigurationAbstractionsPackageVersion)"
+        Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
