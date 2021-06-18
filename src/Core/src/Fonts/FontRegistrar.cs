@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 
@@ -81,18 +82,29 @@ namespace Microsoft.Maui
 			return _fontLookupCache[cacheKey] = result;
 		}
 
-		static Stream GetEmbeddedResourceStream((string Filename, string? Alias, Assembly Assembly) embeddedFont)
+		Stream GetEmbeddedResourceStream((string Filename, string? Alias, Assembly Assembly) embeddedFont)
 		{
 			var resourceNames = embeddedFont.Assembly.GetManifestResourceNames();
-			var searchName = "." + embeddedFont.Filename;
 
-			foreach (var name in resourceNames)
-			{
-				if (name.EndsWith(searchName, StringComparison.CurrentCultureIgnoreCase))
-					return embeddedFont.Assembly.GetManifestResourceStream(name)!;
-			}
+			var resourcePaths = resourceNames
+				.Where(x => x.EndsWith(embeddedFont.Filename, StringComparison.CurrentCultureIgnoreCase))
+				.ToArray();
 
-			throw new FileNotFoundException($"Resource ending with {embeddedFont.Filename} not found.");
+			if (resourcePaths.Length == 0)
+				throw new FileNotFoundException($"Resource ending with {embeddedFont.Filename} not found.");
+
+			if (resourcePaths.Length > 1)
+				resourcePaths = resourcePaths.Where(x => IsFile(x, embeddedFont.Filename)).ToArray();
+
+			return embeddedFont.Assembly.GetManifestResourceStream(resourcePaths[0])!;
+		}
+
+		bool IsFile(string path, string file)
+		{
+			if (!path.EndsWith(file, StringComparison.Ordinal))
+				return false;
+
+			return path.Replace(file, "").EndsWith(".", StringComparison.Ordinal);
 		}
 	}
 }

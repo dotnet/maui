@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using UIKit;
 
@@ -106,7 +107,7 @@ namespace Microsoft.Maui
 				{
 					UIFont? result = null;
 
-					if (Array.IndexOf(UIFont.FamilyNames, family) != -1)
+					if (UIFont.FamilyNames.Contains(family))
 					{
 						var descriptor = new UIFontDescriptor().CreateWithFamily(family);
 						if (hasAttributes)
@@ -124,10 +125,7 @@ namespace Microsoft.Maui
 
 					if (family.StartsWith(".SFUI", StringComparison.InvariantCultureIgnoreCase))
 					{
-						var weights = family.Split('-');
-						var fontWeight = weights.Length == 0
-							? null
-							: weights[weights.Length - 1];
+						var fontWeight = family.Split('-').LastOrDefault();
 
 						if (!string.IsNullOrWhiteSpace(fontWeight) && Enum.TryParse<UIFontWeight>(fontWeight, true, out var uIFontWeight))
 						{

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.UI.Xaml.Media;
@@ -142,10 +143,7 @@ namespace Microsoft.Maui
 					using (var fontSet = new CanvasFontSet(fontUri))
 					{
 						if (fontSet.Fonts.Count != 0)
-						{
-							var props = fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName);
-							return props.Length == 0 ? null : props[0].Value;
-						}
+							return fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName).FirstOrDefault().Value;
 					}
 				}
 

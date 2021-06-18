@@ -3,10 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Controls.Xaml;
 using MauiApp1.Data;
-
-[assembly: XamlCompilationAttribute(XamlCompilationOptions.Compile)]
 
 namespace MauiApp1
 {

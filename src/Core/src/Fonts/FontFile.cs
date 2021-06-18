@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Maui
 {
@@ -30,16 +31,11 @@ namespace Microsoft.Maui
 			//Get the fontFamily name;
 			var fontFamilyName = hashIndex > 0 ? input.Substring(0, hashIndex) : input;
 
-			string? foundExtension = null;
-			foreach (var extension in Extensions)
-			{
-				if (fontFamilyName.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
-				{
-					foundExtension = extension;
-					fontFamilyName = fontFamilyName.Substring(0, fontFamilyName.Length - foundExtension.Length);
-					break;
-				}
-			}
+			var foundExtension = Extensions.
+				FirstOrDefault(x => fontFamilyName.EndsWith(x, StringComparison.OrdinalIgnoreCase));
+
+			if (!string.IsNullOrWhiteSpace(foundExtension))
+				fontFamilyName = fontFamilyName.Substring(0, fontFamilyName.Length - foundExtension.Length);
 
 			return new FontFile
 			{
