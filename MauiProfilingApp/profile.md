@@ -6,4 +6,4 @@ dotnet run --project C:\Projects\diagnostics\src\Tools\dotnet-dsrouter\dotnet-ds
 
 dotnet-trace collect --diagnostic-port /tmp/maui-app --format speedscope -o /tmp/hellomaui-app-trace
 
-..\..\bin\dotnet\dotnet.exe build -f net6.0-android -t:run -p:AndroidLinkResources=true -p:AndroidEnableProfiler=true
+..\..\bin\dotnet\dotnet.exe build -f net6.0-android -t:run -c Release -p:AndroidLinkResources=true -p:AndroidEnableProfiler=true -p:Enable64BitBuild=true
