@@ -55,8 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
 		}
 
-		// TODO ezhart 2021-06-18 Review this after Matt's container fixes from P5 are merged up
-		// A control calling Arrange on itself is almost certainly wrong, but removing this right now is breaking
+		// TODO ezhart 2021-06-18 Review this; a control calling Arrange on itself is almost certainly wrong, but removing this right now is breaking
 		// any layout that's inside a shimmed ScrollView. 
 		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
 		{
