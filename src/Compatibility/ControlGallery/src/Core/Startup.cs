@@ -1,8 +1,8 @@
-﻿using Microsoft.Maui;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
