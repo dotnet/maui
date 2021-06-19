@@ -124,7 +124,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 					if (!File.Exists(assemblyFileName))
 						File.Create(assemblyFileName).Close();
 #else
-					var assemblyFileName = assm.GetName().Name + ".dll";
+					var assemblyFileName = assm.Location;
 #endif
 
 					var configuration = GetConfiguration(assemblyFileName);

@@ -175,7 +175,7 @@ namespace " + RootNamespace + @"
 	{
 		static void Main(global::System.String[] args)
 		{
-#if !SKIP_HEADLESS_RUNNER_ENTRYPOINT_GENERATION
+#if !SKIP_HEADLESS_RUNNER_APP_DELEGATE_GENERATION
 			if (global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestApplicationDelegate.IsHeadlessRunner(args))
 			{
 				global::UIKit.UIApplication.Main(args, null, nameof(global::" + RootNamespace + @"." + headlessDelegateName + @"));
