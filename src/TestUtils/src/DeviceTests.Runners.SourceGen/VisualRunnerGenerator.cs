@@ -44,7 +44,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen
 			var splash = ContainsSplashScreen ? @"Theme = ""@style/Maui.SplashTheme""," : "";
 
 			return @"
-#if !SKIP_RUNNER_ENTRYPOINT_GENERATION && !SKIP_RUNNER_APPLICATION_GENERATION
+#if !SKIP_RUNNER_ENTRYPOINT_GENERATION && !SKIP_VISUAL_RUNNER_ENTRYPOINT_GENERATION && !SKIP_VISUAL_RUNNER_APPLICATION_GENERATION
 namespace " + ns + @"
 {
 	[global::Android.App.Application]
@@ -58,7 +58,7 @@ namespace " + ns + @"
 }
 #endif
 
-#if !SKIP_RUNNER_ENTRYPOINT_GENERATION && !SKIP_RUNNER_ACTIVITY_GENERATION
+#if !SKIP_RUNNER_ENTRYPOINT_GENERATION && !SKIP_VISUAL_RUNNER_ENTRYPOINT_GENERATION && !SKIP_VISUAL_RUNNER_ACTIVITY_GENERATION
 namespace " + ns + @"
 {
 	[global::Android.App.Activity(

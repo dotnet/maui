@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			var root = ((int)Build.VERSION.SdkInt) >= 30
-				? global::Android.OS.Environment.ExternalStorageDirectory.AbsolutePath
+				? Environment.ExternalStorageDirectory.AbsolutePath
 				: Application.Context.GetExternalFilesDir(null)?.AbsolutePath ?? FileSystem.AppDataDirectory;
 #pragma warning restore CS0618 // Type or member is obsolete
 

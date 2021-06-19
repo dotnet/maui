@@ -12,13 +12,13 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen
 
 		public override void Generate()
 		{
-			//if (TargetFramework.IndexOf("-android", StringComparison.OrdinalIgnoreCase) != -1)
-			//{
-			//	var code = GenerateAndroidSource();
-			//	var name = "HeadlessRunner.Android.sg.cs";
+			if (TargetFramework.IndexOf("-android", StringComparison.OrdinalIgnoreCase) != -1)
+			{
+				var code = GenerateAndroidSource();
+				var name = "HeadlessRunner.Android.sg.cs";
 
-			//	AddSource(name, code);
-			//}
+				AddSource(name, code);
+			}
 			//else if (TargetFramework.IndexOf("-ios", StringComparison.OrdinalIgnoreCase) != -1)
 			//{
 			//	var code = GenerateIosSource();
@@ -37,40 +37,38 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen
 
 		string GenerateAndroidSource()
 		{
-			var ns = RootNamespace;
 			var startupName = "Startup";
-			var appName = "MainApplication";
-			var activityName = "MainActivity";
+			var instrumentationName = "MainInstrumentation";
+			var activityName = "TestActivity";
 			var splash = ContainsSplashScreen ? @"Theme = ""@style/Maui.SplashTheme""," : "";
 
 			return @"
-#if !SKIP_RUNNER_ENTRYPOINT_GENERATION && !SKIP_RUNNER_APPLICATION_GENERATION
-namespace " + ns + @"
+#if !SKIP_RUNNER_ENTRYPOINT_GENERATION && !SKIP_HEADLESS_RUNNER_ENTRYPOINT_GENERATION && !SKIP_HEADLESS_RUNNER_INSTRUMENTATION_GENERATION
+namespace " + RootNamespace + @"
 {
-	[global::Android.App.Application]
-	partial class " + appName + @" : global::Microsoft.Maui.MauiApplication<global::" + ns + @"." + startupName + @">
+	[global::Android.App.Instrumentation(Name = " + ApplicationId + @")]
+	public partial class " + instrumentationName + @" : global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestInstrumentation<global::" + RootNamespace + @"." + startupName + @", global::" + RootNamespace + @"." + activityName + @">
 	{
-		public " + appName + @"(global::System.IntPtr handle, global::Android.Runtime.JniHandleOwnership ownership)
-			: base(handle, ownership)
+		protected " + instrumentationName + @"(global::System.IntPtr handle, global::Android.Runtime.JniHandleOwnership transfer)
+			: base(handle, transfer)
 		{
 		}
 	}
 }
 #endif
 
-#if !SKIP_RUNNER_ENTRYPOINT_GENERATION && !SKIP_RUNNER_ACTIVITY_GENERATION
-namespace " + ns + @"
+#if !SKIP_RUNNER_ENTRYPOINT_GENERATION && !SKIP_HEADLESS_RUNNER_ENTRYPOINT_GENERATION && !SKIP_HEADLESS_RUNNER_ACTIVITY_GENERATION
+namespace " + RootNamespace + @"
 {
 	[global::Android.App.Activity(
 		" + splash + @"
-		MainLauncher = true,
 		ConfigurationChanges =
 			global::Android.Content.PM.ConfigChanges.ScreenSize |
 			global::Android.Content.PM.ConfigChanges.Orientation |
 			global::Android.Content.PM.ConfigChanges.UiMode |
 			global::Android.Content.PM.ConfigChanges.ScreenLayout |
 			global::Android.Content.PM.ConfigChanges.SmallestScreenSize)]
-	partial class " + activityName + @" : global::Microsoft.Maui.MauiAppCompatActivity
+	public partial class " + activityName + @" : global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestAppCompatActivity
 	{
 	}
 }
