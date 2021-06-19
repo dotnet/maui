@@ -13,20 +13,20 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		int? _defaultLabelFor;
 
-		public HandlerToRendererShim(IViewHandler vh)
+		public HandlerToRendererShim(INativeViewHandler vh)
 		{
 			ViewHandler = vh;
 		}
 
-		IViewHandler ViewHandler { get; }
+		INativeViewHandler ViewHandler { get; }
 
 		public VisualElement Element { get; private set; }
 
 		public VisualElementTracker Tracker { get; private set; }
 
-		public ViewGroup ViewGroup => ViewHandler.NativeView as ViewGroup;
+		public ViewGroup ViewGroup => null;
 
-		public global::Android.Views.View View => ViewHandler.NativeView as global::Android.Views.View;
+		public global::Android.Views.View View => ViewHandler.ContainerView ?? ViewHandler.NativeView;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;

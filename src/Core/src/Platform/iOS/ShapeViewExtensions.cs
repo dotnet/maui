@@ -12,6 +12,6 @@ namespace Microsoft.Maui
 		public static void InvalidateShape(this MauiShapeView nativeView, IShapeView shapeView)
 		{
 			nativeView.InvalidateDrawable();
-		}		
+		}
 	}
 }

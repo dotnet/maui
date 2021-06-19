@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <AssemblyName>Microsoft.Maui.Controls.SourceGen</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.SourceGen</RootNamespace>
-    <PackageId>Microsoft.Maui.Controls.SourceGen</PackageId>
+    <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU5128;</NoWarn>
   </PropertyGroup>
   

@@ -4,6 +4,7 @@
 		<!-- iOS, Android, MacCatalyst -->
 		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
 		<OutputType>Exe</OutputType>
+		<UseMaui>true</UseMaui>
 		<SingleProject>true</SingleProject>
 		<RootNamespace>MauiApp1</RootNamespace>
 
@@ -34,12 +35,6 @@
 
 		<!-- Custom Fonts -->
 		<MauiFont Include="Resources\Fonts\*" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="MAUI_VERSION" />
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="MICROSOFT_EXTENSIONS_VERSION" />
-		<PackageReference Include="Microsoft.Maui" Version="MAUI_VERSION" />
 	</ItemGroup>
 
 	<PropertyGroup>

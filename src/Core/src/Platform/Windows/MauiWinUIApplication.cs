@@ -34,7 +34,7 @@ namespace Microsoft.Maui
 
 			Application = Services.GetRequiredService<IApplication>();
 
-			var mauiContext = new MauiContext(Services);
+			var mauiContext = new MauiContext(Services, MainWindow);
 
 			var activationState = new ActivationState(mauiContext, args);
 			var window = Application.CreateWindow(activationState);

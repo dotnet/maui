@@ -1,6 +1,7 @@
 stages:
   - stage: security_compliance
     displayName: Security and Compliance checks
+    dependsOn: []
     jobs:
     - job: run_policheck_security_compliance
       displayName: 'Policheck And Credentials Compliance'

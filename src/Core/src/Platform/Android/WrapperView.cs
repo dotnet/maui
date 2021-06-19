@@ -25,7 +25,10 @@ namespace Microsoft.Maui
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			if (ChildCount == 0 || GetChildAt(0) is not View child)
+			{
+				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 				return;
+			}
 
 			child.Measure(widthMeasureSpec, heightMeasureSpec);
 

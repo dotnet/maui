@@ -34,6 +34,9 @@ using Windows.System;
 
 		[MissingMapper]
 		public static void MapHorizontalTextAlignment(IViewHandler handler, IEntry entry) { }
+		
+		[MissingMapper]
+		public static void MapVerticalTextAlignment(IViewHandler handler, IEntry entry) { }
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, IEntry entry) { }
@@ -65,8 +68,10 @@ using Windows.System;
 			handler.NativeView?.UpdateReturnType(entry);
 		}
 
-		[MissingMapper]
-		public static void MapClearButtonVisibility(IViewHandler handler, IEntry entry) { }
+		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateClearButtonVisibility(entry);
+		}
 
 		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry)
 		{

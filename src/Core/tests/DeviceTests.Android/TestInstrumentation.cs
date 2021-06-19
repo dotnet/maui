@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.TestUtils;
 
 namespace Microsoft.Maui.DeviceTests
@@ -26,8 +29,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		public override IEnumerable<TestAssemblyInfo> GetTestAssemblies()
 		{
-			yield return new TestAssemblyInfo(Assembly.GetExecutingAssembly(), Assembly.GetExecutingAssembly().Location);
-			yield return new TestAssemblyInfo(typeof(SliderHandlerTests).Assembly, typeof(SliderHandlerTests).Assembly.Location);
+			foreach (var assembly in TestInstrumentation.TestAssemblies.Distinct())
+			{
+				// this is required to exist, but is not used
+				var path = Path.Combine(FileSystem.CacheDirectory, assembly.GetName().Name);
+				File.Create(path).Close();
+
+				yield return new TestAssemblyInfo(assembly, path);
+			}
 		}
 	}
 
@@ -37,6 +46,15 @@ namespace Microsoft.Maui.DeviceTests
 		protected TestInstrumentation(IntPtr handle, JniHandleOwnership transfer)
 			: base(handle, transfer)
 		{
+		}
+
+		public static IEnumerable<Assembly> TestAssemblies
+		{
+			get
+			{
+				yield return Assembly.GetExecutingAssembly();
+				yield return typeof(SliderHandlerTests).Assembly;
+			}
 		}
 	}
 }

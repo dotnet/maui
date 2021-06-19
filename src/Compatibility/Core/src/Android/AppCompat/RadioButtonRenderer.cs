@@ -49,7 +49,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		VisualElement IVisualElementRenderer.Element => Element;
 		AView IVisualElementRenderer.View => this;
-		ViewGroup IVisualElementRenderer.ViewGroup => null;
 		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;
 
 		AView ITabStop.TabStop => this;

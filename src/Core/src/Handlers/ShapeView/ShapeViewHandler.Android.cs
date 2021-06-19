@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdateShape(shapeView);
 		}
-		
+
 		public static void MapAspect(ShapeViewHandler handler, IShapeView shapeView)
 		{
 			handler.NativeView?.InvalidateShape(shapeView);

@@ -131,8 +131,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public global::Android.Views.View View => this;
 
-		public ViewGroup ViewGroup => null;
-
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)

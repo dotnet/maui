@@ -1,3 +1,8 @@
+<!--
+  NOTE: this file is only used by projects in the dotnet/maui repo directly.
+  AutoImport.props should be used by the .NET 6 workload when $(UseMaui) is true.
+-->
+
 <!-- "Single Project" support - all <ItemGroup/>'s must check if $(EnableDefaultItems) and $(SingleProject) are true -->
 <Project>
 
@@ -21,6 +26,9 @@
         Include="$(iOSProjectFolder)Info.plist"
         Condition="Exists('$(iOSProjectFolder)Info.plist')"
         LogicalName="Info.plist" />
+    <CodesignEntitlements
+        Include="$(iOSProjectFolder)Entitlements.plist"
+        Condition="Exists('$(iOSProjectFolder)Entitlements.plist')" />
     <ImageAsset
         Include="$(iOSProjectFolder)**/*.xcassets/**/*.png;$(iOSProjectFolder)**/*.xcassets/*/*.jpg;$(iOSProjectFolder)**/*.xcassets/**/*.pdf;$(iOSProjectFolder)**/*.xcassets/**/*.json"
         Exclude="$(_SingleProjectiOSExcludes)"
@@ -48,6 +56,9 @@
         Include="$(MacCatalystProjectFolder)Info.plist"
         Condition="Exists('$(MacCatalystProjectFolder)Info.plist')"
         LogicalName="Info.plist" />
+    <CodesignEntitlements
+        Include="$(MacCatalystProjectFolder)Entitlements.plist"
+        Condition="Exists('$(MacCatalystProjectFolder)Entitlements.plist')" />
     <ImageAsset
         Include="$(MacCatalystProjectFolder)**/*.xcassets/**/*.png;$(MacCatalystProjectFolder)**/*.xcassets/*/*.jpg;$(MacCatalystProjectFolder)**/*.xcassets/**/*.pdf;$(MacCatalystProjectFolder)**/*.xcassets/**/*.json"
         Exclude="$(_SingleProjectMacCatalystExcludes)"

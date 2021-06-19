@@ -59,6 +59,11 @@ namespace Microsoft.Maui
 			editText.UpdateHorizontalAlignment(entry.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
 		}
 
+		public static void UpdateVerticalTextAlignment(this AppCompatEditText editText, IEntry entry)
+		{
+			editText.UpdateVerticalAlignment(entry.VerticalTextAlignment);
+		}
+
 		public static void UpdateIsTextPredictionEnabled(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.SetInputType(entry);

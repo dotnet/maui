@@ -65,11 +65,6 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		public static Type[] GetExportedTypes(this Assembly assembly)
-		{
-			return assembly.ExportedTypes.ToArray();
-		}
-
 		public static bool IsAssignableFrom(this Type self, Type c)
 		{
 			return self.GetTypeInfo().IsAssignableFrom(c.GetTypeInfo());

@@ -138,7 +138,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.Android
 		// IVisualElementRenderer
 		VisualElement IVisualElementRenderer.Element => Element;
 		VisualElementTracker IVisualElementRenderer.Tracker => _visualElementTracker;
-		ViewGroup IVisualElementRenderer.ViewGroup => null;
 		AView IVisualElementRenderer.View => this;
 		void IVisualElementRenderer.SetElement(VisualElement element) =>
 			Element = (element as ProgressBar) ?? throw new ArgumentException("Element must be of type ProgressBar.");
