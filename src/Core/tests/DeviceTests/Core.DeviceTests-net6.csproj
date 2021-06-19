@@ -40,7 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests-net6.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials-net6.csproj" />
   </ItemGroup>
@@ -55,7 +55,6 @@
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <Compile Include="..\DeviceTests.Android\**\*.cs" Exclude="..\DeviceTests.Android\obj\**;..\DeviceTests.Android\bin\**" Link="Android\%(RecursiveDir)%(Filename)%(Extension)" />
-    <AndroidResource Include="..\DeviceTests.Android\Resources\**" Link="Android\Resources\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="..\DeviceTests.iOS\**\*.cs" Exclude="..\DeviceTests.iOS\obj\**;..\DeviceTests.iOS\bin\**" Link="iOS\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Remove="**\*.iOS.cs;iOS\**\*.cs" />
     <None Include="**\*.iOS.cs;iOS\**\*.cs" />
@@ -71,13 +70,12 @@
 
   <ItemGroup>
     <None Include="..\DeviceTests.iOS\*.plist" LogicalName="%(Filename)%(Extension)" Link="iOS\%(RecursiveDir)%(Filename)%(Extension)" />
-    <None Include="..\DeviceTests.Android\Properties\AndroidManifest.xml" Link="Android\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Remove="..\DeviceTests.Android\MainActivity.cs" />
   </ItemGroup>
 
   <!-- HACK: seems to fix a threading issue for now -->
   <ItemGroup>
     <None Remove="Android\environment.txt" />
-    <AndroidEnvironment Include="Android\environment.txt" />
   </ItemGroup>
 
 </Project>

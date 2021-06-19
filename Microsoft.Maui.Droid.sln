@@ -44,7 +44,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Templates", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestUtils", "TestUtils", "{6998CAA1-11D4-46B2-B80F-0AC882F58124}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils", "src\TestUtils\TestUtils\src\TestUtils.csproj", "{FBB3270F-1924-4A72-845E-A6DF39C402F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils", "src\TestUtils\src\TestUtils\TestUtils.csproj", "{FBB3270F-1924-4A72-845E-A6DF39C402F6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.UnitTests", "src\Core\tests\UnitTests\Core.UnitTests.csproj", "{92644F6F-5946-48FC-A21A-A3D6EE24E8B3}"
 EndProject

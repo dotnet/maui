@@ -18,7 +18,7 @@
 
   <PropertyGroup>
     <ApplicationTitle>Core Tests</ApplicationTitle>
-    <ApplicationId>com.companyname.microsoft.maui.core.devicetests</ApplicationId>
+    <ApplicationId>com.microsoft.maui.core.devicetests</ApplicationId>
     <ApplicationVersion>1.0</ApplicationVersion>
     <AndroidVersionCode>1</AndroidVersionCode>
   </PropertyGroup>
@@ -44,9 +44,9 @@
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21165.2" />
-    <ProjectReference Include="..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests-net6.csproj" />
-    <ProjectReference Include="..\..\..\TestUtils\DeviceTests.Runner\TestUtils.DeviceTests.Runner.csproj" />
-    <ProjectReference Include="..\..\..\TestUtils\DeviceTests.Runner.SourceGen\TestUtils.DeviceTests.Runner.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners.SourceGen\TestUtils.DeviceTests.Runners.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,17 +59,6 @@
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.targets" />
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Core.targets" />
-
-  <ItemGroup>
-    <CompilerVisibleProperty Include="RootNamespace" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IsMauiSplashScreen" />
-    <AdditionalFiles Include="@(MauiSplashScreen)" IsMauiSplashScreen="True" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Handlers\*\*.cs" />
-    <Compile Include="Handlers\ActivityIndicator\*.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="@(Compile)" />
@@ -89,8 +78,31 @@
     <PackageReference Include="Microsoft.ProjectReunion" />
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
-    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.16" />
-    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.19041.16" />
+  </ItemGroup>
+
+  <!-- TODO: remove this and move some into a reusable targets -->
+
+  <PropertyGroup>
+    <!--<TestRunnerGenerator Condition="'$(TestRunnerGenerator)' == '' and '$(BuildingInsideVisualStudio)' == 'true'">Visual</TestRunnerGenerator>-->
+    <TestRunnerGenerator Condition="'$(TestRunnerGenerator)' == ''">Headless</TestRunnerGenerator>
+
+    <!--<DefineConstants Condition="'$(BuildingHeadlessRunner)' == 'true'">$(DefineConstants);SKIP_XHARNESS_ENTRYPOINT_GENERATION</DefineConstants>-->
+    <!--<DefineConstants Condition="'$(BuildingHeadlessRunner)' != 'true'">$(DefineConstants);SKIP_RUNNER_ENTRYPOINT_GENERATION</DefineConstants>-->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="RootNamespace" />
+    <CompilerVisibleProperty Include="ApplicationId" />
+    <CompilerVisibleProperty Include="ApplicationTitle" />
+    <CompilerVisibleProperty Include="TestRunnerGenerator" />
+    <CompilerVisibleProperty Include="IntermediateOutputPath" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IsMauiSplashScreen" />
+    <AdditionalFiles Include="@(MauiSplashScreen)" IsMauiSplashScreen="True" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <Compile Remove="Handlers\*\*.cs" />
+    <Compile Include="Handlers\ActivityIndicator\*.cs" />
   </ItemGroup>
 
 </Project>

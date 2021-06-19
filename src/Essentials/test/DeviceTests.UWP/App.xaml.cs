@@ -7,7 +7,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Xunit.Runners.UI;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.UI;
 
 namespace Microsoft.Maui.Essentials.DeviceTests.UWP
 {

@@ -64,7 +64,7 @@
     <PackageReference Include="Xamarin.AndroidX.RecyclerView" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests.csproj">
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj">
       <Project>{551b2209-4298-4d60-b55c-79077b8bc244}</Project>
       <Name>TestUtils.DeviceTests</Name>
     </ProjectReference>

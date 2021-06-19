@@ -62,7 +62,7 @@
     <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21165.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests.csproj">
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj">
       <Project>{551b2209-4298-4d60-b55c-79077b8bc244}</Project>
       <Name>TestUtils.DeviceTests</Name>
     </ProjectReference>

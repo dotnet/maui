@@ -42,7 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5774C01E-9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestUtils", "TestUtils", "{44510C11-7CBF-4FE4-9F23-AE1FEE743522}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils", "src\TestUtils\TestUtils\src\TestUtils.csproj", "{CAD6061F-A1B1-41B3-B906-6C6C0BD850EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils", "src\TestUtils\src\TestUtils\TestUtils.csproj", "{CAD6061F-A1B1-41B3-B906-6C6C0BD850EE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.UnitTests", "src\Core\tests\UnitTests\Core.UnitTests.csproj", "{CB3EEB1E-311B-4BF6-9E1A-9CEF74200448}"
 EndProject
@@ -98,11 +98,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWinFormsApp", "src\Bl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWpfApp", "src\BlazorWebView\samples\BlazorWpfApp\BlazorWpfApp.csproj", "{D9232847-18A6-461E-B974-B48FC3D44811}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.DeviceTests.Runner", "src\TestUtils\DeviceTests.Runner\TestUtils.DeviceTests.Runner.csproj", "{C8D16425-24C2-417D-B319-313194853395}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.DeviceTests.Runners", "src\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj", "{C8D16425-24C2-417D-B319-313194853395}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.DeviceTests-net6", "src\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests-net6.csproj", "{0BFF163E-E114-4A65-9DCF-AA17828D661D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.DeviceTests-net6", "src\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj", "{0BFF163E-E114-4A65-9DCF-AA17828D661D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.DeviceTests.Runner.SourceGen", "src\TestUtils\DeviceTests.Runner.SourceGen\TestUtils.DeviceTests.Runner.SourceGen.csproj", "{36A26976-BB1F-4B11-96B4-8042DE5F72EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.DeviceTests.Runners.SourceGen", "src\TestUtils\src\DeviceTests.Runners.SourceGen\TestUtils.DeviceTests.Runners.SourceGen.csproj", "{36A26976-BB1F-4B11-96B4-8042DE5F72EC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.DeviceTests2", "src\Core\tests\DeviceTests2\Core.DeviceTests2.csproj", "{E8262B60-3861-4F33-ADCB-4E7A87B5A014}"
 EndProject

@@ -2,7 +2,7 @@ using System.Reflection;
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
-using Xunit.Runners.UI;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.UI;
 
 namespace Microsoft.Maui.Essentials.DeviceTests.Droid
 {

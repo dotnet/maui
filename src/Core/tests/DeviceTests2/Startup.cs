@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Xunit.Runners;
+using NewNamespace;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner;
 
 namespace Microsoft.Maui.Core.DeviceTests
 {
@@ -17,6 +18,11 @@ namespace Microsoft.Maui.Core.DeviceTests
 						android.OnCreate((a, b) => Maui.DeviceTests.Platform.Init(a));
 					});
 #endif
+				})
+				.UseVisualRunner()
+				.UseHeadlessRunner(new HeadlessRunnerOptions
+				{
+					ActivityType = typeof(TestActivity)
 				})
 				.ConfigureTestRunner(new TestRunnerOptions
 				{
