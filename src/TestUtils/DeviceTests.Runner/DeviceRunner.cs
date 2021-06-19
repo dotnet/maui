@@ -114,14 +114,8 @@ namespace Xunit.Runners
 				{
 #if WINDOWS
 					var location = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
-
-					// See if it's an exe or dll
 					var nameWithoutExt = assm.GetName().Name;
-					string assemblyFileName = null;
-					if (File.Exists(Path.Combine(location, $"{nameWithoutExt}.exe")))
-						assemblyFileName = $"{nameWithoutExt}.exe";
-					else
-						assemblyFileName = $"{nameWithoutExt}.dll";
+					var assemblyFileName = Path.Combine(location, $"{nameWithoutExt}.dll");
 #elif ANDROID
 					// this is required to exist, but is not used
 					var assemblyFileName = assm.GetName().Name + ".dll";

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31410.414
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31410.223
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core-net6", "src\Core\src\Core-net6.csproj", "{95BA42B5-B00E-4986-B9B5-517140378452}"
 EndProject
@@ -619,6 +619,7 @@ Global
 		{36A26976-BB1F-4B11-96B4-8042DE5F72EC}.Release|x86.Build.0 = Release|Any CPU
 		{E8262B60-3861-4F33-ADCB-4E7A87B5A014}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E8262B60-3861-4F33-ADCB-4E7A87B5A014}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8262B60-3861-4F33-ADCB-4E7A87B5A014}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{E8262B60-3861-4F33-ADCB-4E7A87B5A014}.Debug|arm64.ActiveCfg = Debug|Any CPU
 		{E8262B60-3861-4F33-ADCB-4E7A87B5A014}.Debug|arm64.Build.0 = Debug|Any CPU
 		{E8262B60-3861-4F33-ADCB-4E7A87B5A014}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -627,6 +628,7 @@ Global
 		{E8262B60-3861-4F33-ADCB-4E7A87B5A014}.Debug|x86.Build.0 = Debug|Any CPU
 		{E8262B60-3861-4F33-ADCB-4E7A87B5A014}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8262B60-3861-4F33-ADCB-4E7A87B5A014}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8262B60-3861-4F33-ADCB-4E7A87B5A014}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{E8262B60-3861-4F33-ADCB-4E7A87B5A014}.Release|arm64.ActiveCfg = Release|Any CPU
 		{E8262B60-3861-4F33-ADCB-4E7A87B5A014}.Release|arm64.Build.0 = Release|Any CPU
 		{E8262B60-3861-4F33-ADCB-4E7A87B5A014}.Release|x64.ActiveCfg = Release|Any CPU

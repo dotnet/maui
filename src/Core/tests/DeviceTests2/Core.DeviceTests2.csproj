@@ -67,6 +67,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Handlers\*\*.cs" />
+    <Compile Include="Handlers\ActivityIndicator\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="@(Compile)" />
   </ItemGroup>
 
