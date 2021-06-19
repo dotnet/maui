@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Hosting;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Sample
 {

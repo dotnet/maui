@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {
-	public abstract class MauiTestAppCompatActivity : AppCompatActivity
+	public abstract class MauiTestActivity : AppCompatActivity
 	{
 		public TaskCompletionSource<Bundle> TaskCompletionSource { get; } = new TaskCompletionSource<Bundle>();
 

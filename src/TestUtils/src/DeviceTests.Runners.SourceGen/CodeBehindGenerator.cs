@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.CodeAnalysis;
+using System.Diagnostics;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen
 {
@@ -16,21 +17,29 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen
 
 		public void Execute(GeneratorExecutionContext context)
 		{
-			context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.TestRunnerGenerator", out var testRunnerGenerator);
-			if (!Enum.TryParse<GeneratorType>(testRunnerGenerator, out var generatorType))
-				generatorType = GeneratorType.None;
-
 			if (!context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.TargetFramework", out var targetFramework))
 				return;
 
-			RunnerGenerator? generator = generatorType switch
-			{
-				GeneratorType.Headless => new HeadlessRunnerGenerator(context, targetFramework),
-				GeneratorType.Visual => new VisualRunnerGenerator(context, targetFramework),
-				_ => null,
-			};
+			context.Log($"TargetFramework: {targetFramework}");
+
+			var generator = new RunnerGenerator(context, targetFramework);
 
 			generator?.Generate();
 		}
+	}
+
+	static class GeneratorDiagnostics
+	{
+		public static readonly DiagnosticDescriptor LoggingMessage = new DiagnosticDescriptor(
+			id: "TST1001",
+			title: "Logging Message",
+			messageFormat: "{0}",
+			category: "Logging",
+			DiagnosticSeverity.Info,
+			isEnabledByDefault: true);
+
+		[Conditional("DEBUG")]
+		public static void Log(this GeneratorExecutionContext context, string message) =>
+			context.ReportDiagnostic(Diagnostic.Create(LoggingMessage, Location.None, message));
 	}
 }

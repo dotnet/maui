@@ -5,7 +5,7 @@ using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {
-	public class TestDevice : IDevice
+	class TestDevice : IDevice
 	{
 		public string BundleIdentifier => AppInfo.PackageName;
 

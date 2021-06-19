@@ -2,9 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <TestRunnerGenerator Condition="'$(TestRunnerGenerator)' == '' and '$(BuildingInsideVisualStudio)' == 'true'">Visual</TestRunnerGenerator>
-    <TestRunnerGenerator Condition="'$(TestRunnerGenerator)' == ''">Headless</TestRunnerGenerator>
-
     <!--<DefineConstants Condition="'$(BuildingHeadlessRunner)' == 'true'">$(DefineConstants);SKIP_XHARNESS_ENTRYPOINT_GENERATION</DefineConstants>-->
     <!--<DefineConstants Condition="'$(BuildingHeadlessRunner)' != 'true'">$(DefineConstants);SKIP_RUNNER_ENTRYPOINT_GENERATION</DefineConstants>-->
   </PropertyGroup>
@@ -13,7 +10,6 @@
     <CompilerVisibleProperty Include="RootNamespace" />
     <CompilerVisibleProperty Include="ApplicationId" />
     <CompilerVisibleProperty Include="ApplicationTitle" />
-    <CompilerVisibleProperty Include="TestRunnerGenerator" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IsMauiSplashScreen" />
     <AdditionalFiles Include="@(MauiSplashScreen)" IsMauiSplashScreen="True" />
   </ItemGroup>
