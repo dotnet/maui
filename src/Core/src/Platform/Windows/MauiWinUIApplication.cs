@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 
 			Services = host.Services;
 
-			Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
 			Application = Services.GetRequiredService<IApplication>();
 
@@ -49,7 +49,7 @@ namespace Microsoft.Maui
 
 			MainWindow.Content = canvas;
 
-			Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 
 			MainWindow.SizeChanged += (sender, sizeChangedArgs) =>
 			{
