@@ -50,6 +50,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		protected override void TerminateWithSuccess() { }
 
+		protected override TestRunner GetTestRunner(LogWriter logWriter)
+		{
+			var testRunner = base.GetTestRunner(logWriter);
+			if (_options.SkipCategories?.Count > 0)
+				testRunner.SkipCategories(_options.SkipCategories);
+			return testRunner;
+		}
+
 		public async Task<Bundle> RunTestsAsync()
 		{
 			var bundle = new Bundle();

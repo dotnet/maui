@@ -1,11 +1,11 @@
 ﻿#nullable enable
 using System;
-using UIKit;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.DotNet.XHarness.TestRunners.Xunit;
+using UIKit;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {
@@ -35,6 +35,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 		{
 			var s = new ObjCRuntime.Selector("terminateWithSuccess");
 			UIApplication.SharedApplication.PerformSelector(s, UIApplication.SharedApplication, 0);
+		}
+
+		protected override TestRunner GetTestRunner(LogWriter logWriter)
+		{
+			var testRunner = base.GetTestRunner(logWriter);
+			if (_options.SkipCategories?.Count > 0)
+				testRunner.SkipCategories(_options.SkipCategories);
+			return testRunner;
 		}
 
 		public async Task RunTestsAsync()
