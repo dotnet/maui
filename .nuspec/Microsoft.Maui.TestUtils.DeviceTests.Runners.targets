@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <PropertyGroup>
-    <!--<DefineConstants Condition="'$(BuildingHeadlessRunner)' == 'true'">$(DefineConstants);SKIP_XHARNESS_ENTRYPOINT_GENERATION</DefineConstants>-->
-    <!--<DefineConstants Condition="'$(BuildingHeadlessRunner)' != 'true'">$(DefineConstants);SKIP_RUNNER_ENTRYPOINT_GENERATION</DefineConstants>-->
-  </PropertyGroup>
-
   <ItemGroup>
     <CompilerVisibleProperty Include="RootNamespace" />
     <CompilerVisibleProperty Include="ApplicationId" />
