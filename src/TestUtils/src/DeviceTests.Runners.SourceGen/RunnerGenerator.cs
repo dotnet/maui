@@ -130,7 +130,7 @@ namespace " + RootNamespace + @"
 #if !SKIP_RUNNER_ENTRYPOINT_GENERATION && !SKIP_HEADLESS_RUNNER_ENTRYPOINT_GENERATION && !SKIP_HEADLESS_RUNNER_INSTRUMENTATION_GENERATION
 namespace " + RootNamespace + @"
 {
-	[global::Android.App.Instrumentation(Name = " + ApplicationId + @")]
+	[global::Android.App.Instrumentation(Name = """ + ApplicationId + @""")]
 	public partial class " + instrumentationName + @" : global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestInstrumentation<global::" + RootNamespace + @"." + startupName + @", global::" + RootNamespace + @"." + headlessActivityName + @">
 	{
 		protected " + instrumentationName + @"(global::System.IntPtr handle, global::Android.Runtime.JniHandleOwnership transfer)
