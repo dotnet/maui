@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Threading.Tasks;
 using Android.OS;
 using AndroidX.AppCompat.App;
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 	{
 		public TaskCompletionSource<Bundle> TaskCompletionSource { get; } = new TaskCompletionSource<Bundle>();
 
-		protected override async void OnCreate(Bundle savedInstanceState)
+		protected override async void OnCreate(Bundle? savedInstanceState)
 		{
 			base.OnCreate(savedInstanceState);
 

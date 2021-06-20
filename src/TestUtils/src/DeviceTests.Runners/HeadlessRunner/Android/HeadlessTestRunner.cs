@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,7 +7,6 @@ using Android.App;
 using Android.OS;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.DotNet.XHarness.TestRunners.Xunit;
-using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {
@@ -21,23 +21,13 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			_runnerOptions = runnerOptions;
 			_options = options;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			var root = ((int)Build.VERSION.SdkInt) >= 30
-				? Environment.ExternalStorageDirectory.AbsolutePath
-				: Application.Context.GetExternalFilesDir(null)?.AbsolutePath ?? FileSystem.AppDataDirectory;
-#pragma warning restore CS0618 // Type or member is obsolete
-
-			var docsDir = Path.Combine(root, "Documents");
-
-			if (!Directory.Exists(docsDir))
-				Directory.CreateDirectory(docsDir);
-
-			_resultsPath = Path.Combine(docsDir, _runnerOptions.TestResultsFilename);
+			var cache = Application.Context.CacheDir!.AbsolutePath;
+			_resultsPath = Path.Combine(cache, _runnerOptions.TestResultsFilename);
 		}
 
 		protected override bool LogExcludedTests => true;
 
-		public override TextWriter Logger => null;
+		public override TextWriter? Logger => null;
 
 		public override string TestsResultsFinalPath => _resultsPath;
 
@@ -51,7 +41,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				.Select(assembly =>
 				{
 					// Android needs this file to "exist" but it uses the assembly actually.
-					var path = Path.Combine(Application.Context.CacheDir.AbsolutePath, assembly.GetName().Name + ".dll");
+					var path = Path.Combine(Application.Context.CacheDir!.AbsolutePath, assembly.GetName().Name + ".dll");
 					if (!File.Exists(path))
 						File.Create(path).Close();
 
@@ -78,7 +68,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 			return bundle;
 
-			void OnTestsCompleted(object sender, TestRunResult results)
+			void OnTestsCompleted(object? sender, TestRunResult results)
 			{
 				var message =
 					$"Tests run: {results.ExecutedTests} " +

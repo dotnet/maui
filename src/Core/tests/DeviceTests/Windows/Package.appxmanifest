@@ -12,7 +12,7 @@
     Version="1.0.0.0" />
 
   <Properties>
-    <DisplayName>Microsoft.Maui.TestUtils.DeviceTests.Sample</DisplayName>
+    <DisplayName>Core Tests</DisplayName>
     <PublisherDisplayName>Microsoft</PublisherDisplayName>
     <Logo>Assets\appiconStoreLogo.png</Logo>
   </Properties>
@@ -31,8 +31,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Microsoft.Maui.TestUtils.DeviceTests.Sample"
-        Description="Microsoft.Maui.TestUtils.DeviceTests.Sample"
+        DisplayName="Core Tests"
+        Description="Core Tests"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\appiconMediumTile.png"
         Square44x44Logo="Assets\appiconLogo.png">
@@ -40,7 +40,7 @@
           Wide310x150Logo="Assets\appiconWideTile.png"
           Square71x71Logo="Assets\appiconSmallTile.png"
           Square310x310Logo="Assets\appiconLargeTile.png"
-          ShortName="Microsoft.Maui.TestUtils.DeviceTests.Sample">
+          ShortName="Core Tests">
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="square150x150Logo"/>
             <uap:ShowOn Tile="wide310x150Logo"/>

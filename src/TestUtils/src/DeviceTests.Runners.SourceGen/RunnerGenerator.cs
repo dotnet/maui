@@ -131,7 +131,7 @@ namespace " + RootNamespace + @"
 namespace " + RootNamespace + @"
 {
 	[global::Android.App.Instrumentation(Name = """ + ApplicationId + "." + instrumentationName + @""")]
-	public partial class " + instrumentationName + @" : global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestInstrumentation<global::" + RootNamespace + @"." + startupName + @", global::" + RootNamespace + @"." + headlessActivityName + @">
+	public partial class " + instrumentationName + @" : global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestInstrumentation
 	{
 		protected " + instrumentationName + @"(global::System.IntPtr handle, global::Android.Runtime.JniHandleOwnership transfer)
 			: base(handle, transfer)
@@ -145,7 +145,8 @@ namespace " + RootNamespace + @"
 namespace " + RootNamespace + @"
 {
 	[global::Android.App.Activity(
-		" + splash + @"
+		Name = """ + ApplicationId + "." + headlessActivityName + @""",
+		Theme = ""@style/Theme.AppCompat"",
 		ConfigurationChanges =
 			global::Android.Content.PM.ConfigChanges.ScreenSize |
 			global::Android.Content.PM.ConfigChanges.Orientation |

@@ -9,6 +9,7 @@
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.TestUtils.DeviceTests.Sample</RootNamespace>
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests.Sample</AssemblyName>
+    <AndroidHttpClientHandlerType>Xamarin.Android.Net.AndroidClientHandler</AndroidHttpClientHandlerType>
     <!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>-->
 
     <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>

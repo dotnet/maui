@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Globalization;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.Maui.Essentials;

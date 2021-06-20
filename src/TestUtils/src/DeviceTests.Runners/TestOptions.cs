@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners

@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using Foundation;
@@ -37,13 +38,13 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public static MauiTestApplicationDelegate Current { get; private set; } = null!;
 
-		public IServiceProvider Services { get; private set; }
+		public IServiceProvider Services { get; private set; } = null!;
 
-		public TestOptions Options { get; private set; }
+		public TestOptions Options { get; private set; } = null!;
 
-		public HeadlessRunnerOptions RunnerOptions { get; private set; }
+		public HeadlessRunnerOptions RunnerOptions { get; private set; } = null!;
 
-		public override UIWindow Window { get; set; }
+		public override UIWindow? Window { get; set; }
 
 		protected abstract IAppHost OnBuildAppHost();
 

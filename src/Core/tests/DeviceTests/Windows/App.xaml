@@ -1,8 +1,8 @@
 ﻿<local:MiddleApp
-    x:Class="Microsoft.Maui.TestUtils.DeviceTests.Sample.WinUI.App"
+    x:Class="Microsoft.Maui.DeviceTests.WinUI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.Maui.TestUtils.DeviceTests.Sample.WinUI">
+    xmlns:local="using:Microsoft.Maui.DeviceTests.WinUI">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

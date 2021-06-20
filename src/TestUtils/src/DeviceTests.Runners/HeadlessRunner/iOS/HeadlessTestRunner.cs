@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using UIKit;
 using System.Linq;
 using System.Collections.Generic;
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 			TestsCompleted -= OnTestsCompleted;
 
-			void OnTestsCompleted(object sender, TestRunResult results)
+			void OnTestsCompleted(object? sender, TestRunResult results)
 			{
 				var message =
 					$"Tests run: {results.ExecutedTests} " +

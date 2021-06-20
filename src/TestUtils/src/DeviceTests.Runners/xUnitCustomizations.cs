@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -116,7 +117,7 @@ namespace Microsoft.Maui
 	public class DeviceTestCase : IXunitTestCase
 #pragma warning restore xUnit3000 // Test case classes must derive directly or indirectly from Xunit.LongLivedMarshalByRefObject
 	{
-		readonly IXunitTestCase _inner;
+		readonly IXunitTestCase _inner = null!;
 
 		public DeviceTestCase() { }
 
