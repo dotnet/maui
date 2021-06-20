@@ -177,13 +177,13 @@ namespace " + RootNamespace + @"
 #if !SKIP_HEADLESS_RUNNER_APP_DELEGATE_GENERATION
 			if (global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestApplicationDelegate.IsHeadlessRunner(args))
 			{
-				global::UIKit.UIApplication.Main(args, null, nameof(global::" + RootNamespace + @"." + headlessDelegateName + @"));
+				global::UIKit.UIApplication.Main(args, null, """ + headlessDelegateName + @""");
 			}
 			else
 #endif
 			{
 #if !SKIP_VISUAL_RUNNER_APP_DELEGATE_GENERATION
-				global::UIKit.UIApplication.Main(args, null, nameof(global::" + RootNamespace + @"." + visualDelegateName + @"));
+				global::UIKit.UIApplication.Main(args, null, """ + visualDelegateName + @""");
 #endif
 			}
 		}
@@ -194,7 +194,7 @@ namespace " + RootNamespace + @"
 #if !SKIP_RUNNER_ENTRYPOINT_GENERATION && !SKIP_VISUAL_RUNNER_ENTRYPOINT_GENERATION && !SKIP_VISUAL_RUNNER_APP_DELEGATE_GENERATION
 namespace " + RootNamespace + @"
 {
-	[global::Foundation.Register(nameof(" + visualDelegateName + @"))]
+	[global::Foundation.Register(""" + visualDelegateName + @""")]
 	partial class " + visualDelegateName + @" : global::Microsoft.Maui.MauiUIApplicationDelegate<global::" + RootNamespace + @"." + startupName + @">
 	{
 	}
@@ -204,7 +204,7 @@ namespace " + RootNamespace + @"
 #if !SKIP_RUNNER_ENTRYPOINT_GENERATION && !SKIP_HEADLESS_RUNNER_ENTRYPOINT_GENERATION && !SKIP_HEADLESS_RUNNER_APP_DELEGATE_GENERATION
 namespace " + RootNamespace + @"
 {
-	[global::Foundation.Register(nameof(" + headlessDelegateName + @"))]
+	[global::Foundation.Register(""" + headlessDelegateName + @""")]
 	partial class " + headlessDelegateName + @" : global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestApplicationDelegate<global::" + RootNamespace + @"." + startupName + @">
 	{
 	}
