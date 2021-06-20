@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
@@ -153,7 +152,7 @@ namespace " + RootNamespace + @"
 			global::Android.Content.PM.ConfigChanges.UiMode |
 			global::Android.Content.PM.ConfigChanges.ScreenLayout |
 			global::Android.Content.PM.ConfigChanges.SmallestScreenSize)]
-	public partial class " + headlessActivityName + @" : global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestAppCompatActivity
+	public partial class " + headlessActivityName + @" : global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestActivity
 	{
 	}
 }
