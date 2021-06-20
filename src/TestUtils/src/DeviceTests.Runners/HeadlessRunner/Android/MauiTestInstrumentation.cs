@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {
 	public abstract class MauiTestInstrumentation<TStartup, TActivity> : MauiTestInstrumentation
 		where TStartup : IStartup, new()
-		where TActivity : MauiTestAppCompatActivity
+		where TActivity : MauiTestActivity
 	{
 		protected MauiTestInstrumentation(IntPtr handle, JniHandleOwnership transfer)
 			: base(handle, transfer)
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				intent.AddFlags(Android.Content.ActivityFlags.NewTask);
 
 				var activity = StartActivitySync(intent);
-				if (activity is not MauiTestAppCompatActivity testActivity)
+				if (activity is not MauiTestActivity testActivity)
 					throw new InvalidOperationException($"Unexpected activity type '{activity.GetType().FullName}'.");
 
 				return testActivity.TaskCompletionSource.Task;
