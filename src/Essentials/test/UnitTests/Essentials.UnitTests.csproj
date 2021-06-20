@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
-    <AssemblyName>EssentialsTests</AssemblyName>
+    <AssemblyName>Microsoft.Maui.Essentials.UnitTests</AssemblyName>
     <DebugType>portable</DebugType>
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>

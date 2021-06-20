@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #elif __IOS__
 			// all iOS devices (and only devices) have an accelerometer
 			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
-#elif WINDOWS_UWP
+#elif WINDOWS_UWP || WINDOWS
 			// UWP does not emulate, and only some devices have, an accelerometer
 			Windows.Devices.Sensors.Accelerometer.GetDefault() != null;
 #endif
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #elif __IOS__
 			// all iOS devices (and only devices) have a magnetometer
 			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
-#elif WINDOWS_UWP
+#elif WINDOWS_UWP || WINDOWS
 			// UWP does not emulate, and only some devices have, a magnetometer
 			Windows.Devices.Sensors.Magnetometer.GetDefault() != null;
 #endif
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #elif __IOS__
 			// all iOS devices (and only devices) have a gyroscope
 			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
-#elif WINDOWS_UWP
+#elif WINDOWS_UWP || WINDOWS
 			// UWP does not emulate, and only some devices have, a gyroscope
 			Windows.Devices.Sensors.Gyrometer.GetDefault() != null;
 #endif
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #elif __IOS__
 			// all iOS devices (and only devices) have a compass
 			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
-#elif WINDOWS_UWP
+#elif WINDOWS_UWP || WINDOWS
 			// UWP does not emulate, and only some devices have, a compass
 			Windows.Devices.Sensors.Compass.GetDefault() != null;
 #endif
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #elif __IOS__
 			// all iOS devices (and only devices) have a battery
 			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
-#elif WINDOWS_UWP
+#elif WINDOWS_UWP || WINDOWS
 			// UWP appears to emulate a battery
 			// TODO: verify this
 			true;
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #elif __IOS__
 			// all iOS devices (and only devices) have a camera
 			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
-#elif WINDOWS_UWP
+#elif WINDOWS_UWP || WINDOWS
 			// TODO: most UWP devices don't have a camera lamp (mobile devices do, we we don't care about those)
 			false;
 #endif
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #elif __IOS__
 			// iphone 6 and never have a barometer. looking in how to test this.
 			Microsoft.Maui.Essentials.DeviceInfo.DeviceType == Microsoft.Maui.Essentials.DeviceType.Physical;
-#elif WINDOWS_UWP
+#elif WINDOWS_UWP || WINDOWS
 			// TODO: most UWP devices don't have a barometer (mobile devices do, we we don't care about those)
 			false;
 #endif

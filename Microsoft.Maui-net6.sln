@@ -128,6 +128,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.DeviceTests", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.UnitTests", "src\Essentials\test\UnitTests\Essentials.UnitTests.csproj", "{A9BAB840-A53E-405A-9458-CA0E02319FB4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Maps-net6", "src\Controls\Maps\src\Controls.Maps-net6.csproj", "{5C40FA00-7D48-4F54-898C-01C8942E451D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -309,6 +311,10 @@ Global
 		{A9BAB840-A53E-405A-9458-CA0E02319FB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9BAB840-A53E-405A-9458-CA0E02319FB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9BAB840-A53E-405A-9458-CA0E02319FB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C40FA00-7D48-4F54-898C-01C8942E451D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C40FA00-7D48-4F54-898C-01C8942E451D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C40FA00-7D48-4F54-898C-01C8942E451D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C40FA00-7D48-4F54-898C-01C8942E451D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -368,6 +374,7 @@ Global
 		{420BC8CC-EE70-49A1-964A-CB63414A882D} = {94F3C036-A5F4-4ACC-A028-8506802ADB88}
 		{66528BE6-FF53-4A3B-8675-46C0B929C83B} = {420BC8CC-EE70-49A1-964A-CB63414A882D}
 		{A9BAB840-A53E-405A-9458-CA0E02319FB4} = {420BC8CC-EE70-49A1-964A-CB63414A882D}
+		{5C40FA00-7D48-4F54-898C-01C8942E451D} = {50C758FE-4E10-409A-94F5-A75480960864}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

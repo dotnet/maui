@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public void Versions_Are_Correct()
 		{
-#if WINDOWS_UWP
+#if WINDOWS_UWP || WINDOWS
 			Assert.Equal(10, DeviceInfo.Version.Major);
 			Assert.Equal(0, DeviceInfo.Version.Minor);
 			Assert.StartsWith("10.0", DeviceInfo.VersionString);
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public void DeviceModel_Is_Correct()
 		{
-#if WINDOWS_UWP
+#if WINDOWS_UWP || WINDOWS
 			// Nothing right now.
 #elif __IOS__
 			if (DeviceInfo.DeviceType == DeviceType.Virtual)
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public void AppPackageName_Is_Correct()
 		{
-#if WINDOWS_UWP
+#if WINDOWS_UWP || WINDOWS
 			Assert.Equal("ec0cc741-fd3e-485c-81be-68815c480690", AppInfo.PackageName);
 #elif __IOS__
 			Assert.Equal("com.microsoft.maui.essentials.devicetests", AppInfo.PackageName);
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public void Platform_Is_Correct()
 		{
-#if WINDOWS_UWP
+#if WINDOWS_UWP || WINDOWS
 			Assert.Equal(DevicePlatform.UWP, DeviceInfo.Platform);
 #elif __IOS__
 			Assert.Equal(DevicePlatform.iOS, DeviceInfo.Platform);
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public void App_Theme_Is_Correct()
 		{
-#if WINDOWS_UWP || __IOS__ || __ANDROID__
+#if WINDOWS_UWP || WINDOWS || __IOS__ || __ANDROID__
 			Assert.NotEqual(AppTheme.Unspecified, AppInfo.RequestedTheme);
 #else
 			Assert.Equal(AppTheme.Unspecified, AppInfo.RequestedTheme);

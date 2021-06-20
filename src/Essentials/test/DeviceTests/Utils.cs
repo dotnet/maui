@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	{
 		public static void Unused(params object[] obj) { }
 
-#if WINDOWS_UWP
+#if WINDOWS_UWP || WINDOWS
         public static async Task OnMainThread(Windows.UI.Core.DispatchedHandler action)
         {
             var mainView = Windows.ApplicationModel.Core.CoreApplication.MainView;
