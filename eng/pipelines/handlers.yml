@@ -155,12 +155,12 @@ stages:
               #       cat ~/Library/Preferences/Xamarin/Settings.plist || true
               #     displayName: 'Configure Visual Studio'
 
-              # Prepare Windows
-              - ${{ if eq(BuildPlatform.name, 'windows') }}:
-                - task: xamops.azdevex.provisionator-task.provisionator@1
-                  displayName: 'Provision Visual Studio'
-                  inputs:
-                    provisioning_script: $(provisionator.vs2019)
+              # # Prepare Windows
+              # - ${{ if eq(BuildPlatform.name, 'windows') }}:
+              #   - task: xamops.azdevex.provisionator-task.provisionator@1
+              #     displayName: 'Provision Visual Studio'
+              #     inputs:
+              #       provisioning_script: $(provisionator.vs2019)
 
               # Install .NET
               - pwsh: |
