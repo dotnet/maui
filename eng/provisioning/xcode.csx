@@ -14,6 +14,7 @@ if (string.IsNullOrEmpty(desiredXcode)) {
 desiredXcode = desiredXcode.Replace("Xcode_", "").Replace("_", ".");
 Console.WriteLine("Desired Xcode: {0}", desiredXcode);
 
+// Find the best version
 Item item;
 if (desiredXcode == "Latest")
     item = XcodeBeta();
@@ -22,6 +23,7 @@ else if (desiredXcode == "Stable")
 else
     item = Xcode(desiredXcode);
 
+// Fix up the case where the beta did not make it to the machine
 TryMapBetaToStable(item);
 
 // remove the double "0" as this has issues on the lookup
@@ -29,7 +31,6 @@ if (item.Version.Contains(".0.0-") || item.Version.EndsWith(".0.0"))
     item = Xcode(item.Version.Replace(".0.0", ".0"));
 
 Console.WriteLine("Selected version: {0}", item.Version);
-
 item.XcodeSelect();
 
 LogInstalledXcodes();
