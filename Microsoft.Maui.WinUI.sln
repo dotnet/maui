@@ -130,6 +130,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.WinUI"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.WinUI", "src\Compatibility\ControlGallery\src\WinUI\Compatibility.ControlGallery.WinUI.csproj", "{5BA5283D-710E-49D1-8EB9-EB61385107C5}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.UnitTests", "src\Controls\tests\Core.UnitTests\Controls.Core.UnitTests.csproj", "{033FD150-887A-44DB-A0E7-7555B1BF8B07}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests", "src\Controls\tests\Xaml.UnitTests\Controls.Xaml.UnitTests.csproj", "{454208AB-7A1A-4445-96C7-CFE410F0D5D6}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 4
@@ -301,6 +305,14 @@ Global
 		{5BA5283D-710E-49D1-8EB9-EB61385107C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5BA5283D-710E-49D1-8EB9-EB61385107C5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5BA5283D-710E-49D1-8EB9-EB61385107C5}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{033FD150-887A-44DB-A0E7-7555B1BF8B07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{033FD150-887A-44DB-A0E7-7555B1BF8B07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{033FD150-887A-44DB-A0E7-7555B1BF8B07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{033FD150-887A-44DB-A0E7-7555B1BF8B07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{454208AB-7A1A-4445-96C7-CFE410F0D5D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{454208AB-7A1A-4445-96C7-CFE410F0D5D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{454208AB-7A1A-4445-96C7-CFE410F0D5D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{454208AB-7A1A-4445-96C7-CFE410F0D5D6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -362,6 +374,8 @@ Global
 		{832711B9-EB4C-42A1-9E8A-A0D48AA75470} = {361A4F79-AB0F-423E-A1FD-BA5D0678C65F}
 		{1FE34FFE-AAF6-4D0F-9802-8695EC9C586F} = {E1082E26-D700-4127-9329-66D673FD2D55}
 		{5BA5283D-710E-49D1-8EB9-EB61385107C5} = {C3870B28-291A-4DD8-862A-6ADC632E09D0}
+		{033FD150-887A-44DB-A0E7-7555B1BF8B07} = {E26E6C2A-F5A2-4FEF-BFDA-57ABA0F77D08}
+		{454208AB-7A1A-4445-96C7-CFE410F0D5D6} = {E26E6C2A-F5A2-4FEF-BFDA-57ABA0F77D08}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
