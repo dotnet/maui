@@ -90,6 +90,12 @@ Task("dotnet-pack")
         });
     });
 
+Task("dotnet-build-test")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .IsDependentOn("dotnet-build")
+    .IsDependentOn("dotnet-test");
+
 // Tasks for Local Development
 
 Task("VS-DOGFOOD")
