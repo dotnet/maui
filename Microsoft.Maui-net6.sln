@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31410.223
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31410.414
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core-net6", "src\Core\src\Core-net6.csproj", "{95BA42B5-B00E-4986-B9B5-517140378452}"
 EndProject
@@ -137,6 +137,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests", "src\Controls\tests\Xaml.UnitTests\Controls.Xaml.UnitTests.csproj", "{F7A258F6-F4CB-4209-9E63-AECDB2E1F4ED}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.CustomAttributes", "src\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj", "{F7B6C73A-6019-4EAE-9258-E08C0C57829F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.Profiling", "src\Controls\samples\Controls.Sample.Profiling\Maui.Controls.Sample.Profiling.csproj", "{75DB635C-0035-46E7-9A33-857D38082503}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -335,6 +337,12 @@ Global
 		{F7B6C73A-6019-4EAE-9258-E08C0C57829F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7B6C73A-6019-4EAE-9258-E08C0C57829F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7B6C73A-6019-4EAE-9258-E08C0C57829F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75DB635C-0035-46E7-9A33-857D38082503}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75DB635C-0035-46E7-9A33-857D38082503}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75DB635C-0035-46E7-9A33-857D38082503}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{75DB635C-0035-46E7-9A33-857D38082503}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75DB635C-0035-46E7-9A33-857D38082503}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75DB635C-0035-46E7-9A33-857D38082503}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -399,6 +407,7 @@ Global
 		{094FB109-1CBC-4B84-8CFB-072E7B3EC637} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{F7A258F6-F4CB-4209-9E63-AECDB2E1F4ED} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{F7B6C73A-6019-4EAE-9258-E08C0C57829F} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
+		{75DB635C-0035-46E7-9A33-857D38082503} = {E1082E26-D700-4127-9329-66D673FD2D55}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
