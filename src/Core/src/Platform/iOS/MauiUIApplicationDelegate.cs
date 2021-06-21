@@ -33,6 +33,7 @@ namespace Microsoft.Maui
 		{
 			Application = Services.GetRequiredService<IApplication>();
 
+			UIWindow uIWindow = new UIWindow();
 			AlertManager.Subscribe(application);
 
 			var mauiContext = new MauiContext(Services);
@@ -42,10 +43,8 @@ namespace Microsoft.Maui
 
 			var page = window.View;
 
-			Window = new UIWindow
-			{
-				RootViewController = window.View.ToUIViewController(mauiContext)
-			};
+			uIWindow.RootViewController = window.View.ToUIViewController(mauiContext);
+			Window = uIWindow;
 
 			Window.MakeKeyAndVisible();
 

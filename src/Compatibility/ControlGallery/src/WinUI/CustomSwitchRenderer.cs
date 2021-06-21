@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;

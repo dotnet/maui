@@ -3,6 +3,7 @@
   <Import Project="../Shared/Common.targets" />
 
   <PropertyGroup>
+    <Description>.NET MAUI SDK. Enabled via &lt;UseMaui&gt;true&lt;/UseMaui&gt;.</Description>
     <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
   </PropertyGroup>
 

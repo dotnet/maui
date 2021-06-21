@@ -35,8 +35,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public VisualElementTracker Tracker { get; private set; }
 
-		public ViewGroup ViewGroup => this;
-
 		public AView View => this;
 
 		public SwipeRefreshLayout SwipeRefreshLayout => View as SwipeRefreshLayout;

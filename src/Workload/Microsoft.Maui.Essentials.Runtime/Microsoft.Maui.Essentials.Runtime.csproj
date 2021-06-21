@@ -3,6 +3,10 @@
   <Import Project="../Shared/Common.targets" />
   <Import Project="../Shared/Frameworks.targets" />
 
+  <PropertyGroup>
+    <Description>.NET MAUI Essentials runtime pack</Description>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="@(_TargetPlatform->'$(MauiRootDirectory)src/Essentials/src/bin/$(Configuration)/%(Tfm)/Microsoft.Maui.Essentials.dll')" />
     <None Update="@(None)" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="lib/%(FullTfm)/%(FileName)%(Extension)" />

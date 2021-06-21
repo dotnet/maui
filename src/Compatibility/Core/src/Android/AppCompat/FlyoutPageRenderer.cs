@@ -207,8 +207,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_tracker?.UpdateLayout();
 		}
 
-		ViewGroup IVisualElementRenderer.ViewGroup => this;
-
 		AView IVisualElementRenderer.View => this;
 
 		bool ILifeCycleState.MarkedForDispose { get; set; } = false;
