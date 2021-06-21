@@ -31,13 +31,17 @@ Task("dotnet-build")
     .Description("Build the solutions")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln", settings => settings
-            .WithProperty("BuildForWinUI", IsRunningOnWindows().ToString()));
-
         if (IsRunningOnWindows())
+        {
+            RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln", settings => ((MSBuildSettings)settings)
+                .WithProperty("BuildForWinUI", "true"));
             RunMSBuildWithLocalDotNet("./Microsoft.Maui.WinUI.sln");
+        }
         else
+        {
+            RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln");
             RunMSBuildWithLocalDotNet("./Microsoft.Maui-net6.sln");
+        }
     });
 
 Task("dotnet-pack")

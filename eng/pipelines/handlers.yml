@@ -161,6 +161,20 @@ stages:
                 displayName: 'Build .NET Maui'
                 errorActionPreference: stop
 
+              # Run Unit Tests
+              - task: DotNetCoreCLI@2
+                displayName: 'Run Unit Tests'
+                inputs:
+                  command: test
+                  projects: |
+                    **/Controls.Core.UnitTests.csproj
+                    **/Controls.Xaml.UnitTests.csproj
+                    **/Core.UnitTests.csproj
+                    **/Essentials.UnitTests.csproj
+                    **/Resizetizer.UnitTests.csproj
+                  nobuild: true
+                  arguments: '--configuration $(BuildConfiguration)'
+
               # Publish Artifacts
               - task: PublishBuildArtifacts@1
                 condition: always()

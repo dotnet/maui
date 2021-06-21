@@ -60,6 +60,7 @@ steps:
       command: test
       projects: |
         **/Controls.Core.UnitTests.csproj
+        **/Controls.Xaml.UnitTests.csproj
         **/Core.UnitTests.csproj
         **/Essentials.UnitTests.csproj
         **/Resizetizer.UnitTests.csproj
