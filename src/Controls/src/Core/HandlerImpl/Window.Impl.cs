@@ -82,5 +82,9 @@ namespace Microsoft.Maui.Controls
 			get => Page ?? throw new InvalidOperationException("No page was set on the window.");
 			set => Page = (Page)value;
 		}
+
+		static int windowIds;
+		string? _id;
+		string IWindow.Id => _id ??= $"{++windowIds}";
 	}
 }

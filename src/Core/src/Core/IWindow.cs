@@ -5,6 +5,8 @@ namespace Microsoft.Maui
 	/// </summary>
 	public interface IWindow : IFrameworkElement
 	{
+		public string Id { get; }
+
 		/// <summary>
 		/// Gets or sets the current Page displayed in the Window.
 		/// </summary>

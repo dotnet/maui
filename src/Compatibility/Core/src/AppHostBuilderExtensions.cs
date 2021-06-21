@@ -40,12 +40,28 @@ namespace Microsoft.Maui.Controls.Hosting
 {
 	public static class AppHostBuilderExtensions
 	{
+		internal static Type? StartPageType;
 		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder)
 			where TApp : class, IApplication
 		{
 			builder.ConfigureServices((context, collection) =>
 			{
 				collection.AddSingleton<IApplication, TApp>();
+			});
+
+			builder.SetupDefaults();
+			return builder;
+		}
+
+		public static IAppHostBuilder UseMauiApp<TApp, TPage>(this IAppHostBuilder builder)
+			where TApp : class, IApplication
+			where TPage : class, IPage
+		{
+			StartPageType = typeof(TPage);
+			builder.ConfigureServices((context, collection) =>
+			{
+				collection.AddSingleton<IApplication, TApp>();
+				collection.AddTransient<TPage>();
 			});
 
 			builder.SetupDefaults();

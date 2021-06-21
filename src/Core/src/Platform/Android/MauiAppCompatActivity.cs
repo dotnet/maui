@@ -1,18 +1,25 @@
 using System;
 using Android.OS;
-using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
-using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Navigation.UI;
-using Google.Android.Material.AppBar;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui
 {
 	public partial class MauiAppCompatActivity : AppCompatActivity
 	{
+		internal const string MauiAppCompatActivity_WindowId = "MauiAppCompatActivity_WindowId";
 		// Override this if you want to handle the default Android behavior of restoring fragments on an application restart
 		protected virtual bool AllowFragmentRestore => false;
+		IWindow? _window;
+
+		protected override void OnSaveInstanceState(Bundle outState)
+		{
+			base.OnSaveInstanceState(outState);
+
+			if (_window != null)
+				outState.PutString(MauiAppCompatActivity_WindowId, _window?.Id);
+		}
 
 		protected override void OnCreate(Bundle? savedInstanceState)
 		{
@@ -33,31 +40,25 @@ namespace Microsoft.Maui
 
 			base.OnCreate(savedInstanceState);
 
-			var mauiApp = MauiApplication.Current.Application;
-			if (mauiApp == null)
-				throw new InvalidOperationException($"The {nameof(IApplication)} instance was not found.");
-
 			var services = MauiApplication.Current.Services;
-			if (mauiApp == null)
+
+			if (services == null)
 				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
 
+			var mauiApp = services.GetRequiredService<IApplication>();
+
 			MauiContext mauiContext;
-			IWindow window;
 
-			// TODO Fix once we have multiple windows
-			if (mauiApp.Windows.Count > 0)
-			{
-				window = mauiApp.Windows[0];
-				mauiContext = new MauiContext(services, this);
-			}
-			else
-			{
-				mauiContext = new MauiContext(services, this);
-				ActivationState state = new ActivationState(mauiContext, savedInstanceState);
-				window = mauiApp.CreateWindow(state);
-			}
+			var windowScope = services.CreateScope();
+			var windowServices = windowScope.ServiceProvider;
 
-			SetContentView(window.View.ToContainerView(mauiContext));
+			// create the maui context for this instance
+			mauiContext = new MauiContext(windowServices, this);
+
+			var state = new ActivationState(mauiContext, savedInstanceState);
+			_window = WindowFactory.GetOrCreateWindow(state, mauiApp, windowServices);
+			
+			SetContentView(_window.View.ToContainerView(mauiContext));
 
 			//TODO MAUI
 			// Allow users to customize the toolbarid?
