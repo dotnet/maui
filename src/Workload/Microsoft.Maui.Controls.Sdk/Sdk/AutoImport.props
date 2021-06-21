@@ -28,7 +28,13 @@
 
   <!-- iOS -->
   <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' ">
-    <None Include="$(iOSProjectFolder)Info.plist" LogicalName="Info.plist" />
+    <None
+        Include="$(iOSProjectFolder)Info.plist"
+        Condition="Exists('$(iOSProjectFolder)Info.plist')"
+        LogicalName="Info.plist" />
+    <CodesignEntitlements
+        Include="$(iOSProjectFolder)Entitlements.plist"
+        Condition="Exists('$(iOSProjectFolder)Entitlements.plist')" />
     <ImageAsset
         Include="$(iOSProjectFolder)**/*.xcassets/**/*.png;$(iOSProjectFolder)**/*.xcassets/*/*.jpg;$(iOSProjectFolder)**/*.xcassets/**/*.pdf;$(iOSProjectFolder)**/*.xcassets/**/*.json"
         Exclude="$(_SingleProjectiOSExcludes)"
@@ -52,7 +58,13 @@
 
   <!-- MacCatalyst -->
   <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' ">
-    <None Include="$(MacCatalystProjectFolder)Info.plist" LogicalName="Info.plist" />
+    <None
+        Include="$(MacCatalystProjectFolder)Info.plist"
+        Condition="Exists('$(MacCatalystProjectFolder)Info.plist')"
+        LogicalName="Info.plist" />
+    <CodesignEntitlements
+        Include="$(MacCatalystProjectFolder)Entitlements.plist"
+        Condition="Exists('$(MacCatalystProjectFolder)Entitlements.plist')" />
     <ImageAsset
         Include="$(MacCatalystProjectFolder)**/*.xcassets/**/*.png;$(MacCatalystProjectFolder)**/*.xcassets/*/*.jpg;$(MacCatalystProjectFolder)**/*.xcassets/**/*.pdf;$(MacCatalystProjectFolder)**/*.xcassets/**/*.json"
         Exclude="$(_SingleProjectMacCatalystExcludes)"
