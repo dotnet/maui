@@ -22,13 +22,13 @@ else if (desiredXcode == "Stable")
 else
     item = Xcode(desiredXcode);
 
+TryMapBetaToStable(item);
+
 // remove the double "0" as this has issues on the lookup
 if (item.Version.Contains(".0.0-") || item.Version.EndsWith(".0.0"))
     item = Xcode(item.Version.Replace(".0.0", ".0"));
 
 Console.WriteLine("Selected version: {0}", item.Version);
-
-TryMapBetaToStable(item);
 
 item.XcodeSelect();
 
