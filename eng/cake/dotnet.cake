@@ -9,7 +9,7 @@ Task("dotnet")
     .Description("Provisions .NET 6 into bin/dotnet based on eng/Versions.props")
     .Does(() =>
     {
-        var binlog = $"artifacts/dotnet-{configuration}.binlog";
+        var binlog = $"{logDirectory}/dotnet-{configuration}.binlog";
         var settings = new DotNetCoreBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
@@ -42,6 +42,41 @@ Task("dotnet-build")
             RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln");
             RunMSBuildWithLocalDotNet("./Microsoft.Maui-net6.sln");
         }
+    });
+
+Task("dotnet-test")
+    .IsDependentOn("dotnet")
+    .Description("Build the solutions")
+    .Does(() =>
+    {
+        var tests = new []
+        {
+            "**/Controls.Core.UnitTests.csproj",
+            "**/Controls.Xaml.UnitTests.csproj",
+            "**/Core.UnitTests.csproj",
+            "**/Essentials.UnitTests.csproj",
+            "**/Resizetizer.UnitTests.csproj",
+        };
+
+        var success = true;
+
+        foreach (var test in tests)
+        {
+            foreach (var project in GetFiles(test))
+            {
+                try
+                {
+                    RunTestWithLocalDotNet(project.FullPath);
+                }
+                catch
+                {
+                    success = false;
+                }
+            }
+        }
+
+        if (!success)
+            throw new Exception("Some tests failed. Check the logs or test results.");
     });
 
 Task("dotnet-pack")
@@ -93,7 +128,7 @@ Task("VS-WINUI")
             BinaryLogger = new MSBuildBinaryLogSettings
             {
                 Enabled  = true,
-                FileName = "artifacts/winui-buildtasks.binlog",
+                FileName = $"{logDirectory}/winui-buildtasks.binlog",
             }
         }.WithRestore().WithProperty("BuildForWinUI", "true");
 
@@ -106,7 +141,7 @@ Task("VS-WINUI")
             BinaryLogger = new MSBuildBinaryLogSettings
             {
                 Enabled  = true,
-                FileName = "artifacts/winui.binlog",
+                FileName = $"{logDirectory}/winui.binlog",
             }
         }.WithRestore();
 
@@ -218,11 +253,12 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
     StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
 }
 
-// NOTE: this method works as long as the DotNet target has already run
+// NOTE: These methods work as long as the "dotnet" target has already run
+
 void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null, bool deployAndRun = false)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
-    var binlog = $"artifacts/{name}-{configuration}.binlog";
+    var binlog = $"{logDirectory}/{name}-{configuration}.binlog";
 
     SetDotNetEnvironmentVariables();
 
@@ -268,4 +304,25 @@ void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null, bool 
     MSBuild(sln,
        msbuildSettings
        .WithRestore());
+}
+
+void RunTestWithLocalDotNet(string csproj)
+{
+    var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
+    var binlog = $"{logDirectory}/{name}-{configuration}.binlog";
+    var results = $"{testResultsDirectory}/{name}-{configuration}.trx";
+
+    SetDotNetEnvironmentVariables();
+
+    DotNetCoreTest(csproj,
+        new DotNetCoreTestSettings
+        {
+            Configuration = configuration,
+            ToolPath = dotnetPath,
+            NoBuild = true,
+            Verbosity = DotNetCoreVerbosity.Diagnostic,
+            Logger = $"trx;LogFileName={results}",
+            ResultsDirectory = $"{artifactStagingDirectory}/test-results",
+            ArgumentCustomization = args => args.Append($"-bl:{binlog}")
+        });
 }
