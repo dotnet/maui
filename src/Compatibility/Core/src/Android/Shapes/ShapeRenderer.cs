@@ -6,6 +6,7 @@ using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 using AColor = Android.Graphics.Color;
 using AMatrix = Android.Graphics.Matrix;
 using APath = Android.Graphics.Path;
