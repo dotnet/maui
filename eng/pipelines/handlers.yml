@@ -180,6 +180,13 @@ stages:
                 displayName: 'Run Unit Tests'
                 errorActionPreference: stop
 
+              # Publish Test Results
+              - task: PublishTestResults@2
+                condition: always()
+                inputs:
+                  testRunner: VSTest
+                  testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
+
               # Publish Artifacts
               - task: PublishBuildArtifacts@1
                 condition: always()
