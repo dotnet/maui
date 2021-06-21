@@ -3,6 +3,8 @@
 var ext = IsRunningOnWindows() ? ".exe" : "";
 var dotnetPath = $"./bin/dotnet/dotnet{ext}";
 
+// Tasks for CI
+
 Task("dotnet")
     .Description("Provisions .NET 6 into bin/dotnet based on eng/Versions.props")
     .Does(() =>
@@ -17,64 +19,39 @@ Task("dotnet")
         DotNetCoreBuild("./src/DotNet/DotNet.csproj", settings);
     });
 
-Task("dotnet-pack")
-    .Description("Build and create .NET 6 NuGet packages")
-    //.IsDependentOn("dotnet")
-   // .IsDependentOn("dotnet-buildtasks")
-    .Does(()=>
-    {
-
-        var settings = new DotNetCoreToolSettings
-        {
-            DiagnosticOutput = true,
-            ArgumentCustomization = args => args.Append($"./eng/package.ps1 -configuration \"{configuration}\"")
-        };
-
-        DotNetCoreTool("pwsh", settings);
-
-        // RunMSBuildWithLocalDotNet("Microsoft.Maui-net6.sln", (settings) =>
-        // {
-        //     if (settings is MSBuildSettings msbuildSettings)
-        //     {
-        //         msbuildSettings
-        //             .WithProperty("Packing", "true")
-        //             .WithProperty("CI", "true")
-        //             .WithTarget("build");
-
-        //     }
-        //     else if( settings is DotNetCoreMSBuildSettings dotnetSettings )
-        //     {
-        //         dotnetSettings
-        //             .WithProperty("Packing", "true")
-        //             .WithProperty("CI", "true")
-        //             .WithTarget("pack");
-
-        //     }
-        // });
-
-
-        // if (IsRunningOnWindows())
-        // {        
-        //     RunMSBuildWithLocalDotNet("Microsoft.Maui-net6.sln", (settings) =>
-        //     {
-        //         if (settings is MSBuildSettings msbuildSettings)
-        //         {
-        //             msbuildSettings
-        //                 .WithProperty("Packing", "true")
-        //                 .WithProperty("CI", "true")
-        //                 .WithTarget("pack");
-
-        //         }
-        //     });
-        // }
-    });
-
 Task("dotnet-buildtasks")
     .IsDependentOn("dotnet")
     .Does(() =>
     {
         RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln");
     });
+
+Task("dotnet-build")
+    .IsDependentOn("dotnet")
+    .Description("Build the solutions")
+    .Does(() =>
+    {
+        RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln", settings => settings
+            .WithProperty("BuildForWinUI", IsRunningOnWindows().ToString()));
+
+        if (IsRunningOnWindows())
+            RunMSBuildWithLocalDotNet("./Microsoft.Maui.WinUI.sln");
+        else
+            RunMSBuildWithLocalDotNet("./Microsoft.Maui-net6.sln");
+    });
+
+Task("dotnet-pack")
+    .Description("Build and create .NET 6 NuGet packages")
+    .Does(() =>
+    {
+        DotNetCoreTool("pwsh", new DotNetCoreToolSettings
+        {
+            DiagnosticOutput = true,
+            ArgumentCustomization = args => args.Append($"./eng/package.ps1 -configuration \"{configuration}\"")
+        });
+    });
+
+// Tasks for Local Development
 
 Task("VS-DOGFOOD")
     .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
@@ -97,20 +74,10 @@ Task("VS-NET6")
         StartVisualStudioForDotNet6();
     });
 
-Task("VS-WINUI-CI")
-    .Description("Validates that WinUI can build with the cake scripts.")
-    .IsDependentOn("Clean")
-    .IsDependentOn("dotnet")
-    .Does(() =>
-    {
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln", settings => ((MSBuildSettings)settings).WithProperty("BuildForWinUI", "true"));
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui.WinUI.sln");
-    });
-
 Task("VS-WINUI")
     .Description("Provisions .NET 6 and launches an instance of Visual Studio with WinUI projects.")
         .IsDependentOn("Clean")
-    //  .IsDependentOn("dotnet") WINUI currently can't launch application with local dotnet 
+    //  .IsDependentOn("dotnet") WINUI currently can't launch application with local dotnet
     //  .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
@@ -126,9 +93,9 @@ Task("VS-WINUI")
             }
         }.WithRestore().WithProperty("BuildForWinUI", "true");
 
-	    MSBuild("./Microsoft.Maui.BuildTasks-net6.sln", msbuildSettings);
+        MSBuild("./Microsoft.Maui.BuildTasks-net6.sln", msbuildSettings);
 
-	    msbuildSettings = new MSBuildSettings
+        msbuildSettings = new MSBuildSettings
         {
             Configuration = configuration,
             ToolPath = FindMSBuild(),
@@ -145,7 +112,7 @@ Task("VS-WINUI")
 
         if (vsLatest == null)
             throw new Exception("Unable to find Visual Studio!");
-        
+
         StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
     });
 
@@ -205,7 +172,7 @@ string FindMSBuild()
             var path = vsInstallation.CombineWithFilePath(@"MSBuild\Current\Bin\MSBuild.exe");
             if (FileExists(path))
                 return path.FullPath;
-            
+
             path = vsInstallation.CombineWithFilePath(@"MSBuild\15.0\Bin\MSBuild.exe");
             if (FileExists(path))
                 return path.FullPath;
@@ -268,7 +235,7 @@ void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null, bool 
         };
 
         settings?.Invoke(dotnetBuildSettings);
-        
+
         DotNetCoreBuild(sln,
             new DotNetCoreBuildSettings
             {

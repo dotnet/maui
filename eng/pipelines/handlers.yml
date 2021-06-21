@@ -155,24 +155,11 @@ stages:
                     cat ~/Library/Preferences/Xamarin/Settings.plist || true
                   displayName: 'Configure VS Mac for Xcode'
 
-              # Install .NET
-              - pwsh: |
-                  & dotnet build src/DotNet/DotNet.csproj -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
-                  echo "##vso[task.prependpath]$(DotNet.Dir)"
-                displayName: 'Install .NET'
-                errorActionPreference: stop
-
               # Build .NET Maui
-              - ${{ if eq(BuildPlatform.name, 'macos') }}:
-                - pwsh: |
-                    & $(DotNet.Path) build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-samples.binlog
-                  displayName: 'Build .NET Maui for macOS'
-                  errorActionPreference: stop
-              - ${{ if eq(BuildPlatform.name, 'windows') }}:
-                - pwsh: |
-                    & $(DotNet.Path) build Microsoft.Maui.WinUI.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-samples.binlog
-                  displayName: 'Build .NET Maui for Windows'
-                  errorActionPreference: stop
+              - pwsh: |
+                  & dotnet cake --target=dotnet-build --configuration=${{ BuildCondition }}
+                displayName: 'Build .NET Maui'
+                errorActionPreference: stop
 
               # Publish Artifacts
               - task: PublishBuildArtifacts@1
