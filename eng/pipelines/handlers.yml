@@ -62,13 +62,13 @@ parameters:
   - name: BuildPlatforms
     type: object
     default:
-      - name: windows
+      - name: Windows
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
         artifact: net6-windows
-      - name: macos
+      - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
@@ -78,13 +78,13 @@ parameters:
   - name: PackPlatforms
     type: object
     default:
-      - name: windows
+      - name: Windows
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
         artifact: nuget
-      - name: macos
+      - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
@@ -110,7 +110,7 @@ stages:
           - job: build_net6_${{ BuildPlatform.name }}_${{ BuildCondition }}
             workspace:
               clean: all
-            displayName: ${{ BuildPlatform.name }} (${{ BuildCondition }}))
+            displayName: ${{ BuildPlatform.name }} (${{ BuildCondition }})
             timeoutInMinutes: 120
             condition: or(
               ${{ parameters.BuildEverything }},
