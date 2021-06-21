@@ -17,19 +17,21 @@ Console.WriteLine("Desired Xcode: {0}", desiredXcode);
 // Find the best version
 Item item;
 if (desiredXcode == "Latest")
-    item = XcodeBeta();
+{
+    // Fix up the case where the beta did not make it to the machine
+    var latestVersion = GetAvailableXcodes().First().Version;
+    var newVersion = TryMapBetaToStable(betaVersion);
+    if (newVersion != latestVersion)
+    {
+        Console.WriteLine($"Found a better version: {latestVersion} -> {newVersion}");
+        latestVersion = newVersion;
+    }
+    item = Xcode(latestVersion);
+}
 else if (desiredXcode == "Stable")
     item = XcodeStable();
 else
     item = Xcode(desiredXcode);
-
-// Fix up the case where the beta did not make it to the machine
-var newVersion = TryMapBetaToStable(item.Version);
-if (newVersion != item.Version)
-{
-    Console.WriteLine($"Found a better version: {item.Version} -> {newVersion}");
-    item = Xcode(newVersion);
-}
 
 Console.WriteLine("Selected version: {0}", item.Version);
 item.XcodeSelect();
