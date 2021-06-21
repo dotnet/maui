@@ -23,11 +23,6 @@ else if (desiredXcode == "Stable")
 else
     item = Xcode(desiredXcode);
 
-// Fix up the case where the beta did not make it to the machine
-var newVersion = TryMapBetaToStable(item.Version);
-if (newVersion != item.Version)
-    item = Xcode(newVersion);
-
 Console.WriteLine("Selected version: {0}", item.Version);
 item.XcodeSelect();
 
@@ -67,24 +62,4 @@ void SafeSymlink(string source, string destination)
     Console.WriteLine($"ln -sf {source} {destination}");
     Exec("/bin/ln", "-sf", source, destination);
     Console.WriteLine($"Symlink created: '{source}' links to '{destination}'");
-}
-
-string TryMapBetaToStable(string betaVersion)
-{
-    var index = item.Version.IndexOf("-beta");
-    if (index == -1)
-        return betaVersion;
-
-    var stableVersion = item.Version.Substring(0, index);
-    if (Directory.Exists($"/Applications/Xcode_{stableVersion}.app"))
-        return stableVersion;
-
-    if (stableVersion.EndsWith(".0"))
-    {
-        stableVersion = stableVersion.Substring(0, stableVersion.Length - 2);
-        if (Directory.Exists($"/Applications/Xcode_{stableVersion}.app"))
-            return stableVersion;
-    }
-
-    return betaVersion;
 }
