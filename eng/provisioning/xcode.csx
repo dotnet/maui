@@ -81,7 +81,7 @@ string TryMapBetaToStable(string betaVersion)
 
     if (stableVersion.EndsWith(".0"))
     {
-        stableVersion = stableVersion.Substring(0, stableVersion.Length - 2)
+        stableVersion = stableVersion.Substring(0, stableVersion.Length - 2);
         if (Directory.Exists($"/Applications/Xcode_{stableVersion}.app"))
             return stableVersion;
     }
