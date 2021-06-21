@@ -25,6 +25,8 @@ else
 Console.WriteLine("Selected version: {0}", item.Version);
 
 TryMapBetaToStable(item);
+
+item = Xcode(item.Version);
 item.XcodeSelect();
 
 LogInstalledXcodes();
