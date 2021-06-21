@@ -155,6 +155,12 @@ stages:
                     cat ~/Library/Preferences/Xamarin/Settings.plist || true
                   displayName: 'Configure VS Mac for Xcode'
 
+              # Install .NET
+              - pwsh: |
+                  ./build.ps1 -target=dotnet --configuration="$(BuildConfiguration)"
+                displayName: 'Install .NET'
+                errorActionPreference: stop
+
               # Build .NET Maui
               - pwsh: |
                   ./build.ps1 -target=dotnet-build --configuration="$(BuildConfiguration)"
