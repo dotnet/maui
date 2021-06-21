@@ -22,11 +22,13 @@ else if (desiredXcode == "Stable")
 else
     item = Xcode(desiredXcode);
 
+// remove the double "0" as this has issues on the lookup
+item.Version = item.Version.Replace(".0.0", ".0");
+
 Console.WriteLine("Selected version: {0}", item.Version);
 
 TryMapBetaToStable(item);
 
-item = Xcode(item.Version);
 item.XcodeSelect();
 
 LogInstalledXcodes();
