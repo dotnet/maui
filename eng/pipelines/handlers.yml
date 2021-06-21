@@ -105,7 +105,82 @@ stages:
   - stage: build_net6
     displayName: Build .NET 6
     jobs:
-      - template: common/build-net6.yml
+      - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
+        - ${{ each BuildCondition in parameters.BuildConfigurations }}:
+          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildCondition }}
+            workspace:
+              clean: all
+            displayName: ${{ BuildPlatform.name }} (${{ BuildCondition }}))
+            timeoutInMinutes: 120
+            condition: or(
+              ${{ parameters.BuildEverything }},
+              ne(variables['Build.Reason'], 'PullRequest'),
+              eq('${{ BuildCondition }}', 'Release'))
+            pool:
+              name: ${{ BuildPlatform.poolName }}
+              vmImage: ${{ BuildPlatform.vmImage }}
+            steps:
+
+              # Prepare macOS
+              - ${{ if eq(BuildPlatform.name, 'macos') }}:
+                # Provision Xcode
+                - task: xamops.azdevex.provisionator-task.provisionator@1
+                  displayName: 'Provision Xcode'
+                  condition: ne(variables['REQUIRED_XCODE'], '')
+                  inputs:
+                    provisioning_script: $(provisionator.xcode)
+                # Provision Additional Software
+                - task: xamops.azdevex.provisionator-task.provisionator@1
+                  displayName: 'Provision Additional Software'
+                  condition: eq(variables['provisioning'], 'true')
+                  inputs:
+                    provisioning_script: $(provisionator.path)
+                    provisioning_extra_args: $(provisionator.extraArguments)
+                # Setup SDK Paths
+                - bash: |
+                    echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
+                    echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
+                  displayName: 'Setup SDK Paths'
+                  condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
+                # Setup JDK Paths
+                - bash: |
+                    echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)"
+                  displayName: 'Setup JDK Paths'
+                # Configure VS Mac for Xcode
+                - bash: |
+                    set -x
+                    mkdir -p ~/Library/Preferences/Xamarin
+                    rm -f ~/Library/Preferences/Xamarin/Settings.plist
+                    /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
+                    cat ~/Library/Preferences/Xamarin/Settings.plist || true
+                  displayName: 'Configure VS Mac for Xcode'
+
+              # Install .NET
+              - pwsh: |
+                  & dotnet build src/DotNet/DotNet.csproj -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
+                  echo "##vso[task.prependpath]$(DotNet.Dir)"
+                displayName: 'Install .NET'
+                errorActionPreference: stop
+
+              # Build .NET Maui
+              - ${{ if eq(BuildPlatform.name, 'macos') }}:
+                - pwsh: |
+                    & $(DotNet.Path) build Microsoft.Maui-net6.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-samples.binlog
+                  displayName: 'Build .NET Maui for macOS'
+                  errorActionPreference: stop
+              - ${{ if eq(BuildPlatform.name, 'windows') }}:
+                - pwsh: |
+                    & $(DotNet.Path) build Microsoft.Maui.WinUI.sln -c $(BuildConfiguration) -bl:$(LogDirectory)/$(BuildConfiguration)-samples.binlog
+                  displayName: 'Build .NET Maui for Windows'
+                  errorActionPreference: stop
+
+              # Publish Artifacts
+              - task: PublishBuildArtifacts@1
+                condition: always()
+                displayName: Publish Artifacts (${{ BuildPlatform.artifact }})
+                inputs:
+                  ArtifactName: ${{ BuildPlatform.artifact }}
+
 
   # - stage: windows
   #   displayName: Build Windows
