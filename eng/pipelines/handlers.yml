@@ -447,23 +447,23 @@ stages:
   #       #   ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests-net6.csproj
   #       #   net6: true
 
-  # - template: common/security_compliance.yml
-  # - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
-  # - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
-  # - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
+  - template: common/security_compliance.yml
+  - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
+  - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
+  - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
 
-  # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # Sign only using the private server
-  #   - stage: nuget_signing
-  #     dependsOn: pack_net6
-  #     displayName: Sign Nuget
-  #     jobs:
-  #       - template: sign-artifacts/jobs/v2.yml@xamarin-templates
-  #         parameters:
-  #           signType: Real
-  #           teamName: Maui
-  #           usePipelineArtifactTasks: false
-  #           targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
-  #           signedArtifactName: nuget
-  #           signedArtifactPath: signed
-  #           displayName: Sign Phase
-  #           condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # Sign only using the private server
+    - stage: nuget_signing
+      dependsOn: pack_net6
+      displayName: Sign Nuget
+      jobs:
+        - template: sign-artifacts/jobs/v2.yml@xamarin-templates
+          parameters:
+            signType: Real
+            teamName: Maui
+            usePipelineArtifactTasks: false
+            targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
+            signedArtifactName: nuget
+            signedArtifactPath: signed
+            displayName: Sign Phase
+            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
