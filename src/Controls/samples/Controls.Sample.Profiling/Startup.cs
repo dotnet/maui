@@ -12,7 +12,11 @@ namespace Maui.Controls.Sample.Profiling
 		public void Configure(IAppHostBuilder appBuilder)
 		{
 			appBuilder
-				.UseMauiApp<App>();
+				.UseMauiApp<App>()
+				.ConfigureFonts(fonts =>
+				{
+					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+				});
 		}
 	}
 }

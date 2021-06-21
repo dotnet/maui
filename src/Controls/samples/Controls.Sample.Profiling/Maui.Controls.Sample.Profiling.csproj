@@ -34,8 +34,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
-    <MauiSplashScreen Include="Resources\AppIcons\appicon_foreground.svg" Color="#FF69B4" />
+    <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" Color="#512BD4" />
+    <MauiSplashScreen Include="Resources\AppIcons\appicon_foreground.svg" Color="#512BD4" />
+    <MauiImage Include="Resources\Images\*" />
+    <MauiFont Include="Resources\Fonts\*" />
   </ItemGroup>
 
 </Project>
