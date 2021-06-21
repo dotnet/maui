@@ -77,7 +77,7 @@ bool TryMapBetaToStable(Item item)
     if (Directory.Exists(betaPath) || !Directory.Exists(stablePath))
         return false;
 
-    SafeSymlink(betaPath, stablePath);
+    SafeSymlink(stablePath, betaPath);
     Console.WriteLine($"Mapped '{betaPath}' -> '{stablePath}'");
 
     return true;
