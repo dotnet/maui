@@ -28,7 +28,11 @@ TryMapBetaToStable(item);
 
 // remove the double "0" as this has issues on the lookup
 if (item.Version.Contains(".0.0-") || item.Version.EndsWith(".0.0"))
-    item = Xcode(item.Version.Replace(".0.0", ".0"));
+{
+    var newVersion = item.Version.Replace(".0.0", ".0");
+    Console.WriteLine($"Adjusting version '{item.Version}' to '{newVersion}'");
+    item = Xcode(newVersion);
+}
 
 Console.WriteLine("Selected version: {0}", item.Version);
 item.XcodeSelect();
