@@ -157,13 +157,13 @@ stages:
 
               # Install .NET
               - pwsh: |
-                  ./build.ps1 -target=dotnet --configuration="$(BuildConfiguration)"
+                  ./build.ps1 --target=dotnet --configuration="$(BuildConfiguration)"
                 displayName: 'Install .NET'
                 errorActionPreference: stop
 
               # Build .NET Maui
               - pwsh: |
-                  ./build.ps1 -target=dotnet-build --configuration="$(BuildConfiguration)"
+                  ./build.ps1 --target=dotnet-build --configuration="$(BuildConfiguration)"
                 displayName: 'Build .NET Maui'
                 errorActionPreference: stop
 
