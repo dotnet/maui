@@ -74,9 +74,11 @@ bool TryMapBetaToStable(Item item)
     var stablePath = "/Applications/Xcode_" + item.Version.Substring(0, index) + ".app";
     var betaPath = "/Applications/Xcode_" + item.Version.Replace("-", "_") + ".app";
     var betaNoPatchPath = "/Applications/Xcode_" + item.Version.Replace(".0.0-", ".0_") + ".app";
+    var betaNoMinorPath = "/Applications/Xcode_" + item.Version.Replace(".0.0-", "_") + ".app";
 
     SafeSymlink(stablePath, betaPath);
     SafeSymlink(stablePath, betaNoPatchPath);
+    SafeSymlink(stablePath, betaNoMinorPath);
 
     return true;
 }
