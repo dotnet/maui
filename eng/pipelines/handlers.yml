@@ -155,44 +155,44 @@ stages:
                     cat ~/Library/Preferences/Xamarin/Settings.plist || true
                   displayName: 'Configure Visual Studio'
 
-              # Prepare Windows
-              - ${{ if eq(BuildPlatform.name, 'windows') }}:
-                - task: xamops.azdevex.provisionator-task.provisionator@1
-                  displayName: 'Provision Visual Studio'
-                  inputs:
-                    provisioning_script: $(provisionator.vs2019)
+              # # Prepare Windows
+              # - ${{ if eq(BuildPlatform.name, 'windows') }}:
+              #   - task: xamops.azdevex.provisionator-task.provisionator@1
+              #     displayName: 'Provision Visual Studio'
+              #     inputs:
+              #       provisioning_script: $(provisionator.vs2019)
 
-              # Install .NET
-              - pwsh: |
-                  ./build.ps1 --target=dotnet --configuration="$(BuildConfiguration)"
-                displayName: 'Install .NET'
-                errorActionPreference: stop
+              # # Install .NET
+              # - pwsh: |
+              #     ./build.ps1 --target=dotnet --configuration="$(BuildConfiguration)"
+              #   displayName: 'Install .NET'
+              #   errorActionPreference: stop
 
-              # Build .NET Maui
-              - pwsh: |
-                  ./build.ps1 --target=dotnet-build --configuration="$(BuildConfiguration)"
-                displayName: 'Build .NET Maui'
-                errorActionPreference: stop
+              # # Build .NET Maui
+              # - pwsh: |
+              #     ./build.ps1 --target=dotnet-build --configuration="$(BuildConfiguration)"
+              #   displayName: 'Build .NET Maui'
+              #   errorActionPreference: stop
 
-              # Run Unit Tests
-              - pwsh: |
-                  ./build.ps1 --target=dotnet-test --configuration="$(BuildConfiguration)"
-                displayName: 'Run Unit Tests'
-                errorActionPreference: stop
+              # # Run Unit Tests
+              # - pwsh: |
+              #     ./build.ps1 --target=dotnet-test --configuration="$(BuildConfiguration)"
+              #   displayName: 'Run Unit Tests'
+              #   errorActionPreference: stop
 
-              # Publish Test Results
-              - task: PublishTestResults@2
-                condition: always()
-                inputs:
-                  testRunner: VSTest
-                  testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
+              # # Publish Test Results
+              # - task: PublishTestResults@2
+              #   condition: always()
+              #   inputs:
+              #     testRunner: VSTest
+              #     testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
 
-              # Publish Artifacts
-              - task: PublishBuildArtifacts@1
-                condition: always()
-                displayName: Publish Artifacts (${{ BuildPlatform.artifact }})
-                inputs:
-                  ArtifactName: ${{ BuildPlatform.artifact }}
+              # # Publish Artifacts
+              # - task: PublishBuildArtifacts@1
+              #   condition: always()
+              #   displayName: Publish Artifacts (${{ BuildPlatform.artifact }})
+              #   inputs:
+              #     ArtifactName: ${{ BuildPlatform.artifact }}
 
 
   # - stage: windows
