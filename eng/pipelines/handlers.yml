@@ -129,7 +129,7 @@ stages:
                   condition: ne(variables['REQUIRED_XCODE'], '')
                   inputs:
                     provisioning_script: $(provisionator.xcode)
-                    provisioning_extra_args: -vv
+                    provisioning_extra_args: -vvvv
                 # Provision Additional Software
                 - task: xamops.azdevex.provisionator-task.provisionator@1
                   displayName: 'Provision Additional Software'
