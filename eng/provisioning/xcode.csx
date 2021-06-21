@@ -24,15 +24,9 @@ else
     item = Xcode(desiredXcode);
 
 // Fix up the case where the beta did not make it to the machine
-TryMapBetaToStable(item);
-
-// remove the double "0" as this has issues on the lookup
-if (item.Version.Contains(".0.0-") || item.Version.EndsWith(".0.0"))
-{
-    var newVersion = item.Version.Replace(".0.0", ".0");
-    Console.WriteLine($"Adjusting version '{item.Version}' to '{newVersion}'");
+var newVersion = TryMapBetaToStable(item.Version);
+if (newVersion != item.Version)
     item = Xcode(newVersion);
-}
 
 Console.WriteLine("Selected version: {0}", item.Version);
 item.XcodeSelect();
@@ -75,20 +69,22 @@ void SafeSymlink(string source, string destination)
     Console.WriteLine($"Symlink created: '{source}' links to '{destination}'");
 }
 
-bool TryMapBetaToStable(Item item)
+string TryMapBetaToStable(string betaVersion)
 {
     var index = item.Version.IndexOf("-beta");
     if (index == -1)
-        return false;
+        return betaVersion;
 
-    var stablePath = "/Applications/Xcode_" + item.Version.Substring(0, index) + ".app";
-    var betaPath = "/Applications/Xcode_" + item.Version.Replace("-", "_") + ".app";
-    var betaNoPatchPath = "/Applications/Xcode_" + item.Version.Replace(".0.0-", ".0_") + ".app";
-    var betaNoMinorPath = "/Applications/Xcode_" + item.Version.Replace(".0.0-", "_") + ".app";
+    var stableVersion = item.Version.Substring(0, index);
+    if (Directory.Exists($"/Applications/Xcode_{stableVersion}.app"))
+        return stableVersion;
 
-    SafeSymlink(stablePath, betaPath);
-    SafeSymlink(stablePath, betaNoPatchPath);
-    SafeSymlink(stablePath, betaNoMinorPath);
+    if (stableVersion.EndsWith(".0"))
+    {
+        stableVersion = stableVersion.Substring(0, stableVersion.Length - 2)
+        if (Directory.Exists($"/Applications/Xcode_{stableVersion}.app"))
+            return stableVersion;
+    }
 
-    return true;
+    return betaVersion;
 }
