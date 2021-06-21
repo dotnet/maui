@@ -110,7 +110,7 @@ stages:
           - job: build_net6_${{ BuildPlatform.name }}_${{ BuildCondition }}
             workspace:
               clean: all
-            displayName: ${{ BuildPlatform.name }} (${{ BuildCondition }})
+            displayName: Build for ${{ BuildPlatform.name }} (${{ BuildCondition }})
             timeoutInMinutes: 120
             condition: or(
               ${{ parameters.BuildEverything }},
