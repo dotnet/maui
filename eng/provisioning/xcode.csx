@@ -16,7 +16,7 @@ Console.WriteLine ("Desired Xcode: {0} ({1})", desiredXcode, XcodeFileNameToSemv
 
 Item item;
 if (desiredXcode == "Latest")
-    item = GetAvailableXcodes ().First();
+    item = Xcode(GetAvailableXcodes ().First().Version);
 else if (desiredXcode == "Stable")
     item = XcodeStable();
 else
