@@ -7,18 +7,26 @@ namespace Microsoft.Maui
 {
 	public class FileSystemEmbeddedFontLoader : IEmbeddedFontLoader
 	{
-		readonly string _rootPath;
+		readonly Lazy<string> _rootPath;
 		readonly ILogger<EmbeddedFontLoader>? _logger;
 
 		public FileSystemEmbeddedFontLoader(string rootPath, ILogger<EmbeddedFontLoader>? logger = null)
 		{
-			_rootPath = rootPath;
+			_rootPath = new Lazy<string>(() => rootPath);
 			_logger = logger;
 		}
 
+		public FileSystemEmbeddedFontLoader(Func<string> getRootPath, ILogger<EmbeddedFontLoader>? logger = null)
+		{
+			_rootPath = new Lazy<string>(getRootPath);
+			_logger = logger;
+		}
+
+		string RootPath => _rootPath.Value;
+
 		public string? LoadFont(EmbeddedFont font)
 		{
-			var filePath = Path.Combine(_rootPath, font.FontName!);
+			var filePath = Path.Combine(RootPath, font.FontName!);
 			if (File.Exists(filePath))
 				return filePath;
 
@@ -27,8 +35,8 @@ namespace Microsoft.Maui
 				if (font.ResourceStream == null)
 					throw new InvalidOperationException("ResourceStream was null.");
 
-				if (!Directory.Exists(_rootPath))
-					Directory.CreateDirectory(_rootPath);
+				if (!Directory.Exists(RootPath))
+					Directory.CreateDirectory(RootPath);
 
 				using (var fileStream = File.Create(filePath))
 				{

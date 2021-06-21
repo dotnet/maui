@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 
 		public EmbeddedFontLoader(ILogger<EmbeddedFontLoader>? logger = null)
 #if __ANDROID__
-			: base(GetTempPath(), logger)
+			: base(() => GetTempPath(), logger)
 #endif
 		{
 			_logger = logger;
