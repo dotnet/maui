@@ -5,36 +5,38 @@ using static Xamarin.Provisioning.ProvisioningScript;
 using System;
 using System.Linq;
 
-var desiredXcode = Environment.GetEnvironmentVariable ("REQUIRED_XCODE");
-if (string.IsNullOrEmpty (desiredXcode)) {
-    Console.WriteLine ("The environment variable 'REQUIRED_XCODE' must be exported and the value must be a valid value from the 'XreItem' enumeration.");
+var desiredXcode = Environment.GetEnvironmentVariable("REQUIRED_XCODE");
+if (string.IsNullOrEmpty(desiredXcode)) {
+    Console.WriteLine("The environment variable 'REQUIRED_XCODE' must be exported and the value must be a valid value from the 'XreItem' enumeration.");
     return;
 }
 
 desiredXcode = desiredXcode.Replace("Xcode_", "").Replace("_", ".");
-Console.WriteLine ("Desired Xcode: {0} ({1})", desiredXcode, XcodeFileNameToSemver (desiredXcode));
+Console.WriteLine("Desired Xcode: {0}", desiredXcode);
 
 Item item;
 if (desiredXcode == "Latest")
-    item = Xcode(GetAvailableXcodes ().First().Version);
+    item = XcodeBeta();
 else if (desiredXcode == "Stable")
     item = XcodeStable();
 else
     item = Xcode(desiredXcode);
 
-Console.WriteLine ("InstallPath: {0}", item.Version);
-item.XcodeSelect ();
+Console.WriteLine("Selected version: {0}", item.Version);
+
+TryMapBetaToStable(item);
+item.XcodeSelect();
 
 LogInstalledXcodes();
 
-var appleSdkOverride = Path.Combine(Environment.GetFolderPath (Environment.SpecialFolder.Personal), "Library", "Preferences", "Xamarin", "Settings.plist");
+var appleSdkOverride = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library", "Preferences", "Xamarin", "Settings.plist");
 Item("Override Apple SDK Settings")
     .Condition(item => !File.Exists(appleSdkOverride) || GetSettingValue(appleSdkOverride, "AppleSdkRoot") != GetSelectedXcodePath())
-    .Action (item =>
+    .Action(item =>
     {
         DeleteSafe(appleSdkOverride);
-        CreateSetting(appleSdkOverride, "AppleSdkRoot", GetSelectedXcodePath ());
-        Console.WriteLine($"New VSMac iOS SDK Location: {GetSelectedXcodePath ()}");
+        CreateSetting(appleSdkOverride, "AppleSdkRoot", GetSelectedXcodePath());
+        Console.WriteLine($"New VSMac iOS SDK Location: {GetSelectedXcodePath()}");
     });
 
 void DeleteSafe(string file)
@@ -53,12 +55,30 @@ string GetSettingValue(string settingFile, string keyName)
     return Exec("defaults", "read", settingFile, keyName).FirstOrDefault();
 }
 
-void SafeSymlink (string source, string destination)
+void SafeSymlink(string source, string destination)
 {
-    if (Directory.Exists (destination) || Config.DryRun)
+    if (Directory.Exists(destination) || Config.DryRun)
         return;
 
-    Console.WriteLine ($"ln -sf {source} {destination}");
-    Exec ("/bin/ln", "-sf", source, destination);
-    Console.WriteLine ($"Symlink created: '{source}' links to '{destination}'");
+    Console.WriteLine($"ln -sf {source} {destination}");
+    Exec("/bin/ln", "-sf", source, destination);
+    Console.WriteLine($"Symlink created: '{source}' links to '{destination}'");
+}
+
+bool TryMapBetaToStable(Item item)
+{
+    var index = item.Version.IndexOf("-beta");
+    if (index == -1)
+        return false;
+
+    var betaPath = "/Applications/Xcode_" + item.Version + ".app";
+    var stablePath = "/Applications/Xcode_" + item.Version.Substring(0, index) + ".app";
+
+    if (Directory.Exists(betaPath) || !Directory.Exists(stablePath))
+        return false;
+
+    SafeSymlink(betaPath, stablePath);
+    Console.WriteLine($"Mapped '{betaPath}' -> '{stablePath}'");
+
+    return true;
 }
