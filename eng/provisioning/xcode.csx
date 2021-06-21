@@ -71,7 +71,7 @@ bool TryMapBetaToStable(Item item)
     if (index == -1)
         return false;
 
-    var betaPath = "/Applications/Xcode_" + item.Version + ".app";
+    var betaPath = "/Applications/Xcode_" + item.Version.Replace("-", "_") + ".app";
     var stablePath = "/Applications/Xcode_" + item.Version.Substring(0, index) + ".app";
 
     if (Directory.Exists(betaPath) || !Directory.Exists(stablePath))
