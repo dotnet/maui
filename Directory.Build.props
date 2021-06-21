@@ -26,10 +26,6 @@
     <NonNet6EssentialsPlatforms Condition="'$(BuildNonNet6ForAndroid)' == 'true'">netstandard2.0;netstandard2.1;MonoAndroid10.0</NonNet6EssentialsPlatforms>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
-    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
-    <PublishTrimmed>true</PublishTrimmed>
-
     <!-- HACK: WinUI seems to have issues without this -->
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>

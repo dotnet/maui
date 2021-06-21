@@ -5,7 +5,6 @@
     <AssemblyName>Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup</AssemblyName>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
-    <NoWarn>IL2026</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedJar Include="Jars\*.jar" />
