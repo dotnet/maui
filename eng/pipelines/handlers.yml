@@ -106,16 +106,16 @@ stages:
     displayName: Build .NET 6
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
-        - ${{ each BuildCondition in parameters.BuildConfigurations }}:
-          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildCondition }}
+        - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
             workspace:
               clean: all
-            displayName: Build for ${{ BuildPlatform.name }} (${{ BuildCondition }})
+            displayName: Build for ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
             timeoutInMinutes: 120
             condition: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
-              eq('${{ BuildCondition }}', 'Release'))
+              eq('${{ BuildConfiguration }}', 'Release'))
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
@@ -157,7 +157,7 @@ stages:
 
               # Build .NET Maui
               - pwsh: |
-                  & dotnet cake --target=dotnet-build --configuration=${{ BuildCondition }}
+                  ./build.ps1 -Target dotnet-build -ScriptArgs '--configuration="$(BuildConfiguration)"'
                 displayName: 'Build .NET Maui'
                 errorActionPreference: stop
 
@@ -186,15 +186,15 @@ stages:
   # - stage: windows
   #   displayName: Build Windows
   #   jobs:
-  #     - ${{ each BuildCondition in parameters.BuildConfigurations }}:
-  #       - job: win_hosted_${{ BuildCondition }}
+  #     - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+  #       - job: win_hosted_${{ BuildConfiguration }}
   #         workspace:
   #           clean: all
-  #         displayName: Build Windows Phase (${{ BuildCondition }})
+  #         displayName: Build Windows Phase (${{ BuildConfiguration }})
   #         condition: or(
   #           ${{ parameters.BuildEverything }},
   #           ne(variables['Build.Reason'], 'PullRequest'),
-  #           eq('${{ BuildCondition }}', 'Release'))
+  #           eq('${{ BuildConfiguration }}', 'Release'))
   #         timeoutInMinutes: 60
   #         pool:
   #           name: $(vs2019VmPool)
@@ -207,15 +207,15 @@ stages:
   #   displayName: Windows Cake Validation
   #   dependsOn: []
   #   jobs:
-  #     - ${{ each BuildCondition in parameters.BuildConfigurations }}:
-  #       - job: win_hosted_${{ BuildCondition }}
+  #     - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+  #       - job: win_hosted_${{ BuildConfiguration }}
   #         workspace:
   #           clean: all
-  #         displayName: Build Windows Phase (${{ BuildCondition }})
+  #         displayName: Build Windows Phase (${{ BuildConfiguration }})
   #         condition: or(
   #           ${{ parameters.BuildEverything }},
   #           ne(variables['Build.Reason'], 'PullRequest'),
-  #           eq('${{ BuildCondition }}', 'Release'))
+  #           eq('${{ BuildConfiguration }}', 'Release'))
   #         timeoutInMinutes: 60
   #         pool:
   #           name: $(vs2019VmPool)
@@ -229,7 +229,7 @@ stages:
   #           - script: dotnet tool restore
   #             displayName: install dotnet tools
   #           - powershell: |
-  #                 & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildCondition }}
+  #                 & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildConfiguration }}
   #             displayName: 'Build WinUI SLN'
   #           - task: CopyFiles@2
   #             displayName: 'Copy Bin Log Files'
@@ -364,16 +364,16 @@ stages:
   #   dependsOn: pack_net6
   #   jobs:
   #     - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
-  #       - ${{ each BuildCondition in parameters.BuildConfigurations }}:
-  #         - job: build_net6_${{ BuildPlatform.name }}_${{ BuildCondition }}
+  #       - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+  #         - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
   #           workspace:
   #             clean: all
-  #           displayName: .NET 6 Samples (${{ BuildPlatform.name }} | ${{ BuildCondition }})
+  #           displayName: .NET 6 Samples (${{ BuildPlatform.name }} | ${{ BuildConfiguration }})
   #           timeoutInMinutes: 120
   #           condition: or(
   #             ${{ parameters.BuildEverything }},
   #             ne(variables['Build.Reason'], 'PullRequest'),
-  #             eq('${{ BuildCondition }}', 'Release'))
+  #             eq('${{ BuildConfiguration }}', 'Release'))
   #           pool:
   #             name: ${{ BuildPlatform.poolName }}
   #             vmImage: ${{ BuildPlatform.vmImage }}
