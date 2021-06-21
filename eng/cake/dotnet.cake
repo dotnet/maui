@@ -310,7 +310,7 @@ void RunTestWithLocalDotNet(string csproj)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
     var binlog = $"{logDirectory}/{name}-{configuration}.binlog";
-    var results = $"{testResultsDirectory}/{name}-{configuration}.trx";
+    var results = $"{name}-{configuration}.trx";
 
     SetDotNetEnvironmentVariables();
 
@@ -320,9 +320,8 @@ void RunTestWithLocalDotNet(string csproj)
             Configuration = configuration,
             ToolPath = dotnetPath,
             NoBuild = true,
-            Verbosity = DotNetCoreVerbosity.Diagnostic,
             Logger = $"trx;LogFileName={results}",
-            ResultsDirectory = $"{artifactStagingDirectory}/test-results",
+            ResultsDirectory = testResultsDirectory,
             ArgumentCustomization = args => args.Append($"-bl:{binlog}")
         });
 }
