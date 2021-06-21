@@ -157,7 +157,7 @@ stages:
 
               # Build .NET Maui
               - pwsh: |
-                  ./build.ps1 -Target dotnet-build -ScriptArgs '--configuration="$(BuildConfiguration)"'
+                  ./build.ps1 -target=dotnet-build --configuration="$(BuildConfiguration)"
                 displayName: 'Build .NET Maui'
                 errorActionPreference: stop
 
