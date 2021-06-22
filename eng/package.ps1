@@ -7,13 +7,14 @@ $ErrorActionPreference = "Stop"
 Write-Host $msbuild
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
+$logsDirectory = Join-Path $artifacts logs
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
 $blazorWebViewSln = Join-Path $PSScriptRoot ../BlazorWindowsDesktop-net6.sln
 $slnTasks = Join-Path $PSScriptRoot ../Microsoft.Maui.BuildTasks-net6.sln
 
 # Bootstrap ./bin/dotnet/
 $csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
-& dotnet build $csproj -bl:$artifacts/dotnet-$configuration.binlog
+& dotnet build $csproj -bl:$logsDirectory/dotnet-$configuration.binlog
 
 # Full path to dotnet folder
 $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/
@@ -75,7 +76,7 @@ if ($IsWindows)
             /p:SymbolPackageFormat=snupkg `
             /restore `
             /t:build `
-            /bl:"$artifacts/maui-build-tasks-$configuration.binlog"
+            /bl:"$logsDirectory/maui-build-tasks-$configuration.binlog"
 
         # Have to build the solution first so the xbf files are there for pack
         & $msbuild $sln `
@@ -84,7 +85,7 @@ if ($IsWindows)
             /restore `
             /t:build `
             /p:Packing=true `
-            /bl:"$artifacts/maui-build-$configuration.binlog"
+            /bl:"$logsDirectory/maui-build-$configuration.binlog"
         if (!$?) { throw "Build .NET MAUI failed." }
 
         & $msbuild $sln `
@@ -92,7 +93,7 @@ if ($IsWindows)
             /p:SymbolPackageFormat=snupkg `
             /t:pack `
             /p:Packing=true `
-            /bl:"$artifacts/maui-pack-$configuration.binlog"
+            /bl:"$logsDirectory/maui-pack-$configuration.binlog"
         if (!$?) { throw "Pack .NET MAUI failed." }
 
         # Then build and pack the BlazorWebView projects for WPF/WinForms
@@ -102,7 +103,7 @@ if ($IsWindows)
             /restore `
             /t:build `
             /p:Packing=true `
-            /bl:"$artifacts/blazorwebview-build-$configuration.binlog"
+            /bl:"$logsDirectory/blazorwebview-build-$configuration.binlog"
         if (!$?) { throw "Build BlazorWebView failed." }
 
         & $msbuild $blazorWebViewSln `
@@ -110,7 +111,7 @@ if ($IsWindows)
             /p:SymbolPackageFormat=snupkg `
             /t:pack `
             /p:Packing=true `
-            /bl:"$artifacts/blazorwebview-pack-$configuration.binlog"
+            /bl:"$logsDirectory/blazorwebview-pack-$configuration.binlog"
         if (!$?) { throw "Pack BlazorWebView failed." }
     }
     finally
@@ -136,7 +137,7 @@ else
         & $dotnet_tool pack $sln `
             -c:$configuration `
             -p:SymbolPackageFormat=snupkg `
-            -bl:$artifacts/maui-pack-$configuration.binlog
+            -bl:$logsDirectory/maui-pack-$configuration.binlog
         if (!$?) { throw "Pack failed." }
     }
     finally
