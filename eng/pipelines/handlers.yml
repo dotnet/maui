@@ -170,11 +170,12 @@ stages:
                 TargetFolder: $(build.artifactstagingdirectory)
                 flattenFolders: true
             - task: CopyFiles@2
-              displayName: 'Copy Bin Log Files'
+              displayName: 'Copy Log Files'
               condition: always()
               inputs:
                 Contents: |
-                TargetFolder: $(build.artifactstagingdirectory)
+                  artifacts/logs/**
+                TargetFolder: $(build.artifactstagingdirectory)/logs
             - task: PublishBuildArtifacts@1
               condition: always()
               displayName: publish artifacts

@@ -23,7 +23,7 @@ Task("dotnet-buildtasks")
     .IsDependentOn("dotnet")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln");
+        RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
     });
 
 Task("dotnet-build")
@@ -33,13 +33,13 @@ Task("dotnet-build")
     {
         if (IsRunningOnWindows())
         {
-            RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln", settings => ((MSBuildSettings)settings)
+            RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf", settings => ((MSBuildSettings)settings)
                 .WithProperty("BuildForWinUI", "true"));
-            RunMSBuildWithLocalDotNet("./Microsoft.Maui.WinUI.sln");
+            RunMSBuildWithLocalDotNet("./Microsoft.Maui-winui.sln");
         }
         else
         {
-            RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln");
+            RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
             RunMSBuildWithLocalDotNet("./Microsoft.Maui-net6.sln");
         }
     });
@@ -126,7 +126,7 @@ Task("VS-WINUI")
     //  .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        string sln = "./Microsoft.Maui.WinUI.sln";
+        string sln = "./Microsoft.Maui-winui.sln";
         var msbuildSettings = new MSBuildSettings
         {
             Configuration = configuration,

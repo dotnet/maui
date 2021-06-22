@@ -43,7 +43,7 @@ dotnet tool restore
 # Provision .NET 6 in bin\dotnet
 dotnet build src\DotNet\DotNet.csproj
 # Builds Maui MSBuild tasks
-.\bin\dotnet\dotnet build Microsoft.Maui.BuildTasks-net6.sln
+.\bin\dotnet\dotnet build Microsoft.Maui.BuildTasks-net6.slnf
 # Builds the rest of Maui
 .\bin\dotnet\dotnet build Microsoft.Maui-net6.sln
 # (Windows-only) to launch Visual Studio
