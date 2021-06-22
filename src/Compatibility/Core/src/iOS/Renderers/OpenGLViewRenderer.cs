@@ -3,6 +3,7 @@ using System.ComponentModel;
 using CoreAnimation;
 using Foundation;
 using GLKit;
+using Microsoft.Maui.Controls.Platform;
 using OpenGLES;
 using RectangleF = CoreGraphics.CGRect;
 

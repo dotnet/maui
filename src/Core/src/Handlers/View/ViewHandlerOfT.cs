@@ -13,7 +13,7 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView>,
+	public abstract partial class ViewHandler<TVirtualView, TNativeView> : ViewHandler,
 		IViewHandler
 		where TVirtualView : class, IView
 #if !NETSTANDARD || IOS || ANDROID || WINDOWS
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == view)
 				return;
 
-			if (VirtualView?.Handler != null)
+			if (VirtualView?.Handler != null && VirtualView.Handler != this)
 				VirtualView.Handler = null;
 
 			bool setupNativeView = VirtualView == null;
@@ -92,9 +92,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				var map = imv.GetPropertyMapperOverrides();
 				var instancePropertyMapper = map as PropertyMapper<TVirtualView>;
-				if (map != null && instancePropertyMapper == null)
-				{
-				}
+
 				if (instancePropertyMapper != null)
 				{
 					instancePropertyMapper.Chained = _defaultMapper;
@@ -125,14 +123,7 @@ namespace Microsoft.Maui.Handlers
 			=> _mapper?.UpdateProperty(this, VirtualView, property);
 
 		protected virtual void SetupDefaults(TNativeView nativeView) { }
-	}
 
-	public abstract partial class ViewHandler<TVirtualView> : ViewHandler
-		where TVirtualView : class, IView
-	{
-		internal ViewHandler()
-		{
-		}
 
 		public new TVirtualView? VirtualView
 		{

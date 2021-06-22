@@ -93,6 +93,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateHorizontalTextAlignment(entry);
 		}
 
+		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry)
+		{
+			handler?.NativeView?.UpdateVerticalTextAlignment(entry);
+		}
+
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateIsTextPredictionEnabled(entry);
@@ -133,6 +138,16 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateCharacterSpacing(entry);
+		}
+
+		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateCursorPosition(entry);
+		}
+
+		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateSelectionLength(entry);
 		}
 
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)

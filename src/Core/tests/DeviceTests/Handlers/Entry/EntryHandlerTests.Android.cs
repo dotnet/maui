@@ -93,6 +93,32 @@ namespace Microsoft.Maui.DeviceTests
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
+		[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
+		public async Task VerticalTextAlignmentInitializesCorrectily()
+		{
+			var xplatVerticalTextAlignment = TextAlignment.End;
+
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				VerticalTextAlignment = xplatVerticalTextAlignment
+			};
+
+			Android.Views.GravityFlags expectedValue = Android.Views.GravityFlags.Bottom;
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.VerticalTextAlignment,
+					NativeViewValue = GetNativeVerticalTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
 		AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
 			(AppCompatEditText)entryHandler.NativeView;
 
@@ -192,6 +218,9 @@ namespace Microsoft.Maui.DeviceTests
 		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 
+		Android.Views.GravityFlags GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).Gravity;
+
 		ImeAction GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ImeOptions;
 
@@ -247,6 +276,26 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				return editText.LetterSpacing;
 			}
+
+			return -1;
+		}
+
+		int GetNativeCursorPosition(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+
+			if (editText != null)
+				return editText.SelectionEnd;
+
+			return -1;
+		}
+
+		int GetNativeSelectionLength(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+
+			if (editText != null)
+				return editText.SelectionEnd - editText.SelectionStart;
 
 			return -1;
 		}

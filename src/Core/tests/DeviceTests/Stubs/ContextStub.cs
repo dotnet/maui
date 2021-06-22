@@ -17,6 +17,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 #if __ANDROID__
 		public Android.Content.Context Context => Platform.DefaultContext;
+#elif __IOS__
+		public UIKit.UIWindow Window => throw new NotImplementedException();
 #endif
 	}
 }

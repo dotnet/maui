@@ -51,5 +51,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.UpdateContent();
 		}
+
+		protected override void DisconnectHandler(PageViewGroup nativeView)
+		{
+			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
+			NativeView?.RemoveAllViews();
+			base.DisconnectHandler(nativeView);
+		}
 	}
 }

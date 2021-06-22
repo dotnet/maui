@@ -6,6 +6,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
@@ -121,8 +122,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			VisualElement IVisualElementRenderer.Element => Content?.BindingContext as VisualElement;
 
 			VisualElementTracker IVisualElementRenderer.Tracker => null;
-
-			ViewGroup IVisualElementRenderer.ViewGroup => this;
 
 			AView IVisualElementRenderer.View => this;
 

@@ -8,9 +8,7 @@ namespace Microsoft.Maui.Hosting
 		{
 			var builder = new AppHostBuilder();
 
-			builder.UseMauiServiceProviderFactory(false);
-
-			builder.UseMauiHandlers();
+			builder.UseMicrosoftExtensionsServiceProviderFactory();
 			builder.ConfigureFonts();
 			builder.ConfigureImageSources();
 

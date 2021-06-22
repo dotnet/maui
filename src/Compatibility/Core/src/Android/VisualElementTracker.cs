@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;

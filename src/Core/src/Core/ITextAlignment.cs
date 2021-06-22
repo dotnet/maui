@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 		TextAlignment HorizontalTextAlignment { get; }
 
 		/// <summary>
-		/// Gets the vertical text alignment. 
+		/// Gets the vertical text alignment.
 		/// </summary>
 		TextAlignment VerticalTextAlignment { get; }
 	}

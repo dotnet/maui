@@ -1,3 +1,8 @@
+<!--
+  NOTE: this file is only used by projects in the dotnet/maui repo directly.
+  AutoImport.props should be used by the .NET 6 workload when $(UseMaui) is true.
+-->
+
 <!-- "Single Project" support - all <ItemGroup/>'s must check if $(EnableDefaultItems) and $(SingleProject) are true -->
 <Project>
 
@@ -17,7 +22,13 @@
 
   <!-- iOS -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' ">
-    <None Include="$(iOSProjectFolder)Info.plist" LogicalName="Info.plist" />
+    <None
+        Include="$(iOSProjectFolder)Info.plist"
+        Condition="Exists('$(iOSProjectFolder)Info.plist')"
+        LogicalName="Info.plist" />
+    <CodesignEntitlements
+        Include="$(iOSProjectFolder)Entitlements.plist"
+        Condition="Exists('$(iOSProjectFolder)Entitlements.plist')" />
     <ImageAsset
         Include="$(iOSProjectFolder)**/*.xcassets/**/*.png;$(iOSProjectFolder)**/*.xcassets/*/*.jpg;$(iOSProjectFolder)**/*.xcassets/**/*.pdf;$(iOSProjectFolder)**/*.xcassets/**/*.json"
         Exclude="$(_SingleProjectiOSExcludes)"
@@ -41,7 +52,13 @@
 
   <!-- MacCatalyst -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' ">
-    <None Include="$(MacCatalystProjectFolder)Info.plist" LogicalName="Info.plist" />
+    <None
+        Include="$(MacCatalystProjectFolder)Info.plist"
+        Condition="Exists('$(MacCatalystProjectFolder)Info.plist')"
+        LogicalName="Info.plist" />
+    <CodesignEntitlements
+        Include="$(MacCatalystProjectFolder)Entitlements.plist"
+        Condition="Exists('$(MacCatalystProjectFolder)Entitlements.plist')" />
     <ImageAsset
         Include="$(MacCatalystProjectFolder)**/*.xcassets/**/*.png;$(MacCatalystProjectFolder)**/*.xcassets/*/*.jpg;$(MacCatalystProjectFolder)**/*.xcassets/**/*.pdf;$(MacCatalystProjectFolder)**/*.xcassets/**/*.json"
         Exclude="$(_SingleProjectMacCatalystExcludes)"
@@ -61,6 +78,34 @@
         Link="%(RecursiveDir)%(FileName)%(Extension)"
         IsDefaultItem="true"
     />
+  </ItemGroup>
+
+  <!-- Windows -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' ">
+    <Manifest
+        Include="$(ApplicationManifest)"
+        Condition="Exists('$(ApplicationManifest)')" />
+    <AppxManifest
+        Include="$(PackageManifest)"
+        Condition="Exists('$(PackageManifest)')" />
+    <ApplicationDefinition
+        Condition="Exists('$(WindowsProjectFolder)App.xaml')"
+        Include="$(WindowsProjectFolder)App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </ApplicationDefinition>
+    <ApplicationDefinition
+        Condition="Exists('$(WindowsProjectFolder)\Application.xaml')"
+        Include="$(WindowsProjectFolder)Application.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </ApplicationDefinition>
+    <Page
+        Include="$(WindowsProjectFolder)**/*.xaml"
+        Exclude="$(_SingleProjectWindowsExcludes);@(ApplicationDefinition)">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
   </ItemGroup>
 
 </Project>

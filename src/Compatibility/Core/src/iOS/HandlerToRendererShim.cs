@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -8,18 +9,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public class HandlerToRendererShim : IVisualElementRenderer
 	{
-		public HandlerToRendererShim(IViewHandler vh)
+		public HandlerToRendererShim(INativeViewHandler vh)
 		{
 			ViewHandler = vh;
 		}
 
-		IViewHandler ViewHandler { get; }
+		INativeViewHandler ViewHandler { get; }
 
 		public VisualElement Element { get; private set; }
 
-		public UIView NativeView => (UIView)ViewHandler.NativeView;
+		public UIView NativeView => ViewHandler.ContainerView ?? ViewHandler.NativeView;
 
-		public UIViewController ViewController => null;
+		public UIViewController ViewController => ViewHandler.ViewController;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -46,8 +47,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			Element = element;
-			ViewHandler.SetVirtualView((IView)element);
 			((IView)element).Handler = ViewHandler;
+
+			if (ViewHandler.VirtualView != element)
+				ViewHandler.SetVirtualView((IView)element);
 
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
 		}

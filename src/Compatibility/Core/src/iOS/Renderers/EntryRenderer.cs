@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
@@ -264,6 +265,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
+		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
 			Control.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();

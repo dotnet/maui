@@ -22,7 +22,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		static Task<string> s_currentPrompt;
 
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer",
-			typeof(IVisualElementRenderer), typeof(Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer));
+			typeof(IVisualElementRenderer), typeof(Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer),
+			propertyChanged: (bindable, oldvalue, newvalue) =>
+			{
+				if (bindable is IView view)
+				{
+					if (view.Handler == null && newvalue is IVisualElementRenderer ver)
+						view.Handler = new RendererToHandlerShim(ver);
+					else if (newvalue == null && view.Handler != null)
+						view.Handler = null;
+				}
+			});
 
 		public static IVisualElementRenderer GetRenderer(VisualElement element)
 		{
@@ -266,6 +276,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				IVisualElementRenderer elementRenderer = GetRenderer(element);
 				if (elementRenderer != null)
 					return elementRenderer.GetDesiredSize(widthConstraint, heightConstraint);
+				
+				if (element is IView iView)
+					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
 			}
 
 			return new SizeRequest();
