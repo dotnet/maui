@@ -9,14 +9,31 @@ Task("dotnet")
     .Description("Provisions .NET 6 into bin/dotnet based on eng/Versions.props")
     .Does(() =>
     {
-        var binlog = $"{logDirectory}/dotnet-{configuration}.binlog";
-        var settings = new DotNetCoreBuildSettings
+        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger(binlog)
+                .EnableBinaryLogger($"{logDirectory}/dotnet-{configuration}.binlog")
                 .SetConfiguration(configuration),
-        };
-        DotNetCoreBuild("./src/DotNet/DotNet.csproj", settings);
+        });
+    });
+
+Task("dotnet-local-workload")
+    .Does(() =>
+    {
+        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+        {
+            MSBuildSettings = new DotNetCoreMSBuildSettings()
+                .EnableBinaryLogger($"{logDirectory}/dotnet-{configuration}.binlog")
+                .SetConfiguration(configuration)
+                .WithProperty("InstallWorkloadPacks", "false"),
+        });
+        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+        {
+            MSBuildSettings = new DotNetCoreMSBuildSettings()
+                .EnableBinaryLogger($"{logDirectory}/dotnet-install-{configuration}.binlog")
+                .SetConfiguration(configuration)
+                .WithTarget("Install"),
+        });
     });
 
 Task("dotnet-buildtasks")
@@ -42,6 +59,13 @@ Task("dotnet-build")
             RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
             RunMSBuildWithLocalDotNet("./Microsoft.Maui-net6.sln");
         }
+    });
+
+Task("dotnet-samples")
+    .Does(() =>
+    {
+        RunMSBuildWithLocalDotNet("./Microsoft.Maui.Samples-net6.slnf", settings => ((MSBuildSettings)settings)
+            .WithProperty("UseWorkload", "true"));
     });
 
 Task("dotnet-test")

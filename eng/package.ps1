@@ -10,7 +10,6 @@ $artifacts = Join-Path $PSScriptRoot ../artifacts
 $logsDirectory = Join-Path $artifacts logs
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-net6.slnf
 $blazorWebViewSln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages.Desktop-winui.slnf
-$slnTasks = Join-Path $PSScriptRoot ../Microsoft.Maui.BuildTasks-net6.slnf
 
 # Bootstrap ./bin/dotnet/
 $csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
@@ -69,15 +68,6 @@ if ($IsWindows)
 
         # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
         $env:PATH=($dotnet + [IO.Path]::PathSeparator + $env:PATH)
-
-        # Have to build the solution tasks
-        & $msbuild $slnTasks `
-            /p:configuration=$configuration `
-            /p:SymbolPackageFormat=snupkg `
-            /restore `
-            /t:build `
-            /p:Packing=true `
-            /bl:"$logsDirectory/maui-build-tasks-$configuration.binlog"
 
         # Have to build the solution first so the xbf files are there for pack
         & $msbuild $sln `

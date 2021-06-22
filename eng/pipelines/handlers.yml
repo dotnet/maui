@@ -182,74 +182,40 @@ stages:
               inputs:
                 ArtifactName: ${{ BuildPlatform.artifact }}
 
-  # - stage: build_net6
-  #   displayName: .NET 6 Samples
-  #   dependsOn: pack_net6
-  #   jobs:
-  #     - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
-  #       - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-  #         - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
-  #           workspace:
-  #             clean: all
-  #           displayName: .NET 6 Samples (${{ BuildPlatform.name }} | ${{ BuildConfiguration }})
-  #           timeoutInMinutes: 120
-  #           condition: or(
-  #             ${{ parameters.BuildEverything }},
-  #             ne(variables['Build.Reason'], 'PullRequest'),
-  #             eq('${{ BuildConfiguration }}', 'Release'))
-  #           pool:
-  #             name: ${{ BuildPlatform.poolName }}
-  #             vmImage: ${{ BuildPlatform.vmImage }}
-  #           steps:
-  #             - ${{ if eq(BuildPlatform.name, 'macos') }}:
-  #               - task: xamops.azdevex.provisionator-task.provisionator@1
-  #                 displayName: 'Provision Xcode'
-  #                 condition: ne(variables['REQUIRED_XCODE'], '')
-  #                 inputs:
-  #                   provisioning_script: $(provisionator.xcode)
-
-  #               - task: xamops.azdevex.provisionator-task.provisionator@1
-  #                 displayName: 'Provisionator'
-  #                 condition: eq(variables['provisioning'], 'true')
-  #                 inputs:
-  #                   provisioning_script: $(provisionator.path)
-  #                   provisioning_extra_args: $(provisionator.extraArguments)
-
-  #               - script: |
-  #                   echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
-  #                   echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
-  #                 displayName: 'Setup SDK Paths'
-  #                 condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
-
-  #               - bash: |
-  #                   set -x
-  #                   mkdir -p ~/Library/Preferences/Xamarin
-  #                   rm -f ~/Library/Preferences/Xamarin/Settings.plist
-  #                   /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
-  #                   cat ~/Library/Preferences/Xamarin/Settings.plist || true
-  #                 displayName: configure vsmac xcode
-  #               - script: echo '##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)'
-  #                 displayName: set JI_JAVA_HOME
-
-  #             - task: DownloadPipelineArtifact@2
-  #               displayName: download nuget
-  #               inputs:
-  #                 artifact: nuget
-  #                 patterns: '**/*.nupkg'
-  #                 path: $(System.DefaultWorkingDirectory)/artifacts
-
-  #             - pwsh: |
-  #                 & dotnet build src/DotNet/DotNet.csproj -p:InstallWorkloadPacks=false -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
-  #                 $env:PATH = (Join-Path '$(System.DefaultWorkingDirectory)' 'bin/dotnet') + [IO.Path]::PathSeparator + $env:PATH
-  #                 & $(DotNet.Path) build src/DotNet/DotNet.csproj -t:Install -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet-install.binlog
-  #                 & $(DotNet.Path) build Microsoft.Maui.Samples-net6.slnf -c $(BuildConfiguration) -p:UseWorkload=true -bl:$(LogDirectory)/$(BuildConfiguration)-samples.binlog
-  #               displayName: build samples
-  #               errorActionPreference: stop
-  #             - task: PublishBuildArtifacts@1
-  #               condition: always()
-  #               displayName: publish artifacts
-  #               inputs:
-  #                 ArtifactName: ${{ BuildPlatform.artifact }}
+  - stage: samples_net6
+    displayName: Build .NET 6 Samples
+    dependsOn: pack_net6
+    jobs:
+      - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
+        - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+            workspace:
+              clean: all
+            displayName: .NET 6 Samples (${{ BuildPlatform.name }} | ${{ BuildConfiguration }})
+            timeoutInMinutes: 120
+            condition: or(
+              ${{ parameters.BuildEverything }},
+              ne(variables['Build.Reason'], 'PullRequest'),
+              eq('${{ BuildConfiguration }}', 'Release'))
+            pool:
+              name: ${{ BuildPlatform.poolName }}
+              vmImage: ${{ BuildPlatform.vmImage }}
+            steps:
+              - task: DownloadPipelineArtifact@2
+                displayName: 'Download Packages'
+                inputs:
+                  artifact: nuget
+                  patterns: '**/*.nupkg'
+                  path: $(System.DefaultWorkingDirectory)/artifacts
+              - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="$(BuildConfiguration)"
+                displayName: 'Install .NET (Local Workloads)'
+              - pwsh: ./build.ps1 --target=dotnet-samples --configuration="$(BuildConfiguration)"
+                displayName: 'Build .NET 6 Samples'
+              - task: PublishBuildArtifacts@1
+                condition: always()
+                displayName: publish artifacts
+                inputs:
+                  ArtifactName: ${{ BuildPlatform.artifact }}
 
   # - template: common/device-tests.yml
   #   parameters:
@@ -271,70 +237,7 @@ stages:
   #       #   ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests-net6.csproj
   #       #   net6: true
 
-
-  # - stage: windows
-  #   displayName: Build Windows
-  #   jobs:
-  #     - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-  #       - job: win_hosted_${{ BuildConfiguration }}
-  #         workspace:
-  #           clean: all
-  #         displayName: Build Windows Phase (${{ BuildConfiguration }})
-  #         condition: or(
-  #           ${{ parameters.BuildEverything }},
-  #           ne(variables['Build.Reason'], 'PullRequest'),
-  #           eq('${{ BuildConfiguration }}', 'Release'))
-  #         timeoutInMinutes: 60
-  #         pool:
-  #           name: $(vs2019VmPool)
-  #           vmImage: $(vs2019VmImage)
-  #           demands: [ msbuild ]
-  #         steps:
-  #           - template: common/build-windows.yml
-
-  # - stage: windows_cake_validation
-  #   displayName: Windows Cake Validation
-  #   dependsOn: []
-  #   jobs:
-  #     - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-  #       - job: win_hosted_${{ BuildConfiguration }}
-  #         workspace:
-  #           clean: all
-  #         displayName: Build Windows Phase (${{ BuildConfiguration }})
-  #         condition: or(
-  #           ${{ parameters.BuildEverything }},
-  #           ne(variables['Build.Reason'], 'PullRequest'),
-  #           eq('${{ BuildConfiguration }}', 'Release'))
-  #         timeoutInMinutes: 60
-  #         pool:
-  #           name: $(vs2019VmPool)
-  #           vmImage: $(vs2019VmImage)
-  #           demands: [ msbuild ]
-  #         steps:
-  #           - task: xamops.azdevex.provisionator-task.provisionator@1
-  #             displayName: 'Provision VSWindows'
-  #             inputs:
-  #               provisioning_script: $(provisionator.vs2019)
-  #           - script: dotnet tool restore
-  #             displayName: install dotnet tools
-  #           - powershell: |
-  #                 & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildConfiguration }}
-  #             displayName: 'Build WinUI SLN'
-  #           - task: CopyFiles@2
-  #             displayName: 'Copy Bin Log Files'
-  #             condition: always()
-  #             inputs:
-  #               Contents: |
-  #                 **/*.binlog
-  #               TargetFolder: $(build.artifactstagingdirectory)
-  #               flattenFolders: true
-  #           - task: PublishBuildArtifacts@1
-  #             condition: always()
-  #             displayName: publish artifacts
-  #             inputs:
-  #               ArtifactName: win_build_cake
-
-  # - stage: build_osx
+  # - stage: build_ios
   #   displayName: iOS
   #   dependsOn: []
   #   jobs:
