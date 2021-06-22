@@ -89,10 +89,6 @@ namespace Maui.Controls.Sample
 #endif
 				appBuilder.UseMicrosoftExtensionsServiceProviderFactory();
 			}
-			else
-			{
-				appBuilder.UseMauiServiceProviderFactory(constructorInjection: true);
-			}
 
 			appBuilder
 				.ConfigureServices(services =>
@@ -117,7 +113,7 @@ namespace Maui.Controls.Sample
 						services.AddBlazorWebView();
 #endif
 					services.AddTransient(
-						serviceType: _pageType == PageType.Blazor ? typeof(Page) : typeof(IPage),
+						serviceType: typeof(Page),
 						implementationType: _pageType switch
 						{
 							PageType.Shell => typeof(AppShell),
