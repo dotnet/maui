@@ -36,6 +36,19 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="_AddWindowsPriFiles"
+      AfterTargets="_GenerateFrameworkListFile"
+      Condition=" '$(MauiPlatformName)' == 'win' and $(MSBuildProjectName.Contains('.Ref')) ">
+    <ItemGroup>
+      <!-- Look for WinUI .pri files a directory above ref/*.dll files -->
+      <Content
+          Include="@(_AssemblyFiles->'%(RootDir)%(Directory)../%(FileName).pri')"
+          TargetPath=""
+          Condition="Exists('%(RootDir)%(Directory)../%(FileName).pri')"
+      />
+    </ItemGroup>
+  </Target>
+
   <!--
     HACK: temporarily put runtime packs in 'library-packs', until they can be resolved from 'packs'
     See: https://github.com/dotnet/sdk/issues/14044
