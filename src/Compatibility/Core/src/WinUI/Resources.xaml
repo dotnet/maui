@@ -47,7 +47,7 @@
 		<Setter Property="FontWeight" Value="Bold" />
 	</Style>
 
-	<Style x:Key="RootContainerStyle" TargetType="Canvas">
+	<Style x:Key="MauiRootContainerStyle" TargetType="Panel">
 		<Setter Property="Background" Value="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
 	</Style>
 

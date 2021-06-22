@@ -100,6 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else if (handler is INativeViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
+					SetRenderer(element, renderer);
 				}
 			}
 
