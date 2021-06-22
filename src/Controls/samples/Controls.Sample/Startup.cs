@@ -42,7 +42,7 @@ namespace Maui.Controls.Sample
 			bool useFullDIAndBlazor = UseFullDI || _pageType == PageType.Blazor;
 
 			if (UseXamlApp)
-				appBuilder.UseMauiApp<XamlApp>();
+				appBuilder.UseMauiApp<XamlApp, XamlPage>();
 			else
 				appBuilder.UseMauiApp<MyApp>();
 
@@ -131,7 +131,7 @@ namespace Maui.Controls.Sample
 							_ => throw new Exception(),
 						});
 
-					services.AddTransient<IWindow, Window>();
+					//services.AddTransient<IWindow, Window>();
 				})
 				.ConfigureFonts(fonts =>
 				{

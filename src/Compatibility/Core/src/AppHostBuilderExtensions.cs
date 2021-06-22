@@ -66,37 +66,38 @@ namespace Microsoft.Maui.Controls.Hosting
 				});
 
 				collection.AddSingleton<IWindowFactory, ControlsWindowFactory>();
+				collection.AddScoped<IWindow, Window>();
 			});
 
 			builder.SetupDefaults();
 			return builder;
 		}
 
-		//public static IAppHostBuilder UseMauiApp<TApp, TPage>(this IAppHostBuilder builder)
-		//	where TApp : class, IApplication
-		//	where TPage : class, IPage
-		//{
-		//	builder.ConfigureServices((context, collection) =>
-		//	{
-		//		collection.AddSingleton<IApplication, TApp>();
-		//		collection.AddScoped<IWindow>(sp =>
-		//		{
-		//			var application = sp.GetRequiredService<IApplication>();
-		//			var args = sp.GetRequiredService<WindowCreatingArgs>();
-		//			var window = application.CreateWindow(args.ActivationState!);
-		//			if (window is Window win)
-		//			{
-		//				win.Page = sp.GetRequiredService<TPage>() as Page;
-		//			}
-		//			return window;
-		//		});
+		public static IAppHostBuilder UseMauiApp<TApp, TPage>(this IAppHostBuilder builder)
+			where TApp : class, IApplication
+			where TPage : class, IPage
+		{
+			builder.ConfigureServices((context, collection) =>
+			{
+				collection.AddSingleton<IApplication, TApp>();
+				collection.AddScoped<IWindow>(sp =>
+				{
+					var windowFactory = sp.GetRequiredService<IWindowFactory>();
+					var application = sp.GetRequiredService<IApplication>();
+					var args = sp.GetRequiredService<WindowCreatingArgs>();
+					var window = windowFactory.GetOrCreateWindow(args);
+					window.View = sp.GetRequiredService<TPage>();
+					return window;
+				});
 
-		//		collection.AddSingleton<IWindowFactory, ControlsWindowFactory>();
-		//	});
+				collection.AddSingleton<IWindowFactory, ControlsWindowFactory>();
+				collection.AddScoped<IWindow, Window>();
+				collection.AddTransient<TPage>();
+			});
 
-		//	builder.SetupDefaults();
-		//	return builder;
-		//}
+			builder.SetupDefaults();
+			return builder;
+		}
 
 		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
 			where TApp : class, IApplication
