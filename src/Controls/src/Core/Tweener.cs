@@ -25,30 +25,34 @@
 // THE SOFTWARE.
 
 using System;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
 	internal class Tweener
 	{
+		IAnimationManager animationManager;
 		long _lastMilliseconds;
 
 		int _timer;
 		long _frames;
 
-		public Tweener(uint length)
+		public Tweener(uint length, IAnimationManager animationManager)
 		{
 			Value = 0.0f;
 			Length = length;
+			this.animationManager = animationManager;
 			Rate = 1;
 			Loop = false;
 		}
 
-		public Tweener(uint length, uint rate)
+		public Tweener(uint length, uint rate, IAnimationManager animationManager)
 		{
 			Value = 0.0f;
 			Length = length;
 			Rate = rate;
+			this.animationManager = animationManager;
 			Loop = false;
 		}
 
@@ -68,7 +72,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (_timer != 0)
 			{
-				Ticker.Default.Remove(_timer);
+				animationManager.Remove(_timer);
 				_timer = 0;
 			}
 		}
@@ -80,13 +84,13 @@ namespace Microsoft.Maui.Controls
 			_lastMilliseconds = 0;
 			_frames = 0;
 
-			if (!Ticker.Default.SystemEnabled)
+			if (!animationManager.Ticker.SystemEnabled)
 			{
 				FinishImmediately();
 				return;
 			}
 
-			_timer = Ticker.Default.Insert(step =>
+			_timer = animationManager.Insert(step =>
 			{
 				if (step == long.MaxValue)
 				{
@@ -152,7 +156,7 @@ namespace Microsoft.Maui.Controls
 			{
 				try
 				{
-					Ticker.Default.Remove(_timer);
+					animationManager.Remove(_timer);
 				}
 				catch (InvalidOperationException)
 				{
