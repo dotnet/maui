@@ -19,9 +19,7 @@ Item item;
 if (desiredXcode == "Latest")
 {
     // Fix up the case where the beta did not make it to the machine
-    var latest = GetAvailableXcodes().First();
-    Console.WriteLine("" + latest.ToAttributeString ());
-    var latestVersion = latest.Version;
+    var latestVersion = GetAvailableXcodes().First().Version;
     Console.WriteLine($"Found the latest version: {latestVersion}");
     var newVersion = TryMapBetaToStable(latestVersion);
     if (newVersion != latestVersion)
@@ -79,11 +77,11 @@ void SafeSymlink(string source, string destination)
 
 string TryMapBetaToStable(string betaVersion)
 {
-    var index = item.Version.IndexOf("-beta");
+    var index = betaVersion.IndexOf("-beta");
     if (index == -1)
         return betaVersion;
 
-    var stableVersion = item.Version.Substring(0, index);
+    var stableVersion = betaVersion.Substring(0, index);
     if (stableVersion.EndsWith(".0"))
     {
         stableVersion = stableVersion.Substring(0, stableVersion.Length - 2);
