@@ -6,6 +6,7 @@
     <EnableDefaultEmbeddedResourceItems Condition=" '$(EnableDefaultEmbeddedResourceItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultEmbeddedResourceItems>
   </PropertyGroup>
   <Import Project="../targets/Microsoft.Maui.Controls.targets" />
+  <Import Project="WinUI.targets" Condition=" '$(TargetPlatformIdentifier)' == 'windows' " />
   <ItemGroup Condition=" '$(DisableMauiAnalyzers)' != 'true' ">
     <Analyzer Include="$(MSBuildThisFileDirectory)../targets/Microsoft.Maui.Controls.dll" />
     <Analyzer Include="$(MSBuildThisFileDirectory)../targets/Microsoft.Maui.Controls.Xaml.dll" />
