@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 
@@ -145,12 +146,63 @@ namespace Microsoft.Maui.Controls.Shapes
 				brush.Parent = this;
 		}
 
-		PathF IShape.PathForBounds(Graphics.Rectangle bounds)
+		PathF IShape.PathForBounds(Graphics.Rectangle viewBounds)
 		{
-			// TODO: Apply the necessary transformations (scale, translate, etc) after add in Microsost.Maui.Graphics
-			// the possibility of get the PathF Bounds.
+			var path = GetPath();
 
-			return GetPath();
+#if !NETSTANDARD
+			var pathBounds = path.GetBoundsByFlattening();
+
+			AffineTransform transform = null;
+
+			if (Aspect != Stretch.None)
+			{
+				viewBounds.X += StrokeThickness / 2;
+				viewBounds.Y += StrokeThickness / 2;
+				viewBounds.Width -= StrokeThickness;
+				viewBounds.Height -= StrokeThickness;
+
+				float factorX = (float)viewBounds.Width / pathBounds.Width;
+				float factorY = (float)viewBounds.Height / pathBounds.Height;
+
+				if (Aspect == Stretch.Uniform)
+				{
+					var factor = (float)Math.Min(factorX, factorY);
+
+					transform = AffineTransform.GetScaleInstance(factor, factor);
+
+					var translateX = (float)(viewBounds.Left - factor * pathBounds.Left + (viewBounds.Width - factor * pathBounds.Width) / 2);
+					var translateY = (float)(viewBounds.Top - factor * pathBounds.Top + (viewBounds.Height - factor * pathBounds.Height) / 2);
+
+					transform.Translate(translateX, translateY);
+				}
+				else if (Aspect == Stretch.UniformToFill)
+				{
+					var factor = (float)Math.Max(factorX, factorY);
+
+					transform = AffineTransform.GetScaleInstance(factor, factor);
+
+					var translateX = (float)(viewBounds.Left - factor * pathBounds.Left);
+					var translateY = (float)(viewBounds.Top - factor * pathBounds.Top);
+					
+					transform.Translate(translateX, translateY);
+				}
+				else if (Aspect == Stretch.Fill)
+				{
+					transform = AffineTransform.GetScaleInstance(factorX, factorY);
+
+					var translateX = (float)(viewBounds.Left - factorX * pathBounds.Left);
+					var translateY = (float)(viewBounds.Top - factorY * pathBounds.Top);
+					
+					transform.Translate(translateX, translateY);
+				}
+			}
+
+			if (transform != null && !transform.IsIdentity)
+				path.Transform(transform);
+#endif
+
+			return path;
 		}
 	}
 }
