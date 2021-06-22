@@ -167,14 +167,17 @@ namespace Microsoft.Maui.Controls.Shapes
 
 				if (Aspect == Stretch.Uniform)
 				{
-					var factor = (float)Math.Min(factorX, factorY);
+					var factor = Math.Min(factorX, factorY);
 
-					transform = AffineTransform.GetScaleInstance(factor, factor);
+					var width = pathBounds.Width * factor;
+					var height = pathBounds.Height * factor;
 
-					var translateX = (float)(viewBounds.Left - factor * pathBounds.Left + (viewBounds.Width - factor * pathBounds.Width) / 2);
-					var translateY = (float)(viewBounds.Top - factor * pathBounds.Top + (viewBounds.Height - factor * pathBounds.Height) / 2);
+					var translateX = (float)((viewBounds.Width - width) / 2 + viewBounds.X);
+					var translateY = (float)((viewBounds.Height - height) / 2 + viewBounds.Y);
 
+					transform = AffineTransform.GetTranslateInstance(-pathBounds.X, -pathBounds.Y);
 					transform.Translate(translateX, translateY);
+					transform.Scale(factor, factor);
 				}
 				else if (Aspect == Stretch.UniformToFill)
 				{
@@ -184,7 +187,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 					var translateX = (float)(viewBounds.Left - factor * pathBounds.Left);
 					var translateY = (float)(viewBounds.Top - factor * pathBounds.Top);
-					
+
 					transform.Translate(translateX, translateY);
 				}
 				else if (Aspect == Stretch.Fill)
@@ -193,13 +196,13 @@ namespace Microsoft.Maui.Controls.Shapes
 
 					var translateX = (float)(viewBounds.Left - factorX * pathBounds.Left);
 					var translateY = (float)(viewBounds.Top - factorY * pathBounds.Top);
-					
+
 					transform.Translate(translateX, translateY);
 				}
-			}
 
-			if (transform != null && !transform.IsIdentity)
-				path.Transform(transform);
+				if (transform != null && !transform.IsIdentity)
+					path.Transform(transform);
+			}
 #endif
 
 			return path;
