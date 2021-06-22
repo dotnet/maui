@@ -31,8 +31,8 @@ steps:
     displayName: 'Build the MSBuild Tasks'
 
   - pwsh: |
-      $(DotNet.Path) tool restore
       $(DotNet.Path) tool update microsoft.dotnet.xharness.cli --version $(XHARNESS_VERSION)
+      $(DotNet.Path) tool list
     displayName: 'Install XHarness'
 
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
