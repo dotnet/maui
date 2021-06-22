@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapBarBackground(NavigationPageHandler handler, NavigationPage view)
 		{
-			var NavPage = handler.VirtualViewWithValidation();
+			var NavPage = handler.VirtualView;
 			var barBackgroundBrush = NavPage.BarBackground;
 
 			if (Brush.IsNullOrEmpty(barBackgroundBrush) &&
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapBarTextColor(NavigationPageHandler handler, NavigationPage view)
 		{
-			var NavPage = handler.VirtualViewWithValidation();
+			var NavPage = handler.VirtualView;
 
 			var navController = handler._controlsNavigationController;
 			var NavigationBar = navController.NavigationBar;

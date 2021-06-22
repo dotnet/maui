@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var nativeView = WrappedNativeView;
 
-			if (nativeView == null || VirtualView == null)
+			if (nativeView == null)
 			{
 				return new Size(widthConstraint, heightConstraint);
 			}
