@@ -22,11 +22,9 @@ namespace Maui.Controls.Sample
 
 		public IServiceProvider Services { get; }
 
-		public IWindow CreateWindow(IActivationState activationState)
+		public void AddWindow(IWindow window)
 		{
-			var window = Services.GetRequiredService<IWindow>();
 			_windows.Add(window);
-			return window;
 		}
 	}
 }

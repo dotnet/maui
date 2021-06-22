@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls
 				if (Windows.Count == 0)
 				{
 					OnPropertyChanging();
-					AddWindow(new Window(value));
+					(this as IApplication).AddWindow(new Window(value));
 					OnPropertyChanged();
 				}
 				else
