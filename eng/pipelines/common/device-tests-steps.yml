@@ -17,7 +17,7 @@ steps:
       inputs:
         provProfileSecureFile: 'Maui_iOS_Provisioning.mobileprovision'
 
-  - template: common/provision.yml
+  - template: provision.yml
     parameters:
       platform: macos
 
