@@ -20,7 +20,7 @@ if (desiredXcode == "Latest")
 {
     // Fix up the case where the beta did not make it to the machine
     var latest = GetAvailableXcodes().First();
-    Console.WriteLine("" + latest);
+    Console.WriteLine("" + latest.ToAttributeString ());
     var latestVersion = latest.Version;
     Console.WriteLine($"Found the latest version: {latestVersion}");
     var newVersion = TryMapBetaToStable(latestVersion);
