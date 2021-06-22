@@ -176,6 +176,7 @@ stages:
                 Contents: |
                   artifacts/logs/**
                 TargetFolder: $(build.artifactstagingdirectory)/logs
+                flattenFolders: true
             - task: PublishBuildArtifacts@1
               condition: always()
               displayName: publish artifacts
@@ -210,11 +211,7 @@ stages:
                   artifact: nuget
                   patterns: '**/*.nupkg'
                   path: $(System.DefaultWorkingDirectory)/artifacts
-              - pwsh: |
-                  # ./build.ps1 --target=dotnet-local-workloads --configuration="$(BuildConfiguration)"
-                  & dotnet build src/DotNet/DotNet.csproj -p:InstallWorkloadPacks=false -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
-                  $env:PATH = (Join-Path '$(System.DefaultWorkingDirectory)' 'bin/dotnet') + [IO.Path]::PathSeparator + $env:PATH
-                  & $(DotNet.Path) build src/DotNet/DotNet.csproj -t:Install -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet-install.binlog
+              - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="$(BuildConfiguration)"
                 displayName: 'Install .NET (Local Workloads)'
               - pwsh: ./build.ps1 --target=dotnet-samples --configuration="$(BuildConfiguration)"
                 displayName: 'Build .NET 6 Samples'
