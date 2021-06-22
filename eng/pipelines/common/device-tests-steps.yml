@@ -27,6 +27,9 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="$(BuildConfiguration)"
     displayName: 'Build the MSBuild Tasks'
 
+  - pwsh: $(DotNet.Path) tool update microsoft.dotnet.xharness.cli --version $(XHARNESS_VERSION)
+    displayName: 'Install XHarness'
+
   - pwsh: ./build.ps1 eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
 
