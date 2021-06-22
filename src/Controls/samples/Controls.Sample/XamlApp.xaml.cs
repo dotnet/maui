@@ -17,13 +17,10 @@ namespace Maui.Controls.Sample
 
 			Debug.WriteLine($"The .NET Purple color is {Resources["DotNetPurple"]}");
 			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
+
+			MainPage = Services.GetRequiredService<Page>();
 		}
 
 		public IServiceProvider Services { get; }
-
-		protected override IWindow CreateWindow(IActivationState activationState)
-		{
-			return Services.GetRequiredService<IWindow>();
-		}
 	}
 }
