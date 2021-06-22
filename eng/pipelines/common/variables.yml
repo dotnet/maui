@@ -7,8 +7,6 @@ variables:
   value: true
 - name: DOTNET_VERSION
   value: 5.0.201
-- name: XHARNESS_VERSION
-  value: 1.0.0-prerelease.21317.1
 - name: LocBranchPrefix
   value: 'loc-hb'
 - name: LocBranch
@@ -27,9 +25,11 @@ variables:
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 # Common Agent Pools in use
 - name: HostedWinVS2019
-  value: Hosted Windows 2019 with VS2019 
+  value: Hosted Windows 2019 with VS2019
 - name: LogDirectory
   value: $(Build.ArtifactStagingDirectory)/logs
+- name: TestResultsDirectory
+  value: $(Build.ArtifactStagingDirectory)/test-results
 - name: provisionator.xcode
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
 - name: provisionator.path

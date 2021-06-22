@@ -10,10 +10,10 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE
 string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 
 // optional
-var USE_DOTNET = Argument("dotnet", false);
+var USE_DOTNET = Argument("dotnet", true);
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net6.0-android" : ""));
-var BINLOG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? PROJECT + ".binlog");
+var BINLOG_DIR = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
 var TEST_APP = Argument("app", EnvironmentVariable("ANDROID_TEST_APP") ?? "");
 var TEST_APP_PACKAGE_NAME = Argument("package", EnvironmentVariable("ANDROID_TEST_APP_PACKAGE_NAME") ?? "");
 var TEST_APP_INSTRUMENTATION = Argument("instrumentation", EnvironmentVariable("ANDROID_TEST_APP_INSTRUMENTATION") ?? "");
@@ -135,6 +135,9 @@ Task("Build")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
 	.Does(() =>
 {
+	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android.binlog";
+
 	if (USE_DOTNET)
 	{
 		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
@@ -142,7 +145,7 @@ Task("Build")
 			Framework = TARGET_FRAMEWORK,
 			ArgumentCustomization = args => args
 				.Append("/p:EmbedAssembliesIntoApk=true")
-				.Append("/bl:" + BINLOG),
+				.Append("/bl:" + binlog),
 			ToolPath = DOTNET_PATH,
 		});
 	}
@@ -159,7 +162,7 @@ Task("Build")
 			c.Targets.Add("SignAndroidPackage");
 			c.BinaryLogger = new MSBuildBinaryLogSettings {
 				Enabled = true,
-				FileName = BINLOG,
+				FileName = binlog,
 			};
 		});
 	}

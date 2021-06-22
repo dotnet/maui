@@ -7,10 +7,10 @@ FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?
 string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? "ios-simulator-64_14.4"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
 
 // optional
-var USE_DOTNET = Argument("dotnet", false);
+var USE_DOTNET = Argument("dotnet", true);
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net6.0-ios" : ""));
-var BINLOG = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? PROJECT + ".binlog");
+var BINLOG_DIR = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
 var TEST_APP = Argument("app", EnvironmentVariable("IOS_TEST_APP") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("IOS_TEST_RESULTS") ?? "");
 
@@ -79,6 +79,9 @@ Task("Build")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
 	.Does(() =>
 {
+	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
+
 	if (USE_DOTNET)
 	{
 		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
@@ -86,7 +89,7 @@ Task("Build")
 			Framework = TARGET_FRAMEWORK,
 			ArgumentCustomization = args => args
 				.Append("/p:BuildIpa=true")
-				.Append("/bl:" + BINLOG),
+				.Append("/bl:" + binlog),
 			ToolPath = DOTNET_PATH,
 		});
 	}
@@ -104,7 +107,7 @@ Task("Build")
 			c.Targets.Add("Build");
 			c.BinaryLogger = new MSBuildBinaryLogSettings {
 				Enabled = true,
-				FileName = BINLOG,
+				FileName = binlog,
 			};
 		});
 	}

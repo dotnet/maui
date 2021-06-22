@@ -201,6 +201,9 @@ stages:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
             steps:
+              - template: common/provision.yml
+                parameters:
+                  platform: ${{ BuildPlatform.name }}
               - task: DownloadPipelineArtifact@2
                 displayName: 'Download Packages'
                 inputs:

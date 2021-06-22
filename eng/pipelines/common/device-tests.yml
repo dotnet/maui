@@ -10,7 +10,6 @@ parameters:
       desc: Human Description
       android: /optional/path/to/android.csproj
       ios: /optional/path/to/ios.csproj
-      classic: false
 
 stages:
 
@@ -36,7 +35,6 @@ stages:
                     platform: android
                     path: ${{ project.android }}
                     device: android-emulator-32_${{ api }}
-                    net6: ${{ ne(project.classic, 'true') }}
 
   - stage: ios_device_tests
     displayName: iOS Device Tests
@@ -63,4 +61,3 @@ stages:
                       device: ios-simulator-64
                     ${{ if ne(version, 'latest') }}:
                       device: ios-simulator-64_${{ version }}
-                    net6: ${{ ne(project.classic, 'true') }}
