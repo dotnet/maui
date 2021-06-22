@@ -8,10 +8,6 @@ Param(
     [string[]]$ScriptArgs
 )
 
-echo $env:PATH
-
-& dotnet --info
-
 # Restore Cake tool
 & dotnet tool restore
 

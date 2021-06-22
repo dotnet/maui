@@ -24,7 +24,7 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet --configuration="$(BuildConfiguration)"
     displayName: 'Install .NET'
 
-  - pwsh: echo "##vso[task.prependpath]$(DotNet.Path)"
+  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: 'Add .NET to PATH'
 
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="$(BuildConfiguration)"
