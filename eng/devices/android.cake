@@ -140,6 +140,12 @@ Task("Build")
 
 	if (USE_DOTNET)
 	{
+		if (!string.IsNullOrEmpty(DOTNET_PATH)) {
+			var dotnet = (FilePath)DOTNET_PATH;
+			var newPath = dotnet.GetDirectory().FullPath + System.IO.Path.PathSeparator + EnvironmentVariable("PATH");
+			Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.Process);
+		}
+
 		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
 			Configuration = CONFIGURATION,
 			Framework = TARGET_FRAMEWORK,
