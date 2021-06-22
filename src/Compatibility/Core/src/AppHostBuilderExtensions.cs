@@ -57,14 +57,6 @@ namespace Microsoft.Maui.Controls.Hosting
 			builder.ConfigureServices((context, collection) =>
 			{
 				collection.AddSingleton<IApplication, TApp>();
-				collection.AddScoped<IWindow>(sp =>
-				{
-					var windowFactory = sp.GetRequiredService<IWindowFactory>();
-					var application = sp.GetRequiredService<IApplication>();
-					var args = sp.GetRequiredService<WindowCreatingArgs>();
-					return windowFactory.GetOrCreateWindow(args);
-				});
-
 				collection.AddSingleton<IWindowFactory, ControlsWindowFactory>();
 				collection.AddScoped<IWindow, Window>();
 			});
@@ -80,18 +72,8 @@ namespace Microsoft.Maui.Controls.Hosting
 			builder.ConfigureServices((context, collection) =>
 			{
 				collection.AddSingleton<IApplication, TApp>();
-				collection.AddScoped<IWindow>(sp =>
-				{
-					var windowFactory = sp.GetRequiredService<IWindowFactory>();
-					var application = sp.GetRequiredService<IApplication>();
-					var args = sp.GetRequiredService<WindowCreatingArgs>();
-					var window = windowFactory.GetOrCreateWindow(args);
-					window.View = sp.GetRequiredService<TPage>();
-					return window;
-				});
-
-				collection.AddSingleton<IWindowFactory, ControlsWindowFactory>();
 				collection.AddScoped<IWindow, Window>();
+				collection.AddSingleton<IWindowFactory, ControlsWindowFactory>();
 				collection.AddTransient<TPage>();
 			});
 
