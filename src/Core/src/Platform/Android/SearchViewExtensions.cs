@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Android.Text;
 using Android.Widget;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
@@ -20,7 +19,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateFont(this SearchView searchView, ISearchBar searchBar, IFontManager fontManager, EditText? editText = null)
 		{
-			editText ??= searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+			editText ??= searchView.GetFirstChildOfType<EditText>();
 
 			if (editText == null)
 				return;
@@ -30,33 +29,27 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaxLength(this SearchView searchView, ISearchBar searchBar)
 		{
-			searchView.UpdateMaxLength(searchBar, null);
+			searchView.UpdateMaxLength(searchBar.MaxLength, null);
 		}
 
 		public static void UpdateMaxLength(this SearchView searchView, ISearchBar searchBar, EditText? editText)
 		{
-			editText ??= searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+			searchView.UpdateMaxLength(searchBar.MaxLength, editText);
+		}
 
-			var currentFilters = new List<IInputFilter>(editText?.GetFilters() ?? new IInputFilter[0]);
+		public static void UpdateMaxLength(this SearchView searchView, int maxLength, EditText? editText)
+		{
+			editText ??= searchView.GetFirstChildOfType<EditText>();
+			editText?.SetLengthFilter(maxLength);
 
-			for (var i = 0; i < currentFilters.Count; i++)
+			var query = searchView.Query;
+			var trimmedQuery = query.TrimToMaxLength(maxLength);
+
+			if (query != trimmedQuery)
 			{
-				if (currentFilters[i] is InputFilterLengthFilter)
-				{
-					currentFilters.RemoveAt(i);
-					break;
-				}
+				searchView.SetQuery(trimmedQuery, false);
 			}
-
-			currentFilters.Add(new InputFilterLengthFilter(searchBar.MaxLength));
-
-			editText?.SetFilters(currentFilters.ToArray());
-
-			var currentControlText = searchView.Query;
-
-			if (currentControlText.Length > searchBar.MaxLength)
-				searchView.SetQuery(currentControlText.Substring(0, searchBar.MaxLength), false);
-    }
+		}
     
 		public static void UpdateCancelButtonColor(this SearchView searchView, ISearchBar searchBar)
 		{

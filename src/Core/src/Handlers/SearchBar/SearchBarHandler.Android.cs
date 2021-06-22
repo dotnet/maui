@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var searchView = new SearchView(Context);
 
-			_editText = searchView.GetChildrenOfType<EditText>().First();
+			_editText = searchView.GetFirstChildOfType<EditText>();
 
 			return searchView;
 		}
