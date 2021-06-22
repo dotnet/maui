@@ -17,7 +17,7 @@ Task("dotnet")
         });
     });
 
-Task("dotnet-local-workload")
+Task("dotnet-local-workloads")
     .Does(() =>
     {
         DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings

@@ -111,7 +111,7 @@ stages:
           - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
             workspace:
               clean: all
-            displayName: Build for ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
+            displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
             timeoutInMinutes: 120
             condition: or(
               ${{ parameters.BuildEverything }},
@@ -149,7 +149,7 @@ stages:
         - job: pack_net6_${{ BuildPlatform.name }}
           workspace:
             clean: all
-          displayName: Pack .NET 6 (${{ BuildPlatform.name }})
+          displayName: ${{ BuildPlatform.name }}
           timeoutInMinutes: 120
           pool:
             name: ${{ BuildPlatform.poolName }}
@@ -191,7 +191,7 @@ stages:
           - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
             workspace:
               clean: all
-            displayName: .NET 6 Samples (${{ BuildPlatform.name }} | ${{ BuildConfiguration }})
+            displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
             timeoutInMinutes: 120
             condition: or(
               ${{ parameters.BuildEverything }},
@@ -217,25 +217,21 @@ stages:
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
-  # - template: common/device-tests.yml
-  #   parameters:
-  #     ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
-  #       androidApiLevels: [ 30, 29, 21 ]
-  #       iosVersions: [ 'latest' ]
-  #     projects:
-  #       - name: essentials
-  #         desc: Essentials
-  #         android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
-  #         ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
-  #       - name: core
-  #         desc: Core
-  #         android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
-  #         ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
-  #       # - name: core_net6
-  #       #   desc: Core .NET 6
-  #       #   android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests-net6.csproj
-  #       #   ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests-net6.csproj
-  #       #   net6: true
+  - template: common/device-tests.yml
+    parameters:
+      ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
+        androidApiLevels: [ 30, 29, 24 ]
+        # androidApiLevels: [ 30, 29, 24, 21 ] # TODO: Disable until .NET 6 supports API 21: https://github.com/dotnet/runtime/issues/54182
+        iosVersions: [ 'latest' ]
+      projects:
+        - name: essentials
+          desc: Essentials
+          android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+        - name: core
+          desc: Core
+          android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
 
   # - stage: build_ios
   #   displayName: iOS
