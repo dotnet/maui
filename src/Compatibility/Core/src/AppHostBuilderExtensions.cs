@@ -72,7 +72,10 @@ namespace Microsoft.Maui.Controls.Hosting
 			builder.ConfigureServices((context, collection) =>
 			{
 				collection.AddSingleton<IApplication, TApp>();
-				collection.AddScoped<IWindow, Window>();
+				collection.AddScoped<IWindow>(sp =>
+				{
+					return new Window((sp.GetRequiredService<TPage>() as Page)!);
+				});
 				collection.AddSingleton<IWindowFactory, ControlsWindowFactory>();
 				collection.AddTransient<TPage>();
 			});
