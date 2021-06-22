@@ -21,7 +21,7 @@ string CONFIGURATION = "Release";
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 
 Information("Project File: {0}", PROJECT);
-Information("Build Binary Log (binlog): {0}", BINLOG);
+Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
 

@@ -38,7 +38,7 @@ System.Environment.SetEnvironmentVariable("PATH",
 
 Information("Android SDK Root: {0}", ANDROID_SDK_ROOT);
 Information("Project File: {0}", PROJECT);
-Information("Build Binary Log (binlog): {0}", BINLOG);
+Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Configuration: {0}", CONFIGURATION);
 
 var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = ANDROID_SDK_ROOT };
