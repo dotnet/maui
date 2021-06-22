@@ -57,8 +57,14 @@ namespace Microsoft.Maui.Controls.Hosting
 			builder.ConfigureServices((context, collection) =>
 			{
 				collection.AddSingleton<IApplication, TApp>();
-				collection.AddSingleton<IWindowFactory, ControlsWindowFactory>();
-				collection.AddScoped<IWindow, Window>();
+				collection.AddSingleton<IWindowFactory>((_) => new ControlsWindowFactory());
+				collection.AddScoped<IWindow>(sp =>
+				{
+					if (sp.GetRequiredService<WindowCreatingArgs>().ActivationState == null)
+						throw new Exception("Window Currently doesn't support nested scopes.");
+
+					return new Window();
+				});
 			});
 
 			builder.SetupDefaults();
@@ -74,9 +80,12 @@ namespace Microsoft.Maui.Controls.Hosting
 				collection.AddSingleton<IApplication, TApp>();
 				collection.AddScoped<IWindow>(sp =>
 				{
+					if (sp.GetRequiredService<WindowCreatingArgs>().ActivationState == null)
+						throw new Exception("Window Currently doesn't support nested scopes.");
+
 					return new Window((sp.GetRequiredService<TPage>() as Page)!);
 				});
-				collection.AddSingleton<IWindowFactory, ControlsWindowFactory>();
+				collection.AddSingleton<IWindowFactory>((_) => new ControlsWindowFactory());
 				collection.AddTransient<TPage>();
 			});
 
