@@ -8,14 +8,14 @@ namespace Microsoft.Maui.Controls
 		List<IWindow> _windows = new List<IWindow>();
 		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
 
-		IWindow IApplication.CreateWindow(IActivationState activationState)
-		{
-			IWindow window = CreateWindow(activationState);
+		//IWindow IApplication.CreateWindow(IActivationState activationState)
+		//{
+		//	IWindow window = CreateWindow(activationState);
 
-			AddWindow(window);
+		//	AddWindow(window);
 
-			return window;
-		}
+		//	return window;
+		//}
 
 		void AddWindow(IWindow window)
 		{

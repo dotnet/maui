@@ -56,7 +56,13 @@ namespace Microsoft.Maui
 			mauiContext = new MauiContext(windowServices, this);
 
 			var state = new ActivationState(mauiContext, savedInstanceState);
-			_window = WindowFactory.GetOrCreateWindow(state, mauiApp, windowServices);
+			var args = windowServices.GetRequiredService<WindowCreatingArgs>();
+			var windowFactory = windowServices.GetRequiredService<IWindowFactory>();
+			args.ActivationState = state;
+			args.ServiceProvider = windowServices;
+			args.Application = mauiApp;
+
+			_window = windowFactory.GetOrCreateWindow(args);
 			
 			SetContentView(_window.View.ToContainerView(mauiContext));
 

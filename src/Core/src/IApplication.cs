@@ -5,6 +5,6 @@ namespace Microsoft.Maui
 	public interface IApplication
 	{
 		IReadOnlyList<IWindow> Windows { get; }
-		IWindow CreateWindow(IActivationState activationState);
+		//IWindow CreateWindow(IActivationState activationState);
 	}
 }

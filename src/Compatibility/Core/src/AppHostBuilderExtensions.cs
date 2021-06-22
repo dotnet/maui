@@ -38,35 +38,63 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Controls.Hosting
 {
+	public class ControlsWindowFactory : WindowFactory
+	{
+		public override IWindow GetOrCreateWindow(WindowCreatingArgs args)
+		{
+			var window = base.GetOrCreateWindow(args);
+			return window;
+		}
+	}
+
 	public static class AppHostBuilderExtensions
 	{
-		internal static Type? StartPageType;
 		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder)
 			where TApp : class, IApplication
 		{
 			builder.ConfigureServices((context, collection) =>
 			{
 				collection.AddSingleton<IApplication, TApp>();
+				collection.AddScoped<IWindow>(sp =>
+				{
+					var windowFactory = sp.GetRequiredService<IWindowFactory>();
+					var application = sp.GetRequiredService<IApplication>();
+					var args = sp.GetRequiredService<WindowCreatingArgs>();
+					return windowFactory.GetOrCreateWindow(args);
+				});
+
+				collection.AddSingleton<IWindowFactory, ControlsWindowFactory>();
 			});
 
 			builder.SetupDefaults();
 			return builder;
 		}
 
-		public static IAppHostBuilder UseMauiApp<TApp, TPage>(this IAppHostBuilder builder)
-			where TApp : class, IApplication
-			where TPage : class, IPage
-		{
-			StartPageType = typeof(TPage);
-			builder.ConfigureServices((context, collection) =>
-			{
-				collection.AddSingleton<IApplication, TApp>();
-				collection.AddTransient<TPage>();
-			});
+		//public static IAppHostBuilder UseMauiApp<TApp, TPage>(this IAppHostBuilder builder)
+		//	where TApp : class, IApplication
+		//	where TPage : class, IPage
+		//{
+		//	builder.ConfigureServices((context, collection) =>
+		//	{
+		//		collection.AddSingleton<IApplication, TApp>();
+		//		collection.AddScoped<IWindow>(sp =>
+		//		{
+		//			var application = sp.GetRequiredService<IApplication>();
+		//			var args = sp.GetRequiredService<WindowCreatingArgs>();
+		//			var window = application.CreateWindow(args.ActivationState!);
+		//			if (window is Window win)
+		//			{
+		//				win.Page = sp.GetRequiredService<TPage>() as Page;
+		//			}
+		//			return window;
+		//		});
 
-			builder.SetupDefaults();
-			return builder;
-		}
+		//		collection.AddSingleton<IWindowFactory, ControlsWindowFactory>();
+		//	});
+
+		//	builder.SetupDefaults();
+		//	return builder;
+		//}
 
 		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
 			where TApp : class, IApplication

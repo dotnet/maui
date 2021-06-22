@@ -15,14 +15,7 @@ namespace Microsoft.Maui.Hosting
 			builder.ConfigureImageSources();
 			builder.ConfigureServices(services =>
 			{
-				services.AddScoped<IWindow>(sp =>
-				{
-					var application = sp.GetRequiredService<IApplication>();
-					var args = sp.GetRequiredService<StartupActivationState>();
-					return application.CreateWindow(args.ActivationState!);
-
-				});
-				services.AddScoped<StartupActivationState>();
+				services.AddSingleton<IWindowFactory, WindowFactory>();
 			});
 
 			return builder;

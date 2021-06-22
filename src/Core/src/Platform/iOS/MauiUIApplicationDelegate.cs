@@ -36,7 +36,8 @@ namespace Microsoft.Maui
 			var mauiContext = new MauiContext(Services, uIWindow);
 
 			var activationState = new ActivationState(mauiContext);
-			var window = Application.CreateWindow(activationState);
+			
+			var window = Services.GetRequiredService<IWindowFactory>().GetOrCreateWindow(null!);
 
 			var page = window.View;
 
