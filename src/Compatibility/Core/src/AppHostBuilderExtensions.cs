@@ -35,6 +35,7 @@ using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platf
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.LifecycleEvents;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls.Hosting
 {
@@ -43,6 +44,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		public override IWindow GetOrCreateWindow(WindowCreatingArgs args)
 		{
 			var window = base.GetOrCreateWindow(args);
+
 			return window;
 		}
 	}

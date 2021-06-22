@@ -6,5 +6,6 @@ namespace Microsoft.Maui
 	{
 		IReadOnlyList<IWindow> Windows { get; }
 		//IWindow CreateWindow(IActivationState activationState);
+		void AddWindow(IWindow window);
 	}
 }

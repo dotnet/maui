@@ -40,6 +40,7 @@ namespace Microsoft.Maui
 			activationArgs.ActivationState = activationState;
 
 			var newWindow = services.GetRequiredService<IWindow>();
+			application.AddWindow(newWindow);
 			// clear out the args so we aren't holding any references to the bundle
 			activationArgs.ActivationState = null;
 			return newWindow;

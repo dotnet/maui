@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Hosting
 			builder.ConfigureServices(services =>
 			{
 				services.AddSingleton<IWindowFactory, WindowFactory>();
+				services.AddScoped<WindowCreatingArgs>();
 			});
 
 			return builder;

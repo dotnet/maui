@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 		//	return window;
 		//}
 
-		void AddWindow(IWindow window)
+		void IApplication.AddWindow(IWindow window)
 		{
 			_windows.Add(window);
 
