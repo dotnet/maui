@@ -27,7 +27,8 @@ Task("dotnet-local-workloads")
                 .SetConfiguration(configuration)
                 .WithProperty("InstallWorkloadPacks", "false"),
         });
-        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+
+        RunMSBuildWithLocalDotNet("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
                 .EnableBinaryLogger($"{logDirectory}/dotnet-install-{configuration}.binlog")
