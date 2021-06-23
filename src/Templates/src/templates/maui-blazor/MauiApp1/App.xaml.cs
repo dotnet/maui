@@ -11,9 +11,6 @@ namespace MauiApp1
 		{
 			InitializeComponent();
 
-			this.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>()
-				.SetImageDirectory("Assets");
-
 			MainPage = new MainPage();
 		}
 	}
