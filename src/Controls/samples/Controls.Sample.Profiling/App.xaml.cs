@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Profiling
 			InitializeComponent();
 		}
 
-		protected override IWindow CreateWindow(IActivationState activationState)
+		protected override Window CreateWindow(IActivationState activationState)
 		{
 			return new Window(new MainPage());
 		}
