@@ -18,8 +18,8 @@ namespace Microsoft.Maui
 		{
 			Services = services ?? throw new ArgumentNullException(nameof(services));
 			Handlers = Services.GetRequiredService<IMauiHandlersServiceProvider>();
-			AnimationManager = Services.GetRequiredService<IAnimationManager>() ?? new AnimationManager();
-			AnimationManager.Ticker = Services.GetRequiredService<ITicker>() ?? new NativeTicker(this);
+			AnimationManager = Services.GetService<IAnimationManager>() ?? new AnimationManager();
+			AnimationManager.Ticker = Services.GetService<ITicker>() ?? new NativeTicker(this);
 		}
 
 		public IServiceProvider Services { get; }

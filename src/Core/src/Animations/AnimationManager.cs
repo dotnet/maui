@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Animations
 		{
 			_ = ticker ?? throw new ArgumentNullException(nameof(ticker));
 
-			var oldTicker = Ticker;
+			var oldTicker = _ticker;
 			if (oldTicker == ticker)
 				return;
 
