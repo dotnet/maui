@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using EColor = ElmSharp.Color;
 using EProgressBar = ElmSharp.ProgressBar;
 using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ProgressBar;

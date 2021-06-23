@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 using ERect = ElmSharp.Rect;
 using EvasObject = ElmSharp.EvasObject;
 using GestureLayer = ElmSharp.GestureLayer;

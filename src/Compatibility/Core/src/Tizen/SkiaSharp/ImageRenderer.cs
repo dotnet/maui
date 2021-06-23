@@ -1,3 +1,4 @@
+using Microsoft.Maui.Controls.Platform;
 using ESize = ElmSharp.Size;
 using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Image;
 

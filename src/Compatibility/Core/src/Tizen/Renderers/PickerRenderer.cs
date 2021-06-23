@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch;
 using EEntry = ElmSharp.Entry;

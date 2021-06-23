@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Renderers;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

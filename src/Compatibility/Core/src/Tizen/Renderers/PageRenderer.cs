@@ -2,6 +2,7 @@ using System;
 using System.Collections.Specialized;
 using ElmSharp.Wearable;
 using SkiaSharp.Views.Tizen;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Watch;
 using EColor = ElmSharp.Color;
 

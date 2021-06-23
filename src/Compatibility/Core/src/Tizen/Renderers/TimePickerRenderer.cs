@@ -1,7 +1,8 @@
 using System;
 using System.Globalization;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using EEntry = ElmSharp.Entry;
 using NIEntry = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IEntry;
 using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application;

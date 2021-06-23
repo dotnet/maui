@@ -1,3 +1,4 @@
+using Microsoft.Maui.Controls.Platform;
 using EColor = ElmSharp.Color;
 using EProgressBar = ElmSharp.ProgressBar;
 

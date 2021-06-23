@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ElmSharp;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific;
 using EButton = ElmSharp.Button;
 using EToolbar = ElmSharp.Toolbar;

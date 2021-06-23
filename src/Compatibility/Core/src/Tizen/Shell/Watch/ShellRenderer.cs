@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Watch
 {

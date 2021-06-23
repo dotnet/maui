@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

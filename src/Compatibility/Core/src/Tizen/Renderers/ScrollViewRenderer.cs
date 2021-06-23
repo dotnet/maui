@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using EContainer = ElmSharp.Container;
 using ERect = ElmSharp.Rect;

@@ -1,5 +1,6 @@
 using SkiaSharp;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.SkiaSharp
 {

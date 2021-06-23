@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 using NIButton = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.IButton;
 using EButton = ElmSharp.Button;

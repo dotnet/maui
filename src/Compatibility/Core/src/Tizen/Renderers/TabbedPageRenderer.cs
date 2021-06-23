@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific;
 using EColor = ElmSharp.Color;
 using ERect = ElmSharp.Rect;

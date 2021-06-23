@@ -1,4 +1,5 @@
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using ESize = ElmSharp.Size;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

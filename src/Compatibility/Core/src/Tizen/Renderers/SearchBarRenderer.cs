@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Controls.Platform;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

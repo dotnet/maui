@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using EColor = ElmSharp.Color;
 using ESize = ElmSharp.Size;
 using ESlider = ElmSharp.Slider;

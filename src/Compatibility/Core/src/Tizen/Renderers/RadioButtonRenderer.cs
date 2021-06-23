@@ -1,5 +1,6 @@
 using System;
 using ElmSharp;
+using Microsoft.Maui.Controls.Platform;
 using ESize = ElmSharp.Size;
 using TSpan = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native.Span;
 

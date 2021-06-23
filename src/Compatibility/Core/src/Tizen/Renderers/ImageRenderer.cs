@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Platform;
 using EImage = ElmSharp.Image;
-
 using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Image;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen

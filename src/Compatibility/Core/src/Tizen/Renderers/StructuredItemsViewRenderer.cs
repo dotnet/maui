@@ -1,3 +1,4 @@
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
