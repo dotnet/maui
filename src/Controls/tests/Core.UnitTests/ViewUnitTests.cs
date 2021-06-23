@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRotateTo()
 		{
-			var view = new View { IsPlatformEnabled = true };
+			var view = new View { IsPlatformEnabled = true, Handler = new HandlerWithAnimationContext() };
 			view.FindMauiContextOnParent().AnimationManager.Ticker = new BlockingTicker();
 
 			await view.RotateTo(25);
@@ -185,8 +185,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRotateYTo()
 		{
-			var view = new View { IsPlatformEnabled = true };
-			 			view.FindMauiContextOnParent().AnimationManager.Ticker = new BlockingTicker();
+			var view = new View { IsPlatformEnabled = true, Handler = new HandlerWithAnimationContext() };
 
 			await view.RotateYTo(25);
 
@@ -196,8 +195,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRotateXTo()
 		{
-			var view = new View { IsPlatformEnabled = true };
-			 			view.FindMauiContextOnParent().AnimationManager.Ticker = new BlockingTicker();
+			var view = new View { IsPlatformEnabled = true, Handler = new HandlerWithAnimationContext() };
 
 			await view.RotateXTo(25);
 
