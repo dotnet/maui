@@ -19,9 +19,7 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="$(BuildConfiguration)"
     displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: |
-      $(DotNet.Path) tool update microsoft.dotnet.xharness.cli --version $(XHARNESS_VERSION)
-      $(DotNet.Path) tool list
+  - pwsh: $(DotNet.Path) tool update microsoft.dotnet.xharness.cli --version $(XHARNESS_VERSION)
     displayName: 'Install XHarness'
 
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
@@ -32,7 +30,7 @@ steps:
     condition: always()
     inputs:
       testResultsFormat: xUnit
-      testResultsFiles: '$(TestResultsDirectory)/**/*.xml'
+      testResultsFiles: '$(TestResultsDirectory)/**/TestResults.xml'
       testRunTitle: '$(System.PhaseName)'
 
   - task: PublishBuildArtifacts@1
