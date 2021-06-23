@@ -10,5 +10,6 @@ namespace Microsoft.Maui.Animations
 		ITicker Ticker { get; set; }
 		void Add(Animation animation);
 		void Remove(Animation animation);
+		bool AutoStartTicker { get; set; }
 	}
 }

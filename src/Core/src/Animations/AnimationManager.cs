@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Animations
 			get => _ticker ?? (Ticker = new Ticker()); 
 			set => setTicker(value);
 		}
+		public bool AutoStartTicker { get; set; } = true;
+
 		void setTicker(ITicker ticker)
 		{
 			_ = ticker ?? throw new ArgumentNullException(nameof(ticker));
@@ -44,7 +46,7 @@ namespace Microsoft.Maui.Animations
 			}
 			if (!Animations.Contains(animation))
 				Animations.Add(animation);
-			if (!Ticker.IsRunning)
+			if (!Ticker.IsRunning && AutoStartTicker)
 				Start();
 		}
 
@@ -67,7 +69,7 @@ namespace Microsoft.Maui.Animations
 		void OnFire()
 		{
 			var now = GetCurrentTick();
-			var seconds = TimeSpan.FromMilliseconds((now - lastUpdate)).TotalSeconds;
+			var milliseconds = TimeSpan.FromMilliseconds((now - lastUpdate)).TotalMilliseconds;
 			lastUpdate = now;
 			var animations = Animations.ToList();
 			void animationTick(Animation animation)
@@ -79,7 +81,7 @@ namespace Microsoft.Maui.Animations
 					return;
 				}
 
-				animation.Tick(seconds * SpeedModifier);
+				animation.Tick(milliseconds * SpeedModifier);
 				if (animation.HasFinished)
 				{
 					Animations.TryRemove(animation);

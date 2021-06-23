@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Android.Animation;
 using Android.Content;
 using Android.OS;
@@ -7,6 +8,12 @@ namespace Microsoft.Maui.Animations
 {
 	public class NativeTicker : Ticker
 	{
+		static List<NativeTicker> tickers = new List<NativeTicker>();
+		public static void CheckPowerSaveModeStatus()
+		{
+			foreach (var t in tickers)
+				t.checkPowerSaveModeStatus();
+		}
 		readonly IMauiContext MauiContext;
 		ValueAnimator _val;
 		bool _systemEnabled;
@@ -18,10 +25,15 @@ namespace Microsoft.Maui.Animations
 			_val.RepeatCount = ValueAnimator.Infinite;
 			_val.Update += (s, e) => Fire?.Invoke();
 			;
-			CheckPowerSaveModeStatus();
+			checkPowerSaveModeStatus();
+			tickers.Add(this);
+		}
+		~NativeTicker()
+		{
+			tickers.Remove(this);
 		}
 
-		internal void CheckPowerSaveModeStatus()
+		internal void checkPowerSaveModeStatus()
 		{
 			// Android disables animations when it's in power save mode
 			// So we need to keep track of whether we're in that mode and handle animations accordingly

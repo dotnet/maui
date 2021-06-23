@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 		static readonly Dictionary<int, Animation> s_tweeners;
 		static readonly Dictionary<AnimatableKey, Info> s_animations;
 		static readonly Dictionary<AnimatableKey, int> s_kinetics;
-		static int s_currentTweener;
+		static int s_currentTweener = 1;
 
 		static AnimationExtensions()
 		{
@@ -55,26 +55,20 @@ namespace Microsoft.Maui.Controls
 				Step = step
 			};
 			s_tweeners[id] = animation;
-			animationManager.Add(animation);
+			animation.Commit(animationManager);
 			return id;
 		}
 		public static int Insert(this IAnimationManager animationManager, Func<long,bool> step)
 		{
 			var id = s_currentTweener++;
 			Animation animation = null;
-			animation = new Animation
+			animation = new TweenerAnimation(step)
 			{
 				Name = $"{id}",
 				Easing = Easing.Linear,
-				Step = (d) =>
-				{
-					var isComplete = step.Invoke((long)d);
-					if (isComplete)
-						animationManager.Remove(animation);
-				}
 			};
 			s_tweeners[id] = animation;
-			animationManager.Add(animation);
+			animation.Commit(animationManager);
 			return id;
 		}
 		public static void Remove(this IAnimationManager animationManager, int tickerId)
@@ -145,8 +139,8 @@ namespace Microsoft.Maui.Controls
 			if (self == null)
 				throw new ArgumentNullException(nameof(self));
 
-			if (self is IFrameworkElement fe && animationManager == null)
-				animationManager = fe.Handler.MauiContext.AnimationManager;
+			if (self is VisualElement ve && animationManager == null)
+				animationManager = ve.FindMauiContextOnParent()?.AnimationManager;
 
 			Action animate = () => AnimateInternal(self, animationManager, name, transform, callback, rate, length, easing, finished, repeat);
 			DoAction(self, animate);
@@ -155,8 +149,8 @@ namespace Microsoft.Maui.Controls
 
 		public static void AnimateKinetic(this IAnimatable self, string name, Func<double, double, bool> callback, double velocity, double drag, Action finished = null, IAnimationManager animationManager = null)
 		{
-			if (self is IFrameworkElement fe && animationManager == null)
-				animationManager = fe.Handler.MauiContext.AnimationManager;
+			if (self is VisualElement ve && animationManager == null)
+				animationManager = ve.FindMauiContextOnParent()?.AnimationManager;
 			if (animationManager == null)
 				throw new ArgumentException(nameof(animationManager));
 			Action animate = () => AnimateKineticInternal(self, animationManager, name, callback, velocity, drag, finished);
@@ -255,7 +249,8 @@ namespace Microsoft.Maui.Controls
 
 			double sign = velocity / Math.Abs(velocity);
 			velocity = Math.Abs(velocity);
-			int tick = animationManager.Insert(step =>
+			int tick = 0;
+			tick = animationManager.Insert(step =>
 			{
 				long ms = step;
 
@@ -272,11 +267,13 @@ namespace Microsoft.Maui.Controls
 				{
 					finished?.Invoke();
 					s_kinetics.Remove(key);
+					animationManager.Remove(tick);
 				}
 				return result;
 			});
-
 			s_kinetics[key] = tick;
+			if (!animationManager.Ticker.IsRunning)
+				animationManager.Ticker.Start();
 		}
 
 		static void HandleTweenerFinished(object o, EventArgs args)
@@ -303,6 +300,7 @@ namespace Microsoft.Maui.Controls
 					s_animations.Remove(tweener.Handle);
 					tweener.ValueUpdated -= HandleTweenerUpdated;
 					tweener.Finished -= HandleTweenerFinished;
+					tweener.Stop();
 				}
 
 				info.Finished?.Invoke(tweener.Value, !animationsEnabled);

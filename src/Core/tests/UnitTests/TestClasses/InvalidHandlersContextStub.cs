@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui.UnitTests
 {
@@ -11,5 +12,7 @@ namespace Microsoft.Maui.UnitTests
 		public IServiceProvider Services => null!;
 
 		public IMauiHandlersServiceProvider Handlers => null!;
+
+		public IAnimationManager AnimationManager => null!;
 	}
 }

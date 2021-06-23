@@ -62,16 +62,15 @@ namespace Microsoft.Maui.Animations
 			childrenAnimations.Add(animation);
 		}
 
-		public void Tick(double secondsSinceLastUpdate)
+		public void Tick(double milliseconds)
 		{
 			if (IsPaused)
 				return;
-
 			if (0 == Interlocked.Exchange(ref _usingResource, 1))
 			{
 				try
 				{
-					OnTick(_skippedSeconds + secondsSinceLastUpdate);
+					OnTick(_skippedSeconds + milliseconds);
 					_skippedSeconds = 0;
 				}
 				finally
@@ -83,17 +82,17 @@ namespace Microsoft.Maui.Animations
 			//animation is lagging behind!
 			else
 			{
-				_skippedSeconds += secondsSinceLastUpdate;
+				_skippedSeconds += milliseconds;
 			}
 		}
 		public IAnimationManager? AnimationManager => animationManger;
 		protected IAnimationManager? animationManger;
 
-		protected virtual void OnTick(double secondsSinceLastUpdate)
+		protected virtual void OnTick(double millisecondsSinceLastUpdate)
 		{
 			if (HasFinished)
 				return;
-
+			var secondsSinceLastUpdate = millisecondsSinceLastUpdate / 1000.0;
 			CurrentTime += secondsSinceLastUpdate;
 			if (childrenAnimations.Any())
 			{
@@ -101,7 +100,7 @@ namespace Microsoft.Maui.Animations
 				foreach (var animation in childrenAnimations)
 				{
 
-					animation.OnTick(secondsSinceLastUpdate);
+					animation.OnTick(millisecondsSinceLastUpdate);
 					if (!animation.HasFinished)
 						hasFinished = false;
 
@@ -146,6 +145,7 @@ namespace Microsoft.Maui.Animations
 		{
 			this.animationManger = animationManger;
 			animationManger.Add(this);
+			
 		}
 
 		public Animation CreateAutoReversing()
@@ -180,7 +180,7 @@ namespace Microsoft.Maui.Animations
 			};
 		}
 
-		public void Reset()
+		public virtual void Reset()
 		{
 			CurrentTime = 0;
 			HasFinished = false;

@@ -30,6 +30,22 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	internal class TweenerAnimation : Animation
+	{
+		readonly Func<long, bool> _step;
+
+		public TweenerAnimation(Func<long, bool> step)
+		{
+			_step = step;
+		}
+		protected override void OnTick(double millisecondsSinceLastUpdate)
+		{
+			var running = _step.Invoke((long)millisecondsSinceLastUpdate);
+			HasFinished = !running;
+		}
+		
+	}
+
 	internal class Tweener
 	{
 		IAnimationManager animationManager;
@@ -129,6 +145,8 @@ namespace Microsoft.Maui.Controls
 				}
 				return true;
 			});
+			if (!animationManager.Ticker.IsRunning)
+				animationManager.Ticker.Start();
 		}
 
 		void FinishImmediately()

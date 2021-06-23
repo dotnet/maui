@@ -72,6 +72,12 @@ namespace Microsoft.Maui.Controls
 
 		internal void ResetChildren() => this.Reset();
 
+		public override void Reset()
+		{
+			base.Reset();
+			_finishedTriggered = false;
+		}
+
 		public Animation Insert(double beginAt, double finishAt, Animation animation)
 		{
 			Add(beginAt, finishAt, animation);
