@@ -521,8 +521,8 @@
 
         <!-- Tizen - Move splash images to a specific location -->
         <TizenSplashUpdator
-            Condition="'$(_ResizetizerIsTizenApp)' == 'True'"
-            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
+            Condition="'$(_ResizetizerIsTizenApp)' == 'True' And '@(MauiSplashScreen)' != ''"
+            IntermediateOutputPath="$(_MauiIntermediateImages)"
             ManifestFile="$(TizenManifestFile)"
             MauiSplashScreen="@(MauiSplashScreen)" />
 
