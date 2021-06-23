@@ -7,14 +7,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
-using Maui.Controls.Sample.ViewModel;
-#if BLAZOR_ENABLED
-using Microsoft.AspNetCore.Components.WebView.Maui;
-#endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
@@ -23,28 +18,28 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Controls;
 using Maui.Controls.Sample.Controls;
+using Maui.Controls.Sample.ViewModels;
+
+#if BLAZOR_ENABLED
+using Microsoft.AspNetCore.Components.WebView.Maui;
+#endif
 
 namespace Maui.Controls.Sample
 {
-
 	public class CustomButton : Button { }
 
 	public class Startup : IStartup
 	{
-		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage, Shell, TabbedPage }
-		private PageType _pageType = PageType.NavigationPage;
+		enum PageType { Semantics, Main, Blazor, NavigationPage, Shell }
+		readonly PageType _pageType = PageType.NavigationPage;
 
-		public readonly static bool UseXamlApp = true;
 		public readonly static bool UseFullDI = false;
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{
 			bool useFullDIAndBlazor = UseFullDI || _pageType == PageType.Blazor;
 
-			if (UseXamlApp)
-				appBuilder.UseMauiApp<XamlApp>();
-			else
-				appBuilder.UseMauiApp<MyApp>();
+			appBuilder.UseMauiApp<XamlApp>();
 
 			appBuilder
 				.ConfigureMauiHandlers(handlers =>
@@ -63,7 +58,7 @@ namespace Maui.Controls.Sample
 
 
 			// Use a "third party" library that brings in a massive amount of controls
-			appBuilder.UseRed();
+			appBuilder.UseBordelessEntry();
 
 #if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
@@ -107,7 +102,7 @@ namespace Maui.Controls.Sample
 					}
 
 					services.AddSingleton<ITextService, TextService>();
-					services.AddTransient<MainPageViewModel>();
+					services.AddTransient<MainViewModel>();
 #if BLAZOR_ENABLED
 					if (useFullDIAndBlazor)
 						services.AddBlazorWebView();
@@ -117,10 +112,8 @@ namespace Maui.Controls.Sample
 						implementationType: _pageType switch
 						{
 							PageType.Shell => typeof(AppShell),
-							PageType.NavigationPage => typeof(NavPage),
-							PageType.Xaml => typeof(XamlPage),
+							PageType.NavigationPage => typeof(CustomNavigationPage),
 							PageType.Semantics => typeof(SemanticsPage),
-							PageType.TabbedPage => typeof(TabPage),
 							PageType.Blazor =>
 #if BLAZOR_ENABLED
 								typeof(BlazorPage),

@@ -1,10 +1,8 @@
 #if NET6_0_OR_GREATER
 using System;
 using Maui.Controls.Sample.Controls;
-using Maui.Controls.Sample.ViewModel;
+using Maui.Controls.Sample.ViewModels;
 using Microsoft.AspNetCore.Components.WebView.Maui;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -13,9 +11,9 @@ namespace Maui.Controls.Sample.Pages
 	public class BlazorPage : BasePage
 	{
 		readonly IServiceProvider _services;
-		readonly MainPageViewModel _viewModel;
+		readonly MainViewModel _viewModel;
 
-		public BlazorPage(IServiceProvider services, MainPageViewModel viewModel)
+		public BlazorPage(IServiceProvider services, MainViewModel viewModel)
 		{
 			_services = services;
 			BindingContext = _viewModel = viewModel;
