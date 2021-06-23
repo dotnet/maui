@@ -30,6 +30,11 @@ namespace Maui.Controls.Sample.Controls
 		{
 			handler.NativeView.BorderStyle = UIKit.UITextBorderStyle.None;
 		}
+#elif WINDOWS
+		public static void MapBorder(BordelessEntryHandler handler, BordelessEntry borderlessEntry)
+		{
+
+		}
 #endif
 	}
 }
