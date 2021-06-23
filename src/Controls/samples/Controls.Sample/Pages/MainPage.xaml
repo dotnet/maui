@@ -57,7 +57,7 @@
     </views:BasePage.ToolbarItems>
     <ScrollView>
         <Grid
-            RowDefinitions="150, *"
+            RowDefinitions="150, *, Auto"
             RowSpacing="0">
             <!-- HEADER -->
             <Image
@@ -117,6 +117,14 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </Grid>
+            <!-- FOOTER -->
+            <Label
+                Grid.Row="2"
+                Margin="0, 0, 0, 24"
+                FontSize="Small"
+                HorizontalOptions="Center"
+                Text="Microsoft Corporation © 2021"
+                VerticalOptions="End" />
         </Grid>
     </ScrollView>
 </views:BasePage>
