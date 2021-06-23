@@ -1,8 +1,8 @@
 ﻿namespace Maui.Controls.Sample.Pages
 {
-	public partial class GridLayoutPage
+	public partial class StackLayoutPage
 	{
-		public GridLayoutPage()
+		public StackLayoutPage()
 		{
 			InitializeComponent();
 		}
