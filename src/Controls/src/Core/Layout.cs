@@ -518,5 +518,27 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
+
+		protected override Size ArrangeOverride(Rectangle bounds)
+		{
+			var size = base.ArrangeOverride(bounds);
+
+			// The SholdLayoutChildren check will catch impossible sizes (negative widths/heights), not-yet-loaded controls,
+			// and other weirdness that comes from the legacy layouts trying to run layout before the native side is ready. 
+			if (!ShouldLayoutChildren())
+				return size;
+
+			UpdateChildrenLayout();
+
+			foreach (var child in Children)
+			{
+				if (child is IFrameworkElement frameworkElement)
+				{
+					frameworkElement.Handler?.NativeArrange(frameworkElement.Frame);
+				}
+			}
+
+			return Frame.Size;
+		}
 	}
 }

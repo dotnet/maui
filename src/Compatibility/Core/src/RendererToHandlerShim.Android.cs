@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		protected override NativeView CreateNativeView()
 		{
+			_ = VisualElementRenderer ?? throw new InvalidOperationException("VisualElementRenderer cannot be null here");
 			return VisualElementRenderer.View;
 		}
 
@@ -30,6 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+			if (VisualElementRenderer == null)
+				return Size.Zero;
+
 			return GetNativeSize(
 				VisualElementRenderer, widthConstraint, heightConstraint);
 		}

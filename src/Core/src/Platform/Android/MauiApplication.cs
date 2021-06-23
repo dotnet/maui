@@ -1,5 +1,7 @@
 using System;
 using Android.App;
+using Android.Content;
+using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,9 +31,35 @@ namespace Microsoft.Maui
 				.Build();
 
 			Services = host.Services;
+
+			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
+
 			Application = Services.GetRequiredService<IApplication>();
 
+			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreate>(del => del(this));
+
 			base.OnCreate();
+		}
+
+		public override void OnLowMemory()
+		{
+			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationLowMemory>(del => del(this));
+
+			base.OnLowMemory();
+		}
+
+		public override void OnTrimMemory(TrimMemory level)
+		{
+			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationTrimMemory>(del => del(this, level));
+
+			base.OnTrimMemory(level);
+		}
+
+		public override void OnConfigurationChanged(Configuration newConfig)
+		{
+			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationConfigurationChanged>(del => del(this, newConfig));
+
+			base.OnConfigurationChanged(newConfig);
 		}
 
 		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
