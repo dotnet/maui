@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using Maui.Controls.Sample.Controls;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -13,7 +15,8 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		int count = 0;
+		int count = 9;
+
 		private void OnCounterClicked(object sender, EventArgs e)
 		{
 			count++;
