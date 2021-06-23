@@ -29,8 +29,10 @@ namespace Microsoft.Maui
 				.Build();
 
 			Services = host.Services;
+
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
+
 			Application = Services.GetRequiredService<IApplication>();
-			Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
 			var mauiContext = new MauiContext(Services, MainWindow);
 
@@ -47,7 +49,7 @@ namespace Microsoft.Maui
 
 			MainWindow.Content = root;
 
-			Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 
 			MainWindow.Activate();
 		}
