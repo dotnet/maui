@@ -8,8 +8,6 @@ namespace Maui.Controls.Sample.Pages
 		public ListViewPage()
 		{
 			InitializeComponent();
-
-			BasicListView.ItemsSource = new[] { "Item 1", "Item 2", "Item 3" };
 		}
 
 		void OnItemTapped(object sender, ItemTappedEventArgs e)

@@ -13,7 +13,15 @@
                 Style="{StaticResource Headline}"/>
             <ListView 
                 x:Name="BasicListView" 
-			    ItemTapped="OnItemTapped" />
+			    ItemTapped="OnItemTapped">
+                <ListView.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Item 1</x:String>
+                        <x:String>Item 2</x:String>
+                        <x:String>Item 3</x:String>
+                    </x:Array>
+                </ListView.ItemsSource>
+            </ListView>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
