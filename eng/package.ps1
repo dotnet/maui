@@ -74,7 +74,7 @@ if ($IsWindows)
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
             /restore `
-            /t:build `
+            /t:Build `
             /p:Packing=true `
             /bl:"$logsDirectory/maui-build-$configuration.binlog"
         if (!$?) { throw "Build .NET MAUI failed." }
@@ -82,9 +82,8 @@ if ($IsWindows)
         & $msbuild $sln `
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
-            /t:pack `
+            /t:Pack `
             /p:Packing=true `
-            /p:NoBuild=true `
             /bl:"$logsDirectory/maui-pack-$configuration.binlog"
         if (!$?) { throw "Pack .NET MAUI failed." }
 
@@ -93,7 +92,7 @@ if ($IsWindows)
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
             /restore `
-            /t:build `
+            /t:Build `
             /p:Packing=true `
             /bl:"$logsDirectory/blazorwebview-build-$configuration.binlog"
         if (!$?) { throw "Build BlazorWebView failed." }
@@ -101,9 +100,8 @@ if ($IsWindows)
         & $msbuild $blazorWebViewSln `
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
-            /t:pack `
+            /t:Pack `
             /p:Packing=true `
-            /p:NoBuild=true `
             /bl:"$logsDirectory/blazorwebview-pack-$configuration.binlog"
         if (!$?) { throw "Pack BlazorWebView failed." }
     }

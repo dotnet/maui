@@ -20,7 +20,7 @@
   <!-- Eventually replaced by eng/Version.targets -->
   <Target Name="SetVersions" />
 
-  <Target Name="_GenerateWorkloadManifest" BeforeTargets="Build;AssignTargetPaths;_GetPackageFiles" DependsOnTargets="SetVersions" Inputs="$(MSBuildProjectFile);WorkloadManifest.in.json" Outputs="$(IntermediateOutputPath)WorkloadManifest.json">
+  <Target Name="_GenerateWorkloadManifest" BeforeTargets="Build;AssignTargetPaths" DependsOnTargets="SetVersions" Inputs="$(MSBuildProjectFile);WorkloadManifest.in.json" Outputs="$(IntermediateOutputPath)WorkloadManifest.json">
     <ReplaceText Input="WorkloadManifest.in.json" Output="$(IntermediateOutputPath)WorkloadManifest.json" OldValue="@VERSION@" NewValue="$(PackageVersion)" />
     <ItemGroup>
       <None Include="$(IntermediateOutputPath)WorkloadManifest.json" Link="WorkloadManifest.json" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="data" Visible="false" />
