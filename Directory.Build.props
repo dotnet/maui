@@ -30,9 +30,6 @@
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
 
-    <!-- HACK: Android -->
-    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
-
     <DefineConstants Condition="$(TargetFramework.Contains('-windows'))">$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
