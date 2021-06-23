@@ -134,6 +134,7 @@ stages:
       jobs:
         - template: sign-artifacts/jobs/v2.yml@xamarin-templates
           parameters:
+            signType: Real
             teamName: Maui
             usePipelineArtifactTasks: false
             targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
