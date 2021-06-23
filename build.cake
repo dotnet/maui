@@ -22,6 +22,7 @@ PowerShell:
 #addin "nuget:?package=Cake.Boots&version=1.0.4.600-preview1"
 #addin "nuget:?package=Cake.AppleSimulator&version=0.2.0"
 #addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
+#addin "nuget:?package=Cake.BuildSystems.Module&version=0.3.2"
 #load "eng/cake/dotnet.cake"
 #load "eng/cake/helpers.cake"
 
