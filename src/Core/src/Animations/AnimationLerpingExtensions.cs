@@ -55,5 +55,11 @@ namespace Microsoft.Maui.Animations
 				start.Right.Lerp(end.Right, progress),
 				start.Bottom.Lerp(end.Bottom, progress)
 				);
+		public static SolidPaint Lerp(this SolidPaint paint, SolidPaint endPaint, double progress)
+		{
+			var color = paint?.Color ?? Colors.Black;
+			var endColor = endPaint?.Color ?? Colors.Black;
+			return new SolidPaint(color.Lerp(endColor, progress));
+		}
 	}
 }
