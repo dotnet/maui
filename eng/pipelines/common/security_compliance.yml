@@ -40,5 +40,8 @@ stages:
         displayName: Fail Job if Security Issues are Detected
         condition: succeededOrFailed()
         inputs:
-          AllTools: true
+          AllTools: false
+          CredScan: true
+          AntiMalware: true
+          PoliCheck: true
         
