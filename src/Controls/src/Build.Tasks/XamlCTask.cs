@@ -18,12 +18,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		bool hasCompiledXamlResources;
 		public bool KeepXamlResources { get; set; }
 		public bool OptimizeIL { get; set; }
-
-		[Obsolete("OutputGeneratedILAsCode is obsolete as of version 2.3.4. This option is no longer available.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool OutputGeneratedILAsCode { get; set; }
-
-		public bool CompileByDefault { get; set; }
+		public bool DefaultCompile { get; set; }
 		public bool ForceCompile { get; set; }
 
 		public IAssemblyResolver DefaultAssemblyResolver { get; set; }
@@ -41,7 +36,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			thrownExceptions = null;
 			LoggingHelper.LogMessage(Normal, $"{new string(' ', 0)}Compiling Xaml, assembly: {Assembly}");
-			var skipassembly = !CompileByDefault;
+			var skipassembly = !DefaultCompile;
 			bool success = true;
 
 			if (!File.Exists(Assembly))
@@ -226,11 +221,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								initComp.Body.Optimize();
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
 							}
-
-#pragma warning disable 0618
-							if (OutputGeneratedILAsCode)
-								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Decompiling option has been removed. Use a 3rd party decompiler to admire the beauty of the IL generated");
-#pragma warning restore 0618
 							resourcesToPrune.Add(resource);
 						}
 						if (hasCompiledXamlResources)
