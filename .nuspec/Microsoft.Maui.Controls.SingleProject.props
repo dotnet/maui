@@ -32,7 +32,6 @@
     <BundleResource
         Include="$(iOSProjectFolder)Resources\**"
         Exclude="$(_SingleProjectiOSExcludes)"
-        Link="%(RecursiveDir)%(FileName)%(Extension)"
         IsDefaultItem="true"
     />
     <ImageAsset
@@ -68,7 +67,6 @@
     <BundleResource
         Include="$(MacCatalystProjectFolder)Resources\**"
         Exclude="$(_SingleProjectMacCatalystExcludes)"
-        Link="%(RecursiveDir)%(FileName)%(Extension)"
         IsDefaultItem="true"
     />
     <ImageAsset
