@@ -9,6 +9,9 @@ steps:
       provisioning_script: $(provisionator.path)
       provisioning_extra_args: $(provisionator.extraArguments)
   
+  - script: dotnet cake --bootstrap
+    displayName: cake bootstrap 
+  
   - task: Bash@3
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')

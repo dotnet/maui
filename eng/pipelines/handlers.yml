@@ -148,6 +148,7 @@ stages:
             - script: dotnet tool restore
               displayName: install dotnet tools
             - powershell: |
+                  & dotnet cake --bootstrap
                   & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildCondition }}
               displayName: 'Build WinUI SLN'
             - task: CopyFiles@2
@@ -253,6 +254,8 @@ stages:
 
             - script: dotnet tool restore
               displayName: install dotnet tools
+            - script: dotnet cake --bootstrap
+              displayName: cake bootstrap 
             - script: dotnet cake --configuration=Release
               displayName: pack nugets
             - task: CopyFiles@2

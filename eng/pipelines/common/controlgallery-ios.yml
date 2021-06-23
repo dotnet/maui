@@ -21,6 +21,9 @@ steps:
     displayName: 'Setup SDK Paths'
     condition: ne(variables['osx2019VmPool'], 'Azure Pipelines')
 
+  - script: dotnet cake --bootstrap
+    displayName: cake bootstrap 
+    
   - task: Bash@3
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')

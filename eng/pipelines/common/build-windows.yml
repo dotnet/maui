@@ -20,6 +20,9 @@ steps:
       & dotnet build src\DotNet\DotNet.csproj -bl:${{ parameters.artifactsTargetFolder }}\$(BuildConfiguration)-dotnet.binlog
     displayName: install .NET
 
+  - script: dotnet cake --bootstrap
+    displayName: cake bootstrap 
+    
   - powershell: |
       $(System.DefaultWorkingDirectory)/build.ps1 --target provision --TeamProject="$(System.TeamProject)"
     displayName: 'Cake Provision'
