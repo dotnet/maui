@@ -25,29 +25,11 @@
         "datatype": "string",
         "replaces": "com.companyname.MauiApp1"
       },
-      "microsoftExtensionsVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "MICROSOFT_EXTENSIONS_VERSION",
-        "defaultValue": "6.0.0-preview.4.*"
-      },
       "projectReunionVersion": {
         "type": "parameter",
         "dataType": "string",
         "replaces": "PROJECT_REUNION_VERSION",
         "defaultValue": "0.8.0-preview"
-      },
-      "windowsSdkVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "WINDOWS_SDK_VERSION",
-        "defaultValue": "10.0.19041.16"
-      },
-      "mauiVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "MAUI_VERSION",
-        "defaultValue": "MAUI_VERSION_VALUE"
       }
     },
     "defaultName": "MauiApp1"

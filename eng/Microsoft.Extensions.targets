@@ -1,11 +1,14 @@
 <Project>
-  <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' == 'true'">
-    <_MicrosoftHostingVersion>6.0.0-preview.4.21253.7</_MicrosoftHostingVersion>
-    <_MicrosoftDependencyInjectionVersion>$(_MicrosoftHostingVersion)</_MicrosoftDependencyInjectionVersion>
-    <_MicrosoftFileProvidersVersion>6.0.0-preview.4.21253.5</_MicrosoftFileProvidersVersion>
-    <_MicrosoftSystemCodeDomVersion>6.0.0-preview.4.21253.7</_MicrosoftSystemCodeDomVersion>
+  <PropertyGroup>
+    <_UseNet6Packages Condition=" '$(TargetFramework.Contains(net6.0))' == 'true' or '$(PackageType)' == 'DotnetPlatform' ">true</_UseNet6Packages>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework.Contains(net6.0))' != 'true'">
+  <PropertyGroup Condition=" '$(_UseNet6Packages)' == 'true' ">
+    <_MicrosoftHostingVersion>6.0.0-preview.5.21301.5</_MicrosoftHostingVersion>
+    <_MicrosoftDependencyInjectionVersion>$(_MicrosoftHostingVersion)</_MicrosoftDependencyInjectionVersion>
+    <_MicrosoftFileProvidersVersion>6.0.0-preview.5.21301.5</_MicrosoftFileProvidersVersion>
+    <_MicrosoftSystemCodeDomVersion>6.0.0-preview.5.21301.5</_MicrosoftSystemCodeDomVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(_UseNet6Packages)' != 'true' ">
     <_MicrosoftHostingVersion>5.0.0</_MicrosoftHostingVersion>
     <_MicrosoftDependencyInjectionVersion>5.0.1</_MicrosoftDependencyInjectionVersion>
     <_MicrosoftFileProvidersVersion>5.0.6</_MicrosoftFileProvidersVersion>
@@ -14,9 +17,9 @@
   <PropertyGroup>
     <_MicrosoftProjectReunionVersion>0.8.0-preview</_MicrosoftProjectReunionVersion>
     <_MicrosoftGraphicsWin2DVersion>0.5.0.13</_MicrosoftGraphicsWin2DVersion>
-    <_MicrosoftMauiGraphics>6.0.100-preview.5.213</_MicrosoftMauiGraphics>
-    <_MicrosoftMauiGraphicsWin2D>6.0.100-preview.5.213</_MicrosoftMauiGraphicsWin2D>
-    <_MicrosoftAspNetCoreVersion>6.0.0-preview.4.21253.5</_MicrosoftAspNetCoreVersion>
+    <_MicrosoftMauiGraphics>6.0.100-preview.5.229</_MicrosoftMauiGraphics>
+    <_MicrosoftMauiGraphicsWin2D>6.0.100-preview.5.229</_MicrosoftMauiGraphicsWin2D>
+    <_MicrosoftAspNetCoreVersion>6.0.0-preview.5.21301.17</_MicrosoftAspNetCoreVersion>
     <_MicrosoftWebWebView2Version>1.0.705.50</_MicrosoftWebWebView2Version>
     <_XamarinAndroidGlideVersion>4.11.0.1</_XamarinAndroidGlideVersion>
   </PropertyGroup>
@@ -26,18 +29,36 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference
-        Update="Microsoft.Maui.Graphics"
-        Version="$(_MicrosoftMauiGraphics)" />
+        Update="Reloadify3000"
+        Version="1.0.6"
+    />
     <PackageReference
-        Update="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
-        Version="$(_MicrosoftMauiGraphicsWin2D)" />
+        Update="Microsoft.Maui.Graphics"
+        Version="$(_MicrosoftMauiGraphics)" 
+    />
+    <PackageReference
+         Update="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
+         Version="$(_MicrosoftMauiGraphicsWin2D)"
+    />
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
         Version="$(_MicrosoftHostingVersion)"
     />
     <PackageReference
+        Update="Microsoft.Extensions.Configuration.Abstractions"
+        Version="$(_MicrosoftHostingVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
         Version="$(_MicrosoftDependencyInjectionVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.DependencyInjection.Abstractions"
+        Version="$(_MicrosoftDependencyInjectionVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.FileProviders.Abstractions"
+        Version="$(_MicrosoftFileProvidersVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.FileProviders.Embedded"
@@ -61,6 +82,10 @@
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Debug"
+        Version="$(_MicrosoftHostingVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.Primitives"
         Version="$(_MicrosoftHostingVersion)"
     />
     <PackageReference
@@ -111,4 +136,13 @@
         Version="$(_MicrosoftWebWebView2Version)"
     />
   </ItemGroup>
+
+  <!-- Workaround for https://github.com/dotnet/sdk/issues/18148 where an analyzer from a new version of a package
+       is not found in the older version of that same package. So we just remove usage of the analyzer entirely
+       because we don't use it in this repo.  -->
+  <Target Name="RemoveLoggingAnalyzer" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="%(FileName) == 'Microsoft.Extensions.Logging.Generators'" />
+    </ItemGroup>
+  </Target>
 </Project>

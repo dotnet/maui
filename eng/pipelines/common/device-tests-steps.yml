@@ -2,6 +2,8 @@ parameters:
   platform: '' # [ android, ios ]
   path: '' # path to csproj
   device: '' # the xharness device to use
+  net6: false # whether or not this is a net6 build
+  cakeArgs: '' # additional cake args
 
 steps:
   - checkout: self
@@ -38,14 +40,14 @@ steps:
       provisioning_script: $(provisionator.path)
       provisioning_extra_args: $(provisionator.extraArguments)
 
-  - task: UseDotNet@2
-    displayName: 'Install .net core $(DOTNET_VERSION)'
-    condition: ne(variables['DOTNET_VERSION'], '')
-    inputs:
-      version: $(DOTNET_VERSION)
-      packageType: 'sdk'
+  - script: |
+      dotnet build src/DotNet/DotNet.csproj -bl:$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)-dotnet.binlog
+      echo "##vso[task.prependpath]$(DotNet.Dir)"
+    displayName: install .NET
 
-  - script: dotnet tool restore
+  - script: |
+      dotnet tool restore
+      dotnet tool update microsoft.dotnet.xharness.cli --version $(XHARNESS_VERSION)
     displayName: install dotnet tools
 
   - pwsh: |
@@ -54,19 +56,12 @@ steps:
     condition: eq(variables['provisioningCake'], 'true')
 
   - pwsh: |
-      ./build.ps1 --target=BuildTasks --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
-    name: winbuild
+      ./build.ps1 --target=${{ replace(replace(parameters.net6, 'true', 'dotnet-'), 'false', '') }}buildtasks --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
     displayName: 'Build the MSBuild Tasks'
 
-  - ${{ if eq(parameters['platform'], 'android') }}:
-    - pwsh: |
-        ./build.ps1 -Script eng/devices/android.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs"
-      displayName: $(Agent.JobName)
-
-  - ${{ if eq(parameters['platform'], 'ios') }}:
-    - pwsh: |
-        ./build.ps1 -Script eng/devices/ios.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs"
-      displayName: $(Agent.JobName)
+  - pwsh: |
+      ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs" ${{ replace(replace(parameters.net6, 'true', '--dotnet=true'), 'false', '') }} ${{ parameters.cakeArgs }}
+    displayName: $(Agent.JobName)
 
   - task: PublishTestResults@2
     displayName: Publish the $(System.PhaseName) test results

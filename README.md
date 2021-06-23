@@ -1,15 +1,14 @@
 # Introducing .NET Multi-platform App UI (MAUI)
 
-.NET MAUI is:
+.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, macOS, and Windows from a single shared code-base. [Read More](https://docs.microsoft.com/en-us/dotnet/maui/what-is-maui)
 
-* Multi-platform native UI
-* Deploy to multiple devices across mobile & desktop
-* Using a single project, single codebase
-* Evolution of [Xamarin.Forms](https://github.com/xamarin/xamarin.forms)
-* .NET 6
+## Getting Started ##
+
+* [Install .NET MAUI](https://github.com/dotnet/maui/wiki/Getting-Started)
+* [MAUI documentation](https://docs.microsoft.com/en-us/dotnet/maui)
+* [MAUI samples](https://github.com/dotnet/maui-samples)
 
 ## Build Status ##
-
 
 | Private  | Public |
 |--|--|
@@ -67,7 +66,11 @@ Try out a "single project", you will need the `-f` switch to choose the platform
 .\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj -t:Run -f net6.0-ios
 ```
 
+To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://github.com/dotnet/maui/wiki/Blazor-Desktop) wiki topic.
+
 ## Current News
+
+[June 17, 2021 - Announcing .NET MAUI Preview 5](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-5/)
 
 [May 25, 2021 - Announcing .NET MAUI Preview 4](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-4/)
 

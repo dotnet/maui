@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override AView CreateNativeView()
 		{
-			LayoutInflater? li = LayoutInflater.From(ContextWithValidation());
+			LayoutInflater? li = LayoutInflater.From(Context);
 			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
 
 			var view = li.Inflate(Resource.Layout.navigationlayout, null).JavaCast<NavigationLayout>();
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override void ConnectHandler(AView nativeView)
 		{
-			var fragmentManager = ContextWithValidation().GetFragmentManager();
+			var fragmentManager = Context.GetFragmentManager();
 			_ = fragmentManager ?? throw new InvalidOperationException($"GetFragmentManager returned null");
 			_ = VirtualView ?? throw new InvalidOperationException($"VirtualView cannot be null");
 
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			base.ConnectHandler(nativeView);
 
-			INavigationPageController navController = VirtualViewWithValidation();
+			INavigationPageController navController = VirtualView;
 			navController.PushRequested += OnPushed;
 			navController.PopRequested += OnPopped;
 			var inflater = NavHost.NavController.NavInflater;
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected override void DisconnectHandler(AView nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			var navController = (INavigationPageController)VirtualViewWithValidation();
+			var navController = (INavigationPageController)VirtualView;
 			navController.PushRequested -= OnPushed;
 			navController.PopRequested -= OnPopped;
 		}
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		internal void OnPop()
 		{
-			VirtualViewWithValidation()
+			VirtualView
 				.Navigation
 				.PopAsync()
 				.FireAndForget((e) =>
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			//bool isNavigated = NavigationPageController.StackDepth > 1;
 			//bar.NavigationIcon = null;
-			var navPage = VirtualViewWithValidation();
+			var navPage = VirtualView;
 
 			//if (isNavigated)
 			//{

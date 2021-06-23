@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
 			[nameof(IEntry.Font)] = MapFont,
 			[nameof(IEntry.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(IEntry.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IEntry.IsPassword)] = MapIsPassword,
 			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,

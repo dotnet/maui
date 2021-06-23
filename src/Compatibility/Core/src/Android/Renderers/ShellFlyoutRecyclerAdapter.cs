@@ -123,8 +123,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			VisualElementTracker IVisualElementRenderer.Tracker => null;
 
-			ViewGroup IVisualElementRenderer.ViewGroup => this;
-
 			AView IVisualElementRenderer.View => this;
 
 			SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint) => new SizeRequest(new Size(100, 100));
