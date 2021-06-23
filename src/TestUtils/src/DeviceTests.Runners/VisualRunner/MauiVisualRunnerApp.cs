@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			On<WindowsPlatform>().SetImageDirectory("Assets");
 		}
 
-		protected override IWindow CreateWindow(IActivationState activationState)
+		protected override Window CreateWindow(IActivationState activationState)
 		{
 			var hp = new HomePage();
 
