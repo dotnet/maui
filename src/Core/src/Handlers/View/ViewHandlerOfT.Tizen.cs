@@ -183,7 +183,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void OnNativeViewDeleted()
 		{
-			NativeView = null;
 			Dispose();
 		}
 
