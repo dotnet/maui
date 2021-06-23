@@ -55,7 +55,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AndroidEnvironment Include="Android\environment.txt" />
+    <AndroidEnvironment Include="Platforms\Android\environment.txt" />
   </ItemGroup>
 
   <!-- include/exclude the <platform> files -->

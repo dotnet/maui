@@ -36,6 +36,17 @@ steps:
         /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
         cat ~/Library/Preferences/Xamarin/Settings.plist || true
       displayName: 'Configure Visual Studio'
+    # Install Certificates and Provisioning Profiles
+    - task: InstallAppleCertificate@2
+      displayName: 'Install Apple Certificats'
+      inputs:
+        certSecureFile: 'Maui.p12'
+        certPwd: $(P12password)
+    - task: InstallAppleProvisioningProfile@1
+      displayName: 'Install Apple Provisioning Profiles'
+      inputs:
+        provProfileSecureFile: 'Maui_iOS_Provisioning.mobileprovision'
+
 
   # Prepare Windows
   - ${{ if eq(parameters.platform, 'windows') }}:

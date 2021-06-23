@@ -95,7 +95,6 @@
     <MtouchArch>ARMv7, ARM64</MtouchArch>
     <ConsolePause>false</ConsolePause>
     <CodesignKey>iPhone Developer</CodesignKey>
-    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <MtouchLink>Full</MtouchLink>
     <BuildIpa>True</BuildIpa>
@@ -193,9 +192,6 @@
     <Content Include="cover1.jpg" />
     <Content Include="crimson.jpg" />
     <BundleResource Include="default.css" />
-    <Content Include="Entitlements.plist">
-      <SubType>Designer</SubType>
-    </Content>
     <Content Include="GifOne.gif" />
     <Content Include="GifTwo.gif" />
     <Content Include="Goobuntu-icon.png" />

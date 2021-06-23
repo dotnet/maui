@@ -6,17 +6,6 @@ parameters:
 
 steps:
 
-  - ${{ if eq(parameters['platform'], 'ios') }}:
-    - task: InstallAppleCertificate@2
-      displayName: 'Install an Apple certificate'
-      inputs:
-        certSecureFile: 'Maui.p12'
-        certPwd: $(P12password)
-    - task: InstallAppleProvisioningProfile@1
-      displayName: 'Install an Apple provisioning profile'
-      inputs:
-        provProfileSecureFile: 'Maui_iOS_Provisioning.mobileprovision'
-
   - template: provision.yml
     parameters:
       platform: macos

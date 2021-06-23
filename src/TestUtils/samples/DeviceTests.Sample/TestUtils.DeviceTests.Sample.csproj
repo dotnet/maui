@@ -50,7 +50,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AndroidEnvironment Include="Android\environment.txt" />
+    <AndroidEnvironment Include="Platforms\Android\environment.txt" />
   </ItemGroup>
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.targets" />
