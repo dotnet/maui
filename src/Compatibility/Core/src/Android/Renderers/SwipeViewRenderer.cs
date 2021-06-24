@@ -379,7 +379,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		AView CreateContent()
 		{
-			var renderer = Element.Content.GetRenderer() ?? Platform.CreateRendererWithContext(Element.Content, Context);
+			var renderer = Element.Content.GetRenderer() ?? AppCompat.Platform.CreateRendererWithContext(Element.Content, Context);
 			AppCompat.Platform.SetRenderer(Element.Content, renderer);
 
 			return renderer?.View;

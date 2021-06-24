@@ -15,7 +15,10 @@ namespace Maui.Controls.Sample.Pages
 
 		private async void PopButton_Clicked(object sender, System.EventArgs e)
 		{
-			await Navigation.PopAsync();
+			if (Navigation.ModalStack.Count > 0)
+				await Navigation.PopModalAsync();
+			else
+				await Navigation.PopAsync();
 		}
 
 		private async void PushButton_Clicked(object sender, System.EventArgs e)

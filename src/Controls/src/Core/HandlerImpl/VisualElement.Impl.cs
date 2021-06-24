@@ -112,7 +112,21 @@ namespace Microsoft.Maui.Controls
 		double IFrameworkElement.Height => HeightRequest;
 
 		public event EventHandler AttachingHandler;
-		public event EventHandler AttachedHandler;
+
+		EventHandler _attachedHandler;
+		public event EventHandler AttachedHandler
+		{
+			add
+			{
+				_attachedHandler += value;
+				if (Handler != null)
+					value?.Invoke(this, EventArgs.Empty);
+			}
+			remove
+			{
+				_attachedHandler -= value;
+			}
+		}
 		public event EventHandler DetachingHandler;
 		public event EventHandler DetachedHandler;
 
@@ -144,7 +158,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_handler != null)
 			{
-				AttachedHandler?.Invoke(this, EventArgs.Empty);
+				_attachedHandler?.Invoke(this, EventArgs.Empty);
 				OnAttachedHandler();
 			}
 
