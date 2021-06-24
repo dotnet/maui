@@ -462,7 +462,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (Element == null)
 				return;
-			
+
 			var backgroundColor = color ?? Element.BackgroundColor;
 
 			if (backgroundColor == null)
