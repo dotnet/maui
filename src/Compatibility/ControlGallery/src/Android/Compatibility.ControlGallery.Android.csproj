@@ -193,7 +193,7 @@
       <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Core\src\Android.AppLinks\Compatibility.Android.AppLinks.csproj">
+    <ProjectReference Include="..\..\..\Android.AppLinks\src\Compatibility.Android.AppLinks.csproj">
       <Project>{10553575-8e27-4e2c-9e88-90b015e80f1c}</Project>
       <Name>Compatibility.Android.AppLinks</Name>
     </ProjectReference>
@@ -212,7 +212,7 @@
     <ProguardConfiguration Include="..\..\..\..\..\.nuspec\proguard.cfg">
       <Link>proguard.cfg</Link>
     </ProguardConfiguration>
-    <ProjectReference Include="..\..\..\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj">
+    <ProjectReference Include="..\..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj">
       <Project>{3b72465b-acae-43ae-9327-10f372fe5f80}</Project>
       <Name>Compatibility.Android.FormsViewGroup</Name>
     </ProjectReference>
