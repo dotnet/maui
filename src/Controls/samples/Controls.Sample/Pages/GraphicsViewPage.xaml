@@ -14,10 +14,11 @@
         </ResourceDictionary>
     </views:BasePage.Resources>
     <views:BasePage.Content>
-        <VerticalStackLayout
-            Margin="12">
+        <StackLayout>
             <GraphicsView
+                HeightRequest="500"
+                WidthRequest="500"
                 Drawable="{StaticResource GraphicsDrawable}"/>
-        </VerticalStackLayout>
+        </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>
