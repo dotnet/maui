@@ -18,17 +18,9 @@ namespace Samples.Droid
     {
         protected override void OnCreate(Bundle bundle)
         {
-            //TabLayoutResource = Resource.Layout.Tabbar;
-           // ToolbarResource = Resource.Layout.Toolbar;
-
             base.OnCreate(bundle);
-
             Microsoft.Maui.Essentials.Platform.Init(this, bundle);
-            //Microsoft.Maui.Controls.Compatibility.Forms.Init(this, bundle);
-
             Microsoft.Maui.Essentials.Platform.ActivityStateChanged += Platform_ActivityStateChanged;
-
-           // LoadApplication(formsApp ??= new App());
         }
 
         protected override void OnResume()
