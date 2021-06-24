@@ -16,8 +16,8 @@ A "single project", is a multi-targeted .NET Maui project, such as:
 Within the project you would have:
 
 * `*.cs` all shared code
-* `iOS/*` - iOS only stuff, including `Info.plist`
-* `Android/*` - Android only stuff, including `AndroidManifest.xml`
+* `Platforms/iOS/*` - iOS only stuff, including `Info.plist`
+* `Platforms/Android/*` - Android only stuff, including `AndroidManifest.xml`
 
 This project type does not currently work well in IDEs.
 
