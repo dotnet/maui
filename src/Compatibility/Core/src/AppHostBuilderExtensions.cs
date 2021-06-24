@@ -72,93 +72,125 @@ namespace Microsoft.Maui.Controls.Hosting
 			{
 #if __ANDROID__
 				events.AddAndroid(android => android
-					.OnCreate((a, b) =>
+					.OnApplicationCreating((app) =>
 					{
-						// This just gets Forms Compat bits setup with what it needs
-						// to initialize the first view. MauiContext hasn't been initialized at this point
-						// so we setup one that will look exactly the same just
-						// to make legacy Forms bits happy
+						// This is the initial Init to set up any system services registered by
+						// Forms.Init(). This happens in the Application's OnCreate - before
+						// any UI has appeared.
+						// This creates a dummy MauiContext that wraps the Application.
+
 						var services = MauiApplication.Current.Services;
-						MauiContext mauiContext = new MauiContext(services, a);
-						ActivationState state = new ActivationState(mauiContext, b);
-						Forms.Init(new ActivationState(mauiContext, b), new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
+						var mauiContext = new MauiContext(services, app);
+						var state = new ActivationState(mauiContext);
+						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
+
 						GraphicsPlatform.RegisterGlobalService(NativeGraphicsService.Instance);
 					})
-					.OnPostCreate((_, b) =>
+					.OnCreate((activity, bundle) =>
 					{
-						// This calls Init again so that the MauiContext that's part of
-						// Forms.Init matches the rest of the maui application
-						var mauiApp = MauiApplication.Current.Application;
-						if (mauiApp.Windows.Count > 0)
+						// This is the Init that sets up the first context from the activity.
+						// There is still no official MauiContext since that happens just after this.
+
+						var services = MauiApplication.Current.Services;
+						var mauiContext = new MauiContext(services, activity);
+						var state = new ActivationState(mauiContext, bundle);
+						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
+					})
+					.OnPostCreate((activity, bundle) =>
+					{
+						// This is the final Init that ensures the Forms type is using the same
+						// MauiContext that is part of the rest of the maui application.
+
+						var windows = Application.Current?.Windows;
+						if (windows?.Count > 0)
 						{
-							var window = mauiApp.Windows[0];
-							var mauiContext = window.Handler?.MauiContext ?? window.View.Handler?.MauiContext;
+							var window = windows[0];
+							var mauiContext =
+								window.Handler?.MauiContext ??
+								window.Page?.Handler?.MauiContext;
 
 							if (mauiContext != null)
 							{
-								Forms.Init(new ActivationState(mauiContext, b));
+								var state = new ActivationState(mauiContext, bundle);
+								Forms.Init(state);
 							}
 						}
 					}));
 #elif __IOS__
-				events.AddiOS(iOS =>
-				{
-					iOS.WillFinishLaunching((x, y) =>
+				events.AddiOS(iOS => iOS
+					.WillFinishLaunching((app, options) =>
 					{
-						MauiContext mauiContext = new MauiContext(MauiUIApplicationDelegate.Current.Services, new UIKit.UIWindow());
-						Forms.Init(new ActivationState(mauiContext), new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
+						// This is the initial Init to set up any system services registered by
+						// Forms.Init(). This happens before any UI has appeared.
+						// This creates a dummy MauiContext.
+
+						var services = MauiUIApplicationDelegate.Current.Services;
+						var mauiContext = new MauiContext(services);
+						var state = new ActivationState(mauiContext);
+						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
 						return true;
-					});
-
-					iOS.FinishedLaunching((x,y) =>
+					})
+					.FinishedLaunching((app, options) =>
 					{
-						// This calls Init again so that the MauiContext that's part of
-						// Forms.Init matches the rest of the maui application
-						var mauiApp = MauiUIApplicationDelegate.Current.Application;
+						// This is the final Init that ensures the Forms type is using the same
+						// MauiContext that is part of the rest of the maui application.
 
-						if (mauiApp.Windows.Count > 0)
+						var windows = Application.Current?.Windows;
+						if (windows?.Count > 0)
 						{
-							var window = mauiApp.Windows[0];
-							var mauiContext = window.Handler?.MauiContext ?? window.View.Handler?.MauiContext;
+							var window = windows[0];
+							var mauiContext =
+								window.Handler?.MauiContext ??
+								window.Page?.Handler?.MauiContext;
 
 							if (mauiContext != null)
 							{
-								Forms.Init(new ActivationState(mauiContext));
+								var state = new ActivationState(mauiContext);
+								Forms.Init(state);
 							}
 						}
-						
+
 						GraphicsPlatform.RegisterGlobalService(NativeGraphicsService.Instance);
 
 						return true;
-					});
-				});
+					}));
 #elif WINDOWS
 				events.AddWindows(windows => windows
-					.OnLaunching((_, args) =>
+					.OnLaunching((app, args) =>
 					{
-						// We need to call Forms.Init so the Window and Root Page can new up successfully
-						// The dispatcher that's inside of Forms.Init needs to be setup before the initial 
-						// window and root page start creating
+						// This is the initial Init to set up any system services registered by
+						// Forms.Init(). This happens before any UI has appeared.
+						// This creates a dummy MauiContext.
+						// We need to call this so the Window and Root Page can new up successfully
+						// The dispatcher that's inside of Forms.Init needs to be setup before the initial
+						// window and root page start creating.
 						// Inside OnLaunched we grab the MauiContext that's on the window so we can have the correct
 						// MauiContext inside Forms
-						MauiContext mauiContext = new MauiContext(MauiWinUIApplication.Current.Services, new UI.Xaml.Window());
-						ActivationState state = new ActivationState(mauiContext, args);
+
+						var services = MauiWinUIApplication.Current.Services;
+						var mauiContext = new MauiContext(services);
+						var state = new ActivationState(mauiContext, args);
 						Forms.Init(state, new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
+
 						GraphicsPlatform.RegisterGlobalService(W2DGraphicsService.Instance);
 					})
-					.OnLaunched((_, args) =>
+					.OnLaunched((app, args) =>
 					{
-						// This calls Init again so that the MauiContext that's part of
-						// Forms.Init matches the rest of the maui application
-						var mauiApp = MauiWinUIApplication.Current.Application;
-						if (mauiApp.Windows.Count > 0)
+						// This is the final Init that ensures the Forms type is using the same
+						// MauiContext that is part of the rest of the maui application.
+
+						var windows = Application.Current?.Windows;
+						if (windows?.Count > 0)
 						{
-							var window = mauiApp.Windows[0];
-							var mauiContext = window.Handler?.MauiContext ?? window.View.Handler?.MauiContext;
+							var window = windows[0];
+							var mauiContext =
+								window.Handler?.MauiContext ??
+								window.Page?.Handler?.MauiContext;
 
 							if (mauiContext != null)
 							{
-								Forms.Init(new ActivationState(mauiContext, args));
+								var state = new ActivationState(mauiContext, args);
+								Forms.Init(state);
 							}
 						}
 					}));
