@@ -155,14 +155,14 @@ namespace Microsoft.Maui.Animations
 			},
 		};
 
-		public static Lerp GetLerp(Type type)
+		public static Lerp? GetLerp(Type type)
 		{
-			Lerp lerp;
+			Lerp? lerp;
 			if (Lerps.TryGetValue(type, out lerp))
 				return lerp;
 
 			var types = new List<Type> { type };
-			Type baseType = type.BaseType;
+			Type? baseType = type?.BaseType;
 			while (baseType != null)
 			{
 				types.Add(baseType);
