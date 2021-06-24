@@ -1,11 +1,14 @@
 # Introducing .NET Multi-platform App UI (MAUI)
 
-.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, macOS, and Windows from a single shared code-base.
+.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. Using .NET MAUI, you can develop apps that can run on Android, iOS, macOS, and Windows from a single shared code-base. [Read More](https://docs.microsoft.com/en-us/dotnet/maui/what-is-maui)
 
-[Read More](https://docs.microsoft.com/en-us/dotnet/maui/what-is-maui)
+## Getting Started ##
+
+* [Install .NET MAUI](https://github.com/dotnet/maui/wiki/Getting-Started)
+* [MAUI documentation](https://docs.microsoft.com/en-us/dotnet/maui)
+* [MAUI samples](https://github.com/dotnet/maui-samples)
 
 ## Build Status ##
-
 
 | Private  | Public |
 |--|--|
@@ -19,10 +22,6 @@
 - Install the SDKs listed here https://github.com/dotnet/maui-samples
 
 ### Running
-
-#### IDE
-
-- If you have Visual Studio 16.9 P4 or newer installed you can open `Maui.sln` and run it from there.
 
 #### .NET 6
 
@@ -64,6 +63,22 @@ Try out a "single project", you will need the `-f` switch to choose the platform
 ```
 
 To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://github.com/dotnet/maui/wiki/Blazor-Desktop) wiki topic.
+
+#### WinUI3
+
+You will need to use the latest preview of Visual Studio 2019 16.11. WinUI currently does not work with Visual Studio 2022
+
+* Windows: [Get started with Project Reunion](https://docs.microsoft.com/en-us/windows/apps/project-reunion/get-started-with-project-reunion#set-up-your-development-environment)
+
+- Install the following 0.8 Preview Reunion VSIXs. .NET MAUI currently only works with 0.8 Reunion Preview and will not work with 0.8 Reunion Stable.
+  - Uninstall any WinUI extensions that you may have previously installed
+  - https://marketplace.visualstudio.com/items?itemName=ProjectReunion.MicrosoftProjectReunionPreview
+  - https://marketplace.visualstudio.com/items?itemName=ProjectReunion.MicrosoftSingleProjectMSIXPackagingTools
+ 
+```dotnetcli
+dotnet tool restore
+dotnet cake --target=VS-WINUI
+```
 
 ## Current News
 

@@ -3,35 +3,40 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Graphics;
 
 #if __ANDROID__
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
+using Microsoft.Maui.Graphics.Native;
 using FrameRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.FrameRenderer;
 using LabelRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.LabelRenderer;
 using ImageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ImageRenderer;
 using ButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ButtonRenderer;
+using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform.DefaultRenderer;
 #elif WINDOWS
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Graphics.Win2D;
 using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.BoxViewBorderRenderer;
 using CellRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.TextCellRenderer;
 using Deserializer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsSerializer;
 using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
 using StreamImagesourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.UWP.StreamImageSourceHandler;
 using ImageLoaderSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.UWP.UriImageSourceHandler;
-
+using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.DefaultRenderer;
 #elif __IOS__
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Graphics.Native;
 using WebViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.WkWebViewRenderer;
 using NavigationPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.NavigationRenderer;
 using TabbedPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.TabbedRenderer;
 using FlyoutPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.PhoneFlyoutPageRenderer;
 using RadioButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
+using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
 #endif
-
-using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Controls.Hosting
 {
@@ -67,33 +72,34 @@ namespace Microsoft.Maui.Controls.Hosting
 			{
 #if __ANDROID__
 				events.AddAndroid(android => android
-						   .OnCreate((a, b) =>
-						   {
-							   // This just gets Forms Compat bits setup with what it needs
-							   // to initialize the first view. MauiContext hasn't been initialized at this point
-							   // so we setup one that will look exactly the same just
-							   // to make legacy Forms bits happy
-							   var services = MauiApplication.Current.Services;
-							   MauiContext mauiContext = new MauiContext(services, a);
-							   ActivationState state = new ActivationState(mauiContext, b);
-							   Forms.Init(new ActivationState(mauiContext, b), new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
-						   })
-						   .OnPostCreate((_, b) =>
-						   {
-							   // This calls Init again so that the MauiContext that's part of
-							   // Forms.Init matches the rest of the maui application
-							   var mauiApp = MauiApplication.Current.Application;
-							   if (mauiApp.Windows.Count > 0)
-							   {
-								   var window = mauiApp.Windows[0];
-								   var mauiContext = window.Handler?.MauiContext ?? window.View.Handler?.MauiContext;
+					.OnCreate((a, b) =>
+					{
+						// This just gets Forms Compat bits setup with what it needs
+						// to initialize the first view. MauiContext hasn't been initialized at this point
+						// so we setup one that will look exactly the same just
+						// to make legacy Forms bits happy
+						var services = MauiApplication.Current.Services;
+						MauiContext mauiContext = new MauiContext(services, a);
+						ActivationState state = new ActivationState(mauiContext, b);
+						Forms.Init(new ActivationState(mauiContext, b), new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
+						GraphicsPlatform.RegisterGlobalService(NativeGraphicsService.Instance);
+					})
+					.OnPostCreate((_, b) =>
+					{
+						// This calls Init again so that the MauiContext that's part of
+						// Forms.Init matches the rest of the maui application
+						var mauiApp = MauiApplication.Current.Application;
+						if (mauiApp.Windows.Count > 0)
+						{
+							var window = mauiApp.Windows[0];
+							var mauiContext = window.Handler?.MauiContext ?? window.View.Handler?.MauiContext;
 
-								   if (mauiContext != null)
-								   {
-									   Forms.Init(new ActivationState(mauiContext, b));
-								   }
-							   }
-						   }));
+							if (mauiContext != null)
+							{
+								Forms.Init(new ActivationState(mauiContext, b));
+							}
+						}
+					}));
 #elif __IOS__
 				events.AddiOS(iOS =>
 				{
@@ -109,6 +115,7 @@ namespace Microsoft.Maui.Controls.Hosting
 						// This calls Init again so that the MauiContext that's part of
 						// Forms.Init matches the rest of the maui application
 						var mauiApp = MauiUIApplicationDelegate.Current.Application;
+
 						if (mauiApp.Windows.Count > 0)
 						{
 							var window = mauiApp.Windows[0];
@@ -119,38 +126,42 @@ namespace Microsoft.Maui.Controls.Hosting
 								Forms.Init(new ActivationState(mauiContext));
 							}
 						}
+						
+						GraphicsPlatform.RegisterGlobalService(NativeGraphicsService.Instance);
+
 						return true;
 					});
 				});
 #elif WINDOWS
 				events.AddWindows(windows => windows
-							.OnLaunching((_, args) =>
-							{								
-								// We need to call Forms.Init so the Window and Root Page can new up successfully
-								// The dispatcher that's inside of Forms.Init needs to be setup before the initial 
-								// window and root page start creating
-								// Inside OnLaunched we grab the MauiContext that's on the window so we can have the correct
-								// MauiContext inside Forms
-								MauiContext mauiContext = new MauiContext(MauiWinUIApplication.Current.Services, new UI.Xaml.Window());
-								ActivationState state = new ActivationState(mauiContext, args);
-								Forms.Init(state, new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
-							})
-						   .OnLaunched((_, args) =>
-						   {
-							   // This calls Init again so that the MauiContext that's part of
-							   // Forms.Init matches the rest of the maui application
-							   var mauiApp = MauiWinUIApplication.Current.Application;
-							   if (mauiApp.Windows.Count > 0)
-							   {
-								   var window = mauiApp.Windows[0];
-								   var mauiContext = window.Handler?.MauiContext ?? window.View.Handler?.MauiContext;
+					.OnLaunching((_, args) =>
+					{
+						// We need to call Forms.Init so the Window and Root Page can new up successfully
+						// The dispatcher that's inside of Forms.Init needs to be setup before the initial 
+						// window and root page start creating
+						// Inside OnLaunched we grab the MauiContext that's on the window so we can have the correct
+						// MauiContext inside Forms
+						MauiContext mauiContext = new MauiContext(MauiWinUIApplication.Current.Services, new UI.Xaml.Window());
+						ActivationState state = new ActivationState(mauiContext, args);
+						Forms.Init(state, new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
+						GraphicsPlatform.RegisterGlobalService(W2DGraphicsService.Instance);
+					})
+					.OnLaunched((_, args) =>
+					{
+						// This calls Init again so that the MauiContext that's part of
+						// Forms.Init matches the rest of the maui application
+						var mauiApp = MauiWinUIApplication.Current.Application;
+						if (mauiApp.Windows.Count > 0)
+						{
+							var window = mauiApp.Windows[0];
+							var mauiContext = window.Handler?.MauiContext ?? window.View.Handler?.MauiContext;
 
-								   if (mauiContext != null)
-								   {
-									   Forms.Init(new ActivationState(mauiContext, args));
-								   }
-							   }
-						   }));
+							if (mauiContext != null)
+							{
+								Forms.Init(new ActivationState(mauiContext, args));
+							}
+						}
+					}));
 #endif
 			});
 
@@ -162,7 +173,6 @@ namespace Microsoft.Maui.Controls.Hosting
 
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 
-					Forms.RenderersRegistered();
 					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Entry), typeof(EntryRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Editor), typeof(EditorRenderer));
@@ -180,7 +190,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(Line), typeof(LineRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Polyline), typeof(PolylineRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Polygon), typeof(PolygonRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Rectangle), typeof(RectangleRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(Shapes.Rectangle), typeof(RectangleRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(RadioButton), typeof(RadioButtonRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Slider), typeof(SliderRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(WebView), typeof(WebViewRenderer));
@@ -215,6 +225,14 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(TextCell), typeof(TextCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(ViewCell), typeof(ViewCellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(SwitchCell), typeof(SwitchCellRenderer));
+
+					// This is for Layouts that currently don't work when assigned to LayoutHandler
+					handlers.TryAddCompatibilityRenderer(typeof(ContentView), typeof(DefaultRenderer));
+#if __IOS__
+					handlers.TryAddCompatibilityRenderer(typeof(AbsoluteLayout), typeof(DefaultRenderer));
+#endif
+
+
 					DependencyService.Register<Xaml.ResourcesLoader>();
 					DependencyService.Register<NativeBindingService>();
 					DependencyService.Register<NativeValueConverterService>();

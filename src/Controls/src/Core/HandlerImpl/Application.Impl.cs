@@ -5,19 +5,23 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Application : IApplication
 	{
-		List<IWindow> _windows = new List<IWindow>();
-		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
+		readonly List<Window> _windows = new();
+
+		IReadOnlyList<IWindow> IApplication.Windows => Windows;
+
+		public IReadOnlyList<Window> Windows => _windows.AsReadOnly();
 
 		IWindow IApplication.CreateWindow(IActivationState activationState)
 		{
-			IWindow window = CreateWindow(activationState);
+			var window = CreateWindow(activationState);
 
-			AddWindow(window);
+			if (!_windows.Contains(window))
+				AddWindow(window);
 
 			return window;
 		}
 
-		void AddWindow(IWindow window)
+		void AddWindow(Window window)
 		{
 			_windows.Add(window);
 
@@ -32,9 +36,12 @@ namespace Microsoft.Maui.Controls
 				ne.NavigationProxy.Inner = NavigationProxy;
 		}
 
-		protected virtual IWindow CreateWindow(IActivationState activationState)
+		protected virtual Window CreateWindow(IActivationState activationState)
 		{
-			throw new NotImplementedException();
+			if (Windows.Count > 0)
+				return Windows[0];
+
+			throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
 		}
 	}
 }

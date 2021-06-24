@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net6.0-windows10.0.19041</TargetFrameworks>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<OutputType>WinExe</OutputType>
 		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
 		<UseMaui>true</UseMaui>
@@ -42,7 +43,7 @@
 	<ItemGroup>
 		<Compile
 			Include="..\MauiApp1\**\*.cs"
-			Exclude="..\MauiApp1\bin\**;..\MauiApp1\obj\**;..\MauiApp1\Android\**;..\MauiApp1\iOS\**;..\MauiApp1\MacCatalyst\**"
+			Exclude="..\MauiApp1\bin\**;..\MauiApp1\obj\**;..\MauiApp1\Platforms\**"
 			Link="%(RecursiveDir)%(Filename)%(Extension)"/>
 		<MauiXaml
 			Include="..\MauiApp1\**\*.xaml"
@@ -60,8 +61,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="WINDOWS_SDK_VERSION" />
-		<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="WINDOWS_SDK_VERSION" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="MICROSOFT_EXTENSIONS_VERSION" />
+		<PackageReference Include="Microsoft.ProjectReunion" Version="PROJECT_REUNION_VERSION" />
+		<PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="PROJECT_REUNION_VERSION" />
+		<PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="PROJECT_REUNION_VERSION" />
 	</ItemGroup>
 
 </Project>
