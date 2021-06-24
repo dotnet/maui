@@ -78,6 +78,9 @@ namespace Microsoft.Maui.Controls
 				if (_page != null)
 				{
 					InternalChildren.Remove(_page);
+
+					if (_page != null)
+						_page.AttachedHandler -= OnPageAttachedHandler;
 				}
 
 				_page = value;
@@ -89,7 +92,15 @@ namespace Microsoft.Maui.Controls
 					ne.NavigationProxy.Inner = NavigationProxy;
 
 				ModalNavigationService.SettingNewPage();
+
+				if (value != null)
+					value.AttachedHandler += OnPageAttachedHandler;
 			}
+		}
+
+		void OnPageAttachedHandler(object? sender, EventArgs e)
+		{
+			ModalNavigationService.PageAttachedHandler();
 		}
 
 		IView IWindow.View

@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationService
 	{
-		partial void OnAttachedHandler()
+		partial void OnPageAttachedHandler()
 		{
 			var nativeActivity = _window.NativeActivity;
 

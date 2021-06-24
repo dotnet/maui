@@ -37,8 +37,6 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_previousPage != null)
 			{
-				_previousPage.AttachedHandler -= AttachedHandler;
-
 				// if _previousNavModel has been set than _navModel has already been reinitialized
 				if (_previousNavModel != null)
 				{
@@ -59,18 +57,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_navModel.Push(_window.Page, null);
 			_previousPage = _window.Page;
-			_previousPage.AttachedHandler += AttachedHandler;
-			_previousPage.DetachedHandler += DetachedHandler;
-			_previousPage.DetachingHandler += DetachingHandler;
 		}
 
-		partial void OnAttachedHandler();
-		void AttachedHandler(object? sender, EventArgs e) => OnAttachedHandler();
-
-		partial void OnDetachedHandler();
-		void DetachedHandler(object? sender, EventArgs e) => OnDetachedHandler();
-
-		partial void OnDetachingHandler();
-		void DetachingHandler(object? sender, EventArgs e) => OnDetachingHandler();
+		partial void OnPageAttachedHandler();
+		public void PageAttachedHandler() => OnPageAttachedHandler();
 	}
 }
