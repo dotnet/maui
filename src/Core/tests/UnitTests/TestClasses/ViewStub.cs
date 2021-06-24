@@ -9,7 +9,7 @@ namespace Microsoft.Maui.UnitTests
 
 		public Visibility Visibility { get; set; }
 
-		public IGeometry Clip { get; set; }
+		public IShape Clip { get; set; }
 
 		public double Opacity { get; set; }
 
