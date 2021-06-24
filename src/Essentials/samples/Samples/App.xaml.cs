@@ -27,6 +27,8 @@ namespace Samples
 
 			VersionTracking.Track();
 
+			MainPage = new NavigationPage(new HomePage());
+
 			try
 			{
 				AppActions.OnAppAction += AppActions_OnAppAction;
@@ -35,11 +37,6 @@ namespace Samples
 			{
 				Debug.WriteLine($"{nameof(AppActions)} Exception: {ex}");
 			}
-		}
-
-		protected override IWindow CreateWindow(IActivationState activationState)
-		{
-			return new Window(new NavigationPage(new HomePage()));
 		}
 
 		protected override async void OnStart()
