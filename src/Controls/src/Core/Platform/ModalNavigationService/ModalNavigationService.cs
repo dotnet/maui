@@ -61,6 +61,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_previousPage = _window.Page;
 			_previousPage.AttachedHandler += AttachedHandler;
 			_previousPage.DetachedHandler += DetachedHandler;
+			_previousPage.DetachingHandler += DetachingHandler;
 		}
 
 		partial void OnAttachedHandler();
@@ -68,5 +69,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		partial void OnDetachedHandler();
 		void DetachedHandler(object? sender, EventArgs e) => OnDetachedHandler();
+
+		partial void OnDetachingHandler();
+		void DetachingHandler(object? sender, EventArgs e) => OnDetachingHandler();
 	}
 }

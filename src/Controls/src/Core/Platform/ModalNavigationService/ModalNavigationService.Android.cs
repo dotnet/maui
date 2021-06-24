@@ -19,12 +19,13 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		partial void OnAttachedHandler()
 		{
-			if (_BackButtonCallBack == null)
+			var nativeActivity = _window.NativeActivity;
+
+			if (_BackButtonCallBack == null || _BackButtonCallBack.Context != nativeActivity)
 			{
-				_window
-					.NativeActivity
+				nativeActivity
 					.OnBackPressedDispatcher
-					.AddCallback(_window.NativeActivity, _BackButtonCallBack = new BackButtonCallBack(this));
+					.AddCallback(nativeActivity, _BackButtonCallBack = new BackButtonCallBack(this, nativeActivity));
 			}
 		}
 
@@ -167,19 +168,39 @@ namespace Microsoft.Maui.Controls.Platform
 			return handled;
 		}
 
-
-		// TODO MAUI this might not work for cancelling back button pressed events
-		public class BackButtonCallBack : OnBackPressedCallback
+		class BackButtonCallBack : OnBackPressedCallback
 		{
-			ModalNavigationService _service;
-			public BackButtonCallBack(ModalNavigationService service) : base(true)
+			WeakReference<Context> _weakReference;
+			ModalNavigationService? _service;
+
+			public BackButtonCallBack(ModalNavigationService service, Context context) : base(true)
 			{
 				_service = service;
+				_weakReference = new WeakReference<Context>(context);
+			}
+
+			public Context? Context
+			{
+				get
+				{
+					Context context;
+					if (_weakReference.TryGetTarget(out context))
+						return context;
+
+					_service = null;
+					return null;
+				}
 			}
 
 			public override void HandleOnBackPressed()
 			{
-				_service.HandleBackPressed();
+				_service?.HandleBackPressed();
+			}
+
+			protected override void Dispose(bool disposing)
+			{
+				_service = null;
+				base.Dispose(disposing);
 			}
 		}
 
