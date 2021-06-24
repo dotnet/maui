@@ -2,9 +2,9 @@
   <Import Project="eng\Versions.props" />
 
   <PropertyGroup>
-    <BuildForWinUI Condition="'$(SolutionFileName)' == 'Microsoft.Maui.WinUI.sln' AND '$(Packing)' == ''">true</BuildForWinUI>
+    <BuildForWinUI Condition=" ('$(SolutionFileName)' == 'Microsoft.Maui.WinUI.sln' OR '$(SolutionFileName)' == 'BlazorWindows-net6.sln') AND '$(Packing)' == ''">true</BuildForWinUI>
     <BuildForAndroid Condition="'$(SolutionFileName)' == 'Microsoft.Maui.Droid.sln' AND '$(Packing)' == ''">true</BuildForAndroid>
-    <BuildForNet6 Condition="'$(Packing)' == 'true' OR $(MSBuildProjectFile.Contains('SingleProject')) == true  OR $(MSBuildProjectFile.Contains('net6')) == true OR $(SolutionFileName.Contains('net6')) == true OR '$(BuildForWinUI)' == 'true' OR '$(BuildForAndroid)' == 'true'">true</BuildForNet6>
+    <BuildForNet6 Condition="'$(Packing)' == 'true' OR $(MSBuildProjectFile.Contains('SingleProject')) OR $(MSBuildProjectFile.Contains('Profiling')) OR $(MSBuildProjectFile.Contains('net6')) OR $(SolutionFileName.Contains('net6')) OR '$(BuildForWinUI)' == 'true' OR '$(BuildForAndroid)' == 'true'">true</BuildForNet6>
     <MauiPlatforms>net6.0-ios;net6.0-maccatalyst;net6.0-android</MauiPlatforms>
     <WindowsTargetFramework Condition="'$(WindowsTargetFramework)' == ''">net6.0-windows10.0.18362</WindowsTargetFramework>
     <MauiPlatforms Condition="'$(Packing)' == 'true'">$(MauiPlatforms);$(WindowsTargetFramework)</MauiPlatforms>
@@ -28,16 +28,21 @@
 
     <!-- HACK: WinUI seems to have issues without this -->
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
+    <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
 
   </PropertyGroup>
 
   <PropertyGroup>
+    <MauiRootDirectory>$(MSBuildThisFileDirectory)</MauiRootDirectory>
+    <MauiNuSpecDirectory>$(MSBuildThisFileDirectory).nuspec/</MauiNuSpecDirectory>
     <DotNetOutputPath>$(MSBuildThisFileDirectory)bin/</DotNetOutputPath>
     <DotNetTempDirectory>$(DotNetOutputPath)temp/</DotNetTempDirectory>
     <DotNetDirectory>$(DotNetOutputPath)dotnet/</DotNetDirectory>
     <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
     <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
+    <DotNetLibraryPacksDirectory>$(DotNetDirectory)library-packs/</DotNetLibraryPacksDirectory>
     <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetPreviewVersionBand)/</DotNetSdkManifestsDirectory>
+    <DotNetTemplatePacksDirectory>$(DotNetDirectory)template-packs/</DotNetTemplatePacksDirectory>
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
     <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\</_MauiBuildTasksLocation>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

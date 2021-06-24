@@ -47,7 +47,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.Visibility, id);
 		}
 
-		[Fact(DisplayName = "Semantic Description is set correctly")]
+		[Fact(DisplayName = "Semantic Description is set correctly"
+#if __ANDROID__
+			, Skip = "This value can't be validated through automated tests"
+#endif
+		)]
 		[InlineData()]
 		public async Task SetSemanticDescription()
 		{
@@ -58,7 +62,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Semantic Hint is set correctly"
-#if MONOANDROID
+#if __ANDROID__
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]

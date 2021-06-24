@@ -6,11 +6,11 @@ namespace Microsoft.Maui
 {
 	public static class ViewGroupExtensions
 	{
-		public static IEnumerable<T> GetChildrenOfType<T>(this AViewGroup self) where T : AView
+		public static IEnumerable<T> GetChildrenOfType<T>(this AViewGroup viewGroup) where T : AView
 		{
-			for (var i = 0; i < self.ChildCount; i++)
+			for (var i = 0; i < viewGroup.ChildCount; i++)
 			{
-				AView? child = self.GetChildAt(i);
+				AView? child = viewGroup.GetChildAt(i);
 
 				if (child is T typedChild)
 					yield return typedChild;
@@ -23,6 +23,28 @@ namespace Microsoft.Maui
 							yield return nextChild;
 				}
 			}
+		}
+
+		public static T? GetFirstChildOfType<T>(this AViewGroup viewGroup) where T : AView
+		{
+			for (var i = 0; i < viewGroup.ChildCount; i++)
+			{
+				AView? child = viewGroup.GetChildAt(i);
+
+				if (child is T typedChild)
+					return typedChild;
+
+				if (child is AViewGroup vg)
+				{
+					var descendant = vg.GetFirstChildOfType<T>();
+					if (descendant != null)
+					{
+						return descendant;
+					}
+				}
+			}
+
+			return null;
 		}
 	}
 }

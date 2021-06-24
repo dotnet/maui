@@ -54,8 +54,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 		AView ITabStop.TabStop => this;
 
-		ViewGroup IVisualElementRenderer.ViewGroup => null;
-
 		protected Label Element
 		{
 			get { return _element; }

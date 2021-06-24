@@ -67,6 +67,17 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Text;
 
+		Color GetNativeTextColor(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return Colors.Transparent;
+
+			return textField.TextColor.ToColor();
+		}
+
 		string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Placeholder;
 

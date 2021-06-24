@@ -184,15 +184,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return _ColorButtonNormal;
 		}
 
-		public static void Init(IActivationState activationState) =>
-			Init(activationState.Context, activationState.SavedInstance);
+		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
+			Init(activationState.Context, activationState.SavedInstance, options);
 
 		// Provide backwards compat for Forms.Init and AndroidActivity
 		// Why is bundle a param if never used?
 		public static void Init(Context activity, Bundle bundle) =>
 			Init(new MauiContext(activity), bundle);
 
-		public static void Init(IMauiContext context, Bundle bundle)
+		public static void Init(IMauiContext context, Bundle bundle, InitializationOptions? options = null)
 		{
 			Assembly resourceAssembly;
 
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FrameEnd("Assembly.GetCallingAssembly");
 
 			Profile.FrameBegin();
-			SetupInit(context, resourceAssembly, null);
+			SetupInit(context, resourceAssembly, options);
 			Profile.FrameEnd();
 		}
 
@@ -256,29 +256,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		internal static void RenderersRegistered()
 		{
 			IsInitializedRenderers = true;
-		}
-
-		internal static void RegisterCompatRenderers(
-			Assembly[] assemblies,
-			Assembly defaultRendererAssembly,
-			Action<Type> viewRegistered)
-		{
-			if (IsInitializedRenderers)
-				return;
-
-			IsInitializedRenderers = true;
-
-			// Only need to do this once
-			Registrar.RegisterAll(
-				assemblies,
-				defaultRendererAssembly,
-				new[] {
-						typeof(ExportRendererAttribute),
-						typeof(ExportCellAttribute),
-						typeof(ExportImageSourceHandlerAttribute),
-						typeof(ExportFontAttribute)
-					}, default(InitializationFlags),
-				viewRegistered);
 		}
 
 		internal static void RegisterCompatRenderers(InitializationOptions? maybeOptions)

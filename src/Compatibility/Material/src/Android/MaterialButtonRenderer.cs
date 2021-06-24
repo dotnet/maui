@@ -407,7 +407,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.Android
 		// IVisualElementRenderer
 		VisualElement IVisualElementRenderer.Element => Element;
 		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;
-		ViewGroup IVisualElementRenderer.ViewGroup => null;
 		AView IVisualElementRenderer.View => this;
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)

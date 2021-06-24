@@ -42,10 +42,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		AView IVisualElementRenderer.View => _flyoutRenderer.AndroidView;
 
-		// Used by Previewer
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ViewGroup ViewGroup => _flyoutRenderer.AndroidView as ViewGroup;
-
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
 			return new SizeRequest(new Size(100, 100));
@@ -267,7 +263,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			FragmentTransaction transaction = manager.BeginTransactionEx();
 
 			if (animate)
-				transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.EnterMask);
+				transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.FragmentOpen);
 
 			transaction.ReplaceEx(_frameLayout.Id, fragment);
 			transaction.CommitAllowingStateLossEx();

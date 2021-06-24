@@ -187,8 +187,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static void Init(InitializationOptions options) =>
 			SetupInit(new MauiContext(), options);
 
-		public static void Init(IActivationState activationState) =>
-			SetupInit(activationState.Context);
+		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
+			SetupInit(activationState.Context, options);
 
 		static void SetupInit(IMauiContext context, InitializationOptions? maybeOptions = null)
 		{
@@ -274,29 +274,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					typeof(ExportFontAttribute)
 				});
 			}
-		}
-
-		internal static void RegisterCompatRenderers(
-			Assembly[] assemblies,
-			Assembly defaultRendererAssembly,
-			Action<Type> viewRegistered)
-		{
-			if (IsInitializedRenderers)
-				return;
-
-			IsInitializedRenderers = true;
-
-			// Only need to do this once
-			Controls.Internals.Registrar.RegisterAll(
-				assemblies,
-				defaultRendererAssembly,
-				new[] {
-						typeof(ExportRendererAttribute),
-						typeof(ExportCellAttribute),
-						typeof(ExportImageSourceHandlerAttribute),
-						typeof(ExportFontAttribute)
-					}, default(InitializationFlags),
-				viewRegistered);
 		}
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
