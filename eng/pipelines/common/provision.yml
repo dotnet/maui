@@ -1,5 +1,6 @@
 parameters:
   platform : ''
+  installXcode: true
 
 steps:
 
@@ -8,7 +9,7 @@ steps:
     # Provision Xcode
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Xcode'
-      condition: ne(variables['REQUIRED_XCODE'], '')
+      condition: and(ne(variables['REQUIRED_XCODE'], ''), ne('{{ parameters.installXcode }}', 'false'))
       inputs:
         provisioning_script: $(provisionator.xcode)
     # Provision Additional Software
