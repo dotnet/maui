@@ -44,7 +44,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2ACC7FFA-2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "src\Core\src\Core.csproj", "{29913989-0F70-48D8-8EDE-B1DD217F21D1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup", "src\Compatibility\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj", "{3B72465B-ACAE-43AE-9327-10F372FE5F80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup", "src\Compatibility\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj", "{3B72465B-ACAE-43AE-9327-10F372FE5F80}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D5B986A3-7FC9-437E-8030-349AA4698DFD}"
 EndProject
