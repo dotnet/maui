@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using AView = Android.Views.View;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(Issue12484CustomView), typeof(_12484CustomRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android

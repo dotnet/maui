@@ -11,6 +11,7 @@ using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.Core.Content;
 using Java.Lang;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Graphics;
 

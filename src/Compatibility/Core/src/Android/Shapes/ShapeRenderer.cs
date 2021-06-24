@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;

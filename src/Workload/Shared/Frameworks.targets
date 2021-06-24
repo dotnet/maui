@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup Condition=" '$(MauiPlatformName)' != '' ">
-    <!-- NOTE: $(MauiPlatformName) is expected to be passed in: android, maccatalyst, ios, or windows -->
+    <!-- NOTE: $(MauiPlatformName) is expected to be passed in: android, maccatalyst, ios, or win -->
     <PackageId>$(PackageId).$(MauiPlatformName)</PackageId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(MauiPlatformName)' == '' ">
@@ -31,7 +31,7 @@
         Profile="MacCatalyst"
     />
     <_TargetPlatform
-        Condition=" '$(MauiPlatformName)' == 'windows' "
+        Condition=" '$(MauiPlatformName)' == 'win' "
         Include="$(WindowsTargetFramework)"
         FullTfm="%(Identity)"
         Tfm="$(WindowsTargetFramework)"
@@ -43,7 +43,7 @@
 
   <ItemGroup>
     <_Platforms Include="android;maccatalyst;ios" />
-    <_Platforms Include="windows" Condition=" '$(BuildForWinUI)' == 'true' or '$(Packing)' == 'true' " />
+    <_Platforms Include="win" Condition=" '$(BuildForWinUI)' == 'true' or '$(Packing)' == 'true' " />
   </ItemGroup>
 
   <Target Name="_PackPerPlatform" Condition=" '$(MauiPlatformName)' == '' " AfterTargets="Build">

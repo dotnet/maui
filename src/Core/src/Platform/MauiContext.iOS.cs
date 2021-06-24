@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 		{
 			_window = new WeakReference<UIWindow>(window ?? throw new ArgumentNullException(nameof(window)));
 		}
-		
+
 
 		public UIWindow? Window
 		{

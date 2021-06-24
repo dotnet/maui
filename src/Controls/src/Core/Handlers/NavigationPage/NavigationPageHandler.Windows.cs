@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			set
 			{
-				NativeViewValidation().ToolbarBackground = value;
+				NativeView.ToolbarBackground = value;
 				UpdateTitleOnParents();
 			}
 		}
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			set
 			{
-				NativeViewValidation().TitleBrush = value;
+				NativeView.TitleBrush = value;
 				UpdateTitleOnParents();
 			}
 		}
@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		Task<CommandBar?> IToolbarProvider.GetCommandBarAsync()
 		{
-			return ((IToolbarProvider)NativeViewValidation())?.GetCommandBarAsync() ??
+			return ((IToolbarProvider)NativeView)?.GetCommandBarAsync() ??
 				Task<CommandBar?>.FromResult((CommandBar?)null);
 		}
 
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			base.ConnectHandler(nativeView);
 
-			var virtualView = VirtualViewWithValidation();
+			var virtualView = VirtualView;
 
 			nativeView.PointerPressed += OnPointerPressed;
 			nativeView.SizeChanged += OnNativeSizeChanged;
@@ -265,10 +265,10 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			object defaultColor = GetDefaultColor();
 
-			if (VirtualViewWithValidation().BarBackgroundColor.IsDefault() && defaultColor != null)
+			if (VirtualView.BarBackgroundColor.IsDefault() && defaultColor != null)
 				return (WBrush)defaultColor;
 
-			return Maui.ColorExtensions.ToNative(VirtualViewWithValidation().BarBackgroundColor);
+			return Maui.ColorExtensions.ToNative(VirtualView.BarBackgroundColor);
 		}
 
 		static WBrush? GetBarBackgroundBrush(NavigationPage navigationPage)
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void LookupRelevantParents()
 		{
-			IEnumerable<IPage> parentPages = VirtualViewWithValidation().GetParentPages();
+			IEnumerable<IPage> parentPages = VirtualView.GetParentPages();
 
 			if (_parentTabbedPage != null)
 				_parentTabbedPage.PropertyChanged -= MultiPagePropertyChanged;
@@ -406,13 +406,13 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (point.Properties.IsXButton1Pressed)
 			{
 				e.Handled = true;
-				OnBackClicked(NativeViewValidation(), e);
+				OnBackClicked(NativeView, e);
 			}
 		}
 
 		protected virtual void OnPopRequested(object? sender, NavigationRequestedEventArgs e)
 		{
-			var newCurrent = VirtualViewWithValidation().Peek(1);
+			var newCurrent = VirtualView.Peek(1);
 			SetPage(newCurrent, e.Animated, true);
 		}
 
@@ -433,7 +433,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void PushExistingNavigationStack()
 		{
-			foreach (var page in VirtualViewWithValidation().Pages)
+			foreach (var page in VirtualView.Pages)
 			{
 				SetPage(page, false, false);
 			}
@@ -446,10 +446,10 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (isPopping)
 				{
 					_currentPage.Cleanup();
-					NativeViewValidation().TitleView?.Cleanup();
+					NativeView.TitleView?.Cleanup();
 				}
 
-				NativeViewValidation().Content = null;
+				NativeView.Content = null;
 				_currentPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 			}
 
@@ -474,13 +474,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			SetupPageTransition(_transition, isAnimated, isPopping);
 
-			NativeViewValidation().Content = renderer.NativeView;
-			NativeViewValidation().DataContext = page;
+			NativeView.Content = renderer.NativeView;
+			NativeView.DataContext = page;
 		}
 
 		protected virtual void SetupPageTransition(Transition transition, bool isAnimated, bool isPopping)
 		{
-			PageControl nativeView = NativeViewValidation();
+			PageControl nativeView = NativeView;
 			if (isAnimated && transition == null)
 			{
 				transition  = new EntranceThemeTransition();
@@ -509,27 +509,27 @@ namespace Microsoft.Maui.Controls.Handlers
 			else
 				title = String.Empty;
 
-			NativeViewValidation().BackButtonTitle = title;
+			NativeView.BackButtonTitle = title;
 		}
 
 		void UpdateContainerArea()
 		{
-			VirtualViewWithValidation().ContainerArea = new Rectangle(0, 0, NativeViewValidation().ContentWidth, NativeViewValidation().ContentHeight);
+			VirtualView.ContainerArea = new Rectangle(0, 0, NativeView.ContentWidth, NativeView.ContentHeight);
 		}
 
 		void UpdateTitleVisible()
 		{
 			UpdateTitleOnParents();
 
-			bool showing = NativeViewValidation().TitleVisibility == Visibility.Visible;
+			bool showing = NativeView.TitleVisibility == Visibility.Visible;
 			bool newValue = GetIsNavBarPossible() && NavigationPage.GetHasNavigationBar(_currentPage);
 			if (showing == newValue)
 				return;
 
-			NativeViewValidation().TitleVisibility = newValue ? Visibility.Visible : Visibility.Collapsed;
+			NativeView.TitleVisibility = newValue ? Visibility.Visible : Visibility.Collapsed;
 
 			// Force ContentHeight/Width to update, doesn't work from inside PageControl for some reason
-			NativeViewValidation().UpdateLayout();
+			NativeView.UpdateLayout();
 			UpdateContainerArea();
 		}
 
@@ -550,7 +550,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				return;
 			}
 
-			bool showBackButton = VirtualViewWithValidation().InternalChildren.Count > 1 && NavigationPage.GetHasBackButton(_currentPage);
+			bool showBackButton = VirtualView.InternalChildren.Count > 1 && NavigationPage.GetHasBackButton(_currentPage);
 			if (NativeVersion.IsDesktop)
 			{
 				//TODO MAUI: this means it's running as a desktop app
@@ -562,7 +562,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					navManager.AppViewBackButtonVisibility = showBackButton ? AppViewBackButtonVisibility.Visible : AppViewBackButtonVisibility.Collapsed;
 			}
 
-			NativeView.SetBackButtonTitle(VirtualViewWithValidation());
+			NativeView.SetBackButtonTitle(VirtualView);
 		}
 
 		void UpdateTitleOnParents()
@@ -606,17 +606,17 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void UpdatePadding()
 		{
-			NativeViewValidation().TitleInset = VirtualViewWithValidation().Padding.Left;
+			NativeView.TitleInset = VirtualView.Padding.Left;
 		}
 
 		void UpdateTitleColor()
 		{
-			(this as ITitleProvider).BarForegroundBrush = GetBarForegroundBrush(VirtualViewWithValidation());
+			(this as ITitleProvider).BarForegroundBrush = GetBarForegroundBrush(VirtualView);
 		}
 
 		void UpdateNavigationBarBackground()
 		{
-			(this as ITitleProvider).BarBackgroundBrush = GetBarBackgroundBrush(VirtualViewWithValidation());
+			(this as ITitleProvider).BarBackgroundBrush = GetBarBackgroundBrush(VirtualView);
 		}
 
 		void UpdateTitleIcon() =>
@@ -660,7 +660,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					parent.TitleView = TitleView;
 			}
 			else if (_parentFlyoutPage == null)
-				NativeViewValidation().TitleView = TitleView;
+				NativeView.TitleView = TitleView;
 
 		}
 

@@ -26,8 +26,10 @@ namespace Microsoft.Maui
 				.Build();
 
 			Services = host.Services;
+
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
+
 			Application = Services.GetRequiredService<IApplication>();
-			Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
 			var mauiContext = new MauiContext(Services, MainWindow);
 
@@ -36,47 +38,30 @@ namespace Microsoft.Maui
 
 			var content = window.View;
 
-			var canvas = CreateRootContainer();
+			var root = CreateRootContainer();
 
 			var nativeContent = content.ToNative(mauiContext);
 
-			canvas.Children.Add(nativeContent);
-
-			MainWindow.Content = canvas;
+			root.Children.Add(nativeContent);
 
 			AlertManager.Subscribe(this, mauiContext);
 
-			Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
+			MainWindow.Content = root;
 
-			MainWindow.SizeChanged += (sender, sizeChangedArgs) =>
-			{
-				// TODO ezhart We need a better signalling mechanism between the PagePanel and the ContentPage for invalidation
-				content.InvalidateMeasure();
-
-				// TODO ezhart This is not ideal, but we need to force the canvas to match the window size
-				// We probably need a better root control than Canvas, really
-				canvas.Width = MainWindow.Bounds.Width;
-				canvas.Height = MainWindow.Bounds.Height;
-
-				// TODO ezhart Once we've got navigation up and running, this will need to be updated so it 
-				// affects the navigation root or the current page. Again, Canvas is probably not the right root, but
-				// I haven't been able to get a custom Panel to handle the drawing correctly yet.
-				nativeContent.Width = canvas.ActualWidth;
-				nativeContent.Height = canvas.ActualHeight;
-			};
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 
 			MainWindow.Activate();
 		}
 
-		Canvas CreateRootContainer()
+		RootPanel CreateRootContainer()
 		{
 			// TODO WINUI should this be some other known constant or via some mechanism? Or done differently?
-			Resources.TryGetValue("RootContainerStyle", out object style);
-
-			return new Canvas
-			{
-				Style = style as UI.Xaml.Style
-			};
+			return Resources.TryGetValue("MauiRootContainerStyle", out object style)
+				? new RootPanel
+				{
+					Style = style as UI.Xaml.Style
+				}
+				: new RootPanel();
 		}
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)

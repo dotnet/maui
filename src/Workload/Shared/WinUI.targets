@@ -1,7 +1,0 @@
-<Project>
-  <Target Name="_WinUIFix" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows'))">
-    <PropertyGroup>
-      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-    </PropertyGroup>
-  </Target>
-</Project>
