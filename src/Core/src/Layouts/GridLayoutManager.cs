@@ -27,15 +27,20 @@ namespace Microsoft.Maui.Layouts
 		{
 			var structure = _gridStructure ?? new GridStructure(Grid, childBounds.Width, childBounds.Height);
 
-			foreach (var view in Grid.Children)
+			foreach (var child in Grid.Children)
 			{
-				if (view.Visibility == Visibility.Collapsed)
+				if (child.Visibility == Visibility.Collapsed)
 				{
 					continue;
 				}
 
-				var cell = structure.GetCellBoundsFor(view);
-				view.Arrange(cell);
+				var cell = structure.GetCellBoundsFor(child);
+
+				// Set the actual position and size for the child
+				child.Frame = child.ComputeFrame(cell);
+
+				// And allow the child to arrange its children, if any
+				child.Arrange(child.Frame);
 			}
 		}
 

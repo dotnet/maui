@@ -50,15 +50,8 @@ namespace Microsoft.Maui.Controls.Layout2
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			base.ArrangeOverride(bounds);
-
+			// The base implementation is empty, so we don't bother calling it here
 			LayoutManager.ArrangeChildren(Frame);
-
-			foreach (var child in Children)
-			{
-				child.Handler?.NativeArrange(child.Frame);
-			}
-
 			return Frame.Size;
 		}
 

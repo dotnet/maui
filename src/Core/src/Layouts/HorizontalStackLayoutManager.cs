@@ -95,7 +95,13 @@ namespace Microsoft.Maui.Layouts
 		static double ArrangeChild(IView child, double height, int spacing, double x)
 		{
 			var destination = new Rectangle(x, 0, child.DesiredSize.Width, height);
-			child.Arrange(destination);
+			
+			// Set the actual position and size for the child
+			child.Frame = child.ComputeFrame(destination);
+
+			// And allow the child to arrange its children, if any
+			child.Arrange(child.Frame);
+			
 			return destination.Width + spacing;
 		}
 	}

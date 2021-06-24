@@ -40,7 +40,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 				[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure,
-				[nameof(IFrameworkElement.Frame)] = MapFrame,
+				[nameof(IFrameworkElement.Frame)] = MapFrame, // TODO ezhart 2021-06-24 Should this be a regular mapping? I think it's on actions to prevent it running immediately on creation
+				// Which might be fine? Or maybe it just needs a guard clause to discard invalid values?
 			}
 		};
 
@@ -95,7 +96,7 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
-		public abstract void NativeArrange(Rectangle frame);
+		public abstract void SetNativeFrame(Rectangle frame);
 
 		partial void ConnectingHandler(NativeView? nativeView);
 
@@ -192,6 +193,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFrame(ViewHandler handler, IView view)
 		{
+			handler.SetNativeFrame(view.Frame);
 			MappingFrame(handler, view);
 #if WINDOWS
 			MapClip(handler, view);

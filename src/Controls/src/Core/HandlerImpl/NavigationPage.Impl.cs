@@ -24,13 +24,6 @@ namespace Microsoft.Maui.Controls
 		{
 			// Update the Bounds (Frame) for this page
 			Layout(bounds);
-
-			if (Content is IFrameworkElement element)
-			{
-				element.Arrange(bounds);
-				element.Handler?.NativeArrange(element.Frame);
-			}
-
 			return Frame.Size;
 		}
 

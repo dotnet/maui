@@ -37,13 +37,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (oldElement != null)
 			{
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
-				oldElement.BatchCommitted -= OnBatchCommitted;
 			}
 
 			if (element != null)
 			{
 				element.PropertyChanged += OnElementPropertyChanged;
-				element.BatchCommitted += OnBatchCommitted;
 			}
 
 			Element = element;
@@ -53,13 +51,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				ViewHandler.SetVirtualView((IView)element);
 
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
-		}
-
-		// TODO ezhart 2021-06-18 Review this; a control calling Arrange on itself is almost certainly wrong, but removing this right now is breaking
-		// any layout that's inside a shimmed ScrollView. 
-		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
-		{
-			ViewHandler?.NativeArrange(Element.Bounds);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

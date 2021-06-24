@@ -14,6 +14,5 @@ namespace Microsoft.Maui
 		bool HasContainer { get; set; }
 		object? ContainerView { get; }
 		Size GetDesiredSize(double widthConstraint, double heightConstraint);
-		void NativeArrange(Rectangle frame);
 	}
 }
