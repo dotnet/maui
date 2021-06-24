@@ -52,8 +52,9 @@ Task("dotnet-build")
     {
         if (IsRunningOnWindows())
         {
-            RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf", settings => ((MSBuildSettings)settings)
-                .WithProperty("BuildForWinUI", "true"));
+            RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf", new Dictionary<string, string> {
+                ["BuildForWinUI"] = bool.TrueString,
+            });
             RunMSBuildWithLocalDotNet("./Microsoft.Maui-winui.sln");
         }
         else
@@ -66,8 +67,9 @@ Task("dotnet-build")
 Task("dotnet-samples")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui.Samples-net6.slnf", settings => ((MSBuildSettings)settings)
-            .WithProperty("UseWorkload", "true"));
+        RunMSBuildWithLocalDotNet("./Microsoft.Maui.Samples-net6.slnf", new Dictionary<string, string> {
+            ["UseWorkload"] = bool.TrueString,
+        });;
     });
 
 Task("dotnet-test")
@@ -211,7 +213,7 @@ Task("SAMPLE-ANDROID")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj", deployAndRun:true);
+        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj", deployAndRun: true);
     });
 
 Task("SAMPLE-IOS")
@@ -220,7 +222,7 @@ Task("SAMPLE-IOS")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj", deployAndRun:true);
+        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj", deployAndRun: true);
     });
 
 Task("SAMPLE-MAC")
@@ -229,7 +231,7 @@ Task("SAMPLE-MAC")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj", deployAndRun:true);
+        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj", deployAndRun: true);
     });
 
 
@@ -287,7 +289,7 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
 
 // NOTE: These methods work as long as the "dotnet" target has already run
 
-void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null, bool deployAndRun = false)
+void RunMSBuildWithLocalDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var binlog = $"{logDirectory}/{name}-{configuration}.binlog";
@@ -297,45 +299,47 @@ void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null, bool 
     // If we're not on Windows, use ./bin/dotnet/dotnet
     if (!IsRunningOnWindows() || deployAndRun)
     {
-        var dotnetBuildSettings = new DotNetCoreMSBuildSettings
+        var msbuildSettings = new DotNetCoreMSBuildSettings()
+            .SetConfiguration(configuration)
+            .EnableBinaryLogger(binlog);
+
+        if (properties != null)
         {
-            BinaryLogger = new MSBuildBinaryLoggerSettings
+            foreach (var property in properties)
             {
-                Enabled = true,
-                FileName = binlog,
-            },
+                msbuildSettings.WithProperty(property.Key, property.Value);
+            }
+        }
+
+        if (deployAndRun)
+            msbuildSettings.WithTarget("Run");
+
+        var dotnetBuildSettings = new DotNetCoreBuildSettings
+        {
+            ToolPath = dotnetPath,
+            MSBuildSettings = msbuildSettings,
         };
 
-        settings?.Invoke(dotnetBuildSettings);
-
-        DotNetCoreBuild(sln,
-            new DotNetCoreBuildSettings
-            {
-                Configuration = configuration,
-                ToolPath = dotnetPath,
-                MSBuildSettings = dotnetBuildSettings,
-                ArgumentCustomization = args=> { if(deployAndRun) { args.Append("-t:Run"); } return args; }
-            });
-        return;
+        DotNetCoreBuild(sln, dotnetBuildSettings);
     }
+    else
+    {
+        // Otherwise we need to run MSBuild for WinUI support
+        var msbuildSettings = new MSBuildSettings { ToolPath = FindMSBuild() }
+            .WithRestore()
+            .SetConfiguration(configuration)
+            .EnableBinaryLogger(binlog);
 
-    // Otherwise we need to run MSBuild for WinUI support
-    var msbuildSettings = new MSBuildSettings
+        if (properties != null)
         {
-            Configuration = configuration,
-            BinaryLogger = new MSBuildBinaryLogSettings
+            foreach (var property in properties)
             {
-                Enabled  = true,
-                FileName = binlog,
-            },
-            ToolPath = FindMSBuild(),
-        };
+                msbuildSettings.WithProperty(property.Key, property.Value);
+            }
+        }
 
-    settings?.Invoke(msbuildSettings);
-
-    MSBuild(sln,
-       msbuildSettings
-       .WithRestore());
+        MSBuild(sln, msbuildSettings);
+    }
 }
 
 void RunTestWithLocalDotNet(string csproj)
