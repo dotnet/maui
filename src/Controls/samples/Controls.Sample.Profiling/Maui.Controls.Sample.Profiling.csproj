@@ -22,8 +22,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AndroidEnvironment Condition="'$(IsEmulator)' == 'true'" Include="Android\environment.emulator.txt" />
-    <AndroidEnvironment Condition="'$(IsEmulator)' != 'true'" Include="Android\environment.device.txt" />
+    <AndroidEnvironment Condition="'$(IsEmulator)' == 'true'" Include="Platforms\Android\environment.emulator.txt" />
+    <AndroidEnvironment Condition="'$(IsEmulator)' != 'true'" Include="Platforms\Android\environment.device.txt" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">

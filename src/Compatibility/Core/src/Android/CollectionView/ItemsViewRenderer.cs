@@ -461,11 +461,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void UpdateBackgroundColor(Color color = null)
 		{
 			if (Element == null)
-			{
 				return;
-			}
+			
+			var backgroundColor = color ?? Element.BackgroundColor;
 
-			SetBackgroundColor((color ?? Element.BackgroundColor).ToAndroid());
+			if (backgroundColor == null)
+				return;
+
+			SetBackgroundColor(backgroundColor.ToAndroid());
 		}
 
 		protected virtual void UpdateBackground(Brush brush = null)

@@ -1,6 +1,6 @@
-using UIKit;
+﻿using UIKit;
 
-namespace Sample.MacCatalyst
+namespace Maui.Controls.Sample.SingleProject
 {
 	public class Application
 	{

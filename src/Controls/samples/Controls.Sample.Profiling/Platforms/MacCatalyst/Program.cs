@@ -1,8 +1,8 @@
-using UIKit;
+﻿using UIKit;
 
-namespace Sample.MacCatalyst
+namespace Maui.Controls.Sample.Profiling
 {
-	public class Application
+	public class Program
 	{
 		static void Main(string[] args) => UIApplication.Main(args, null, typeof(AppDelegate));
 	}
