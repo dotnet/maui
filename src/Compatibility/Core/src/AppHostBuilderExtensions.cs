@@ -3,10 +3,15 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Graphics;
 
 #if __ANDROID__
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
+using Microsoft.Maui.Graphics.Native;
 using FrameRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.FrameRenderer;
 using LabelRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.LabelRenderer;
 using ImageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ImageRenderer;
@@ -14,6 +19,7 @@ using ButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.Fa
 using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform.DefaultRenderer;
 #elif WINDOWS
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Graphics.Win2D;
 using BoxRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.BoxViewBorderRenderer;
 using CellRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.TextCellRenderer;
 using Deserializer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsSerializer;
@@ -21,9 +27,9 @@ using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.Win
 using StreamImagesourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.UWP.StreamImageSourceHandler;
 using ImageLoaderSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.UWP.UriImageSourceHandler;
 using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.UWP.DefaultRenderer;
-
 #elif __IOS__
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Graphics.Native;
 using WebViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.WkWebViewRenderer;
 using NavigationPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.NavigationRenderer;
 using TabbedPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.TabbedRenderer;
@@ -31,10 +37,6 @@ using FlyoutPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Ph
 using RadioButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
 using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
 #endif
-
-using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Controls.Hosting
 {
@@ -81,6 +83,8 @@ namespace Microsoft.Maui.Controls.Hosting
 						var mauiContext = new MauiContext(services, app);
 						var state = new ActivationState(mauiContext);
 						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
+
+						GraphicsPlatform.RegisterGlobalService(NativeGraphicsService.Instance);
 					})
 					.OnCreate((activity, bundle) =>
 					{
@@ -145,6 +149,9 @@ namespace Microsoft.Maui.Controls.Hosting
 								Forms.Init(state);
 							}
 						}
+
+						GraphicsPlatform.RegisterGlobalService(NativeGraphicsService.Instance);
+
 						return true;
 					}));
 #elif WINDOWS
@@ -164,6 +171,8 @@ namespace Microsoft.Maui.Controls.Hosting
 						var mauiContext = new MauiContext(services);
 						var state = new ActivationState(mauiContext, args);
 						Forms.Init(state, new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
+
+						GraphicsPlatform.RegisterGlobalService(W2DGraphicsService.Instance);
 					})
 					.OnLaunched((app, args) =>
 					{
@@ -213,7 +222,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(Line), typeof(LineRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Polyline), typeof(PolylineRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Polygon), typeof(PolygonRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(Rectangle), typeof(RectangleRenderer));
+					handlers.TryAddCompatibilityRenderer(typeof(Shapes.Rectangle), typeof(RectangleRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(RadioButton), typeof(RadioButtonRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Slider), typeof(SliderRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(WebView), typeof(WebViewRenderer));
