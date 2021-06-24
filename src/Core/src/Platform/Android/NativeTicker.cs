@@ -4,15 +4,16 @@ using Android.Animation;
 using Android.Content;
 using Android.OS;
 using Microsoft.Maui;
+using Microsoft.Maui.Internal;
+
 namespace Microsoft.Maui.Animations
 {
 	public class NativeTicker : Ticker
 	{
-		static List<NativeTicker> tickers = new List<NativeTicker>();
+		static WeakList<NativeTicker> tickers = new WeakList<NativeTicker>();
 		public static void CheckPowerSaveModeStatus()
 		{
-			foreach (var t in tickers)
-				t.checkPowerSaveModeStatus();
+			tickers.ForEach((t) => t.checkPowerSaveModeStatus());
 		}
 		readonly IMauiContext MauiContext;
 		ValueAnimator _val;
@@ -38,12 +39,6 @@ namespace Microsoft.Maui.Animations
 			// So we need to keep track of whether we're in that mode and handle animations accordingly
 			// We can't just check ValueAnimator.AreAnimationsEnabled() because there's no event for that, and it's
 			// only supported on API >= 26
-
-			//if (!Forms.IsLollipopOrNewer)
-			//{
-			//    _systemEnabled = true;
-			//    return;
-			//}
 			var context = MauiContext.Context!;
 			var powerManager = (PowerManager)context.GetSystemService(Context.PowerService)!;
 

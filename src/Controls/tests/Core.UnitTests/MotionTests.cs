@@ -42,7 +42,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			_enabled = enabled;
 
-			//OnSystemEnabledChanged();
 		}
 		public override async void Start()
 		{

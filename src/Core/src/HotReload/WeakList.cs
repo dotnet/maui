@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-namespace Microsoft.Maui.HotReload
+namespace Microsoft.Maui.Internal
 {
 	internal class WeakList<T> : IList<T?>
 	{
