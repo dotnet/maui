@@ -180,6 +180,7 @@
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
         Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag"
+        EnvironmentVariables="TMP=$(DotNetTempDirectory);TEMP=$(DotNetTempDirectory)"
         WorkingDirectory="$(MauiRootDirectory)"
     />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />
