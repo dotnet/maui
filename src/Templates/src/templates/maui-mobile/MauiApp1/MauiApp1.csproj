@@ -43,8 +43,5 @@
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
 		<UseInterpreter Condition="$(TargetFramework.Contains('-android'))">True</UseInterpreter>
 	</PropertyGroup>
-	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-		<AndroidEnvironment Include="Android\AndroidEnvironment.txt" />
-	</ItemGroup>
 
 </Project>
