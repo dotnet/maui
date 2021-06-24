@@ -280,11 +280,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public OSAppTheme RequestedTheme { get; }
 			public string RuntimePlatform { get; }
 
-			public Ticker CreateTicker()
-			{
-				throw new NotImplementedException();
-			}
-
 			public Assembly[] GetAssemblies()
 			{
 				throw new NotImplementedException();

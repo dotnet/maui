@@ -1,4 +1,5 @@
 using Android.Content;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -13,7 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public void CheckAnimationEnabledStatus()
 		{
-			((AndroidTicker)Ticker.Default).CheckAnimationEnabledStatus();
+			NativeTicker.CheckPowerSaveModeStatus();
 		}
 	}
 }
