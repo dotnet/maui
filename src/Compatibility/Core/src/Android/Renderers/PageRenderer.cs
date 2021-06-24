@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (Id == NoId)
 			{
-				Id = AppCompat.Platform.GenerateViewId();
+				Id = Platform.GenerateViewId();
 			}
 
 			UpdateBackground(false);

@@ -128,8 +128,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (!(_context.TryGetTarget(out context)))
 					return;
 
-				Renderer = AppCompat.Platform.CreateRenderer(view, context);
-				AppCompat.Platform.SetRenderer(view, Renderer);
+				Renderer = Platform.CreateRenderer(view, context);
+				Platform.SetRenderer(view, Renderer);
 				NativeView = Renderer.View;
 
 				if (View is VisualElement ve)

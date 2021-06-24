@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public PageContainer(Context context, IVisualElementRenderer child, bool inFragment = false) : base(context)
 		{
-			Id = AppCompat.Platform.GenerateViewId();
+			Id = Platform.GenerateViewId();
 			Child = child;
 			IsInFragment = inFragment;
 			AddView(child.View);
