@@ -31,12 +31,13 @@ namespace Microsoft.Maui
 
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			Application = Services.GetRequiredService<IApplication>();
-
-			UIWindow uIWindow = new UIWindow();
 			AlertManager.Subscribe(application);
 
-			var mauiContext = new MauiContext(Services);
+			Application = Services.GetRequiredService<IApplication>();
+			AlertManager.Subscribe(application);
+
+			UIWindow uIWindow = new UIWindow();
+			var mauiContext = new MauiContext(Services, uIWindow);
 
 			var activationState = new ActivationState(mauiContext);
 			var window = Application.CreateWindow(activationState);
