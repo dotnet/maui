@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	{
 		public abstract void AppendPath(PathF path);
 
-		PathF IGeometry.PathForBounds(Graphics.Rectangle bounds)
+		PathF IShape.PathForBounds(Graphics.Rectangle bounds)
 		{
 			var path = new PathF();
 

@@ -37,7 +37,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the Path used to define the outline of the contents of a View.
 		/// </summary>
-		IGeometry? Clip { get; }
+		IShape? Clip { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether this FrameworkElement is enabled in the user interface. 

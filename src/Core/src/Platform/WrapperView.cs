@@ -4,9 +4,9 @@ namespace Microsoft.Maui
 {
 	public partial class WrapperView
 	{
-		IGeometry? _clip;
+		IShape? _clip;
 
-		public IGeometry? Clip
+		public IShape? Clip
 		{
 			get => _clip;
 			set

@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		IGeometry IFrameworkElement.Clip => Clip;
+		IShape IFrameworkElement.Clip => Clip;
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
