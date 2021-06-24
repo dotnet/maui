@@ -42,10 +42,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		AView IVisualElementRenderer.View => _flyoutRenderer.AndroidView;
 
-		// Used by Previewer
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ViewGroup ViewGroup => _flyoutRenderer.AndroidView as ViewGroup;
-
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
 			return new SizeRequest(new Size(100, 100));

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>net6.0-maccatalyst</TargetFramework>
@@ -9,10 +9,12 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Controls.Sample\Maui.Controls.Sample-net6.csproj" />
   </ItemGroup>
 

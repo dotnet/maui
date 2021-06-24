@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		Task<IDictionary<string, object>> _propertiesTask;
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
+		readonly Lazy<IResourceDictionary> _systemResources;
 
 		public override IDispatcher Dispatcher => this.GetDispatcher();
 
@@ -26,8 +27,12 @@ namespace Microsoft.Maui.Controls
 		{
 			SetCurrentApplication(this);
 			NavigationProxy = new NavigationImpl(this);
-			SystemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
-			SystemResources.ValuesChanged += OnParentResourcesChanged;
+			_systemResources = new Lazy<IResourceDictionary>(() =>
+			{
+				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
+				systemResources.ValuesChanged += OnParentResourcesChanged;
+				return systemResources;
+			});
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
 		}
 
@@ -58,7 +63,6 @@ namespace Microsoft.Maui.Controls
 
 		public static Application Current { get; set; }
 
-		// TODO MAUI. What should this be?
 		public Page MainPage
 		{
 			get
@@ -66,73 +70,52 @@ namespace Microsoft.Maui.Controls
 				if (Windows.Count == 0)
 					return null;
 
-				return Windows[0].View as Page;
+				return Windows[0].Page;
 			}
 			set
 			{
 				if (value == null)
-					throw new ArgumentNullException("value");
+					throw new ArgumentNullException(nameof(value));
 
 				if (MainPage == value)
 					return;
 
+				OnPropertyChanging();
+
+				var previousPage = MainPage;
+
+				if (previousPage != null)
+					previousPage.Parent = null;
+
 				if (Windows.Count == 0)
 				{
-					OnPropertyChanging();
+					// there are no windows, so add a new window
+
 					AddWindow(new Window(value));
-					OnPropertyChanged();
 				}
 				else
 				{
-					var mainPage = MainPage;
+					// find the best window and replace the page
 
-					if (mainPage == value)
-						return;
+					var theWindow = Windows[0];
+					foreach (var window in Windows)
+					{
+						if (window.Page == previousPage)
+						{
+							theWindow = window;
+							break;
+						}
+					}
 
-					OnPropertyChanging();
-					if (mainPage != null)
-						mainPage.Parent = null;
-
-					Windows[0].View = (IView)value;
-
-					if (mainPage != null)
-						mainPage.NavigationProxy.Inner = NavigationProxy;
-
-					OnPropertyChanged();
+					theWindow.Page = value;
 				}
+
+				if (previousPage != null)
+					previousPage.NavigationProxy.Inner = NavigationProxy;
+
+				OnPropertyChanged();
 			}
 		}
-
-		//public Page MainPage
-		//{
-		//	get { return _mainPage; }
-		//	set
-		//	{
-		//		if (value == null)
-		//			throw new ArgumentNullException("value");
-
-		//		if (_mainPage == value)
-		//			return;
-
-		//		OnPropertyChanging();
-		//		if (_mainPage != null)
-		//		{
-		//			InternalChildren.Remove(_mainPage);
-		//			_mainPage.Parent = null;
-		//		}
-
-		//		_mainPage = value;
-
-		//		if (_mainPage != null)
-		//		{
-		//			_mainPage.Parent = this;
-		//			_mainPage.NavigationProxy.Inner = NavigationProxy;
-		//			InternalChildren.Add(_mainPage);
-		//		}
-
-		//		OnPropertyChanged();
-		//	}
-		//}
 
 		public IDictionary<string, object> Properties
 		{
@@ -158,7 +141,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int PanGestureId { get; set; }
 
-		internal IResourceDictionary SystemResources { get; }
+		internal IResourceDictionary SystemResources => _systemResources.Value;
 
 		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 

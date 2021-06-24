@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #pragma warning restore 618
 			};
 
+			AWebView.SetWebContentsDebuggingEnabled(enabled: true);
+
 			if (aWebView.Settings != null)
 			{
 				aWebView.Settings.JavaScriptEnabled = true;

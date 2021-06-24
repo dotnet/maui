@@ -50,7 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Semantic Description is set correctly"
-#if MONOANDROID
+#if __ANDROID__
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Semantic Hint is set correctly"
-#if MONOANDROID
+#if __ANDROID__
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]

@@ -12,13 +12,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	}
 
 	public class PathStub : StubBase, IShape
-    {
-        public PathStub()
-        {
+	{
+		public PathStub()
+		{
 
-        }
+		}
 
-        public GeometryStub? Data { get; set; }
+		public GeometryStub? Data { get; set; }
 
 		public PathF PathForBounds(Rectangle rect)
 		{

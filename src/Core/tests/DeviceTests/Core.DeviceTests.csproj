@@ -1,6 +1,6 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <TargetFrameworks>Xamarin.iOS10;MonoAndroid10.0</TargetFrameworks>
+    <TargetFrameworks>$(NonNet6Platforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Core.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Core.DeviceTests</AssemblyName>
     <Nullable>disable</Nullable>
@@ -20,5 +20,4 @@
     <MauiImage Include="Images\*" />
     <MauiImage Update="Images\*.gif" Resize="false" />
   </ItemGroup>
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Resizetizer.targets" />
 </Project>

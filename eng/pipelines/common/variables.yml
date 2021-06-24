@@ -7,6 +7,8 @@ variables:
   value: true
 - name: DOTNET_VERSION
   value: 5.0.201
+- name: XHARNESS_VERSION
+  value: 1.0.0-prerelease.21317.1
 - name: LocBranchPrefix
   value: 'loc-hb'
 - name: LocBranch
@@ -36,5 +38,7 @@ variables:
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs2019.csx'
 - name: provisionator.extraArguments
   value: '--v'
+- name: DotNet.Dir
+  value: $(System.DefaultWorkingDirectory)/bin/dotnet
 - name: DotNet.Path
   value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet

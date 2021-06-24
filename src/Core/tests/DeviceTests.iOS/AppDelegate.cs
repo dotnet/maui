@@ -1,4 +1,4 @@
-using System.Reflection;
+using System.Linq;
 using Foundation;
 using UIKit;
 
@@ -12,9 +12,8 @@ namespace Microsoft.Maui.DeviceTests
 			// We need this to ensure the execution assembly is part of the app bundle
 			AddExecutionAssembly(typeof(SliderHandlerTests).Assembly);
 
-			// tests can be inside the main assembly
-			AddTestAssembly(Assembly.GetExecutingAssembly());
-			AddTestAssembly(typeof(SliderHandlerTests).Assembly);
+			foreach (var assembly in TestApplicationDelegate.TestAssemblies.Distinct())
+				AddTestAssembly(assembly);
 
 			return base.FinishedLaunching(app, options);
 		}

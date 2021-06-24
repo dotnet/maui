@@ -62,13 +62,27 @@ namespace Microsoft.Maui
 			if (paint.IsNullOrEmpty())
 				return;
 
-			var backgroundLayer = paint?.ToCALayer(nativeView.Bounds);
-
-			if (backgroundLayer != null)
+			if (paint is SolidPaint solidPaint)
 			{
-				backgroundLayer.Name = BackgroundLayerName;
-				nativeView.BackgroundColor = UIColor.Clear;
-				nativeView.InsertBackgroundLayer(backgroundLayer, 0);
+				Color backgroundColor = solidPaint.Color;
+
+				if (backgroundColor == null)
+					nativeView.BackgroundColor = ColorExtensions.BackgroundColor;
+				else
+					nativeView.BackgroundColor = backgroundColor.ToNative();
+
+				return;
+			}
+			else if (paint is GradientPaint gradientPaint)
+			{
+				var backgroundLayer = gradientPaint?.ToCALayer(nativeView.Bounds);
+
+				if (backgroundLayer != null)
+				{
+					backgroundLayer.Name = BackgroundLayerName;
+					nativeView.BackgroundColor = UIColor.Clear;
+					nativeView.InsertBackgroundLayer(backgroundLayer, 0);
+				}
 			}
 		}
 
