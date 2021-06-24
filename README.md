@@ -23,10 +23,6 @@
 
 ### Running
 
-#### IDE
-
-- If you have Visual Studio 16.9 P4 or newer installed you can open `Maui.sln` and run it from there.
-
 #### .NET 6
 
 You can run a `Cake` target to bootstrap .NET 6 in `bin\dotnet` and launch Visual Studio:
@@ -67,6 +63,22 @@ Try out a "single project", you will need the `-f` switch to choose the platform
 ```
 
 To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://github.com/dotnet/maui/wiki/Blazor-Desktop) wiki topic.
+
+#### WinUI3
+
+You will need to use the latest preview of Visual Studio 2019 16.11. WinUI currently does not work with Visual Studio 2022
+
+* Windows: [Get started with Project Reunion](https://docs.microsoft.com/en-us/windows/apps/project-reunion/get-started-with-project-reunion#set-up-your-development-environment)
+
+- Install the following 0.8 Preview Reunion VSIXs. .NET MAUI currently only works with 0.8 Reunion Preview and will not work with 0.8 Reunion Stable.
+  - Uninstall any WinUI extensions that you may have previously installed
+  - https://marketplace.visualstudio.com/items?itemName=ProjectReunion.MicrosoftProjectReunionPreview
+  - https://marketplace.visualstudio.com/items?itemName=ProjectReunion.MicrosoftSingleProjectMSIXPackagingTools
+ 
+```dotnetcli
+dotnet tool restore
+dotnet cake --target=VS-WINUI
+```
 
 ## Current News
 

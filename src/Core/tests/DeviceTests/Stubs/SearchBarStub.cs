@@ -26,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsReadOnly { get; set; }
 
-		public int MaxLength { get; set; }
+		public int MaxLength { get; set; } = int.MaxValue;
 
 		public Keyboard Keyboard { get; set; }
 
