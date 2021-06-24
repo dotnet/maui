@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <PackageId>$(MSBuildProjectName)</PackageId>
+    <Description>.NET MAUI NuGet dependencies pack</Description>
     <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <GenerateDependencyFile>false</GenerateDependencyFile>
@@ -10,7 +11,6 @@
   </PropertyGroup>
 
   <Import Project="../Shared/LibraryPacks.targets" />
-  <Import Project="../Shared/WinUI.targets" />
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Graphics" />
@@ -27,6 +27,7 @@
     <PackageReference Include="Xamarin.Google.Android.Material" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == '$(WindowsTargetFramework)' ">
+    <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
     <PackageReference Include="Microsoft.ProjectReunion" />
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" />

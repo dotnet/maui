@@ -17,7 +17,7 @@
   <PropertyGroup>
     <_MicrosoftProjectReunionVersion>0.8.0-preview</_MicrosoftProjectReunionVersion>
     <_MicrosoftGraphicsWin2DVersion>0.5.0.13</_MicrosoftGraphicsWin2DVersion>
-    <_MicrosoftMauiGraphics>6.0.100-preview.5.229</_MicrosoftMauiGraphics>
+    <_MicrosoftMauiGraphics>6.0.100-preview.5.246</_MicrosoftMauiGraphics>
     <_MicrosoftMauiGraphicsWin2D>6.0.100-preview.5.229</_MicrosoftMauiGraphicsWin2D>
     <_MicrosoftAspNetCoreVersion>6.0.0-preview.5.21301.17</_MicrosoftAspNetCoreVersion>
     <_MicrosoftWebWebView2Version>1.0.705.50</_MicrosoftWebWebView2Version>
@@ -45,8 +45,20 @@
         Version="$(_MicrosoftHostingVersion)"
     />
     <PackageReference
+        Update="Microsoft.Extensions.Configuration.Abstractions"
+        Version="$(_MicrosoftHostingVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
         Version="$(_MicrosoftDependencyInjectionVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.DependencyInjection.Abstractions"
+        Version="$(_MicrosoftDependencyInjectionVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.FileProviders.Abstractions"
+        Version="$(_MicrosoftFileProvidersVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.FileProviders.Embedded"
@@ -70,6 +82,10 @@
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Debug"
+        Version="$(_MicrosoftHostingVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.Primitives"
         Version="$(_MicrosoftHostingVersion)"
     />
     <PackageReference

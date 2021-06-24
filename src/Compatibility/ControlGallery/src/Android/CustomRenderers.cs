@@ -21,6 +21,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 using NestedScrollView = AndroidX.Core.Widget.NestedScrollView;
@@ -735,7 +736,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		bool AView.IOnTouchListener.OnTouch(AView v, MotionEvent e)
 		{
 			((Element.Children.First() as Layout).Children.First() as Label).Text = Issue1942.SuccessString;
-			ViewGroup.ViewTreeObserver.RemoveOnGlobalLayoutListener(this);
+			ViewTreeObserver.RemoveOnGlobalLayoutListener(this);
 			_gridChild.SetOnTouchListener(null);
 			return true;
 		}
@@ -745,7 +746,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			base.OnElementChanged(e);
 			if (e.NewElement != null)
 			{
-				ViewGroup.ViewTreeObserver.AddOnGlobalLayoutListener(this);
+				ViewTreeObserver.AddOnGlobalLayoutListener(this);
 			}
 		}
 
@@ -753,7 +754,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 			if (disposing)
 			{
-				ViewGroup.ViewTreeObserver.RemoveOnGlobalLayoutListener(this);
+				ViewTreeObserver.RemoveOnGlobalLayoutListener(this);
 				_gridChild.SetOnTouchListener(null);
 				_gridChild = null;
 			}
@@ -763,7 +764,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 		void ViewTreeObserver.IOnGlobalLayoutListener.OnGlobalLayout()
 		{
-			_gridChild = ViewGroup.GetChildAt(0);
+			_gridChild = GetChildAt(0);
 			_gridChild.SetOnTouchListener(this);
 		}
 	}
