@@ -182,8 +182,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 		AView ITabStop.TabStop => this;
 
-		ViewGroup IVisualElementRenderer.ViewGroup => null;
-
 		void IImageRendererController.SkipInvalidate() => _skipInvalidate = true;
 		void IImageRendererController.SetFormsAnimationDrawable(IFormsAnimationDrawable value)
 		{

@@ -1,4 +1,4 @@
-using Microsoft.Maui;
+using System.Threading.Tasks;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -61,6 +61,20 @@ namespace Microsoft.Maui
 				uiSlider.ThumbTintColor = defaultThumbColor;
 			else
 				uiSlider.ThumbTintColor = slider.ThumbColor.ToNative();
+		}
+
+		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IImageSourceServiceProvider provider)
+		{
+			var thumbImageSource = slider.ThumbImageSource;
+
+			if (thumbImageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(thumbImageSource);
+				var result = await service.GetImageAsync(thumbImageSource);
+				var thumbImage = result?.Value;
+
+				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);
+			}
 		}
 	}
 }

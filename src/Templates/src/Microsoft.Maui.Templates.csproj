@@ -4,10 +4,10 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageType>Template</PackageType>
     <PackageId>Microsoft.Maui.Templates</PackageId>
-    <PackageVersion>6.0.100-preview.4.9991</PackageVersion>
     <Title>.NET MAUI Templates</Title>
     <Authors>Microsoft</Authors>
     <Description>Templates for .NET MAUI.</Description>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
@@ -16,10 +16,20 @@
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
-
   <ItemGroup>
     <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**" />
     <Compile Remove="**\*" />
   </ItemGroup>
+
+  <Target Name="_CopyToTemplatePacks" AfterTargets="Pack">
+    <ItemGroup>
+      <_PackagesToCopy Include="$(PackageOutputPath)/$(PackageId).*.nupkg" />
+    </ItemGroup>
+    <Copy
+        SourceFiles="@(_PackagesToCopy)"
+        DestinationFolder="$(DotNetTemplatePacksDirectory)"
+        SkipUnchangedFiles="true"
+    />
+  </Target>
 
 </Project>

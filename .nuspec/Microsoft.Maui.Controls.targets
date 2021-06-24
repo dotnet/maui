@@ -26,7 +26,7 @@
 		<IsXBuild Condition="'$(MSBuildRuntimeType)' == ''">true</IsXBuild>
 		<IsXBuild Condition="'$(MSBuildRuntimeType)' != ''">false</IsXBuild>
 	</PropertyGroup>
-	
+
 	<Target Name="_ValidateMauiTasks" BeforeTargets="_CheckForInvalidConfigurationAndPlatform" Condition="'$(MauiDisableTargetsValidation)' != 'True'">
 		<Error Code="XF001"
 			Text="Microsoft.Maui targets have been imported multiple times. Please check your project file and remove the duplicate import(s)."
@@ -47,9 +47,9 @@
 	</Target>
 
 
-  <!-- Inject MauiXaml and MauiCss as AdditionalFiles for partial type generation-->  
+  <!-- Inject MauiXaml and MauiCss as AdditionalFiles for partial type generation-->
   <Target Name="_MauiInjectXamlCssAdditionalFiles"
-          BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun" 
+          BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun"
           DependsOnTargets="$(CreateManifestResourceNamesDependsOn)">
     <ItemGroup>
       <_MauiXamlWithResourceNames Remove="@(_MauiXamlWithResourceNames)" />
@@ -57,32 +57,32 @@
       <_MauiCssWithResourceNames Remove="@(_MauiCssWithResourceNames)" />
       <_MauiCssWithTargetPath Remove="@(_MauiCssWithTargetPath)" />
     </ItemGroup>
-          
+
+    <AssignTargetPath Files="@(MauiXaml)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="_MauiXamlWithTargetPath" />
+    </AssignTargetPath>
+
+    <AssignTargetPath Files="@(MauiCss)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="_MauiCssWithTargetPath" />
+    </AssignTargetPath>
+
     <CreateCSharpManifestResourceName
-              ResourceFiles="@(MauiXaml)"
+              ResourceFiles="@(_MauiXamlWithTargetPath -> '%(FullPath)')"
               RootNamespace="$(RootNamespace)"
               UseDependentUponConvention="$(EmbeddedResourceUseDependentUponConvention)">
       <Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="_MauiXamlWithResourceNames" />
     </CreateCSharpManifestResourceName>
-    
+
     <CreateCSharpManifestResourceName
-              ResourceFiles="@(MauiCss)"
+              ResourceFiles="@(_MauiCssWithTargetPath -> '%(FullPath)')"
               RootNamespace="$(RootNamespace)"
               UseDependentUponConvention="$(EmbeddedResourceUseDependentUponConvention)">
       <Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="_MauiCssWithResourceNames" />
     </CreateCSharpManifestResourceName>
-    
-    <AssignTargetPath Files="@(_MauiXamlWithResourceNames)" RootFolder="$(MSBuildProjectDirectory)">
-      <Output TaskParameter="AssignedFiles" ItemName="_MauiXamlWithTargetPath" />
-    </AssignTargetPath>
-    
-    <AssignTargetPath Files="@(_MauiCssWithResourceNames)" RootFolder="$(MSBuildProjectDirectory)">
-      <Output TaskParameter="AssignedFiles" ItemName="_MauiCssWithTargetPath" />
-    </AssignTargetPath>
-    
+
     <ItemGroup>
-      <AdditionalFiles Include="@(_MauiXamlWithTargetPath)" ManifestResourceName="%(ManifestResourceName)" TargetPath="%(TargetPath)" ItemSpec="%(OriginalItemSpec)" GenKind="Xaml"/>
-      <AdditionalFiles Include="@(_MauiCssWithTargetPath)" ManifestResourceName="%(ManifestResourceName)" TargetPath="%(TargetPath)" ItemSpec="%(OriginalItemSpec)" GenKind="Css"/>
+      <AdditionalFiles Include="@(_MauiXamlWithResourceNames)" ManifestResourceName="%(ManifestResourceName)" TargetPath="%(TargetPath)" ItemSpec="%(OriginalItemSpec)" GenKind="Xaml"/>
+      <AdditionalFiles Include="@(_MauiCssWithResourceNames)" ManifestResourceName="%(ManifestResourceName)" TargetPath="%(TargetPath)" ItemSpec="%(OriginalItemSpec)" GenKind="Css"/>
       <_MauiXamlWithResourceNames Remove="@(_MauiXamlWithResourceNames)" />
       <_MauiXamlWithTargetPath Remove="@(_MauiXamlWithTargetPath)" />
       <_MauiCssWithResourceNames Remove="@(_MauiCssWithResourceNames)" />
@@ -136,8 +136,8 @@
 			<FileWrites Include="$(IntermediateOutputPath)XamlC.stamp" />
 		</ItemGroup>
 	</Target>
-  
- <!-- 
+
+ <!--
     Platform Specific Targets.
     We can't use a framework specific targets file because it breaks shared projects i.e.  /build/MonoAndroid10/Microsoft.Maui.Controls.targets
   -->
@@ -153,7 +153,7 @@
       $(PrepareForBuildDependsOn);
     </PrepareForBuildDependsOn>
   </PropertyGroup>
-  
+
   <Target Name="IncludeProguardForAndroid" Condition="'$(MauiDisableDefaultProguardConfiguration)' != 'True'">
     <ItemGroup>
       <ProguardConfiguration Include="$(MSBuildThisFileDirectory)MonoAndroid10\proguard.cfg" />

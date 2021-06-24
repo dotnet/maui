@@ -9,6 +9,7 @@
         <VerticalStackLayout>
             <Label
                 Text="Welcome to .NET MAUI Semantics!"
+                SemanticProperties.Description="Welcome to dotnet MAUI Semantics!"
                 TextColor="DodgerBlue"
                 FontSize="30"
                 HorizontalTextAlignment="Center"/>
@@ -55,10 +56,10 @@
                 SemanticProperties.Hint="Hint text"/>
 
             <Entry
-                Text="Entry text TH"
+                Text="Entry text, DTH"
                 FontSize="14"
                 SemanticProperties.Description="Description text"
-                SemanticProperties.Hint="Hint text"/>
+                SemanticProperties.Hint="Hint text" />
 
             <Entry
                 FontSize="14"
@@ -66,7 +67,7 @@
                 SemanticProperties.Hint="Hint text"/>
 
             <Editor
-                Text="Editor text TH"
+                Text="Editor text, DTH"
                 FontSize="14"
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
@@ -77,14 +78,21 @@
                 SemanticProperties.Hint="Hint text"/>
             
             <SearchBar
-                Text="Search bar text"
+                Text="Search bar text, DH (Android reads T when focus is on entry)"
                 Placeholder="Placeholder text"
                 PlaceholderColor="DodgerBlue"
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
 
+            <Label
+                Text="The next 3 controls read out DTH"
+                TextColor="RoyalBlue"
+                FontAttributes="Bold"
+                FontSize="16"
+                Margin="0,10"/>
+
             <Picker
-                Title="Select a monkey TH"
+                Title="Select a monkey, DTH"
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text">
                 <Picker.ItemsSource>
@@ -108,6 +116,13 @@
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
 
+            <Label
+                Text="The rest of the controls read out DH"
+                TextColor="RoyalBlue"
+                FontAttributes="Bold"
+                FontSize="16"
+                Margin="0,10"/>
+
             <ActivityIndicator 
                 IsRunning="True"
                 Color="DodgerBlue"
@@ -124,6 +139,7 @@
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
 
+            <!-- iOS: currently not accessible as a whole; only focuses on increment/decrement buttons individually -->
             <Stepper
                 SemanticProperties.Description="Description text"
                 SemanticProperties.Hint="Hint text"/>
@@ -179,7 +195,26 @@
                 FontSize="14"
                 SemanticProperties.HeadingLevel="Level3"/>
 
+            <VerticalStackLayout SemanticProperties.Description="Layout description text">
+                <Label
+                    Text="Label in StackLayout with semantic description"
+                    FontSize="14"/>
+                <Label
+                    Text="Label in StackLayout with semantic description"
+                    FontSize="14"/>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout SemanticProperties.Description="Layout description text">
+                <Label
+                    Text="Label in StackLayout with semantic description"
+                    FontSize="14"/>
+                <Button
+                    Text="Button in StackLayout with semantic description"
+                    FontSize="14"/>
+            </VerticalStackLayout>
+
         </VerticalStackLayout>
+
     </ScrollView>
 
 </controls:BasePage>

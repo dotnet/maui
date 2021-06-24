@@ -66,6 +66,14 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateThumbColor(slider, DefaultThumbColor);
 		}
 
+		public static void MapThumbImageSource(SliderHandler handler, ISlider slider)
+		{
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			handler.NativeView?.UpdateThumbImageSourceAsync(slider, provider)
+				.FireAndForget(handler);
+		}
+
 		void OnControlValueChanged(object? sender, EventArgs eventArgs)
 		{
 			if (NativeView == null || VirtualView == null)

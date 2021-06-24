@@ -110,36 +110,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public void DefaultHandlersAreRegistered()
-		{
-			var host = AppHost
-				.CreateDefaultBuilder()
-				.Build();
-
-			var handler = host.Handlers.GetHandler(typeof(IButton));
-
-			Assert.NotNull(handler);
-			Assert.IsType<ButtonHandler>(handler);
-		}
-
-		[Fact]
-		public void CanSpecifyHandler()
-		{
-			var host = AppHost
-				.CreateDefaultBuilder()
-				.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<ButtonStub, ButtonHandlerStub>())
-				.Build();
-
-			var defaultHandler = host.Handlers.GetHandler(typeof(IButton));
-			var specificHandler = host.Handlers.GetHandler(typeof(ButtonStub));
-
-			Assert.NotNull(defaultHandler);
-			Assert.NotNull(specificHandler);
-			Assert.IsType<ButtonHandler>(defaultHandler);
-			Assert.IsType<ButtonHandlerStub>(specificHandler);
-		}
-
-		[Fact]
 		public void CanChangeHandlerRegistration()
 		{
 			var host = AppHost

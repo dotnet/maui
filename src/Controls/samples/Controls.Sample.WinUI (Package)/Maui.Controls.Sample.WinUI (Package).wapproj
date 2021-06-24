@@ -31,17 +31,18 @@
   </ItemGroup>
   <PropertyGroup>
     <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
-    <PathToXAMLWinRTImplementations>Controls.Sample.WinUI\</PathToXAMLWinRTImplementations>
+    <PathToXAMLWinRTImplementations>Maui.Controls.Sample.WinUI\</PathToXAMLWinRTImplementations>
   </PropertyGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
   <PropertyGroup>
-    <ProjectGuid>503b7824-7376-450b-9ef7-ea587df2c8be</ProjectGuid>
+    <ProjectGuid>1c23bceb-dd4a-4527-a126-01966a9db646</ProjectGuid>
     <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <AssetTargetFallback>net6.0-windows$(TargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
-    <AppxTargetsLocation Condition="'$(AppxTargetsLocation)'==''">$(MSBuildThisFileDirectory)build\</AppxTargetsLocation>
+    <EntryPointProjectUniqueName>..\Controls.Sample.WinUI\Maui.Controls.Sample.WinUI.csproj</EntryPointProjectUniqueName>
+    <AppProjectTargetFramework>net6.0-windows$(TargetPlatformVersion)</AppProjectTargetFramework>
+    <AssetTargetFallback>$(AppProjectTargetFramework);$(AssetTargetFallback)</AssetTargetFallback>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -57,24 +58,12 @@
     <Content Include="Images\StoreLogo.png" />
     <Content Include="Images\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
-  <PropertyGroup>
-    <!--PackageReference.GeneratePathProperty does not support NUGET_PACKAGES env var...-->
-    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'==''">$(NUGET_PACKAGES)</NuGetPackageRoot>
-    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)'==''">$(UserProfile)\.nuget\packages</NuGetPackageRoot>
-    <PkgMicrosoft_ProjectReunion Condition="'$(PkgMicrosoft_ProjectReunion)'==''">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'Microsoft.ProjectReunion', '$(_MicrosoftProjectReunionVersion)'))</PkgMicrosoft_ProjectReunion>
-    <PkgMicrosoft_ProjectReunion Condition="!Exists($(PkgMicrosoft_ProjectReunion))">$(SolutionDir)packages\Microsoft.ProjectReunion.$(_MicrosoftProjectReunionVersion)\</PkgMicrosoft_ProjectReunion>
-    <PkgMicrosoft_ProjectReunion_WinUI Condition="'$(PkgMicrosoft_ProjectReunion_WinUI)'==''">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'Microsoft.ProjectReunion.WinUI', '$(_MicrosoftProjectReunionVersion)'))</PkgMicrosoft_ProjectReunion_WinUI>
-    <PkgMicrosoft_ProjectReunion_WinUI Condition="!Exists($(PkgMicrosoft_ProjectReunion_WinUI))">$(SolutionDir)packages\Microsoft.ProjectReunion.WinUI.$(_MicrosoftProjectReunionVersion)\</PkgMicrosoft_ProjectReunion_WinUI>
-    <Microsoft_ProjectReunion_AppXReference_props>$([MSBuild]::NormalizeDirectory('$(PkgMicrosoft_ProjectReunion)', 'build'))Microsoft.ProjectReunion.AppXReference.props</Microsoft_ProjectReunion_AppXReference_props>
-    <Microsoft_WinUI_AppX_targets>$([MSBuild]::NormalizeDirectory('$(PkgMicrosoft_ProjectReunion_WinUI)', 'build'))Microsoft.WinUI.AppX.targets</Microsoft_WinUI_AppX_targets>
-    <EntryPointProjectUniqueName>..\Controls.Sample.WinUI\Maui.Controls.Sample.WinUI.csproj</EntryPointProjectUniqueName>
-  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.ProjectReunion" Version="[$(_MicrosoftProjectReunionVersion)]" GeneratePathProperty="true">
-      <ExcludeAssets>all</ExcludeAssets>
+    <PackageReference Include="Microsoft.ProjectReunion" Version="[$(_MicrosoftProjectReunionVersion)]">
+      <IncludeAssets>build</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[$(_MicrosoftProjectReunionVersion)]" GeneratePathProperty="true">
-      <ExcludeAssets>all</ExcludeAssets>
+    <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[$(_MicrosoftProjectReunionVersion)]">
+      <IncludeAssets>build</IncludeAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -83,6 +72,4 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
-  <Import Project="$(Microsoft_ProjectReunion_AppXReference_props)" />
-  <Import Project="$(Microsoft_WinUI_AppX_targets)" />
 </Project>

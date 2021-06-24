@@ -215,31 +215,34 @@ namespace Microsoft.Maui.Layouts
 					var availableWidth = _gridWidthConstraint - GridWidth();
 					var availableHeight = _gridHeightConstraint - GridHeight();
 
-					var measure = _children[cell.ViewIndex].Measure(availableWidth, availableHeight);
-
-					if (cell.IsColumnSpanAuto)
+					if (cell.IsColumnSpanAuto || cell.IsRowSpanAuto)
 					{
-						if (cell.ColumnSpan == 1)
-						{
-							_columns[cell.Column].Update(measure.Width);
-						}
-						else
-						{
-							var span = new Span(cell.Column, cell.ColumnSpan, true, measure.Width);
-							TrackSpan(span);
-						}
-					}
+						var measure = _children[cell.ViewIndex].Measure(availableWidth, availableHeight);
 
-					if (cell.IsRowSpanAuto)
-					{
-						if (cell.RowSpan == 1)
+						if (cell.IsColumnSpanAuto)
 						{
-							_rows[cell.Row].Update(measure.Height);
+							if (cell.ColumnSpan == 1)
+							{
+								_columns[cell.Column].Update(measure.Width);
+							}
+							else
+							{
+								var span = new Span(cell.Column, cell.ColumnSpan, true, measure.Width);
+								TrackSpan(span);
+							}
 						}
-						else
+
+						if (cell.IsRowSpanAuto)
 						{
-							var span = new Span(cell.Row, cell.RowSpan, false, measure.Height);
-							TrackSpan(span);
+							if (cell.RowSpan == 1)
+							{
+								_rows[cell.Row].Update(measure.Height);
+							}
+							else
+							{
+								var span = new Span(cell.Row, cell.RowSpan, false, measure.Height);
+								TrackSpan(span);
+							}
 						}
 					}
 				}
@@ -248,6 +251,8 @@ namespace Microsoft.Maui.Layouts
 
 				ResolveStarColumns();
 				ResolveStarRows();
+
+				EnsureFinalMeasure();
 			}
 
 			void TrackSpan(Span span)
@@ -415,13 +420,34 @@ namespace Microsoft.Maui.Layouts
 				ResolveStars(_columns, availableSpace, cellCheck, getDimension);
 			}
 
-			private void ResolveStarRows()
+			void ResolveStarRows()
 			{
 				var availableSpace = _gridHeightConstraint - GridHeight();
 				static bool cellCheck(Cell cell) => cell.IsRowSpanStar;
 				static double getDimension(Size size) => size.Height;
 
 				ResolveStars(_rows, availableSpace, cellCheck, getDimension);
+			}
+
+			void EnsureFinalMeasure()
+			{
+				foreach (var cell in _cells)
+				{
+					double width = 0;
+					double height = 0;
+
+					for (int n = cell.Row; n < cell.Row + cell.RowSpan; n++)
+					{
+						height += _rows[n].Size;
+					}
+
+					for (int n = cell.Column; n < cell.Column + cell.ColumnSpan; n++)
+					{
+						width += _columns[n].Size;
+					}
+
+					_children[cell.ViewIndex].Measure(width, height);
+				}
 			}
 		}
 

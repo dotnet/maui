@@ -19,12 +19,11 @@ namespace Maui.Controls.Sample
 			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
 		}
 
-		public IServiceProvider Services { get; }
-
-		protected override IWindow CreateWindow(IActivationState activationState)
+		protected override Window CreateWindow(IActivationState activationState)
 		{
-			Microsoft.Maui.Controls.Compatibility.Forms.Init(activationState);
-			return Services.GetRequiredService<IWindow>();
+			return new Window(Services.GetRequiredService<Page>());
 		}
+
+		public IServiceProvider Services { get; }
 	}
 }
