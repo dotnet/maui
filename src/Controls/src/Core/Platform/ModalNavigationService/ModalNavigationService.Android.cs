@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				get
 				{
-					Context context;
+					Context? context;
 					if (_weakReference.TryGetTarget(out context))
 						return context;
 
