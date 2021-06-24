@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Animations
 		{
 			CompositionTarget.Rendering -= RenderingFrameEventHandler;
 		}
-		void RenderingFrameEventHandler(object sender, object args)
+		void RenderingFrameEventHandler(object? sender, object? args)
 		{
 			Fire?.Invoke();
 		}
