@@ -110,6 +110,17 @@ namespace Maui.Controls.Sample
 				logging.AddConsole();
 #endif
 			});
+#if TIZEN
+			services.AddTransient<InitializationOptions>((_) => 
+			{
+				var option = new InitializationOptions
+				{
+					DisplayResolutionUnit = DisplayResolutionUnit.DP(true),
+					UseSkiaSharp = true
+				};
+				return option;
+			});
+#endif
 
 			services.AddSingleton<ITextService, TextService>();
 			services.AddTransient<MainViewModel>();
