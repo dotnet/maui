@@ -38,7 +38,8 @@ namespace Microsoft.Maui
 				view.Handler = handler;
 			}
 
-			handler.SetVirtualView(view);
+			if (handler.VirtualView != view)
+				handler.SetVirtualView(view);
 
 			if (((INativeViewHandler)handler).NativeView is not UIView result)
 			{

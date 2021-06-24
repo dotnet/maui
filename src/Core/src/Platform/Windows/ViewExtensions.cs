@@ -3,11 +3,18 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui
 {
 	public static class ViewExtensions
 	{
+		public static void TryMoveFocus(this FrameworkElement nativeView, FocusNavigationDirection direction)
+		{
+			if (nativeView?.XamlRoot?.Content is UIElement elem)
+				FocusManager.TryMoveFocus(direction, new FindNextElementOptions { SearchRoot = elem });
+		}
+
 		public static void UpdateIsEnabled(this FrameworkElement nativeView, IView view) =>
 			(nativeView as Control)?.UpdateIsEnabled(view.IsEnabled);
 

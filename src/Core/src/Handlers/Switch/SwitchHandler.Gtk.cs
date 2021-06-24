@@ -2,8 +2,12 @@
 
 namespace Microsoft.Maui.Handlers
 {
+	
+	// https://developer.gnome.org/gtk3/stable/GtkSwitch.html
+	
 	public partial class SwitchHandler : ViewHandler<ISwitch, Switch>
 	{
+		// 
 		protected override Switch CreateNativeView()
 		{
 			return new Switch();
@@ -18,6 +22,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view) { }
 
 		[MissingMapper]
-		public static void MapThumbColor(SwitchHandler handler, ISwitch view) { }
+		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
+		{
+			if (handler.NativeView is not { } nativeView)
+				return;
+
+			// this don't work cause slider is an icon
+			nativeView.SetColor(view.ThumbColor, "color", "slider");
+		}
 	}
 }

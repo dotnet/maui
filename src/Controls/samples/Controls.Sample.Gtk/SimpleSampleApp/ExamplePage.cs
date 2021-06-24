@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.LifecycleEvents;
 using Debug = System.Diagnostics.Debug;
+using GradientStop = Microsoft.Maui.Graphics.GradientStop;
 
 namespace Maui.SimpleSampleApp
 {
@@ -321,6 +321,17 @@ namespace Maui.SimpleSampleApp
 
 			verticalStack.Add(underlineLabel);
 
+			var labelG = new Label
+			{
+				Text = "this has gradient",
+				Background = new RadialGradientBrush(new GradientStopCollection
+				{
+					new (Colors.Aqua, 0),
+					new (Colors.Green, 10),
+				})
+			};
+			verticalStack.Add(labelG);
+			
 			verticalStack.Add(new ActivityIndicator());
 
 			verticalStack.Add(new ActivityIndicator
@@ -509,13 +520,20 @@ namespace Maui.SimpleSampleApp
 			var picker = new Picker
 			{
 				Title = "Select a monkey",
-				FontFamily = "Dokdo"
+				FontFamily = "Dokdo",
+				TextColor = Colors.Chartreuse,
+				BackgroundColor = Colors.Yellow,
+				HorizontalTextAlignment = TextAlignment.Center
 			};
 
 			picker.ItemsSource = monkeyList;
 			verticalStack.Add(picker);
 
-			verticalStack.Add(new Slider());
+			verticalStack.Add(new Slider
+			{
+				ThumbColor = Colors.Aqua,
+				ThumbImageSource = "dotnet_bot.png"
+			});
 
 			verticalStack.Add(new Stepper());
 			verticalStack.Add(new Stepper { BackgroundColor = Colors.IndianRed });
@@ -556,6 +574,8 @@ namespace Maui.SimpleSampleApp
 				CharacterSpacing = 6
 			});
 
+			verticalStack.Add(CreateShapes());
+
 			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
 
 			Content = new ScrollView { Content = verticalStack };
@@ -585,6 +605,7 @@ namespace Maui.SimpleSampleApp
 			label.Margin = new Thickness(15, 10, 20, 15);
 
 			verticalStack.Add(label);
+
 
 			var button = new Button()
 			{
@@ -667,7 +688,8 @@ namespace Maui.SimpleSampleApp
 			var topRight = new Label
 			{
 				Text = "Top Right",
-				BackgroundColor = Colors.Orange
+				BackgroundColor = Colors.Orange,
+				TextColor = Colors.Chocolate
 			};
 
 			layout.Add(topRight);
@@ -686,6 +708,93 @@ namespace Maui.SimpleSampleApp
 			layout.BackgroundColor = Colors.Chartreuse;
 
 			return layout;
+		}
+
+		IView CreateShapes()
+		{
+			var ellipse = new Ellipse
+			{
+				Fill = new SolidColorBrush(Colors.Red),
+				Stroke = new SolidColorBrush(Colors.Blue),
+				StrokeThickness = 4,
+				HeightRequest = 120,
+				WidthRequest = 200
+			};
+
+			var line = new Line
+			{
+				X1 = 0,
+				Y1 = 0,
+				X2 = 80,
+				Y2 = 90,
+				Fill = new SolidColorBrush(Colors.Red),
+				Stroke = new SolidColorBrush(Colors.Green),
+				StrokeThickness = 4,
+				StrokeDashArray = new double[] { 2, 2 },
+				HeightRequest = 200,
+				WidthRequest = 200
+			};
+
+			var pathData = (Microsoft.Maui.Controls.Shapes.Geometry)new PathGeometryConverter().ConvertFromInvariantString("M15.999996,0L31.999999,13.000001 15.999996,26.199999 0,13.000001z");
+
+			var path = new Microsoft.Maui.Controls.Shapes.Path
+			{
+				Data = pathData,
+				Fill = new SolidColorBrush(Colors.Pink),
+				Stroke = new SolidColorBrush(Colors.Red),
+				StrokeThickness = 1,
+				HeightRequest = 100,
+				WidthRequest = 100
+			};
+
+			var polyline = new Polyline
+			{
+				Points = new[] { new Point(10, 10), new Point(100, 50), new Point(50, 90) },
+				Stroke = new SolidColorBrush(Colors.Black),
+				StrokeThickness = 2,
+				StrokeDashArray = new double[] { 1, 1, 1, 1 },
+				HeightRequest = 100,
+				WidthRequest = 100
+			};
+
+			var polygon = new Polygon
+			{
+				Points = new[] { new Point(10, 10), new Point(100, 50), new Point(50, 90) },
+				Fill = new SolidColorBrush(Colors.LightBlue),
+				Stroke = new SolidColorBrush(Colors.Black),
+				StrokeThickness = 2,
+				StrokeDashArray = new double[] { 2, 2 },
+				HeightRequest = 100,
+				WidthRequest = 100
+			};
+
+			var rectangle = new Microsoft.Maui.Controls.Shapes.Rectangle
+			{
+				RadiusX = 12,
+				RadiusY = 6,
+				Fill = new LinearGradientBrush(new Microsoft.Maui.Controls.GradientStopCollection
+				{
+					new(Colors.Green, 0),
+					new(Colors.Blue, 1)
+				}, new Point(0, 0), new Point(1, 0)),
+				Stroke = new SolidColorBrush(Colors.Purple),
+				StrokeThickness = 8,
+				StrokeDashArray = new float[] { 2, 2 },
+				HeightRequest = 120,
+				WidthRequest = 200
+			};
+
+			var verticalStack = new VerticalStackLayout
+			{
+				ellipse,
+				line,
+				path,
+				polyline,
+				polygon,
+				rectangle
+			};
+
+			return verticalStack;
 		}
 
 	}

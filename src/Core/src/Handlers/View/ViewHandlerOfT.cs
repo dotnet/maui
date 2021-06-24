@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				var map = imv.GetPropertyMapperOverrides();
 				var instancePropertyMapper = map as PropertyMapper<TVirtualView>;
-				
+
 				if (instancePropertyMapper != null)
 				{
 					instancePropertyMapper.Chained = _defaultMapper;

@@ -641,6 +641,6 @@ namespace Microsoft.Maui.DeviceTests
 			var actualLength = await GetValueAsync(entry, GetNativeSelectionLength);
 
 			Assert.Equal(text.Length, actualLength);
-		}		
+		}
 	}
 }

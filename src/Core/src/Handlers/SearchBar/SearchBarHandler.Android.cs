@@ -63,8 +63,10 @@ namespace Microsoft.Maui.Handlers
 			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.QueryEditor?.UpdateTextColor(searchBar);
+		}
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
@@ -75,7 +77,9 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapCancelButtonColor(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateCancelButtonColor(searchBar);
+		}
 	}
 }

@@ -16,17 +16,8 @@ namespace Microsoft.Maui
 
 		protected override bool OnDrawn(Cairo.Context cr)
 		{
-			var bk = this.GetBackgroundColor(this.StateFlags);
-
-			if (bk != null)
-			{
-				cr.Save();
-				cr.SetSourceColor(bk.ToCairoColor());
-				cr.Rectangle(0, 0, Allocation.Width, Allocation.Height);
-
-				cr.Fill();
-				cr.Restore();
-			}
+			var stc = this.StyleContext;
+			stc.RenderBackground(cr, 0, 0, Allocation.Width, Allocation.Height);
 
 			var r = base.OnDrawn(cr);
 #if DEBUG

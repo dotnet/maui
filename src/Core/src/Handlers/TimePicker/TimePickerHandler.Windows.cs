@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+#nullable enable
+using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Handlers
@@ -9,30 +10,57 @@ namespace Microsoft.Maui.Handlers
 
 		protected override TimePicker CreateNativeView() => new TimePicker();
 
-		protected override void SetupDefaults(TimePicker nativeView)
+		protected override void ConnectHandler(TimePicker nativeView)
+		{
+			nativeView.TimeChanged += OnControlTimeChanged;
+		}
+
+		protected override void DisconnectHandler(TimePicker nativeView)
+		{
+			nativeView.TimeChanged -= OnControlTimeChanged;
+		}
+
+    protected override void SetupDefaults(TimePicker nativeView)
 		{
 			_defaultForeground = nativeView.Foreground;
 
 			base.SetupDefaults(nativeView);
 		}
 
-		[MissingMapper]
-		public static void MapFormat(TimePickerHandler handler, ITimePicker view) { }
+	  public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.NativeView?.UpdateTime(timePicker);
+		}
 
 		public static void MapTime(TimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.NativeView?.UpdateTime(timePicker);
 		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker view) { }
+		public static void MapCharacterSpacing(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.NativeView?.UpdateCharacterSpacing(timePicker);
+		}
 
-		[MissingMapper]
-		public static void MapFont(TimePickerHandler handler, ITimePicker view) { }
+		public static void MapFont(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
 
-		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
+			handler.NativeView?.UpdateFont(timePicker, fontManager);
+		}
+
+    public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.NativeView?.UpdateTextColor(timePicker, handler._defaultForeground);
 		}
+    
+		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)
+		{
+			if (VirtualView != null)
+			{
+				VirtualView.Time = e.NewTime;
+				VirtualView.InvalidateMeasure();
+			}
+    }
 	}
 }

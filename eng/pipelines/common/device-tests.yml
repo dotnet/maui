@@ -10,6 +10,7 @@ parameters:
       desc: Human Description
       android: /optional/path/to/android.csproj
       ios: /optional/path/to/ios.csproj
+      net6: false
 
 stages:
 
@@ -35,6 +36,7 @@ stages:
                     platform: android
                     path: ${{ project.android }}
                     device: android-emulator-32_${{ api }}
+                    net6: ${{ project.net6 }}
 
   - stage: ios_device_tests
     displayName: iOS Device Tests
@@ -50,6 +52,8 @@ stages:
               pool:
                 name: ${{ parameters.iosVmPool }}
                 vmImage: ${{ parameters.iosVmImage }}
+              variables:
+                REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
               steps:
                 - template: device-tests-steps.yml
                   parameters:
@@ -59,3 +63,4 @@ stages:
                       device: ios-simulator-64
                     ${{ if ne(version, 'latest') }}:
                       device: ios-simulator-64_${{ version }}
+                    net6: ${{ project.net6 }}

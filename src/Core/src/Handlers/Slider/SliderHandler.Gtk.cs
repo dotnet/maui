@@ -3,17 +3,21 @@ using Gtk;
 
 namespace Microsoft.Maui.Handlers
 {
+
+	// https://developer.gnome.org/gtk3/stable/GtkScale.html
+
 	public partial class SliderHandler : ViewHandler<ISlider, Scale>
 	{
+
 		protected override Scale CreateNativeView()
 		{
-			return new Scale(Orientation.Horizontal,0,1,.1);
+			return new Scale(Orientation.Horizontal, 0, 1, .1);
 		}
 
 		protected override void ConnectHandler(Scale nativeView)
 		{
 			base.ConnectHandler(nativeView);
-			
+
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 
 			nativeView.ValueChanged += OnNativeViewValueChanged;
@@ -22,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(Scale nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			
+
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 
 			nativeView.ValueChanged -= OnNativeViewValueChanged;
@@ -31,11 +35,11 @@ namespace Microsoft.Maui.Handlers
 
 		void OnNativeViewValueChanged(object? sender, EventArgs e)
 		{
-			if (sender is not Scale nativeView || VirtualView is not {} virtualView) 
+			if (sender is not Scale nativeView || VirtualView is not { } virtualView)
 				return;
-			
+
 			virtualView.Value = nativeView.Value;
-			
+
 		}
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)
@@ -59,7 +63,42 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapMaximumTrackColor(SliderHandler handler, ISlider slider) { }
 
+		public static void MapThumbColor(SliderHandler handler, ISlider slider)
+		{
+			if (handler.NativeView is not { } nativeView)
+				return;
+
+			// this don't work cause slider is an icon
+			nativeView.SetColor(slider.ThumbColor, "color", "contents > trough > slider");
+
+		}
+
 		[MissingMapper]
-		public static void MapThumbColor(SliderHandler handler, ISlider slider) { }
+		public static void MapThumbImageSource(SliderHandler handler, ISlider slider)
+		{
+			if (handler.NativeView is not { } nativeView)
+				return;
+
+			var img = slider.ThumbImageSource;
+
+			if (img == null)
+				return;
+
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			img.UpdateImageSourceAsync(1, provider, p =>
+				{
+					if (p == null)
+						return;
+
+					var css = p.CssImage();
+					// not working:
+					nativeView.SetStyleImage(css, "background-image", "contents > trough > slider");
+
+				})
+			   .FireAndForget(handler);
+		}
+
 	}
+
 }

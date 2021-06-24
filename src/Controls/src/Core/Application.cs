@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		Task<IDictionary<string, object>> _propertiesTask;
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
+		readonly Lazy<IResourceDictionary> _systemResources;
 
 		public override IDispatcher Dispatcher => this.GetDispatcher();
 
@@ -26,8 +27,11 @@ namespace Microsoft.Maui.Controls
 		{
 			SetCurrentApplication(this);
 			NavigationProxy = new NavigationImpl(this);
-			SystemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
-			SystemResources.ValuesChanged += OnParentResourcesChanged;
+			_systemResources = new Lazy<IResourceDictionary>(() => {
+				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
+				systemResources.ValuesChanged += OnParentResourcesChanged;
+				return systemResources;
+			});
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
 		}
 
@@ -158,7 +162,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int PanGestureId { get; set; }
 
-		internal IResourceDictionary SystemResources { get; }
+		internal IResourceDictionary SystemResources => _systemResources.Value;
 
 		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
