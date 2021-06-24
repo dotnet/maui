@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class EllipseGeometryStub : IGeometry
+	public class EllipseGeometryStub : IShape
 	{
 		public EllipseGeometryStub()
 		{
