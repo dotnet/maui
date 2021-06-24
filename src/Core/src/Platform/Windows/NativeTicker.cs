@@ -1,8 +1,6 @@
 ﻿using Windows.ApplicationModel.Core;
 using System;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Microsoft.Maui.Animations
 {
 	public class NativeTicker : Ticker
