@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Animations
 			_val.SetIntValues(0, 100); // avoid crash
 			_val.RepeatCount = ValueAnimator.Infinite;
 			_val.Update += (s, e) => Fire?.Invoke();
-			;
 			checkPowerSaveModeStatus();
 			tickers.Add(this);
 		}
