@@ -193,7 +193,7 @@
       <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Core\src\Android.AppLinks\Compatibility.Android.AppLinks.csproj">
+    <ProjectReference Include="..\..\..\Android.AppLinks\src\Compatibility.Android.AppLinks.csproj">
       <Project>{10553575-8e27-4e2c-9e88-90b015e80f1c}</Project>
       <Name>Compatibility.Android.AppLinks</Name>
     </ProjectReference>

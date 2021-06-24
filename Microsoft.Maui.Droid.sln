@@ -14,7 +14,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core-net6", "src\C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility-net6", "src\Compatibility\Core\src\Compatibility-net6.csproj", "{00A11C2F-969F-4964-8557-91ADF4B1523D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup-net6", "src\Compatibility\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup-net6.csproj", "{EB956381-F3E6-437C-9069-36B8BF5C6E2F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup-net6", "src\Compatibility\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup-net6.csproj", "{EB956381-F3E6-437C-9069-36B8BF5C6E2F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{459BF674-83CB-46F6-881F-A2D2117DBF4D}"
 EndProject
