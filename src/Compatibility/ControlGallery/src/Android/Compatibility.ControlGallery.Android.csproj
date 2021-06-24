@@ -212,7 +212,7 @@
     <ProguardConfiguration Include="..\..\..\..\..\.nuspec\proguard.cfg">
       <Link>proguard.cfg</Link>
     </ProguardConfiguration>
-    <ProjectReference Include="..\..\..\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj">
+    <ProjectReference Include="..\..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj">
       <Project>{3b72465b-acae-43ae-9327-10f372fe5f80}</Project>
       <Name>Compatibility.Android.FormsViewGroup</Name>
     </ProjectReference>
