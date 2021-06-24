@@ -361,7 +361,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.SetFlags(s_flags);
 
 			Profile.FramePartition("AndroidTicker");
-			Ticker.SetDefault(null);
 
 			Profile.FramePartition("RegisterAll");
 
@@ -668,11 +667,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 
 				s_handler.Post(action);
-			}
-
-			public Ticker CreateTicker()
-			{
-				return new AndroidTicker();
 			}
 
 			public Assembly[] GetAssemblies()

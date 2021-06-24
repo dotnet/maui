@@ -41,7 +41,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml-net6", "src\C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials-net6", "src\Essentials\src\Essentials-net6.csproj", "{5E19CF70-7730-4CBB-B277-BDE35F0F7AF3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup-net6", "src\Compatibility\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup-net6.csproj", "{33EAB4A6-32A9-49DD-8240-5D297C157BCF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup-net6", "src\Compatibility\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup-net6.csproj", "{33EAB4A6-32A9-49DD-8240-5D297C157BCF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen-net6", "src\Controls\src\SourceGen\Controls.SourceGen-net6.csproj", "{FA5292A0-CB7E-42C1-89DF-59E630C9F829}"
 EndProject
