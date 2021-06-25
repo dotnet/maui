@@ -1,14 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+    <TargetFramework>net6.0-ios</TargetFramework>
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS</AssemblyName>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <!--<DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>-->
-    <AndroidLinkMode Condition="'$(CI)' == 'true'">Full</AndroidLinkMode>
+    <MtouchLink Condition="'$(CI)' == 'true'">Full</MtouchLink>
+    <RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -48,8 +49,7 @@
     <BundleResource Include="*.ttf" />
     <BundleResource Include="WebImages\**" />
     <BundleResource Include="Images\**" />
-    <BundleResource Include="Resources\**" Exclude="Resources\LaunchScreen.storyboard" />
-    <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
+    <BundleResource Include="Resources\**" />
     <ImageAsset Include="Assets.xcassets\**" Visible="False" />
   </ItemGroup>
 
