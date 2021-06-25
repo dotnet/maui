@@ -6,15 +6,22 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Image">
     <views:BasePage.Content>
-        <VerticalStackLayout
-            Margin="12">
-            <Label
-                Text="Default"
-                Style="{StaticResource Headline}"/>
-            <Image 
-                Source="dotnet_bot.png"
-                HeightRequest="200" 
-                WidthRequest="200"/>
-        </VerticalStackLayout>
+        <ScrollView>
+            <VerticalStackLayout
+                Margin="12">
+                <Label
+                    Text="UriSource"
+                    Style="{StaticResource Headline}"/>
+                <Image 
+                    Source="https://aka.ms/campus.jpg" />
+                <Label
+                    Text="FileSource"
+                    Style="{StaticResource Headline}"/>
+                <Image 
+                    Source="dotnet_bot.png"
+                    HeightRequest="200" 
+                    WidthRequest="200"/>
+            </VerticalStackLayout>
+        </ScrollView>
     </views:BasePage.Content>
 </views:BasePage>

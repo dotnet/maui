@@ -112,7 +112,11 @@ namespace Maui.Controls.Sample
 						implementationType: _pageType switch
 						{
 							PageType.Shell => typeof(AppShell),
+#if WINDOWS
+							PageType.NavigationPage => typeof(TempPage),
+#else
 							PageType.NavigationPage => typeof(CustomNavigationPage),
+#endif
 							PageType.Semantics => typeof(SemanticsPage),
 							PageType.Blazor =>
 #if BLAZOR_ENABLED

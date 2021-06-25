@@ -9,8 +9,17 @@ namespace Maui.Controls.Sample.ViewModels
 	{
 		protected override IEnumerable<SectionModel> CreateItems() => new[]
 		{
+			new SectionModel(typeof(AnimationsPage), "Animations",
+				"Animate your UI!"),
+
 			new SectionModel(typeof(FontsPage), "Fonts",
-				"Customize the font type with different sizes, attributes, etc..")
+				"Customize the font type with different sizes, attributes, etc..."),
+
+			new SectionModel(typeof(StylesPage), "Styles",
+				"Define the visual elements appearance."),
+
+			new SectionModel(typeof(TriggersPage), "Triggers",
+				"Triggers allow you to express actions declaratively in XAML that change the appearance of controls based on events or property changes. ")
 		};
 	}
 }

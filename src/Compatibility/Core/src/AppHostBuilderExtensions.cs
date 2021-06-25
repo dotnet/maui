@@ -146,7 +146,8 @@ namespace Microsoft.Maui.Controls.Hosting
 						MauiContext mauiContext = new MauiContext(MauiWinUIApplication.Current.Services, new UI.Xaml.Window());
 						ActivationState state = new ActivationState(mauiContext, args);
 						Forms.Init(state, new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
-						GraphicsPlatform.RegisterGlobalService(W2DGraphicsService.Instance);
+						// TODO: Implement GetPathBounds in Microsoft.Maui.Graphics
+						// GraphicsPlatform.RegisterGlobalService(W2DGraphicsService.Instance);
 					})
 					.OnLaunched((_, args) =>
 					{

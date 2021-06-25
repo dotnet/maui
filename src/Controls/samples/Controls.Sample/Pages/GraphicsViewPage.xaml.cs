@@ -19,6 +19,7 @@ namespace Maui.Controls.Sample.Pages
 			//
 			// DrawXXXX Methods
 			//
+
 			canvas.StrokeColor = Colors.Grey;
 			canvas.DrawLine(0, 0, 100, 100);
 			canvas.DrawRectangle(100, 0, 100, 100);
