@@ -16,7 +16,8 @@ namespace Controls.Core.UnitTests.TestClasses
 
 		public double SpeedModifier { get; set; } = 1;
 		ITicker ticker;
-		public ITicker Ticker {
+		public ITicker Ticker
+		{
 			get => ticker;
 			set
 			{

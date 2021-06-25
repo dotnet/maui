@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Animations
 
 		public override bool IsRunning => _val.IsStarted;
 		public override bool SystemEnabled { get => _systemEnabled; }
-		public override void Start() =>  _val.Start();
-		public override void Stop() =>  _val?.Cancel();
+		public override void Start() => _val.Start();
+		public override void Stop() => _val?.Cancel();
 	}
 }

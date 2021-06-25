@@ -267,7 +267,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			await DisableTicker();
 
-			var label = new Label { Text = "Foo" , Handler = animationContext };
+			var label = new Label { Text = "Foo", Handler = animationContext };
 			var result = await label.ScaleTo(2, 500);
 
 			Assert.That(result, Is.True);

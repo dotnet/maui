@@ -12,8 +12,9 @@ namespace Microsoft.Maui.Animations
 
 
 		ITicker? _ticker;
-		public ITicker Ticker {
-			get => _ticker ?? (Ticker = new Ticker()); 
+		public ITicker Ticker
+		{
+			get => _ticker ?? (Ticker = new Ticker());
 			set => setTicker(value);
 		}
 		public bool AutoStartTicker { get; set; } = true;

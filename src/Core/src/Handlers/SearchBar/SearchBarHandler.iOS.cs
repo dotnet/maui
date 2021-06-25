@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ShouldChangeTextInRange -= ShouldChangeText;
 
 			base.DisconnectHandler(nativeView);
-    }
-    
+		}
+
 		protected override void SetupDefaults(UISearchBar nativeView)
 		{
 			_defaultTextColor = QueryEditor?.TextColor;
@@ -122,11 +122,11 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
 
-    public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
+		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.NativeView?.UpdateCancelButton(searchBar, handler._cancelButtonTextColorDefaultNormal, handler._cancelButtonTextColorDefaultHighlighted, handler._cancelButtonTextColorDefaultDisabled);
-    }
-    
+		}
+
 		void OnCancelClicked(object? sender, EventArgs args)
 		{
 			if (VirtualView != null)

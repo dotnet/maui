@@ -93,7 +93,7 @@ namespace Microsoft.Maui
 				editText.Text = newText;
 		}
 
-		public static void SetLengthFilter(this EditText editText, int maxLength) 
+		public static void SetLengthFilter(this EditText editText, int maxLength)
 		{
 			var currentFilters = new List<IInputFilter>(editText.GetFilters() ?? new IInputFilter[0]);
 			var changed = false;

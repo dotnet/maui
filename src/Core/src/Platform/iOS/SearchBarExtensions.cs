@@ -40,8 +40,8 @@ namespace Microsoft.Maui
 
 			if (currentControlText?.Length > maxLength)
 				uiSearchBar.Text = currentControlText.Substring(0, maxLength);
-    }
-    
+		}
+
 		public static void UpdateCancelButton(this UISearchBar uiSearchBar, ISearchBar searchBar,
 			UIColor? cancelButtonTextColorDefaultNormal, UIColor? cancelButtonTextColorDefaultHighlighted, UIColor? cancelButtonTextColorDefaultDisabled)
 		{

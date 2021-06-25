@@ -3,10 +3,10 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.LifecycleEvents;
 
 #if __ANDROID__
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
