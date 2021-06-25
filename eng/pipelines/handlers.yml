@@ -102,124 +102,124 @@ resources:
 
 stages:
 
-  # - stage: build_net6
-  #   displayName: Build .NET 6
-  #   dependsOn: []
-  #   jobs:
-  #     - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
-  #       - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-  #         - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
-  #           workspace:
-  #             clean: all
-  #           displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-  #           timeoutInMinutes: 120
-  #           condition: or(
-  #             ${{ parameters.BuildEverything }},
-  #             ne(variables['Build.Reason'], 'PullRequest'),
-  #             eq('${{ BuildConfiguration }}', 'Release'))
-  #           pool:
-  #             name: ${{ BuildPlatform.poolName }}
-  #             vmImage: ${{ BuildPlatform.vmImage }}
-  #           steps:
-  #             - template: common/provision.yml
-  #               parameters:
-  #                 platform: ${{ BuildPlatform.name }}
-  #             - pwsh: ./build.ps1 --target=dotnet --configuration="$(BuildConfiguration)"
-  #               displayName: 'Install .NET'
-  #             - pwsh: ./build.ps1 --target=dotnet-build --configuration="$(BuildConfiguration)"
-  #               displayName: 'Build .NET Maui'
-  #             - pwsh: ./build.ps1 --target=dotnet-test --configuration="$(BuildConfiguration)"
-  #               displayName: 'Run Unit Tests'
-  #             - task: PublishTestResults@2
-  #               condition: always()
-  #               inputs:
-  #                 testRunner: VSTest
-  #                 testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
-  #             - task: PublishBuildArtifacts@1
-  #               condition: always()
-  #               displayName: Publish Artifacts (${{ BuildPlatform.artifact }})
-  #               inputs:
-  #                 ArtifactName: ${{ BuildPlatform.artifact }}
+  - stage: build_net6
+    displayName: Build .NET 6
+    dependsOn: []
+    jobs:
+      - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
+        - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+            workspace:
+              clean: all
+            displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
+            timeoutInMinutes: 120
+            condition: or(
+              ${{ parameters.BuildEverything }},
+              ne(variables['Build.Reason'], 'PullRequest'),
+              eq('${{ BuildConfiguration }}', 'Release'))
+            pool:
+              name: ${{ BuildPlatform.poolName }}
+              vmImage: ${{ BuildPlatform.vmImage }}
+            steps:
+              - template: common/provision.yml
+                parameters:
+                  platform: ${{ BuildPlatform.name }}
+              - pwsh: ./build.ps1 --target=dotnet --configuration="$(BuildConfiguration)"
+                displayName: 'Install .NET'
+              - pwsh: ./build.ps1 --target=dotnet-build --configuration="$(BuildConfiguration)"
+                displayName: 'Build .NET Maui'
+              - pwsh: ./build.ps1 --target=dotnet-test --configuration="$(BuildConfiguration)"
+                displayName: 'Run Unit Tests'
+              - task: PublishTestResults@2
+                condition: always()
+                inputs:
+                  testRunner: VSTest
+                  testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
+              - task: PublishBuildArtifacts@1
+                condition: always()
+                displayName: Publish Artifacts (${{ BuildPlatform.artifact }})
+                inputs:
+                  ArtifactName: ${{ BuildPlatform.artifact }}
 
-  # - stage: pack_net6
-  #   displayName: Pack .NET 6
-  #   dependsOn: []
-  #   jobs:
-  #     - ${{ each BuildPlatform in parameters.PackPlatforms }}:
-  #       - job: pack_net6_${{ BuildPlatform.name }}
-  #         workspace:
-  #           clean: all
-  #         displayName: ${{ BuildPlatform.name }}
-  #         timeoutInMinutes: 120
-  #         pool:
-  #           name: ${{ BuildPlatform.poolName }}
-  #           vmImage: ${{ BuildPlatform.vmImage }}
-  #         steps:
-  #           - template: common/provision.yml
-  #             parameters:
-  #               platform: ${{ BuildPlatform.name }}
-  #           - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release"
-  #             displayName: 'Pack .NET Maui'
-  #           - task: CopyFiles@2
-  #             condition: always()
-  #             displayName: 'Copy files to staging'
-  #             inputs:
-  #               Contents: |
-  #                 artifacts/**/*.*nupkg
-  #                 eng/automation/SignList.xml
-  #               TargetFolder: $(build.artifactstagingdirectory)
-  #               flattenFolders: true
-  #           - task: CopyFiles@2
-  #             displayName: 'Copy Log Files'
-  #             condition: always()
-  #             inputs:
-  #               Contents: |
-  #                 artifacts/logs/**
-  #               TargetFolder: $(build.artifactstagingdirectory)/logs
-  #               flattenFolders: true
-  #           - task: PublishBuildArtifacts@1
-  #             condition: always()
-  #             displayName: publish artifacts
-  #             inputs:
-  #               ArtifactName: ${{ BuildPlatform.artifact }}
+  - stage: pack_net6
+    displayName: Pack .NET 6
+    dependsOn: []
+    jobs:
+      - ${{ each BuildPlatform in parameters.PackPlatforms }}:
+        - job: pack_net6_${{ BuildPlatform.name }}
+          workspace:
+            clean: all
+          displayName: ${{ BuildPlatform.name }}
+          timeoutInMinutes: 120
+          pool:
+            name: ${{ BuildPlatform.poolName }}
+            vmImage: ${{ BuildPlatform.vmImage }}
+          steps:
+            - template: common/provision.yml
+              parameters:
+                platform: ${{ BuildPlatform.name }}
+            - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release"
+              displayName: 'Pack .NET Maui'
+            - task: CopyFiles@2
+              condition: always()
+              displayName: 'Copy files to staging'
+              inputs:
+                Contents: |
+                  artifacts/**/*.*nupkg
+                  eng/automation/SignList.xml
+                TargetFolder: $(build.artifactstagingdirectory)
+                flattenFolders: true
+            - task: CopyFiles@2
+              displayName: 'Copy Log Files'
+              condition: always()
+              inputs:
+                Contents: |
+                  artifacts/logs/**
+                TargetFolder: $(build.artifactstagingdirectory)/logs
+                flattenFolders: true
+            - task: PublishBuildArtifacts@1
+              condition: always()
+              displayName: publish artifacts
+              inputs:
+                ArtifactName: ${{ BuildPlatform.artifact }}
 
-  # - stage: samples_net6
-  #   displayName: Build .NET 6 Samples
-  #   dependsOn: pack_net6
-  #   jobs:
-  #     - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
-  #       - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-  #         - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
-  #           workspace:
-  #             clean: all
-  #           displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-  #           timeoutInMinutes: 120
-  #           condition: or(
-  #             ${{ parameters.BuildEverything }},
-  #             ne(variables['Build.Reason'], 'PullRequest'),
-  #             eq('${{ BuildConfiguration }}', 'Release'))
-  #           pool:
-  #             name: ${{ BuildPlatform.poolName }}
-  #             vmImage: ${{ BuildPlatform.vmImage }}
-  #           steps:
-  #             - template: common/provision.yml
-  #               parameters:
-  #                 platform: ${{ BuildPlatform.name }}
-  #             - task: DownloadPipelineArtifact@2
-  #               displayName: 'Download Packages'
-  #               inputs:
-  #                 artifact: nuget
-  #                 patterns: '**/*.nupkg'
-  #                 path: $(System.DefaultWorkingDirectory)/artifacts
-  #             - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="$(BuildConfiguration)"
-  #               displayName: 'Install .NET (Local Workloads)'
-  #             - pwsh: ./build.ps1 --target=dotnet-samples --configuration="$(BuildConfiguration)"
-  #               displayName: 'Build .NET 6 Samples'
-  #             - task: PublishBuildArtifacts@1
-  #               condition: always()
-  #               displayName: publish artifacts
-  #               inputs:
-  #                 ArtifactName: ${{ BuildPlatform.artifact }}
+  - stage: samples_net6
+    displayName: Build .NET 6 Samples
+    dependsOn: pack_net6
+    jobs:
+      - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
+        - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+            workspace:
+              clean: all
+            displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
+            timeoutInMinutes: 120
+            condition: or(
+              ${{ parameters.BuildEverything }},
+              ne(variables['Build.Reason'], 'PullRequest'),
+              eq('${{ BuildConfiguration }}', 'Release'))
+            pool:
+              name: ${{ BuildPlatform.poolName }}
+              vmImage: ${{ BuildPlatform.vmImage }}
+            steps:
+              - template: common/provision.yml
+                parameters:
+                  platform: ${{ BuildPlatform.name }}
+              - task: DownloadPipelineArtifact@2
+                displayName: 'Download Packages'
+                inputs:
+                  artifact: nuget
+                  patterns: '**/*.nupkg'
+                  path: $(System.DefaultWorkingDirectory)/artifacts
+              - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="$(BuildConfiguration)"
+                displayName: 'Install .NET (Local Workloads)'
+              - pwsh: ./build.ps1 --target=dotnet-samples --configuration="$(BuildConfiguration)"
+                displayName: 'Build .NET 6 Samples'
+              - task: PublishBuildArtifacts@1
+                condition: always()
+                displayName: publish artifacts
+                inputs:
+                  ArtifactName: ${{ BuildPlatform.artifact }}
 
   - template: common/device-tests.yml
     parameters:
@@ -228,10 +228,10 @@ stages:
         # androidApiLevels: [ 30, 29, 24, 21 ] # TODO: Disable until .NET 6 supports API 21: https://github.com/dotnet/runtime/issues/54182
         iosVersions: [ 'latest' ]
       projects:
-        # - name: essentials
-        #   desc: Essentials
-        #   android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
-        #   ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+        - name: essentials
+          desc: Essentials
+          android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
         - name: core
           desc: Core
           android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
@@ -273,23 +273,23 @@ stages:
   #       steps:
   #         - template: common/controlgallery-android.yml
 
-  # - template: common/security_compliance.yml
-  # - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
-  # - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
-  # - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
+  - template: common/security_compliance.yml
+  - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
+  - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
+  - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
 
-  # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # Sign only using the private server
-  #   - stage: nuget_signing
-  #     dependsOn: pack_net6
-  #     displayName: Sign Nuget
-  #     jobs:
-  #       - template: sign-artifacts/jobs/v2.yml@xamarin-templates
-  #         parameters:
-  #           signType: Real
-  #           teamName: Maui
-  #           usePipelineArtifactTasks: false
-  #           targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
-  #           signedArtifactName: nuget
-  #           signedArtifactPath: signed
-  #           displayName: Sign Phase
-  #           condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # Sign only using the private server
+    - stage: nuget_signing
+      dependsOn: pack_net6
+      displayName: Sign Nuget
+      jobs:
+        - template: sign-artifacts/jobs/v2.yml@xamarin-templates
+          parameters:
+            signType: Real
+            teamName: Maui
+            usePipelineArtifactTasks: false
+            targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
+            signedArtifactName: nuget
+            signedArtifactPath: signed
+            displayName: Sign Phase
+            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))

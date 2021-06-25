@@ -52,7 +52,7 @@ stages:
                 name: ${{ parameters.iosVmPool }}
                 vmImage: ${{ parameters.iosVmImage }}
               variables:
-                REQUIRED_XCODE: 13.0-beta2
+                REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
               steps:
                 - template: device-tests-steps.yml
                   parameters:

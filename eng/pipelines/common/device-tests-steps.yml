@@ -9,7 +9,6 @@ steps:
   - template: provision.yml
     parameters:
       platform: macos
-      installXcode: ${{ eq(parameters.platform, 'ios') }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="$(BuildConfiguration)"
     displayName: 'Install .NET'
