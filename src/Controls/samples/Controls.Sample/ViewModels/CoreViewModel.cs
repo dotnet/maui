@@ -12,6 +12,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(BrushesPage), "Brushes",
 				"A brush enables you to paint an area, such as the background of a control, using different approaches."),
 
+			new SectionModel(typeof(ClipPage), "Clip",
+				"Defines the outline of the contents of an element."),
+
 			new SectionModel(typeof(SemanticsPage), "Semantics",
 				".NET MAUI allows accessibility values to be set on user interface elements by using Semantics values."),
 

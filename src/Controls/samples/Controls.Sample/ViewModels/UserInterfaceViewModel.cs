@@ -12,6 +12,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(AnimationsPage), "Animations",
 				"Animate your UI!"),
 
+			new SectionModel(typeof(BehaviorsPage), "Behaviors",
+				"Behaviors lets you add functionality to user interface controls without having to subclass them."),
+
 			new SectionModel(typeof(FontsPage), "Fonts",
 				"Customize the font type with different sizes, attributes, etc..."),
 
@@ -19,7 +22,10 @@ namespace Maui.Controls.Sample.ViewModels
 				"Define the visual elements appearance."),
 
 			new SectionModel(typeof(TriggersPage), "Triggers",
-				"Triggers allow you to express actions declaratively in XAML that change the appearance of controls based on events or property changes. ")
+				"Triggers allow you to express actions declaratively in XAML that change the appearance of controls based on events or property changes. "),
+
+			new SectionModel(typeof(VisualStatesPage), "VisualStates",
+				"Use the Visual State Manager to make changes to XAML elements based on visual states set from code."),
 		};
 	}
 }
