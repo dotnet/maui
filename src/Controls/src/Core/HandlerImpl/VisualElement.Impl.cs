@@ -33,10 +33,12 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		IShape IFrameworkElement.Clip => Clip;
+
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);
-			(Handler)?.UpdateValue(propertyName);
+			Handler?.UpdateValue(propertyName);
 		}
 
 		IFrameworkElement IFrameworkElement.Parent => Parent as IView;

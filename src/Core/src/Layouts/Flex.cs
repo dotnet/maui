@@ -10,7 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.Maui.Controls.Flex
+namespace Microsoft.Maui.Layouts.Flex
 {
 	/// <summary>
 	/// Values for <see cref="P:Microsoft.Maui.Controls.Flex.Item.AlignContent" />.
@@ -238,8 +238,8 @@ namespace Microsoft.Maui.Controls.Flex
 
 		/// <summary>The parent item.</summary>
 		/// <value>The parent item, or null if the item is a root item.</value>
-		public Item Parent { get; private set; }
-		IList<Item> Children { get; set; }
+		public Item? Parent { get; private set; }
+		IList<Item>? Children { get; set; }
 		bool ShouldOrderChildren { get; set; }
 
 		///<summary>This property defines how the layout engine will distribute space between and around child items that have been laid out on multiple lines. This property is ignored if the root item does not have its <see cref="P:Microsoft.Maui.Controls.Flex.Item.Wrap" /> property set to Wrap or WrapReverse.</summary>
@@ -410,7 +410,7 @@ namespace Microsoft.Maui.Controls.Flex
 
 		public Item RemoveAt(uint index)
 		{
-			var child = Children[(int)index];
+			var child = Children![(int)index];
 			child.Parent = null;
 			Children.RemoveAt((int)index);
 			return child;
@@ -420,7 +420,7 @@ namespace Microsoft.Maui.Controls.Flex
 			(Children?.Count ?? 0);
 
 		public Item ItemAt(int index) =>
-			Children?[index];
+			Children![index];
 
 		public Item this[int index]
 		{
@@ -451,7 +451,7 @@ namespace Microsoft.Maui.Controls.Flex
 
 		public delegate void SelfSizingDelegate(Item item, ref float width, ref float height);
 
-		public SelfSizingDelegate SelfSizing { get; set; }
+		public SelfSizingDelegate? SelfSizing { get; set; }
 
 		IEnumerator IEnumerable.GetEnumerator() =>
 			((IEnumerable<Item>)this).GetEnumerator();
@@ -613,7 +613,7 @@ namespace Microsoft.Maui.Controls.Flex
 				for (uint i = 0; i < (layout.lines?.Length ?? 0); i++)
 				{
 
-					flex_layout.flex_layout_line line = layout.lines[i];
+					flex_layout.flex_layout_line line = layout.lines![i];
 
 					if (layout.reverse2)
 					{
@@ -906,7 +906,7 @@ namespace Microsoft.Maui.Controls.Flex
 			public uint frame_pos2_i;           // cross axis position
 			public uint frame_size_i;           // main axis size
 			public uint frame_size2_i;          // cross axis size
-			int[] ordered_indices;
+			int[]? ordered_indices;
 
 			// Set for each line layout.
 			public float line_dim;              // the cross axis size
@@ -927,7 +927,7 @@ namespace Microsoft.Maui.Controls.Flex
 				public float size;
 			};
 
-			public flex_layout_line[] lines;
+			public flex_layout_line[]? lines;
 			public float lines_sizes;
 
 			//LAYOUT_RESET
@@ -993,7 +993,7 @@ namespace Microsoft.Maui.Controls.Flex
 						{
 							int prev = indices[j - 1];
 							int curr = indices[j];
-							if (item.Children[prev].Order <= item.Children[curr].Order)
+							if (item.Children![prev].Order <= item.Children[curr].Order)
 							{
 								break;
 							}
@@ -1029,7 +1029,7 @@ namespace Microsoft.Maui.Controls.Flex
 			}
 
 			public Item child_at(Item item, int i) =>
-				item.Children[(ordered_indices?[i] ?? i)];
+				item.Children![(ordered_indices?[i] ?? i)];
 
 			public void cleanup()
 			{
