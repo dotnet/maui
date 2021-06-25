@@ -6,18 +6,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class HandlerWithAnimationContextStub : ViewHandler<IView, object>
 	{
-		class TestContext : IMauiContext
+		class TestContext : IMauiContext, IServiceProvider
 		{
 			public TestContext(IAnimationManager manager = null)
 			{
 				AnimationManager = manager ?? new TestAnimationManager();
 			}
 
-			public IServiceProvider Services => throw new NotImplementedException();
+			public IServiceProvider Services => this;
 
 			public IMauiHandlersServiceProvider Handlers => throw new NotImplementedException();
 
 			public IAnimationManager AnimationManager { get; }
+
+			public object GetService(Type type) =>
+				type == typeof(IAnimationManager)
+					? AnimationManager
+					: throw new NotImplementedException();
 		}
 
 		public bool IsDisconnected { get; private set; }
