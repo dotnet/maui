@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui
 {
@@ -8,7 +7,6 @@ namespace Microsoft.Maui
 		IServiceProvider Services { get; }
 
 		IMauiHandlersServiceProvider Handlers { get; }
-		IAnimationManager AnimationManager { get; }
 
 #if __ANDROID__
 		global::Android.Content.Context? Context { get; }

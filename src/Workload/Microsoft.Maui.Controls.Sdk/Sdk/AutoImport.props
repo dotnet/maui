@@ -31,10 +31,15 @@
     <None
         Include="$(iOSProjectFolder)Info.plist"
         Condition="Exists('$(iOSProjectFolder)Info.plist')"
-        LogicalName="Info.plist" />
-    <CodesignEntitlements
-        Include="$(iOSProjectFolder)Entitlements.plist"
-        Condition="Exists('$(iOSProjectFolder)Entitlements.plist')" />
+        Exclude="$(_SingleProjectiOSExcludes)"
+        LogicalName="Info.plist"
+        IsDefaultItem="true"
+    />
+    <BundleResource
+        Include="$(iOSProjectFolder)Resources\**"
+        Exclude="$(_SingleProjectiOSExcludes)"
+        IsDefaultItem="true"
+    />
     <ImageAsset
         Include="$(iOSProjectFolder)**/*.xcassets/**/*.png;$(iOSProjectFolder)**/*.xcassets/*/*.jpg;$(iOSProjectFolder)**/*.xcassets/**/*.pdf;$(iOSProjectFolder)**/*.xcassets/**/*.json"
         Exclude="$(_SingleProjectiOSExcludes)"
@@ -61,10 +66,15 @@
     <None
         Include="$(MacCatalystProjectFolder)Info.plist"
         Condition="Exists('$(MacCatalystProjectFolder)Info.plist')"
-        LogicalName="Info.plist" />
-    <CodesignEntitlements
-        Include="$(MacCatalystProjectFolder)Entitlements.plist"
-        Condition="Exists('$(MacCatalystProjectFolder)Entitlements.plist')" />
+        Exclude="$(_SingleProjectMacCatalystExcludes)"
+        LogicalName="Info.plist"
+        IsDefaultItem="true"
+    />
+    <BundleResource
+        Include="$(MacCatalystProjectFolder)Resources\**"
+        Exclude="$(_SingleProjectMacCatalystExcludes)"
+        IsDefaultItem="true"
+    />
     <ImageAsset
         Include="$(MacCatalystProjectFolder)**/*.xcassets/**/*.png;$(MacCatalystProjectFolder)**/*.xcassets/*/*.jpg;$(MacCatalystProjectFolder)**/*.xcassets/**/*.pdf;$(MacCatalystProjectFolder)**/*.xcassets/**/*.json"
         Exclude="$(_SingleProjectMacCatalystExcludes)"
