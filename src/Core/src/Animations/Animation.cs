@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Animations
 		{
 			this.animationManger = animationManger;
 			animationManger.Add(this);
-			
+
 		}
 
 		public Animation CreateAutoReversing()

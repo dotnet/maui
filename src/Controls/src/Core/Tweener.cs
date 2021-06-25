@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls
 			var running = _step.Invoke((long)millisecondsSinceLastUpdate);
 			HasFinished = !running;
 		}
-		
+
 	}
 
 	internal class Tweener

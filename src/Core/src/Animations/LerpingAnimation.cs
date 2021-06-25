@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Animations
 		public Action? ValueChanged { get; set; }
 		public object? StartValue { get; set; }
 		public object? EndValue { get; set; }
-		public object? CurrentValue {
+		public object? CurrentValue
+		{
 			get => _currentValue;
 			protected set
 			{
