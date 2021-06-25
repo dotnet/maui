@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Microsoft.Maui.Animations
+﻿namespace Microsoft.Maui.Animations
 {
 	public interface IAnimationManager
 	{
+		ITicker Ticker { get; }
+
 		double SpeedModifier { get; set; }
-		ITicker Ticker { get; set; }
-		void Add(Animation animation);
-		void Remove(Animation animation);
+
 		bool AutoStartTicker { get; set; }
+
+		void Add(Animation animation);
+
+		void Remove(Animation animation);
 	}
 }

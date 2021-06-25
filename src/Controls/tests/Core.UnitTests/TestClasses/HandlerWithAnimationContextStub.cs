@@ -1,47 +1,43 @@
 ﻿using System;
-using Controls.Core.UnitTests.TestClasses;
-using Microsoft.Maui;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Handlers;
+
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public class HandlerWithAnimationContext : ViewHandler<IView, object>
+	public class HandlerWithAnimationContextStub : ViewHandler<IView, object>
 	{
 		class TestContext : IMauiContext
 		{
+			public TestContext(IAnimationManager manager = null)
+			{
+				AnimationManager = manager ?? new TestAnimationManager();
+			}
+
 			public IServiceProvider Services => throw new NotImplementedException();
 
 			public IMauiHandlersServiceProvider Handlers => throw new NotImplementedException();
-			IAnimationManager manager = new TestAnimationManager
-			{
-				AutoStartTicker = false,
-			};
-			public IAnimationManager AnimationManager
-			{
-				get => manager;
-				set => manager = value;
-			}
-		}
 
+			public IAnimationManager AnimationManager { get; }
+		}
 
 		public bool IsDisconnected { get; private set; }
+
 		public int ConnectHandlerCount { get; set; } = 0;
+
 		public int DisconnectHandlerCount { get; set; } = 0;
-		static IMauiContext MainContext = new TestContext();
 
-		public IAnimationManager AnimationManager
+		public IAnimationManager AnimationManager => ((TestContext)MauiContext).AnimationManager;
+
+		public HandlerWithAnimationContextStub()
+			: base(new PropertyMapper<IView>())
 		{
-			get => this.MauiContext?.AnimationManager ?? MainContext.AnimationManager;
-			set => SetMauiContext(new TestContext { AnimationManager = value });
+			SetMauiContext(new TestContext());
 		}
 
-		public HandlerWithAnimationContext() : base(new PropertyMapper<IView>())
+		public HandlerWithAnimationContextStub(IAnimationManager manager)
+			: base(new PropertyMapper<IView>())
 		{
-			this.SetMauiContext(MainContext);
-		}
-
-		public HandlerWithAnimationContext(PropertyMapper mapper) : base(mapper)
-		{
+			SetMauiContext(new TestContext(manager));
 		}
 
 		protected override object CreateNativeView()

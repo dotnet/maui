@@ -22,4 +22,7 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xamarin.Android.Glide" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Essentials\src\Essentials-net6.csproj" />
+  </ItemGroup>
 </Project>

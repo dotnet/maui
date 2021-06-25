@@ -139,8 +139,7 @@ namespace Microsoft.Maui.Controls
 			if (self == null)
 				throw new ArgumentNullException(nameof(self));
 
-			if (self is VisualElement ve && animationManager == null)
-				animationManager = ve.FindMauiContextOnParent()?.AnimationManager;
+			animationManager ??= self.GetAnimationManager();
 
 			Action animate = () => AnimateInternal(self, animationManager, name, transform, callback, rate, length, easing, finished, repeat);
 			DoAction(self, animate);
@@ -149,10 +148,8 @@ namespace Microsoft.Maui.Controls
 
 		public static void AnimateKinetic(this IAnimatable self, string name, Func<double, double, bool> callback, double velocity, double drag, Action finished = null, IAnimationManager animationManager = null)
 		{
-			if (self is VisualElement ve && animationManager == null)
-				animationManager = ve.FindMauiContextOnParent()?.AnimationManager;
-			if (animationManager == null)
-				throw new ArgumentException(nameof(animationManager));
+			animationManager ??= self.GetAnimationManager();
+
 			Action animate = () => AnimateKineticInternal(self, animationManager, name, callback, velocity, drag, finished);
 			DoAction(self, animate);
 		}

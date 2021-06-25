@@ -1,98 +1,88 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.Maui.Animations
 {
 	public class AnimationManager : IAnimationManager
 	{
+		readonly List<Animation> _animations = new();
+		long _lastUpdate;
+
+		public AnimationManager(ITicker ticker)
+		{
+			_lastUpdate = GetCurrentTick();
+
+			Ticker = ticker;
+			Ticker.Fire = OnFire;
+		}
+
+		public ITicker Ticker { get; }
+
 		public double SpeedModifier { get; set; } = 1;
 
-		long lastUpdate;
-
-
-		ITicker? _ticker;
-		public ITicker Ticker {
-			get => _ticker ?? (Ticker = new Ticker()); 
-			set => setTicker(value);
-		}
 		public bool AutoStartTicker { get; set; } = true;
-
-		void setTicker(ITicker ticker)
-		{
-			_ = ticker ?? throw new ArgumentNullException(nameof(ticker));
-
-			var oldTicker = _ticker;
-			if (oldTicker == ticker)
-				return;
-
-			var isRunning = oldTicker?.IsRunning ?? false;
-			oldTicker?.Stop();
-			_ticker = ticker;
-			ticker.Fire = OnFire;
-			if (isRunning)
-				ticker.Start();
-			lastUpdate = GetCurrentTick();
-		}
-
-		List<Animation> Animations = new List<Animation>();
 
 		public void Add(Animation animation)
 		{
-			//If animations are disabled, don't do anything
+			// If animations are disabled, don't do anything
 			if (!Ticker.SystemEnabled)
-			{
 				return;
-			}
-			if (!Animations.Contains(animation))
-				Animations.Add(animation);
+
+			if (!_animations.Contains(animation))
+				_animations.Add(animation);
 			if (!Ticker.IsRunning && AutoStartTicker)
 				Start();
 		}
 
 		public void Remove(Animation animation)
 		{
-			Animations.TryRemove(animation);
-			if (!Animations.Any())
+			_animations.TryRemove(animation);
+
+			if (_animations.Count == 0)
 				End();
 		}
 
 		void Start()
 		{
-			lastUpdate = GetCurrentTick();
+			_lastUpdate = GetCurrentTick();
 			Ticker.Start();
 		}
 
-		long GetCurrentTick() => (Environment.TickCount & int.MaxValue);
+		void End() =>
+			Ticker?.Stop();
 
-		void End() => Ticker?.Stop();
+		long GetCurrentTick() =>
+			Environment.TickCount & int.MaxValue;
+
 		void OnFire()
 		{
 			var now = GetCurrentTick();
-			var milliseconds = TimeSpan.FromMilliseconds((now - lastUpdate)).TotalMilliseconds;
-			lastUpdate = now;
-			var animations = Animations.ToList();
-			void animationTick(Animation animation)
+			var milliseconds = TimeSpan.FromMilliseconds(now - _lastUpdate).TotalMilliseconds;
+			_lastUpdate = now;
+
+			var animations = new List<Animation>(_animations);
+			animations.ForEach(OnAnimationTick);
+
+			if (_animations.Count == 0)
+				End();
+
+			void OnAnimationTick(Animation animation)
 			{
 				if (animation.HasFinished)
 				{
-					Animations.TryRemove(animation);
+					_animations.TryRemove(animation);
 					animation.RemoveFromParent();
 					return;
 				}
 
 				animation.Tick(milliseconds * SpeedModifier);
+
 				if (animation.HasFinished)
 				{
-					Animations.TryRemove(animation);
+					_animations.TryRemove(animation);
 					animation.RemoveFromParent();
 				}
 			}
-			animations.ForEach(animationTick);
-
-			if (!Animations.Any())
-				End();
 		}
-
 	}
 }

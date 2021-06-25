@@ -6,20 +6,17 @@ namespace Microsoft.Maui.UnitTests
 {
 	class HandlersContextStub : IMauiContext
 	{
-		IServiceProvider _services;
-		IMauiHandlersServiceProvider _mauiHandlersServiceProvider;
-		IAnimationManager _animationManager;
 		public HandlersContextStub(IServiceProvider services)
 		{
-			_services = services;
-			_mauiHandlersServiceProvider = Services.GetService<IMauiHandlersServiceProvider>() ?? throw new NullReferenceException(nameof(IMauiServiceProvider));
-			_animationManager = services.GetService<IAnimationManager>() ?? new AnimationManager();
+			Services = services;
+			Handlers = Services.GetRequiredService<IMauiHandlersServiceProvider>();
+			AnimationManager = services.GetService<IAnimationManager>();
 		}
 
-		public IServiceProvider Services => _services;
+		public IServiceProvider Services { get; }
 
-		public IMauiHandlersServiceProvider Handlers => _mauiHandlersServiceProvider;
+		public IMauiHandlersServiceProvider Handlers { get; }
 
-		public IAnimationManager AnimationManager => _animationManager;
+		public IAnimationManager AnimationManager { get; }
 	}
 }

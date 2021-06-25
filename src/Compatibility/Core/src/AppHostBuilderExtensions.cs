@@ -289,7 +289,6 @@ namespace Microsoft.Maui.Controls.Hosting
 				})
 				.ConfigureServices<MauiCompatBuilder>();
 
-
 			return builder;
 		}
 
