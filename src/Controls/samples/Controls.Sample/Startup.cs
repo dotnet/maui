@@ -30,8 +30,8 @@ namespace Maui.Controls.Sample
 
 	public class Startup : IStartup
 	{
-		enum PageType { Semantics, Main, Blazor, NavigationPage, Shell }
-		readonly PageType _pageType = PageType.NavigationPage;
+		enum PageType { Main, Blazor, Shell }
+		readonly PageType _pageType = PageType.Main;
 
 		public readonly static bool UseFullDI = false;
 
@@ -113,18 +113,16 @@ namespace Maui.Controls.Sample
 						{
 							PageType.Shell => typeof(AppShell),
 #if WINDOWS
-							PageType.NavigationPage => typeof(TempPage),
+							PageType.Main => typeof(TempPage),
 #else
-							PageType.NavigationPage => typeof(CustomNavigationPage),
+							PageType.Main => typeof(CustomNavigationPage),
 #endif
-							PageType.Semantics => typeof(SemanticsPage),
 							PageType.Blazor =>
 #if BLAZOR_ENABLED
 								typeof(BlazorPage),
 #else
 								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
 #endif
-							PageType.Main => typeof(MainPage),
 							_ => throw new Exception(),
 						});
 
