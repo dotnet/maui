@@ -59,7 +59,6 @@
     <AndroidAsset Include="Assets\**" />
     <AndroidResource Include="Resources\**" />
     <AndroidEnvironment Include="Environment.txt" />
-    <LinkDescription Include="LinkDescription.xml" />
     <Compile Include="Properties\MapsKey.cs" Condition="Exists('Properties\MapsKey.cs')" />
   </ItemGroup>
 

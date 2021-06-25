@@ -40,7 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <LinkDescription Include="LinkDescription.xml" />
     <BundleResource Include="*.png" />
     <BundleResource Include="*.css" />
     <BundleResource Include="*.jpg" />
@@ -49,7 +48,7 @@
     <BundleResource Include="*.ttf" />
     <BundleResource Include="WebImages\**" />
     <BundleResource Include="Images\**" />
-    <BundleResource Include="Resources\**" Exclude="**\*.storyboard" />
+    <BundleResource Include="Resources\**" Exclude="Resources\LaunchScreen.storyboard" />
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
     <ImageAsset Include="Assets.xcassets\**" Visible="False" />
   </ItemGroup>
