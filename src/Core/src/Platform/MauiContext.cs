@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui
 {
@@ -10,16 +11,21 @@ namespace Microsoft.Maui
 			// Temporary hack until we fully remove Forms.Init
 			Services = null!;
 			Handlers = null!;
+			AnimationManager = null!;
 		}
 
-		private MauiContext(IServiceProvider services)
+		public MauiContext(IServiceProvider services)
 		{
 			Services = services ?? throw new ArgumentNullException(nameof(services));
 			Handlers = Services.GetRequiredService<IMauiHandlersServiceProvider>();
+			AnimationManager = Services.GetService<IAnimationManager>() ?? new AnimationManager();
+			AnimationManager.Ticker = Services.GetService<ITicker>() ?? new NativeTicker(this);
 		}
 
 		public IServiceProvider Services { get; }
 
 		public IMauiHandlersServiceProvider Handlers { get; }
+
+		public IAnimationManager AnimationManager { get; protected set; }
 	}
 }

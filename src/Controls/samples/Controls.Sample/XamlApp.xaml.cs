@@ -17,11 +17,8 @@ namespace Maui.Controls.Sample
 
 			Debug.WriteLine($"The AccentColor color is {Resources["AccentColor"]}");
 			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
-		}
 
-		protected override Window CreateWindow(IActivationState activationState)
-		{
-			return new Window(Services.GetRequiredService<Page>());
+			MainPage = Services.GetRequiredService<Page>();
 		}
 
 		public IServiceProvider Services { get; }
