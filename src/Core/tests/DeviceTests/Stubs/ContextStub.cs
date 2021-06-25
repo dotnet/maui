@@ -6,7 +6,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	class ContextStub : IMauiContext
 	{
-		IAnimationManager _animationManager;
 		public ContextStub(IServiceProvider services)
 		{
 			Services = services;
@@ -17,7 +16,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public IMauiHandlersServiceProvider Handlers =>
 			Services.GetRequiredService<IMauiHandlersServiceProvider>();
 
-		public IAnimationManager AnimationManager => _animationManager ??= new AnimationManager { Ticker = new NativeTicker(this) };
+		public IAnimationManager AnimationManager =>
+			Services.GetRequiredService<IAnimationManager>();
+
 #if __ANDROID__
 		public Android.Content.Context Context => Platform.DefaultContext;
 #elif __IOS__

@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Maui.Animations;
-using Microsoft.Maui.Controls.Internals;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -10,18 +6,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class ProgressBarTests : BaseTestFixture
 	{
-
-
-		AnimationManager animationManager;
-
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
-			animationManager = new AnimationManager
-			{
-				Ticker = new BlockingTicker(),
-			};
+
 			Device.PlatformServices = new MockPlatformServices();
 		}
 
@@ -29,8 +18,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void TearDown()
 		{
 			base.TearDown();
+
 			Device.PlatformServices = null;
-			animationManager = null;
 		}
 
 		[Test]
@@ -50,7 +39,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var bar = new ProgressBar
 			{
-				Handler = new HandlerWithAnimationContext()
+				Handler = new HandlerWithAnimationContextStub()
 			};
 
 			bar.ProgressTo(0.8, 250, Easing.Linear);

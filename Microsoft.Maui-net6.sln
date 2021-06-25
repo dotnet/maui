@@ -140,7 +140,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.CustomAttributes",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.Profiling", "src\Controls\samples\Controls.Sample.Profiling\Maui.Controls.Sample.Profiling.csproj", "{75DB635C-0035-46E7-9A33-857D38082503}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ControlGallery", "ControlGallery", "{FA181CD5-95AF-46B7-95D2-852F2398833C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Core-net6", "src\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core-net6.csproj", "{772E2531-2270-429A-9AFB-4AA0104AEF27}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.ControlGallery.Issues.Shared", "src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.shproj", "{AE2513CB-4E5E-4E5C-8237-88954D4C9433}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{772e2531-2270-429a-9afb-4aa0104aef27}*SharedItemsImports = 5
+		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{ae2513cb-4e5e-4e5c-8237-88954d4c9433}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -343,6 +353,10 @@ Global
 		{75DB635C-0035-46E7-9A33-857D38082503}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75DB635C-0035-46E7-9A33-857D38082503}.Release|Any CPU.Build.0 = Release|Any CPU
 		{75DB635C-0035-46E7-9A33-857D38082503}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{772E2531-2270-429A-9AFB-4AA0104AEF27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{772E2531-2270-429A-9AFB-4AA0104AEF27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{772E2531-2270-429A-9AFB-4AA0104AEF27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{772E2531-2270-429A-9AFB-4AA0104AEF27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -408,6 +422,9 @@ Global
 		{F7A258F6-F4CB-4209-9E63-AECDB2E1F4ED} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{F7B6C73A-6019-4EAE-9258-E08C0C57829F} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{75DB635C-0035-46E7-9A33-857D38082503} = {E1082E26-D700-4127-9329-66D673FD2D55}
+		{FA181CD5-95AF-46B7-95D2-852F2398833C} = {123AA89E-1638-4E0E-B828-B8F9F9F906A2}
+		{772E2531-2270-429A-9AFB-4AA0104AEF27} = {FA181CD5-95AF-46B7-95D2-852F2398833C}
+		{AE2513CB-4E5E-4E5C-8237-88954D4C9433} = {FA181CD5-95AF-46B7-95D2-852F2398833C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

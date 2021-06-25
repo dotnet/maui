@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Hosting
 			builder.UseMicrosoftExtensionsServiceProviderFactory();
 			builder.ConfigureFonts();
 			builder.ConfigureImageSources();
+			builder.ConfigureAnimations();
 
 			return builder;
 		}
