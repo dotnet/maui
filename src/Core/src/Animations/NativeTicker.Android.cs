@@ -49,6 +49,6 @@ namespace Microsoft.Maui.Animations
 		}
 
 		void IEnergySaverListener.OnStatusUpdated(bool energySaverEnabled) =>
-			_systemEnabled = energySaverEnabled;
+			_systemEnabled = !energySaverEnabled;
 	}
 }

@@ -17,4 +17,7 @@
   <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid'))">
     <PackageReference Include="Xamarin.Android.Glide" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Essentials\src\Essentials.csproj" />
+  </ItemGroup>
 </Project>

@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 			s_kinetics = new Dictionary<AnimatableKey, int>();
 			s_tweeners = new Dictionary<int, Animation>();
 		}
-		
+
 		public static int Add(this IAnimationManager animationManager, Action<double> step)
 		{
 			var id = s_currentTweener++;
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls
 			animation.Commit(animationManager);
 			return id;
 		}
-		public static int Insert(this IAnimationManager animationManager, Func<long,bool> step)
+		public static int Insert(this IAnimationManager animationManager, Func<long, bool> step)
 		{
 			var id = s_currentTweener++;
 			Animation animation = null;
@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Controls
 
 		static void AbortKinetic(AnimatableKey key)
 		{
-			if(s_kinetics.TryGetValue(key,out var ticker))
+			if (s_kinetics.TryGetValue(key, out var ticker))
 			{
 				var animation = s_tweeners[ticker];
 				animation.AnimationManager?.Remove(ticker);

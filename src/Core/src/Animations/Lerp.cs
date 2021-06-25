@@ -10,7 +10,8 @@ namespace Microsoft.Maui.Animations
 		{
 			[typeof(int)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 					var start = Convert.ToInt32(s);
 					var end = Convert.ToInt32(e);
 					return (int)((end - start) * progress) + start;
@@ -18,7 +19,8 @@ namespace Microsoft.Maui.Animations
 			},
 			[typeof(short)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 					var start = Convert.ToInt16(s);
 					var end = Convert.ToInt16(e);
 					return (short)((end - start) * progress) + start;
@@ -26,7 +28,8 @@ namespace Microsoft.Maui.Animations
 			},
 			[typeof(byte)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 					var start = Convert.ToByte(s);
 					var end = Convert.ToByte(e);
 					return (byte)((end - start) * progress) + start;
@@ -34,7 +37,8 @@ namespace Microsoft.Maui.Animations
 			},
 			[typeof(float)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 					var start = (float)(s ?? 0f);
 					var end = (float)(e ?? 0f);
 					return (float)((end - start) * progress) + start;
@@ -42,7 +46,8 @@ namespace Microsoft.Maui.Animations
 			},
 			[typeof(double)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 					var start = Convert.ToDouble(s);
 					var end = Convert.ToDouble(e);
 					return ((end - start) * progress) + start;
@@ -50,7 +55,8 @@ namespace Microsoft.Maui.Animations
 			},
 			[typeof(long)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 					var start = Convert.ToInt64(s);
 					var end = Convert.ToInt64(e);
 					return (long)((end - start) * progress) + start;
@@ -63,7 +69,8 @@ namespace Microsoft.Maui.Animations
 
 			[typeof(uint)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 					var start = Convert.ToUInt32(s);
 					var end = Convert.ToUInt32(e);
 					return (uint)((end - start) * progress) + start;
@@ -72,7 +79,8 @@ namespace Microsoft.Maui.Animations
 
 			[typeof(Color)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 					var start = (Color)s;
 					var end = (Color)e;
 					return start.Lerp(end, progress);
@@ -80,7 +88,8 @@ namespace Microsoft.Maui.Animations
 			},
 			[typeof(RectangleF)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 
 					var start = (RectangleF)s;
 					var end = (RectangleF)e;
@@ -89,7 +98,8 @@ namespace Microsoft.Maui.Animations
 			},
 			[typeof(Rectangle)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 
 					var start = (Rectangle)s;
 					var end = (Rectangle)e;
@@ -98,7 +108,8 @@ namespace Microsoft.Maui.Animations
 			},
 			[typeof(PointF)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 
 					var start = (PointF)s;
 					var end = (PointF)e;
@@ -107,7 +118,8 @@ namespace Microsoft.Maui.Animations
 			},
 			[typeof(Point)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 
 					var start = (Point)s;
 					var end = (Point)e;
@@ -116,7 +128,8 @@ namespace Microsoft.Maui.Animations
 			},
 			[typeof(SizeF)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 
 					var start = (SizeF)s;
 					var end = (SizeF)e;
@@ -125,7 +138,8 @@ namespace Microsoft.Maui.Animations
 			},
 			[typeof(Size)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 
 					var start = (Size)s;
 					var end = (Size)e;
@@ -134,7 +148,8 @@ namespace Microsoft.Maui.Animations
 			},
 			[typeof(Thickness)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 
 					var start = (Thickness)(s ?? Thickness.Zero);
 					var end = (Thickness)(e ?? Thickness.Zero);
@@ -143,7 +158,8 @@ namespace Microsoft.Maui.Animations
 			},
 			[typeof(SolidPaint)] = new Lerp
 			{
-				Calculate = (s, e, progress) => {
+				Calculate = (s, e, progress) =>
+				{
 					var start = (SolidPaint)s;
 					var end = (SolidPaint)e;
 					return start.Lerp(end, progress);

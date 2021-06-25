@@ -13,9 +13,9 @@ namespace Microsoft.Maui.Controls
 			Easing = Easing.Linear;
 		}
 
-		public Animation(Action<double> callback, double start = 0.0f, double end = 1.0f, Easing easing = null, Action finished = null) : base(callback,start,end - start,easing,finished)
+		public Animation(Action<double> callback, double start = 0.0f, double end = 1.0f, Easing easing = null, Action finished = null) : base(callback, start, end - start, easing, finished)
 		{
-			
+
 			Easing = easing ?? Easing.Linear;
 			Func<double, double> transform = AnimationExtensions.Interpolate(start, end);
 			Step = f => callback(transform(f));
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentException("finishAt must be greater than beginAt");
 
 			animation.StartDelay = beginAt;
-			animation.Duration =  finishAt - beginAt;
+			animation.Duration = finishAt - beginAt;
 			childrenAnimations.Add(animation);
 		}
 
