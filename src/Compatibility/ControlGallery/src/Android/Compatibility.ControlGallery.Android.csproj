@@ -9,6 +9,7 @@
     <Nullable>disable</Nullable>
     <!--<DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>-->
     <AndroidLinkMode Condition="'$(CI)' == 'true'">Full</AndroidLinkMode>
+    <NoWarn>IL2036</NoWarn>
   </PropertyGroup>
 
     <!--
