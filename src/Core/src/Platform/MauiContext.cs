@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui
 {

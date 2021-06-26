@@ -118,8 +118,8 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeText = await GetValueAsync(searchBar, GetNativeText);
 
 			Assert.Equal(expectedText, nativeText);
-    }
-      
+		}
+
 		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
 		public async Task CancelButtonColorInitializeCorrectly()
 		{

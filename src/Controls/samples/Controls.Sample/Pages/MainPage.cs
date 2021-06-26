@@ -315,6 +315,19 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Label { Text = "IMAGES (static | animated):" });
 			verticalStack.Add(CreateImagesGrid());
 
+			verticalStack.Add(new Label
+			{
+				HeightRequest = 120,
+				WidthRequest = 120,
+				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalTextAlignment = TextAlignment.Center,
+				Background = new SolidColorBrush(Colors.Purple),
+				Text = "Clip",
+				TextColor = Colors.White,
+				FontSize = 24,
+				Clip = new EllipseGeometry(new Point(60, 60), 60, 60)
+			});
+
 			Content = new ScrollView
 			{
 				Content = verticalStack

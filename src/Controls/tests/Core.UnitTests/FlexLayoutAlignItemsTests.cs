@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {

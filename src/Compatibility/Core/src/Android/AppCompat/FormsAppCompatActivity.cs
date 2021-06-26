@@ -52,8 +52,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool _renderersAdded;
 		bool _activityCreated;
 		bool _needMainPageAssign;
-		bool _powerSaveReceiverRegistered;
-		PowerSaveModeBroadcastReceiver _powerSaveModeBroadcastReceiver;
 
 		static readonly ManualResetEventSlim PreviousActivityDestroying = new ManualResetEventSlim(true);
 
@@ -258,12 +256,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					Window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
 				}
 			}
-			if (Forms.IsLollipopOrNewer)
-			{
-				// Listen for the device going into power save mode so we can handle animations being disabled
-				Profile.FramePartition("Allocate PowerSaveModeReceiver");
-				_powerSaveModeBroadcastReceiver = new PowerSaveModeBroadcastReceiver();
-			}
 
 			Profile.FrameEnd();
 		}
@@ -301,13 +293,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void OnPause()
 		{
 			_layout.HideKeyboard(true);
-
-			if (_powerSaveReceiverRegistered && Forms.IsLollipopOrNewer)
-			{
-				// Don't listen for power save mode changes while we're paused
-				UnregisterReceiver(_powerSaveModeBroadcastReceiver);
-				_powerSaveReceiverRegistered = false;
-			}
 
 			// Stop animations or other ongoing actions that could consume CPU
 			// Commit unsaved changes, build only if users expect such changes to be permanently saved when thy leave such as a draft email
@@ -351,16 +336,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_needMainPageAssign = false;
 				SettingMainPage();
 				SetMainPage();
-			}
-
-			if (!_powerSaveReceiverRegistered && Forms.IsLollipopOrNewer)
-			{
-				// Start listening for power save mode changes
-				RegisterReceiver(_powerSaveModeBroadcastReceiver, new IntentFilter(
-					PowerManager.ActionPowerSaveModeChanged
-				));
-
-				_powerSaveReceiverRegistered = true;
 			}
 
 			OnStateChanged();
