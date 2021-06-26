@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using Controls.Core.UnitTests.TestClasses;
 using Microsoft.Maui.Animations;
-using Microsoft.Maui.Controls.Internals;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -62,12 +59,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class MotionTests : BaseTestFixture
 	{
-		HandlerWithAnimationContext animationContext;
+		HandlerWithAnimationContextStub animationContext;
+
 		[OneTimeSetUp]
 		public void Init()
 		{
 			Device.PlatformServices = new MockPlatformServices();
-			animationContext = new HandlerWithAnimationContext();
+			animationContext = new HandlerWithAnimationContextStub();
 		}
 
 		[OneTimeTearDown]
@@ -165,18 +163,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class TickerSystemEnabledTests
 	{
-		HandlerWithAnimationContext animationContext;
+		HandlerWithAnimationContextStub animationContext;
+
 		[OneTimeSetUp]
 		public void Init()
 		{
 			Device.PlatformServices = new MockPlatformServices();
-			animationContext = new HandlerWithAnimationContext
-			{
-				AnimationManager = new TestAnimationManager
-				{
-					Ticker = new AsyncTicker(),
-				}
-			};
+			animationContext = new HandlerWithAnimationContextStub(new TestAnimationManager(new AsyncTicker()));
 		}
 
 		[OneTimeTearDown]
