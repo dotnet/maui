@@ -14,6 +14,7 @@
 			[nameof(IPicker.Title)] = MapTitle,
 			[nameof(IPicker.TitleColor)] = MapTitleColor,
 			[nameof(IPicker.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(IPicker.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			Actions =
 			{
 				["Reload"] = MapReload,

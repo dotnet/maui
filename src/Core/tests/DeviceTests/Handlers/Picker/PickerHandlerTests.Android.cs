@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Android.Views;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -109,5 +110,8 @@ namespace Microsoft.Maui.DeviceTests
 			var currentTextColor = new AColor(currentTextColorInt);
 			return currentTextColor.ToColor();
 		}
+
+		GravityFlags GetNativeVerticalTextAlignment(PickerHandler pickerHandler) =>
+			GetNativePicker(pickerHandler).Gravity;
 	}
 }
