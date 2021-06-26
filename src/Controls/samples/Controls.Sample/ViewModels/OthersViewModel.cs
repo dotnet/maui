@@ -5,7 +5,7 @@ using Maui.Controls.Sample.Pages;
 
 namespace Maui.Controls.Sample.ViewModels
 {
-    public class OthersViewModel : BaseGalleryViewModel
+	public class OthersViewModel : BaseGalleryViewModel
 	{
 		protected override IEnumerable<SectionModel> CreateItems() => new[]
 		{

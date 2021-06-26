@@ -39,11 +39,11 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ProgressBarPage), "ProgressBar",
 				"The ProgressBar control visually represents progress as a horizontal bar that is filled to a percentage represented by a float value."),
 
-			new SectionModel(typeof(ShapesPage), "Shapes",
-				"A Shape is a type of View that enables you to draw a shape to the screen."),
-
 			new SectionModel(typeof(SearchBarPage), "SearchBar",
 				"The SearchBar is a user input control used to initiating a search."),
+
+			new SectionModel(typeof(ShapesPage), "Shapes",
+				"A Shape is a type of View that enables you to draw a shape to the screen."),
 
 			new SectionModel(typeof(SliderPage), "Slider",
 				"The Slider is a horizontal bar that can be manipulated by the user to select a double value from a continuous range."),
