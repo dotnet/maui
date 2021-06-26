@@ -1,8 +1,11 @@
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages.Base;
-using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+
+#if NET6_0_OR_GREATER
+using Microsoft.AspNetCore.Components.WebView.Maui;
+#endif
 
 namespace Maui.Controls.Sample.Pages
 {
