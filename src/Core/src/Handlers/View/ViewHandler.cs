@@ -1,6 +1,4 @@
-#nullable enable
 using Microsoft.Maui.Graphics;
-using System;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
 #elif MONOANDROID
@@ -13,9 +11,9 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler : IViewHandler
+	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
-		public static PropertyMapper<IView, ViewHandler> ViewMapper = new PropertyMapper<IView, ViewHandler>
+		public static PropertyMapper<IView, ViewHandler> ViewMapper = new PropertyMapper<IView, ViewHandler>(ElementHandler.ElementMapper)
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.Clip)] = MapClip,
@@ -39,16 +37,17 @@ namespace Microsoft.Maui.Handlers
 			Actions =
 			{
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
-				[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure,
-				[nameof(IFrameworkElement.Frame)] = MapFrame,
+				[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
+				[nameof(IView.Frame)] = MapFrame,
 			}
 		};
 
-		internal ViewHandler()
+		bool _hasContainer;
+
+		protected ViewHandler(PropertyMapper mapper)
+			: base(mapper)
 		{
 		}
-
-		bool _hasContainer;
 
 		public bool HasContainer
 		{
@@ -71,50 +70,61 @@ namespace Microsoft.Maui.Handlers
 
 		protected abstract void RemoveContainer();
 
-		public IMauiContext? MauiContext { get; private set; }
-
-		public IServiceProvider? Services => MauiContext?.Services;
-
 		public virtual bool NeedsContainer { get; }
 
-		public object? ContainerView { get; private protected set; }
+		public NativeView? ContainerView { get; private protected set; }
 
-		public object? NativeView { get; private protected set; }
+		object? IViewHandler.ContainerView => ContainerView;
 
-		protected object? WrappedNativeView => ContainerView ?? NativeView;
+		protected NativeView? WrappedNativeView => ContainerView ?? NativeView;
 
-		public IView? VirtualView { get; private protected set; }
+		public new NativeView? NativeView
+		{
+			get => (NativeView?)base.NativeView;
+			private protected set => base.NativeView = value;
+		}
 
-		public void SetMauiContext(IMauiContext mauiContext) => MauiContext = mauiContext;
-
-		public abstract void SetVirtualView(IView view);
-
-		public abstract void UpdateValue(string property);
-
-		void IViewHandler.DisconnectHandler() => DisconnectHandler(((NativeView?)NativeView));
+		public new IView? VirtualView
+		{
+			get => (IView?)base.VirtualView;
+			private protected set => base.VirtualView = value;
+		}
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
 		public abstract void NativeArrange(Rectangle frame);
 
+		private protected abstract NativeView OnCreateNativeView();
+
+		private protected sealed override object OnCreateNativeElement() =>
+			OnCreateNativeView();
+
+#if !NETSTANDARD
+		private protected abstract void OnSetupDefaults(NativeView nativeView);
+
+		private protected sealed override void OnSetupDefaults(object nativeView) =>
+			OnSetupDefaults((NativeView)nativeView);
+
+		private protected abstract void OnConnectHandler(NativeView nativeView);
+
 		partial void ConnectingHandler(NativeView? nativeView);
 
-		private protected void ConnectHandler(NativeView? nativeView)
+		private protected sealed override void OnConnectHandler(object nativeView)
 		{
-			ConnectingHandler(nativeView);
+			ConnectingHandler((NativeView)nativeView);
+			OnConnectHandler((NativeView)nativeView);
 		}
 
-		partial void DisconnectingHandler(NativeView? nativeView);
+		private protected abstract void OnDisconnectHandler(NativeView nativeView);
 
-		private protected void DisconnectHandler(NativeView? nativeView)
+		partial void DisconnectingHandler(NativeView nativeView);
+
+		private protected sealed override void OnDisconnectHandler(object nativeView)
 		{
-			DisconnectingHandler(nativeView);
-
-			if (VirtualView != null)
-				VirtualView.Handler = null;
-
-			VirtualView = null;
+			DisconnectingHandler((NativeView)nativeView);
+			OnDisconnectHandler((NativeView)nativeView);
 		}
+#endif
 
 		public static void MapWidth(ViewHandler handler, IView view)
 		{
@@ -141,7 +151,7 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateBackground(view);
 		}
 
-		public static void MapOpacity(IViewHandler handler, IView view)
+		public static void MapOpacity(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateOpacity(view);
 		}
@@ -151,7 +161,7 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateAutomationId(view);
 		}
 
-		public static void MapClip(IViewHandler handler, IView view)
+		public static void MapClip(ViewHandler handler, IView view)
 		{
 			var clipGeometry = view.Clip;
 #if WINDOWS

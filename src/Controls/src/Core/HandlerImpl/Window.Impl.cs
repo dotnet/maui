@@ -1,15 +1,59 @@
 #nullable enable
-
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui.Controls
 {
 	public class Window : VisualElement, IWindow
 	{
+		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
+			nameof(Title), typeof(string), typeof(Window), default(string?));
+
+		public string? Title
+		{
+			get => (string?)GetValue(TitleProperty);
+			set => SetValue(TitleProperty, value);
+		}
+
 		ReadOnlyCollection<Element>? _logicalChildren;
 		Page? _page;
+		MauiContextAware<IAnimationManager> _animationManager;
+
+		struct MauiContextAware<T>
+			where T : notnull
+		{
+			readonly IFrameworkElement _element;
+
+			T? _value;
+			IMauiContext? _context;
+
+			public MauiContextAware(IFrameworkElement element)
+				: this()
+			{
+				_element = element;
+			}
+
+			public T? Value
+			{
+				get
+				{
+					if (_context != _element?.Handler?.MauiContext)
+					{
+						_value = default;
+						_context = _element?.Handler?.MauiContext;
+					}
+
+					var services = _context?.Services;
+					if (services is not null)
+						_value ??= services.GetRequiredService<T>();
+
+					return _value;
+				}
+			}
+		}
 
 		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
@@ -19,6 +63,7 @@ namespace Microsoft.Maui.Controls
 		public Window()
 		{
 			InternalChildren.CollectionChanged += OnCollectionChanged;
+			_animationManager = new MauiContextAware<IAnimationManager>(this);
 		}
 
 		public Window(Page page)
@@ -27,6 +72,7 @@ namespace Microsoft.Maui.Controls
 			Page = page;
 		}
 
+		public IAnimationManager? AnimationManager => _animationManager.Value;
 
 		void SendWindowAppearing()
 		{
@@ -77,10 +123,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		IView IWindow.View
-		{
-			get => Page ?? throw new InvalidOperationException("No page was set on the window.");
-			set => Page = (Page)value;
-		}
+		IView IWindow.View => Page ?? throw new InvalidOperationException("No page was set on the window.");
 	}
 }

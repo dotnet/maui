@@ -310,7 +310,7 @@ namespace Microsoft.Maui.Controls
 		internal static void ClearCurrent() => Current = null;
 
 		internal static bool IsApplicationOrNull(object element) =>
-			element == null || element is IApplication || element is IWindow;
+			element == null || element is IApplication;
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
 		{

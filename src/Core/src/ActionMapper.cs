@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui
 {
 	public class ActionMapper<TVirtualView, TViewHandler>
-			where TVirtualView : IFrameworkElement
-			where TViewHandler : IViewHandler
+		where TVirtualView : IElement
+		where TViewHandler : IElementHandler
 	{
 		public ActionMapper(PropertyMapper<TVirtualView, TViewHandler> propertyMapper)
 		{

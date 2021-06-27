@@ -10,6 +10,22 @@ namespace Microsoft.Maui.Controls
 		Semantics _semantics;
 		IViewHandler _handler;
 
+		IElementHandler Maui.IElement.Handler
+		{
+			get => Handler;
+			set
+			{
+				if (value is null)
+					Handler = null;
+				else if (value is IViewHandler viewHandler)
+					Handler = viewHandler;
+				else
+					throw new InvalidCastException($"Handler for {GetType().Name} must be a {nameof(IViewHandler)}.");
+			}
+		}
+
+		Maui.IElement Maui.IElement.Parent => Parent as Maui.IElement;
+
 		public Rectangle Frame => Bounds;
 
 		public IViewHandler Handler
@@ -41,7 +57,7 @@ namespace Microsoft.Maui.Controls
 			Handler?.UpdateValue(propertyName);
 		}
 
-		IFrameworkElement IFrameworkElement.Parent => Parent as IView;
+		IFrameworkElement IFrameworkElement.Parent => Parent as IFrameworkElement;
 
 		public Size DesiredSize { get; protected set; }
 

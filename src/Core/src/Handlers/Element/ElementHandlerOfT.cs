@@ -1,25 +1,25 @@
 using System;
 #if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIView;
+using NativeView = UIKit.UIViewController;
 #elif MONOANDROID
-using NativeView = Android.Views.View;
+using NativeView = Android.App.Activity;
 #elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+using NativeView = Microsoft.UI.Xaml.Window;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
 using NativeView = System.Object;
 #endif
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TNativeView> : ViewHandler, IViewHandler
-		where TVirtualView : class, IView
+	public abstract partial class ElementHandler<TVirtualView, TNativeView> : ElementHandler
+		where TVirtualView : class, IElement
 #if !NETSTANDARD || IOS || ANDROID || WINDOWS
 		where TNativeView : NativeView
 #else
 		where TNativeView : class
 #endif
 	{
-		protected ViewHandler(PropertyMapper mapper)
+		protected ElementHandler(PropertyMapper mapper)
 			: base(mapper)
 		{
 		}
@@ -36,10 +36,7 @@ namespace Microsoft.Maui.Handlers
 			private protected set => base.VirtualView = value;
 		}
 
-		public virtual void SetVirtualView(IView view) =>
-			base.SetVirtualView(view);
-
-		protected abstract TNativeView CreateNativeView();
+		protected abstract TNativeView CreateNativeElement();
 
 		protected virtual void SetupDefaults(TNativeView nativeView)
 		{
@@ -53,16 +50,16 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		private protected override NativeView OnCreateNativeView() =>
-			CreateNativeView();
+		private protected override object OnCreateNativeElement() =>
+			CreateNativeElement();
 
-		private protected override void OnSetupDefaults(NativeView nativeView) =>
+		private protected override void OnSetupDefaults(object nativeView) =>
 			SetupDefaults((TNativeView)nativeView);
 
-		private protected override void OnConnectHandler(NativeView nativeView) =>
+		private protected override void OnConnectHandler(object nativeView) =>
 			ConnectHandler((TNativeView)nativeView);
 
-		private protected override void OnDisconnectHandler(NativeView nativeView) =>
+		private protected override void OnDisconnectHandler(object nativeView) =>
 			DisconnectHandler((TNativeView)nativeView);
 	}
 }
