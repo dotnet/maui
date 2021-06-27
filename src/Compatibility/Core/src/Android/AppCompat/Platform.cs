@@ -323,7 +323,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				//TODO: Handle this with AppBuilderHost
 				try
 				{
-					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType());
+					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(Forms.MauiContext);
 				}
 				catch
