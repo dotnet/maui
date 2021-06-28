@@ -56,10 +56,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (!HasSetDefaults)
 			{
-				if (NativeView != null)
-				{
-					SetupDefaults(NativeView);
-				}
+				SetupDefaults(NativeView);
 
 				HasSetDefaults = true;
 			}

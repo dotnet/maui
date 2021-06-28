@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -36,12 +35,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		IShape IFrameworkElement.Clip => Clip;
-
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
-		{
-			base.OnPropertyChanged(propertyName);
-			Handler?.UpdateValue(propertyName);
-		}
 
 		IFrameworkElement IFrameworkElement.Parent => Parent as IFrameworkElement;
 

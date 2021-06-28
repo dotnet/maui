@@ -14,6 +14,14 @@ namespace Microsoft.Maui.Controls
 			set => SetHandler(value);
 		}
 
+		public event EventHandler AttachingHandler;
+
+		public event EventHandler AttachedHandler;
+
+		public event EventHandler DetachingHandler;
+
+		public event EventHandler DetachedHandler;
+
 		protected virtual void OnAttachingHandler() { }
 
 		protected virtual void OnAttachedHandler() { }
@@ -24,13 +32,6 @@ namespace Microsoft.Maui.Controls
 
 		private protected virtual void OnHandlerSet() { }
 
-		public event EventHandler AttachingHandler;
-
-		public event EventHandler AttachedHandler;
-
-		public event EventHandler DetachingHandler;
-
-		public event EventHandler DetachedHandler;
 
 		void SetHandler(IElementHandler newHandler)
 		{

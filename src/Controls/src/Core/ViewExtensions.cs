@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls
 
 		internal static IAnimationManager? GetAnimationManager(this IAnimatable animatable)
 		{
-			if (animatable is Element e && e.FindElementOfType<Window>() is Window window)
+			if (animatable is Element e && e.FindParentOfType<Window>(true) is Window window)
 				return window.AnimationManager;
 
 			throw new ArgumentException($"Unable to find {nameof(IAnimationManager)} for '{animatable.GetType().FullName}'.", nameof(animatable));
@@ -190,18 +190,12 @@ namespace Microsoft.Maui.Controls
 			return default;
 		}
 
-		internal static T? FindElementOfType<T>(this Element element)
+		internal static T? FindParentOfType<T>(this Element element, bool includeThis = false)
 			where T : Maui.IElement
 		{
-			if (element is T view)
+			if (includeThis && element is T view)
 				return view;
 
-			return element.FindParentOfType<T>();
-		}
-
-		internal static T? FindParentOfType<T>(this Element element)
-			where T : Maui.IElement
-		{
 			foreach (var parent in element.GetParentsPath())
 			{
 				if (parent is T parentView)
