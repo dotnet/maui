@@ -61,8 +61,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateMaxLength(editor);
 		}
 
-		[MissingMapper]
-		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) { }
+		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateIsTextPredictionEnabled(editor);
+		}
 
 		public static void MapFont(EditorHandler handler, IEditor editor)
 		{
@@ -81,7 +83,7 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapKeyboard(EditorHandler handler, IEditor editor) { }
-		
+
 		void OnLostFocus(object? sender, RoutedEventArgs e)
 		{
 			VirtualView?.Completed();
