@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				if (child != null)
 				{
-					IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(child);
+					IVisualElementRenderer renderer = Platform.GetRenderer(child);
 
 					if (renderer == null)
 						continue;
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					renderer.View.RemoveFromParent();
 
-					AppCompat.Platform.SetRenderer(child, null);
+					Platform.SetRenderer(child, null);
 
 					PushRenderer(renderer);
 				}

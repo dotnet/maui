@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			_services = services;
 			_handlersServiceProvider = Services.GetRequiredService<IMauiHandlersServiceProvider>();
-			_animationManager = Services.GetService<IAnimationManager>() ?? new AnimationManager();
+			_animationManager = Services.GetRequiredService<IAnimationManager>();
 		}
 
 		public IServiceProvider Services => _services;

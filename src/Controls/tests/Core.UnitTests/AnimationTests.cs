@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var box = new BoxView
 			{
-				Handler = new HandlerWithAnimationContext(),
+				Handler = new HandlerWithAnimationContextStub(),
 			};
 			Assume.That(box.Rotation, Is.EqualTo(0d));
 			var sb = new Animation();

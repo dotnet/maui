@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30503.244
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31410.414
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12C50D-A570-4DF1-94E1-8599843FA87C}"
 	ProjectSection(SolutionItems) = preProject
@@ -31,6 +31,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{FF16050F-B905-4DE1-92FA-8B9EC93EE009}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen-net6", "src\Controls\src\SourceGen\Controls.SourceGen-net6.csproj", "{3E40598B-A52D-417D-B856-240847F6A43F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials-net6", "src\Essentials\src\Essentials-net6.csproj", "{63FDEDD9-C54C-44EE-A4BE-4C870D4CB68A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +68,10 @@ Global
 		{3E40598B-A52D-417D-B856-240847F6A43F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E40598B-A52D-417D-B856-240847F6A43F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E40598B-A52D-417D-B856-240847F6A43F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63FDEDD9-C54C-44EE-A4BE-4C870D4CB68A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63FDEDD9-C54C-44EE-A4BE-4C870D4CB68A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63FDEDD9-C54C-44EE-A4BE-4C870D4CB68A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63FDEDD9-C54C-44EE-A4BE-4C870D4CB68A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

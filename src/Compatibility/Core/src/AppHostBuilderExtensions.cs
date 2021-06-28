@@ -16,7 +16,7 @@ using FrameRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.Fas
 using LabelRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.LabelRenderer;
 using ImageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ImageRenderer;
 using ButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ButtonRenderer;
-using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform.DefaultRenderer;
+using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.DefaultRenderer;
 #elif WINDOWS
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Graphics.Win2D;
@@ -51,6 +51,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			});
 
 			builder.SetupDefaults();
+
 			return builder;
 		}
 
@@ -63,6 +64,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			});
 
 			builder.SetupDefaults();
+
 			return builder;
 		}
 
@@ -170,9 +172,9 @@ namespace Microsoft.Maui.Controls.Hosting
 						var services = MauiWinUIApplication.Current.Services;
 						var mauiContext = new MauiContext(services);
 						var state = new ActivationState(mauiContext, args);
-						Forms.Init(state, new InitializationOptions() { Flags = InitializationFlags.SkipRenderers });
-
-						GraphicsPlatform.RegisterGlobalService(W2DGraphicsService.Instance);
+						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
+						// TODO: Implement GetPathBounds in Microsoft.Maui.Graphics
+						// GraphicsPlatform.RegisterGlobalService(W2DGraphicsService.Instance);
 					})
 					.OnLaunched((app, args) =>
 					{
@@ -288,7 +290,6 @@ namespace Microsoft.Maui.Controls.Hosting
 #endif
 				})
 				.ConfigureServices<MauiCompatBuilder>();
-
 
 			return builder;
 		}

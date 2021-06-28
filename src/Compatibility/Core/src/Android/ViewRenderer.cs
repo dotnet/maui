@@ -320,7 +320,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Control = control;
 			if (Control.Id == NoId)
 			{
-				Control.Id = AppCompat.Platform.GenerateViewId();
+				Control.Id = Platform.GenerateViewId();
 			}
 
 			AView toAdd = container == this ? control : (AView)container;
