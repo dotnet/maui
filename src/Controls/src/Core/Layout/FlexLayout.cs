@@ -346,7 +346,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			}
 		}
 
-		internal Flex.Item GetFlexItem(IView view) 
+		internal Flex.Item GetFlexItem(IView view)
 		{
 			return view switch
 			{
@@ -355,7 +355,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			};
 		}
 
-		void SetFlexItem(IView view, Flex.Item flexItem) 
+		void SetFlexItem(IView view, Flex.Item flexItem)
 		{
 			switch (view)
 			{
@@ -368,7 +368,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			}
 		}
 
-		Thickness GetMargin(IView view) 
+		Thickness GetMargin(IView view)
 		{
 			return view switch
 			{
@@ -377,7 +377,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			};
 		}
 
-		double GetWidth(IView view) 
+		double GetWidth(IView view)
 		{
 			return view switch
 			{
@@ -460,7 +460,7 @@ namespace Microsoft.Maui.Controls.Layout2
 		{
 			if (_root == null)
 				return;
-			
+
 			var item = GetFlexItem(child);
 			_root.Remove(item);
 

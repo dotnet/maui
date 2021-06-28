@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Layouts
 {
 	public class FlexLayoutManager : ILayoutManager
 	{
-		IFlexLayout FlexLayout { get;}
+		IFlexLayout FlexLayout { get; }
 
 		public FlexLayoutManager(IFlexLayout flexLayout)
 		{
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Layouts
 		public void ArrangeChildren(Rectangle childBounds)
 		{
 			FlexLayout.Layout(childBounds.Width, childBounds.Height);
-			
+
 			foreach (var child in FlexLayout.Children)
 			{
 				var frame = FlexLayout.GetFlexFrame(child);
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Layouts
 					|| double.IsNaN(frame.Width)
 					|| double.IsNaN(frame.Height))
 					throw new Exception("something is deeply wrong");
-				frame = frame.Offset(childBounds.X, childBounds.Y); 
+				frame = frame.Offset(childBounds.X, childBounds.Y);
 				child.Arrange(frame);
 			}
 		}

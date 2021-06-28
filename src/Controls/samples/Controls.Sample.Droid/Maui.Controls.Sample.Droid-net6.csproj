@@ -6,6 +6,7 @@
     <RootNamespace>Maui.Controls.Sample.Droid</RootNamespace>
     <AssemblyName>Maui.Controls.Sample.Droid</AssemblyName>
     <IsPackable>false</IsPackable>
+    <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
   </PropertyGroup>
 
   <!-- HACK: seems to fix a threading issue for now -->

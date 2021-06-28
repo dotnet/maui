@@ -933,7 +933,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
-				return Platform.Android.AppCompat.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 			}
 
 			public void Invalidate(VisualElement visualElement)
