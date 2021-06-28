@@ -48,7 +48,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 		VisualElement IVisualElementRenderer.Element => Element;
 		AView IVisualElementRenderer.View => this;
-		ViewGroup IVisualElementRenderer.ViewGroup => null;
 		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;
 
 		Button Button
@@ -183,8 +182,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 				if (Element != null)
 				{
-					if (AppCompat.Platform.GetRenderer(Element) == this)
-						Element.ClearValue(AppCompat.Platform.RendererProperty);
+					if (Platform.GetRenderer(Element) == this)
+						Element.ClearValue(Platform.RendererProperty);
 				}
 			}
 

@@ -51,9 +51,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected virtual void AddChildView(VisualElement childView)
 		{
-			IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(childView);
+			IVisualElementRenderer renderer = Platform.GetRenderer(childView);
 			if (renderer == null)
-				AppCompat.Platform.SetRenderer(childView, renderer = AppCompat.Platform.CreateRenderer(childView, Context));
+				Platform.SetRenderer(childView, renderer = Platform.CreateRenderer(childView, Context));
 
 			if (renderer.View.Parent != this)
 			{
@@ -105,15 +105,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else
 				MasterDetailPageController.DetailBounds = bounds;
 
-			IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(_childView);
+			IVisualElementRenderer renderer = Platform.GetRenderer(_childView);
 			renderer?.UpdateLayout();
 		}
 
 		void DisposeChildRenderers()
 		{
-			IVisualElementRenderer childRenderer = AppCompat.Platform.GetRenderer(_childView);
+			IVisualElementRenderer childRenderer = Platform.GetRenderer(_childView);
 			childRenderer?.Dispose();
-			_childView?.ClearValue(AppCompat.Platform.RendererProperty);
+			_childView?.ClearValue(Platform.RendererProperty);
 		}
 
 		Rectangle GetBounds(bool isMasterPage, int left, int top, int right, int bottom)

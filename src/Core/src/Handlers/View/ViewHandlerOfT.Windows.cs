@@ -1,4 +1,5 @@
 #nullable enable
+using System.Net;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -10,7 +11,8 @@ namespace Microsoft.Maui.Handlers
 		FrameworkElement? INativeViewHandler.NativeView => WrappedNativeView;
 		FrameworkElement? INativeViewHandler.ContainerView => ContainerView;
 
-		protected FrameworkElement? WrappedNativeView => ContainerView ?? (FrameworkElement?)NativeView;
+		protected new FrameworkElement? WrappedNativeView =>
+			(FrameworkElement?)base.WrappedNativeView;
 
 		public new Border? ContainerView
 		{
@@ -33,10 +35,10 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = WrappedNativeView;
-
-			if (nativeView == null || VirtualView == null)
+			if (WrappedNativeView == null)
 				return Size.Zero;
+
+			var nativeView = WrappedNativeView;
 
 			if (widthConstraint < 0 || heightConstraint < 0)
 				return Size.Zero;

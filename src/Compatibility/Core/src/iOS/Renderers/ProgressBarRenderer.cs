@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using UIKit;
 using SizeF = CoreGraphics.CGSize;

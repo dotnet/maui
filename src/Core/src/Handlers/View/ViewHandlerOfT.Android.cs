@@ -11,7 +11,8 @@ namespace Microsoft.Maui.Handlers
 		View? INativeViewHandler.NativeView => WrappedNativeView;
 		View? INativeViewHandler.ContainerView => ContainerView;
 
-		protected View? WrappedNativeView => ContainerView ?? (View?)NativeView;
+		protected new View? WrappedNativeView =>
+			(View?)base.WrappedNativeView;
 
 		public new WrapperView? ContainerView
 		{
@@ -19,13 +20,7 @@ namespace Microsoft.Maui.Handlers
 			protected set => base.ContainerView = value;
 		}
 
-		public Context? Context => MauiContext?.Context;
-
-		protected Context ContextWithValidation([CallerMemberName] string callerName = "")
-		{
-			_ = Context ?? throw new InvalidOperationException($"Context cannot be null here: {callerName}");
-			return Context;
-		}
+		public Context Context => MauiContext?.Context ?? throw new InvalidOperationException($"Context cannot be null here");
 
 		public override void NativeArrange(Rectangle frame)
 		{

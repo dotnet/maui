@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UISlider nativeView)
 		{
+			base.ConnectHandler(nativeView);
+
 			nativeView.ValueChanged += OnControlValueChanged;
 			nativeView.AddTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
 			nativeView.AddTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
@@ -20,6 +22,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(UISlider nativeView)
 		{
+			base.DisconnectHandler(nativeView);
+
 			nativeView.ValueChanged -= OnControlValueChanged;
 			nativeView.RemoveTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
 			nativeView.RemoveTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
@@ -60,6 +64,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapThumbColor(SliderHandler handler, ISlider slider)
 		{
 			handler.NativeView?.UpdateThumbColor(slider, DefaultThumbColor);
+		}
+
+		public static void MapThumbImageSource(SliderHandler handler, ISlider slider)
+		{
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			handler.NativeView?.UpdateThumbImageSourceAsync(slider, provider)
+				.FireAndForget(handler);
 		}
 
 		void OnControlValueChanged(object? sender, EventArgs eventArgs)

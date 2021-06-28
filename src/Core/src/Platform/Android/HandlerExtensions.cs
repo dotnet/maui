@@ -21,7 +21,6 @@ namespace Microsoft.Maui
 			if (handler?.MauiContext != null &&
 				handler.MauiContext != context)
 			{
-				view.Handler = null;
 				handler = null;
 			}
 
@@ -37,7 +36,8 @@ namespace Microsoft.Maui
 				view.Handler = handler;
 			}
 
-			handler.SetVirtualView(view);
+			if (handler.VirtualView != view)
+				handler.SetVirtualView(view);
 
 			if (((INativeViewHandler)handler).NativeView is not AView result)
 			{

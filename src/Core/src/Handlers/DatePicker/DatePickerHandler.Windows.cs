@@ -1,20 +1,30 @@
 ﻿#nullable enable
 using Microsoft.UI.Xaml.Controls;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class DatePickerHandler : ViewHandler<IDatePicker, DatePicker>
+	public partial class DatePickerHandler : ViewHandler<IDatePicker, CalendarDatePicker>
 	{
-		protected override DatePicker CreateNativeView() => new DatePicker();
+		WBrush? _defaultForeground;
 
-		protected override void ConnectHandler(DatePicker nativeView)
+		protected override CalendarDatePicker CreateNativeView() => new CalendarDatePicker();
+
+		protected override void ConnectHandler(CalendarDatePicker nativeView)
 		{
-			nativeView.DateChanged += OnControlDateChanged;
+			nativeView.DateChanged += DateChanged;
 		}
 
-		protected override void DisconnectHandler(DatePicker nativeView)
+		protected override void DisconnectHandler(CalendarDatePicker nativeView)
 		{
-			nativeView.DateChanged -= OnControlDateChanged;
+			nativeView.DateChanged -= DateChanged;
+		}
+
+		protected override void SetupDefaults(CalendarDatePicker nativeView)
+		{
+			_defaultForeground = nativeView.Foreground;
+
+			base.SetupDefaults(nativeView);
 		}
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
@@ -49,28 +59,35 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(datePicker, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultForeground);
+		}
 
-		void OnControlDateChanged(object? sender, DatePickerValueChangedEventArgs e)
+		private void DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
 		{
 			if (VirtualView == null)
 				return;
 
-			if (VirtualView.Date.CompareTo(e.NewDate.Date) != 0)
+			if (!args.NewDate.HasValue)
 			{
-				var date = e.NewDate.Date.Clamp(VirtualView.MinimumDate, VirtualView.MaximumDate);
-				VirtualView.Date = date;
-
-				// Set the control date-time to clamped value, if it exceeded the limits at the time of installation.
-				if (date != e.NewDate.Date)
-				{
-					NativeView?.UpdateDate(date);
-					NativeView?.UpdateLayout();
-				}
-
-				VirtualView.InvalidateMeasure();
+				return;
 			}
+
+			// TODO ezhart 2021-06-21 For the moment, IDatePicker requires a date to be selected; once that's fixed, we can uncomment these next lines
+
+			//if (!args.NewDate.HasValue)
+			//{
+			//	VirtualView.Date = null;
+			//	return;
+			//}
+
+			//if (VirtualView.Date == null)
+			//{
+			//	VirtualView.Date = args.NewDate.Value.Date;
+			//}
+
+			VirtualView.Date = args.NewDate.Value.Date;
 		}
 	}
 }

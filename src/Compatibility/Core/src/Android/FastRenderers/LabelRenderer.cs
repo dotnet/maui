@@ -54,8 +54,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 		AView ITabStop.TabStop => this;
 
-		ViewGroup IVisualElementRenderer.ViewGroup => null;
-
 		protected Label Element
 		{
 			get { return _element; }
@@ -208,8 +206,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 				if (Element != null)
 				{
-					if (AppCompat.Platform.GetRenderer(Element) == this)
-						Element.ClearValue(AppCompat.Platform.RendererProperty);
+					if (Platform.GetRenderer(Element) == this)
+						Element.ClearValue(Platform.RendererProperty);
 				}
 			}
 

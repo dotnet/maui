@@ -1,14 +1,20 @@
 #nullable enable
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler : ViewHandler<IEditor, MauiTextBox>
 	{
+		Brush? _placeholderDefaultBrush;
+		Brush? _defaultPlaceholderColorFocusBrush;
+
 		protected override MauiTextBox CreateNativeView() => new MauiTextBox
 		{
 			AcceptsReturn = true,
 			TextWrapping = TextWrapping.Wrap,
+			Style = Application.Current.Resources["MauiTextBoxStyle"] as Style,
+			UpdateVerticalAlignmentOnLoad = false,
 			VerticalContentAlignment = VerticalAlignment.Top
 		};
 
@@ -22,6 +28,14 @@ namespace Microsoft.Maui.Handlers
 			nativeView.LostFocus -= OnLostFocus;
 		}
 
+		protected override void SetupDefaults(MauiTextBox nativeView)
+		{
+			_placeholderDefaultBrush = nativeView.PlaceholderForeground;
+			_defaultPlaceholderColorFocusBrush = nativeView.PlaceholderForegroundFocusBrush;
+
+			base.SetupDefaults(nativeView);
+		}
+
 		public static void MapText(EditorHandler handler, IEditor editor)
 		{
 			handler.NativeView?.UpdateText(editor);
@@ -32,11 +46,15 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdatePlaceholder(editor);
 		}
 
-		[MissingMapper]
-		public static void MapPlaceholderColor(IViewHandler handler, IEditor editor) { }
+		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdatePlaceholderColor(editor, handler._placeholderDefaultBrush, handler._defaultPlaceholderColorFocusBrush);
+		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(IViewHandler handler, IEditor editor) { }
+		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateCharacterSpacing(editor);
+		}
 
 		public static void MapMaxLength(EditorHandler handler, IEditor editor)
 		{
@@ -60,6 +78,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateTextColor(editor);
+
+		[MissingMapper]
+		public static void MapKeyboard(EditorHandler handler, IEditor editor) { }
 		
 		void OnLostFocus(object? sender, RoutedEventArgs e)
 		{

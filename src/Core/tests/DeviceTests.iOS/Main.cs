@@ -8,9 +8,9 @@ namespace Microsoft.Maui.DeviceTests
 		static void Main(string[] args)
 		{
 			if (BaseTestApplicationDelegate.IsXHarnessRun(args))
-				UIApplication.Main(args, null, nameof(TestApplicationDelegate));
+				UIApplication.Main(args, null, typeof(TestApplicationDelegate));
 			else
-				UIApplication.Main(args, null, nameof(AppDelegate));
+				UIApplication.Main(args, null, typeof(AppDelegate));
 		}
 	}
 }

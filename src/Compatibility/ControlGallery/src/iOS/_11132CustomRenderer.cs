@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(Issue11132Control), typeof(_11132CustomRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS

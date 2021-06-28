@@ -1,10 +1,14 @@
-﻿namespace Microsoft.Maui
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a View used to initiating a search.
 	/// </summary>
 	public interface ISearchBar : IView, ITextInput, ITextAlignment
 	{
+		Color CancelButtonColor { get; }
+
 		/// <summary>
 		/// Notify when the user presses the Search button.
 		/// </summary>

@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
@@ -114,10 +115,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				invokeOnMainThread(action);
 		}
 
-		public Internals.Ticker CreateTicker()
-		{
-			return new MockTicker();
-		}
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
@@ -276,21 +273,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 	}
 
-	internal class MockTicker : Internals.Ticker
+	internal class MockTicker : Ticker
 	{
 		bool _enabled;
 
-		protected override void EnableTimer()
+		public override void Start()
 		{
 			_enabled = true;
 
 			while (_enabled)
 			{
-				SendSignals(16);
+				this.Fire?.Invoke();
 			}
 		}
-
-		protected override void DisableTimer()
+		public override void Stop()
 		{
 			_enabled = false;
 		}

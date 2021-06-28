@@ -17,8 +17,7 @@ namespace Microsoft.Maui.Controls
 			get => _handler;
 			set
 			{
-				_handler = value;
-				IsPlatformEnabled = _handler != null;
+				SetHandler(value);
 			}
 		}
 
@@ -34,10 +33,12 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		IShape IFrameworkElement.Clip => Clip;
+
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);
-			(Handler)?.UpdateValue(propertyName);
+			Handler?.UpdateValue(propertyName);
 		}
 
 		IFrameworkElement IFrameworkElement.Parent => Parent as IView;
@@ -54,54 +55,11 @@ namespace Microsoft.Maui.Controls
 			return ArrangeOverride(bounds);
 		}
 
-		// The CloseEnough methods will likely go away once we get rid of the cause (see comments below); if not, we'll
-		// add a proper extension method or add a compare method to MG with a tolerance parameter
-		bool CloseEnough(double a, double b)
-		{
-			const double tolerance = 0.0001;
-
-			return (Math.Abs(a - b) < tolerance);
-		}
-
-		bool CloseEnough(Rectangle currentBounds, Rectangle newBounds)
-		{
-			if (!CloseEnough(currentBounds.X, newBounds.X))
-			{
-				return false;
-			}
-
-			if (!CloseEnough(currentBounds.Y, newBounds.Y))
-			{
-				return false;
-			}
-
-			if (!CloseEnough(currentBounds.Width, newBounds.Width))
-			{
-				return false;
-			}
-
-			if (!CloseEnough(currentBounds.Height, newBounds.Height))
-			{
-				return false;
-			}
-
-			return true;
-		}
-
 		// ArrangeOverride provides a way to allow subclasses (e.g., Layout) to override Arrange even though
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
-			// We check the previous bounds here to avoid getting into a loop caused by the OnSizeAllocated override
-			// in View.cs; the arrange it forces ends up back here and if we have a margin, ComputeFrame will 
-			// keep applying it in a loop until the element disappears. Hopefully we can remove the OnSizeAllocated 
-			// hack at some point and avoid this extra check.
-			if (!CloseEnough(Bounds, bounds))
-			{
-				// Setting Bounds here is equivalent to setting the Frame
-				Bounds = this.ComputeFrame(bounds);
-			}
-
+			Bounds = this.ComputeFrame(bounds);
 			return Frame.Size;
 		}
 
@@ -154,5 +112,68 @@ namespace Microsoft.Maui.Controls
 
 		double IFrameworkElement.Width => WidthRequest;
 		double IFrameworkElement.Height => HeightRequest;
+
+		public event EventHandler AttachingHandler;
+
+		EventHandler _attachedHandler;
+		public event EventHandler AttachedHandler
+		{
+			add
+			{
+				_attachedHandler += value;
+				if (Handler != null)
+					value?.Invoke(this, EventArgs.Empty);
+			}
+			remove
+			{
+				_attachedHandler -= value;
+			}
+		}
+		public event EventHandler DetachingHandler;
+		public event EventHandler DetachedHandler;
+
+		void SetHandler(IViewHandler newHandler)
+		{
+			if (newHandler == _handler)
+				return;
+
+			var previousHandler = _handler;
+
+			if (_handler != null)
+			{
+				DetachingHandler?.Invoke(this, EventArgs.Empty);
+				OnDetachingHandler();
+			}
+
+			if (newHandler != null)
+			{
+				AttachingHandler?.Invoke(this, EventArgs.Empty);
+				OnAttachingHandler();
+			}
+
+			_handler = newHandler;
+
+			if (_handler?.VirtualView != this)
+				_handler?.SetVirtualView((IView)this);
+
+			IsPlatformEnabled = _handler != null;
+
+			if (_handler != null)
+			{
+				_attachedHandler?.Invoke(this, EventArgs.Empty);
+				OnAttachedHandler();
+			}
+
+			if (previousHandler != null)
+			{
+				DetachedHandler?.Invoke(this, EventArgs.Empty);
+				OnDetachedHandler();
+			}
+		}
+
+		public virtual void OnAttachingHandler() { }
+		public virtual void OnAttachedHandler() { }
+		public virtual void OnDetachingHandler() { }
+		public virtual void OnDetachedHandler() { }
 	}
 }

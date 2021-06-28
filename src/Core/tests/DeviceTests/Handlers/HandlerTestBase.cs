@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
@@ -19,6 +20,11 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var appBuilder = AppHost
 				.CreateDefaultBuilder()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(SliderStub), typeof(SliderHandler));
+					handlers.AddHandler(typeof(ButtonStub), typeof(ButtonHandler));
+				})
 				.ConfigureImageSources((ctx, services) =>
 				{
 					services.AddService<ICountedImageSourceStub, CountedImageSourceServiceStub>();

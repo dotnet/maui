@@ -4,7 +4,7 @@
     <FirstParty Include="Microsoft.Maui.dll" />
     <FirstParty Include="Microsoft.Maui.*.dll" />
     <FirstParty Include="FormsViewGroup.dll" />
-    <FirstParty Include="Microsoft.AspNetCore.Components.WebView.Maui.dll" />
+    <FirstParty Include="Microsoft.AspNetCore.Components.WebView.*.dll" />
     
     <!-- SkiaSharp -->
     <FirstParty Include="SkiaSharp*.dll" />
@@ -37,6 +37,7 @@
     <Skip Include="NuGet.*.dll" />
     <Skip Include="Mono.*.dll" />
     <Skip Include="Microsoft.Build.*.dll" />
+    <Skip Include="Microsoft.Extensions.*.dll" />
   </ItemGroup>
 
 </Project>

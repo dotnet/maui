@@ -33,25 +33,31 @@ namespace Microsoft.Maui.Layouts
 		{
 			Thickness margin = frameworkElement.GetMargin();
 
-			// Normally the frame's width will be the element's desired width
-			var frameWidth = frameworkElement.DesiredSize.Width;
+			// We need to determine the width the element wants to consume; normally that's the element's DesiredSize.Width
+			var consumedWidth = frameworkElement.DesiredSize.Width;
 
-			// But, if the element is set to fill horizontally and it doesn't have an explicitly set width,
-			// the frame width will be large enough to fill the space
 			if (frameworkElement.HorizontalLayoutAlignment == LayoutAlignment.Fill && frameworkElement.Width == -1)
 			{
-				frameWidth = Math.Max(0, bounds.Width - margin.HorizontalThickness);
+				// But if the element is set to fill horizontally and it doesn't have an explicitly set width,
+				// then we want the width of the entire bounds
+				consumedWidth = bounds.Width;
 			}
 
-			// Normally the frame's height will be the element's desired height
-			var frameHeight = frameworkElement.DesiredSize.Height;
+			// And the actual frame width needs to subtract the margins
+			var frameWidth = Math.Max(0, consumedWidth - margin.HorizontalThickness);
+
+			// We need to determine the height the element wants to consume; normally that's the element's DesiredSize.Height
+			var consumedHeight = frameworkElement.DesiredSize.Height;
 
 			// But, if the element is set to fill vertically and it doesn't have an explicitly set height,
-			// the frame height will be large enough to fill the space
+			// then we want the height of the entire bounds
 			if (frameworkElement.VerticalLayoutAlignment == LayoutAlignment.Fill && frameworkElement.Height == -1)
 			{
-				frameHeight = Math.Max(0, bounds.Height - margin.VerticalThickness);
+				consumedHeight = bounds.Height;
 			}
+
+			// And the actual frame height needs to subtract the margins
+			var frameHeight = Math.Max(0, consumedHeight - margin.VerticalThickness);
 
 			var frameX = AlignHorizontal(frameworkElement, bounds, margin);
 			var frameY = AlignVertical(frameworkElement, bounds, margin);
@@ -108,14 +114,14 @@ namespace Microsoft.Maui.Layouts
 
 				case LayoutAlignment.Center:
 
-					frameX = (boundsWidth - desiredWidth) / 2;
+					frameX = startX + ((boundsWidth - desiredWidth) / 2);
 					var marginOffset = (startMargin - endMargin) / 2;
 					frameX += marginOffset;
 
 					break;
 				case LayoutAlignment.End:
 
-					frameX = boundsWidth - endMargin - desiredWidth;
+					frameX = startX + boundsWidth - endMargin - desiredWidth;
 					break;
 			}
 
@@ -125,29 +131,26 @@ namespace Microsoft.Maui.Layouts
 		static double AlignVertical(IFrameworkElement frameworkElement, Rectangle bounds, Thickness margin)
 		{
 			double frameY = 0;
+			var startY = bounds.Y;
 
 			switch (frameworkElement.VerticalLayoutAlignment)
 			{
 				case LayoutAlignment.Fill:
-
-					frameY = bounds.Y + margin.Top;
-					break;
-
 				case LayoutAlignment.Start:
 
-					frameY = bounds.Y + margin.Top;
+					frameY = startY + margin.Top;
 					break;
 
 				case LayoutAlignment.Center:
 
-					frameY = (bounds.Height - frameworkElement.DesiredSize.Height) / 2;
+					frameY = startY + ((bounds.Height - frameworkElement.DesiredSize.Height) / 2);
 					var offset = (margin.Top - margin.Bottom) / 2;
 					frameY += offset;
 					break;
 
 				case LayoutAlignment.End:
 
-					frameY = bounds.Height - margin.Bottom - frameworkElement.DesiredSize.Height;
+					frameY = startY + bounds.Height - margin.Bottom - frameworkElement.DesiredSize.Height;
 					break;
 			}
 

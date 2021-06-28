@@ -132,5 +132,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			return null;
 		}
+
+		public static (int left, int top, int right, int bottom) ToPixels(this Context context, Graphics.Rectangle rectangle)
+		{
+			return
+			(
+				(int)context.ToPixels(rectangle.Left),
+				(int)context.ToPixels(rectangle.Top),
+				(int)context.ToPixels(rectangle.Right),
+				(int)context.ToPixels(rectangle.Bottom)
+			);
+		}
 	}
 }

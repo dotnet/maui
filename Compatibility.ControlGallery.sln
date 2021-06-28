@@ -39,7 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2ACC7FFA-2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "src\Core\src\Core.csproj", "{29913989-0F70-48D8-8EDE-B1DD217F21D1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup", "src\Compatibility\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj", "{3B72465B-ACAE-43AE-9327-10F372FE5F80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup", "src\Compatibility\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj", "{3B72465B-ACAE-43AE-9327-10F372FE5F80}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D5B986A3-7FC9-437E-8030-349AA4698DFD}"
 EndProject
@@ -117,7 +117,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.CustomAttributes",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Maps.Android", "src\Compatibility\Maps\src\Android\Compatibility.Maps.Android.csproj", "{69913006-0AAB-4357-9DE7-DA048B336862}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.AppLinks", "src\Compatibility\Core\src\Android.AppLinks\Compatibility.Android.AppLinks.csproj", "{92B830CD-3BD9-4428-BBB1-16BD0F9D58FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.AppLinks", "src\Compatibility\Android.AppLinks\src\Compatibility.Android.AppLinks.csproj", "{92B830CD-3BD9-4428-BBB1-16BD0F9D58FD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{EF03D38C-44B9-4E4E-B25E-8259BDF4A02F}"
 EndProject
