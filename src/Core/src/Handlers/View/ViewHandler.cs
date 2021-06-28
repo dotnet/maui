@@ -36,11 +36,12 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.RotationY)] = MapRotationY,
 			[nameof(IView.AnchorX)] = MapAnchorX,
 			[nameof(IView.AnchorY)] = MapAnchorY,
-			[nameof(IFrameworkElement.Frame)] = MapFrame,
+			
 			Actions =
 			{
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 				[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure,
+				[nameof(IFrameworkElement.Frame)] = MapFrame,
 			}
 		};
 

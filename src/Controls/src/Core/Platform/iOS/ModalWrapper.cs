@@ -122,7 +122,10 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			_modal.VirtualView.Frame = new Rectangle(0, 0, View.Bounds.Width, View.Bounds.Height);
+			var destination = new Rectangle(0, 0, View.Bounds.Width, View.Bounds.Height);
+
+			_modal.VirtualView.Arrange(destination);
+			_modal.VirtualView.Frame = destination;
 		}
 
 		public override void ViewWillAppear(bool animated)

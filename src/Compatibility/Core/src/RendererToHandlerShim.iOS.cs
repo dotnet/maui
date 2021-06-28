@@ -25,15 +25,5 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return Internals.Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(view)
 										?? new DefaultRenderer();
 		}
-
-		// TODO ezhart 2021-06-18 This is almost certainly unnecessary; review it along with the OnBatchCommitted method in HandlerToRendererShim
-		public override void UpdateValue(string property)
-		{
-			base.UpdateValue(property);
-			if (property == "Frame" && VisualElementRenderer != null)
-			{
-				SetNativeFrame(VisualElementRenderer.Element.Bounds);
-			}
-		}
 	}
 }
