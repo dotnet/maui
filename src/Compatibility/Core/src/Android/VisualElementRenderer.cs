@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected VisualElementRenderer(Context context) : base(context)
 		{
-			_gestureManager = new GestureManager(this);
+			_gestureManager = new GestureManager(null);
 		}
 
 		public override bool OnTouchEvent(MotionEvent e)
@@ -345,6 +345,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void OnElementChanged(ElementChangedEventArgs<TElement> e)
 		{
 			var args = new VisualElementChangedEventArgs(e.OldElement, e.NewElement);
+			_gestureManager.OnElementChanged(args);
 
 			// The list of event handlers can be changed inside the handlers. (ex.: are used CompressedLayout)
 			// To avoid an exception, a copy of the handlers is called.

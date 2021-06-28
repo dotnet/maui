@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			_renderer = renderer;
 			_renderer.ElementPropertyChanged += OnElementPropertyChanged;
 			_renderer.ElementChanged += OnElementChanged;
-			_gestureManager = new GestureManager(_renderer);
+			_gestureManager = new GestureManager(renderer?.Element?.Handler);
 			_automationPropertiesProvider = new AutomationPropertiesProvider(_renderer);
 
 			_effectControlProvider = new EffectControlProvider(_renderer?.View);
@@ -101,6 +101,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 
 			EffectUtilities.RegisterEffectControlProvider(this, e.OldElement, e.NewElement);
+
+			_gestureManager.OnElementChanged(e);
 			Performance.Stop(reference);
 		}
 
@@ -124,6 +126,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			{
 				UpdateIsEnabled();
 			}
+
+			_gestureManager.OnElementPropertyChanged(e);
 		}
 	}
 }

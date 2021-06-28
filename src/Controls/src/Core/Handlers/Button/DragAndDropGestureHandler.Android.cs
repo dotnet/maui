@@ -8,9 +8,9 @@ using ADragFlags = Android.Views.DragFlags;
 using AUri = Android.Net.Uri;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Controls.Platform
 {
-	class DragAndDropGestureHandler : Java.Lang.Object, AView.IOnDragListener
+	internal class DragAndDropGestureHandler : Java.Lang.Object, AView.IOnDragListener
 	{
 		bool _isDisposed;
 		CustomLocalStateData _currentCustomLocalStateData;
@@ -109,9 +109,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			DataPackage package = null;
 			CustomLocalStateData localStateData = (e.LocalState as CustomLocalStateData) ?? _currentCustomLocalStateData ?? new CustomLocalStateData();
 			_currentCustomLocalStateData = localStateData;
-			IVisualElementRenderer dragSourceRenderer = localStateData?.SourceNativeView as IVisualElementRenderer;
+
+			// TODO MAUI FIX FOR COMPAT
+			//IVisualElementRenderer dragSourceRenderer = localStateData?.SourceNativeView as IVisualElementRenderer;
 			package = localStateData?.DataPackage;
-			var dragSourceElement = _currentCustomLocalStateData?.SourceElement ?? dragSourceRenderer?.Element;
+			var dragSourceElement = _currentCustomLocalStateData?.SourceElement;// ?? dragSourceRenderer?.Element;
 
 			if (package == null)
 			{
@@ -250,8 +252,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					return;
 
 				var element = GetView();
-				var renderer = Platform.GetRenderer(element);
-				var v = renderer.View;
+				// TODO MAUI FIX FOR COMPAT
+				//var renderer = AppCompat.Platform.GetRenderer(element);
+				var v = (AView)element.Handler.NativeView;
 
 				if (v.Handle == IntPtr.Zero)
 					return;
@@ -264,8 +267,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				CustomLocalStateData customLocalStateData = new CustomLocalStateData();
 				customLocalStateData.DataPackage = args.Data;
 
-				//_dragSource[element] = args.Data;
-				string clipDescription = FastRenderers.AutomationPropertiesProvider.ConcatenateNameAndHelpText(element) ?? String.Empty;
+
+				// TODO MAUI
+				string clipDescription = String.Empty;//AutomationPropertiesProvider.ConcatenateNameAndHelpText(element) ?? String.Empty;
 				ClipData.Item item = null;
 				List<string> mimeTypes = new List<string>();
 
@@ -314,9 +318,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var dragShadowBuilder = new AView.DragShadowBuilder(v);
 
 				customLocalStateData.SourceNativeView = v;
-				customLocalStateData.SourceElement = renderer?.Element;
+				customLocalStateData.SourceElement = element;
 
-				if (Forms.IsNougatOrNewer)
+				if (NativeVersion.IsAtLeast(24))
 					v.StartDragAndDrop(data, dragShadowBuilder, customLocalStateData, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
 				else
 #pragma warning disable CS0618 // Type or member is obsolete
