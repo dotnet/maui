@@ -12,6 +12,12 @@
                 Style="{StaticResource Headline}"/>
             <ProgressBar
                 Progress="0.5"/>
+            <Label
+                Text="ProgressColor"
+                Style="{StaticResource Headline}"/>
+            <ProgressBar
+                Progress="0.5"
+                ProgressColor="Orange"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
