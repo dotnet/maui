@@ -4,8 +4,8 @@ using Flex = Microsoft.Maui.Layouts.Flex;
 
 namespace Microsoft.Maui
 {
-	public interface IFlexLayout : ILayout 
-	{ 
+	public interface IFlexLayout : ILayout
+	{
 		FlexDirection Direction { get; }
 		FlexJustify JustifyContent { get; }
 		FlexAlignContent AlignContent { get; }

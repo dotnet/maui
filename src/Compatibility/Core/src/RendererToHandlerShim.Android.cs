@@ -4,7 +4,7 @@ using System.Text;
 using Android.Views;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Graphics;
-using static Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform;
+using static Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform;
 using NativeView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility

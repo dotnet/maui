@@ -6,6 +6,6 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// Enable you to describe the geometry of a 2D shape.
 	/// </summary>
 	public interface IGeometry : IShape
-	{ 
+	{
 	}
 }

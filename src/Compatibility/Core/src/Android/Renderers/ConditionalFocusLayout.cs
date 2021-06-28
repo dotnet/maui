@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (viewCell?.View == null)
 				return;
 
-			IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(viewCell.View);
+			IVisualElementRenderer renderer = Platform.GetRenderer(viewCell.View);
 			GetEditText(renderer)?.SetOnTouchListener(this);
 
 			foreach (Element descendant in viewCell.View.Descendants())
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var element = descendant as VisualElement;
 				if (element == null)
 					continue;
-				renderer = AppCompat.Platform.GetRenderer(element);
+				renderer = Platform.GetRenderer(element);
 				GetEditText(renderer)?.SetOnTouchListener(this);
 			}
 		}

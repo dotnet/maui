@@ -38,11 +38,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static void Init(IActivationState state, InitializationOptions? options = null)
 		{
-			SetupInit(state.Context, null, maybeOptions: options);
+			SetupInit(state.Context, state.Context.Window, maybeOptions: options);
 		}
 
 		public static void Init(
-			WindowsBasePage mainWindow,
+			UI.Xaml.Window mainWindow,
 			IEnumerable<Assembly> rendererAssemblies = null)
 		{
 			SetupInit(new MauiContext(), mainWindow, rendererAssemblies);
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		static void SetupInit(
 			IMauiContext mauiContext,
-			WindowsBasePage mainWindow,
+			UI.Xaml.Window mainWindow,
 			IEnumerable<Assembly> rendererAssemblies = null,
 			InitializationOptions? maybeOptions = null)
 		{
@@ -141,8 +141,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 				//TODO WINUI3
 				Platform.UWP.Platform.SubscribeAlertsAndActionSheets();
 
-				mainWindow.LoadApplication(mainWindow.CreateApplication());
-				mainWindow.Activate();
+				if (mainWindow is WindowsBasePage windowsPage)
+				{
+					windowsPage.LoadApplication(windowsPage.CreateApplication());
+					windowsPage.Activate();
+				}
 			}
 
 			IsInitialized = true;
