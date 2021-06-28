@@ -7,6 +7,42 @@ using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui.Controls
 {
+	struct MauiContextAware<T>
+		where T : notnull
+	{
+		readonly Maui.IElement _element;
+
+		T? _value;
+		IMauiContext? _context;
+
+		public MauiContextAware(Maui.IElement element)
+			: this()
+		{
+			_element = element;
+		}
+
+		public T? Value
+		{
+			get
+			{
+				if (_context != _element?.Handler?.MauiContext)
+				{
+					_value = default;
+					_context = _element?.Handler?.MauiContext;
+				}
+
+				if (_value is null)
+				{
+					var services = _context?.Services;
+					if (services is not null)
+						_value ??= services.GetRequiredService<T>();
+				}
+
+				return _value;
+			}
+		}
+	}
+
 	public class Window : NavigableElement, IWindow
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
@@ -20,40 +56,7 @@ namespace Microsoft.Maui.Controls
 
 		ReadOnlyCollection<Element>? _logicalChildren;
 		Page? _page;
-		//MauiContextAware<IAnimationManager> _animationManager;
-
-		//struct MauiContextAware<T>
-		//	where T : notnull
-		//{
-		//	readonly IFrameworkElement _element;
-
-		//	T? _value;
-		//	IMauiContext? _context;
-
-		//	public MauiContextAware(IFrameworkElement element)
-		//		: this()
-		//	{
-		//		_element = element;
-		//	}
-
-		//	public T? Value
-		//	{
-		//		get
-		//		{
-		//			if (_context != _element?.Handler?.MauiContext)
-		//			{
-		//				_value = default;
-		//				_context = _element?.Handler?.MauiContext;
-		//			}
-
-		//			var services = _context?.Services;
-		//			if (services is not null)
-		//				_value ??= services.GetRequiredService<T>();
-
-		//			return _value;
-		//		}
-		//	}
-		//}
+		MauiContextAware<IAnimationManager> _animationManager;
 
 		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
@@ -62,8 +65,8 @@ namespace Microsoft.Maui.Controls
 
 		public Window()
 		{
+			_animationManager = new MauiContextAware<IAnimationManager>(this);
 			InternalChildren.CollectionChanged += OnCollectionChanged;
-			//_animationManager = new MauiContextAware<IAnimationManager>(this);
 		}
 
 		public Window(Page page)
@@ -72,7 +75,7 @@ namespace Microsoft.Maui.Controls
 			Page = page;
 		}
 
-		public IAnimationManager? AnimationManager => null; //_animationManager.Value;
+		public IAnimationManager? AnimationManager => _animationManager.Value;
 
 		void SendWindowAppearing()
 		{
