@@ -7,30 +7,30 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Platform
 {
 	internal class ModalWrapper : UIViewController, IUIAdaptivePresentationControllerDelegate
 	{
-		IVisualElementRenderer _modal;
+		INativeViewHandler _modal;
 		bool _isDisposed;
 
-		internal ModalWrapper(IVisualElementRenderer modal)
+		internal ModalWrapper(INativeViewHandler modal)
 		{
 			_modal = modal;
 
-			var elementConfiguration = modal.Element as IElementConfiguration<Page>;
+			var elementConfiguration = modal.VirtualView as IElementConfiguration<Page>;
 			if (elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() is PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)
 			{
 				var result = style.ToNativeModalPresentationStyle();
 
-				if (!Forms.IsiOS13OrNewer && result == UIKit.UIModalPresentationStyle.Automatic)
+				if (!NativeVersion.IsAtLeast(13) && result == UIKit.UIModalPresentationStyle.Automatic)
 				{
 					result = UIKit.UIModalPresentationStyle.FullScreen;
 				}
 
 				if (result == UIKit.UIModalPresentationStyle.FullScreen)
 				{
-					Color modalBkgndColor = ((Page)_modal.Element).BackgroundColor;
+					Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
 
 					if (modalBkgndColor?.Alpha > 0)
 						result = UIKit.UIModalPresentationStyle.OverFullScreen;
@@ -46,10 +46,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			modal.ViewController.DidMoveToParentViewController(this);
 
-			if (Forms.IsiOS13OrNewer)
+			if (NativeVersion.IsAtLeast(13))
 				PresentationController.Delegate = this;
 
-			((Page)modal.Element).PropertyChanged += OnModalPagePropertyChanged;
+			((Page)modal.VirtualView).PropertyChanged += OnModalPagePropertyChanged;
 		}
 
 		[Export("presentationControllerDidDismiss:")]
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			_modal?.SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
+			_modal?.NativeArrange(new Rectangle(0, 0, View.Bounds.Width, View.Bounds.Height));
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (disposing)
 			{
-				if (_modal?.Element is Page modalPage)
+				if (_modal?.VirtualView is Page modalPage)
 				{
 					modalPage.PropertyChanged -= OnModalPagePropertyChanged;
 				}
@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			base.ViewDidLoad();
 			SetNeedsStatusBarAppearanceUpdate();
-			if (Forms.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden)
+			if (NativeVersion.Supports(NativeApis.RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden))
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 		}
 
@@ -173,8 +173,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (ModalPresentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
 			{
-				Color modalBkgndColor = ((Page)_modal.Element).BackgroundColor;
-				View.BackgroundColor = modalBkgndColor?.ToUIColor() ?? ColorExtensions.BackgroundColor;
+				Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
+				View.BackgroundColor = modalBkgndColor?.ToNative() ?? Microsoft.Maui.ColorExtensions.BackgroundColor;
 			}
 			else
 			{

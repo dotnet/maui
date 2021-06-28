@@ -2,9 +2,8 @@ using System;
 using Microsoft.Maui.Controls.Internals;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Platform
 {
-	[PortHandler("Following methods still need to be ported.")]
 	public static class Extensions
 	{
 		public static UIModalPresentationStyle ToNativeModalPresentationStyle(this PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)

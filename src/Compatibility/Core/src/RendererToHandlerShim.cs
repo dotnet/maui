@@ -3,7 +3,7 @@
 using System;
 using Microsoft.Maui.Controls.Platform;
 #if __ANDROID__
-using static Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform;
+using static Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform;
 using NativeView = Android.Views.View;
 using IVisualElementRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.IVisualElementRenderer;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Android.Views.View>;

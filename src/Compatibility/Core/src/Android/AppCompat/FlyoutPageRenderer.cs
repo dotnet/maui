@@ -279,7 +279,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				if (Element != null)
 				{
-					Element.ClearValue(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform.RendererProperty);
+					Element.ClearValue(Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.RendererProperty);
 					Element = null;
 				}
 			}

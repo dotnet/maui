@@ -1,7 +1,7 @@
 using System;
 using Android.Animation;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Controls.Platform
 {
 	public class GenericAnimatorListener : AnimatorListenerAdapter
 	{

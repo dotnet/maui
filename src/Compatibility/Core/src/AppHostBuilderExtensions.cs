@@ -16,7 +16,7 @@ using FrameRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.Fas
 using LabelRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.LabelRenderer;
 using ImageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ImageRenderer;
 using ButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers.ButtonRenderer;
-using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform.DefaultRenderer;
+using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.DefaultRenderer;
 #elif WINDOWS
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Graphics.Win2D;
