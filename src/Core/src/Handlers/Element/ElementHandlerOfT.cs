@@ -6,6 +6,12 @@ namespace Microsoft.Maui.Handlers
 		where TVirtualView : class, IElement
 		where TNativeView : class
 	{
+		[HotReload.OnHotReload]
+		internal static void OnHotReload()
+		{
+			Defaults<ElementHandler<TVirtualView, TNativeView>>.HasSetDefaults = false;
+		}
+
 		protected ElementHandler(PropertyMapper mapper)
 			: base(mapper)
 		{
@@ -21,6 +27,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			get => (TVirtualView?)base.VirtualView ?? throw new InvalidOperationException($"VirtualView cannot be null here");
 			private protected set => base.VirtualView = value;
+		}
+
+		protected override bool HasSetDefaults
+		{
+			get => Defaults<ElementHandler<TVirtualView, TNativeView>>.HasSetDefaults;
+			set => Defaults<ElementHandler<TVirtualView, TNativeView>>.HasSetDefaults = value;
 		}
 
 		protected abstract TNativeView CreateNativeElement();

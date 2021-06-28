@@ -8,13 +8,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		static bool HasSetDefaults;
-
-		[HotReload.OnHotReload]
-		internal static void OnHotReload()
-		{
-			HasSetDefaults = false;
-		}
+		protected abstract bool HasSetDefaults { get; set; }
 
 		protected PropertyMapper _mapper;
 		protected readonly PropertyMapper _defaultMapper;

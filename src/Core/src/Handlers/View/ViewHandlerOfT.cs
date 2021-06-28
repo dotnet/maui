@@ -19,6 +19,12 @@ namespace Microsoft.Maui.Handlers
 		where TNativeView : class
 #endif
 	{
+		[HotReload.OnHotReload]
+		internal static void OnHotReload()
+		{
+			Defaults<ViewHandler<TVirtualView, TNativeView>>.HasSetDefaults = false;
+		}
+
 		protected ViewHandler(PropertyMapper mapper)
 			: base(mapper)
 		{
@@ -36,8 +42,17 @@ namespace Microsoft.Maui.Handlers
 			private protected set => base.VirtualView = value;
 		}
 
+		protected override bool HasSetDefaults
+		{
+			get => Defaults<ViewHandler<TVirtualView, TNativeView>>.HasSetDefaults;
+			set => Defaults<ViewHandler<TVirtualView, TNativeView>>.HasSetDefaults = value;
+		}
+
 		public virtual void SetVirtualView(IView view) =>
 			base.SetVirtualView(view);
+
+		public sealed override void SetVirtualView(IElement view) =>
+			SetVirtualView((IView)view);
 
 		protected abstract TNativeView CreateNativeView();
 
