@@ -16,6 +16,13 @@ namespace Microsoft.Maui.Controls
 			set => base.Handler = value;
 		}
 
+		private protected override void OnHandlerSet()
+		{
+			base.OnHandlerSet();
+
+			IsPlatformEnabled = Handler != null;
+		}
+
 		Paint IFrameworkElement.Background
 		{
 			get

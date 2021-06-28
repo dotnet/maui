@@ -14,13 +14,15 @@ namespace Microsoft.Maui.Controls
 			set => SetHandler(value);
 		}
 
-		public virtual void OnAttachingHandler() { }
+		protected virtual void OnAttachingHandler() { }
 
-		public virtual void OnAttachedHandler() { }
+		protected virtual void OnAttachedHandler() { }
 
-		public virtual void OnDetachingHandler() { }
+		protected virtual void OnDetachingHandler() { }
 
-		public virtual void OnDetachedHandler() { }
+		protected virtual void OnDetachedHandler() { }
+
+		private protected virtual void OnHandlerSet() { }
 
 		public event EventHandler AttachingHandler;
 
@@ -54,8 +56,7 @@ namespace Microsoft.Maui.Controls
 			if (_handler?.VirtualView != this)
 				_handler?.SetVirtualView(this);
 
-			if (this is VisualElement ve)
-				ve.IsPlatformEnabled = Handler != null;
+			OnHandlerSet();
 
 			if (_handler != null)
 			{
