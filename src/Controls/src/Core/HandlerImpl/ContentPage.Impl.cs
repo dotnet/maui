@@ -2,6 +2,7 @@
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.HotReload;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
@@ -25,7 +26,25 @@ namespace Microsoft.Maui.Controls
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
 			// Update the Bounds (Frame) for this page
-			Layout(bounds); 
+			// Ideally, this would be happening from a higher level; controls should not be responsible for setting their own Frames
+			// But until we've got Window fully worked out, Pages will have to handle that themselves. 
+			Layout(bounds);
+							
+			if (Content is IFrameworkElement element)
+			{
+				// The size checks here are a guard against legacy layouts which try to lay things out before the
+				// native side is ready. We just ignore those invalid values.
+				if (bounds.Size.Width >= 0 && bounds.Size.Height >= 0)
+				{
+					// Yes, this looks weird. 
+					// Invoking the Frame property's setter will kick off the native "set location and size" step.
+					// The values whick make up Frame and Bounds are the same, but setting Bounds has other side effects
+					// (like laying out the Page and its content). We don't want to kick off another layout pass (it just finished),
+					// but we _do_ want the native control backing Content to run its native arrangement code. 
+					element.Frame = element.Frame;
+				}
+			}
+
 			return Frame.Size;
 		}
 

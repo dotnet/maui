@@ -12,8 +12,17 @@ namespace Microsoft.Maui.Controls
 
 		public Rectangle Frame
 		{
-			get => Bounds;
-			set => Bounds = value;
+			get => Bounds; // TODO ezhart 2021-06-27 This will allocate a new rectangle every time, which isn't great for performance
+			set
+			{
+				// These next four lines are the same as setting Bounds, but without the layout side-effects
+				X = value.X;
+				Y = value.Y;
+				Width = value.Width;
+				Height = value.Height;
+
+				Handler?.UpdateValue(nameof(IFrameworkElement.Frame));
+			}
 		}
 
 		public IViewHandler Handler

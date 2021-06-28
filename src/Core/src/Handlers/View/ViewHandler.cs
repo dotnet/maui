@@ -36,12 +36,11 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.RotationY)] = MapRotationY,
 			[nameof(IView.AnchorX)] = MapAnchorX,
 			[nameof(IView.AnchorY)] = MapAnchorY,
+			[nameof(IFrameworkElement.Frame)] = MapFrame,
 			Actions =
 			{
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 				[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure,
-				[nameof(IFrameworkElement.Frame)] = MapFrame, // TODO ezhart 2021-06-24 Should this be a regular mapping? I think it's on actions to prevent it running immediately on creation
-				// Which might be fine? Or maybe it just needs a guard clause to discard invalid values?
 			}
 		};
 

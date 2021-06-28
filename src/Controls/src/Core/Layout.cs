@@ -530,6 +530,15 @@ namespace Microsoft.Maui.Controls
 
 			UpdateChildrenLayout();
 
+			foreach (var child in Children)
+			{
+				if (child is IFrameworkElement frameworkElement)
+				{
+					// See ContentPage.Impl.cs for an explanation
+					frameworkElement.Frame = frameworkElement.Frame;
+				}
+			}
+
 			return Frame.Size;
 		}
 	}

@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 			protected set => base.ContainerView = value;
 		}
 
-		public override void NativeArrange(Rectangle rect)
+		public override void SetNativeFrame(Rectangle rect)
 		{
 			var nativeView = WrappedNativeView;
 

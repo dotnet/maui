@@ -37,11 +37,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (oldElement != null)
 			{
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
+				oldElement.BatchCommitted -= Element_BatchCommitted;
 			}
 
 			if (element != null)
 			{
 				element.PropertyChanged += OnElementPropertyChanged;
+				element.BatchCommitted += Element_BatchCommitted;
 			}
 
 			Element = element;
@@ -51,6 +53,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				ViewHandler.SetVirtualView((IView)element);
 
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
+		}
+
+		private void Element_BatchCommitted(object sender, EventArg<VisualElement> e)
+		{
+			((VisualElement)sender).Frame = e.Data.Bounds;
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
