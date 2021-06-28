@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		AndroidApplicationLifecycleState _currentState;
 		ARelativeLayout _layout;
 
-		internal AppCompat.Platform Platform { get; private set; }
+		internal Platform Platform { get; private set; }
 
 		AndroidApplicationLifecycleState _previousState;
 
@@ -437,7 +437,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			PopupManager.ResetBusyCount(this);
 
-			Platform = new AppCompat.Platform(this);
+			Platform = new Platform(this);
 			Platform.SetPage(page);
 			_layout.AddView(Platform);
 			_layout.BringToFront();

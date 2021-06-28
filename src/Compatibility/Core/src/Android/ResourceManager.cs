@@ -361,7 +361,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		static int IdFromTitle(string title, Type resourceType, string defType, Resources resource)
 		{
-			return IdFromTitle(title, resourceType, defType, resource, AppCompat.Platform.GetPackageName());
+			return IdFromTitle(title, resourceType, defType, resource, Platform.GetPackageName());
 		}
 
 		static int IdFromTitle(string title, Type resourceType, string defType, Context context)

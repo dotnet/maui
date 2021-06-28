@@ -138,18 +138,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (renderer == null || (renderer.View?.Handle ?? IntPtr.Zero) == IntPtr.Zero)
 				{
 					Performance.Start(reference, "New renderer");
-					renderer = AppCompat.Platform.CreateRenderer(view, _renderer.View.Context);
+					renderer = Platform.CreateRenderer(view, _renderer.View.Context);
 					Performance.Stop(reference, "New renderer");
 				}
 
 				if (renderer == oldRenderer)
 				{
-					renderer.Element?.ClearValue(AppCompat.Platform.RendererProperty);
+					renderer.Element?.ClearValue(Platform.RendererProperty);
 					renderer.SetElement(view);
 				}
 
 				Performance.Start(reference, "Set renderer");
-				AppCompat.Platform.SetRenderer(view, renderer);
+				Platform.SetRenderer(view, renderer);
 				Performance.Stop(reference, "Set renderer");
 
 				Performance.Start(reference, "Add view");
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var element = (VisualElement)child;
 				if (element != null)
 				{
-					IVisualElementRenderer r = AppCompat.Platform.GetRenderer(element);
+					IVisualElementRenderer r = Platform.GetRenderer(element);
 					if (r != null)
 					{
 						if (Forms.IsLollipopOrNewer)
@@ -227,10 +227,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			IVisualElementRenderer previousRenderer = null;
 
 			if (lastChild is VisualElement last)
-				lastRenderer = AppCompat.Platform.GetRenderer(last);
+				lastRenderer = Platform.GetRenderer(last);
 
 			if (previousChild is VisualElement previous)
-				previousRenderer = AppCompat.Platform.GetRenderer(previous);
+				previousRenderer = Platform.GetRenderer(previous);
 
 			if (ElevationHelper.GetElevation(lastRenderer?.View) < ElevationHelper.GetElevation(previousRenderer?.View))
 				EnsureChildOrder();
@@ -253,7 +253,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void RemoveChild(VisualElement view)
 		{
-			IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(view);
+			IVisualElementRenderer renderer = Platform.GetRenderer(view);
 			if (renderer == null) // child is itself a compressed layout
 			{
 				if (_childPackagers != null && _childPackagers.TryGetValue(view, out VisualElementPackager packager))
