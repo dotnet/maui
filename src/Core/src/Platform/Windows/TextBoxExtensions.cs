@@ -135,7 +135,7 @@ namespace Microsoft.Maui
 			else
 			{
 				textBox.IsTextPredictionEnabled = textInput.IsTextPredictionEnabled;
-			
+
 				// TODO: Update IsSpellCheckEnabled
 			}
 
