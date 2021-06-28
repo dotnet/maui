@@ -37,7 +37,7 @@ namespace Microsoft.Maui
 		{
 			textBox.CharacterSpacing = textStyle.CharacterSpacing.ToEm();
 		}
-		
+
 		public static void UpdateCharacterSpacing(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.CharacterSpacing = entry.CharacterSpacing.ToEm();
@@ -118,6 +118,28 @@ namespace Microsoft.Maui
 
 			if (currentControlText.Length > maxLength)
 				textBox.Text = currentControlText.Substring(0, maxLength);
+		}
+
+		internal static void UpdateIsTextPredictionEnabled(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.UpdateInputScope(entry);
+		}
+
+		internal static void UpdateInputScope(this MauiTextBox textBox, IEntry entry)
+		{
+			if (entry.Keyboard is CustomKeyboard custom)
+			{
+				textBox.IsTextPredictionEnabled = (custom.Flags & KeyboardFlags.Suggestions) != 0;
+				textBox.IsSpellCheckEnabled = (custom.Flags & KeyboardFlags.Spellcheck) != 0;
+			}
+			else
+			{
+				textBox.IsTextPredictionEnabled = entry.IsTextPredictionEnabled;
+			
+				// TODO: Update IsSpellCheckEnabled
+			}
+
+			textBox.InputScope = entry.Keyboard.ToInputScope();
 		}
 	}
 }
