@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var page = value as Page;
 				if (page != null)
 				{
-					return page.ToNative(page.FindMauiContextOnParent());
+					return page.ToNative(page.FindMauiContext());
 				}
 			}
 
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_view = view;
 				_view.MeasureInvalidated += OnMeasureInvalidated;
 
-				var renderer = view.ToNative(view.FindMauiContextOnParent());
+				var renderer = view.ToNative(view.FindMauiContext());
 
 				FrameworkElement = renderer;
 				Children.Add(renderer);

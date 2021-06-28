@@ -1,6 +1,4 @@
-﻿using Android.App;
-
-namespace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
 	public interface INativeWindowHandler : IWindowHandler
 	{
