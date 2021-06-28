@@ -125,21 +125,21 @@ namespace Microsoft.Maui
 			textBox.UpdateInputScope(entry);
 		}
 
-		internal static void UpdateInputScope(this MauiTextBox textBox, IEntry entry)
+		internal static void UpdateInputScope(this MauiTextBox textBox, ITextInput textInput)
 		{
-			if (entry.Keyboard is CustomKeyboard custom)
+			if (textInput.Keyboard is CustomKeyboard custom)
 			{
 				textBox.IsTextPredictionEnabled = (custom.Flags & KeyboardFlags.Suggestions) != 0;
 				textBox.IsSpellCheckEnabled = (custom.Flags & KeyboardFlags.Spellcheck) != 0;
 			}
 			else
 			{
-				textBox.IsTextPredictionEnabled = entry.IsTextPredictionEnabled;
+				textBox.IsTextPredictionEnabled = textInput.IsTextPredictionEnabled;
 			
 				// TODO: Update IsSpellCheckEnabled
 			}
 
-			textBox.InputScope = entry.Keyboard.ToInputScope();
+			textBox.InputScope = textInput.Keyboard.ToInputScope();
 		}
 	}
 }
