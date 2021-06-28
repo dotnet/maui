@@ -10,8 +10,8 @@
 
   <!-- Android-only files -->
   <ItemGroup Condition=" '$(MauiPlatformName)' == 'android' ">
-    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Core/src/Android.FormsViewGroup/bin/$(Configuration)/net6.0-android/ref/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.dll" />
-    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Core/src/Android.FormsViewGroup/bin/$(Configuration)/net6.0-android/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.aar" />
+    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/net6.0-android/ref/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.dll" />
+    <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/net6.0-android/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.aar" />
     <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Core/src/bin/$(Configuration)/net6.0-android/Microsoft.Maui.Controls.Compatibility.aar" />
     <None Include="@(_AndroidFiles)" FullTfm="net6.0-android30.0" Tfm="net6.0-android" Profile="Android" />
   </ItemGroup>
@@ -28,7 +28,7 @@
     <ProjectReference Include="../../../src/Controls/src/Core/Controls.Core-net6.csproj" />
     <ProjectReference Include="../../../src/Controls/src/Xaml/Controls.Xaml-net6.csproj" />
     <ProjectReference Include="../../../src/Compatibility/Core/src/Compatibility-net6.csproj" />
-    <ProjectReference Include="../../../src/Compatibility/Core/src/Android.FormsViewGroup/Compatibility.Android.FormsViewGroup-net6.csproj" />
+    <ProjectReference Include="../../../src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup-net6.csproj" />
   </ItemGroup>
 
 </Project>

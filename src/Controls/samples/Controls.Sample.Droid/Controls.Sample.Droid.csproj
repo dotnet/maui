@@ -83,7 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj">
-      <Project>{8e86f0da-ed1c-409e-a7a9-df3e58498620}</Project>
+      <Project>{9FAA9654-80E6-4664-9702-47998A04E8FE}</Project>
       <Name>Compatibility</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj">
@@ -99,7 +99,7 @@
       <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\Controls.Sample\Controls.Sample.csproj">
-      <Project>{90b727dd-4c7b-4462-950f-61842a87de8a}</Project>
+      <Project>{8e86f0da-ed1c-409e-a7a9-df3e58498620}</Project>
       <Name>Controls.Sample</Name>
     </ProjectReference>
   </ItemGroup>

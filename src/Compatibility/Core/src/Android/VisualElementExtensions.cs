@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (self == null)
 				throw new ArgumentNullException(nameof(self));
 
-			IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(self);
+			IVisualElementRenderer renderer = Platform.GetRenderer(self);
 
 			return renderer;
 		}

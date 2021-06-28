@@ -4,8 +4,7 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static class EnumerableExtensions
+	static class EnumerableExtensions
 	{
 
 		public static IEnumerable<T> GetChildGesturesFor<T>(this IEnumerable<GestureElement> elements, Func<T, bool> predicate = null) where T : GestureRecognizer
@@ -95,5 +94,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 			return -1;
 		}
+
+		public static T Last<T>(this IList<T> self) => self[self.Count - 1];
 	}
 }
