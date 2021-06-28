@@ -1,23 +1,10 @@
 using System;
-#if __IOS__ || MACCATALYST
-using NativeView = UIKit.UIViewController;
-#elif MONOANDROID
-using NativeView = Android.App.Activity;
-#elif WINDOWS
-using NativeView = Microsoft.UI.Xaml.Window;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
-using NativeView = System.Object;
-#endif
 
 namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ElementHandler<TVirtualView, TNativeView> : ElementHandler
 		where TVirtualView : class, IElement
-#if !NETSTANDARD || IOS || ANDROID || WINDOWS
-		where TNativeView : NativeView
-#else
 		where TNativeView : class
-#endif
 	{
 		protected ElementHandler(PropertyMapper mapper)
 			: base(mapper)

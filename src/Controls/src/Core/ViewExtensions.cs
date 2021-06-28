@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal static T? FindElementOfType<T>(this Element element)
-			where T : IFrameworkElement
+			where T : Maui.IElement
 		{
 			if (element is T view)
 				return view;
@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal static T? FindParentOfType<T>(this Element element)
-			where T : IFrameworkElement
+			where T : Maui.IElement
 		{
 			foreach (var parent in element.GetParentsPath())
 			{

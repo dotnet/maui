@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Handlers
 {
-	public partial class WindowHandler
+	public partial class WindowHandler : IWindowHandler
 	{
 		public static PropertyMapper<IWindow, WindowHandler> WindowMapper = new(ElementHandler.ElementMapper)
 		{

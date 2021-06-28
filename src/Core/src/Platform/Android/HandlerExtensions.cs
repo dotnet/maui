@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 				handler = context.Handlers.GetHandler(view.GetType()) as IViewHandler;
 
 			if (handler == null)
-				throw new Exception($"Handler not found for view {view}");
+				throw new Exception($"Handler not found for view {view} or was not {nameof(IViewHandler)}.");
 
 			handler.SetMauiContext(context);
 
@@ -47,17 +47,18 @@ namespace Microsoft.Maui
 			_ = window ?? throw new ArgumentNullException(nameof(window));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
 
-			var handler = window.Handler;
+			var handler = window.Handler as INativeWindowHandler;
 			if (handler?.MauiContext != null && handler.MauiContext != context)
 				handler = null;
 
 			if (handler == null)
-				handler = context.Handlers.GetHandler(window.GetType());
+				handler = context.Handlers.GetHandler(window.GetType()) as INativeWindowHandler;
 
 			if (handler == null)
-				throw new Exception($"Handler not found for view {window}");
+				throw new Exception($"Handler not found for view {window} or was not {nameof(INativeWindowHandler)}.");
 
 			handler.SetMauiContext(context);
+			handler.SetWindow(activity);
 
 			window.Handler = handler;
 

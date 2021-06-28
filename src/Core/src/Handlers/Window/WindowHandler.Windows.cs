@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class WindowHandler : ElementHandler<IWindow, UI.Xaml.Window>
+	public partial class WindowHandler : ElementHandler<IWindow, UI.Xaml.Window>, INativeWindowHandler
 	{
 		protected override UI.Xaml.Window CreateNativeElement() => throw new NotImplementedException();
 
