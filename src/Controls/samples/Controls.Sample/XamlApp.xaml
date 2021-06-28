@@ -2,7 +2,6 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
-    xmlns:controls="using:Maui.Controls.Sample.Controls"
     xmlns:windows="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;assembly=Microsoft.Maui.Controls"
     x:Class="Maui.Controls.Sample.XamlApp"
     windows:Application.ImageDirectory="Assets">
@@ -62,72 +61,6 @@
             <Style x:Key="Subhead" TargetType="Label">
                 <Setter Property="FontSize" Value="9" />
             </Style>
-
-            <ControlTemplate x:Key="SubCategoryView">
-                <Grid
-                    RowSpacing="0"
-                    RowDefinitions="48, 20, *">
-                    <!-- HEADER -->
-                    <Image
-                        Grid.Row="0"
-                        Aspect="AspectFill"
-                        Source="header_background"/>
-                    <!-- SEARCH -->
-                    <Frame
-                        Grid.Row="0"
-                        Grid.RowSpan="2"
-                        Style="{StaticResource SearchBorderStyle}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <controls:BordelessEntry
-                                Grid.Column="1"
-                                Placeholder="Filter"
-                                Text="{Binding FilterValue, Mode=TwoWay}"
-                                PlaceholderColor="{DynamicResource TextSecondaryColor}"
-                                TextColor="{DynamicResource TextPrimaryColor}"
-                                FontSize="Medium"
-                                HorizontalOptions="FillAndExpand"
-                                VerticalOptions="Center"/>
-                        </Grid>
-                    </Frame>
-                    <!-- CONTENT -->
-                    <CollectionView
-                        x:Name="ControlSections"
-                        Grid.Row="2"
-                        BackgroundColor="Transparent"
-                        ItemsSource="{Binding FilteredItems}"
-                        SelectionMode="Single"
-                        SelectionChangedCommand="{Binding NavigateCommand, Source={x:RelativeSource AncestorType={x:Type ContentPage}}}"
-                        SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference ControlSections}}"
-                        Margin="6, 12, 6, 0">
-                        <CollectionView.ItemsLayout>
-                            <LinearItemsLayout  
-                                Orientation="Vertical"
-                                ItemSpacing="6"/>
-                        </CollectionView.ItemsLayout>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Frame Style="{StaticResource GalleryItemContainerStyle}">
-                                    <Grid>
-                                        <StackLayout>
-                                            <Label
-                                    Text="{Binding Title}"
-                                    Style="{StaticResource GalleryItemTitleStyle}"/>
-                                            <Label
-                                    Text="{Binding Description}"
-                                    Style="{StaticResource GalleryItemDescriptionStyle}"/>
-                                        </StackLayout>
-                                    </Grid>
-                                </Frame>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </Grid>
-            </ControlTemplate>
 
         </ResourceDictionary>
     </Application.Resources>
