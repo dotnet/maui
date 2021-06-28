@@ -42,8 +42,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (cell.View == null)
 				throw new InvalidOperationException($"ViewCell must have a {nameof(cell.View)}");
 
-			IVisualElementRenderer view = AppCompat.Platform.CreateRenderer(cell.View, context);
-			AppCompat.Platform.SetRenderer(cell.View, view);
+			IVisualElementRenderer view = Platform.CreateRenderer(cell.View, context);
+			Platform.SetRenderer(cell.View, view);
 			cell.View.IsPlatformEnabled = true;
 			var c = new ViewCellContainer(context, view, cell, ParentView, unevenRows, rowHeight);
 
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 						return null;
 					}
 
-					_listViewRenderer = AppCompat.Platform.GetRenderer(listView) as ListViewRenderer;
+					_listViewRenderer = Platform.GetRenderer(listView) as ListViewRenderer;
 
 					return _listViewRenderer;
 				}
@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				Performance.Start(out string reference);
 				var renderer = GetChildAt(0) as IVisualElementRenderer;
-				var viewHandlerType = Registrar.Registered.GetHandlerTypeForObject(cell.View) ?? typeof(AppCompat.Platform.DefaultRenderer);
+				var viewHandlerType = Registrar.Registered.GetHandlerTypeForObject(cell.View) ?? typeof(Platform.DefaultRenderer);
 				var reflectableType = renderer as System.Reflection.IReflectableType;
 				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (renderer != null ? renderer.GetType() : typeof(System.Object));
 				if (renderer != null && rendererType == viewHandlerType)
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					renderer.SetElement(cell.View);
 					Performance.Stop(reference, "Reuse.SetElement");
 
-					AppCompat.Platform.SetRenderer(cell.View, _view);
+					Platform.SetRenderer(cell.View, _view);
 
 					cell.View.DisableLayout = false;
 					foreach (VisualElement c in cell.View.Descendants())
@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 
 				RemoveView(_view.View);
-				AppCompat.Platform.SetRenderer(_viewCell.View, null);
+				Platform.SetRenderer(_viewCell.View, null);
 				_viewCell.View.IsPlatformEnabled = false;
 
 				// Adding a special case for HandlerToRendererShim so that DisconnectHandler gets called;
@@ -230,9 +230,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				}
 
 				_viewCell = cell;
-				_view = AppCompat.Platform.CreateRenderer(_viewCell.View, Context);
+				_view = Platform.CreateRenderer(_viewCell.View, Context);
 
-				AppCompat.Platform.SetRenderer(_viewCell.View, _view);
+				Platform.SetRenderer(_viewCell.View, _view);
 				AddView(_view.View);
 
 				UpdateIsEnabled();

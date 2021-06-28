@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui.Controls
 {

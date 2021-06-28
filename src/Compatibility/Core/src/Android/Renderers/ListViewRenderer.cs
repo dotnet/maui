@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				if (_headerRenderer != null)
 				{
-					AppCompat.Platform.ClearRenderer(_headerRenderer.View);
+					Platform.ClearRenderer(_headerRenderer.View);
 					_headerRenderer.Dispose();
 					_headerRenderer = null;
 				}
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				if (_footerRenderer != null)
 				{
-					AppCompat.Platform.ClearRenderer(_footerRenderer.View);
+					Platform.ClearRenderer(_footerRenderer.View);
 					_footerRenderer.Dispose();
 					_footerRenderer = null;
 				}
@@ -352,7 +352,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					if (_footerView != null)
 						_footerView.Child = null;
-					AppCompat.Platform.ClearRenderer(_footerRenderer.View);
+					Platform.ClearRenderer(_footerRenderer.View);
 					_footerRenderer.Dispose();
 					_footerRenderer = null;
 				}
@@ -365,12 +365,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_footerRenderer.SetElement(footer);
 			else
 			{
-				_footerRenderer = AppCompat.Platform.CreateRenderer(footer, Context);
+				_footerRenderer = Platform.CreateRenderer(footer, Context);
 				if (_footerView != null)
 					_footerView.Child = _footerRenderer;
 			}
 
-			AppCompat.Platform.SetRenderer(footer, _footerRenderer);
+			Platform.SetRenderer(footer, _footerRenderer);
 		}
 
 		void UpdateHeader()
@@ -384,7 +384,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					if (_headerView != null)
 						_headerView.Child = null;
-					AppCompat.Platform.ClearRenderer(_headerRenderer.View);
+					Platform.ClearRenderer(_headerRenderer.View);
 					_headerRenderer.Dispose();
 					_headerRenderer = null;
 				}
@@ -397,12 +397,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_headerRenderer.SetElement(header);
 			else
 			{
-				_headerRenderer = AppCompat.Platform.CreateRenderer(header, Context);
+				_headerRenderer = Platform.CreateRenderer(header, Context);
 				if (_headerView != null)
 					_headerView.Child = _headerRenderer;
 			}
 
-			AppCompat.Platform.SetRenderer(header, _headerRenderer);
+			Platform.SetRenderer(header, _headerRenderer);
 		}
 
 		void UpdateIsRefreshing(bool isInitialValue = false)

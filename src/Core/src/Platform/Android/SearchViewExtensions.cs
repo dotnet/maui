@@ -50,7 +50,7 @@ namespace Microsoft.Maui
 				searchView.SetQuery(trimmedQuery, false);
 			}
 		}
-    
+
 		public static void UpdateCancelButtonColor(this SearchView searchView, ISearchBar searchBar)
 		{
 			if (searchView.Resources == null)

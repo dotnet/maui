@@ -1,0 +1,26 @@
+﻿<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.ListViewPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="ListView">
+    <views:BasePage.Content>
+        <VerticalStackLayout
+            Margin="12">
+            <Label
+                Text="Basic"
+                Style="{StaticResource Headline}"/>
+            <ListView 
+                x:Name="BasicListView" 
+			    ItemTapped="OnItemTapped">
+                <ListView.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Item 1</x:String>
+                        <x:String>Item 2</x:String>
+                        <x:String>Item 3</x:String>
+                    </x:Array>
+                </ListView.ItemsSource>
+            </ListView>
+        </VerticalStackLayout>
+    </views:BasePage.Content>
+</views:BasePage>
