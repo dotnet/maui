@@ -261,6 +261,7 @@ stages:
               inputs:
                 Contents: |
                   artifacts/*nupkg
+                  artifacts/xamarin-workload.props
                   **/SignList.xml
                 TargetFolder: $(build.artifactstagingdirectory)
                 flattenFolders: true
@@ -372,10 +373,10 @@ stages:
   - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
   - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
 
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # Sign only using the private server
-    - stage: nuget_signing
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # Prepare release only when using the private server
+    - stage: prepare_release
       dependsOn: pack_net6
-      displayName: Sign Nuget
+      displayName: Prepare Release
       jobs:
         - template: sign-artifacts/jobs/v2.yml@xamarin-templates
           parameters:
@@ -387,3 +388,17 @@ stages:
             signedArtifactPath: signed
             displayName: Sign Phase
             condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+
+        - template: nuget-msi-convert/job/v1.yml@xamarin-templates
+          parameters:
+            yamlResourceName: xamarin-templates
+            dependsOn: signing
+            artifactName: nuget
+            artifactPatterns: |
+              signed/*.nupkg
+            propsArtifactName: nuget
+            signType: Real
+
+    - template: vs-insertion/stage/v1.yml@xamarin-templates
+      parameters:
+        dependsOn: prepare_release

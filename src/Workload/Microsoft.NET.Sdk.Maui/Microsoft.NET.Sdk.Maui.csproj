@@ -21,10 +21,17 @@
   <Target Name="SetVersions" />
 
   <Target Name="_GenerateWorkloadManifest" BeforeTargets="Build;AssignTargetPaths" DependsOnTargets="SetVersions" Inputs="$(MSBuildProjectFile);WorkloadManifest.in.json" Outputs="$(IntermediateOutputPath)WorkloadManifest.json">
-    <ReplaceText Input="WorkloadManifest.in.json" Output="$(IntermediateOutputPath)WorkloadManifest.json" OldValue="@VERSION@" NewValue="$(PackageVersion)" />
+    <ReplaceText Input="WorkloadManifest.in.json" Output="$(IntermediateOutputPath)WorkloadManifest.json" OldValue="@VERSION@" NewValue="$(PackageReferenceVersion)" />
     <ItemGroup>
       <None Include="$(IntermediateOutputPath)WorkloadManifest.json" Link="WorkloadManifest.json" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="data" Visible="false" />
       <FileWrites Include="$(IntermediateOutputPath)WorkloadManifest.json" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateWorkloadMsiProps" AfterTargets="Build" Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/automation/xamarin-workload.template.props" Outputs="$(PackageOutputPath)/xamarin-workload.props">
+    <ReplaceText Input="$(MauiRootDirectory)eng/automation/xamarin-workload.template.props" Output="$(PackageOutputPath)/xamarin-workload.props" OldValue="@VERSION@" NewValue="$(PackageReferenceVersion)" />
+    <ItemGroup>
+      <FileWrites Include="$(PackageOutputPath)/xamarin-workload.props" />
     </ItemGroup>
   </Target>
 
