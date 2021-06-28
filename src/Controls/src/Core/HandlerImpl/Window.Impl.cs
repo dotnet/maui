@@ -3,51 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls
 {
-	struct MauiContextAware<T>
-		where T : notnull
-	{
-		readonly Maui.IElement _element;
-
-		T? _value;
-		IMauiContext? _context;
-
-		public MauiContextAware(Maui.IElement element)
-			: this()
-		{
-			_element = element;
-		}
-
-		public T? Value
-		{
-			get
-			{
-				if (_context != _element?.Handler?.MauiContext)
-				{
-					if (_value is IDisposable disposable)
-						disposable.Dispose();
-
-					_value = default;
-					_context = _element?.Handler?.MauiContext;
-				}
-
-				if (_value is null)
-				{
-					var services = _context?.Services;
-					if (services is not null)
-						_value ??= services.GetRequiredService<T>();
-				}
-
-				return _value;
-			}
-		}
-	}
-
-	public class Window : NavigableElement, IWindow
+	public partial class Window : NavigableElement, IWindow
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
@@ -60,21 +24,23 @@ namespace Microsoft.Maui.Controls
 
 		ReadOnlyCollection<Element>? _logicalChildren;
 		Page? _page;
-		MauiContextAware<IAnimationManager> _animationManager;
+		IAnimationManager? _animationManager;
 
 		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
 			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
 
-		internal IMauiContext MauiContext => Page?.Handler?.MauiContext 
-			?? throw new InvalidOperationException("MauiContext is null");
+		internal IMauiContext MauiContext =>
+			Page?.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null");
 
 		internal ModalNavigationService ModalNavigationService { get; }
 
+		internal IAnimationManager? AnimationManager =>
+			_animationManager ??= MauiContext?.Services.GetRequiredService<IAnimationManager>();
+
 		public Window()
 		{
-			_animationManager = new MauiContextAware<IAnimationManager>(this);
 			ModalNavigationService = new ModalNavigationService(this);
 			Navigation = new NavigationImpl(this);
 			InternalChildren.CollectionChanged += OnCollectionChanged;
@@ -85,8 +51,6 @@ namespace Microsoft.Maui.Controls
 		{
 			Page = page;
 		}
-
-		public IAnimationManager? AnimationManager => _animationManager.Value;
 
 		void SendWindowAppearing()
 		{
@@ -154,13 +118,6 @@ namespace Microsoft.Maui.Controls
 			ModalNavigationService.PageAttachedHandler();
 		}
 
-		IView IWindow.View
-		{
-			get => Page ?? throw new InvalidOperationException("No page was set on the window.");
-			set => Page = (Page)value;
-		}
-
-
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
 
 		public event EventHandler<ModalPoppingEventArgs>? ModalPopping;
@@ -199,7 +156,6 @@ namespace Microsoft.Maui.Controls
 			ModalPushing?.Invoke(this, args);
 			(Parent as Application)?.NotifyOfWindowModalEvent(args);
 		}
-
 
 		void OnPopCanceled()
 		{
