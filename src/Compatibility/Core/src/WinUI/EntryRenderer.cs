@@ -198,11 +198,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			((IEntryController)Element).SendCompleted();
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
+		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
 			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
