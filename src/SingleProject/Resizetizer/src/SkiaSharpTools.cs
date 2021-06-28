@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Resizetizer
 		public string Filename { get; }
 
 		public SKSize? BaseSize { get; }
+
 		public ILogger Logger { get; }
 
 		public SKPaint Paint { get; }
@@ -84,31 +85,34 @@ namespace Microsoft.Maui.Resizetizer
 
 		(SKSizeI, float) GetScaledSize(SKSize originalSize, decimal scale, SKSize absoluteSize)
 		{
-			var ratio = (decimal)absoluteSize.Width / (decimal)originalSize.Width;
+			var ratio = Math.Min(
+				(decimal)absoluteSize.Width / (decimal)originalSize.Width,
+				(decimal)absoluteSize.Height / (decimal)originalSize.Height);
 
 			return GetScaledSize(originalSize, ratio * scale);
 		}
 
 		public (SKSizeI, float) GetScaledSize(SKSize originalSize, decimal resizeRatio)
 		{
-			int sourceNominalWidth = (int)(BaseSize?.Width ?? originalSize.Width);
-			int sourceNominalHeight = (int)(BaseSize?.Height ?? originalSize.Height);
+			var sourceNominalWidth = (int)(BaseSize?.Width ?? originalSize.Width);
+			var sourceNominalHeight = (int)(BaseSize?.Height ?? originalSize.Height);
 
 			// Find the actual size of the image
-			var sourceActualWidth = originalSize.Width;
-			var sourceActualHeight = originalSize.Height;
+			var sourceActualWidth = (double)originalSize.Width;
+			var sourceActualHeight = (double)originalSize.Height;
 
 			// Figure out what the ratio to convert the actual image size to the nominal size is
 			var nominalRatio = Math.Max(sourceNominalWidth / sourceActualWidth, sourceNominalHeight / sourceActualHeight);
 
 			// Multiply nominal ratio by the resize ratio to get our final ratio we actually adjust by
-			var adjustRatio = nominalRatio * (float)resizeRatio;
+			var adjustRatio = nominalRatio * (double)resizeRatio;
 
 			// Figure out our scaled width and height to make a new canvas for
 			var scaledWidth = sourceActualWidth * adjustRatio;
 			var scaledHeight = sourceActualHeight * adjustRatio;
+			var scaledSize = new SKSizeI((int)Math.Round(scaledWidth), (int)Math.Round(scaledHeight));
 
-			return (new SKSizeI((int)scaledWidth, (int)scaledHeight), adjustRatio);
+			return (scaledSize, (float)adjustRatio);
 		}
 	}
 }

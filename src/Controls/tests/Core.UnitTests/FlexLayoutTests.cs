@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests

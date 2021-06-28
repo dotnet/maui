@@ -5,6 +5,7 @@ using AndroidX.AppCompat.View.Menu;
 using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -12,20 +13,20 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		int? _defaultLabelFor;
 
-		public HandlerToRendererShim(IViewHandler vh)
+		public HandlerToRendererShim(INativeViewHandler vh)
 		{
 			ViewHandler = vh;
 		}
 
-		IViewHandler ViewHandler { get; }
+		INativeViewHandler ViewHandler { get; }
 
 		public VisualElement Element { get; private set; }
 
 		public VisualElementTracker Tracker { get; private set; }
 
-		public ViewGroup ViewGroup => ViewHandler.NativeView as ViewGroup;
+		public ViewGroup ViewGroup => null;
 
-		public global::Android.Views.View View => ViewHandler.NativeView as global::Android.Views.View;
+		public global::Android.Views.View View => ViewHandler.ContainerView ?? ViewHandler.NativeView;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -42,6 +43,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public void SetElement(VisualElement element)
 		{
+			if (element == Element)
+				return;
+
 			var oldElement = Element;
 			if (oldElement != null)
 			{
@@ -55,8 +59,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Element = element;
 
-			ViewHandler.SetVirtualView((IView)element);
 			((IView)element).Handler = ViewHandler;
+
+			if (ViewHandler.VirtualView != element)
+				ViewHandler.SetVirtualView((IView)element);
 
 			if (Tracker == null)
 			{

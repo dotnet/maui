@@ -1,4 +1,7 @@
-﻿namespace Microsoft.Maui
+using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml.Media;
+
+namespace Microsoft.Maui
 {
 	public static class TextBoxExtensions
 	{
@@ -31,6 +34,11 @@
 			textBox.ForegroundFocusBrush = brush;
 		}
 
+		public static void UpdateCharacterSpacing(this MauiTextBox textBox, ITextStyle textStyle)
+		{
+			textBox.CharacterSpacing = textStyle.CharacterSpacing.ToEm();
+		}
+		
 		public static void UpdateCharacterSpacing(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.CharacterSpacing = entry.CharacterSpacing.ToEm();
@@ -41,7 +49,12 @@
 			textBox.InputScope = entry.ReturnType.ToNative();
     	}
 
-    	public static void UpdatePlaceholder(this MauiTextBox textBox, IEditor editor)
+		public static void UpdateClearButtonVisibility(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.ClearButtonVisible = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing;
+		}
+
+		public static void UpdatePlaceholder(this MauiTextBox textBox, IEditor editor)
 		{
 			textBox.PlaceholderText = editor.Placeholder ?? string.Empty;
 		}
@@ -49,6 +62,17 @@
 		public static void UpdatePlaceholder(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.PlaceholderText = entry.Placeholder ?? string.Empty;
+		}
+
+		public static void UpdatePlaceholderColor(this MauiTextBox textBox, IEditor editor, Brush? placeholderDefaultBrush, Brush? defaultPlaceholderColorFocusBrush)
+		{
+			Color placeholderColor = editor.PlaceholderColor;
+
+			BrushHelpers.UpdateColor(placeholderColor, ref placeholderDefaultBrush,
+				() => textBox.PlaceholderForegroundBrush, brush => textBox.PlaceholderForegroundBrush = brush);
+
+			BrushHelpers.UpdateColor(placeholderColor, ref defaultPlaceholderColorFocusBrush,
+				() => textBox.PlaceholderForegroundFocusBrush, brush => textBox.PlaceholderForegroundFocusBrush = brush);
 		}
 
 		public static void UpdateFont(this MauiTextBox nativeControl, IText text, IFontManager fontManager) =>

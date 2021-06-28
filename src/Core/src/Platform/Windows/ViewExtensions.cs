@@ -1,13 +1,24 @@
 #nullable enable
+using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Hosting;
 
 namespace Microsoft.Maui
 {
 	public static class ViewExtensions
 	{
+		public static void TryMoveFocus(this FrameworkElement nativeView, FocusNavigationDirection direction)
+		{
+			if (nativeView?.XamlRoot?.Content is UIElement elem)
+				FocusManager.TryMoveFocus(direction, new FindNextElementOptions { SearchRoot = elem });
+		}
+
 		public static void UpdateIsEnabled(this FrameworkElement nativeView, IView view) =>
 			(nativeView as Control)?.UpdateIsEnabled(view.IsEnabled);
 
@@ -32,6 +43,31 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateClip(this FrameworkElement nativeView, IView view)
+		{
+			var clipGeometry = view.Clip;
+
+			if (clipGeometry == null)
+				return;
+
+			if (Application.Current is not MauiWinUIApplication app)
+				return;
+
+			var compositor = app.MainWindow.Compositor;
+			var visual = ElementCompositionPreview.GetElementVisual(nativeView);
+
+			var pathSize = new Rectangle(0, 0, view.Width, view.Height);
+			var clipPath = clipGeometry.PathForBounds(pathSize);
+			var device = CanvasDevice.GetSharedDevice();
+			var geometry = clipPath.AsPath(device);
+
+			var path = new CompositionPath(geometry);
+			var pathGeometry = compositor.CreatePathGeometry(path);
+			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
+
+			visual.Clip = geometricClip;
+    }
+    
 		public static void UpdateOpacity(this FrameworkElement nativeView, IView view)
 		{
 			nativeView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
@@ -47,7 +83,7 @@ namespace Microsoft.Maui
 				panel.UpdateBackground(view.Background);
 		}
 
-		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
+		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>	
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);
 
 		public static void UpdateSemantics(this FrameworkElement nativeView, IView view)

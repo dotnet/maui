@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISearchBar.Placeholder)] = MapPlaceholder,
 			[nameof(ISearchBar.Text)] = MapText,
 			[nameof(ISearchBar.TextColor)] = MapTextColor,
+			[nameof(ISearchBar.CancelButtonColor)] = MapCancelButtonColor
 		};
 
 		public SearchBarHandler() : base(SearchBarMapper)

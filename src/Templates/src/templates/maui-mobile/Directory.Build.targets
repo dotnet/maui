@@ -1,4 +1,5 @@
 <Project>
+
   <PropertyGroup>
     <!-- Required - Enable Launch Profiles for .NET 6 iOS/Android -->
     <_KeepLaunchProfiles>true</_KeepLaunchProfiles>
@@ -12,4 +13,9 @@
     <!-- If removed, Top level debug targets show as a list of devices for the selected TFM -->
     <ProjectCapability Include="XamarinStaticLaunchProfiles" />
   </ItemGroup>
+
+  <!-- Required - Overwrite tasks that are not needed when multitargeting -->
+  <Target Name="ValidateWinUIPlatform" />
+  <Target Name="BinPlaceBootstrapDll" />
+
 </Project>

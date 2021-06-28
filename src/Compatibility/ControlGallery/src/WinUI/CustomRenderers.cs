@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;

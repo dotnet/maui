@@ -184,15 +184,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return _ColorButtonNormal;
 		}
 
-		public static void Init(IActivationState activationState) =>
-			Init(activationState.Context, activationState.SavedInstance);
+		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
+			Init(activationState.Context, activationState.SavedInstance, options);
 
 		// Provide backwards compat for Forms.Init and AndroidActivity
 		// Why is bundle a param if never used?
 		public static void Init(Context activity, Bundle bundle) =>
 			Init(new MauiContext(activity), bundle);
 
-		public static void Init(IMauiContext context, Bundle bundle)
+		public static void Init(IMauiContext context, Bundle bundle, InitializationOptions? options = null)
 		{
 			Assembly resourceAssembly;
 
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FrameEnd("Assembly.GetCallingAssembly");
 
 			Profile.FrameBegin();
-			SetupInit(context, resourceAssembly, null);
+			SetupInit(context, resourceAssembly, options);
 			Profile.FrameEnd();
 		}
 
@@ -251,28 +251,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		static bool IsInitializedRenderers;
 
-
-		internal static void RegisterCompatRenderers(
-			Assembly[] assemblies,
-			Assembly defaultRendererAssembly,
-			Action<Type> viewRegistered)
+		// Once we get essentials/cg converted to using startup.cs
+		// we will delete all the renderer code inside this file
+		internal static void RenderersRegistered()
 		{
-			if (IsInitializedRenderers)
-				return;
-
 			IsInitializedRenderers = true;
-
-			// Only need to do this once
-			Registrar.RegisterAll(
-				assemblies,
-				defaultRendererAssembly,
-				new[] {
-						typeof(ExportRendererAttribute),
-						typeof(ExportCellAttribute),
-						typeof(ExportImageSourceHandlerAttribute),
-						typeof(ExportFontAttribute)
-					}, default(InitializationFlags),
-				viewRegistered);
 		}
 
 		internal static void RegisterCompatRenderers(InitializationOptions? maybeOptions)
@@ -378,7 +361,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.SetFlags(s_flags);
 
 			Profile.FramePartition("AndroidTicker");
-			Ticker.SetDefault(null);
 
 			Profile.FramePartition("RegisterAll");
 
@@ -687,11 +669,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				s_handler.Post(action);
 			}
 
-			public Ticker CreateTicker()
-			{
-				return new AndroidTicker();
-			}
-
 			public Assembly[] GetAssemblies()
 			{
 				return AppDomain.CurrentDomain.GetAssemblies();
@@ -956,7 +933,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
-				return Platform.Android.AppCompat.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 			}
 
 			public void Invalidate(VisualElement visualElement)

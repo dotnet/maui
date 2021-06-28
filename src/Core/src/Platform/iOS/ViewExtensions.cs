@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using CoreAnimation;
-using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -63,13 +62,27 @@ namespace Microsoft.Maui
 			if (paint.IsNullOrEmpty())
 				return;
 
-			var backgroundLayer = paint?.ToCALayer(nativeView.Bounds);
-
-			if (backgroundLayer != null)
+			if (paint is SolidPaint solidPaint)
 			{
-				backgroundLayer.Name = BackgroundLayerName;
-				nativeView.BackgroundColor = UIColor.Clear;
-				nativeView.InsertBackgroundLayer(backgroundLayer, 0);
+				Color backgroundColor = solidPaint.Color;
+
+				if (backgroundColor == null)
+					nativeView.BackgroundColor = ColorExtensions.BackgroundColor;
+				else
+					nativeView.BackgroundColor = backgroundColor.ToNative();
+
+				return;
+			}
+			else if (paint is GradientPaint gradientPaint)
+			{
+				var backgroundLayer = gradientPaint?.ToCALayer(nativeView.Bounds);
+
+				if (backgroundLayer != null)
+				{
+					backgroundLayer.Name = BackgroundLayerName;
+					nativeView.BackgroundColor = UIColor.Clear;
+					nativeView.InsertBackgroundLayer(backgroundLayer, 0);
+				}
 			}
 		}
 
@@ -81,6 +94,11 @@ namespace Microsoft.Maui
 		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
 			nativeView.AccessibilityIdentifier = view.AutomationId;
 
+		public static void UpdateClip(this WrapperView nativeView, IView view)
+		{
+			nativeView.Clip = view.Clip;
+		}
+
 		public static void UpdateSemantics(this UIView nativeView, IView view)
 		{
 			var semantics = view.Semantics;
@@ -90,6 +108,10 @@ namespace Microsoft.Maui
 
 			nativeView.AccessibilityLabel = semantics.Description;
 			nativeView.AccessibilityHint = semantics.Hint;
+
+			// UIControl elements automatically have IsAccessibilityElement set to true
+			if (nativeView is not UIControl && (!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description)))
+				nativeView.IsAccessibilityElement = true;
 
 			if (semantics.IsHeading)
 				nativeView.AccessibilityTraits |= UIAccessibilityTrait.Header;

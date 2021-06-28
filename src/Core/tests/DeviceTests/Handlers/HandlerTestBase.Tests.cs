@@ -1,4 +1,6 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -47,7 +49,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.Visibility, id);
 		}
 
-		[Fact(DisplayName = "Semantic Description is set correctly")]
+		[Fact(DisplayName = "Semantic Description is set correctly"
+#if __ANDROID__
+			, Skip = "This value can't be validated through automated tests"
+#endif
+		)]
 		[InlineData()]
 		public async Task SetSemanticDescription()
 		{
@@ -58,7 +64,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Semantic Hint is set correctly"
-#if MONOANDROID
+#if __ANDROID__
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]
@@ -92,6 +98,22 @@ namespace Microsoft.Maui.DeviceTests
 			};
 			var id = await GetValueAsync(view, handler => GetAutomationId(handler));
 			Assert.Equal(view.AutomationId, id);
+		}
+
+		[Fact(DisplayName = "Clip Initializes ContainerView Correctly")]
+		public async Task ContainerViewInitializesCorrectly()
+		{
+			var view = new TStub
+			{
+				Height = 100,
+				Width = 100,
+				Background = new SolidPaintStub(Colors.Red),
+				Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50)
+			};
+
+			var handler = await CreateHandlerAsync(view);
+
+			Assert.NotNull(handler.ContainerView);
 		}
 	}
 }

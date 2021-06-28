@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using Android.Text;
 using Android.Widget;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -18,11 +19,57 @@ namespace Microsoft.Maui
 
 		public static void UpdateFont(this SearchView searchView, ISearchBar searchBar, IFontManager fontManager, EditText? editText = null)
 		{
-			editText ??= searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+			editText ??= searchView.GetFirstChildOfType<EditText>();
+
 			if (editText == null)
 				return;
 
 			editText.UpdateFont(searchBar, fontManager);
+		}
+
+		public static void UpdateMaxLength(this SearchView searchView, ISearchBar searchBar)
+		{
+			searchView.UpdateMaxLength(searchBar.MaxLength, null);
+		}
+
+		public static void UpdateMaxLength(this SearchView searchView, ISearchBar searchBar, EditText? editText)
+		{
+			searchView.UpdateMaxLength(searchBar.MaxLength, editText);
+		}
+
+		public static void UpdateMaxLength(this SearchView searchView, int maxLength, EditText? editText)
+		{
+			editText ??= searchView.GetFirstChildOfType<EditText>();
+			editText?.SetLengthFilter(maxLength);
+
+			var query = searchView.Query;
+			var trimmedQuery = query.TrimToMaxLength(maxLength);
+
+			if (query != trimmedQuery)
+			{
+				searchView.SetQuery(trimmedQuery, false);
+			}
+		}
+
+		public static void UpdateCancelButtonColor(this SearchView searchView, ISearchBar searchBar)
+		{
+			if (searchView.Resources == null)
+				return;
+
+			var searchCloseButtonIdentifier = Resource.Id.search_close_btn;
+
+			if (searchCloseButtonIdentifier > 0)
+			{
+				var image = searchView.FindViewById<ImageView>(searchCloseButtonIdentifier);
+
+				if (image != null && image.Drawable != null)
+				{
+					if (searchBar.CancelButtonColor != null)
+						image.Drawable.SetColorFilter(searchBar.CancelButtonColor, FilterMode.SrcIn);
+					else
+						image.Drawable.ClearColorFilter();
+				}
+			}
 		}
 	}
 }

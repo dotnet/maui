@@ -207,8 +207,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_tracker?.UpdateLayout();
 		}
 
-		ViewGroup IVisualElementRenderer.ViewGroup => this;
-
 		AView IVisualElementRenderer.View => this;
 
 		bool ILifeCycleState.MarkedForDispose { get; set; } = false;
@@ -281,7 +279,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				if (Element != null)
 				{
-					Element.ClearValue(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform.RendererProperty);
+					Element.ClearValue(Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.RendererProperty);
 					Element = null;
 				}
 			}

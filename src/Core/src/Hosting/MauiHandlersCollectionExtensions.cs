@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Hosting
 
 		public static IMauiHandlersCollection TryAddHandler(this IMauiHandlersCollection handlersCollection, Type viewType, Type handlerType)
 		{
-			handlersCollection.AddTransient(viewType, handlerType);
+			handlersCollection.TryAddTransient(viewType, handlerType);
 			return handlersCollection;
 		}
 
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Hosting
 			where TType : IFrameworkElement
 			where TTypeRender : IViewHandler
 		{
-			handlersCollection.AddTransient(typeof(TType), typeof(TTypeRender));
+			handlersCollection.TryAddTransient(typeof(TType), typeof(TTypeRender));
 			return handlersCollection;
 		}
 	}

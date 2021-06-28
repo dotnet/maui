@@ -10,6 +10,36 @@ namespace Microsoft.Maui
 	public interface IFrameworkElement : ITransform
 	{
 		/// <summary>
+		/// Id used by automation tools to interact with this FrameworkElement
+		/// </summary>
+		string AutomationId { get; }
+
+		/// <summary>
+		/// Direction in which the UI elements on the page are scanned by the eye
+		/// </summary>
+		FlowDirection FlowDirection { get; }
+
+		/// <summary>
+		/// Determines the horizontal aspect of this element's arrangement in a container
+		/// </summary>
+		LayoutAlignment HorizontalLayoutAlignment { get; }
+
+		/// <summary>
+		/// Determines the vertical aspect of this element's arrangement in a container
+		/// </summary>
+		LayoutAlignment VerticalLayoutAlignment { get; }
+
+		/// <summary>
+		/// Adds semantics to every FrameworkElement for accessibility
+		/// </summary>
+		Semantics Semantics { get; }
+
+		/// <summary>
+		/// Gets the Path used to define the outline of the contents of a View.
+		/// </summary>
+		IShape? Clip { get; }
+
+		/// <summary>
 		/// Gets a value indicating whether this FrameworkElement is enabled in the user interface. 
 		/// </summary>
 		bool IsEnabled { get; }
@@ -83,30 +113,5 @@ namespace Microsoft.Maui
 		/// Method that is called to invalidate the layout of this FrameworkElement.
 		/// </summary>
 		void InvalidateArrange();
-
-		/// <summary>
-		/// Id used by automation tools to interact with this FrameworkElement
-		/// </summary>
-		string AutomationId { get; }
-
-		/// <summary>
-		/// Direction in which the UI elements on the page are scanned by the eye
-		/// </summary>
-		FlowDirection FlowDirection { get; }
-
-		/// <summary>
-		/// Determines the horizontal aspect of this element's arrangement in a container
-		/// </summary>
-		LayoutAlignment HorizontalLayoutAlignment { get; }
-
-		/// <summary>
-		/// Determines the vertical aspect of this element's arrangement in a container
-		/// </summary>
-		LayoutAlignment VerticalLayoutAlignment { get; }
-
-		/// <summary>
-		/// Adds semantics to every FrameworkElement for accessibility
-		/// </summary>
-		Semantics Semantics { get; }
 	}
 }

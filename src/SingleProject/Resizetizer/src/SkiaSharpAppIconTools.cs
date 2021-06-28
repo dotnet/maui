@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using SkiaSharp;
 
@@ -36,6 +35,7 @@ namespace Microsoft.Maui.Resizetizer
 		SKSize backgroundOriginalSize;
 
 		public ResizeImageInfo Info { get; }
+
 		public ILogger Logger { get; }
 
 		public string AppIconName { get; }
@@ -47,14 +47,25 @@ namespace Microsoft.Maui.Resizetizer
 
 			var (bgScaledSize, bgScale) = backgroundTools.GetScaledSize(backgroundOriginalSize, dpi);
 
+			// Make the canvas size match the desired size
+			var canvasSize = bgScaledSize;
+			if (dpi.Size is SKSize size && size.Width != size.Height)
+			{
+				var scale = (float)dpi.Scale;
+				canvasSize = new SKSizeI((int)(size.Width * scale), (int)(size.Height * scale));
+			}
+
 			// Allocate
-			using (var tempBitmap = new SKBitmap(bgScaledSize.Width, bgScaledSize.Height))
+			using (var tempBitmap = new SKBitmap(canvasSize.Width, canvasSize.Height))
 			{
 				// Draw (copy)
 				using (var canvas = new SKCanvas(tempBitmap))
 				{
-					canvas.Clear(SKColors.Transparent);
+					canvas.Clear(Info.Color ?? SKColors.Transparent);
 					canvas.Save();
+					canvas.Translate(
+						(canvasSize.Width - bgScaledSize.Width) / 2,
+						(canvasSize.Height - bgScaledSize.Height) / 2);
 					canvas.Scale(bgScale, bgScale);
 
 					backgroundTools.DrawUnscaled(canvas, bgScale);
@@ -85,6 +96,11 @@ namespace Microsoft.Maui.Resizetizer
 
 						//Logger.Log("\tfgScaledSizeCenterX: " + fgScaledSizeCenterX);
 						//Logger.Log("\tfgScaledSizeCenterY: " + fgScaledSizeCenterY);
+
+						// center the foreground
+						canvas.Translate(
+							(canvasSize.Width - fgScaledSize.Width) / 2,
+							(canvasSize.Height - fgScaledSize.Height) / 2);
 
 						// scale so the forground is the same size as the background
 						canvas.Scale(fgScale, fgScale);

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using CoreGraphics;
+using Microsoft.Maui.Controls.Platform;
 using Path = Microsoft.Maui.Controls.Shapes.Path;
 
 #if __MOBILE__

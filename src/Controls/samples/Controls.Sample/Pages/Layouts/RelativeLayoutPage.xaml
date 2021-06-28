@@ -1,0 +1,42 @@
+﻿<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.RelativeLayoutPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="RelativeLayout">
+    <views:BasePage.Content>
+        <RelativeLayout>
+            <BoxView 
+                Color="Red"
+                RelativeLayout.XConstraint="{ConstraintExpression Type=Constant, Constant=0}"
+                RelativeLayout.YConstraint="{ConstraintExpression Type=Constant, Constant=0}" />
+            <BoxView 
+                Color="Green"
+                RelativeLayout.XConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Constant=-40}"
+                RelativeLayout.YConstraint="{ConstraintExpression Type=Constant, Constant=0}" />
+            <BoxView 
+                Color="Blue"
+                RelativeLayout.XConstraint="{ConstraintExpression Type=Constant, Constant=0}"
+                RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Constant=-40}" />
+            <BoxView 
+                Color="Yellow"
+                RelativeLayout.XConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Constant=-40}"
+                RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Constant=-40}" />
+            <!-- Centered and 1/3 width and height of parent -->
+            <BoxView 
+                x:Name="oneThird"
+                Color="Silver"
+                RelativeLayout.XConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.33}"
+                RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.33}"
+                RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.33}"
+                RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.33}" />
+            <!-- 1/3 width and height of previous -->
+            <BoxView 
+                Color="Black"
+                RelativeLayout.XConstraint="{ConstraintExpression Type=RelativeToView, ElementName=oneThird, Property=X}"
+                RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToView, ElementName=oneThird, Property=Y}"
+                RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToView, ElementName=oneThird, Property=Width, Factor=0.33}"
+                RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToView, ElementName=oneThird, Property=Height, Factor=0.33}" />
+        </RelativeLayout>
+    </views:BasePage.Content>
+</views:BasePage>

@@ -6,6 +6,7 @@ using Android.Content;
 using Android.Text.Format;
 using Android.Util;
 using Android.Widget;
+using Microsoft.Maui.Controls.Platform;
 using ATimePicker = Android.Widget.TimePicker;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android

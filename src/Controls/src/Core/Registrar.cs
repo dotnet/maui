@@ -329,8 +329,13 @@ namespace Microsoft.Maui.Controls.Internals
 			for (var i = 0; i < exportEffectsLength; i++)
 			{
 				var effect = effectAttributes[i];
-				Effects[resolutionName + "." + effect.Id] = effect.Type;
+				RegisterEffect(resolutionName, effect.Id, effect.Type);
 			}
+		}
+
+		public static void RegisterEffect(string resolutionName, string id, Type effectType)
+		{
+			Effects[resolutionName + "." + id] = effectType;
 		}
 
 		public static void RegisterAll(Type[] attrTypes)
@@ -348,12 +353,12 @@ namespace Microsoft.Maui.Controls.Internals
 				null);
 		}
 
-		public static void RegisterAll(
+		internal static void RegisterAll(
 			Assembly[] assemblies,
 			Assembly defaultRendererAssembly,
 			Type[] attrTypes,
 			InitializationFlags flags,
-			Action<Type> viewRegistered)
+			Action<(Type handler, Type target)> viewRegistered)
 		{
 			Profile.FrameBegin();
 
@@ -384,20 +389,24 @@ namespace Microsoft.Maui.Controls.Internals
 						continue;
 
 					var length = attributes.Length;
+
 					for (var i = 0; i < length; i++)
 					{
 						var a = attributes[i];
 						var attribute = a as HandlerAttribute;
 						if (attribute == null && (a is ExportFontAttribute fa))
 						{
-							CompatServiceProvider.FontRegistrar.Register(fa.FontFileName, fa.Alias, assembly);
+							CompatServiceProvider.RegisterFont(fa.FontFileName, fa.Alias, assembly);
 						}
 						else
 						{
 							if (attribute.ShouldRegister())
 							{
 								Registered.Register(attribute.HandlerType, attribute.TargetType, attribute.SupportedVisuals, attribute.Priority);
-								viewRegistered?.Invoke(attribute.HandlerType);
+
+								// I realize these names seem wrong from the name of the action but in Xamarin.Forms we were calling
+								// the View types (Button, Image, etc..) handlers
+								viewRegistered?.Invoke((attribute.TargetType, attribute.HandlerType));
 							}
 						}
 					}
@@ -421,10 +430,6 @@ namespace Microsoft.Maui.Controls.Internals
 
 				Profile.FrameEnd(frameName);
 			}
-
-			var type = Registered.GetHandlerType(typeof(EmbeddedFont));
-			if (type != null)
-				CompatServiceProvider.SetFontLoader(type);
 
 			RegisterStylesheets(flags);
 			Profile.FramePartition("DependencyService.Initialize");

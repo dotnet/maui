@@ -1,0 +1,12 @@
+{
+  "solution": {
+    "path": "Microsoft.Maui-net6.sln",
+    "projects": [
+      "src\\Controls\\samples\\Controls.Sample.Droid\\Maui.Controls.Sample.Droid-net6.csproj",
+      "src\\Controls\\samples\\Controls.Sample.MacCatalyst\\Maui.Controls.Sample.MacCatalyst-net6.csproj",
+      "src\\Controls\\samples\\Controls.Sample.SingleProject\\Maui.Controls.Sample.SingleProject.csproj",
+      "src\\Controls\\samples\\Controls.Sample.iOS\\Maui.Controls.Sample.iOS-net6.csproj",
+      "src\\Controls\\samples\\Controls.Sample\\Maui.Controls.Sample-net6.csproj"
+    ]
+  }
+}
