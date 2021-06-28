@@ -54,6 +54,9 @@ namespace Microsoft.Maui.Controls
 			if (_handler?.VirtualView != this)
 				_handler?.SetVirtualView(this);
 
+			if (this is VisualElement ve)
+				ve.IsPlatformEnabled = Handler != null;
+
 			if (_handler != null)
 			{
 				AttachedHandler?.Invoke(this, EventArgs.Empty);

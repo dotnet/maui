@@ -13,11 +13,7 @@ namespace Microsoft.Maui.Controls
 		new public IViewHandler Handler
 		{
 			get => base.Handler as IViewHandler;
-			set
-			{
-				base.Handler = value;
-				IsPlatformEnabled = Handler != null;
-			}
+			set => base.Handler = value;
 		}
 
 		Paint IFrameworkElement.Background
