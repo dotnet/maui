@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests

@@ -1,6 +1,7 @@
 using System;
 using Foundation;
 using Microsoft.AppCenter.Distribute;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Samples.View;
@@ -9,16 +10,11 @@ using UIKit;
 namespace Samples.iOS
 {
     [Register(nameof(AppDelegate))]
-    public partial class AppDelegate : FormsApplicationDelegate
+    public partial class AppDelegate : MauiUIApplicationDelegate<Startup>
     {
-        static App formsApp;
-
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
-            Forms.Init();
-
             Distribute.DontCheckForUpdatesInDebug();
-            LoadApplication(formsApp ??= new App());
 
             return base.FinishedLaunching(app, options);
         }

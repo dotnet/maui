@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Animations;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -11,17 +10,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		bool _enabled;
 
-		protected override void EnableTimer()
+		public override void Start()
 		{
 			_enabled = true;
 
 			while (_enabled)
 			{
-				SendSignals(16);
+				Fire?.Invoke();
+				Task.Delay(16).Wait();
 			}
 		}
-
-		protected override void DisableTimer()
+		public override void Stop()
 		{
 			_enabled = false;
 		}
@@ -40,21 +39,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			_enabled = enabled;
 
-			OnSystemEnabledChanged();
 		}
-
-		protected override async void EnableTimer()
+		public override async void Start()
 		{
 			_enabled = true;
 
 			while (_enabled)
 			{
-				SendSignals(16);
+				Fire?.Invoke();
 				await Task.Delay(16);
 			}
 		}
-
-		protected override void DisableTimer()
+		public override void Stop()
 		{
 			_enabled = false;
 		}
@@ -63,24 +59,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class MotionTests : BaseTestFixture
 	{
+		HandlerWithAnimationContextStub animationContext;
+
 		[OneTimeSetUp]
 		public void Init()
 		{
 			Device.PlatformServices = new MockPlatformServices();
-			Ticker.Default = new BlockingTicker();
+			animationContext = new HandlerWithAnimationContextStub();
 		}
 
 		[OneTimeTearDown]
 		public void End()
 		{
 			Device.PlatformServices = null;
-			Ticker.Default = null;
+			animationContext = null;
 		}
 
 		[Test]
 		public void TestLinearTween()
 		{
-			var tweener = new Tweener(250);
+			var tweener = new Tweener(250, animationContext.AnimationManager);
 
 			double value = 0;
 			int updates = 0;
@@ -116,7 +114,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void Kinetic()
 		{
-			var view = new View();
+			var view = new View()
+			{
+				Handler = animationContext,
+			};
 			var resultList = new List<Tuple<double, double>>();
 			view.AnimateKinetic(
 				name: "Kinetics",
@@ -143,7 +144,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void KineticFinished()
 		{
-			var view = new View();
+			var view = new View
+			{
+				Handler = animationContext,
+			};
 			bool finished = false;
 			view.AnimateKinetic(
 				name: "Kinetics",
@@ -159,30 +163,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class TickerSystemEnabledTests
 	{
+		HandlerWithAnimationContextStub animationContext;
+
 		[OneTimeSetUp]
 		public void Init()
 		{
 			Device.PlatformServices = new MockPlatformServices();
-			Ticker.Default = new AsyncTicker();
+			animationContext = new HandlerWithAnimationContextStub(new TestAnimationManager(new AsyncTicker()));
 		}
 
 		[OneTimeTearDown]
 		public void End()
 		{
 			Device.PlatformServices = null;
-			Ticker.Default = null;
+			animationContext = null;
 		}
 
-		static async Task DisableTicker()
+		async Task DisableTicker()
 		{
 			await Task.Delay(32);
-			((AsyncTicker)Ticker.Default).SetEnabled(false);
+			((AsyncTicker)animationContext.AnimationManager.Ticker).SetEnabled(false);
 		}
 
-		static async Task EnableTicker()
+		async Task EnableTicker()
 		{
 			await Task.Delay(32);
-			((AsyncTicker)Ticker.Default).SetEnabled(true);
+			((AsyncTicker)animationContext.AnimationManager.Ticker).SetEnabled(true);
 		}
 
 		async Task SwapFadeViews(View view1, View view2)
@@ -194,7 +200,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test, Timeout(3000)]
 		public async Task DisablingTickerFinishesAnimationInProgress()
 		{
-			var view = new View { Opacity = 1 };
+			var view = new View { Opacity = 1, Handler = animationContext };
 
 			await Task.WhenAll(view.FadeTo(0, 2000), DisableTicker());
 
@@ -204,8 +210,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test, Timeout(3000)]
 		public async Task DisablingTickerFinishesAllAnimationsInChain()
 		{
-			var view1 = new View { Opacity = 1 };
-			var view2 = new View { Opacity = 0 };
+			var view1 = new View { Opacity = 1, Handler = animationContext };
+			var view2 = new View { Opacity = 0, Handler = animationContext };
 
 			await Task.WhenAll(SwapFadeViews(view1, view2), DisableTicker());
 
@@ -230,7 +236,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test, Timeout(3000)]
 		public async Task DisablingTickerPreventsAnimationFromRepeating()
 		{
-			var view = new View { Opacity = 0 };
+			var view = new View { Opacity = 0, Handler = animationContext };
 
 			await Task.WhenAll(RepeatFade(view), DisableTicker());
 
@@ -240,7 +246,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task NewAnimationsFinishImmediatelyWhenTickerDisabled()
 		{
-			var view = new View { Opacity = 1 };
+			var view = new View { Opacity = 1, Handler = animationContext };
 
 			await DisableTicker();
 
@@ -254,7 +260,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			await DisableTicker();
 
-			var label = new Label { Text = "Foo" };
+			var label = new Label { Text = "Foo", Handler = animationContext };
 			var result = await label.ScaleTo(2, 500);
 
 			Assert.That(result, Is.True);
@@ -266,23 +272,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await DisableTicker();
 
 			var run = true;
-			var label = new Label { Text = "Foo" };
+			var label = new Label { Text = "Foo", Handler = animationContext };
 
 			while (run)
 			{
 				await label.ScaleTo(2, 500);
 				run = !(await label.ScaleTo(0.5, 500));
 			}
-		}
-
-		[Test]
-		public async Task CanCheckThatAnimationsAreEnabled()
-		{
-			await EnableTicker();
-			Assert.That(Animation.IsEnabled, Is.True);
-
-			await DisableTicker();
-			Assert.That(Animation.IsEnabled, Is.False);
 		}
 	}
 }

@@ -60,11 +60,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			//await TryAllDispatchers(action);
 		}
 
-		public Ticker CreateTicker()
-		{
-			return new WindowsTicker();
-		}
-
 		public virtual Assembly[] GetAssemblies()
 		{
 

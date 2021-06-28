@@ -47,12 +47,12 @@ namespace Microsoft.Maui.Controls
 		};
 
 		internal static Dictionary<Type, Type> KnownConverters = new Dictionary<Type, Type> {
-			{ typeof(CornerRadius), typeof(CornerRadiusTypeConverter) },
 			{ typeof(Color), typeof(ColorTypeConverter) },
+			{ typeof(CornerRadius), typeof(CornerRadiusTypeConverter) },
 			{ typeof(Font), typeof(FontTypeConverter) },
 			{ typeof(FlowDirection), typeof(FlowDirectionConverter) },
 			{ typeof(Keyboard), typeof(KeyboardTypeConverter) },
-			{ typeof(Rectangle), typeof(RectangleTypeConverter) },
+			{ typeof(Graphics.Rectangle), typeof(RectangleTypeConverter) },
 			{ typeof(Size), typeof(SizeTypeConverter) },
 			{ typeof(Thickness), typeof(ThicknessTypeConverter) },
 			{ typeof(Point), typeof(PointTypeConverter) },

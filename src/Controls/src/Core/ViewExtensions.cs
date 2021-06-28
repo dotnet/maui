@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -173,8 +175,19 @@ namespace Microsoft.Maui.Controls
 			return navPage;
 		}
 
+		internal static IAnimationManager GetAnimationManager(this IAnimatable animatable)
+		{
+			if (animatable is VisualElement ve && ve.FindMauiContextOnParent() is IMauiContext context)
+				return context.Services.GetRequiredService<IAnimationManager>();
+
+			throw new ArgumentException($"Unable to find {nameof(IAnimationManager)} for '{animatable.GetType().FullName}'.", nameof(animatable));
+		}
+
 		internal static IMauiContext FindMauiContextOnParent(this Element element)
 		{
+			if (element is IView v && v.Handler?.MauiContext != null)
+				return v.Handler.MauiContext;
+
 			var navPage = element
 				.GetParentsPath()
 				.OfType<IView>()

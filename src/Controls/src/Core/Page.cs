@@ -275,8 +275,8 @@ namespace Microsoft.Maui.Controls
 			if (RealParent is BaseShellItem || RealParent is Shell)
 				return false;
 
-			var application = RealParent as Application;
-			if (application == null || this == application.MainPage)
+			var application = RealParent as Window;
+			if (application == null || this == application.Page)
 				return false;
 
 			var canceled = false;
