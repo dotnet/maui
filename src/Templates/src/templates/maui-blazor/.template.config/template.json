@@ -12,6 +12,13 @@
       "type": "solution"
     },
     "sourceName": "MauiApp1",
+    "sources": [
+      {
+        "source": "./",
+        "target": "./",
+        "copyOnly": [ "**/wwwroot/css/**", "**/*.svg", "**/*.ttf" ]
+      }
+    ],
     "preferNameDirectory": true,
     "primaryOutputs": [
       { "path": "MauiApp1/MauiApp1.csproj" },
