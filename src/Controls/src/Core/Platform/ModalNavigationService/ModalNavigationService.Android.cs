@@ -256,8 +256,8 @@ namespace Microsoft.Maui.Controls.Platform
 					var destination = Rectangle.FromLTRB(deviceIndependentLeft, deviceIndependentTop,
 						deviceIndependentRight, deviceIndependentBottom);
 
+					(_modal as IFrameworkElement).Frame = _modal.Frame;
 					(_modal as IFrameworkElement).Arrange(destination);
-					(_modal.Handler as INativeViewHandler)?.NativeArrange(_modal.Frame);
 					_backgroundView.Layout(0, 0, r - l, b - t);
 				}
 
