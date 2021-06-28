@@ -27,6 +27,9 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_context != _element?.Handler?.MauiContext)
 				{
+					if (_value is IDisposable disposable)
+						disposable.Dispose();
+
 					_value = default;
 					_context = _element?.Handler?.MauiContext;
 				}
