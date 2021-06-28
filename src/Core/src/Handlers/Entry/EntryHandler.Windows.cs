@@ -32,11 +32,15 @@ using Windows.System;
 		[MissingMapper]
 		public static void MapIsPassword(IViewHandler handler, IEntry entry) { }
 
-		[MissingMapper]
-		public static void MapHorizontalTextAlignment(IViewHandler handler, IEntry entry) { }
-		
-		[MissingMapper]
-		public static void MapVerticalTextAlignment(IViewHandler handler, IEntry entry) { }
+		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateHorizontalTextAlignment(entry);
+		}
+
+		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(entry);
+		}
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, IEntry entry) { }

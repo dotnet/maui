@@ -37,7 +37,7 @@ namespace Microsoft.Maui
 		{
 			textBox.CharacterSpacing = textStyle.CharacterSpacing.ToEm();
 		}
-		
+
 		public static void UpdateCharacterSpacing(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.CharacterSpacing = entry.CharacterSpacing.ToEm();
@@ -118,6 +118,19 @@ namespace Microsoft.Maui
 
 			if (currentControlText.Length > maxLength)
 				textBox.Text = currentControlText.Substring(0, maxLength);
+		}
+
+		public static void UpdateHorizontalTextAlignment(this MauiTextBox textBox, IEntry entry)
+		{
+			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
+			// TODO: Update this when FlowDirection is available 
+			// (or update the extension to take an ILabel instead of an alignment and work it out from there) 
+			textBox.TextAlignment = entry.HorizontalTextAlignment.ToNative(true);
+		}
+
+		public static void UpdateVerticalTextAlignment(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.VerticalAlignment = entry.VerticalTextAlignment.ToNativeVerticalAlignment();
 		}
 	}
 }
