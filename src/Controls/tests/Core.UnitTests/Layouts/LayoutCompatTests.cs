@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			(page as IFrameworkElement).Measure(expectedSize.Width, expectedSize.Height);
 			(page as IFrameworkElement).Arrange(expectedRect);
 
-			buttonHandler.Received().NativeArrange(expectedRect);
+			Assert.AreEqual(expectedRect, button.Frame);
 			Assert.AreEqual(expectedSize, button.Bounds.Size);
 		}
 
@@ -78,9 +78,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			stackLayout.Children.Add(button);
 
 			(verticalStackLayout as IFrameworkElement).Measure(expectedRect.Width, expectedRect.Height);
+			(verticalStackLayout as IFrameworkElement).Frame = expectedRect;
 			(verticalStackLayout as IFrameworkElement).Arrange(expectedRect);
 
-			slHandler.Received().NativeArrange(expectedRect);
+			Assert.AreEqual(expectedRect, stackLayout.Frame);
 			Assert.AreEqual(expectedSize, stackLayout.Bounds.Size);
 		}
 
