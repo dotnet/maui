@@ -38,11 +38,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static void Init(IActivationState state, InitializationOptions? options = null)
 		{
-			SetupInit(state.Context, null, maybeOptions: options);
+			SetupInit(state.Context, state.Context.Window, maybeOptions: options);
 		}
 
 		public static void Init(
-			WindowsBasePage mainWindow,
+			UI.Xaml.Window mainWindow,
 			IEnumerable<Assembly> rendererAssemblies = null)
 		{
 			SetupInit(new MauiContext(), mainWindow, rendererAssemblies);
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		static void SetupInit(
 			IMauiContext mauiContext,
-			WindowsBasePage mainWindow,
+			UI.Xaml.Window mainWindow,
 			IEnumerable<Assembly> rendererAssemblies = null,
 			InitializationOptions? maybeOptions = null)
 		{
@@ -134,9 +134,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.PlatformServices = platformServices;
 			Device.PlatformInvalidator = platformServices;
 
-			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
-				RegisterCompatRenderers();
-
 			if (mainWindow != null)
 			{
 				MainWindow = mainWindow;
@@ -144,59 +141,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 				//TODO WINUI3
 				Platform.UWP.Platform.SubscribeAlertsAndActionSheets();
 
-				mainWindow.LoadApplication(mainWindow.CreateApplication());
-				mainWindow.Activate();
+				if (mainWindow is WindowsBasePage windowsPage)
+				{
+					windowsPage.LoadApplication(windowsPage.CreateApplication());
+					windowsPage.Activate();
+				}
 			}
 
 			IsInitialized = true;
-		}
-
-		static bool IsInitializedRenderers;
-
-		// Once we get essentials/cg converted to using startup.cs
-		// we will delete all the renderer code inside this file
-		internal static void RenderersRegistered()
-		{
-			IsInitializedRenderers = true;
-		}
-		internal static void RegisterCompatRenderers()
-		{
-			if (IsInitializedRenderers)
-				return;
-
-			IsInitializedRenderers = true;
-
-			// Only need to do this once
-			Registrar.RegisterAll(new[]
-			{
-				typeof(ExportRendererAttribute),
-				typeof(ExportCellAttribute),
-				typeof(ExportImageSourceHandlerAttribute),
-				typeof(ExportFontAttribute)
-			});
-		}
-
-		internal static void RegisterCompatRenderers(
-			Assembly[] assemblies,
-			Assembly defaultRendererAssembly,
-			Action<Type> viewRegistered)
-		{
-			if (IsInitializedRenderers)
-				return;
-
-			IsInitializedRenderers = true;
-
-			// Only need to do this once
-			Controls.Internals.Registrar.RegisterAll(
-				assemblies,
-				defaultRendererAssembly,
-				new[] {
-						typeof(ExportRendererAttribute),
-						typeof(ExportCellAttribute),
-						typeof(ExportImageSourceHandlerAttribute),
-						typeof(ExportFontAttribute)
-					}, default(InitializationFlags),
-				viewRegistered);
 		}
 
 		static FlowDirection GetFlowDirection()

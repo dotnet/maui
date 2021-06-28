@@ -6,14 +6,8 @@
     <AssemblyName>Microsoft.Maui.Resizetizer</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
     <LangVersion>9.0</LangVersion>
-    <IncludeBuildOutput>False</IncludeBuildOutput>
-    <NoWarn>$(NoWarn);NU5100;NU5128;</NoWarn>
+    <IsPackable>false</IsPackable>
     <IsTrimmable>false</IsTrimmable>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <PackageId>Microsoft.Maui.Resizetizer</PackageId>
-    <IncludeSymbols>False</IncludeSymbols>
   </PropertyGroup>
 
   <ItemGroup>
@@ -50,27 +44,7 @@
     <None Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Fizzler" Version="1.2.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="HarfBuzzSharp" Version="2.6.1.7" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.6.1.7" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="16.7.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.7.0" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp" Version="2.80.2" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.80.2" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.80.2" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Svg.Skia" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Svg.Custom" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Svg.Picture" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Memory" Version="4.5.4" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Buffers" Version="4.5.1" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.IO.UnmanagedMemoryStream" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.ObjectModel" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Svg2VectorDrawable.Net" Version="0.3.0" GeneratePathProperty="true" PrivateAssets="all" />
-  </ItemGroup>
+  <Import Project="ResizetizerPackages.projitems" />
 
   <Target Name="_CopyToNuspecDir" AfterTargets="Build">
     <ItemGroup>

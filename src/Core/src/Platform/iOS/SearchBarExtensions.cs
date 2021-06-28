@@ -29,6 +29,19 @@ namespace Microsoft.Maui
 			textField.UpdateFont(textStyle, fontManager);
 		}
 
+		public static void UpdateMaxLength(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			var maxLength = searchBar.MaxLength;
+
+			if (maxLength == -1)
+				maxLength = int.MaxValue;
+
+			var currentControlText = uiSearchBar.Text;
+
+			if (currentControlText?.Length > maxLength)
+				uiSearchBar.Text = currentControlText.Substring(0, maxLength);
+		}
+
 		public static void UpdateCancelButton(this UISearchBar uiSearchBar, ISearchBar searchBar,
 			UIColor? cancelButtonTextColorDefaultNormal, UIColor? cancelButtonTextColorDefaultHighlighted, UIColor? cancelButtonTextColorDefaultDisabled)
 		{

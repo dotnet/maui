@@ -23,6 +23,11 @@ namespace Microsoft.Maui
 			nativeView.Visibility = view.Visibility.ToNativeVisibility();
 		}
 
+		public static void UpdateClip(this WrapperView nativeView, IView view)
+		{
+			nativeView.Clip = view.Clip;
+		}
+
 		public static ViewStates ToNativeVisibility(this Visibility visibility)
 		{
 			return visibility switch

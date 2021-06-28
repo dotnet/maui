@@ -100,6 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else if (handler is INativeViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
+					SetRenderer(element, renderer);
 				}
 			}
 
@@ -276,6 +277,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				IVisualElementRenderer elementRenderer = GetRenderer(element);
 				if (elementRenderer != null)
 					return elementRenderer.GetDesiredSize(widthConstraint, heightConstraint);
+				
+				if (element is IView iView)
+					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
 			}
 
 			return new SizeRequest();

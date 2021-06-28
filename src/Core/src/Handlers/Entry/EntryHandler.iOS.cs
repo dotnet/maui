@@ -68,6 +68,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateHorizontalTextAlignment(entry);
 		}
 
+		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry)
+		{
+			handler?.NativeView?.UpdateVerticalTextAlignment(entry);
+		}
+
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateIsTextPredictionEnabled(entry);

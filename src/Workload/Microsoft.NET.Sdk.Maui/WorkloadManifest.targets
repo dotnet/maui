@@ -1,0 +1,10 @@
+<Project>
+  <Import
+      Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' "
+      Project="Sdk.targets" Sdk="Microsoft.Maui.Controls.Sdk"
+  />
+  <Import
+      Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' "
+      Project="Sdk.targets" Sdk="Microsoft.Maui.Resizetizer.Sdk"
+  />
+</Project>

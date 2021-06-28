@@ -118,16 +118,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal static void Initialize(Assembly[] assemblies)
+		public static void Register(Assembly[] assemblies)
 		{
-			if (s_initialized)
-				return;
-
 			lock (s_initializeLock)
 			{
-				if (s_initialized)
-					return;
-
 				// Don't use LINQ for performance reasons
 				// Naive implementation can easily take over a second to run
 				foreach (Assembly assembly in assemblies)
@@ -145,6 +139,20 @@ namespace Microsoft.Maui.Controls
 						}
 					}
 				}
+			}
+		}
+
+		internal static void Initialize(Assembly[] assemblies)
+		{
+			if (s_initialized)
+				return;
+
+			lock (s_initializeLock)
+			{
+				if (s_initialized)
+					return;
+
+				Register(assemblies);
 
 				s_initialized = true;
 			}

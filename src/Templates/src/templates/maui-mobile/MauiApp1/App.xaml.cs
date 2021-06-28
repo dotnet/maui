@@ -10,14 +10,8 @@ namespace MauiApp1
 		public App()
 		{
 			InitializeComponent();
-		}
 
-		protected override IWindow CreateWindow(IActivationState activationState)
-		{
-			this.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>()
-				.SetImageDirectory("Assets");
-
-			return new Microsoft.Maui.Controls.Window(new MainPage());
+			MainPage = new MainPage();
 		}
 	}
 }

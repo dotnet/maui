@@ -15,6 +15,8 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Animations;
 
 #if __MOBILE__
 using UIKit;
@@ -276,29 +278,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		internal static void RegisterCompatRenderers(
-			Assembly[] assemblies,
-			Assembly defaultRendererAssembly,
-			Action<Type> viewRegistered)
-		{
-			if (IsInitializedRenderers)
-				return;
-
-			IsInitializedRenderers = true;
-
-			// Only need to do this once
-			Controls.Internals.Registrar.RegisterAll(
-				assemblies,
-				defaultRendererAssembly,
-				new[] {
-						typeof(ExportRendererAttribute),
-						typeof(ExportCellAttribute),
-						typeof(ExportImageSourceHandlerAttribute),
-						typeof(ExportFontAttribute)
-					}, default(InitializationFlags),
-				viewRegistered);
-		}
-
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
 
 		internal static void SendViewInitialized(this VisualElement self, TNativeView nativeView)
@@ -351,11 +330,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public void BeginInvokeOnMainThread(Action action)
 			{
 				NSRunLoop.Main.BeginInvokeOnMainThread(action.Invoke);
-			}
-
-			public Ticker CreateTicker()
-			{
-				return new CADisplayLinkTicker();
 			}
 
 			public Assembly[] GetAssemblies()
