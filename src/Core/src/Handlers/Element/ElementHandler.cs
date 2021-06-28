@@ -66,10 +66,10 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView is IPropertyMapperView imv)
 			{
 				var map = imv.GetPropertyMapperOverrides();
-				if (map is PropertyMapperChained chainedMapper)
+				if (map is not null)
 				{
-					chainedMapper.Chained = _defaultMapper;
-					_mapper = chainedMapper;
+					map.Chained = _defaultMapper;
+					_mapper = map;
 				}
 			}
 

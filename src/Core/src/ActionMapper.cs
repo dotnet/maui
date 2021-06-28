@@ -15,7 +15,8 @@ namespace Microsoft.Maui
 
 		public Action<TViewHandler, TVirtualView> this[string key]
 		{
-			set => PropertyMapper._mapper[key] = ((r, v) => value?.Invoke((TViewHandler)r, (TVirtualView)v), false);
+			get => PropertyMapper[key];
+			set => PropertyMapper.Add(key, value, false);
 		}
 	}
 }

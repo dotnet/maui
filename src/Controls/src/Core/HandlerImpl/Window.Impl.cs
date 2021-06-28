@@ -31,10 +31,16 @@ namespace Microsoft.Maui.Controls
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
 			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
 
-		internal IMauiContext MauiContext =>
-			Page?.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null");
+		new internal IWindowHandler Handler
+		{
+			get => (IWindowHandler)base.Handler;
+			set => base.Handler = value;
+		}
 
 		internal ModalNavigationService ModalNavigationService { get; }
+
+		internal IMauiContext MauiContext =>
+			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
 
 		internal IAnimationManager? AnimationManager =>
 			_animationManager ??= MauiContext?.Services.GetRequiredService<IAnimationManager>();
