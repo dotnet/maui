@@ -12,10 +12,10 @@ namespace Maui.Controls.Sample
 		public XamlApp(IServiceProvider services, ITextService textService)
 		{
 			InitializeComponent();
-
+		
 			Services = services;
 
-			Debug.WriteLine($"The .NET Purple color is {Resources["DotNetPurple"]}");
+			Debug.WriteLine($"The AccentColor color is {Resources["AccentColor"]}");
 			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
 
 			MainPage = Services.GetRequiredService<Page>();
