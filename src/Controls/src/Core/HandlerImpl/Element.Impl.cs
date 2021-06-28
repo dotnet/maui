@@ -5,6 +5,7 @@ namespace Microsoft.Maui.Controls
 	public partial class Element : Maui.IElement
 	{
 		IElementHandler _handler;
+		EventHandler _attachedHandler;
 
 		Maui.IElement Maui.IElement.Parent => Parent;
 
@@ -16,7 +17,6 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler AttachingHandler;
 
-		EventHandler _attachedHandler;
 		public event EventHandler AttachedHandler
 		{
 			add
@@ -44,7 +44,6 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnDetachedHandler() { }
 
 		private protected virtual void OnHandlerSet() { }
-
 
 		void SetHandler(IElementHandler newHandler)
 		{
