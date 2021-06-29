@@ -9,7 +9,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		Graphics.Rectangle _arrangeCache;
 
-		public override bool NeedsContainer => VirtualView?.Background != null ||
+		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
+			VirtualView?.Clip != null ||
 			base.NeedsContainer;
 
 		public static void MapBackground(LayoutHandler handler, ILayout layout)
