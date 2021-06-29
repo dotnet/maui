@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Controls.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ActionSheetArguments

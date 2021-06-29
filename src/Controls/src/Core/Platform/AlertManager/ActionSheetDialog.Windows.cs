@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.Linq;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
