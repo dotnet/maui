@@ -32,16 +32,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		VisualElementPackager _packager;
 		PropertyChangedEventHandler _propertyChangeHandler;
 
-		GestureManager _gestureManager;
-
 		protected VisualElementRenderer(Context context) : base(context)
 		{
-			_gestureManager = new GestureManager(null);
-		}
-
-		public override bool OnTouchEvent(MotionEvent e)
-		{
-			return _gestureManager.OnTouchEvent(e) || base.OnTouchEvent(e);
 		}
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
@@ -302,12 +294,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					_packager = null;
 				}
 
-				if (_gestureManager != null)
-				{
-					_gestureManager.Dispose();
-					_gestureManager = null;
-				}
-
 				if (ManageNativeControlLifetime)
 				{
 					while (ChildCount > 0)
@@ -345,7 +331,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected virtual void OnElementChanged(ElementChangedEventArgs<TElement> e)
 		{
 			var args = new VisualElementChangedEventArgs(e.OldElement, e.NewElement);
-			_gestureManager.OnElementChanged(args);
 
 			// The list of event handlers can be changed inside the handlers. (ex.: are used CompressedLayout)
 			// To avoid an exception, a copy of the handlers is called.

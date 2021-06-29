@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
@@ -32,19 +30,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public GestureManager(IViewHandler handler)
 		{
-			Console.WriteLine("taxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxes");
 			_handler = handler;
 			_tapAndPanAndSwipeDetector = new Lazy<TapAndPanGestureDetector>(InitializeTapAndPanAndSwipeDetector);
 			_scaleDetector = new Lazy<ScaleGestureDetector>(InitializeScaleDetector);
 			_dragAndDropGestureHandler = new Lazy<DragAndDropGestureHandler>(InitializeDragAndDropHandler);
-			UpdateDragAndDrop();
-			UpdateInputTransparent();
-			UpdateIsEnabled();
-
-			if (View?.GestureRecognizers is INotifyCollectionChanged incc)
-			{
-				incc.CollectionChanged += GestureCollectionChanged;
-			}
+			SetupElement(null, Element);
 		}
 
 		public bool OnTouchEvent(MotionEvent e)
@@ -74,56 +64,6 @@ namespace Microsoft.Maui.Controls.Platform
 				eventConsumed = _tapAndPanAndSwipeDetector.Value.OnTouchEvent(e) || eventConsumed;
 
 			return eventConsumed;
-		}
-
-		public class TapAndPanGestureDetector : GestureDetector
-		{
-			InnerGestureListener? _listener;
-			public TapAndPanGestureDetector(Context context, InnerGestureListener listener) : base(context, listener)
-			{
-				_listener = listener;
-				UpdateLongPressSettings();
-			}
-
-			public void UpdateLongPressSettings()
-			{
-				if (_listener == null)
-					return;
-
-				// Right now this just disables long press, since we don't support a long press gesture
-				// in Forms. If we ever do, we'll need to selectively enable it, probably by hooking into the 
-				// InnerGestureListener and listening for the addition of any long press gesture recognizers.
-				// (since a long press will prevent a pan gesture from starting, we can't just leave support for it 
-				// on by default).
-				// Also, since the property is virtual we shouldn't just set it from the constructor.
-
-				IsLongpressEnabled = _listener.EnableLongPressGestures;
-			}
-
-			public override bool OnTouchEvent(MotionEvent? ev)
-			{
-				if (base.OnTouchEvent(ev))
-					return true;
-
-				if (_listener != null && ev?.Action == MotionEventActions.Up)
-					_listener.EndScrolling();
-
-				return false;
-			}
-
-			protected override void Dispose(bool disposing)
-			{
-				base.Dispose(disposing);
-
-				if (disposing)
-				{
-					if (_listener != null)
-					{
-						_listener.Dispose();
-						_listener = null;
-					}
-				}
-			}
 		}
 
 		public void Dispose()
@@ -192,40 +132,87 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool ViewHasPinchGestures()
 		{
-			return View != null && View.GestureRecognizers.OfType<PinchGestureRecognizer>().Any();
+			if (View == null)
+				return false;
+
+			int count = View.GestureRecognizers.Count;
+			for (var i = 0; i < count; i++)
+			{
+				if (View.GestureRecognizers[i] is PinchGestureRecognizer)
+					return true;
+			}
+
+			return false;
 		}
 
-		internal void OnElementChanged(VisualElementChangedEventArgs e)
+		void SetupGestures()
+		{
+			if (View == null)
+				return;
+
+			AView? nativeView = (_handler?.NativeView as AView);
+
+			if (nativeView == null)
+				return;
+
+			if (View.GestureRecognizers.Count == 0)
+			{
+				nativeView.Touch -= OnNativeViewTouched;
+				
+			}
+			else
+			{
+				nativeView.Touch += OnNativeViewTouched;
+			}
+		}
+
+		void OnNativeViewTouched(object? sender, Android.Views.View.TouchEventArgs e)
+		{
+			if (e.Event != null)
+				OnTouchEvent(e.Event);
+		}
+
+		void SetupElement(VisualElement? oldElement, VisualElement? newElement)
 		{
 			_handler = null;
-
-			if (e.OldElement != null)
+			if (oldElement != null)
 			{
-				if (e.OldElement is View ov &&
+				if (oldElement is View ov &&
 					ov.GestureRecognizers is INotifyCollectionChanged incc)
 				{
 					incc.CollectionChanged -= GestureCollectionChanged;
 				}
+
+				oldElement.PropertyChanged -= OnElementPropertyChanged;
 			}
 
-			if (e.NewElement != null)
+			if (newElement != null)
 			{
-				_handler = e.NewElement.Handler;
-				if (e.NewElement is View ov &&
+				_handler = newElement.Handler;
+				if (newElement is View ov &&
 					ov.GestureRecognizers is INotifyCollectionChanged incc)
 				{
 					incc.CollectionChanged += GestureCollectionChanged;
 				}
+
+				newElement.PropertyChanged += OnElementPropertyChanged;
 			}
 
 			UpdateInputTransparent();
 			UpdateIsEnabled();
 			UpdateDragAndDrop();
+			SetupGestures();
+		}
+
+		internal void OnElementChanged(VisualElementChangedEventArgs e)
+		{
+			SetupElement(e.OldElement, e.NewElement);
 		}
 
 		void GestureCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			UpdateDragAndDrop();
+			SetupGestures();
 
 			if (_tapAndPanAndSwipeDetector.IsValueCreated)
 				_tapAndPanAndSwipeDetector.Value.UpdateLongPressSettings();
@@ -237,7 +224,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_dragAndDropGestureHandler.Value.SetupHandlerForDrop();
 		}
 
-		internal void OnElementPropertyChanged(PropertyChangedEventArgs e)
+		void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 				UpdateInputTransparent();
@@ -256,14 +243,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (disposing)
 			{
-				if (Element != null)
-				{
-					if (Element is View ov &&
-						ov.GestureRecognizers is INotifyCollectionChanged incc)
-					{
-						incc.CollectionChanged -= GestureCollectionChanged;
-					}
-				}
+				SetupElement(Element, null);
 
 				if (_tapAndPanAndSwipeDetector.IsValueCreated)
 				{
