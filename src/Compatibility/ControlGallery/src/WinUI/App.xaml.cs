@@ -23,16 +23,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public class MiddleApp : MauiWinUIApplication<Startup>
 	{
-		public override UI.Xaml.Window CreateWindow()
+		public override MauiWinUIWindow CreateWindow()
 		{
-			return base.CreateWindow();
+			return new MainPage();
 		}
 	}
 
 	/// <summary>
 	/// Provides application-specific behavior to supplement the default Application class.
 	/// </summary>
-	sealed partial class App
+	sealed partial class App : MiddleApp
 	{
 		public static bool RunningAsUITests { get; private set; }
 		/// <summary>
@@ -45,6 +45,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			//Suspending += OnSuspending;
 		}
 
+		public override MauiWinUIWindow CreateWindow()
+		{
+			return new MainPage();
+		}
+
 		/// <summary>
 		/// Invoked when the application is launched normally by the end user.  Other entry points
 		/// will be used such as when the application is launched to open a specific file.
@@ -52,6 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		/// <param name="e">Details about the launch request and process.</param>
 		protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs e)
 		{
+			base.OnLaunched(e);
 			if (!String.IsNullOrWhiteSpace(e.Arguments) &&
 				e.Arguments.Contains("RunningAsUITests"))
 			{

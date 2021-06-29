@@ -59,6 +59,8 @@ namespace Microsoft.Maui
 
 		RootPanel CreateRootContainer()
 		{
+			Resources.TryGetValue("MauiRootContainerStyle", out object style2);
+
 			// TODO WINUI should this be some other known constant or via some mechanism? Or done differently?
 			return Resources.TryGetValue("MauiRootContainerStyle", out object style)
 				? new RootPanel
