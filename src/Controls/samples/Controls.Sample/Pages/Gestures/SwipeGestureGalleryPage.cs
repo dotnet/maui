@@ -32,6 +32,8 @@ namespace Maui.Controls.Sample.Pages.Gestures
 				{
 					if (Children.Count > 0)
 						Remove(Children[0]);
+
+					Add(value);
 				}
 			}
 
