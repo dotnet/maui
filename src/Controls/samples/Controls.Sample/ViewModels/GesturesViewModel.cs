@@ -18,8 +18,11 @@ namespace Maui.Controls.Sample.ViewModels
 				"Pan Gesture."),
 			new SectionModel(typeof(SwipeGestureGalleryPage), "Swipe Gesture",
 				"Swipe Gesture."),
+
+#if WINDOWS || MACCATALYST
 			new SectionModel(typeof(ClickGestureGalleryPage), "Click Gesture",
 				"Click Gesture."),
+#endif
 
 		};
 	}
