@@ -14,7 +14,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class GestureManager : IDisposable
+	class GestureManager : IDisposable
 	{
 		IViewHandler? _handler;
 		Lazy<ScaleGestureDetector> _scaleDetector;
@@ -38,8 +38,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_dragAndDropGestureHandler = new Lazy<DragAndDropGestureHandler>(InitializeDragAndDropHandler);
 			UpdateDragAndDrop();
 
-			if (Element is View ov &&
-				ov.GestureRecognizers is INotifyCollectionChanged incc)
+			if (View?.GestureRecognizers is INotifyCollectionChanged incc)
 			{
 				incc.CollectionChanged += GestureCollectionChanged;
 			}
