@@ -143,8 +143,6 @@
     <_WorkloadIds Include="microsoft-macos-sdk-full" />
     <_WorkloadIds Include="microsoft-ios-sdk-full" />
     <_WorkloadIds Include="microsoft-tvos-sdk-full" />
-    <!-- TODO: this should eventually come in automatically -->
-    <_WorkloadIds Include="microsoft-net-runtime-maccatalyst" />
   </ItemGroup>
 
   <Target Name="_AcquireWorkloadManifests"
