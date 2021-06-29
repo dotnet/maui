@@ -12,6 +12,13 @@
       "type": "solution"
     },
     "sourceName": "MauiApp1",
+    "sources": [
+      {
+        "source": "./",
+        "target": "./",
+        "copyOnly": [ "**/*.svg", "**/*.ttf" ]
+      }
+    ],
     "preferNameDirectory": true,
     "guids": [
       "07CD65EF-6238-4365-AF5D-F6D433967F48",
