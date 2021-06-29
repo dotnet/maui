@@ -396,6 +396,7 @@ stages:
             artifactName: nuget
             artifactPatterns: |
               **/signed/*.nupkg
+            artifactPath: signed
             propsArtifactName: nuget
             signType: Real
 
