@@ -21,12 +21,19 @@ using Windows.UI.ViewManagement;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
+	public class MiddleApp : MauiWinUIApplication<Startup>
+	{
+		public override UI.Xaml.Window CreateWindow()
+		{
+			return base.CreateWindow();
+		}
+	}
+
 	/// <summary>
 	/// Provides application-specific behavior to supplement the default Application class.
 	/// </summary>
-	sealed partial class App : Microsoft.UI.Xaml.Application
+	sealed partial class App
 	{
-		private UI.Xaml.Window m_window;
 		public static bool RunningAsUITests { get; private set; }
 		/// <summary>
 		/// Initializes the singleton application object.  This is the first line of authored code
@@ -51,9 +58,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 				RunningAsUITests = true;
 				ControlGallery.App.PreloadTestCasesIssuesList = false;
 			}
-
-			m_window = new MainPage();
-			Maui.Controls.Compatibility.Forms.Init(m_window as MainPage);
 		}
 
 		/// <summary>
