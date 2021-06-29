@@ -373,10 +373,10 @@ stages:
   - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
   - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
 
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # Prepare release only when using the private server
-    - stage: prepare_release
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # Sign only using the private server
+    - stage: nuget_signing
       dependsOn: pack_net6
-      displayName: Prepare Release
+      displayName: Sign Nuget
       jobs:
         - template: sign-artifacts/jobs/v2.yml@xamarin-templates
           parameters:
@@ -401,4 +401,4 @@ stages:
 
     - template: vs-insertion/stage/v1.yml@xamarin-templates
       parameters:
-        dependsOn: prepare_release
+        dependsOn: nuget_signing
