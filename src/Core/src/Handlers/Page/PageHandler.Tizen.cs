@@ -2,6 +2,7 @@
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
 using NativeView = ElmSharp.EvasObject;
+using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -14,7 +15,10 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
 			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
 
-			var view = new Page(NativeParent);
+			var view = new Page(NativeParent)
+			{
+				BackgroundColor = EColor.White
+			};
 			view.Show();
 			return view;
 		}

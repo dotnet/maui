@@ -403,6 +403,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static void Init(IMauiContext context, InitializationOptions options = null)
 		{
+			if (options != null && options.DisplayResolutionUnit != null)
+			{
+				DisplayResolutionUnit = options.DisplayResolutionUnit;
+			}
 			SetupInit(context, options);
 		}
 

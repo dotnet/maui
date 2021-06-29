@@ -23,6 +23,7 @@ namespace Microsoft.Maui
 			if (IsInitialized)
 				return _instance!;
 
+
 			_instance = (window == null) ? new CoreUIAppContext(application) : new CoreUIAppContext(application, window);
 			return _instance;
 		}
@@ -154,6 +155,7 @@ namespace Microsoft.Maui
 				// TODO : should update later
 			};
 
+			// TODO : Fix Backbutton later
 			MainWindow.BackButtonPressed += (sender, e) => CurrentApplication.Exit();
 		}
 	}
