@@ -12,6 +12,14 @@ namespace Maui.Controls.Sample.ViewModels
 		{
 			new SectionModel(typeof(DragAndDropBetweenLayouts), "Drag And Drop",
 				"Drag and Drop Views."),
+			new SectionModel(typeof(PinchGestureTestPage), "Pinch Gesture",
+				"Pinch Gesture."),
+			new SectionModel(typeof(PanGestureGalleryPage), "Pan Gesture",
+				"Pan Gesture."),
+			new SectionModel(typeof(SwipeGestureGalleryPage), "Swipe Gesture",
+				"Swipe Gesture."),
+			new SectionModel(typeof(ClickGestureGalleryPage), "Click Gesture",
+				"Click Gesture."),
 
 		};
 	}
