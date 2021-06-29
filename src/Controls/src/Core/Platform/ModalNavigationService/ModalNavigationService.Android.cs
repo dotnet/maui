@@ -1,13 +1,8 @@
 ﻿#nullable enable
-
 using System;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
 using System.Threading.Tasks;
 using Android.Content;
-using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
