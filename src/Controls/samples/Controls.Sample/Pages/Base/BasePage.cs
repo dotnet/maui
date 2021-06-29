@@ -1,9 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Windows.Input;
+using Maui.Controls.Sample.Models;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Maui.Controls.Sample.Models;
-using System.Diagnostics;
 
 namespace Maui.Controls.Sample.Pages.Base
 {
