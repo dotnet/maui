@@ -355,6 +355,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				else if (handler is INativeViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
+					element.Handler = handler;
 					SetRenderer(element, renderer);
 				}
 			}
