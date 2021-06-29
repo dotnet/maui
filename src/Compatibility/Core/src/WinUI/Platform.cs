@@ -128,11 +128,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			var current = Microsoft.UI.Xaml.Application.Current;
 
-			if (!current.Resources.ContainsKey("RootContainerStyle"))
-			{
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(Forms.GetTabletResources());
-			}
-
 			_container = new Canvas
 			{
 				Style = (Microsoft.UI.Xaml.Style)current.Resources["RootContainerStyle"]

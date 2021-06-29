@@ -69,24 +69,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			}
 
-			if (!UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
-			{
-				UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
-			}
-
-			try
-			{
-				if (!WinUIResourcesAdded)
-				{
-					WinUIResourcesAdded = true;
-					UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new UI.Xaml.Controls.XamlControlsResources());
-				}
-			}
-			catch
-			{
-				Log.Warning("Resources", "Unable to load WinUI resources. Try adding Microsoft.Maui.Controls.Compatibility nuget to UWP project");
-			}
-
 			Device.SetIdiom(TargetIdiom.Tablet);
 			Device.SetFlowDirection(GetFlowDirection());
 
@@ -160,16 +142,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return FlowDirection.RightToLeft;
 
 			return FlowDirection.MatchParent;
-		}
-
-		internal static UI.Xaml.ResourceDictionary GetTabletResources()
-		{
-			var dict = new UI.Xaml.ResourceDictionary
-			{
-				Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/WinUI/Resources.xbf")
-			};
-
-			return dict;
 		}
 	}
 }
