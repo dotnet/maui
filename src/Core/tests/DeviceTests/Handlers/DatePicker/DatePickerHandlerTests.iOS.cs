@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -113,7 +114,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		MauiDatePicker GetNativeDatePicker(DatePickerHandler datePickerHandler) =>
-			(MauiDatePicker)datePickerHandler.NativeView;
+			datePickerHandler.NativeView;
 
 		DateTime GetNativeDate(DatePickerHandler datePickerHandler)
 		{
@@ -122,6 +123,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			return result;
 		}
+
+		Color GetNativeTextColor(DatePickerHandler datePickerHandler) =>
+			GetNativeDatePicker(datePickerHandler).TextColor.ToColor();
 
 		DateTime GetNativeMinimumDate(DatePickerHandler datePickerHandler)
 		{

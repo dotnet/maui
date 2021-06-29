@@ -48,8 +48,12 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateHorizontalTextAlignment(searchBar, handler._queryTextBox);
 		}
 
-		[MissingMapper]
-		public static void MapFont(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.NativeView?.UpdateFont(searchBar, fontManager);
+		}
 
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
 		{
