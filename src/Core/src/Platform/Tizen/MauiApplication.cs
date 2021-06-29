@@ -59,7 +59,10 @@ namespace Microsoft.Maui
 
 			Services = _applicationContext.Services;
 
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
+			if (Services == null)
+				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
+
+			Current.Services.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
 		}
 
 		protected override void OnCreate()
