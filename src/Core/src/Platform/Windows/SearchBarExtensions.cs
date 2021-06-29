@@ -15,11 +15,14 @@ namespace Microsoft.Maui
 		{
 			nativeControl.PlaceholderText = searchBar.Placeholder ?? string.Empty;
 		}
-  
+
 		public static void UpdateText(this AutoSuggestBox nativeControl, ISearchBar searchBar)
 		{
 			nativeControl.Text = searchBar.Text;
 		}
+
+		public static void UpdateFont(this AutoSuggestBox nativeControl, ISearchBar searchBar, IFontManager fontManager) =>
+			nativeControl.UpdateFont(searchBar.Font, fontManager);
 
 		public static void UpdateHorizontalTextAlignment(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiTextBox? queryTextBox)
 		{
