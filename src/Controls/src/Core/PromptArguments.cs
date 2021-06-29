@@ -1,4 +1,3 @@
-﻿#nullable disable
 using System.ComponentModel;
 using System.Threading.Tasks;
 
