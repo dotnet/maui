@@ -29,7 +29,7 @@
   </Target>
 
   <Target Name="_GenerateWorkloadMsiProps" AfterTargets="Build" Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/automation/xamarin-workload.template.props" Outputs="$(PackageOutputPath)/xamarin-workload.props">
-    <ReplaceText Input="$(MauiRootDirectory)eng/automation/xamarin-workload.template.props" Output="$(PackageOutputPath)/xamarin-workload.props" OldValue="@VERSION@" NewValue="$(PackageReferenceVersion)" />
+    <ReplaceText Input="$(MauiRootDirectory)eng/automation/xamarin-workload.template.props" Output="$(PackageOutputPath)/xamarin-workload.props" OldValue="@VERSION@" NewValue="$(VSComponentVersion)" />
     <ItemGroup>
       <FileWrites Include="$(PackageOutputPath)/xamarin-workload.props" />
     </ItemGroup>

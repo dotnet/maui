@@ -74,6 +74,7 @@
       <Version>$(GitBaseVersionMajor).$(GitBaseVersionMinor).$(GitBaseVersionPatch)</Version>
       <PackageReferenceVersion>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</PackageReferenceVersion>
       <PackageReferenceVersion Condition="$(CI)">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch)$(GitSemVerDashLabel).$(BUILDVERSION)</PackageReferenceVersion>
+      <VSComponentVersion Condition="$(CI)">$(GitSemVerMajor).$(GitSemVerMinor).$(GitBaseVersionPatch).$(BUILDVERSION)</VSComponentVersion>
       <PackageVersion>$(PackageReferenceVersion)$(VersionMetadataPlusLabel)</PackageVersion>
     </PropertyGroup>
 
