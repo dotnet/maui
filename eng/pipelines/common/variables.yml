@@ -42,3 +42,5 @@ variables:
   value: $(System.DefaultWorkingDirectory)/bin/dotnet
 - name: DotNet.Path
   value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
+- name: TeamName
+  value: Maui
