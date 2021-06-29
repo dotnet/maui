@@ -431,6 +431,7 @@ namespace Microsoft.Maui.Controls
 
 		void InternalChildrenOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			TypeHashCode = null;
 			if (e.Action == NotifyCollectionChangedAction.Move)
 			{
 				return;
@@ -468,6 +469,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnInternalAdded(View view)
 		{
+			TypeHashCode = null;
 			var parent = view.Parent as Layout;
 			parent?.InternalChildren.Remove(view);
 
@@ -480,6 +482,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnInternalRemoved(View view, int oldIndex)
 		{
+			TypeHashCode = null;
 			view.MeasureInvalidated -= OnChildMeasureInvalidated;
 
 			OnChildRemoved(view, oldIndex);
@@ -539,6 +542,16 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return Frame.Size;
+		}
+
+		public override int GetContentTypeHashCode() => TypeHashCode ??= GetChidrensTypeHasCode();
+
+		int GetChidrensTypeHasCode()
+		{
+			int hashCode = base.GetContentTypeHashCode();
+			foreach (var v in Children)
+				hashCode = HashCode.Combine(hashCode, v.GetType().GetHashCode());
+			return hashCode;
 		}
 	}
 }

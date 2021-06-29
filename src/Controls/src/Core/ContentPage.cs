@@ -8,7 +8,10 @@ namespace Microsoft.Maui.Controls
 		public View Content
 		{
 			get { return (View)GetValue(ContentProperty); }
-			set { SetValue(ContentProperty, value); }
+			set {
+				SetValue(ContentProperty, value);
+				TypeHashCode = null;
+			}
 		}
 
 		protected override void OnBindingContextChanged()

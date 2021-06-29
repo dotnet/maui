@@ -113,5 +113,12 @@ namespace Microsoft.Maui
 		/// Method that is called to invalidate the layout of this FrameworkElement.
 		/// </summary>
 		void InvalidateArrange();
+
+		/// <summary>
+		/// Gets a hash code of the current view type.
+		/// If this has children, it should be a hascode of the entire hierarchy type
+		/// </summary>
+		/// <returns></returns>
+		int GetContentTypeHashCode() => this.GetType().GetHashCode();
 	}
 }

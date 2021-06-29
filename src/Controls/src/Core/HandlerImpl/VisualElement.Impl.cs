@@ -175,5 +175,8 @@ namespace Microsoft.Maui.Controls
 		public virtual void OnAttachedHandler() { }
 		public virtual void OnDetachingHandler() { }
 		public virtual void OnDetachedHandler() { }
+
+		protected int? TypeHashCode;
+		public virtual int GetContentTypeHashCode() => TypeHashCode ??= this.GetType().GetHashCode();
 	}
 }
