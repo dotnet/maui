@@ -280,7 +280,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			}
 
 #if WINDOWS
-			void AddLibraryResources(string key, string uri)
+			static void AddLibraryResources(string key, string uri)
 			{
 				var resources = UI.Xaml.Application.Current?.Resources;
 				if (resources == null)
