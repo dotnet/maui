@@ -56,12 +56,9 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				var destination = new Rectangle(0, stackHeight, width, child.DesiredSize.Height);
-				
-				// Set the actual position and size for the child
-				child.Frame = child.ComputeFrame(destination);
 
-				// And allow the child to arrange its children, if any
-				child.Arrange(child.Frame);
+				// Tell the child to set its position/size and arrange its own children
+				child.Arrange(child.ComputeFrame(destination));
 
 				stackHeight += destination.Height + spacing;
 			}

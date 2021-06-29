@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
-			// No child elements to arrange, so nothing to do here
+			Frame = bounds;
 			return Frame.Size;
 		}
 

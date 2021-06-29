@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Layout2
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			// The base implementation is empty, so we don't bother calling it here
+			_ = base.ArrangeOverride(bounds);
 			LayoutManager.ArrangeChildren(Frame);
 			return Frame.Size;
 		}

@@ -521,12 +521,10 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			var size = base.ArrangeOverride(bounds);
-
 			// The ShouldLayoutChildren check will catch impossible sizes (negative widths/heights), not-yet-loaded controls,
 			// and other weirdness that comes from the legacy layouts trying to run layout before the native side is ready. 
 			if (!ShouldLayoutChildren())
-				return size;
+				return bounds.Size;
 
 			UpdateChildrenLayout();
 

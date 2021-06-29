@@ -86,7 +86,7 @@ namespace Microsoft.Maui
 
 		// TODO ezhart 2021-06-24 AFAIK, we don't actually use the value returned from Arrange anywhere; can we drop it?
 		/// <summary>
-		/// Positions child elements and determines a size for an Element.
+		/// Sets the Frame for an element and positions child elements.
 		/// </summary>
 		/// <param name="bounds">The size that the parent computes for the child element.</param>
 		/// <returns>Return the actual arranged Size for this element.</returns>

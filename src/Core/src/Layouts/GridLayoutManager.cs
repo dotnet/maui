@@ -36,11 +36,8 @@ namespace Microsoft.Maui.Layouts
 
 				var cell = structure.GetCellBoundsFor(child);
 
-				// Set the actual position and size for the child
-				child.Frame = child.ComputeFrame(cell);
-
-				// And allow the child to arrange its children, if any
-				child.Arrange(child.Frame);
+				// Tell the child to set its position/size and arrange its own children
+				child.Arrange(child.ComputeFrame(cell));
 			}
 		}
 
