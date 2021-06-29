@@ -32,7 +32,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static UI.Xaml.Window MainWindow { get; set; }
 
 		public static bool IsInitialized { get; private set; }
-		static bool WinUIResourcesAdded { get; set; }
 
 		public static IMauiContext MauiContext { get; private set; }
 

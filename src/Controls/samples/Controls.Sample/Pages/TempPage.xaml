@@ -48,7 +48,13 @@
                     HorizontalOptions="Center"
                     HeightRequest="150"
                     WidthRequest="150"
-                    Margin="48, 0" />
+                    Margin="48, 0">
+                    <Image.Clip>
+                        <EllipseGeometry
+                            Center="50, 50"
+                            RadiusX="50"
+                            RadiusY="50"/>
+                    </Image.Clip></Image>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

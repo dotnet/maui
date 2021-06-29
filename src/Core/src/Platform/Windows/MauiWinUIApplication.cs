@@ -27,18 +27,29 @@ namespace Microsoft.Maui
 
 			Application = Services.GetRequiredService<IApplication>();
 
-			MainWindow = new MauiWinUIWindow();
+			var winuiWndow = CreateNativeWindow(args);
 
-			var mauiContext = new MauiContext(Services, MainWindow);
+			MainWindow = winuiWndow;
+
+			MainWindow.Activate();
+
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
+		}
+
+		UI.Xaml.Window CreateNativeWindow(UI.Xaml.LaunchActivatedEventArgs? args = null)
+		{
+			var winuiWndow = new MauiWinUIWindow();
+
+			var mauiContext = new MauiContext(Services, winuiWndow);
+
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
 			var activationState = new ActivationState(mauiContext, args);
 			var window = Application.CreateWindow(activationState);
 
-			MainWindow.SetWindow(window, this, mauiContext);
+			winuiWndow.SetWindow(window, this, mauiContext);
 
-			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
-
-			MainWindow.Activate();
+			return winuiWndow;
 		}
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
@@ -56,7 +67,7 @@ namespace Microsoft.Maui
 
 		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
 
-		public MauiWinUIWindow MainWindow { get; protected set; } = null!;
+		public UI.Xaml.Window MainWindow { get; protected set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

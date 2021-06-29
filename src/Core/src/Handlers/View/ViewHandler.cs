@@ -70,7 +70,12 @@ namespace Microsoft.Maui.Handlers
 
 		protected abstract void RemoveContainer();
 
-		public virtual bool NeedsContainer { get; }
+		public virtual bool NeedsContainer =>
+#if WINDOWS
+			false;
+#else
+			VirtualView?.Clip != null;
+#endif
 
 		public NativeView? ContainerView { get; private protected set; }
 
@@ -163,19 +168,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapClip(ViewHandler handler, IView view)
 		{
-			var clipGeometry = view.Clip;
 #if WINDOWS
-			((NativeView?)handler.ContainerView)?.UpdateClip(view);
+			((NativeView?)handler.NativeView)?.UpdateClip(view);
 #else
-			if (clipGeometry != null)
-				handler.HasContainer = true;
-			else
-			{
-				if (handler is ViewHandler viewHandler)
-					handler.HasContainer = viewHandler.NeedsContainer;
-			}
-
-			((WrapperView?)handler.ContainerView)?.UpdateClip(view);
+			((NativeView?)handler.WrappedNativeView)?.UpdateClip(view);
 #endif
 		}
 
