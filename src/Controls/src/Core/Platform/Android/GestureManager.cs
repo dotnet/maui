@@ -28,15 +28,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 		View? View => Element as View;
 
-		protected virtual AView? Control => _handler?.NativeView as AView;
+		protected virtual AView? Control => (_handler?.ContainerView ?? _handler?.NativeView) as AView;
 
 		public GestureManager(IViewHandler handler)
 		{
+			Console.WriteLine("taxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxestaxes");
 			_handler = handler;
 			_tapAndPanAndSwipeDetector = new Lazy<TapAndPanGestureDetector>(InitializeTapAndPanAndSwipeDetector);
 			_scaleDetector = new Lazy<ScaleGestureDetector>(InitializeScaleDetector);
 			_dragAndDropGestureHandler = new Lazy<DragAndDropGestureHandler>(InitializeDragAndDropHandler);
 			UpdateDragAndDrop();
+			UpdateInputTransparent();
+			UpdateIsEnabled();
 
 			if (View?.GestureRecognizers is INotifyCollectionChanged incc)
 			{

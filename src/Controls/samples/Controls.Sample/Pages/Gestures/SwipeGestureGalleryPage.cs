@@ -18,10 +18,6 @@ namespace Maui.Controls.Sample.Pages.Gestures
 
 			public SwipeContainer()
 			{
-				GestureRecognizers.Add(GetSwipeLeft());
-				GestureRecognizers.Add(GetSwipeRight());
-				GestureRecognizers.Add(GetSwipeUp());
-				GestureRecognizers.Add(GetSwipeDown());
 			}
 
 
@@ -34,6 +30,10 @@ namespace Maui.Controls.Sample.Pages.Gestures
 						Remove(Children[0]);
 
 					Add(value);
+					value.GestureRecognizers.Add(GetSwipeRight());
+					value.GestureRecognizers.Add(GetSwipeLeft());
+					value.GestureRecognizers.Add(GetSwipeUp());
+					value.GestureRecognizers.Add(GetSwipeDown());
 				}
 			}
 

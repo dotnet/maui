@@ -16,6 +16,7 @@ namespace Maui.Controls.Sample.Pages.Gestures
 		public DragAndDropBetweenLayouts()
 		{
 			InitializeComponent();
+			Console.WriteLine("Some really long text Some really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long text");
 			AllColors = new ObservableCollection<Brush>();
 			RainbowColors = new ObservableCollection<Brush>();
 
