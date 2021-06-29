@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ElementHandler<TVirtualView, TNativeView> : ElementHandler
+	public abstract partial class ElementHandler<TVirtualView, TNativeView> : ElementHandler, IElementHandler
 		where TVirtualView : class, IElement
 		where TNativeView : class
 	{
@@ -28,6 +28,10 @@ namespace Microsoft.Maui.Handlers
 			get => (TVirtualView?)base.VirtualView ?? throw new InvalidOperationException($"VirtualView cannot be null here");
 			private protected set => base.VirtualView = value;
 		}
+
+		IElement? IElementHandler.VirtualView => base.VirtualView;
+
+		object? IElementHandler.NativeView => base.NativeView;
 
 		protected override bool HasSetDefaults
 		{

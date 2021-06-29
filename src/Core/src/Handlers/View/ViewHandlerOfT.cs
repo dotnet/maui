@@ -42,6 +42,12 @@ namespace Microsoft.Maui.Handlers
 			private protected set => base.VirtualView = value;
 		}
 
+		IView? IViewHandler.VirtualView => base.VirtualView;
+
+		IElement? IElementHandler.VirtualView => base.VirtualView;
+
+		object? IElementHandler.NativeView => base.NativeView;
+
 		protected override bool HasSetDefaults
 		{
 			get => Defaults<ViewHandler<TVirtualView, TNativeView>>.HasSetDefaults;
