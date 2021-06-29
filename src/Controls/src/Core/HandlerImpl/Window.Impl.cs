@@ -11,10 +11,32 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls
 {
+	[ContentProperty(nameof(Page))]
 	public partial class Window : NavigableElement, IWindow
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
+
+		public static readonly BindableProperty PageProperty = BindableProperty.Create(
+			nameof(Page), typeof(Page), typeof(Window), default(Page?),
+			propertyChanged: OnPageChanged);
+
+		ReadOnlyCollection<Element>? _logicalChildren;
+		IAnimationManager? _animationManager;
+
+		public Window()
+		{
+			ModalNavigationService = new ModalNavigationService(this);
+			Navigation = new NavigationImpl(this);
+
+			InternalChildren.CollectionChanged += OnCollectionChanged;
+		}
+
+		public Window(Page page)
+			: this()
+		{
+			Page = page;
+		}
 
 		public string? Title
 		{
@@ -22,11 +44,23 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(TitleProperty, value);
 		}
 
-		ReadOnlyCollection<Element>? _logicalChildren;
-		Page? _page;
-		IAnimationManager? _animationManager;
+		public Page? Page
+		{
+			get => (Page?)GetValue(PageProperty);
+			set => SetValue(PageProperty, value);
+		}
 
-		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
+		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
+
+		public event EventHandler<ModalPoppingEventArgs>? ModalPopping;
+
+		public event EventHandler<ModalPushedEventArgs>? ModalPushed;
+
+		public event EventHandler<ModalPushingEventArgs>? ModalPushing;
+
+		public event EventHandler? PopCanceled;
+
+		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
 			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
@@ -45,23 +79,8 @@ namespace Microsoft.Maui.Controls
 		internal IAnimationManager? AnimationManager =>
 			_animationManager ??= MauiContext?.Services.GetRequiredService<IAnimationManager>();
 
-		public Window()
-		{
-			ModalNavigationService = new ModalNavigationService(this);
-			Navigation = new NavigationImpl(this);
-			InternalChildren.CollectionChanged += OnCollectionChanged;
-		}
-
-		public Window(Page page)
-			: this()
-		{
-			Page = page;
-		}
-
-		void SendWindowAppearing()
-		{
-			Page?.SendAppearing();
-		}
+		IView IWindow.View =>
+			Page ?? throw new InvalidOperationException("No page was set on the window.");
 
 		void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -89,50 +108,42 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public Page? Page
+		static void OnPageChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			get => _page;
-			set
+			if (bindable is not Window window)
+				return;
+
+			var oldPage = oldValue as Page;
+			if (oldPage != null)
 			{
-				if (_page != null)
-				{
-					InternalChildren.Remove(_page);
+				window.InternalChildren.Remove(oldPage);
+				oldPage.AttachedHandler -= OnPageAttachedHandler;
+			}
 
-					if (_page != null)
-						_page.AttachedHandler -= OnPageAttachedHandler;
-				}
+			var newPage = newValue as Page;
+			if (newPage != null)
+			{
+				window.InternalChildren.Add(newPage);
+				newPage.NavigationProxy.Inner = window.NavigationProxy;
+			}
 
-				_page = value;
+			window.ModalNavigationService.SettingNewPage();
 
-				if (_page != null)
-					InternalChildren.Add(_page);
+			if (newPage != null)
+			{
+				newPage.AttachedHandler += OnPageAttachedHandler;
+			}
 
-				if (value is NavigableElement ne)
-					ne.NavigationProxy.Inner = NavigationProxy;
-
-				ModalNavigationService.SettingNewPage();
-
-				if (value != null)
-					value.AttachedHandler += OnPageAttachedHandler;
+			void OnPageAttachedHandler(object? sender, EventArgs e)
+			{
+				window.ModalNavigationService.PageAttachedHandler();
 			}
 		}
 
-		IView IWindow.View => Page ?? throw new InvalidOperationException("No page was set on the window.");
-
-		void OnPageAttachedHandler(object? sender, EventArgs e)
+		void SendWindowAppearing()
 		{
-			ModalNavigationService.PageAttachedHandler();
+			Page?.SendAppearing();
 		}
-
-		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
-
-		public event EventHandler<ModalPoppingEventArgs>? ModalPopping;
-
-		public event EventHandler<ModalPushedEventArgs>? ModalPushed;
-
-		public event EventHandler<ModalPushingEventArgs>? ModalPushing;
-
-		public event EventHandler? PopCanceled;
 
 		void OnModalPopped(Page modalPage)
 		{
