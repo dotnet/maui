@@ -60,6 +60,11 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateClip(this WrapperView nativeView, IView view)
+		{
+			nativeView.Clip = view.Clip;
+		}
+
 		public static void UpdateAutomationId(this EvasObject nativeView, IView view)
 		{
 			{

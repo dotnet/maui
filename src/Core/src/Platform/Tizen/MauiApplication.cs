@@ -23,17 +23,21 @@ namespace Microsoft.Maui
 				.Build();
 
 			Services = host.Services;
-			Application = Services.GetRequiredService<IApplication>();
 
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
+			if (Services == null)
+				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
+
+			Current.Services.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
 		}
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			var services = MauiApplication.Current.Services;
-			var mauiApp = MauiApplication.Current.Application;
+			Application = Services.GetRequiredService<IApplication>();
+
+			if (Application == null)
+				throw new InvalidOperationException($"The {nameof(IApplication)} instance was not found.");
 
 			MauiContext mauiContext;
 			IWindow window;
@@ -41,16 +45,16 @@ namespace Microsoft.Maui
 			var context = CoreUIAppContext.GetInstance(this);
 
 			// TODO Fix once we have multiple windows
-			if (mauiApp.Windows.Count > 0)
+			if (Application.Windows.Count > 0)
 			{
-				window = mauiApp.Windows[0];
-				mauiContext = new MauiContext(services, context);
+				window = Application.Windows[0];
+				mauiContext = new MauiContext(Services, context);
 			}
 			else
 			{
-				mauiContext = new MauiContext(services, context);
+				mauiContext = new MauiContext(Services, context);
 				ActivationState state = new ActivationState(mauiContext);
-				window = mauiApp.CreateWindow(state);
+				window = Application.CreateWindow(state);
 			}
 
 			var page = window.View;

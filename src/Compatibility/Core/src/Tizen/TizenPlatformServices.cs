@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using ElmSharp;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
 using TAppControl = Tizen.Applications.AppControl;
 using Color = Microsoft.Maui.Graphics.Color;
@@ -22,40 +23,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			s_context = SynchronizationContext.Current;
 		}
 
-		public class TizenTicker : Ticker
-		{
-			readonly Timer _timer;
-
-			public TizenTicker()
-			{
-				_timer = new Timer((object o) => HandleElapsed(o), this, Timeout.Infinite, Timeout.Infinite);
-			}
-
-			protected override void EnableTimer()
-			{
-				_timer.Change(16, 16);
-			}
-
-			protected override void DisableTimer()
-			{
-				_timer.Change(-1, -1);
-			}
-
-			void HandleElapsed(object state)
-			{
-				s_context.Post((o) => SendSignals(-1), null);
-			}
-		}
 		#region IPlatformServices implementation
 
 		public void BeginInvokeOnMainThread(Action action)
 		{
 			s_context.Post((o) => action(), null);
-		}
-
-		public Ticker CreateTicker()
-		{
-			return new TizenTicker();
 		}
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
