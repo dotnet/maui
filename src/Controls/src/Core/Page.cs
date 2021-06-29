@@ -13,13 +13,13 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement
 	{
-		public const string BusySetSignalName = AlertConstants.BusySetSignalName;
+		public const string BusySetSignalName = "Microsoft.Maui.Controls.BusySet";
 
-		public const string AlertSignalName = AlertConstants.AlertSignalName;
+		public const string AlertSignalName = "Microsoft.Maui.Controls.SendAlert";
 
-		public const string PromptSignalName = AlertConstants.PromptSignalName;
+		public const string PromptSignalName = "Microsoft.Maui.Controls.SendPrompt";
 
-		public const string ActionSheetSignalName = AlertConstants.ActionSheetSignalName;
+		public const string ActionSheetSignalName = "Microsoft.Maui.Controls.ShowActionSheet";
 
 		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create("IgnoresContainerArea", typeof(bool), typeof(Page), false);
 
@@ -165,9 +165,9 @@ namespace Microsoft.Maui.Controls
 			args.FlowDirection = flowDirection;
 
 			if (IsPlatformEnabled)
-				MessagingCenter.Send((IPage)this, ActionSheetSignalName, args);
+				MessagingCenter.Send(this, ActionSheetSignalName, args);
 			else
-				_pendingActions.Add(() => MessagingCenter.Send((IPage)this, ActionSheetSignalName, args));
+				_pendingActions.Add(() => MessagingCenter.Send(this, ActionSheetSignalName, args));
 
 			return args.Result.Task;
 		}
@@ -196,9 +196,9 @@ namespace Microsoft.Maui.Controls
 			args.FlowDirection = flowDirection;
 
 			if (IsPlatformEnabled)
-				MessagingCenter.Send((IPage)this, AlertSignalName, args);
+				MessagingCenter.Send(this, AlertSignalName, args);
 			else
-				_pendingActions.Add(() => MessagingCenter.Send((IPage)this, AlertSignalName, args));
+				_pendingActions.Add(() => MessagingCenter.Send(this, AlertSignalName, args));
 
 			return args.Result.Task;
 		}
@@ -208,9 +208,9 @@ namespace Microsoft.Maui.Controls
 			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
 
 			if (IsPlatformEnabled)
-				MessagingCenter.Send((IPage)this, PromptSignalName, args);
+				MessagingCenter.Send(this, PromptSignalName, args);
 			else
-				_pendingActions.Add(() => MessagingCenter.Send((IPage)this, PromptSignalName, args));
+				_pendingActions.Add(() => MessagingCenter.Send(this, PromptSignalName, args));
 
 			return args.Result.Task;
 		}
@@ -413,9 +413,9 @@ namespace Microsoft.Maui.Controls
 			if (IsBusy)
 			{
 				if (IsPlatformEnabled)
-					MessagingCenter.Send((IPage)this, BusySetSignalName, true);
+					MessagingCenter.Send(this, BusySetSignalName, true);
 				else
-					_pendingActions.Add(() => MessagingCenter.Send((IPage)this, BusySetSignalName, true));
+					_pendingActions.Add(() => MessagingCenter.Send(this, BusySetSignalName, true));
 			}
 
 			OnAppearing();
@@ -436,7 +436,7 @@ namespace Microsoft.Maui.Controls
 			_hasAppeared = false;
 
 			if (IsBusy)
-				MessagingCenter.Send((IPage)this, BusySetSignalName, false);
+				MessagingCenter.Send(this, BusySetSignalName, false);
 
 			var pageContainer = this as IPageContainer<Page>;
 			pageContainer?.CurrentPage?.SendDisappearing();
@@ -493,7 +493,7 @@ namespace Microsoft.Maui.Controls
 			if (!_hasAppeared)
 				return;
 
-			MessagingCenter.Send((IPage)this, BusySetSignalName, IsBusy);
+			MessagingCenter.Send(this, BusySetSignalName, IsBusy);
 		}
 
 		void OnToolbarItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)

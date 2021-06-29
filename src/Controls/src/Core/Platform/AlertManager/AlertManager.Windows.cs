@@ -6,25 +6,31 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Controls.Platform
 {
-	internal static class AlertManager
+	internal partial class AlertManager
 	{
-		static readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
+		readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
 
-		internal static void Subscribe(Application application, MauiContext mauiContext)
+		internal void Subscribe(Window window)
 		{
-			if (Subscriptions.Any(s => s.Application == application))
+			IMauiContext mauiContext = window?.MauiContext;
+			UI.Xaml.Window nativeWindow = mauiContext?.Window;
+
+			if (Subscriptions.Any(s => s.Window == nativeWindow))
 			{
 				return;
 			}
 
-			Subscriptions.Add(new AlertRequestHelper(application, mauiContext));
+			Subscriptions.Add(new AlertRequestHelper(nativeWindow, mauiContext));
 		}
 
-		internal static void Unsubscribe(Application application)
+		internal void Unsubscribe(Window window)
 		{
-			var toRemove = Subscriptions.Where(s => s.Application == application).ToList();
+			IMauiContext mauiContext = window?.MauiContext;
+			UI.Xaml.Window nativeWindow = mauiContext?.Window;
+
+			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
 
 			foreach (AlertRequestHelper alertRequestHelper in toRemove)
 			{
@@ -38,34 +44,34 @@ namespace Microsoft.Maui
 			static Task<bool> CurrentAlert;
 			static Task<string> CurrentPrompt;
 
-			internal AlertRequestHelper(Application application, MauiContext mauiContext)
+			internal AlertRequestHelper(UI.Xaml.Window window, IMauiContext mauiContext)
 			{
-				Application = application;
+				Window = window;
 				MauiContext = mauiContext;
 
-				MessagingCenter.Subscribe<IPage, bool>(Application, AlertConstants.BusySetSignalName, OnPageBusy);
-				MessagingCenter.Subscribe<IPage, AlertArguments>(Application, AlertConstants.AlertSignalName, OnAlertRequested);
-				MessagingCenter.Subscribe<IPage, PromptArguments>(Application, AlertConstants.PromptSignalName, OnPromptRequested);
-				MessagingCenter.Subscribe<IPage, ActionSheetArguments>(Application, AlertConstants.ActionSheetSignalName, OnActionSheetRequested);
+				MessagingCenter.Subscribe<Page, bool>(Window, Page.BusySetSignalName, OnPageBusy);
+				MessagingCenter.Subscribe<Page, AlertArguments>(Window, Page.AlertSignalName, OnAlertRequested);
+				MessagingCenter.Subscribe<Page, PromptArguments>(Window, Page.PromptSignalName, OnPromptRequested);
+				MessagingCenter.Subscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName, OnActionSheetRequested);
 			}
 
-			public Application Application { get; }
-			public MauiContext MauiContext { get; }
+			public UI.Xaml.Window Window { get; }
+			public IMauiContext MauiContext { get; }
 
 			public void Dispose()
 			{
-				MessagingCenter.Unsubscribe<IPage, bool>(Application, AlertConstants.BusySetSignalName);
-				MessagingCenter.Unsubscribe<IPage, AlertArguments>(Application, AlertConstants.AlertSignalName);
-				MessagingCenter.Unsubscribe<IPage, PromptArguments>(Application, AlertConstants.PromptSignalName);
-				MessagingCenter.Unsubscribe<IPage, ActionSheetArguments>(Application, AlertConstants.ActionSheetSignalName);
+				MessagingCenter.Unsubscribe<Page, bool>(Window, Page.BusySetSignalName);
+				MessagingCenter.Unsubscribe<Page, AlertArguments>(Window, Page.AlertSignalName);
+				MessagingCenter.Unsubscribe<Page, PromptArguments>(Window, Page.PromptSignalName);
+				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName);
 			}
 
-			void OnPageBusy(IPage sender, bool enabled)
+			void OnPageBusy(Page sender, bool enabled)
 			{
 				// TODO: Wrap the pages in a Canvas, and dynamically add a ProgressBar
 			}
 
-			async void OnAlertRequested(IPage sender, AlertArguments arguments)
+			async void OnAlertRequested(Page sender, AlertArguments arguments)
 			{
 				string content = arguments.Message ?? string.Empty;
 				string title = arguments.Title ?? string.Empty;
@@ -74,7 +80,7 @@ namespace Microsoft.Maui
 				{
 					Content = content,
 					Title = title,
-					VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+					VerticalScrollBarVisibility = UI.Xaml.Controls.ScrollBarVisibility.Auto
 				};
 
 				if (arguments.FlowDirection == FlowDirection.RightToLeft)
@@ -95,8 +101,7 @@ namespace Microsoft.Maui
 					alertDialog.PrimaryButtonText = arguments.Accept;
 
 				// This is a temporary workaround
-				var nativePage = sender.ToNative(MauiContext);
-				alertDialog.XamlRoot = nativePage.XamlRoot;
+				alertDialog.XamlRoot = Window.Content.XamlRoot;
 
 				var currentAlert = CurrentAlert;
 
@@ -111,7 +116,7 @@ namespace Microsoft.Maui
 				CurrentAlert = null;
 			}
 
-			async void OnPromptRequested(IPage sender, PromptArguments arguments)
+			async void OnPromptRequested(Page sender, PromptArguments arguments)
 			{
 				var promptDialog = new PromptDialog
 				{
@@ -136,17 +141,16 @@ namespace Microsoft.Maui
 					await currentAlert;
 					currentAlert = CurrentPrompt;
 				}
-				
+
 				// This is a temporary workaround
-				var nativePage = sender.ToNative(MauiContext);
-				promptDialog.XamlRoot = nativePage.XamlRoot;
+				promptDialog.XamlRoot = Window.Content.XamlRoot;
 
 				CurrentPrompt = ShowPrompt(promptDialog);
 				arguments.SetResult(await CurrentPrompt.ConfigureAwait(false));
 				CurrentPrompt = null;
 			}
 
-			void OnActionSheetRequested(IPage sender, ActionSheetArguments arguments)
+			void OnActionSheetRequested(Page sender, ActionSheetArguments arguments)
 			{
 				bool userDidSelect = false;
 
@@ -184,7 +188,7 @@ namespace Microsoft.Maui
 				}
 				catch (ArgumentException) // If the page is not in the visual tree
 				{
-					if (Window.Current.Content is FrameworkElement mainPage)
+					if (UI.Xaml.Window.Current.Content is FrameworkElement mainPage)
 						actionSheet.ShowAt(mainPage);
 				}
 			}

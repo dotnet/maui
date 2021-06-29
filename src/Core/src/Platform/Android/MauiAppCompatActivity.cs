@@ -51,8 +51,6 @@ namespace Microsoft.Maui
 				window = mauiApp.CreateWindow(state);
 			}
 
-			AlertManager.Subscribe(this, mauiContext);
-
 			SetContentView(window.View.ToContainerView(mauiContext));
 
 			//TODO MAUI
@@ -64,13 +62,6 @@ namespace Microsoft.Maui
 				if (toolbar != null)
 					SetSupportActionBar(toolbar);
 			}
-		}
-
-		protected override void OnDestroy()
-		{
-			base.OnDestroy();
-
-			AlertManager.Unsubscribe(this);
 		}
 	}
 }

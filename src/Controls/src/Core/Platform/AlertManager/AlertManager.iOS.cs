@@ -7,25 +7,31 @@ using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Controls.Platform
 {
-	internal static class AlertManager
+	internal partial class AlertManager
 	{
-		static readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
+		readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
 
-		internal static void Subscribe(UIApplication application)
+		internal void Subscribe(Window window)
 		{
-			if (Subscriptions.Any(s => s.Application == application))
+			IMauiContext mauiContext = window?.MauiContext;
+			UIWindow nativeWindow = mauiContext?.Window;
+
+			if (Subscriptions.Any(s => s.Window == nativeWindow))
 			{
 				return;
 			}
 
-			Subscriptions.Add(new AlertRequestHelper(application));
+			Subscriptions.Add(new AlertRequestHelper(nativeWindow));
 		}
 
-		internal static void Unsubscribe(UIApplication context)
+		internal void Unsubscribe(Window window)
 		{
-			var toRemove = Subscriptions.Where(s => s.Application == context).ToList();
+			IMauiContext mauiContext = window?.MauiContext;
+			UIWindow nativeWindow = mauiContext?.Window;
+
+			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
 
 			foreach (AlertRequestHelper alertRequestHelper in toRemove)
 			{
@@ -40,24 +46,24 @@ namespace Microsoft.Maui
 
 			int _busyCount;
 
-			internal AlertRequestHelper(UIApplication application)
+			internal AlertRequestHelper(UIWindow window)
 			{
-				Application = application;
+				Window = window;
 
-				MessagingCenter.Subscribe<IPage, bool>(Application, AlertConstants.BusySetSignalName, OnPageBusy);
-				MessagingCenter.Subscribe<IPage, AlertArguments>(Application, AlertConstants.AlertSignalName, OnAlertRequested);
-				MessagingCenter.Subscribe<IPage, PromptArguments>(Application, AlertConstants.PromptSignalName, OnPromptRequested);
-				MessagingCenter.Subscribe<IPage, ActionSheetArguments>(Application, AlertConstants.ActionSheetSignalName, OnActionSheetRequested);
+				MessagingCenter.Subscribe<Page, bool>(Window, Page.BusySetSignalName, OnPageBusy);
+				MessagingCenter.Subscribe<Page, AlertArguments>(Window, Page.AlertSignalName, OnAlertRequested);
+				MessagingCenter.Subscribe<Page, PromptArguments>(Window, Page.PromptSignalName, OnPromptRequested);
+				MessagingCenter.Subscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName, OnActionSheetRequested);
 			}
 
-			public UIApplication Application { get; }
+			public UIWindow Window { get; }
 
 			public void Dispose()
 			{
-				MessagingCenter.Unsubscribe<IPage, bool>(Application, AlertConstants.BusySetSignalName);
-				MessagingCenter.Unsubscribe<IPage, AlertArguments>(Application, AlertConstants.AlertSignalName);
-				MessagingCenter.Unsubscribe<IPage, PromptArguments>(Application, AlertConstants.PromptSignalName);
-				MessagingCenter.Unsubscribe<IPage, ActionSheetArguments>(Application, AlertConstants.ActionSheetSignalName);
+				MessagingCenter.Unsubscribe<Page, bool>(Window, Page.BusySetSignalName);
+				MessagingCenter.Unsubscribe<Page, AlertArguments>(Window, Page.AlertSignalName);
+				MessagingCenter.Unsubscribe<Page, PromptArguments>(Window, Page.PromptSignalName);
+				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName);
 			}
 
 			void OnPageBusy(IPage sender, bool enabled)

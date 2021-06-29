@@ -44,8 +44,6 @@ namespace Microsoft.Maui
 
 			root.Children.Add(nativeContent);
 
-			AlertManager.Subscribe(this, mauiContext);
-
 			MainWindow.Content = root;
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));

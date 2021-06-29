@@ -138,9 +138,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				MainWindow = mainWindow;
 
-				//TODO WINUI3
-				Platform.UWP.Platform.SubscribeAlertsAndActionSheets();
-
 				if (mainWindow is WindowsBasePage windowsPage)
 				{
 					windowsPage.LoadApplication(windowsPage.CreateApplication());

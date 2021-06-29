@@ -9,27 +9,37 @@ using Android.Views;
 using Android.Widget;
 using AppCompatActivity = AndroidX.AppCompat.App.AppCompatActivity;
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
+using AButton = Android.Widget.Button;
+using AView = Android.Views.View;
 using AWindow = Android.Views.Window;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Controls.Platform
 {
-	internal static class AlertManager
+	internal partial class AlertManager
 	{
-		static readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
+		readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
 
-		internal static void Subscribe(Activity context, MauiContext mauiContext)
+		internal void Subscribe(Window window)
 		{
-			if (Subscriptions.Any(s => s.Activity == context))
+			IMauiContext mauiContext = window?.MauiContext;
+			Context context = mauiContext?.Context;
+			Activity activity = context.GetActivity();
+
+			if (Subscriptions.Any(s => s.Activity == activity))
 			{
 				return;
 			}
 
-			Subscriptions.Add(new AlertRequestHelper(context, mauiContext));
+			Subscriptions.Add(new AlertRequestHelper(activity, mauiContext));
 		}
 
-		internal static void Unsubscribe(Activity context)
+		internal void Unsubscribe(Window window)
 		{
-			var toRemove = Subscriptions.Where(s => s.Activity == context).ToList();
+			IMauiContext mauiContext = window?.MauiContext;
+			Context context = mauiContext?.Context;
+			Activity activity = context.GetActivity();
+
+			var toRemove = Subscriptions.Where(s => s.Activity == activity).ToList();
 
 			foreach (AlertRequestHelper alertRequestHelper in toRemove)
 			{
@@ -38,7 +48,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		internal static void ResetBusyCount(Activity context)
+		internal void ResetBusyCount(Activity context)
 		{
 			Subscriptions.FirstOrDefault(s => s.Activity == context)?.ResetBusyCount();
 		}
@@ -48,26 +58,26 @@ namespace Microsoft.Maui
 			int _busyCount;
 			bool? _supportsProgress;
 
-			internal AlertRequestHelper(Activity context, MauiContext mauiContext)
+			internal AlertRequestHelper(Activity context, IMauiContext mauiContext)
 			{
 				Activity = context;
 				MauiContext = mauiContext;
 
-				MessagingCenter.Subscribe<IPage, bool>(Activity, AlertConstants.BusySetSignalName, OnPageBusy);
-				MessagingCenter.Subscribe<IPage, AlertArguments>(Activity, AlertConstants.AlertSignalName, OnAlertRequested);
-				MessagingCenter.Subscribe<IPage, PromptArguments>(Activity, AlertConstants.PromptSignalName, OnPromptRequested);
-				MessagingCenter.Subscribe<IPage, ActionSheetArguments>(Activity, AlertConstants.ActionSheetSignalName, OnActionSheetRequested);
+				MessagingCenter.Subscribe<Page, bool>(Activity, Page.BusySetSignalName, OnPageBusy);
+				MessagingCenter.Subscribe<Page, AlertArguments>(Activity, Page.AlertSignalName, OnAlertRequested);
+				MessagingCenter.Subscribe<Page, PromptArguments>(Activity, Page.PromptSignalName, OnPromptRequested);
+				MessagingCenter.Subscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName, OnActionSheetRequested);
 			}
 
 			public Activity Activity { get; }
-			public MauiContext MauiContext { get; }
+			public IMauiContext MauiContext { get; }
 
 			public void Dispose()
 			{
-				MessagingCenter.Unsubscribe<IPage, bool>(Activity, AlertConstants.BusySetSignalName);
-				MessagingCenter.Unsubscribe<IPage, AlertArguments>(Activity, AlertConstants.AlertSignalName);
-				MessagingCenter.Unsubscribe<IPage, PromptArguments>(Activity, AlertConstants.PromptSignalName);
-				MessagingCenter.Unsubscribe<IPage, ActionSheetArguments>(Activity, AlertConstants.ActionSheetSignalName);
+				MessagingCenter.Unsubscribe<Page, bool>(Activity, Page.BusySetSignalName);
+				MessagingCenter.Unsubscribe<Page, AlertArguments>(Activity, Page.AlertSignalName);
+				MessagingCenter.Unsubscribe<Page, PromptArguments>(Activity, Page.PromptSignalName);
+				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Activity, Page.ActionSheetSignalName);
 			}
 
 			public void ResetBusyCount()
@@ -139,7 +149,7 @@ namespace Microsoft.Maui
 					listView.TextDirection = GetTextDirection(sender, arguments.FlowDirection);
 					LayoutDirection layoutDirection = GetLayoutDirection(sender, arguments.FlowDirection);
 
-					if (dialog.GetButton((int)DialogButtonType.Negative)?.Parent is View parentView)
+					if (dialog.GetButton((int)DialogButtonType.Negative)?.Parent is AView parentView)
 					{
 						if (arguments.Cancel != null)
 							parentView.LayoutDirection = layoutDirection;
@@ -156,7 +166,7 @@ namespace Microsoft.Maui
 				{
 					return;
 				}
-		
+
 				int messageID = 16908299;
 				var alert = new DialogBuilder(Activity).Create();
 
@@ -187,7 +197,7 @@ namespace Microsoft.Maui
 				textView.TextDirection = GetTextDirection(sender, arguments.FlowDirection);
 
 
-				if (alert.GetButton((int)DialogButtonType.Negative).Parent is View parentView)
+				if (alert.GetButton((int)DialogButtonType.Negative).Parent is AView parentView)
 					parentView.LayoutDirection = GetLayoutDirection(sender, arguments.FlowDirection);
 			}
 
@@ -276,9 +286,9 @@ namespace Microsoft.Maui
 				{
 					if (_supportsProgress.HasValue)
 						return _supportsProgress.Value;
-					
+
 					int progressCircularId = Activity.Resources.GetIdentifier("progress_circular", "id", "android");
-				
+
 					if (progressCircularId > 0)
 						_supportsProgress = Activity.FindViewById(progressCircularId) != null;
 					else
@@ -449,7 +459,7 @@ namespace Microsoft.Maui
 					}
 				}
 
-				public Button GetButton(int whichButton)
+				public AButton GetButton(int whichButton)
 				{
 					if (_useAppCompat)
 					{
@@ -461,7 +471,7 @@ namespace Microsoft.Maui
 					}
 				}
 
-				public View GetListView()
+				public AView GetListView()
 				{
 					if (_useAppCompat)
 					{
@@ -497,7 +507,7 @@ namespace Microsoft.Maui
 					}
 				}
 
-				public void SetView(View view)
+				public void SetView(AView view)
 				{
 					if (_useAppCompat)
 					{
@@ -509,7 +519,7 @@ namespace Microsoft.Maui
 					}
 				}
 
-				public View findViewByID(int id)
+				public AView findViewByID(int id)
 				{
 					if (_useAppCompat)
 					{

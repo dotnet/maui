@@ -1,10 +1,10 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Controls.Platform
 {
 	public sealed class AlertDialog : ContentDialog
 	{
-		public ScrollBarVisibility VerticalScrollBarVisibility { get; set; }
+		public UI.Xaml.Controls.ScrollBarVisibility VerticalScrollBarVisibility { get; set; }
 
 		protected override void OnApplyTemplate()
 		{
