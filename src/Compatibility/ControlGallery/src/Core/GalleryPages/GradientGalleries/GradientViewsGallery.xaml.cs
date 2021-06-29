@@ -1,7 +1,9 @@
 ﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries
 {
+    [XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class GradientViewsGallery : ContentPage
 	{
 		public GradientViewsGallery()

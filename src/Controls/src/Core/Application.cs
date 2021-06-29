@@ -408,7 +408,7 @@ namespace Microsoft.Maui.Controls
 		internal void OnPageDisappearing(Page page)
 			=> PageDisappearing?.Invoke(this, page);
 
-		
+
 		async Task SetPropertiesAsync()
 		{
 			await SaveSemaphore.WaitAsync();
