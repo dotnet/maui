@@ -1,7 +1,11 @@
 using System;
 using Android.OS;
+using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Navigation.UI;
+using Google.Android.Material.AppBar;
 
 namespace Microsoft.Maui
 {
@@ -55,7 +59,8 @@ namespace Microsoft.Maui
 
 			//TODO MAUI
 			// Allow users to customize the toolbarid?
-			if (Theme.TryResolveAttribute(Resource.Attribute.windowActionBar, out var windowActionBar) &&
+			bool? windowActionBar;
+			if (Theme.TryResolveAttribute(Resource.Attribute.windowActionBar, out windowActionBar) &&
 				windowActionBar == false)
 			{
 				var toolbar = FindViewById<Toolbar>(Resource.Id.maui_toolbar);

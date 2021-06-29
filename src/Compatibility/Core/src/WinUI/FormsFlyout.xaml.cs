@@ -21,18 +21,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			TitleBlock.Text = options.Title ?? string.Empty;
 			OptionsList.ItemsSource = options.Buttons.ToList();
 
-			if (options.FlowDirection == Maui.FlowDirection.RightToLeft)
+			if (options.FlowDirection == Microsoft.Maui.Controls.FlowDirection.RightToLeft)
 			{
-				TitleBlock.FlowDirection = UI.Xaml.FlowDirection.RightToLeft;
-				OptionsList.FlowDirection = UI.Xaml.FlowDirection.RightToLeft;
+				TitleBlock.FlowDirection = Microsoft.UI.Xaml.FlowDirection.RightToLeft;
+				OptionsList.FlowDirection = Microsoft.UI.Xaml.FlowDirection.RightToLeft;
 			}
-			else if (options.FlowDirection == Maui.FlowDirection.LeftToRight)
+			else if (options.FlowDirection == Microsoft.Maui.Controls.FlowDirection.LeftToRight)
 			{
-				TitleBlock.FlowDirection = UI.Xaml.FlowDirection.LeftToRight;
-				OptionsList.FlowDirection = UI.Xaml.FlowDirection.LeftToRight;
+				TitleBlock.FlowDirection = Microsoft.UI.Xaml.FlowDirection.LeftToRight;
+				OptionsList.FlowDirection = Microsoft.UI.Xaml.FlowDirection.LeftToRight;
 			}
 
-			if (options.FlowDirection == Maui.FlowDirection.RightToLeft)
+			if (options.FlowDirection == Microsoft.Maui.Controls.FlowDirection.RightToLeft)
 			{
 				if (options.Cancel != null)
 				{
