@@ -140,13 +140,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 				(VisualElement)view,
 				VisualElementRenderer);
 
+			if (view != VirtualView)
+				base.SetVirtualView(view);
+
 			if (VisualElementRenderer != null && VisualElementRenderer.Element != view)
 			{
 				VisualElementRenderer.SetElement((VisualElement)view);
-			}
-			else if(view != VirtualView)
-			{
-				base.SetVirtualView(view);
 			}
 		}
 #else
