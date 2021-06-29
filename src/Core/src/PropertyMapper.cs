@@ -9,9 +9,9 @@ namespace Microsoft.Maui
 
 		PropertyMapper? _chained;
 
-		List<string>? _allKeys;
-		List<string>? _actionKeys;
-		List<string>? _updateKeys;
+		HashSet<string>? _allKeys;
+		HashSet<string>? _actionKeys;
+		HashSet<string>? _updateKeys;
 
 		public PropertyMapper()
 		{
@@ -73,11 +73,11 @@ namespace Microsoft.Maui
 			}
 		}
 
-		protected List<string> PopulateKeys(ref List<string>? returnList)
+		protected HashSet<string> PopulateKeys(ref HashSet<string>? returnList)
 		{
-			_allKeys = new List<string>();
-			_updateKeys = new List<string>();
-			_actionKeys = new List<string>();
+			_allKeys = new HashSet<string>();
+			_updateKeys = new HashSet<string>();
+			_actionKeys = new HashSet<string>();
 
 			foreach (var key in GetKeys())
 			{
@@ -91,7 +91,7 @@ namespace Microsoft.Maui
 					_actionKeys.Add(key);
 			}
 
-			return returnList ?? new List<string>();
+			return returnList ?? new HashSet<string>();
 		}
 
 		protected virtual void ClearKeyCache()
@@ -101,13 +101,13 @@ namespace Microsoft.Maui
 			_actionKeys = null;
 		}
 
-		public virtual IReadOnlyList<string> Keys =>
+		public virtual IReadOnlyCollection<string> Keys =>
 			_allKeys ?? PopulateKeys(ref _allKeys);
 
-		public virtual IReadOnlyList<string> ActionKeys =>
+		public virtual IReadOnlyCollection<string> ActionKeys =>
 			_actionKeys ?? PopulateKeys(ref _actionKeys);
 
-		public virtual IReadOnlyList<string> UpdateKeys =>
+		public virtual IReadOnlyCollection<string> UpdateKeys =>
 			_updateKeys ?? PopulateKeys(ref _updateKeys);
 
 		IEnumerable<string> GetKeys()

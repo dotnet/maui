@@ -113,8 +113,8 @@ namespace Microsoft.Maui.Handlers
 
 		void IElementHandler.DisconnectHandler()
 		{
-			if (NativeView is object nativeView)
-				DisconnectHandle(nativeView);
+			if (NativeView != null && VirtualView != null)
+				DisconnectHandle(NativeView);
 		}
 	}
 }
