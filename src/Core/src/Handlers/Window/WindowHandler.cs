@@ -27,13 +27,12 @@ namespace Microsoft.Maui.Handlers
 		}
 
 #if !NETSTANDARD
-		NativeView? _window;
-
 		protected override NativeView CreateNativeElement() =>
-			_window ?? throw new InvalidOperationException($"Native window must be set via {nameof(SetWindow)}.");
-
-		public void SetWindow(NativeView window) =>
-			_window = window;
+#if __ANDROID__
+			MauiContext?.Context as NativeView ?? throw new InvalidOperationException($"MauiContext did not have a valid window.");
+#else
+			MauiContext?.Window ?? throw new InvalidOperationException($"MauiContext did not have a valid window.");
+#endif
 #endif
 	}
 }
