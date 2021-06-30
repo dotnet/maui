@@ -550,7 +550,7 @@ namespace Microsoft.Maui.Controls
 		{
 			int hashCode = base.GetContentTypeHashCode();
 			foreach (var v in Children)
-				hashCode = HashCode.Combine(hashCode, v.GetType().GetHashCode());
+				hashCode = (hashCode, v.GetType()).GetHashCode();
 			return hashCode;
 		}
 	}

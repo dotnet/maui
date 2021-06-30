@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public override int GetContentTypeHashCode() => TypeHashCode ?? System.HashCode.Combine(this.GetType().GetHashCode(), Content.GetContentTypeHashCode());
+		public override int GetContentTypeHashCode() => TypeHashCode ?? (this.GetType(), Content.GetContentTypeHashCode()).GetHashCode();
 
 		#region HotReload
 
