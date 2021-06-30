@@ -16,6 +16,8 @@ namespace Microsoft.Maui
 
 		static CoreUIAppContext? _instance = null;
 
+		Func<bool>? _handleBackButtonPressed;
+
 		public static bool IsInitialized { get; private set; }
 
 		public static CoreUIAppContext GetInstance(CoreApplication application, Window? window = null)
@@ -38,6 +40,8 @@ namespace Microsoft.Maui
 
 		public ELayout BaseLayout { get; set; }
 
+		public ModalStack ModalStack { get; private set; }
+
 		public CircleSurface? BaseCircleSurface { get; set; }
 
 		public DeviceType DeviceType => DeviceInfo.GetDeviceType();
@@ -58,7 +62,8 @@ namespace Microsoft.Maui
 			set
 			{
 				_viewPortWidth = value;
-				ViewportWidth = _viewPortWidth;
+				// TODO. DeviceInfo.ViewportWidth is readonly, fix it
+				//ViewportWidth = _viewPortWidth;
 			}
 		}
 
@@ -88,6 +93,16 @@ namespace Microsoft.Maui
 				Environment.SetEnvironmentVariable("XDG_DATA_HOME", CurrentApplication.DirectoryInfo.Data);
 			}
 
+			ModalStack = new ModalStack(NativeParent)
+			{
+				AlignmentX = -1,
+				AlignmentY = -1,
+				WeightX = 1,
+				WeightY= 1,
+			};
+			ModalStack.Show();
+			BaseLayout.SetContent(ModalStack);
+
 			IsInitialized = true;
 		}
 
@@ -96,7 +111,12 @@ namespace Microsoft.Maui
 			content.SetAlignment(-1, -1);
 			content.SetWeight(1, 1);
 			content.Show();
-			BaseLayout.SetContent(content);
+			ModalStack.Push(content);
+		}
+
+		public void SetBackButtonPressedHandler(Func<bool> handler)
+		{
+			_handleBackButtonPressed = handler;
 		}
 
 		static Window CreateDefaultWindow()
@@ -155,8 +175,18 @@ namespace Microsoft.Maui
 				// TODO : should update later
 			};
 
-			// TODO : Fix Backbutton later
-			MainWindow.BackButtonPressed += (sender, e) => CurrentApplication.Exit();
+			MainWindow.BackButtonPressed += OnBackButtonPressed;
+
+
+
+		}
+
+		void OnBackButtonPressed(object sender, EventArgs e)
+		{
+			if (!(_handleBackButtonPressed?.Invoke() ?? false))
+			{
+				CurrentApplication.Exit();
+			}
 		}
 	}
 }
