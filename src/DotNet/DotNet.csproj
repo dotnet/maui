@@ -86,8 +86,9 @@
     </PropertyGroup>
     <WriteLinesToFile File="$(_NuGetConfig)" Lines="$(_NuGetContent)" Overwrite="true" />
     <Exec
-        WorkingDirectory="$(DotNetTempDirectory)"
         Command="&quot;$(_ThisDotNet)&quot; workload install maui --skip-manifest-update --verbosity diag"
+        EnvironmentVariables="TMP=$(DotNetTempDirectory);TEMP=$(DotNetTempDirectory)"
+        WorkingDirectory="$(DotNetTempDirectory)"
     />
     <Delete Files="$(_NuGetConfig)" />
 
