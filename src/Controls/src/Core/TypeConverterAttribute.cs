@@ -34,8 +34,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
-using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 using Microsoft.Maui.Layouts;
+using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
 namespace Microsoft.Maui.Controls
 {
