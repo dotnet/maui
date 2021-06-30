@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -22,7 +21,6 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: OnPageChanged);
 
 		ReadOnlyCollection<Element>? _logicalChildren;
-		IAnimationManager? _animationManager;
 
 		public Window()
 		{
@@ -77,7 +75,7 @@ namespace Microsoft.Maui.Controls
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
 
 		internal IAnimationManager? AnimationManager =>
-			_animationManager ??= MauiContext?.Services.GetRequiredService<IAnimationManager>();
+			Handler?.AnimationManager;
 
 		IView IWindow.Content =>
 			Page ?? throw new InvalidOperationException("No page was set on the window.");
