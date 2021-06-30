@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			if (element == null)
 				return true;
 
-			var renderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.CreateRendererWithContext(element, _context);
+			var renderer = Platform.Android.Platform.CreateRendererWithContext(element, _context);
 
 			if (renderer == null
 				|| renderer.GetType().Name == "DefaultRenderer"

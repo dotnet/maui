@@ -10,18 +10,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public class HandlerToRendererShim : IVisualElementRenderer
 	{
-		public HandlerToRendererShim(IViewHandler vh)
+		bool _nativeViewLoaded;
+
+		public HandlerToRendererShim(INativeViewHandler vh)
 		{
 			ViewHandler = vh;
 		}
 
-		IViewHandler ViewHandler { get; }
+		INativeViewHandler ViewHandler { get; }
 
 		public VisualElement Element { get; private set; }
 
-		public FrameworkElement NativeView => (FrameworkElement)ViewHandler.NativeView;
-
-		public FrameworkElement ContainerElement => (FrameworkElement)ViewHandler.NativeView;
+		public FrameworkElement ContainerElement => ViewHandler.ContainerView ?? ViewHandler.NativeView;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -41,13 +41,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (oldElement != null)
 			{
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
-				oldElement.BatchCommitted -= OnBatchCommitted;
 			}
 
 			if (element != null)
 			{
 				element.PropertyChanged += OnElementPropertyChanged;
-				element.BatchCommitted += OnBatchCommitted;
 			}
 
 			Element = element;
@@ -59,12 +57,48 @@ namespace Microsoft.Maui.Controls.Compatibility
 				ViewHandler.SetVirtualView((IView)element);
 			}
 
+			if (ViewHandler.NativeView is FrameworkElement frameworkElement)
+			{
+				frameworkElement.Loaded += NativeViewLoaded;
+			}
+
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
 		}
 
-		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
+		void NativeViewLoaded(object sender, RoutedEventArgs e)
 		{
-			ViewHandler?.NativeArrange(Element.Bounds);
+			_nativeViewLoaded = true;
+			((FrameworkElement)sender).Loaded -= NativeViewLoaded;
+
+			// For old-school renderers on Windows, VisualElementRenderer watches for the Loaded event and 
+			// sets IsNativeStateConsistent, which invalidates the measure for the element. This tells everything 
+			// to lay out again because all the layout activity previous to that was invalid - the state of the control
+			// was undefined with regard to measurement, and internal stuff like DesiredSize might be wrong or reset
+			// at this point. Since we're using a shim to imitate a renderer, we're dealing with legacy layouts. Which
+			// means we have to deal with the fact that they've started doing measure/layout even though it's not
+			// time for that yet. So we need to imitate what VisualElementRenderer does and update IsNativeStateConsistent
+			// and force a re-layout with new measurements.
+
+			if (Element is VisualElement visualElement)
+			{
+				visualElement.IsNativeStateConsistent = true;
+
+				if (visualElement is Layout layout)
+				{
+					// Unfortunately, the layout and its children will have cached their previous measurement results
+					// So we need to iterate over the children and force them to clear their caches so they'll call
+					// the native measurement methods again now that measurement is a valid thing to do.
+					foreach (var child in layout.Children)
+					{
+						if (child is VisualElement ve)
+						{
+							ve.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+						}
+					}
+
+					layout.ForceLayout();
+				}
+			}
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -74,13 +108,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+			if (!_nativeViewLoaded)
+			{
+				return new SizeRequest(Size.Zero);
+			}
+
 			var size = ViewHandler.GetDesiredSize(widthConstraint, heightConstraint);
 			return new SizeRequest(size, size);
-		}
-
-		public void SetElementSize(Size size)
-		{
-			Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
 		}
 
 		public UIElement GetNativeElement()

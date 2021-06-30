@@ -89,7 +89,7 @@
       <Project>{29913989-0f70-48d8-8ede-b1dd217f21d1}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj">
+    <ProjectReference Include="..\..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj">
       <Project>{3b72465b-acae-43ae-9327-10f372fe5f80}</Project>
       <Name>Compatibility.Android.FormsViewGroup</Name>
     </ProjectReference>

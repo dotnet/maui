@@ -100,6 +100,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else if (handler is INativeViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
+					element.Handler = handler;
+					SetRenderer(element, renderer);
 				}
 			}
 
@@ -125,11 +127,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_page = page;
 
 			var current = Microsoft.UI.Xaml.Application.Current;
-
-			if (!current.Resources.ContainsKey("RootContainerStyle"))
-			{
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(Forms.GetTabletResources());
-			}
 
 			_container = new Canvas
 			{
@@ -276,6 +273,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				IVisualElementRenderer elementRenderer = GetRenderer(element);
 				if (elementRenderer != null)
 					return elementRenderer.GetDesiredSize(widthConstraint, heightConstraint);
+				
+				if (element is IView iView)
+					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
 			}
 
 			return new SizeRequest();

@@ -41,23 +41,21 @@ namespace Microsoft.Maui
 			if (mauiApp == null)
 				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
 
-			MauiContext mauiContext;
-			IWindow window;
+			var mauiContext = new MauiContext(services, this);
 
 			// TODO Fix once we have multiple windows
+			IWindow window;
 			if (mauiApp.Windows.Count > 0)
 			{
 				window = mauiApp.Windows[0];
-				mauiContext = new MauiContext(services, this);
 			}
 			else
 			{
-				mauiContext = new MauiContext(services, this);
-				ActivationState state = new ActivationState(mauiContext, savedInstanceState);
+				var state = new ActivationState(mauiContext, savedInstanceState);
 				window = mauiApp.CreateWindow(state);
 			}
 
-			SetContentView(window.View.ToNative(mauiContext));
+			SetContentView(window.View.ToContainerView(mauiContext));
 
 			//TODO MAUI
 			// Allow users to customize the toolbarid?

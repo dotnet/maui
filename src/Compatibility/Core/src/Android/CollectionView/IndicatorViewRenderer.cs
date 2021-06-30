@@ -43,8 +43,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public VisualElementTracker Tracker => _visualElementTracker;
 
-		public ViewGroup ViewGroup => null;
-
 		public AView View => this;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
@@ -117,9 +115,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					TearDownOldElement(Element as IndicatorView);
 
-					if (AppCompat.Platform.GetRenderer(Element) == this)
+					if (Platform.GetRenderer(Element) == this)
 					{
-						Element.ClearValue(AppCompat.Platform.RendererProperty);
+						Element.ClearValue(Platform.RendererProperty);
 					}
 				}
 			}
@@ -294,8 +292,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (IndicatorView.IndicatorLayout == null)
 				return;
 
-			var renderer = IndicatorView.IndicatorLayout.GetRenderer() ?? AppCompat.Platform.CreateRendererWithContext(IndicatorView.IndicatorLayout, Context);
-			AppCompat.Platform.SetRenderer(IndicatorView.IndicatorLayout, renderer);
+			var renderer = IndicatorView.IndicatorLayout.GetRenderer() ?? Platform.CreateRendererWithContext(IndicatorView.IndicatorLayout, Context);
+			Platform.SetRenderer(IndicatorView.IndicatorLayout, renderer);
 
 			RemoveAllViews();
 			AddView(renderer.View);

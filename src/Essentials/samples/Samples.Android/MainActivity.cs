@@ -4,6 +4,7 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Android.Widget;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Samples.View;
 
@@ -13,23 +14,13 @@ namespace Samples.Droid
     [IntentFilter(
         new[] { Microsoft.Maui.Essentials.Platform.Intent.ActionAppAction },
         Categories = new[] { Intent.CategoryDefault })]
-    public class MainActivity : FormsAppCompatActivity
+    public class MainActivity : MauiAppCompatActivity
     {
-        static App formsApp;
-
         protected override void OnCreate(Bundle bundle)
         {
-            TabLayoutResource = Resource.Layout.Tabbar;
-            ToolbarResource = Resource.Layout.Toolbar;
-
             base.OnCreate(bundle);
-
             Microsoft.Maui.Essentials.Platform.Init(this, bundle);
-            Microsoft.Maui.Controls.Compatibility.Forms.Init(this, bundle);
-
             Microsoft.Maui.Essentials.Platform.ActivityStateChanged += Platform_ActivityStateChanged;
-
-            LoadApplication(formsApp ??= new App());
         }
 
         protected override void OnResume()

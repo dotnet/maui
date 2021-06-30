@@ -123,8 +123,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			VisualElementTracker IVisualElementRenderer.Tracker => null;
 
-			ViewGroup IVisualElementRenderer.ViewGroup => this;
-
 			AView IVisualElementRenderer.View => this;
 
 			SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint) => new SizeRequest(new Size(100, 100));
@@ -170,7 +168,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				do
 				{
 					element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
-					var renderer = (element as BindableObject).GetValue(AppCompat.Platform.RendererProperty);
+					var renderer = (element as BindableObject).GetValue(Platform.RendererProperty);
 					control = (renderer as ITabStop)?.TabStop;
 				} while (!(control?.Focusable == true || ++attempt >= maxAttempts));
 
@@ -331,7 +329,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					_shell.RemoveLogicalChild(View);
 					if (_element != null && _element is BaseShellItem)
 					{
-						_element.ClearValue(AppCompat.Platform.RendererProperty);
+						_element.ClearValue(Platform.RendererProperty);
 						_element.PropertyChanged -= OnElementPropertyChanged;
 					}
 
@@ -344,7 +342,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					{
 						_shell.AddLogicalChild(View);
 						FastRenderers.AutomationPropertiesProvider.AccessibilitySettingsChanged(_itemView, value);
-						_element.SetValue(AppCompat.Platform.RendererProperty, _itemView);
+						_element.SetValue(Platform.RendererProperty, _itemView);
 						_element.PropertyChanged += OnElementPropertyChanged;
 						UpdateVisualState();
 					}

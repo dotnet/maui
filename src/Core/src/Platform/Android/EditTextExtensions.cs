@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
+using Android.Widget;
 using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui
@@ -59,6 +60,11 @@ namespace Microsoft.Maui
 			editText.UpdateHorizontalAlignment(entry.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
 		}
 
+		public static void UpdateVerticalTextAlignment(this AppCompatEditText editText, IEntry entry)
+		{
+			editText.UpdateVerticalAlignment(entry.VerticalTextAlignment);
+		}
+
 		public static void UpdateIsTextPredictionEnabled(this AppCompatEditText editText, IEntry entry)
 		{
 			editText.SetInputType(entry);
@@ -79,6 +85,15 @@ namespace Microsoft.Maui
 			UpdateMaxLength(editText, editor.MaxLength);
 
 		public static void UpdateMaxLength(this AppCompatEditText editText, int maxLength)
+		{
+			editText.SetLengthFilter(maxLength);
+
+			var newText = editText.Text.TrimToMaxLength(maxLength);
+			if (editText.Text != newText)
+				editText.Text = newText;
+		}
+
+		public static void SetLengthFilter(this EditText editText, int maxLength)
 		{
 			var currentFilters = new List<IInputFilter>(editText.GetFilters() ?? new IInputFilter[0]);
 			var changed = false;
@@ -101,10 +116,6 @@ namespace Microsoft.Maui
 
 			if (changed)
 				editText.SetFilters(currentFilters.ToArray());
-
-			var newText = editText.Text.TrimToMaxLength(maxLength);
-			if (editText.Text != newText)
-				editText.Text = newText;
 		}
 
 		public static void UpdatePlaceholder(this AppCompatEditText editText, IPlaceholder textInput)
@@ -220,7 +231,6 @@ namespace Microsoft.Maui
 				UpdateCursorSelection(editText, entry);
 		}
 
-
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
 		static void UpdateCursorSelection(AppCompatEditText editText, IEntry entry)
 		{
@@ -267,6 +277,7 @@ namespace Microsoft.Maui
 				entry.SelectionLength = newSelectionLength;
 			return end;
 		}
+
 		internal static void SetInputType(this AppCompatEditText editText, IEditor editor)
 		{
 			if (editor.IsReadOnly)

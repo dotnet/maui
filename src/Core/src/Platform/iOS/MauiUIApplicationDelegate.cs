@@ -25,6 +25,7 @@ namespace Microsoft.Maui
 			Services = host.Services;
 
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
+
 			return true;
 		}
 
@@ -32,17 +33,16 @@ namespace Microsoft.Maui
 		{
 			Application = Services.GetRequiredService<IApplication>();
 
-			var mauiContext = new MauiContext(Services);
+			UIWindow uIWindow = new UIWindow();
+			var mauiContext = new MauiContext(Services, uIWindow);
 
 			var activationState = new ActivationState(mauiContext);
 			var window = Application.CreateWindow(activationState);
 
 			var page = window.View;
 
-			Window = new UIWindow
-			{
-				RootViewController = window.View.ToUIViewController(mauiContext)
-			};
+			uIWindow.RootViewController = window.View.ToUIViewController(mauiContext);
+			Window = uIWindow;
 
 			Window.MakeKeyAndVisible();
 

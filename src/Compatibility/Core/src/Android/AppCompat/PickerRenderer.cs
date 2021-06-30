@@ -8,6 +8,7 @@ using Android.Text;
 using Android.Text.Style;
 using Android.Util;
 using Android.Widget;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {

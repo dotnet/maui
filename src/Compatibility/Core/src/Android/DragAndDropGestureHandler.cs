@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					return;
 
 				var element = GetView();
-				var renderer = AppCompat.Platform.GetRenderer(element);
+				var renderer = Platform.GetRenderer(element);
 				var v = renderer.View;
 
 				if (v.Handle == IntPtr.Zero)

@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;
 
+		public IShape Clip { get; set; }
+
 		public double Opacity { get; set; } = 1.0d;
 
 		public Paint Background { get; set; }

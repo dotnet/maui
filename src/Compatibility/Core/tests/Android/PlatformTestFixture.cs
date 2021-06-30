@@ -98,8 +98,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			var renderer = element.GetRenderer();
 			if (renderer == null)
 			{
-				renderer = AppCompat.Platform.CreateRendererWithContext(element, context);
-				AppCompat.Platform.SetRenderer(element, renderer);
+				renderer = Platform.CreateRendererWithContext(element, context);
+				Platform.SetRenderer(element, renderer);
 			}
 
 			return renderer;
