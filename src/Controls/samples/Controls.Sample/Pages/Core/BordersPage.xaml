@@ -23,8 +23,10 @@
         <Label
             x:Name="BorderView"
             Text="Label"
+            TextColor="White"
             HorizontalTextAlignment="Center"
-            VerticalTextAlignment="Center"/>
+            VerticalTextAlignment="Center"
+            Padding="12"/>
         <ScrollView
             Grid.Row="1">
             <StackLayout>
