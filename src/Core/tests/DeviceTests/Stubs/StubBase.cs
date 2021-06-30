@@ -95,5 +95,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			return new Size(widthConstraint, heightConstraint);
 		}
+
+		public int GetContentTypeHashCode() => this.GetType().GetHashCode();
 	}
 }

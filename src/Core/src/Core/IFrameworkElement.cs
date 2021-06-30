@@ -116,9 +116,11 @@ namespace Microsoft.Maui
 
 		/// <summary>
 		/// Gets a hash code of the current view type.
-		/// If this has children, it should be a hascode of the entire hierarchy type
+		/// i.e: this.GetType().GetHashCode()
+		/// If this has children, it should be a hashcode of the entire hierarchy type
+		/// i.e: (this.GetType(), Child.GetType()).GetHashCode()
 		/// </summary>
 		/// <returns></returns>
-		int GetContentTypeHashCode() => this.GetType().GetHashCode();
+		int GetContentTypeHashCode();
 	}
 }

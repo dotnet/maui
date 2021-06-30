@@ -99,5 +99,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			return new Size(widthConstraint, heightConstraint);
 		}
+
+		public int GetContentTypeHashCode() => this.GetType().GetHashCode();
 	}
 }
