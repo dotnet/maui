@@ -23,10 +23,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public class MiddleApp : MauiWinUIApplication<Startup>
 	{
-		public override MauiWinUIWindow CreateWindow()
-		{
-			return new MainPage();
-		}
 	}
 
 	/// <summary>
