@@ -176,12 +176,6 @@
 
     <!-- HACK: temporary fixes for iOS and MacCatalyst workloads -->
     <ReplaceText
-        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.maccatalyst/WorkloadManifest.json"
-        Output="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.maccatalyst/WorkloadManifest.json"
-        OldValue="&quot;description&quot;"
-        NewValue="&quot;extends&quot;: [ &quot;microsoft-net-runtime-maccatalyst&quot; ], &quot;description&quot;"
-    />
-    <ReplaceText
         Input="$(DotNetSdkManifestsDirectory)microsoft.net.workload.mono.toolchain/WorkloadManifest.targets"
         Output="$(DotNetSdkManifestsDirectory)microsoft.net.workload.mono.toolchain/WorkloadManifest.targets"
         OldValue="Sdk=&quot;Microsoft.NETCore.App.Runtime.AOT.Cross.maccatalyst&quot;"
