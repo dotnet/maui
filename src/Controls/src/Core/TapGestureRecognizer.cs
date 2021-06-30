@@ -35,9 +35,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public event EventHandler Tapped;
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendTapped(View sender)
+		
+		internal void SendTapped(View sender)
 		{
 			ICommand cmd = Command;
 			if (cmd != null && cmd.CanExecute(CommandParameter))

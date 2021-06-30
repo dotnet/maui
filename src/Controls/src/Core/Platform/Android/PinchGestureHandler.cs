@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Controls.Platform
 {
 	internal class PinchGestureHandler
 	{
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		Func<View> GetView { get; }
 
 		// A View can have at most one pinch gesture, so we just need to look for one (or none)
-		PinchGestureRecognizer PinchGesture => GetView()?.GestureRecognizers.OfType<PinchGestureRecognizer>()
+		IPinchGestureController PinchGesture => GetView()?.GestureRecognizers.OfType<PinchGestureRecognizer>()
 			.FirstOrDefault();
 
 		public bool OnPinch(float scale, Point scalePoint)
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (view == null)
 				return false;
 
-			PinchGestureRecognizer pinchGesture = PinchGesture;
+			IPinchGestureController pinchGesture = PinchGesture;
 			if (pinchGesture == null)
 				return true;
 
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (view == null)
 				return;
 
-			PinchGestureRecognizer pinchGesture = PinchGesture;
+			IPinchGestureController pinchGesture = PinchGesture;
 			pinchGesture?.SendPinchEnded(view);
 		}
 
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (view == null)
 				return false;
 
-			PinchGestureRecognizer pinchGesture = PinchGesture;
+			IPinchGestureController pinchGesture = PinchGesture;
 			if (pinchGesture == null)
 				return false;
 

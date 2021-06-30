@@ -22,10 +22,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 	/// <summary>
 	/// An empty page that can be used on its own or navigated to within a Frame.
 	/// </summary>
-	public sealed partial class MainPage
+	public sealed partial class MainPage : MauiWinUIWindow
 	{
-		ControlGallery.App _app;
-
 		public MainPage()
 		{
 			InitializeComponent();
@@ -47,19 +45,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
 			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
 
+			this.Activated += MainPage_Activated;
 		}
 
-		public override Application CreateApplication()
+		private void MainPage_Activated(object sender, UI.Xaml.WindowActivatedEventArgs args)
 		{
-			_app = new ControlGallery.App();
-			return _app;
-		}
-
-		public override void LoadApplication(Application application)
-		{
-			base.LoadApplication(application);
-
-			_app.PropertyChanged += _app_PropertyChanged;
+			Application.Current.PropertyChanged += _app_PropertyChanged;
 			WireUpKeyDown();
 		}
 
@@ -92,12 +83,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		{
 			if (args.Key == VirtualKey.Escape)
 			{
-				_app.Reset();
+				(Application.Current as ControlGallery.App)
+					.Reset();
+
 				args.Handled = true;
 			}
 			else if (args.Key == VirtualKey.F1)
 			{
-				_app.PlatformTest();
+				(Application.Current as ControlGallery.App)
+					.PlatformTest();
 			}
 		}
 

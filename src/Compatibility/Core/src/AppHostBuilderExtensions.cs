@@ -301,19 +301,74 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 				CompatServiceProvider.SetServiceProvider(services);
 #endif
+
+#if WINDOWS
+				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
+				if (dictionaries != null)
+				{
+					// WinUI
+					AddLibraryResources<UI.Xaml.Controls.XamlControlsResources>();
+
+					// Microsoft.Maui
+					AddLibraryResources("MicrosoftMauiCoreIncluded", "ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
+
+					// Microsoft.Maui.Controls
+					AddLibraryResources("MicrosoftMauiControlsIncluded", "ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
+
+					// Microsoft.Maui.Controls.Compatibility
+					AddLibraryResources("MicrosoftMauiControlsCompatibilityIncluded", "ms-appx:///Microsoft.Maui.Controls.Compatibility/WinUI/Resources.xbf");
+				}
+#endif
 			}
 
 			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
 			{
-#if WINDOWS
-				if (!UI.Xaml.Application.Current.Resources.ContainsKey("MauiControlsPageControlStyle"))
-				{
-					var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
-					myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
-					Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
-				}
-#endif
 			}
+
+#if WINDOWS
+			static void AddLibraryResources(string key, string uri)
+			{
+				var resources = UI.Xaml.Application.Current?.Resources;
+				if (resources == null)
+					return;
+
+				var dictionaries = resources.MergedDictionaries;
+				if (dictionaries == null)
+					return;
+
+				if (!resources.ContainsKey(key))
+				{
+					dictionaries.Add(new UI.Xaml.ResourceDictionary
+					{
+						Source = new Uri(uri)
+					});
+				}
+			}
+
+			static void AddLibraryResources<T>()
+				where T : UI.Xaml.ResourceDictionary, new()
+			{
+				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
+				if (dictionaries == null)
+					return;
+
+				var found = false;
+				foreach (var dic in dictionaries)
+				{
+					if (dic is T)
+					{
+						found = true;
+						break;
+					}
+				}
+
+				if (!found)
+				{
+					var dic = new T();
+					dictionaries.Add(dic);
+				}
+			}
+#endif
 		}
 	}
 }
