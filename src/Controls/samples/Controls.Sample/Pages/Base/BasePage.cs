@@ -9,12 +9,18 @@ namespace Maui.Controls.Sample.Pages.Base
 {
 	public class BasePage : ContentPage, IPage
 	{
+		SectionModel _selectedItem;
+
 		public BasePage()
 		{
-			NavigateCommand = new Command<SectionModel>(sectionModel =>
+			NavigateCommand = new Command(async () =>
 			{
-				if (sectionModel != null)
-					Navigation.PushAsync(PreparePage(sectionModel));
+				if (SelectedItem != null)
+				{
+					await Navigation.PushAsync(PreparePage(SelectedItem));
+
+					SelectedItem = null;
+				}
 			});
 		}
 
@@ -29,6 +35,16 @@ namespace Maui.Controls.Sample.Pages.Base
 		}
 
 		public ICommand NavigateCommand { get; }
+
+		public SectionModel SelectedItem
+		{
+			get { return _selectedItem; }
+			set
+			{
+				_selectedItem = value;
+				OnPropertyChanged();
+			}
+		}
 
 		Page PreparePage(SectionModel model)
 		{
