@@ -52,7 +52,17 @@ namespace Microsoft.Maui
 			if (paint.IsNullOrEmpty())
 				nativeView.Background = defaultBackground;
 			else
-				nativeView.Background = paint!.ToDrawable();
+			{
+				if (paint is SolidPaint solidPaint)
+				{
+					Color backgroundColor = solidPaint.Color;
+
+					if (backgroundColor != null)
+						nativeView.SetBackgroundColor(backgroundColor.ToNative());
+				}
+				else
+					nativeView.Background = paint!.ToDrawable();
+			}
 		}
 
 		public static void UpdateOpacity(this AView nativeView, IView view)
