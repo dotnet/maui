@@ -20,12 +20,6 @@ namespace Microsoft.Maui.Controls
 				if (value != _frame)
 				{
 					_frame = value;
-
-					X = _frame.X;
-					Y = _frame.Y;
-					Width = _frame.Width;
-					Height = _frame.Height;
-
 					Handler?.UpdateValue(nameof(IFrameworkElement.Frame));
 				}
 			}

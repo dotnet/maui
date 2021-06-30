@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			// Normally this would get called from the native platform
 			(verticalStackLayout as IFrameworkElement).Arrange(rect);
 
-			Assert.AreEqual(expectedSize, button.Bounds.Size);
+			Assert.AreEqual(expectedSize, button.Frame.Size);
 		}
 
 		[Test]
@@ -82,7 +82,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			(verticalStackLayout as IFrameworkElement).Arrange(expectedRect);
 
 			Assert.AreEqual(expectedRect, stackLayout.Frame);
-			Assert.AreEqual(expectedSize, stackLayout.Bounds.Size);
 		}
 
 		[Test]
@@ -102,14 +101,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			grid.Children.Add(label);
 			contentPage.Content = stackLayout;
 
-			var rect = new Rectangle(0, 0, 50, 100);
+			var rect = new Rectangle(0, 0, 50, 50);
 			(contentPage as IFrameworkElement).Measure(expectedSize.Width, expectedSize.Height);
 			(contentPage as IFrameworkElement).Arrange(rect);
 
 			// This simulates the arrange call that happens from the native LayoutViewGroup
 			(grid as IFrameworkElement).Arrange(rect);
 
-			Assert.AreEqual(expectedSize, grid.Bounds.Size);
+			Assert.AreEqual(expectedSize, grid.Frame.Size);
 		}
 	}
 }
