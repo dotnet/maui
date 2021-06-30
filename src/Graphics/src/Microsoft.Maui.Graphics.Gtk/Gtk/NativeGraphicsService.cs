@@ -65,6 +65,9 @@ namespace Microsoft.Maui.Graphics.Native.Gtk {
 			return new GtkBitmapExportContext(width, height, displayScale);
 		}
 
+		public RectangleF GetPathBounds(PathF path) {
+			return path.GetBoundsByFlattening();
+		}
 	}
 
 }
