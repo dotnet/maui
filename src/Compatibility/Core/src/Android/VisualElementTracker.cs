@@ -96,9 +96,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				formsViewGroup.MeasureAndLayout(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.Exactly), x, y, x + width, y + height);
 				Performance.Stop(reference, "MeasureAndLayout");
 			}
-			else if (aview is LayoutViewGroup && width == 0 && height == 0)
+			else if (aview is LayoutViewGroup)
 			{
-				// Nothing to do here; just chill.
+				// Are we in a shim? Force a layout via the Frame rather than explicitly; that way,
+				// the Frame is also correctly set
+				_renderer.Element.Frame = new Graphics.Rectangle(x, y, width, height);
 			}
 			else
 			{

@@ -39,6 +39,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public override void SetNativeFrame(Rectangle frame)
 		{
+			// TODO ezhart It might be worthwhile here to check the view's Frame
+			// and avoid a layout call; VisualElementTracker has probably already laid this out
+
+
 			// This is a hack to force the shimmed control to actually do layout; without this, some controls won't actually
 			// call OnLayout after updating their frame if their sizes haven't changed (e.g., ScrollView)
 			// Luckily, measuring with MeasureSpecMode.Exactly is pretty fast, since it just returns the value you give it.

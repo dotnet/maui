@@ -521,6 +521,8 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
+			_ = base.ArrangeOverride(bounds);
+
 			// The ShouldLayoutChildren check will catch impossible sizes (negative widths/heights), not-yet-loaded controls,
 			// and other weirdness that comes from the legacy layouts trying to run layout before the native side is ready. 
 			if (!ShouldLayoutChildren())
@@ -530,10 +532,9 @@ namespace Microsoft.Maui.Controls
 
 			foreach (var child in Children)
 			{
-				if (child is IFrameworkElement frameworkElement)
+				if (child is IFrameworkElement frameworkElement and VisualElement visualElement)
 				{
-					// See ContentPage.Impl.cs for an explanation
-					frameworkElement.Frame = frameworkElement.Frame;
+					frameworkElement.Frame = visualElement.Bounds;
 				}
 			}
 

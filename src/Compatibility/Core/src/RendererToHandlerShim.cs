@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 #if __ANDROID__
 using static Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform;
 using NativeView = Android.Views.View;
@@ -99,7 +100,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (e.NewElement is IView newView)
 			{
+				var currentContext = newView.Handler?.MauiContext;
 				newView.Handler = this;
+				if (this.MauiContext == null && currentContext != null)
+				{
+					this.SetMauiContext(currentContext);
+				}
 
 				if (VirtualView != newView)
 					this.SetVirtualView(newView);
@@ -149,6 +155,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				base.SetVirtualView(view);
 			}
 		}
+
 #else
 		protected override NativeView CreateNativeView()
 		{

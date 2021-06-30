@@ -10,18 +10,24 @@ namespace Microsoft.Maui.Controls
 		Semantics _semantics;
 		IViewHandler _handler;
 
+		Rectangle _frame;
+
 		public Rectangle Frame
 		{
-			get => Bounds; // TODO ezhart 2021-06-27 This will allocate a new rectangle every time, which isn't great for performance
+			get => _frame; 
 			set
 			{
-				// These next four lines are the same as setting Bounds, but without the layout side-effects
-				X = value.X;
-				Y = value.Y;
-				Width = value.Width;
-				Height = value.Height;
+				if (value != _frame)
+				{
+					_frame = value;
 
-				Handler?.UpdateValue(nameof(IFrameworkElement.Frame));
+					X = _frame.X;
+					Y = _frame.Y;
+					Width = _frame.Width;
+					Height = _frame.Height;
+
+					Handler?.UpdateValue(nameof(IFrameworkElement.Frame));
+				}
 			}
 		}
 
@@ -172,7 +178,11 @@ namespace Microsoft.Maui.Controls
 			if (_handler?.VirtualView != this)
 				_handler?.SetVirtualView((IView)this);
 
+				#if WINDOWS
+
+				#else
 			IsPlatformEnabled = _handler != null;
+			#endif
 
 			if (_handler != null)
 			{
