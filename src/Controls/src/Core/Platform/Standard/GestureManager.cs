@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public void Dispose()
 		{
-			throw new NotImplementedException();
 		}
 	}
 }
