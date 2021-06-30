@@ -47,6 +47,7 @@ namespace Microsoft.Maui
 		UIWindow CreateNativeWindow()
 		{
 			var uiWindow = new UIWindow();
+
 			var mauiContext = new MauiContext(Services, uiWindow);
 
 			Services.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
@@ -54,7 +55,7 @@ namespace Microsoft.Maui
 			var activationState = new ActivationState(mauiContext);
 			var window = Application.CreateWindow(activationState);
 
-			uiWindow.RootViewController = window.Content.ToUIViewController(mauiContext);
+			uiWindow.SetWindow(window, mauiContext);
 
 			return uiWindow;
 		}
