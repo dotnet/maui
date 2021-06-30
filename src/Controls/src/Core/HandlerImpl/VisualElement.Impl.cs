@@ -35,11 +35,32 @@ namespace Microsoft.Maui.Controls
 
 		IShape IFrameworkElement.Clip => Clip;
 
-		public CornerRadius CornerRadius { get; set; }
+		public static readonly BindableProperty BorderBrushProperty = BindableProperty.Create(
+			nameof(BorderBrush), typeof(Paint), typeof(VisualElement), null);
 
-		public Paint BorderBrush { get; set; }
+		public Paint BorderBrush
+		{
+			get => (Paint)GetValue(BorderBrushProperty);
+			set => SetValue(BorderBrushProperty, value);
+		}
 
-		public double BorderWidth { get; set; }
+		public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create(
+			nameof(BorderWidth), typeof(double), typeof(VisualElement), 0.0d);
+
+		public double BorderWidth
+		{
+			get => (double)GetValue(BorderWidthProperty);
+			set => SetValue(BorderWidthProperty, value);
+		}
+
+		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(
+		   nameof(CornerRadius), typeof(CornerRadius), typeof(VisualElement), new CornerRadius());
+
+		public CornerRadius CornerRadius
+		{
+			get => (CornerRadius)GetValue(CornerRadiusProperty);
+			set => SetValue(CornerRadiusProperty, value);
+		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{

@@ -9,6 +9,9 @@ namespace Maui.Controls.Sample.ViewModels
 	{
 		protected override IEnumerable<SectionModel> CreateItems() => new[]
 		{
+			new SectionModel(typeof(BordersPage), "Borders and CornerRadius",
+				"The border that surrounds a View."),
+
 			new SectionModel(typeof(BrushesPage), "Brushes",
 				"A brush enables you to paint an area, such as the background of a control, using different approaches."),
 

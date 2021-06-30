@@ -37,11 +37,11 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create("BorderWidth", typeof(double), typeof(Button), -1d);
+		public static readonly new BindableProperty BorderWidthProperty = BindableProperty.Create("BorderWidth", typeof(double), typeof(Button), -1d);
 
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
-		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create("CornerRadius", typeof(int), typeof(Button), defaultValue: BorderElement.DefaultCornerRadius,
+		public static readonly new BindableProperty CornerRadiusProperty = BindableProperty.Create("CornerRadius", typeof(int), typeof(Button), defaultValue: BorderElement.DefaultCornerRadius,
 			propertyChanged: CornerRadiusPropertyChanged);
 
 		public static readonly BindableProperty ImageSourceProperty = ImageElement.ImageSourceProperty;

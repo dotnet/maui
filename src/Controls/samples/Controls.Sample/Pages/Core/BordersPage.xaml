@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.BordersPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="Borders">
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+            
+            <Style x:Key="InfoStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="8" />
+            </Style>
+            
+        </ResourceDictionary>
+    </views:BasePage.Resources>
+    <Grid
+        Padding="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="150" />
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Label
+            x:Name="BorderView"
+            Text="Label"
+            HorizontalTextAlignment="Center"
+            VerticalTextAlignment="Center"/>
+        <ScrollView
+            Grid.Row="1">
+            <StackLayout>
+                <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}"/>
+                <Label 
+                    Text="Background Start Color"
+                    Style="{StaticResource InfoStyle}" />
+                <Entry
+                    x:Name="BackgroundStartColor"
+                    Text="#00B4DB"
+                    Placeholder="Background Start Color Hex"
+                    TextChanged="OnBackgroundChanged" />
+                <Label 
+                    Text="Background End Color"
+                    Style="{StaticResource InfoStyle}" />
+                <Entry
+                    x:Name="BackgroundEndColor"
+                    Text="#0083B0"
+                    Placeholder="Background End Color Hex"
+                    TextChanged="OnBackgroundChanged"/>
+                <Label
+                    Text="Border"
+                    Style="{StaticResource Headline}"/>
+                <Label 
+                    Text="Border Start Color"
+                    Style="{StaticResource InfoStyle}" />
+                <Entry
+                    x:Name="BorderStartColor"
+                    Text="#CAC531"
+                    Placeholder="Border Start Color Hex" 
+                    TextChanged="OnBorderChanged"/>
+                <Label 
+                    Text="Border End Color"
+                    Style="{StaticResource InfoStyle}" />
+                <Entry
+                    x:Name="BorderEndColor"
+                    Text="#F3F9A7"
+                    Placeholder="Border End Color Hex"
+                    TextChanged="OnBorderChanged"/>
+                <Label 
+                    Text="{Binding Source={x:Reference BorderWidthSlider}, Path=Value, StringFormat='{}Border Width: {0}'}"
+                    Style="{StaticResource InfoStyle}" />
+                <Slider
+                    x:Name="BorderWidthSlider" 
+                    Maximum="20" 
+                    Minimum="0" 
+                    Value="10"
+                    ValueChanged="OnBorderWidthChanged" />
+                <Label
+                    Text="Corner Radius"
+                    Style="{StaticResource Headline}"/>
+                <Label 
+                    Text="{Binding Source={x:Reference TopLeftCornerSlider}, Path=Value, StringFormat='{}Top Left Corner Radius: {0}'}"
+                    Style="{StaticResource InfoStyle}"/>
+                <Slider 
+                    x:Name="TopLeftCornerSlider"
+                    Maximum="60" 
+                    Minimum="0" 
+                    Value="6"
+                    ValueChanged="OnCornerRadiusChanged" />
+                <Label 
+                    Text="{Binding Source={x:Reference TopRightCornerSlider}, Path=Value, StringFormat='{}Top Right Corner Radius: {0}'}"
+                    Style="{StaticResource InfoStyle}" />
+                <Slider
+                    x:Name="TopRightCornerSlider" 
+                    Maximum="60" 
+                    Minimum="0" 
+                    ValueChanged="OnCornerRadiusChanged" />
+                <Label 
+                    Text="{Binding Source={x:Reference BottomLeftCornerSlider}, Path=Value, StringFormat='{}Bottom Left Corner Radius: {0}'}"
+                    Style="{StaticResource InfoStyle}" />
+                <Slider 
+                    x:Name="BottomLeftCornerSlider" 
+                    Maximum="60" 
+                    Minimum="0" 
+                    ValueChanged="OnCornerRadiusChanged" />
+                <Label 
+                    Text="{Binding Source={x:Reference BottomRightCornerSlider}, Path=Value, StringFormat='{}Bottom Right Corner Radius: {0}'}"
+                    Style="{StaticResource InfoStyle}" />
+                <Slider 
+                    x:Name="BottomRightCornerSlider" 
+                    Maximum="60"
+                    Minimum="0"
+                    Value="12"
+                    ValueChanged="OnCornerRadiusChanged" />
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+</views:BasePage>

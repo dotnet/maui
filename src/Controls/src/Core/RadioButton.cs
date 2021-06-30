@@ -61,9 +61,9 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
-		public static readonly BindableProperty CornerRadiusProperty = BorderElement.CornerRadiusProperty;
+		public static readonly new BindableProperty CornerRadiusProperty = BorderElement.CornerRadiusProperty;
 
-		public static readonly BindableProperty BorderWidthProperty = BorderElement.BorderWidthProperty;
+		public static readonly new BindableProperty BorderWidthProperty = BorderElement.BorderWidthProperty;
 
 		// If Content is set to a string, the string will be displayed using the native Text property
 		// on platforms which support that; in a ControlTemplate it will be automatically converted
