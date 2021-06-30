@@ -51,7 +51,6 @@ namespace Microsoft.Maui.Controls
 			{ typeof(Color), typeof(ColorTypeConverter) },
 			{ typeof(CornerRadius), typeof(CornerRadiusTypeConverter) },
 			{ typeof(Font), typeof(FontTypeConverter) },
-			{ typeof(FlowDirection), typeof(FlowDirectionConverter) },
 			{ typeof(Keyboard), typeof(KeyboardTypeConverter) },
 			{ typeof(Graphics.Rectangle), typeof(RectangleTypeConverter) },
 			{ typeof(Size), typeof(SizeTypeConverter) },

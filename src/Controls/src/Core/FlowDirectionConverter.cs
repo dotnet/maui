@@ -2,6 +2,14 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
+	[TypeConverter(typeof(FlowDirectionConverter))]
+	public enum FlowDirection
+	{
+		MatchParent = 0,
+		LeftToRight = 1,
+		RightToLeft = 2,
+	}
+
 	[Xaml.TypeConversion(typeof(FlowDirection))]
 	public class FlowDirectionConverter : TypeConverter
 	{
