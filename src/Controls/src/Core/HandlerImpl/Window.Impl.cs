@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
 			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
 
-		internal IMauiContext MauiContext => Page?.Handler?.MauiContext 
+		internal IMauiContext MauiContext => Page?.Handler?.MauiContext
 			?? throw new InvalidOperationException("MauiContext is null");
 
 		internal AlertManager AlertManager { get; }

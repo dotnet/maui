@@ -16,6 +16,10 @@
                 Style="{StaticResource Headline}"/>
             <DatePicker
                 IsEnabled="False"/>
+            <Label
+                Text="TextColor"
+                Style="{StaticResource Headline}"/>
+            <DatePicker TextColor="Red"/>
         </VerticalStackLayout>
-    </views:BasePage.Content>
+    </views:BasePage.Content>               
 </views:BasePage>

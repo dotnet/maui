@@ -2,16 +2,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Runtime;
 using Android.Views;
+using Android.Views.Animations;
+using AndroidX.Activity;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
-using Android.Views.Animations;
-using System.ComponentModel;
-using AndroidX.Activity;
-using Android.Runtime;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -68,16 +68,16 @@ namespace Microsoft.Maui.Controls.Platform
 					modalContainer
 						.Animate()?.TranslationY(_renderer.Height)?
 						.SetInterpolator(new AccelerateInterpolator(1))?.SetDuration(300)?.SetListener(new GenericAnimatorListener
-					{
-						OnEnd = a =>
 						{
-							modalContainer.RemoveFromParent();
-							modalContainer.Dispose();
-							source.TrySetResult(modal);
-							CurrentPageController?.SendAppearing();
-							modalContainer = null;
-						}
-					});
+							OnEnd = a =>
+							{
+								modalContainer.RemoveFromParent();
+								modalContainer.Dispose();
+								source.TrySetResult(modal);
+								CurrentPageController?.SendAppearing();
+								modalContainer = null;
+							}
+						});
 				}
 				else
 				{
