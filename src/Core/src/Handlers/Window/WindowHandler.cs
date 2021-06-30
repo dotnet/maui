@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Animations;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIWindow;
 #elif MONOANDROID
@@ -16,6 +17,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IWindow.Title)] = MapTitle,
 		};
 
+		IAnimationManager? _animationManager;
+
 		public WindowHandler()
 			: base(WindowMapper)
 		{
@@ -25,6 +28,9 @@ namespace Microsoft.Maui.Handlers
 			: base(mapper ?? WindowMapper)
 		{
 		}
+
+		public IAnimationManager AnimationManager =>
+			_animationManager ??= this.GetRequiredService<IAnimationManager>();
 
 #if !NETSTANDARD
 		protected override NativeView CreateNativeElement() =>
