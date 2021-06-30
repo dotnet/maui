@@ -47,7 +47,7 @@ namespace Microsoft.Maui
 			var activationState = new ActivationState(mauiContext, args);
 			var window = Application.CreateWindow(activationState);
 
-			winuiWndow.SetWindow(window, this, mauiContext);
+			winuiWndow.SetWindow(window, mauiContext);
 
 			return winuiWndow;
 		}

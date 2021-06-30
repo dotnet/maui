@@ -63,8 +63,6 @@ namespace Microsoft.Maui
 
 			if (handler.VirtualView != window)
 				handler.SetVirtualView(window);
-
-			activity.SetContentView(window.View.ToContainerView(context));
 		}
 	}
 }

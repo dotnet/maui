@@ -54,7 +54,7 @@ namespace Microsoft.Maui
 			var activationState = new ActivationState(mauiContext);
 			var window = Application.CreateWindow(activationState);
 
-			uiWindow.RootViewController = window.View.ToUIViewController(mauiContext);
+			uiWindow.RootViewController = window.Content.ToUIViewController(mauiContext);
 
 			return uiWindow;
 		}

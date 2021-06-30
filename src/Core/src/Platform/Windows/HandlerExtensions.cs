@@ -37,10 +37,9 @@ namespace Microsoft.Maui
 			return result;
 		}
 
-		public static void SetWindow(this UI.Xaml.Window nativeWindow, IWindow window, MauiWinUIApplication mauiApp, IMauiContext context)
+		public static void SetWindow(this UI.Xaml.Window nativeWindow, IWindow window, IMauiContext context)
 		{
 			_ = nativeWindow ?? throw new ArgumentNullException(nameof(nativeWindow));
-			_ = mauiApp ?? throw new ArgumentNullException(nameof(mauiApp));
 			_ = window ?? throw new ArgumentNullException(nameof(window));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
 
@@ -57,22 +56,6 @@ namespace Microsoft.Maui
 
 			if (handler.VirtualView != window)
 				handler.SetVirtualView(window);
-
-			var nativeContent = window.View.ToNative(context);
-
-			// TODO WINUI should this be some other known constant or via some mechanism? Or done differently?
-			mauiApp.Resources.TryGetValue("MauiRootContainerStyle", out object style);
-
-			var root = new RootPanel
-			{
-				Style = style as UI.Xaml.Style,
-				Children =
-				{
-					nativeContent
-				}
-			};
-
-			nativeWindow.Content = root;
 		}
 	}
 }

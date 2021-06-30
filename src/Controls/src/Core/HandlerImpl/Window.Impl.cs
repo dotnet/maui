@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls
 		internal IAnimationManager? AnimationManager =>
 			_animationManager ??= MauiContext?.Services.GetRequiredService<IAnimationManager>();
 
-		IView IWindow.View =>
+		IView IWindow.Content =>
 			Page ?? throw new InvalidOperationException("No page was set on the window.");
 
 		void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
