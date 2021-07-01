@@ -333,6 +333,9 @@ namespace Microsoft.Maui.Controls
 		internal static bool IsApplicationOrNull(object element) =>
 			element == null || element is IApplication;
 
+		internal static bool IsApplicationOrWindowOrNull(object element) =>
+			element == null || element is IApplication || element is IWindow;
+
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
 		{
 			if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)

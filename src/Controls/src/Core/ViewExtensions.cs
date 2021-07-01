@@ -178,12 +178,12 @@ namespace Microsoft.Maui.Controls
 
 		internal static IMauiContext? FindMauiContext(this Element element)
 		{
-			if (element is IFrameworkElement fe && fe.Handler?.MauiContext != null)
+			if (element is Maui.IElement fe && fe.Handler?.MauiContext != null)
 				return fe.Handler.MauiContext;
 
 			foreach (var parent in element.GetParentsPath())
 			{
-				if (parent is IFrameworkElement parentView && parentView.Handler?.MauiContext != null)
+				if (parent is Maui.IElement parentView && parentView.Handler?.MauiContext != null)
 					return parentView.Handler.MauiContext;
 			}
 
@@ -214,6 +214,20 @@ namespace Microsoft.Maui.Controls
 				current = current.RealParent;
 				yield return current;
 			}
+		}
+
+		internal static List<Page> GetParentPages(this Page target)
+		{
+			var result = new List<Page>();
+
+			var parent = target.RealParent as Page;
+			while (!Application.IsApplicationOrWindowOrNull(parent))
+			{
+				result.Add(parent!);
+				parent = parent!.RealParent as Page;
+			}
+
+			return result;
 		}
 
 		internal static string? GetStringValue(this IView element)
