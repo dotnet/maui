@@ -110,16 +110,13 @@ namespace Microsoft.Maui.Controls
 		void OnPageAttachedHandler(object? sender, EventArgs e)
 		{
 			ModalNavigationService.PageAttachedHandler();
-#if !NETSTANDARD
+
 			AlertManager.Subscribe();
-#endif
 		}
 
 		void OnPageDetachedHandler(object? sender, EventArgs e)
 		{
-#if !NETSTANDARD
 			AlertManager.Unsubscribe();
-#endif
 		}
 
 		IView IWindow.View
