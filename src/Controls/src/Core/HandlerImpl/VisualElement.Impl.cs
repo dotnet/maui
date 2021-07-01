@@ -172,11 +172,7 @@ namespace Microsoft.Maui.Controls
 			if (_handler?.VirtualView != this)
 				_handler?.SetVirtualView((IView)this);
 
-				#if WINDOWS
-
-				#else
 			IsPlatformEnabled = _handler != null;
-			#endif
 
 			if (_handler != null)
 			{
