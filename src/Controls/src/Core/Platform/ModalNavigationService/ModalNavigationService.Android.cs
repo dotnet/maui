@@ -1,15 +1,12 @@
 ﻿#nullable enable
-
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 using System.Threading.Tasks;
 using Android.Content;
-using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
+using AndroidX.AppCompat.App;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -19,13 +16,11 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		partial void OnPageAttachedHandler()
 		{
-			var nativeActivity = _window.NativeActivity;
-
-			if (_BackButtonCallBack == null || _BackButtonCallBack.Context != nativeActivity)
+			if (_window.NativeActivity is AppCompatActivity activity && (_BackButtonCallBack == null || _BackButtonCallBack.Context != activity))
 			{
-				nativeActivity
+				activity
 					.OnBackPressedDispatcher
-					.AddCallback(nativeActivity, _BackButtonCallBack = new BackButtonCallBack(this, nativeActivity));
+					.AddCallback(activity, _BackButtonCallBack = new BackButtonCallBack(this, activity));
 			}
 		}
 

@@ -85,38 +85,13 @@ namespace Microsoft.Maui.Controls.Hosting
 						var mauiContext = new MauiContext(services, app);
 						var state = new ActivationState(mauiContext);
 						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
-
-						GraphicsPlatform.RegisterGlobalService(NativeGraphicsService.Instance);
 					})
-					.OnCreate((activity, bundle) =>
+					.OnMauiContextCreated((mauiContext) =>
 					{
-						// This is the Init that sets up the first context from the activity.
-						// There is still no official MauiContext since that happens just after this.
+						// This is the final Init that sets up the real context from the activity.
 
-						var services = MauiApplication.Current.Services;
-						var mauiContext = new MauiContext(services, activity);
-						var state = new ActivationState(mauiContext, bundle);
-						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
-					})
-					.OnPostCreate((activity, bundle) =>
-					{
-						// This is the final Init that ensures the Forms type is using the same
-						// MauiContext that is part of the rest of the maui application.
-
-						var windows = Application.Current?.Windows;
-						if (windows?.Count > 0)
-						{
-							var window = windows[0];
-							var mauiContext =
-								window.Handler?.MauiContext ??
-								window.Page?.Handler?.MauiContext;
-
-							if (mauiContext != null)
-							{
-								var state = new ActivationState(mauiContext, bundle);
-								Forms.Init(state);
-							}
-						}
+						var state = new ActivationState(mauiContext);
+						Forms.Init(state);
 					}));
 #elif __IOS__
 				events.AddiOS(iOS => iOS
@@ -132,29 +107,12 @@ namespace Microsoft.Maui.Controls.Hosting
 						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
 						return true;
 					})
-					.FinishedLaunching((app, options) =>
+					.OnMauiContextCreated((mauiContext) =>
 					{
-						// This is the final Init that ensures the Forms type is using the same
-						// MauiContext that is part of the rest of the maui application.
+						// This is the final Init that sets up the real context from the application.
 
-						var windows = Application.Current?.Windows;
-						if (windows?.Count > 0)
-						{
-							var window = windows[0];
-							var mauiContext =
-								window.Handler?.MauiContext ??
-								window.Page?.Handler?.MauiContext;
-
-							if (mauiContext != null)
-							{
-								var state = new ActivationState(mauiContext);
-								Forms.Init(state);
-							}
-						}
-
-						GraphicsPlatform.RegisterGlobalService(NativeGraphicsService.Instance);
-
-						return true;
+						var state = new ActivationState(mauiContext);
+						Forms.Init(state);
 					}));
 #elif WINDOWS
 				events.AddWindows(windows => windows
@@ -173,28 +131,13 @@ namespace Microsoft.Maui.Controls.Hosting
 						var mauiContext = new MauiContext(services);
 						var state = new ActivationState(mauiContext, args);
 						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
-						// TODO: Implement GetPathBounds in Microsoft.Maui.Graphics
-						// GraphicsPlatform.RegisterGlobalService(W2DGraphicsService.Instance);
 					})
-					.OnLaunched((app, args) =>
+					.OnMauiContextCreated((mauiContext) =>
 					{
-						// This is the final Init that ensures the Forms type is using the same
-						// MauiContext that is part of the rest of the maui application.
+						// This is the final Init that sets up the real context from the application.
 
-						var windows = Application.Current?.Windows;
-						if (windows?.Count > 0)
-						{
-							var window = windows[0];
-							var mauiContext =
-								window.Handler?.MauiContext ??
-								window.Page?.Handler?.MauiContext;
-
-							if (mauiContext != null)
-							{
-								var state = new ActivationState(mauiContext, args);
-								Forms.Init(state);
-							}
-						}
+						var state = new ActivationState(mauiContext);
+						Forms.Init(state);
 					}));
 #endif
 			});
@@ -302,6 +245,9 @@ namespace Microsoft.Maui.Controls.Hosting
 				CompatServiceProvider.SetServiceProvider(services);
 #endif
 
+				if (services.GetService<IGraphicsService>() is IGraphicsService graphicsService)
+					GraphicsPlatform.RegisterGlobalService(graphicsService);
+
 #if WINDOWS
 				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
 				if (dictionaries != null)
@@ -323,6 +269,14 @@ namespace Microsoft.Maui.Controls.Hosting
 
 			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
 			{
+#if __IOS__ || MACCATALYST
+				services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
+#elif __ANDROID__
+				services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
+#elif WINDOWS
+				// TODO: Implement GetPathBounds in Microsoft.Maui.Graphics
+				//services.AddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
+#endif
 			}
 
 #if WINDOWS
