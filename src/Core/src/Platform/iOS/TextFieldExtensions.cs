@@ -74,12 +74,13 @@ namespace Microsoft.Maui
 				return;
 
 			var placeholderColor = entry.PlaceholderColor;
-			var color = placeholderColor ?? defaultPlaceholderColor;
+			var foregroundColor = placeholderColor ?? defaultPlaceholderColor;
 
-			if (color != null)
-				textField.AttributedPlaceholder = new NSAttributedString(str: placeholder, foregroundColor: color.ToNative());
-			else
-				textField.Placeholder = placeholder;
+			textField.AttributedPlaceholder = foregroundColor == null
+ 				? new NSAttributedString(placeholder)
+ 				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToNative());
+
+			textField.AttributedPlaceholder.WithCharacterSpacing(entry.CharacterSpacing);
 		}
 
 		public static void UpdateIsReadOnly(this UITextField textField, IEntry entry)
