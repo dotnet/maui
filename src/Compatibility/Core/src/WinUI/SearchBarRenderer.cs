@@ -238,6 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.PlaceholderText = Element.Placeholder ?? string.Empty;
 		}
 
+		[PortHandler]
 		void UpdatePlaceholderColor()
 		{
 			if (_queryTextBox == null)

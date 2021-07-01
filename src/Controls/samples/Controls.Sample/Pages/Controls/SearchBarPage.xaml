@@ -22,6 +22,17 @@
             <SearchBar
                 TextColor="Green"/>
             <Label
+                Text="With Placeholder"
+                Style="{StaticResource Headline}" />
+            <SearchBar 
+                Placeholder="Placeholder"/>
+            <Label
+                Text="Using PlaceholderColor"
+                Style="{StaticResource Headline}" />
+            <SearchBar 
+                PlaceholderColor="Pink"
+                Placeholder="Placeholder"/>
+            <Label
                 Text="Fonts"
                 Style="{StaticResource Headline}"/>
             <SearchBar
