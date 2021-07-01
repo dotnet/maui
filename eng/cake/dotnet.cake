@@ -257,13 +257,13 @@ string FindMSBuild()
 void SetDotNetEnvironmentVariables()
 {
     var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
-    var target = EnvironmentVariableTarget.Process;
-    Environment.SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet, target);
-    Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnet, target);
-    Environment.SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet, target);
-    Environment.SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0", target);
-    Environment.SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true", target);
-    Environment.SetEnvironmentVariable("PATH", dotnet + System.IO.Path.PathSeparator + EnvironmentVariable("PATH"), target);
+
+    SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
+    SetEnvironmentVariable("DOTNET_ROOT", dotnet);
+    SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
+    SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
+    SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
+    SetEnvironmentVariable("PATH", dotnet, prepend: true);
 }
 
 void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
@@ -283,7 +283,7 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
     if (vsLatest == null)
         throw new Exception("Unable to find Visual Studio!");
     SetDotNetEnvironmentVariables();
-    Environment.SetEnvironmentVariable("_ExcludeMauiProjectCapability", "true", EnvironmentVariableTarget.Process);
+    SetEnvironmentVariable("_ExcludeMauiProjectCapability", "true");
     StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
 }
 
