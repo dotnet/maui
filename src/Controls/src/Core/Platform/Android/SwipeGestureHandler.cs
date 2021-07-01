@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Controls.Platform
 {
 	internal class SwipeGestureHandler
 	{

@@ -13,6 +13,9 @@ namespace Microsoft.Maui
 	public class MauiWinUIApplication<TStartup> : MauiWinUIApplication
 		where TStartup : IStartup, new()
 	{
+		public virtual UI.Xaml.Window CreateWindow() =>
+			new MauiWinUIWindow();
+
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
 			LaunchActivatedEventArgs = args;

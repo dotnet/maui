@@ -123,7 +123,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual void SetupDefaults(TNativeView nativeView) { }
 
-
 		public new TVirtualView VirtualView
 		{
 			get => (TVirtualView?)base.VirtualView ?? throw new InvalidOperationException($"VirtualView cannot be null here");

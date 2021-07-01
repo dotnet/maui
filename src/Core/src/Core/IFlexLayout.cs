@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	/// A Flexbox-like layout that lays out child elements in optionally wrappable rows or columns of 
 	/// child elements.
 	/// </summary>
-	public interface IFlexLayout : ILayout 
+	public interface IFlexLayout : ILayout
 	{
 		/// <summary>
 		/// Gets the flex direction for child elements within this layout.
