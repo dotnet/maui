@@ -120,24 +120,5 @@ namespace Microsoft.Maui.Controls.Platform
 
 			return view.Parent.GetParentOfType<T>();
 		}
-
-		internal static T FindParentOfType<T>(this VisualElement element)
-		{
-			var navPage = element.GetParentsPath()
-				.OfType<T>()
-				.FirstOrDefault();
-			return navPage;
-		}
-
-		internal static IEnumerable<Element> GetParentsPath(this VisualElement self)
-		{
-			Element current = self;
-
-			while (!Application.IsApplicationOrNull(current.RealParent))
-			{
-				current = current.RealParent;
-				yield return current;
-			}
-		}
 	}
 }

@@ -1,85 +1,79 @@
-﻿// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
-
-using System;
+﻿using System;
 using System.Globalization;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.LifecycleEvents;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.Graphics.Display;
 using Windows.System;
-using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
-	/// <summary>
-	/// An empty page that can be used on its own or navigated to within a Frame.
-	/// </summary>
-	public sealed partial class MainPage : MauiWinUIWindow
+	public class WinUIStartup : Startup
 	{
-		public MainPage()
+		public override void Configure(IAppHostBuilder appBuilder)
 		{
-			InitializeComponent();
+			base.Configure(appBuilder);
 
-			// TODO WINUI3
-			// some tests need to window to be large enough to click on things
-			// can we make this only open to window size for UI Tests?
-			//var bounds = ApplicationView.GetForCurrentView().VisibleBounds;
-			//var scaleFactor = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
-			//var size = new Windows.Foundation.Size(bounds.Width * scaleFactor, bounds.Height * scaleFactor);
-			//ApplicationView.PreferredLaunchViewSize = size;
-			//ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
+			appBuilder.ConfigureLifecycleEvents(lifecycle => lifecycle
+				.AddWindows(windows => windows
+					.OnLaunching((_, e) =>
+					{
+						if (!string.IsNullOrWhiteSpace(e.Arguments) && e.Arguments.Contains("RunningAsUITests"))
+						{
+							App.RunningAsUITests = true;
+							ControlGallery.App.PreloadTestCasesIssuesList = false;
+						}
+					})
+					.OnActivated(WinUIPageStartup.OnActivated)));
+		}
+	}
 
-
-
+	static class WinUIPageStartup
+	{
+		public static void OnActivated(UI.Xaml.Window window, UI.Xaml.WindowActivatedEventArgs e)
+		{
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
-			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
+			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(window, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
 
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
-			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
+			MessagingCenter.Subscribe<NativeBindingGalleryPage>(window, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
 
-			this.Activated += MainPage_Activated;
-		}
+			Application.Current.PropertyChanged += OnAppPropertyChanged;
 
-		private void MainPage_Activated(object sender, UI.Xaml.WindowActivatedEventArgs args)
-		{
-			Application.Current.PropertyChanged += _app_PropertyChanged;
-			WireUpKeyDown();
+			WireUpKeyDown(window);
+
+			void OnAppPropertyChanged(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
+			{
+				if (e.PropertyName == nameof(Application.MainPage))
+					WireUpKeyDown(window);
+			}
 		}
 
 		// TODO WINUI3 not sure the best way to detect the content swap out
-		void WireUpKeyDown()
+		static void WireUpKeyDown(UI.Xaml.Window window)
 		{
-			this.DispatcherQueue.TryEnqueue(() =>
+			window.DispatcherQueue.TryEnqueue(() =>
 			{
-				if (this.Content != null)
+				if (window.Content != null)
 				{
-					this.Content.KeyDown -= OnKeyDown;
-					this.Content.KeyDown += OnKeyDown;
+					window.Content.KeyDown -= OnKeyDown;
+					window.Content.KeyDown += OnKeyDown;
 				}
 				else
 				{
-					WireUpKeyDown();
+					WireUpKeyDown(window);
 				}
 			});
 		}
 
-		private void _app_PropertyChanged(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == "MainPage")
-			{
-				WireUpKeyDown();
-			}
-		}
-
-		void OnKeyDown(object sender, KeyRoutedEventArgs args)
+		static void OnKeyDown(object sender, KeyRoutedEventArgs args)
 		{
 			if (args.Key == VirtualKey.Escape)
 			{
@@ -95,7 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			}
 		}
 
-		void AddNativeControls(NestedNativeControlGalleryPage page)
+		static void AddNativeControls(NestedNativeControlGalleryPage page)
 		{
 			if (page.NativeControlsAdded)
 			{
@@ -116,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			sl?.Children.Add(textBlock);
 
 			// Create and add a native Button 
-			var button = new Microsoft.UI.Xaml.Controls.Button { Content = "Toggle Font Size", Height = 80 };
+			var button = new UI.Xaml.Controls.Button { Content = "Toggle Font Size", Height = 80 };
 			button.Click += (sender, args) => { textBlock.FontSize = textBlock.FontSize == 14 ? 24 : 14; };
 
 			sl?.Children.Add(button.ToView());
@@ -138,9 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 				arrangeOverrideDelegate: (renderer, finalSize) =>
 				{
 					if (finalSize.Width <= 0 || double.IsInfinity(finalSize.Width))
-					{
 						return null;
-					}
 
 					FrameworkElement frameworkElement = renderer.Control;
 
@@ -168,7 +160,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			page.NativeControlsAdded = true;
 		}
 
-		void AddNativeBindings(NativeBindingGalleryPage page)
+		static void AddNativeBindings(NativeBindingGalleryPage page)
 		{
 			if (page.NativeControlsAdded)
 				return;
@@ -187,10 +179,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 				FontFamily = new FontFamily("HelveticaNeue")
 			};
 
-			var btnColor = new Microsoft.UI.Xaml.Controls.Button { Content = "Toggle Label Color", Height = 80 };
+			var btnColor = new UI.Xaml.Controls.Button { Content = "Toggle Label Color", Height = 80 };
 			btnColor.Click += (sender, args) => txbLabel.Foreground = SolidColorBrush.Pink.ToBrush();
 
-			var btnTextBox = new Microsoft.UI.Xaml.Controls.Button { Content = "Change text textbox", Height = 80 };
+			var btnTextBox = new UI.Xaml.Controls.Button { Content = "Change text textbox", Height = 80 };
 			btnTextBox.Click += (sender, args) => txbBox.Text = "Hello 2 way native";
 
 			txbLabel.SetBinding("Text", new Binding("NativeLabel"));
@@ -214,15 +206,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 			{
 				if (value is Color)
-					return new Microsoft.UI.Xaml.Media.SolidColorBrush(ToWindowsColor((Color)value));
+					return new UI.Xaml.Media.SolidColorBrush(ToWindowsColor((Color)value));
 
 				return null;
 			}
 
 			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			{
-				if (value is Microsoft.UI.Xaml.Media.SolidColorBrush)
-					return ToColor(((Microsoft.UI.Xaml.Media.SolidColorBrush)value).Color);
+				if (value is UI.Xaml.Media.SolidColorBrush)
+					return ToColor(((UI.Xaml.Media.SolidColorBrush)value).Color);
 
 				return null;
 			}

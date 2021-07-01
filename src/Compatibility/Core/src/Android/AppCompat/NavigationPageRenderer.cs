@@ -344,16 +344,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					_toolbarTracker.CollectionChanged += ToolbarTrackerOnCollectionChanged;
 				}
 
-				var parents = new List<Page>();
-				Page root = Element;
-				while (!Application.IsApplicationOrNull(root.RealParent))
-				{
-					root = (Page)root.RealParent;
-					parents.Add(root);
-				}
-
 				_toolbarTracker.Target = e.NewElement;
-				_toolbarTracker.AdditionalTargets = parents;
+				_toolbarTracker.AdditionalTargets = Element.GetParentPages();
 				UpdateMenu();
 
 				var navController = (INavigationPageController)e.NewElement;
