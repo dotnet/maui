@@ -166,16 +166,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		HandlerWithAnimationContextStub animationContext;
 
 		[OneTimeSetUp]
-		public void Init()
+		public void OneTimeSetUp()
 		{
 			Device.PlatformServices = new MockPlatformServices();
-			animationContext = new HandlerWithAnimationContextStub(new TestAnimationManager(new AsyncTicker()));
 		}
 
 		[OneTimeTearDown]
-		public void End()
+		public void OneTimeTearDown()
 		{
 			Device.PlatformServices = null;
+		}
+
+		[SetUp]
+		public void SetUp()
+		{
+			animationContext = new HandlerWithAnimationContextStub(new TestAnimationManager(new AsyncTicker()));
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
 			animationContext = null;
 		}
 
