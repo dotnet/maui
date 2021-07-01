@@ -73,12 +73,6 @@ namespace Microsoft.Maui.Controls
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
 			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
 
-		new internal IWindowHandler Handler
-		{
-			get => (IWindowHandler)base.Handler;
-			set => base.Handler = value;
-		}
-
 		internal AlertManager AlertManager { get; }
 
 		internal ModalNavigationService ModalNavigationService { get; }
@@ -86,8 +80,14 @@ namespace Microsoft.Maui.Controls
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
 
-		internal IAnimationManager AnimationManager =>
-			Handler?.AnimationManager ?? throw new InvalidOperationException("The AnimationManager was not provided for this window.");
+		internal IAnimationManager AnimationManager
+		{
+			get
+			{
+				var handler = Handler as IWindowHandler;
+				return handler?.AnimationManager ?? throw new InvalidOperationException("The AnimationManager was not provided for this window.");
+			}
+		}
 
 		IView IWindow.Content =>
 			Page ?? throw new InvalidOperationException("No page was set on the window.");

@@ -2,7 +2,8 @@
 
 namespace Microsoft.Maui
 {
-	public interface IWindowHandler : IElementHandler
+	// TODO: internal for now as we are not yet sure we want this
+	interface IWindowHandler : IElementHandler
 	{
 		IAnimationManager AnimationManager { get; }
 	}
