@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public event EventHandler Tapped;
-		
+
 		internal void SendTapped(View sender)
 		{
 			ICommand cmd = Command;
