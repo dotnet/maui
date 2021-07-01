@@ -1,9 +1,6 @@
 ﻿#nullable enable
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Android.App;
 using AndroidX.AppCompat.App;
 
 namespace Microsoft.Maui.Controls
