@@ -176,9 +176,6 @@ namespace Microsoft.Maui
 			};
 
 			MainWindow.BackButtonPressed += OnBackButtonPressed;
-
-
-
 		}
 
 		void OnBackButtonPressed(object sender, EventArgs e)
