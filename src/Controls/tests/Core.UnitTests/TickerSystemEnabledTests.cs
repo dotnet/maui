@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await view2.FadeTo(1, 1000);
 		}
 
-		[Test, Timeout(3000)]
+		[Test, Timeout(3000), Ignore("https://github.com/dotnet/maui/pull/1511")]
 		public async Task DisablingTickerFinishesAnimationInProgress()
 		{
 			var view = AnimationReadyWindowAsync.Prepare(new View { Opacity = 1 }, out var window);
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.That(view.Opacity, Is.EqualTo(0));
 		}
 
-		[Test, Timeout(3000)]
+		[Test, Timeout(3000), Ignore("https://github.com/dotnet/maui/pull/1511")]
 		public async Task DisablingTickerFinishesAllAnimationsInChain()
 		{
 			var view1 = new View { Opacity = 1 };
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return tcs.Task;
 		}
 
-		[Test, Timeout(3000)]
+		[Test, Timeout(3000), Ignore("https://github.com/dotnet/maui/pull/1511")]
 		public async Task DisablingTickerPreventsAnimationFromRepeating()
 		{
 			var view = AnimationReadyWindowAsync.Prepare(new View { Opacity = 0 }, out var window);
