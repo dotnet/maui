@@ -30,10 +30,8 @@
     <None Include="**\Android\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('tizen')) != true AND $(TargetFramework.StartsWith('net6.0-tizen')) != true ">
-    <Compile Remove="**\*.Tizen.cs" />
-    <None Include="**\*.Tizen.cs" />
-    <Compile Remove="**\Tizen\*.cs" />
-    <None Include="**\Tizen\*.cs" />
+    <Compile Remove="**\**\*.Tizen.cs" />
+    <None Include="**\**\*.Tizen.cs" />
     <Compile Remove="**\Tizen\**\*.cs" />
     <None Include="**\Tizen\**\*.cs" />
   </ItemGroup>
