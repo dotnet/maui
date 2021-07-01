@@ -25,10 +25,9 @@ namespace Microsoft.Maui.Controls
 			// Update the Bounds (Frame) for this page
 			Layout(bounds);
 
-			if (Content is IFrameworkElement element)
+			if (Content is IFrameworkElement frameworkElement && Content is VisualElement visualElement)
 			{
-				element.Arrange(bounds);
-				element.Handler?.NativeArrange(element.Frame);
+				frameworkElement.Frame = visualElement.Bounds;
 			}
 
 			return Frame.Size;

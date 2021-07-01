@@ -69,8 +69,9 @@ namespace Microsoft.Maui.DeviceTests
 			handler.SetVirtualView(view);
 			view.Handler = handler;
 
-			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
-			handler.NativeArrange(view.Frame);
+			// We're faking here as if we've measured the view
+			handler.VirtualView.Frame = new Rectangle(0, 0, handler.VirtualView.DesiredSize.Width, handler.VirtualView.DesiredSize.Height);
+			view.Arrange(view.Frame);
 
 			return handler;
 		}

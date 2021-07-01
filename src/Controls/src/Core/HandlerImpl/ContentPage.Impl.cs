@@ -2,6 +2,7 @@
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.HotReload;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
@@ -24,17 +25,14 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
+			_ = base.ArrangeOverride(bounds);
+
 			// Update the Bounds (Frame) for this page
 			Layout(bounds);
 
-			if (Content is IFrameworkElement element)
+			if (Content is IFrameworkElement frameworkElement && Content is VisualElement visualElement)
 			{
-				// The size checks here are a guard against legacy layouts which try to lay things out before the
-				// native side is ready. We just ignore those invalid values.
-				if (element.Frame.Size.Width >= 0 && element.Frame.Size.Height >= 0)
-				{
-					element.Handler?.NativeArrange(element.Frame);
-				}
+				frameworkElement.Frame = visualElement.Bounds;
 			}
 
 			return Frame.Size;

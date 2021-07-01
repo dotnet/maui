@@ -8,6 +8,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class StubBase : IFrameworkElement
 	{
+		Rectangle _frame;
+
 		public bool IsEnabled { get; set; } = true;
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;
@@ -16,8 +18,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Paint Background { get; set; }
 
-		public Rectangle Frame { get; set; }
-
+		public Rectangle Frame
+		{
+			get => _frame;
+			set => SetProperty(ref _frame, value);
+		}
+		
 		public IViewHandler Handler { get; set; }
 
 		public IShape Clip { get; set; }

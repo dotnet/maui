@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Graphics;
@@ -22,21 +21,18 @@ namespace Microsoft.Maui.Handlers
 
 		public Context Context => MauiContext?.Context ?? throw new InvalidOperationException($"Context cannot be null here");
 
-		public override void NativeArrange(Rectangle frame)
+		public override void SetNativeFrame(Rectangle frame)
 		{
 			var nativeView = WrappedNativeView;
 
 			if (nativeView == null)
 				return;
 
-			if (frame.Width < 0 || frame.Height < 0)
+			if (MauiContext == null || frame.Width < 0 || frame.Height < 0)
 			{
-				// This is a legacy layout value from Controls, nothing is actually laying out yet so we just ignore it
+				// This is just legacy layout stuff from Controls jumping the gun; we aren't ready to actually lay things out yet
 				return;
 			}
-
-			if (Context == null)
-				return;
 
 			var left = Context.ToPixels(frame.Left);
 			var top = Context.ToPixels(frame.Top);

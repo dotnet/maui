@@ -60,9 +60,9 @@ namespace Microsoft.Maui
 		Paint? Background { get; }
 
 		/// <summary>
-		/// Gets the bounds of the FrameworkElement.
+		/// Gets or sets the Rectangle which specifies the bounds of the element in relation to its container
 		/// </summary>
-		Rectangle Frame { get; }
+		Rectangle Frame { get; set; }
 
 		/// <summary>
 		/// Gets the specified width of this FrameworkElement. 
@@ -84,8 +84,9 @@ namespace Microsoft.Maui
 		/// </summary>
 		IFrameworkElement? Parent { get; }
 
+		// TODO ezhart 2021-06-24 AFAIK, we don't actually use the value returned from Arrange anywhere; can we drop it?
 		/// <summary>
-		/// Positions child elements and determines a size for an Element.
+		/// Sets the Frame for an element and positions child elements.
 		/// </summary>
 		/// <param name="bounds">The size that the parent computes for the child element.</param>
 		/// <returns>Return the actual arranged Size for this element.</returns>

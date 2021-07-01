@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.RotationY)] = MapRotationY,
 			[nameof(IView.AnchorX)] = MapAnchorX,
 			[nameof(IView.AnchorY)] = MapAnchorY,
+			
 			Actions =
 			{
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
@@ -95,7 +96,7 @@ namespace Microsoft.Maui.Handlers
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
-		public abstract void NativeArrange(Rectangle frame);
+		public abstract void SetNativeFrame(Rectangle frame);
 
 		partial void ConnectingHandler(NativeView? nativeView);
 
@@ -192,6 +193,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFrame(ViewHandler handler, IView view)
 		{
+			handler.SetNativeFrame(view.Frame);
 			MappingFrame(handler, view);
 #if WINDOWS
 			MapClip(handler, view);

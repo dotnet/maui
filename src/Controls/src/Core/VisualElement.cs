@@ -403,6 +403,7 @@ namespace Microsoft.Maui.Controls
 
 		public Rectangle Bounds
 		{
+			// TODO ezhart 2021-06-26 It seems ... wrong that this should return a brand new rectangle on every access
 			get { return new Rectangle(X, Y, Width, Height); }
 			private set
 			{
@@ -413,8 +414,6 @@ namespace Microsoft.Maui.Controls
 				Y = value.Y;
 				SetSize(value.Width, value.Height);
 				BatchCommit();
-
-				Handler?.UpdateValue(nameof(IFrameworkElement.Frame));
 			}
 		}
 

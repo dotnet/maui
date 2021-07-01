@@ -10,7 +10,20 @@ namespace Microsoft.Maui.Controls
 		Semantics _semantics;
 		IViewHandler _handler;
 
-		public Rectangle Frame => Bounds;
+		Rectangle _frame;
+
+		public Rectangle Frame
+		{
+			get => _frame; 
+			set
+			{
+				if (value != _frame)
+				{
+					_frame = value;
+					Handler?.UpdateValue(nameof(IFrameworkElement.Frame));
+				}
+			}
+		}
 
 		public IViewHandler Handler
 		{
@@ -45,6 +58,9 @@ namespace Microsoft.Maui.Controls
 
 		public Size DesiredSize { get; protected set; }
 
+		// TODO ezhart 2021-06-24 Does anything actually _use_ this Arrange method? Because if not, we could remove it
+		// and if we can remove it, we might be able to drop the explicit arrange implementation below, and ArrangeOverride
+		// which would make all of this much easier to grok
 		public void Arrange(Rectangle bounds)
 		{
 			Layout(bounds);
@@ -59,7 +75,7 @@ namespace Microsoft.Maui.Controls
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
-			Bounds = this.ComputeFrame(bounds);
+			Frame = bounds;
 			return Frame.Size;
 		}
 

@@ -257,8 +257,9 @@ namespace Microsoft.Maui.Controls.Platform
 						deviceIndependentRight, deviceIndependentBottom);
 
 					(_modal as IFrameworkElement).Arrange(destination);
-					(_modal.Handler as INativeViewHandler)?.NativeArrange(_modal.Frame);
-					_backgroundView.Layout(0, 0, r - l, b - t);
+					(_modal as IFrameworkElement).Frame = destination;
+
+					_backgroundView.Layout(l, t, r, b);
 				}
 
 				// _renderer.UpdateLayout();

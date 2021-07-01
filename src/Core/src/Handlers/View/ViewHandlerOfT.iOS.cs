@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Handlers
 
 		UIViewController? INativeViewHandler.ViewController => null;
 
-		public override void NativeArrange(Rectangle rect)
+		public override void SetNativeFrame(Rectangle frame)
 		{
 			var nativeView = WrappedNativeView;
 
@@ -28,8 +28,8 @@ namespace Microsoft.Maui.Handlers
 
 			// We set Center and Bounds rather than Frame because Frame is undefined if the CALayer's transform is 
 			// anything other than the identity (https://developer.apple.com/documentation/uikit/uiview/1622459-transform)
-			nativeView.Center = new CoreGraphics.CGPoint(rect.Center.X, rect.Center.Y);
-			nativeView.Bounds = new CoreGraphics.CGRect(0, 0, rect.Width, rect.Height);
+			nativeView.Center = new CoreGraphics.CGPoint(frame.Center.X, frame.Center.Y);
+			nativeView.Bounds = new CoreGraphics.CGRect(0, 0, frame.Width, frame.Height);
 
 			nativeView.UpdateBackgroundLayerFrame();
 		}

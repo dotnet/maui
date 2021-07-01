@@ -169,5 +169,35 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			UpdateBackgroundColor();
 		}
+
+		public override SizeRequest GetDesiredSize(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
+			var specWidth = MeasureSpec.GetSize(widthMeasureSpec);
+			var specHeight = MeasureSpec.GetSize(heightMeasureSpec);
+			var widthRequest = Element.WidthRequest;
+			var heightRequest = Element.HeightRequest;
+
+			if (widthMode != MeasureSpecMode.Exactly && widthRequest >= 0)
+			{
+				if (widthMode == MeasureSpecMode.Unspecified || widthRequest <= specWidth)
+				{
+					var deviceWidth = (int)Context.ToPixels(widthRequest);
+					widthMeasureSpec = MeasureSpec.MakeMeasureSpec(deviceWidth, MeasureSpecMode.Exactly);
+				}
+			}
+
+			if (heightMode != MeasureSpecMode.Exactly && heightRequest >= 0)
+			{
+				if (heightMode == MeasureSpecMode.Unspecified || heightRequest <= specHeight)
+				{
+					var deviceheight = (int)Context.ToPixels(heightRequest);
+					heightMeasureSpec = MeasureSpec.MakeMeasureSpec(deviceheight, MeasureSpecMode.Exactly);
+				}
+			}
+
+			return base.GetDesiredSize(widthMeasureSpec, heightMeasureSpec);
+		}
 	}
 }
