@@ -32,7 +32,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static UI.Xaml.Window MainWindow { get; set; }
 
 		public static bool IsInitialized { get; private set; }
-		static bool WinUIResourcesAdded { get; set; }
 
 		public static IMauiContext MauiContext { get; private set; }
 
@@ -67,24 +66,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				Log.Listeners.Add(new DelegateLogListener((c, m) => Debug.WriteLine(LogFormat, c, m)));
 
-			}
-
-			if (!UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
-			{
-				UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
-			}
-
-			try
-			{
-				if (!WinUIResourcesAdded)
-				{
-					WinUIResourcesAdded = true;
-					UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new UI.Xaml.Controls.XamlControlsResources());
-				}
-			}
-			catch
-			{
-				Log.Warning("Resources", "Unable to load WinUI resources. Try adding Microsoft.Maui.Controls.Compatibility nuget to UWP project");
 			}
 
 			Device.SetIdiom(TargetIdiom.Tablet);
@@ -138,9 +119,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				MainWindow = mainWindow;
 
-				//TODO WINUI3
-				Platform.UWP.Platform.SubscribeAlertsAndActionSheets();
-
 				if (mainWindow is WindowsBasePage windowsPage)
 				{
 					windowsPage.LoadApplication(windowsPage.CreateApplication());
@@ -160,16 +138,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return FlowDirection.RightToLeft;
 
 			return FlowDirection.MatchParent;
-		}
-
-		internal static UI.Xaml.ResourceDictionary GetTabletResources()
-		{
-			var dict = new UI.Xaml.ResourceDictionary
-			{
-				Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/WinUI/Resources.xbf")
-			};
-
-			return dict;
 		}
 	}
 }

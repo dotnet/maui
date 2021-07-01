@@ -23,12 +23,16 @@ namespace Microsoft.Maui.Controls
 		internal IMauiContext MauiContext => Page?.Handler?.MauiContext
 			?? throw new InvalidOperationException("MauiContext is null");
 
+		internal AlertManager AlertManager { get; }
+
 		internal ModalNavigationService ModalNavigationService { get; }
 
 		public Window()
 		{
 			ModalNavigationService = new ModalNavigationService(this);
 			Navigation = new NavigationImpl(this);
+			AlertManager = new AlertManager(this);
+
 			InternalChildren.CollectionChanged += OnCollectionChanged;
 		}
 
@@ -37,7 +41,6 @@ namespace Microsoft.Maui.Controls
 		{
 			Page = page;
 		}
-
 
 		void SendWindowAppearing()
 		{
@@ -80,7 +83,10 @@ namespace Microsoft.Maui.Controls
 					InternalChildren.Remove(_page);
 
 					if (_page != null)
+					{
 						_page.AttachedHandler -= OnPageAttachedHandler;
+						_page.DetachedHandler -= OnPageDetachedHandler;
+					}
 				}
 
 				_page = value;
@@ -94,13 +100,23 @@ namespace Microsoft.Maui.Controls
 				ModalNavigationService.SettingNewPage();
 
 				if (value != null)
+				{
 					value.AttachedHandler += OnPageAttachedHandler;
+					value.DetachedHandler += OnPageDetachedHandler;
+				}
 			}
 		}
 
 		void OnPageAttachedHandler(object? sender, EventArgs e)
 		{
 			ModalNavigationService.PageAttachedHandler();
+
+			AlertManager.Subscribe();
+		}
+
+		void OnPageDetachedHandler(object? sender, EventArgs e)
+		{
+			AlertManager.Unsubscribe();
 		}
 
 		IView IWindow.View
@@ -148,7 +164,6 @@ namespace Microsoft.Maui.Controls
 			ModalPushing?.Invoke(this, args);
 			(Parent as Application)?.NotifyOfWindowModalEvent(args);
 		}
-
 
 		void OnPopCanceled()
 		{

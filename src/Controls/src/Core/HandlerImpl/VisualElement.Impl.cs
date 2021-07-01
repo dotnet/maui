@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls
 			if (_handler != null)
 			{
 				DetachingHandler?.Invoke(this, EventArgs.Empty);
-				OnDetachingHandler();
+				OnDetachingHandlerCore();
 			}
 
 			if (newHandler != null)
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls
 			if (_handler != null)
 			{
 				_attachedHandler?.Invoke(this, EventArgs.Empty);
-				OnAttachedHandler();
+				OnAttachedHandlerCore();
 			}
 
 			if (previousHandler != null)
@@ -171,9 +171,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public virtual void OnAttachingHandler() { }
-		public virtual void OnAttachedHandler() { }
-		public virtual void OnDetachingHandler() { }
-		public virtual void OnDetachedHandler() { }
+
+		private protected virtual void OnAttachedHandlerCore() => OnAttachedHandler();
+
+		private protected virtual void OnDetachingHandlerCore() => OnDetachingHandler();
+
+		protected virtual void OnAttachingHandler() { }
+		protected virtual void OnAttachedHandler() { }
+		protected virtual void OnDetachingHandler() { }
+		protected virtual void OnDetachedHandler() { }
 	}
 }
