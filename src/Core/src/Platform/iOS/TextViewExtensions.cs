@@ -69,7 +69,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateAutoSize(this UITextView textView, IEditor editor)
 		{
-			if(editor.AutoSize== EditorAutoSizeOption.Disabled)
+			if (editor.AutoSize == EditorAutoSizeOption.Disabled)
 			{
 				textView.ScrollEnabled = true;
 			}
@@ -78,7 +78,7 @@ namespace Microsoft.Maui
 				textView.ScrollEnabled = false;
 			}
 		}
-		
+
 		public static void UpdateKeyboard(this UITextView textView, IEditor editor)
 		{
 			var keyboard = editor.Keyboard;
