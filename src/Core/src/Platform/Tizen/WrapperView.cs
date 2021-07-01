@@ -11,7 +11,6 @@ using Rect = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
-
 	public interface IBackgroundCanvas
 	{
 		public SkiaGraphicsView BackgroundCanvas { get; }
@@ -320,22 +319,12 @@ namespace Microsoft.Maui.Platform
 		internal static extern IntPtr elm_object_part_content_get(IntPtr obj, string part);
 	}
 
-	/// <summary>
-	/// A clipper area drawing view, it used for clipping
-	/// </summary>
 	public class SKClipperView : SKCanvasView
 	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="SKClipperView"/> class.
-		/// </summary>
-		/// <param name="parent">Parent of this instance.</param>
 		public SKClipperView(EvasObject parent) : base(parent) { }
 
 		public bool ClippingRequired { get; set; }
 
-		/// <summary>
-		/// Invalidate clipping area
-		/// </summary>
 		public new void Invalidate()
 		{
 			ClippingRequired = true;
@@ -346,11 +335,6 @@ namespace Microsoft.Maui.Platform
 
 	public static class ClipperExtension
 	{
-		/// <summary>
-		/// Set Clipper canvas
-		/// </summary>
-		/// <param name="target">A target view to clip</param>
-		/// <param name="clipper">A clip area</param>
 		public static void SetClipperCanvas(this EvasObject target, SKClipperView clipper)
 		{
 			if (target != null && clipper.ClippingRequired)
