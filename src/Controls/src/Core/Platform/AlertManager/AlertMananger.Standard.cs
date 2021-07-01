@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal static class AlertMananger
+	internal partial class AlertManager
 	{
 		internal static void Subscribe(Window window)
 		{
