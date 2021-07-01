@@ -82,11 +82,11 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapKeyboard(EditorHandler handler, IEditor editor) { }
-		
+
 		public static void MapTextAutoSize(EditorHandler handler, IEditor editor)
-        {
+		{
 			handler.NativeView?.UpdateAutoSize(editor);
-        }
+		}
 
 		void OnLostFocus(object? sender, RoutedEventArgs e)
 		{
