@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextField>
 	{
 		static UIColor? DefaultTextColor;
+		static Color? DefaultPlaceholderColor;
 
 		protected override MauiTextField CreateNativeView()
 		{
@@ -43,6 +44,10 @@ namespace Microsoft.Maui.Handlers
 		protected override void SetupDefaults(MauiTextField nativeView)
 		{
 			DefaultTextColor = nativeView.TextColor;
+
+			// Placeholder default color is 70% gray					
+			// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
+			DefaultPlaceholderColor = ColorExtensions.SeventyPercentGrey.ToColor();
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry)
@@ -86,6 +91,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdatePlaceholder(entry);
+		}
+
+		public static void MapPlaceholderColor(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdatePlaceholder(entry, DefaultPlaceholderColor);
 		}
 
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)

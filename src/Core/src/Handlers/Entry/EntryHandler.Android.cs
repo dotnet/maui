@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Handlers
 		EditorActionListener ActionListener { get; } = new EditorActionListener();
 
 		static ColorStateList? DefaultTextColors { get; set; }
+		static ColorStateList? DefaultPlaceholderColors { get; set; }
 		static Drawable? ClearButtonDrawable { get; set; }
 		static Drawable? DefaultBackground;
 
@@ -64,6 +65,7 @@ namespace Microsoft.Maui.Handlers
 
 			ClearButtonDrawable = GetClearButtonDrawable();
 			DefaultTextColors = nativeView.TextColors;
+			DefaultPlaceholderColors = nativeView.HintTextColors;
 			DefaultBackground = nativeView.Background;
 		}
 
@@ -111,6 +113,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdatePlaceholder(entry);
+		}
+
+		public static void MapPlaceholderColor(EntryHandler handler, IEntry entry) 
+		{
+			handler.NativeView?.UpdatePlaceholderColor(entry, DefaultPlaceholderColors);
 		}
 
 		public static void MapFont(EntryHandler handler, IEntry entry)

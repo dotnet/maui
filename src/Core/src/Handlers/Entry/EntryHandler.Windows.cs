@@ -1,11 +1,15 @@
 ﻿#nullable enable
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Windows.System;
 
 ﻿namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextBox>
 	{
+		Brush? _defaultPplaceholderBrush;
+		Brush? _defaultPlaceholderColorFocusBrush;
+
 		protected override MauiTextBox CreateNativeView() =>
 			new MauiTextBox { Style = UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as UI.Xaml.Style };
 
@@ -17,6 +21,14 @@ using Windows.System;
 		protected override void DisconnectHandler(MauiTextBox nativeView)
 		{
 			nativeView.KeyUp -= OnNativeKeyUp;
+		}
+
+		protected override void SetupDefaults(MauiTextBox nativeView)
+		{
+			_defaultPplaceholderBrush = nativeView.PlaceholderForeground;
+			_defaultPlaceholderColorFocusBrush = nativeView.PlaceholderForegroundFocusBrush;
+
+			base.SetupDefaults(nativeView);
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry) 
@@ -49,6 +61,11 @@ using Windows.System;
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdatePlaceholder(entry);
+		}
+
+		public static void MapPlaceholderColor(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdatePlaceholderColor(entry, handler._defaultPplaceholderBrush, handler._defaultPlaceholderColorFocusBrush);
 		}
 
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
