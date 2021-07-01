@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
 
-		internal IAnimationManager? AnimationManager =>
+		internal IAnimationManager AnimationManager =>
 			Handler?.AnimationManager ?? throw new InvalidOperationException("The AnimationManager was not provided for this window.");
 
 		IView IWindow.Content =>
