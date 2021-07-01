@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls
 
 		public Window()
 		{
+			AlertManager = new AlertManager(this);
 			ModalNavigationService = new ModalNavigationService(this);
 			Navigation = new NavigationImpl(this);
 
@@ -78,6 +79,8 @@ namespace Microsoft.Maui.Controls
 			set => base.Handler = value;
 		}
 
+		internal AlertManager AlertManager { get; }
+
 		internal ModalNavigationService ModalNavigationService { get; }
 
 		internal IMauiContext MauiContext =>
@@ -125,6 +128,7 @@ namespace Microsoft.Maui.Controls
 			{
 				window.InternalChildren.Remove(oldPage);
 				oldPage.AttachedHandler -= OnPageAttachedHandler;
+				oldPage.DetachedHandler -= OnPageDetachedHandler;
 			}
 
 			var newPage = newValue as Page;
@@ -139,11 +143,18 @@ namespace Microsoft.Maui.Controls
 			if (newPage != null)
 			{
 				newPage.AttachedHandler += OnPageAttachedHandler;
+				newPage.DetachedHandler += OnPageDetachedHandler;
 			}
 
 			void OnPageAttachedHandler(object? sender, EventArgs e)
 			{
 				window.ModalNavigationService.PageAttachedHandler();
+				window.AlertManager.Subscribe();
+			}
+
+			void OnPageDetachedHandler(object? sender, EventArgs e)
+			{
+				window.AlertManager.Unsubscribe();
 			}
 		}
 

@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using Android.App;
+using AndroidX.AppCompat.App;
 
 namespace Microsoft.Maui.Controls
 {
