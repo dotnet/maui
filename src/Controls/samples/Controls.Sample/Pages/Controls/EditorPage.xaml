@@ -34,6 +34,10 @@
                     Style="{StaticResource Headline}"/>
                 <Editor
                     Keyboard="Numeric"/>
+                <Label
+                    Text="Auto Size with Text Changes"
+                    Style="{StaticResource Headline}" />
+                <Editor AutoSize="TextChanges"  />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
