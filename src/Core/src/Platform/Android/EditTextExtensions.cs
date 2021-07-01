@@ -5,7 +5,6 @@ using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
-using Android.Widget;
 using Android.Util;
 
 namespace Microsoft.Maui
@@ -221,24 +220,22 @@ namespace Microsoft.Maui
 
 		public static void UpdateAutoSize(this AppCompatEditText editText, IEditor editor)
 		{
-			if(editor.AutoSize == EditorAutoSizeOption.Disabled)
+			if (editor.AutoSize == EditorAutoSizeOption.Disabled)
 			{
 				editText.SetAutoSizeTextTypeWithDefaults(AutoSizeTextType.None);
 			}
 			else
 			{
-				editText.SetAutoSizeTextTypeWithDefaults(AutoSizeTextType.Uniform);
+				editText.SetAutoSizeTextTypeUniformWithConfiguration(editText.AutoSizeMinTextSize, editText.AutoSizeMaxTextSize, editText.AutoSizeStepGranularity, (int)ComplexUnitType.Sp);
 			}
 		}
-		
-		[PortHandler]
+
 		public static void UpdateCursorPosition(this AppCompatEditText editText, IEntry entry)
 		{
 			if (editText.SelectionStart != entry.CursorPosition)
 				UpdateCursorSelection(editText, entry);
 		}
 
-		[PortHandler]
 		public static void UpdateSelectionLength(this AppCompatEditText editText, IEntry entry)
 		{
 			if ((editText.SelectionEnd - editText.SelectionStart) != entry.SelectionLength)
@@ -320,18 +317,6 @@ namespace Microsoft.Maui
 				}
 
 				editText.InputType = nativeInputTypeToUpdate;
-			}
-		}
-
-		public static void UpdateAutoSize(this AppCompatEditText editText, IEditor editor)
-		{
-			if(editor.AutoSize == EditorAutoSizeOption.Disabled)
-			{				
-				editText.SetAutoSizeTextTypeWithDefaults(AutoSizeTextType.None);
-			}
-			else
-			{
-				editText.SetAutoSizeTextTypeUniformWithConfiguration(editText.AutoSizeMinTextSize, editText.AutoSizeMaxTextSize, editText.AutoSizeStepGranularity, (int)ComplexUnitType.Sp);
 			}
 		}
 
