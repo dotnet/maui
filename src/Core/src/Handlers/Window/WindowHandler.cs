@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Handlers
 		public static PropertyMapper<IWindow, WindowHandler> WindowMapper = new(ElementHandler.ElementMapper)
 		{
 			[nameof(IWindow.Title)] = MapTitle,
+			[nameof(IWindow.Content)] = MapContent,
 		};
 
 		IAnimationManager? _animationManager;

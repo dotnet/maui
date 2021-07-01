@@ -7,18 +7,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTitle(WindowHandler handler, IWindow window) =>
 			handler.NativeView?.UpdateTitle(window);
 
-		public override void SetVirtualView(IElement view)
+		public static void MapContent(WindowHandler handler, IWindow window)
 		{
-			base.SetVirtualView(view);
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-
-			var nativeContent = VirtualView.Content.ToNative(MauiContext);
+			var nativeContent = window.Content.ToNative(handler.MauiContext);
 
 			// TODO WINUI should this be some other known constant or via some mechanism? Or done differently?
-
 			MauiWinUIApplication.Current.Resources.TryGetValue("MauiRootContainerStyle", out object? style);
 
 			var root = new RootPanel
@@ -30,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 				}
 			};
 
-			NativeView.Content = root;
+			handler.NativeView.Content = root;
 		}
 	}
 }

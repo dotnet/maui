@@ -7,5 +7,7 @@ namespace Microsoft.Maui.Handlers
 		protected override object CreateNativeElement() => throw new NotImplementedException();
 
 		public static void MapTitle(WindowHandler handler, IWindow window) { }
+
+		public static void MapContent(WindowHandler handler, IWindow window) { }
 	}
 }

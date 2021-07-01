@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
@@ -57,6 +58,14 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<ModalPushingEventArgs>? ModalPushing;
 
 		public event EventHandler? PopCanceled;
+
+		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == nameof(Page))
+				Handler?.UpdateValue(nameof(IWindow.Content));
+		}
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
