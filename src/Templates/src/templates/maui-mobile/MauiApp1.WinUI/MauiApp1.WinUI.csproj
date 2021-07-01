@@ -55,6 +55,7 @@
 		<PackageReference Include="Microsoft.ProjectReunion" Version="PROJECT_REUNION_VERSION" />
 		<PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="PROJECT_REUNION_VERSION" />
 		<PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="PROJECT_REUNION_VERSION" />
+		<PackageReference Include="Microsoft.ProjectReunion.InteractiveExperiences" Version="PROJECT_REUNION_VERSION" NoWarn="NU1701" />
 	</ItemGroup>
 
 </Project>
