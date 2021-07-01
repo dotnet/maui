@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Extensions.Configuration;
 using Maui.Controls.Sample.Models;
-using Maui.Controls.Sample.ViewModels.Base;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
+using Maui.Controls.Sample.ViewModels.Base;
+using Microsoft.Extensions.Configuration;
 
 namespace Maui.Controls.Sample.ViewModels
 {
@@ -40,7 +40,10 @@ namespace Maui.Controls.Sample.ViewModels
 				"User interface concepts like Animations, Colors, Fonts and more."),
 
 			new SectionModel(typeof(OthersPage), "Others Concepts",
-				"Other options like Graphics.")
+				"Other options like Graphics."),
+
+			new SectionModel(typeof(GesturesPage), "Gestures",
+				"Gestures")
 		};
 	}
 }

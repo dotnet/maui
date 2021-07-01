@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Represents a framework-level set of properties, events, and methods for .NET MAUI elements. 
 	/// </summary>
-	public interface IFrameworkElement : ITransform
+	public interface IFrameworkElement : IElement, ITransform
 	{
 		/// <summary>
 		/// Id used by automation tools to interact with this FrameworkElement
@@ -77,12 +77,12 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets or sets the View Handler of the FrameworkElement.
 		/// </summary>
-		IViewHandler? Handler { get; set; }
+		new IViewHandler? Handler { get; set; }
 
 		/// <summary>
 		/// Gets the Parent of the Element.
 		/// </summary>
-		IFrameworkElement? Parent { get; }
+		new IFrameworkElement? Parent { get; }
 
 		/// <summary>
 		/// Positions child elements and determines a size for an Element.

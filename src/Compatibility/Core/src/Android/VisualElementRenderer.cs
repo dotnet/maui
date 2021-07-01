@@ -32,16 +32,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		VisualElementPackager _packager;
 		PropertyChangedEventHandler _propertyChangeHandler;
 
-		GestureManager _gestureManager;
-
 		protected VisualElementRenderer(Context context) : base(context)
 		{
-			_gestureManager = new GestureManager(this);
-		}
-
-		public override bool OnTouchEvent(MotionEvent e)
-		{
-			return _gestureManager.OnTouchEvent(e) || base.OnTouchEvent(e);
 		}
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
@@ -300,12 +292,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					_packager.Dispose();
 					_packager = null;
-				}
-
-				if (_gestureManager != null)
-				{
-					_gestureManager.Dispose();
-					_gestureManager = null;
 				}
 
 				if (ManageNativeControlLifetime)

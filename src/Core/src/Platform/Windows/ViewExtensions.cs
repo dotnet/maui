@@ -6,8 +6,8 @@ using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui
 {
@@ -46,14 +46,13 @@ namespace Microsoft.Maui
 		public static void UpdateClip(this FrameworkElement nativeView, IView view)
 		{
 			var clipGeometry = view.Clip;
-
 			if (clipGeometry == null)
 				return;
 
-			if (Application.Current is not MauiWinUIApplication app)
+			if (view.Handler?.MauiContext?.Window is not Window window)
 				return;
 
-			var compositor = app.MainWindow.Compositor;
+			var compositor = window.Compositor;
 			var visual = ElementCompositionPreview.GetElementVisual(nativeView);
 
 			var pathSize = new Rectangle(0, 0, view.Width, view.Height);
@@ -66,8 +65,8 @@ namespace Microsoft.Maui
 			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
 
 			visual.Clip = geometricClip;
-    }
-    
+		}
+
 		public static void UpdateOpacity(this FrameworkElement nativeView, IView view)
 		{
 			nativeView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
@@ -83,7 +82,7 @@ namespace Microsoft.Maui
 				panel.UpdateBackground(view.Background);
 		}
 
-		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>	
+		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);
 
 		public static void UpdateSemantics(this FrameworkElement nativeView, IView view)

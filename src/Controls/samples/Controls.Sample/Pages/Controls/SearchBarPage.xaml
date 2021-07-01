@@ -11,6 +11,22 @@
                 Text="Default"
                 Style="{StaticResource Headline}"/>
             <SearchBar/>
+            <Label
+                Text="Disabled"
+                Style="{StaticResource Headline}"/>
+            <SearchBar
+                IsEnabled="False"/>
+            <Label
+                Text="TextColor"
+                Style="{StaticResource Headline}"/>
+            <SearchBar
+                TextColor="Green"/>
+            <Label
+                Text="Fonts"
+                Style="{StaticResource Headline}"/>
+            <SearchBar
+                FontSize="24"
+                FontAttributes="Italic"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

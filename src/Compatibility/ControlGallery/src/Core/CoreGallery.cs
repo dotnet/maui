@@ -552,12 +552,21 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	[Preserve(AllMembers = true)]
 	internal class CoreRootPage : ContentPage
 	{
+		bool registrarValidated;
 		CoreRootView CoreRootView { get; }
+
+		protected override void OnAttachedHandler()
+		{
+			base.OnAttachedHandler();
+
+			if (!registrarValidated)
+				ValidateRegistrar();
+
+			registrarValidated = true;
+		}
 
 		public CoreRootPage(Page rootPage, NavigationBehavior navigationBehavior = NavigationBehavior.PushAsync)
 		{
-			ValidateRegistrar();
-
 			var galleryFactory = DependencyService.Get<IPlatformSpecificCoreGalleryFactory>();
 
 			Title = galleryFactory?.Title ?? "Core Gallery";
