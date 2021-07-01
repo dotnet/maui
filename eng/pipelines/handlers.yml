@@ -124,11 +124,11 @@ stages:
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
-              - pwsh: ./build.ps1 --target=dotnet --configuration="$(BuildConfiguration)"
+              - pwsh: ./build.ps1 --target=dotnet --configuration="$(BuildConfiguration)" --verbosity=diagnostic
                 displayName: 'Install .NET'
-              - pwsh: ./build.ps1 --target=dotnet-build --configuration="$(BuildConfiguration)"
+              - pwsh: ./build.ps1 --target=dotnet-build --configuration="$(BuildConfiguration)" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
-              - pwsh: ./build.ps1 --target=dotnet-test --configuration="$(BuildConfiguration)"
+              - pwsh: ./build.ps1 --target=dotnet-test --configuration="$(BuildConfiguration)" --verbosity=diagnostic
                 displayName: 'Run Unit Tests'
               - task: PublishTestResults@2
                 condition: always()
@@ -158,7 +158,7 @@ stages:
             - template: common/provision.yml
               parameters:
                 platform: ${{ BuildPlatform.name }}
-            - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release"
+            - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
               displayName: 'Pack .NET Maui'
             - task: CopyFiles@2
               condition: always()
@@ -211,9 +211,9 @@ stages:
                   artifact: nuget
                   patterns: '**/*.nupkg'
                   path: $(System.DefaultWorkingDirectory)/artifacts
-              - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="$(BuildConfiguration)"
+              - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="$(BuildConfiguration)" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
-              - pwsh: ./build.ps1 --target=dotnet-samples --configuration="$(BuildConfiguration)"
+              - pwsh: ./build.ps1 --target=dotnet-samples --configuration="$(BuildConfiguration)" --verbosity=diagnostic
                 displayName: 'Build .NET 6 Samples'
               - task: PublishBuildArtifacts@1
                 condition: always()
@@ -236,42 +236,6 @@ stages:
           desc: Core
           android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
-
-  # - stage: build_ios
-  #   displayName: iOS
-  #   dependsOn: []
-  #   jobs:
-  #     - job: ios
-  #       workspace:
-  #         clean: all
-  #       displayName: Build ControlGallery iOS
-  #       timeoutInMinutes: 120
-  #       pool:
-  #         name:  $(macOSXVmPool)
-  #         vmImage: $(macOSXVmImage)
-  #         demands:
-  #           - sh
-  #           - Xamarin.iOS
-  #       steps:
-  #         - template: common/controlgallery-ios.yml
-
-  # - stage: build_android
-  #   displayName: Android
-  #   dependsOn: []
-  #   jobs:
-  #     - job: android
-  #       workspace:
-  #         clean: all
-  #       displayName: Build ControlGallery Android
-  #       timeoutInMinutes: 120
-  #       pool:
-  #         name:  $(macOSXVmPool)
-  #         vmImage: $(macOSXVmImage)
-  #       variables:
-  #         renderers: 'FAST'
-  #         outputfolder: 'newRenderers'
-  #       steps:
-  #         - template: common/controlgallery-android.yml
 
   - template: common/security_compliance.yml
   - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]

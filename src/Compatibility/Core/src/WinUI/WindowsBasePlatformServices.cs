@@ -30,12 +30,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 	{
 		const string WrongThreadError = "RPC_E_WRONG_THREAD";
 #pragma warning disable CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-		readonly Microsoft.System.DispatcherQueue _dispatcher;
+		readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcher;
 #pragma warning restore CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 		readonly UISettings _uiSettings = new UISettings();
 
 #pragma warning disable CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
-		protected WindowsBasePlatformServices(Microsoft.System.DispatcherQueue dispatcher)
+		protected WindowsBasePlatformServices(Microsoft.UI.Dispatching.DispatcherQueue dispatcher)
 #pragma warning restore CS8305 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 		{
 			_dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));

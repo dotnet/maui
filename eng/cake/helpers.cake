@@ -60,3 +60,15 @@ public void PrintEnvironmentVariables()
             );
     };
 }
+
+void SetEnvironmentVariable(string name, string value, bool prepend = false)
+{
+    var target = EnvironmentVariableTarget.Process;
+
+    if (prepend)
+        value = value + System.IO.Path.PathSeparator + EnvironmentVariable(name);
+
+    Environment.SetEnvironmentVariable(name, value, target);
+
+    Information("Setting environment variable: {0} = '{1}'", name, value);
+}
