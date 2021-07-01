@@ -527,7 +527,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				return _toolbarResource;
 			}
-			set => _toolbarResource = value; 
+			set => _toolbarResource = value;
 		}
 
 		#endregion
