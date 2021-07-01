@@ -1,12 +1,13 @@
-﻿<views:BasePage
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Maui.Controls.Sample.Pages.ControlsPage"
+    x:Class="Maui.Controls.Sample.Pages.GesturesPage"
     xmlns:controls="using:Maui.Controls.Sample.Controls"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels">
     <views:BasePage.BindingContext>
-        <viewmodels:ControlsViewModel />
+        <viewmodels:GesturesViewModel />
     </views:BasePage.BindingContext>
     <!-- TODO: Create a ControlTemplate -->
     <Grid
@@ -31,7 +32,9 @@
                 <controls:BordelessEntry
                     Grid.Column="1"
                     Placeholder="Filter"
-                    Text="{Binding FilterValue, Mode=TwoWay}"
+                    Text="{Binding FilterValue, Mode=OneWayToSource}"
+                    ReturnCommand="{Binding FilterCommand}"
+                    ReturnType="Search"
                     PlaceholderColor="{DynamicResource TextSecondaryColor}"
                     TextColor="{DynamicResource TextPrimaryColor}"
                     FontSize="Medium"
@@ -41,13 +44,13 @@
         </Frame>
         <!-- CONTENT -->
         <CollectionView
-            x:Name="ControlSections"
+            x:Name="CoreSections"
             Grid.Row="2"
             BackgroundColor="Transparent"
             ItemsSource="{Binding FilteredItems}"
             SelectionMode="Single"
-            SelectedItem="{Binding SelectedItem, Source={x:RelativeSource AncestorType={x:Type ContentPage}}, Mode=TwoWay}"
             SelectionChangedCommand="{Binding NavigateCommand, Source={x:RelativeSource AncestorType={x:Type ContentPage}}}"
+            SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference CoreSections}}"
             Margin="6, 12, 6, 0">
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout  

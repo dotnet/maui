@@ -43,6 +43,10 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnDetachedHandler() { }
 
+		private protected virtual void OnAttachedHandlerCore() => OnAttachedHandler();
+
+		private protected virtual void OnDetachingHandlerCore() => OnDetachingHandler();
+
 		private protected virtual void OnHandlerSet() { }
 
 		void SetHandler(IElementHandler newHandler)
@@ -55,7 +59,7 @@ namespace Microsoft.Maui.Controls
 			if (_handler != null)
 			{
 				DetachingHandler?.Invoke(this, EventArgs.Empty);
-				OnDetachingHandler();
+				OnDetachingHandlerCore();
 			}
 
 			if (newHandler != null)
@@ -74,7 +78,7 @@ namespace Microsoft.Maui.Controls
 			if (_handler != null)
 			{
 				_attachedHandler?.Invoke(this, EventArgs.Empty);
-				OnAttachedHandler();
+				OnAttachedHandlerCore();
 			}
 
 			if (previousHandler != null)

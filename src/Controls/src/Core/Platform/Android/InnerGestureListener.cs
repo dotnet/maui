@@ -6,7 +6,7 @@ using Android.Views;
 using Microsoft.Maui.Graphics;
 using Object = Java.Lang.Object;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Controls.Platform
 {
 	internal class InnerGestureListener : Object, GestureDetector.IOnGestureListener, GestureDetector.IOnDoubleTapListener
 	{
