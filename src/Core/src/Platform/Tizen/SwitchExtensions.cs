@@ -12,8 +12,10 @@ namespace Microsoft.Maui
 
 		public static void UpdateTrackColor(this Check nativeCheck, ISwitch view)
 		{
-			//TODO: need to consider default color
-			nativeCheck.Color = view.TrackColor.ToNativeEFL();
+			if (view.ThumbColor != null)
+			{
+				nativeCheck.Color = view.TrackColor.ToNativeEFL();
+			}
 		}
 
 		public static void UpdateThumbColor(this Check nativeCheck, ISwitch view)

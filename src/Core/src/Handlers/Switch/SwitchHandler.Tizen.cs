@@ -5,15 +5,20 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, Check>
 	{
-		protected override Check CreateNativeView() => new Check(NativeParent);
+		protected override Check CreateNativeView() => new Check(NativeParent)
+		{
+			Style = "toggle"
+		};
 
 		protected override void ConnectHandler(Check nativeView)
 		{
+			base.ConnectHandler(nativeView);
 			nativeView!.StateChanged += OnStateChanged;
 		}
 
 		protected override void DisconnectHandler(Check nativeView)
 		{
+			base.DisconnectHandler(nativeView);
 			nativeView!.StateChanged -= OnStateChanged;
 		}
 
