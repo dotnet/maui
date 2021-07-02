@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override TextView CreateNativeView() => new TextView(Context);
 
-		protected override void SetupDefaults(TextView nativeView)
+		void SetupDefaults(TextView nativeView)
 		{
 			if (nativeView.TextColors == null)
 			{

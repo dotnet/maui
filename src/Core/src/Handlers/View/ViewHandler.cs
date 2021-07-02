@@ -105,11 +105,6 @@ namespace Microsoft.Maui.Handlers
 			OnCreateNativeView();
 
 #if !NETSTANDARD
-		private protected abstract void OnSetupDefaults(NativeView nativeView);
-
-		private protected sealed override void OnSetupDefaults(object nativeView) =>
-			OnSetupDefaults((NativeView)nativeView);
-
 		private protected abstract void OnConnectHandler(NativeView nativeView);
 
 		partial void ConnectingHandler(NativeView? nativeView);

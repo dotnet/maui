@@ -20,11 +20,11 @@ namespace Microsoft.Maui.Handlers
 			nativeView.TimeChanged -= OnControlTimeChanged;
 		}
 
-    protected override void SetupDefaults(TimePicker nativeView)
+    void SetupDefaults(TimePicker nativeView)
 		{
 			_defaultForeground = nativeView.Foreground;
 
-			base.SetupDefaults(nativeView);
+			
 		}
 
 	  public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
