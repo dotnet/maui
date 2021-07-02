@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>Microsoft.Maui.Handlers.Benchmarks</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Handlers.Benchmarks</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
