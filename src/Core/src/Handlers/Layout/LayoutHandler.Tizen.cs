@@ -167,5 +167,10 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 		}
+
+		public void RegisterOnLayoutUpdated()
+		{
+			_layoutUpdatedRegistered = true;
+		}
 	}
 }
