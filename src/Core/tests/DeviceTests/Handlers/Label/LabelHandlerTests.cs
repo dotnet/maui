@@ -46,6 +46,18 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(label, () => label.TextColor, GetNativeTextColor, label.TextColor);
 		}
 
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
+		{
+			var label = new LabelStub()
+			{
+				Text = "Test",
+				TextColor = null
+			};
+
+			await CreateHandlerAsync(label);
+		}
+
 		[Theory(DisplayName = "Font Size Initializes Correctly")]
 		[InlineData(1)]
 		[InlineData(10)]

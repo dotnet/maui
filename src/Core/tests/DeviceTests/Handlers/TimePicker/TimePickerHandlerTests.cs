@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -53,6 +54,30 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
 			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
+		}
+
+		[Fact(DisplayName = "Text Color Initializes Correctly")]
+		public async Task TextColorInitializesCorrectly()
+		{
+			var timePicker = new TimePickerStub()
+			{
+				Time = DateTime.Now.TimeOfDay,
+				TextColor = Colors.Red
+			};
+
+			await ValidatePropertyInitValue(timePicker, () => timePicker.TextColor, GetNativeTextColor, timePicker.TextColor);
+		}
+
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
+		{
+			var timePicker = new TimePickerStub()
+			{
+				Time = DateTime.Now.TimeOfDay,
+				TextColor = null
+			};
+
+			await CreateHandlerAsync(timePicker);
 		}
 	}
 }
