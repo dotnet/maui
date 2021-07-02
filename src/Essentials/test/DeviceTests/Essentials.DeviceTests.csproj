@@ -21,6 +21,10 @@
     <ApplicationId>com.microsoft.maui.essentials.devicetests</ApplicationId>
     <ApplicationVersion>1.0.1.0</ApplicationVersion>
     <AndroidVersionCode>1</AndroidVersionCode>
+
+    <!-- HACK for now until inconsistency is fixed -->
+    <AppleShortVersion>1.0.1.0</AppleShortVersion>
+    <ApplicationVersion Condition="$(TargetFramework.Contains('-ios'))">1</ApplicationVersion>
   </PropertyGroup>
 
   <ItemGroup>
