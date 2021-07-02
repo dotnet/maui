@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 			{
-				return ((Color)value).IsDefault ? ThemeConstants.EntryCell.ColorClass.DefaultLabelColor : value;
+				return (value == null || ((Color)value).IsDefault) ? ThemeConstants.EntryCell.ColorClass.DefaultLabelColor : value;
 			}
 
 			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

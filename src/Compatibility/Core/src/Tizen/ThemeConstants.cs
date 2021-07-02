@@ -517,7 +517,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			public class Resources
 			{
 				public const int IconSize = 48;
-				public const string IconPath = "Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Resource.refresh_48dp.png";
+				public const string IconPath = "Microsoft.Maui.Controls.Compatibility.Resource.refresh_48dp.png";
 			}
 
 			public class ColorClass
@@ -575,7 +575,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					public const int DefaultNavigationViewIconSize = 60;
 					public const int DefaultDrawerTouchWidth = 50;
 					public const int DefaultDrawerIconSize = 40;
-					public const string DefaultDrawerIcon = "Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Resource.wc_visual_cue.png";
+					public const string DefaultDrawerIcon = "Microsoft.Maui.Controls.Compatibility.Resource.wc_visual_cue.png";
 				}
 
 				public class TV
@@ -619,8 +619,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			public class Resources
 			{
-				public const string PlayImagePath = "Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Resource.img_button_play.png";
-				public const string PauseImagePath = "Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Resource.img_button_pause.png";
+				public const string PlayImagePath = "Microsoft.Maui.Controls.Compatibility.Resource.img_button_play.png";
+				public const string PauseImagePath = "Microsoft.Maui.Controls.Compatibility.Resource.img_button_pause.png";
 			}
 
 			public class ColorClass

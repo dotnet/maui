@@ -1,13 +1,28 @@
 using System;
 using System.ComponentModel;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using EvasObject = ElmSharp.EvasObject;
+using Microsoft.Maui.Handlers;
 using ERect = ElmSharp.Rect;
+using EvasObject = ElmSharp.EvasObject;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
+	public class LayoutHandlerToRendererShim : HandlerToRendererShim, ILayoutRenderer
+	{
+		LayoutHandler _layoutHandler;
+		public LayoutHandlerToRendererShim(LayoutHandler vh) : base(vh)
+		{
+			_layoutHandler = vh;
+		}
+
+		public void RegisterOnLayoutUpdated()
+		{
+			_layoutHandler.RegisterOnLayoutUpdated();
+		}
+	}
+
 	public class HandlerToRendererShim : IVisualElementRenderer
 	{
 		public HandlerToRendererShim(IViewHandler vh)
@@ -27,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public void Dispose()
 		{
-			ViewHandler.DisconnectHandler();
+			(ViewHandler as INativeViewHandler)?.Dispose();
 		}
 
 		public void SetElement(VisualElement element)
@@ -97,7 +112,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 
 			VisualElement RealParent { get; }
-			IVisualElementRenderer Renderer => Platform.GetRenderer(RealParent);
+			IVisualElementRenderer Renderer => RealParent != null ? Platform.GetRenderer(RealParent) : null;
 			public EvasObject NativeView => Renderer.NativeView;
 
 			public EvasObject ContainerView => NativeView;
@@ -119,7 +134,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			public void Dispose()
 			{
-				throw new NotImplementedException();
 			}
 
 			public Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -129,7 +143,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			public ERect GetNativeContentGeometry()
 			{
-				return Renderer.GetNativeContentGeometry();
+				return Renderer?.GetNativeContentGeometry() ?? new ERect(0, 0, 0, 0);
 			}
 
 			public void NativeArrange(Rectangle frame)

@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ElmSharp;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Handlers;
 
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Material")]
 
@@ -84,7 +85,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					{
 						vh.SetParent(nvh);
 					}
-					renderer = new HandlerToRendererShim(vh);
+
+					if (handler is LayoutHandler layoutHandler)
+					{
+						renderer = new LayoutHandlerToRendererShim(layoutHandler);
+					}
+					else
+					{
+						renderer = new HandlerToRendererShim(vh);
+					}
+
 					element.Handler = handler;
 					SetRenderer(element, renderer);
 				}

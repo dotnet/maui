@@ -5,8 +5,14 @@ using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LayoutHandler : ViewHandler<ILayout, Canvas>
+	public interface IRegisterLayoutUpdate
 	{
+		void RegisterOnLayoutUpdated();
+	}
+
+	public partial class LayoutHandler : ViewHandler<ILayout, Canvas>, IRegisterLayoutUpdate
+	{
+		bool _layoutUpdatedRegistered;
 		Graphics.Rectangle _arrangeCache;
 
 		public override bool NeedsContainer =>
@@ -87,6 +93,13 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		protected override Graphics.Point ComputeAbsolutePoint(Graphics.Rectangle frame)
+		{
+			if (_layoutUpdatedRegistered)
+				return frame.Location;
+			return base.ComputeAbsolutePoint(frame);
+		}
+
 		protected override void ConnectHandler(Canvas nativeView)
 		{
 			base.ConnectHandler(nativeView);
@@ -114,11 +127,20 @@ namespace Microsoft.Maui.Handlers
 					VirtualView.InvalidateMeasure();
 					VirtualView.InvalidateArrange();
 					VirtualView.Measure(nativeGeometry.Width, nativeGeometry.Height);
-					nativeGeometry.X = VirtualView.Frame.X;
-					nativeGeometry.Y = VirtualView.Frame.Y;
+
+					if (!_layoutUpdatedRegistered)
+					{
+						nativeGeometry.X = VirtualView.Frame.X;
+						nativeGeometry.Y = VirtualView.Frame.Y;
+					}
 					VirtualView.Arrange(nativeGeometry);
 				}
 			}
+		}
+
+		public void RegisterOnLayoutUpdated()
+		{
+			_layoutUpdatedRegistered = true;
 		}
 	}
 }
