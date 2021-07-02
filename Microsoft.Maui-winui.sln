@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31410.223
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31410.414
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core-net6", "src\Core\src\Core-net6.csproj", "{95BA42B5-B00E-4986-B9B5-517140378452}"
 EndProject
@@ -133,6 +133,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.UnitTests", "src\Controls\tests\Core.UnitTests\Controls.Core.UnitTests.csproj", "{033FD150-887A-44DB-A0E7-7555B1BF8B07}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests", "src\Controls\tests\Xaml.UnitTests\Controls.Xaml.UnitTests.csproj", "{454208AB-7A1A-4445-96C7-CFE410F0D5D6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A2379B6A-CF92-4C97-8F72-FE9EAC669949}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.Sample.Server.WebAuthenticator", "src\Essentials\samples\Sample.Server.WebAuthenticator\Essentials.Sample.Server.WebAuthenticator.csproj", "{32A4A924-C3CD-4FE3-A21E-DD018F0CC4BD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.Sample", "src\Essentials\samples\Sample\Essentials.Sample.csproj", "{B157321E-9FB6-430E-B36C-D389DDEC22DE}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -313,6 +319,16 @@ Global
 		{454208AB-7A1A-4445-96C7-CFE410F0D5D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{454208AB-7A1A-4445-96C7-CFE410F0D5D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{454208AB-7A1A-4445-96C7-CFE410F0D5D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32A4A924-C3CD-4FE3-A21E-DD018F0CC4BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32A4A924-C3CD-4FE3-A21E-DD018F0CC4BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32A4A924-C3CD-4FE3-A21E-DD018F0CC4BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32A4A924-C3CD-4FE3-A21E-DD018F0CC4BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B157321E-9FB6-430E-B36C-D389DDEC22DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B157321E-9FB6-430E-B36C-D389DDEC22DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B157321E-9FB6-430E-B36C-D389DDEC22DE}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{B157321E-9FB6-430E-B36C-D389DDEC22DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B157321E-9FB6-430E-B36C-D389DDEC22DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B157321E-9FB6-430E-B36C-D389DDEC22DE}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -376,6 +392,9 @@ Global
 		{5BA5283D-710E-49D1-8EB9-EB61385107C5} = {C3870B28-291A-4DD8-862A-6ADC632E09D0}
 		{033FD150-887A-44DB-A0E7-7555B1BF8B07} = {E26E6C2A-F5A2-4FEF-BFDA-57ABA0F77D08}
 		{454208AB-7A1A-4445-96C7-CFE410F0D5D6} = {E26E6C2A-F5A2-4FEF-BFDA-57ABA0F77D08}
+		{A2379B6A-CF92-4C97-8F72-FE9EAC669949} = {94F3C036-A5F4-4ACC-A028-8506802ADB88}
+		{32A4A924-C3CD-4FE3-A21E-DD018F0CC4BD} = {A2379B6A-CF92-4C97-8F72-FE9EAC669949}
+		{B157321E-9FB6-430E-B36C-D389DDEC22DE} = {A2379B6A-CF92-4C97-8F72-FE9EAC669949}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

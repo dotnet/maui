@@ -5,59 +5,58 @@ using Android.OS;
 using Android.Runtime;
 using Android.Widget;
 using Microsoft.Maui;
-using Microsoft.Maui.Controls.Compatibility.Platform.Android;
-using Samples.View;
 
 namespace Samples.Droid
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    [IntentFilter(
-        new[] { Microsoft.Maui.Essentials.Platform.Intent.ActionAppAction },
-        Categories = new[] { Intent.CategoryDefault })]
-    public class MainActivity : MauiAppCompatActivity
-    {
-        protected override void OnCreate(Bundle bundle)
-        {
-            base.OnCreate(bundle);
-            Microsoft.Maui.Essentials.Platform.Init(this, bundle);
-            Microsoft.Maui.Essentials.Platform.ActivityStateChanged += Platform_ActivityStateChanged;
-        }
+	[Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+	[IntentFilter(
+		new[] { Microsoft.Maui.Essentials.Platform.Intent.ActionAppAction },
+		Categories = new[] { Intent.CategoryDefault })]
+	public class MainActivity : MauiAppCompatActivity
+	{
+		protected override void OnCreate(Bundle bundle)
+		{
+			base.OnCreate(bundle);
 
-        protected override void OnResume()
-        {
-            base.OnResume();
+			Microsoft.Maui.Essentials.Platform.Init(this, bundle);
+			Microsoft.Maui.Essentials.Platform.ActivityStateChanged += Platform_ActivityStateChanged;
+		}
 
-            Microsoft.Maui.Essentials.Platform.OnResume(this);
-        }
+		protected override void OnResume()
+		{
+			base.OnResume();
 
-        protected override void OnNewIntent(Intent intent)
-        {
-            base.OnNewIntent(intent);
+			Microsoft.Maui.Essentials.Platform.OnResume(this);
+		}
 
-            Microsoft.Maui.Essentials.Platform.OnNewIntent(intent);
-        }
+		protected override void OnNewIntent(Intent intent)
+		{
+			base.OnNewIntent(intent);
 
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
+			Microsoft.Maui.Essentials.Platform.OnNewIntent(intent);
+		}
 
-            Microsoft.Maui.Essentials.Platform.ActivityStateChanged -= Platform_ActivityStateChanged;
-        }
+		protected override void OnDestroy()
+		{
+			base.OnDestroy();
 
-        void Platform_ActivityStateChanged(object sender, Microsoft.Maui.Essentials.ActivityStateChangedEventArgs e) =>
-            Toast.MakeText(this, e.State.ToString(), ToastLength.Short).Show();
+			Microsoft.Maui.Essentials.Platform.ActivityStateChanged -= Platform_ActivityStateChanged;
+		}
 
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
-        {
-            Microsoft.Maui.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+		void Platform_ActivityStateChanged(object sender, Microsoft.Maui.Essentials.ActivityStateChangedEventArgs e) =>
+			Toast.MakeText(this, e.State.ToString(), ToastLength.Short).Show();
 
-            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-    }
+		public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
+		{
+			Microsoft.Maui.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
-    [Activity(NoHistory = true, LaunchMode = LaunchMode.SingleTop)]
-    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable }, DataScheme = "xamarinessentials")]
-    public class WebAuthenticationCallbackActivity : Microsoft.Maui.Essentials.WebAuthenticatorCallbackActivity
-    {
-    }
+			base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+		}
+	}
+
+	[Activity(NoHistory = true, LaunchMode = LaunchMode.SingleTop)]
+	[IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable }, DataScheme = "xamarinessentials")]
+	public class WebAuthenticationCallbackActivity : Microsoft.Maui.Essentials.WebAuthenticatorCallbackActivity
+	{
+	}
 }

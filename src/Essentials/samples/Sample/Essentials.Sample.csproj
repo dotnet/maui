@@ -1,29 +1,30 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Maui.Essentials.Sample</RootNamespace>
-    <AssemblyName>Maui.Essentials.Sample</AssemblyName>
+    <AssemblyName>Microsoft.Maui.Essentials.Sample</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
-    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows')) == true ">10.0.17763.0</TargetPlatformMinVersion>
+
+    <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
+    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>MSIX</WindowsPackageType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
-    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+  <PropertyGroup>
+    <ApplicationTitle>Essentials</ApplicationTitle>
+    <ApplicationId>com.microsoft.maui.essentials</ApplicationId>
+    <ApplicationVersion>1.0</ApplicationVersion>
+    <AndroidVersionCode>1</AndroidVersionCode>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
-    <PackageReference Include="Microsoft.Extensions.Configuration" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(UseMaui)' != 'true' and $(TargetFramework.Contains('-windows')) == true ">
+  <ItemGroup Condition="'$(UseMaui)' != 'true' and $(TargetFramework.Contains('-windows'))">
     <PackageReference Include="Microsoft.ProjectReunion" />
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
-    <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
@@ -35,14 +36,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Embedded\*" />
-    <MauiAsset Include="Resources\Raw\*" />
     <MauiImage Include="Resources\Images\*" />
-    <MauiImage Update="Resources\Images\*.gif" Resize="false" />
-    <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
-    <MauiFont Include="Resources\Fonts\*" />
-    <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
-    <AndroidResource Remove="Resources\**" />
+    <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appiconfg.svg" IsAppIcon="true" Color="#512BD4" />
+    <MauiSplashScreen Include="Resources\AppIcons\appiconfg.svg" Color="#512BD4" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <InvariantGlobalization Condition="$(TargetFramework.Contains('-maccatalyst'))">true</InvariantGlobalization>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
+  </PropertyGroup>
 
 </Project>
