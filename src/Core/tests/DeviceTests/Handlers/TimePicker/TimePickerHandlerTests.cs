@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
 
-		[Fact(DisplayName = "Text Color Initializes Correctly")]
+		[Fact(DisplayName = "Text Color Initializes Correctly", Skip = "Mapper not implemented")]
 		public async Task TextColorInitializesCorrectly()
 		{
 			var timePicker = new TimePickerStub()
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(timePicker, () => timePicker.TextColor, GetNativeTextColor, timePicker.TextColor);
 		}
 
-		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		[Fact(DisplayName = "Null Text Color Doesn't Crash", Skip = "Mapper not implemented")]
 		public async Task NullTextColorDoesntCrash()
 		{
 			var timePicker = new TimePickerStub()
