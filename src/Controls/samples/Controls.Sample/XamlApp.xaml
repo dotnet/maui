@@ -37,28 +37,35 @@
             </Style>
 
             <Style x:Key="GalleryItemTitleStyle" TargetType="Label">
-                <Setter Property="FontSize" Value="12" />
+                <Setter Property="FontSize" Value="Small" />
+                <Setter Property="FontFamily" Value="Segoe UI" />
+                <Setter Property="FontAttributes" Value="Bold" />
                 <Setter Property="TextColor" Value="{StaticResource AccentColor}" />
+                <Setter Property="Margin" Value="0, 0, 0, 6" />
             </Style>
 
             <Style x:Key="GalleryItemDescriptionStyle" TargetType="Label">
-                <Setter Property="FontSize" Value="9" />
+                <Setter Property="FontSize" Value="Caption" />
+                <Setter Property="FontFamily" Value="Segoe UI" />
                 <Setter Property="TextColor" Value="{StaticResource BlackColor}" />
                 <Setter Property="LineBreakMode" Value="WordWrap" />
             </Style>
 
             <Style x:Key="NoItemsStyle" TargetType="Label">
-                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontSize" Value="Medium" />
+                <Setter Property="FontFamily" Value="Segoe UI" />
                 <Setter Property="HorizontalTextAlignment" Value="Center" />
                 <Setter Property="HorizontalOptions" Value="Center" />
                 <Setter Property="VerticalOptions" Value="Center" />
             </Style>
 
             <Style x:Key="Headline" TargetType="Label">
+                <Setter Property="FontFamily" Value="Segoe UI" />
                 <Setter Property="FontSize" Value="10" />
             </Style>
 
             <Style x:Key="Subhead" TargetType="Label">
+                <Setter Property="FontFamily" Value="Segoe UI" />
                 <Setter Property="FontSize" Value="9" />
             </Style>
 

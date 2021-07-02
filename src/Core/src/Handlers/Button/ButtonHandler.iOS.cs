@@ -37,13 +37,11 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		protected override void SetupDefaults(UIButton nativeView)
+		void SetupDefaults(UIButton nativeView)
 		{
 			ButtonTextColorDefaultNormal = nativeView.TitleColor(UIControlState.Normal);
 			ButtonTextColorDefaultHighlighted = nativeView.TitleColor(UIControlState.Highlighted);
 			ButtonTextColorDefaultDisabled = nativeView.TitleColor(UIControlState.Disabled);
-
-			base.SetupDefaults(nativeView);
 		}
 
 		public static void MapText(ButtonHandler handler, IButton button)

@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using Maui.Controls.Sample.Pages.Base;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Maui.Controls.Sample.Pages.Gestures
+namespace Maui.Controls.Sample.Pages
 {
 	public class PinchToZoomContainer : VerticalStackLayout
 	{
@@ -15,7 +13,6 @@ namespace Maui.Controls.Sample.Pages.Gestures
 		{
 
 		}
-
 
 		public View Content
 		{

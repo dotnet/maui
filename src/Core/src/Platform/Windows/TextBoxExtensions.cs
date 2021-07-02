@@ -29,6 +29,7 @@ namespace Microsoft.Maui
 				return;
 
 			var brush = textStyle.TextColor.ToNative();
+
 			textBox.Foreground = brush;
 			textBox.ForegroundFocusBrush = brush;
 		}
@@ -46,7 +47,7 @@ namespace Microsoft.Maui
 		public static void UpdateReturnType(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.InputScope = entry.ReturnType.ToNative();
-		}
+    	}
 
 		public static void UpdateClearButtonVisibility(this MauiTextBox textBox, IEntry entry)
 		{
@@ -130,6 +131,11 @@ namespace Microsoft.Maui
 			{
 				textBox.AcceptsReturn = true;
 			}
+		}
+		
+		public static void UpdateIsPassword(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.IsPassword = entry.IsPassword;
 		}
 	}
 }

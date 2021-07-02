@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.SetOnCheckedChangeListener(null);
 		}
 
-		protected override void SetupDefaults(ASwitch nativeView)
+		void SetupDefaults(ASwitch nativeView)
 		{
 			DefaultTrackColorStateList = nativeView.GetDefaultSwitchTrackColorStateList();
 			DefaultThumbColorStateList = nativeView.GetDefaultSwitchThumbColorStateList();

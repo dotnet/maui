@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		}
 
-		[PortHandler("Partially ported")]
+		[PortHandler]
 		void UpdateAlign(TextBlock textBlock)
 		{
 			_perfectSizeValid = false;

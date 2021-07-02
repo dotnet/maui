@@ -64,11 +64,9 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		protected override void SetupDefaults(MauiDatePicker nativeView)
+		void SetupDefaults(MauiDatePicker nativeView)
 		{
 			_defaultTextColor = nativeView.TextColor;
-
-			base.SetupDefaults(nativeView);
 		}
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)

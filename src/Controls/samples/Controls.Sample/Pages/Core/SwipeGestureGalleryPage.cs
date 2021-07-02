@@ -5,7 +5,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
-namespace Maui.Controls.Sample.Pages.Gestures
+namespace Maui.Controls.Sample.Pages
 {
 	public class SwipeGestureGalleryPage : BasePage
 	{

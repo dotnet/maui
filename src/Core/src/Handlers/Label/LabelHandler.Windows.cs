@@ -34,10 +34,13 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(label, fontManager);
 		}
 
-		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label) => 
+		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label) =>
 			handler.NativeView?.UpdateHorizontalTextAlignment(label);
 
-		public static void MapLineBreakMode(LabelHandler handler, ILabel label) => 
+		public static void MapVerticalTextAlignment(LabelHandler handler, ILabel label) =>
+			handler.NativeView?.UpdateVerticalTextAlignment(label);
+
+		public static void MapLineBreakMode(LabelHandler handler, ILabel label) =>
 			handler.NativeView?.UpdateLineBreakMode(label);
 
 		public static void MapTextDecorations(LabelHandler handler, ILabel label) =>
@@ -49,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPadding(LabelHandler handler, ILabel label) =>
 			handler.NativeView?.UpdatePadding(label);
 
-		public static void MapLineHeight(LabelHandler handler, ILabel label) =>		
+		public static void MapLineHeight(LabelHandler handler, ILabel label) =>
 			handler.NativeView?.UpdateLineHeight(label);
 	}
 }

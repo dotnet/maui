@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ShouldChangeCharacters -= OnShouldChangeCharacters;
 		}
 
-		protected override void SetupDefaults(MauiTextField nativeView)
+		void SetupDefaults(MauiTextField nativeView)
 		{
 			DefaultTextColor = nativeView.TextColor;
 		}

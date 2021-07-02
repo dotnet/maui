@@ -11,7 +11,7 @@
 
 		public void Subscribe() => Subscribe(_window);
 
-		public void Unsubscribe() => Unsubscribe(_window);		
+		public void Unsubscribe() => Unsubscribe(_window);
 
 	}
 }

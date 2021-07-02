@@ -1,21 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Maui.Controls.Sample.Pages.Base;
 using Microsoft.Maui.Controls;
 
-namespace Maui.Controls.Sample.Pages.Gestures
+namespace Maui.Controls.Sample.Pages
 {
 	public partial class DragAndDropBetweenLayouts
 	{
 		public ObservableCollection<Brush> AllColors { get; }
 		public ObservableCollection<Brush> RainbowColors { get; }
+
 		public DragAndDropBetweenLayouts()
 		{
 			InitializeComponent();
+
 			Console.WriteLine("Some really long text Some really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long text");
 			AllColors = new ObservableCollection<Brush>();
 			RainbowColors = new ObservableCollection<Brush>();

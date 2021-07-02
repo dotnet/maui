@@ -8,8 +8,6 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		protected abstract bool HasSetDefaults { get; set; }
-
 		protected PropertyMapper _mapper;
 		protected readonly PropertyMapper _defaultMapper;
 
@@ -54,13 +52,6 @@ namespace Microsoft.Maui.Handlers
 				ConnectHandler(NativeView);
 			}
 
-			if (!HasSetDefaults)
-			{
-				SetupDefaults(NativeView);
-
-				HasSetDefaults = true;
-			}
-
 			_mapper = _defaultMapper;
 
 			if (VirtualView is IPropertyMapperView imv)
@@ -88,11 +79,6 @@ namespace Microsoft.Maui.Handlers
 
 		object CreateNativeElement() =>
 			OnCreateNativeElement();
-
-		private protected abstract void OnSetupDefaults(object nativeView);
-
-		void SetupDefaults(object nativeView) =>
-			OnSetupDefaults(nativeView);
 
 		private protected abstract void OnConnectHandler(object nativeView);
 

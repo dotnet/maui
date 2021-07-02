@@ -28,11 +28,11 @@ namespace Microsoft.Maui.Handlers
 			nativeView.SelectionChanged -= OnControlSelectionChanged;
 		}
 
-		protected override void SetupDefaults(MauiComboBox nativeView)
+		void SetupDefaults(MauiComboBox nativeView)
 		{
 			_defaultForeground = nativeView.Foreground;
 
-			base.SetupDefaults(nativeView);
+			
 		}
 		void Reload()
 		{

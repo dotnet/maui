@@ -40,10 +40,7 @@ namespace Maui.Controls.Sample.ViewModels
 				"User interface concepts like Animations, Colors, Fonts and more."),
 
 			new SectionModel(typeof(OthersPage), "Others Concepts",
-				"Other options like Graphics."),
-
-			new SectionModel(typeof(GesturesPage), "Gestures",
-				"Gestures")
+				"Other options like Graphics.")
 		};
 	}
 }

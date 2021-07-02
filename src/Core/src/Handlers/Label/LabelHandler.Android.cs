@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override TextView CreateNativeView() => new TextView(Context);
 
-		protected override void SetupDefaults(TextView nativeView)
+		void SetupDefaults(TextView nativeView)
 		{
 			if (nativeView.TextColors == null)
 			{
@@ -52,6 +52,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdateHorizontalTextAlignment(label);
 		}
+
+		[MissingMapper]
+		public static void MapVerticalTextAlignment(LabelHandler handler, ILabel label) { }
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
 		{

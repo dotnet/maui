@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 			return nativeButton;
 		}
 
-		protected override void SetupDefaults(AppCompatButton nativeView)
+		void SetupDefaults(AppCompatButton nativeView)
 		{
 			DefaultPadding = new Thickness(
 				nativeView.PaddingLeft,
@@ -34,8 +34,6 @@ namespace Microsoft.Maui.Handlers
 				nativeView.PaddingBottom);
 
 			DefaultBackground = nativeView.Background;
-
-			base.SetupDefaults(nativeView);
 		}
 
 		protected override void ConnectHandler(AppCompatButton nativeView)
