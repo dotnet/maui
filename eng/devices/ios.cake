@@ -1,4 +1,5 @@
 #addin nuget:?package=Cake.AppleSimulator&version=0.2.0
+#load "../cake/helpers.cake"
 
 string TARGET = Argument("target", "Test");
 
@@ -85,11 +86,7 @@ Task("Build")
 
 	if (USE_DOTNET)
 	{
-		if (!string.IsNullOrEmpty(DOTNET_PATH)) {
-			var dotnet = (FilePath)DOTNET_PATH;
-			var newPath = dotnet.GetDirectory().FullPath;
-			SetEnvironmentVariable("PATH", newPath, prepend: true);
-		}
+		SetDotNetEnvironmentVariables(DOTNET_PATH);
 
 		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
 			Configuration = CONFIGURATION,
