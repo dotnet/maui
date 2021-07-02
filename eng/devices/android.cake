@@ -31,11 +31,11 @@ bool DEVICE_BOOT_WAIT = Argument("wait", true);
 // set up env
 var ANDROID_SDK_ROOT = GetAndroidSDKPath();
 
-SetEnvironmentVariable("PATH",
+System.Environment.SetEnvironmentVariable("PATH",
 	$"{ANDROID_SDK_ROOT}/tools/bin" + System.IO.Path.PathSeparator +
 	$"{ANDROID_SDK_ROOT}/platform-tools" + System.IO.Path.PathSeparator +
-	$"{ANDROID_SDK_ROOT}/emulator" + System.IO.Path.PathSeparator,
-	prepend: true);
+	$"{ANDROID_SDK_ROOT}/emulator" + System.IO.Path.PathSeparator +
+	EnvironmentVariable("PATH"));
 
 Information("Android SDK Root: {0}", ANDROID_SDK_ROOT);
 Information("Project File: {0}", PROJECT);
@@ -143,8 +143,8 @@ Task("Build")
 	{
 		if (!string.IsNullOrEmpty(DOTNET_PATH)) {
 			var dotnet = (FilePath)DOTNET_PATH;
-			var newPath = dotnet.GetDirectory().FullPath;
-			SetEnvironmentVariable("PATH", newPath, prepend: true);
+			var newPath = dotnet.GetDirectory().FullPath + System.IO.Path.PathSeparator + EnvironmentVariable("PATH");
+			Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.Process);
 		}
 
 		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
