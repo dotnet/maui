@@ -20,11 +20,11 @@ namespace Microsoft.Maui.Handlers
 			nativeView.DateChanged -= DateChanged;
 		}
 
-		protected override void SetupDefaults(CalendarDatePicker nativeView)
+		void SetupDefaults(CalendarDatePicker nativeView)
 		{
 			_defaultForeground = nativeView.Foreground;
 
-			base.SetupDefaults(nativeView);
+			
 		}
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)

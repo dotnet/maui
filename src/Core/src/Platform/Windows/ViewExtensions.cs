@@ -1,8 +1,12 @@
 #nullable enable
+using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui
@@ -37,6 +41,30 @@ namespace Microsoft.Maui
 					nativeView.Visibility = UI.Xaml.Visibility.Collapsed;
 					break;
 			}
+		}
+
+		public static void UpdateClip(this FrameworkElement nativeView, IView view)
+		{
+			var clipGeometry = view.Clip;
+			if (clipGeometry == null)
+				return;
+
+			if (view.Handler?.MauiContext?.Window is not Window window)
+				return;
+
+			var compositor = window.Compositor;
+			var visual = ElementCompositionPreview.GetElementVisual(nativeView);
+
+			var pathSize = new Rectangle(0, 0, view.Width, view.Height);
+			var clipPath = clipGeometry.PathForBounds(pathSize);
+			var device = CanvasDevice.GetSharedDevice();
+			var geometry = clipPath.AsPath(device);
+
+			var path = new CompositionPath(geometry);
+			var pathGeometry = compositor.CreatePathGeometry(path);
+			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
+
+			visual.Clip = geometricClip;
 		}
 
 		public static void UpdateOpacity(this FrameworkElement nativeView, IView view)

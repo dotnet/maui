@@ -1,6 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -8,17 +6,20 @@ namespace Microsoft.Maui.Controls
 	public partial class VisualElement : IFrameworkElement
 	{
 		Semantics _semantics;
-		IViewHandler _handler;
 
 		public Rectangle Frame => Bounds;
 
-		public IViewHandler Handler
+		new public IViewHandler Handler
 		{
-			get => _handler;
-			set
-			{
-				SetHandler(value);
-			}
+			get => base.Handler as IViewHandler;
+			set => base.Handler = value;
+		}
+
+		private protected override void OnHandlerSet()
+		{
+			base.OnHandlerSet();
+
+			IsPlatformEnabled = Handler != null;
 		}
 
 		Paint IFrameworkElement.Background
@@ -33,13 +34,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
-		{
-			base.OnPropertyChanged(propertyName);
-			(Handler)?.UpdateValue(propertyName);
-		}
+		IShape IFrameworkElement.Clip => Clip;
 
-		IFrameworkElement IFrameworkElement.Parent => Parent as IView;
+		IFrameworkElement IFrameworkElement.Parent => Parent as IFrameworkElement;
 
 		public Size DesiredSize { get; protected set; }
 
@@ -110,54 +107,5 @@ namespace Microsoft.Maui.Controls
 
 		double IFrameworkElement.Width => WidthRequest;
 		double IFrameworkElement.Height => HeightRequest;
-
-		public event EventHandler AttachingHandler;
-		public event EventHandler AttachedHandler;
-		public event EventHandler DetachingHandler;
-		public event EventHandler DetachedHandler;
-
-		void SetHandler(IViewHandler newHandler)
-		{
-			if (newHandler == _handler)
-				return;
-
-			var previousHandler = _handler;
-
-			if (_handler != null)
-			{
-				DetachingHandler?.Invoke(this, EventArgs.Empty);
-				OnDetachingHandler();
-			}
-
-			if (newHandler != null)
-			{
-				AttachingHandler?.Invoke(this, EventArgs.Empty);
-				OnAttachingHandler();
-			}
-
-			_handler = newHandler;
-
-			if (_handler?.VirtualView != this)
-				_handler?.SetVirtualView((IView)this);
-
-			IsPlatformEnabled = _handler != null;
-
-			if (_handler != null)
-			{
-				AttachedHandler?.Invoke(this, EventArgs.Empty);
-				OnAttachedHandler();
-			}
-
-			if (previousHandler != null)
-			{
-				DetachedHandler?.Invoke(this, EventArgs.Empty);
-				OnDetachedHandler();
-			}
-		}
-
-		public virtual void OnAttachingHandler() { }
-		public virtual void OnAttachedHandler() { }
-		public virtual void OnDetachingHandler() { }
-		public virtual void OnDetachedHandler() { }
 	}
 }

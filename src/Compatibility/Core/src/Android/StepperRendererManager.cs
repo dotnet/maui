@@ -12,10 +12,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			where TButton : AButton
 		{
 			downButton = (TButton)renderer.CreateButton();
-			downButton.Id = AppCompat.Platform.GenerateViewId();
+			downButton.Id = Platform.GenerateViewId();
 			downButton.Focusable = true;
 			upButton = (TButton)renderer.CreateButton();
-			upButton.Id = AppCompat.Platform.GenerateViewId();
+			upButton.Id = Platform.GenerateViewId();
 			upButton.Focusable = true;
 
 			downButton.Gravity = GravityFlags.Center;

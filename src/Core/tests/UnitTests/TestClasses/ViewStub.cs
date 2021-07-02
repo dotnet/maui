@@ -5,9 +5,19 @@ namespace Microsoft.Maui.UnitTests
 {
 	class ViewStub : IViewStub
 	{
+		IElementHandler IElement.Handler
+		{
+			get => Handler;
+			set => Handler = (IViewHandler)value;
+		}
+
+		IElement IElement.Parent => Parent;
+
 		public bool IsEnabled { get; set; }
 
 		public Visibility Visibility { get; set; }
+
+		public IShape Clip { get; set; }
 
 		public double Opacity { get; set; }
 

@@ -86,13 +86,13 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		public void OneTimeSetUp()
 		{
 			resolver = new XamlCAssemblyResolver();
-			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(TypeReferenceExtensionsTests).Assembly.CodeBase)).Path));
-			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(BindableObject).Assembly.CodeBase)).Path));
-			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(object).Assembly.CodeBase)).Path));
-			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(IList<>).Assembly.CodeBase)).Path));
-			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(Queue<>).Assembly.CodeBase)).Path));
-			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(IViewHandler).Assembly.CodeBase)).Path));
-			resolver.AddAssembly(Uri.UnescapeDataString((new UriBuilder(typeof(Color).Assembly.CodeBase)).Path));
+			resolver.AddAssembly(typeof(TypeReferenceExtensionsTests).Assembly.Location);
+			resolver.AddAssembly(typeof(BindableObject).Assembly.Location);
+			resolver.AddAssembly(typeof(object).Assembly.Location);
+			resolver.AddAssembly(typeof(IList<>).Assembly.Location);
+			resolver.AddAssembly(typeof(Queue<>).Assembly.Location);
+			resolver.AddAssembly(typeof(IViewHandler).Assembly.Location);
+			resolver.AddAssembly(typeof(Color).Assembly.Location);
 
 			module = ModuleDefinition.CreateModule("foo", new ModuleParameters
 			{

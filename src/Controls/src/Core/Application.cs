@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -26,7 +27,6 @@ namespace Microsoft.Maui.Controls
 		public Application()
 		{
 			SetCurrentApplication(this);
-			NavigationProxy = new NavigationImpl(this);
 			_systemResources = new Lazy<IResourceDictionary>(() =>
 			{
 				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
@@ -240,6 +240,27 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<ModalPushingEventArgs> ModalPushing;
 
+		internal void NotifyOfWindowModalEvent(EventArgs eventArgs)
+		{
+			switch (eventArgs)
+			{
+				case ModalPoppedEventArgs poppedEvents:
+					ModalPopped?.Invoke(this, poppedEvents);
+					break;
+				case ModalPoppingEventArgs poppingEvents:
+					ModalPopping?.Invoke(this, poppingEvents);
+					break;
+				case ModalPushedEventArgs pushedEvents:
+					ModalPushed?.Invoke(this, pushedEvents);
+					break;
+				case ModalPushingEventArgs pushingEvents:
+					ModalPushing?.Invoke(this, pushingEvents);
+					break;
+				default:
+					break;
+			}
+		}
+
 		public event EventHandler<Page> PageAppearing;
 
 		public event EventHandler<Page> PageDisappearing;
@@ -310,6 +331,9 @@ namespace Microsoft.Maui.Controls
 		internal static void ClearCurrent() => Current = null;
 
 		internal static bool IsApplicationOrNull(object element) =>
+			element == null || element is IApplication;
+
+		internal static bool IsApplicationOrWindowOrNull(object element) =>
 			element == null || element is IApplication || element is IWindow;
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
@@ -331,8 +355,6 @@ namespace Microsoft.Maui.Controls
 			}
 			OnResourcesChanged(changedResources);
 		}
-
-		internal event EventHandler PopCanceled;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendOnAppLinkRequestReceived(Uri uri)
@@ -389,24 +411,6 @@ namespace Microsoft.Maui.Controls
 		internal void OnPageDisappearing(Page page)
 			=> PageDisappearing?.Invoke(this, page);
 
-		void OnModalPopped(Page modalPage)
-			=> ModalPopped?.Invoke(this, new ModalPoppedEventArgs(modalPage));
-
-		bool OnModalPopping(Page modalPage)
-		{
-			var args = new ModalPoppingEventArgs(modalPage);
-			ModalPopping?.Invoke(this, args);
-			return args.Cancel;
-		}
-
-		void OnModalPushed(Page modalPage)
-			=> ModalPushed?.Invoke(this, new ModalPushedEventArgs(modalPage));
-
-		void OnModalPushing(Page modalPage)
-			=> ModalPushing?.Invoke(this, new ModalPushingEventArgs(modalPage));
-
-		void OnPopCanceled()
-			=> PopCanceled?.Invoke(this, EventArgs.Empty);
 
 		async Task SetPropertiesAsync()
 		{
@@ -436,50 +440,6 @@ namespace Microsoft.Maui.Controls
 			//}
 
 			NavigationProxy = null;
-		}
-
-		class NavigationImpl : NavigationProxy
-		{
-			readonly Application _owner;
-
-			public NavigationImpl(Application owner)
-			{
-				_owner = owner;
-			}
-
-			protected override async Task<Page> OnPopModal(bool animated)
-			{
-				Page modal = ModalStack[ModalStack.Count - 1];
-				if (_owner.OnModalPopping(modal))
-				{
-					_owner.OnPopCanceled();
-					return null;
-				}
-				Page result = await base.OnPopModal(animated);
-				result.Parent = null;
-				_owner.OnModalPopped(result);
-				return result;
-			}
-
-			protected override async Task OnPushModal(Page modal, bool animated)
-			{
-				_owner.OnModalPushing(modal);
-
-				modal.Parent = _owner;
-
-				if (modal.NavigationProxy.ModalStack.Count == 0)
-				{
-					modal.NavigationProxy.Inner = this;
-					await base.OnPushModal(modal, animated);
-				}
-				else
-				{
-					await base.OnPushModal(modal, animated);
-					modal.NavigationProxy.Inner = this;
-				}
-
-				_owner.OnModalPushed(modal);
-			}
 		}
 	}
 }

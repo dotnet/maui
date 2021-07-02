@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui
 {
@@ -12,7 +13,7 @@ namespace Microsoft.Maui
 			Handlers = null!;
 		}
 
-		private MauiContext(IServiceProvider services)
+		public MauiContext(IServiceProvider services)
 		{
 			Services = services ?? throw new ArgumentNullException(nameof(services));
 			Handlers = Services.GetRequiredService<IMauiHandlersServiceProvider>();

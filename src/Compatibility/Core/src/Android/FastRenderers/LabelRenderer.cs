@@ -206,8 +206,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 				if (Element != null)
 				{
-					if (AppCompat.Platform.GetRenderer(Element) == this)
-						Element.ClearValue(AppCompat.Platform.RendererProperty);
+					if (Platform.GetRenderer(Element) == this)
+						Element.ClearValue(Platform.RendererProperty);
 				}
 			}
 
@@ -216,7 +216,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
-			if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
+			if (base.OnTouchEvent(e))
 			{
 				return true;
 			}

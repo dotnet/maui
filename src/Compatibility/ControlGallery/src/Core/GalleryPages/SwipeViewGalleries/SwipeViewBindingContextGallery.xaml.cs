@@ -1,10 +1,12 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.SwipeViewGalleries
 {
 	[Preserve(AllMembers = true)]
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class SwipeViewBindingContextGallery : ContentPage
 	{
 		public SwipeViewBindingContextGallery()

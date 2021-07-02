@@ -361,7 +361,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.SetFlags(s_flags);
 
 			Profile.FramePartition("AndroidTicker");
-			Ticker.SetDefault(null);
 
 			Profile.FramePartition("RegisterAll");
 
@@ -670,11 +669,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				s_handler.Post(action);
 			}
 
-			public Ticker CreateTicker()
-			{
-				return new AndroidTicker();
-			}
-
 			public Assembly[] GetAssemblies()
 			{
 				return AppDomain.CurrentDomain.GetAssemblies();
@@ -939,7 +933,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
-				return Platform.Android.AppCompat.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
 			}
 
 			public void Invalidate(VisualElement visualElement)

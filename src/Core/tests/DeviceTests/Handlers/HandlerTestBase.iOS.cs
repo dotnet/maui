@@ -111,7 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var window = new WindowStub();
 
-			window.View = view;
+			window.Content = view;
 			view.Parent = window;
 
 			view.Frame = new Rectangle(0, 0, 100, 100);

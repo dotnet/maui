@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.Maui.LifecycleEvents;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {
@@ -11,13 +9,6 @@ namespace Microsoft.Maui
 			Activated += OnActivated;
 			Closed += OnClosed;
 			VisibilityChanged += OnVisibilityChanged;
-
-			if (!Application.Current.Resources.ContainsKey("MauiRootContainerStyle"))
-			{
-				var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
-				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
-			}
 		}
 
 		protected virtual void OnActivated(object sender, UI.Xaml.WindowActivatedEventArgs args)

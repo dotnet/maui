@@ -15,6 +15,8 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Animations;
 
 #if __MOBILE__
 using UIKit;
@@ -328,11 +330,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public void BeginInvokeOnMainThread(Action action)
 			{
 				NSRunLoop.Main.BeginInvokeOnMainThread(action.Invoke);
-			}
-
-			public Ticker CreateTicker()
-			{
-				return new CADisplayLinkTicker();
 			}
 
 			public Assembly[] GetAssemblies()

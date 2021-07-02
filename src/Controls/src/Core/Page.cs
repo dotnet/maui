@@ -275,8 +275,8 @@ namespace Microsoft.Maui.Controls
 			if (RealParent is BaseShellItem || RealParent is Shell)
 				return false;
 
-			var application = RealParent as Application;
-			if (application == null || this == application.MainPage)
+			var application = RealParent as Window;
+			if (application == null || this == application.Page)
 				return false;
 
 			var canceled = false;
@@ -312,7 +312,7 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnParentSet()
 		{
-			if (!Application.IsApplicationOrNull(RealParent) && !(RealParent is Page) && !(RealParent is BaseShellItem) && !(RealParent is IWindow))
+			if (!Application.IsApplicationOrWindowOrNull(RealParent) && !(RealParent is Page) && !(RealParent is BaseShellItem))
 				throw new InvalidOperationException("Parent of a Page must also be a Page");
 			base.OnParentSet();
 		}
