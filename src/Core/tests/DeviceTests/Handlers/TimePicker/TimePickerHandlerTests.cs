@@ -56,19 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
 
-		[Fact(DisplayName = "Text Color Initializes Correctly", Skip = "Mapper not implemented")]
-		public async Task TextColorInitializesCorrectly()
-		{
-			var timePicker = new TimePickerStub()
-			{
-				Time = DateTime.Now.TimeOfDay,
-				TextColor = Colors.Red
-			};
-
-			await ValidatePropertyInitValue(timePicker, () => timePicker.TextColor, GetNativeTextColor, timePicker.TextColor);
-		}
-
-		[Fact(DisplayName = "Null Text Color Doesn't Crash", Skip = "Mapper not implemented")]
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
 		public async Task NullTextColorDoesntCrash()
 		{
 			var timePicker = new TimePickerStub()
