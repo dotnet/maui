@@ -1,9 +1,8 @@
-﻿using System;
-using Maui.Controls.Sample.Pages.Base;
+﻿using Maui.Controls.Sample.Pages.Base;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
-namespace Maui.Controls.Sample.Pages.Gestures
+namespace Maui.Controls.Sample.Pages
 {
 	public class ClickGestureGalleryPage : BasePage
 	{

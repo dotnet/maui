@@ -1,21 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Maui.Controls.Sample.Pages.Base;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
+
 using Microsoft.Maui.Graphics;
 
-namespace Maui.Controls.Sample.Pages.Gestures
+namespace Maui.Controls.Sample.Pages
 {
 	public class PanGestureGalleryPage : BasePage
 	{
 		public class PanCompleteArgs : EventArgs
 		{
 			public PanCompleteArgs(string message) { Message = message; }
+
 			public string Message
 			{
 				get; private set;
