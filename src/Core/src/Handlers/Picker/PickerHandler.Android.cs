@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 
 		void SetupDefaults(MauiPicker nativeView)
 		{
-			
+
 
 			DefaultBackground = nativeView.Background;
 			DefaultTitleColors = nativeView.HintTextColors;

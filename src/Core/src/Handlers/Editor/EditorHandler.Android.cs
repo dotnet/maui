@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 
 		void SetupDefaults(AppCompatEditText nativeView)
 		{
-			
+
 
 			DefaultTextColors = nativeView.TextColors;
 			DefaultPlaceholderTextColors = nativeView.HintTextColors;

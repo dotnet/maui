@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 				_cancelButtonTextColorDefaultDisabled = cancelButton.TitleColor(UIControlState.Disabled);
 			}
 
-			
+
 		}
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)

@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			DefaultBackground = nativeView.Background;
 
-			
+
 		}
 
 		protected override void DisconnectHandler(MauiTimePicker nativeView)
