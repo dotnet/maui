@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			DefaultBackground = nativeView.Background;
 
-			
+
 		}
 
 		// This is a Android-specific mapping

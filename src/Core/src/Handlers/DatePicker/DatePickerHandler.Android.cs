@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 			_defaultBackground = nativeView.Background;
 			_defaultTextColors = nativeView.TextColors;
 
-			
+
 		}
 
 		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
