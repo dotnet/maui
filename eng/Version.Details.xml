@@ -28,7 +28,6 @@
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>b7298b17f8b4b18f36fd56627f340c226d320164</Sha>
     </Dependency>
-    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="6.0.0-preview.6.21328.3" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>85add249cab4766fd9f5773e5555b47cd698446a</Sha>
