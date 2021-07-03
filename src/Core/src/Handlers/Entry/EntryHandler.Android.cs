@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 
 		void SetupDefaults(AppCompatEditText nativeView)
 		{
-			
+
 
 			ClearButtonDrawable = GetClearButtonDrawable();
 			DefaultTextColors = nativeView.TextColors;
