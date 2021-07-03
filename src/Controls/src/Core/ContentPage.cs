@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty("Content")]
@@ -12,6 +14,13 @@ namespace Microsoft.Maui.Controls
 				SetValue(ContentProperty, value);
 				TypeHashCode = null;
 			}
+		}
+
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+			if(propertyName == nameof(Content))
+				TypeHashCode = null;
 		}
 
 		protected override void OnBindingContextChanged()

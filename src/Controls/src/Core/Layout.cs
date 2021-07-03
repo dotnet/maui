@@ -469,7 +469,6 @@ namespace Microsoft.Maui.Controls
 
 		void OnInternalAdded(View view)
 		{
-			TypeHashCode = null;
 			var parent = view.Parent as Layout;
 			parent?.InternalChildren.Remove(view);
 
@@ -482,7 +481,6 @@ namespace Microsoft.Maui.Controls
 
 		void OnInternalRemoved(View view, int oldIndex)
 		{
-			TypeHashCode = null;
 			view.MeasureInvalidated -= OnChildMeasureInvalidated;
 
 			OnChildRemoved(view, oldIndex);
