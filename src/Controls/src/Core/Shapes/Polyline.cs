@@ -1,8 +1,16 @@
-
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public sealed class Polyline : Shape
+	public sealed partial class Polyline : Shape
 	{
+		public Polyline() : base()
+		{
+		}
+
+		public Polyline(PointCollection points) : this()
+		{
+			Points = points;
+		}
+
 		public static readonly BindableProperty PointsProperty =
 			BindableProperty.Create(nameof(Points), typeof(PointCollection), typeof(Polyline), null, defaultValueCreator: bindable => new PointCollection());
 

@@ -1,9 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using AColor = global::Android.Graphics.Color;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.DeviceTests
@@ -62,11 +65,39 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
 		}
 
+		[Fact]
+		public async Task SearchViewHasEditTextChild()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var view = new SearchView(MauiContext.Context);
+
+				var editText = view.GetFirstChildOfType<EditText>();
+
+				Assert.NotNull(editText);
+			});
+		}
+
 		SearchView GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
 			(SearchView)searchBarHandler.NativeView;
 
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Query;
+
+		Color GetNativeTextColor(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+
+			if (editText != null)
+			{
+				int currentTextColorInt = editText.CurrentTextColor;
+				AColor currentTextColor = new AColor(currentTextColorInt);
+				return currentTextColor.ToColor();
+			}
+
+			return Colors.Transparent;
+		}
 
 		string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).QueryHint;
@@ -122,6 +153,16 @@ namespace Microsoft.Maui.DeviceTests
 				return false;
 
 			return editText.Typeface.IsItalic;
+		}
+
+		Task ValidateHasColor(ISearchBar searchBar, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeSearchBar = GetNativeSearchBar(CreateHandler(searchBar));
+				action?.Invoke();
+				nativeSearchBar.AssertContainsColor(color);
+			});
 		}
 	}
 }

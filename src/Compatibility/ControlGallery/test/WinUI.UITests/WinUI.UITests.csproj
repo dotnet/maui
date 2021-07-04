@@ -72,6 +72,9 @@
       <Project>{de354790-6107-468a-b388-e1eff1416240}</Project>
       <Name>Controls.Maps-net6</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj">
+      <Name>Controls.Xaml-net6</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core-net6.csproj">
       <Project>{af64451f-e2bd-41c2-b083-f60c26ae2a9f}</Project>
       <Name>Controls.Core-net6</Name>

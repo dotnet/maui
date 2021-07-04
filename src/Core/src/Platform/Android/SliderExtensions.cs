@@ -1,7 +1,8 @@
-﻿using Android.Content.Res;
+﻿using System.Threading.Tasks;
+using Android.Content.Res;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Widget;
-using Microsoft.Maui;
 
 namespace Microsoft.Maui
 {
@@ -67,5 +68,24 @@ namespace Microsoft.Maui
 
 		public static void UpdateThumbColor(this SeekBar seekBar, ISlider slider, ColorFilter? defaultThumbColorFilter) =>
 			seekBar.Thumb?.SetColorFilter(slider.ThumbColor, FilterMode.SrcIn, defaultThumbColorFilter);
+
+		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider, Drawable? defaultThumb)
+		{
+			var context = seekBar.Context;
+
+			if (context == null)
+				return;
+
+			var thumbImageSource = slider.ThumbImageSource;
+
+			if (thumbImageSource != null)
+			{
+				var service = provider.GetRequiredImageSourceService(thumbImageSource);
+				var result = await service.GetDrawableAsync(thumbImageSource, context);
+				Drawable? thumbDrawable = result?.Value;
+
+				seekBar.SetThumb(thumbDrawable ?? defaultThumb);
+			}
+		}
 	}
 }

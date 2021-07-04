@@ -1,4 +1,5 @@
 using System;
+using Android.Graphics.Drawables;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class ButtonHandler : ViewHandler<IButton, AppCompatButton>
 	{
 		static Thickness? DefaultPadding;
+		static Drawable? DefaultBackground;
 
 		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
 		ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();
@@ -23,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 			return nativeButton;
 		}
 
-		protected override void SetupDefaults(AppCompatButton nativeView)
+		void SetupDefaults(AppCompatButton nativeView)
 		{
 			DefaultPadding = new Thickness(
 				nativeView.PaddingLeft,
@@ -31,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 				nativeView.PaddingRight,
 				nativeView.PaddingBottom);
 
-			base.SetupDefaults(nativeView);
+			DefaultBackground = nativeView.Background;
 		}
 
 		protected override void ConnectHandler(AppCompatButton nativeView)
@@ -54,6 +56,12 @@ namespace Microsoft.Maui.Handlers
 			nativeView.SetOnTouchListener(null);
 
 			base.DisconnectHandler(nativeView);
+		}
+
+		// This is a Android-specific mapping
+		public static void MapBackground(ButtonHandler handler, IButton button)
+		{
+			handler.NativeView?.UpdateBackground(button, DefaultBackground);
 		}
 
 		public static void MapText(ButtonHandler handler, IButton button)

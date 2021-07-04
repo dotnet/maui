@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CoreAnimation;
 using Microsoft.Maui.Graphics;
@@ -8,9 +9,6 @@ namespace Microsoft.Maui
 	public static class ViewExtensions
 	{
 		const string BackgroundLayerName = "MauiBackgroundLayer";
-
-		public static UIColor? GetBackgroundColor(this UIView view)
-			=> view?.BackgroundColor;
 
 		public static void UpdateIsEnabled(this UIView nativeView, IView view)
 		{
@@ -64,18 +62,43 @@ namespace Microsoft.Maui
 			if (paint.IsNullOrEmpty())
 				return;
 
-			var backgroundLayer = paint?.ToCALayer(nativeView.Bounds);
-
-			if (backgroundLayer != null)
+			if (paint is SolidPaint solidPaint)
 			{
-				backgroundLayer.Name = BackgroundLayerName;
-				nativeView.BackgroundColor = UIColor.Clear;
-				nativeView.InsertBackgroundLayer(backgroundLayer, 0);
+				Color backgroundColor = solidPaint.Color;
+
+				if (backgroundColor == null)
+					nativeView.BackgroundColor = ColorExtensions.BackgroundColor;
+				else
+					nativeView.BackgroundColor = backgroundColor.ToNative();
+
+				return;
 			}
+			else if (paint is GradientPaint gradientPaint)
+			{
+				var backgroundLayer = gradientPaint?.ToCALayer(nativeView.Bounds);
+
+				if (backgroundLayer != null)
+				{
+					backgroundLayer.Name = BackgroundLayerName;
+					nativeView.BackgroundColor = UIColor.Clear;
+					nativeView.InsertBackgroundLayer(backgroundLayer, 0);
+				}
+			}
+		}
+
+		public static void UpdateOpacity(this UIView nativeView, IView view)
+		{
+			nativeView.Alpha = (float)view.Opacity;
 		}
 
 		public static void UpdateAutomationId(this UIView nativeView, IView view) =>
 			nativeView.AccessibilityIdentifier = view.AutomationId;
+
+		public static void UpdateClip(this UIView nativeView, IView view)
+		{
+			if (nativeView is WrapperView wrapper)
+				wrapper.Clip = view.Clip;
+		}
 
 		public static void UpdateSemantics(this UIView nativeView, IView view)
 		{
@@ -86,6 +109,10 @@ namespace Microsoft.Maui
 
 			nativeView.AccessibilityLabel = semantics.Description;
 			nativeView.AccessibilityHint = semantics.Hint;
+
+			// UIControl elements automatically have IsAccessibilityElement set to true
+			if (nativeView is not UIControl && (!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description)))
+				nativeView.IsAccessibilityElement = true;
 
 			if (semantics.IsHeading)
 				nativeView.AccessibilityTraits |= UIAccessibilityTrait.Header;
@@ -119,7 +146,7 @@ namespace Microsoft.Maui
 
 			var layer = view.Layer;
 
-			if (layer == null || layer.Sublayers == null)
+			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
 				return;
 
 			foreach (var sublayer in layer.Sublayers)
@@ -165,6 +192,14 @@ namespace Microsoft.Maui
 			// Handling of the default (-1) width/height will be taken care of by GetDesiredSize
 			var currentFrame = nativeView.Frame;
 			nativeView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
+		}
+
+		public static int IndexOfSubview(this UIView nativeView, UIView subview)
+		{
+			if (nativeView.Subviews.Length == 0)
+				return -1;
+
+			return Array.IndexOf(nativeView.Subviews, subview);
 		}
 
 		internal static void Collapse(this UIView view)

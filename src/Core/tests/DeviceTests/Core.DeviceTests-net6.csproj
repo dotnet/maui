@@ -1,0 +1,83 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-ios'">iossimulator-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">maccatalyst-x64</RuntimeIdentifier>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Microsoft.Maui.Core.DeviceTests</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Core.DeviceTests</RootNamespace>
+    <SingleProject>true</SingleProject>
+    <ApplicationTitle>Core Tests</ApplicationTitle>
+    <ApplicationId>com.microsoft.maui.devicetests</ApplicationId>
+    <ApplicationVersion>1.0</ApplicationVersion>
+    <AndroidVersionCode>1</AndroidVersionCode>
+    <IsPackable>false</IsPackable>
+    <AndroidManifest>..\DeviceTests.Android\Properties\AndroidManifest.xml</AndroidManifest>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+  </PropertyGroup>
+
+  <!-- special love for classic xamarin for now -->
+  <PropertyGroup>
+    <TargetFrameworkVersion Condition="$(TargetFramework.Contains('-android'))">v10.0</TargetFrameworkVersion>
+    <AssetTargetFallback Condition="$(TargetFramework.Contains('-android'))">monoandroid10.0</AssetTargetFallback>
+    <AssetTargetFallback Condition="$(TargetFramework.Contains('-ios'))">xamarinios10</AssetTargetFallback>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Xamarin.Forms" Version="5.0.0.1931" GeneratePathProperty="true" ExcludeAssets="all" />
+    <Reference Condition="$(TargetFramework.Contains('-android'))" Include="$(PkgXamarin_Forms)\lib\MonoAndroid10.0\*.dll" />
+    <Reference Condition="$(TargetFramework.Contains('-ios'))" Include="$(PkgXamarin_Forms)\lib\Xamarin.iOS10\*.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- xunit.runner.devices is using the fallback -->
+    <PackageReference Include="xunit.runner.devices" Version="2.5.25" NoWarn="NU1701" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.utility" Version="2.4.1" />
+    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21165.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests-net6.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials-net6.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiFont Include="Fonts\*" />
+    <MauiImage Include="Images\*" />
+    <MauiImage Update="Images\*.gif" Resize="false" />
+    <MauiImage Update="Images\appicon.svg" ForegroundFile="Images\appicon_foreground.svg" IsAppIcon="true" />
+    <MauiSplashScreen Include="Images\dotnet_bot.svg" Color="#FFFFFF" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <Compile Include="..\DeviceTests.Android\**\*.cs" Exclude="..\DeviceTests.Android\obj\**;..\DeviceTests.Android\bin\**" Link="Android\%(RecursiveDir)%(Filename)%(Extension)" />
+    <AndroidResource Include="..\DeviceTests.Android\Resources\**" Link="Android\Resources\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\DeviceTests.iOS\**\*.cs" Exclude="..\DeviceTests.iOS\obj\**;..\DeviceTests.iOS\bin\**" Link="iOS\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Remove="**\*.iOS.cs;iOS\**\*.cs" />
+    <None Include="**\*.iOS.cs;iOS\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
+    <Compile Include="..\DeviceTests.iOS\**\*.cs" Exclude="..\DeviceTests.iOS\obj\**;..\DeviceTests.iOS\bin\**" Link="iOS\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\DeviceTests.Android\**\*.cs" Exclude="..\DeviceTests.Android\obj\**;..\DeviceTests.Android\bin\**" Link="Android\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\DeviceTests.Android\Resources\**" Link="Android\Resources\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Remove="**\*.Android.cs;Android\**\*.cs" />
+    <None Include="**\*.Android.cs;Android\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\DeviceTests.iOS\*.plist" LogicalName="%(Filename)%(Extension)" Link="iOS\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\DeviceTests.Android\Properties\AndroidManifest.xml" Link="Android\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- HACK: seems to fix a threading issue for now -->
+  <ItemGroup>
+    <None Remove="Android\environment.txt" />
+    <AndroidEnvironment Include="Android\environment.txt" />
+  </ItemGroup>
+
+</Project>

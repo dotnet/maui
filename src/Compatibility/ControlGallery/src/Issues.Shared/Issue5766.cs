@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				{
 					HeightRequest = 80,
 					Margin = new Thickness(0, 10, 0, 0),
-					BackgroundColor = Color.FromHex("#F1F1F1")
+					BackgroundColor = Color.FromArgb("#F1F1F1")
 				};
 				view.AddChild(new Frame
 				{

@@ -1,60 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
-using Maui.Controls.Sample.ViewModel;
-#if NET6_0_OR_GREATER
-using Microsoft.AspNetCore.Components.WebView.Maui;
-#endif
+using Maui.Controls.Sample.ViewModels;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Controls;
-using Maui.Controls.Sample.Controls;
+
+#if NET6_0_OR_GREATER
+using Microsoft.AspNetCore.Components.WebView.Maui;
+#endif
 
 namespace Maui.Controls.Sample
 {
+	public class CustomButton : Button { }
+
 	public class Startup : IStartup
 	{
-		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage }
-		private PageType _pageType = PageType.NavigationPage;
-
-		public readonly static bool UseXamlApp = true;
-		public readonly static bool UseFullDI = false;
+		enum PageType { Main, Blazor, Shell }
+		readonly PageType _pageType = PageType.Main;
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{
+			appBuilder.UseMauiApp<XamlApp>();
+
 			appBuilder
-				.UseFormsCompatibility()
-				.UseMauiControlsHandlers();
+				.ConfigureMauiHandlers(handlers =>
+				{
+#if __ANDROID__
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.ButtonRenderer));
+#elif __IOS__
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.iOS.ButtonRenderer));
+#elif WINDOWS
+					handlers.AddCompatibilityRenderer(typeof(CustomButton),
+						typeof(Microsoft.Maui.Controls.Compatibility.Platform.UWP.ButtonRenderer));
+#endif
+				});
 
-			if (UseXamlApp)
-				appBuilder.UseMauiApp<XamlApp>();
-			else
-				appBuilder.UseMauiApp<MyApp>();
-
-			if (UseFullDI)
-				appBuilder.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory());
-			else
-				appBuilder.UseMauiServiceProviderFactory(true);
 
 			// Use a "third party" library that brings in a massive amount of controls
-			appBuilder.UseRed();
+			appBuilder.UseBordelessEntry();
 
 #if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
-#endif
-
-#if NET6_0_OR_GREATER
-			appBuilder.RegisterBlazorMauiWebView();
 #endif
 
 			appBuilder
@@ -67,39 +66,48 @@ namespace Maui.Controls.Sample
 						{"Position:Name", "Dictionary_Name" },
 						{"Logging:LogLevel:Default", "Warning"}
 					});
-				})
+				});
+
+#if NET6_0_OR_GREATER
+			appBuilder
+				.RegisterBlazorMauiWebView(typeof(Startup).Assembly);
+#endif
+
+			appBuilder
 				.ConfigureServices(services =>
 				{
-					// The MAUI DI does not support generic argument resolution
-					if (UseFullDI)
+					services.AddLogging(logging =>
 					{
-						services.AddLogging(logging =>
-						{
 #if WINDOWS
-							logging.AddDebug();
+						logging.AddDebug();
 #else
-							logging.AddConsole();
+						logging.AddConsole();
 #endif
-						});
-					}
+					});
 
 					services.AddSingleton<ITextService, TextService>();
-					services.AddTransient<MainPageViewModel>();
+					services.AddTransient<MainViewModel>();
+
+#if NET6_0_OR_GREATER
+					services.AddBlazorWebView();
+#endif
 
 					services.AddTransient(
 						serviceType: typeof(Page),
 						implementationType: _pageType switch
 						{
-							PageType.NavigationPage => typeof(NavPage),
-							PageType.Xaml => typeof(XamlPage),
-							PageType.Semantics => typeof(SemanticsPage),
+							PageType.Shell => typeof(AppShell),
+#if WINDOWS
+							PageType.Main => typeof(TempPage),
+#else
+							PageType.Main => typeof(CustomNavigationPage),
+#endif
 							PageType.Blazor =>
 #if NET6_0_OR_GREATER
 								typeof(BlazorPage),
 #else
 								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
 #endif
-							PageType.Main => typeof(MainPage),
 							_ => throw new Exception(),
 						});
 
@@ -113,6 +121,10 @@ namespace Maui.Controls.Sample
 					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
 					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 					fonts.AddFont("ionicons.ttf", "Ionicons");
+					fonts.AddFont("SegoeUI.ttf", "Segoe UI");
+					fonts.AddFont("SegoeUI-Bold.ttf", "Segoe UI Bold");
+					fonts.AddFont("SegoeUI-Italic.ttf", "Segoe UI Italic");
+					fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
 				})
 				.ConfigureEssentials(essentials =>
 				{
@@ -205,16 +217,6 @@ namespace Maui.Controls.Sample
 						return true;
 					}
 				});
-		}
-
-		// To use the Microsoft.Extensions.DependencyInjection ServiceCollection and not the MAUI one
-		class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
-		{
-			public ServiceCollection CreateBuilder(IServiceCollection services)
-				=> new ServiceCollection { services };
-
-			public IServiceProvider CreateServiceProvider(ServiceCollection containerBuilder)
-				=> containerBuilder.BuildServiceProvider();
 		}
 	}
 }

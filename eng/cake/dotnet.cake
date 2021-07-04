@@ -91,18 +91,62 @@ Task("VS-NET6")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
+        // VS has trouble building all the references correctly so this makes sure everything is built
+        // and we're ready to go right when VS launches
+        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample-net6.csproj");
         StartVisualStudioForDotNet6();
+    });
+
+Task("VS-WINUI-CI")
+    .Description("Validates that WinUI can build with the cake scripts.")
+    .IsDependentOn("Clean")
+    .IsDependentOn("dotnet")
+    .Does(() =>
+    {
+        RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.sln", settings => ((MSBuildSettings)settings).WithProperty("BuildForWinUI", "true"));
+        RunMSBuildWithLocalDotNet("./Microsoft.Maui.WinUI.sln");
     });
 
 Task("VS-WINUI")
     .Description("Provisions .NET 6 and launches an instance of Visual Studio with WinUI projects.")
-    .IsDependentOn("Clean")
-    .IsDependentOn("dotnet")
-    .IsDependentOn("dotnet-buildtasks")
+        .IsDependentOn("Clean")
+    //  .IsDependentOn("dotnet") WINUI currently can't launch application with local dotnet 
+    //  .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui.WinUI.sln");
-        StartVisualStudioForDotNet6("./Microsoft.Maui.WinUI.sln");
+        string sln = "./Microsoft.Maui.WinUI.sln";
+        var msbuildSettings = new MSBuildSettings
+        {
+            Configuration = configuration,
+            ToolPath = FindMSBuild(),
+            BinaryLogger = new MSBuildBinaryLogSettings
+            {
+                Enabled  = true,
+                FileName = "artifacts/winui-buildtasks.binlog",
+            }
+        }.WithRestore().WithProperty("BuildForWinUI", "true");
+
+	    MSBuild("./Microsoft.Maui.BuildTasks-net6.sln", msbuildSettings);
+
+	    msbuildSettings = new MSBuildSettings
+        {
+            Configuration = configuration,
+            ToolPath = FindMSBuild(),
+            BinaryLogger = new MSBuildBinaryLogSettings
+            {
+                Enabled  = true,
+                FileName = "artifacts/winui.binlog",
+            }
+        }.WithRestore();
+
+        MSBuild(sln, msbuildSettings);
+
+        var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, Version = "[\"16.0\",\"17.0\"]"});
+
+        if (vsLatest == null)
+            throw new Exception("Unable to find Visual Studio!");
+        
+        StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
     });
 
 Task("VS-ANDROID")
@@ -117,8 +161,39 @@ Task("VS-ANDROID")
             ToolPath = dotnetPath
         });
 
+        // VS has trouble building all the references correctly so this makes sure everything is built
+        // and we're ready to go right when VS launches
+        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample-net6.csproj");
         StartVisualStudioForDotNet6("./Microsoft.Maui.Droid.sln");
     });
+
+Task("SAMPLE-ANDROID")
+    .Description("Provisions .NET 6 and launches Android Sample.")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .Does(() =>
+    {
+        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj", deployAndRun:true);
+    });
+
+Task("SAMPLE-IOS")
+    .Description("Provisions .NET 6 and launches launches iOS Sample.")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .Does(() =>
+    {
+        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj", deployAndRun:true);
+    });
+
+Task("SAMPLE-MAC")
+    .Description("Provisions .NET 6 and launches Mac Catalyst Sample.")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .Does(() =>
+    {
+        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj", deployAndRun:true);
+    });
+
 
 string FindMSBuild()
 {
@@ -173,13 +248,15 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
 }
 
 // NOTE: this method works as long as the DotNet target has already run
-void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null)
+void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null, bool deployAndRun = false)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var binlog = $"artifacts/{name}-{configuration}.binlog";
 
-    // If we're not on Windows, just use ./bin/dotnet/dotnet, that's it
-    if (!IsRunningOnWindows())
+    SetDotNetEnvironmentVariables();
+
+    // If we're not on Windows, use ./bin/dotnet/dotnet
+    if (!IsRunningOnWindows() || deployAndRun)
     {
         var dotnetBuildSettings = new DotNetCoreMSBuildSettings
         {
@@ -198,12 +275,12 @@ void RunMSBuildWithLocalDotNet(string sln, Action<object> settings = null)
                 Configuration = configuration,
                 ToolPath = dotnetPath,
                 MSBuildSettings = dotnetBuildSettings,
+                ArgumentCustomization = args=> { if(deployAndRun) { args.Append("-t:Run"); } return args; }
             });
         return;
     }
 
-    // Otherwise we need to set env variables and run MSBuild
-    SetDotNetEnvironmentVariables();
+    // Otherwise we need to run MSBuild for WinUI support
     var msbuildSettings = new MSBuildSettings
         {
             Configuration = configuration,

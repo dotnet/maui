@@ -3,9 +3,12 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
+using Flex = Microsoft.Maui.Layouts.Flex;
 
 namespace Microsoft.Maui.Controls
 {
+	[ContentProperty(nameof(Children))]
 	public class FlexLayout : Layout<View>
 	{
 		public static readonly BindableProperty DirectionProperty =
@@ -447,7 +450,7 @@ namespace Microsoft.Maui.Controls
 					heightConstraint = Math.Max(heightConstraint, item.Frame[1] + item.Frame[3] + item.MarginBottom);
 			}
 
-			//3. reset Shrink, algin-self, and image.aspect
+			//3. reset Shrink, align-self, and image.aspect
 			foreach (var child in Children)
 			{
 				if (GetFlexItem(child) is Flex.Item item)

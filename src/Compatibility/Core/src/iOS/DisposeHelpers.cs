@@ -1,4 +1,6 @@
 #if __MOBILE__
+using Microsoft.Maui.Controls.Platform;
+
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #else
 

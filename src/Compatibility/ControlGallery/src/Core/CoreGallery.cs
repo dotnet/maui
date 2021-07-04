@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	{
 		protected override void Init()
 		{
-			On<Android>().SetToolbarPlacement(ToolbarPlacement.Bottom);
+			On<PlatformConfiguration.Android>().SetToolbarPlacement(ToolbarPlacement.Bottom);
 			base.Init();
 		}
 	}
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				Title = "Bookmarks",
 			});
 
-			if (On<Android>().GetMaxItemCount() > 5)
+			if (On<PlatformConfiguration.Android>().GetMaxItemCount() > 5)
 			{
 				Children.Add(new NavigationPage(new Page { Title = "Alertes" })
 				{
@@ -552,12 +552,21 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	[Preserve(AllMembers = true)]
 	internal class CoreRootPage : ContentPage
 	{
+		bool registrarValidated;
 		CoreRootView CoreRootView { get; }
+
+		protected override void OnAttachedHandler()
+		{
+			base.OnAttachedHandler();
+
+			if (!registrarValidated)
+				ValidateRegistrar();
+
+			registrarValidated = true;
+		}
 
 		public CoreRootPage(Page rootPage, NavigationBehavior navigationBehavior = NavigationBehavior.PushAsync)
 		{
-			ValidateRegistrar();
-
 			var galleryFactory = DependencyService.Get<IPlatformSpecificCoreGalleryFactory>();
 
 			Title = galleryFactory?.Title ?? "Core Gallery";

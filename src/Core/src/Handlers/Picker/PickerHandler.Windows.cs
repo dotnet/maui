@@ -28,11 +28,11 @@ namespace Microsoft.Maui.Handlers
 			nativeView.SelectionChanged -= OnControlSelectionChanged;
 		}
 
-		protected override void SetupDefaults(MauiComboBox nativeView)
+		void SetupDefaults(MauiComboBox nativeView)
 		{
 			_defaultForeground = nativeView.Foreground;
 
-			base.SetupDefaults(nativeView);
+			
 		}
 		void Reload()
 		{
@@ -45,6 +45,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapReload(PickerHandler handler, IPicker picker) => handler.Reload();
 
 		public static void MapTitle(PickerHandler handler, IPicker picker) 
+		{
+			handler.NativeView?.UpdateTitle(picker);
+		}
+
+		public static void MapTitleColor(PickerHandler handler, IPicker picker)
 		{
 			handler.NativeView?.UpdateTitle(picker);
 		}

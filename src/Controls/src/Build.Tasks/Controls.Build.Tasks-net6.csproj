@@ -19,11 +19,13 @@
 		<StrongNamerKeyFile>..\..\..\..\eng\microsoft.maui.controls.snk</StrongNamerKeyFile>
 		<DefineConstants Condition=" '$(_DisableStrongNamer)' != 'True' ">$(DefineConstants);STRONG_NAME</DefineConstants> -->
 		<IsTrimmable>false</IsTrimmable>
+		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Mono.Cecil" Version="0.11.3" PrivateAssets="all" GeneratePathProperty="true" />
-		<PackageReference Include="System.CodeDom" Version="4.7.0" PrivateAssets="all" GeneratePathProperty="true" />
+		<PackageReference Include="System.CodeDom" GeneratePathProperty="true" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+		<PackageReference Include="System.CodeDom" PrivateAssets="all" Condition="'$(TargetFramework)' == 'net6.0'" />
 		<PackageReference Include="Microsoft.Build" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" PrivateAssets="all" />
@@ -31,13 +33,6 @@
 		<PackageReference Include="Microsoft.Maui.Graphics" GeneratePathProperty="true" />
 		<!-- <PackageReference Include="StrongNamer" Version="0.2.5" PrivateAssets="all" GeneratePathProperty="true" /> -->
 	</ItemGroup>
-
-	<PropertyGroup>
-		<PackageId>Microsoft.Maui.Controls.Build.Tasks</PackageId>
-		<IncludeBuildOutput>False</IncludeBuildOutput>
-		<NoWarn>$(NoWarn);NU5100;NU5128;</NoWarn>
-		<IncludeSymbols>False</IncludeSymbols>
-	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="$(TargetPath)" Visible="False" Pack="True" PackagePath="buildTransitive" />

@@ -89,7 +89,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
-			(MauiTextView)editorHandler.NativeView;
+			editorHandler.NativeView;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
@@ -120,5 +120,35 @@ namespace Microsoft.Maui.DeviceTests
 
 		UITextAlignment GetNativeHorizontalTextAlignment(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).TextAlignment;
+			
+		bool GetNativeIsNumericKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.DecimalPad;
+
+		bool GetNativeIsEmailKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.EmailAddress;
+
+		bool GetNativeIsTelephoneKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.PhonePad;
+
+		bool GetNativeIsUrlKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.Url;
+
+		bool GetNativeIsTextKeyboard(EditorHandler editorHandler)
+		{
+			var nativeEditor = GetNativeEditor(editorHandler);
+
+			return nativeEditor.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				nativeEditor.SpellCheckingType == UITextSpellCheckingType.Yes;
+		}
+
+		bool GetNativeIsChatKeyboard(EditorHandler editorHandler)
+		{
+			var nativeEditor = GetNativeEditor(editorHandler);
+
+			return nativeEditor.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				nativeEditor.SpellCheckingType == UITextSpellCheckingType.No;
+		}
 	}
 }

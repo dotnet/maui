@@ -5,6 +5,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static PropertyMapper<ISearchBar, SearchBarHandler> SearchBarMapper = new PropertyMapper<ISearchBar, SearchBarHandler>(ViewHandler.ViewMapper)
 		{
+#if __ANDROID__
+			[nameof(ISearchBar.Background)] = MapBackground,
+#endif
 			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ISearchBar.Font)] = MapFont,
 			[nameof(ISearchBar.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
@@ -14,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISearchBar.Placeholder)] = MapPlaceholder,
 			[nameof(ISearchBar.Text)] = MapText,
 			[nameof(ISearchBar.TextColor)] = MapTextColor,
+			[nameof(ISearchBar.CancelButtonColor)] = MapCancelButtonColor
 		};
 
 		public SearchBarHandler() : base(SearchBarMapper)

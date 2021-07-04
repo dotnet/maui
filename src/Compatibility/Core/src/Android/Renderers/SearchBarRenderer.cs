@@ -8,6 +8,7 @@ using Android.Text.Method;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Controls.Platform;
 using Color = Microsoft.Maui.Graphics.Color;
 using Size = Microsoft.Maui.Graphics.Size;
 
@@ -80,17 +81,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			base.OnElementChanged(e);
 
 			SearchView searchView = Control;
-			var isDesigner = Context.IsDesignerContext();
 
 			if (searchView == null)
 			{
 				searchView = CreateNativeControl();
 				searchView.SetIconifiedByDefault(false);
-				// set Iconified calls onSearchClicked 
-				// https://github.com/aosp-mirror/platform_frameworks_base/blob/6d891937a38220b0c712a1927f969e74bea3a0f3/core/java/android/widget/SearchView.java#L674-L680
-				// which causes requestFocus. The designer does not support focuses.
-				if (!isDesigner)
-					searchView.Iconified = false;
+				searchView.Iconified = false;
 				SetNativeControl(searchView);
 				_editText = _editText ?? Control.GetChildrenOfType<EditText>().FirstOrDefault();
 
@@ -103,8 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			}
 
-			if (!isDesigner)
-				ClearFocus(searchView);
+			ClearFocus(searchView);
 			UpdateInputType();
 			UpdatePlaceholder();
 			UpdateText();

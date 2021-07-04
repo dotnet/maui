@@ -15,15 +15,6 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class ViewExtensions
 	{
-		public static void RemoveFromParent(this AView view)
-		{
-			if (view == null)
-				return;
-			if (view.Parent == null)
-				return;
-			((ViewGroup)view.Parent).RemoveView(view);
-		}
-
 		public static void SetBackground(this AView view, Drawable drawable)
 		{
 
@@ -128,25 +119,6 @@ namespace Microsoft.Maui.Controls.Platform
 				return t;
 
 			return view.Parent.GetParentOfType<T>();
-		}
-
-		internal static T FindParentOfType<T>(this VisualElement element)
-		{
-			var navPage = element.GetParentsPath()
-				.OfType<T>()
-				.FirstOrDefault();
-			return navPage;
-		}
-
-		internal static IEnumerable<Element> GetParentsPath(this VisualElement self)
-		{
-			Element current = self;
-
-			while (!Application.IsApplicationOrNull(current.RealParent))
-			{
-				current = current.RealParent;
-				yield return current;
-			}
 		}
 	}
 }

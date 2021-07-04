@@ -41,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				var expectedColor = Color.FromHex(colorHex);
+				var expectedColor = Color.FromArgb(colorHex);
 
 				await handler.NativeView.AssertContainsColor(expectedColor);
 			});
@@ -92,13 +92,13 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(image, () => image.Aspect, GetNativeAspect, aspect);
 		}
 
-		[Theory(Skip = "Image needs to use ContainerView to handle Brushes properly.")]
+		[Theory]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#000000")]
 		public async Task InvalidSourceFailsToLoad(string colorHex)
 		{
-			var color = Color.FromHex(colorHex);
+			var color = Color.FromArgb(colorHex);
 
 			var image = new ImageStub
 			{

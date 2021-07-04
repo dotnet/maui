@@ -5,10 +5,14 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static PropertyMapper<IEntry, EntryHandler> EntryMapper = new PropertyMapper<IEntry, EntryHandler>(ViewHandler.ViewMapper)
 		{
+#if __ANDROID__
+			[nameof(IEntry.Background)] = MapBackground,
+#endif
 			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
 			[nameof(IEntry.Font)] = MapFont,
 			[nameof(IEntry.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(IEntry.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IEntry.IsPassword)] = MapIsPassword,
 			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
@@ -18,6 +22,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.ReturnType)] = MapReturnType,
 			[nameof(IEntry.Text)] = MapText,
 			[nameof(IEntry.TextColor)] = MapTextColor,
+			[nameof(IEntry.CursorPosition)] = MapCursorPosition,
+			[nameof(IEntry.SelectionLength)] = MapSelectionLength
 		};
 
 		public EntryHandler() : base(EntryMapper)

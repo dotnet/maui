@@ -1,19 +1,14 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Name="Net6WinUIWorkaround" 
-          BeforeTargets="_GetSdkToolsPathsFromSdk"
-          Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PropertyGroup>
-      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-    </PropertyGroup>
-  </Target>
-  <Target Name="_RemoveIncompatibleXamlFiles" BeforeTargets="BeforeBuild" Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <ItemGroup Condition="$(OutputType) != 'WinExe'">
-      <Page Remove="**/*.xaml">
-      </Page>
+  <Target Name="_RemoveIncompatibleXamlFiles" BeforeTargets="BeforeBuild" Condition="'$(MauiRemoveIncompatibleXaml)' != 'false' and $(TargetFramework.Contains('-windows')) == true and '$(SingleProject)' != 'true'">
+    <!-- assume all xaml files in a non-WinExe are MAUI xaml, so remove WinUI xaml -->
+    <ItemGroup Condition=" '$(OutputType)' != 'WinExe' ">
+      <Page Remove="**/*.xaml" />
     </ItemGroup>
-    <ItemGroup Condition="$(OutputType) == 'WinExe'">
-      <EmbeddedResource Remove="**\*.xaml"></EmbeddedResource>
-      <Compile Remove="**\*.xaml"></Compile>
+    <!-- assume all xaml files in a WinExe are WinUI xaml, so remove MAUI xaml -->
+    <ItemGroup Condition=" '$(OutputType)' == 'WinExe' ">
+      <EmbeddedResource Remove="**\*.xaml" />
+      <MauiXaml Remove="**\*.xaml" />
+      <Compile Remove="**\*.xaml" />
     </ItemGroup>
   </Target>
 </Project>

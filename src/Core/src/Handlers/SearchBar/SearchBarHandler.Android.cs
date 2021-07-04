@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using Android.Graphics.Drawables;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, SearchView>
 	{
+		static Drawable? DefaultBackground;
+
 		EditText? _editText;
 		public EditText? QueryEditor => _editText;
 
@@ -15,9 +17,22 @@ namespace Microsoft.Maui.Handlers
 		{
 			var searchView = new SearchView(Context);
 
-			_editText = searchView.GetChildrenOfType<EditText>().First();
+			_editText = searchView.GetFirstChildOfType<EditText>();
 
 			return searchView;
+		}
+
+		void SetupDefaults(SearchView nativeView)
+		{
+			DefaultBackground = nativeView.Background;
+
+
+		}
+
+		// This is a Android-specific mapping
+		public static void MapBackground(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateBackground(searchBar, DefaultBackground);
 		}
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
@@ -47,16 +62,25 @@ namespace Microsoft.Maui.Handlers
 			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.QueryEditor?.UpdateTextColor(searchBar);
+		}
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapMaxLength(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateMaxLength(searchBar, handler.QueryEditor);
+		}
 
 		[MissingMapper]
 		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
+
+		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateCancelButtonColor(searchBar);
+		}
 	}
 }

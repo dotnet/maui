@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Element.ReturnType == ReturnType.Next)
 			{
-				FocusManager.TryMoveFocus(FocusNavigationDirection.Next);
+				Control.TryMoveFocus(FocusNavigationDirection.Next);
 			}
 			else
 			{
@@ -275,6 +275,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.InputScope = entry.Keyboard.ToInputScope();
 		}
 
+		[PortHandler]
 		void UpdateIsPassword()
 		{
 			Control.IsPassword = Element.IsPassword;
@@ -344,6 +345,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateReturnType()
 		{
 			if (Control == null || Element == null)

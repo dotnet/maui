@@ -139,8 +139,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Tracker?.UpdateLayout();
 		}
 
-		public ViewGroup ViewGroup => this;
-
 		AView IVisualElementRenderer.View => this;
 
 		public override void Draw(Canvas canvas)

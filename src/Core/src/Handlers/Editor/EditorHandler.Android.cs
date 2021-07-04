@@ -1,4 +1,5 @@
 ﻿using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
@@ -10,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		static ColorStateList? DefaultTextColors { get; set; }
 		static ColorStateList? DefaultPlaceholderTextColors { get; set; }
+		static Drawable? DefaultBackground;
 
 		EditorFocusChangeListener FocusChangeListener { get; } = new EditorFocusChangeListener();
 
@@ -42,12 +44,19 @@ namespace Microsoft.Maui.Handlers
 			FocusChangeListener.Handler = null;
 		}
 
-		protected override void SetupDefaults(AppCompatEditText nativeView)
+		void SetupDefaults(AppCompatEditText nativeView)
 		{
-			base.SetupDefaults(nativeView);
+
 
 			DefaultTextColors = nativeView.TextColors;
 			DefaultPlaceholderTextColors = nativeView.HintTextColors;
+			DefaultBackground = nativeView.Background;
+		}
+
+		// This is a Android-specific mapping
+		public static void MapBackground(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateBackground(editor, DefaultBackground);
 		}
 
 		public static void MapText(EditorHandler handler, IEditor editor)
@@ -100,7 +109,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
 		{
 			handler.NativeView?.UpdateHorizontalTextAlignment(editor);	
-    }
+		}
+		
+		public static void MapKeyboard(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateKeyboard(editor);
+		}
 
 		void OnFocusedChange(bool hasFocus)
 		{

@@ -1,8 +1,8 @@
+using System.Linq;
 using Android.App;
+using Android.Content.PM;
 using Android.OS;
 using Xunit.Runners.UI;
-using System.Reflection;
-using Android.Content.PM;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -19,9 +19,8 @@ namespace Microsoft.Maui.DeviceTests
 			Microsoft.Maui.Essentials.Platform.Init(this, bundle);
 			Platform.Init(this);
 
-			// Tests can be inside the main assembly
-			AddTestAssembly(Assembly.GetExecutingAssembly());
-			AddTestAssembly(typeof(SliderHandlerTests).Assembly);
+			foreach (var assembly in TestInstrumentation.TestAssemblies.Distinct())
+				AddTestAssembly(assembly);
 
 			base.OnCreate(bundle);
 		}

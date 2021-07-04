@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					var _headerLabel = new Label
 					{
 						Text = Title,
-						TextColor = Color.FromHex("333333"),
+						TextColor = Color.FromArgb("333333"),
 						HeightRequest = 25,
 					};
 

@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Android.Text;
 using Android.Views;
+using Android.Text.Method;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -146,6 +147,55 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var textView = GetNativeEditor(editorHandler);
 			return (textView.Gravity, textView.TextAlignment);
+		}
+		
+		bool GetNativeIsNumericKeyboard(EditorHandler editorHandler)
+		{
+			var textView = GetNativeEditor(editorHandler);
+			var inputTypes = textView.InputType;
+
+			return textView.KeyListener is NumberKeyListener
+				&& (inputTypes.HasFlag(InputTypes.NumberFlagDecimal) && inputTypes.HasFlag(InputTypes.ClassNumber) && inputTypes.HasFlag(InputTypes.NumberFlagSigned));
+		}
+
+		bool GetNativeIsChatKeyboard(EditorHandler editorHandler)
+		{
+			var textView = GetNativeEditor(editorHandler);
+			var inputTypes = textView.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+		}
+
+		bool GetNativeIsEmailKeyboard(EditorHandler editorHandler)
+		{
+			var textView = GetNativeEditor(editorHandler);
+			var inputTypes = textView.InputType;
+
+			return (inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextVariationEmailAddress));
+		}
+
+		bool GetNativeIsTelephoneKeyboard(EditorHandler editorHandler)
+		{
+			var textView = GetNativeEditor(editorHandler);
+			var inputTypes = textView.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassPhone);
+		}
+
+		bool GetNativeIsUrlKeyboard(EditorHandler editorHandler)
+		{
+			var textView = GetNativeEditor(editorHandler);
+			var inputTypes = textView.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextVariationUri);
+		}
+
+		bool GetNativeIsTextKeyboard(EditorHandler editorHandler)
+		{
+			var textView = GetNativeEditor(editorHandler);
+			var inputTypes = textView.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
 		}
 	}
 }

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30503.244
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31410.414
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12C50D-A570-4DF1-94E1-8599843FA87C}"
 	ProjectSection(SolutionItems) = preProject
@@ -25,6 +25,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Build.Tasks", "src\Controls\src\Build.Tasks\Controls.Build.Tasks.csproj", "{C328C538-B69F-43D2-80EE-3C1EB8254CBA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resizetizer", "src\SingleProject\Resizetizer\src\Resizetizer.csproj", "{3E1D0DED-6B13-42C8-AA15-2EDFD8ECE80C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen", "src\Controls\src\SourceGen\Controls.SourceGen.csproj", "{A33C2BD2-293C-4890-91C0-4665BC6E2AD3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials", "src\Essentials\src\Essentials.csproj", "{9810F7C0-827B-48A4-8634-0B71A18B563F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -52,6 +56,14 @@ Global
 		{3E1D0DED-6B13-42C8-AA15-2EDFD8ECE80C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E1D0DED-6B13-42C8-AA15-2EDFD8ECE80C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E1D0DED-6B13-42C8-AA15-2EDFD8ECE80C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A33C2BD2-293C-4890-91C0-4665BC6E2AD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A33C2BD2-293C-4890-91C0-4665BC6E2AD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A33C2BD2-293C-4890-91C0-4665BC6E2AD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A33C2BD2-293C-4890-91C0-4665BC6E2AD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9810F7C0-827B-48A4-8634-0B71A18B563F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9810F7C0-827B-48A4-8634-0B71A18B563F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9810F7C0-827B-48A4-8634-0B71A18B563F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9810F7C0-827B-48A4-8634-0B71A18B563F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

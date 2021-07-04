@@ -15,19 +15,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		public void BasicContentPage()
 		{
 			var page = new ContentPage() { IsPlatformEnabled = true };
-			var layout = new VerticalStackLayout() { IsPlatformEnabled = true };
 			var button = new Button() { IsPlatformEnabled = true };
 			var expectedSize = new Size(100, 100);
+			var expectedRect = new Rectangle(Point.Zero, expectedSize);
 
-			var view = Substitute.For<IViewHandler>();
-			view.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
-			button.Handler = view;
+			var buttonHandler = Substitute.For<IViewHandler>();
+			buttonHandler.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
+			button.Handler = buttonHandler;
 
-			layout.Add(button);
-			page.Content = layout;
-			(page as IFrameworkElement).Measure(100, 100);
-			(page as IFrameworkElement).Arrange(new Rectangle(0, 0, 100, 100));
+			page.Content = button;
+			(page as IFrameworkElement).Measure(expectedSize.Width, expectedSize.Height);
+			(page as IFrameworkElement).Arrange(expectedRect);
 
+			buttonHandler.Received().NativeArrange(expectedRect);
 			Assert.AreEqual(expectedSize, button.Bounds.Size);
 		}
 
@@ -39,9 +39,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var button = new Button() { IsPlatformEnabled = true, HeightRequest = 100, WidthRequest = 100 };
 			var expectedSize = new Size(100, 100);
 
-			var view = Substitute.For<IViewHandler>();
-			view.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
-			button.Handler = view;
+			var buttonHandler = Substitute.For<IViewHandler>();
+			buttonHandler.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
+			button.Handler = buttonHandler;
 
 			stackLayout.Children.Add(verticalStackLayout);
 			verticalStackLayout.Add(button);
@@ -55,28 +55,60 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.AreEqual(expectedSize, button.Bounds.Size);
 		}
 
-
 		[Test]
 		public void StackLayoutInsideVerticalStackLayout()
 		{
-			ContentPage contentPage = new ContentPage();
-			var stackLayout = new StackLayout() { IsPlatformEnabled = true };
-			var verticalStackLayout = new VerticalStackLayout() { IsPlatformEnabled = true };
-			var button = new Button() { IsPlatformEnabled = true, HeightRequest = 100, WidthRequest = 100 };
 			var expectedSize = new Size(100, 100);
+			var expectedRect = new Rectangle(Point.Zero, expectedSize);
 
-			var view = Substitute.For<IViewHandler>();
-			view.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
-			button.Handler = view;
+			var stackLayout = new StackLayout() { IsPlatformEnabled = true };
+			var slHandler = Substitute.For<ILayoutHandler>();
+			stackLayout.Handler = slHandler;
+
+			var verticalStackLayout = new VerticalStackLayout() { IsPlatformEnabled = true };
+			var vslHandler = Substitute.For<ILayoutHandler>();
+			verticalStackLayout.Handler = vslHandler;
+
+			var button = new Button() { IsPlatformEnabled = true, HeightRequest = 100, WidthRequest = 100 };
+			var buttonHandler = Substitute.For<IViewHandler>();
+			buttonHandler.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
+			button.Handler = buttonHandler;
 
 			verticalStackLayout.Add(stackLayout);
 			stackLayout.Children.Add(button);
-			contentPage.Content = verticalStackLayout;
 
-			var rect = new Rectangle(0, 0, 100, 100);
+			(verticalStackLayout as IFrameworkElement).Measure(expectedRect.Width, expectedRect.Height);
+			(verticalStackLayout as IFrameworkElement).Arrange(expectedRect);
+
+			slHandler.Received().NativeArrange(expectedRect);
+			Assert.AreEqual(expectedSize, stackLayout.Bounds.Size);
+		}
+
+		[Test]
+		public void GridInsideStackLayout()
+		{
+			ContentPage contentPage = new ContentPage();
+			var stackLayout = new StackLayout() { IsPlatformEnabled = true };
+			var grid = new Grid() { IsPlatformEnabled = true, HeightRequest = 50 };
+			var label = new Label() { IsPlatformEnabled = true };
+			var expectedSize = new Size(50, 50);
+
+			var view = Substitute.For<IViewHandler>();
+			view.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
+			label.Handler = view;
+
+			stackLayout.Add(grid);
+			grid.Children.Add(label);
+			contentPage.Content = stackLayout;
+
+			var rect = new Rectangle(0, 0, 50, 100);
 			(contentPage as IFrameworkElement).Measure(expectedSize.Width, expectedSize.Height);
 			(contentPage as IFrameworkElement).Arrange(rect);
-			Assert.AreEqual(expectedSize, button.Bounds.Size);
+
+			// This simulates the arrange call that happens from the native LayoutViewGroup
+			(grid as IFrameworkElement).Arrange(rect);
+
+			Assert.AreEqual(expectedSize, grid.Bounds.Size);
 		}
 	}
 }

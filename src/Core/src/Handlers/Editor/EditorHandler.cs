@@ -5,6 +5,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static PropertyMapper<IEditor, EditorHandler> EditorMapper = new PropertyMapper<IEditor, EditorHandler>(ViewHandler.ViewMapper)
 		{
+#if __ANDROID__
+			[nameof(IEditor.Background)] = MapBackground,
+#endif
 			[nameof(IEditor.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEditor.Font)] = MapFont,
 			[nameof(IEditor.IsReadOnly)] = MapIsReadOnly,
@@ -15,6 +18,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.Text)] = MapText,
 			[nameof(IEditor.TextColor)] = MapTextColor,
 			[nameof(IEditor.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(IEditor.Keyboard)] = MapKeyboard
 		};
 
 		public EditorHandler() : base(EditorMapper)

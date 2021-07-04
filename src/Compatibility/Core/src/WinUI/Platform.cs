@@ -22,7 +22,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		static Task<string> s_currentPrompt;
 
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer",
-			typeof(IVisualElementRenderer), typeof(Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer));
+			typeof(IVisualElementRenderer), typeof(Windows.Foundation.Metadata.Platform), default(IVisualElementRenderer),
+			propertyChanged: (bindable, oldvalue, newvalue) =>
+			{
+				if (bindable is IView view)
+				{
+					if (view.Handler == null && newvalue is IVisualElementRenderer ver)
+						view.Handler = new RendererToHandlerShim(ver);
+					else if (newvalue == null && view.Handler != null)
+						view.Handler = null;
+				}
+			});
 
 		public static IVisualElementRenderer GetRenderer(VisualElement element)
 		{
@@ -59,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				//TODO: Handle this with AppBuilderHost
 				try
 				{
-					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType());
+					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(Forms.MauiContext);
 				}
 				catch
@@ -90,6 +100,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else if (handler is INativeViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
+					element.Handler = handler;
+					SetRenderer(element, renderer);
 				}
 			}
 
@@ -115,18 +127,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_page = page;
 
 			var current = Microsoft.UI.Xaml.Application.Current;
-
-			if (!current.Resources.ContainsKey("RootContainerStyle"))
-			{
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(Forms.GetTabletResources());
-			}
-
-			if (!current.Resources.ContainsKey(ShellRenderer.ShellStyle))
-			{
-				var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
-				myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/WinUI/Shell/ShellStyles.xbf");
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
-			}
 
 			_container = new Canvas
 			{
@@ -273,6 +273,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				IVisualElementRenderer elementRenderer = GetRenderer(element);
 				if (elementRenderer != null)
 					return elementRenderer.GetDesiredSize(widthConstraint, heightConstraint);
+				
+				if (element is IView iView)
+					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
 			}
 
 			return new SizeRequest();

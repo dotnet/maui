@@ -1,19 +1,10 @@
 using System;
 using System.Globalization;
+using Microsoft.Maui.Layouts;
+using Flex = Microsoft.Maui.Layouts.Flex;
 
 namespace Microsoft.Maui.Controls
 {
-	[TypeConverter(typeof(FlexJustifyTypeConverter))]
-	public enum FlexJustify
-	{
-		Start = Flex.Justify.Start,
-		Center = Flex.Justify.Center,
-		End = Flex.Justify.End,
-		SpaceBetween = Flex.Justify.SpaceBetween,
-		SpaceAround = Flex.Justify.SpaceAround,
-		SpaceEvenly = Flex.Justify.SpaceEvenly,
-	}
-
 	[Xaml.TypeConversion(typeof(FlexJustify))]
 	public class FlexJustifyTypeConverter : TypeConverter
 	{
@@ -43,21 +34,6 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	public enum FlexPosition
-	{
-		Relative = Flex.Position.Relative,
-		Absolute = Flex.Position.Absolute,
-	}
-
-	[TypeConverter(typeof(FlexDirectionTypeConverter))]
-	public enum FlexDirection
-	{
-		Column = Flex.Direction.Column,
-		ColumnReverse = Flex.Direction.ColumnReverse,
-		Row = Flex.Direction.Row,
-		RowReverse = Flex.Direction.RowReverse,
-	}
-
 	[Xaml.TypeConversion(typeof(FlexDirection))]
 	public class FlexDirectionTypeConverter : TypeConverter
 	{
@@ -81,18 +57,6 @@ namespace Microsoft.Maui.Controls
 				throw new NotSupportedException();
 			return fd.ToString();
 		}
-	}
-
-	[TypeConverter(typeof(FlexAlignContentTypeConverter))]
-	public enum FlexAlignContent
-	{
-		Stretch = Flex.AlignContent.Stretch,
-		Center = Flex.AlignContent.Center,
-		Start = Flex.AlignContent.Start,
-		End = Flex.AlignContent.End,
-		SpaceBetween = Flex.AlignContent.SpaceBetween,
-		SpaceAround = Flex.AlignContent.SpaceAround,
-		SpaceEvenly = Flex.AlignContent.SpaceEvenly,
 	}
 
 	[Xaml.TypeConversion(typeof(FlexAlignContent))]
@@ -124,16 +88,6 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	[TypeConverter(typeof(FlexAlignItemsTypeConverter))]
-	public enum FlexAlignItems
-	{
-		Stretch = Flex.AlignItems.Stretch,
-		Center = Flex.AlignItems.Center,
-		Start = Flex.AlignItems.Start,
-		End = Flex.AlignItems.End,
-		//Baseline = Flex.AlignItems.Baseline,
-	}
-
 	[Xaml.TypeConversion(typeof(FlexAlignItems))]
 	public class FlexAlignItemsTypeConverter : TypeConverter
 	{
@@ -157,17 +111,6 @@ namespace Microsoft.Maui.Controls
 				throw new NotSupportedException();
 			return fai.ToString();
 		}
-	}
-
-	[TypeConverter(typeof(FlexAlignSelfTypeConverter))]
-	public enum FlexAlignSelf
-	{
-		Auto = Flex.AlignSelf.Auto,
-		Stretch = Flex.AlignSelf.Stretch,
-		Center = Flex.AlignSelf.Center,
-		Start = Flex.AlignSelf.Start,
-		End = Flex.AlignSelf.End,
-		//Baseline = Flex.AlignSelf.Baseline,
 	}
 
 	[Xaml.TypeConversion(typeof(FlexAlignSelf))]
@@ -195,14 +138,6 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	[TypeConverter(typeof(FlexWrapTypeConverter))]
-	public enum FlexWrap
-	{
-		NoWrap = Flex.Wrap.NoWrap,
-		Wrap = Flex.Wrap.Wrap,
-		Reverse = Flex.Wrap.WrapReverse,
-	}
-
 	[Xaml.TypeConversion(typeof(FlexWrap))]
 	public class FlexWrapTypeConverter : TypeConverter
 	{
@@ -226,59 +161,33 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	[TypeConverter(typeof(FlexBasisTypeConverter))]
-	public struct FlexBasis
+	[Xaml.TypeConversion(typeof(FlexBasis))]
+	public class FlexBasisTypeConverter : TypeConverter
 	{
-		bool _isLength;
-		bool _isRelative;
-		public static FlexBasis Auto = new FlexBasis();
-		public float Length { get; }
-		internal bool IsAuto => !_isLength && !_isRelative;
-		internal bool IsRelative => _isRelative;
-		public FlexBasis(float length, bool isRelative = false)
+		public override object ConvertFromInvariantString(string value)
 		{
-			if (length < 0)
-				throw new ArgumentException("should be a positive value", nameof(length));
-			if (isRelative && length > 1)
-				throw new ArgumentException("relative length should be in [0, 1]", nameof(length));
-			_isLength = !isRelative;
-			_isRelative = isRelative;
-			Length = length;
+			if (value != null)
+			{
+				if (value.Equals("auto", StringComparison.OrdinalIgnoreCase))
+					return FlexBasis.Auto;
+				value = value.Trim();
+				if (value.EndsWith("%", StringComparison.OrdinalIgnoreCase) && float.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
+					return new FlexBasis(relflex / 100, isRelative: true);
+				if (float.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
+					return new FlexBasis(flex);
+			}
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexBasis)));
 		}
 
-		public static implicit operator FlexBasis(float length)
+		public override string ConvertToInvariantString(object value)
 		{
-			return new FlexBasis(length);
-		}
-
-		[Xaml.TypeConversion(typeof(FlexBasis))]
-		public class FlexBasisTypeConverter : TypeConverter
-		{
-			public override object ConvertFromInvariantString(string value)
-			{
-				if (value != null)
-				{
-					if (value.Equals("auto", StringComparison.OrdinalIgnoreCase))
-						return Auto;
-					value = value.Trim();
-					if (value.EndsWith("%", StringComparison.OrdinalIgnoreCase) && float.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
-						return new FlexBasis(relflex / 100, isRelative: true);
-					if (float.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
-						return new FlexBasis(flex);
-				}
-				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexBasis)));
-			}
-
-			public override string ConvertToInvariantString(object value)
-			{
-				if (!(value is FlexBasis basis))
-					throw new NotSupportedException();
-				if (basis.IsAuto)
-					return "auto";
-				if (basis.IsRelative)
-					return $"{(basis.Length * 100).ToString(CultureInfo.InvariantCulture)}%";
-				return $"{basis.Length.ToString(CultureInfo.InvariantCulture)}";
-			}
+			if (!(value is FlexBasis basis))
+				throw new NotSupportedException();
+			if (basis.IsAuto)
+				return "auto";
+			if (basis.IsRelative)
+				return $"{(basis.Length * 100).ToString(CultureInfo.InvariantCulture)}%";
+			return $"{basis.Length.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}
 }

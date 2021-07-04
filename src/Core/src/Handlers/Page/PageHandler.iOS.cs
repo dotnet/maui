@@ -26,7 +26,14 @@ namespace Microsoft.Maui.Handlers
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
+			NativeView.CrossPlatformArrange = VirtualView.Arrange;
+		}
+
+		void UpdateContent()
+		{
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
@@ -34,8 +41,6 @@ namespace Microsoft.Maui.Handlers
 			//Cleanup the old view when reused
 			var oldChildren = NativeView.Subviews.ToList();
 			oldChildren.ForEach(x => x.RemoveFromSuperview());
-
-			NativeView.CrossPlatformArrange = VirtualView.Arrange;
 
 			if (VirtualView.Content != null)
 				NativeView.AddSubview(VirtualView.Content.ToNative(MauiContext));
@@ -45,6 +50,20 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler._pageViewController != null)
 				handler._pageViewController.Title = page.Title;
+		}
+
+		public static void MapContent(PageHandler handler, IPage page)
+		{
+			handler.UpdateContent();
+		}
+
+		public static void MapFrame(PageHandler handler, IView view)
+		{
+			ViewHandler.MapFrame(handler, view);
+
+			// TODO MAUI: Currently the background layer frame is tied to the layout system
+			// which needs to be investigated more
+			handler.NativeView?.UpdateBackgroundLayerFrame();
 		}
 	}
 }

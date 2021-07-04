@@ -1,3 +1,4 @@
+using Android.Graphics.Drawables;
 using Android.Views;
 using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
@@ -12,8 +13,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateIsEnabled(this AView nativeView, IView view)
 		{
-			if (nativeView != null)
-				nativeView.Enabled = view.IsEnabled;
+			nativeView.Enabled = view.IsEnabled;
 		}
 
 		public static void UpdateVisibility(this AView nativeView, IView view)
@@ -21,7 +21,13 @@ namespace Microsoft.Maui
 			nativeView.Visibility = view.Visibility.ToNativeVisibility();
 		}
 
-		public static ViewStates ToNativeVisibility(this Visibility visibility) 
+		public static void UpdateClip(this AView nativeView, IView view)
+		{
+			if (nativeView is WrapperView wrapper)
+				wrapper.Clip = view.Clip;
+		}
+
+		public static ViewStates ToNativeVisibility(this Visibility visibility)
 		{
 			return visibility switch
 			{
@@ -31,11 +37,8 @@ namespace Microsoft.Maui
 			};
 		}
 
-		public static void UpdateBackground(this AView nativeView, IView view)
+		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackground = null)
 		{
-			if (view == null)
-				return;
-
 			// Remove previous background gradient if any
 			if (nativeView.Background is MauiDrawable mauiDrawable)
 			{
@@ -46,9 +49,24 @@ namespace Microsoft.Maui
 			var paint = view.Background;
 
 			if (paint.IsNullOrEmpty())
-				return;
+				nativeView.Background = defaultBackground;
+			else
+			{
+				if (paint is SolidPaint solidPaint)
+				{
+					Color backgroundColor = solidPaint.Color;
 
-			nativeView.Background = paint?.ToDrawable();
+					if (backgroundColor != null)
+						nativeView.SetBackgroundColor(backgroundColor.ToNative());
+				}
+				else
+					nativeView.Background = paint!.ToDrawable();
+			}
+		}
+
+		public static void UpdateOpacity(this AView nativeView, IView view)
+		{
+			nativeView.Alpha = (float)view.Opacity;
 		}
 
 		public static bool GetClipToOutline(this AView view)
@@ -78,7 +96,6 @@ namespace Microsoft.Maui
 			if (semantics == null)
 				return;
 
-			nativeView.ContentDescription = semantics.Description;
 			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
 		}
 
@@ -104,5 +121,15 @@ namespace Microsoft.Maui
 				nativeView.RequestLayout();
 			}
 		}
+
+		public static void RemoveFromParent(this AView view)
+		{
+			if (view == null)
+				return;
+			if (view.Parent == null)
+				return;
+			((ViewGroup)view.Parent).RemoveView(view);
+		}
+
 	}
 }
