@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					_layoutUpdatedRegistered = false;
 				}
 
-				if (Forms.UseSkiaSharp)
+				if (Forms.UseSkiaSharp && Control != null)
 				{
 					Control.LayoutUpdated -= OnBackgroundLayoutUpdated;
 
