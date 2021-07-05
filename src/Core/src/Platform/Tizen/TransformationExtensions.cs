@@ -29,6 +29,7 @@ namespace Microsoft.Maui
 
 			if (changed)
 			{
+				nativeView.EvasMap = map;
 				if (!s_movedHandlers.ContainsKey(nativeView))
 				{
 					// not registered moved handler
