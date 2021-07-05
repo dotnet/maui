@@ -12,7 +12,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public class View : VisualElement, IView, IViewController, IGestureController, IGestureRecognizers, IPropertyMapperView, IHotReloadableView
+	public partial class View : VisualElement, IView, IViewController, IGestureController, IGestureRecognizers, IPropertyMapperView, IHotReloadableView
 	{
 		protected internal IGestureController GestureController => this;
 

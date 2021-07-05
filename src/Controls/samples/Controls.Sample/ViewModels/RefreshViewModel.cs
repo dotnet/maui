@@ -1,12 +1,12 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Controls.Sample.Models;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using Controls.Sample.Models;
 
 namespace Maui.Controls.Sample.ViewModels
 {

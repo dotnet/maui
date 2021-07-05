@@ -1,17 +1,14 @@
 ﻿#nullable enable
-
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Views;
+using Android.Views.Animations;
+using AndroidX.Activity;
+using AndroidX.AppCompat.App;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
-using Android.Views.Animations;
-using System.ComponentModel;
-using AndroidX.Activity;
-using Android.Runtime;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -19,13 +16,11 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		partial void OnPageAttachedHandler()
 		{
-			var nativeActivity = _window.NativeActivity;
-
-			if (_BackButtonCallBack == null || _BackButtonCallBack.Context != nativeActivity)
+			if (_window.NativeActivity is AppCompatActivity activity && (_BackButtonCallBack == null || _BackButtonCallBack.Context != activity))
 			{
-				nativeActivity
+				activity
 					.OnBackPressedDispatcher
-					.AddCallback(nativeActivity, _BackButtonCallBack = new BackButtonCallBack(this, nativeActivity));
+					.AddCallback(activity, _BackButtonCallBack = new BackButtonCallBack(this, activity));
 			}
 		}
 
@@ -68,16 +63,16 @@ namespace Microsoft.Maui.Controls.Platform
 					modalContainer
 						.Animate()?.TranslationY(_renderer.Height)?
 						.SetInterpolator(new AccelerateInterpolator(1))?.SetDuration(300)?.SetListener(new GenericAnimatorListener
-					{
-						OnEnd = a =>
 						{
-							modalContainer.RemoveFromParent();
-							modalContainer.Dispose();
-							source.TrySetResult(modal);
-							CurrentPageController?.SendAppearing();
-							modalContainer = null;
-						}
-					});
+							OnEnd = a =>
+							{
+								modalContainer.RemoveFromParent();
+								modalContainer.Dispose();
+								source.TrySetResult(modal);
+								CurrentPageController?.SendAppearing();
+								modalContainer = null;
+							}
+						});
 				}
 				else
 				{

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Animations
 {
-	public class AnimationManager : IAnimationManager
+	public class AnimationManager : IAnimationManager, IDisposable
 	{
 		readonly List<Animation> _animations = new();
 		long _lastUpdate;
+		bool _disposedValue;
 
 		public AnimationManager(ITicker ticker)
 		{
@@ -83,6 +84,23 @@ namespace Microsoft.Maui.Animations
 					animation.RemoveFromParent();
 				}
 			}
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposedValue)
+			{
+				if (disposing && Ticker is IDisposable disposable)
+					disposable.Dispose();
+
+				_disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }

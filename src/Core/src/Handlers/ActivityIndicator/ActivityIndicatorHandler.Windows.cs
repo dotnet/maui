@@ -11,11 +11,9 @@ namespace Microsoft.Maui.Handlers
 			Style = UI.Xaml.Application.Current.Resources["MauiActivityIndicatorStyle"] as UI.Xaml.Style
 		};
 
-		protected override void SetupDefaults(MauiActivityIndicator nativeView)
+		void SetupDefaults(MauiActivityIndicator nativeView)
 		{
 			_foregroundDefault = nativeView.GetForegroundCache();
-
-			base.SetupDefaults(nativeView);
 		}
 
 		public static void MapIsRunning(ActivityIndicatorHandler handler, IActivityIndicator activityIndicator)

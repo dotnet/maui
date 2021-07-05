@@ -65,6 +65,9 @@
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="[$(_MicrosoftProjectReunionVersion)]">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.ProjectReunion.InteractiveExperiences" Version="[$(_MicrosoftProjectReunionVersion)]" NoWarn="NU1701">
+      <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Controls.Sample.WinUI\Maui.Controls.Sample.WinUI.csproj">
