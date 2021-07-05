@@ -149,9 +149,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					TearDownOldElement(Element as ItemsView);
 
-					if (AppCompat.Platform.GetRenderer(Element) == this)
+					if (Platform.GetRenderer(Element) == this)
 					{
-						Element.ClearValue(AppCompat.Platform.RendererProperty);
+						Element.ClearValue(Platform.RendererProperty);
 					}
 				}
 			}
@@ -462,7 +462,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (Element == null)
 				return;
-			
+
 			var backgroundColor = color ?? Element.BackgroundColor;
 
 			if (backgroundColor == null)

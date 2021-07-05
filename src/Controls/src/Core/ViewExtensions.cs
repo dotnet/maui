@@ -1,7 +1,8 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -12,6 +13,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
+
 			view.AbortAnimation(nameof(LayoutTo));
 			view.AbortAnimation(nameof(TranslateTo));
 			view.AbortAnimation(nameof(RotateTo));
@@ -24,7 +26,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		static Task<bool> AnimateTo(this VisualElement view, double start, double end, string name,
-			Action<VisualElement, double> updateAction, uint length = 250, Easing easing = null)
+			Action<VisualElement, double> updateAction, uint length = 250, Easing? easing = null)
 		{
 			if (easing == null)
 				easing = Easing.Linear;
@@ -35,7 +37,7 @@ namespace Microsoft.Maui.Controls
 
 			void UpdateProperty(double f)
 			{
-				if (weakView.TryGetTarget(out VisualElement v))
+				if (weakView.TryGetTarget(out VisualElement? v))
 				{
 					updateAction(v, f);
 				}
@@ -46,7 +48,7 @@ namespace Microsoft.Maui.Controls
 			return tcs.Task;
 		}
 
-		public static Task<bool> FadeTo(this VisualElement view, double opacity, uint length = 250, Easing easing = null)
+		public static Task<bool> FadeTo(this VisualElement view, double opacity, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
@@ -54,7 +56,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.Opacity, opacity, nameof(FadeTo), (v, value) => v.Opacity = value, length, easing);
 		}
 
-		public static Task<bool> LayoutTo(this VisualElement view, Rectangle bounds, uint length = 250, Easing easing = null)
+		public static Task<bool> LayoutTo(this VisualElement view, Rectangle bounds, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
@@ -73,7 +75,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, 0, 1, nameof(LayoutTo), (v, value) => v.Layout(computeBounds(value)), length, easing);
 		}
 
-		public static Task<bool> RelRotateTo(this VisualElement view, double drotation, uint length = 250, Easing easing = null)
+		public static Task<bool> RelRotateTo(this VisualElement view, double drotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
@@ -81,7 +83,7 @@ namespace Microsoft.Maui.Controls
 			return view.RotateTo(view.Rotation + drotation, length, easing);
 		}
 
-		public static Task<bool> RelScaleTo(this VisualElement view, double dscale, uint length = 250, Easing easing = null)
+		public static Task<bool> RelScaleTo(this VisualElement view, double dscale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
@@ -89,7 +91,7 @@ namespace Microsoft.Maui.Controls
 			return view.ScaleTo(view.Scale + dscale, length, easing);
 		}
 
-		public static Task<bool> RotateTo(this VisualElement view, double rotation, uint length = 250, Easing easing = null)
+		public static Task<bool> RotateTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
@@ -97,7 +99,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.Rotation, rotation, nameof(RotateTo), (v, value) => v.Rotation = value, length, easing);
 		}
 
-		public static Task<bool> RotateXTo(this VisualElement view, double rotation, uint length = 250, Easing easing = null)
+		public static Task<bool> RotateXTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
@@ -105,7 +107,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.RotationX, rotation, nameof(RotateXTo), (v, value) => v.RotationX = value, length, easing);
 		}
 
-		public static Task<bool> RotateYTo(this VisualElement view, double rotation, uint length = 250, Easing easing = null)
+		public static Task<bool> RotateYTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
@@ -113,7 +115,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.RotationY, rotation, nameof(RotateYTo), (v, value) => v.RotationY = value, length, easing);
 		}
 
-		public static Task<bool> ScaleTo(this VisualElement view, double scale, uint length = 250, Easing easing = null)
+		public static Task<bool> ScaleTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
@@ -121,7 +123,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.Scale, scale, nameof(ScaleTo), (v, value) => v.Scale = value, length, easing);
 		}
 
-		public static Task<bool> ScaleXTo(this VisualElement view, double scale, uint length = 250, Easing easing = null)
+		public static Task<bool> ScaleXTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
@@ -129,7 +131,7 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.ScaleX, scale, nameof(ScaleXTo), (v, value) => v.ScaleX = value, length, easing);
 		}
 
-		public static Task<bool> ScaleYTo(this VisualElement view, double scale, uint length = 250, Easing easing = null)
+		public static Task<bool> ScaleYTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
@@ -137,51 +139,70 @@ namespace Microsoft.Maui.Controls
 			return AnimateTo(view, view.ScaleY, scale, nameof(ScaleYTo), (v, value) => v.ScaleY = value, length, easing);
 		}
 
-		public static Task<bool> TranslateTo(this VisualElement view, double x, double y, uint length = 250, Easing easing = null)
+		public static Task<bool> TranslateTo(this VisualElement view, double x, double y, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
-			easing = easing ?? Easing.Linear;
+
+			easing ??= Easing.Linear;
 
 			var tcs = new TaskCompletionSource<bool>();
 			var weakView = new WeakReference<VisualElement>(view);
 			Action<double> translateX = f =>
 			{
-				VisualElement v;
-				if (weakView.TryGetTarget(out v))
+				if (weakView.TryGetTarget(out VisualElement? v))
 					v.TranslationX = f;
 			};
 			Action<double> translateY = f =>
 			{
-				VisualElement v;
-				if (weakView.TryGetTarget(out v))
+				if (weakView.TryGetTarget(out VisualElement? v))
 					v.TranslationY = f;
 			};
-			new Animation { { 0, 1, new Animation(translateX, view.TranslationX, x, easing: easing) }, { 0, 1, new Animation(translateY, view.TranslationY, y, easing: easing) } }.Commit(view, nameof(TranslateTo), 16, length, null,
-				(f, a) => tcs.SetResult(a));
+
+			new Animation
+			{
+				{ 0, 1, new Animation(translateX, view.TranslationX, x, easing: easing) },
+				{ 0, 1, new Animation(translateY, view.TranslationY, y, easing: easing) }
+			}.Commit(view, nameof(TranslateTo), 16, length, null, (f, a) => tcs.SetResult(a));
 
 			return tcs.Task;
 		}
 
-		internal static T FindParentOfType<T>(this Element element)
+		internal static IAnimationManager? GetAnimationManager(this IAnimatable animatable)
 		{
-			var navPage = element
-				.GetParentsPath()
-				.OfType<T>()
-				.FirstOrDefault();
+			if (animatable is Element e && e.FindParentOfType<Window>(true) is Window window)
+				return window.AnimationManager;
 
-			return navPage;
+			throw new ArgumentException($"Unable to find {nameof(IAnimationManager)} for '{animatable.GetType().FullName}'.", nameof(animatable));
 		}
 
-		internal static IMauiContext FindMauiContextOnParent(this Element element)
+		internal static IMauiContext? FindMauiContext(this Element element)
 		{
-			var navPage = element
-				.GetParentsPath()
-				.OfType<IView>()
-				.Where(x => x.Handler?.MauiContext != null)
-				.FirstOrDefault();
+			if (element is Maui.IElement fe && fe.Handler?.MauiContext != null)
+				return fe.Handler.MauiContext;
 
-			return navPage?.Handler?.MauiContext;
+			foreach (var parent in element.GetParentsPath())
+			{
+				if (parent is Maui.IElement parentView && parentView.Handler?.MauiContext != null)
+					return parentView.Handler.MauiContext;
+			}
+
+			return default;
+		}
+
+		internal static T? FindParentOfType<T>(this Element element, bool includeThis = false)
+			where T : Maui.IElement
+		{
+			if (includeThis && element is T view)
+				return view;
+
+			foreach (var parent in element.GetParentsPath())
+			{
+				if (parent is T parentView)
+					return parentView;
+			}
+
+			return default;
 		}
 
 		internal static IEnumerable<Element> GetParentsPath(this Element self)
@@ -195,9 +216,24 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal static string GetStringValue(this IView element)
+		internal static List<Page> GetParentPages(this Page target)
 		{
-			string text = null;
+			var result = new List<Page>();
+
+			var parent = target.RealParent as Page;
+			while (!Application.IsApplicationOrWindowOrNull(parent))
+			{
+				result.Add(parent!);
+				parent = parent!.RealParent as Page;
+			}
+
+			return result;
+		}
+
+		internal static string? GetStringValue(this IView element)
+		{
+			string? text = null;
+
 			if (element is ILabel label)
 				text = label.Text;
 			else if (element is IEntry entry)

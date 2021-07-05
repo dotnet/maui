@@ -14,7 +14,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core-net6", "src\C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility-net6", "src\Compatibility\Core\src\Compatibility-net6.csproj", "{00A11C2F-969F-4964-8557-91ADF4B1523D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup-net6", "src\Compatibility\Core\src\Android.FormsViewGroup\Compatibility.Android.FormsViewGroup-net6.csproj", "{EB956381-F3E6-437C-9069-36B8BF5C6E2F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup-net6", "src\Compatibility\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup-net6.csproj", "{EB956381-F3E6-437C-9069-36B8BF5C6E2F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{459BF674-83CB-46F6-881F-A2D2117DBF4D}"
 EndProject
@@ -115,6 +115,14 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Extensions", "src\Workload\Microsoft.Maui.Extensions\Microsoft.Maui.Extensions.csproj", "{6EDE0C1B-B718-4331-99BA-423042CDBE24}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.Profiling", "src\Controls\samples\Controls.Sample.Profiling\Maui.Controls.Sample.Profiling.csproj", "{75DB635C-0035-46E7-9A33-857D38082503}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D8CD878F-34BC-4393-881A-E3DD7348A13E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Maps-net6", "src\Controls\Maps\src\Controls.Maps-net6.csproj", "{41CF73B5-D60E-4644-BA72-904CFF43C4AF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.UnitTests-net6", "src\Controls\tests\Core.UnitTests\Controls.Core.UnitTests-net6.csproj", "{DCA77B3F-73C2-488C-8D16-F5055DC3098C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Benchmarks-net6", "src\Core\tests\Benchmarks\Core.Benchmarks-net6.csproj", "{A1B1052C-740D-4733-BB3F-8558B661E78D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -281,6 +289,18 @@ Global
 		{75DB635C-0035-46E7-9A33-857D38082503}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75DB635C-0035-46E7-9A33-857D38082503}.Release|Any CPU.Build.0 = Release|Any CPU
 		{75DB635C-0035-46E7-9A33-857D38082503}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{41CF73B5-D60E-4644-BA72-904CFF43C4AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41CF73B5-D60E-4644-BA72-904CFF43C4AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41CF73B5-D60E-4644-BA72-904CFF43C4AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41CF73B5-D60E-4644-BA72-904CFF43C4AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCA77B3F-73C2-488C-8D16-F5055DC3098C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCA77B3F-73C2-488C-8D16-F5055DC3098C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCA77B3F-73C2-488C-8D16-F5055DC3098C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCA77B3F-73C2-488C-8D16-F5055DC3098C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B1052C-740D-4733-BB3F-8558B661E78D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B1052C-740D-4733-BB3F-8558B661E78D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B1052C-740D-4733-BB3F-8558B661E78D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B1052C-740D-4733-BB3F-8558B661E78D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -331,6 +351,10 @@ Global
 		{081EE5E5-69D4-493C-9EB4-47423C4728AB} = {EC63FD88-5E12-46D7-B440-68F70241D987}
 		{6EDE0C1B-B718-4331-99BA-423042CDBE24} = {EC63FD88-5E12-46D7-B440-68F70241D987}
 		{75DB635C-0035-46E7-9A33-857D38082503} = {E1082E26-D700-4127-9329-66D673FD2D55}
+		{D8CD878F-34BC-4393-881A-E3DD7348A13E} = {459BF674-83CB-46F6-881F-A2D2117DBF4D}
+		{41CF73B5-D60E-4644-BA72-904CFF43C4AF} = {50C758FE-4E10-409A-94F5-A75480960864}
+		{DCA77B3F-73C2-488C-8D16-F5055DC3098C} = {D8CD878F-34BC-4393-881A-E3DD7348A13E}
+		{A1B1052C-740D-4733-BB3F-8558B661E78D} = {C564DDD6-DE79-45CD-88EA-3F690481572A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

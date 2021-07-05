@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,16 +17,16 @@ namespace Microsoft.Maui.Handlers
 		{
 			var searchView = new SearchView(Context);
 
-			_editText = searchView.GetChildrenOfType<EditText>().First();
+			_editText = searchView.GetFirstChildOfType<EditText>();
 
 			return searchView;
 		}
 
-		protected override void SetupDefaults(SearchView nativeView)
+		void SetupDefaults(SearchView nativeView)
 		{
 			DefaultBackground = nativeView.Background;
 
-			base.SetupDefaults(nativeView);
+
 		}
 
 		// This is a Android-specific mapping
@@ -71,8 +70,10 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapMaxLength(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateMaxLength(searchBar, handler.QueryEditor);
+		}
 
 		[MissingMapper]
 		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }

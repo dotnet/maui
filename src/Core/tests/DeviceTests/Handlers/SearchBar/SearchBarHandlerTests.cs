@@ -52,7 +52,19 @@ namespace Microsoft.Maui.DeviceTests
 				TextColor = Colors.Red
 			};
 
-			await ValidatePropertyInitValue(searchBar, () => searchBar.TextColor, GetNativeTextColor, searchBar.TextColor);
+			await ValidatePropertyInitValue(searchBar, () => searchBar.TextColor, GetNativeTextColor, Colors.Red);
+		}
+
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
+		{
+			var searchBar = new SearchBarStub
+			{
+				Text = "TextColor",
+				TextColor = null,
+			};
+
+			await CreateHandlerAsync(searchBar);
 		}
 
 		[Fact(DisplayName = "Placeholder Initializes Correctly")]
@@ -99,6 +111,27 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
 
+		[Theory(DisplayName = "MaxLength Initializes Correctly")]
+		[InlineData(2)]
+		[InlineData(5)]
+		[InlineData(8)]
+		[InlineData(10)]
+		public async Task MaxLengthInitializesCorrectly(int maxLength)
+		{
+			const string text = "Lorem ipsum dolor sit amet";
+			var expectedText = text.Substring(0, maxLength);
+
+			var searchBar = new SearchBarStub()
+			{
+				MaxLength = maxLength,
+				Text = text
+			};
+
+			var nativeText = await GetValueAsync(searchBar, GetNativeText);
+
+			Assert.Equal(expectedText, nativeText);
+		}
+
 		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
 		public async Task CancelButtonColorInitializeCorrectly()
 		{
@@ -108,6 +141,17 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidateHasColor(searchBar, Colors.MediumPurple, () => searchBar.CancelButtonColor = Colors.MediumPurple);
+		}
+
+		[Fact(DisplayName = "Null Cancel Button Color Doesn't Crash")]
+		public async Task NullCancelButtonColorDoesntCrash()
+		{
+			var searchBar = new SearchBarStub
+			{
+				CancelButtonColor = null,
+			};
+
+			await CreateHandlerAsync(searchBar);
 		}
 	}
 }

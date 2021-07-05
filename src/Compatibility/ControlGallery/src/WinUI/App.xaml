@@ -1,4 +1,5 @@
-﻿<Application
+﻿<local1:MiddleApp
+    xmlns:local1="using:Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI"
     x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,10 +7,11 @@
 
 	<Application.Resources>
 		<ResourceDictionary>
-			<ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="ms-appx:///Microsoft.Maui.Controls.Compatibility/WinUI/Resources.xbf" />
-			</ResourceDictionary.MergedDictionaries>
-		</ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!-- Other merged dictionaries here -->
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 
-</Application>
+</local1:MiddleApp>

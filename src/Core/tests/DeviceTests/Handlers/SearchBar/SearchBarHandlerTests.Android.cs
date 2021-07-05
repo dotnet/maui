@@ -65,6 +65,19 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
 		}
 
+		[Fact]
+		public async Task SearchViewHasEditTextChild()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var view = new SearchView(MauiContext.Context);
+
+				var editText = view.GetFirstChildOfType<EditText>();
+
+				Assert.NotNull(editText);
+			});
+		}
+
 		SearchView GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
 			(SearchView)searchBarHandler.NativeView;
 

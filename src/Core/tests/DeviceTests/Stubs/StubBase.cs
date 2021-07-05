@@ -8,6 +8,14 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class StubBase : IFrameworkElement
 	{
+		IElementHandler IElement.Handler
+		{
+			get => Handler;
+			set => Handler = (IViewHandler)value;
+		}
+
+		IElement IElement.Parent => Parent;
+
 		public bool IsEnabled { get; set; } = true;
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;
@@ -19,6 +27,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Rectangle Frame { get; set; }
 
 		public IViewHandler Handler { get; set; }
+
+		public IShape Clip { get; set; }
 
 		public IFrameworkElement Parent { get; set; }
 

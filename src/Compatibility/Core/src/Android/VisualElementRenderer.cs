@@ -32,16 +32,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		VisualElementPackager _packager;
 		PropertyChangedEventHandler _propertyChangeHandler;
 
-		GestureManager _gestureManager;
-
 		protected VisualElementRenderer(Context context) : base(context)
 		{
-			_gestureManager = new GestureManager(this);
-		}
-
-		public override bool OnTouchEvent(MotionEvent e)
-		{
-			return _gestureManager.OnTouchEvent(e) || base.OnTouchEvent(e);
 		}
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
@@ -302,12 +294,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					_packager = null;
 				}
 
-				if (_gestureManager != null)
-				{
-					_gestureManager.Dispose();
-					_gestureManager = null;
-				}
-
 				if (ManageNativeControlLifetime)
 				{
 					while (ChildCount > 0)
@@ -320,8 +306,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				if (Element != null)
 				{
-					if (AppCompat.Platform.GetRenderer(Element) == this)
-						AppCompat.Platform.SetRenderer(Element, null);
+					if (Platform.GetRenderer(Element) == this)
+						Platform.SetRenderer(Element, null);
 
 					Element = null;
 				}
@@ -406,7 +392,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (visualElement == null)
 					continue;
 
-				IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(visualElement);
+				IVisualElementRenderer renderer = Platform.GetRenderer(visualElement);
 				if (renderer == null && CompressedLayout.GetIsHeadless(visualElement))
 					UpdateLayout(visualElement.LogicalChildren);
 

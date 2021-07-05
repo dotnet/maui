@@ -27,6 +27,8 @@
     </_ProvisionDependsOn>
   </PropertyGroup>
 
+  <Import Project="$(MauiRootDirectory)eng/ReplaceText.targets" />
+
   <!-- Build target provisions ./bin/dotnet/ -->
   <Target Name="_Provision" BeforeTargets="Build" DependsOnTargets="$(_ProvisionDependsOn)" />
 
@@ -84,8 +86,8 @@
     </PropertyGroup>
     <WriteLinesToFile File="$(_NuGetConfig)" Lines="$(_NuGetContent)" Overwrite="true" />
     <Exec
+        Command="&quot;$(_ThisDotNet)&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir $(DotNetTempDirectory)"
         WorkingDirectory="$(DotNetTempDirectory)"
-        Command="&quot;$(_ThisDotNet)&quot; workload install maui --skip-manifest-update --verbosity diag"
     />
     <Delete Files="$(_NuGetConfig)" />
 
@@ -171,6 +173,26 @@
         VersionBand="$(DotNetPreviewVersionBand)"
     />
 
+    <!-- HACK: temporary fixes for iOS and MacCatalyst workloads -->
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.workload.mono.toolchain/WorkloadManifest.targets"
+        Output="$(DotNetSdkManifestsDirectory)microsoft.net.workload.mono.toolchain/WorkloadManifest.targets"
+        OldValue="Sdk=&quot;Microsoft.NETCore.App.Runtime.AOT.Cross.maccatalyst&quot;"
+        NewValue="Condition=&quot;%24([MSBuild]::IsOSPlatform('osx'))&quot; Sdk=&quot;Microsoft.NETCore.App.Runtime.AOT.Cross.maccatalyst&quot;"
+    />
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.workload.mono.toolchain/WorkloadManifest.targets"
+        Output="$(DotNetSdkManifestsDirectory)microsoft.net.workload.mono.toolchain/WorkloadManifest.targets"
+        OldValue="Sdk=&quot;Microsoft.NETCore.App.Runtime.AOT.Cross.ios-arm&quot;"
+        NewValue="Condition=&quot;%24([MSBuild]::IsOSPlatform('osx'))&quot; Sdk=&quot;Microsoft.NETCore.App.Runtime.AOT.Cross.ios-arm&quot;"
+    />
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.workload.mono.toolchain/WorkloadManifest.targets"
+        Output="$(DotNetSdkManifestsDirectory)microsoft.net.workload.mono.toolchain/WorkloadManifest.targets"
+        OldValue="Sdk=&quot;Microsoft.NETCore.App.Runtime.AOT.Cross.ios-arm64&quot;"
+        NewValue="Condition=&quot;%24([MSBuild]::IsOSPlatform('osx'))&quot; Sdk=&quot;Microsoft.NETCore.App.Runtime.AOT.Cross.ios-arm64&quot;"
+    />
+
     <Touch Files="$(DotNetSdkManifestsDirectory).stamp" AlwaysCreate="true" />
   </Target>
 
@@ -179,7 +201,7 @@
       Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag"
+        Command="&quot;$(DotNetToolPath)&quot; workload install @(_WorkloadIds, ' ') --skip-manifest-update --verbosity diag --temp-dir $(DotNetTempDirectory)"
         WorkingDirectory="$(MauiRootDirectory)"
     />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />

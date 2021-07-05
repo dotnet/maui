@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Controls.Hosting
 	{
 		static readonly Dictionary<Type, Type> DefaultMauiControlHandlers = new Dictionary<Type, Type>
 		{
-			{ typeof(NavigationPage), typeof(NavigationPageHandler) },
 #if WINDOWS
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif
@@ -42,6 +41,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Shapes.Polyline), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Rectangle), typeof(ShapeViewHandler) },
 			{ typeof(Layout), typeof(LayoutHandler) },
+			{ typeof(Window), typeof(WindowHandler) },
 		};
 
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)

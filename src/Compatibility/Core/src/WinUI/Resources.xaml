@@ -19,6 +19,8 @@
         <ResourceDictionary Source="PickerStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
+    <x:Boolean x:Key="MicrosoftMauiControlsCompatibilityIncluded">true</x:Boolean>
+
     <uwp:CaseConverter x:Key="LowerConverter" ConvertToUpper="False" />
 	<uwp:CaseConverter x:Key="UpperConverter" ConvertToUpper="True" />
 	<uwp:HeightConverter x:Key="HeightConverter" />
@@ -47,7 +49,7 @@
 		<Setter Property="FontWeight" Value="Bold" />
 	</Style>
 
-	<Style x:Key="MauiRootContainerStyle" TargetType="Panel">
+	<Style x:Key="RootContainerStyle" TargetType="Panel">
 		<Setter Property="Background" Value="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
 	</Style>
 

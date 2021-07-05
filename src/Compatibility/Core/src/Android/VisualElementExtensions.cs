@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (self == null)
 				throw new ArgumentNullException(nameof(self));
 
-			IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(self);
+			IVisualElementRenderer renderer = Platform.GetRenderer(self);
 
 			return renderer;
 		}
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				parent = parent?.RealParent;
 			}
 
-			while (!Application.IsApplicationOrNull(root.RealParent))
+			while (!Application.IsApplicationOrWindowOrNull(root.RealParent))
 			{
 				root = (Page)root.RealParent;
 				if (root.GetRenderer() is ILifeCycleState lcs)

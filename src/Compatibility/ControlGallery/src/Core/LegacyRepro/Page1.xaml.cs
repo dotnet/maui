@@ -7,9 +7,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
 
 namespace App2
 {
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class Page1 : ContentPage
 	{
 		public Page1()

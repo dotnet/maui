@@ -81,8 +81,8 @@
     </CreateCSharpManifestResourceName>
 
     <ItemGroup>
-      <AdditionalFiles Include="@(_MauiXamlWithResourceNames)" ManifestResourceName="%(ManifestResourceName)" TargetPath="%(TargetPath)" ItemSpec="%(OriginalItemSpec)" GenKind="Xaml"/>
-      <AdditionalFiles Include="@(_MauiCssWithResourceNames)" ManifestResourceName="%(ManifestResourceName)" TargetPath="%(TargetPath)" ItemSpec="%(OriginalItemSpec)" GenKind="Css"/>
+      <AdditionalFiles Include="@(_MauiXamlWithResourceNames)" ManifestResourceName="%(_MauiXamlWithResourceNames.ManifestResourceName)" TargetPath="%(_MauiXamlWithResourceNames.TargetPath)" ItemSpec="%(_MauiXamlWithResourceNames.OriginalItemSpec)" GenKind="Xaml"/>
+      <AdditionalFiles Include="@(_MauiCssWithResourceNames)" ManifestResourceName="%(_MauiCssWithResourceNames.ManifestResourceName)" TargetPath="%(_MauiCssWithResourceNames.TargetPath)" ItemSpec="%(_MauiCssWithResourceNames.OriginalItemSpec)" GenKind="Css"/>
       <_MauiXamlWithResourceNames Remove="@(_MauiXamlWithResourceNames)" />
       <_MauiXamlWithTargetPath Remove="@(_MauiXamlWithTargetPath)" />
       <_MauiCssWithResourceNames Remove="@(_MauiCssWithResourceNames)" />
@@ -129,6 +129,7 @@
 			OptimizeIL = "true"
 			DebugSymbols = "$(DebugSymbols)"
 			DebugType = "$(DebugType)"
+      DefaultCompile = "true"
 			ValidateOnly = "$(_MauiXamlCValidateOnly)"
 			KeepXamlResources = "$(MauiKeepXamlResources)" />
 		<Touch Files="$(IntermediateOutputPath)XamlC.stamp" AlwaysCreate="True" />
