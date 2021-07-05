@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ValueChanged -= OnProgressBarValueChanged;
 		}
 
-		protected override void SetupDefaults(ProgressBar nativeView)
+		void SetupDefaults(ProgressBar nativeView)
 		{
 			_foregroundDefault = nativeView.GetForegroundCache();
 		}
