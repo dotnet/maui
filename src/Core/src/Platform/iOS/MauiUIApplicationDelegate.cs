@@ -11,10 +11,21 @@ namespace Microsoft.Maui
 	public class MauiUIApplicationDelegate<TStartup> : MauiUIApplicationDelegate
 		where TStartup : IStartup, new()
 	{
+		protected override IStartup OnCreateStartup() => new TStartup();
+	}
+
+	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
+	{
+		protected MauiUIApplicationDelegate()
+		{
+			Current = this;
+		}
+
+		protected abstract IStartup OnCreateStartup();
 
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			var startup = new TStartup();
+			var startup = OnCreateStartup();
 
 			var host = startup
 				.CreateAppHostBuilder()
@@ -117,14 +128,6 @@ namespace Microsoft.Maui
 		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
-		}
-	}
-
-	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
-	{
-		protected MauiUIApplicationDelegate()
-		{
-			Current = this;
 		}
 
 		public static MauiUIApplicationDelegate Current { get; private set; } = null!;

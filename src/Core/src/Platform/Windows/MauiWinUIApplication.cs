@@ -9,11 +9,25 @@ namespace Microsoft.Maui
 	public class MauiWinUIApplication<TStartup> : MauiWinUIApplication
 		where TStartup : IStartup, new()
 	{
+		protected override IStartup OnCreateStartup() => new TStartup();
+	}
+
+	public abstract class MauiWinUIApplication : UI.Xaml.Application
+	{
+		protected abstract IStartup OnCreateStartup();
+
+		public virtual UI.Xaml.Window CreateWindow() =>
+			new MauiWinUIWindow();
+
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
 			LaunchActivatedEventArgs = args;
 
-			var startup = new TStartup();
+			// TODO: This should not be here. CreateWindow should do it.
+			MainWindow = new MauiWinUIWindow();
+
+			var startup = OnCreateStartup() ??
+				throw new InvalidOperationException($"A valid startup object must be provided by overriding {nameof(OnCreateStartup)}.");
 
 			var host = startup
 				.CreateAppHostBuilder()
@@ -53,13 +67,6 @@ namespace Microsoft.Maui
 		}
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
-		}
-	}
-
-	public abstract class MauiWinUIApplication : UI.Xaml.Application
-	{
-		protected MauiWinUIApplication()
 		{
 		}
 
