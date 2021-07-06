@@ -145,6 +145,8 @@ namespace Microsoft.Maui
 
 		public static new MauiApplication Current { get; private set; } = null!;
 
+		public Window MainWindow { get; protected set; } = null!;
+
 		public IServiceProvider Services { get; protected set; } = null!;
 
 		public IApplication Application { get; protected set; } = null!;

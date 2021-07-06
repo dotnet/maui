@@ -1,4 +1,5 @@
 using System;
+using ElmSharp;
 
 namespace Microsoft.Maui
 {
@@ -33,5 +34,6 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public Window? Window => Context?.MainWindow;
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Tizen.Applications;
 using ElmSharp;
 using Microsoft.Maui.Handlers;
 
@@ -18,11 +19,12 @@ namespace Microsoft.Maui
 			var handler = view.Handler;
 
 			if (handler == null)
-			{
-				handler = context.Handlers.GetHandler(view.GetType());
+				handler = context.Handlers.GetHandler(view.GetType()) as IViewHandler;
 
-				if (handler == null)
-					throw new Exception($"Handler not found for view {view}");
+			if (handler == null)
+				throw new Exception($"Handler not found for view {view} or was not {nameof(IViewHandler)}.");
+
+			handler.SetMauiContext(context);
 
 				handler.SetMauiContext(context);
 
@@ -34,7 +36,6 @@ namespace Microsoft.Maui
 			if (!(handler.NativeView is EvasObject result))
 			{
 				throw new InvalidOperationException($"Unable to convert {view} to {typeof(EvasObject)}");
-			}
 
 			// Root content view should register to LayoutUpdated() callback.
 			if (isRoot && handler is LayoutHandler layoutHandler)
@@ -43,6 +44,27 @@ namespace Microsoft.Maui
 			}
 
 			return result;
+		}
+
+		public static void SetWindow(this Window nativeWindow, IWindow window, IMauiContext mauiContext)
+		{
+			_ = nativeWindow ?? throw new ArgumentNullException(nameof(nativeWindow));
+			_ = window ?? throw new ArgumentNullException(nameof(window));
+			_ = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
+
+			var handler = window.Handler as IWindowHandler;
+			if (handler == null)
+				handler = mauiContext.Handlers.GetHandler(window.GetType()) as IWindowHandler;
+
+			if (handler == null)
+				throw new Exception($"Handler not found for view {window} or was not {nameof(IWindowHandler)}'");
+
+			handler.SetMauiContext(mauiContext);
+
+			window.Handler = handler;
+
+			if (handler.VirtualView != window)
+				handler.SetVirtualView(window);
 		}
 	}
 }
