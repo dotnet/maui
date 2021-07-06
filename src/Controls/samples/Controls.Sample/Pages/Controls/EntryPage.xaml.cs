@@ -1,10 +1,10 @@
 ﻿namespace Maui.Controls.Sample.Pages
 {
-    public partial class EntryPage
-    {
-        public EntryPage()
-        {
-            InitializeComponent();
-        }
-    }
+	public partial class EntryPage
+	{
+		public EntryPage()
+		{
+			InitializeComponent();
+		}
+	}
 }

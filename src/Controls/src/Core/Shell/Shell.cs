@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var element = (Element)bindable;
 
-			while (!Application.IsApplicationOrNull(element))
+			while (!Application.IsApplicationOrWindowOrNull(element))
 			{
 				if (element is Shell shell)
 					shell.NotifyFlyoutBehaviorObservers();
@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls
 			var item = (Element)bindable;
 			var source = item;
 
-			while (!Application.IsApplicationOrNull(item))
+			while (!Application.IsApplicationOrWindowOrNull(item))
 			{
 				if (item is IShellController shell)
 				{
@@ -358,7 +358,7 @@ namespace Microsoft.Maui.Controls
 					target = pivot;
 				}
 
-				while (!Application.IsApplicationOrNull(leaf))
+				while (!Application.IsApplicationOrWindowOrNull(leaf))
 				{
 					if (leaf == target)
 					{
@@ -1073,7 +1073,7 @@ namespace Microsoft.Maui.Controls
 			bool anySet = false;
 			ShellAppearance result = new ShellAppearance();
 			// Now we walk up
-			while (!Application.IsApplicationOrNull(pivot))
+			while (!Application.IsApplicationOrWindowOrNull(pivot))
 			{
 				if (pivot is ShellContent)
 					foundShellContent = true;

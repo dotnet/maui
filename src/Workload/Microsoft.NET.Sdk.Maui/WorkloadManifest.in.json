@@ -23,6 +23,7 @@
       ]
     },
     "maui-core": {
+      "abstract": true,
       "description": ".NET MAUI SDK Core Packages",
       "packs": [
           "Microsoft.AspNetCore.Components.WebView.Maui",

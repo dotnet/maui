@@ -24,11 +24,11 @@ namespace Microsoft.Maui.Handlers
 			return _timePicker;
 		}
 
-		protected override void SetupDefaults(MauiTimePicker nativeView)
+		void SetupDefaults(MauiTimePicker nativeView)
 		{
 			DefaultBackground = nativeView.Background;
 
-			base.SetupDefaults(nativeView);
+
 		}
 
 		protected override void DisconnectHandler(MauiTimePicker nativeView)

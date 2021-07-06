@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				//TODO: Handle this with AppBuilderHost
 				try
 				{
-					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType());
+					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(Forms.MauiContext);
 				}
 				catch
@@ -100,6 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				else if (handler is INativeViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
+					element.Handler = handler;
 					SetRenderer(element, renderer);
 				}
 			}
@@ -126,11 +127,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_page = page;
 
 			var current = Microsoft.UI.Xaml.Application.Current;
-
-			if (!current.Resources.ContainsKey("RootContainerStyle"))
-			{
-				Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(Forms.GetTabletResources());
-			}
 
 			_container = new Canvas
 			{

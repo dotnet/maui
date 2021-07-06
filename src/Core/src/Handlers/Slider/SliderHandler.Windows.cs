@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 			_pointerReleasedHandler = null;
 		}
 
-		protected override void SetupDefaults(MauiSlider nativeView)
+		void SetupDefaults(MauiSlider nativeView)
 		{
 			DefaultForegroundColor = nativeView.Foreground;
 			DefaultBackgroundColor = nativeView.Background;

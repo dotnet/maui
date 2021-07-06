@@ -344,16 +344,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 					_toolbarTracker.CollectionChanged += ToolbarTrackerOnCollectionChanged;
 				}
 
-				var parents = new List<Page>();
-				Page root = Element;
-				while (!Application.IsApplicationOrNull(root.RealParent))
-				{
-					root = (Page)root.RealParent;
-					parents.Add(root);
-				}
-
 				_toolbarTracker.Target = e.NewElement;
-				_toolbarTracker.AdditionalTargets = parents;
+				_toolbarTracker.AdditionalTargets = Element.GetParentPages();
 				UpdateMenu();
 
 				var navController = (INavigationPageController)e.NewElement;
@@ -958,8 +950,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 						toggle.SyncState();
 					}
 
-					var activity = (AppCompatActivity)context.GetActivity();
-					var icon = new DrawerArrowDrawable(activity.SupportActionBar.ThemedContext);
+					var icon = new DrawerArrowDrawable(context.GetThemedContext());
 					icon.Progress = 1;
 					bar.NavigationIcon = icon;
 

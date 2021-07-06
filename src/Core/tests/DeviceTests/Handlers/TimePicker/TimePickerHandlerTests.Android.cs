@@ -2,8 +2,10 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -89,6 +91,13 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return -1;
+		}
+
+		Color GetNativeTextColor(TimePickerHandler timePickerHandler)
+		{
+			int currentTextColorInt = GetNativeTimePicker(timePickerHandler).CurrentTextColor;
+			AColor currentTextColor = new AColor(currentTextColorInt);
+			return currentTextColor.ToColor();
 		}
 
 		double GetNativeUnscaledFontSize(TimePickerHandler timePickerHandler)

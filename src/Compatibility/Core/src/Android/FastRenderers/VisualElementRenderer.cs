@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		bool _disposed;
 
 		IVisualElementRenderer _renderer;
-		readonly GestureManager _gestureManager;
 		readonly AutomationPropertiesProvider _automationPropertiesProvider;
 		readonly EffectControlProvider _effectControlProvider;
 
@@ -21,7 +20,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			_renderer = renderer;
 			_renderer.ElementPropertyChanged += OnElementPropertyChanged;
 			_renderer.ElementChanged += OnElementChanged;
-			_gestureManager = new GestureManager(_renderer);
 			_automationPropertiesProvider = new AutomationPropertiesProvider(_renderer);
 
 			_effectControlProvider = new EffectControlProvider(_renderer?.View);
@@ -44,11 +42,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				return;
 
 			Control.UpdateFlowDirection(Element);
-		}
-
-		public bool OnTouchEvent(MotionEvent e)
-		{
-			return _gestureManager.OnTouchEvent(e);
 		}
 
 		public void Dispose()
@@ -80,7 +73,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 					_renderer = null;
 				}
 
-				_gestureManager?.Dispose();
 				_automationPropertiesProvider?.Dispose();
 			}
 		}
@@ -101,6 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 
 			EffectUtilities.RegisterEffectControlProvider(this, e.OldElement, e.NewElement);
+
 			Performance.Stop(reference);
 		}
 
