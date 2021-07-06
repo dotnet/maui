@@ -43,9 +43,9 @@ namespace Microsoft.Maui
 		public static void UpdateMaximumTrackColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultBackgroundColor)
 		{
 			if (slider.MaximumTrackColor.IsDefault())
-				nativeSlider.Background = defaultBackgroundColor;
+				nativeSlider.BorderBrush = defaultBackgroundColor;
 			else
-				nativeSlider.Background = slider.MaximumTrackColor.ToNative();
+				nativeSlider.BorderBrush = slider.MaximumTrackColor.ToNative();
 		}
 
 		public static void UpdateThumbColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultThumbColor)

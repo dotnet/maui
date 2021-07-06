@@ -51,18 +51,7 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
-                                <VisualState x:Name="Pressed">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb"
-                                           Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightChromeHighBrush}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb"
-                                           Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightChromeHighBrush}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Pressed" />
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HeaderContentPresenter"
@@ -113,14 +102,6 @@
                                 </VisualState>
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalTrackRect"
-                                           Storyboard.TargetProperty="Fill">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalTrackRect"
-                                           Storyboard.TargetProperty="Fill">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlForegroundBaseMediumBrush}" />
-                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb"
                                            Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightChromeAltLowBrush}" />
@@ -160,7 +141,7 @@
                                 </Grid.RowDefinitions>
                                 <Rectangle 
                                     x:Name="HorizontalTrackRect"
-                                    Fill="{TemplateBinding Background}"
+                                    Fill="{TemplateBinding BorderBrush}"
                                     Height="{ThemeResource SliderTrackThemeHeight}"
                                     Grid.Row="1"
                                     Grid.ColumnSpan="3" />
@@ -231,7 +212,7 @@
                                 </Grid.ColumnDefinitions>
                                 <Rectangle
                                     x:Name="VerticalTrackRect"
-                                    Fill="{TemplateBinding Background}"
+                                    Fill="{TemplateBinding BorderBrush}"
                                     Width="{ThemeResource SliderTrackThemeHeight}"
                                     Grid.Column="1"
                                     Grid.RowSpan="3" />
