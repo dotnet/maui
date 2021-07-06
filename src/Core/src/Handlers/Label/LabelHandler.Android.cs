@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateLineHeight(label, LineSpacingAddDefault, LineSpacingMultDefault);
+			handler.NativeView?.UpdateLineHeight(label);
 		}
 	}
 }
