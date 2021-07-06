@@ -16,6 +16,21 @@
                 Style="{StaticResource Headline}"/>
             <Slider
                 IsEnabled="False"/>
+            <Label
+                Text="MinimumTrackColor"
+                Style="{StaticResource Headline}"/>
+            <Slider
+                MinimumTrackColor="LightBlue"/>
+            <Label
+                Text="MaximumTrackColor"
+                Style="{StaticResource Headline}"/>
+            <Slider
+                MaximumTrackColor="Pink"/>
+            <Label
+                Text="ThumbColor"
+                Style="{StaticResource Headline}"/>
+            <Slider
+                ThumbColor="Orange"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
