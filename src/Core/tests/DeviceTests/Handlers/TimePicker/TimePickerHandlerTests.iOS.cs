@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using UIKit;
 using Xunit;
@@ -61,6 +62,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		MauiTimePicker GetNativeTimePicker(TimePickerHandler timePickerHandler) =>
 			(MauiTimePicker)timePickerHandler.NativeView;
+
+		Color GetNativeTextColor(TimePickerHandler timePickerHandler) =>
+			GetNativeTimePicker(timePickerHandler).TextColor.ToColor();
 
 		async Task ValidateTime(ITimePicker timePickerStub, Action action = null)
 		{

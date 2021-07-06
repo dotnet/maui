@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Pages
 {
-	public partial class HorizontalStackLayoutPage 
+	public partial class HorizontalStackLayoutPage
 	{
 		public HorizontalStackLayoutPage()
 		{

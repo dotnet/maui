@@ -2,8 +2,10 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -116,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		MauiDatePicker GetNativeDatePicker(DatePickerHandler datePickerHandler) =>
-			(MauiDatePicker)datePickerHandler.NativeView;
+			datePickerHandler.NativeView;
 
 		DateTime GetNativeDate(DatePickerHandler datePickerHandler)
 		{
@@ -124,6 +126,13 @@ namespace Microsoft.Maui.DeviceTests
 			DateTime.TryParse(dateString, out DateTime result);
 
 			return result;
+		}
+
+		Color GetNativeTextColor(DatePickerHandler datePickerHandler)
+		{
+			int currentTextColorInt = GetNativeDatePicker(datePickerHandler).CurrentTextColor;
+			AColor currentTextColor = new AColor(currentTextColorInt);
+			return currentTextColor.ToColor();
 		}
 
 		long GetNativeMinimumDate(DatePickerHandler datePickerHandler)
