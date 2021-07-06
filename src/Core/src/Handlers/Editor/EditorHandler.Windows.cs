@@ -28,12 +28,12 @@ namespace Microsoft.Maui.Handlers
 			nativeView.LostFocus -= OnLostFocus;
 		}
 
-		protected override void SetupDefaults(MauiTextBox nativeView)
+		void SetupDefaults(MauiTextBox nativeView)
 		{
 			_placeholderDefaultBrush = nativeView.PlaceholderForeground;
 			_defaultPlaceholderColorFocusBrush = nativeView.PlaceholderForegroundFocusBrush;
 
-			base.SetupDefaults(nativeView);
+			
 		}
 
 		public static void MapText(EditorHandler handler, IEditor editor)

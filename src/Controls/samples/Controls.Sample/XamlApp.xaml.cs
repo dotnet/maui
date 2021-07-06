@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample
 		public XamlApp(IServiceProvider services, ITextService textService)
 		{
 			InitializeComponent();
-		
+
 			Services = services;
 
 			Debug.WriteLine($"The AccentColor color is {Resources["AccentColor"]}");

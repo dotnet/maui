@@ -433,7 +433,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			_isPanning = true;
 
-			foreach (PanGestureRecognizer recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
+			foreach (IPanGestureController recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
 			{
 				if (!_wasPanGestureStartedSent)
 				{
@@ -455,7 +455,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			var scaleOriginPoint = new Point(translationPoint.X / view.Width, translationPoint.Y / view.Height);
 			IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
-			foreach (PinchGestureRecognizer recognizer in pinchGestures)
+			foreach (IPinchGestureController recognizer in pinchGestures)
 			{
 				if (!_wasPinchGestureStartedSent)
 				{
@@ -632,7 +632,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (view == null || !_isPanning)
 				return;
 
-			foreach (PanGestureRecognizer recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
+			foreach (IPanGestureController recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
 			{
 				if (success)
 				{
@@ -655,7 +655,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 
 			IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
-			foreach (PinchGestureRecognizer recognizer in pinchGestures)
+			foreach (IPinchGestureController recognizer in pinchGestures)
 			{
 				if (success)
 				{

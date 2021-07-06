@@ -25,5 +25,7 @@
 		public static IAndroidLifecycleBuilder OnSaveInstanceState(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnSaveInstanceState del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnStart(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnStart del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnStop(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnStop del) => lifecycle.OnEvent(del);
+
+		internal static IAndroidLifecycleBuilder OnMauiContextCreated(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnMauiContextCreated del) => lifecycle.OnEvent(del);
 	}
 }

@@ -9,10 +9,6 @@
   <PropertyGroup Condition=" '$(CI)' == 'true' ">
     <PublishTrimmed Condition=" '$(TargetFramework)' == 'net6.0-ios' or '$(TargetFramework)' == 'net6.0-maccatalyst' ">false</PublishTrimmed>
   </PropertyGroup>
-  <!-- Temporarily disable runtimeconfig.json under .NET framework MSBuild -->
-  <PropertyGroup Condition=" '$(MSBuildRuntimeType)' == 'Full' and ('$(TargetFramework)' == 'net6.0-android' or '$(TargetFramework)' == 'net6.0-ios' or '$(TargetFramework)' == 'net6.0-maccatalyst') ">
-    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
-  </PropertyGroup>
 
   <PropertyGroup Condition="'$(SingleProject)' == 'true'">
     <!-- Required - Enable Launch Profiles for .NET 6 iOS/Android -->

@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public int detaching = 0;
 			public int detached = 0;
 
-			public override void OnAttachedHandler()
+			protected override void OnAttachedHandler()
 			{
 				attached++;
 
@@ -124,9 +124,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					Assert.Fail("Attaching/Attached fire mismatch");
 			}
 
-			public override void OnAttachingHandler() => attaching++;
-			public override void OnDetachingHandler() => detaching++;
-			public override void OnDetachedHandler()
+			protected override void OnAttachingHandler() => attaching++;
+			protected override void OnDetachingHandler() => detaching++;
+			protected override void OnDetachedHandler()
 			{
 				detached++;
 

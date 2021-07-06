@@ -29,6 +29,7 @@ namespace Microsoft.Maui
 				return;
 
 			var brush = textStyle.TextColor.ToNative();
+
 			textBox.Foreground = brush;
 			textBox.ForegroundFocusBrush = brush;
 		}
@@ -46,7 +47,7 @@ namespace Microsoft.Maui
 		public static void UpdateReturnType(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.InputScope = entry.ReturnType.ToNative();
-		}
+    	}
 
 		public static void UpdateClearButtonVisibility(this MauiTextBox textBox, IEntry entry)
 		{
@@ -119,7 +120,12 @@ namespace Microsoft.Maui
 			if (currentControlText.Length > maxLength)
 				textBox.Text = currentControlText.Substring(0, maxLength);
 		}
-
+    
+		public static void UpdateIsPassword(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.IsPassword = entry.IsPassword;
+		}
+    
 		public static void UpdateHorizontalTextAlignment(this MauiTextBox textBox, IEntry entry)
 		{
 			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
@@ -131,6 +137,6 @@ namespace Microsoft.Maui
 		public static void UpdateVerticalTextAlignment(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.VerticalAlignment = entry.VerticalTextAlignment.ToNativeVerticalAlignment();
-		}
+    }
 	}
 }

@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(CarouselViewPage), "CarouselView",
 				"CarouselView displays a scrollable list of data items."),
-					
+
 			new SectionModel(typeof(FramePage), "Frame",
 				"The Frame class derives from ContentView and displays a border, or frame, around its child."),
 

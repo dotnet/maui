@@ -66,6 +66,9 @@
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
       <Name>Controls.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml.csproj">
+      <Name>Controls.Xaml</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj">
       <Project>{d816b818-f58f-4738-93ae-924efab7a07f}</Project>
       <Name>Controls.CustomAttributes</Name>
