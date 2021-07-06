@@ -26,6 +26,8 @@ namespace Microsoft.Maui.Resizetizer
 
 		public SKColor? TintColor { get; set; }
 
+		public SKColor? Color { get; set; }
+
 		public bool IsVector => IsVectorFilename(Filename);
 
 		public bool IsAppIcon { get; set; }

@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				var id = Control.Id;
 				if (id == -1)
-					id = Control.Id = AppCompat.Platform.GenerateViewId();
+					id = Control.Id = Platform.GenerateViewId();
 
 				var renderer = elemValue?.GetRenderer();
 				renderer?.SetLabelFor(id);

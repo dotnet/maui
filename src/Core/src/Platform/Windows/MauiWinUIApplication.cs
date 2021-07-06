@@ -3,10 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.UI;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui
 {
@@ -17,9 +13,6 @@ namespace Microsoft.Maui
 		{
 			LaunchActivatedEventArgs = args;
 
-			// TODO: This should not be here. CreateWindow should do it.
-			MainWindow = new MauiWinUIWindow();
-
 			var startup = new TStartup();
 
 			var host = startup
@@ -29,54 +22,34 @@ namespace Microsoft.Maui
 				.Build();
 
 			Services = host.Services;
+
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
+
 			Application = Services.GetRequiredService<IApplication>();
 
-			var mauiContext = new MauiContext(Services);
+			var winuiWndow = CreateNativeWindow(args);
+
+			MainWindow = winuiWndow;
+
+			MainWindow.Activate();
+
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
+		}
+
+		UI.Xaml.Window CreateNativeWindow(UI.Xaml.LaunchActivatedEventArgs? args = null)
+		{
+			var winuiWndow = new MauiWinUIWindow();
+
+			var mauiContext = new MauiContext(Services, winuiWndow);
+
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
 			var activationState = new ActivationState(mauiContext, args);
 			var window = Application.CreateWindow(activationState);
 
-			var content = (window.View as IView);
+			winuiWndow.SetWindow(window, mauiContext);
 
-			var canvas = CreateRootContainer();
-
-			var nativeContent = content.ToNative(mauiContext);
-
-			canvas.Children.Add(nativeContent);
-
-			MainWindow.Content = canvas;
-
-			Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
-
-			MainWindow.SizeChanged += (sender, sizeChangedArgs) =>
-			{
-				// TODO ezhart We need a better signalling mechanism between the PagePanel and the ContentPage for invalidation
-				content.InvalidateMeasure();
-
-				// TODO ezhart This is not ideal, but we need to force the canvas to match the window size
-				// We probably need a better root control than Canvas, really
-				canvas.Width = MainWindow.Bounds.Width;
-				canvas.Height = MainWindow.Bounds.Height;
-
-				// TODO ezhart Once we've got navigation up and running, this will need to be updated so it 
-				// affects the navigation root or the current page. Again, Canvas is probably not the right root, but
-				// I haven't been able to get a custom Panel to handle the drawing correctly yet.
-				nativeContent.Width = canvas.ActualWidth;
-				nativeContent.Height = canvas.ActualHeight;
-			};
-
-			MainWindow.Activate();
-		}
-
-		Canvas CreateRootContainer()
-		{
-			// TODO WINUI should this be some other known constant or via some mechanism? Or done differently?
-			Resources.TryGetValue("RootContainerStyle", out object style);
-
-			return new Canvas
-			{
-				Style = style as UI.Xaml.Style
-			};
+			return winuiWndow;
 		}
 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
@@ -94,7 +67,7 @@ namespace Microsoft.Maui
 
 		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
 
-		public MauiWinUIWindow MainWindow { get; protected set; } = null!;
+		public UI.Xaml.Window MainWindow { get; protected set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

@@ -1,6 +1,6 @@
 param(
   [string] $configuration = 'Debug',
-  [string] $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Preview\MSBuild\Current\Bin\MSBuild.exe"
+  [string] $msbuild
 )
 
 $ErrorActionPreference = "Stop"
@@ -8,6 +8,7 @@ Write-Host $msbuild
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
+$blazorWebViewSln = Join-Path $PSScriptRoot ../BlazorWindowsDesktop-net6.sln
 $slnTasks = Join-Path $PSScriptRoot ../Microsoft.Maui.BuildTasks-net6.sln
 
 # Bootstrap ./bin/dotnet/
@@ -20,6 +21,19 @@ $dotnet = (Get-Item $dotnet).FullName
 
 if ($IsWindows)
 {
+    if (-not $msbuild)
+    {
+        # If MSBuild path isn't specified, use the standard location of 'vswhere' to determine an appropriate MSBuild to use.
+        # Learn more about VSWhere here: https://github.com/microsoft/vswhere/wiki/Find-MSBuild
+        $msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -prerelease -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+
+        if (-not $msbuild)
+        {
+            throw 'Could not locate MSBuild automatically. Set the $msbuild parameter of this script to provide a location.'
+        }
+        Write-Host "Found MSBuild at ${msbuild}"
+    }
+
     # Modify global.json, so the IDE can load
     $globaljson = Join-Path $PSScriptRoot ../global.json
     [xml] $xml = Get-Content (Join-Path $PSScriptRoot Versions.props)
@@ -71,7 +85,7 @@ if ($IsWindows)
             /t:build `
             /p:Packing=true `
             /bl:"$artifacts/maui-build-$configuration.binlog"
-        if (!$?) { throw "Build failed." }
+        if (!$?) { throw "Build .NET MAUI failed." }
 
         & $msbuild $sln `
             /p:configuration=$configuration `
@@ -79,7 +93,25 @@ if ($IsWindows)
             /t:pack `
             /p:Packing=true `
             /bl:"$artifacts/maui-pack-$configuration.binlog"
-        if (!$?) { throw "Pack failed." }
+        if (!$?) { throw "Pack .NET MAUI failed." }
+
+        # Then build and pack the BlazorWebView projects for WPF/WinForms
+        & $msbuild $blazorWebViewSln `
+            /p:configuration=$configuration `
+            /p:SymbolPackageFormat=snupkg `
+            /restore `
+            /t:build `
+            /p:Packing=true `
+            /bl:"$artifacts/blazorwebview-build-$configuration.binlog"
+        if (!$?) { throw "Build BlazorWebView failed." }
+
+        & $msbuild $blazorWebViewSln `
+            /p:configuration=$configuration `
+            /p:SymbolPackageFormat=snupkg `
+            /t:pack `
+            /p:Packing=true `
+            /bl:"$artifacts/blazorwebview-pack-$configuration.binlog"
+        if (!$?) { throw "Pack BlazorWebView failed." }
     }
     finally
     {

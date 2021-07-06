@@ -7,13 +7,13 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="16d22843-fa2c-4cfb-9d79-176fce2a90a8"
-    Publisher="CN=shane"
+    Name="f9e4fa3e-3505-4742-9b2b-d1acdaff4ec8"
+    Publisher="CN=.NET Foundation"
     Version="1.0.0.0" />
 
   <Properties>
-    <DisplayName>Maui.Controls.Sample.WinUI3 (Package)</DisplayName>
-    <PublisherDisplayName>shane</PublisherDisplayName>
+    <DisplayName>.NET MAUI Controls</DisplayName>
+    <PublisherDisplayName>.NET Foundation</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 
@@ -31,8 +31,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Maui.Controls.Sample.WinUI3 (Package)"
-        Description="Maui.Controls.Sample.WinUI3 (Package)"
+        DisplayName=".NET MAUI Controls"
+        Description=".NET MAUI Controls sample application"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png">

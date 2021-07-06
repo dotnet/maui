@@ -1,5 +1,6 @@
 #addin nuget:?package=Cake.Android.Adb&version=3.2.0
 #addin nuget:?package=Cake.Android.AvdManager&version=2.2.0
+#load "../cake/helpers.cake"
 
 string TARGET = Argument("target", "Test");
 
@@ -9,6 +10,9 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE
 string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 
 // optional
+var USE_DOTNET = Argument("dotnet", false);
+var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
+var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net6.0-android" : ""));
 var BINLOG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? PROJECT + ".binlog");
 var TEST_APP = Argument("app", EnvironmentVariable("ANDROID_TEST_APP") ?? "");
 var TEST_APP_PACKAGE_NAME = Argument("package", EnvironmentVariable("ANDROID_TEST_APP_PACKAGE_NAME") ?? "");
@@ -24,10 +28,8 @@ bool DEVICE_BOOT = Argument("boot", true);
 bool DEVICE_BOOT_WAIT = Argument("wait", true);
 
 // set up env
-var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT") ?? EnvironmentVariable("ANDROID_HOME"));
-if (string.IsNullOrEmpty(ANDROID_SDK_ROOT)) {
-	throw new Exception("Environment variable 'ANDROID_SDK_ROOT' or 'ANDROID_HOME' must be set to the Android SDK root.");
-}
+var ANDROID_SDK_ROOT = GetAndroidSDKPath();
+
 System.Environment.SetEnvironmentVariable("PATH",
 	$"{ANDROID_SDK_ROOT}/tools/bin" + System.IO.Path.PathSeparator +
 	$"{ANDROID_SDK_ROOT}/platform-tools" + System.IO.Path.PathSeparator +
@@ -133,18 +135,34 @@ Task("Build")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
 	.Does(() =>
 {
-	MSBuild(PROJECT.FullPath, c => {
-		c.Configuration = CONFIGURATION;
-		c.Restore = true;
-		c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
-		c.Targets.Clear();
-		c.Targets.Add("Build");
-		c.Targets.Add("SignAndroidPackage");
-		c.BinaryLogger = new MSBuildBinaryLogSettings {
-			Enabled = true,
-			FileName = BINLOG,
-		};
-	});
+	if (USE_DOTNET)
+	{
+		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+			Configuration = CONFIGURATION,
+			Framework = TARGET_FRAMEWORK,
+			ArgumentCustomization = args => args
+				.Append("/p:EmbedAssembliesIntoApk=true")
+				.Append("/bl:" + BINLOG),
+			ToolPath = DOTNET_PATH,
+		});
+	}
+	else
+	{
+		MSBuild(PROJECT.FullPath, c => {
+			c.Configuration = CONFIGURATION;
+			c.Restore = true;
+			c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
+			if (!string.IsNullOrEmpty(TARGET_FRAMEWORK))
+				c.Properties["TargetFramework"] = new List<string> { TARGET_FRAMEWORK };
+			c.Targets.Clear();
+			c.Targets.Add("Build");
+			c.Targets.Add("SignAndroidPackage");
+			c.BinaryLogger = new MSBuildBinaryLogSettings {
+				Enabled = true,
+				FileName = BINLOG,
+			};
+		});
+	}
 });
 
 Task("Test")
@@ -154,7 +172,7 @@ Task("Test")
 	if (string.IsNullOrEmpty(TEST_APP)) {
 		if (string.IsNullOrEmpty(PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION).FullPath;
+		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).FullPath;
 		var apps = GetFiles(binDir + "/*-Signed.apk");
 		if (apps.Any()) {
 			TEST_APP = apps.FirstOrDefault().FullPath;

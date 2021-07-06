@@ -1,10 +1,16 @@
+using System;
+using System.Linq;
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public abstract class Shape : View
+	public abstract partial class Shape : View, IShapeView, IShape
 	{
 		public Shape()
 		{
 		}
+
+		public abstract PathF GetPath();
 
 		public static readonly BindableProperty FillProperty =
 			BindableProperty.Create(nameof(Fill), typeof(Brush), typeof(Shape), null,
@@ -90,6 +96,45 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (Stretch)GetValue(AspectProperty); }
 		}
 
+		IShape IShapeView.Shape => this;
+
+		PathAspect IShapeView.Aspect
+			=> Aspect switch
+			{
+				Stretch.Fill => PathAspect.Stretch,
+				Stretch.Uniform => PathAspect.AspectFit,
+				Stretch.UniformToFill => PathAspect.AspectFill,
+				Stretch.None => PathAspect.None,
+				_ => PathAspect.None
+			};
+
+		Paint IShapeView.Fill => Fill;
+
+		Paint IShapeView.Stroke => Stroke;
+
+		LineCap IShapeView.StrokeLineCap =>
+			StrokeLineCap switch
+			{
+				PenLineCap.Flat => LineCap.Butt,
+				PenLineCap.Round => LineCap.Round,
+				PenLineCap.Square => LineCap.Square,
+				_ => LineCap.Butt
+			};
+
+		LineJoin IShapeView.StrokeLineJoin =>
+			StrokeLineJoin switch
+			{
+				PenLineJoin.Round => LineJoin.Round,
+				PenLineJoin.Bevel => LineJoin.Bevel,
+				PenLineJoin.Miter => LineJoin.Miter,
+				_ => LineJoin.Round
+			};
+
+		public float[] StrokeDashPattern
+			=> StrokeDashArray?.Select(a => (float)a)?.ToArray();
+
+		float IShapeView.StrokeMiterLimit => (float)StrokeMiterLimit;
+
 		static void OnBrushChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			((Shape)bindable).UpdateBrushParent((Brush)newValue);
@@ -99,6 +144,68 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			if (brush != null)
 				brush.Parent = this;
+		}
+
+		PathF IShape.PathForBounds(Graphics.Rectangle viewBounds)
+		{
+			var path = GetPath();
+
+#if !NETSTANDARD
+			var pathBounds = path.GetBoundsByFlattening();
+
+			AffineTransform transform = null;
+
+			if (Aspect != Stretch.None)
+			{
+				viewBounds.X += StrokeThickness / 2;
+				viewBounds.Y += StrokeThickness / 2;
+				viewBounds.Width -= StrokeThickness;
+				viewBounds.Height -= StrokeThickness;
+
+				float factorX = (float)viewBounds.Width / pathBounds.Width;
+				float factorY = (float)viewBounds.Height / pathBounds.Height;
+
+				if (Aspect == Stretch.Uniform)
+				{
+					var factor = Math.Min(factorX, factorY);
+
+					var width = pathBounds.Width * factor;
+					var height = pathBounds.Height * factor;
+
+					var translateX = (float)((viewBounds.Width - width) / 2 + viewBounds.X);
+					var translateY = (float)((viewBounds.Height - height) / 2 + viewBounds.Y);
+
+					transform = AffineTransform.GetTranslateInstance(-pathBounds.X, -pathBounds.Y);
+					transform.Translate(translateX, translateY);
+					transform.Scale(factor, factor);
+				}
+				else if (Aspect == Stretch.UniformToFill)
+				{
+					var factor = (float)Math.Max(factorX, factorY);
+
+					transform = AffineTransform.GetScaleInstance(factor, factor);
+
+					var translateX = (float)(viewBounds.Left - factor * pathBounds.Left);
+					var translateY = (float)(viewBounds.Top - factor * pathBounds.Top);
+
+					transform.Translate(translateX, translateY);
+				}
+				else if (Aspect == Stretch.Fill)
+				{
+					transform = AffineTransform.GetScaleInstance(factorX, factorY);
+
+					var translateX = (float)(viewBounds.Left - factorX * pathBounds.Left);
+					var translateY = (float)(viewBounds.Top - factorY * pathBounds.Top);
+
+					transform.Translate(translateX, translateY);
+				}
+
+				if (transform != null && !transform.IsIdentity)
+					path.Transform(transform);
+			}
+#endif
+
+			return path;
 		}
 	}
 }

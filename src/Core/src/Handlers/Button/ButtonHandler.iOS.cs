@@ -14,8 +14,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIButton CreateNativeView()
 		{
-			SetControlPropertiesFromProxy();
-			return new UIButton(UIButtonType.System);
+			var button = new UIButton(UIButtonType.System);
+			SetControlPropertiesFromProxy(button);
+			return button;
 		}
 
 		protected override void ConnectHandler(UIButton nativeView)
@@ -36,13 +37,11 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		protected override void SetupDefaults(UIButton nativeView)
+		void SetupDefaults(UIButton nativeView)
 		{
 			ButtonTextColorDefaultNormal = nativeView.TitleColor(UIControlState.Normal);
 			ButtonTextColorDefaultHighlighted = nativeView.TitleColor(UIControlState.Highlighted);
 			ButtonTextColorDefaultDisabled = nativeView.TitleColor(UIControlState.Disabled);
-
-			base.SetupDefaults(nativeView);
 		}
 
 		public static void MapText(ButtonHandler handler, IButton button)
@@ -81,16 +80,13 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateCharacterSpacing(button);
 		}
 
-		void SetControlPropertiesFromProxy()
+		static void SetControlPropertiesFromProxy(UIButton nativeView)
 		{
-			if (NativeView == null)
-				return;
-
 			foreach (UIControlState uiControlState in ControlStates)
 			{
-				NativeView.SetTitleColor(UIButton.Appearance.TitleColor(uiControlState), uiControlState); // If new values are null, old values are preserved.
-				NativeView.SetTitleShadowColor(UIButton.Appearance.TitleShadowColor(uiControlState), uiControlState);
-				NativeView.SetBackgroundImage(UIButton.Appearance.BackgroundImageForState(uiControlState), uiControlState);
+				nativeView.SetTitleColor(UIButton.Appearance.TitleColor(uiControlState), uiControlState); // If new values are null, old values are preserved.
+				nativeView.SetTitleShadowColor(UIButton.Appearance.TitleShadowColor(uiControlState), uiControlState);
+				nativeView.SetBackgroundImage(UIButton.Appearance.BackgroundImageForState(uiControlState), uiControlState);
 			}
 		}
 

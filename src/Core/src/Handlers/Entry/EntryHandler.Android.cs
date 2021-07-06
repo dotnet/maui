@@ -58,9 +58,9 @@ namespace Microsoft.Maui.Handlers
 			ActionListener.Handler = null;
 		}
 
-		protected override void SetupDefaults(AppCompatEditText nativeView)
+		void SetupDefaults(AppCompatEditText nativeView)
 		{
-			base.SetupDefaults(nativeView);
+
 
 			ClearButtonDrawable = GetClearButtonDrawable();
 			DefaultTextColors = nativeView.TextColors;
@@ -91,6 +91,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateHorizontalTextAlignment(entry);
+		}
+
+		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry)
+		{
+			handler?.NativeView?.UpdateVerticalTextAlignment(entry);
 		}
 
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry)
@@ -133,6 +138,16 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateCharacterSpacing(entry);
+		}
+
+		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateCursorPosition(entry);
+		}
+
+		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateSelectionLength(entry);
 		}
 
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)

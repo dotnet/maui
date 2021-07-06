@@ -26,35 +26,33 @@ namespace Microsoft.Maui.Controls.Compatibility
 	public static partial class Forms
 	{
 		const string LogFormat = "[{0}] {1}";
-		private static ApplicationExecutionState s_state;
 
 		//TODO WINUI3 This is set by main page currently because
 		// it's only a single window
 		public static UI.Xaml.Window MainWindow { get; set; }
 
 		public static bool IsInitialized { get; private set; }
+
 		public static IMauiContext MauiContext { get; private set; }
 
-		public static void Init(IActivationState state)
+		public static void Init(IActivationState state, InitializationOptions? options = null)
 		{
-			SetupInit(state.Context, state.LaunchActivatedEventArgs, null, null);
+			SetupInit(state.Context, state.Context.Window, maybeOptions: options);
 		}
 
 		public static void Init(
-			UI.Xaml.LaunchActivatedEventArgs launchActivatedEventArgs,
-			WindowsBasePage mainWindow,
+			UI.Xaml.Window mainWindow,
 			IEnumerable<Assembly> rendererAssemblies = null)
 		{
-			SetupInit(new MauiContext(), launchActivatedEventArgs, mainWindow, rendererAssemblies);
+			SetupInit(new MauiContext(), mainWindow, rendererAssemblies);
 		}
 
 		public static void Init(InitializationOptions options) =>
-			SetupInit(new MauiContext(), options.LaunchActivatedEventArgs, null, null, options);
+			SetupInit(new MauiContext(), null, null, options);
 
 		static void SetupInit(
 			IMauiContext mauiContext,
-			UI.Xaml.LaunchActivatedEventArgs launchActivatedEventArgs,
-			WindowsBasePage mainWindow,
+			UI.Xaml.Window mainWindow,
 			IEnumerable<Assembly> rendererAssemblies = null,
 			InitializationOptions? maybeOptions = null)
 		{
@@ -68,20 +66,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				Log.Listeners.Add(new DelegateLogListener((c, m) => Debug.WriteLine(LogFormat, c, m)));
 
-			}
-
-			if (!UI.Xaml.Application.Current.Resources.ContainsKey("RootContainerStyle"))
-			{
-				UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
-			}
-
-			try
-			{
-				UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(new UI.Xaml.Controls.XamlControlsResources());
-			}
-			catch
-			{
-				Log.Warning("Resources", "Unable to load WinUI resources. Try adding Microsoft.Maui.Controls.Compatibility nuget to UWP project");
 			}
 
 			Device.SetIdiom(TargetIdiom.Tablet);
@@ -123,72 +107,26 @@ namespace Microsoft.Maui.Controls.Compatibility
 			ExpressionSearch.Default = new WindowsExpressionSearch();
 
 			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
-			s_state = launchActivatedEventArgs.UWPLaunchActivatedEventArgs.PreviousExecutionState;
 
-			var dispatcher = mainWindow?.DispatcherQueue ?? System.DispatcherQueue.GetForCurrentThread();
+			var dispatcher = mainWindow?.DispatcherQueue ?? UI.Dispatching.DispatcherQueue.GetForCurrentThread();
 
 			var platformServices = new WindowsPlatformServices(dispatcher);
 
 			Device.PlatformServices = platformServices;
 			Device.PlatformInvalidator = platformServices;
 
-			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
-				RegisterCompatRenderers();
-
 			if (mainWindow != null)
 			{
 				MainWindow = mainWindow;
 
-				//TODO WINUI3
-				Platform.UWP.Platform.SubscribeAlertsAndActionSheets();
-
-				mainWindow.LoadApplication(mainWindow.CreateApplication());
-				mainWindow.Activate();
+				if (mainWindow is WindowsBasePage windowsPage)
+				{
+					windowsPage.LoadApplication(windowsPage.CreateApplication());
+					windowsPage.Activate();
+				}
 			}
 
 			IsInitialized = true;
-		}
-
-		static bool IsInitializedRenderers;
-
-		internal static void RegisterCompatRenderers()
-		{
-			if (IsInitializedRenderers)
-				return;
-
-			IsInitializedRenderers = true;
-
-			// Only need to do this once
-			Registrar.RegisterAll(new[]
-			{
-				typeof(ExportRendererAttribute),
-				typeof(ExportCellAttribute),
-				typeof(ExportImageSourceHandlerAttribute),
-				typeof(ExportFontAttribute)
-			});
-		}
-
-		internal static void RegisterCompatRenderers(
-			Assembly[] assemblies,
-			Assembly defaultRendererAssembly,
-			Action<Type> viewRegistered)
-		{
-			if (IsInitializedRenderers)
-				return;
-
-			IsInitializedRenderers = true;
-
-			// Only need to do this once
-			Controls.Internals.Registrar.RegisterAll(
-				assemblies,
-				defaultRendererAssembly,
-				new[] {
-						typeof(ExportRendererAttribute),
-						typeof(ExportCellAttribute),
-						typeof(ExportImageSourceHandlerAttribute),
-						typeof(ExportFontAttribute)
-					}, default(InitializationFlags),
-				viewRegistered);
 		}
 
 		static FlowDirection GetFlowDirection()
@@ -200,16 +138,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return FlowDirection.RightToLeft;
 
 			return FlowDirection.MatchParent;
-		}
-
-		internal static UI.Xaml.ResourceDictionary GetTabletResources()
-		{
-			var dict = new UI.Xaml.ResourceDictionary
-			{
-				Source = new Uri("ms-appx:///Microsoft.Maui.Controls.Compatibility/WinUI/Resources.xbf")
-			};
-
-			return dict;
 		}
 	}
 }

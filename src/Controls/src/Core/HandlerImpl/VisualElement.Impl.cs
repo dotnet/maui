@@ -1,6 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -8,18 +6,20 @@ namespace Microsoft.Maui.Controls
 	public partial class VisualElement : IFrameworkElement
 	{
 		Semantics _semantics;
-		IViewHandler _handler;
 
 		public Rectangle Frame => Bounds;
 
-		public IViewHandler Handler
+		new public IViewHandler Handler
 		{
-			get => _handler;
-			set
-			{
-				_handler = value;
-				IsPlatformEnabled = _handler != null;
-			}
+			get => base.Handler as IViewHandler;
+			set => base.Handler = value;
+		}
+
+		private protected override void OnHandlerSet()
+		{
+			base.OnHandlerSet();
+
+			IsPlatformEnabled = Handler != null;
 		}
 
 		Paint IFrameworkElement.Background
@@ -34,13 +34,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
-		{
-			base.OnPropertyChanged(propertyName);
-			(Handler)?.UpdateValue(propertyName);
-		}
+		IShape IFrameworkElement.Clip => Clip;
 
-		IFrameworkElement IFrameworkElement.Parent => Parent as IView;
+		IFrameworkElement IFrameworkElement.Parent => Parent as IFrameworkElement;
 
 		public Size DesiredSize { get; protected set; }
 
@@ -54,54 +50,11 @@ namespace Microsoft.Maui.Controls
 			return ArrangeOverride(bounds);
 		}
 
-		// The CloseEnough methods will likely go away once we get rid of the cause (see comments below); if not, we'll
-		// add a proper extension method or add a compare method to MG with a tolerance parameter
-		bool CloseEnough(double a, double b)
-		{
-			const double tolerance = 0.0001;
-
-			return (Math.Abs(a - b) < tolerance);
-		}
-
-		bool CloseEnough(Rectangle currentBounds, Rectangle newBounds)
-		{
-			if (!CloseEnough(currentBounds.X, newBounds.X))
-			{
-				return false;
-			}
-
-			if (!CloseEnough(currentBounds.Y, newBounds.Y))
-			{
-				return false;
-			}
-
-			if (!CloseEnough(currentBounds.Width, newBounds.Width))
-			{
-				return false;
-			}
-
-			if (!CloseEnough(currentBounds.Height, newBounds.Height))
-			{
-				return false;
-			}
-
-			return true;
-		}
-
 		// ArrangeOverride provides a way to allow subclasses (e.g., Layout) to override Arrange even though
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
-			// We check the previous bounds here to avoid getting into a loop caused by the OnSizeAllocated override
-			// in View.cs; the arrange it forces ends up back here and if we have a margin, ComputeFrame will 
-			// keep applying it in a loop until the element disappears. Hopefully we can remove the OnSizeAllocated 
-			// hack at some point and avoid this extra check.
-			if (!CloseEnough(Bounds, bounds))
-			{
-				// Setting Bounds here is equivalent to setting the Frame
-				Bounds = this.ComputeFrame(bounds);
-			}
-
+			Bounds = this.ComputeFrame(bounds);
 			return Frame.Size;
 		}
 

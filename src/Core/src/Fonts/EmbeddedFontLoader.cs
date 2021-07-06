@@ -24,10 +24,18 @@ namespace Microsoft.Maui
 
 		public EmbeddedFontLoader(ILogger<EmbeddedFontLoader>? logger = null)
 #if __ANDROID__
-			: base(Path.GetTempPath(), logger)
+			: base(GetTempPath(), logger)
 #endif
 		{
 			_logger = logger;
 		}
+
+#if __ANDROID__
+		static string GetTempPath()
+		{
+			var ctx = Android.App.Application.Context;
+			return ctx.CacheDir?.AbsolutePath ?? Path.GetTempPath();
+		}
+#endif
 	}
 }

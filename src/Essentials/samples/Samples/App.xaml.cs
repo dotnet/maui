@@ -28,7 +28,6 @@ namespace Samples
 			VersionTracking.Track();
 
 			MainPage = new NavigationPage(new HomePage());
-
 			try
 			{
 				AppActions.OnAppAction += AppActions_OnAppAction;
@@ -103,5 +102,7 @@ namespace Samples
 		{
 			// Handle when your app resumes
 		}
+
+
 	}
 }

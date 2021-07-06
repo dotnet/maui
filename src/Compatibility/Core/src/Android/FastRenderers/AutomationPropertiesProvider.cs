@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Controls.Platform;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
@@ -117,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			{
 				var id = control.Id;
 				if (id == AView.NoId)
-					id = control.Id = AppCompat.Platform.GenerateViewId();
+					id = control.Id = Platform.GenerateViewId();
 
 				var renderer = elemValue?.GetRenderer();
 				renderer?.SetLabelFor(id);

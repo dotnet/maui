@@ -12,11 +12,18 @@
       "type": "solution"
     },
     "sourceName": "MauiApp1",
+    "sources": [
+      {
+        "source": "./",
+        "target": "./",
+        "copyOnly": [ "**/*.svg", "**/*.ttf" ]
+      }
+    ],
     "preferNameDirectory": true,
     "guids": [
       "07CD65EF-6238-4365-AF5D-F6D433967F48",
       "202C61B5-A2D9-4817-8020-731D9F855561",
-      "A88FCF8C-EC35-4623-B126-C591EEF99C70"
+      "919dc1f9-17a9-48b3-81f8-0b8016bdfbf7"
     ],
     "symbols": {
       "applicationId": {
@@ -25,17 +32,11 @@
         "datatype": "string",
         "replaces": "com.companyname.MauiApp1"
       },
-      "microsoftExtensionsVersion": {
+      "projectReunionVersion": {
         "type": "parameter",
         "dataType": "string",
-        "replaces": "MICROSOFT_EXTENSIONS_VERSION",
-        "defaultValue": "6.0.0-preview.4.*"
-      },
-      "mauiVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "MAUI_VERSION",
-        "defaultValue": "6.0.100-preview.4.*"
+        "replaces": "PROJECT_REUNION_VERSION",
+        "defaultValue": "0.8.0"
       }
     },
     "defaultName": "MauiApp1"

@@ -12,8 +12,6 @@ namespace Microsoft.Maui.Controls
 
 		IView IPage.Content => Content;
 
-
-
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			if (Content is IFrameworkElement frameworkElement)
@@ -31,8 +29,12 @@ namespace Microsoft.Maui.Controls
 
 			if (Content is IFrameworkElement element)
 			{
-				element.Arrange(bounds);
-				element.Handler?.NativeArrange(element.Frame);
+				// The size checks here are a guard against legacy layouts which try to lay things out before the
+				// native side is ready. We just ignore those invalid values.
+				if (element.Frame.Size.Width >= 0 && element.Frame.Size.Height >= 0)
+				{
+					element.Handler?.NativeArrange(element.Frame);
+				}
 			}
 
 			return Frame.Size;

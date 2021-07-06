@@ -8,6 +8,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		public string Title { get; set; }
 
+		public Color TitleColor { get; set; }
+
 		public IList<string> Items { get; set; } = new List<string>();
 
 		public IList ItemsSource { get; set; }
@@ -23,6 +25,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Font Font { get; set; }
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
+
+		public TextAlignment VerticalTextAlignment { get; set; }
 
 		int IItemDelegate<string>.GetCount() => Items?.Count ?? ItemsSource?.Count ?? 0;
 

@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public TestWindow CreateWindow() =>
 				(TestWindow)(this as IApplication).CreateWindow(null);
 
-			protected override IWindow CreateWindow(IActivationState activationState)
+			protected override Window CreateWindow(IActivationState activationState)
 			{
 				return new TestWindow(new ContentPage());
 			}

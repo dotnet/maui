@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 #if __MOBILE__
 using UIKit;
@@ -309,13 +310,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 			}
 
-			var pinchRecognizer = recognizer as PinchGestureRecognizer;
+			var pinchRecognizer = recognizer as IPinchGestureController;
 			if (pinchRecognizer != null)
 			{
 				double startingScale = 1;
 				var uiRecognizer = CreatePinchRecognizer(r =>
 				{
-					var pinchGestureRecognizer = weakRecognizer.Target as PinchGestureRecognizer;
+					var pinchGestureRecognizer = weakRecognizer.Target as IPinchGestureController;
 					var eventTracker = weakEventTracker.Target as EventTracker;
 					var view = eventTracker?._renderer?.Element as View;
 
@@ -386,7 +387,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					var eventTracker = weakEventTracker.Target as EventTracker;
 					var view = eventTracker?._renderer?.Element as View;
 
-					var panGestureRecognizer = weakRecognizer.Target as PanGestureRecognizer;
+					var panGestureRecognizer = weakRecognizer.Target as IPanGestureController;
 					if (panGestureRecognizer != null && view != null)
 					{
 						switch (r.State)

@@ -1,0 +1,17 @@
+﻿<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.ProgressBarPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="ProgressBar">
+    <views:BasePage.Content>
+        <VerticalStackLayout
+            Margin="12">
+            <Label
+                Text="Default"
+                Style="{StaticResource Headline}"/>
+            <ProgressBar
+                Progress="0.5"/>
+        </VerticalStackLayout>
+    </views:BasePage.Content>
+</views:BasePage>

@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
 			[nameof(IEntry.Font)] = MapFont,
 			[nameof(IEntry.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(IEntry.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IEntry.IsPassword)] = MapIsPassword,
 			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
@@ -21,6 +22,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.ReturnType)] = MapReturnType,
 			[nameof(IEntry.Text)] = MapText,
 			[nameof(IEntry.TextColor)] = MapTextColor,
+			[nameof(IEntry.CursorPosition)] = MapCursorPosition,
+			[nameof(IEntry.SelectionLength)] = MapSelectionLength
 		};
 
 		public EntryHandler() : base(EntryMapper)

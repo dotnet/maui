@@ -35,5 +35,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			return result;
 		}
+
+		public static T Last<T>(this T[] self) => self[self.Length - 1];
 	}
 }

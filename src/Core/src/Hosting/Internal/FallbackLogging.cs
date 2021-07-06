@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
-	class FallbackLoggerFactory : ILoggerFactory
+	partial class FallbackLoggerFactory : ILoggerFactory
 	{
 		public void AddProvider(ILoggerProvider provider) { }
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		public void Dispose() { }
 
-		class FallbackLogger : ILogger
+		partial class FallbackLogger : ILogger
 		{
 			private string _categoryName;
 
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Hosting.Internal
 				if (exception != null)
 					message += Environment.NewLine + Environment.NewLine + exception;
 
-				Debug.WriteLine(message, category: _categoryName);
+				DebugWriteLine(message);
 			}
 		}
 
