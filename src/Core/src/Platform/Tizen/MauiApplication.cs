@@ -54,7 +54,17 @@ namespace Microsoft.Maui
 
 			this.CreatePlatformWindow(Application);
 
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
+			var tizenWindow = mauiContext.Window;
+
+			if (tizenWindow == null)
+				throw new InvalidOperationException($"The {nameof(tizenWindow)} instance was not found.");
+
+			var activationState = new ActivationState(mauiContext);
+			var window = Application.CreateWindow(activationState);
+
+			tizenWindow.SetWindow(window, mauiContext);
+
+			return tizenWindow;
 		}
 
 		protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
@@ -112,6 +122,8 @@ namespace Microsoft.Maui
 		}
 
 		public static new MauiApplication Current { get; private set; } = null!;
+
+		public Window MainWindow { get; protected set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 
