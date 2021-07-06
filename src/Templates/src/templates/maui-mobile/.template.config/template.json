@@ -12,6 +12,13 @@
       "type": "solution"
     },
     "sourceName": "MauiApp1",
+    "sources": [
+      {
+        "source": "./",
+        "target": "./",
+        "copyOnly": [ "**/*.svg", "**/*.ttf" ]
+      }
+    ],
     "preferNameDirectory": true,
     "guids": [
       "07CD65EF-6238-4365-AF5D-F6D433967F48",
@@ -29,7 +36,7 @@
         "type": "parameter",
         "dataType": "string",
         "replaces": "PROJECT_REUNION_VERSION",
-        "defaultValue": "0.8.0-preview"
+        "defaultValue": "0.8.0"
       }
     },
     "defaultName": "MauiApp1"

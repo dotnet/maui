@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void LookupRelevantParents()
 		{
-			IEnumerable<IPage> parentPages = VirtualView.GetParentPages();
+			var parentPages = VirtualView.GetParentPages();
 
 			if (_parentTabbedPage != null)
 				_parentTabbedPage.PropertyChanged -= MultiPagePropertyChanged;

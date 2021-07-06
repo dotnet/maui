@@ -12,6 +12,13 @@
       "type": "solution"
     },
     "sourceName": "MauiApp1",
+    "sources": [
+      {
+        "source": "./",
+        "target": "./",
+        "copyOnly": [ "**/wwwroot/css/**", "**/*.svg", "**/*.ttf" ]
+      }
+    ],
     "preferNameDirectory": true,
     "primaryOutputs": [
       { "path": "MauiApp1/MauiApp1.csproj" },
@@ -39,7 +46,7 @@
         "type": "parameter",
         "dataType": "string",
         "replaces": "PROJECT_REUNION_VERSION",
-        "defaultValue": "0.8.0-preview"
+        "defaultValue": "0.8.0"
       }
     },
     "defaultName": "MauiApp1"

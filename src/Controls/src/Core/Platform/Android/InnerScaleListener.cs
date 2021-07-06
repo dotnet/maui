@@ -3,7 +3,7 @@ using Android.Runtime;
 using Android.Views;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Controls.Platform
 {
 	internal class InnerScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener
 	{

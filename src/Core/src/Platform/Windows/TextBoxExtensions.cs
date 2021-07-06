@@ -29,6 +29,7 @@ namespace Microsoft.Maui
 				return;
 
 			var brush = textStyle.TextColor.ToNative();
+
 			textBox.Foreground = brush;
 			textBox.ForegroundFocusBrush = brush;
 		}
@@ -46,7 +47,7 @@ namespace Microsoft.Maui
 		public static void UpdateReturnType(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.InputScope = entry.ReturnType.ToNative();
-		}
+    	}
 
 		public static void UpdateClearButtonVisibility(this MauiTextBox textBox, IEntry entry)
 		{
@@ -119,7 +120,12 @@ namespace Microsoft.Maui
 			if (currentControlText.Length > maxLength)
 				textBox.Text = currentControlText.Substring(0, maxLength);
 		}
-
+    
+		public static void UpdateIsPassword(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.IsPassword = entry.IsPassword;
+		}
+    
 		public static void UpdateIsTextPredictionEnabled(this MauiTextBox textBox, IEditor editor)
 		{
 			textBox.UpdateInputScope(editor);
@@ -140,6 +146,6 @@ namespace Microsoft.Maui
 			}
 
 			textBox.InputScope = textInput.Keyboard.ToInputScope();
-		}
+    }
 	}
 }

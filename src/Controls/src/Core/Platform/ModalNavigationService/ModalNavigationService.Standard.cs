@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class ModalNavigationService
 	{
-		public  Task<Page> PopModalAsync(bool animated)
+		public Task<Page> PopModalAsync(bool animated)
 		{
 			throw new NotImplementedException();
 		}

@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ILabel.Font)] = MapFont,
 			[nameof(ILabel.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(ILabel.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(ILabel.LineBreakMode)] = MapLineBreakMode,
 			[nameof(ILabel.LineHeight)] = MapLineHeight,
 			[nameof(ILabel.MaxLines)] = MapMaxLines,

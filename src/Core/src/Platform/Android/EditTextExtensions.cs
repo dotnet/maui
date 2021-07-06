@@ -36,7 +36,8 @@ namespace Microsoft.Maui
 
 			if (textColor == null)
 			{
-				editText.SetTextColor(defaultColor);
+				if (defaultColor != null)
+					editText.SetTextColor(defaultColor);
 			}
 			else
 			{

@@ -14,13 +14,11 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiButton CreateNativeView() 
 			=> new MauiButton();
 
-		protected override void SetupDefaults(MauiButton nativeView)
+		void SetupDefaults(MauiButton nativeView)
 		{
 			DefaultPadding = (UI.Xaml.Thickness)MauiWinUIApplication.Current.Resources["ButtonPadding"];
 			DefaultForeground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonForegroundThemeBrush"];
 			DefaultBackground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonBackgroundThemeBrush"];
-
-			base.SetupDefaults(nativeView);
 		}
 
 		protected override void ConnectHandler(MauiButton nativeView)
