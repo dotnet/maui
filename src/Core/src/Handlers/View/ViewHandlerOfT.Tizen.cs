@@ -193,10 +193,10 @@ namespace Microsoft.Maui.Handlers
 				if (disposing)
 				{
 					// Dispose managed state (managed objects)
-					if (WrappedNativeView != null)
+					if (WrappedNativeView is TNativeView wrapped)
 					{
-						DisconnectHandler(WrappedNativeView);
-						WrappedNativeView.Unrealize();
+						DisconnectHandler(wrapped);
+						wrapped.Unrealize();
 					}
 				}
 

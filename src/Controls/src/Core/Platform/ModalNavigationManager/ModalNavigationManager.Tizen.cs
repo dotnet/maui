@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class ModalNavigationService
+	internal partial class ModalNavigationManager
 	{
 		ModalStack _modalStack => MauiContext.Context!.ModalStack;
 		IPageController CurrentPageController => _navModel.CurrentPage;

@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView!.DragStopped -= OnDragStopped;
 		}
 
-		protected override void SetupDefaults(ESlider nativeView)
+		void SetupDefaults(ESlider nativeView)
 		{
 			DefaultMinTrackColor = nativeView.GetBarColor();
 			DefaultMaxTrackColor = nativeView.GetBackgroundColor();

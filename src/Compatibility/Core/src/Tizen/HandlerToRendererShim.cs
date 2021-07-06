@@ -123,12 +123,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			public IMauiContext MauiContext => null;
 
-			object IViewHandler.NativeView => NativeView;
+			object IElementHandler.NativeView => NativeView;
 
 			object IViewHandler.ContainerView => NativeView;
 
-			bool HasContainer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 			bool IViewHandler.HasContainer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+			Maui.IElement IElementHandler.VirtualView => throw new NotImplementedException();
 
 			public void DisconnectHandler() { }
 
@@ -167,6 +168,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 
 			public void UpdateValue(string property)
+			{
+				throw new NotImplementedException();
+			}
+
+			public void SetVirtualView(Maui.IElement view)
 			{
 				throw new NotImplementedException();
 			}

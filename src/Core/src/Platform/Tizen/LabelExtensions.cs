@@ -31,6 +31,11 @@ namespace Microsoft.Maui
 			nativeLabel.HorizontalTextAlignment = label.HorizontalTextAlignment.ToNative();
 		}
 
+		public static void UpdateVerticalTextAlignment(this Label nativeLabel, ILabel label)
+		{
+			nativeLabel.VerticalTextAlignment = label.VerticalTextAlignment.ToNative();
+		}
+
 		public static void UpdateLineBreakMode(this Label nativeLabel, ILabel label)
 		{
 			nativeLabel.LineBreakMode = label.LineBreakMode.ToNative();

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 			return progressBar;
 		}
 
-		protected override void SetupDefaults(EProgressBar nativeView)
+		void SetupDefaults(EProgressBar nativeView)
 		{
 			nativeView.Color = ThemeConstants.ProgressBar.ColorClass.Default;
 		}

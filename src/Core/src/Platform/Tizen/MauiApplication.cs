@@ -1,5 +1,6 @@
 using System;
 using Tizen.Applications;
+using ElmSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
@@ -39,28 +40,30 @@ namespace Microsoft.Maui
 			if (Application == null)
 				throw new InvalidOperationException($"The {nameof(IApplication)} instance was not found.");
 
-			MauiContext mauiContext;
-			IWindow window;
-
-			var context = CoreUIAppContext.GetInstance(this);
-
-			// TODO Fix once we have multiple windows
-			if (Application.Windows.Count > 0)
-			{
-				window = Application.Windows[0];
-				mauiContext = new MauiContext(Services, context);
-			}
-			else
-			{
-				mauiContext = new MauiContext(Services, context);
-				ActivationState state = new ActivationState(mauiContext);
-				window = Application.CreateWindow(state);
-			}
-
-			var page = window.View;
-			context.SetContent(page.ToNative(mauiContext));
+			MainWindow = CreateNativeWindow();
+			MainWindow.Show();
 
 			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
+		}
+
+		Window CreateNativeWindow()
+		{
+			var context = CoreUIAppContext.GetInstance(this);
+			var mauiContext = new MauiContext(Services, context);
+
+			Services.InvokeLifecycleEvents<TizenLifecycle.OnMauiContextCreated>(del => del(mauiContext));
+
+			var tizenWindow = mauiContext.Window;
+
+			if (tizenWindow == null)
+				throw new InvalidOperationException($"The {nameof(tizenWindow)} instance was not found.");
+
+			var activationState = new ActivationState(mauiContext);
+			var window = Application.CreateWindow(activationState);
+
+			tizenWindow.SetWindow(window, mauiContext);
+
+			return tizenWindow;
 		}
 
 		protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
@@ -132,6 +135,8 @@ namespace Microsoft.Maui
 		}
 
 		public static new MauiApplication Current { get; private set; } = null!;
+
+		public Window MainWindow { get; protected set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

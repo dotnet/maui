@@ -25,7 +25,6 @@ namespace Microsoft.Maui
 			if (IsInitialized)
 				return _instance!;
 
-
 			_instance = (window == null) ? new CoreUIAppContext(application) : new CoreUIAppContext(application, window);
 			return _instance;
 		}

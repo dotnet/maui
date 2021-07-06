@@ -19,5 +19,7 @@ namespace Microsoft.Maui.LifecycleEvents
 		public delegate void OnRegionFormatChanged(CoreUIApplication application, RegionFormatChangedEventArgs e);
 		public delegate void OnTerminate(CoreUIApplication application);
 
+		// Internal events
+		internal delegate void OnMauiContextCreated(IMauiContext mauiContext);
 	}
 }

@@ -13,5 +13,7 @@
 		public static ITizenLifecycleBuilder OnLowMemory(this ITizenLifecycleBuilder lifecycle, TizenLifecycle.OnLowMemory del) => lifecycle.OnEvent(del);
 		public static ITizenLifecycleBuilder OnRegionFormatChanged(this ITizenLifecycleBuilder lifecycle, TizenLifecycle.OnRegionFormatChanged del) => lifecycle.OnEvent(del);
 		public static ITizenLifecycleBuilder OnTerminate(this ITizenLifecycleBuilder lifecycle, TizenLifecycle.OnTerminate del) => lifecycle.OnEvent(del);
+
+		internal static ITizenLifecycleBuilder OnMauiContextCreated(this ITizenLifecycleBuilder lifecycle, TizenLifecycle.OnMauiContextCreated del) => lifecycle.OnEvent(del);
 	}
 }
