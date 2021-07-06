@@ -144,13 +144,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		[Export("NavigateToTest")]
 		public bool NavigateToTest(string test)
 		{
-			return _app.NavigateToTestPage(test);
+			return App.NavigateToTestPage(test);
 		}
 
 		[Export("Reset")]
 		public void Reset()
 		{
-			_app.Reset();
+			App.Reset();
 		}
 
 		void SetUpForceRestartTest()
