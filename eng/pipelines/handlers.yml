@@ -53,7 +53,7 @@ variables:
 parameters:
   - name: BuildEverything
     type: boolean
-    default: false
+    default: true
   - name: BuildConfigurations
     type: object
     default:
@@ -224,7 +224,7 @@ stages:
   - template: common/device-tests.yml
     parameters:
       ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
-        androidApiLevels: [ 30, 29, 24 ]
+        androidApiLevels: [ 30, 29, 24, 21 ]
         # androidApiLevels: [ 30, 29, 24, 21 ] # TODO: Disable until .NET 6 supports API 21: https://github.com/dotnet/runtime/issues/54182
         iosVersions: [ 'latest' ]
       projects:
