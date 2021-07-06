@@ -26,6 +26,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(TransformationsPage), "Transformations",
 				"Apply scale transformations, rotation, etc. to a View."),
+
+			new SectionModel(typeof(ModalPage), "Modal",
+				"Allows you to push and pop Modal Pages."),
 		};
 	}
 }
