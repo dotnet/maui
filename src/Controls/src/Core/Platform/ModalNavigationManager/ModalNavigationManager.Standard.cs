@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class ModalNavigationService
+	internal partial class ModalNavigationManager
 	{
 		public Task<Page> PopModalAsync(bool animated)
 		{

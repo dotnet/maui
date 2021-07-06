@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 		public Window()
 		{
 			AlertManager = new AlertManager(this);
-			ModalNavigationService = new ModalNavigationService(this);
+			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
 
 			InternalChildren.CollectionChanged += OnCollectionChanged;
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls
 
 		internal AlertManager AlertManager { get; }
 
-		internal ModalNavigationService ModalNavigationService { get; }
+		internal ModalNavigationManager ModalNavigationManager { get; }
 
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls
 				newPage.NavigationProxy.Inner = window.NavigationProxy;
 			}
 
-			window.ModalNavigationService.SettingNewPage();
+			window.ModalNavigationManager.SettingNewPage();
 
 			if (newPage != null)
 			{
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls
 
 			void OnPageAttachedHandler(object? sender, EventArgs e)
 			{
-				window.ModalNavigationService.PageAttachedHandler();
+				window.ModalNavigationManager.PageAttachedHandler();
 				window.AlertManager.Subscribe();
 			}
 
@@ -208,19 +208,19 @@ namespace Microsoft.Maui.Controls
 
 			protected override IReadOnlyList<Page> GetModalStack()
 			{
-				return _owner.ModalNavigationService.ModalStack;
+				return _owner.ModalNavigationManager.ModalStack;
 			}
 
 			protected override async Task<Page?> OnPopModal(bool animated)
 			{
-				Page modal = _owner.ModalNavigationService.ModalStack[_owner.ModalNavigationService.ModalStack.Count - 1];
+				Page modal = _owner.ModalNavigationManager.ModalStack[_owner.ModalNavigationManager.ModalStack.Count - 1];
 				if (_owner.OnModalPopping(modal))
 				{
 					_owner.OnPopCanceled();
 					return null;
 				}
 
-				Page result = await _owner.ModalNavigationService.PopModalAsync(animated);
+				Page result = await _owner.ModalNavigationManager.PopModalAsync(animated);
 				result.Parent = null;
 				_owner.OnModalPopped(result);
 				return result;
@@ -235,11 +235,11 @@ namespace Microsoft.Maui.Controls
 				if (modal.NavigationProxy.ModalStack.Count == 0)
 				{
 					modal.NavigationProxy.Inner = this;
-					await _owner.ModalNavigationService.PushModalAsync(modal, animated);
+					await _owner.ModalNavigationManager.PushModalAsync(modal, animated);
 				}
 				else
 				{
-					await _owner.ModalNavigationService.PushModalAsync(modal, animated);
+					await _owner.ModalNavigationManager.PushModalAsync(modal, animated);
 					modal.NavigationProxy.Inner = this;
 				}
 
