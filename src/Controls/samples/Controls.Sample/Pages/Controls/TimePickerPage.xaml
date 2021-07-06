@@ -16,6 +16,11 @@
                 Style="{StaticResource Headline}"/>
             <TimePicker
                 IsEnabled="False"/>
+            <Label
+                Text="TextColor"
+                Style="{StaticResource Headline}"/>
+            <TimePicker
+                TextColor="Green"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

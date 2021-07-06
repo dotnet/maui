@@ -1,14 +1,15 @@
 ﻿using System;
 using Android.App;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text.Format;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
 		static Drawable? DefaultBackground;
+		static ColorStateList? DefaultTextColors;
 
 		MauiTimePicker? _timePicker;
 		AlertDialog? _dialog;
@@ -27,8 +28,7 @@ namespace Microsoft.Maui.Handlers
 		void SetupDefaults(MauiTimePicker nativeView)
 		{
 			DefaultBackground = nativeView.Background;
-
-
+			DefaultTextColors = nativeView.TextColors;
 		}
 
 		protected override void DisconnectHandler(MauiTimePicker nativeView)
@@ -83,8 +83,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(timePicker, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker) { }
+		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.NativeView?.UpdateTextColor(timePicker, DefaultTextColors);
+		}
 
 		void ShowPickerDialog()
 		{
