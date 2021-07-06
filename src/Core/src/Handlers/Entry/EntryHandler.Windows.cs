@@ -84,8 +84,10 @@ using Windows.System;
 			handler.NativeView?.UpdateCharacterSpacing(entry);
 		}
 
-		[MissingMapper]
-		public static void MapKeyboard(IViewHandler handler, IEntry entry) { }
+		public static void MapKeyboard(EntryHandler handler, IEntry entry)
+		{ 
+			handler.NativeView?.UpdateKeyboard(entry); 
+		}
 
 		void OnNativeKeyUp(object? sender, KeyRoutedEventArgs args)
 		{

@@ -71,6 +71,10 @@
                 <Entry 
                     Text="Text"
                     Background="Orange"/>
+                <Entry 
+                    Text="Keyboard"
+                    Style="{StaticResource Headline}" 
+                    Keyboard="Numeric"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
