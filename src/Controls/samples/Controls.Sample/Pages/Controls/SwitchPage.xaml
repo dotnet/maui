@@ -16,6 +16,16 @@
                 Style="{StaticResource Headline}"/>
             <Switch
                 IsEnabled="False"/>
+            <Label
+                Text="OnColor"
+                Style="{StaticResource Headline}"/>
+            <Switch 
+                OnColor="Red"/>
+            <Label
+                Text="ThumbColor"
+                Style="{StaticResource Headline}"/>
+            <Switch
+                ThumbColor="Orange"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

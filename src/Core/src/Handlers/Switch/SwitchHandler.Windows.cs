@@ -1,13 +1,5 @@
 #nullable enable
-using System.Linq;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Animation;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
-using WColor = Windows.UI.Color;
-using WGrid = Microsoft.UI.Xaml.Controls.Grid;
-using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
-using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
-using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 using WResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
 
 namespace Microsoft.Maui.Handlers
@@ -18,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override ToggleSwitch CreateNativeView() => new ToggleSwitch();
 
-		protected override void SetupDefaults(ToggleSwitch nativeView)
+		void SetupDefaults(ToggleSwitch nativeView)
 		{
 			_originalResources = nativeView?.CloneResources();
 		}

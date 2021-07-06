@@ -39,7 +39,10 @@
                 <Label
                     Text="Switch" />
                 <Switch 
-                    HorizontalOptions="Start" />
+                    HorizontalOptions="Start"
+                    IsToggled="True"
+                    OnColor="Violet"
+                    ThumbColor="Purple"/>
                 <Label 
                     Text="Image" />
                 <Image 

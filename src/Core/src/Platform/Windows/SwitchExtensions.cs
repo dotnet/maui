@@ -30,10 +30,6 @@ namespace Microsoft.Maui
 			{
 				toggleSwitch.TryUpdateResource(
 					view.TrackColor.ToNative() ?? originalResources?["ToggleSwitchFillOff"] as WSolidColorBrush ?? new WSolidColorBrush(),
-					"ToggleSwitchFillOff",
-					"ToggleSwitchFillOffPointerOver",
-					"ToggleSwitchFillOffPressed",
-					"ToggleSwitchFillOffDisabled",
 					"ToggleSwitchFillOn",
 					"ToggleSwitchFillOnPointerOver",
 					"ToggleSwitchFillOnPressed",
