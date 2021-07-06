@@ -52,7 +52,19 @@ namespace Microsoft.Maui.DeviceTests
 				TextColor = Colors.Red
 			};
 
-			await ValidatePropertyInitValue(searchBar, () => searchBar.TextColor, GetNativeTextColor, searchBar.TextColor);
+			await ValidatePropertyInitValue(searchBar, () => searchBar.TextColor, GetNativeTextColor, Colors.Red);
+		}
+
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
+		{
+			var searchBar = new SearchBarStub
+			{
+				Text = "TextColor",
+				TextColor = null,
+			};
+
+			await CreateHandlerAsync(searchBar);
 		}
 
 		[Fact(DisplayName = "Placeholder Initializes Correctly")]
@@ -129,6 +141,17 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidateHasColor(searchBar, Colors.MediumPurple, () => searchBar.CancelButtonColor = Colors.MediumPurple);
+		}
+
+		[Fact(DisplayName = "Null Cancel Button Color Doesn't Crash")]
+		public async Task NullCancelButtonColorDoesntCrash()
+		{
+			var searchBar = new SearchBarStub
+			{
+				CancelButtonColor = null,
+			};
+
+			await CreateHandlerAsync(searchBar);
 		}
 	}
 }

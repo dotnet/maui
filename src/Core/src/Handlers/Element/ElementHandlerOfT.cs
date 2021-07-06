@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Handlers
 		[HotReload.OnHotReload]
 		internal static void OnHotReload()
 		{
-			Defaults<ElementHandler<TVirtualView, TNativeView>>.HasSetDefaults = false;
 		}
 
 		protected ElementHandler(PropertyMapper mapper)
@@ -33,17 +32,7 @@ namespace Microsoft.Maui.Handlers
 
 		object? IElementHandler.NativeView => base.NativeView;
 
-		protected override bool HasSetDefaults
-		{
-			get => Defaults<ElementHandler<TVirtualView, TNativeView>>.HasSetDefaults;
-			set => Defaults<ElementHandler<TVirtualView, TNativeView>>.HasSetDefaults = value;
-		}
-
 		protected abstract TNativeView CreateNativeElement();
-
-		protected virtual void SetupDefaults(TNativeView nativeView)
-		{
-		}
 
 		protected virtual void ConnectHandler(TNativeView nativeView)
 		{
@@ -55,9 +44,6 @@ namespace Microsoft.Maui.Handlers
 
 		private protected override object OnCreateNativeElement() =>
 			CreateNativeElement();
-
-		private protected override void OnSetupDefaults(object nativeView) =>
-			SetupDefaults((TNativeView)nativeView);
 
 		private protected override void OnConnectHandler(object nativeView) =>
 			ConnectHandler((TNativeView)nativeView);

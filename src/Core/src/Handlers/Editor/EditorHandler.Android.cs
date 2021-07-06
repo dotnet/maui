@@ -44,9 +44,9 @@ namespace Microsoft.Maui.Handlers
 			FocusChangeListener.Handler = null;
 		}
 
-		protected override void SetupDefaults(AppCompatEditText nativeView)
+		void SetupDefaults(AppCompatEditText nativeView)
 		{
-			base.SetupDefaults(nativeView);
+
 
 			DefaultTextColors = nativeView.TextColors;
 			DefaultPlaceholderTextColors = nativeView.HintTextColors;
