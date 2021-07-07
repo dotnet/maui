@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
     /// <summary>
     /// A Windows Forms control for hosting Blazor web components locally in Windows desktop applications.
     /// </summary>
-    public sealed class BlazorWebView : ContainerControl, IDisposable
+    public class BlazorWebView : ContainerControl, IDisposable
     {
         private readonly WebView2Control _webview;
         private WebView2WebViewManager _webviewManager;
