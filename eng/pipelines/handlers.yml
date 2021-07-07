@@ -53,7 +53,7 @@ variables:
 parameters:
   - name: BuildEverything
     type: boolean
-    default: true
+    default: false
   - name: BuildConfigurations
     type: object
     default:
@@ -124,11 +124,11 @@ stages:
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
-              - pwsh: ./build.ps1 --target=dotnet --configuration="$(BuildConfiguration)" --verbosity=diagnostic
+              - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
-              - pwsh: ./build.ps1 --target=dotnet-build --configuration="$(BuildConfiguration)" --verbosity=diagnostic
+              - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
-              - pwsh: ./build.ps1 --target=dotnet-test --configuration="$(BuildConfiguration)" --verbosity=diagnostic
+              - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Run Unit Tests'
               - task: PublishTestResults@2
                 condition: always()
@@ -211,9 +211,9 @@ stages:
                   artifact: nuget
                   patterns: '**/*.nupkg'
                   path: $(System.DefaultWorkingDirectory)/artifacts
-              - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="$(BuildConfiguration)" --verbosity=diagnostic
+              - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
-              - pwsh: ./build.ps1 --target=dotnet-samples --configuration="$(BuildConfiguration)" --verbosity=diagnostic
+              - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET 6 Samples'
               - task: PublishBuildArtifacts@1
                 condition: always()
@@ -224,8 +224,8 @@ stages:
   - template: common/device-tests.yml
     parameters:
       ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
-        androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ]
-        # androidApiLevels: [ 30, 29, 24, 21 ] # TODO: Disable until .NET 6 supports API 21: https://github.com/dotnet/runtime/issues/54182
+        androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22 ]
+        # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # TODO: Disable until .NET 6 supports API 21: https://github.com/dotnet/runtime/issues/54182
         iosVersions: [ 'latest' ]
       projects:
         - name: essentials

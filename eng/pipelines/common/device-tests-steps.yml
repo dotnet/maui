@@ -10,13 +10,13 @@ steps:
     parameters:
       platform: macos
 
-  - pwsh: ./build.ps1 --target=dotnet --configuration="$(BuildConfiguration)"
+  - pwsh: ./build.ps1 --target=dotnet --configuration="Release"
     displayName: 'Install .NET'
 
   - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: 'Add .NET to PATH'
 
-  - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="$(BuildConfiguration)"
+  - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
     displayName: 'Build the MSBuild Tasks'
 
   - pwsh: $(DotNet.Path) tool update microsoft.dotnet.xharness.cli --version $(XHARNESS_VERSION)
