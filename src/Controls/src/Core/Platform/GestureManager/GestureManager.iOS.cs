@@ -605,7 +605,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (NativeVersion.IsAtLeast(11) && recognizer is DragGestureRecognizer)
 				{
 					dragFound = true;
-					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate();
+					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_renderer);
 					if (uIDragInteraction == null)
 					{
 						var interaction = new UIDragInteraction(_dragAndDropDelegate);
@@ -617,7 +617,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (NativeVersion.IsAtLeast(11) && recognizer is DropGestureRecognizer)
 				{
 					dropFound = true;
-					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate();
+					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_renderer);
 					if (uIDropInteraction == null)
 					{
 						var interaction = new UIDropInteraction(_dragAndDropDelegate);

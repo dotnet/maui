@@ -11,9 +11,13 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	class DragAndDropDelegate : NSObject, IUIDragInteractionDelegate, IUIDropInteractionDelegate
 	{
+		INativeViewHandler _viewHandler;
+		public DragAndDropDelegate(INativeViewHandler viewHandler)
+		{
+			_viewHandler = viewHandler;
+		}
+
 #region UIDragInteractionDelegate
-
-
 		[Export("dragInteraction:session:willEndWithOperation:")]
 		[Preserve(Conditional = true)]
 		public void SessionWillEnd(UIDragInteraction interaction, IUIDragSession session, UIDropOperation operation)
@@ -29,9 +33,8 @@ namespace Microsoft.Maui.Controls.Platform
 		[Preserve(Conditional = true)]
 		public UIDragItem[] GetItemsForBeginningSession(UIDragInteraction interaction, IUIDragSession session)
 		{
-			throw new NotImplementedException();
 			//if (interaction.View is IVisualElementRenderer renderer && renderer.Element is View view)
-			//	return HandleDragStarting(view, renderer);
+				return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler);
 
 			//return new UIDragItem[0];
 		}
@@ -57,70 +60,65 @@ namespace Microsoft.Maui.Controls.Platform
 		[Preserve(Conditional = true)]
 		public void SessionDidExit(UIDropInteraction interaction, IUIDropSession session)
 		{
-			throw new NotImplementedException();
-			//if (interaction.View is IVisualElementRenderer renderer)
-			//{
-			//	DataPackage package = null;
+			// if (interaction.View is IVisualElementRenderer renderer)
+			{
+				DataPackage package = null;
 
-			//	if (session.LocalDragSession.Items.Length > 0 &&
-			//		session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi)
-			//	{
-			//		package = cdi.DataPackage;
-			//	}
+				if (session.LocalDragSession.Items.Length > 0 &&
+					session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi)
+				{
+					package = cdi.DataPackage;
+				}
 
-			//	if (HandleDragLeave((View)renderer.Element, package))
-			//	{
-			//	}
-			//}
+				if (HandleDragLeave((View)_viewHandler.VirtualView, package))
+				{
+				}
+			}
 		}
 
 		[Export("dropInteraction:sessionDidUpdate:")]
 		[Preserve(Conditional = true)]
 		public UIDropProposal SessionDidUpdate(UIDropInteraction interaction, IUIDropSession session)
 		{
+			UIDropOperation operation = UIDropOperation.Cancel;
 
-			throw new NotImplementedException();
-			//UIDropOperation operation = UIDropOperation.Cancel;
+			if (session.LocalDragSession == null)
+				return new UIDropProposal(operation);
 
-			//if (session.LocalDragSession == null)
-			//	return new UIDropProposal(operation);
+			// if (interaction.View is IVisualElementRenderer renderer)
+			{
+				DataPackage package = null;
 
-			//if (interaction.View is IVisualElementRenderer renderer)
-			//{
-			//	DataPackage package = null;
+				if (session.LocalDragSession.Items.Length > 0 &&
+					session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi)
+				{
+					package = cdi.DataPackage;
+				}
 
-			//	if (session.LocalDragSession.Items.Length > 0 &&
-			//		session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi)
-			//	{
-			//		package = cdi.DataPackage;
-			//	}
+				if (HandleDragOver((View)_viewHandler.VirtualView, package))
+				{
+					operation = UIDropOperation.Copy;
+				}
+			}
 
-			//	if (HandleDragOver((View)renderer.Element, package))
-			//	{
-			//		operation = UIDropOperation.Copy;
-			//	}
-			//}
-
-			//return new UIDropProposal(operation);
+			return new UIDropProposal(operation);
 		}
 
 		[Export("dropInteraction:performDrop:")]
 		[Preserve(Conditional = true)]
 		public void PerformDrop(UIDropInteraction interaction, IUIDropSession session)
 		{
+			if (session.LocalDragSession == null)
+				return;
 
-			throw new NotImplementedException();
-			//if (session.LocalDragSession == null)
-			//	return;
-
-			//if (session.LocalDragSession.Items.Length > 0 &&
-			//	session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi &&
-			//	interaction.View is IVisualElementRenderer renderer &&
-			//	renderer.Element is View view)
-			//{
-			//	HandleDrop(view, cdi.DataPackage);
-			//	HandleDropCompleted(cdi.View);
-			//}
+			if (session.LocalDragSession.Items.Length > 0 &&
+				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi &&
+				//interaction.View is IVisualElementRenderer renderer &&
+				_viewHandler.VirtualView is View view)
+			{
+				HandleDrop(view, cdi.DataPackage);
+				HandleDropCompleted(cdi.View);
+			}
 		}
 
 
@@ -140,65 +138,69 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public UIDragItem[] HandleDragStarting(View element, IViewHandler renderer)
+		public UIDragItem[] HandleDragStarting(View element, INativeViewHandler renderer)
 		{
-			throw new NotImplementedException();
-			//UIDragItem[] returnValue = null;
-			//SendEventArgs<DragGestureRecognizer>(rec =>
-			//{
-			//	if (!rec.CanDrag)
-			//		return;
+			UIDragItem[] returnValue = null;
+			SendEventArgs<DragGestureRecognizer>(rec =>
+			{
+				if (!rec.CanDrag)
+					return;
 
-			//	var args = rec.SendDragStarting(element);
+				var args = rec.SendDragStarting(element);
 
-			//	if (args.Cancel)
-			//		return;
+				if (args.Cancel)
+					return;
 
-			//	if (!args.Handled)
-			//	{
-			//		UIImage uIImage = null;
-			//		string clipDescription = String.Empty;
-			//		NSItemProvider itemProvider = null;
+				if (!args.Handled)
+				{
+					UIImage uIImage = null;
+					string clipDescription = String.Empty;
+					NSItemProvider itemProvider = null;
 
-			//		if (renderer is IImageVisualElementRenderer iver)
-			//		{
-			//			uIImage = iver.GetImage()?.Image;
-			//			if (uIImage != null)
-			//				itemProvider = new NSItemProvider(uIImage);
-			//			else
-			//				itemProvider = new NSItemProvider(new NSString(""));
+					if (renderer.NativeView is UIImageView iv)
+						uIImage = iv.Image;
 
-			//			if (args.Data.Image == null && renderer.VirtualView is IImageElement imageElement)
-			//				args.Data.Image = imageElement.Source;
-			//		}
-			//		else
-			//		{
-			//			string text = args.Data.Text ?? clipDescription;
+					if (renderer.NativeView is UIButton b && b.ImageView != null)
+						uIImage = b.ImageView.Image;
 
-			//			if (String.IsNullOrWhiteSpace(text))
-			//			{
-			//				itemProvider = new NSItemProvider(renderer.NativeView.ConvertToImage());
-			//			}
-			//			else
-			//			{
-			//				itemProvider = new NSItemProvider(new NSString(text));
-			//			}
-			//		}
+					if (uIImage != null)
+					{
+						if (uIImage != null)
+							itemProvider = new NSItemProvider(uIImage);
+						else
+							itemProvider = new NSItemProvider(new NSString(""));
 
-			//		var dragItem = new UIDragItem(itemProvider);
-			//		dragItem.LocalObject = new CustomLocalStateData()
-			//		{
-			//			Renderer = renderer,
-			//			View = renderer.VirtualView as View,
-			//			DataPackage = args.Data
-			//		};
+						if (args.Data.Image == null && renderer.VirtualView is IImageElement imageElement)
+							args.Data.Image = imageElement.Source;
+					}
+					else
+					{
+						string text = args.Data.Text ?? clipDescription;
 
-			//		returnValue = new UIDragItem[] { dragItem };
-			//	}
-			//},
-			//element);
+						if (String.IsNullOrWhiteSpace(text))
+						{
+							itemProvider = new NSItemProvider(renderer.NativeView.ConvertToImage());
+						}
+						else
+						{
+							itemProvider = new NSItemProvider(new NSString(text));
+						}
+					}
 
-			//return returnValue ?? new UIDragItem[0];
+					var dragItem = new UIDragItem(itemProvider);
+					dragItem.LocalObject = new CustomLocalStateData()
+					{
+						Renderer = renderer,
+						View = renderer.VirtualView as View,
+						DataPackage = args.Data
+					};
+
+					returnValue = new UIDragItem[] { dragItem };
+				}
+			},
+			element);
+
+			return returnValue ?? new UIDragItem[0];
 		}
 
 		void HandleDropCompleted(View element)
