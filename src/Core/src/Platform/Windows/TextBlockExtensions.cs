@@ -88,6 +88,11 @@ namespace Microsoft.Maui
 			nativeControl.TextAlignment = label.HorizontalTextAlignment.ToNative(true);
 		}
 
+		public static void UpdateVerticalTextAlignment(this TextBlock nativeControl, ILabel label)
+		{
+			nativeControl.VerticalAlignment = label.VerticalTextAlignment.ToNativeVerticalAlignment();
+		}
+
 		public static void UpdateLineBreakMode(this TextBlock nativeControl, ILabel label)
 		{
 			var lineBreakMode = label.LineBreakMode;

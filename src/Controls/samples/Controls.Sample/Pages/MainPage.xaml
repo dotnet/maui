@@ -4,12 +4,14 @@
     x:Class="Maui.Controls.Sample.Pages.MainPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     x:Name="HomePage"
+    BackgroundColor="{DynamicResource BackgroundColor}"
     Title="Gallery">
     <views:BasePage.Resources>
         <ResourceDictionary>
 
             <Style x:Key="TitleStyle" TargetType="Label">
                 <Setter Property="FontSize" Value="Title" />
+                <Setter Property="FontFamily" Value="Segoe UI Bold" />
                 <Setter Property="TextColor" Value="{StaticResource WhiteColor}" />
                 <Setter Property="HorizontalOptions" Value="Center" />
                 <Setter Property="Margin" Value="0, 24, 0, 0" />
@@ -17,6 +19,7 @@
 
             <Style x:Key="SubTitleStyle" TargetType="Label">
                 <Setter Property="FontSize" Value="Small" />
+                <Setter Property="FontFamily" Value="Segoe UI" />
                 <Setter Property="TextColor" Value="{StaticResource WhiteColor}" />
                 <Setter Property="HorizontalTextAlignment" Value="Center" />
                 <Setter Property="HorizontalOptions" Value="Center" />
@@ -35,16 +38,13 @@
                 <Setter Property="FlexLayout.Basis" Value="50%"/>
                 <Setter Property="FlexLayout.Grow" Value="0"/>
             </Style>
-
-            <Style x:Key="SectionItemTitleStyle" TargetType="Label">
-                <Setter Property="FontSize" Value="Medium" />
-                <Setter Property="TextColor" Value="{StaticResource AccentColor}" />
-            </Style>
-
-            <Style x:Key="SectionItemDescriptionStyle" TargetType="Label">
-                <Setter Property="FontSize" Value="Micro" />
-                <Setter Property="TextColor" Value="{StaticResource BlackColor}" />
-                <Setter Property="LineBreakMode" Value="WordWrap" />
+            
+            <Style x:Key="FooterStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="Small" />
+                <Setter Property="FontFamily" Value="Segoe UI" />
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="VerticalOptions" Value="End" />
+                <Setter Property="Margin" Value="0, 24" />
             </Style>
 
         </ResourceDictionary>
@@ -52,7 +52,7 @@
     <views:BasePage.ToolbarItems>
         <ToolbarItem
             IconImageSource="settings.png"
-            Text="Settings"/>
+            Text="Settings" />
     </views:BasePage.ToolbarItems>
     <ScrollView>
         <Grid
@@ -78,7 +78,7 @@
                     Text="An open-source framework for building iOS, Android, macOS and Windows apps"
                     Style="{StaticResource SubTitleStyle}"/>
             </Grid>
-            <!-- CONTENT -->
+            <!-- SECTIONS -->
             <Grid
                 Grid.Row="1"
                 Margin="12">
@@ -106,11 +106,11 @@
                                    RowDefinitions="Auto, *">
                                     <Label
                                        Text="{Binding Title}"
-                                       Style="{StaticResource SectionItemTitleStyle}"/>
+                                       Style="{StaticResource GalleryItemTitleStyle}"/>
                                     <Label
                                        Grid.Row="1"
                                        Text="{Binding Description}"
-                                       Style="{StaticResource SectionItemDescriptionStyle}"/>
+                                       Style="{StaticResource GalleryItemDescriptionStyle}"/>
                                 </Grid>
                             </Frame>
                         </DataTemplate>
@@ -120,11 +120,8 @@
             <!-- FOOTER -->
             <Label
                 Grid.Row="2"
-                Margin="0, 0, 0, 24"
-                FontSize="Small"
-                HorizontalOptions="Center"
                 Text="Microsoft Corporation © 2021"
-                VerticalOptions="End" />
+                Style="{StaticResource FooterStyle}" />
         </Grid>
     </ScrollView>
 </views:BasePage>

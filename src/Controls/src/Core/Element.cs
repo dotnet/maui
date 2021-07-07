@@ -357,19 +357,22 @@ namespace Microsoft.Maui.Controls
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);
+
+			Handler?.UpdateValue(propertyName);
+
 			foreach (var logicalChildren in ChildrenNotDrawnByThisElement)
 			{
 				if (logicalChildren is IPropertyPropagationController controller)
 					PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { logicalChildren });
 			}
 
-			if (_effects == null || _effects.Count == 0)
-				return;
-
-			var args = new PropertyChangedEventArgs(propertyName);
-			foreach (Effect effect in _effects)
+			if (_effects?.Count > 0)
 			{
-				effect?.SendOnElementPropertyChanged(args);
+				var args = new PropertyChangedEventArgs(propertyName);
+				foreach (Effect effect in _effects)
+				{
+					effect?.SendOnElementPropertyChanged(args);
+				}
 			}
 		}
 

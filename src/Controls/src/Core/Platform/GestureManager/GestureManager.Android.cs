@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (View.GestureRecognizers.Count == 0)
 			{
 				nativeView.Touch -= OnNativeViewTouched;
-				
+
 			}
 			else
 			{

@@ -559,7 +559,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			base.OnAttachedHandler();
 
-			if(!registrarValidated)
+			if (!registrarValidated)
 				ValidateRegistrar();
 
 			registrarValidated = true;

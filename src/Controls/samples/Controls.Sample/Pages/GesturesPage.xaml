@@ -44,13 +44,13 @@
         </Frame>
         <!-- CONTENT -->
         <CollectionView
-            x:Name="CoreSections"
+            x:Name="GesturesSections"
             Grid.Row="2"
             BackgroundColor="Transparent"
             ItemsSource="{Binding FilteredItems}"
             SelectionMode="Single"
+            SelectedItem="{Binding SelectedItem, Source={x:RelativeSource AncestorType={x:Type ContentPage}}, Mode=TwoWay}"
             SelectionChangedCommand="{Binding NavigateCommand, Source={x:RelativeSource AncestorType={x:Type ContentPage}}}"
-            SelectionChangedCommandParameter="{Binding SelectedItem, Source={x:Reference CoreSections}}"
             Margin="6, 12, 6, 0">
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout  

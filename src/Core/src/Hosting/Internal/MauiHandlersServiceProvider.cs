@@ -13,10 +13,10 @@ namespace Microsoft.Maui.Hosting.Internal
 			_collection = collection;
 		}
 
-		public IViewHandler? GetHandler(Type type)
-			=> GetService(type) as IViewHandler;
+		public IElementHandler? GetHandler(Type type)
+			=> GetService(type) as IElementHandler;
 
-		public IViewHandler? GetHandler<T>() where T : IView
+		public IElementHandler? GetHandler<T>() where T : IElement
 			=> GetHandler(typeof(T));
 
 		public Type? GetHandlerType(Type iview)

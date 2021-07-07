@@ -1,8 +1,6 @@
 using Android.Graphics.Drawables;
 using Android.Views;
-using Android.Widget;
 using AndroidX.Core.View;
-using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -23,9 +21,10 @@ namespace Microsoft.Maui
 			nativeView.Visibility = view.Visibility.ToNativeVisibility();
 		}
 
-		public static void UpdateClip(this WrapperView nativeView, IView view)
+		public static void UpdateClip(this AView nativeView, IView view)
 		{
-			nativeView.Clip = view.Clip;
+			if (nativeView is WrapperView wrapper)
+				wrapper.Clip = view.Clip;
 		}
 
 		public static ViewStates ToNativeVisibility(this Visibility visibility)
@@ -52,7 +51,17 @@ namespace Microsoft.Maui
 			if (paint.IsNullOrEmpty())
 				nativeView.Background = defaultBackground;
 			else
-				nativeView.Background = paint!.ToDrawable();
+			{
+				if (paint is SolidPaint solidPaint)
+				{
+					Color backgroundColor = solidPaint.Color;
+
+					if (backgroundColor != null)
+						nativeView.SetBackgroundColor(backgroundColor.ToNative());
+				}
+				else
+					nativeView.Background = paint!.ToDrawable();
+			}
 		}
 
 		public static void UpdateOpacity(this AView nativeView, IView view)

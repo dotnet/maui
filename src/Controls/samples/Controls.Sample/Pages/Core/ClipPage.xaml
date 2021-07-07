@@ -40,7 +40,7 @@
                     Text="Clipped Image using EllipseGeometry"
                     Style="{StaticResource Headline}"/>
                 <Image  
-                    Source="crimson.jpg">
+                    Source="dotnet_bot.png">
                     <Image.Clip>
                         <EllipseGeometry
                             Center="100, 100"

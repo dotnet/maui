@@ -2,25 +2,35 @@
   <PropertyGroup>
     <_UseNet6Packages Condition=" '$(TargetFramework.Contains(net6.0))' == 'true' or '$(PackageType)' == 'DotnetPlatform' ">true</_UseNet6Packages>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(_UseNet6Packages)' == 'true' ">
-    <_MicrosoftHostingVersion>6.0.0-preview.5.21301.5</_MicrosoftHostingVersion>
-    <_MicrosoftDependencyInjectionVersion>$(_MicrosoftHostingVersion)</_MicrosoftDependencyInjectionVersion>
-    <_MicrosoftFileProvidersVersion>6.0.0-preview.5.21301.5</_MicrosoftFileProvidersVersion>
-    <_MicrosoftSystemCodeDomVersion>6.0.0-preview.5.21301.5</_MicrosoftSystemCodeDomVersion>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(_UseNet6Packages)' != 'true' ">
     <_MicrosoftHostingVersion>5.0.0</_MicrosoftHostingVersion>
-    <_MicrosoftDependencyInjectionVersion>5.0.1</_MicrosoftDependencyInjectionVersion>
-    <_MicrosoftFileProvidersVersion>5.0.6</_MicrosoftFileProvidersVersion>
-    <_MicrosoftSystemCodeDomVersion>4.7.0</_MicrosoftSystemCodeDomVersion>
+    <SystemCodeDomPackageVersion>4.7.0</SystemCodeDomPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>(_MicrosoftHostingVersion)</MicrosoftExtensionsPrimitivesPackageVersion>
+    <MicrosoftExtensionsHostingAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.1</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>5.0.6</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
   </PropertyGroup>
+   <!-- Microsoft.Maui.Graphics related Packages -->
   <PropertyGroup>
-    <_MicrosoftProjectReunionVersion>0.8.0-preview</_MicrosoftProjectReunionVersion>
-    <_MicrosoftGraphicsWin2DVersion>0.5.0.13</_MicrosoftGraphicsWin2DVersion>
+    <_MicrosoftGraphicsWin2DVersion>0.8.0.21</_MicrosoftGraphicsWin2DVersion>
     <_MicrosoftMauiGraphics>6.0.100-preview.5.246</_MicrosoftMauiGraphics>
     <_MicrosoftMauiGraphicsWin2D>6.0.100-preview.5.229</_MicrosoftMauiGraphicsWin2D>
-    <_MicrosoftAspNetCoreVersion>6.0.0-preview.5.21301.17</_MicrosoftAspNetCoreVersion>
+  </PropertyGroup>
+   <!-- WINUI related Packages -->
+  <PropertyGroup>
+    <_MicrosoftProjectReunionVersion>0.8.0</_MicrosoftProjectReunionVersion>
     <_MicrosoftWebWebView2Version>1.0.705.50</_MicrosoftWebWebView2Version>
+  </PropertyGroup>
+  <!-- Android related Packages -->
+  <PropertyGroup>
     <_XamarinAndroidGlideVersion>4.11.0.1</_XamarinAndroidGlideVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
@@ -42,51 +52,51 @@
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsConfigurationPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration.Abstractions"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
-        Version="$(_MicrosoftDependencyInjectionVersion)"
+        Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection.Abstractions"
-        Version="$(_MicrosoftDependencyInjectionVersion)"
+        Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.FileProviders.Abstractions"
-        Version="$(_MicrosoftFileProvidersVersion)"
+        Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.FileProviders.Embedded"
-        Version="$(_MicrosoftFileProvidersVersion)"
+        Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Hosting.Abstractions"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Abstractions"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsLoggingPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Console"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Debug"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsLoggingDebugPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Primitives"
-        Version="$(_MicrosoftHostingVersion)"
+        Version="$(MicrosoftExtensionsPrimitivesPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.ProjectReunion"
@@ -101,6 +111,11 @@
         Version="$(_MicrosoftProjectReunionVersion)"
     />
     <PackageReference
+        Update="Microsoft.ProjectReunion.InteractiveExperiences"
+        Version="$(_MicrosoftProjectReunionVersion)"
+        NoWarn="NU1701"
+    />
+    <PackageReference
         Update="Microsoft.Graphics.Win2D"
         Version="$(_MicrosoftGraphicsWin2DVersion)"
     />
@@ -110,26 +125,23 @@
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Authorization"
-        Version="$(_MicrosoftAspNetCoreVersion)"
+        Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Components.WebView"
-        Version="$(_MicrosoftAspNetCoreVersion)"
+        Version="$(MicrosoftAspNetCoreComponentsWebViewPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Components.Web"
-        Version="$(_MicrosoftAspNetCoreVersion)" />
-    <PackageReference
-        Update="Microsoft.Extensions.FileProviders.Embedded"
-        Version="$(_MicrosoftAspNetCoreVersion)"
-    />
+        Version="$(MicrosoftAspNetCoreComponentsWebPackageVersion)" />
+
     <PackageReference
         Update="Microsoft.JSInterop"
-        Version="$(_MicrosoftAspNetCoreVersion)"
+        Version="$(MicrosoftJSInteropPackageVersion)"
     />
     <PackageReference
         Update="System.CodeDom"
-        Version="$(_MicrosoftSystemCodeDomVersion)"
+        Version="$(SystemCodeDomPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Web.WebView2"

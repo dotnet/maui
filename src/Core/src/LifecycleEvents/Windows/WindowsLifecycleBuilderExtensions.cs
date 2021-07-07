@@ -7,5 +7,7 @@
 		public static IWindowsLifecycleBuilder OnLaunching(this IWindowsLifecycleBuilder lifecycle, WindowsLifecycle.OnLaunching del) => lifecycle.OnEvent(del);
 		public static IWindowsLifecycleBuilder OnLaunched(this IWindowsLifecycleBuilder lifecycle, WindowsLifecycle.OnLaunched del) => lifecycle.OnEvent(del);
 		public static IWindowsLifecycleBuilder OnVisibilityChanged(this IWindowsLifecycleBuilder lifecycle, WindowsLifecycle.OnVisibilityChanged del) => lifecycle.OnEvent(del);
+
+		internal static IWindowsLifecycleBuilder OnMauiContextCreated(this IWindowsLifecycleBuilder lifecycle, WindowsLifecycle.OnMauiContextCreated del) => lifecycle.OnEvent(del);
 	}
 }
