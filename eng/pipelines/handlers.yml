@@ -261,7 +261,7 @@ stages:
               inputs:
                 Contents: |
                   artifacts/*nupkg
-                  artifacts/xamarin-workload.props
+                  artifacts/vs-workload.props
                   **/SignList.xml
                 TargetFolder: $(build.artifactstagingdirectory)
                 flattenFolders: true
