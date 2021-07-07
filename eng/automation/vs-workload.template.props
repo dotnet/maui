@@ -4,6 +4,11 @@
     <TargetName>Microsoft.NET.Sdk.Maui.Workload</TargetName>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Shorten package names to avoid long path caching issues in Visual Studio -->
+    <ShortNames Include="microsoft.aspnetcore.components.webview.maui;Microsoft.AspNetCore.Components.WebView.Maui">
+      <Replacement>WebView.Maui</Replacement>
+    </ShortNames>
+
     <ComponentResources Include="maui" Category=".NET" Title=".NET MAUI workload" Description=".NET MAUI SDK for all platforms"/>
     <ComponentVersions Include="maui" Version="@VERSION@" />
 
