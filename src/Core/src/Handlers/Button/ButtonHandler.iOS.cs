@@ -14,9 +14,12 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIButton CreateNativeView()
 		{
-			var button = new UIButton(UIButtonType.System);
-			SetControlPropertiesFromProxy(button);
-			return button;
+			var nativeButton = new UIButton(UIButtonType.System);
+
+			SetupDefaults(nativeButton);
+			SetControlPropertiesFromProxy(nativeButton);
+
+			return nativeButton;
 		}
 
 		protected override void ConnectHandler(UIButton nativeView)

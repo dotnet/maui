@@ -12,11 +12,15 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiTextField CreateNativeView()
 		{
-			return new MauiTextField
+			var nativeEntry = new MauiTextField
 			{
 				BorderStyle = UITextBorderStyle.RoundedRect,
 				ClipsToBounds = true
 			};
+
+			SetupDefaults(nativeEntry);
+
+			return nativeEntry;
 		}
 
 		protected override void ConnectHandler(MauiTextField nativeView)

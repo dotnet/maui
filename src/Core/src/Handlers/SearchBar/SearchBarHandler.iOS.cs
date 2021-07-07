@@ -1,7 +1,6 @@
 using System;
 using System.Drawing;
 using Foundation;
-using Microsoft.Extensions.DependencyInjection;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -23,6 +22,8 @@ namespace Microsoft.Maui.Handlers
 			var searchBar = new UISearchBar(RectangleF.Empty) { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
 			_editor = searchBar.FindDescendantView<UITextField>();
+
+			SetupDefaults(searchBar);
 
 			return searchBar;
 		}
@@ -59,8 +60,6 @@ namespace Microsoft.Maui.Handlers
 				_cancelButtonTextColorDefaultHighlighted = cancelButton.TitleColor(UIControlState.Highlighted);
 				_cancelButtonTextColorDefaultDisabled = cancelButton.TitleColor(UIControlState.Disabled);
 			}
-
-
 		}
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)

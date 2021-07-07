@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Handlers
 				SoundEffectsEnabled = false
 			};
 
+			SetupDefaults(nativeButton);
+
 			return nativeButton;
 		}
 

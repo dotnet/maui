@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView != null)
 				nativePicker.ItemsSource = new ItemDelegateList<string>(VirtualView);
 
+			SetupDefaults(nativePicker);
+
 			return nativePicker;
 		}
 
@@ -30,15 +32,14 @@ namespace Microsoft.Maui.Handlers
 
 		void SetupDefaults(MauiComboBox nativeView)
 		{
-			_defaultForeground = nativeView.Foreground;
-
-			
+			_defaultForeground = nativeView.Foreground;	
 		}
+
 		void Reload()
 		{
-
 			if (VirtualView == null || NativeView == null)
 				return;
+
 			NativeView.ItemsSource = new ItemDelegateList<string>(VirtualView);
 		}
 

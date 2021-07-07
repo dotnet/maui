@@ -1,11 +1,4 @@
-using System;
-using Android.Content;
-using Android.Runtime;
-using Android.Util;
-using Android.Views;
 using Android.Widget;
-using Java.Lang;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
@@ -16,7 +9,14 @@ namespace Microsoft.Maui.Handlers
 		static float? LineSpacingAddDefault { get; set; }
 		static float? LineSpacingMultDefault { get; set; }
 
-		protected override TextView CreateNativeView() => new TextView(Context);
+		protected override TextView CreateNativeView()
+		{
+			var textView = new TextView(Context);
+
+			SetupDefaults(textView);
+
+			return textView;
+		}
 
 		void SetupDefaults(TextView nativeView)
 		{

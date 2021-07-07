@@ -27,6 +27,8 @@ namespace Microsoft.Maui.Handlers
 			editText.TextAlignment = Android.Views.TextAlignment.ViewStart;
 			editText.SetHorizontallyScrolling(false);
 
+			SetupDefaults(editText);
+
 			return editText;
 		}
 
@@ -46,8 +48,6 @@ namespace Microsoft.Maui.Handlers
 
 		void SetupDefaults(AppCompatEditText nativeView)
 		{
-
-
 			DefaultTextColors = nativeView.TextColors;
 			DefaultPlaceholderTextColors = nativeView.HintTextColors;
 			DefaultBackground = nativeView.Background;

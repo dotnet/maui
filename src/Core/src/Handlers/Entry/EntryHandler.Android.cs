@@ -25,7 +25,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AppCompatEditText CreateNativeView()
 		{
-			return new AppCompatEditText(Context);
+			var appCompatEditText = new AppCompatEditText(Context);
+
+			SetupDefaults(appCompatEditText);
+
+			return appCompatEditText;
 		}
 
 		// Returns the default 'X' char drawable in the AppCompatEditText.
@@ -60,8 +64,6 @@ namespace Microsoft.Maui.Handlers
 
 		void SetupDefaults(AppCompatEditText nativeView)
 		{
-
-
 			ClearButtonDrawable = GetClearButtonDrawable();
 			DefaultTextColors = nativeView.TextColors;
 			DefaultBackground = nativeView.Background;

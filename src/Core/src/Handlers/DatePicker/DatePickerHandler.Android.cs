@@ -19,6 +19,8 @@ namespace Microsoft.Maui.Handlers
 				HidePicker = HidePickerDialog
 			};
 
+			SetupDefaults(mauiDatePicker);
+
 			var date = VirtualView?.Date;
 
 			if (date != null)
@@ -31,8 +33,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			_defaultBackground = nativeView.Background;
 			_defaultTextColors = nativeView.TextColors;
-
-
 		}
 
 		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }

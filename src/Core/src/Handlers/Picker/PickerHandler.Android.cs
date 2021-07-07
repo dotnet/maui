@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Specialized;
-using System.Linq;
 using Android.App;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
-using Microsoft.Maui.Graphics;
 using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers
@@ -19,8 +16,14 @@ namespace Microsoft.Maui.Handlers
 
 		static ColorStateList? DefaultTitleColors { get; set; }
 
-		protected override MauiPicker CreateNativeView() =>
-			new MauiPicker(Context);
+		protected override MauiPicker CreateNativeView()
+		{
+			var nativePicker = new MauiPicker(Context);
+
+			SetupDefaults(nativePicker);
+
+			return nativePicker;
+		}
 
 		protected override void ConnectHandler(MauiPicker nativeView)
 		{
@@ -40,8 +43,6 @@ namespace Microsoft.Maui.Handlers
 
 		void SetupDefaults(MauiPicker nativeView)
 		{
-
-
 			DefaultBackground = nativeView.Background;
 			DefaultTitleColors = nativeView.HintTextColors;
 		}
@@ -141,7 +142,7 @@ namespace Microsoft.Maui.Handlers
 					{
 						var selectedIndex = e.Which;
 						VirtualView.SelectedIndex = selectedIndex;
-						base.NativeView?.UpdatePicker(VirtualView);
+						NativeView?.UpdatePicker(VirtualView);
 					});
 
 					builder.SetNegativeButton(AResource.String.Cancel, (o, args) => { });

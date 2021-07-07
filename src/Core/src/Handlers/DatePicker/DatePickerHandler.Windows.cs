@@ -8,7 +8,14 @@ namespace Microsoft.Maui.Handlers
 	{
 		WBrush? _defaultForeground;
 
-		protected override CalendarDatePicker CreateNativeView() => new CalendarDatePicker();
+		protected override CalendarDatePicker CreateNativeView()
+		{
+			var nativeDatePicker = new CalendarDatePicker();
+
+			SetupDefaults(nativeDatePicker);
+
+			return nativeDatePicker;
+		}
 
 		protected override void ConnectHandler(CalendarDatePicker nativeView)
 		{
@@ -22,9 +29,7 @@ namespace Microsoft.Maui.Handlers
 
 		void SetupDefaults(CalendarDatePicker nativeView)
 		{
-			_defaultForeground = nativeView.Foreground;
-
-			
+			_defaultForeground = nativeView.Foreground;	
 		}
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)

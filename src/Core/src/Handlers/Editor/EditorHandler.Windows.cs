@@ -9,14 +9,21 @@ namespace Microsoft.Maui.Handlers
 		Brush? _placeholderDefaultBrush;
 		Brush? _defaultPlaceholderColorFocusBrush;
 
-		protected override MauiTextBox CreateNativeView() => new MauiTextBox
+		protected override MauiTextBox CreateNativeView()
 		{
-			AcceptsReturn = true,
-			TextWrapping = TextWrapping.Wrap,
-			Style = Application.Current.Resources["MauiTextBoxStyle"] as Style,
-			UpdateVerticalAlignmentOnLoad = false,
-			VerticalContentAlignment = VerticalAlignment.Top
-		};
+			var nativeEditor = new MauiTextBox
+			{
+				AcceptsReturn = true,
+				TextWrapping = TextWrapping.Wrap,
+				Style = Application.Current.Resources["MauiTextBoxStyle"] as Style,
+				UpdateVerticalAlignmentOnLoad = false,
+				VerticalContentAlignment = VerticalAlignment.Top
+			};
+
+			SetupDefaults(nativeEditor);
+
+			return nativeEditor;
+		}
 
 		protected override void ConnectHandler(MauiTextBox nativeView)
 		{
@@ -31,9 +38,7 @@ namespace Microsoft.Maui.Handlers
 		void SetupDefaults(MauiTextBox nativeView)
 		{
 			_placeholderDefaultBrush = nativeView.PlaceholderForeground;
-			_defaultPlaceholderColorFocusBrush = nativeView.PlaceholderForegroundFocusBrush;
-
-			
+			_defaultPlaceholderColorFocusBrush = nativeView.PlaceholderForegroundFocusBrush;		
 		}
 
 		public static void MapText(EditorHandler handler, IEditor editor)

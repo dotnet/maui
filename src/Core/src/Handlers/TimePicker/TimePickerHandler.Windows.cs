@@ -8,7 +8,14 @@ namespace Microsoft.Maui.Handlers
 	{
 		WBrush? _defaultForeground;
 
-		protected override TimePicker CreateNativeView() => new TimePicker();
+		protected override TimePicker CreateNativeView()
+		{
+			var nativeTimePicker = new TimePicker();
+
+			SetupDefaults(nativeTimePicker);
+
+			return nativeTimePicker;
+		}
 
 		protected override void ConnectHandler(TimePicker nativeView)
 		{

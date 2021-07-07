@@ -2,7 +2,6 @@
 using Android.App;
 using Android.Graphics.Drawables;
 using Android.Text.Format;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -21,14 +20,14 @@ namespace Microsoft.Maui.Handlers
 				HidePicker = HidePickerDialog
 			};
 
+			SetupDefaults(_timePicker);
+
 			return _timePicker;
 		}
 
 		void SetupDefaults(MauiTimePicker nativeView)
 		{
 			DefaultBackground = nativeView.Background;
-
-
 		}
 
 		protected override void DisconnectHandler(MauiTimePicker nativeView)

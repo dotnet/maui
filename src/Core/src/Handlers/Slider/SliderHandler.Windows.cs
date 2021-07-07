@@ -16,12 +16,15 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiSlider CreateNativeView()
 		{
-			var slider = new MauiSlider
+			var nativeSlider = new MauiSlider
 			{
 				IsThumbToolTipEnabled = false
 			};
 
-			return slider;
+
+			SetupDefaults(nativeSlider);
+
+			return nativeSlider;
 		}
 
 		protected override void ConnectHandler(MauiSlider nativeView)

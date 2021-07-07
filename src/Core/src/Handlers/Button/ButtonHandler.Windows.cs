@@ -11,8 +11,14 @@ namespace Microsoft.Maui.Handlers
 
 		PointerEventHandler? _pointerPressedHandler;
 
-		protected override MauiButton CreateNativeView() 
-			=> new MauiButton();
+		protected override MauiButton CreateNativeView()
+		{ 
+			var nativeButton = new MauiButton();
+
+			SetupDefaults(nativeButton);
+
+			return nativeButton;
+		}
 
 		void SetupDefaults(MauiButton nativeView)
 		{

@@ -18,11 +18,15 @@ namespace Microsoft.Maui.Handlers
 
 		protected override SeekBar CreateNativeView()
 		{
-			return new SeekBar(Context)
+			var seekBar = new SeekBar(Context)
 			{
 				DuplicateParentStateEnabled = false,
 				Max = (int)SliderExtensions.NativeMaxValue
 			};
+
+			SetupDefaults(seekBar);
+
+			return seekBar;
 		}
 
 		protected override void ConnectHandler(SeekBar nativeView)

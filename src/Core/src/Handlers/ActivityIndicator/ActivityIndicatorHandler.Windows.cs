@@ -5,11 +5,18 @@ namespace Microsoft.Maui.Handlers
 	{
 		object? _foregroundDefault;
 
-		protected override MauiActivityIndicator CreateNativeView() => new MauiActivityIndicator
+		protected override MauiActivityIndicator CreateNativeView()
 		{
-			IsIndeterminate = true,
-			Style = UI.Xaml.Application.Current.Resources["MauiActivityIndicatorStyle"] as UI.Xaml.Style
-		};
+			var nativeActivityIndicator = new MauiActivityIndicator
+			{
+				IsIndeterminate = true,
+				Style = UI.Xaml.Application.Current.Resources["MauiActivityIndicatorStyle"] as UI.Xaml.Style
+			};
+
+			SetupDefaults(nativeActivityIndicator);
+
+			return nativeActivityIndicator;
+		}
 
 		void SetupDefaults(MauiActivityIndicator nativeView)
 		{

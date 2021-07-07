@@ -9,7 +9,14 @@ namespace Microsoft.Maui.Handlers
 		static UIColor? DefaultMaxTrackColor;
 		static UIColor? DefaultThumbColor;
 
-		protected override UISlider CreateNativeView() => new UISlider { Continuous = true };
+		protected override UISlider CreateNativeView()
+		{
+			var nativeSlider = new UISlider { Continuous = true };
+
+			SetupDefaults(nativeSlider);
+
+			return nativeSlider;
+		}
 
 		protected override void ConnectHandler(UISlider nativeView)
 		{

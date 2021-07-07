@@ -43,6 +43,8 @@ namespace Microsoft.Maui.Handlers
 
 			nativeDatePicker.AccessibilityTraits = UIAccessibilityTrait.Button;
 
+			SetupDefaults(nativeDatePicker);
+
 			return nativeDatePicker;
 		}
 

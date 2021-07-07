@@ -12,7 +12,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UISwitch CreateNativeView()
 		{
-			return new UISwitch(RectangleF.Empty);
+			var nativeSwitch = new UISwitch(RectangleF.Empty);
+
+			SetupDefaults(nativeSwitch);
+
+			return nativeSwitch;
 		}
 
 		protected override void ConnectHandler(UISwitch nativeView)

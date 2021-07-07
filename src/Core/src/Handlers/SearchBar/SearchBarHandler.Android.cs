@@ -1,7 +1,5 @@
-﻿using System;
-using Android.Graphics.Drawables;
+﻿using Android.Graphics.Drawables;
 using Android.Widget;
-using Microsoft.Extensions.DependencyInjection;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Handlers
@@ -11,11 +9,14 @@ namespace Microsoft.Maui.Handlers
 		static Drawable? DefaultBackground;
 
 		EditText? _editText;
+
 		public EditText? QueryEditor => _editText;
 
 		protected override SearchView CreateNativeView()
 		{
 			var searchView = new SearchView(Context);
+
+			SetupDefaults(searchView);
 
 			_editText = searchView.GetFirstChildOfType<EditText>();
 
@@ -25,8 +26,6 @@ namespace Microsoft.Maui.Handlers
 		void SetupDefaults(SearchView nativeView)
 		{
 			DefaultBackground = nativeView.Background;
-
-
 		}
 
 		// This is a Android-specific mapping
