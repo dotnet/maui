@@ -13,12 +13,12 @@ namespace Microsoft.Maui.Handlers
 	public partial class LabelHandler : ViewHandler<ILabel, TextView>
 	{
 		static Color? DefaultTextColor { get; set; }
-		static float LineSpacingAddDefault { get; set; }
-		static float LineSpacingMultDefault { get; set; }
+		static float? LineSpacingAddDefault { get; set; }
+		static float? LineSpacingMultDefault { get; set; }
 
 		protected override TextView CreateNativeView() => new TextView(Context);
 
-		protected override void SetupDefaults(TextView nativeView)
+		void SetupDefaults(TextView nativeView)
 		{
 			if (nativeView.TextColors == null)
 			{
@@ -53,6 +53,9 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateHorizontalTextAlignment(label);
 		}
 
+		[MissingMapper]
+		public static void MapVerticalTextAlignment(LabelHandler handler, ILabel label) { }
+
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
 		{
 			handler.NativeView?.UpdateLineBreakMode(label);
@@ -82,7 +85,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateLineHeight(label, LineSpacingAddDefault, LineSpacingMultDefault);
+			handler.NativeView?.UpdateLineHeight(label);
 		}
 	}
 }

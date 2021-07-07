@@ -5,7 +5,7 @@ using System.Diagnostics;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 #elif WINDOWS
-using Microsoft.System;
+using Microsoft.UI.Dispatching;
 #endif
 
 namespace Microsoft.Maui.Essentials

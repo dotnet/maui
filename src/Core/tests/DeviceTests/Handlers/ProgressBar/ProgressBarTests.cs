@@ -18,12 +18,23 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var progressBar = new ProgressBarStub()
 			{
-				Progress = progress
+				Progress = progress,
 			};
 
 			var expected = progressBar.Progress;
 
 			await ValidatePropertyInitValue(progressBar, () => progressBar.Progress, GetNativeProgress, progressBar.Progress);
+		}
+
+		[Fact(DisplayName = "Null Progress Color Doesn't Crash")]
+		public async Task NullProgressColorDoesntCrash()
+		{
+			var progressBar = new ProgressBarStub()
+			{
+				ProgressColor = null
+			};
+
+			await CreateHandlerAsync(progressBar);
 		}
 	}
 }

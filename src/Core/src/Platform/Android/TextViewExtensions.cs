@@ -22,7 +22,10 @@ namespace Microsoft.Maui
 
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)
 		{
-			textView.SetTextColor(textStyle.TextColor?.ToNative() ?? defaultColor.ToNative());
+			var textColor = textStyle.TextColor?.ToNative() ?? defaultColor?.ToNative();
+
+			if (textColor != null)
+				textView.SetTextColor(textColor.Value);
 		}
 
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle) =>
@@ -109,11 +112,9 @@ namespace Microsoft.Maui
 				textView.PaintFlags |= PaintFlags.UnderlineText;
 		}
 
-		public static void UpdateLineHeight(this TextView textView, ILabel label, float lineSpacingAddDefault, float lineSpacingMultDefault)
+		public static void UpdateLineHeight(this TextView textView, ILabel label)
 		{
-			if (label.LineHeight == -1)
-				textView.SetLineSpacing(lineSpacingAddDefault, lineSpacingMultDefault);
-			else if (label.LineHeight >= 0)
+			if (label.LineHeight >= 0)
 				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
 

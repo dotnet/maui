@@ -22,11 +22,11 @@ namespace Microsoft.Maui.Handlers
 			return searchView;
 		}
 
-		protected override void SetupDefaults(SearchView nativeView)
+		void SetupDefaults(SearchView nativeView)
 		{
 			DefaultBackground = nativeView.Background;
 
-			base.SetupDefaults(nativeView);
+
 		}
 
 		// This is a Android-specific mapping

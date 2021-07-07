@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				//TODO: Handle this with AppBuilderHost
 				try
 				{
-					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType());
+					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(Forms.MauiContext);
 				}
 				catch
@@ -355,6 +355,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				else if (handler is INativeViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
+					element.Handler = handler;
 					SetRenderer(element, renderer);
 				}
 			}

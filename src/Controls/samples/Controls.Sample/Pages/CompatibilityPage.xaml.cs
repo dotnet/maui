@@ -1,10 +1,10 @@
 ﻿namespace Maui.Controls.Sample.Pages
 {
-    public partial class CompatibilityPage
+	public partial class CompatibilityPage
 	{
-        public CompatibilityPage()
-        {
-            InitializeComponent();
-        }
-    }
+		public CompatibilityPage()
+		{
+			InitializeComponent();
+		}
+	}
 }

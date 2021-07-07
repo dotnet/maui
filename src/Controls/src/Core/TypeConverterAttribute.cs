@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
 namespace Microsoft.Maui.Controls
@@ -57,6 +58,7 @@ namespace Microsoft.Maui.Controls
 			{ typeof(Point), typeof(PointTypeConverter) },
 			{ typeof(PointCollection), typeof(PointCollectionConverter) },
 			{ typeof(DoubleCollection), typeof(DoubleCollectionConverter) },
+			{ typeof(FlexBasis), typeof(FlexBasisTypeConverter) },
 		};
 
 		public static readonly TypeConverterAttribute Default = new TypeConverterAttribute();

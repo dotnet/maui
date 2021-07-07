@@ -39,5 +39,8 @@ namespace Microsoft.Maui.LifecycleEvents
 
 		// Custom events
 		public delegate bool OnPressingBack(Activity activity);
+
+		// Internal events
+		internal delegate void OnMauiContextCreated(IMauiContext mauiContext);
 	}
 }
