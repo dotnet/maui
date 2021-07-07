@@ -13,8 +13,8 @@ namespace Microsoft.Maui.Handlers
 	public partial class LabelHandler : ViewHandler<ILabel, TextView>
 	{
 		static Color? DefaultTextColor { get; set; }
-		static float LineSpacingAddDefault { get; set; }
-		static float LineSpacingMultDefault { get; set; }
+		static float? LineSpacingAddDefault { get; set; }
+		static float? LineSpacingMultDefault { get; set; }
 
 		protected override TextView CreateNativeView() => new TextView(Context);
 
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateLineHeight(label, LineSpacingAddDefault, LineSpacingMultDefault);
+			handler.NativeView?.UpdateLineHeight(label);
 		}
 	}
 }
