@@ -54,3 +54,9 @@ steps:
       displayName: 'Provision Visual Studio'
       inputs:
         provisioning_script: $(provisionator.vs2019)
+
+
+  # Prepare Both
+  - pwsh: ./build.ps1 --target provision
+    displayName: 'Cake Provision'
+    condition: eq(variables['provisioningCake'], 'true')
