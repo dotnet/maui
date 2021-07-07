@@ -506,8 +506,9 @@ namespace Microsoft.Maui.Controls
 				throw new InvalidOperationException("Cannot attach Effect to multiple sources");
 
 			Effect effectToRegister = effect;
-			if (effect is RoutingEffect)
-				effectToRegister = ((RoutingEffect)effect).Inner;
+			if (effect is RoutingEffect re && re.Inner != null)
+				effectToRegister = re.Inner;
+
 			_effectControlProvider.RegisterEffect(effectToRegister);
 			effectToRegister.Element = this;
 			effect.SendAttached();

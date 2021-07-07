@@ -18,6 +18,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ClipPage), "Clip",
 				"Defines the outline of the contents of an element."),
 
+			new SectionModel(typeof(Effects), "Effects",
+				"Apply Effects to a View."),
+
 			new SectionModel(typeof(GesturesPage), "Gestures",
 				"Use tap, pinch, pan, swipe, and drag and drop gestures on View instances."),
 
@@ -26,7 +29,7 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(TransformationsPage), "Transformations",
 				"Apply scale transformations, rotation, etc. to a View."),
-
+				
 			new SectionModel(typeof(ModalPage), "Modal",
 				"Allows you to push and pop Modal Pages."),
 		};

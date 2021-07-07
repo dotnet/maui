@@ -51,6 +51,10 @@ namespace Maui.Controls.Sample
 
 			// Use a "third party" library that brings in a massive amount of controls
 			appBuilder.UseBordelessEntry();
+			appBuilder.ConfigureEffects(builder =>
+			{
+				builder.Add<FocusRoutingEffect, FocusPlatformEffect>();
+			});
 
 #if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
@@ -98,7 +102,7 @@ namespace Maui.Controls.Sample
 						{
 							PageType.Shell => typeof(AppShell),
 #if WINDOWS
-							PageType.Main => typeof(TempPage),
+							PageType.Main => typeof(Effects),
 #else
 							PageType.Main => typeof(CustomNavigationPage),
 #endif
