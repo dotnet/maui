@@ -353,7 +353,7 @@ namespace Microsoft.Maui.Controls
 						var page = GetOrCreateFromRoute(globalRoutes[i], queryData, i == globalRoutes.Count - 1, false);
 						if (IsModal(page))
 						{
-							await Navigation.PushModalAsync(page, IsNavigationAnimated(page));
+							await PushModalAsync(page, IsNavigationAnimated(page));
 							break;
 						}
 						else if (!isLast && navIndex < _navStack.Count)
@@ -408,7 +408,7 @@ namespace Microsoft.Maui.Controls
 							bool isAnimated = animate ?? IsNavigationAnimated(navStack[navStack.Count - 1]);
 							if (Navigation.ModalStack.Contains(navStack[navStack.Count - 1]))
 							{
-								await Navigation.PopModalAsync(isAnimated);
+								await PopModalAsync(isAnimated);
 							}
 							else if (Navigation.ModalStack.Count > 0)
 							{
@@ -549,7 +549,7 @@ namespace Microsoft.Maui.Controls
 
 				if (modalPage is NavigationPage np)
 				{
-					await Navigation.PushModalAsync(modalPage, isAnimated);
+					await PushModalAsync(modalPage, isAnimated);
 					activeModalNavigationPage = np;
 				}
 				else
@@ -557,7 +557,7 @@ namespace Microsoft.Maui.Controls
 					if (activeModalNavigationPage != null)
 						await activeModalNavigationPage.Navigation.PushAsync(modalPage, animate ?? IsNavigationAnimated(modalPage));
 					else
-						await Navigation.PushModalAsync(modalPage, isAnimated);
+						await PushModalAsync(modalPage, isAnimated);
 				}
 			}
 
@@ -567,6 +567,22 @@ namespace Microsoft.Maui.Controls
 			{
 				//shell.UpdateCurrentState(ShellNavigationSource.ShellSectionChanged);
 			}
+		}
+
+		Task PopModalAsync(bool isAnimated)
+		{
+			if (Navigation is NavigationImpl shellSectionProxy)
+				return shellSectionProxy.PopModalInnerAsync(isAnimated);
+
+			return Navigation.PopModalAsync(isAnimated);
+		}
+
+		Task PushModalAsync(Page page, bool isAnimated)
+		{
+			if (Navigation is NavigationImpl shellSectionProxy)
+				return shellSectionProxy.PushModalInnerAsync(page, isAnimated);
+
+			return Navigation.PushModalAsync(page, isAnimated);
 		}
 
 		async Task PushStackOfPages(List<Page> pages, bool? animate)
@@ -851,7 +867,7 @@ namespace Microsoft.Maui.Controls
 					}
 
 					bool isAnimated = animated ?? (Shell.GetPresentationMode(pageToPop) & PresentationMode.NotAnimated) != PresentationMode.NotAnimated;
-					await Navigation.PopModalAsync(isAnimated);
+					await PopModalAsync(isAnimated);
 				}
 			}
 			finally
@@ -1086,6 +1102,52 @@ namespace Microsoft.Maui.Controls
 				};
 
 				return _owner.Shell.NavigationManager.GoToAsync(navigationParameters);
+			}
+
+			// This is used when we just want to process the modal operation and we don't need
+			// it to process through the internal shell navigation bits
+			internal Task PushModalInnerAsync(Page modal, bool animated)
+			{
+				return Inner?.PushModalAsync(modal, animated);
+			}
+
+			// This is used when we just want to process the modal operation and we don't need
+			// it to process through the internal shell navigation bits
+			internal Task<Page> PopModalInnerAsync(bool animated)
+			{
+				return Inner?.PopModalAsync(animated);
+			}
+
+			protected override async Task OnPushModal(Page modal, bool animated)
+			{
+				if (_owner.Shell.NavigationManager.AccumulateNavigatedEvents)
+				{
+					await base.OnPushModal(modal, animated);
+					return;
+				}
+
+				if (animated)
+					Shell.SetPresentationMode(modal, PresentationMode.ModalAnimated);
+				else
+					Shell.SetPresentationMode(modal, PresentationMode.ModalNotAnimated);
+
+				var navigationParameters = new ShellNavigationParameters()
+				{
+					Animated = animated,
+					PagePushing = modal
+				};
+
+				await _owner.Shell.NavigationManager.GoToAsync(navigationParameters);
+			}
+
+			protected async override Task<Page> OnPopModal(bool animated)
+			{
+				if (_owner.Shell.NavigationManager.AccumulateNavigatedEvents)
+					return await base.OnPopModal(animated);
+
+				var page = ModalStack[ModalStack.Count - 1];
+				await _owner.Shell.GoToAsync("..", animated);
+				return page;
 			}
 
 			protected override void OnRemovePage(Page page)
