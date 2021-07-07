@@ -310,16 +310,14 @@ namespace Microsoft.Maui.Controls.Platform
 				double startingScale = 1;
 				var uiRecognizer = CreatePinchRecognizer(r =>
 				{
-					var pinchGestureRecognizer = weakRecognizer.Target as IPinchGestureController;
-					var eventTracker = weakEventTracker.Target as GestureManager;
-					var view = eventTracker?._handler?.VirtualView as View;
-
-					if (pinchGestureRecognizer != null && eventTracker != null && view != null)
+					if (weakRecognizer.Target is IPinchGestureController pinchGestureRecognizer &&
+						weakEventTracker.Target is GestureManager eventTracker &&
+						eventTracker._handler?.VirtualView is View view)
 					{
 						var oldScale = eventTracker._previousScale;
 						var originPoint = r.LocationInView(null);
 #if __MOBILE__
-						originPoint = UIApplication.SharedApplication.GetKeyWindow().ConvertPointToView(originPoint, eventTracker._handler.NativeView);
+						originPoint = UIApplication.SharedApplication.GetKeyWindow().ConvertPointToView(originPoint, eventTracker._nativeView);
 #else
 						originPoint = NSApplication.SharedApplication.KeyWindow.ContentView.ConvertPointToView(originPoint, eventTracker._handler.NativeView);
 #endif
