@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Platform
 		DragAndDropDelegate? _dragAndDropDelegate;
 #endif
 
-		public GestureManager(INativeViewHandler handler)
+		public GestureManager(IViewHandler handler)
 		{
 			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_nativeView = handler.NativeView;
 			_collectionChangedHandler = ModelGestureRecognizersOnCollectionChanged;
 
-			_handler = handler;
+			_handler = (INativeViewHandler)handler;
 
 			// In XF this was called inside ViewDidLoad
 			LoadEvents(_handler.NativeView);
