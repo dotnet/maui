@@ -37,16 +37,16 @@ namespace Microsoft.Maui.Controls.Platform
 			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
 
-			if (handler.NativeView == null)
+			_handler = (INativeViewHandler)handler;
+			_nativeView = _handler.NativeView;
+
+			if (_nativeView == null)
 				throw new ArgumentNullException(nameof(handler.NativeView));
 
-			_nativeView = handler.NativeView;
 			_collectionChangedHandler = ModelGestureRecognizersOnCollectionChanged;
 
-			_handler = (INativeViewHandler)handler;
-
 			// In XF this was called inside ViewDidLoad
-			LoadEvents(_handler.NativeView);
+			LoadEvents(_nativeView);
 		}
 
 		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers
