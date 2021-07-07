@@ -1,11 +1,11 @@
 #if __MOBILE__
 using CurrentPlatform = Microsoft.Maui.Controls.PlatformConfiguration.iOS;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+namespace Microsoft.Maui.Controls.Platform
 #else
 using CurrentPlatform = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.macOS;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
+namespace Microsoft.Maui.Controls.Platform
 #endif
 {
 	public static class PlatformConfigurationExtensions
