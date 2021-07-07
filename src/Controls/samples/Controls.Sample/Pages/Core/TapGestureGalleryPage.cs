@@ -67,9 +67,10 @@ namespace Maui.Controls.Sample.Pages
 			Content = vertical;
 		}
 
-		void HandleTapCommand(Color backgroundColor)
+		async void HandleTapCommand(Color backgroundColor)
 		{
 			changeColorBoxView.BackgroundColor = backgroundColor;
+			await DisplayAlert("Tapped", "Tap Command Fired", "Close");
 		}
 	}
 }
