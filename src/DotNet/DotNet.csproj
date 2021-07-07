@@ -84,8 +84,8 @@
     </PropertyGroup>
     <WriteLinesToFile File="$(_NuGetConfig)" Lines="$(_NuGetContent)" Overwrite="true" />
     <Exec
+        Command="&quot;$(_ThisDotNet)&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir $(DotNetTempDirectory)"
         WorkingDirectory="$(DotNetTempDirectory)"
-        Command="&quot;$(_ThisDotNet)&quot; workload install maui --skip-manifest-update --verbosity diag"
     />
     <Delete Files="$(_NuGetConfig)" />
 
@@ -179,7 +179,7 @@
       Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag"
+        Command="&quot;$(DotNetToolPath)&quot; workload install @(_WorkloadIds, ' ') --skip-manifest-update --verbosity diag --temp-dir $(DotNetTempDirectory)"
         WorkingDirectory="$(MauiRootDirectory)"
     />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />

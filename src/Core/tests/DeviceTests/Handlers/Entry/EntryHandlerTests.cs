@@ -33,6 +33,18 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.TextColor, GetNativeTextColor, entry.TextColor);
 		}
 
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				TextColor = null
+			};
+
+			await CreateHandlerAsync(entry);
+		}
+
 		[Theory(DisplayName = "IsPassword Initializes Correctly")]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -51,10 +63,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var entry = new EntryStub()
 			{
-				Text = "Placeholder"
+				Placeholder = "Placeholder"
 			};
 
-			await ValidatePropertyInitValue(entry, () => entry.Placeholder, GetNativePlaceholder, entry.Placeholder);
+			await ValidatePropertyInitValue(entry, () => entry.Placeholder, GetNativePlaceholder, "Placeholder");
 		}
 
 		[Theory(DisplayName = "Is Text Prediction Enabled")]

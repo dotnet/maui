@@ -27,12 +27,12 @@ namespace Microsoft.Maui.Handlers
 			return mauiDatePicker;
 		}
 
-		protected override void SetupDefaults(MauiDatePicker nativeView)
+		void SetupDefaults(MauiDatePicker nativeView)
 		{
 			_defaultBackground = nativeView.Background;
 			_defaultTextColors = nativeView.TextColors;
 
-			base.SetupDefaults(nativeView);
+
 		}
 
 		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }

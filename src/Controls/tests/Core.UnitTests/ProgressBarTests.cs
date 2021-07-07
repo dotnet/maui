@@ -1,4 +1,3 @@
-using Microsoft.Maui.Animations;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -6,22 +5,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class ProgressBarTests : BaseTestFixture
 	{
-		[SetUp]
-		public override void Setup()
-		{
-			base.Setup();
-
-			Device.PlatformServices = new MockPlatformServices();
-		}
-
-		[TearDown]
-		public override void TearDown()
-		{
-			base.TearDown();
-
-			Device.PlatformServices = null;
-		}
-
 		[Test]
 		public void TestClamp()
 		{
@@ -37,10 +20,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestProgressTo()
 		{
-			var bar = new ProgressBar
-			{
-				Handler = new HandlerWithAnimationContextStub()
-			};
+			var bar = AnimationReadyWindow.Prepare(new ProgressBar());
 
 			bar.ProgressTo(0.8, 250, Easing.Linear);
 

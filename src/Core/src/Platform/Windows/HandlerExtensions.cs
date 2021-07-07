@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Hosting;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui
@@ -18,16 +17,14 @@ namespace Microsoft.Maui
 			var handler = view.Handler;
 
 			if (handler == null)
-			{
-				handler = context.Handlers.GetHandler(view.GetType());
+				handler = context.Handlers.GetHandler(view.GetType()) as IViewHandler;
 
-				if (handler == null)
-					throw new Exception($"Handler not found for view {view}");
+			if (handler == null)
+				throw new Exception($"Handler not found for view {view}");
 
-				handler.SetMauiContext(context);
+			handler.SetMauiContext(context);
 
-				view.Handler = handler;
-			}
+			view.Handler = handler;
 
 			if (handler.VirtualView != view)
 				handler.SetVirtualView(view);
@@ -38,6 +35,27 @@ namespace Microsoft.Maui
 			}
 
 			return result;
+		}
+
+		public static void SetWindow(this UI.Xaml.Window nativeWindow, IWindow window, IMauiContext context)
+		{
+			_ = nativeWindow ?? throw new ArgumentNullException(nameof(nativeWindow));
+			_ = window ?? throw new ArgumentNullException(nameof(window));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
+
+			var handler = window.Handler;
+			if (handler == null)
+				handler = context.Handlers.GetHandler(window.GetType());
+
+			if (handler == null)
+				throw new Exception($"Handler not found for view {window}.");
+
+			handler.SetMauiContext(context);
+
+			window.Handler = handler;
+
+			if (handler.VirtualView != window)
+				handler.SetVirtualView(window);
 		}
 	}
 }

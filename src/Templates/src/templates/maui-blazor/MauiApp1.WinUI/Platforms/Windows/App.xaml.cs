@@ -10,7 +10,7 @@ namespace MauiApp1.WinUI
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
-    public partial class App : MiddleApp
+    public partial class App : MauiWinUIApplication
     {
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -21,14 +21,13 @@ namespace MauiApp1.WinUI
             this.InitializeComponent();
         }
 
+        protected override IStartup OnCreateStartup() => new Startup();
+
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             base.OnLaunched(args);
 
             Microsoft.Maui.Essentials.Platform.OnLaunched(args);
         }
-    }
-    public class MiddleApp : MauiWinUIApplication<Startup>
-    {
     }
 }

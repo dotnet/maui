@@ -8,6 +8,14 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 {
 	public class StubBase : IFrameworkElement
 	{
+		IElementHandler IElement.Handler
+		{
+			get => Handler;
+			set => Handler = (IViewHandler)value;
+		}
+
+		IElement IElement.Parent => Parent;
+
 		public bool IsEnabled { get; set; } = true;
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;

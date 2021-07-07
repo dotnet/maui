@@ -1,47 +1,40 @@
+﻿#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using AView = Android.Views.View;
 
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
+namespace Microsoft.Maui.Controls.Platform
 {
-	internal class GestureManager : IDisposable
+	class GestureManager : IDisposable
 	{
-		IVisualElementRenderer _renderer;
-		readonly Lazy<ScaleGestureDetector> _scaleDetector;
-		readonly Lazy<TapAndPanGestureDetector> _tapAndPanAndSwipeDetector;
-		readonly Lazy<DragAndDropGestureHandler> _dragAndDropGestureHandler;
+		IViewHandler? _handler;
+		Lazy<ScaleGestureDetector> _scaleDetector;
+		Lazy<TapAndPanGestureDetector> _tapAndPanAndSwipeDetector;
+		Lazy<DragAndDropGestureHandler> _dragAndDropGestureHandler;
 		bool _disposed;
 		bool _inputTransparent;
 		bool _isEnabled;
 
-		VisualElement Element => _renderer?.Element;
+		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
 
-		View View => _renderer?.Element as View;
+		View? View => Element as View;
 
-		global::Android.Views.View Control => _renderer?.View;
+		protected virtual AView? Control => (_handler?.ContainerView ?? _handler?.NativeView) as AView;
 
-		public GestureManager(IVisualElementRenderer renderer)
+		public GestureManager(IViewHandler handler)
 		{
-			_renderer = renderer;
-			_renderer.ElementChanged += OnElementChanged;
-
+			_handler = handler;
 			_tapAndPanAndSwipeDetector = new Lazy<TapAndPanGestureDetector>(InitializeTapAndPanAndSwipeDetector);
 			_scaleDetector = new Lazy<ScaleGestureDetector>(InitializeScaleDetector);
 			_dragAndDropGestureHandler = new Lazy<DragAndDropGestureHandler>(InitializeDragAndDropHandler);
-			UpdateDragAndDrop();
-
-			if (_renderer.Element is View ov &&
-				ov.GestureRecognizers is INotifyCollectionChanged incc)
-			{
-				incc.CollectionChanged += GestureCollectionChanged;
-			}
+			SetupElement(null, Element);
 		}
 
 		public bool OnTouchEvent(MotionEvent e)
@@ -71,53 +64,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				eventConsumed = _tapAndPanAndSwipeDetector.Value.OnTouchEvent(e) || eventConsumed;
 
 			return eventConsumed;
-		}
-
-		public class TapAndPanGestureDetector : GestureDetector
-		{
-			InnerGestureListener _listener;
-			public TapAndPanGestureDetector(Context context, InnerGestureListener listener) : base(context, listener)
-			{
-				_listener = listener;
-				UpdateLongPressSettings();
-			}
-
-			public void UpdateLongPressSettings()
-			{
-				// Right now this just disables long press, since we don't support a long press gesture
-				// in Forms. If we ever do, we'll need to selectively enable it, probably by hooking into the 
-				// InnerGestureListener and listening for the addition of any long press gesture recognizers.
-				// (since a long press will prevent a pan gesture from starting, we can't just leave support for it 
-				// on by default).
-				// Also, since the property is virtual we shouldn't just set it from the constructor.
-
-				IsLongpressEnabled = _listener.EnableLongPressGestures;
-			}
-
-			public override bool OnTouchEvent(MotionEvent ev)
-			{
-				if (base.OnTouchEvent(ev))
-					return true;
-
-				if (ev.Action == MotionEventActions.Up)
-					_listener.EndScrolling();
-
-				return false;
-			}
-
-			protected override void Dispose(bool disposing)
-			{
-				base.Dispose(disposing);
-
-				if (disposing)
-				{
-					if (_listener != null)
-					{
-						_listener.Dispose();
-						_listener = null;
-					}
-				}
-			}
 		}
 
 		public void Dispose()
@@ -151,6 +97,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		TapAndPanGestureDetector InitializeTapAndPanAndSwipeDetector()
 		{
+			if (Control?.Context == null)
+				throw new InvalidOperationException("Context cannot be null here");
+
 			var context = Control.Context;
 			var listener = new InnerGestureListener(
 				new TapGestureHandler(() => View, () =>
@@ -170,6 +119,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		ScaleGestureDetector InitializeScaleDetector()
 		{
+			if (Control?.Context == null)
+				throw new InvalidOperationException("Context cannot be null here");
+
 			var context = Control.Context;
 			var listener = new InnerScaleListener(new PinchGestureHandler(() => View), context.FromPixels);
 			var detector = new ScaleGestureDetector(context, listener, Control.Handler);
@@ -180,41 +132,87 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		bool ViewHasPinchGestures()
 		{
-			return View != null && View.GestureRecognizers.OfType<PinchGestureRecognizer>().Any();
+			if (View == null)
+				return false;
+
+			int count = View.GestureRecognizers.Count;
+			for (var i = 0; i < count; i++)
+			{
+				if (View.GestureRecognizers[i] is PinchGestureRecognizer)
+					return true;
+			}
+
+			return false;
 		}
 
-		void OnElementChanged(object sender, VisualElementChangedEventArgs e)
+		void SetupGestures()
 		{
-			if (e.OldElement != null)
-			{
-				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
+			if (View == null)
+				return;
 
-				if (e.OldElement is View ov &&
+			AView? nativeView = (_handler?.NativeView as AView);
+
+			if (nativeView == null)
+				return;
+
+			if (View.GestureRecognizers.Count == 0)
+			{
+				nativeView.Touch -= OnNativeViewTouched;
+
+			}
+			else
+			{
+				nativeView.Touch += OnNativeViewTouched;
+			}
+		}
+
+		void OnNativeViewTouched(object? sender, Android.Views.View.TouchEventArgs e)
+		{
+			if (e.Event != null)
+				OnTouchEvent(e.Event);
+		}
+
+		void SetupElement(VisualElement? oldElement, VisualElement? newElement)
+		{
+			_handler = null;
+			if (oldElement != null)
+			{
+				if (oldElement is View ov &&
 					ov.GestureRecognizers is INotifyCollectionChanged incc)
 				{
 					incc.CollectionChanged -= GestureCollectionChanged;
 				}
+
+				oldElement.PropertyChanged -= OnElementPropertyChanged;
 			}
 
-			if (e.NewElement != null)
+			if (newElement != null)
 			{
-				e.NewElement.PropertyChanged += OnElementPropertyChanged;
-
-				if (e.NewElement is View ov &&
+				_handler = newElement.Handler;
+				if (newElement is View ov &&
 					ov.GestureRecognizers is INotifyCollectionChanged incc)
 				{
 					incc.CollectionChanged += GestureCollectionChanged;
 				}
+
+				newElement.PropertyChanged += OnElementPropertyChanged;
 			}
 
 			UpdateInputTransparent();
 			UpdateIsEnabled();
 			UpdateDragAndDrop();
+			SetupGestures();
 		}
 
-		void GestureCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		internal void OnElementChanged(VisualElementChangedEventArgs e)
+		{
+			SetupElement(e.OldElement, e.NewElement);
+		}
+
+		void GestureCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			UpdateDragAndDrop();
+			SetupGestures();
 
 			if (_tapAndPanAndSwipeDetector.IsValueCreated)
 				_tapAndPanAndSwipeDetector.Value.UpdateLongPressSettings();
@@ -226,7 +224,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				_dragAndDropGestureHandler.Value.SetupHandlerForDrop();
 		}
 
-		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 				UpdateInputTransparent();
@@ -245,18 +243,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (disposing)
 			{
-				_renderer.ElementChanged -= OnElementChanged;
-
-				if (Element != null)
-				{
-					Element.PropertyChanged -= OnElementPropertyChanged;
-
-					if (Element is View ov &&
-						ov.GestureRecognizers is INotifyCollectionChanged incc)
-					{
-						incc.CollectionChanged -= GestureCollectionChanged;
-					}
-				}
+				SetupElement(Element, null);
 
 				if (_tapAndPanAndSwipeDetector.IsValueCreated)
 				{
@@ -268,7 +255,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					_scaleDetector.Value.Dispose();
 				}
 
-				_renderer = null;
+				_handler = null;
 			}
 		}
 

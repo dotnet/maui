@@ -28,15 +28,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		}
 
-		protected T FindParentOfType<T>(Element element)
-		{
-			var navPage = GetParentsPath(element)
-				.OfType<T>()
-				.FirstOrDefault();
-
-			return navPage;
-		}
-
 		protected T GetVisiblePage<T>(Shell shell)
 			where T : Page
 		{
@@ -44,17 +35,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				return (T)scc.PresentedPage;
 
 			return default(T);
-		}
-
-		protected IEnumerable<Element> GetParentsPath(Element self)
-		{
-			Element current = self;
-
-			while (!Application.IsApplicationOrNull(current.RealParent))
-			{
-				current = current.RealParent;
-				yield return current;
-			}
 		}
 
 		protected bool IsModal(BindableObject bindableObject)

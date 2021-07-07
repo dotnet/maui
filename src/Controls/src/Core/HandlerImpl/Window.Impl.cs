@@ -1,34 +1,34 @@
 #nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Window : VisualElement, IWindow
+	[ContentProperty(nameof(Page))]
+	public partial class Window : NavigableElement, IWindow
 	{
+		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
+			nameof(Title), typeof(string), typeof(Window), default(string?));
+
+		public static readonly BindableProperty PageProperty = BindableProperty.Create(
+			nameof(Page), typeof(Page), typeof(Window), default(Page?),
+			propertyChanged: OnPageChanged);
+
 		ReadOnlyCollection<Element>? _logicalChildren;
-		Page? _page;
-
-		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
-
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
-			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
-
-		internal IMauiContext MauiContext => Page?.Handler?.MauiContext
-			?? throw new InvalidOperationException("MauiContext is null");
-
-		internal ModalNavigationService ModalNavigationService { get; }
 
 		public Window()
 		{
+			AlertManager = new AlertManager(this);
 			ModalNavigationService = new ModalNavigationService(this);
 			Navigation = new NavigationImpl(this);
+
 			InternalChildren.CollectionChanged += OnCollectionChanged;
 		}
 
@@ -38,11 +38,59 @@ namespace Microsoft.Maui.Controls
 			Page = page;
 		}
 
-
-		void SendWindowAppearing()
+		public string? Title
 		{
-			Page?.SendAppearing();
+			get => (string?)GetValue(TitleProperty);
+			set => SetValue(TitleProperty, value);
 		}
+
+		public Page? Page
+		{
+			get => (Page?)GetValue(PageProperty);
+			set => SetValue(PageProperty, value);
+		}
+
+		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
+
+		public event EventHandler<ModalPoppingEventArgs>? ModalPopping;
+
+		public event EventHandler<ModalPushedEventArgs>? ModalPushed;
+
+		public event EventHandler<ModalPushingEventArgs>? ModalPushing;
+
+		public event EventHandler? PopCanceled;
+
+		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == nameof(Page))
+				Handler?.UpdateValue(nameof(IWindow.Content));
+		}
+
+		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
+
+		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
+			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
+
+		internal AlertManager AlertManager { get; }
+
+		internal ModalNavigationService ModalNavigationService { get; }
+
+		internal IMauiContext MauiContext =>
+			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
+
+		internal IAnimationManager AnimationManager
+		{
+			get
+			{
+				var handler = Handler as IWindowHandler;
+				return handler?.AnimationManager ?? throw new InvalidOperationException("The AnimationManager was not provided for this window.");
+			}
+		}
+
+		IView IWindow.Content =>
+			Page ?? throw new InvalidOperationException("No page was set on the window.");
 
 		void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -70,55 +118,50 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public Page? Page
+		static void OnPageChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			get => _page;
-			set
+			if (bindable is not Window window)
+				return;
+
+			var oldPage = oldValue as Page;
+			if (oldPage != null)
 			{
-				if (_page != null)
-				{
-					InternalChildren.Remove(_page);
+				window.InternalChildren.Remove(oldPage);
+				oldPage.AttachedHandler -= OnPageAttachedHandler;
+				oldPage.DetachedHandler -= OnPageDetachedHandler;
+			}
 
-					if (_page != null)
-						_page.AttachedHandler -= OnPageAttachedHandler;
-				}
+			var newPage = newValue as Page;
+			if (newPage != null)
+			{
+				window.InternalChildren.Add(newPage);
+				newPage.NavigationProxy.Inner = window.NavigationProxy;
+			}
 
-				_page = value;
+			window.ModalNavigationService.SettingNewPage();
 
-				if (_page != null)
-					InternalChildren.Add(_page);
+			if (newPage != null)
+			{
+				newPage.AttachedHandler += OnPageAttachedHandler;
+				newPage.DetachedHandler += OnPageDetachedHandler;
+			}
 
-				if (value is NavigableElement ne)
-					ne.NavigationProxy.Inner = NavigationProxy;
+			void OnPageAttachedHandler(object? sender, EventArgs e)
+			{
+				window.ModalNavigationService.PageAttachedHandler();
+				window.AlertManager.Subscribe();
+			}
 
-				ModalNavigationService.SettingNewPage();
-
-				if (value != null)
-					value.AttachedHandler += OnPageAttachedHandler;
+			void OnPageDetachedHandler(object? sender, EventArgs e)
+			{
+				window.AlertManager.Unsubscribe();
 			}
 		}
 
-		void OnPageAttachedHandler(object? sender, EventArgs e)
+		void SendWindowAppearing()
 		{
-			ModalNavigationService.PageAttachedHandler();
+			Page?.SendAppearing();
 		}
-
-		IView IWindow.View
-		{
-			get => Page ?? throw new InvalidOperationException("No page was set on the window.");
-			set => Page = (Page)value;
-		}
-
-
-		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
-
-		public event EventHandler<ModalPoppingEventArgs>? ModalPopping;
-
-		public event EventHandler<ModalPushedEventArgs>? ModalPushed;
-
-		public event EventHandler<ModalPushingEventArgs>? ModalPushing;
-
-		public event EventHandler? PopCanceled;
 
 		void OnModalPopped(Page modalPage)
 		{
@@ -148,7 +191,6 @@ namespace Microsoft.Maui.Controls
 			ModalPushing?.Invoke(this, args);
 			(Parent as Application)?.NotifyOfWindowModalEvent(args);
 		}
-
 
 		void OnPopCanceled()
 		{

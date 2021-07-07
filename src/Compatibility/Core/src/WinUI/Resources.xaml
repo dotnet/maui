@@ -49,7 +49,7 @@
 		<Setter Property="FontWeight" Value="Bold" />
 	</Style>
 
-	<Style x:Key="MauiRootContainerStyle" TargetType="Panel">
+	<Style x:Key="RootContainerStyle" TargetType="Panel">
 		<Setter Property="Background" Value="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
 	</Style>
 
