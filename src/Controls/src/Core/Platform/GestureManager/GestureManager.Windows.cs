@@ -1,4 +1,4 @@
-﻿//#nullable enable
+﻿#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -17,26 +17,11 @@ namespace Microsoft.Maui.Controls.Platform
 	class GestureManager : IDisposable
 	{
 		readonly INativeViewHandler _handler;
-
-		public GestureManager(IViewHandler handler)
-		{
-			_handler = (INativeViewHandler)handler;
-			_collectionChangedHandler = ModelGestureRecognizersOnCollectionChanged;
-
-			Element = (VisualElement)_handler.VirtualView;
-			Control = _handler.NativeView;
-
-			if (_handler.HasContainer)
-				Container = _handler.ContainerView;
-			else
-				Container = _handler.NativeView;
-		}
-
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 		readonly List<uint> _fingers = new List<uint>();
-		FrameworkElement _container;
-		FrameworkElement _control;
-		VisualElement _element;
+		FrameworkElement? _container;
+		FrameworkElement? _control;
+		VisualElement? _element;
 
 		bool _isDisposed;
 		bool _isPanning;
@@ -45,7 +30,27 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _wasPanGestureStartedSent;
 		bool _wasPinchGestureStartedSent;
 
-		public FrameworkElement Container
+		public GestureManager(IViewHandler handler)
+		{
+			_handler = (INativeViewHandler)handler;
+			_collectionChangedHandler = ModelGestureRecognizersOnCollectionChanged;
+
+			if (_handler.VirtualView == null)
+				throw new ArgumentNullException(nameof(handler.VirtualView));
+
+			if (_handler.NativeView == null)
+				throw new ArgumentNullException(nameof(handler.NativeView));
+
+			Element = (VisualElement)_handler.VirtualView;
+			Control = _handler.NativeView;
+
+			if (_handler.ContainerView != null)
+				Container = _handler.ContainerView;
+			else
+				Container = _handler.NativeView;
+		}
+
+		public FrameworkElement? Container
 		{
 			get { return _container; }
 			set
@@ -64,9 +69,9 @@ namespace Microsoft.Maui.Controls.Platform
 		// TODO MAUI
 		// Do we need to provide a hook for this in the handlers?
 		// For now I just built this ugly matching statement
-		// to replicate our renderers where we are setting this to true
-		public bool PreventGestureBubbling 
-		{ 
+		// to replicate our handlers where we are setting this to true
+		public bool PreventGestureBubbling
+		{
 			get
 			{
 				return Element switch
@@ -85,7 +90,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public FrameworkElement Control
+		public FrameworkElement? Control
 		{
 			get { return _control; }
 			set
@@ -186,11 +191,12 @@ namespace Microsoft.Maui.Controls.Platform
 		void HandleDrop(object sender, Microsoft.UI.Xaml.DragEventArgs e)
 		{
 			var datapackage = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
-			VisualElement element = null;
+			VisualElement? element = null;
 
-			if (sender is IViewHandler renderer)
+			if (sender is IViewHandler handler &&
+				handler.VirtualView is VisualElement ve)
 			{
-				element = (VisualElement)renderer.VirtualView;
+				element = ve;
 			}
 
 			var args = new DropEventArgs(datapackage?.View);
@@ -220,20 +226,20 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				var renderer = sender as IViewHandler;
-				var args = rec.SendDragStarting(renderer?.VirtualView as IView);
+				var handler = sender as IViewHandler;
+				var args = rec.SendDragStarting(handler?.VirtualView as IView);
 				e.Data.Properties["_XFPropertes_DONTUSE"] = args.Data;
 
-				if (!args.Handled && renderer != null)
+				if (!args.Handled && handler != null)
 				{
-					if (renderer.NativeView is UI.Xaml.Controls.Image nativeImage &&
+					if (handler.NativeView is UI.Xaml.Controls.Image nativeImage &&
 						nativeImage.Source is BitmapImage bi && bi.UriSource != null)
 					{
 						e.Data.SetBitmap(RandomAccessStreamReference.CreateFromUri(bi.UriSource));
 					}
 					else if (!String.IsNullOrWhiteSpace(args.Data.Text))
 					{
-						Uri uri;
+						Uri? uri;
 						if (Uri.TryCreate(args.Data.Text, UriKind.Absolute, out uri))
 						{
 							if (args.Data.Text.StartsWith("http", StringComparison.OrdinalIgnoreCase))
@@ -253,7 +259,7 @@ namespace Microsoft.Maui.Controls.Platform
 			});
 		}
 
-		public VisualElement Element
+		public VisualElement? Element
 		{
 			get { return _element; }
 			set
@@ -268,7 +274,9 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						var oldRecognizers = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
 						oldRecognizers.CollectionChanged -= _collectionChangedHandler;
-						((view as IGestureController)?.CompositeGestureRecognizers as ObservableCollection<IGestureRecognizer>).CollectionChanged -= _collectionChangedHandler;
+
+						if ((view as IGestureController)?.CompositeGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
+							oc.CollectionChanged -= _collectionChangedHandler;
 					}
 				}
 
@@ -281,7 +289,9 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						var newRecognizers = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
 						newRecognizers.CollectionChanged += _collectionChangedHandler;
-						((view as IGestureController)?.CompositeGestureRecognizers as ObservableCollection<IGestureRecognizer>).CollectionChanged += _collectionChangedHandler;
+
+						if ((view as IGestureController)?.CompositeGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
+							oc.CollectionChanged += _collectionChangedHandler;
 					}
 				}
 			}
@@ -292,8 +302,6 @@ namespace Microsoft.Maui.Controls.Platform
 			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
-
-		public event EventHandler Updated;
 
 		void ClearContainerEventHandlers()
 		{
@@ -402,17 +410,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_wasPinchGestureStartedSent = true;
 		}
 
-		void MaybeInvalidate()
-		{
-			if (Element.IsInNativeLayout)
-				return;
-
-			var parent = (FrameworkElement)Container.Parent;
-			parent?.InvalidateMeasure();
-			Container.InvalidateMeasure();
-		}
-
-		void ModelGestureRecognizersOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+		void ModelGestureRecognizersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
 			UpdatingGestureRecognizers();
 		}
@@ -551,12 +549,6 @@ namespace Microsoft.Maui.Controls.Platform
 			_isSwiping = false;
 		}
 
-		void OnUpdated()
-		{
-			if (Updated != null)
-				Updated(this, EventArgs.Empty);
-		}
-
 		void PanComplete(bool success)
 		{
 			var view = Element as View;
@@ -607,7 +599,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			var view = Element as View;
-			IList<IGestureRecognizer> gestures = view?.GestureRecognizers;
+			IList<IGestureRecognizer>? gestures = view?.GestureRecognizers;
 
 			if (gestures == null)
 				return;
@@ -635,7 +627,7 @@ namespace Microsoft.Maui.Controls.Platform
 		void UpdatingGestureRecognizers()
 		{
 			var view = Element as View;
-			IList<IGestureRecognizer> gestures = view?.GestureRecognizers;
+			IList<IGestureRecognizer>? gestures = view?.GestureRecognizers;
 
 			if (_container == null || gestures == null)
 				return;
@@ -644,7 +636,8 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateDragAndDropGestureRecognizers();
 
 			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
-			IList<TapGestureRecognizer> childGestures = children?.GetChildGesturesFor<TapGestureRecognizer>().ToList();
+			IList<TapGestureRecognizer>? childGestures =
+				children?.GetChildGesturesFor<TapGestureRecognizer>().ToList();
 
 			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any()
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
