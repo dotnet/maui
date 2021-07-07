@@ -46,7 +46,10 @@ namespace Microsoft.Maui.Controls.Platform
 			_collectionChangedHandler = ModelGestureRecognizersOnCollectionChanged;
 
 			// In XF this was called inside ViewDidLoad
-			LoadEvents(_nativeView);
+			if (_handler.VirtualView is View view)
+				OnElementChanged(this, new VisualElementChangedEventArgs(null, view));
+			else 
+				throw new ArgumentNullException(nameof(handler.VirtualView));
 		}
 
 		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers
@@ -89,13 +92,6 @@ namespace Microsoft.Maui.Controls.Platform
 			Disconnect();
 
 			_nativeView = null;
-		}
-
-		public void LoadEvents(NativeView handler)
-		{
-			if (_disposed)
-				throw new ObjectDisposedException(null);
-
 		}
 
 		static IList<GestureElement>? GetChildGestures(
