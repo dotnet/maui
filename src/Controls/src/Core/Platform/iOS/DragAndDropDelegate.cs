@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_viewHandler = viewHandler;
 		}
 
-#region UIDragInteractionDelegate
+		#region UIDragInteractionDelegate
 		[Export("dragInteraction:session:willEndWithOperation:")]
 		[Preserve(Conditional = true)]
 		public void SessionWillEnd(UIDragInteraction interaction, IUIDragSession session, UIDropOperation operation)
@@ -33,12 +33,9 @@ namespace Microsoft.Maui.Controls.Platform
 		[Preserve(Conditional = true)]
 		public UIDragItem[] GetItemsForBeginningSession(UIDragInteraction interaction, IUIDragSession session)
 		{
-			//if (interaction.View is IVisualElementRenderer renderer && renderer.Element is View view)
-				return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler);
-
-			//return new UIDragItem[0];
+			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler);
 		}
-#endregion
+		#endregion
 
 		[Export("dropInteraction:canHandleSession:")]
 		[Preserve(Conditional = true)]
@@ -60,19 +57,16 @@ namespace Microsoft.Maui.Controls.Platform
 		[Preserve(Conditional = true)]
 		public void SessionDidExit(UIDropInteraction interaction, IUIDropSession session)
 		{
-			// if (interaction.View is IVisualElementRenderer renderer)
+			DataPackage package = null;
+
+			if (session.LocalDragSession.Items.Length > 0 &&
+				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi)
 			{
-				DataPackage package = null;
+				package = cdi.DataPackage;
+			}
 
-				if (session.LocalDragSession.Items.Length > 0 &&
-					session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi)
-				{
-					package = cdi.DataPackage;
-				}
-
-				if (HandleDragLeave((View)_viewHandler.VirtualView, package))
-				{
-				}
+			if (HandleDragLeave((View)_viewHandler.VirtualView, package))
+			{
 			}
 		}
 
@@ -85,20 +79,17 @@ namespace Microsoft.Maui.Controls.Platform
 			if (session.LocalDragSession == null)
 				return new UIDropProposal(operation);
 
-			// if (interaction.View is IVisualElementRenderer renderer)
+			DataPackage package = null;
+
+			if (session.LocalDragSession.Items.Length > 0 &&
+				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi)
 			{
-				DataPackage package = null;
+				package = cdi.DataPackage;
+			}
 
-				if (session.LocalDragSession.Items.Length > 0 &&
-					session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi)
-				{
-					package = cdi.DataPackage;
-				}
-
-				if (HandleDragOver((View)_viewHandler.VirtualView, package))
-				{
-					operation = UIDropOperation.Copy;
-				}
+			if (HandleDragOver((View)_viewHandler.VirtualView, package))
+			{
+				operation = UIDropOperation.Copy;
 			}
 
 			return new UIDropProposal(operation);
@@ -113,7 +104,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (session.LocalDragSession.Items.Length > 0 &&
 				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi &&
-				//interaction.View is IVisualElementRenderer renderer &&
 				_viewHandler.VirtualView is View view)
 			{
 				HandleDrop(view, cdi.DataPackage);
@@ -138,7 +128,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public UIDragItem[] HandleDragStarting(View element, INativeViewHandler renderer)
+		public UIDragItem[] HandleDragStarting(View element, INativeViewHandler handler)
 		{
 			UIDragItem[] returnValue = null;
 			SendEventArgs<DragGestureRecognizer>(rec =>
@@ -157,10 +147,10 @@ namespace Microsoft.Maui.Controls.Platform
 					string clipDescription = String.Empty;
 					NSItemProvider itemProvider = null;
 
-					if (renderer.NativeView is UIImageView iv)
+					if (handler.NativeView is UIImageView iv)
 						uIImage = iv.Image;
 
-					if (renderer.NativeView is UIButton b && b.ImageView != null)
+					if (handler.NativeView is UIButton b && b.ImageView != null)
 						uIImage = b.ImageView.Image;
 
 					if (uIImage != null)
@@ -170,7 +160,7 @@ namespace Microsoft.Maui.Controls.Platform
 						else
 							itemProvider = new NSItemProvider(new NSString(""));
 
-						if (args.Data.Image == null && renderer.VirtualView is IImageElement imageElement)
+						if (args.Data.Image == null && handler.VirtualView is IImageElement imageElement)
 							args.Data.Image = imageElement.Source;
 					}
 					else
@@ -179,7 +169,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 						if (String.IsNullOrWhiteSpace(text))
 						{
-							itemProvider = new NSItemProvider(renderer.NativeView.ConvertToImage());
+							itemProvider = new NSItemProvider(handler.NativeView.ConvertToImage());
 						}
 						else
 						{
@@ -190,8 +180,8 @@ namespace Microsoft.Maui.Controls.Platform
 					var dragItem = new UIDragItem(itemProvider);
 					dragItem.LocalObject = new CustomLocalStateData()
 					{
-						Renderer = renderer,
-						View = renderer.VirtualView as View,
+						Handler = handler,
+						View = handler.VirtualView as View,
 						DataPackage = args.Data
 					};
 
@@ -265,7 +255,7 @@ namespace Microsoft.Maui.Controls.Platform
 		class CustomLocalStateData : NSObject
 		{
 			public View View { get; set; }
-			public IViewHandler Renderer { get; set; }
+			public IViewHandler Handler { get; set; }
 			public DataPackage DataPackage { get; set; }
 		}
 	}
