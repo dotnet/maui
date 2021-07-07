@@ -1,11 +1,11 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
 
 using UIKit;
 using NativeView = UIKit.UIView;
@@ -24,33 +24,40 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly INativeViewHandler _handler;
 
 		bool _disposed;
-		NativeView _nativeView;
+		NativeView? _nativeView;
 
 		double _previousScale = 1.0;
 #if __MOBILE__
-		UITouchEventArgs _shouldReceiveTouch;
-		DragAndDropDelegate _dragAndDropDelegate;
+		UITouchEventArgs? _shouldReceiveTouch;
+		DragAndDropDelegate? _dragAndDropDelegate;
 #endif
 
-		public GestureManager(IViewHandler handler)
+		public GestureManager(INativeViewHandler handler)
 		{
 			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
 
+			if (handler.NativeView == null)
+				throw new ArgumentNullException(nameof(handler.NativeView));
+
+			_nativeView = handler.NativeView;
 			_collectionChangedHandler = ModelGestureRecognizersOnCollectionChanged;
 
-			_handler = (INativeViewHandler)handler;
+			_handler = handler;
 
 			// In XF this was called inside ViewDidLoad
 			LoadEvents(_handler.NativeView);
 		}
 
-		ObservableCollection<IGestureRecognizer> ElementGestureRecognizers
+		ObservableCollection<IGestureRecognizer>? ElementGestureRecognizers
 		{
 			get
 			{
-				return ((_handler?.VirtualView as IGestureController)
-							?.CompositeGestureRecognizers as ObservableCollection<IGestureRecognizer>);
+				if (_handler?.VirtualView is IGestureController gc &&
+					gc.CompositeGestureRecognizers is ObservableCollection<IGestureRecognizer> oc)
+					return oc;
+
+				return null;
 			}
 		}
 
@@ -69,7 +76,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			foreach (var kvp in _gestureRecognizers)
 			{
-				_nativeView.RemoveGestureRecognizer(kvp.Value);
+				if (_nativeView != null)
+					_nativeView.RemoveGestureRecognizer(kvp.Value);
 #if __MOBILE__
 				kvp.Value.ShouldReceiveTouch = null;
 #endif
@@ -88,21 +96,19 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_disposed)
 				throw new ObjectDisposedException(null);
 
-			_nativeView = handler;
-			OnElementChanged(this, new VisualElementChangedEventArgs(null, (VisualElement)_handler.VirtualView));
 		}
 
-		static IList<GestureElement> GetChildGestures(
+		static IList<GestureElement>? GetChildGestures(
 			NativeGestureRecognizer sender,
-			WeakReference weakEventTracker, WeakReference weakRecognizer, GestureManager eventTracker, View view)
+			WeakReference weakEventTracker, WeakReference weakRecognizer, GestureManager? eventTracker, View? view)
 		{
 			if (!weakRecognizer.IsAlive)
 				return null;
 
-			if (eventTracker._disposed || view == null)
+			if (eventTracker == null || eventTracker._disposed || view == null)
 				return null;
 
-			var originPoint = sender.LocationInView((UIView)eventTracker._handler.NativeView);
+			var originPoint = sender.LocationInView(eventTracker._handler.NativeView);
 			var childGestures = view.GetChildElements(new Point(originPoint.X, originPoint.Y));
 			return childGestures;
 		}
@@ -191,12 +197,12 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			return new Action<UITapGestureRecognizer>((sender) =>
 			{
-				GestureManager eventTracker = weakEventTracker.Target as GestureManager;
-				View view = eventTracker?._handler?.VirtualView as View;
+				var eventTracker = weakEventTracker.Target as GestureManager;
+				var view = eventTracker?._handler?.VirtualView as View;
 
 				var childGestures = GetChildGestures(sender, weakEventTracker, weakRecognizer, eventTracker, view);
 
-				if (childGestures?.GetChildGesturesFor<TapGestureRecognizer>(x => x.NumberOfTapsRequired == (int)sender.NumberOfTapsRequired).Count() > 0)
+				if (childGestures?.HasChildGesturesFor<TapGestureRecognizer>(x => x.NumberOfTapsRequired == (int)sender.NumberOfTapsRequired) == true)
 					return;
 
 				if (weakRecognizer.Target is TapGestureRecognizer tapGestureRecognizer && view != null)
@@ -215,7 +221,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var recognizers = childGestures?.GetChildGesturesFor<TapGestureRecognizer>(x => x.NumberOfTapsRequired == (int)sender.NumberOfTapsRequired);
 
-				if (recognizers == null)
+				if (recognizers == null || weakRecognizer.Target == null)
 					return;
 
 				var tapGestureRecognizer = ((ChildGestureRecognizer)weakRecognizer.Target).GestureRecognizer as TapGestureRecognizer;
@@ -226,7 +232,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 #endif
 
-		protected virtual NativeGestureRecognizer GetNativeRecognizer(IGestureRecognizer recognizer)
+		protected virtual NativeGestureRecognizer? GetNativeRecognizer(IGestureRecognizer recognizer)
 		{
 			if (recognizer == null)
 				return null;
@@ -317,7 +323,7 @@ namespace Microsoft.Maui.Controls.Platform
 						var oldScale = eventTracker._previousScale;
 						var originPoint = r.LocationInView(null);
 #if __MOBILE__
-						originPoint = UIApplication.SharedApplication.GetKeyWindow().ConvertPointToView(originPoint, (UIView)eventTracker._handler.NativeView);
+						originPoint = UIApplication.SharedApplication.GetKeyWindow().ConvertPointToView(originPoint, eventTracker._handler.NativeView);
 #else
 						originPoint = NSApplication.SharedApplication.KeyWindow.ContentView.ConvertPointToView(originPoint, eventTracker._handler.NativeView);
 #endif
@@ -564,10 +570,10 @@ namespace Microsoft.Maui.Controls.Platform
 #endif
 
 #if __MOBILE__
-			UIDragInteraction uIDragInteraction = null;
-			UIDropInteraction uIDropInteraction = null;
+			UIDragInteraction? uIDragInteraction = null;
+			UIDropInteraction? uIDropInteraction = null;
 
-			if (_dragAndDropDelegate != null)
+			if (_dragAndDropDelegate != null && _handler.NativeView != null)
 			{
 				foreach (var interaction in _handler.NativeView.Interactions)
 				{
@@ -604,7 +610,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					dragFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
-					if (uIDragInteraction == null)
+					if (uIDragInteraction == null && _handler.NativeView != null)
 					{
 						var interaction = new UIDragInteraction(_dragAndDropDelegate);
 						interaction.Enabled = true;
@@ -616,7 +622,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					dropFound = true;
 					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
-					if (uIDropInteraction == null)
+					if (uIDropInteraction == null && _handler.NativeView != null)
 					{
 						var interaction = new UIDropInteraction(_dragAndDropDelegate);
 						_handler.NativeView.AddInteraction(interaction);
@@ -626,22 +632,30 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 #if __MOBILE__
-			if (!dragFound && uIDragInteraction != null)
+			if (!dragFound && uIDragInteraction != null && _handler.NativeView != null)
 				_handler.NativeView.RemoveInteraction(uIDragInteraction);
 
-			if (!dropFound && uIDropInteraction != null)
+			if (!dropFound && uIDropInteraction != null && _handler.NativeView != null)
 				_handler.NativeView.RemoveInteraction(uIDropInteraction);
 #endif
 
-			var toRemove = _gestureRecognizers.Keys.Where(key => !ElementGestureRecognizers.Contains(key)).ToArray();
+			var toRemove = new List<IGestureRecognizer>();
 
-			for (int i = 0; i < toRemove.Length; i++)
+			foreach (var key in _gestureRecognizers.Keys)
+			{
+				if (!ElementGestureRecognizers.Contains(key))
+					toRemove.Add(key);
+			}
+
+			for (int i = 0; i < toRemove.Count; i++)
 			{
 				IGestureRecognizer gestureRecognizer = toRemove[i];
 				var uiRecognizer = _gestureRecognizers[gestureRecognizer];
 				_gestureRecognizers.Remove(gestureRecognizer);
 
-				_nativeView.RemoveGestureRecognizer(uiRecognizer);
+				if (_nativeView != null)
+					_nativeView.RemoveGestureRecognizer(uiRecognizer);
+
 				uiRecognizer.Dispose();
 			}
 		}
@@ -672,7 +686,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 #endif
 
-		void ModelGestureRecognizersOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+		void ModelGestureRecognizersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
 			LoadRecognizers();
 		}
