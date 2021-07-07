@@ -783,7 +783,7 @@ Task("VSWINDOWS")
                 GetMSBuildSettings()
                     .WithRestore());
 
-        //StartVisualStudio(sln);
+        StartVisualStudio(sln);
     });
 
 Task("VSMAC")
