@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>.NET MAUI SDK. Enabled via &lt;UseMaui&gt;true&lt;/UseMaui&gt;.</Description>
-    <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageReferenceVersion)/</OutputPath>
+    <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
