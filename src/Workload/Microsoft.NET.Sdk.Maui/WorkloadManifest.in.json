@@ -53,7 +53,7 @@
       "description": ".NET MAUI SDK for Mac Catalyst",
       "extends": [ 
         "maui-core",
-        "microsoft-maccatalyst-sdk-full"
+        "maccatalyst"
       ],
       "packs": [
           "Microsoft.Maui.Core.Ref.maccatalyst",
@@ -68,7 +68,7 @@
       "description": ".NET MAUI SDK for iOS",
       "extends": [ 
         "maui-core",
-        "microsoft-ios-sdk-full"
+        "ios"
       ],
       "packs": [
           "Microsoft.Maui.Core.Ref.ios",
