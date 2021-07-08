@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class ModalNavigationService
+	internal partial class ModalNavigationManager
 	{
 		Window _window;
 		public IReadOnlyList<Page> ModalStack => _navModel.Modals;
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 		NavigationModel? _previousNavModel = null;
 		Page? _previousPage;
 
-		public ModalNavigationService(Window window)
+		public ModalNavigationManager(Window window)
 		{
 			_window = window;
 		}
@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		partial void OnPageAttachedHandler();
+
 		public void PageAttachedHandler() => OnPageAttachedHandler();
 	}
 }
