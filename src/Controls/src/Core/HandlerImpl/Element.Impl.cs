@@ -104,6 +104,13 @@ namespace Microsoft.Maui.Controls
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
+			if (effect is RoutingEffect re && re.Inner != null)
+			{
+				re.Element = this;
+				re.Inner.Element = this;
+				return;
+			}	
+
 			var platformEffect = EffectsFactory.CreateEffect(effect);
 
 			if (platformEffect != null)
@@ -120,15 +127,6 @@ namespace Microsoft.Maui.Controls
 		void AttachNativeEffects()
 		{
 			EffectControlProvider = this;
-
-			//if (Effects.Count == 0)
-			//	return;
-
-			//var effectManager = Handler.MauiContext.Services.GetService<EffectsFactory>();
-			//foreach (var effect in Effects)
-			//{
-			//	effectManager.CreateEffect(effect).Setup(effect);
-			//}
 		}
 
 		void DetachNativeEffects()

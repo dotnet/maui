@@ -7,10 +7,10 @@ namespace Microsoft.Maui.Controls.Hosting
 {
 	public interface IEffectsBuilder
 	{
-		void Add<TEffect, TPlatformEffect>()
+		IEffectsBuilder Add<TEffect, TPlatformEffect>()
 			where TEffect : RoutingEffect
 			where TPlatformEffect : PlatformEffect, new();
 
-		void Add(Type TEffect, Type TPlatformEffect);
+		IEffectsBuilder Add(Type TEffect, Type TPlatformEffect);
 	}
 }
