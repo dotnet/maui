@@ -6,8 +6,6 @@
       "extends": [ 
         "maui-mobile",
         "maui-desktop"
-      ],
-      "packs": [
       ]
     },
     "maui-mobile": {
@@ -15,8 +13,6 @@
       "extends": [ 
         "maui-android",
         "maui-ios"
-      ],
-      "packs": [
       ]
     },
     "maui-desktop": {
@@ -24,8 +20,6 @@
       "extends": [ 
         "maui-maccatalyst",
         "maui-windows"
-      ],
-      "packs": [
       ]
     },
     "maui-core": {
