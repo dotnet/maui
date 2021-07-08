@@ -6,7 +6,27 @@
   <ItemGroup>
     <!-- Shorten package names to avoid long path caching issues in Visual Studio -->
     <ShortNames Include="microsoft.aspnetcore.components.webview.maui;Microsoft.AspNetCore.Components.WebView.Maui">
-      <Replacement>WebView.Maui</Replacement>
+      <Replacement>AspWV.Maui</Replacement>
+    </ShortNames>
+
+    <ShortNames Include="microsoft.maui.core.runtime;Microsoft.Maui.Core.Runtime">
+      <Replacement>MMCore.RT</Replacement>
+    </ShortNames>
+
+    <ShortNames Include="microsoft.maui.controls.ref;Microsoft.Maui.Controls.Ref">
+      <Replacement>MMCtrls.Ref</Replacement>
+    </ShortNames>
+
+    <ShortNames Include="microsoft.maui.controls.runtime;Microsoft.Maui.Controls.Runtime">
+      <Replacement>MMCtrls.RT</Replacement>
+    </ShortNames>
+
+    <ShortNames Include="microsoft.maui.essentials.ref;Microsoft.Maui.Essentials.Ref">
+      <Replacement>MMEss.Ref</Replacement>
+    </ShortNames>
+
+    <ShortNames Include="microsoft.maui.essentials.runtime;Microsoft.Maui.Essentials.Runtime">
+      <Replacement>MMEss.RT</Replacement>
     </ShortNames>
 
     <ComponentResources Include="maui" Category=".NET" Title=".NET MAUI workload" Description=".NET MAUI SDK for all platforms"/>
