@@ -126,13 +126,20 @@ namespace Microsoft.Maui.Handlers
 				{
 					VirtualView.InvalidateMeasure();
 					VirtualView.InvalidateArrange();
-					VirtualView.Measure(nativeGeometry.Width, nativeGeometry.Height);
 
 					if (!_layoutUpdatedRegistered)
 					{
 						nativeGeometry.X = VirtualView.Frame.X;
 						nativeGeometry.Y = VirtualView.Frame.Y;
 					}
+
+					// revoke margin area, we need to assign area including margin
+					nativeGeometry.Width += VirtualView.Margin.HorizontalThickness;
+					nativeGeometry.Height += VirtualView.Margin.VerticalThickness;
+					nativeGeometry.X -= VirtualView.Margin.Left;
+					nativeGeometry.Y -= VirtualView.Margin.Top;
+
+					VirtualView.Measure(nativeGeometry.Width, nativeGeometry.Height);
 					VirtualView.Arrange(nativeGeometry);
 				}
 			}
