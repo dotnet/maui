@@ -38,20 +38,14 @@ steps:
       displayName: 'Configure Visual Studio'
     # Install Certificates and Provisioning Profiles
     - task: InstallAppleCertificate@2
+      displayName: 'Install Apple Certificats'
       inputs:
-        certSecureFile: 'Components iOS Certificate.p12'
-    - task: InstallAppleCertificate@2
-      inputs:
-        certSecureFile: 'Components Mac Certificate.p12'
+        certSecureFile: 'Maui.p12'
+        certPwd: $(P12password)
     - task: InstallAppleProvisioningProfile@1
+      displayName: 'Install Apple Provisioning Profiles'
       inputs:
-        provProfileSecureFile: 'Components iOS Provisioning.mobileprovision'
-    - task: InstallAppleProvisioningProfile@1
-      inputs:
-        provProfileSecureFile: 'Components Mac Provisioning.provisionprofile'
-    - task: InstallAppleProvisioningProfile@1
-      inputs:
-        provProfileSecureFile: 'Components tvOS Provisioning.mobileprovision'
+        provProfileSecureFile: 'Maui_iOS_Provisioning.mobileprovision'
 
 
   # Prepare Windows
