@@ -139,10 +139,10 @@
     <_PacksToRemove Include="Microsoft.NET.Workload.macOS" />
     <!-- Ids for 'dotnet workload install' -->
     <_WorkloadIds Include="microsoft-android-sdk-full" />
-    <_WorkloadIds Include="microsoft-maccatalyst-sdk-full" />
-    <_WorkloadIds Include="microsoft-macos-sdk-full" />
-    <_WorkloadIds Include="microsoft-ios-sdk-full" />
-    <_WorkloadIds Include="microsoft-tvos-sdk-full" />
+    <_WorkloadIds Include="maccatalyst" />
+    <_WorkloadIds Include="macos" />
+    <_WorkloadIds Include="ios" />
+    <_WorkloadIds Include="tvos" />
   </ItemGroup>
 
   <Target Name="_AcquireWorkloadManifests"
