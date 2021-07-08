@@ -1,29 +1,33 @@
 <Project>
+  <PropertyGroup>
+    <!-- allow more explicit intent on conditions that bring in controls -->
+    <_UseMauiControls Condition="'$(UseMaui)'=='true'">true</_UseMauiControls>
+  </PropertyGroup>
 
   <ItemGroup Condition=" '$(DisableImplicitFrameworkReferences)' != 'true' ">
     <FrameworkReference
-        Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
+        Condition="'$(UseMauiCore)' == 'true'"
         Include="Microsoft.Maui.Extensions"
         IsImplicitlyDefined="true"
         Pack="false"
         PrivateAssets="All"
     />
     <FrameworkReference
-        Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
+        Condition="'$(UseMauiCore)' == 'true'"
         Include="Microsoft.Maui.Core"
         IsImplicitlyDefined="true"
         Pack="false"
         PrivateAssets="All"
     />
     <FrameworkReference
-        Condition=" '$(UseMaui)' == 'true' "
+        Condition="'$(_UseMauiControls)' == 'true'"
         Include="Microsoft.Maui.Controls"
         IsImplicitlyDefined="true"
         Pack="false"
         PrivateAssets="All"
     />
     <FrameworkReference
-        Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' "
+        Condition="'$(UseMauiEssentials)' == 'true'"
         Include="Microsoft.Maui.Essentials"
         IsImplicitlyDefined="true"
         Pack="false"
@@ -32,6 +36,11 @@
   </ItemGroup>
 
   <Import Project="../targets/BundledVersions.targets" />
-  <Import Project="Microsoft.Maui.Controls.Sdk.targets" Condition=" '$(UseMaui)' == 'true' " />
+  <!--
+  these targets currently bring in a mixture of controls logic (xamlc, default xaml items etc) and generic logic (singleproject)
+  they should really be split up and conditioned separately so projects can get singleproject logic without all the controls stuff.
+  perhaps singleproject should be a UseSingleProject that works by itself?
+  -->
+  <Import Project="Microsoft.Maui.Controls.Sdk.targets" Condition="'$(UseMauiEssentials)' == 'true'" />
 
 </Project>
