@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
     /// <summary>
     /// A Windows Presentation Foundation (WPF) control for hosting Blazor web components locally in Windows desktop applications.
     /// </summary>
-    public sealed class BlazorWebView : Control, IDisposable
+    public class BlazorWebView : Control, IDisposable
     {
         #region Dependency property definitions
         /// <summary>

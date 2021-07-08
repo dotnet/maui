@@ -285,10 +285,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					_packager.Load();
 				}
 
+
+				// TODO MAUI AUTOTRACK?
 				if (AutoTrack && _events == null)
 				{
-					_events = new EventTracker(this);
-					_events.LoadEvents(this);
+					// _events = new EventTracker(this);
+					//_events.LoadEvents(this);
 				}
 
 				element.PropertyChanged += _propertyChangedHandler;

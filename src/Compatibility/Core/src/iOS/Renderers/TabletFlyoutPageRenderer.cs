@@ -322,7 +322,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			UpdateFlowDirection();
 			UpdateFlyoutLayoutBehavior(View.Bounds.Size);
 			_tracker = new VisualElementTracker(this);
-			_events = new EventTracker(this);
 			_events.LoadEvents(NativeView);
 		}
 
