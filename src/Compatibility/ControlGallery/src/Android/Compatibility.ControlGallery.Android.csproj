@@ -8,7 +8,8 @@
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <!--<DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>-->
-    <AndroidLinkMode Condition="'$(CI)' == 'true'">Full</AndroidLinkMode>
+    <!-- <AndroidLinkMode Condition="'$(CI)' == 'true'">Full</AndroidLinkMode> -->
+    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
     <NoWarn>IL2036</NoWarn>
   </PropertyGroup>
 
