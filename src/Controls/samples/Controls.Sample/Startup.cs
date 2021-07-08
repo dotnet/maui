@@ -102,7 +102,7 @@ namespace Maui.Controls.Sample
 						{
 							PageType.Shell => typeof(AppShell),
 #if WINDOWS
-							PageType.Main => typeof(Effects),
+							PageType.Main => typeof(TempPage),
 #else
 							PageType.Main => typeof(CustomNavigationPage),
 #endif
