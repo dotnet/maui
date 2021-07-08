@@ -5,13 +5,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
-
 using UIKit;
-using NativeView = UIKit.UIView;
 using NativeGestureRecognizer = UIKit.UIGestureRecognizer;
 using NativeGestureRecognizerState = UIKit.UIGestureRecognizerState;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -48,7 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// In XF this was called inside ViewDidLoad
 			if (_handler.VirtualView is View view)
 				OnElementChanged(this, new VisualElementChangedEventArgs(null, view));
-			else 
+			else
 				throw new ArgumentNullException(nameof(handler.VirtualView));
 		}
 

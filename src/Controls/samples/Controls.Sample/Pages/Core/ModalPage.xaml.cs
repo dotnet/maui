@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			await Navigation.PushModalAsync(new ModalPage()
 			{
-				BackgroundColor = 
+				BackgroundColor =
 					(BackgroundColor == Colors.Purple) ? Colors.Pink : Colors.Purple
 			});
 		}
