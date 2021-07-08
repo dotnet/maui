@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.MapsPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+    Title="Maps">
+    <views:BasePage.Content>
+        <ScrollView>
+            <StackLayout
+                Margin="12">
+                <Label
+                    Text="Default"
+                    Style="{StaticResource Headline}"/>
+                <maps:Map
+                    HeightRequest="100"
+                    WidthRequest="300"/>
+                <Label
+                    Text="MapType (Satellite)"
+                    Style="{StaticResource Headline}"/>
+                <maps:Map
+                    MapType="Satellite"
+                    HeightRequest="100"
+                    WidthRequest="300"/>
+                <Label
+                    Text="MapType (Hybrid)"
+                    Style="{StaticResource Headline}"/>
+                <maps:Map
+                    MapType="Hybrid"
+                    HeightRequest="100"
+                    WidthRequest="300"/>
+                <Label
+                    Text="TrafficEnabled"
+                    Style="{StaticResource Headline}"/>
+                <maps:Map
+                    TrafficEnabled="True"
+                    HeightRequest="100"
+                    WidthRequest="300"/>
+                <Label
+                    Text="HasScrollEnabled"
+                    Style="{StaticResource Headline}"/>
+                <maps:Map
+                    HasScrollEnabled="False"
+                    HeightRequest="100"
+                    WidthRequest="300"/>
+                <Label
+                    Text="HasZoomEnabled"
+                    Style="{StaticResource Headline}"/>
+                <maps:Map
+                    HasZoomEnabled="False"
+                    HeightRequest="100"
+                    WidthRequest="300"/>
+                <Label
+                    Text="IsShowingUser"
+                    Style="{StaticResource Headline}"/>
+                <maps:Map
+                    IsShowingUser="False"
+                    HeightRequest="100"
+                    WidthRequest="300"/>
+            </StackLayout>
+        </ScrollView>
+    </views:BasePage.Content>
+</views:BasePage>

@@ -40,7 +40,11 @@
 	<string>Assets.xcassets/appicon.appiconset</string>
 	<key>CFBundleName</key>
 	<string>Controls</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Access to your location is required for cool things to happen!</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>Can we use your location at all times?</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Can we use your location when your application is being used?</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Can we use your location at all times?</string>
 </dict>
 </plist>
