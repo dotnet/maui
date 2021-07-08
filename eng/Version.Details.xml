@@ -8,25 +8,25 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>770d630b283ec1be4a8ed41ac78e13ec1fd957b1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="30.0.100-preview.6.62">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="30.0.100-ci.main.72">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>9a7da6d3e943544abbf67758b50fd5afb21875cc</Sha>
+      <Sha>c705bf53d8c3d2cf2935aa1283b65c4cbc86d02b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.0.100-preview.6.63">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.0.100-ci.main.138">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>b7298b17f8b4b18f36fd56627f340c226d320164</Sha>
+      <Sha>f9639388d51d042ff0d6d191889775a3b7c42268</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk" Version="15.0.100-preview.6.63">
+    <Dependency Name="Microsoft.iOS.Sdk" Version="15.0.100-ci.main.138">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>b7298b17f8b4b18f36fd56627f340c226d320164</Sha>
+      <Sha>f9639388d51d042ff0d6d191889775a3b7c42268</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.0.100-preview.6.63">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.0.100-ci.main.138">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>b7298b17f8b4b18f36fd56627f340c226d320164</Sha>
+      <Sha>f9639388d51d042ff0d6d191889775a3b7c42268</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk" Version="12.0.100-preview.6.63">
+    <Dependency Name="Microsoft.macOS.Sdk" Version="12.0.100-ci.main.138">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>b7298b17f8b4b18f36fd56627f340c226d320164</Sha>
+      <Sha>f9639388d51d042ff0d6d191889775a3b7c42268</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="6.0.0-preview.6.21355.2" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
