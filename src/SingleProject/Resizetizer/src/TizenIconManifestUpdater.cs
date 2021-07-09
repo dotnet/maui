@@ -3,11 +3,11 @@ using System.Xml;
 
 namespace Microsoft.Maui.Resizetizer
 {
-	internal class TizenIconManifestUpdator
+	internal class TizenIconManifestUpdater
 	{
 		const string namespaceURI = "http://tizen.org/ns/packages";
 
-		public TizenIconManifestUpdator(string appIconName, DpiPath[] dpis, ILogger logger)
+		public TizenIconManifestUpdater(string appIconName, DpiPath[] dpis, ILogger logger)
 		{
 			AppIconName = appIconName;
 			Dpis = dpis;

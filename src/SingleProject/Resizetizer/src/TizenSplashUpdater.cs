@@ -8,7 +8,7 @@ using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
 {
-	public class TizenSplashUpdator : Task
+	public class TizenSplashUpdater : Task
 	{
 		[Required]
 		public ITaskItem[] MauiSplashScreen { get; set; }
@@ -104,7 +104,6 @@ namespace Microsoft.Maui.Resizetizer
 					}
 				}
 			}
-			File.Delete(sourceFilePath);
 		}
 
 		public void UpdateManifest()
@@ -151,7 +150,6 @@ namespace Microsoft.Maui.Resizetizer
 					splashScreenNode.SetAttribute("dpi", image.Key);
 					splashScreenNode.SetAttribute("orientation", orientation);
 					splashScreenNode.SetAttribute("indicator-display", "false");
-					splashScreenNode.SetAttribute("app-control-operation", "http://tizen.org/appcontrol/operation/default");
 					splashScreensNode.AppendChild(splashScreenNode);
 				}
 			}

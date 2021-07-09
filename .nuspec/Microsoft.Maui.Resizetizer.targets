@@ -35,7 +35,7 @@
 
     <UsingTask
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
-        TaskName="Microsoft.Maui.Resizetizer.TizenSplashUpdator" />
+        TaskName="Microsoft.Maui.Resizetizer.TizenSplashUpdater" />
 
     <UsingTask
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
@@ -520,7 +520,7 @@
         </ResizetizeImages>
 
         <!-- Tizen - Move splash images to a specific location -->
-        <TizenSplashUpdator
+        <TizenSplashUpdater
             Condition="'$(_ResizetizerIsTizenApp)' == 'True' And '@(MauiSplashScreen)' != ''"
             IntermediateOutputPath="$(_MauiIntermediateImages)"
             ManifestFile="$(TizenManifestFile)"
@@ -599,7 +599,7 @@
         <PropertyGroup>
             <ResizetizerIntermediateOutputAbsolutePath>$([System.IO.Path]::GetFullPath('$(_MauiIntermediateImages)'))</ResizetizerIntermediateOutputAbsolutePath>
         </PropertyGroup>
-        <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
+        <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True' And '@(_ResizetizerCollectedImages)' != ''">
             <TizenTpkUserIncludeFiles Include="$(ResizetizerIntermediateOutputAbsolutePath)res\res.xml" TizenTpkSubDir="res\" />
             <FileWrites Include="$(ResizetizerIntermediateOutputAbsolutePath)res\res.xml)" />
 
