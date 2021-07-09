@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CoreAnimation;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -51,22 +52,57 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this UIView nativeView, IView view)
 		{
-			nativeView.UpdateBackgroundLayer(view);		
+			var background = view.Background;
+
+			if (background.IsNullOrEmpty())
+				return;
+
+			if (background is SolidPaint solidPaint)
+			{
+				Color backgroundColor = solidPaint.Color;
+
+				if (backgroundColor == null)
+					nativeView.BackgroundColor = ColorExtensions.BackgroundColor;
+				else
+					nativeView.BackgroundColor = backgroundColor.ToNative();
+
+				return;
+			}
+
+			nativeView.UpdateMauiCALayer(view);
 		}
-				
+
 		public static void UpdateBorderBrush(this UIView nativeView, IView view)
 		{
-			nativeView.UpdateBackgroundLayer(view);
+			var borderBrush = view.BorderBrush;
+			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
+
+			if (backgroundLayer == null && borderBrush.IsNullOrEmpty())
+				return;
+
+			nativeView.UpdateMauiCALayer(view);
 		}
 
 		public static void UpdateBorderWidth(this UIView nativeView, IView view)
 		{
-			nativeView.UpdateBackgroundLayer(view);
+			var borderWidth = view.BorderWidth;
+			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
+
+			if (backgroundLayer == null && borderWidth == 0)
+				return;
+
+			nativeView.UpdateMauiCALayer(view);
 		}
 
 		public static void UpdateCornerRadius(this UIView nativeView, IView view)
 		{
-			nativeView.UpdateBackgroundLayer(view);
+			var cornerRadius = view.CornerRadius;
+			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
+
+			if (backgroundLayer == null && cornerRadius.TopLeft == 0 && cornerRadius.TopRight == 0 && cornerRadius.BottomLeft == 0 && cornerRadius.BottomRight == 0)
+				return;
+
+			nativeView.UpdateMauiCALayer(view);
 		}
 
 		public static void UpdateOpacity(this UIView nativeView, IView view)
@@ -219,7 +255,7 @@ namespace Microsoft.Maui
 			return false;
 		}
 
-		internal static void UpdateBackgroundLayer(this UIView nativeView, IView view)
+		internal static void UpdateMauiCALayer(this UIView nativeView, IView view)
 		{
 			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
 
