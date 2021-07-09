@@ -26,7 +26,23 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Net.Http" />
-    <AndroidResource Include="$(AndroidRoot)Resources\**\*.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\bottomtablayout.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\flyoutcontent.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\rootlayout.axml"  />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\shellcontent.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\tabbar.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\toolbar.axml" />
+
+
+    <AndroidResource Include="$(AndroidRoot)Resources\anim\enterfromleft.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\anim\enterfromright.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoleft.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoright.xml" />
+
+
+    <AndroidResource Include="$(AndroidRoot)Resources\values\styles.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\values\strings.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" />
     <ProjectReference Include="..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
@@ -47,5 +63,13 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="iOS\Resources\StringResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>StringResources.resx</DependentUpon>
+    </None>
   </ItemGroup>
 </Project>
