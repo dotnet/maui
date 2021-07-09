@@ -46,7 +46,6 @@
     <ProjectReference Include="..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
-    <EmbeddedResource Include="$(iOSRoot)Resources\*.resx" />
     <Reference Include="System" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
