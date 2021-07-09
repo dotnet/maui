@@ -3,11 +3,11 @@
   AutoImport.props should be used by the .NET 6 workload when $(UseMaui) is true.
 -->
 
-<!-- "Single Project" support - all <ItemGroup/>'s must check if $(EnableDefaultItems) and $(SingleProject) are true -->
+<!-- every <ItemGroup/> must check the appropriate $(Enable*Items) properties -->
 <Project>
 
   <!-- Android -->
-  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'android' and '$(MonoAndroidResourcePrefix)' != '' ">
+  <ItemGroup Condition=" '$(EnableDefaultSingleProjectItems)' == 'true' and '$(TargetPlatformIdentifier)' == 'android' and '$(MonoAndroidResourcePrefix)' != '' ">
     <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.xml" />
     <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.axml" />
     <AndroidResource Include="$(MonoAndroidResourcePrefix)/*/*.png" />
@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <!-- iOS -->
-  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' ">
+  <ItemGroup Condition=" '$(EnableDefaultSingleProjectItems)' == 'true' and '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' ">
     <None
         Include="$(iOSProjectFolder)Info.plist"
         Condition="Exists('$(iOSProjectFolder)Info.plist')"
@@ -56,7 +56,7 @@
   </ItemGroup>
 
   <!-- MacCatalyst -->
-  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' ">
+  <ItemGroup Condition=" '$(EnableDefaultSingleProjectItems)' == 'true' and '$(TargetPlatformIdentifier)' == 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' ">
     <None
         Include="$(MacCatalystProjectFolder)Info.plist"
         Condition="Exists('$(MacCatalystProjectFolder)Info.plist')"
@@ -91,7 +91,7 @@
   </ItemGroup>
 
   <!-- Windows -->
-  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' ">
+  <ItemGroup Condition=" '$(EnableDefaultSingleProjectItems)' == 'true' and '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' ">
     <Manifest
         Include="$(ApplicationManifest)"
         Condition="Exists('$(ApplicationManifest)')" />
