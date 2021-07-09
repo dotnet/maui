@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RootNamespace>Microsoft.Maui.Graphics.Text</RootNamespace>
-        <Version>2.0.0</Version>
+        <AssemblyName>Microsoft.Maui.Graphics.Text</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
@@ -11,6 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics-net6.csproj" />
+        <ProjectReference Include="..\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics-net6.csproj" />
     </ItemGroup>
+
 </Project>
