@@ -26,44 +26,30 @@
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 
   <ItemGroup>
-    <Compile Remove="GTK\**" />
-    <Compile Remove="MacOS\**" />
-    <Compile Remove="Tizen\**" />
-    <Compile Remove="WPF\**" />
-    <EmbeddedResource Remove="GTK\**" />
-    <EmbeddedResource Remove="MacOS\**" />
-    <EmbeddedResource Remove="Tizen\**" />
-    <EmbeddedResource Remove="WPF\**" />
-    <None Remove="GTK\**" />
-    <None Remove="MacOS\**" />
-    <None Remove="Tizen\**" />
-    <None Remove="WPF\**" />
-    <Page Remove="**\WPF\**\*.xaml" />
-    <MauiXaml Remove="**\WPF\**\*.xaml" />
+    <Compile Remove="**\GTK\**\*.cs" />
+    <None Include="**\GTK\**\*.cs" />
+    <Compile Remove="**\MacOS\**\*.cs" />
+    <None Include="**\MacOS\**\*.cs" />
+    <Compile Remove="**\Tizen\**\*.cs" />
+    <None Include="**\Tizen\**\*.cs" />
+    <Compile Remove="**\WPF\**\*.cs" />
+    <None Include="**\WPF\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
+    <Page Include="$(WindowsRoot)**\*.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Remove="$(WindowsRoot)TabbedPageStyle.xaml" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\bottomtablayout.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\flyoutcontent.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\rootlayout.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\shellcontent.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\tabbar.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\toolbar.axml" />
-
-
-    <AndroidResource Include="$(AndroidRoot)Resources\anim\enterfromleft.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\anim\enterfromright.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoleft.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoright.xml" />
-
-
-    <AndroidResource Include="$(AndroidRoot)Resources\values\styles.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\values\strings.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\**\*.axml" />
     <ProjectReference Include="..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup-net6.csproj" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' OR '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
+    <EmbeddedResource Include="$(iOSRoot)Resources\*.resx" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
