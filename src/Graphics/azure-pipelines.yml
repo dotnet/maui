@@ -91,7 +91,9 @@ stages:
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
 
-            - pwsh: dotnet vs install preview Enterprise +core +mobile +desktop +uwp --quiet
+            - pwsh: |
+                dotnet vs install preview Enterprise +core +mobile +desktop +uwp --quiet
+                dotnet vs where
               displayName: update vs
 
             # - pwsh: |
