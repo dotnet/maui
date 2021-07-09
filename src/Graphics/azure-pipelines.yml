@@ -82,12 +82,6 @@ stages:
             #   displayName: install .NET $(DotNet.Version)
             #   errorActionPreference: stop
 
-            - pwsh: |
-                & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
-                & maui-check $(Maui.Version) --ci --non-interactive --fix --skip androidsdk --skip xcode --skip vswin --skip vsmac
-              displayName: maui-check
-              errorActionPreference: stop
-
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
 
@@ -95,6 +89,12 @@ stages:
                 dotnet vs install preview Enterprise +core +mobile +desktop +uwp --quiet
                 dotnet vs where
               displayName: update vs
+
+            - pwsh: |
+                & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
+                & maui-check $(Maui.Version) --ci --non-interactive --fix --skip androidsdk --skip xcode --skip vswin --skip vsmac
+              displayName: maui-check
+              errorActionPreference: stop
 
             - pwsh: |
                 $vs = & vs where --preview --prop=InstallationPath
