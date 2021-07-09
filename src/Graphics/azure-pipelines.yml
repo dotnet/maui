@@ -1,8 +1,8 @@
 variables:
   BuildVersion: $[counter('release-counter', 1)]
   IsRunningOnCI: true
-  # DotNet.Version: 6.0.100-preview.4.21255.9
-  # DotNet.Cli.Telemetry.OptOut: true
+  DotNet.Version: 6.0.100-preview.6.21355.2
+  DotNet.Cli.Telemetry.OptOut: true
   MauiCheck.Version: 0.6.0
   Maui.Version: --preview
 
@@ -74,18 +74,22 @@ stages:
           pool:
             vmImage:  windows-latest
           steps:
-            # - pwsh: |
-            #     $ProgressPreference = 'SilentlyContinue'
-            #     Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
-            #     & .\dotnet-install.ps1 -Version $(DotNet.Version) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
-            #     & dotnet --list-sdks
-            #   displayName: install .NET $(DotNet.Version)
-            #   errorActionPreference: stop
+            - pwsh: |
+                $ProgressPreference = 'SilentlyContinue'
+                Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+                & .\dotnet-install.ps1 -Version $(DotNet.Version) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
+                & dotnet --list-sdks
+              displayName: install .NET $(DotNet.Version)
+              errorActionPreference: stop
 
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
 
             - pwsh: |
+                Update the installer installer
+                Invoke-WebRequest -UseBasicParsing -Uri "https://aka.ms/vs/install/latest/vs_setup.exe" -OutFile "$env:TEMP\dd_vs_setup.exe"
+                & "$env:TEMP\dd_vs_setup.exe" --update --quiet --wait | Out-Null
+
                 dotnet vs install preview Enterprise +core +mobile +desktop +uwp --quiet
                 dotnet vs where
               displayName: update vs
