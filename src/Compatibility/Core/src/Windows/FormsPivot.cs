@@ -1,4 +1,4 @@
-/*
+
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	public class FormsPivot : Pivot, IToolbarProvider
 	{
-		public static readonly DependencyProperty TitleVisibilityProperty = DependencyProperty.Register(nameof(TitleVisibility), typeof(Visibility), typeof(FormsPivot), new PropertyMetadata(Visibility.Collapsed));
+		public static readonly DependencyProperty TitleVisibilityProperty = DependencyProperty.Register(nameof(TitleVisibility), typeof(UI.Xaml.Visibility), typeof(FormsPivot), new PropertyMetadata(UI.Xaml.Visibility.Collapsed));
 
 		public static readonly DependencyProperty ToolbarForegroundProperty = DependencyProperty.Register(nameof(ToolbarForeground), typeof(WBrush), typeof(FormsPivot), new PropertyMetadata(default(WBrush)));
 
@@ -41,9 +41,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			set { SetValue(ToolbarForegroundProperty, value); }
 		}
 
-		public Visibility TitleVisibility
+		public UI.Xaml.Visibility TitleVisibility
 		{
-			get { return (Visibility)GetValue(TitleVisibilityProperty); }
+			get { return (UI.Xaml.Visibility)GetValue(TitleVisibilityProperty); }
 			set { SetValue(TitleVisibilityProperty, value); }
 		}
 
@@ -129,4 +129,3 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 }
-*/

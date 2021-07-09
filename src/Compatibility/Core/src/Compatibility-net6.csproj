@@ -30,12 +30,11 @@
     <Compile Remove="**\MacOS\**\*.cs" />
     <Compile Remove="**\Tizen\**\*.cs" />
     <Compile Remove="**\WPF\**\*.cs" />
+    <Compile Remove="**\WPF\**\*.xaml" />
+    <Page Remove="**\WPF\**\*.xaml" />
+    <MauiXaml Remove="**\WPF\**\*.xaml" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <Page Include="$(WindowsRoot)**\*.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Remove="$(WindowsRoot)TabbedPageStyle.xaml" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
