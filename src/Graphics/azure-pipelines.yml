@@ -87,8 +87,8 @@ stages:
 
             - pwsh: |
                 # Update the installer installer
-                Invoke-WebRequest -UseBasicParsing -Uri "https://aka.ms/vs/install/latest/vs_setup.exe" -OutFile "$env:TEMP\dd_vs_setup.exe"
-                & "$env:TEMP\dd_vs_setup.exe" --update --quiet --wait | Out-Null
+                Invoke-WebRequest -UseBasicParsing -Uri "https://aka.ms/vs/install/latest/vs_setup.exe" -OutFile vs_setup.exe
+                & vs_setup.exe --update --quiet --wait | Out-Null
 
                 dotnet vs install preview Enterprise +core +mobile +desktop +uwp --quiet
                 dotnet vs where
@@ -101,7 +101,7 @@ stages:
               errorActionPreference: stop
 
             - pwsh: |
-                $vs = & vs where --preview --prop=InstallationPath
+                $vs = & dotnet vs where --preview --prop=InstallationPath
                 $msbuild = "$vs\MSBuild\Current\Bin\MSBuild.exe"
                 & $msbuild /r ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }}
               displayName: build net6 solutions
