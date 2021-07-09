@@ -2,9 +2,9 @@
 <Project>
 
   <!-- Default .NET MAUI files-->
-  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' and '$(EnableDefaultEmbeddedResourceItems)' == 'true' ">
-    <MauiXaml Condition=" '$(EnableDefaultXamlItems)' == 'true' "  Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
-    <MauiCss  Condition=" '$(EnableDefaultCssItems)' == 'true' "   Include="**\*.css"  Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+  <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' ">
+    <MauiXaml Condition=" '$(EnableDefaultXamlItems)' == 'true' " Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+    <MauiCss  Condition=" '$(EnableDefaultCssItems)' == 'true' "  Include="**\*.css"  Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
   </ItemGroup>
 
   <!-- Android -->
