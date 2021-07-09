@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility</RootNamespace>
@@ -7,7 +7,7 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <AndroidRoot>Android\</AndroidRoot>
     <iOSRoot>iOS\</iOSRoot>
-    <WindowsRoot>WinUI\</WindowsRoot>
+    <WindowsRoot>Windows\</WindowsRoot>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -24,59 +24,31 @@
     <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
 
-  <!--<Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />-->
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 
+  <ItemGroup>
+    <Compile Remove="**\GTK\**\*.cs" />
+    <None Include="**\GTK\**\*.cs" />
+    <Compile Remove="**\MacOS\**\*.cs" />
+    <None Include="**\MacOS\**\*.cs" />
+    <Compile Remove="**\Tizen\**\*.cs" />
+    <None Include="**\Tizen\**\*.cs" />
+    <Compile Remove="**\WPF\**\*.cs" />
+    <None Include="**\WPF\**\*.cs" />
+  </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <Compile Include="$(WindowsRoot)**\*.cs"></Compile>
     <Page Include="$(WindowsRoot)**\*.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Remove="$(WindowsRoot)TabbedPageStyle.xaml" />
-    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
-    <Compile Include="*.Windows.cs" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
-    <Compile Include="$(AndroidRoot)**\*.cs"></Compile>
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\bottomtablayout.axml" Link="Android\Resources\Layout\bottomtablayout.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\flyoutcontent.axml" Link="Android\Resources\Layout\flyoutcontent.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\rootlayout.axml" Link="Android\Resources\Layout\rootlayout.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\shellcontent.axml" Link="Android\Resources\Layout\shellcontent.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\tabbar.axml" Link="Android\Resources\Layout\tabbar.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\toolbar.axml" Link="Android\Resources\Layout\toolbar.axml" />
-
-
-    <AndroidResource Include="$(AndroidRoot)Resources\anim\enterfromleft.xml" Link="Android\Resources\anim\enterfromleft.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\anim\enterfromright.xml" Link="Android\Resources\anim\enterfromright.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoleft.xml" Link="Android\Resources\anim\exittoleft.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoright.xml" Link="Android\Resources\anim\exittoright.xml" />
-
-
-    <AndroidResource Include="$(AndroidRoot)Resources\values\styles.xml" Link="Android\Resources\values\styles.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\values\strings.xml" Link="Android\Resources\values\strings.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" Link="Android\Resources\values\attrs.xml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\**\*.axml" />
     <ProjectReference Include="..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup-net6.csproj" />
-
-    <Compile Remove="$(AndroidRoot)AppCompat\Resource.cs" />
-    <Compile Remove="$(AndroidRoot)bin\**\*.cs" />
-    <Compile Remove="$(AndroidRoot)obj\**\*.cs" />
-    <Compile Include="*.Android.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' OR '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
-    <Compile Include="$(iOSRoot)**\*.cs"></Compile>
     <EmbeddedResource Include="$(iOSRoot)Resources\*.resx" />
-    <Compile Remove="$(iOSRoot)bin\**\*.cs" />
-    <Compile Remove="$(iOSRoot)obj\**\*.cs" />
-    <Compile Include="*.iOS.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="RendererToHandlerShim.cs" />
-    <Compile Include="AppHostBuilderExtensions.cs" />
-    <Compile Include="MauiHandlersCollectionExtensions.cs" />
-    <Compile Include="ExportRendererAttribute.cs" />
-    <Compile Include="Forms.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -84,7 +56,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
