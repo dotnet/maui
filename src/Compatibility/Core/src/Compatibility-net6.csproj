@@ -57,9 +57,6 @@
     <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" />
     <ProjectReference Include="..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup-net6.csproj" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' OR '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
-    <EmbeddedResource Include="$(iOSRoot)Resources\*.resx" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
