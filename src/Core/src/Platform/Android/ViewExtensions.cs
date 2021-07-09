@@ -60,7 +60,7 @@ namespace Microsoft.Maui
 						nativeView.SetBackgroundColor(backgroundColor.ToNative());
 				}
 				else
-					nativeView.Background = paint!.ToDrawable();
+					nativeView.Background = paint!.ToDrawable(nativeView.Context);
 			}
 		}
 			

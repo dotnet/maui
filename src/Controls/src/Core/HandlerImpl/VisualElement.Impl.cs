@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -37,6 +38,7 @@ namespace Microsoft.Maui.Controls
 		IShape IFrameworkElement.Clip => Clip;
 
 		IFrameworkElement IFrameworkElement.Parent => Parent as IFrameworkElement;
+
 		public static readonly BindableProperty BorderBrushProperty = BindableProperty.Create(
 			nameof(BorderBrush), typeof(Paint), typeof(VisualElement), null);
 

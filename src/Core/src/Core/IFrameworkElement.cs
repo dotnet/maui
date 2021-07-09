@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Represents a framework-level set of properties, events, and methods for .NET MAUI elements. 
 	/// </summary>
-	public interface IFrameworkElement : IElement, ICornerRadius, ITransform
+	public interface IFrameworkElement : IElement, IBorder, ICornerRadius, ITransform
 	{
 		/// <summary>
 		/// Id used by automation tools to interact with this FrameworkElement

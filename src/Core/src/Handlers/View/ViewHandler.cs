@@ -73,14 +73,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected abstract void RemoveContainer();
 
-		public virtual bool NeedsContainer
+		public virtual bool NeedsContainer =>
 #if WINDOWS
-			=> VirtualView?.BorderBrush != null || VirtualView?.BorderWidth > 0 || VirtualView?.CornerRadius != default(CornerRadius);
+			VirtualView?.BorderBrush != null || VirtualView?.BorderWidth > 0 || VirtualView?.CornerRadius != default(CornerRadius);
 #else
-			=> VirtualView?.Clip != null;
+			VirtualView?.Clip != null;
 #endif
 
 		public NativeView? ContainerView { get; private protected set; }
+
+		object? IViewHandler.ContainerView => ContainerView;
 
 		protected NativeView? WrappedNativeView => ContainerView ?? NativeView;
 
@@ -171,10 +173,10 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateBorderWidth(view);
 #endif
 		}
-		
+
 		public static void MapCornerRadius(IViewHandler handler, IView view)
 		{
-#if WINDOWS		
+#if WINDOWS
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateCornerRadius(view);
 #else
@@ -182,7 +184,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 		}
 
-		public static void MapOpacity(IViewHandler handler, IView view)
+		public static void MapOpacity(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateOpacity(view);
 		}
