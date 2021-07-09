@@ -17,7 +17,7 @@
     <Grid
         Padding="12">
         <Grid.RowDefinitions>
-            <RowDefinition Height="60" />
+            <RowDefinition Height="80" />
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <ScrollView
@@ -25,7 +25,8 @@
             HorizontalScrollBarVisibility="Default"
             VerticalScrollBarVisibility="Never">
             <StackLayout
-                Orientation="Horizontal">
+                Orientation="Horizontal"
+                Padding="6">
                 <Grid
                     RowDefinitions="Auto, *">
                     <Label
