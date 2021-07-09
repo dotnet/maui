@@ -52,33 +52,39 @@
     <_SingleProjectWindowsExcludes>$(WindowsProjectFolder)/**/.*/**</_SingleProjectWindowsExcludes>
   </PropertyGroup>
 
-  <!-- Removals -->
-  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' ">
-    <!-- Explicitly include the platform code -->
-    <_MauiCompileToAdd
-        Condition=" '$(TargetPlatformIdentifier)' == 'android' and '$(AndroidProjectFolder)' != '' "
-        Include="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-    <_MauiCompileToAdd
-        Condition=" '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' "
-        Include="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-    <_MauiCompileToAdd
-        Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' "
-        Include="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-    <_MauiCompileToAdd
-        Condition=" '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' "
-        Include="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-    <None Include="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" Exclude="@(_MauiCompileToAdd)" />
-    <Compile Remove="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
-    <Compile Include="@(_MauiCompileToAdd)" />
-    <_MauiCompileToAdd Remove="@(_MauiCompileToAdd)" />
+  <PropertyGroup Condition=" '$(SingleProject)' == 'true' ">
+    <_TargetPlatformProjectFolderNormalized Condition=" '$(TargetPlatformIdentifier)' == 'android' ">$(AndroidProjectFolder)</_TargetPlatformProjectFolderNormalized>
+    <_TargetPlatformProjectFolderNormalized Condition=" '$(TargetPlatformIdentifier)' == 'ios' ">$(iOSProjectFolder)</_TargetPlatformProjectFolderNormalized>
+    <_TargetPlatformProjectFolderNormalized Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' ">$(MacCatalystProjectFolder)</_TargetPlatformProjectFolderNormalized>
+    <_TargetPlatformProjectFolderNormalized Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">$(WindowsProjectFolder)</_TargetPlatformProjectFolderNormalized>
+    <_TargetPlatformProjectFolderNormalized Condition=" '$(_TargetPlatformProjectFolderNormalized)' != ''">$([MSBuild]::NormalizeDirectory('$(_TargetPlatformProjectFolder)'))</_TargetPlatformProjectFolderNormalized>
+    <_PlatformsProjectFolderNormalized Condition=" '$(_PlatformsProjectFolderNormalized)' != ''">$([MSBuild]::NormalizeDirectory('$(PlatformsProjectFolder)'))</_TargetPlatformProjectFolderNormalized>
+  </PropertyGroup>
 
+  <!--
+  Fix up the default compile items to exclude items for platforms other than the current platform
+  We do this by filtering the list and removing any items that are in PlatformsProjectFolder, except those that are in the _TargetPlatformProjectFolder
+  That way it respects any removals, metadata updates etc
+  -->
+  <ItemGroup Condition=" '$(_TargetPlatformProjectFolderNormalized)' != '' and '$(EnableDefaultCompileItems)' == 'true' and '$(EnableDefaultItems)' == 'true' ">
+    <_MauiCompileWithAnnotations
+      Include="@(Compile)"
+      RemoveItems="$([MSBuild]::NormalizePath('%(FullPath)').StartsWith('$(_PlatformsProjectFolderNormalized)'))"
+      ExceptItems="$([MSBuild]::NormalizePath('%(FullPath)').StartsWith('$(_TargetPlatformProjectFolderNormalized)'))"
+      />
+    <_MauiCompileToRemove Remove="@(_MauiCompileWithAnnotations->WithMetadataValue('RemoveItems', 'true')->WithMetadataValue('ExceptItems', 'false')->ClearMetadata())" />
+    <Compile Remove="@(_MauiCompileToRemove)" />
+    <None Include="@(_MauiCompileToRemove)" Condition="'$(EnableDefaultNoneItems)' == 'true'" />
+    <_MauiCompileToRemove Remove="@(_MauiCompileToRemove)" />
+    <_MauiCompileWithAnnotations Remove="@(_MauiCompileWithAnnotations)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' and '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' ">
     <!-- Remove all Windows (WinUI) XAML Files from the Windows folder -->
-    <_MauiXamlToRemove
-        Condition="'$(WindowsProjectFolder)' != ''"
-        Include="$(WindowsProjectFolder)**/*.xaml" />
+    <_MauiXamlToRemove Include="$(WindowsProjectFolder)**/*.xaml" />
     <EmbeddedResource Remove="@(_MauiXamlToRemove)" />
     <MauiXaml Remove="@(_MauiXamlToRemove)" />
-    <None Include="@(_MauiXamlToRemove)" />
+    <None Include="@(_MauiXamlToRemove)" Condition="$(EnableDefaultNoneItems)" />
     <_MauiXamlToRemove Remove="@(_MauiXamlToRemove)" />
   </ItemGroup>
 
