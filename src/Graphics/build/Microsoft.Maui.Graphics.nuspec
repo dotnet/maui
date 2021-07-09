@@ -18,7 +18,7 @@
       <group targetFramework="net6.0-android30.0" />
       <group targetFramework="net6.0-ios13.6" />
       <group targetFramework="net6.0-maccatalyst13.5" />
-      <group targetFramework="net6.0-windows7.0" />
+      <group targetFramework="net6.0-windows10.0.18362" />
       <group targetFramework=".NETStandard2.0" />
       <group targetFramework=".NETStandard2.1" />
     </dependencies>
