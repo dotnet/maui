@@ -88,7 +88,7 @@ stages:
             - pwsh: |
                 # Update the installer installer
                 Invoke-WebRequest -UseBasicParsing -Uri "https://aka.ms/vs/install/latest/vs_setup.exe" -OutFile vs_setup.exe
-                & vs_setup.exe --update --quiet --wait | Out-Null
+                & .\vs_setup.exe --update --quiet --wait | Out-Null
 
                 dotnet vs install preview Enterprise +core +mobile +desktop +uwp --quiet
                 dotnet vs where
