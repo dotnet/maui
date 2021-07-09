@@ -86,7 +86,7 @@ stages:
               displayName: install dotnet tools
 
             - pwsh: |
-                Update the installer installer
+                # Update the installer installer
                 Invoke-WebRequest -UseBasicParsing -Uri "https://aka.ms/vs/install/latest/vs_setup.exe" -OutFile "$env:TEMP\dd_vs_setup.exe"
                 & "$env:TEMP\dd_vs_setup.exe" --update --quiet --wait | Out-Null
 
