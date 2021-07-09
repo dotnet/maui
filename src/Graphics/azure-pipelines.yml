@@ -3,8 +3,8 @@ variables:
   IsRunningOnCI: true
   # DotNet.Version: 6.0.100-preview.4.21255.9
   # DotNet.Cli.Telemetry.OptOut: true
-  # MauiCheck.Version: 0.6.0
-  # Maui.Version: --preview
+  MauiCheck.Version: 0.6.0
+  Maui.Version: --preview
 
 parameters:
   - name: BuildConfigurations
@@ -82,11 +82,11 @@ stages:
             #   displayName: install .NET $(DotNet.Version)
             #   errorActionPreference: stop
 
-            # - pwsh: |
-            #     & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
-            #     & maui-check $(Maui.Version) --ci --non-interactive --fix --skip androidsdk --skip xcode --skip vswin --skip vsmac
-            #   displayName: maui-check
-            #   errorActionPreference: stop
+            - pwsh: |
+                & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
+                & maui-check $(Maui.Version) --ci --non-interactive --fix --skip androidsdk --skip xcode --skip vswin --skip vsmac
+              displayName: maui-check
+              errorActionPreference: stop
 
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
@@ -96,14 +96,14 @@ stages:
                 dotnet vs where
               displayName: update vs
 
-            # - pwsh: |
-            #     $vs = & vs where --preview --prop=InstallationPath
-            #     $msbuild = "$vs\MSBuild\Current\Bin\MSBuild.exe"
-            #     & $msbuild /r ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }}
-            #   displayName: build net6 solutions
-
-            - pwsh: dotnet cake --configuration=${{ BuildConfiguration }}
+            - pwsh: |
+                $vs = & vs where --preview --prop=InstallationPath
+                $msbuild = "$vs\MSBuild\Current\Bin\MSBuild.exe"
+                & $msbuild /r ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }}
               displayName: build net6 solutions
+
+            # - pwsh: dotnet cake --configuration=${{ BuildConfiguration }}
+            #   displayName: build net6 solutions
 
             - task: NuGetCommand@2
               displayName: 'Pack nupkg'
