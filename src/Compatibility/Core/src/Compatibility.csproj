@@ -15,6 +15,12 @@
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 
+  <ItemGroup>
+    <Compile Remove="**\GTK\**\*.cs" />
+    <Compile Remove="**\MacOS\**\*.cs" />
+    <Compile Remove="**\Tizen\**\*.cs" />
+    <Compile Remove="**\WPF\**\*.cs" />
+  </ItemGroup>
 
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) == true ">
     <Reference Include="System.Runtime.Serialization" />

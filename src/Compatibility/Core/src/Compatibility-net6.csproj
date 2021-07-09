@@ -28,13 +28,9 @@
 
   <ItemGroup>
     <Compile Remove="**\GTK\**\*.cs" />
-    <None Include="**\GTK\**\*.cs" />
     <Compile Remove="**\MacOS\**\*.cs" />
-    <None Include="**\MacOS\**\*.cs" />
     <Compile Remove="**\Tizen\**\*.cs" />
-    <None Include="**\Tizen\**\*.cs" />
     <Compile Remove="**\WPF\**\*.cs" />
-    <None Include="**\WPF\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <Page Include="$(WindowsRoot)**\*.xaml">
