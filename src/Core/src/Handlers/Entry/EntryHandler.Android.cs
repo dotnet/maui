@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateClearButtonVisibility(entry, handler.GetClearButtonDrawable());
+			handler.NativeView?.UpdateClearButtonVisibility(entry, handler.GetClearButtonDrawable);
 		}
 
 		void OnFocusedChange(bool hasFocus)
@@ -190,26 +190,32 @@ namespace Microsoft.Maui.Handlers
 			if (motionEvent == null || NativeView == null || VirtualView == null)
 				return false;
 
-			var rBounds = GetClearButtonDrawable()?.Bounds;
+			var virtualView = VirtualView;
+			if (virtualView.ClearButtonVisibility == ClearButtonVisibility.Never)
+				return false;
 
-			if (rBounds != null)
+			var rBounds = GetClearButtonDrawable()?.Bounds;
+			var buttonWidth = rBounds?.Width();
+
+			if (buttonWidth > 0)
 			{
 				var x = motionEvent.GetX();
 				var y = motionEvent.GetY();
+				var nativeView = NativeView;
 
 				if (motionEvent.Action == MotionEventActions.Up
-					&& ((x >= (NativeView.Right - rBounds.Width())
-					&& x <= (NativeView.Right - NativeView.PaddingRight)
-					&& y >= NativeView.PaddingTop
-					&& y <= (NativeView.Height - NativeView.PaddingBottom)
-					&& (VirtualView.FlowDirection == FlowDirection.LeftToRight))
-					|| (x >= (NativeView.Left + NativeView.PaddingLeft)
-					&& x <= (NativeView.Left + rBounds.Width())
-					&& y >= NativeView.PaddingTop
-					&& y <= (NativeView.Height - NativeView.PaddingBottom)
-					&& VirtualView.FlowDirection == FlowDirection.RightToLeft)))
+					&& ((x >= nativeView.Right - buttonWidth
+					&& x <= nativeView.Right - nativeView.PaddingRight
+					&& y >= nativeView.PaddingTop
+					&& y <= nativeView.Height - nativeView.PaddingBottom
+					&& virtualView.FlowDirection == FlowDirection.LeftToRight)
+					|| (x >= nativeView.Left + nativeView.PaddingLeft
+					&& x <= nativeView.Left + buttonWidth
+					&& y >= nativeView.PaddingTop
+					&& y <= nativeView.Height - nativeView.PaddingBottom
+					&& virtualView.FlowDirection == FlowDirection.RightToLeft)))
 				{
-					NativeView.Text = null;
+					nativeView.Text = null;
 
 					return true;
 				}
