@@ -38,6 +38,8 @@
     <None Remove="MacOS\**" />
     <None Remove="Tizen\**" />
     <None Remove="WPF\**" />
+    <Page Remove="**\WPF\**\*.xaml" />
+    <MauiXaml Remove="**\WPF\**\*.xaml" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
   </ItemGroup>
