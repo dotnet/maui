@@ -15,10 +15,20 @@
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 
   <ItemGroup>
-    <Compile Remove="**\GTK\**\*.cs" />
-    <Compile Remove="**\MacOS\**\*.cs" />
-    <Compile Remove="**\Tizen\**\*.cs" />
-    <Compile Remove="**\WPF\**\*.cs" />
+    <Compile Remove="GTK\**" />
+    <Compile Remove="MacOS\**" />
+    <Compile Remove="Tizen\**" />
+    <Compile Remove="WPF\**" />
+    <EmbeddedResource Remove="GTK\**" />
+    <EmbeddedResource Remove="MacOS\**" />
+    <EmbeddedResource Remove="Tizen\**" />
+    <EmbeddedResource Remove="WPF\**" />
+    <None Remove="GTK\**" />
+    <None Remove="MacOS\**" />
+    <None Remove="Tizen\**" />
+    <None Remove="WPF\**" />
+    <Page Remove="**\WPF\**\*.xaml" />
+    <MauiXaml Remove="**\WPF\**\*.xaml" />
   </ItemGroup>
 
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) == true ">
