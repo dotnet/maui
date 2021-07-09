@@ -3,7 +3,7 @@ variables:
   IsRunningOnCI: true
   DotNet.Version: 6.0.100-preview.6.21355.2
   DotNet.Cli.Telemetry.OptOut: true
-  MauiCheck.Version: 0.6.0
+  MauiCheck.Version: 0.6.1
   Maui.Version: --preview
 
 parameters:
@@ -96,7 +96,7 @@ stages:
 
             - pwsh: |
                 & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
-                & maui-check $(Maui.Version) --ci --non-interactive --fix --skip androidsdk --skip xcode --skip vswin --skip vsmac
+                & maui-check $(Maui.Version) --ci --non-interactive --fix --skip androidsdk --skip xcode --skip vswin --skip vsmac --skip edgewebview2
               displayName: maui-check
               errorActionPreference: stop
 
