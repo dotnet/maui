@@ -5,17 +5,7 @@
   <PropertyGroup>
     <PublishTrimmed Condition=" '$(TargetFramework)' == 'net6.0-ios' or '$(TargetFramework)' == 'net6.0-maccatalyst' ">false</PublishTrimmed>
   </PropertyGroup>
-
-  <Target Name="Net6WinUIPackagingWorkaround" BeforeTargets="GetPackagingOutputs" Condition="$(TargetFramework.Contains('-windows')) == true AND '$(DisableEmbeddedXbf)' != 'true' ">
-    <PropertyGroup>
-      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-      <_SupportEmbedFileResources>true</_SupportEmbedFileResources>
-      <_EmbedFileResfilePath>$(IntermediateOutputPath)$(AppxSubfolderWithFilesToBeEmbedded)\embed.resfiles</_EmbedFileResfilePath>
-    </PropertyGroup>
-  </Target>
-  <Target Name="Net6WinUIWorkaround" BeforeTargets="_GetSdkToolsPathsFromSdk" Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PropertyGroup>
-      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-    </PropertyGroup>
-  </Target>
+  <!-- HACK: Prevent the Platform checks -->
+  <Target Name="ValidateWinUIPlatform" />
+  <Target Name="BinPlaceBootstrapDll" />
 </Project>

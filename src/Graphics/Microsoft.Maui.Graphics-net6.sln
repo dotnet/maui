@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30523.141
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31506.33
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Graphics.Text.Markdig-net6", "src\Microsoft.Maui.Graphics.Text.Markdig\Microsoft.Maui.Graphics.Text.Markdig-net6.csproj", "{B364BA53-2BA8-4844-8BD2-CF257A3C21F1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop-net6", "src\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop\Microsoft.Maui.Graphics.Win2D.WinUI.Desktop-net6.csproj", "{B2776881-0ED3-45B4-92DF-EF90810A2507}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Graphics.Skia-net6", "src\Microsoft.Maui.Graphics.Skia\Microsoft.Maui.Graphics.Skia-net6.csproj", "{56EFCFA2-4520-4749-974E-6744A32B22D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +37,10 @@ Global
 		{B2776881-0ED3-45B4-92DF-EF90810A2507}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2776881-0ED3-45B4-92DF-EF90810A2507}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2776881-0ED3-45B4-92DF-EF90810A2507}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56EFCFA2-4520-4749-974E-6744A32B22D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56EFCFA2-4520-4749-974E-6744A32B22D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56EFCFA2-4520-4749-974E-6744A32B22D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56EFCFA2-4520-4749-974E-6744A32B22D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -43,6 +49,7 @@ Global
 		{E66999B3-9585-4EF3-A45C-97A2101AD612} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
 		{B364BA53-2BA8-4844-8BD2-CF257A3C21F1} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
 		{B2776881-0ED3-45B4-92DF-EF90810A2507} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
+		{56EFCFA2-4520-4749-974E-6744A32B22D9} = {9E4B772B-D417-4147-B8B1-FD9E3B0B4EC5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B07E734-6AE2-4A12-AD60-C072F3695854}

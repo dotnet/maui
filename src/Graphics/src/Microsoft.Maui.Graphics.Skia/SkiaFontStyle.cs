@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			return String.Compare(Name, other.Name, StringComparison.Ordinal);
 		}
 
-		public System.IO.Stream OpenStream()
+		public global::System.IO.Stream OpenStream()
 		{
 			throw new NotImplementedException();
 		}
