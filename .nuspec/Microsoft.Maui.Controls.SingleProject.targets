@@ -19,25 +19,25 @@
     <WindowsProjectFolder Condition=" '$(WindowsProjectFolder)' == '' ">$(PlatformsProjectFolder)\Windows\</WindowsProjectFolder>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'android' ">
+  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'android' ">
     <AndroidManifest Condition=" Exists('$(AndroidProjectFolder)AndroidManifest.xml') ">$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>
     <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
     <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'ios' ">
+  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'ios' ">
     <IPhoneResourcePrefix>$(iOSProjectFolder)Resources</IPhoneResourcePrefix>
     <CodesignEntitlements Condition=" Exists('$(iOSProjectFolder)Entitlements.plist') ">$(iOSProjectFolder)Entitlements.plist</CodesignEntitlements>
     <_SingleProjectiOSExcludes>$(iOSProjectFolder)/**/.*/**</_SingleProjectiOSExcludes>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'maccatalyst' ">
+  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
     <IPhoneResourcePrefix>$(MacCatalystProjectFolder)Resources</IPhoneResourcePrefix>
     <CodesignEntitlements Condition=" Exists('$(MacCatalystProjectFolder)Entitlements.plist') ">$(MacCatalystProjectFolder)Entitlements.plist</CodesignEntitlements>
     <_SingleProjectMacCatalystExcludes>$(MacCatalystProjectFolder)/**/.*/**</_SingleProjectMacCatalystExcludes>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">
+  <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'windows' ">
     <ApplicationManifest Condition=" Exists('$(WindowsProjectFolder)app.manifest') ">$(WindowsProjectFolder)app.manifest</ApplicationManifest>
     <PackageManifest Condition=" Exists('$(WindowsProjectFolder)Package.appxmanifest') ">$(WindowsProjectFolder)Package.appxmanifest</PackageManifest>
     <RuntimeIdentifiers Condition=" '$(RuntimeIdentifiers)' == '' ">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
