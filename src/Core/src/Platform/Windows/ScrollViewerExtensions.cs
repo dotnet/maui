@@ -3,7 +3,7 @@ using WScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 
 namespace Microsoft.Maui
 {
-	public static class ScrollViewerExtensions
+	public static class ScrollViewerExtensions 
 	{
 		public static WScrollBarVisibility ToWindowsScrollBarVisibility(this ScrollBarVisibility visibility)
 		{
@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 		}
 
 		public static void UpdateScrollBarVisibility(this ScrollViewer scrollViewer, ScrollOrientation orientation,
-			ScrollBarVisibility horizontalScrollBarVisibility)
+			ScrollBarVisibility horizontalScrollBarVisibility) 
 		{
 			if (horizontalScrollBarVisibility == ScrollBarVisibility.Default)
 			{
