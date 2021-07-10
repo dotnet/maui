@@ -128,6 +128,8 @@ namespace Microsoft.Maui.Controls
 				if (_content != null)
 					InternalChildren.Add(_content);
 				OnPropertyChanged();
+
+				Handler?.UpdateValue(nameof(Content));
 			}
 		}
 
