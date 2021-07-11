@@ -368,5 +368,19 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(editor, () => expected, GetNativeIsChatKeyboard, expected);
 		}
+
+		[Theory]
+		[InlineData(EditorAutoSizeOption.Disabled)]
+		[InlineData(EditorAutoSizeOption.TextChanges)]
+		public async Task AutoSizeInitializesCorrectly(EditorAutoSizeOption option)
+		{
+			var editor = new EditorStub
+			{
+				AutoSize = option,
+				Text = "Test"
+			};
+
+			await ValidatePropertyInitValue(editor, () => editor.AutoSize, GetNativeAutoSize, editor.AutoSize);
+		}
 	}
 }
