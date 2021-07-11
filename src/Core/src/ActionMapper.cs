@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Command = System.Action<Microsoft.Maui.IElementHandler, Microsoft.Maui.IElement, object>;
 
 namespace Microsoft.Maui
 {

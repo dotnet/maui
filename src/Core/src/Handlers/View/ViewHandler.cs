@@ -44,8 +44,8 @@ namespace Microsoft.Maui.Handlers
 
 		bool _hasContainer;
 
-		protected ViewHandler(PropertyMapper mapper)
-			: base(mapper)
+		protected ViewHandler(PropertyMapper mapper, CommandMapper? commandMapper = null)
+			: base(mapper, commandMapper)
 		{
 		}
 

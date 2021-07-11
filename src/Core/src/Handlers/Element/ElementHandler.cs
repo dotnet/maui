@@ -9,13 +9,15 @@ namespace Microsoft.Maui.Handlers
 		};
 
 		protected PropertyMapper _mapper;
+		protected CommandMapper? CommandMapper;
 		protected readonly PropertyMapper _defaultMapper;
 
-		protected ElementHandler(PropertyMapper mapper)
+		protected ElementHandler(PropertyMapper mapper, CommandMapper? commandMapper = null)
 		{
 			_ = mapper ?? throw new ArgumentNullException(nameof(mapper));
 			_defaultMapper = mapper;
 			_mapper = _defaultMapper;
+			CommandMapper = commandMapper;
 		}
 
 		public IMauiContext? MauiContext { get; private set; }
@@ -80,7 +82,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null)
 				return;
 
-			_mapper?.Invoke(this, VirtualView, command, args);
+			CommandMapper?.Invoke(this, VirtualView, command, args);
 		}
 
 		private protected abstract object OnCreateNativeElement();

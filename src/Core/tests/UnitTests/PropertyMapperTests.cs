@@ -118,12 +118,8 @@ namespace Microsoft.Maui.UnitTests
 				[mapperActionKey] = (r, v) => wasMapper2Called = true
 			};
 
-			Assert.Equal(2, mapper1.Keys.Count);
-			Assert.Equal(1, mapper1.ActionKeys.Count);
 			Assert.Equal(1, mapper1.UpdateKeys.Count);
 
-			Assert.Equal(2, mapper2.Keys.Count);
-			Assert.Equal(0, mapper2.ActionKeys.Count);
 			Assert.Equal(2, mapper2.UpdateKeys.Count);
 
 			mapper2.UpdateProperties(null, new Button());

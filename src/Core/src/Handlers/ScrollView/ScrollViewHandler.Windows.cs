@@ -52,6 +52,14 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.HorizontalScrollBarVisibility);
 		}
 
+		public static void MapRequestScrollTo(ScrollViewHandler handler, IScrollView scrollView, object args) 
+		{
+			if (args is ScrollToRequest request)
+			{
+				handler.NativeView.ChangeView(request.HoriztonalOffset, request.VerticalOffset, null, request.Instant);
+			}
+		}
+
 		void ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
 		{
 			VirtualView.VerticalOffset = NativeView.VerticalOffset;
