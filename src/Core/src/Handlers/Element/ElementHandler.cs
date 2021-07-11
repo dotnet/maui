@@ -75,6 +75,14 @@ namespace Microsoft.Maui.Handlers
 			_mapper?.UpdateProperty(this, VirtualView, property);
 		}
 
+		public virtual void Invoke(string command, object args) 
+		{
+			if (VirtualView == null)
+				return;
+
+			_mapper?.Invoke(this, VirtualView, command, args);
+		}
+
 		private protected abstract object OnCreateNativeElement();
 
 		object CreateNativeElement() =>

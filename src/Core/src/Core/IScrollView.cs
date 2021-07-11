@@ -46,5 +46,7 @@ namespace Microsoft.Maui
 		/// Allows the native ScrollView to inform that cross-platform code that a scroll operation has completed.
 		/// </summary>
 		void ScrollFinished();
+
+		void RequestScrollTo(double horizontalOffset, double verticalOffset, bool instant);
 	}
 }

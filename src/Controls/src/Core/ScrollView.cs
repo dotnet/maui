@@ -363,6 +363,8 @@ namespace Microsoft.Maui.Controls
 		{
 			CheckTaskCompletionSource();
 			ScrollToRequested?.Invoke(this, e);
+
+			Handler?.Invoke(nameof(IScrollView.RequestScrollTo), e.ToRequest());
 		}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
