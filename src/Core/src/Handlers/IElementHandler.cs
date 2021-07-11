@@ -8,7 +8,7 @@
 
 		void UpdateValue(string property);
 
-		void Invoke(string command, object args);
+		void Invoke(string command, object? args = null);
 
 		void DisconnectHandler();
 

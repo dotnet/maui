@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.UI.Xaml.Controls;
 
-
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, ScrollViewer>
@@ -52,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.HorizontalScrollBarVisibility);
 		}
 
-		public static void MapRequestScrollTo(ScrollViewHandler handler, IScrollView scrollView, object args) 
+		public static void MapRequestScrollTo(ScrollViewHandler handler, IScrollView scrollView, object? args) 
 		{
 			if (args is ScrollToRequest request)
 			{

@@ -5,10 +5,12 @@ namespace Microsoft.Maui
 {
 	public abstract class PropertyMapper
 	{
-		readonly Dictionary<string, (Action<IElementHandler, IElement> Action, bool RunOnUpdateAll)> _mapper = new();
+		readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new();
 
 		PropertyMapper? _chained;
 
+		// Keep a distinct list of the keys so we don't run any duplicate (overridden) updates more than once
+		// when we call UpdateProperties
 		HashSet<string>? _updateKeys;
 
 		public PropertyMapper()
@@ -20,26 +22,26 @@ namespace Microsoft.Maui
 			Chained = chained;
 		}
 
-		private protected virtual void SetPropertyCore(string key, Action<IElementHandler, IElement> action, bool runOnUpdateAll)
+		private protected virtual void SetPropertyCore(string key, Action<IElementHandler, IElement> action)
 		{
-			_mapper[key] = (action, runOnUpdateAll);
+			_mapper[key] = action;
 			ClearKeyCache();
 		}
 
 		private protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
 		{
 			var action = GetPropertyCore(key);
-			action.Action?.Invoke(viewHandler, virtualView);
+			action?.Invoke(viewHandler, virtualView);
 		}
 
-		private protected virtual (Action<IElementHandler, IElement>? Action, bool RunOnUpdateAll) GetPropertyCore(string key)
+		private protected virtual Action<IElementHandler, IElement>? GetPropertyCore(string key)
 		{
 			if (_mapper.TryGetValue(key, out var action))
 				return action;
 			else if (Chained is not null)
 				return Chained.GetPropertyCore(key);
 			else
-				return (null, false);
+				return null;
 		}
 
 		internal void UpdateProperty(IElementHandler viewHandler, IElement? virtualView, string property)
@@ -77,10 +79,7 @@ namespace Microsoft.Maui
 
 			foreach (var key in GetKeys())
 			{
-				var result = GetPropertyCore(key);
-
-				if (result.RunOnUpdateAll)
-					_updateKeys.Add(key);
+				_updateKeys.Add(key);
 			}
 
 			return returnList ?? new HashSet<string>();
@@ -111,8 +110,6 @@ namespace Microsoft.Maui
 		where TVirtualView : IElement
 		where TViewHandler : IElementHandler
 	{
-		ActionMapper<TVirtualView, TViewHandler>? _actions;
-
 		public PropertyMapper()
 		{
 		}
@@ -126,20 +123,14 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-				var action = GetPropertyCore(key).Action ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
+				var action = GetPropertyCore(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
 				return new Action<TViewHandler, TVirtualView>((h, v) => action.Invoke(h, v));
 			}
-			set => Add(key, value, true);
+			set => Add(key, value);
 		}
 
-		public ActionMapper<TVirtualView, TViewHandler> Actions =>
-			_actions ??= new ActionMapper<TVirtualView, TViewHandler>(this);
-
 		public void Add(string key, Action<TViewHandler, TVirtualView> action) =>
-			Add(key, action, true);
-
-		public void Add(string key, Action<TViewHandler, TVirtualView> action, bool runOnUpdateAll) =>
-			SetPropertyCore(key, (h, v) => action?.Invoke((TViewHandler)h, (TVirtualView)v), runOnUpdateAll);
+			SetPropertyCore(key, (h, v) => action?.Invoke((TViewHandler)h, (TVirtualView)v));
 	}
 
 	public class PropertyMapper<TVirtualView> : PropertyMapper<TVirtualView, IElementHandler>

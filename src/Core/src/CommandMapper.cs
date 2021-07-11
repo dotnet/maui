@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Command = System.Action<Microsoft.Maui.IElementHandler, Microsoft.Maui.IElement, object>;
+using Command = System.Action<Microsoft.Maui.IElementHandler, Microsoft.Maui.IElement, object?>;
 
 namespace Microsoft.Maui
 {
@@ -24,23 +24,23 @@ namespace Microsoft.Maui
 			_mapper[key] = action;
 		}
 
-		private protected virtual void InvokeCore(string key, IElementHandler viewHandler, IElement virtualView, object args)
+		private protected virtual void InvokeCore(string key, IElementHandler viewHandler, IElement virtualView, object? args)
 		{
-			var action = GetPropertyCore(key);
+			var action = GetCommandCore(key);
 			action?.Invoke(viewHandler, virtualView, args);
 		}
 
-		private protected virtual Command? GetPropertyCore(string key)
+		private protected virtual Command? GetCommandCore(string key)
 		{
 			if (_mapper.TryGetValue(key, out var action))
 				return action;
 			else if (Chained is not null)
-				return Chained.GetPropertyCore(key);
+				return Chained.GetCommandCore(key);
 			else
 				return null;
 		}
 
-		internal void Invoke(IElementHandler viewHandler, IElement? virtualView, string property, object args)
+		internal void Invoke(IElementHandler viewHandler, IElement? virtualView, string property, object? args)
 		{
 			if (virtualView == null)
 				return;
@@ -71,12 +71,12 @@ namespace Microsoft.Maui
 		{
 		}
 
-		public Action<TViewHandler, TVirtualView, object> this[string key]
+		public Action<TViewHandler, TVirtualView, object?> this[string key]
 		{
 			get
 			{
-				var action = GetPropertyCore(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
-				return new Action<TViewHandler, TVirtualView, object>((h, v, o) => action.Invoke(h, v, o));
+				var action = GetCommandCore(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
+				return new Action<TViewHandler, TVirtualView, object?>((h, v, o) => action.Invoke(h, v, o));
 			}
 			set => Add(key, value);
 		}
@@ -85,7 +85,7 @@ namespace Microsoft.Maui
 		public void Add(string key, Action<TViewHandler, TVirtualView> action) =>
 			Add(key, action);
 
-		public void Add(string key, Action<TViewHandler, TVirtualView, object> action) =>
+		public void Add(string key, Action<TViewHandler, TVirtualView, object?> action) =>
 			SetPropertyCore(key, (h, v, o) => action?.Invoke((TViewHandler)h, (TVirtualView)v, o));
 	}
 
