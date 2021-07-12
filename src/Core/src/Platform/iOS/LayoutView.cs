@@ -43,9 +43,9 @@ namespace Microsoft.Maui
 			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
 			CrossPlatformArrange?.Invoke(bounds);
 		}
-		
+
 		static bool? respondsToSafeArea;
-		
+
 		bool RespondsToSafeArea()
 		{
 			if (respondsToSafeArea.HasValue)
