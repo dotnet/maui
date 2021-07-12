@@ -8,16 +8,16 @@ using Microsoft.AspNetCore.Components.WebView.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
 {
-    /// <summary>
-    /// Describes a root component that can be added to a <see cref="BlazorWebView"/>.
-    /// </summary>
-    public class RootComponent
+	/// <summary>
+	/// Describes a root component that can be added to a <see cref="BlazorWebView"/>.
+	/// </summary>
+	public class RootComponent
     {
-        /// <summary>
-        /// Gets or sets the CSS selector string that specifies where in the document the component should be placed.
-        /// This must be unique among the root components within the <see cref="BlazorWebView"/>.
-        /// </summary>
-        public string Selector { get; set; }
+		/// <summary>
+		/// Gets or sets the CSS selector string that specifies where in the document the component should be placed.
+		/// This must be unique among the root components within the <see cref="BlazorWebView"/>.
+		/// </summary>
+		public string Selector { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the root component. This type must implement <see cref="IComponent"/>.
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         /// </summary>
         public IDictionary<string, object> Parameters { get; set; }
 
-        internal Task AddToWebViewManagerAsync(WebViewManager webViewManager)
+        internal Task AddToWebViewManagerAsync(IWebViewManager webViewManager)
         {
             // As a characteristic of XAML,we can't rely on non-default constructors. So we have to
             // validate that the required properties were set. We could skip validating this and allow
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             return webViewManager.AddRootComponentAsync(ComponentType, Selector, parameterView);
         }
 
-        internal Task RemoveFromWebViewManagerAsync(WebView2WebViewManager webviewManager)
+        internal Task RemoveFromWebViewManagerAsync(IWebViewManager webviewManager)
         {
             return webviewManager.RemoveRootComponentAsync(Selector);
         }

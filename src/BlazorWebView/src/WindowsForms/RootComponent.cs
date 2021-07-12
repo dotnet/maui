@@ -49,13 +49,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         /// </summary>
         public IDictionary<string, object> Parameters { get; }
 
-        internal Task AddToWebViewManagerAsync(WebViewManager webViewManager)
+        internal Task AddToWebViewManagerAsync(IWebViewManager webViewManager)
         {
             var parameterView = Parameters == null ? ParameterView.Empty : ParameterView.FromDictionary(Parameters);
             return webViewManager.AddRootComponentAsync(ComponentType, Selector, parameterView);
         }
 
-        internal Task RemoveFromWebViewManagerAsync(WebView2WebViewManager webviewManager)
+        internal Task RemoveFromWebViewManagerAsync(IWebViewManager webviewManager)
         {
             return webviewManager.RemoveRootComponentAsync(Selector);
         }

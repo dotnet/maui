@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 	/// An implementation of <see cref="WebViewManager"/> that uses the Edge WebView2 browser control
 	/// to render web content.
 	/// </summary>
-	public class WebView2WebViewManager : WebViewManager
+	public class WebView2WebViewManager : WebViewManager, IWebViewManager
 	{
 		// Using an IP address means that WebView2 doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since

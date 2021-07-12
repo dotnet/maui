@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebView;
+using Microsoft.AspNetCore.Components.WebView.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// </summary>
 		public IDictionary<string, object?>? Parameters { get; set; }
 
-		internal Task AddToWebViewManagerAsync(WebViewManager webViewManager)
+		internal Task AddToWebViewManagerAsync(IWebViewManager webViewManager)
 		{
 			// As a characteristic of XAML,we can't rely on non-default constructors. So we have to
 			// validate that the required properties were set. We could skip validating this and allow
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return webViewManager.AddRootComponentAsync(ComponentType, Selector, parameterView);
 		}
 
-		internal Task RemoveFromWebViewManagerAsync(WebViewManager webviewManager)
+		internal Task RemoveFromWebViewManagerAsync(IWebViewManager webviewManager)
 		{
 			if (string.IsNullOrWhiteSpace(Selector))
 			{

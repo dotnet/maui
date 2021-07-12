@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WebView2Control>
 	{
-		private WebView2WebViewManager? _webviewManager;
+		private IWebViewManager? _webviewManager;
 
 		protected override WebView2Control CreateNativeView()
 		{
@@ -25,12 +25,26 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			//_webChromeClient?.Dispose();
 		}
 
-		private bool RequiredStartupPropertiesSet =>
+		protected virtual bool RequiredStartupPropertiesSet =>
 			//_webview != null &&
 			HostPage != null &&
 			Services != null;
 
-		private void StartWebViewCoreIfPossible()
+		protected virtual IWebViewManager CreateWebViewManager(WebView2Control nativeView, IWebView2Wrapper wrapper, IServiceProvider services, Dispatcher dispatcher)
+		{
+			var assetConfig = Services!.GetRequiredService<BlazorAssetsAssemblyConfiguration>()!;
+
+			// We assume the host page is always in the root of the content directory, because it's
+			// unclear there's any other use case. We can add more options later if so.
+			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
+			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
+
+			var fileProvider = new ManifestEmbeddedFileProvider(assetConfig.AssetsAssembly, root: contentRootDir);
+
+			return new WinUIWebViewManager(nativeView, wrapper, services, dispatcher, fileProvider, hostPageRelativePath);
+		}
+
+		protected void StartWebViewCoreIfPossible()
 		{
 			if (!RequiredStartupPropertiesSet ||
 				_webviewManager != null)
@@ -42,16 +56,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				throw new InvalidOperationException($"Can't start {nameof(BlazorWebView)} without native web view instance.");
 			}
 
-			var assetConfig = Services!.GetRequiredService<BlazorAssetsAssemblyConfiguration>()!;
-
-			// We assume the host page is always in the root of the content directory, because it's
-			// unclear there's any other use case. We can add more options later if so.
-			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
-			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
-
-			var fileProvider = new ManifestEmbeddedFileProvider(assetConfig.AssetsAssembly, root: contentRootDir);
-
-			_webviewManager = new WinUIWebViewManager(NativeView, new WinUIWebView2Wrapper(NativeView), Services!, MauiDispatcher.Instance, fileProvider, hostPageRelativePath);
+			_webviewManager = CreateWebViewManager(NativeView, new WinUIWebView2Wrapper(NativeView), Services!, MauiDispatcher.Instance);
 			if (RootComponents != null)
 			{
 				foreach (var rootComponent in RootComponents)
