@@ -81,24 +81,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		[Obsolete("ParentView is obsolete as of version 2.1.0. Please use Parent instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public VisualElement ParentView
-		{
-			get
-			{
-				Element parent = Parent;
-				while (parent != null)
-				{
-					var parentView = parent as VisualElement;
-					if (parentView != null)
-						return parentView;
-					parent = parent.RealParent;
-				}
-				return null;
-			}
-		}
-
 		public string StyleId
 		{
 			get { return _styleId; }
