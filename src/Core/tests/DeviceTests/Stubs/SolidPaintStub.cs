@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				Frame = frame,
 			};
 #elif __ANDROID__
-		public Android.Graphics.Drawables.Drawable ToDrawable()
+		public Android.Graphics.Drawables.Drawable ToDrawable(Android.Content.Context context)
 		{
 			var drawable = new MauiDrawable(context);
 			drawable.SetBackgroundColor(Color.ToNative());
