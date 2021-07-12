@@ -17,8 +17,8 @@
     <dependencies>
       <group>
         <dependency id="JonLipsky.Microsoft.Maui.Graphics" version="$version$"/>
-        <dependency id="SkiaSharp" version="2.80.2"/>
-        <dependency id="SkiaSharp.Views" version="2.80.2"/>
+        <dependency id="SkiaSharp" version="2.80.3"/>
+        <dependency id="SkiaSharp.Views" version="2.80.3"/>
         <dependency id="Xamarin.Forms" version="4.8.0.1821"/>
       </group>
     </dependencies>

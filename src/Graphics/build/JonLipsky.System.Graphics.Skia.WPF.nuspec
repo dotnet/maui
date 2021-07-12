@@ -17,9 +17,9 @@
     <dependencies>
       <group>
         <dependency id="JonLipsky.Microsoft.Maui.Graphics" version="$version$"/>
-        <dependency id="SkiaSharp" version="2.80.2"/>
-        <dependency id="SkiaSharp.Views" version="2.80.2"/>
-        <dependency id="SkiaSharp.Views.WPF" version="2.80.2"/>
+        <dependency id="SkiaSharp" version="2.80.3"/>
+        <dependency id="SkiaSharp.Views" version="2.80.3"/>
+        <dependency id="SkiaSharp.Views.WPF" version="2.80.3"/>
       </group>
     </dependencies>
   </metadata>

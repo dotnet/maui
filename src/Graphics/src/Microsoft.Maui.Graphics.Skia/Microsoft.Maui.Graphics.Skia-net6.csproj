@@ -7,15 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.46" />
+    <PackageReference Include="SkiaSharp" Version="2.88.0-pr.1740.16" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
-    <PackageReference Include="SkiaSharp.Views" Version="2.88.0-preview.46" />
+    <PackageReference Include="SkiaSharp.Views" Version="2.88.0-pr.1740.16" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="SkiaSharp.Views.WinUI" Version="2.88.0-preview.46" />
+    <PackageReference Include="SkiaSharp.Views.WinUI" Version="2.88.0-pr.1740.16" />
   </ItemGroup>
 
   <ItemGroup>
