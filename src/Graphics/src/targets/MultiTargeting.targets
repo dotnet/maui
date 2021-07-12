@@ -39,6 +39,14 @@
     <Compile Remove="**\Tizen\**\*.cs"/>
     <None Include="**\Tizen\**\*.cs"/>
   </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.Contains('-windows'))">
+    <Compile Remove="**\*.Windows.cs"/>
+    <None Include="**\*.Windows.cs"/>
+    <Compile Remove="**\Windows\*.cs"/>
+    <None Include="**\Windows\*.cs"/>
+    <Compile Remove="**\Windows\**\*.cs"/>
+    <None Include="**\Windows\**\*.cs"/>
+  </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard')) != true ">
     <Compile Remove="**\*.Standard.cs"/>
     <None Include="**\*.Standard.cs"/>
