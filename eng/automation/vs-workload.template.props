@@ -5,52 +5,32 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Shorten package names to avoid long path caching issues in Visual Studio -->
-    <ShortNames Include="microsoft.aspnetcore.components.webview.maui;Microsoft.AspNetCore.Components.WebView.Maui">
-      <Replacement>AspWV.Maui</Replacement>
+    <ShortNames Include="@PACK_VERSION_LONG@">
+      <Replacement>@VS_COMPONENT_VERSION@</Replacement>
     </ShortNames>
 
-    <ShortNames Include="microsoft.maui.core.runtime;Microsoft.Maui.Core.Runtime">
-      <Replacement>MMCore.RT</Replacement>
-    </ShortNames>
+    <ComponentResources Include="maui" Category=".NET" Title=".NET MAUI SDK" Description=".NET SDK Workload for building all types of MAUI applications." />
+    <ComponentVersions Include="maui" Version="@VS_COMPONENT_VERSION@" />
 
-    <ShortNames Include="microsoft.maui.controls.ref;Microsoft.Maui.Controls.Ref">
-      <Replacement>MMCtrls.Ref</Replacement>
-    </ShortNames>
+    <ComponentResources Include="maui-mobile" Category=".NET" Title=".NET MAUI SDK for Mobile" Description=".NET SDK Workload for building MAUI applications that target mobile platforms." />
+    <ComponentVersions Include="maui-mobile" Version="@VS_COMPONENT_VERSION@" />
 
-    <ShortNames Include="microsoft.maui.controls.runtime;Microsoft.Maui.Controls.Runtime">
-      <Replacement>MMCtrls.RT</Replacement>
-    </ShortNames>
+    <ComponentResources Include="maui-desktop" Category=".NET" Title=".NET MAUI SDK for Desktop" Description=".NET SDK Workload for building MAUI applications that target desktop platforms." />
+    <ComponentVersions Include="maui-deskotp" Version="@VS_COMPONENT_VERSION@" />
 
-    <ShortNames Include="microsoft.maui.essentials.ref;Microsoft.Maui.Essentials.Ref">
-      <Replacement>MMEss.Ref</Replacement>
-    </ShortNames>
+    <ComponentResources Include="maui-core" Category=".NET" Title=".NET MAUI SDK Core" Description=".NET SDK Workload containing core MAUI SDK packages." />
+    <ComponentVersions Include="maui-core" Version="@VS_COMPONENT_VERSION@" />
 
-    <ShortNames Include="microsoft.maui.essentials.runtime;Microsoft.Maui.Essentials.Runtime">
-      <Replacement>MMEss.RT</Replacement>
-    </ShortNames>
+    <ComponentResources Include="maui-android" Category=".NET" Title=".NET MAUI SDK for Android" Description=".NET SDK Workload for building MAUI applications that target Android." />
+    <ComponentVersions Include="maui-android" Version="@VS_COMPONENT_VERSION@" />
 
-    <ComponentResources Include="maui" Category=".NET" Title=".NET MAUI workload" Description=".NET MAUI SDK for all platforms"/>
-    <ComponentVersions Include="maui" Version="@VERSION@" />
+    <ComponentResources Include="maui-maccatalyst" Category=".NET" Title=".NET MAUI SDK for Mac Catalyst" Description=".NET SDK Workload for building MAUI applications that target Mac Catalyst." />
+    <ComponentVersions Include="maui-maccatalyst" Version="@VS_COMPONENT_VERSION@" />
 
-    <ComponentResources Include="maui-mobile" Category=".NET" Title=".NET MAUI mobile workload" Description=".NET MAUI SDK for Mobile"/>
-    <ComponentVersions Include="maui-mobile" Version="@VERSION@" />
+    <ComponentResources Include="maui-ios" Category=".NET" Title=".NET MAUI SDK for iOS" Description=".NET SDK Workload for building MAUI applications that target iOS." />
+    <ComponentVersions Include="maui-ios" Version="@VS_COMPONENT_VERSION@" />
 
-    <ComponentResources Include="maui-desktop" Category=".NET" Title=".NET MAUI desktop workload" Description=".NET MAUI SDK for Desktop"/>
-    <ComponentVersions Include="maui-deskotp" Version="@VERSION@" />
-
-    <ComponentResources Include="maui-core" Category=".NET" Title=".NET MAUI core workload" Description=".NET MAUI SDK Core Packages"/>
-    <ComponentVersions Include="maui-core" Version="@VERSION@" />
-
-    <ComponentResources Include="maui-android" Category=".NET" Title=".NET MAUI android workload" Description=".NET MAUI SDK for Android"/>
-    <ComponentVersions Include="maui-android" Version="@VERSION@" />
-
-    <ComponentResources Include="maui-maccatalyst" Category=".NET" Title=".NET MAUI mac catalyst workload" Description=".NET MAUI SDK for Mac Catalyst"/>
-    <ComponentVersions Include="maui-maccatalyst" Version="@VERSION@" />
-
-    <ComponentResources Include="maui-ios" Category=".NET" Title=".NET MAUI iOS workload" Description=".NET MAUI SDK for iOS"/>
-    <ComponentVersions Include="maui-ios" Version="@VERSION@" />
-
-    <ComponentResources Include="maui-windows" Category=".NET" Title=".NET MAUI windows workload" Description=".NET MAUI SDK for Windows"/>
-    <ComponentVersions Include="maui-windows" Version="@VERSION@" />
+    <ComponentResources Include="maui-windows" Category=".NET" Title=".NET MAUI SDK for Windows" Description=".NET SDK Workload for building MAUI applications that target Windows." />
+    <ComponentVersions Include="maui-windows" Version="@VS_COMPONENT_VERSION@" />
   </ItemGroup>
 </Project>
