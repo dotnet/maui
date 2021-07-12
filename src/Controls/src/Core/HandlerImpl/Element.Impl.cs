@@ -1,13 +1,17 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls.Hosting;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Element : Maui.IElement
+	public partial class Element : Maui.IElement, IEffectControlProvider
 	{
 		IElementHandler _handler;
 		EventHandler _attachedHandler;
+		EffectsFactory _effectsFactory;
 
 		Maui.IElement Maui.IElement.Parent => Parent;
+		EffectsFactory EffectsFactory => _effectsFactory ??= Handler.MauiContext.Services.GetRequiredService<EffectsFactory>();
 
 		public IElementHandler Handler
 		{
@@ -43,9 +47,19 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnDetachedHandler() { }
 
-		private protected virtual void OnAttachedHandlerCore() => OnAttachedHandler();
+		private protected virtual void OnAttachedHandlerCore()
+		{
+			OnAttachedHandler();
+			AttachNativeEffects();
+		}
 
 		private protected virtual void OnDetachingHandlerCore() => OnDetachingHandler();
+
+		private protected virtual void OnDetachedHandlerCore()
+		{
+			OnDetachedHandler();
+			DetachNativeEffects();
+		}
 
 		private protected virtual void OnHandlerSet() { }
 
@@ -84,8 +98,40 @@ namespace Microsoft.Maui.Controls
 			if (previousHandler != null)
 			{
 				DetachedHandler?.Invoke(this, EventArgs.Empty);
-				OnDetachedHandler();
+				OnDetachedHandlerCore();
 			}
+		}
+
+		void IEffectControlProvider.RegisterEffect(Effect effect)
+		{
+			if (effect is RoutingEffect re && re.Inner != null)
+			{
+				re.Element = this;
+				re.Inner.Element = this;
+				return;
+			}	
+
+			var platformEffect = EffectsFactory.CreateEffect(effect);
+
+			if (platformEffect != null)
+			{
+				platformEffect.Element = this;
+				effect.PlatformEffect = platformEffect;
+			}
+			else
+			{
+				effect.Element = this;
+			}
+		}
+
+		void AttachNativeEffects()
+		{
+			EffectControlProvider = this;
+		}
+
+		void DetachNativeEffects()
+		{
+			EffectControlProvider = null;
 		}
 	}
 }
