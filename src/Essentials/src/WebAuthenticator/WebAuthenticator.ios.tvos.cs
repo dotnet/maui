@@ -9,6 +9,7 @@ using Foundation;
 using SafariServices;
 #endif
 using UIKit;
+using WebKit;
 
 namespace Microsoft.Maui.Essentials
 {
@@ -36,8 +37,12 @@ namespace Microsoft.Maui.Essentials
 		static SFAuthenticationSession sf;
 #endif
 
-		internal static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
+		internal static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
+			var url = webAuthenticatorOptions?.Url;
+			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
+			var prefersEphemeralWebBrowserSession = webAuthenticatorOptions?.PrefersEphemeralWebBrowserSession ?? false;
+
 			if (!VerifyHasUrlSchemeOrDoesntRequire(callbackUrl.Scheme))
 				throw new InvalidOperationException("You must register your URL Scheme handler in your app's Info.plist.");
 
@@ -73,6 +78,11 @@ namespace Microsoft.Maui.Essentials
 				{
 					var ctx = new ContextProvider(Platform.GetCurrentWindow());
 					void_objc_msgSend_IntPtr(was.Handle, ObjCRuntime.Selector.GetHandle("setPresentationContextProvider:"), ctx.Handle);
+					was.PrefersEphemeralWebBrowserSession = prefersEphemeralWebBrowserSession;
+				}
+				else if (prefersEphemeralWebBrowserSession)
+				{
+					ClearCookies();
 				}
 
 				using (was)
@@ -81,6 +91,9 @@ namespace Microsoft.Maui.Essentials
 					return await tcsResponse.Task;
 				}
 			}
+
+			if (prefersEphemeralWebBrowserSession)
+				ClearCookies();
 
 			if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
 			{
@@ -117,6 +130,24 @@ namespace Microsoft.Maui.Essentials
 			return await tcsResponse.Task;
 		}
 
+		void ClearCookies()
+		{
+			NSUrlCache.SharedCache.RemoveAllCachedResponses();
+
+#if __IOS__
+			if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
+			{
+				WKWebsiteDataStore.DefaultDataStore.HttpCookieStore.GetAllCookies((cookies) =>
+				{
+					foreach (var cookie in cookies)
+					{
+						WKWebsiteDataStore.DefaultDataStore.HttpCookieStore.DeleteCookie(cookie, null);
+					}
+				});
+			}
+#endif
+		}
+				
 		internal static bool OpenUrl(Uri uri)
 		{
 			// If we aren't waiting on a task, don't handle the url
