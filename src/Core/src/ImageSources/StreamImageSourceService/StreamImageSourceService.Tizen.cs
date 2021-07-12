@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 
 			try
 			{
-				var stream = await imageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+				var stream = await imageSource.GetStreamAsync(cancellationToken);
 
 				if (stream == null)
 					throw new InvalidOperationException("Unable to load image stream.");

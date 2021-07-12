@@ -11,7 +11,7 @@ using TWebView = Tizen.WebView.WebView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
-	class RefreshIcon : ContentView
+	class RefreshIcon : AbsoluteLayout
 	{
 		public const int IconSize = ThemeConstants.RefreshView.Resources.IconSize;
 		static readonly Color DefaultColor = ThemeConstants.RefreshView.ColorClass.DefaultColor;
@@ -24,15 +24,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			HeightRequest = IconSize;
 			WidthRequest = IconSize;
-			var layout = new AbsoluteLayout()
-			{
-				HeightRequest = IconSize,
-				WidthRequest = IconSize,
-			};
 
-			layout.Children.Add(new BoxView
+			Children.Add(new BoxView
 			{
-				Color = Color.FromRgb(255, 255, 255),
+				Color = Color.FromRgb(200, 200, 200),
 				CornerRadius = new CornerRadius(IconSize),
 			}, new Rectangle(0.5, 0.5, IconSize, IconSize), AbsoluteLayoutFlags.PositionProportional);
 
@@ -41,8 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				Source = ImageSource.FromResource(IconPath, typeof(ShellItemRenderer).Assembly),
 			};
 
-			layout.Children.Add(_icon, new Rectangle(0.5, 0.5, IconSize - 8, IconSize - 8), AbsoluteLayoutFlags.PositionProportional);
-			Content = layout;
+			Children.Add(_icon, new Rectangle(0.5, 0.5, IconSize - 8, IconSize - 8), AbsoluteLayoutFlags.PositionProportional);
 
 			IconColor = DefaultColor;
 		}
@@ -109,6 +103,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				Opacity = 0.5,
 			};
 			Children.Add(RefreshIcon);
+			Children.Add(new BoxView
+			{
+				HeightRequest = 200
+			});
 		}
 
 		RefreshIcon RefreshIcon { get; set; }
@@ -202,6 +200,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		void UpdateRefreshLayout()
 		{
 			_refreshLayout = new RefreshLayout();
+			_refreshLayout.Parent = Element;
 			_refreshLayout.RefreshIconColor = RefreshView.RefreshColor;
 			_refreshLayoutRenderer = Platform.GetOrCreateRenderer(_refreshLayout);
 			(_refreshLayoutRenderer as ILayoutRenderer).RegisterOnLayoutUpdated();

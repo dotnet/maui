@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (disposing)
 			{
 				VisualElementRenderer?.Dispose();
+				VisualElementRenderer = null;
 			}
 			base.Dispose(disposing);
 		}
