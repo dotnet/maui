@@ -14,27 +14,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 {
 	public static class UIViewExtensions
 	{
-#if __MOBILE__
-		public static UIImage ConvertToImage(this UIView view)
-		{
-			if (!Forms.IsiOS10OrNewer)
-			{
-				UIGraphics.BeginImageContext(view.Frame.Size);
-				view.Layer.RenderInContext(UIGraphics.GetCurrentContext());
-				var image = UIGraphics.GetImageFromCurrentImageContext();
-				UIGraphics.EndImageContext();
-				return new UIImage(image.CGImage);
-			}
-
-			var imageRenderer = new UIGraphicsImageRenderer(view.Bounds.Size);
-
-			return imageRenderer.CreateImage((a) =>
-			{
-				view.Layer.RenderInContext(a.CGContext);
-			});
-		}
-#endif
-
 		internal static T GetParentOfType<T>(this UIView view)
 			where T : class
 		{

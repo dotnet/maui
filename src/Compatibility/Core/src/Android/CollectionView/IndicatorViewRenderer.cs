@@ -179,7 +179,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return;
 			}
 
-			SetBackgroundColor((color ?? Element.BackgroundColor).ToAndroid());
+			Color backgroundColor = color ?? Element.BackgroundColor;
+
+			if (backgroundColor != null)
+				SetBackgroundColor(backgroundColor.ToAndroid());
 		}
 
 		void SetUpNewElement(IndicatorView newElement)

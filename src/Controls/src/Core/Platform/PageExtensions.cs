@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {

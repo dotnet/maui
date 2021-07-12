@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 
 			var crossPlatformSize = CrossPlatformMeasure(width, height);
 
-			return base.SizeThatFits(crossPlatformSize.ToCGSize());
+			return crossPlatformSize.ToCGSize();
 		}
 
 		public IView? View { get; set; }
@@ -29,6 +29,7 @@ namespace Microsoft.Maui
 		{
 			base.LayoutSubviews();
 
+			// TODO ezhart 2021-07-07 This Frame may not make sense if we're applying a transform to this UIView; we should determine the rectangle from Bounds/Center instead
 			var bounds = Frame.ToRectangle();
 			if (View is ISafeAreaView sav && !sav.IgnoreSafeArea && RespondsToSafeArea())
 			{
@@ -42,7 +43,9 @@ namespace Microsoft.Maui
 			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
 			CrossPlatformArrange?.Invoke(bounds);
 		}
+
 		static bool? respondsToSafeArea;
+
 		bool RespondsToSafeArea()
 		{
 			if (respondsToSafeArea.HasValue)
