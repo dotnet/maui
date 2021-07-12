@@ -6,7 +6,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.MasterDetailPage;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using Microsoft.Maui.Graphics;
@@ -446,10 +445,5 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			return _detail;
 		}
-	}
-
-	public class MasterDetailPageRenderer : FlyoutPageRenderer
-	{
-
 	}
 }
