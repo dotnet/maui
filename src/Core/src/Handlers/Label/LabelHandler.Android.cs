@@ -1,11 +1,4 @@
-using System;
-using Android.Content;
-using Android.Runtime;
-using Android.Util;
-using Android.Views;
 using Android.Widget;
-using Java.Lang;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
@@ -38,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateText(label);
 		}
 
-		public static void MapTextColor(LabelHandler handler, ILabel label)
+ 		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
 			handler.NativeView?.UpdateTextColor(label, DefaultTextColor!);
 		}

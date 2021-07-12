@@ -3,21 +3,15 @@ using Android.Graphics;
 using Android.Text;
 using Android.Util;
 using Android.Widget;
+using static Android.Widget.TextView;
 
 namespace Microsoft.Maui
 {
 	public static class TextViewExtensions
 	{
-		public static void UpdateText(this TextView textView, ILabel label) =>
-			UpdateText(textView, label.Text);
-
-		public static void UpdateText(this TextView textView, string newText)
+		public static void UpdateText(this TextView textView, ILabel label)
 		{
-			newText ??= string.Empty;
-			var oldText = textView.Text ?? string.Empty;
-
-			if (oldText != newText)
-				textView.Text = newText;
+			textView.Text = label.Text;
 		}
 
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)

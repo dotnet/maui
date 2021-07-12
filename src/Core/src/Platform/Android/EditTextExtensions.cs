@@ -18,14 +18,14 @@ namespace Microsoft.Maui
 
 		public static void UpdateText(this AppCompatEditText editText, IEntry entry)
 		{
-			editText.UpdateText(entry.Text);
+			editText.Text = entry.Text;
 
 			// TODO ezhart The renderer sets the text to selected and shows the keyboard if the EditText is focused
 		}
 
 		public static void UpdateText(this AppCompatEditText editText, IEditor editor)
 		{
-			editText.UpdateText(editor.Text);
+			editText.Text = editor.Text;
 
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
