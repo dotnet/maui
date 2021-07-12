@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.SetCursorVisible(isReadOnly);
 		}
 
+		[PortHandler]
 		protected override void UpdatePlaceholderColor()
 		{
 			_hintColorSwitcher = _hintColorSwitcher ?? new TextColorSwitcher(EditText.HintTextColors, Element.UseLegacyColorManagement());

@@ -15,6 +15,18 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
+		[Fact(DisplayName = "PlaceholderColor Initializes Correctly")]
+		public async Task PlaceholderColorInitializesCorrectly()
+		{
+			var entry = new EntryStub()
+			{
+				Placeholder = "Test",
+				PlaceholderColor = Colors.Yellow
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.PlaceholderColor, GetNativePlaceholderColor, entry.PlaceholderColor);
+		}
+
 		[Theory(DisplayName = "Font Family Initializes Correctly")]
 		[InlineData(null)]
 		[InlineData("monospace")]
@@ -120,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
-			(AppCompatEditText)entryHandler.NativeView;
+			entryHandler.NativeView;
 
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
@@ -146,6 +158,13 @@ namespace Microsoft.Maui.DeviceTests
 
 		string GetNativePlaceholder(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Hint;
+
+		Color GetNativePlaceholderColor(EntryHandler entryHandler)
+		{
+			int currentHintTextColor = GetNativeEntry(entryHandler).CurrentHintTextColor;
+			AColor currentPlaceholderColor = new AColor(currentHintTextColor);
+			return currentPlaceholderColor.ToColor();
+		}
 
 		bool GetNativeIsReadOnly(EntryHandler entryHandler)
 		{

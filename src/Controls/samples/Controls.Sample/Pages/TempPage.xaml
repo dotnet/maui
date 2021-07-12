@@ -27,7 +27,9 @@
                     Text="Entry" 
                     TextColor="{DynamicResource PrimaryTextColor}"  />
                 <Entry 
-                    x:Name="entry"
+                    x:Name="entry"    
+                    PlaceholderColor="Purple"
+                    Placeholder="Placeholder"
                     Text="Entry" />
                 <Label 
                     Text="Slider" 
