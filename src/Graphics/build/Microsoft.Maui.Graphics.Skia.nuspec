@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Maui.Graphics.Skia</id>
+    <version>$version$</version>
+    <title>Microsoft.Maui.Graphics for SkiaSharp</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>SkiaSharp implementation for Microsoft.Maui.Graphics.Skia</description>
+    <summary>This allows you to use SkiaSharp as a Microsoft.Maui.Graphics.Skia target.</summary>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <projectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics.Skia</projectUrl>
+    <repository type="git" url="https://github.com/dotnet/Microsoft.Maui.Graphics.Skia"/>
+    <license type="expression">MIT</license>
+    <language>C#</language>
+    <dependencies>
+      <group targetFramework="net6.0-android30.0">
+        <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.61"/>
+        <dependency id="SkiaSharp.Views" version="2.88.0-preview.61"/>
+      </group>
+      <group targetFramework="net6.0-ios13.6">
+        <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.61"/>
+        <dependency id="SkiaSharp.Views" version="2.88.0-preview.61"/>
+      </group>
+      <group targetFramework="net6.0-maccatalyst13.5">
+        <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.61"/>
+        <dependency id="SkiaSharp.Views" version="2.88.0-preview.61"/>
+      </group>
+      <group targetFramework="net6.0-windows10.0.18362">
+        <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.61"/>
+        <dependency id="SkiaSharp.Views.WinUI" version="2.88.0-preview.61"/>
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.61"/>
+      </group>
+      <group targetFramework=".NETStandard2.1">
+        <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.61"/>
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/netstandard2.0/Microsoft.Maui.Graphics.Skia.dll" target="lib/netstandard2.0/Microsoft.Maui.Graphics.Skia.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/netstandard2.0/Microsoft.Maui.Graphics.Skia.pdb" target="lib/netstandard2.0/Microsoft.Maui.Graphics.Skia.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/netstandard2.1/Microsoft.Maui.Graphics.Skia.dll" target="lib/netstandard2.1/Microsoft.Maui.Graphics.Skia.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/netstandard2.1/Microsoft.Maui.Graphics.Skia.pdb" target="lib/netstandard2.1/Microsoft.Maui.Graphics.Skia.pdb"/>
+
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-ios/Microsoft.Maui.Graphics.Skia.dll" target="lib/net6.0-ios13.6/Microsoft.Maui.Graphics.Skia.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-ios/Microsoft.Maui.Graphics.Skia.pdb" target="lib/net6.0-ios13.6/Microsoft.Maui.Graphics.Skia.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-android/Microsoft.Maui.Graphics.Skia.dll" target="lib/net6.0-android30.0/Microsoft.Maui.Graphics.Skia.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-android/Microsoft.Maui.Graphics.Skia.pdb" target="lib/net6.0-android30.0/Microsoft.Maui.Graphics.Skia.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-maccatalyst/Microsoft.Maui.Graphics.Skia.dll" target="lib/net6.0-maccatalyst13.5/Microsoft.Maui.Graphics.Skia.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-maccatalyst/Microsoft.Maui.Graphics.Skia.pdb" target="lib/net6.0-maccatalyst13.5/Microsoft.Maui.Graphics.Skia.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Skia.dll" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Skia.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Skia.pdb" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Skia.pdb"/>
+  </files>
+</package>

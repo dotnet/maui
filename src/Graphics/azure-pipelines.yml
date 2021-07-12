@@ -1,15 +1,12 @@
 variables:
   BuildVersion: $[counter('release-counter', 1)]
   IsRunningOnCI: true
-  DotNetVersion: 6.0.100-preview.4.21255.9
+  DotNet.Version: 6.0.100-preview.6.21355.2
   DotNet.Cli.Telemetry.OptOut: true
-  MauiCheck.Version: 0.4.1
-  MauiCheck.Manifest: https://raw.githubusercontent.com/Redth/dotnet-maui-check/main/manifests/maui-dev.manifest.json
+  MauiCheck.Version: 0.6.1
+  Maui.Version: --preview
 
 parameters:
-  - name: BuildEverything
-    type: boolean
-    default: false
   - name: BuildConfigurations
     type: object
     default:
@@ -68,56 +65,67 @@ stages:
   - stage: windows
     displayName: Build Windows
     jobs:
-      - ${{ each BuildCondition in parameters.BuildConfigurations }}:
-        - job: win_hosted_${{ BuildCondition }}
+      - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+        - job: win_hosted_${{ BuildConfiguration }}
           workspace:
             clean: all
-          displayName: Build Windows Phase (${{ BuildCondition }})
+          displayName: Build Windows Phase (${{ BuildConfiguration }})
           timeoutInMinutes: 60
           pool:
             vmImage:  windows-latest
           steps:
-            # - powershell: |
-            #     $ProgressPreference = 'SilentlyContinue'
-            #     Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
-            #     & .\dotnet-install.ps1 -Version $(DotNetVersion) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
-            #     & dotnet --list-sdks
-            #   displayName: install .NET $(DotNetVersion)
-            #   errorActionPreference: stop
-       
+            - pwsh: |
+                $ProgressPreference = 'SilentlyContinue'
+                Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+                & .\dotnet-install.ps1 -Version $(DotNet.Version) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
+                & dotnet --list-sdks
+              displayName: install .NET $(DotNet.Version)
+              errorActionPreference: stop
 
-            # - powershell: |
-            #     & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
-            #     & maui-check --ci --non-interactive --fix --skip androidsdk --skip xcode --skip vswin --skip vsmac --manifest $(MauiCheck.Manifest)
-            #   displayName: maui-check
-            #   errorActionPreference: stop
-
-            - script: dotnet tool restore
+            - pwsh: dotnet tool restore
               displayName: install dotnet tools
 
-            - script: dotnet vs install preview Enterprise +core +mobile +desktop +uwp --quiet
+            - pwsh: |
+                # Update the installer installer
+                Invoke-WebRequest -UseBasicParsing -Uri "https://aka.ms/vs/install/latest/vs_setup.exe" -OutFile vs_setup.exe
+                & .\vs_setup.exe --update --quiet --wait | Out-Null
+
+                dotnet vs install preview Enterprise +core +mobile +desktop +uwp --quiet
+                dotnet vs where
               displayName: update vs
 
-            - script: dotnet cake --configuration=${{ BuildCondition }}
+            - pwsh: |
+                & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
+                & maui-check $(Maui.Version) --ci --non-interactive --fix --skip androidsdk --skip xcode --skip vswin --skip vsmac --skip edgewebview2
+              displayName: maui-check
+              errorActionPreference: stop
+
+            - pwsh: |
+                $vs = & dotnet vs where --preview --prop=InstallationPath
+                $msbuild = "$vs\MSBuild\Current\Bin\MSBuild.exe"
+                & $msbuild /r ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
               displayName: build net6 solutions
+
+            # - pwsh: dotnet cake --configuration=${{ BuildConfiguration }}
+            #   displayName: build net6 solutions
 
             - task: NuGetCommand@2
               displayName: 'Pack nupkg'
               inputs:
                 command: 'pack'
                 packagesToPack: '**\\Microsoft.Maui.*.nuspec'
-                packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
-                configuration: ${{ BuildCondition }}
+                packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}'
+                configuration: ${{ BuildConfiguration }}
                 basePath: '$(System.DefaultWorkingDirectory)'
                 versioningScheme : 'byEnvVar'
                 versionEnvVar: 'BUILD_BUILDNUMBER'
-                
+
             - task: CopyFiles@2
               displayName: 'Copy SignList.xml and Packages'
               inputs:
                 Contents: |
                   **/SignList.xml
-                TargetFolder: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
+                TargetFolder: '$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}'
                 flattenFolders: true
 
             - task: PublishBuildArtifacts@1
@@ -126,7 +134,7 @@ stages:
               inputs:
                 ArtifactName: nuget
 
-# only sign using the private server
+  # only sign using the private server
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - stage: nuget_signing
       dependsOn: windows

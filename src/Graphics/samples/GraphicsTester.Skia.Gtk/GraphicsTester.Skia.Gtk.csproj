@@ -14,7 +14,7 @@
         <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics.Skia.GtkSharp\Microsoft.Maui.Graphics.Skia.GtkSharp.csproj" />
         <ProjectReference Include="..\..\src\Microsoft.Maui.Graphics\Microsoft.Maui.Graphics.csproj" />
         <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
-        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.2" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.3" />
 
     </ItemGroup>
 

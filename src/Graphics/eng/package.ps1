@@ -62,7 +62,15 @@ if ($OnWindows)
         # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
         $env:PATH=($dotnet + [IO.Path]::PathSeparator + $env:PATH)
 
-        # Have to build the solution first so the xbf files are there for pack
+        # & $msbuild $sln `
+        #     /p:configuration=$configuration `
+        #     /p:SymbolPackageFormat=snupkg `
+        #     /restore `
+        #     /t:build `
+        #     /p:Packing=true `
+        #     /bl:"$artifacts/maui-graphics-build-$configuration.binlog"
+        # if (!$?) { throw "Build failed." }
+
         & $msbuild $slnnet6 `
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
@@ -72,24 +80,13 @@ if ($OnWindows)
             /bl:"$artifacts/maui-graphics-net6-build-$configuration.binlog"
         if (!$?) { throw "Build failed." }
 
-
-        & $msbuild $sln `
-            /p:configuration=$configuration `
-            /p:SymbolPackageFormat=snupkg `
-            /restore `
-            /t:build `
-            /p:Packing=true `
-            /bl:"$artifacts/maui-graphics-build-$configuration.binlog"
-    if (!$?) { throw "Build failed." }
-
-
         # & $msbuild $sln `
         #     /p:configuration=$configuration `
         #     /p:SymbolPackageFormat=snupkg `
         #     /t:pack `
         #     /p:Packing=true `
         #     /bl:"$artifacts/maui-graphics-pack-$configuration.binlog"
-        if (!$?) { throw "Pack failed." }
+        # if (!$?) { throw "Pack failed." }
     }
     finally
     {

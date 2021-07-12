@@ -15,7 +15,7 @@
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>
-      <group>
+      <group targetFramework=".NETStandard2.0">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
         <dependency id="Markdig" version="0.22.1"/>
       </group>
