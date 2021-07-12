@@ -397,9 +397,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.SetContainer(this);
-			effect.SetControl(Control);
+			effect.Container = this;
+			effect.Control = Control;
 		}
+
 
 		protected virtual void SetAutomationId(string id)
 		{

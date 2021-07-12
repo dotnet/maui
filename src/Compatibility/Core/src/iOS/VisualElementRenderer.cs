@@ -108,8 +108,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (platformEffect == null)
 				return;
 
-			platformEffect.SetContainer(container);
-			platformEffect.SetControl(control);
+			platformEffect.Container = container;
+			platformEffect.Control = control;
 		}
 
 #if __MOBILE__
@@ -445,7 +445,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.SetContainer(this);
+			effect.Container = this;
 		}
 
 		protected virtual void SetAccessibilityHint()
