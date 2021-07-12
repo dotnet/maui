@@ -10,7 +10,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class ModalNavigationService
+	internal partial class ModalNavigationManager
 	{
 		UIViewController? _renderer
 		{
