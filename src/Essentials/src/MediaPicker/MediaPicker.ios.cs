@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Essentials
 			if (!UIImagePickerController.AvailableMediaTypes(sourceType).Contains(mediaType))
 				throw new FeatureNotSupportedException();
 
-			if (!photo)
+			if (!photo && !pickExisting)
 				await Permissions.EnsureGrantedAsync<Permissions.Microphone>();
 
 			// Check if picking existing or not and ensure permission accordingly as they can be set independently from each other
