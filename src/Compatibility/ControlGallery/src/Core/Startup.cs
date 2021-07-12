@@ -29,6 +29,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				.ConfigureServices(services =>
 				{
 					DependencyService.Register(Device.GetAssemblies());
+				})
+				.ConfigureEffects(effects =>
+				{
+					effects.AddCompatibilityEffects(Device.GetAssemblies());
 				});
 		}
 	}

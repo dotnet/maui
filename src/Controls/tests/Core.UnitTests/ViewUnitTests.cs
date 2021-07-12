@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
@@ -656,6 +657,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.GestureRecognizers.Add(gestureRecognizer);
 			view.GestureRecognizers.Remove(gestureRecognizer);
 
+			Assert.Null(gestureRecognizer.Parent);
+		}
+
+
+		[Test]
+		public void ClearingGestureRecognizers()
+		{
+			var view = new View();
+			var gestureRecognizer = new TapGestureRecognizer();
+
+			view.GestureRecognizers.Add(gestureRecognizer);
+			view.GestureRecognizers.Clear();
+
+
+			Assert.AreEqual(0, (view as IGestureController).CompositeGestureRecognizers.Count);
 			Assert.Null(gestureRecognizer.Parent);
 		}
 

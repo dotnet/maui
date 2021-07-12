@@ -20,14 +20,12 @@ namespace Microsoft.Maui.Handlers
 			nativeView.TimeChanged -= OnControlTimeChanged;
 		}
 
-    void SetupDefaults(TimePicker nativeView)
+		void SetupDefaults(TimePicker nativeView)
 		{
 			_defaultForeground = nativeView.Foreground;
-
-			
 		}
 
-	  public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapFormat(TimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.NativeView?.UpdateTime(timePicker);
 		}
@@ -49,11 +47,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(timePicker, fontManager);
 		}
 
-    public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
+		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.NativeView?.UpdateTextColor(timePicker, handler._defaultForeground);
 		}
-    
+
 		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)
 		{
 			if (VirtualView != null)
@@ -61,6 +59,6 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.Time = e.NewTime;
 				VirtualView.InvalidateMeasure();
 			}
-    }
+		}
 	}
 }
