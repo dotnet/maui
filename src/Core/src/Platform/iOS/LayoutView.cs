@@ -1,6 +1,7 @@
 using System;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 
@@ -93,6 +94,17 @@ namespace Microsoft.Maui
 			{
 				CrossPlatformArrange = ((IPage)view).Arrange,
 			};
+		}
+
+		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
+		{
+			if (CurrentView?.Handler is ElementHandler handler)
+			{
+				var application = handler.GetRequiredService<IApplication>();
+				application?.ThemeChanged();
+			}
+
+			base.TraitCollectionDidChange(previousTraitCollection);
 		}
 	}
 }
