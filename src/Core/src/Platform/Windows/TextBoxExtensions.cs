@@ -125,7 +125,29 @@ namespace Microsoft.Maui
 		{
 			textBox.IsPassword = entry.IsPassword;
 		}
-    
+
+		internal static void UpdateIsTextPredictionEnabled(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.UpdateInputScope(entry);
+		}
+
+		internal static void UpdateInputScope(this MauiTextBox textBox, ITextInput textInput)
+		{
+			if (textInput.Keyboard is CustomKeyboard custom)
+			{
+				textBox.IsTextPredictionEnabled = (custom.Flags & KeyboardFlags.Suggestions) != 0;
+				textBox.IsSpellCheckEnabled = (custom.Flags & KeyboardFlags.Spellcheck) != 0;
+			}
+			else
+			{
+				textBox.IsTextPredictionEnabled = textInput.IsTextPredictionEnabled;
+
+				// TODO: Update IsSpellCheckEnabled
+			}
+
+			textBox.InputScope = textInput.Keyboard.ToInputScope();
+    }
+
 		public static void UpdateHorizontalTextAlignment(this MauiTextBox textBox, IEntry entry)
 		{
 			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
