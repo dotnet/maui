@@ -29,6 +29,7 @@
             <Color x:Key="SectionItemBorderColor">#C8C8C8</Color>
 
             <Style x:Key="SectionItemContainerStyle" TargetType="Frame">
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackgroundSecondaryColor}, Dark={StaticResource DarkBackgroundSecondaryColor}}" />
                 <Setter Property="BorderColor" Value="{StaticResource SectionItemBorderColor}" />
                 <Setter Property="CornerRadius" Value="0" />
                 <Setter Property="HasShadow" Value="False" />
