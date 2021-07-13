@@ -125,7 +125,13 @@ namespace Microsoft.Maui
 			nativeView.Opacity = view.Opacity;
 		}
 
+		public static void UpdateClip(this WrapperView nativeView, IView view)
+		{
+			nativeView.Clip = view.Clip;
+		}
 
+		public static void UpdateClip(this Widget nativeView, IView view)
+		{ }
 	}
 
 }
