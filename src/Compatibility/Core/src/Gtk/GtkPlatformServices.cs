@@ -20,12 +20,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			MauiGtkApplication.Invoke(action);
 		}
-
-		public Ticker CreateTicker()
-		{
-			return new GtkTicker();
-		}
-
 		public Assembly[] GetAssemblies()
 		{
 			return AppDomain.CurrentDomain.GetAssemblies();
