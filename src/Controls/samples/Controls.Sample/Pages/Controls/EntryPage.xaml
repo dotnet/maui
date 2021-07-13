@@ -37,6 +37,18 @@
                 <Entry 
                     Text="Text"/>
                 <Label
+                    Text="ClearButtonVisibility = Never"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Text"
+                    ClearButtonVisibility="Never"/>
+                <Label
+                    Text="ClearButtonVisibility = WhileEditing"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Text"
+                    ClearButtonVisibility="WhileEditing"/>
+                <Label
                     Text="Read-only"
                     Style="{StaticResource Headline}" />
                 <Entry 
@@ -53,6 +65,12 @@
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Completed="OnEntryCompleted"/>
+                <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Text"
+                    Background="Orange"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

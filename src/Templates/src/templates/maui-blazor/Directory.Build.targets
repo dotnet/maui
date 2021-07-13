@@ -14,6 +14,11 @@
     <ProjectCapability Include="XamarinStaticLaunchProfiles" />
   </ItemGroup>
 
+  <!-- Required - Skip the runtime settings -->
+  <PropertyGroup>
+    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
+  </PropertyGroup>
+
   <!-- Required - Overwrite tasks that are not needed when multitargeting -->
   <Target Name="ValidateWinUIPlatform" />
   <Target Name="BinPlaceBootstrapDll" />
