@@ -274,8 +274,7 @@ namespace Microsoft.Maui.Controls.Hosting
 #elif __ANDROID__
 				services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
 #elif WINDOWS
-				// TODO: Implement GetPathBounds in Microsoft.Maui.Graphics
-				//services.AddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
+				services.AddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
 #endif
 			}
 
