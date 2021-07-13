@@ -35,7 +35,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
-			[TestCase(false), TestCase(true)]
+			[TestCase(false)]
+			//only works for runtime interpreted xaml
 			public void XamlLoadingUsesResourceLoader(bool useCompiledXaml)
 			{
 				var layout = new ResourceLoader(useCompiledXaml);
@@ -61,7 +62,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Test]
-			public void XamlLoadingUsesResourceProvider2([Values(false, true)] bool useCompiledXaml)
+			//only works for runtime interpreted xaml
+			public void XamlLoadingUsesResourceProvider2([Values(false)] bool useCompiledXaml)
 			{
 				var layout = new ResourceLoader(useCompiledXaml);
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromArgb("#368F95")));
@@ -96,7 +98,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[Test]
-			public void XamlLoadingUsesResourceProvider2WithDesignProperties([Values(false, true)] bool useCompiledXaml)
+			//only works for runtime interpreted xaml
+			public void XamlLoadingUsesResourceProvider2WithDesignProperties([Values(false)] bool useCompiledXaml)
 			{
 				var layout = new ResourceLoader(useCompiledXaml);
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromArgb("#368F95")));
