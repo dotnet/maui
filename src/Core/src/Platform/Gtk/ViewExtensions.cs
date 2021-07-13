@@ -21,7 +21,20 @@ namespace Microsoft.Maui
 				color = paint.ToColor();
 			}
 
-			var css = view.Background.CssImage();
+			var css = view.Background.ToCss();
+			
+			
+			var disposePixbuf = false;
+			var pixbuf = css == null ? view.Background?.ToPixbuf(out disposePixbuf) : default;
+			
+			// create a temporary file 
+			var tempFile = pixbuf?.TempFileFor();
+
+			if (tempFile != null)
+			{
+				// use the tempfile as url in css
+				css = $"url('{tempFile}')";
+			}
 
 			if (color == null && css == null)
 				return;
@@ -40,7 +53,7 @@ namespace Microsoft.Maui
 				default:
 					if (css != null)
 					{
-						nativeView.SetStyleImage(css, "background-image");
+						nativeView.SetStyleValue(css, "background-image");
 					}
 					else
 					{
@@ -50,6 +63,11 @@ namespace Microsoft.Maui
 					break;
 			}
 
+			// Gtk.CssProvider translates the file of url() into Base64, so the file can safely deleted:
+			tempFile?.Dispose();
+
+			if (disposePixbuf)
+				pixbuf?.Dispose();
 		}
 
 		public static void UpdateForeground(this Widget nativeView, Paint? paint)
