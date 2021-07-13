@@ -682,6 +682,57 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<FocusEventArgs> Focused;
 
+		SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
+		{
+			var constraintSize = new Size(widthConstraint, heightConstraint);
+			if (_measureCache.TryGetValue(constraintSize, out SizeRequest cachedResult))
+				return cachedResult;
+
+			double widthRequest = WidthRequest;
+			double heightRequest = HeightRequest;
+			if (widthRequest >= 0)
+				widthConstraint = Math.Min(widthConstraint, widthRequest);
+			if (heightRequest >= 0)
+				heightConstraint = Math.Min(heightConstraint, heightRequest);
+
+			SizeRequest result = OnMeasure(widthConstraint, heightConstraint);
+			bool hasMinimum = result.Minimum != result.Request;
+			Size request = result.Request;
+			Size minimum = result.Minimum;
+
+			if (heightRequest != -1)
+			{
+				request.Height = heightRequest;
+				if (!hasMinimum)
+					minimum.Height = heightRequest;
+			}
+
+			if (widthRequest != -1)
+			{
+				request.Width = widthRequest;
+				if (!hasMinimum)
+					minimum.Width = widthRequest;
+			}
+
+			double minimumHeightRequest = MinimumHeightRequest;
+			double minimumWidthRequest = MinimumWidthRequest;
+
+			if (minimumHeightRequest != -1)
+				minimum.Height = minimumHeightRequest;
+			if (minimumWidthRequest != -1)
+				minimum.Width = minimumWidthRequest;
+
+			minimum.Height = Math.Min(request.Height, minimum.Height);
+			minimum.Width = Math.Min(request.Width, minimum.Width);
+
+			var r = new SizeRequest(request, minimum);
+
+			if (r.Request.Width > 0 && r.Request.Height > 0)
+				_measureCache[constraintSize] = r;
+
+			return r;
+		}
+
 		public SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
 			bool includeMargins = (flags & MeasureFlags.IncludeMargins) != 0;
@@ -694,7 +745,7 @@ namespace Microsoft.Maui.Controls
 				heightConstraint = Math.Max(0, heightConstraint - margin.VerticalThickness);
 			}
 
-			SizeRequest result = OnMeasure(widthConstraint, heightConstraint);
+			SizeRequest result = GetSizeRequest(widthConstraint, heightConstraint);
 
 			if (includeMargins && !margin.IsEmpty)
 			{
