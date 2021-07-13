@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Animations;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIWindow;
 #elif MONOANDROID
