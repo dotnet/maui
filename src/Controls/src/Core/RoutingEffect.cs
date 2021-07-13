@@ -11,8 +11,8 @@ namespace Microsoft.Maui.Controls
 			Inner = Resolve(effectId);
 		}
 
-		protected RoutingEffect() 
-		{ 
+		protected RoutingEffect()
+		{
 		}
 
 		protected override void OnAttached()
