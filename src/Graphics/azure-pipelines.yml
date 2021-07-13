@@ -103,11 +103,14 @@ stages:
             - pwsh: |
                 $vs = & dotnet vs where --preview --prop=InstallationPath
                 $msbuild = "$vs\MSBuild\Current\Bin\MSBuild.exe"
-                & $msbuild /r ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
-              displayName: build net6 solutions
+                & $msbuild /r ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
+              displayName: build classic solutions
 
-            # - pwsh: dotnet cake --configuration=${{ BuildConfiguration }}
-            #   displayName: build net6 solutions
+            - pwsh: |
+                $vs = & dotnet vs where --preview --prop=InstallationPath
+                $msbuild = "$vs\MSBuild\Current\Bin\MSBuild.exe"
+                & $msbuild /r ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}-net6.binlog
+              displayName: build net6 solutions
 
             - task: NuGetCommand@2
               displayName: 'Pack nupkg'
