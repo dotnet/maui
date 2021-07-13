@@ -54,16 +54,15 @@
     <Compile Remove="**\*.uwp.cs" />
     <None Include="**\*.uwp.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="bin\**;obj\**" />
-    <None Remove="bin\**;obj\**" />
-  </ItemGroup>
-  
   <ItemGroup Condition="$(DefineConstants.Contains('GTK')) != true ">
     <Compile Remove="**\*.Gtk.cs" />
     <None Include="**\*.Gtk.cs" />
     <Compile Remove="**\Gtk\*.cs" />
     <None Include="**\Gtk\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="bin\**;obj\**" />
+    <None Remove="bin\**;obj\**" />
   </ItemGroup>
   <PropertyGroup>
     <!-- Windows -->
@@ -123,7 +122,7 @@
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
   </ItemGroup>
   <ItemGroup Condition="$(DefineConstants.Contains('GTK')) == true ">
-    <PackageReference Include="GtkSharp" Version="3.24.24.34" />
+    <PackageReference Include="GtkSharp" Version="3.24.24.64" />
     <Reference Include="Microsoft.Maui.Graphics.Gtk">
       <HintPath>$(SolutionDir)\src\Microsoft.Maui.Graphics.Gtk\Microsoft.Maui.Graphics.Gtk.dll</HintPath>
     </Reference>
