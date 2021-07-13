@@ -107,7 +107,18 @@
           }
         }
       },
+      "System.Numerics.Vectors/4.5.0": {
+        "runtime": {
+          "lib/netstandard2.0/System.Numerics.Vectors.dll": {
+            "assemblyVersion": "4.1.4.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        }
+      },
       "Microsoft.Maui.Graphics/0.0.1-alpha1": {
+        "dependencies": {
+          "System.Numerics.Vectors": "4.5.0"
+        },
         "runtime": {
           "Microsoft.Maui.Graphics.dll": {}
         }
@@ -196,6 +207,13 @@
       "sha512": "sha512-QpBEIiE29sxkewdW7l7rVRJR1p3SGoPauHrjm0A3yxpYxj+St5x45weHI8jquMJAZBUdVQuXYHSZDW1lQeJ+PQ==",
       "path": "pangosharp/3.24.24.34",
       "hashPath": "pangosharp.3.24.24.34.nupkg.sha512"
+    },
+    "System.Numerics.Vectors/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-QQTlPTl06J/iiDbJCiepZ4H//BVraReU4O4EoRw1U02H5TLUIT7xn3GnDp9AXPSlJUDyFs4uWjWafNX6WrAojQ==",
+      "path": "system.numerics.vectors/4.5.0",
+      "hashPath": "system.numerics.vectors.4.5.0.nupkg.sha512"
     },
     "Microsoft.Maui.Graphics/0.0.1-alpha1": {
       "type": "project",
