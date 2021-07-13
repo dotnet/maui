@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Skip Include="System.*.dll" />
+    <Skip Include="System.*.dll" Exclude="System.CodeDom.dll" />
     <Skip Include="NuGet.*.dll" />
     <Skip Include="Mono.*.dll" />
     <Skip Include="Microsoft.Build.*.dll" />
