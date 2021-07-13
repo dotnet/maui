@@ -7,6 +7,5 @@
     -->
     <NoWarn>$(NoWarn);CS8032</NoWarn>
   </PropertyGroup>
-  <Import Project="Maui.InTree.targets" Condition=" '$(UseMaui)' != 'true' " />
-  <Import Project="../../../Directory.Build.targets" />
+  <Import Project="$(MauiRootDirectory)Directory.Build.targets" />
 </Project>
