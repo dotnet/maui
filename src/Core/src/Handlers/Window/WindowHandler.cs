@@ -18,8 +18,6 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IWindow.Content)] = MapContent,
 		};
 
-		IAnimationManager? _animationManager;
-
 		public WindowHandler()
 			: base(WindowMapper)
 		{
@@ -29,9 +27,6 @@ namespace Microsoft.Maui.Handlers
 			: base(mapper ?? WindowMapper)
 		{
 		}
-
-		public IAnimationManager AnimationManager =>
-			_animationManager ??= this.GetRequiredService<IAnimationManager>();
 
 #if !NETSTANDARD
 		protected override NativeView CreateNativeElement() =>
