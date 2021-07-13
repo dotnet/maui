@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Maui.Animations;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIWindow;
 #elif MONOANDROID
@@ -10,15 +9,13 @@ using NativeView = Microsoft.UI.Xaml.Window;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class WindowHandler : IWindowHandler
+	public partial class WindowHandler
 	{
 		public static PropertyMapper<IWindow, WindowHandler> WindowMapper = new(ElementHandler.ElementMapper)
 		{
 			[nameof(IWindow.Title)] = MapTitle,
 			[nameof(IWindow.Content)] = MapContent,
 		};
-
-		IAnimationManager? _animationManager;
 
 		public WindowHandler()
 			: base(WindowMapper)
@@ -29,9 +26,6 @@ namespace Microsoft.Maui.Handlers
 			: base(mapper ?? WindowMapper)
 		{
 		}
-
-		public IAnimationManager AnimationManager =>
-			_animationManager ??= this.GetRequiredService<IAnimationManager>();
 
 #if !NETSTANDARD
 		protected override NativeView CreateNativeElement() =>
