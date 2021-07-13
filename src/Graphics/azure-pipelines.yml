@@ -103,8 +103,8 @@ stages:
             - pwsh: |
                 $vs = & dotnet vs where --preview --prop=InstallationPath
                 $msbuild = "$vs\MSBuild\Current\Bin\MSBuild.exe"
-                & $msbuild /r ./Microsoft.Maui.Graphics.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
-              displayName: build net6 solutions
+                & $msbuild /r ./Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
+              displayName: build classic solutions
 
             - pwsh: |
                 $vs = & dotnet vs where --preview --prop=InstallationPath
