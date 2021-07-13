@@ -733,7 +733,7 @@ namespace Microsoft.Maui.Controls
 			return r;
 		}
 
-		public SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
+		public virtual SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
 			bool includeMargins = (flags & MeasureFlags.IncludeMargins) != 0;
 			Thickness margin = default(Thickness);
