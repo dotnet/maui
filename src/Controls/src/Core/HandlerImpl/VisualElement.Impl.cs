@@ -1,6 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -8,17 +6,30 @@ namespace Microsoft.Maui.Controls
 	public partial class VisualElement : IFrameworkElement
 	{
 		Semantics _semantics;
-		IViewHandler _handler;
 
-		public Rectangle Frame => Bounds;
-
-		public IViewHandler Handler
+		public Rectangle Frame
 		{
-			get => _handler;
+			get => Bounds;
 			set
 			{
-				SetHandler(value);
+				X = value.X;
+				Y = value.Y;
+				Width = value.Width;
+				Height = value.Height;
 			}
+		}
+
+		new public IViewHandler Handler
+		{
+			get => base.Handler as IViewHandler;
+			set => base.Handler = value;
+		}
+
+		private protected override void OnHandlerSet()
+		{
+			base.OnHandlerSet();
+
+			IsPlatformEnabled = Handler != null;
 		}
 
 		Paint IFrameworkElement.Background
@@ -35,13 +46,7 @@ namespace Microsoft.Maui.Controls
 
 		IShape IFrameworkElement.Clip => Clip;
 
-		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
-		{
-			base.OnPropertyChanged(propertyName);
-			Handler?.UpdateValue(propertyName);
-		}
-
-		IFrameworkElement IFrameworkElement.Parent => Parent as IView;
+		IFrameworkElement IFrameworkElement.Parent => Parent as IFrameworkElement;
 
 		public Size DesiredSize { get; protected set; }
 
@@ -59,7 +64,6 @@ namespace Microsoft.Maui.Controls
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
-			Bounds = this.ComputeFrame(bounds);
 			return Frame.Size;
 		}
 
@@ -112,73 +116,5 @@ namespace Microsoft.Maui.Controls
 
 		double IFrameworkElement.Width => WidthRequest;
 		double IFrameworkElement.Height => HeightRequest;
-
-		public event EventHandler AttachingHandler;
-
-		EventHandler _attachedHandler;
-		public event EventHandler AttachedHandler
-		{
-			add
-			{
-				_attachedHandler += value;
-				if (Handler != null)
-					value?.Invoke(this, EventArgs.Empty);
-			}
-			remove
-			{
-				_attachedHandler -= value;
-			}
-		}
-		public event EventHandler DetachingHandler;
-		public event EventHandler DetachedHandler;
-
-		void SetHandler(IViewHandler newHandler)
-		{
-			if (newHandler == _handler)
-				return;
-
-			var previousHandler = _handler;
-
-			if (_handler != null)
-			{
-				DetachingHandler?.Invoke(this, EventArgs.Empty);
-				OnDetachingHandlerCore();
-			}
-
-			if (newHandler != null)
-			{
-				AttachingHandler?.Invoke(this, EventArgs.Empty);
-				OnAttachingHandler();
-			}
-
-			_handler = newHandler;
-
-			if (_handler?.VirtualView != this)
-				_handler?.SetVirtualView((IView)this);
-
-			IsPlatformEnabled = _handler != null;
-
-			if (_handler != null)
-			{
-				_attachedHandler?.Invoke(this, EventArgs.Empty);
-				OnAttachedHandlerCore();
-			}
-
-			if (previousHandler != null)
-			{
-				DetachedHandler?.Invoke(this, EventArgs.Empty);
-				OnDetachedHandler();
-			}
-		}
-
-
-		private protected virtual void OnAttachedHandlerCore() => OnAttachedHandler();
-
-		private protected virtual void OnDetachingHandlerCore() => OnDetachingHandler();
-
-		protected virtual void OnAttachingHandler() { }
-		protected virtual void OnAttachedHandler() { }
-		protected virtual void OnDetachingHandler() { }
-		protected virtual void OnDetachedHandler() { }
 	}
 }

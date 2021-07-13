@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.Maui.LifecycleEvents;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {

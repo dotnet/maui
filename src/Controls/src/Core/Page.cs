@@ -258,6 +258,12 @@ namespace Microsoft.Maui.Controls
 				var child = element as VisualElement;
 				if (child == null)
 					continue;
+
+				if (child is Layout2.Layout)
+				{
+					continue;
+				}
+
 				var page = child as Page;
 				if (page != null && page.IgnoresContainerArea)
 					Maui.Controls.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
@@ -312,7 +318,7 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnParentSet()
 		{
-			if (!Application.IsApplicationOrNull(RealParent) && !(RealParent is Page) && !(RealParent is BaseShellItem) && !(RealParent is IWindow))
+			if (!Application.IsApplicationOrWindowOrNull(RealParent) && !(RealParent is Page) && !(RealParent is BaseShellItem))
 				throw new InvalidOperationException("Parent of a Page must also be a Page");
 			base.OnParentSet();
 		}

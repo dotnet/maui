@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestFadeTo()
 		{
-			var view = new View { IsPlatformEnabled = true, Handler = new HandlerWithAnimationContextStub() };
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.FadeTo(0.1);
 
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestTranslateTo()
 		{
-			var view = new View { IsPlatformEnabled = true, Handler = new HandlerWithAnimationContextStub() };
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.TranslateTo(100, 50);
 
@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task ScaleTo()
 		{
-			var view = new View { IsPlatformEnabled = true, Handler = new HandlerWithAnimationContextStub() };
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.ScaleTo(2);
 
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRotateTo()
 		{
-			var view = new View { IsPlatformEnabled = true, Handler = new HandlerWithAnimationContextStub() };
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.RotateTo(25);
 
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRotateYTo()
 		{
-			var view = new View { IsPlatformEnabled = true, Handler = new HandlerWithAnimationContextStub() };
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.RotateYTo(25);
 
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRotateXTo()
 		{
-			var view = new View { IsPlatformEnabled = true, Handler = new HandlerWithAnimationContextStub() };
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.RotateXTo(25);
 
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRelRotateTo()
 		{
-			var view = new View { Rotation = 30, IsPlatformEnabled = true, Handler = new HandlerWithAnimationContextStub() };
+			var view = AnimationReadyHandler.Prepare(new View { Rotation = 30 });
 
 			await view.RelRotateTo(20);
 
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRelScaleTo()
 		{
-			var view = new View { Scale = 1, IsPlatformEnabled = true, Handler = new HandlerWithAnimationContextStub() };
+			var view = AnimationReadyHandler.Prepare(new View { Scale = 1 });
 
 			await view.RelScaleTo(1);
 
@@ -657,6 +657,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.GestureRecognizers.Add(gestureRecognizer);
 			view.GestureRecognizers.Remove(gestureRecognizer);
 
+			Assert.Null(gestureRecognizer.Parent);
+		}
+
+
+		[Test]
+		public void ClearingGestureRecognizers()
+		{
+			var view = new View();
+			var gestureRecognizer = new TapGestureRecognizer();
+
+			view.GestureRecognizers.Add(gestureRecognizer);
+			view.GestureRecognizers.Clear();
+
+
+			Assert.AreEqual(0, (view as IGestureController).CompositeGestureRecognizers.Count);
 			Assert.Null(gestureRecognizer.Parent);
 		}
 

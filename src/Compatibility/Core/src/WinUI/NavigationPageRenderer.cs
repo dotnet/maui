@@ -314,7 +314,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void LookupRelevantParents()
 		{
-			IEnumerable<Page> parentPages = Element.GetParentPages();
+			var parentPages = Element.GetParentPages();
 
 			if (_parentTabbedPage != null)
 				_parentTabbedPage.PropertyChanged -= MultiPagePropertyChanged;

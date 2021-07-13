@@ -17,6 +17,19 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static VerticalAlignment ToNativeVerticalAlignment(this TextAlignment alignment)
+		{
+			switch (alignment)
+			{
+				case TextAlignment.Center:
+					return VerticalAlignment.Center;
+				case TextAlignment.End:
+					return VerticalAlignment.Bottom;
+				default:
+					return VerticalAlignment.Top;
+			}
+		}
+
 		public static UI.Xaml.TextAlignment ToNative(this TextAlignment alignment, bool isLtr = true)
 		{
 			switch (alignment)

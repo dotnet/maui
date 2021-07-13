@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (View.GestureRecognizers.Count == 0)
 			{
 				nativeView.Touch -= OnNativeViewTouched;
-				
+
 			}
 			else
 			{
@@ -202,11 +202,6 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateIsEnabled();
 			UpdateDragAndDrop();
 			SetupGestures();
-		}
-
-		internal void OnElementChanged(VisualElementChangedEventArgs e)
-		{
-			SetupElement(e.OldElement, e.NewElement);
 		}
 
 		void GestureCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

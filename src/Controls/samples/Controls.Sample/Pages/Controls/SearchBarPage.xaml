@@ -3,7 +3,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.SearchBarPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels"
     Title="SearchBar">
+    <views:BasePage.BindingContext>
+        <viewmodels:SearchBarViewModel />
+    </views:BasePage.BindingContext>
     <views:BasePage.Content>
         <VerticalStackLayout
             Margin="12">
@@ -38,6 +42,12 @@
             <SearchBar
                 FontSize="24"
                 FontAttributes="Italic"/>
+            <Label
+                Text="SearchCommand"
+                Style="{StaticResource Headline}"/>
+            <SearchBar
+                SearchCommand="{Binding SearchCommand}"
+                SearchCommandParameter="SearchCommandParameter"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

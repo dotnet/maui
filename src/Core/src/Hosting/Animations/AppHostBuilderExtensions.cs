@@ -14,11 +14,11 @@ namespace Microsoft.Maui.Hosting
 			{
 #if __ANDROID__
 				services.AddSingleton<IEnergySaverListenerManager>(svcs => new EnergySaverListenerManager());
-				services.AddSingleton<ITicker>(svcs => new NativeTicker(svcs.GetRequiredService<IEnergySaverListenerManager>()));
+				services.AddTransient<ITicker>(svcs => new NativeTicker(svcs.GetRequiredService<IEnergySaverListenerManager>()));
 #else
-				services.AddSingleton<ITicker>(svcs => new NativeTicker());
+				services.AddTransient<ITicker>(svcs => new NativeTicker());
 #endif
-				services.AddSingleton<IAnimationManager>(svcs => new AnimationManager(svcs.GetRequiredService<ITicker>()));
+				services.AddTransient<IAnimationManager>(svcs => new AnimationManager(svcs.GetRequiredService<ITicker>()));
 			});
 
 			return builder;

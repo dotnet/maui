@@ -33,6 +33,18 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(button, () => button.TextColor, GetNativeTextColor, button.TextColor);
 		}
 
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
+		{
+			var button = new ButtonStub()
+			{
+				Text = "Test",
+				TextColor = null
+			};
+
+			await CreateHandlerAsync(button);
+		}
+
 		[Fact(DisplayName = "Click event fires Correctly")]
 		public async Task ClickEventFires()
 		{

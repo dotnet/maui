@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	{
 		internal static bool UseBlazor = false;
 
-		public void Configure(IAppHostBuilder appBuilder)
+		public virtual void Configure(IAppHostBuilder appBuilder)
 		{
 			appBuilder
 				.UseMauiApp<App>()
@@ -29,6 +29,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				.ConfigureServices(services =>
 				{
 					DependencyService.Register(Device.GetAssemblies());
+				})
+				.ConfigureEffects(effects =>
+				{
+					effects.AddCompatibilityEffects(Device.GetAssemblies());
 				});
 		}
 	}
