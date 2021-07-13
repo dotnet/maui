@@ -35,6 +35,11 @@ namespace Maui.Controls.Sample.Controls
 		{
 
 		}
+#elif GTK
+		public static void MapBorder(BordelessEntryHandler handler, BordelessEntry borderlessEntry)
+		{
+
+		}
 #endif
 	}
 }

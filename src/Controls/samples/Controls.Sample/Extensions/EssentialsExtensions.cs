@@ -137,7 +137,12 @@ namespace Microsoft.Maui.Essentials
 						.CreateLogger<IEssentialsBuilder>()?
 						.LogError(ex, "App Actions are not supported on this platform.");
 				}
-
+				catch (NotImplementedException ex)
+				{
+					services.GetService<ILoggerFactory>()?
+					   .CreateLogger<IEssentialsBuilder>()?
+					   .LogError(ex, "App Actions are not implemented on this platform.");
+				}
 				if (_trackVersions)
 					VersionTracking.Track();
 			}

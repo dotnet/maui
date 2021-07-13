@@ -135,5 +135,54 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 	}
+
+#elif GTK
+	public class FocusPlatformEffect : PlatformEffect
+	{
+
+		Microsoft.Maui.Graphics.Color originalBackgroundColor;
+		Microsoft.Maui.Graphics.Color backgroundColor;
+
+		protected override void OnAttached()
+		{
+			try
+			{
+				originalBackgroundColor = Control.GetBackgroundColor();
+				backgroundColor = Microsoft.Maui.Graphics.Colors.LightGreen;
+				Control.SetBackgroundColor(Gtk.StateFlags.Focused, backgroundColor);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Cannot set property on attached control. Error: ", ex.Message);
+			}
+		}
+
+		protected override void OnDetached()
+		{ }
+
+		protected override void OnElementPropertyChanged(PropertyChangedEventArgs args)
+		{
+			base.OnElementPropertyChanged(args);
+
+			try
+			{
+				if (args.PropertyName == "IsFocused")
+				{
+					if (Control.GetBackgroundColor() == backgroundColor)
+					{
+						Control.SetBackgroundColor(originalBackgroundColor);
+					}
+					else
+					{
+						Control.SetBackgroundColor(backgroundColor);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Cannot set property on attached control. Error: ", ex.Message);
+			}
+		}
+	}
 #endif
 }
