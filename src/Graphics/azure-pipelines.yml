@@ -5,6 +5,7 @@ variables:
   DotNet.Cli.Telemetry.OptOut: true
   MauiCheck.Version: 0.6.1
   Maui.Version: --preview
+  Tizen.Version: 6.5.100-preview.5.57
 
 parameters:
   - name: BuildConfigurations
@@ -84,6 +85,10 @@ stages:
 
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
+
+            - pwsh:
+                dotnet boots --url https://workload-bin.s3.ap-northeast-2.amazonaws.com/windows/Samsung.NET.Workload.Tizen.$(Tizen.Version).msi
+              displayName: install tizen
 
             - pwsh: |
                 # Update the installer installer
