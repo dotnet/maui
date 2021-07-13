@@ -14,19 +14,27 @@ namespace Microsoft.Maui
 			if (color == null)
 				return;
 
-			widget.SetBackgroundColor(Gtk.StateType.Normal, color);
+			widget.SetBackgroundColor(Gtk.StateFlags.Normal, color);
 		}
 
-		public static void SetBackgroundColor(this Gtk.Widget widget, Gtk.StateType state, Graphics.Color color)
+		public static void SetBackgroundColor(this Gtk.Widget widget, Gtk.StateType state, Graphics.Color? color)
 		{
+			if (color == null)
+				return;
+
 			widget.SetBackgroundColor(state.ToStateFlag(), color);
 		}
 
-		public static void SetBackgroundColor(this Gtk.Widget widget, Gtk.StateFlags state, Graphics.Color color)
+		public static void SetBackgroundColor(this Gtk.Widget widget, Gtk.StateFlags state, Graphics.Color? color)
 		{
-			var nativeColor = color.ToGdkRgba();
+			if (color == null)
+				return;
 
-			widget.SetColor(nativeColor, "background-color");
+			var cssFlags = state.CssState();
+			var mainNode = widget.CssMainNode();
+			if (cssFlags != null) mainNode = $"{mainNode}:{cssFlags}";
+			widget.SetStyleColor(color, mainNode, "background-color");
+
 		}
 
 		public static Graphics.Color GetBackgroundColor(this Gtk.Widget widget)
@@ -76,12 +84,7 @@ namespace Microsoft.Maui
 
 		public static void SetStyleColor(this Gtk.Widget widget, Gdk.RGBA color, string mainNode, string attr, string? subNode = null)
 		{
-			using var p = new Gtk.CssProvider();
-
-			subNode = subNode != null ? $" > {subNode} " : subNode;
-
-			p.LoadFromData($"{mainNode}{subNode}{{{attr}:{color.ToString()}}}");
-			widget.StyleContext.AddProvider(p, Gtk.StyleProviderPriority.User);
+			widget.SetStyleValueNode(color.ToString(), mainNode, attr, subNode);
 		}
 
 		public static void SetColor(this Gtk.Widget widget, Color? color, string attr, string? subNode = null)
@@ -138,7 +141,7 @@ namespace Microsoft.Maui
 				case Gtk.StateType.Focused:
 					return Gtk.StateFlags.Active;
 				case Gtk.StateType.Inconsistent:
-					return Gtk.StateFlags.Normal;
+					return Gtk.StateFlags.Inconsistent;
 				case Gtk.StateType.Selected:
 					return Gtk.StateFlags.Selected;
 			}
@@ -146,7 +149,7 @@ namespace Microsoft.Maui
 			return Gtk.StateFlags.Normal;
 		}
 
-		public static Gdk.Color ColorFor(this Gtk.StyleContext ctx, string postfix, Gtk.StateType state)
+		public static Color ColorFor(this Gtk.StyleContext ctx, string postfix, Gtk.StateType state)
 		{
 			var prefix = string.Empty;
 			// see: https://developer.gnome.org/gtk3/stable/gtk-migrating-GtkStyleContext-css.html
@@ -180,27 +183,27 @@ namespace Microsoft.Maui
 
 			if (ctx.LookupColor($"{prefix}{postfix}_color", out var col))
 			{
-				return col.ToGdkColor();
+				return col.ToColor();
 			}
 
 			ctx.LookupColor("base_color", out col);
 
-			return col.ToGdkColor();
+			return col.ToColor();
 		}
 
-		public static Gdk.Color Background(this Gtk.Style it, Gtk.StateType state)
+		public static Color Background(this Gtk.Style it, Gtk.StateType state)
 		{
 
 			return it.Context.ColorFor("bg", state);
 		}
 
-		public static Gdk.Color Foreground(this Gtk.Style it, Gtk.StateType state)
+		public static Color Foreground(this Gtk.Style it, Gtk.StateType state)
 		{
 			return it.Context.ColorFor("fg", state);
 
 		}
 
-		public static Gdk.Color Base(this Gtk.Style it, Gtk.StateType state)
+		public static Color Base(this Gtk.Style it, Gtk.StateType state)
 		{
 			return it.Context.ColorFor("", state);
 		}
