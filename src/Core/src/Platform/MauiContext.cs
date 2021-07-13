@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 {
 	public partial class MauiContext : IMauiContext, IScopedMauiContext
 	{
-		readonly IAnimationManager? _animationManager;
+		IAnimationManager? _animationManager;
 
 		public MauiContext()
 		{
