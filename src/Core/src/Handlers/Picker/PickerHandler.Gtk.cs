@@ -97,8 +97,10 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(PickerHandler handler, IPicker view) { }
+		public static void MapCharacterSpacing(PickerHandler handler, IPicker view)
+		{
+			handler.NativeView.UpdateCharacterSpacing(view.CharacterSpacing);
+		}
 
 		[MissingMapper]
 		public static void MapTitle(PickerHandler handler, IPicker view) { }
