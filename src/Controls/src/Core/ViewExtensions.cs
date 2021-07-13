@@ -173,8 +173,8 @@ namespace Microsoft.Maui.Controls
 		{
 			if (animatable is Element e && e.FindMauiContext() is IMauiContext mauiContext)
 			{
-				if (mauiContext is INativeMauiContext nativeContext)
-					return nativeContext.AnimationManager;
+				if (mauiContext is IScopedMauiContext scoped)
+					return scoped.AnimationManager;
 				else
 					return mauiContext.Services.GetService<IAnimationManager>();
 			}

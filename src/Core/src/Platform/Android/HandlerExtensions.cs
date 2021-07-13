@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
-		public static AView ToContainerView(this IView view, IMauiContext context) =>
+		public static AView ToContainerView(this IElement view, IMauiContext context) =>
 			new ContainerView(context) { CurrentView = view };
 
 		public static AView ToNative(this IElement view, IMauiContext context)

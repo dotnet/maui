@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public IAnimationManager AnimationManager => ((AnimationReadyMauiContext)MauiContext).AnimationManager;
 
-		class AnimationReadyMauiContext : IMauiContext, INativeMauiContext
+		class AnimationReadyMauiContext : IMauiContext, IScopedMauiContext
 		{
 			readonly IAnimationManager _animationManager;
 

@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 	}
 
 	// TODO: This will be replaced with scoped services
-	internal interface INativeMauiContext : IMauiContext
+	internal interface IScopedMauiContext : IMauiContext
 	{
 		IAnimationManager AnimationManager { get; }
 	}

@@ -4,7 +4,7 @@ using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui
 {
-	public partial class MauiContext : IMauiContext, INativeMauiContext
+	public partial class MauiContext : IMauiContext, IScopedMauiContext
 	{
 		readonly IAnimationManager _animationManager;
 
@@ -27,6 +27,6 @@ namespace Microsoft.Maui
 
 		public IMauiHandlersServiceProvider Handlers { get; }
 
-		IAnimationManager INativeMauiContext.AnimationManager => _animationManager;
+		IAnimationManager IScopedMauiContext.AnimationManager => _animationManager;
 	}
 }
