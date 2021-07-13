@@ -198,9 +198,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				UpdateMaster();
 			else if (e.PropertyName == "Detail")
 				UpdateDetail();
-			else if (e.PropertyName == nameof(FlyoutPageControl.ShouldShowSplitMode)
-					 || e.PropertyName == Specifics.CollapseStyleProperty.PropertyName
-					 || e.PropertyName == Specifics.CollapsedPaneWidthProperty.PropertyName)
+			else if (e.PropertyName == nameof(FlyoutPageControl.ShouldShowSplitMode))
 				UpdateMode();
 			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName)
 				UpdateToolbarPlacement();
