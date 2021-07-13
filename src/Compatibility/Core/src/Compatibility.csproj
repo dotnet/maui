@@ -8,6 +8,10 @@
     <AndroidRoot>Android\</AndroidRoot>
     <iOSRoot>iOS\</iOSRoot>
     <WindowsRoot>WinUI\</WindowsRoot>
+    <GtkRoot>Gtk\</GtkRoot>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(MauiGtkTargets.Contains($(TargetFramework))) == true AND $(TargetFramework.StartsWith('MonoAndroid')) != true ">
+    <DefineConstants>$(DefineConstants);LINUX;GTK</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
@@ -58,7 +62,12 @@
     <Reference Include="System.Net.Http" />
     <Compile Include="*.iOS.cs" />
   </ItemGroup>
-
+  <ItemGroup Condition="$(DefineConstants.Contains('GTK')) == true ">
+    <Compile Include="$(GtkRoot)**\*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net48' ">
+    <Reference Include="System.Net.Http"/>
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />

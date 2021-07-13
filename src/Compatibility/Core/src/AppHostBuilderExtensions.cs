@@ -231,6 +231,12 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
+#if GTK
+					handlers.AddHandler<ScrollView, ScrollViewHandler>();
+					DependencyService.Register<NativeBindingService>();
+					DependencyService.Register<NativeValueConverterService>();
+
+#endif
 				})
 				.ConfigureServices<MauiCompatBuilder>();
 
@@ -241,7 +247,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			public void Configure(HostBuilderContext context, IServiceProvider services)
 			{
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
+#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST || GTK
 				CompatServiceProvider.SetServiceProvider(services);
 #endif
 
