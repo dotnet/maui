@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Gtk;
 
 namespace Microsoft.Maui.Handlers
@@ -68,14 +69,23 @@ namespace Microsoft.Maui.Handlers
 			if (handler.NativeView is not { } nativeView)
 				return;
 
-			// this don't work cause slider is an icon
-			nativeView.SetColor(slider.ThumbColor, "color", "contents > trough > slider");
+			nativeView.SetColor(slider.ThumbColor, "background-color", "contents > trough > slider");
 
 		}
 
-		[MissingMapper]
+		static void SetImage(Widget w, string? image)
+		{
+			if (string.IsNullOrEmpty(image))
+				return;
+
+			w.SetStyleValue($"url('{image}')", "background-image", "contents > trough > slider");
+			// nativeView.SetStyleImage("center","background-position", "contents > trough > slider");
+			w.SetStyleValue("contain", "background-size", "contents > trough > slider");
+		}
+
 		public static void MapThumbImageSource(SliderHandler handler, ISlider slider)
 		{
+
 			if (handler.NativeView is not { } nativeView)
 				return;
 
@@ -84,16 +94,22 @@ namespace Microsoft.Maui.Handlers
 			if (img == null)
 				return;
 
+			if (img is IFileImageSource fis && File.Exists(fis.File))
+			{
+				SetImage(nativeView, fis.File);
+
+				return;
+			}
+
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 
 			img.UpdateImageSourceAsync(1, provider, p =>
 				{
-					if (p == null)
-						return;
 
-					var css = p.CssImage();
-					// not working:
-					nativeView.SetStyleImage(css, "background-image", "contents > trough > slider");
+					// var css = p.CssImage(); //not working, so workaround is saving a tmp file:
+					using var tmpfile = p?.TempFileFor();
+
+					SetImage(nativeView, tmpfile?.Name);
 
 				})
 			   .FireAndForget(handler);
