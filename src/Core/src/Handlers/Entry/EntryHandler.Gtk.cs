@@ -1,5 +1,6 @@
 ﻿using System;
 using Gtk;
+using Microsoft.Maui.Graphics.Native.Gtk;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -110,8 +111,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsPassword(EntryHandler handler, IEntry entry)
 		{
-			if (handler.NativeView != null && entry.IsPassword)
-				handler.NativeView.InputPurpose = InputPurpose.Password;
+			if (handler.NativeView is { } nativeView)
+			{
+				nativeView.Visibility = !entry.IsPassword;
+			}
 		}
 
 		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry)
@@ -119,6 +122,10 @@ namespace Microsoft.Maui.Handlers
 			if (handler.NativeView is { } nativeView)
 				nativeView.Alignment = entry.HorizontalTextAlignment.ToXyAlign();
 		}
+
+		[MissingMapper]
+		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry)
+		{ }
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry) { }
@@ -160,8 +167,13 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry) { }
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry) { }
+		public static void MapCharacterSpacing(EntryHandler handler, IEntry entry)
+		{
+			if (handler.NativeView is not { } nativeView)
+				return;
+
+			nativeView.Attributes = nativeView.Attributes.AttrListFor(entry.CharacterSpacing);
+		}
 
 		[MissingMapper]
 		public static void MapKeyboard(EntryHandler handler, IEntry entry)
