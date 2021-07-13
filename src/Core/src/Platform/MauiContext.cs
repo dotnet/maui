@@ -26,6 +26,6 @@ namespace Microsoft.Maui
 		public IMauiHandlersServiceProvider Handlers { get; }
 
 		IAnimationManager IScopedMauiContext.AnimationManager =>
-			_animationManager ?? Services.GetRequiredService<IAnimationManager>();
+			_animationManager ??= Services.GetRequiredService<IAnimationManager>();
 	}
 }
