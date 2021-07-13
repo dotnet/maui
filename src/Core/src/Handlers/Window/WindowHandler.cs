@@ -10,7 +10,7 @@ using NativeView = Microsoft.UI.Xaml.Window;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class WindowHandler : IWindowHandler
+	public partial class WindowHandler
 	{
 		public static PropertyMapper<IWindow, WindowHandler> WindowMapper = new(ElementHandler.ElementMapper)
 		{
