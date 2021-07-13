@@ -9,9 +9,10 @@ namespace Microsoft.Maui
 {
 	public class ContainerView : LinearLayout, IReloadHandler
 	{
+		readonly IMauiContext? _context;
+
 		AView? _mainView;
 		IElement? _view;
-		readonly IMauiContext? _context;
 
 		protected ContainerView(IntPtr javaReference, JniHandleOwnership transfer)
 			: base(javaReference, transfer)
