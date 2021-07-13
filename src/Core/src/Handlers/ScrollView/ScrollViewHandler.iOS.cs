@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -49,6 +51,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView.UpdateContent(scrollView.Content.ToNative(handler.MauiContext));
 		}
 
+		public static void MapContentSize(ScrollViewHandler handler, IScrollView scrollView)
+		{
+			handler.NativeView.UpdateContentSize(scrollView.ContentSize);
+		}
+
 		public static void MapHorizontalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView?.UpdateHorizontalScrollBarVisibility(scrollView.HorizontalScrollBarVisibility);
@@ -61,7 +68,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOrientation(ScrollViewHandler handler, IScrollView scrollView)
 		{
-			
+			// Nothing to do here for now, but we might need to make adjustments for FlowDirection when the orientation is set to Horizontal
 		}
 
 		public static void MapRequestScrollTo(ScrollViewHandler handler, IScrollView scrollView, object? args)

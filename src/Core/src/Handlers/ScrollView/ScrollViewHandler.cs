@@ -10,7 +10,10 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IScrollView.Content)] = MapContent,
 			[nameof(IScrollView.HorizontalScrollBarVisibility)] = MapHorizontalScrollBarVisibility,
 			[nameof(IScrollView.VerticalScrollBarVisibility)] = MapVerticalScrollBarVisibility,
-			[nameof(IScrollView.Orientation)] = MapOrientation
+			[nameof(IScrollView.Orientation)] = MapOrientation,
+#if __IOS__
+			[nameof(IScrollView.ContentSize)] = MapContentSize
+#endif
 		};
 
 		public static CommandMapper<IScrollView, ScrollViewHandler> ScrollViewCommandMapper = new(ViewCommandMapper) {
