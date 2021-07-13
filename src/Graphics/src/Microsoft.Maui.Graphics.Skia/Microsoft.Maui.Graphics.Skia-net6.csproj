@@ -10,7 +10,7 @@
     <PackageReference Include="SkiaSharp" Version="2.88.0-preview.61" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
+  <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst')) or $(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="SkiaSharp.Views" Version="2.88.0-preview.61" />
   </ItemGroup>
 
