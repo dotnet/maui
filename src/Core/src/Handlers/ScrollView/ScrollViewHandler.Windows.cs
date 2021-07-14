@@ -21,14 +21,6 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ViewChanged += ViewChanged;
 		}
 
-		public override void NativeArrange(Rectangle rect)
-		{
-			// Re-measure the content too, otherwise winui will try and keep the scrollviewer' size >= the content size
-			NativeView?.Measure(new Windows.Foundation.Size(rect.Size.Width, rect.Size.Height));
-
-			base.NativeArrange(rect);
-		}
-
 		protected override void DisconnectHandler(ScrollViewer nativeView)
 		{
 			base.DisconnectHandler(nativeView);
