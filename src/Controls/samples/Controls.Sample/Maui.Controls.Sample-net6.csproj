@@ -55,6 +55,7 @@
     <AndroidResource Remove="Resources\**" />
   </ItemGroup>
 
+
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
 </Project>

@@ -2,35 +2,70 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.ButtonPage"
+    xmlns:app="clr-namespace:Maui.Controls.Sample"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Button">
     <views:BasePage.Content>
-        <VerticalStackLayout
-            Margin="12">
-            <Label
-                Text="Default"
-                Style="{StaticResource Headline}"/>
-            <Button
-                Text="Button"/>
-            <Label
-                Text="Disabled"
-                Style="{StaticResource Headline}"/>
-            <Button
-                IsEnabled="False"
-                Text="Button"/>
-            <Label
-                Text="BackgroundColor"
-                Style="{StaticResource Headline}"/>
-            <Button
-                BackgroundColor="Blue"
-                Text="Button"/>
-            <Label
-                Text="TextColor"
-                Style="{StaticResource Headline}"/>
-            <Button
-                BackgroundColor="Red"
-                TextColor="White"
-                Text="Button"/>
-        </VerticalStackLayout>
+        <ScrollView>
+            <VerticalStackLayout
+                Margin="12">
+                <Label Text="Primary filled"/>
+                <HorizontalStackLayout>
+                    <Button Text="Button"/>
+                    <Button Text="Button" IsEnabled="False"/>
+                </HorizontalStackLayout>
+
+                <Label Text="Primary filled with Image"/>
+                <HorizontalStackLayout>
+                    <Button ImageSource="{StaticResource CircleIcon}" Text="Button"/>
+                    <Button ImageSource="{StaticResource CircleIcon}" Text="Button" IsEnabled="False"/>
+                </HorizontalStackLayout>
+
+                <Label Text="Primary filled FontImageSource"/>
+                <HorizontalStackLayout>
+                    <Button FontFamily="FontAwesome"
+                                Text="{x:Static app:IconFont.Archway}"/>
+                    <Button FontFamily="FontAwesome"
+                                Text="{x:Static app:IconFont.Archway}"
+                                IsEnabled="False"/>
+                </HorizontalStackLayout>
+
+                <Label Text="Primary outline"/>
+                <HorizontalStackLayout>
+                    <Button Text="Button" Style="{StaticResource PrimaryButtonOutline}"/>
+                    <Button Text="Button" IsEnabled="False" Style="{StaticResource PrimaryButtonOutline}"/>
+                </HorizontalStackLayout>
+
+                <Label Text="Primary outline with Image"/>
+                <HorizontalStackLayout>
+                    <Button ImageSource="{StaticResource CircleIconAlt}" Text="Button" Style="{StaticResource PrimaryButtonOutlineIcon}"/>
+                    <Button ImageSource="{StaticResource CircleIconAlt}" Text="Button" IsEnabled="False" Style="{StaticResource PrimaryButtonOutlineIcon}"/>
+                </HorizontalStackLayout>
+                
+                <Label Text="Primary outline with Image only"/>
+                <HorizontalStackLayout>
+                    <Button ImageSource="{StaticResource CircleIconAlt}" Style="{StaticResource PrimaryButtonOutlineIcon}"/>
+                    <Button ImageSource="{StaticResource CircleIconAlt}" IsEnabled="False" Style="{StaticResource PrimaryButtonOutlineIcon}"/>
+                </HorizontalStackLayout>
+
+                <Label Text="Secondary outline"/>
+                <HorizontalStackLayout>
+                    <Button Text="Button" Style="{StaticResource SecondaryButtonOutline}"/>
+                    <Button Text="Button" IsEnabled="False" Style="{StaticResource SecondaryButtonOutline}"/>
+                </HorizontalStackLayout>
+
+                <Label Text="Teriary outline"/>
+                <HorizontalStackLayout>
+                    <Button Text="Button" Style="{StaticResource TertiaryButtonOutline}"/>
+                    <Button Text="Button" IsEnabled="False" Style="{StaticResource TertiaryButtonOutline}"/>
+                </HorizontalStackLayout>
+
+                <Label Text="Borderless"/>
+                <HorizontalStackLayout>
+                    <Button Text="Button" Style="{StaticResource BorderlessButton}"/>
+                    <Button Text="Button" IsEnabled="False" Style="{StaticResource BorderlessButton}"/>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
     </views:BasePage.Content>
 </views:BasePage>

@@ -18,6 +18,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(FontsPage), "Fonts",
 				"Customize the font type with different sizes, attributes, etc..."),
 
+			new SectionModel(typeof(GesturesPage), "Gestures",
+				"Gesture recognizers can be used to detect user interaction with views."),
+
 			new SectionModel(typeof(StylesPage), "Styles",
 				"Define the visual elements appearance."),
 

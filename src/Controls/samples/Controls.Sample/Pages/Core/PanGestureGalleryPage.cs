@@ -125,13 +125,19 @@ namespace Maui.Controls.Sample.Pages
 			var box = new Image
 			{
 				BackgroundColor = Colors.Gray,
-				WidthRequest = 2000,
-				HeightRequest = 2000,
+				WidthRequest = 2700,
+				HeightRequest = 900,
+				Aspect = Aspect.AspectFill,
 				VerticalOptions = LayoutOptions.Center,
-				HorizontalOptions = LayoutOptions.Center
+				HorizontalOptions = LayoutOptions.Center,
+				Source = FileImageSource.FromUri(new Uri("https://images.fineartamerica.com/images/artworkimages/mediumlarge/3/maui-hawaii-ulua-beach-wailea-makena-panorama-photo-paul-velgos.jpg"))
 			};
 
-			var label = new Label { Text = "Use two fingers to pinch. Use one finger to pan." };
+			var label = new Label { 
+				Text = "Use two fingers to pinch. Use one finger to pan.",
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Center,
+			};
 
 			var panme = new PanContainer { Content = box };
 			panme.PanCompleted += (s, e) =>
@@ -139,7 +145,7 @@ namespace Maui.Controls.Sample.Pages
 				label.Text = e.Message;
 			};
 
-			Content = new StackLayout { Children = { label, panme }, Padding = new Thickness(20) };
+			Content = new Grid { Children = { panme, label }, Padding = new Thickness(0) };
 		}
 	}
 }

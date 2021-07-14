@@ -13,6 +13,10 @@ namespace Maui.Controls.Sample
 		{
 			InitializeComponent();
 
+			#if __ANDROID__
+			
+			#endif
+
 			Services = services;
 
 			Debug.WriteLine($"The AccentColor color is {Resources["AccentColor"]}");

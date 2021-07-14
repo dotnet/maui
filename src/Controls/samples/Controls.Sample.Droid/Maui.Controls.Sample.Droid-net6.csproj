@@ -12,6 +12,7 @@
   <!-- HACK: seems to fix a threading issue for now -->
   <ItemGroup>
     <None Remove="environment.txt" />
+    <None Remove="Resources\values\colors.xml" />
     <AndroidEnvironment Include="environment.txt" />
   </ItemGroup>
 
