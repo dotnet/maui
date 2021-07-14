@@ -52,12 +52,12 @@ namespace Microsoft.Maui
 			_ = window ?? throw new ArgumentNullException(nameof(window));
 			_ = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
 
-			var handler = window.Handler as IWindowHandler;
+			var handler = window.Handler;
 			if (handler == null)
-				handler = mauiContext.Handlers.GetHandler(window.GetType()) as IWindowHandler;
+				handler = mauiContext.Handlers.GetHandler(window.GetType());
 
 			if (handler == null)
-				throw new Exception($"Handler not found for view {window} or was not {nameof(IWindowHandler)}'");
+				throw new Exception($"Handler not found for view {window}.");
 
 			handler.SetMauiContext(mauiContext);
 
