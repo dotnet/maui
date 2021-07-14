@@ -278,7 +278,7 @@ namespace Microsoft.Maui.Controls
 
 			SizeRequest contentRequest;
 
-			if (Content is IFrameworkElement fe)
+			if (Content is IFrameworkElement fe && fe.Handler != null)
 			{
 				contentRequest = fe.Handler.GetDesiredSize(widthConstraint, heightConstraint);
 			}
