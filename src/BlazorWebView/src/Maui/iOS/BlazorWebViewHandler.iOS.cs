@@ -91,10 +91,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		protected override void DisconnectHandler(WKWebView nativeView)
 		{
-			//nativeView.StopLoading();
+			nativeView.StopLoading();
 
-			//_webViewClient?.Dispose();
-			//_webChromeClient?.Dispose();
+			if (_webviewManager != null)
+			{
+				// Dispose this component's contents and block on completion so that user-written disposal logic and
+				// Blazor disposal logic will complete.
+				_webviewManager?
+					.DisposeAsync()
+					.AsTask()
+					.ConfigureAwait(false)
+					.GetAwaiter()
+					.GetResult();
+
+				_webviewManager = null;
+			}
 		}
 
 		private bool RequiredStartupPropertiesSet =>
