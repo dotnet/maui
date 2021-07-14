@@ -12,7 +12,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class ModalNavigationService
+	internal partial class ModalNavigationManager
 	{
 		partial void OnPageAttachedHandler()
 		{
@@ -166,9 +166,9 @@ namespace Microsoft.Maui.Controls.Platform
 		class BackButtonCallBack : OnBackPressedCallback
 		{
 			WeakReference<Context> _weakReference;
-			ModalNavigationService? _service;
+			ModalNavigationManager? _service;
 
-			public BackButtonCallBack(ModalNavigationService service, Context context) : base(true)
+			public BackButtonCallBack(ModalNavigationManager service, Context context) : base(true)
 			{
 				_service = service;
 				_weakReference = new WeakReference<Context>(context);

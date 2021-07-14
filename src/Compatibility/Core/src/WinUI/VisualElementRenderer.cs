@@ -397,9 +397,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.SetContainer(this);
-			effect.SetControl(Control);
+			effect.Container = this;
+			effect.Control = Control;
 		}
+
 
 		protected virtual void SetAutomationId(string id)
 		{
@@ -750,7 +751,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (_tracker == null)
 				return;
 
-			_tracker.PreventGestureBubbling = PreventGestureBubbling;
 			_tracker.Control = Control;
 			_tracker.Element = Element;
 			_tracker.Container = ContainerElement;

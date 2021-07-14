@@ -258,6 +258,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.Text = Element.UpdateFormsText(Element.Text, Element.TextTransform);
 		}
 
+		[PortHandler]
 		void UpdateTextColor()
 		{
 			if (_queryTextBox == null)

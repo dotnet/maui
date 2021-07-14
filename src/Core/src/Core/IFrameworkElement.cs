@@ -62,7 +62,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the bounds of the FrameworkElement.
 		/// </summary>
-		Rectangle Frame { get; }
+		Rectangle Frame { get; set; }
 
 		/// <summary>
 		/// Gets the specified width of this FrameworkElement. 

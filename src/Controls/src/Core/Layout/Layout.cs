@@ -52,6 +52,8 @@ namespace Microsoft.Maui.Controls.Layout2
 		{
 			base.ArrangeOverride(bounds);
 
+			Frame = bounds;
+
 			LayoutManager.ArrangeChildren(Frame);
 
 			foreach (var child in Children)
