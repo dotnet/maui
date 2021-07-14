@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
@@ -18,6 +19,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(nativeView);
 			nativeView.ViewChanged += ViewChanged;
+		}
+
+		public override void NativeArrange(Rectangle rect)
+		{
+			// Re-measure the content too, otherwise winui will try and keep the scrollviewer' size >= the content size
+			NativeView?.Measure(new Windows.Foundation.Size(rect.Size.Width, rect.Size.Height));
+
+			base.NativeArrange(rect);
 		}
 
 		protected override void DisconnectHandler(ScrollViewer nativeView)
