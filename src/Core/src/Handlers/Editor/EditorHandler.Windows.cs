@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateTextColor(editor);
-      
+
 		public static void MapKeyboard(EditorHandler handler, IEditor editor) 
 		{
 			handler.NativeView?.UpdateKeyboard(editor); 
