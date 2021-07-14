@@ -301,8 +301,7 @@ namespace Microsoft.Maui
 		// handled accordingly.
 		protected override void OnKeyDown(KeyRoutedEventArgs e)
 		{
-			// TODO: MAUI Change for MultiWindow
-			if (IsPassword && Application.Current is MauiWinUIApplication app)
+			if (IsPassword)
 			{
 				// The ctrlDown flag is used to track if the Ctrl key is pressed; if it's actively being used and the most recent
 				// key to trigger OnKeyDown, then treat it as handled.
