@@ -1,12 +1,74 @@
-﻿<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:Maui.Controls.Sample"
-             xmlns:windows="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;assembly=Microsoft.Maui.Controls"
-             x:Class="Maui.Controls.Sample.XamlApp"
-             windows:Application.ImageDirectory="Assets">
+﻿<Application 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
+    xmlns:windows="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;assembly=Microsoft.Maui.Controls"
+    x:Class="Maui.Controls.Sample.XamlApp"
+    windows:Application.ImageDirectory="Assets">
     <Application.Resources>
         <ResourceDictionary>
-            <Color x:Key="DotNetPurple">#512BD4</Color>
+
+            <!-- COLORS -->
+            <Color x:Key="BlackColor">#150303</Color>
+            <Color x:Key="WhiteColor">#F8F8FF</Color>
+            <Color x:Key="AccentColor">#4423A8</Color>
+            <Color x:Key="BackgroundColor">#F9F8FF</Color>
+            <Color x:Key="BackgroundSecondaryColor">#F9F9FF</Color>
+            <Color x:Key="TextPrimaryColor">#B0150303</Color>
+            <Color x:Key="TextSecondaryColor">#B01d1d1d</Color>
+            <Color x:Key="BorderColor">#C8C8C8</Color>
+
+            <!-- STYLES -->
+            <Style x:Key="SearchBorderStyle" TargetType="Frame">
+                <Setter Property="BackgroundColor" Value="{DynamicResource BackgroundSecondaryColor}" />
+                <Setter Property="HasShadow" Value="True" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="HeightRequest" Value="40" />
+                <Setter Property="VerticalOptions" Value="End" />
+                <Setter Property="Margin" Value="12, 0" />
+            </Style>
+
+            <Style x:Key="GalleryItemContainerStyle" TargetType="Frame">
+                <Setter Property="BorderColor" Value="{StaticResource BorderColor}" />
+                <Setter Property="CornerRadius" Value="0" />
+                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="Padding" Value="12" />
+                <Setter Property="Margin" Value="12, 0, 12, 12" />
+            </Style>
+
+            <Style x:Key="GalleryItemTitleStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="Small" />
+                <Setter Property="FontFamily" Value="Segoe UI" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="TextColor" Value="{StaticResource AccentColor}" />
+                <Setter Property="Margin" Value="0, 0, 0, 6" />
+            </Style>
+
+            <Style x:Key="GalleryItemDescriptionStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="Caption" />
+                <Setter Property="FontFamily" Value="Segoe UI" />
+                <Setter Property="TextColor" Value="{StaticResource BlackColor}" />
+                <Setter Property="LineBreakMode" Value="WordWrap" />
+            </Style>
+
+            <Style x:Key="NoItemsStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="Medium" />
+                <Setter Property="FontFamily" Value="Segoe UI" />
+                <Setter Property="HorizontalTextAlignment" Value="Center" />
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
+
+            <Style x:Key="Headline" TargetType="Label">
+                <Setter Property="FontFamily" Value="Segoe UI" />
+                <Setter Property="FontSize" Value="10" />
+            </Style>
+
+            <Style x:Key="Subhead" TargetType="Label">
+                <Setter Property="FontFamily" Value="Segoe UI" />
+                <Setter Property="FontSize" Value="9" />
+            </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

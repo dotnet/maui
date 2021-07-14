@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
+
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
@@ -24,6 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	// this doesn't fail on Uwp but it leaves a browser window open and breaks later tests
 	[Category(UITestCategories.UwpIgnore)]
 #endif
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class Issue2357 : FlyoutPage
 	{
 		public Issue2357()

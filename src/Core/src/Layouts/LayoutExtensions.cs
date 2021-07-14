@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Layouts
 			widthConstraint -= margin.HorizontalThickness;
 			heightConstraint -= margin.VerticalThickness;
 
-			// Ask the handler to do the actual measuring								
+			// Ask the handler to do the actual measuring
 			var measureWithMargins = frameworkElement.Handler.GetDesiredSize(widthConstraint, heightConstraint);
 
 			// Account for the margins when reporting the desired size value

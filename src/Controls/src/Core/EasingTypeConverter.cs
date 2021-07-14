@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using static Microsoft.Maui.Controls.Easing;
+using static Microsoft.Maui.Easing;
 
 namespace Microsoft.Maui.Controls
 {

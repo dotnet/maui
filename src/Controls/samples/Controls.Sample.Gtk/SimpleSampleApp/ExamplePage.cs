@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Debug = System.Diagnostics.Debug;
-using GradientStop = Microsoft.Maui.Graphics.GradientStop;
+using IImage = Microsoft.Maui.Graphics.IImage;
 
 namespace Maui.SimpleSampleApp
 {
@@ -128,7 +129,7 @@ namespace Maui.SimpleSampleApp
 			{
 				Text = "a label",
 				HorizontalTextAlignment = TextAlignment.Center,
-
+				VerticalTextAlignment = TextAlignment.Center
 			};
 
 			verticalStack.Add(label);
@@ -315,23 +316,44 @@ namespace Maui.SimpleSampleApp
 
 			var underlineLabel = new Label
 			{
-				Text = "underline",
-				TextDecorations = TextDecorations.Underline
+				Text = (TextDecorations.Underline | TextDecorations.Strikethrough).ToString(),
+				TextDecorations = TextDecorations.Underline | TextDecorations.Strikethrough
 			};
 
 			verticalStack.Add(underlineLabel);
+			IImage image = default;
+
+			using (var stream = File.OpenRead("dotnet_bot.png"))
+			{
+				image = GraphicsPlatform.CurrentService.LoadImageFromStream(stream);
+			}
+
+			var paint = image.AsPaint();
+
+			var labelImage = new Label
+			{
+				Text = "this has backgroudImage",
+				Background = paint
+			};
+			// Background is null cause there is no ImageBrush
+
+			if (labelImage.Background != null)
+				verticalStack.Add(labelImage);
 
 			var labelG = new Label
 			{
 				Text = "this has gradient",
 				Background = new RadialGradientBrush(new GradientStopCollection
 				{
-					new (Colors.Aqua, 0),
-					new (Colors.Green, 10),
-				})
+					new(Colors.Aqua, 0),
+					new(Colors.Green, 10),
+				}),
+				Padding = new Thickness(30),
+				Margin = new Thickness(10),
 			};
+
 			verticalStack.Add(labelG);
-			
+
 			verticalStack.Add(new ActivityIndicator());
 
 			verticalStack.Add(new ActivityIndicator
@@ -360,8 +382,10 @@ namespace Maui.SimpleSampleApp
 				TextColor = Colors.Green,
 				Text = "Hello I'm a button",
 				BackgroundColor = Colors.Purple,
-				Margin = new Thickness(12)
+				Margin = new Thickness(12),
 			};
+
+
 
 			horizontalStack.Add(button);
 			horizontalStack.Add(button2);
@@ -369,7 +393,8 @@ namespace Maui.SimpleSampleApp
 			horizontalStack.Add(new Label
 			{
 				Text = "And these buttons are in a HorizontalStackLayout",
-				VerticalOptions = LayoutOptions.Center
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalTextAlignment = TextAlignment.End
 			});
 
 			verticalStack.Add(horizontalStack);
@@ -465,12 +490,32 @@ namespace Maui.SimpleSampleApp
 				Placeholder = "MaxLength text"
 			});
 
-			verticalStack.Add(new Entry
+			var spacingEntry = new Entry
 			{
 				Text = "This should be text with character spacing",
 				CharacterSpacing = 10
-			});
+			};
 
+			verticalStack.Add(spacingEntry);
+
+			button2.Clicked += (s, e) =>
+			{
+				if (underlineLabel.TextDecorations.HasFlag(TextDecorations.Underline))
+				{
+					underlineLabel.TextDecorations = TextDecorations.Strikethrough;
+					underlineLabel.Text = nameof(TextDecorations.Strikethrough);
+					underlineLabel.CharacterSpacing = 2;
+				}
+				else if (underlineLabel.TextDecorations.HasFlag(TextDecorations.Strikethrough))
+				{
+					underlineLabel.TextDecorations = TextDecorations.Underline;
+					underlineLabel.Text = nameof(TextDecorations.Underline);
+					underlineLabel.CharacterSpacing = 1;
+				}
+
+				spacingEntry.CharacterSpacing = spacingEntry.CharacterSpacing == 10 ? 5 : 10;
+			};
+			
 			verticalStack.Add(new Entry
 			{
 				Keyboard = Keyboard.Numeric,
@@ -532,7 +577,7 @@ namespace Maui.SimpleSampleApp
 			verticalStack.Add(new Slider
 			{
 				ThumbColor = Colors.Aqua,
-				ThumbImageSource = "dotnet_bot.png"
+				ThumbImageSource = "rainbow_heart.png"
 			});
 
 			verticalStack.Add(new Stepper());
@@ -606,7 +651,6 @@ namespace Maui.SimpleSampleApp
 
 			verticalStack.Add(label);
 
-
 			var button = new Button()
 			{
 				Text = _viewModel.Text,
@@ -679,7 +723,7 @@ namespace Maui.SimpleSampleApp
 			var bottomLeft = new Label
 			{
 				Text = "Bottom Left",
-				BackgroundColor = Colors.Lavender
+				BackgroundColor = Colors.Lavender,
 			};
 
 			layout.Add(bottomLeft);
@@ -689,7 +733,9 @@ namespace Maui.SimpleSampleApp
 			{
 				Text = "Top Right",
 				BackgroundColor = Colors.Orange,
-				TextColor = Colors.Chocolate
+				TextColor = Colors.Chocolate,
+				VerticalTextAlignment = TextAlignment.Start,
+				HorizontalTextAlignment = TextAlignment.End
 			};
 
 			layout.Add(topRight);
@@ -698,7 +744,9 @@ namespace Maui.SimpleSampleApp
 			var bottomRight = new Label
 			{
 				Text = "Bottom Right",
-				BackgroundColor = Colors.MediumPurple
+				BackgroundColor = Colors.MediumPurple,
+				VerticalTextAlignment = TextAlignment.End,
+				HorizontalTextAlignment = TextAlignment.End
 			};
 
 			layout.Add(bottomRight);

@@ -83,7 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj">
-      <Project>{8e86f0da-ed1c-409e-a7a9-df3e58498620}</Project>
+      <Project>{9FAA9654-80E6-4664-9702-47998A04E8FE}</Project>
       <Name>Compatibility</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj">
@@ -99,9 +99,44 @@
       <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\Controls.Sample\Controls.Sample.csproj">
-      <Project>{90b727dd-4c7b-4462-950f-61842a87de8a}</Project>
+      <Project>{8e86f0da-ed1c-409e-a7a9-df3e58498620}</Project>
       <Name>Controls.Sample</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="..\..\..\Core\src\Platform\Android\Resources\Layout\navigationlayout.axml">
+      <Link>Resources\layout\navigationlayout.axml</Link>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\BottomTabLayout.axml">
+      <Link>Resources\layout\BottomTabLayout.axml</Link>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\FlyoutContent.axml">
+      <Link>Resources\layout\FlyoutContent.axml</Link>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\RootLayout.axml">
+      <Link>Resources\layout\RootLayout.axml</Link>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\ShellContent.axml">
+      <Link>Resources\layout\ShellContent.axml</Link>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\Tabbar.axml">
+      <Link>Resources\layout\Tabbar.axml</Link>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\Toolbar.axml">
+      <Link>Resources\layout\Toolbar.axml</Link>
+    </AndroidResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
 </Project>

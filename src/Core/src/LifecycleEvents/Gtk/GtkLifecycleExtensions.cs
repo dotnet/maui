@@ -22,7 +22,7 @@ namespace Microsoft.Maui.LifecycleEvents
 				_builder = builder;
 			}
 
-			public void AddEvent(string eventName, Delegate action) =>
+			public void AddEvent<TDelegate>(string eventName, TDelegate action) where TDelegate : Delegate =>
 				_builder.AddEvent(eventName, action);
 		}
 	}

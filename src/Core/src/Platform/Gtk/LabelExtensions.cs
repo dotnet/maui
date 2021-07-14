@@ -54,6 +54,16 @@ namespace Microsoft.Maui
 				_ => throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null)
 			};
 
+		public static Maui.Graphics.VerticalAlignment GetVerticalAlignment(this TextAlignment alignment) =>
+			alignment switch
+			{
+
+				TextAlignment.Start => Graphics.VerticalAlignment.Top,
+				TextAlignment.Center => Graphics.VerticalAlignment.Center,
+				TextAlignment.End => Graphics.VerticalAlignment.Bottom,
+				_ => throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null)
+			};
+
 		public static Microsoft.Maui.Graphics.Extras.LineBreakMode GetLineBreakMode(this Label nativeLabel)
 		{
 			var res = nativeLabel.Ellipsize switch
@@ -129,14 +139,20 @@ namespace Microsoft.Maui
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+
 			nativeLabel.AdjustMaxLines();
 		}
 
-		public static void UpdateTextAlignment(this Label nativeLabel, ILabel label)
+		public static void UpdateHorizontalTextAlignment(this Label nativeLabel, ILabel label)
 		{
 			nativeLabel.Justify = label.HorizontalTextAlignment.ToJustification();
 			nativeLabel.Xalign = label.HorizontalTextAlignment.ToXyAlign();
 
+		}
+
+		public static void UpdateVerticalTextAlignment(this Label nativeLabel, ILabel label)
+		{
+			nativeLabel.Yalign = label.VerticalTextAlignment.ToXyAlign();
 		}
 
 	}

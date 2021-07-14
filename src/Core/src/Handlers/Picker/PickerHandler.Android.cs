@@ -38,9 +38,9 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		protected override void SetupDefaults(MauiPicker nativeView)
+		void SetupDefaults(MauiPicker nativeView)
 		{
-			base.SetupDefaults(nativeView);
+
 
 			DefaultBackground = nativeView.Background;
 			DefaultTitleColors = nativeView.HintTextColors;

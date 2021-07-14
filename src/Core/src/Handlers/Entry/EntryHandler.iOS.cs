@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ShouldChangeCharacters -= OnShouldChangeCharacters;
 		}
 
-		protected override void SetupDefaults(MauiTextField nativeView)
+		void SetupDefaults(MauiTextField nativeView)
 		{
 			DefaultTextColor = nativeView.TextColor;
 		}
@@ -66,6 +66,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateHorizontalTextAlignment(entry);
+		}
+
+		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry)
+		{
+			handler?.NativeView?.UpdateVerticalTextAlignment(entry);
 		}
 
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry)

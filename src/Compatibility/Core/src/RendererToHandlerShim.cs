@@ -1,7 +1,9 @@
+#nullable enable
+
 using System;
 using Microsoft.Maui.Controls.Platform;
 #if __ANDROID__
-using static Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform;
+using static Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform;
 using NativeView = Android.Views.View;
 using IVisualElementRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.IVisualElementRenderer;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Android.Views.View>;
@@ -56,7 +58,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
-		internal IVisualElementRenderer VisualElementRenderer { get; private set; }
+		internal IVisualElementRenderer? VisualElementRenderer { get; private set; }
+		new IView? VirtualView => (this as IViewHandler).VirtualView;
 
 		public static IViewHandler CreateShim(object renderer)
 		{
@@ -92,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			VisualElementRenderer.ElementChanged += OnElementChanged;
 		}
 
-		void OnElementChanged(object sender, VisualElementChangedEventArgs e)
+		void OnElementChanged(object? sender, VisualElementChangedEventArgs e)
 		{
 			if (e.OldElement is IView view)
 				view.Handler = null;
@@ -111,19 +114,22 @@ namespace Microsoft.Maui.Controls.Compatibility
 		protected override void ConnectHandler(NativeView nativeView)
 		{
 			base.ConnectHandler(nativeView);
-			VirtualView.Handler = this;
+			base.VirtualView.Handler = this;
 		}
 
 		protected override void DisconnectHandler(NativeView nativeView)
 		{
-			SetRenderer(
-				VisualElementRenderer.Element,
-				null);
+			if (VisualElementRenderer != null)
+			{
+				SetRenderer(
+					VisualElementRenderer.Element,
+					null);
 
-			VisualElementRenderer.SetElement(null);
+				VisualElementRenderer.SetElement(null);
+			}
 
 			base.DisconnectHandler(nativeView);
-			VirtualView.Handler = null;
+			base.VirtualView.Handler = null;
 		}
 
 		public override void SetVirtualView(IView view)
@@ -137,14 +143,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 				(VisualElement)view,
 				VisualElementRenderer);
 
-			if (VisualElementRenderer.Element != view)
+			if (VisualElementRenderer != null && VisualElementRenderer.Element != view)
 			{
 				VisualElementRenderer.SetElement((VisualElement)view);
 			}
-			else if(view != VirtualView)
-			{
+
+			if (view != VirtualView)
 				base.SetVirtualView(view);
-			}
 		}
 #else
 		protected override NativeView CreateNativeView()

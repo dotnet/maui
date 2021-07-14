@@ -33,7 +33,7 @@
     </Page>
     <Page Remove="$(WindowsRoot)TabbedPageStyle.xaml" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
-    <Compile Include="RendererToHandlerShim.Windows.cs" />
+    <Compile Include="*.Windows.cs" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
@@ -55,25 +55,26 @@
     <AndroidResource Include="$(AndroidRoot)Resources\values\styles.xml" Link="Android\Resources\values\styles.xml" />
     <AndroidResource Include="$(AndroidRoot)Resources\values\strings.xml" Link="Android\Resources\values\strings.xml" />
     <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" Link="Android\Resources\values\attrs.xml" />
-    <ProjectReference Include="Android.FormsViewGroup\Compatibility.Android.FormsViewGroup-net6.csproj" />
+    <ProjectReference Include="..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup-net6.csproj" />
 
     <Compile Remove="$(AndroidRoot)AppCompat\Resource.cs" />
     <Compile Remove="$(AndroidRoot)bin\**\*.cs" />
     <Compile Remove="$(AndroidRoot)obj\**\*.cs" />
-    <Compile Include="RendererToHandlerShim.Android.cs" />
+    <Compile Include="*.Android.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' OR '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
     <Compile Include="$(iOSRoot)**\*.cs"></Compile>
     <EmbeddedResource Include="$(iOSRoot)Resources\*.resx" />
     <Compile Remove="$(iOSRoot)bin\**\*.cs" />
     <Compile Remove="$(iOSRoot)obj\**\*.cs" />
-    <Compile Include="RendererToHandlerShim.iOS.cs" />
+    <Compile Include="*.iOS.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="RendererToHandlerShim.cs" />
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />
+    <Compile Include="ExportRendererAttribute.cs" />
     <Compile Include="Forms.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

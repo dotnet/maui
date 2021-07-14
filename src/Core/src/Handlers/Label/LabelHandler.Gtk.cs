@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Runtime.InteropServices.ComTypes;
 using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native.Gtk;
-using Pango;
 
 namespace Microsoft.Maui.Handlers
 {
 
-	public partial class LabelHandler : ViewHandler<ILabel, Label>
+	public partial class LabelHandler : ViewHandler<ILabel, LabelView>
 	{
 
 		private static Microsoft.Maui.Graphics.Native.Gtk.TextLayout? _textLayout;
@@ -17,14 +15,13 @@ namespace Microsoft.Maui.Handlers
 			Microsoft.Maui.Graphics.Native.Gtk.NativeGraphicsService.Instance.SharedContext) { HeightForWidth = true };
 
 		// https://developer.gnome.org/gtk3/stable/GtkLabel.html
-		protected override Label CreateNativeView()
+		protected override LabelView CreateNativeView()
 		{
-			return new Label()
+			return new()
 			{
 				LineWrap = true,
 				Halign = Align.Fill,
 				Xalign = 0,
-				MaxWidthChars = 1
 			};
 		}
 
@@ -53,6 +50,8 @@ namespace Microsoft.Maui.Handlers
 
 				SharedTextLayout.TextFlow = TextFlow.ClipBounds;
 				SharedTextLayout.HorizontalAlignment = virtualView.HorizontalTextAlignment.GetHorizontalAlignment();
+				SharedTextLayout.VerticalAlignment = virtualView.VerticalTextAlignment.GetVerticalAlignment();
+
 				SharedTextLayout.LineBreakMode = virtualView.LineBreakMode.GetLineBreakMode();
 
 				var heightForWidth = !heightConstrained;
@@ -66,6 +65,16 @@ namespace Microsoft.Maui.Handlers
 				layout.Width = -1;
 				layout.Ellipsize = nativeView.Ellipsize;
 				layout.Spacing = nativeView.Layout.Spacing;
+
+				layout.Attributes = nativeView.Attributes;
+
+				if (virtualView.LineHeight > 1)
+					layout.LineSpacing = (float)virtualView.LineHeight;
+				else
+				{
+					layout.LineSpacing = 0;
+				}
+
 				layout.SetText(nativeView.Text);
 
 				if (!heightConstrained)
@@ -88,6 +97,9 @@ namespace Microsoft.Maui.Handlers
 				{
 					height = Math.Min((int)lh.ScaledFromPango(), height);
 				}
+
+				layout.Attributes = null;
+
 			}
 
 			width += hMargin;
@@ -114,7 +126,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapHorizontalTextAlignment(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateTextAlignment(label);
+			handler.NativeView?.UpdateHorizontalTextAlignment(label);
+		}
+
+		public static void MapVerticalTextAlignment(LabelHandler handler, ILabel label)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(label);
 		}
 
 		public static void MapLineBreakMode(LabelHandler handler, ILabel label)
@@ -133,20 +150,24 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		[MissingMapper]
 		public static void MapCharacterSpacing(LabelHandler handler, ILabel label)
-		{ }
+		{
+			if (handler.NativeView is not { } nativeView)
+				return;
 
-		[MissingMapper]
+			nativeView.Attributes = nativeView.Attributes.AttrListFor(label.TextDecorations, label.CharacterSpacing);
+		}
+
 		public static void MapTextDecorations(LabelHandler handler, ILabel label)
-		{ }
+		{
+			if (handler.NativeView is not { } nativeView)
+				return;
 
-		[MissingMapper]
+			nativeView.Attributes = nativeView.Attributes.AttrListFor(label.TextDecorations, label.CharacterSpacing);
+		}
+
 		public static void MapLineHeight(LabelHandler handler, ILabel label)
 		{
-			// there is no LineHeight for label in gtk3:
-			// https://gitlab.gnome.org/GNOME/gtk/-/issues/2379
-
 			if (handler.NativeView is not { } nativeView)
 				return;
 
@@ -154,9 +175,22 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			if (label.LineHeight > 1)
-				// should be: https://developer.gnome.org/pango/1.46/pango-Layout-Objects.html#pango-layout-set-line-spacing
-				// see: https://github.com/GtkSharp/GtkSharp/issues/258
-				nativeView.Layout.Spacing = (int)label.LineHeight.ScaledToPango();
+			{
+				// there is no LineHeight for label in gtk3:
+				// https://gitlab.gnome.org/GNOME/gtk/-/issues/2379
+				
+				// try to set it over css: not working: exception thrown: 'line-height' is not a valid property name
+				// nativeView.SetStyleValue($"{(int)label.LineHeight}","line-height");
+
+				// try to set it over https://developer.gnome.org/pango/1.46/pango-Layout-Objects.html#pango-layout-set-line-spacing
+
+				// no effect: https://developer.gnome.org/gtk3/stable/GtkLabel.html#gtk-label-get-layout
+				// The label is free to recreate its layout at any time, so it should be considered read-only
+				// nativeView.Layout.LineSpacing = (float)label.LineHeight;
+
+				// so we use LabelView, this sets it before OnDrawn:
+				nativeView.LineHeight = (float)label.LineHeight;
+			}
 
 		}
 

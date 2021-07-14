@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
@@ -248,7 +249,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				//TODO: Handle this with AppBuilderHost
 				try
 				{
-					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType());
+					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(Forms.MauiContext);
 				}
 				catch
@@ -279,6 +280,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				else if (handler is INativeViewHandler vh)
 				{
 					renderer = new HandlerToRendererShim(vh);
+					element.Handler = handler;
+					SetRenderer(element, renderer);
 				}
 			}
 
@@ -536,7 +539,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				SetRenderer(modal, modalRenderer);
 			}
 
-			var wrapper = new ModalWrapper(modalRenderer);
+			var wrapper = new ModalWrapper(modalRenderer.Element.Handler as INativeViewHandler);
 
 			if (_modals.Count > 1)
 			{

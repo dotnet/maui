@@ -198,11 +198,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			((IEntryController)Element).SendCompleted();
 		}
 
+		[PortHandler]
 		void UpdateHorizontalTextAlignment()
 		{
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
+		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
 			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();
@@ -275,6 +277,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.InputScope = entry.Keyboard.ToInputScope();
 		}
 
+		[PortHandler]
 		void UpdateIsPassword()
 		{
 			Control.IsPassword = Element.IsPassword;

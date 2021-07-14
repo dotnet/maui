@@ -43,12 +43,12 @@
     <AndroidResource Include="$(AndroidRoot)Resources\values\styles.xml" Link="Android\Resources\values\styles.xml" />
     <AndroidResource Include="$(AndroidRoot)Resources\values\strings.xml" Link="Android\Resources\values\strings.xml" />
     <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" Link="Android\Resources\values\attrs.xml" />
-    <ProjectReference Include="Android.FormsViewGroup\Compatibility.Android.FormsViewGroup.csproj" />
+    <ProjectReference Include="..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj" />
 
     <Compile Remove="$(AndroidRoot)AppCompat\Resource.cs" />
     <Compile Remove="$(AndroidRoot)bin\**\*.cs" />
     <Compile Remove="$(AndroidRoot)obj\**\*.cs" />
-    <Compile Include="RendererToHandlerShim.Android.cs" />
+    <Compile Include="*.Android.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
     <Compile Include="$(iOSRoot)**\*.cs"></Compile>
@@ -60,22 +60,27 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http" />
+    <Compile Include="*.iOS.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(DefineConstants.Contains('GTK')) == true ">
     <Compile Include="$(GtkRoot)**\*.cs" />
+    <Reference Include="Microsoft.Maui.Graphics.Gtk">
+      <HintPath>$(SolutionDir)\src\Microsoft.Maui.Graphics.Gtk\Microsoft.Maui.Graphics.Gtk.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net48' ">
-    <Reference Include="System.Net.Http"/>
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHostBuilderExtensions.cs" />
     <Compile Include="MauiHandlersCollectionExtensions.cs" />
+    <Compile Include="ExportRendererAttribute.cs" />
     <Compile Include="Forms.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RendererToHandlerShim.cs" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup>    
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />

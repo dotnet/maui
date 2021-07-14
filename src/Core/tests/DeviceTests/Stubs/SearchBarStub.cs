@@ -20,11 +20,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
 
+		public TextAlignment VerticalTextAlignment { get; set; }
+
 		public bool IsTextPredictionEnabled { get; set; } = true;
 
 		public bool IsReadOnly { get; set; }
 
-		public int MaxLength { get; set; }
+		public int MaxLength { get; set; } = int.MaxValue;
 
 		public Keyboard Keyboard { get; set; }
 

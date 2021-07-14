@@ -1,5 +1,7 @@
 ﻿using System.Linq;
+using Gtk;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Native.Gtk;
 
 namespace Microsoft.Maui
 {
@@ -35,6 +37,20 @@ namespace Microsoft.Maui
 
 			if (nativeView.GetCellRendererText() is { } cell)
 				cell.Xalign = nativeAlign;
+		}
+
+		public static void UpdateCharacterSpacing(this Gtk.ComboBox? nativeView, double spacing)
+		{
+			if (nativeView == null || spacing == 0)
+				return;
+
+			if (nativeView.HasEntry)
+			{
+				nativeView.Entry.Attributes = nativeView.Entry.Attributes.AttrListFor(spacing);
+			}
+
+			if (nativeView.GetCellRendererText() is { } cell)
+				cell.Attributes = cell.Attributes.AttrListFor(spacing);
 		}
 
 	}

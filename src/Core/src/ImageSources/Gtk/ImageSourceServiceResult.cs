@@ -1,16 +1,18 @@
 ﻿#nullable enable
 using System;
 using NativeImage = Gdk.Pixbuf;
+
 namespace Microsoft.Maui
 {
+
 	public class ImageSourceServiceResult : IImageSourceServiceResult<NativeImage>
 	{
+
 		Action? _dispose;
 
 		public ImageSourceServiceResult(NativeImage image, Action? dispose = null)
 			: this(image, false, dispose)
-		{
-		}
+		{ }
 
 		public ImageSourceServiceResult(NativeImage image, bool resolutionDependent, Action? dispose = null)
 		{
@@ -25,6 +27,8 @@ namespace Microsoft.Maui
 
 		public bool IsDisposed { get; private set; }
 
+		public bool IsResource { get; set; }
+
 		public void Dispose()
 		{
 			if (IsDisposed)
@@ -35,5 +39,7 @@ namespace Microsoft.Maui
 			_dispose?.Invoke();
 			_dispose = null;
 		}
+
 	}
+
 }

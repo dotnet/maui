@@ -323,6 +323,28 @@ namespace Microsoft.Maui.Controls.Internals
 			return properties;
 		}
 
+		internal static void RegisterEffects(Assembly[] assemblies)
+		{
+			foreach (Assembly assembly in assemblies)
+			{
+				object[] effectAttributes = assembly.GetCustomAttributesSafe(typeof(ExportEffectAttribute));
+				if (effectAttributes == null || effectAttributes.Length == 0)
+				{
+					continue;
+				}
+
+				string resolutionName = assembly.FullName;
+				var resolutionNameAttribute = (ResolutionGroupNameAttribute)assembly.GetCustomAttribute(typeof(ResolutionGroupNameAttribute));
+				if (resolutionNameAttribute != null)
+					resolutionName = resolutionNameAttribute.ShortName;
+
+				//NOTE: a simple cast to ExportEffectAttribute[] failed on UWP, hence the Array.Copy
+				var typedEffectAttributes = new ExportEffectAttribute[effectAttributes.Length];
+				Array.Copy(effectAttributes, typedEffectAttributes, effectAttributes.Length);
+				RegisterEffects(resolutionName, typedEffectAttributes);
+			}
+		}
+
 		public static void RegisterEffects(string resolutionName, ExportEffectAttribute[] effectAttributes)
 		{
 			var exportEffectsLength = effectAttributes.Length;
@@ -353,12 +375,12 @@ namespace Microsoft.Maui.Controls.Internals
 				null);
 		}
 
-		public static void RegisterAll(
+		internal static void RegisterAll(
 			Assembly[] assemblies,
 			Assembly defaultRendererAssembly,
 			Type[] attrTypes,
 			InitializationFlags flags,
-			Action<Type> viewRegistered)
+			Action<(Type handler, Type target)> viewRegistered)
 		{
 			Profile.FrameBegin();
 
@@ -396,41 +418,24 @@ namespace Microsoft.Maui.Controls.Internals
 						var attribute = a as HandlerAttribute;
 						if (attribute == null && (a is ExportFontAttribute fa))
 						{
-							CompatServiceProvider.FontRegistrar.Register(fa.FontFileName, fa.Alias, assembly);
+							CompatServiceProvider.RegisterFont(fa.FontFileName, fa.Alias, assembly);
 						}
 						else
 						{
 							if (attribute.ShouldRegister())
 							{
 								Registered.Register(attribute.HandlerType, attribute.TargetType, attribute.SupportedVisuals, attribute.Priority);
-								viewRegistered?.Invoke(attribute.HandlerType);
+
+								// I realize these names seem wrong from the name of the action but in Xamarin.Forms we were calling
+								// the View types (Button, Image, etc..) handlers
+								viewRegistered?.Invoke((attribute.TargetType, attribute.HandlerType));
 							}
 						}
 					}
 				}
 
-				object[] effectAttributes = assembly.GetCustomAttributesSafe(typeof(ExportEffectAttribute));
-				if (effectAttributes == null || effectAttributes.Length == 0)
-				{
-					Profile.FrameEnd(frameName);
-					continue;
-				}
-
-				string resolutionName = assembly.FullName;
-				var resolutionNameAttribute = (ResolutionGroupNameAttribute)assembly.GetCustomAttribute(typeof(ResolutionGroupNameAttribute));
-				if (resolutionNameAttribute != null)
-					resolutionName = resolutionNameAttribute.ShortName;
-				//NOTE: a simple cast to ExportEffectAttribute[] failed on UWP, hence the Array.Copy
-				var typedEffectAttributes = new ExportEffectAttribute[effectAttributes.Length];
-				Array.Copy(effectAttributes, typedEffectAttributes, effectAttributes.Length);
-				RegisterEffects(resolutionName, typedEffectAttributes);
-
 				Profile.FrameEnd(frameName);
 			}
-
-			var type = Registered.GetHandlerType(typeof(EmbeddedFont));
-			if (type != null)
-				CompatServiceProvider.SetFontLoader(type);
 
 			RegisterStylesheets(flags);
 			Profile.FramePartition("DependencyService.Initialize");

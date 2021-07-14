@@ -63,8 +63,8 @@ parameters:
     type: object
     default:
       - name: windows
-        poolName: 'Azure Pipelines'
-        vmImage: windows-latest
+        poolName: $(windowsNet6VmPool)
+        vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
         artifact: net6-windows
@@ -79,14 +79,14 @@ parameters:
     type: object
     default:
       - name: windows
-        poolName: 'Azure Pipelines'
-        vmImage: windows-latest
+        poolName: $(windowsNet6VmPool)
+        vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
         artifact: nuget
       - name: macos
-        poolName: 'Azure Pipelines'
-        vmImage: macos-latest
+        poolName: $(macOSXNet6VmPool)
+        vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
@@ -386,4 +386,4 @@ stages:
             signedArtifactName: nuget
             signedArtifactPath: signed
             displayName: Sign Phase
-            condition: and(succeeded(), ne(variables['signVmImage'], ''), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))

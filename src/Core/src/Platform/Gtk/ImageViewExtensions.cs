@@ -2,7 +2,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Gtk;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Native.Gtk;
 
 namespace Microsoft.Maui
 {
@@ -130,6 +131,18 @@ namespace Microsoft.Maui
 
 			return null;
 
+		}
+
+		public static TempFile? TempFileFor(this Gdk.Pixbuf? p, ImageFormat format = ImageFormat.Png)
+		{
+			if (p == null)
+				return default;
+
+			var tmpfile = new TempFile();
+
+			p.Save(tmpfile, format.ToImageExtension());
+
+			return tmpfile;
 		}
 
 	}

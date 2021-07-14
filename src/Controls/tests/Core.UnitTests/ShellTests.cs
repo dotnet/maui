@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var item2 = shell.Items[1];
 
-			Assert.AreEqual(FindParentOfType<ShellItem>(shellElement), item2);
+			Assert.AreEqual(shellElement.FindParentOfType<ShellItem>(), item2);
 
 			if (useShellContent)
 				shell.CurrentItem = (ShellContent)shellElement;
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				shell.CurrentItem = (ShellSection)shellElement;
 
 			Assert.AreEqual(2, shell.Items.Count);
-			Assert.AreEqual(FindParentOfType<ShellItem>(shellElement), item2);
+			Assert.AreEqual(shellElement.FindParentOfType<ShellItem>(), item2);
 			Assert.AreEqual(item2, shell.CurrentItem);
 		}
 

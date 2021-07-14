@@ -22,8 +22,8 @@
     <_ProvisionDependsOn>
       _DownloadDotNetInstallScript;
       _InstallDotNet;
-      _AcquireWorkloads;
-      _AcquirePacks;
+      _AcquireWorkloadManifests;
+      _InstallWorkloadPacks;
     </_ProvisionDependsOn>
   </PropertyGroup>
 
@@ -84,8 +84,8 @@
     </PropertyGroup>
     <WriteLinesToFile File="$(_NuGetConfig)" Lines="$(_NuGetContent)" Overwrite="true" />
     <Exec
+        Command="&quot;$(_ThisDotNet)&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir $(DotNetTempDirectory)"
         WorkingDirectory="$(DotNetTempDirectory)"
-        Command="&quot;$(_ThisDotNet)&quot; workload install maui --skip-manifest-update --verbosity diag"
     />
     <Delete Files="$(_NuGetConfig)" />
 
@@ -137,23 +137,33 @@
     <_PacksToRemove Include="Microsoft.NET.Workload.iOS" />
     <_PacksToRemove Include="Microsoft.NET.Workload.tvOS" />
     <_PacksToRemove Include="Microsoft.NET.Workload.macOS" />
+    <!-- Ids for 'dotnet workload install' -->
+    <_WorkloadIds Include="microsoft-android-sdk-full" />
+    <_WorkloadIds Include="microsoft-maccatalyst-sdk-full" />
+    <_WorkloadIds Include="microsoft-macos-sdk-full" />
+    <_WorkloadIds Include="microsoft-ios-sdk-full" />
+    <_WorkloadIds Include="microsoft-tvos-sdk-full" />
   </ItemGroup>
 
-  <Target Name="_AcquireWorkloads"
+  <Target Name="_AcquireWorkloadManifests"
       Inputs="$(_Inputs);Dependencies/Workloads.csproj"
       Outputs="$(DotNetSdkManifestsDirectory).stamp">
-    <RemoveDir Directories="@(_PacksToRemove->'$(DotNetSdkManifestsDirectory)%(Identity)')" />
+    <PropertyGroup>
+      <_WorkloadManifestDir>$(DotNetTempDirectory)workload/</_WorkloadManifestDir>
+    </PropertyGroup>
+    <RemoveDir Directories="$(_WorkloadManifestDir);@(_PacksToRemove->'$(DotNetSdkManifestsDirectory)%(Identity)')" />
+    <MakeDir Directories="$(_WorkloadManifestDir)" />
     <Exec
         Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Workloads.csproj&quot; -bl:$(PackageOutputPath)/DotNetWorkloads.binlog"
-        EnvironmentVariables="NUGET_PACKAGES=$(DotNetTempDirectory);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
+        EnvironmentVariables="NUGET_PACKAGES=$(_WorkloadManifestDir);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
     />
     <!--
-      NOTE: Workloads need to go in dotnet/sdk-manifests/6.0.100/Microsoft.NET.*/
+      NOTE: Workloads need to go in dotnet/sdk-manifests/6.0.100/microsoft.net.*/
       Workloads only contain two files: data/WorkloadManifest.targets & data/WorkloadManifest.json
-      We downloaded these to $(DotNetTempDirectory), so we could move files individually.
+      We downloaded these to $(_WorkloadManifestDir), so we could move files individually.
     -->
     <ItemGroup>
-      <_WorkloadFiles Include="$(DotNetTempDirectory)Microsoft.NET.*/*/data/WorkloadManifest.*" />
+      <_WorkloadFiles Include="$(_WorkloadManifestDir)microsoft.net.*/*/data/WorkloadManifest.*" />
     </ItemGroup>
     <CopyWorkloadFiles
         Files="@(_WorkloadFiles)"
@@ -164,15 +174,14 @@
     <Touch Files="$(DotNetSdkManifestsDirectory).stamp" AlwaysCreate="true" />
   </Target>
 
-  <Target Name="_AcquirePacks"
+  <Target Name="_InstallWorkloadPacks"
       Condition=" '$(InstallWorkloadPacks)' == 'true' "
-      Inputs="$(_Inputs);Dependencies/Packs.csproj"
+      Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Packs.csproj&quot; -bl:$(PackageOutputPath)/DotNetPacks.binlog"
-        EnvironmentVariables="NUGET_PACKAGES=$(DotNetPacksDirectory);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
+        Command="&quot;$(DotNetToolPath)&quot; workload install @(_WorkloadIds, ' ') --skip-manifest-update --verbosity diag --temp-dir $(DotNetTempDirectory)"
+        WorkingDirectory="$(MauiRootDirectory)"
     />
-    <RemoveDir Directories="@(_PacksToRemove->'$(DotNetPacksDirectory)%(Identity)')" />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />
   </Target>
 

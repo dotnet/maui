@@ -1,5 +1,6 @@
 ﻿using System;
 using Gtk;
+using Microsoft.Maui.Graphics.Native.Gtk;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -70,12 +71,15 @@ namespace Microsoft.Maui.Handlers
 				nativeView.MaxLength = searchBar.MaxLength;
 		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar) { }
+		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			if (handler.NativeView?.Entry is { } nativeView)
+				nativeView.Attributes = nativeView.Attributes.AttrListFor(searchBar.CharacterSpacing);
+		}
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(SearchBarHandler handler, ISearchBar searchBar) { }
-		
+
 		[MissingMapper]
 		public static void MapCancelButtonColor(IViewHandler handler, ISearchBar searchBar) { }
 

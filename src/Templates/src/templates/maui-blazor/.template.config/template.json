@@ -12,6 +12,13 @@
       "type": "solution"
     },
     "sourceName": "MauiApp1",
+    "sources": [
+      {
+        "source": "./",
+        "target": "./",
+        "copyOnly": [ "**/wwwroot/css/**", "**/*.svg", "**/*.ttf" ]
+      }
+    ],
     "preferNameDirectory": true,
     "primaryOutputs": [
       { "path": "MauiApp1/MauiApp1.csproj" },
@@ -33,25 +40,13 @@
         "type": "parameter",
         "dataType": "string",
         "replaces": "MICROSOFT_EXTENSIONS_VERSION",
-        "defaultValue": "6.0.0-preview.5.*"
+        "defaultValue": "6.0.0-preview.6.*"
       },
       "projectReunionVersion": {
         "type": "parameter",
         "dataType": "string",
         "replaces": "PROJECT_REUNION_VERSION",
-        "defaultValue": "0.8.0-preview"
-      },
-      "windowsSdkVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "WINDOWS_SDK_VERSION",
-        "defaultValue": "10.0.19041.16"
-      },
-      "mauiVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "MAUI_VERSION",
-        "defaultValue": "MAUI_VERSION_VALUE"
+        "defaultValue": "0.8.0"
       }
     },
     "defaultName": "MauiApp1"

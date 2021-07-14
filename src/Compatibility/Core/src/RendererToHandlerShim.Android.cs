@@ -4,7 +4,7 @@ using System.Text;
 using Android.Views;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Graphics;
-using static Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform;
+using static Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform;
 using NativeView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		protected override NativeView CreateNativeView()
 		{
+			_ = VisualElementRenderer ?? throw new InvalidOperationException("VisualElementRenderer cannot be null here");
 			return VisualElementRenderer.View;
 		}
 
@@ -30,6 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+			if (VisualElementRenderer == null)
+				return Size.Zero;
+
 			return GetNativeSize(
 				VisualElementRenderer, widthConstraint, heightConstraint);
 		}

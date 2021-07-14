@@ -2,6 +2,7 @@
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.HotReload;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
@@ -11,8 +12,6 @@ namespace Microsoft.Maui.Controls
 		public Primitives.LayoutAlignment HorizontalLayoutAlignment => Primitives.LayoutAlignment.Fill;
 
 		IView IPage.Content => Content;
-
-
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
@@ -29,10 +28,15 @@ namespace Microsoft.Maui.Controls
 			// Update the Bounds (Frame) for this page
 			Layout(bounds);
 
-			if (Content is IFrameworkElement element)
+			if (Content is IFrameworkElement element and VisualElement visualElement)
 			{
-				element.Arrange(bounds);
-				element.Handler?.NativeArrange(element.Frame);
+				// The size checks here are a guard against legacy layouts which try to lay things out before the
+				// native side is ready. We just ignore those invalid values.
+				if (bounds.Size.Width >= 0 && bounds.Size.Height >= 0)
+				{
+					visualElement.Frame = element.ComputeFrame(bounds);
+					element.Handler?.NativeArrange(visualElement.Frame);
+				}
 			}
 
 			return Frame.Size;

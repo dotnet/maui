@@ -4,12 +4,26 @@ using GLib;
 namespace Microsoft.Maui.LifecycleEvents
 {
 
+	public class ActivationEventArgs : EventArgs
+	{
+
+		public ActivationEventArgs(ActivationState state) : base()
+		{
+			ActivationState = state;
+		}
+
+		public ActivationState ActivationState { get; }
+
+	}
+
 	public static class GtkLifecycle
 	{
 
 		public delegate void OnStartup(Gtk.Application application, EventArgs args);
 
-		public delegate void OnLaunched(Gtk.Application application, EventArgs args);
+		public delegate void OnLaunching(MauiGtkApplication application, ActivationEventArgs args);
+
+		public delegate void OnLaunched(Gtk.Application application, ActivationEventArgs args);
 
 		public delegate void OnOpened(Gtk.Application application, OpenedArgs args);
 
@@ -26,6 +40,9 @@ namespace Microsoft.Maui.LifecycleEvents
 		public delegate void OnStateChanged(Gtk.Window window, Gtk.WindowStateEventArgs args);
 
 		public delegate void OnDelete(Gtk.Window window, Gtk.DeleteEventArgs args);
+		
+		internal delegate void OnMauiContextCreated(IMauiContext mauiContext);
+
 
 	}
 

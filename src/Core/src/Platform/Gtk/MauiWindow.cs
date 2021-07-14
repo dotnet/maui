@@ -7,6 +7,8 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {
+	
+	[Obsolete("use MauiGtkApplication")]
 	public class MauiWindow<TStartup> : Window
 		where TStartup : IStartup, new()
 	{
@@ -27,7 +29,7 @@ namespace Microsoft.Maui
 
 			var activationState = new ActivationState(mauiContext);
 			var window = Application.CreateWindow(activationState);
-			var content = window.View;
+			var content = window.Content;
 
 			Add(content.ToNative(mauiContext));
 			Child.ShowAll();

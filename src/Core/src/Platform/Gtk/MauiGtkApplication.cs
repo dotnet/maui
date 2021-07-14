@@ -15,6 +15,46 @@ namespace Microsoft.Maui
 		where TStartup : IStartup, new()
 	{
 
+		protected override IStartup OnCreateStartup() => new TStartup();
+
+		// https://developer.gnome.org/gio/stable/GApplication.html#g-application-id-is-valid
+		// TODO: find a better algo for id
+		public override string ApplicationId => $"{typeof(TStartup).Namespace}.{typeof(TStartup).Name}.{Name}".PadRight(255, ' ').Substring(0, 255).Trim();
+
+	}
+
+	public abstract class MauiGtkApplication
+	{
+
+		public abstract string ApplicationId { get; }
+
+		/// <summary>
+		/// overrides creation of rootcontainer
+		/// rootcontainer is MainWindow 's <see cref="Gtk.Window.Child"/>
+		/// paramter is Maui's Mainwindows <see cref="IWindow.Page"/> as Gtk.Widget
+		/// </summary>
+		public Func<Widget, Widget> TopContainerOverride { get; set; } = null!;
+
+		string? _name;
+
+		// https://developer.gnome.org/gio/stable/GApplication.html#g-application-id-is-valid
+		public string? Name
+		{
+			get => _name ??= $"A{Guid.NewGuid()}";
+			set { _name = value; }
+		}
+
+		// https://developer.gnome.org/gtk3/stable/GtkApplication.html
+		public static Gtk.Application CurrentGtkApplication { get; internal set; } = null!;
+
+		public static MauiGtkApplication Current { get; internal set; } = null!;
+
+		public MauiGtkMainWindow MainWindow { get; protected set; } = null!;
+
+		public IServiceProvider Services { get; protected set; } = null!;
+
+		public IApplication Application { get; protected set; } = null!;
+
 		public void Run()
 		{
 			Launch(new EventArgs());
@@ -36,7 +76,7 @@ namespace Microsoft.Maui
 		protected void OnStartup(object sender, EventArgs args)
 		{
 
-			StartupMainWindow();
+			CreateMainWindow();
 
 			Services.InvokeLifecycleEvents<GtkLifecycle.OnStartup>(del => del(CurrentGtkApplication, args));
 		}
@@ -57,7 +97,7 @@ namespace Microsoft.Maui
 		{
 			Services?.InvokeLifecycleEvents<GtkLifecycle.OnShutdown>(del => del(CurrentGtkApplication, args));
 
-			MauiGtkApplication.DispatchPendingEvents();
+			DispatchPendingEvents();
 
 		}
 
@@ -76,10 +116,6 @@ namespace Microsoft.Maui
 			// future use: to have notifications at cross platform Window level
 		}
 
-		// https://developer.gnome.org/gio/stable/GApplication.html#g-application-id-is-valid
-		// TODO: find a better algo for id
-		public string ApplicationId => $"{typeof(TStartup).Namespace}.{typeof(TStartup).Name}.{base.Name}".PadRight(255, ' ').Substring(0, 255).Trim();
-
 		Widget CreateRootContainer(Widget nativePage)
 		{
 			var b = new Box(Orientation.Vertical, 0)
@@ -92,9 +128,11 @@ namespace Microsoft.Maui
 			return b;
 		}
 
+		protected abstract IStartup OnCreateStartup();
+
 		protected void StartupLauch(object sender, EventArgs args)
 		{
-			var startup = new TStartup();
+			var startup = OnCreateStartup();
 
 			var host = startup
 			   .CreateAppHostBuilder()
@@ -103,14 +141,19 @@ namespace Microsoft.Maui
 			   .Build();
 
 			Services = host.Services;
-			Application = Services.GetRequiredService<IApplication>();
 
 			var mauiContext = new MauiContext(Services);
+			Services.InvokeLifecycleEvents<GtkLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
 			var activationState = new ActivationState(mauiContext);
+
+			Services.InvokeLifecycleEvents<GtkLifecycle.OnLaunching>(del => del(this, new ActivationEventArgs(activationState)));
+
+			Application = Services.GetRequiredService<IApplication>();
+
 			var window = Application.CreateWindow(activationState);
 
-			var content = window.View;
+			var content = window.Content;
 			var nativeContent = content.ToNative(mauiContext);
 
 			var canvas = TopContainerOverride?.Invoke(nativeContent) ?? CreateRootContainer(nativeContent);
@@ -123,10 +166,10 @@ namespace Microsoft.Maui
 
 			MainWindow.Present();
 
-			Services?.InvokeLifecycleEvents<GtkLifecycle.OnLaunched>(del => del(CurrentGtkApplication, args));
+			Services?.InvokeLifecycleEvents<GtkLifecycle.OnLaunched>(del => del(CurrentGtkApplication, new ActivationEventArgs(activationState)));
 		}
 
-		void StartupMainWindow()
+		void CreateMainWindow()
 		{
 			MainWindow = new MauiGtkMainWindow();
 			CurrentGtkApplication.AddWindow(MainWindow);
@@ -153,41 +196,6 @@ namespace Microsoft.Maui
 		{
 			//future use: there will be a need of GtkNativeServices, eg. for WebView
 		}
-
-	}
-
-	public abstract class MauiGtkApplication
-	{
-
-		/// <summary>
-		/// overrides creation of rootcontainer
-		/// rootcontainer is MainWindow 's <see cref="Gtk.Window.Child"/>
-		/// paramter is Maui's Mainwindows <see cref="IWindow.Page"/> as Gtk.Widget
-		/// </summary>
-		public Func<Widget, Widget> TopContainerOverride { get; set; } = null!;
-
-		protected MauiGtkApplication()
-		{ }
-
-		string? _name;
-
-		// https://developer.gnome.org/gio/stable/GApplication.html#g-application-id-is-valid
-		public string? Name
-		{
-			get => _name ??= $"A{Guid.NewGuid()}";
-			set { _name = value; }
-		}
-
-		// https://developer.gnome.org/gtk3/stable/GtkApplication.html
-		public static Gtk.Application CurrentGtkApplication { get; internal set; } = null!;
-
-		public static MauiGtkApplication Current { get; internal set; } = null!;
-
-		public MauiGtkMainWindow MainWindow { get; protected set; } = null!;
-
-		public IServiceProvider Services { get; protected set; } = null!;
-
-		public IApplication Application { get; protected set; } = null!;
 
 		public static void DispatchPendingEvents()
 		{

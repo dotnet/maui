@@ -1,11 +1,8 @@
 using System;
 using Android.OS;
-using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
-using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Navigation.UI;
-using Google.Android.Material.AppBar;
+using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {
@@ -33,31 +30,7 @@ namespace Microsoft.Maui
 
 			base.OnCreate(savedInstanceState);
 
-			var mauiApp = MauiApplication.Current.Application;
-			if (mauiApp == null)
-				throw new InvalidOperationException($"The {nameof(IApplication)} instance was not found.");
-
-			var services = MauiApplication.Current.Services;
-			if (mauiApp == null)
-				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
-
-			MauiContext mauiContext;
-			IWindow window;
-
-			// TODO Fix once we have multiple windows
-			if (mauiApp.Windows.Count > 0)
-			{
-				window = mauiApp.Windows[0];
-				mauiContext = new MauiContext(services, this);
-			}
-			else
-			{
-				mauiContext = new MauiContext(services, this);
-				ActivationState state = new ActivationState(mauiContext, savedInstanceState);
-				window = mauiApp.CreateWindow(state);
-			}
-
-			SetContentView(window.View.ToContainerView(mauiContext));
+			CreateNativeWindow(savedInstanceState);
 
 			//TODO MAUI
 			// Allow users to customize the toolbarid?
@@ -69,6 +42,37 @@ namespace Microsoft.Maui
 				if (toolbar != null)
 					SetSupportActionBar(toolbar);
 			}
+		}
+
+		void CreateNativeWindow(Bundle? savedInstanceState = null)
+		{
+			var mauiApp = MauiApplication.Current.Application;
+			if (mauiApp == null)
+				throw new InvalidOperationException($"The {nameof(IApplication)} instance was not found.");
+
+			var services = MauiApplication.Current.Services;
+			if (mauiApp == null)
+				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
+
+			var mauiContext = new MauiContext(services, this);
+
+			services.InvokeLifecycleEvents<AndroidLifecycle.OnMauiContextCreated>(del => del(mauiContext));
+
+			// TODO: Fix once we have multiple windows
+			IWindow window;
+			if (mauiApp.Windows.Count > 0)
+			{
+				// assume if there are windows, then this is a "resume" activity
+				window = mauiApp.Windows[0];
+			}
+			else
+			{
+				// there are no windows, so this is a fresh launch
+				var state = new ActivationState(mauiContext, savedInstanceState);
+				window = mauiApp.CreateWindow(state);
+			}
+
+			this.SetWindow(window, mauiContext);
 		}
 	}
 }

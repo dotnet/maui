@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void OnRegisterEffect(PlatformEffect effect)
 		{
 			base.OnRegisterEffect(effect);
-			effect.SetControl(Control);
+			effect.Control = Control;
 		}
 
 		void SetupAutomationDefaults()
@@ -320,7 +320,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Control = control;
 			if (Control.Id == NoId)
 			{
-				Control.Id = AppCompat.Platform.GenerateViewId();
+				Control.Id = Platform.GenerateViewId();
 			}
 
 			AView toAdd = container == this ? control : (AView)container;
