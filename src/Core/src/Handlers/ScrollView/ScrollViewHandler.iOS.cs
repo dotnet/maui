@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapContent(ScrollViewHandler handler, IScrollView scrollView)
 		{
-			if (handler.MauiContext == null)
+			if (handler.MauiContext == null || scrollView.Content == null)
 			{
 				return;
 			}
