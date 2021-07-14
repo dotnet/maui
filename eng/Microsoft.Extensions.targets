@@ -26,7 +26,7 @@
   </PropertyGroup>
    <!-- WINUI related Packages -->
   <PropertyGroup>
-    <_MicrosoftProjectReunionVersion>0.8.0</_MicrosoftProjectReunionVersion>
+    <_MicrosoftProjectReunionVersion>0.8.1</_MicrosoftProjectReunionVersion>
     <_MicrosoftWebWebView2Version>1.0.705.50</_MicrosoftWebWebView2Version>
   </PropertyGroup>
   <!-- Android related Packages -->
