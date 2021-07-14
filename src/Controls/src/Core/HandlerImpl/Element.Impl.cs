@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls
 				re.Element = this;
 				re.Inner.Element = this;
 				return;
-			}	
+			}
 
 			var platformEffect = EffectsFactory.CreateEffect(effect);
 

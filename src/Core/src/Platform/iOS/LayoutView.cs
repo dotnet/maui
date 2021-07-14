@@ -83,14 +83,15 @@ namespace Microsoft.Maui
 		{
 			CurrentView = page;
 			Context = mauiContext;
+
 			LoadFirstView(page);
 		}
 
-		protected override UIView CreateNativeView(IView view)
+		protected override UIView CreateNativeView(IElement view)
 		{
 			return new PageView
 			{
-				CrossPlatformArrange = view.Arrange,
+				CrossPlatformArrange = ((IPage)view).Arrange,
 			};
 		}
 	}

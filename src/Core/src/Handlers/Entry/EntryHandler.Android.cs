@@ -1,5 +1,4 @@
-﻿using Android.Content.Res;
-using Android.Graphics.Drawables;
+﻿using Android.Graphics.Drawables;
 using Android.Runtime;
 using Android.Text;
 using Android.Views;
@@ -14,14 +13,12 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
 	{
-		TextWatcher Watcher { get; } = new TextWatcher();
-		EntryTouchListener TouchListener { get; } = new EntryTouchListener();
-		EntryFocusChangeListener FocusChangeListener { get; } = new EntryFocusChangeListener();
-		EditorActionListener ActionListener { get; } = new EditorActionListener();
+		readonly TextWatcher _watcher = new();
+		readonly EntryTouchListener _touchListener = new();
+		readonly EntryFocusChangeListener _focusChangeListener = new();
+		readonly EditorActionListener _actionListener = new();
 
-		static ColorStateList? DefaultTextColors { get; set; }
-		static Drawable? ClearButtonDrawable { get; set; }
-		static Drawable? DefaultBackground;
+		Drawable? _clearButtonDrawable;
 
 		protected override AppCompatEditText CreateNativeView()
 		{
@@ -30,47 +27,40 @@ namespace Microsoft.Maui.Handlers
 
 		// Returns the default 'X' char drawable in the AppCompatEditText.
 		protected virtual Drawable GetClearButtonDrawable() =>
-			ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
+			_clearButtonDrawable ??= ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
 
 		protected override void ConnectHandler(AppCompatEditText nativeView)
 		{
-			Watcher.Handler = this;
-			TouchListener.Handler = this;
-			FocusChangeListener.Handler = this;
-			ActionListener.Handler = this;
+			_watcher.Handler = this;
+			_touchListener.Handler = this;
+			_focusChangeListener.Handler = this;
+			_actionListener.Handler = this;
 
-			nativeView.OnFocusChangeListener = FocusChangeListener;
-			nativeView.AddTextChangedListener(Watcher);
-			nativeView.SetOnTouchListener(TouchListener);
-			nativeView.SetOnEditorActionListener(ActionListener);
+			nativeView.OnFocusChangeListener = _focusChangeListener;
+			nativeView.AddTextChangedListener(_watcher);
+			nativeView.SetOnTouchListener(_touchListener);
+			nativeView.SetOnEditorActionListener(_actionListener);
 		}
 
 		protected override void DisconnectHandler(AppCompatEditText nativeView)
 		{
-			nativeView.RemoveTextChangedListener(Watcher);
+			_clearButtonDrawable = null;
+
+			nativeView.RemoveTextChangedListener(_watcher);
 			nativeView.SetOnTouchListener(null);
 			nativeView.OnFocusChangeListener = null;
 			nativeView.SetOnEditorActionListener(null);
 
-			FocusChangeListener.Handler = null;
-			Watcher.Handler = null;
-			TouchListener.Handler = null;
-			ActionListener.Handler = null;
-		}
-
-		void SetupDefaults(AppCompatEditText nativeView)
-		{
-
-
-			ClearButtonDrawable = GetClearButtonDrawable();
-			DefaultTextColors = nativeView.TextColors;
-			DefaultBackground = nativeView.Background;
+			_focusChangeListener.Handler = null;
+			_watcher.Handler = null;
+			_touchListener.Handler = null;
+			_actionListener.Handler = null;
 		}
 
 		// This is a Android-specific mapping
 		public static void MapBackground(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateBackground(entry, DefaultBackground);
+			handler.NativeView?.UpdateBackground(entry);
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry)
@@ -80,7 +70,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateTextColor(entry, DefaultTextColors);
+			handler.NativeView?.UpdateTextColor(entry);
 		}
 
 		public static void MapIsPassword(EntryHandler handler, IEntry entry)
@@ -152,7 +142,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateClearButtonVisibility(entry, ClearButtonDrawable);
+			handler.NativeView?.UpdateClearButtonVisibility(entry, handler.GetClearButtonDrawable);
 		}
 
 		void OnFocusedChange(bool hasFocus)
@@ -162,7 +152,7 @@ namespace Microsoft.Maui.Handlers
 
 			// This will eliminate additional native property setting if not required.
 			if (VirtualView.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
-				NativeView?.UpdateClearButtonVisibility(VirtualView, ClearButtonDrawable);
+				UpdateValue(nameof(VirtualView.ClearButtonVisibility));
 		}
 
 		bool OnTouch(MotionEvent? motionEvent)
@@ -187,7 +177,7 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.Text = nativeText;
 
 			// Text changed should trigger clear button visibility.
-			NativeView.UpdateClearButtonVisibility(VirtualView, ClearButtonDrawable);
+			UpdateValue(nameof(VirtualView.ClearButtonVisibility));
 		}
 
 		/// <summary>
@@ -200,26 +190,32 @@ namespace Microsoft.Maui.Handlers
 			if (motionEvent == null || NativeView == null || VirtualView == null)
 				return false;
 
-			var rBounds = ClearButtonDrawable?.Bounds;
+			var virtualView = VirtualView;
+			if (virtualView.ClearButtonVisibility == ClearButtonVisibility.Never)
+				return false;
 
-			if (rBounds != null)
+			var rBounds = GetClearButtonDrawable()?.Bounds;
+			var buttonWidth = rBounds?.Width();
+
+			if (buttonWidth > 0)
 			{
 				var x = motionEvent.GetX();
 				var y = motionEvent.GetY();
+				var nativeView = NativeView;
 
 				if (motionEvent.Action == MotionEventActions.Up
-					&& ((x >= (NativeView.Right - rBounds.Width())
-					&& x <= (NativeView.Right - NativeView.PaddingRight)
-					&& y >= NativeView.PaddingTop
-					&& y <= (NativeView.Height - NativeView.PaddingBottom)
-					&& (VirtualView.FlowDirection == FlowDirection.LeftToRight))
-					|| (x >= (NativeView.Left + NativeView.PaddingLeft)
-					&& x <= (NativeView.Left + rBounds.Width())
-					&& y >= NativeView.PaddingTop
-					&& y <= (NativeView.Height - NativeView.PaddingBottom)
-					&& VirtualView.FlowDirection == FlowDirection.RightToLeft)))
+					&& ((x >= nativeView.Right - buttonWidth
+					&& x <= nativeView.Right - nativeView.PaddingRight
+					&& y >= nativeView.PaddingTop
+					&& y <= nativeView.Height - nativeView.PaddingBottom
+					&& virtualView.FlowDirection == FlowDirection.LeftToRight)
+					|| (x >= nativeView.Left + nativeView.PaddingLeft
+					&& x <= nativeView.Left + buttonWidth
+					&& y >= nativeView.PaddingTop
+					&& y <= nativeView.Height - nativeView.PaddingBottom
+					&& virtualView.FlowDirection == FlowDirection.RightToLeft)))
 				{
-					NativeView.Text = null;
+					nativeView.Text = null;
 
 					return true;
 				}

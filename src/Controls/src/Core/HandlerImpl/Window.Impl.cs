@@ -80,15 +80,6 @@ namespace Microsoft.Maui.Controls
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
 
-		internal IAnimationManager AnimationManager
-		{
-			get
-			{
-				var handler = Handler as IWindowHandler;
-				return handler?.AnimationManager ?? throw new InvalidOperationException("The AnimationManager was not provided for this window.");
-			}
-		}
-
 		IView IWindow.Content =>
 			Page ?? throw new InvalidOperationException("No page was set on the window.");
 
