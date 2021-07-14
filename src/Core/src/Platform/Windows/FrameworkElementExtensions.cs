@@ -78,6 +78,7 @@ namespace Microsoft.Maui
 			{
 				var child = VisualTreeHelper.GetChild(parent, i);
 				var controlName = child.GetValue(FrameworkElement.NameProperty) as string;
+
 				if (controlName == elementName && child is T t)
 					yield return t;
 				else
@@ -100,6 +101,30 @@ namespace Microsoft.Maui
 			}
 
 			return null;
+		}
+
+		internal static ResourceDictionary CloneResources(this FrameworkElement element)
+		{
+			var rd = new ResourceDictionary();
+
+			foreach (var r in element.Resources)
+				rd.TryAdd(r.Key, r.Value);
+
+			return rd;
+		}
+
+		internal static void TryUpdateResource(this FrameworkElement element, object newValue, params string[] keys)
+		{
+			var rd = element?.Resources;
+
+			if (rd == null)
+				return;
+
+			foreach (var key in keys)
+			{
+				if (rd?.ContainsKey(key) ?? false)
+					rd[key] = newValue;
+			}
 		}
 
 		static DependencyProperty? GetForegroundProperty(FrameworkElement element)
@@ -131,6 +156,7 @@ namespace Microsoft.Maui
 			for (int i = 0; i < myChildrenCount; i++)
 			{
 				var child = VisualTreeHelper.GetChild(parent, i);
+
 				if (child is T t)
 					yield return t;
 				else
