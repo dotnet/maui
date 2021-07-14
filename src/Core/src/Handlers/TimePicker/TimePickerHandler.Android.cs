@@ -25,12 +25,6 @@ namespace Microsoft.Maui.Handlers
 			return _timePicker;
 		}
 
-		void SetupDefaults(MauiTimePicker nativeView)
-		{
-			DefaultBackground = nativeView.Background;
-			DefaultTextColors = nativeView.TextColors;
-		}
-
 		protected override void DisconnectHandler(MauiTimePicker nativeView)
 		{
 			if (_dialog != null)
@@ -85,7 +79,21 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(TimePickerHandler handler, ITimePicker timePicker)
 		{
+			//no color to set
+			if ((timePicker.TextColor == null && DefaultTextColors == null) || handler._timePicker == null)
+				return;
+
+			//get the defauls since we are changing the color
+			if (timePicker.TextColor != null && DefaultTextColors == null)
+				SetupDefaults(handler._timePicker);
+
 			handler.NativeView?.UpdateTextColor(timePicker, DefaultTextColors);
+		}
+
+		static void SetupDefaults(MauiTimePicker nativeView)
+		{
+			DefaultBackground = nativeView.Background;
+			DefaultTextColors = nativeView.TextColors;
 		}
 
 		void ShowPickerDialog()
