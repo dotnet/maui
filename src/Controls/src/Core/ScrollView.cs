@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class ScrollView : Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
+	public partial class ScrollView : Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
 	{
 		#region IScrollViewController
 
@@ -274,7 +274,17 @@ namespace Microsoft.Maui.Controls
 					break;
 			}
 
-			SizeRequest contentRequest = Content.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
+			SizeRequest contentRequest;
+
+			if (Content is IFrameworkElement fe && fe.Handler != null)
+			{
+				contentRequest = fe.Handler.GetDesiredSize(widthConstraint, heightConstraint);
+			}
+			else
+			{
+				contentRequest = Content.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
+			}
+
 			contentRequest.Minimum = new Size(Math.Min(40, contentRequest.Minimum.Width), Math.Min(40, contentRequest.Minimum.Height));
 
 			return contentRequest;
