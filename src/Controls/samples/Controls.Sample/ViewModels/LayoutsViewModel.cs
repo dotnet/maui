@@ -12,6 +12,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(AbsoluteLayoutPage), "AbsoluteLayout",
 				"An AbsoluteLayout is used to position and size children using explicit values. The position is specified by the upper-left corner of the child relative to the upper-left corner of the AbsoluteLayout, in device-independent units."),
 
+			new SectionModel(typeof(ContentViewPage), "ContentView",
+				"ContentView contains a single child that is set with the Content property. The Content property can be set to any View derivative, including other Layout derivatives. ContentView is mostly used as a structural element."),
+
 			new SectionModel(typeof(FlexLayoutPage), "FlexLayout",
 				"FlexLayout is also capable of wrapping its children if there are too many to fit in a single row or column, and also has many options for orientation, alignment, and adapting to various screen sizes."),
 
@@ -26,6 +29,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(StackLayoutPage), "StackLayout",
 				"A StackLayout organizes child views in a one-dimensional horizontal or vertical stack."),
+
+			new SectionModel(typeof(TemplatedViewPage), "TemplatedView",
+				"TemplatedView displays content with a control template, and is the base class for ContentView."),
 
 			new SectionModel(typeof(HorizontalStackLayoutPage), "HorizontalStackLayout",
 				"A HorizontalStackLayout organizes child views in a one-dimensional horizontal stack."),
