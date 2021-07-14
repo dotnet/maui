@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				var cell = structure.GetCellBoundsFor(view);
-				view.Arrange(cell);
+
+				view.Frame = view.ComputeFrame(cell);
+				view.Arrange(view.Frame);
 			}
 		}
 

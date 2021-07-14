@@ -7,7 +7,17 @@ namespace Microsoft.Maui.Controls
 	{
 		Semantics _semantics;
 
-		public Rectangle Frame => Bounds;
+		public Rectangle Frame
+		{
+			get => Bounds;
+			set
+			{
+				X = value.X;
+				Y = value.Y;
+				Width = value.Width;
+				Height = value.Height;
+			}
+		}
 
 		new public IViewHandler Handler
 		{
@@ -54,7 +64,6 @@ namespace Microsoft.Maui.Controls
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
-			Bounds = this.ComputeFrame(bounds);
 			return Frame.Size;
 		}
 
