@@ -902,8 +902,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		/// <param name="effect">The effect to register.</param>
 		void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.SetContainer(Element.Parent == null ? null : Platform.GetRenderer(Element.Parent)?.NativeView);
-			effect.SetControl(NativeView);
+			effect.Container = Element.Parent == null ? null : Platform.GetRenderer(Element.Parent)?.NativeView;
+			effect.Control = NativeView;
 		}
 
 		void OnMoved(object sender, EventArgs e)
