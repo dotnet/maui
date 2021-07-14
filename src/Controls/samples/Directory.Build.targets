@@ -1,12 +1,4 @@
 <Project>
-  <PropertyGroup>
-    <!--
-        FIXME: workaround for:
-        error CS8032: An instance of analyzer Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator cannot be created from C:\src\maui\bin\dotnet\sdk\6.0.100-preview.7.21327.2\Sdks\Microsoft.NET.Sdk.Razor\source-generators\Microsoft.NET.Sdk.Razor.SourceGenerators.dll :
-        Could not load file or assembly 'Microsoft.CodeAnalysis, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35' or one of its dependencies. The system cannot find the file specified.
-    -->
-    <NoWarn>$(NoWarn);CS8032</NoWarn>
-  </PropertyGroup>
   <Import Project="Maui.InTree.targets" Condition=" '$(UseMaui)' != 'true' " />
   <Import Project="../../../Directory.Build.targets" />
 </Project>
