@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
 {
-	public class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable
+	public class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable, IImageSourcePart
 	{
 		public static readonly BindableProperty AcceleratorProperty = BindableProperty.CreateAttached(nameof(Accelerator), typeof(Accelerator), typeof(MenuItem), null);
 
@@ -140,6 +140,17 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			IsEnabledCore = Command.CanExecute(CommandParameter);
+		}
+
+
+		IImageSource IImageSourcePart.Source => this.IconImageSource;
+
+		bool _isLoading;
+		bool IImageSourcePart.IsAnimationPlaying => false;
+
+		void IImageSourcePart.UpdateIsLoading(bool isLoading)
+		{
+			_isLoading = isLoading;
 		}
 	}
 }

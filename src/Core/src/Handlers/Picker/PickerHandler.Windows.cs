@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 

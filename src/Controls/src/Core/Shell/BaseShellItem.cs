@@ -331,7 +331,175 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal static DataTemplate CreateDefaultFlyoutItemCell(string textBinding, string iconBinding)
+		// Attempt to use Grid Layout
+		//internal static DataTemplate CreateDefaultFlyoutItemCell(string textBinding, string iconBinding)
+		//{
+		//	return new DataTemplate(() =>
+		//	{
+		//		var grid = new GridLayout();
+		//		if (Device.RuntimePlatform == Device.UWP)
+		//			grid.ColumnSpacing = grid.RowSpacing = 0;
+
+		//		grid.Resources = new ResourceDictionary();
+
+		//		var defaultLabelClass = new Style(typeof(Label))
+		//		{
+		//			Setters = {
+		//				new Setter { Property = Label.VerticalTextAlignmentProperty, Value = TextAlignment.Center }
+		//			},
+		//			Class = DefaultFlyoutItemLabelStyle,
+		//		};
+
+		//		var defaultImageClass = new Style(typeof(Image))
+		//		{
+		//			Setters = {
+		//				new Setter { Property = Image.VerticalOptionsProperty, Value = LayoutOptions.Center }
+		//			},
+		//			Class = DefaultFlyoutItemImageStyle,
+		//		};
+
+		//		var defaultGridClass = new Style(typeof(GridLayout))
+		//		{
+		//			Class = DefaultFlyoutItemLayoutStyle,
+		//		};
+
+
+		//		var groups = new VisualStateGroupList();
+
+		//		var commonGroup = new VisualStateGroup();
+		//		commonGroup.Name = "CommonStates";
+		//		groups.Add(commonGroup);
+
+		//		var normalState = new VisualState();
+		//		normalState.Name = "Normal";
+		//		commonGroup.States.Add(normalState);
+
+		//		var selectedState = new VisualState();
+		//		selectedState.Name = "Selected";
+
+		//		if (Device.RuntimePlatform != Device.UWP)
+		//		{
+		//			selectedState.Setters.Add(new Setter
+		//			{
+		//				Property = VisualElement.BackgroundColorProperty,
+		//				Value = new Color(0.95f)
+
+		//			});
+		//		}
+
+		//		if (Device.RuntimePlatform == Device.UWP)
+		//		{
+		//			normalState.Setters.Add(new Setter
+		//			{
+		//				Property = VisualElement.BackgroundColorProperty,
+		//				Value = Colors.Transparent
+		//			});
+		//		}
+
+		//		commonGroup.States.Add(selectedState);
+
+		//		defaultGridClass.Setters.Add(new Setter { Property = VisualStateManager.VisualStateGroupsProperty, Value = groups });
+
+		//		int height;
+		//		if (Device.RuntimePlatform == Device.Android)
+		//			height = 50;
+		//		else
+		//			height = 44;
+
+		//		defaultGridClass.Setters.Add(new Setter { Property = GridLayout.HeightRequestProperty, Value = height });
+
+		//		ColumnDefinitionCollection columnDefinitions = new ColumnDefinitionCollection();
+
+		//		if (Device.RuntimePlatform == Device.Android)
+		//			columnDefinitions.Add(new ColumnDefinition { Width = 54 });
+		//		else if (Device.RuntimePlatform == Device.iOS)
+		//			columnDefinitions.Add(new ColumnDefinition { Width = 50 });
+		//		else if (Device.RuntimePlatform == Device.UWP)
+		//			columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+		//		columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+		//		// TODO MAUI
+		//		//columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+
+		//		// TODO MAUI HOW?
+		//		//defaultGridClass.Setters.Add(new Setter { Property = GridLayout.ColumnDefinitionsProperty, Value = columnDefinitions });
+		//		grid.AddColumnDefinition(columnDefinitions[0]);
+		//		grid.AddColumnDefinition(columnDefinitions[1]);
+		//		grid.AddRowDefinition(new RowDefinition() { Height = height });
+
+		//		var image = new Image();
+
+		//		double sizeRequest = -1;
+		//		if (Device.RuntimePlatform == Device.Android)
+		//			sizeRequest = 24;
+		//		else if (Device.RuntimePlatform == Device.iOS)
+		//			sizeRequest = 22;
+		//		else if (Device.RuntimePlatform == Device.UWP)
+		//			sizeRequest = 16;
+
+		//		if (sizeRequest > 0)
+		//		{
+		//			defaultImageClass.Setters.Add(new Setter() { Property = Image.HeightRequestProperty, Value = sizeRequest });
+		//			defaultImageClass.Setters.Add(new Setter() { Property = Image.WidthRequestProperty, Value = sizeRequest });
+		//		}
+
+		//		if (Device.RuntimePlatform == Device.UWP)
+		//		{
+		//			defaultImageClass.Setters.Add(new Setter { Property = Image.HorizontalOptionsProperty, Value = LayoutOptions.Start });
+		//			defaultImageClass.Setters.Add(new Setter { Property = Image.MarginProperty, Value = new Thickness(12, 0, 12, 0) });
+		//		}
+
+		//		Binding imageBinding = new Binding(iconBinding);
+		//		defaultImageClass.Setters.Add(new Setter { Property = Image.SourceProperty, Value = imageBinding });
+
+		//		grid.Add(image);
+
+		//		var label = new Label();
+		//		Binding labelBinding = new Binding(textBinding);
+		//		defaultLabelClass.Setters.Add(new Setter { Property = Label.TextProperty, Value = labelBinding });
+
+		//		grid.Add(label);
+		//		grid.SetColumn(label, 1);
+
+		//		if (Device.RuntimePlatform == Device.Android)
+		//		{
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.TextColorProperty, Value = Colors.Black.MultiplyAlpha(0.87f) });
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = "sans-serif-medium" });
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.MarginProperty, Value = new Thickness(20, 0, 0, 0) });
+		//		}
+		//		else if (Device.RuntimePlatform == Device.iOS)
+		//		{
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = Device.GetNamedSize(NamedSize.Small, label) });
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.FontAttributesProperty, Value = FontAttributes.Bold });
+		//		}
+		//		else if (Device.RuntimePlatform == Device.UWP)
+		//		{
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalOptionsProperty, Value = LayoutOptions.Start });
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Start });
+		//		}
+
+		//		INameScope nameScope = new NameScope();
+		//		NameScope.SetNameScope(grid, nameScope);
+		//		nameScope.RegisterName("FlyoutItemLayout", grid);
+		//		nameScope.RegisterName("FlyoutItemImage", image);
+		//		nameScope.RegisterName("FlyoutItemLabel", label);
+
+		//		grid.BindingContextChanged += (sender, __) =>
+		//		{
+		//			if (sender is Grid g)
+		//			{
+		//				var bo = g.BindingContext as BindableObject;
+		//				var styleClassSource = Shell.GetBindableObjectWithFlyoutItemTemplate(bo) as IStyleSelectable;
+		//				UpdateFlyoutItemStyles(g, styleClassSource);
+		//			}
+		//		};
+
+		//		grid.Resources = new ResourceDictionary() { defaultGridClass, defaultLabelClass, defaultImageClass };
+		//		return grid;
+		//	});
+
+			internal static DataTemplate CreateDefaultFlyoutItemCell(string textBinding, string iconBinding)
 		{
 			return new DataTemplate(() =>
 			{

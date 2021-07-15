@@ -4,6 +4,7 @@ using Android.Text.Style;
 using Android.Views;
 using Android.Widget;
 using Java.Lang;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AView = global::Android.Views.View;
 

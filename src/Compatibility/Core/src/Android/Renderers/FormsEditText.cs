@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.Graphics.Drawable;
+using Microsoft.Maui.Controls.Platform;
 using ARect = Android.Graphics.Rect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
