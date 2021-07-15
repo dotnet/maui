@@ -118,8 +118,8 @@ namespace Microsoft.Maui.Controls
 			if (oldPage != null)
 			{
 				window.InternalChildren.Remove(oldPage);
-				oldPage.AttachedHandler -= OnPageAttachedHandler;
-				oldPage.DetachedHandler -= OnPageDetachedHandler;
+				oldPage.HandlerChanged -= OnPageAttachedHandler;
+				oldPage.HandlerChanging -= OnPageDetachedHandler;
 			}
 
 			var newPage = newValue as Page;
@@ -133,8 +133,8 @@ namespace Microsoft.Maui.Controls
 
 			if (newPage != null)
 			{
-				newPage.AttachedHandler += OnPageAttachedHandler;
-				newPage.DetachedHandler += OnPageDetachedHandler;
+				newPage.HandlerChanged += OnPageAttachedHandler;
+				newPage.HandlerChanging += OnPageDetachedHandler;
 			}
 
 			void OnPageAttachedHandler(object? sender, EventArgs e)
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls
 				window.AlertManager.Subscribe();
 			}
 
-			void OnPageDetachedHandler(object? sender, EventArgs e)
+			void OnPageDetachedHandler(object? sender, HandlerChangingEventArgs e)
 			{
 				window.AlertManager.Unsubscribe();
 			}
