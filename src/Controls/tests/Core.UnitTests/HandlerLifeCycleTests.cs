@@ -13,22 +13,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class HandlerLifeCycleTests : BaseTestFixture
 	{
 		[Test]
-		public void ChangedFiresWhenSubscribedAfterHandlerIsSet()
-		{
-			LifeCycleButton button = new LifeCycleButton();
-			bool changed = false;
-
-			button.Handler = new HandlerStub();
-			button.HandlerChanged += (_, __) =>
-			{
-				changed = true;
-			};
-
-			Assert.IsTrue(changed);
-			Assert.AreEqual(1, button.changed);
-		}
-
-		[Test]
 		public void ChangingAndChangedBothFireInitially()
 		{
 			LifeCycleButton button = new LifeCycleButton();

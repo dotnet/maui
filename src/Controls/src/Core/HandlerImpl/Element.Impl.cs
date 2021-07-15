@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Controls
 	public partial class Element : Maui.IElement, IEffectControlProvider
 	{
 		IElementHandler _handler;
-		EventHandler _handlerChanged;
 		EffectsFactory _effectsFactory;
 
 		Maui.IElement Maui.IElement.Parent => Parent;
@@ -20,19 +19,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public event EventHandler<HandlerChangingEventArgs> HandlerChanging;
-		public event EventHandler HandlerChanged
-		{
-			add
-			{
-				_handlerChanged += value;
-				if (Handler != null)
-					value?.Invoke(this, EventArgs.Empty);
-			}
-			remove
-			{
-				_handlerChanged -= value;
-			}
-		}
+		public event EventHandler HandlerChanged;
 
 		protected virtual void OnHandlerChanging(HandlerChangingEventArgs args) { }
 
@@ -41,8 +28,7 @@ namespace Microsoft.Maui.Controls
 		private protected virtual void OnHandlerChangedCore()
 		{
 			EffectControlProvider = (Handler != null) ? this : null;
-
-			_handlerChanged?.Invoke(this, EventArgs.Empty);
+			HandlerChanged?.Invoke(this, EventArgs.Empty);
 			OnHandlerChanged();
 		}
 
