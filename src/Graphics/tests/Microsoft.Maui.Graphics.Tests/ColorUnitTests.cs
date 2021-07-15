@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Microsoft.Maui.Graphics.Tests
 {
 	public class ColorUnitTests
 	{
