@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "cake.tool": {
+      "version": "1.0.0",
+      "commands": [
+        "dotnet-cake"
+      ]
+    },
+    "powershell": {
+      "version": "7.1.2",
+      "commands": [
+        "pwsh"
+      ]
+    },
+    "dotnet-vs": {
+      "version": "1.0.0",
+      "commands": [
+        "vs"
+      ]
+    },
+    "boots": {
+      "version": "1.0.4.624",
+      "commands": [
+        "boots"
+      ]
+    }
+  }
+}

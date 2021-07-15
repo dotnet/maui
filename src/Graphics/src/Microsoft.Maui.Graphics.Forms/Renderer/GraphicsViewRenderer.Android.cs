@@ -1,6 +1,6 @@
 using System.ComponentModel;
-using Microsoft.Maui.Graphics.Android;
 using Microsoft.Maui.Graphics.Forms.Android;
+using Microsoft.Maui.Graphics.Native;
 using Android.Content;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Graphics.Forms.Android
 			if (e.NewElement != null)
 			{
 				SetNativeControl(new NativeGraphicsView(Context));
+				UpdateDrawable();
 			}
 		}
 

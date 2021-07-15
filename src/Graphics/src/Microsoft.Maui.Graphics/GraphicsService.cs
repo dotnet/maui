@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Graphics
 		SizeF GetStringSize(string value, string fontName, float textSize);
 		SizeF GetStringSize(string value, string fontName, float textSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment);
 
+		RectangleF GetPathBounds(PathF path);
+
 		IImage LoadImageFromStream(Stream stream, ImageFormat format = ImageFormat.Png);
 		BitmapExportContext CreateBitmapExportContext(int width, int height, float displayScale = 1);
 	}

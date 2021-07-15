@@ -40,5 +40,10 @@ namespace Microsoft.Maui.Graphics.GDI
 		{
 			return new GDIBitmapExportContext(width, height, displayScale);
 		}
+
+		public RectangleF GetPathBounds(PathF path)
+		{
+			return path.GetBoundsByFlattening();
+		}
 	}
 }

@@ -1,0 +1,174 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
+    <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
+    <DotNetInstallScriptName>dotnet-install.ps1</DotNetInstallScriptName>
+    <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
+    <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
+    <DotNetInstallCommand>powershell -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
+  </PropertyGroup>
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('osx'))">
+    <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.sh</DotNetInstallScriptUrl>
+    <DotNetInstallScriptName>dotnet-install.sh</DotNetInstallScriptName>
+    <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
+    <DotNetInstallCommand>sh '$(DotNetInstallScriptPath)' --version $(MicrosoftDotnetSdkInternalPackageVersion) --install-dir '$(DotNetDirectory)' --verbose</DotNetInstallCommand>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_ProvisionDependsOn>
+      _DownloadDotNetInstallScript;
+      _InstallDotNet;
+      _AcquireWorkloads;
+      _AcquirePacks;
+    </_ProvisionDependsOn>
+  </PropertyGroup>
+  <Target Name="_Provision" BeforeTargets="Build" DependsOnTargets="$(_ProvisionDependsOn)" />
+
+  <PropertyGroup>
+    <!-- These files should invalidate ./bin/dotnet completely -->
+    <_Inputs>
+      $(MSBuildThisFile);
+      ../../eng/Versions.props;
+    </_Inputs>
+  </PropertyGroup>
+
+  <Target Name="_DownloadDotNetInstallScript"
+      Inputs="$(_Inputs)"
+      Outputs="$(DotNetInstallScriptPath)">
+    <DownloadFile
+        SourceUrl="$(DotNetInstallScriptUrl)"
+        DestinationFolder="$(DotNetOutputPath)"
+        DestinationFileName="$(DotNetInstallScriptName)"
+    />
+  </Target>
+
+  <Target Name="_InstallDotNet"
+      Inputs="$(_Inputs)"
+      Outputs="$(DotNetDirectory).stamp">
+    <RemoveDir Directories="$(DotNetDirectory)" />
+    <Exec Command="$(DotNetInstallCommand)" />
+    <Touch Files="$(DotNetDirectory).stamp" AlwaysCreate="true" />
+  </Target>
+
+  <ItemGroup>
+    <!-- These are past workload names -->
+    <_PacksToRemove Include="Microsoft.NET.Workload.Android" />
+    <_PacksToRemove Include="Microsoft.NET.Workload.MacCatalyst" />
+    <_PacksToRemove Include="Microsoft.NET.Workload.iOS" />
+    <_PacksToRemove Include="Microsoft.NET.Workload.tvOS" />
+    <_PacksToRemove Include="Microsoft.NET.Workload.macOS" />
+  </ItemGroup>
+
+  <Target Name="_AcquireWorkloads"
+      Inputs="$(_Inputs);Dependencies/Workloads.csproj"
+      Outputs="$(DotNetSdkManifestsDirectory).stamp">
+    <RemoveDir Directories="@(_PacksToRemove->'$(DotNetSdkManifestsDirectory)%(Identity)')" />
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Workloads.csproj&quot; -bl:$(PackageOutputPath)/DotNetWorkloads.binlog"
+        EnvironmentVariables="NUGET_PACKAGES=$(DotNetTempDirectory);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
+    />
+    <!--
+      NOTE: Workloads need to go in dotnet/sdk-manifests/6.0.100/Microsoft.NET.*/
+      Workloads only contain two files: data/WorkloadManifest.targets & data/WorkloadManifest.json
+      We downloaded these to $(DotNetTempDirectory), so we could move files individually.
+    -->
+    <ItemGroup>
+      <_WorkloadFiles Include="$(DotNetTempDirectory)Microsoft.NET.*/*/data/WorkloadManifest.*" />
+    </ItemGroup>
+    <CopyWorkloadFiles
+        Files="@(_WorkloadFiles)"
+        WorkloadDirectory="$(DotNetSdkManifestsDirectory)"
+        VersionBand="$(DotNetPreviewVersionBand)"
+    />
+
+    <!-- In order to support older MSBuild versions, change the version string to an integer -->
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.android/WorkloadManifest.json"
+        OldValue="&quot;version&quot;: &quot;$(MicrosoftAndroidSdkWindowsPackageVersion)&quot;"
+        NewValue="&quot;version&quot;: 6"
+    />
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.maccatalyst/WorkloadManifest.json"
+        OldValue="&quot;version&quot;: &quot;$(MicrosoftMacCatalystSdkPackageVersion)&quot;"
+        NewValue="&quot;version&quot;: 6"
+    />
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.ios/WorkloadManifest.json"
+        OldValue="&quot;version&quot;: &quot;$(MicrosoftiOSSdkPackageVersion)&quot;"
+        NewValue="&quot;version&quot;: 6"
+    />
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.tvos/WorkloadManifest.json"
+        OldValue="&quot;version&quot;: &quot;$(MicrosofttvOSSdkPackageVersion)&quot;"
+        NewValue="&quot;version&quot;: 6"
+    />
+    <ReplaceText
+        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.macos/WorkloadManifest.json"
+        OldValue="&quot;version&quot;: &quot;$(MicrosoftmacOSSdkPackageVersion)&quot;"
+        NewValue="&quot;version&quot;: 6"
+    />
+
+    <Touch Files="$(DotNetSdkManifestsDirectory).stamp" AlwaysCreate="true" />
+  </Target>
+
+  <Target Name="_AcquirePacks"
+      Inputs="$(_Inputs);Dependencies/Packs.csproj"
+      Outputs="$(DotNetPacksDirectory).stamp">
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Packs.csproj&quot; -bl:$(PackageOutputPath)/DotNetPacks.binlog"
+        EnvironmentVariables="NUGET_PACKAGES=$(DotNetPacksDirectory);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
+    />
+    <RemoveDir Directories="@(_PacksToRemove->'$(DotNetPacksDirectory)%(Identity)')" />
+    <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />
+  </Target>
+
+  <UsingTask TaskName="CopyWorkloadFiles"
+      TaskFactory="RoslynCodeTaskFactory"
+      AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Files ParameterType="System.String[]" Required="true" />
+      <WorkloadDirectory ParameterType="System.String" Required="true" />
+      <VersionBand ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          // This is only in C#, because the equivalent MSBuild XML would not be pretty.
+          foreach (var file in Files)
+          {
+              var name = Directory.GetParent (file).Parent.Parent.Name;
+              var directory = Path.Combine(WorkloadDirectory, name.Replace($".manifest-{VersionBand}", ""));
+              Directory.CreateDirectory(directory);
+              var destination = Path.Combine(directory, Path.GetFileName(file));
+              Log.LogMessage($"Copying {file} to {destination}");
+              File.Copy(file, destination, overwrite: true);
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+  <UsingTask TaskName="ReplaceText"
+      TaskFactory="RoslynCodeTaskFactory"
+      AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Input ParameterType="System.String" Required="true" />
+      <OldValue ParameterType="System.String" Required="true" />
+      <NewValue ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          var regex = new Regex(Regex.Escape(OldValue));
+          File.WriteAllText(Input, regex.Replace(File.ReadAllText(Input), NewValue, count: 1));
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+</Project>

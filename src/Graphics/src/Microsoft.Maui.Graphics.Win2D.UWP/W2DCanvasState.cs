@@ -384,7 +384,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 		public void SetShadow(SizeF offset, float blur, Color color)
 		{
-			if (offset != null)
+			if (blur > 0)
 			{
 				IsShadowed = true;
 				ShadowOffset = new Vector2(offset.Width, offset.Height);

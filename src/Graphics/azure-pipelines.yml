@@ -1,11 +1,13 @@
 variables:
-- name: BuildVersion
-  value: $[counter('release-counter', 1)]
+  BuildVersion: $[counter('release-counter', 1)]
+  IsRunningOnCI: true
+  DotNet.Version: 6.0.100-preview.6.21355.2
+  DotNet.Cli.Telemetry.OptOut: true
+  MauiCheck.Version: 0.6.1
+  Maui.Version: --preview
+  Tizen.Version: 6.5.100-preview.5.57
 
 parameters:
-  - name: BuildEverything
-    type: boolean
-    default: false
   - name: BuildConfigurations
     type: object
     default:
@@ -16,6 +18,7 @@ trigger:
   branches:
     include:
     - main
+    - release/*
   tags:
     include:
     - '*'
@@ -63,58 +66,74 @@ stages:
   - stage: windows
     displayName: Build Windows
     jobs:
-      - ${{ each BuildCondition in parameters.BuildConfigurations }}:
-        - job: win_hosted_${{ BuildCondition }}
+      - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+        - job: win_hosted_${{ BuildConfiguration }}
           workspace:
             clean: all
-          displayName: Build Windows Phase (${{ BuildCondition }})
+          displayName: Build Windows Phase (${{ BuildConfiguration }})
           timeoutInMinutes: 60
           pool:
             vmImage:  windows-latest
           steps:
-            - task: NuGetToolInstaller@1
-              displayName: 'Use NuGet 5.7.0'
-              inputs:
-                versionSpec: 5.7.0
+            - pwsh: |
+                $ProgressPreference = 'SilentlyContinue'
+                Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+                & .\dotnet-install.ps1 -Version $(DotNet.Version) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
+                & dotnet --list-sdks
+              displayName: install .NET $(DotNet.Version)
+              errorActionPreference: stop
 
-            - task: DotNetCoreCLI@2
-              displayName: 'Install NET6'
-              inputs:
-                command: 'build'
-                projects: src\external\DotNet\DotNet.csproj
+            - pwsh: dotnet tool restore
+              displayName: install dotnet tools
 
-            - task: NuGetCommand@2
-              displayName: 'Restore sln'
-              inputs:
-                command: 'restore'
-                restoreSolution: build\Build.Microsoft.Maui.Graphics.Windows.sln
+            - pwsh:
+                dotnet boots --url https://workload-bin.s3.ap-northeast-2.amazonaws.com/windows/Samsung.NET.Workload.Tizen.$(Tizen.Version).msi
+              displayName: install tizen
 
-            - task: MSBuild@1
-              displayName: 'Build Graphics with MSBUILD'
-              inputs:
-                solution: build\Build.Microsoft.Maui.Graphics.Windows.sln
-                configuration: ${{ BuildCondition }}
-                msbuildArguments: /verbosity:normal /t:Build
+            - pwsh: |
+                # Update the installer installer
+                Invoke-WebRequest -UseBasicParsing -Uri "https://aka.ms/vs/install/latest/vs_setup.exe" -OutFile vs_setup.exe
+                & .\vs_setup.exe --update --quiet --wait | Out-Null
 
-            - script: src\bin\dotnet\dotnet build build\Build.Microsoft.Maui.Graphics-net6.sln -p:Configuration=${{ BuildCondition }}
-              displayName: 'Build Graphics with NET6'
+                dotnet vs install preview Enterprise +core +mobile +desktop +uwp --quiet
+                dotnet vs where
+              displayName: update vs
+
+            - pwsh: |
+                & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
+                & maui-check $(Maui.Version) --ci --non-interactive --fix --skip androidsdk --skip xcode --skip vswin --skip vsmac --skip edgewebview2
+              displayName: maui-check
+              errorActionPreference: stop
+
+            - pwsh: |
+                $vs = & dotnet vs where --preview --prop=InstallationPath
+                $msbuild = "$vs\MSBuild\Current\Bin\MSBuild.exe"
+                & $msbuild /r ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
+              displayName: build classic solutions
+
+            - pwsh: |
+                $vs = & dotnet vs where --preview --prop=InstallationPath
+                $msbuild = "$vs\MSBuild\Current\Bin\MSBuild.exe"
+                & $msbuild /r ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}-net6.binlog
+              displayName: build net6 solutions
 
             - task: NuGetCommand@2
               displayName: 'Pack nupkg'
               inputs:
                 command: 'pack'
-                packagesToPack: 'build/Microsoft.Maui.Graphics.nuspec'
-                packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
-                configuration: ${{ BuildCondition }}
+                packagesToPack: '**\\Microsoft.Maui.*.nuspec'
+                packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}'
+                configuration: ${{ BuildConfiguration }}
                 basePath: '$(System.DefaultWorkingDirectory)'
                 versioningScheme : 'byEnvVar'
                 versionEnvVar: 'BUILD_BUILDNUMBER'
 
             - task: CopyFiles@2
-              displayName: 'Copy SignList.xml Files'
+              displayName: 'Copy SignList.xml and Packages'
               inputs:
-                Contents: eng/SignList.xml
-                TargetFolder: '$(Build.ArtifactStagingDirectory)/${{ BuildCondition }}'
+                Contents: |
+                  **/SignList.xml
+                TargetFolder: '$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}'
                 flattenFolders: true
 
             - task: PublishBuildArtifacts@1
@@ -123,7 +142,7 @@ stages:
               inputs:
                 ArtifactName: nuget
 
-# only sign using the private server
+  # only sign using the private server
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - stage: nuget_signing
       dependsOn: windows
@@ -131,6 +150,7 @@ stages:
       jobs:
         - template: sign-artifacts/jobs/v2.yml@xamarin-templates
           parameters:
+            signType: Real
             teamName: Maui
             usePipelineArtifactTasks: false
             targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
@@ -138,4 +158,4 @@ stages:
             signedArtifactName: nuget
             signedArtifactPath: signed
             displayName: Sign Phase
-            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'],'refs/tags/'))))
+            condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))

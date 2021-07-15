@@ -16,10 +16,10 @@ namespace Microsoft.Maui.Graphics
 
 		public Color()
 		{
-			// Default Black - XAML Editor is happy with param-less ctor!
+			// Default Black
 			Red = Green = Blue = 0;	
 		}
-		
+
 		public Color(float gray)
 		{
 			Red = Green = Blue = gray.Clamp(0, 1);
@@ -65,7 +65,8 @@ namespace Microsoft.Maui.Graphics
 			return base.Equals(obj);
 		}
 
-		public string ToHex(bool includeAlpha = false)
+		[Obsolete("Use ToArgbHex instead.")]
+		public string ToHex(bool includeAlpha)
 		{
 			if (includeAlpha || Alpha < 1)
 				return "#" + ToHex(Alpha) + ToHex(Red) + ToHex(Green) + ToHex(Blue);
@@ -73,7 +74,29 @@ namespace Microsoft.Maui.Graphics
 			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
 		}
 
-		public static Color FromHex(string colorAsHex) => FromArgb(colorAsHex);
+		public string ToHex()
+		{
+			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
+		}
+
+		public string ToArgbHex(bool includeAlpha = false)
+		{
+			if (includeAlpha || Alpha < 1)
+				return "#" + ToHex(Alpha) + ToHex(Red) + ToHex(Green) + ToHex(Blue);
+
+			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
+		}
+
+		public string ToRgbaHex(bool includeAlpha = false)
+		{
+			if (includeAlpha || Alpha < 1)
+				return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue) + ToHex(Alpha);
+
+			return "#" + ToHex(Red) + ToHex(Green) + ToHex(Blue);
+		}
+
+		[Obsolete("Use FromArgb instead.")]
+		public static Color FromHex(string colorAsArgbHex) => FromArgb(colorAsArgbHex);
 
 		public Paint AsPaint()
 		{

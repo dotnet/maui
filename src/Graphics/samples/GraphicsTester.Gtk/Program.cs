@@ -3,51 +3,61 @@
 
 using System;
 using Gtk;
-using Microsoft.Maui.Graphics.Skia;
+using Microsoft.Maui.Graphics.Native.Gtk;
 
-namespace Samples
-{
-	class Program
-	{
+namespace Samples {
+
+	class Program {
+
 		public static Application App;
 		public static Window Win;
 
 		[STAThread]
-		public static void Main(string[] args)
-		{
+		public static void Main(string[] args) {
+
 			Application.Init();
 
 			App = new Application("Microsoft.Maui.Graphics.Samples", GLib.ApplicationFlags.None);
-			App.Register(GLib.Cancellable.Current);
 
-			Win = new MainWindow();
-			App.AddWindow(Win);
+			App.Startup += (s, e) => StartupTests();
 
-			var menu = new GLib.Menu();
+			App.Startup += (s, e) => {
 
-			menu.AppendItem(new GLib.MenuItem("About", "app.about"));
-			menu.AppendItem(new GLib.MenuItem("Quit", "app.quit"));
-			App.AppMenu = menu;
+				Win = new MainWindow();
+				App.AddWindow(Win);
 
+				var menu = new GLib.Menu();
 
-			var aboutAction = new GLib.SimpleAction("about", null);
-			aboutAction.Activated += AboutActivated;
-			App.AddAction(aboutAction);
+				menu.AppendItem(new GLib.MenuItem("About", "app.about"));
+				menu.AppendItem(new GLib.MenuItem("Quit", "app.quit"));
+				App.AppMenu = menu;
 
-			var quitAction = new GLib.SimpleAction("quit", null);
-			quitAction.Activated += QuitActivated;
-			App.AddAction(quitAction);
+				var aboutAction = new GLib.SimpleAction("about", null);
+				aboutAction.Activated += AboutActivated;
+				App.AddAction(aboutAction);
 
-			Win.ShowAll();
-			Application.Run();
+				var quitAction = new GLib.SimpleAction("quit", null);
+				quitAction.Activated += QuitActivated;
+				App.AddAction(quitAction);
+
+				Win.ShowAll();
+			};
+
+			App.Activated += (s, e) => {
+				App.Windows[0].Present();
+			};
+
+			((GLib.Application) App).Run();
 		}
 
-		private static void AboutActivated(object sender, EventArgs e)
-		{
-			var dialog = new AboutDialog
-			{
+		private static void StartupTests() {
+			StartupTest.InitTests();
+		}
+
+		private static void AboutActivated(object sender, EventArgs e) {
+			var dialog = new AboutDialog {
 				TransientFor = Win,
-				ProgramName = $"{nameof(GtkSkiaGraphicsView)} Sample Application",
+				ProgramName = $"{nameof(GtkGraphicsView)} Sample Application",
 				Version = "1.0.0.0",
 				Comments = $"A gtk sample application for the {typeof(Microsoft.Maui.Graphics.Point).Namespace} project.",
 				LogoIconName = "system-run-symbolic",
@@ -55,13 +65,15 @@ namespace Samples
 				Website = "https://www.github.com/dotnet/Microsoft.Maui.Graphics",
 				WebsiteLabel = "Microsoft.Maui.Graphics Website"
 			};
+
 			dialog.Run();
 			dialog.Hide();
 		}
 
-		private static void QuitActivated(object sender, EventArgs e)
-		{
-			Application.Quit();
+		private static void QuitActivated(object sender, EventArgs e) {
+			((GLib.Application) App).Quit();
 		}
+
 	}
+
 }

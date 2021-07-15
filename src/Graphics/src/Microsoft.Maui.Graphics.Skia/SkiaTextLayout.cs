@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			// Figure out the center index of the list, and the center point to start drawing from.
 			var startIndex = (lines.Count / 2);
-			if (linesToDraw % 2 == 0)
+			if (linesToDraw % 2 != 0)
 				y -= _lineHeight / 2;
 
 			// Figure out which index to draw first (of the range) and the point of the first line.

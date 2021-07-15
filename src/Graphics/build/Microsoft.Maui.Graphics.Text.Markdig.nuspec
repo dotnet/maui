@@ -4,9 +4,9 @@
     <id>Microsoft.Maui.Graphics.Text.Markdig</id>
     <version>$version$</version>
     <title>Microsoft.Maui.Graphics.Text.Markdig</title>
-    <authors>Microsoft, Jon Lipsky</authors>
+    <authors>Microsoft</authors>
     <owners>Microsoft</owners>
-    <requireLicenseAcceptance>True</requireLicenseAcceptance>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>Markdown support for Microsoft.Maui.Graphics attributed text powered by Markdig</description>
     <summary>Markdown support for Microsoft.Maui.Graphics attributed text powered by Markdig</summary>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
@@ -15,14 +15,14 @@
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>
-      <group>
+      <group targetFramework=".NETStandard2.0">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
         <dependency id="Markdig" version="0.22.1"/>
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="src/Microsoft.Maui.Graphics.Text.Markdig/bin/Release/netstandard2.0/Microsoft.Maui.Graphics.Text.Markdig.dll" target="lib/netstandard2.0/Microsoft.Maui.Graphics.Text.Markdig.dll"/>
-    <file src="src/Microsoft.Maui.Graphics.Text.Markdig/bin/Release/netstandard2.0/Microsoft.Maui.Graphics.Text.Markdig.pdb" target="lib/netstandard2.0/Microsoft.Maui.Graphics.Text.Markdig.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Text.Markdig/bin/$configuration$/netstandard2.0/Microsoft.Maui.Graphics.Text.Markdig.dll" target="lib/netstandard2.0/Microsoft.Maui.Graphics.Text.Markdig.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Text.Markdig/bin/$configuration$/netstandard2.0/Microsoft.Maui.Graphics.Text.Markdig.pdb" target="lib/netstandard2.0/Microsoft.Maui.Graphics.Text.Markdig.pdb"/>
   </files>
 </package>
