@@ -191,15 +191,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             }
         }
 
-        /// <summary>
-        /// Performs the final cleanup before the garbage collector destroys the object.
-        /// </summary>
-        ~BlazorWebView()
-        {
-            // Do not change this code. Put cleanup code in 'DisposeAsyncCore()' method
-            _ = DisposeAsync();
-        }
-
         private void CheckDisposed()
         {
             if (_isDisposed)
