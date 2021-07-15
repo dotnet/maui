@@ -280,7 +280,10 @@ stages:
 
   - stage: build_net6
     displayName: .NET 6 Samples
-    dependsOn: pack_net6
+    ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+      dependsOn: nuget_signing
+    ${{ if ne(variables['System.TeamProject'], 'devdiv') }}:
+      dependsOn: pack_net6
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
         - ${{ each BuildCondition in parameters.BuildConfigurations }}:
@@ -327,12 +330,21 @@ stages:
                 - script: echo '##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)'
                   displayName: set JI_JAVA_HOME
 
-              - task: DownloadPipelineArtifact@2
-                displayName: download nuget 
-                inputs:
-                  artifact: nuget
-                  patterns: '**/*.nupkg'
-                  path: $(System.DefaultWorkingDirectory)/artifacts
+              - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+                - task: DownloadPipelineArtifact@2
+                  displayName: download nuget 
+                  inputs:
+                    artifact: nuget
+                    patterns: 'signed/**/*.nupkg'
+                    path: $(System.DefaultWorkingDirectory)/artifacts
+
+              - ${{ if ne(variables['System.TeamProject'], 'devdiv') }}:
+                - task: DownloadPipelineArtifact@2
+                  displayName: download nuget 
+                  inputs:
+                    artifact: nuget
+                    patterns: '**/*.nupkg'
+                    path: $(System.DefaultWorkingDirectory)/artifacts
 
               - pwsh: |
                   & dotnet build src/DotNet/DotNet.csproj -p:InstallWorkloadPacks=false -bl:$(LogDirectory)/$(BuildConfiguration)-dotnet.binlog
