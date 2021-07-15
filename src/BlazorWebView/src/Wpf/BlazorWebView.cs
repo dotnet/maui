@@ -217,8 +217,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
         public async ValueTask DisposeAsync()
         {
-            // Perform async cleanup.
-            await DisposeAsyncCore();
+			if (_isDisposed)
+			{
+				return;
+			}
+			_isDisposed = true;
+
+			// Perform async cleanup.
+			await DisposeAsyncCore();
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
             // Suppress finalization.
