@@ -2,6 +2,9 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Button : IButton
 	{
+		CornerRadius IButton.CornerRadius =>
+			new CornerRadius(CornerRadius);
+
 		void IButton.Clicked()
 		{
 			(this as IButtonController).SendClicked();

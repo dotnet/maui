@@ -1,15 +1,15 @@
 ﻿#nullable enable
 using System;
-using System.Linq;
-using Microsoft.UI.Xaml;
 using System.Collections.Concurrent;
-using Microsoft.UI.Xaml.Media;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using WBinding = Microsoft.UI.Xaml.Data.Binding;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
+using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui
 {
@@ -71,37 +71,6 @@ namespace Microsoft.Maui
 			element.SetBinding(GetForegroundProperty(element), binding);
 		}
 
-		internal static IEnumerable<T?> GetDescendantsByName<T>(this DependencyObject parent, string elementName) where T : DependencyObject
-		{
-			int myChildrenCount = VisualTreeHelper.GetChildrenCount(parent);
-			for (int i = 0; i < myChildrenCount; i++)
-			{
-				var child = VisualTreeHelper.GetChild(parent, i);
-				var controlName = child.GetValue(FrameworkElement.NameProperty) as string;
-				if (controlName == elementName && child is T t)
-					yield return t;
-				else
-				{
-					foreach (var subChild in child.GetDescendantsByName<T>(elementName))
-						yield return subChild;
-				}
-			}
-		}
-
-		internal static T? GetFirstDescendant<T>(this DependencyObject element) where T : FrameworkElement
-		{
-			int count = VisualTreeHelper.GetChildrenCount(element);
-			for (var i = 0; i < count; i++)
-			{
-				DependencyObject child = VisualTreeHelper.GetChild(element, i);
-
-				if ((child as T ?? GetFirstDescendant<T>(child)) is T target)
-					return target;
-			}
-
-			return null;
-		}
-
 		static DependencyProperty? GetForegroundProperty(FrameworkElement element)
 		{
 			if (element is Control)
@@ -125,20 +94,63 @@ namespace Microsoft.Maui
 			return foregroundProperty;
 		}
 
-		internal static IEnumerable<T?> GetChildren<T>(this DependencyObject parent) where T : DependencyObject
+		internal static IEnumerable<DependencyObject> GetChildren(this DependencyObject parent)
 		{
-			int myChildrenCount = VisualTreeHelper.GetChildrenCount(parent);
-			for (int i = 0; i < myChildrenCount; i++)
+			var count = VisualTreeHelper.GetChildrenCount(parent);
+			for (var i = 0; i < count; i++)
 			{
 				var child = VisualTreeHelper.GetChild(parent, i);
+				yield return child;
+			}
+		}
+
+		internal static IEnumerable<T> GetChildren<T>(this DependencyObject parent)
+			where T : DependencyObject
+		{
+			foreach (var child in parent.GetChildren())
+			{
 				if (child is T t)
+				{
 					yield return t;
+				}
 				else
 				{
 					foreach (var subChild in child.GetChildren<T>())
 						yield return subChild;
 				}
 			}
+		}
+
+		internal static IEnumerable<T> GetChildren<T>(this DependencyObject parent, string elementName)
+			where T : DependencyObject
+		{
+			foreach (var child in parent.GetChildren<T>())
+			{
+				if (child.GetValue(FrameworkElement.NameProperty) is string name && name == elementName)
+					yield return child;
+			}
+		}
+
+		internal static T? GetChild<T>(this DependencyObject parent, string elementName)
+			where T : DependencyObject
+		{
+			foreach (var child in parent.GetChildren<T>(elementName))
+			{
+				return child;
+			}
+
+			return default;
+		}
+
+		internal static T? GetChild<T>(this DependencyObject parent)
+			where T : DependencyObject
+		{
+			foreach (var child in parent.GetChildren<T>())
+			{
+				return child;
+			}
+
+			return default;
 		}
 	}
 }

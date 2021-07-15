@@ -64,6 +64,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateBackground(button, DefaultBackground);
 		}
 
+		[PortHandler]
+		public static void MapCornerRadius(ButtonHandler handler, IButton button)
+		{
+		}
+
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
 			handler.NativeView?.UpdateText(button);

@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS || __ANDROID__
 			[nameof(IButton.Background)] = MapBackground,
 #endif
+			[nameof(IButton.CornerRadius)] = MapCornerRadius,
 			[nameof(IButton.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IButton.Font)] = MapFont,
 			[nameof(IButton.Padding)] = MapPadding,
