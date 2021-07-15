@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		protected override void OnRegisterEffect(PlatformEffect effect)
 		{
 			base.OnRegisterEffect(effect);
-			effect.SetControl(Control);
+			effect.Control = Control;
 		}
 
 		void SetupAutomationDefaults()

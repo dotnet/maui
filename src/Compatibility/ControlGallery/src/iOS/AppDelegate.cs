@@ -14,6 +14,7 @@ using IOPath = System.IO.Path;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Size = Microsoft.Maui.Graphics.Size;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: Dependency(typeof(TestCloudService))]
 [assembly: Dependency(typeof(CacheService))]

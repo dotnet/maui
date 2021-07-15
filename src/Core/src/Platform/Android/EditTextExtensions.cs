@@ -175,18 +175,23 @@ namespace Microsoft.Maui
 			editText.SetCursorVisible(isReadOnly);
 		}
 
-		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry, Drawable? ClearButtonDrawable)
+		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry, Drawable? clearButtonDrawable) =>
+			UpdateClearButtonVisibility(editText, entry, () => clearButtonDrawable);
+
+		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry, Func<Drawable?>? getClearButtonDrawable)
 		{
 			// Places clear button drawable at the end or start of the EditText based on FlowDirection.
 			void ShowClearButton()
 			{
+				var drawable = getClearButtonDrawable?.Invoke();
+
 				if (entry.FlowDirection == FlowDirection.RightToLeft)
 				{
-					editText.SetCompoundDrawablesWithIntrinsicBounds(ClearButtonDrawable, null, null, null);
+					editText.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
 				}
 				else
 				{
-					editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, ClearButtonDrawable, null);
+					editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
 				}
 			}
 

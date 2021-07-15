@@ -8,7 +8,7 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Hosting
 {
-	public static class AppHostBuilderExtensions
+	public static partial class AppHostBuilderExtensions
 	{
 		static readonly Dictionary<Type, Type> DefaultMauiControlHandlers = new Dictionary<Type, Type>
 		{
