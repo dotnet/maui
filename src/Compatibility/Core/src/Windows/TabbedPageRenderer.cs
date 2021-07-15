@@ -1,4 +1,4 @@
-/*
+
 using System;
 using System.Linq;
 using System.Collections.Specialized;
@@ -23,6 +23,8 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.
 using VisualElementSpecifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.VisualElement;
 using PageSpecifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Page;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -342,17 +344,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			object defaultColor = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
 
-			if (Element.BarBackgroundColor.IsDefault && defaultColor != null)
+			if (Element.BarBackgroundColor.IsDefault() && defaultColor != null)
 				return (WBrush)defaultColor;
-			return Element.BarBackgroundColor.ToBrush();
+			return Element.BarBackgroundColor.ToNative();
 		}
 
 		WBrush GetBarForegroundBrush()
 		{
 			object defaultColor = Microsoft.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
-			if (Element.BarTextColor.IsDefault && defaultColor != null)
+			if (Element.BarTextColor.IsDefault() && defaultColor != null)
 				return (WBrush)defaultColor;
-			return Element.BarTextColor.ToBrush();
+			return Element.BarTextColor.ToNative();
 		}
 
 		void UpdateBarBackgroundColor()
@@ -386,7 +388,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void ApplyBarBackgroundColor(bool force = false)
 		{
 			var controlToolbarBackground = Control.ToolbarBackground;
-			if (controlToolbarBackground == null && _barBackgroundColor.IsDefault)
+			if (controlToolbarBackground == null && _barBackgroundColor.IsDefault())
 				return;
 
 			var brush = GetBarBackgroundBrush();
@@ -408,7 +410,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (Brush.IsNullOrEmpty(barBackground))
 				return;
-
+						
 			var brush = barBackground.ToBrush();
 
 			if (brush == controlToolbarBackground)
@@ -438,7 +440,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void ApplyBarTextColor(bool force = false)
 		{
 			var controlToolbarForeground = Control.ToolbarForeground;
-			if (controlToolbarForeground == null && _barTextColor.IsDefault)
+			if (controlToolbarForeground == null && _barTextColor.IsDefault())
 				return;
 
 			var brush = GetBarForegroundBrush();
@@ -628,8 +630,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					if (_defaultSelectedColor == null)
 						_defaultSelectedColor = tabBarTextBlock.Foreground;
 
-					if (Element.IsSet(TabbedPage.SelectedTabColorProperty) && Element.SelectedTabColor != Color.Default)
-						tabBarTextBlock.Foreground = Element.SelectedTabColor.ToBrush();
+					if (Element.IsSet(TabbedPage.SelectedTabColorProperty) && Element.SelectedTabColor != null)
+						tabBarTextBlock.Foreground = Element.SelectedTabColor.ToNative();
 					else
 						tabBarTextBlock.Foreground = _defaultSelectedColor;
 				}
@@ -638,8 +640,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					if (_defaultUnselectedColor == null)
 						_defaultUnselectedColor = tabBarTextBlock.Foreground;
 
-					if (Element.IsSet(TabbedPage.SelectedTabColorProperty) && Element.UnselectedTabColor != Color.Default)
-						tabBarTextBlock.Foreground = Element.UnselectedTabColor.ToBrush();
+					if (Element.IsSet(TabbedPage.SelectedTabColorProperty) && Element.UnselectedTabColor != null)
+						tabBarTextBlock.Foreground = Element.UnselectedTabColor.ToNative();
 					else
 						tabBarTextBlock.Foreground = _defaultUnselectedColor;
 				}
@@ -647,4 +649,3 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 	}
 }
-*/
