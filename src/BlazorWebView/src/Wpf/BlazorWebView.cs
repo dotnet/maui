@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
     /// <summary>
     /// A Windows Presentation Foundation (WPF) control for hosting Blazor web components locally in Windows desktop applications.
     /// </summary>
-    public sealed class BlazorWebView : Control, IDisposable
+    public class BlazorWebView : Control, IDisposable
     {
         #region Dependency property definitions
         /// <summary>
@@ -53,10 +53,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         private WebView2WebViewManager _webviewManager;
         private bool _isDisposed;
 
-        /// <summary>
-        /// Creates a new instance of <see cref="BlazorWebView"/>.
-        /// </summary>
-        public BlazorWebView()
+		/// <summary>
+		/// Creates a new instance of <see cref="BlazorWebView"/>.
+		/// </summary>
+		public BlazorWebView()
         {
             SetValue(RootComponentsProperty, new ObservableCollection<RootComponent>());
             RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
@@ -112,10 +112,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
         private void OnHostPagePropertyChanged(DependencyPropertyChangedEventArgs e) => StartWebViewCoreIfPossible();
 
-        private bool RequiredStartupPropertiesSet =>
-            _webview != null &&
-            HostPage != null &&
-            Services != null;
+		protected virtual bool RequiredStartupPropertiesSet =>
+			_webview != null &&
+			HostPage != null &&
+			Services != null;
 
         /// <inheritdoc />
         public override void OnApplyTemplate()
@@ -140,7 +140,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             StartWebViewCoreIfPossible();
         }
 
-        private void StartWebViewCoreIfPossible()
+        public virtual WebView2WebViewManager CreateWebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher)
+        {
+			// We assume the host page is always in the root of the content directory, because it's
+			// unclear there's any other use case. We can add more options later if so.
+			var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(HostPage));
+			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
+			var fileProvider = new PhysicalFileProvider(contentRootDir);
+			return new WebView2WebViewManager(webview, services, dispatcher, fileProvider, hostPageRelativePath);
+        }
+
+        protected void StartWebViewCoreIfPossible()
         {
             CheckDisposed();
 
@@ -148,14 +158,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             {
                 return;
             }
-
-            // We assume the host page is always in the root of the content directory, because it's
-            // unclear there's any other use case. We can add more options later if so.
-            var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(HostPage));
-            var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
-            var fileProvider = new PhysicalFileProvider(contentRootDir);
-
-            _webviewManager = new WebView2WebViewManager(new WpfWebView2Wrapper(_webview), Services, WpfDispatcher.Instance, fileProvider, hostPageRelativePath);
+			
+            _webviewManager = this.CreateWebViewManager(new WpfWebView2Wrapper(_webview), Services, WpfDispatcher.Instance);
             foreach (var rootComponent in RootComponents)
             {
                 // Since the page isn't loaded yet, this will always complete synchronously

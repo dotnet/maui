@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
     /// <summary>
     /// A Windows Forms control for hosting Blazor web components locally in Windows desktop applications.
     /// </summary>
-    public sealed class BlazorWebView : ContainerControl, IDisposable
+    public class BlazorWebView : ContainerControl, IDisposable
     {
         private readonly WebView2Control _webview;
         private WebView2WebViewManager _webviewManager;
@@ -118,13 +118,23 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
                     ? control.Site
                     : GetSitedParentSite(control.Parent);
 
-        private bool RequiredStartupPropertiesSet =>
+        protected virtual bool RequiredStartupPropertiesSet =>
             Created &&
             _webview != null &&
             HostPage != null &&
             Services != null;
 
-        private void StartWebViewCoreIfPossible()
+        protected virtual WebView2WebViewManager CreateWebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher)
+        {
+			// We assume the host page is always in the root of the content directory, because it's
+			// unclear there's any other use case. We can add more options later if so.
+			var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(HostPage));
+			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
+			var fileProvider = new PhysicalFileProvider(contentRootDir);
+			return new WebView2WebViewManager(webview, services, dispatcher, fileProvider, hostPageRelativePath);
+        }
+
+        protected void StartWebViewCoreIfPossible()
         {
             // We never start the Blazor code in design time because it doesn't make sense to run
             // a Blazor component in the designer.
@@ -133,13 +143,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
                 return;
             }
 
-            // We assume the host page is always in the root of the content directory, because it's
-            // unclear there's any other use case. We can add more options later if so.
-            var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(HostPage));
-            var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
-            var fileProvider = new PhysicalFileProvider(contentRootDir);
-
-            _webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, Dispatcher, fileProvider, hostPageRelativePath);
+            _webviewManager = CreateWebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, Dispatcher);
+          
             foreach (var rootComponent in RootComponents)
             {
                 // Since the page isn't loaded yet, this will always complete synchronously
@@ -172,20 +177,20 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             }
         }
 
-        /// <inheritdoc />
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
+		/// <inheritdoc />
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
 				// Dispose this component's contents before calling base.Dispose() because that will dispose the WebView2 control, likely
 				// preventing user-written disposal logic from working (because it might try to use Blazor stuff, which wouldn't work anymore).
 				_webviewManager?.Dispose();
-            }
+			}
 			base.Dispose(disposing);
 		}
 
-		/// <inheritdoc />
-		protected override ControlCollection CreateControlsInstance()
+        /// <inheritdoc />
+        protected override ControlCollection CreateControlsInstance()
         {
             return new BlazorWebViewControlCollection(this);
         }
