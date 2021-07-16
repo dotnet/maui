@@ -1,11 +1,11 @@
-﻿namespace Microsoft.Maui.Accessibility
+﻿namespace Microsoft.Maui.Semantics
 {
-	interface IAccessibilityService
+	interface ISemanticService
 	{
 		/// <summary>
 		/// Tell screen reader to read out the text specified
 		/// </summary>
 		/// <param name="text"></param>
-		void SetAnnouncement(string text);
+		void Announce(string text);
 	}
 }

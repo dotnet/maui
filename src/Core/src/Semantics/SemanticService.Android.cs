@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Semantics
 {
 	public class SemanticService
 	{
-		public void SetAnnouncement(string text)
+		public void Announce(string text)
 		{
 			AccessibilityManager? manager = Android.App.Application.Context.GetSystemService(Android.Content.Context.AccessibilityService) as AccessibilityManager;
 			AccessibilityEvent? announcement = AccessibilityEvent.Obtain();

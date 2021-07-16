@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Semantics
 {
 	public class SemanticService
 	{
-		public void SetAnnouncement(string text)
+		public void Announce(string text)
 		{
 			if (!UIAccessibility.IsVoiceOverRunning)
 				return;
