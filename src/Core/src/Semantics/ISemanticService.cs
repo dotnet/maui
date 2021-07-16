@@ -1,6 +1,6 @@
-﻿namespace Microsoft.Maui.Semantics
+﻿namespace Microsoft.Maui
 {
-	interface ISemanticService
+	public interface ISemanticService
 	{
 		/// <summary>
 		/// Tell screen reader to read out the text specified
