@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Layouts;
 using Flex = Microsoft.Maui.Layouts.Flex;
@@ -6,182 +7,195 @@ using Flex = Microsoft.Maui.Layouts.Flex;
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.TypeConversion(typeof(FlexJustify))]
-	public class FlexJustifyTypeConverter : TypeConverter
+	public class FlexJustifyTypeConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+
+			if (strValue != null)
 			{
-				if (Enum.TryParse(value, true, out FlexJustify justify))
+				if (Enum.TryParse(strValue, true, out FlexJustify justify))
 					return justify;
-				if (value.Equals("flex-start", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("flex-start", StringComparison.OrdinalIgnoreCase))
 					return FlexJustify.Start;
-				if (value.Equals("flex-end", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("flex-end", StringComparison.OrdinalIgnoreCase))
 					return FlexJustify.End;
-				if (value.Equals("space-between", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("space-between", StringComparison.OrdinalIgnoreCase))
 					return FlexJustify.SpaceBetween;
-				if (value.Equals("space-around", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("space-around", StringComparison.OrdinalIgnoreCase))
 					return FlexJustify.SpaceAround;
 			}
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexJustify)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexJustify)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is FlexJustify fj))
+			if (value is not FlexJustify fj)
 				throw new NotSupportedException();
 			return fj.ToString();
 		}
 	}
 
 	[Xaml.TypeConversion(typeof(FlexDirection))]
-	public class FlexDirectionTypeConverter : TypeConverter
+	public class FlexDirectionTypeConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+
+			if (strValue != null)
 			{
-				if (Enum.TryParse(value, true, out FlexDirection aligncontent))
+				if (Enum.TryParse(strValue, true, out FlexDirection aligncontent))
 					return aligncontent;
-				if (value.Equals("row-reverse", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("row-reverse", StringComparison.OrdinalIgnoreCase))
 					return FlexDirection.RowReverse;
-				if (value.Equals("column-reverse", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("column-reverse", StringComparison.OrdinalIgnoreCase))
 					return FlexDirection.ColumnReverse;
 			}
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexDirection)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexDirection)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is FlexDirection fd))
+			if (value is not FlexDirection fd)
 				throw new NotSupportedException();
 			return fd.ToString();
 		}
 	}
 
 	[Xaml.TypeConversion(typeof(FlexAlignContent))]
-	public class FlexAlignContentTypeConverter : TypeConverter
+	public class FlexAlignContentTypeConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+
+			if (strValue != null)
 			{
-				if (Enum.TryParse(value, true, out FlexAlignContent aligncontent))
+				if (Enum.TryParse(strValue, true, out FlexAlignContent aligncontent))
 					return aligncontent;
-				if (value.Equals("flex-start", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("flex-start", StringComparison.OrdinalIgnoreCase))
 					return FlexAlignContent.Start;
-				if (value.Equals("flex-end", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("flex-end", StringComparison.OrdinalIgnoreCase))
 					return FlexAlignContent.End;
-				if (value.Equals("space-between", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("space-between", StringComparison.OrdinalIgnoreCase))
 					return FlexAlignContent.SpaceBetween;
-				if (value.Equals("space-around", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("space-around", StringComparison.OrdinalIgnoreCase))
 					return FlexAlignContent.SpaceAround;
 			}
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexAlignContent)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexAlignContent)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is FlexAlignContent fac))
+			if (value is not FlexAlignContent fac)
 				throw new NotSupportedException();
 			return fac.ToString();
 		}
 	}
 
 	[Xaml.TypeConversion(typeof(FlexAlignItems))]
-	public class FlexAlignItemsTypeConverter : TypeConverter
+	public class FlexAlignItemsTypeConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+
+			if (strValue != null)
 			{
-				if (Enum.TryParse(value, true, out FlexAlignItems alignitems))
+				if (Enum.TryParse(strValue, true, out FlexAlignItems alignitems))
 					return alignitems;
-				if (value.Equals("flex-start", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("flex-start", StringComparison.OrdinalIgnoreCase))
 					return FlexAlignItems.Start;
-				if (value.Equals("flex-end", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("flex-end", StringComparison.OrdinalIgnoreCase))
 					return FlexAlignItems.End;
 			}
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexAlignItems)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexAlignItems)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is FlexAlignItems fai))
+			if (value is not FlexAlignItems fai)
 				throw new NotSupportedException();
 			return fai.ToString();
 		}
 	}
 
 	[Xaml.TypeConversion(typeof(FlexAlignSelf))]
-	public class FlexAlignSelfTypeConverter : TypeConverter
+	public class FlexAlignSelfTypeConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+
+			if (strValue != null)
 			{
-				if (Enum.TryParse(value, true, out FlexAlignSelf alignself))
+				if (Enum.TryParse(strValue, true, out FlexAlignSelf alignself))
 					return alignself;
-				if (value.Equals("flex-start", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("flex-start", StringComparison.OrdinalIgnoreCase))
 					return FlexAlignSelf.Start;
-				if (value.Equals("flex-end", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("flex-end", StringComparison.OrdinalIgnoreCase))
 					return FlexAlignSelf.End;
 			}
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexAlignSelf)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexAlignSelf)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is FlexAlignSelf fes))
+			if (value is not FlexAlignSelf fes)
 				throw new NotSupportedException();
 			return fes.ToString();
 		}
 	}
 
 	[Xaml.TypeConversion(typeof(FlexWrap))]
-	public class FlexWrapTypeConverter : TypeConverter
+	public class FlexWrapTypeConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+
+			if (strValue != null)
 			{
-				if (Enum.TryParse(value, true, out FlexWrap wrap))
+				if (Enum.TryParse(strValue, true, out FlexWrap wrap))
 					return wrap;
-				if (value.Equals("wrap-reverse", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("wrap-reverse", StringComparison.OrdinalIgnoreCase))
 					return FlexWrap.Reverse;
 			}
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexWrap)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexWrap)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is FlexWrap fw))
+			if (value is not FlexWrap fw)
 				throw new NotSupportedException();
 			return fw.ToString();
 		}
 	}
 
 	[Xaml.TypeConversion(typeof(FlexBasis))]
-	public class FlexBasisTypeConverter : TypeConverter
+	public class FlexBasisTypeConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+			if (strValue != null)
 			{
-				if (value.Equals("auto", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("auto", StringComparison.OrdinalIgnoreCase))
 					return FlexBasis.Auto;
-				value = value.Trim();
-				if (value.EndsWith("%", StringComparison.OrdinalIgnoreCase) && float.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
+				value = strValue.Trim();
+				if (strValue.EndsWith("%", StringComparison.OrdinalIgnoreCase) && float.TryParse(strValue.Substring(0, strValue.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
 					return new FlexBasis(relflex / 100, isRelative: true);
-				if (float.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
+				if (float.TryParse(strValue, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
 					return new FlexBasis(flex);
 			}
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlexBasis)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlexBasis)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is FlexBasis basis))
+			if (value is not FlexBasis basis)
 				throw new NotSupportedException();
 			if (basis.IsAuto)
 				return "auto";

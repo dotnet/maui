@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
@@ -8,7 +9,7 @@ namespace Microsoft.Maui.Controls
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.ColorTypeConverter")]
 	[Xaml.TypeConversion(typeof(Color))]
-	public class ColorTypeConverter : TypeConverter
+	public class ColorTypeConverter : StringTypeConverterBase
 	{
 		// Supported inputs
 		// HEX		#rgb, #argb, #rrggbb, #aarrggbb
@@ -19,23 +20,24 @@ namespace Microsoft.Maui.Controls
 		// HSV		hsv(120, 100%, 50%)								h is 0-360, s and v are 0%-100%
 		// HSVA		hsva(120, 100%, 50%, .8)						opacity is 0.0-1.0
 		// Predefined color											case insensitive
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+			if (strValue != null)
 			{
-				value = value.Trim();
-				if (value.StartsWith("#", StringComparison.Ordinal))
-					return Color.FromArgb(value);
+				strValue = strValue.Trim();
+				if (strValue.StartsWith("#", StringComparison.Ordinal))
+					return Color.FromArgb(strValue);
 
-				if (value.StartsWith("rgba", StringComparison.OrdinalIgnoreCase))
+				if (strValue.StartsWith("rgba", StringComparison.OrdinalIgnoreCase))
 				{
-					var op = value.IndexOf('(');
-					var cp = value.LastIndexOf(')');
+					var op = strValue.IndexOf('(');
+					var cp = strValue.LastIndexOf(')');
 					if (op < 0 || cp < 0 || cp < op)
-						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
-					var quad = value.Substring(op + 1, cp - op - 1).Split(',');
+						throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Color)}");
+					var quad = strValue.Substring(op + 1, cp - op - 1).Split(',');
 					if (quad.Length != 4)
-						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
+						throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Color)}");
 					var r = ParseColorValue(quad[0], 255, acceptPercent: true);
 					var g = ParseColorValue(quad[1], 255, acceptPercent: true);
 					var b = ParseColorValue(quad[2], 255, acceptPercent: true);
@@ -43,30 +45,30 @@ namespace Microsoft.Maui.Controls
 					return new Color((float)r, (float)g, (float)b, (float)a);
 				}
 
-				if (value.StartsWith("rgb", StringComparison.OrdinalIgnoreCase))
+				if (strValue.StartsWith("rgb", StringComparison.OrdinalIgnoreCase))
 				{
-					var op = value.IndexOf('(');
-					var cp = value.LastIndexOf(')');
+					var op = strValue.IndexOf('(');
+					var cp = strValue.LastIndexOf(')');
 					if (op < 0 || cp < 0 || cp < op)
-						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
-					var triplet = value.Substring(op + 1, cp - op - 1).Split(',');
+						throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Color)}");
+					var triplet = strValue.Substring(op + 1, cp - op - 1).Split(',');
 					if (triplet.Length != 3)
-						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
+						throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Color)}");
 					var r = ParseColorValue(triplet[0], 255, acceptPercent: true);
 					var g = ParseColorValue(triplet[1], 255, acceptPercent: true);
 					var b = ParseColorValue(triplet[2], 255, acceptPercent: true);
 					return new Color((float)r, (float)g, (float)b);
 				}
 
-				if (value.StartsWith("hsla", StringComparison.OrdinalIgnoreCase))
+				if (strValue.StartsWith("hsla", StringComparison.OrdinalIgnoreCase))
 				{
-					var op = value.IndexOf('(');
-					var cp = value.LastIndexOf(')');
+					var op = strValue.IndexOf('(');
+					var cp = strValue.LastIndexOf(')');
 					if (op < 0 || cp < 0 || cp < op)
-						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
-					var quad = value.Substring(op + 1, cp - op - 1).Split(',');
+						throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Color)}");
+					var quad = strValue.Substring(op + 1, cp - op - 1).Split(',');
 					if (quad.Length != 4)
-						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
+						throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Color)}");
 					var h = ParseColorValue(quad[0], 360, acceptPercent: false);
 					var s = ParseColorValue(quad[1], 100, acceptPercent: true);
 					var l = ParseColorValue(quad[2], 100, acceptPercent: true);
@@ -74,30 +76,30 @@ namespace Microsoft.Maui.Controls
 					return Color.FromHsla(h, s, l, a);
 				}
 
-				if (value.StartsWith("hsl", StringComparison.OrdinalIgnoreCase))
+				if (strValue.StartsWith("hsl", StringComparison.OrdinalIgnoreCase))
 				{
-					var op = value.IndexOf('(');
-					var cp = value.LastIndexOf(')');
+					var op = strValue.IndexOf('(');
+					var cp = strValue.LastIndexOf(')');
 					if (op < 0 || cp < 0 || cp < op)
-						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
-					var triplet = value.Substring(op + 1, cp - op - 1).Split(',');
+						throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Color)}");
+					var triplet = strValue.Substring(op + 1, cp - op - 1).Split(',');
 					if (triplet.Length != 3)
-						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
+						throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Color)}");
 					var h = ParseColorValue(triplet[0], 360, acceptPercent: false);
 					var s = ParseColorValue(triplet[1], 100, acceptPercent: true);
 					var l = ParseColorValue(triplet[2], 100, acceptPercent: true);
 					return Color.FromHsla(h, s, l);
 				}
 
-				if (value.StartsWith("hsva", StringComparison.OrdinalIgnoreCase))
+				if (strValue.StartsWith("hsva", StringComparison.OrdinalIgnoreCase))
 				{
-					var op = value.IndexOf('(');
-					var cp = value.LastIndexOf(')');
+					var op = strValue.IndexOf('(');
+					var cp = strValue.LastIndexOf(')');
 					if (op < 0 || cp < 0 || cp < op)
-						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
-					var quad = value.Substring(op + 1, cp - op - 1).Split(',');
+						throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Color)}");
+					var quad = strValue.Substring(op + 1, cp - op - 1).Split(',');
 					if (quad.Length != 4)
-						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
+						throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Color)}");
 					var h = ParseColorValue(quad[0], 360, acceptPercent: false);
 					var s = ParseColorValue(quad[1], 100, acceptPercent: true);
 					var v = ParseColorValue(quad[2], 100, acceptPercent: true);
@@ -105,22 +107,22 @@ namespace Microsoft.Maui.Controls
 					return Color.FromHsva((float)h, (float)s, (float)v, (float)a);
 				}
 
-				if (value.StartsWith("hsv", StringComparison.OrdinalIgnoreCase))
+				if (strValue.StartsWith("hsv", StringComparison.OrdinalIgnoreCase))
 				{
-					var op = value.IndexOf('(');
-					var cp = value.LastIndexOf(')');
+					var op = strValue.IndexOf('(');
+					var cp = strValue.LastIndexOf(')');
 					if (op < 0 || cp < 0 || cp < op)
-						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
-					var triplet = value.Substring(op + 1, cp - op - 1).Split(',');
+						throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Color)}");
+					var triplet = strValue.Substring(op + 1, cp - op - 1).Split(',');
 					if (triplet.Length != 3)
-						throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
+						throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Color)}");
 					var h = ParseColorValue(triplet[0], 360, acceptPercent: false);
 					var s = ParseColorValue(triplet[1], 100, acceptPercent: true);
 					var v = ParseColorValue(triplet[2], 100, acceptPercent: true);
 					return Color.FromHsv((float)h, (float)s, (float)v);
 				}
 
-				string[] parts = value.Split('.');
+				string[] parts = strValue.Split('.');
 				if (parts.Length == 1 || (parts.Length == 2 && parts[0] == "Color"))
 				{
 					string color = parts[parts.Length - 1];
@@ -423,12 +425,12 @@ namespace Microsoft.Maui.Controls
 						return (Color)property.GetValue(null, null);
 				}
 
-				var namedColor = Device.GetNamedColor(value);
+				var namedColor = Device.GetNamedColor(strValue);
 				if (namedColor != default)
 					return namedColor;
 			}
 
-			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Color)}");
+			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Color)}");
 		}
 
 		static double ParseColorValue(string elem, int maxValue, bool acceptPercent)
@@ -447,9 +449,9 @@ namespace Microsoft.Maui.Controls
 			return double.Parse(elem, NumberStyles.Number, CultureInfo.InvariantCulture).Clamp(0, 1);
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is Color color))
+			if (value is not Color color)
 				throw new NotSupportedException();
 
 			return color.ToHex();

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -323,7 +324,7 @@ namespace Microsoft.Maui.Controls
 
 		[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.RDSourceTypeConverter")]
 		[TypeConversion(typeof(Uri))]
-		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
+		public class RDSourceTypeConverter : StringTypeConverterBase, IExtendedTypeConverter
 		{
 			object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 			{
@@ -370,14 +371,12 @@ namespace Microsoft.Maui.Controls
 				return resourceUri.AbsolutePath.Substring(1);
 			}
 
-			public override object ConvertFromInvariantString(string value)
-			{
-				throw new NotImplementedException();
-			}
+			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+				=> throw new NotImplementedException();
 
-			public override string ConvertToInvariantString(object value)
+			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 			{
-				if (!(value is Uri uri))
+				if (value is not Uri uri)
 					throw new NotSupportedException();
 				return uri.ToString();
 			}

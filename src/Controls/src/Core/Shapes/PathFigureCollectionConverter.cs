@@ -1,11 +1,12 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public class PathFigureCollectionConverter : TypeConverter
+	public class PathFigureCollectionConverter : StringTypeConverterBase
 	{
 		const bool AllowSign = true;
 		const bool AllowComma = true;
@@ -19,11 +20,12 @@ namespace Microsoft.Maui.Controls.Shapes
 		static Point _secondLastPoint;
 		static char _token;
 
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			var strValue = value?.ToString();
 			PathFigureCollection pathFigureCollection = new PathFigureCollection();
 
-			ParseStringToPathFigureCollection(pathFigureCollection, value);
+			ParseStringToPathFigureCollection(pathFigureCollection, strValue);
 
 			return pathFigureCollection;
 		}
@@ -565,6 +567,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		public override string ConvertToInvariantString(object value) => throw new NotSupportedException();
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+			=> throw new NotSupportedException();
 	}
 }

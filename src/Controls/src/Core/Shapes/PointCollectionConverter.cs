@@ -1,15 +1,17 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public class PointCollectionConverter : TypeConverter
+	public class PointCollectionConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			string[] points = value.Split(new char[] { ' ', ',' });
+			var strValue = value?.ToString();
+			string[] points = strValue.Split(new char[] { ' ', ',' });
 			var pointCollection = new PointCollection();
 			double x = 0;
 			bool hasX = false;
@@ -42,9 +44,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			return pointCollection;
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is PointCollection pc))
+			if (value is not PointCollection pc)
 				throw new NotSupportedException();
 
 			var converter = new PointTypeConverter();

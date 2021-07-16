@@ -1,19 +1,22 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.TypeConversion(typeof(ImageSource))]
-	public sealed class ImageSourceConverter : TypeConverter
+	public sealed class ImageSourceConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
-				return Uri.TryCreate(value, UriKind.Absolute, out Uri uri) && uri.Scheme != "file" ? ImageSource.FromUri(uri) : ImageSource.FromFile(value);
+			var strValue = value?.ToString();
+			if (strValue != null)
+				return Uri.TryCreate(strValue, UriKind.Absolute, out Uri uri) && uri.Scheme != "file" ? ImageSource.FromUri(uri) : ImageSource.FromFile(strValue);
 
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(ImageSource)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(ImageSource)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is FileImageSource fis)
 				return fis.File;

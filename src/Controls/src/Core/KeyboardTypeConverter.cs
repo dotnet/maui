@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
@@ -6,13 +8,14 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.TypeConversion(typeof(Keyboard))]
-	public class KeyboardTypeConverter : TypeConverter
+	public class KeyboardTypeConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+			if (strValue != null)
 			{
-				string[] parts = value.Split('.');
+				string[] parts = strValue.Split('.');
 				if (parts.Length == 1 || (parts.Length == 2 && parts[0] == "Keyboard"))
 				{
 					string keyboard = parts[parts.Length - 1];
@@ -25,10 +28,10 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(Keyboard)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(Keyboard)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (!(value is Keyboard keyboard))
 				throw new NotSupportedException();

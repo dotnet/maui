@@ -1,21 +1,24 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.TypeConversion(typeof(UrlWebViewSource))]
-	public class WebViewSourceTypeConverter : TypeConverter
+	public class WebViewSourceTypeConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
-				return new UrlWebViewSource { Url = value };
+			var strValue = value?.ToString();
+			if (strValue != null)
+				return new UrlWebViewSource { Url = strValue };
 
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(UrlWebViewSource)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(UrlWebViewSource)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is UrlWebViewSource uwvs))
+			if (value is not UrlWebViewSource uwvs)
 				throw new NotSupportedException();
 			return uwvs.Url;
 		}

@@ -1,16 +1,18 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using Rect = Microsoft.Maui.Graphics.Rectangle;
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.TypeConversion(typeof(Rect))]
-	public class RectTypeConverter : TypeConverter
+	public class RectTypeConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+			if (strValue != null)
 			{
-				string[] xywh = value.Split(',');
+				string[] xywh = strValue.Split(',');
 				if (xywh.Length == 4
 					&& double.TryParse(xywh[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double x)
 					&& double.TryParse(xywh[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double y)
@@ -19,12 +21,12 @@ namespace Microsoft.Maui.Controls
 					return new Rect(x, y, w, h);
 			}
 
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(Rect)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(Rect)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is Rect r))
+			if (value is not Rect r)
 				throw new NotSupportedException();
 
 			return $"{r.X.ToString(CultureInfo.InvariantCulture)}, {r.Y.ToString(CultureInfo.InvariantCulture)}, {r.Width.ToString(CultureInfo.InvariantCulture)}, {r.Height.ToString(CultureInfo.InvariantCulture)}";

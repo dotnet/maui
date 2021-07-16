@@ -1,5 +1,6 @@
 using System;
-
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
@@ -9,18 +10,20 @@ namespace Microsoft.Maui.Controls
 	}
 
 	[Xaml.TypeConversion(typeof(TextDecorations))]
-	public class TextDecorationConverter : TypeConverter
+	public class TextDecorationConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			TextDecorations result = TextDecorations.None;
-			if (value == null)
-				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(TextDecorations)));
+			var strValue = value?.ToString();
 
-			var valueArr = value.Split(',');
+			TextDecorations result = TextDecorations.None;
+			if (strValue == null)
+				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(TextDecorations)));
+
+			var valueArr = strValue.Split(',');
 
 			if (valueArr.Length <= 1)
-				valueArr = value.Split(' ');
+				valueArr = strValue.Split(' ');
 
 			foreach (var item in valueArr)
 			{
@@ -35,9 +38,9 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is TextDecorations td))
+			if (value is not TextDecorations td)
 				throw new NotSupportedException();
 			if (td == TextDecorations.None)
 				return nameof(TextDecorations.None);

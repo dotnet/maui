@@ -1,20 +1,22 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.ThicknessTypeConverter")]
 	[Xaml.TypeConversion(typeof(Thickness))]
-	public class ThicknessTypeConverter : TypeConverter
+	public class ThicknessTypeConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+			if (strValue != null)
 			{
-				value = value.Trim();
-				if (value.Contains(","))
+				strValue = strValue.Trim();
+				if (strValue.Contains(","))
 				{ //Xaml
-					var thickness = value.Split(',');
+					var thickness = strValue.Split(',');
 					switch (thickness.Length)
 					{
 						case 2:
@@ -31,9 +33,9 @@ namespace Microsoft.Maui.Controls
 							break;
 					}
 				}
-				else if (value.Contains(" "))
+				else if (strValue.Contains(" "))
 				{ //CSS
-					var thickness = value.Split(' ');
+					var thickness = strValue.Split(' ');
 					switch (thickness.Length)
 					{
 						case 2:
@@ -58,17 +60,17 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{ //single uniform thickness
-					if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
+					if (double.TryParse(strValue, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
 						return new Thickness(l);
 				}
 			}
 
-			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Thickness)}");
+			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Thickness)}");
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is Thickness t))
+			if (value is not Thickness t)
 				throw new NotSupportedException();
 			return $"{t.Left.ToString(CultureInfo.InvariantCulture)}, {t.Top.ToString(CultureInfo.InvariantCulture)}, {t.Right.ToString(CultureInfo.InvariantCulture)}, {t.Bottom.ToString(CultureInfo.InvariantCulture)}";
 		}

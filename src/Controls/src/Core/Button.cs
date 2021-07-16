@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -376,17 +377,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		[Xaml.TypeConversion(typeof(ButtonContentLayout))]
-		public sealed class ButtonContentTypeConverter : TypeConverter
+		public sealed class ButtonContentTypeConverter : StringTypeConverterBase
 		{
-			public override object ConvertFromInvariantString(string value)
+			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 			{
-				if (value == null)
+				var strValue = value?.ToString();
+				if (strValue == null)
 					throw new InvalidOperationException($"Cannot convert null into {typeof(ButtonContentLayout)}");
 
-				string[] parts = value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+				string[] parts = strValue.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
 				if (parts.Length != 1 && parts.Length != 2)
-					throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(ButtonContentLayout)}");
+					throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(ButtonContentLayout)}");
 
 				double spacing = DefaultSpacing;
 				var position = ButtonContentLayout.ImagePosition.Left;
@@ -405,7 +407,8 @@ namespace Microsoft.Maui.Controls
 				return new ButtonContentLayout(position, spacing);
 			}
 
-			public override string ConvertToInvariantString(object value) => throw new NotSupportedException();
+			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+				=> throw new NotSupportedException();
 		}
 	}
 }

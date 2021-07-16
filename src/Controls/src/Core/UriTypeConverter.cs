@@ -1,21 +1,24 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.UriTypeConverter")]
 	[Xaml.TypeConversion(typeof(Uri))]
-	public class UriTypeConverter : TypeConverter
+	public class UriTypeConverter : StringTypeConverterBase
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (string.IsNullOrWhiteSpace(value))
+			var strValue = value?.ToString();
+			if (string.IsNullOrWhiteSpace(strValue))
 				return null;
-			return new Uri(value, UriKind.RelativeOrAbsolute);
+			return new Uri(strValue, UriKind.RelativeOrAbsolute);
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is Uri uri))
+			if (value is not Uri uri)
 				throw new NotSupportedException();
 			return uri.ToString();
 		}

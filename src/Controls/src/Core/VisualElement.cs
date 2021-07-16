@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 //using Microsoft.Maui.Controls.Shapes;
@@ -1129,30 +1130,31 @@ namespace Microsoft.Maui.Controls
 			public bool Result { get; set; }
 		}
 
-		public class VisibilityConverter : TypeConverter
+		public class VisibilityConverter : StringTypeConverterBase
 		{
-			public override object ConvertFromInvariantString(string value)
+			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 			{
-				value = value?.Trim();
-				if (!string.IsNullOrEmpty(value))
+				var strValue = value?.ToString()?.Trim();
+
+				if (!string.IsNullOrEmpty(strValue))
 				{
-					if (value.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
+					if (strValue.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
 						return true;
-					if (value.Equals("visible", StringComparison.OrdinalIgnoreCase))
+					if (strValue.Equals("visible", StringComparison.OrdinalIgnoreCase))
 						return true;
-					if (value.Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
+					if (strValue.Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
 						return false;
-					if (value.Equals("hidden", StringComparison.OrdinalIgnoreCase))
+					if (strValue.Equals("hidden", StringComparison.OrdinalIgnoreCase))
 						return false;
-					if (value.Equals("collapse", StringComparison.OrdinalIgnoreCase))
+					if (strValue.Equals("collapse", StringComparison.OrdinalIgnoreCase))
 						return false;
 				}
-				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}.", value, typeof(bool)));
+				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}.", strValue, typeof(bool)));
 			}
 
-			public override string ConvertToInvariantString(object value)
+			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 			{
-				if (!(value is bool visibility))
+				if (value is not bool visibility)
 					throw new NotSupportedException();
 				return visibility.ToString();
 			}
