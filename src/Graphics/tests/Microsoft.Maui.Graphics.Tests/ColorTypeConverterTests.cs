@@ -47,5 +47,25 @@ namespace Microsoft.Maui.Graphics.Tests
 				new object[] { "hsv(253,80,83)", Color.FromArgb("#512BD4") },
 				new object[] { "rgb(81,43,212)", Color.FromArgb("#512BD4") },
 			};
+
+		// Ensures all the named color fields are represented in the color type converter
+		// which uses hard coded strings for better perf
+		// So let's use a test that does reflection to make sure we don't forget to add
+		// any to the hard coded list if we add more fields
+		[Fact]
+		public void ConvertStandardValuesAreComplete()
+		{
+			var colorTypeConverter = new ColorTypeConverter();
+
+			var standardValues = colorTypeConverter.GetStandardValues().Cast<string>().ToList();
+
+			var namedColors = typeof(Colors)
+				.GetFields()
+				.Where(f => f.FieldType == typeof(Color))
+				.Select(f => f.Name);
+
+			foreach (var namedColor in namedColors)
+				Assert.Contains(standardValues, c => c.Equals(namedColor, StringComparison.OrdinalIgnoreCase));
+		}
 	}
 }
