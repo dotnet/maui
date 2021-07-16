@@ -1,8 +1,8 @@
 ﻿using Android.Views.Accessibility;
 
-namespace Microsoft.Maui.Accessibility
+namespace Microsoft.Maui.Semantics
 {
-	public class AccessibilityService
+	public class SemanticService
 	{
 		public void SetAnnouncement(string text)
 		{
