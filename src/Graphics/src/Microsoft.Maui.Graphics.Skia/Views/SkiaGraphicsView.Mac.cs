@@ -1,6 +1,6 @@
 
 using System;
-using Microsoft.Maui.Graphics.CoreGraphics;
+using Microsoft.Maui.Graphics.Native;
 using Microsoft.Maui.Graphics.Skia;
 using SkiaSharp.Views.Mac;
 

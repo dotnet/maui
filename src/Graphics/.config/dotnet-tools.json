@@ -19,6 +19,12 @@
       "commands": [
         "vs"
       ]
+    },
+    "boots": {
+      "version": "1.0.4.624",
+      "commands": [
+        "boots"
+      ]
     }
   }
 }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.18362</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-windows10.0.18362;net6.0-tizen</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Graphics.Skia</RootNamespace>
     <AssemblyName>Microsoft.Maui.Graphics.Skia</AssemblyName>
   </PropertyGroup>
@@ -10,7 +10,7 @@
     <PackageReference Include="SkiaSharp" Version="2.88.0-preview.61" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
+  <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst')) or $(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="SkiaSharp.Views" Version="2.88.0-preview.61" />
   </ItemGroup>
 
