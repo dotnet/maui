@@ -35,7 +35,7 @@
         <dependency id="SkiaSharp" version="2.88.0-preview.61"/>
         <dependency id="SkiaSharp.Views.WinUI" version="2.88.0-preview.61"/>
       </group>
-      <group targetFramework="net6.0-tizen">
+      <group targetFramework="net6.0-tizen6.5">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
         <dependency id="SkiaSharp" version="2.88.0-preview.61"/>
         <dependency id="SkiaSharp.Views" version="2.88.0-preview.61"/>
@@ -84,8 +84,8 @@
     <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-maccatalyst/Microsoft.Maui.Graphics.Skia.pdb" target="lib/net6.0-maccatalyst13.5/Microsoft.Maui.Graphics.Skia.pdb"/>
     <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Skia.dll" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Skia.dll"/>
     <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Skia.pdb" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.Skia.pdb"/>
-    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-tizen/Microsoft.Maui.Graphics.Skia.dll" target="lib/net6.0-tizen/Microsoft.Maui.Graphics.Skia.dll"/>
-    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-tizen/Microsoft.Maui.Graphics.Skia.pdb" target="lib/net6.0-tizen/Microsoft.Maui.Graphics.Skia.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-tizen6.5/Microsoft.Maui.Graphics.Skia.dll" target="lib/net6.0-tizen6.5/Microsoft.Maui.Graphics.Skia.dll"/>
+    <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/net6.0-tizen6.5/Microsoft.Maui.Graphics.Skia.pdb" target="lib/net6.0-tizen6.5/Microsoft.Maui.Graphics.Skia.pdb"/>
 
     <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/xamarin.ios10/Microsoft.Maui.Graphics.Skia.dll" target="lib/xamarin.ios10/Microsoft.Maui.Graphics.Skia.dll"/>
     <file src="src/Microsoft.Maui.Graphics.Skia/bin/$configuration$/xamarin.ios10/Microsoft.Maui.Graphics.Skia.pdb" target="lib/xamarin.ios10/Microsoft.Maui.Graphics.Skia.pdb"/>
