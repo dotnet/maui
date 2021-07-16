@@ -31,6 +31,14 @@
                 BackgroundColor="Red"
                 TextColor="White"
                 Text="Button"/>
+            <Label
+                Text="CornerRadius"
+                Style="{StaticResource Headline}"/>
+            <Button
+                BackgroundColor="Orange"
+                TextColor="White"
+                Text="Button"
+                CornerRadius="12"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
