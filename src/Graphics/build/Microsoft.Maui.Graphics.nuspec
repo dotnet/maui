@@ -49,8 +49,8 @@
     <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-maccatalyst/Microsoft.Maui.Graphics.pdb" target="lib/net6.0-maccatalyst13.5/Microsoft.Maui.Graphics.pdb"/>
     <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.dll" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.dll"/>
     <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.pdb" target="lib/net6.0-windows10.0.18362/Microsoft.Maui.Graphics.pdb"/>
-    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-tizen6.5/Microsoft.Maui.Graphics.dll" target="lib/net6.0-tizen/Microsoft.Maui.Graphics.dll"/>
-    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-tizen6.5/Microsoft.Maui.Graphics.pdb" target="lib/net6.0-tizen/Microsoft.Maui.Graphics.pdb"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-tizen6.5/Microsoft.Maui.Graphics.dll" target="lib/net6.0-tizen6.5/Microsoft.Maui.Graphics.dll"/>
+    <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/net6.0-tizen6.5/Microsoft.Maui.Graphics.pdb" target="lib/net6.0-tizen6.5/Microsoft.Maui.Graphics.pdb"/>
     <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/tizen40/Microsoft.Maui.Graphics.dll" target="lib/tizen40/Microsoft.Maui.Graphics.dll"/>
     <file src="src/Microsoft.Maui.Graphics/bin/$configuration$/tizen40/Microsoft.Maui.Graphics.pdb" target="lib/tizen40/Microsoft.Maui.Graphics.pdb"/>
   </files>
