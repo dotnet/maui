@@ -19,6 +19,9 @@ namespace Microsoft.Maui
 
 		protected virtual void OnNativeMessage(object? sender, WindowsNativeMessageEventArgs args)
 		{
+			if (args.MessageId == WindowsNativeMessageIds.WM_SETTINGCHANGE || args.MessageId == WindowsNativeMessageIds.WM_THEMECHANGE)
+				MauiWinUIApplication.Current.Application?.ThemeChanged();
+
 			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnNativeMessage>(m => m(this, args));
 		}
 
@@ -36,10 +39,10 @@ namespace Microsoft.Maui
 		{
 			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnVisibilityChanged>(del => del(this, args));
 		}
-
 		public event EventHandler<WindowsNativeMessageEventArgs> NativeMessage;
 
 		#region Native Window
+
 		IntPtr _hwnd = IntPtr.Zero;
 		delegate IntPtr WinProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 		WinProc? newWndProc = null;
@@ -69,6 +72,7 @@ namespace Microsoft.Maui
 
 			return CallWindowProc(oldWndProc, hWnd, msg, wParam, lParam);
 		}
+
 		#endregion
 	}
 }
