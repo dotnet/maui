@@ -1,0 +1,160 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Essentials - Platform APIs",
+  "steps": [
+    {
+      "title": "Introduction",
+      "description": ".NET MAUI Essentials provides developers with cross-platform APIs for their applications. Android, iOS, macOS, and Windows offer unique operating system and platform APIs that developers have access to all in C#. .NET MAUI Essentials provides a single cross-platform API that works with any .NET MAUI, Android, iOS, macOS, or Windows application that can be accessed from shared code no matter how the user interface is created."
+    },
+    {
+      "directory": "src/Essentials",
+      "description": "The Essentials folder contains documentation, sample projects, test project, and full source code for all .NET MAUI Essentials APIs.",
+      "title": "Code, tests, and samples"
+    },
+    {
+      "directory": "src/Essentials/src",
+      "description": "Each feature of .NET MAUI Essentials is contained inside of the `src` folder. The naming convention for the files inside of the folder is the feature name followed by a series of platforms.\r\n* `android` - Android platform\r\n* `ios`, `watchos`, `tvos`, `macos` - Apple platforms\r\n* `tizen` - Samsung Tizen\r\n* `uwp` - Windows\r\n* `shared` - Contains the public API\r\n* `netstandard` - Contains internal APIs that by default throw an exception. APIs must be implemented on the feature level if supported.\r\n\r\nThese keywords can be chained together. For example: `Accelerometer.ios.watchos.cs` contains implementation for both iOS and watchOS platforms.",
+      "title": "Code structure"
+    },
+    {
+      "file": "src/Essentials/src/AppInfo/AppInfo.shared.cs",
+      "selection": {
+        "start": {
+          "line": 5,
+          "character": 2
+        },
+        "end": {
+          "line": 5,
+          "character": 37
+        }
+      },
+      "description": "Each API starts with a `public static partial class` that contains the public API that developers will be exposed to. In this case the API will be accessed through the `AppInfo.` class name.",
+      "title": "Public API Class"
+    },
+    {
+      "file": "src/Essentials/src/AppInfo/AppInfo.shared.cs",
+      "selection": {
+        "start": {
+          "line": 7,
+          "character": 3
+        },
+        "end": {
+          "line": 7,
+          "character": 64
+        }
+      },
+      "description": "Public properties, methods, and events are exposed through this class. The standard convention is to call a method or property with `Platform` added to the start. In this cass the API to developers using the library is `AppInfo.PackageName` and when this is called it will call the platform method `PlatformGetPackageName()`.",
+      "title": "Public API (Methods, Properties, Events)"
+    },
+    {
+      "file": "src/Essentials/src/AppInfo/AppInfo.netstandard.cs",
+      "selection": {
+        "start": {
+          "line": 5,
+          "character": 3
+        },
+        "end": {
+          "line": 5,
+          "character": 101
+        }
+      },
+      "description": "The `netstandard`, and any other platform attached (such as `netstandard.watchos.cs`), contain the platform specific API. .NET MAUI Essentials uses a bait and switch approach. This means if the platform is included in this file then it will throw an exception, however if an implementation for `PlatformGetPackageName` exists in a platform file that is installed then that method will get called.",
+      "title": "Platform abstraction"
+    },
+    {
+      "file": "src/Essentials/src/AppInfo/AppInfo.android.cs",
+      "selection": {
+        "start": {
+          "line": 12,
+          "character": 3
+        },
+        "end": {
+          "line": 12,
+          "character": 77
+        }
+      },
+      "description": "Each platform will implement the platform abstraction to provide the platform specific functionality. In this case `PlatformGetPackageName()` is implemented to get the package name of the Android app.",
+      "title": "Platform implementation"
+    },
+    {
+      "directory": "src/Essentials/test/UnitTests",
+      "description": "Unit tests are built with xUnit and are located in the test/UnitTests folder. The naming convention is `Feature_Tests.cs`. These tests are not run on device, instead they are to test abstractions to ensure exception are thrown properly and logic functionality.",
+      "title": "Unit Tests"
+    },
+    {
+      "file": "src/Essentials/test/UnitTests/Compass_Tests.cs",
+      "selection": {
+        "start": {
+          "line": 9,
+          "character": 3
+        },
+        "end": {
+          "line": 11,
+          "character": 84
+        }
+      },
+      "description": "Each property, method, and event in the API should be tested to ensure that a proper exception is thrown or value returned. In this case for we are testing to ensure the `NotImplementedInReferenceAssemblyException` is thrown when the `Start` method is called.",
+      "title": "Unit Test - API"
+    },
+    {
+      "file": "src/Essentials/test/UnitTests/Compass_Tests.cs",
+      "selection": {
+        "start": {
+          "line": 25,
+          "character": 3
+        },
+        "end": {
+          "line": 31,
+          "character": 17
+        }
+      },
+      "description": "Additional logic tests can be added. Here we are ensuring the data comparison is working properly.",
+      "title": "Unit Test - Logic"
+    },
+    {
+      "file": "src/Essentials/test/DeviceTests.Shared/Compass_Tests.cs",
+      "selection": {
+        "start": {
+          "line": 17,
+          "character": 3
+        },
+        "end": {
+          "line": 20,
+          "character": 53
+        }
+      },
+      "description": "This test is run when the compass is supported on the device and tests that data is returned properly.",
+      "title": "Device Tests"
+    },
+    {
+      "directory": "src/Essentials/samples",
+      "description": "Each API must also include a sample that includes a UI to test the API and a backing view model that calls the feature.",
+      "title": "Sample Apps"
+    },
+    {
+      "file": "src/Essentials/samples/Samples/ViewModel/CompassViewModel.cs",
+      "selection": {
+        "start": {
+          "line": 10,
+          "character": 2
+        },
+        "end": {
+          "line": 10,
+          "character": 40
+        }
+      },
+      "description": "Here the `CompassViewModel` exposes properties and methods that will trigger the compass functionality that can be called from the user interface. The goal of this is to have a test app that anyone can run on any device to see the API in action.",
+      "title": "Sample App - Testing Functionality"
+    },
+    {
+      "directory": "src/Essentials/docs",
+      "description": "API docs for each feature that is implemented are written and publically available. Please read documentation on how to generate documentation and fill it in with desktop tools.",
+      "title": "Documentation"
+    },
+    {
+      "directory": "src/Essentials/test/DeviceTests.Shared",
+      "description": "Device tests are similar to the unit tests, however they test actual funcationality that are run on device runners during a CI build. These tests are run on emulators/simulators and account for this."
+    }
+  ],
+  "ref": "main"
+}
