@@ -53,6 +53,7 @@
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'tizen'" >
     <Compile Include="$(TizenRoot)**\*.cs"></Compile>
     <EmbeddedResource Include="$(TizenRoot)Resources\*.resx" />
+    <EmbeddedResource Include="$(TizenRoot)Resources\*.png" />
     <Compile Remove="$(TizenRoot)bin\**\*.cs" />
     <Compile Remove="$(TizenRoot)obj\**\*.cs" />
   </ItemGroup>
