@@ -5,7 +5,7 @@ using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
 	public class AbsoluteLayout : Layout<View>, IElementConfiguration<AbsoluteLayout>

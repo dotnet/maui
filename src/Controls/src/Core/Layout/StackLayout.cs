@@ -1,5 +1,4 @@
-﻿// This is a temporary namespace until we rename everything and move the legacy layouts
-namespace Microsoft.Maui.Controls.Layout2
+﻿namespace Microsoft.Maui.Controls
 {
 	public abstract class StackLayout : Layout, IStackLayout
 	{

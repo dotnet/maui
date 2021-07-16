@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls.Compatibility
 {
 	[System.ComponentModel.TypeConverter(typeof(ConstraintTypeConverter))]
 	public sealed class Constraint

@@ -4,8 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Maui.Layouts;
 
-// This is a temporary namespace until we rename everything and move the legacy layouts
-namespace Microsoft.Maui.Controls.Layout2
+namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Children))]
 	public class GridLayout : Layout, IGridLayout
@@ -13,7 +12,7 @@ namespace Microsoft.Maui.Controls.Layout2
 		readonly Dictionary<IView, GridInfo> _viewInfo = new();
 
 		public static readonly BindableProperty ColumnDefinitionsProperty = BindableProperty.Create("ColumnDefinitions",
-			typeof(ColumnDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
+			typeof(ColumnDefinitionCollection), typeof(GridLayout), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
 			{
 				var colDef = new ColumnDefinitionCollection();
@@ -22,7 +21,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			});
 
 		public static readonly BindableProperty RowDefinitionsProperty = BindableProperty.Create("RowDefinitions",
-			typeof(RowDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
+			typeof(RowDefinitionCollection), typeof(GridLayout), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
 			{
 				var rowDef = new RowDefinitionCollection();

@@ -9,10 +9,10 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
-	public abstract partial class Layout<T> : Layout, Microsoft.Maui.ILayout, ILayoutManager, IViewContainer<T> where T : View
+	public abstract class Layout<T> : Layout, Microsoft.Maui.ILayout, ILayoutManager, IBindableLayout, IViewContainer<T> where T : View
 	{
 		readonly ElementCollection<T> _children;
 
@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls
 		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
 
 		ILayoutManager Maui.ILayout.LayoutManager => this;
+		IList IBindableLayout.Children => _children;
 
 		protected override void OnChildAdded(Element child)
 		{

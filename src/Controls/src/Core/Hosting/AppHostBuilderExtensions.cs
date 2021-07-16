@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(GraphicsView), typeof(GraphicsViewHandler) },
 			{ typeof(Image), typeof(ImageHandler) },
 			{ typeof(Label), typeof(LabelHandler) },
-			{ typeof(Layout2.Layout), typeof(LayoutHandler) },
+			{ typeof(Layout), typeof(LayoutHandler) },
 			{ typeof(Picker), typeof(PickerHandler) },
 			{ typeof(ProgressBar), typeof(ProgressBarHandler) },
 			{ typeof(ScrollView), typeof(ScrollViewHandler) },
