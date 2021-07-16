@@ -8,16 +8,26 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls.Layout2
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout : View, Microsoft.Maui.ILayout, IEnumerable<IView>
+	public abstract class Layout : View, Maui.ILayout, IList<IView>
 	{
 		ILayoutManager _layoutManager;
 		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
 
-		readonly List<IView> _children = new List<IView>();
+		// The actual backing store for the IViews in the ILayout
+		readonly List<IView> _children = new();
 
-		public IReadOnlyList<IView> Children { get => _children.AsReadOnly(); }
+		// This provides a Children property for XAML 
+		public IList<IView> Children => this;
 
 		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
+
+		public int Count => _children.Count;
+
+		public bool IsReadOnly => ((ICollection<IView>)_children).IsReadOnly;
+
+		IReadOnlyList<IView> IContainer.Children => _children.AsReadOnly();
+
+		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
 
 		protected abstract ILayoutManager CreateLayoutManager();
 
@@ -89,6 +99,44 @@ namespace Microsoft.Maui.Controls.Layout2
 			LayoutHandler?.Add(child);
 		}
 
+		public void Clear()
+		{
+			for (int n = _children.Count - 1; n >= 0; n--)
+			{
+				Remove(this[n]);
+			}
+		}
+
+		public bool Contains(IView item)
+		{
+			return _children.Contains(item);
+		}
+
+		public void CopyTo(IView[] array, int arrayIndex)
+		{
+			_children.CopyTo(array, arrayIndex);
+		}
+
+		public int IndexOf(IView item)
+		{
+			return _children.IndexOf(item);
+		}
+
+		public void Insert(int index, IView child)
+		{
+			if (child == null)
+				return;
+
+			_children.Insert(index, child);
+
+			if (child is Element element)
+				element.Parent = this;
+
+			InvalidateMeasure();
+
+			LayoutHandler?.Add(child);
+		}
+
 		public virtual void Remove(IView child)
 		{
 			if (child == null)
@@ -102,6 +150,42 @@ namespace Microsoft.Maui.Controls.Layout2
 			InvalidateMeasure();
 
 			LayoutHandler?.Remove(child);
+		}
+
+		public void RemoveAt(int index)
+		{
+			if (index >= Count)
+			{
+				return;
+			}
+
+			var child = _children[index];
+
+			_children.RemoveAt(index);
+
+			if (child is Element element)
+				element.Parent = null;
+
+			InvalidateMeasure();
+
+			LayoutHandler?.Remove(child);
+		}
+
+		bool ICollection<IView>.Remove(IView child)
+		{
+			if (child == null)
+				return false;
+
+			var result = _children.Remove(child);
+
+			if (child is Element element)
+				element.Parent = null;
+
+			InvalidateMeasure();
+
+			LayoutHandler?.Remove(child);
+
+			return result;
 		}
 	}
 }
