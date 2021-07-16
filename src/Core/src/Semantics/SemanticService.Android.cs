@@ -1,6 +1,6 @@
 ﻿using Android.Views.Accessibility;
 
-namespace Microsoft.Maui.Semantics
+namespace Microsoft.Maui
 {
 	public class SemanticService
 	{

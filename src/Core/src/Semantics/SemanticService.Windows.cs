@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Semantics
+﻿namespace Microsoft.Maui
 {
 	public class SemanticService
 	{

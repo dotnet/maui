@@ -1,7 +1,7 @@
 ﻿using Foundation;
 using UIKit;
 
-namespace Microsoft.Maui.Semantics
+namespace Microsoft.Maui
 {
 	public class SemanticService
 	{
