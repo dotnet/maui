@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Microsoft.Maui.Graphics.Tests
 {
 	public class ColorUnitTests
 	{
@@ -202,24 +203,24 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void TestFromHex()
 		{
 			var color = Color.FromRgb(138, 43, 226);
-			Assert.Equal(color, Color.FromHex("8a2be2"));
+			Assert.Equal(color, Color.FromArgb("8a2be2"));
 
-			Assert.Equal(Color.FromRgba(138, 43, 226, 128), Color.FromHex("#808a2be2"));
-			Assert.Equal(Color.FromHex("#aabbcc"), Color.FromHex("#abc"));
-			Assert.Equal(Color.FromHex("#aabbccdd"), Color.FromHex("#abcd"));
+			Assert.Equal(Color.FromRgba(138, 43, 226, 128), Color.FromArgb("#808a2be2"));
+			Assert.Equal(Color.FromArgb("#aabbcc"), Color.FromArgb("#abc"));
+			Assert.Equal(Color.FromArgb("#aabbccdd"), Color.FromArgb("#abcd"));
 		}
 
 		[Fact]
 		public void TestToHex()
 		{
 			var colorRgb = Color.FromRgb(138, 43, 226);
-			Assert.Equal(Color.FromHex(colorRgb.ToHex()), colorRgb);
+			Assert.Equal(Color.FromArgb(colorRgb.ToArgbHex()), colorRgb);
 			var colorRgba = Color.FromRgba(138, 43, 226, .2);
-			Assert.Equal(Color.FromHex(colorRgba.ToHex()), colorRgba);
+			Assert.Equal(Color.FromArgb(colorRgba.ToArgbHex()), colorRgba);
 			var colorHsl = Color.FromHsla(240, 1, 1);
-			Assert.Equal(Color.FromHex(colorHsl.ToHex()), colorHsl);
+			Assert.Equal(Color.FromArgb(colorHsl.ToArgbHex()), colorHsl);
 			var colorHsla = Color.FromHsla(240, 1, 1, .1f);
-			var hexFromHsla = Color.FromHex(colorHsla.ToHex());
+			var hexFromHsla = Color.FromArgb(colorHsla.ToArgbHex());
 			Assert.Equal(hexFromHsla.Alpha, colorHsla.Alpha,2);
 			Assert.Equal(hexFromHsla.Red, colorHsla.Red,3);
 			Assert.Equal(hexFromHsla.Green, colorHsla.Green,3);
@@ -333,8 +334,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[InlineData("#0AF56C", "#F50A93")] // Lime green & bright purple (but with no limit values)
 		public void GetComplementary(string original, string expected)
 		{
-			var orig = Color.FromHex(original);
-			var expectedComplement = Color.FromHex(expected);
+			var orig = Color.FromArgb(original);
+			var expectedComplement = Color.FromArgb(expected);
 
 			var comp = orig.GetComplementary();
 
