@@ -48,6 +48,7 @@ namespace Maui.Controls.Sample
 #endif
 				});
 
+			appBuilder.ConfigureMaps();
 
 			// Use a "third party" library that brings in a massive amount of controls
 			appBuilder.UseBordelessEntry();
