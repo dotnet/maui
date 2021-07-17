@@ -18,7 +18,7 @@
       <group targetFramework="net6.0-windows10.0.18362">
         <dependency id="Microsoft.Maui.Graphics" version="$version$" exclude="Build,Analyzers" />
         <dependency id="Microsoft.Graphics.Win2D" version="0.8.0.21" exclude="Build,Analyzers" />
-        <dependency id="Microsoft.ProjectReunion" version="0.8.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.ProjectReunion" version="0.8.1" exclude="Build,Analyzers" />
       </group>
     </dependencies>
   </metadata>
