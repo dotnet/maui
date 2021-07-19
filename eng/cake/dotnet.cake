@@ -237,6 +237,9 @@ Task("SAMPLE-MAC")
 
 string FindMSBuild()
 {
+    if (!string.IsNullOrWhiteSpace(MSBuildExe))
+        return MSBuildExe;
+
     if (IsRunningOnWindows())
     {
         var vsInstallation = VSWhereLatest(new VSWhereLatestSettings { Requires = "Microsoft.Component.MSBuild", IncludePrerelease = true });

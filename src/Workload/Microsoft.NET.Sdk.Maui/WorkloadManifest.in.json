@@ -38,7 +38,7 @@
       "description": ".NET MAUI SDK for Android",
       "extends": [ 
         "maui-core",
-        "microsoft-android-sdk-full"
+        "android"
       ],
       "packs": [
           "Microsoft.Maui.Core.Ref.android",
