@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				SetFocusable();
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 				UpdateInputTransparent();
-			else if (e.PropertyName == Microsoft.Maui.Controls.Layout.CascadeInputTransparentProperty.PropertyName)
+			else if (e.PropertyName == Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparentProperty.PropertyName)
 				UpdateInputTransparentInherited();
 
 			ElementPropertyChanged?.Invoke(this, e);

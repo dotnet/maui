@@ -82,6 +82,11 @@ namespace Maui.Controls.Sample.Pages
 		double _currentScale = 1;
 	}
 
+	// TODO ezhart 2021-07-19 Okay, we _have_ a StackLayout in the default layouts namespace now, based on V/HStack 
+	// Right now there's a _lot_ of legacy code using sl.Children.Add that won't compile, but that should be fixed
+	// by making IContainer an IList<IView> and redirection Children to the Layout itself. So we're waiting on that change,
+	// since otherwise we have to change a _lot_ of code in Control Gallery
+
 	public class PinchGestureTestPage : BasePage
 	{
 		public PinchGestureTestPage()

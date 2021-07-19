@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Children))]
 	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement
 	{
-		ILayoutManager _layoutManager;
+		protected ILayoutManager _layoutManager;
 		public ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
 
 		// The actual backing store for the IViews in the ILayout
