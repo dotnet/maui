@@ -53,7 +53,7 @@ steps:
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Visual Studio'
       inputs:
-        provisioning_script: $(provisionator.vs2019)
+        provisioning_script: $(provisionator.vs)
 
 
   # Prepare Both
