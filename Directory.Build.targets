@@ -33,4 +33,10 @@
     <Content Remove="@(None->WithMetadataValue('Pack','true'))" />
   </ItemGroup>
 
+  <!-- Until we get a new enough dotnet -->
+  <ItemGroup>
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.19" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.19041.19" />
+  </ItemGroup>
+
 </Project>
