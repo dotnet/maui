@@ -29,14 +29,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		DataScheme = "http", DataHost = App.AppName, DataPathPrefix = "/gallery/"
 		)
 	]
-	public partial class Activity1 : FormsAppCompatActivity
+	public partial class Activity1 : MauiAppCompatActivity
 	{
+		App App => Microsoft.Maui.Controls.Application.Current as App; 
+
 		protected override void OnCreate(Bundle bundle)
 		{
 			Profile.Start();
-
-			ToolbarResource = Resource.Layout.Toolbar;
-			TabLayoutResource = Resource.Layout.Tabbar;
 
 			// Uncomment the next line to run this as a full screen app (no status bar)
 			//Window.AddFlags(WindowManagerFlags.Fullscreen | WindowManagerFlags.TurnScreenOn);
@@ -52,8 +51,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			// At some point the Resources class types will go away so
 			// reflection will stop working
 			ResourceManager.Init(null);
-
-			Microsoft.Maui.Controls.Compatibility.Forms.Init(this, bundle);
 			FormsMaps.Init(this, bundle);
 
 #if ENABLE_TEST_CLOUD
@@ -75,16 +72,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			// uncomment to verify turning off title bar works. This is not intended to be dynamic really.
 			//Forms.SetTitleBarVisibility (AndroidTitleBarVisibility.Never);
 
-			if (RestartAppTest.App != null)
-			{
-				_app = (App)RestartAppTest.App;
-				RestartAppTest.Reinit = true;
-			}
-			else
-			{
-				_app = new App();
-			}
-
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
 			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
 
@@ -92,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
 
 			// Listen for the message from the status bar color toggle test
-			MessagingCenter.Subscribe<AndroidStatusBarColor>(this, AndroidStatusBarColor.Message, color => SetStatusBarColor(global::Android.Graphics.Color.Red));
+			// MessagingCenter.Subscribe<AndroidStatusBarColor>(this, AndroidStatusBarColor.Message, color => SetStatusBarColor(global::Android.Graphics.Color.Red));
 
 			SetUpForceRestartTest();
 
@@ -107,8 +94,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			});
 
 			DependencyService.Register<IMultiWindowService, MultiWindowService>();
-			
-			LoadApplication(_app);
 
 #if LEGACY_RENDERERS
 			if ((int)Build.VERSION.SdkInt >= 21)
@@ -121,7 +106,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 		public void ReloadApplication()
 		{
-			LoadApplication(_app);
+			App.Windows[0].Page = App.CreateDefaultMainPage();
 		}
 
 		protected override void OnResume()

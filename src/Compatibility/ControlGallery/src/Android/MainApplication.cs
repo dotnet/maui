@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	//You can specify additional application information in this attribute
     [Application]
-    public class MainApplication : global::Android.App.Application, global::Android.App.Application.IActivityLifecycleCallbacks
+    public class MainApplication : MauiApplication, global::Android.App.Application.IActivityLifecycleCallbacks
     {
 		internal static Context ActivityContext { get; private set; }
 
@@ -69,5 +69,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 			ActivityContext = activity;
 		}
-    }
+
+		protected override IStartup OnCreateStartup() =>
+			new Startup();
+	}
 }

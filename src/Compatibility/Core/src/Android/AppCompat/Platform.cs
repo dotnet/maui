@@ -322,13 +322,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				IViewHandler handler = null;
 
 				//TODO: Handle this with AppBuilderHost
+
+				if (Forms.MauiContext?.Handlers == null)
+				{
+					throw new InvalidOperationException("Forms.MauiContext.Handlers cannot be null here");
+				}
+
 				try
 				{
 					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
 					handler.SetMauiContext(Forms.MauiContext);
 				}
-				catch
+				catch (Exception e)
 				{
+					Internals.Log.Warning(nameof(Platform), $"{e}");
 					// TODO define better catch response or define if this is needed?
 				}
 
