@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Essentials
 			return await tcsResponse.Task;
 		}
 
-		void ClearCookies()
+		static void ClearCookies()
 		{
 			NSUrlCache.SharedCache.RemoveAllCachedResponses();
 
