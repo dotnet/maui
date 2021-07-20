@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Layouts
 
 		public override void ArrangeChildren(Rectangle bounds) => Arrange(bounds.Width, Stack.Spacing, Stack.Children);
 
-		static Size Measure(double widthConstraint, int spacing, IReadOnlyList<IView> views)
+		static Size Measure(double widthConstraint, double spacing, IReadOnlyList<IView> views)
 		{
 			double totalRequestedHeight = 0;
 			double requestedWidth = 0;
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Layouts
 			return new Size(requestedWidth, totalRequestedHeight);
 		}
 
-		static void Arrange(double width, int spacing, IEnumerable<IView> views)
+		static void Arrange(double width, double spacing, IEnumerable<IView> views)
 		{
 			double stackHeight = 0;
 

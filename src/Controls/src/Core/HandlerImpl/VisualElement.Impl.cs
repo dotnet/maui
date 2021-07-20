@@ -25,9 +25,9 @@ namespace Microsoft.Maui.Controls
 			set => base.Handler = value;
 		}
 
-		private protected override void OnHandlerSet()
+		private protected override void OnHandlerChangedCore()
 		{
-			base.OnHandlerSet();
+			base.OnHandlerChangedCore();
 
 			IsPlatformEnabled = Handler != null;
 		}
