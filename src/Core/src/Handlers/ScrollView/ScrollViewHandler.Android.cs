@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ScrollChange -= ScrollChange;
 		}
 
-		void ScrollChange(object sender, AndroidX.Core.Widget.NestedScrollView.ScrollChangeEventArgs e)
+		void ScrollChange(object? sender, AndroidX.Core.Widget.NestedScrollView.ScrollChangeEventArgs e)
 		{
 			var context = (sender as View)?.Context;
 

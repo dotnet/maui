@@ -30,12 +30,12 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ScrollAnimationEnded -= ScrollAnimationEnded;
 		}
 
-		void ScrollAnimationEnded(object sender, EventArgs e)
+		void ScrollAnimationEnded(object? sender, EventArgs e)
 		{
 			VirtualView.ScrollFinished();
 		}
 
-		void Scrolled(object sender, EventArgs e)
+		void Scrolled(object? sender, EventArgs e)
 		{
 			VirtualView.HorizontalOffset = NativeView.ContentOffset.X;
 			VirtualView.VerticalOffset = NativeView.ContentOffset.Y;
