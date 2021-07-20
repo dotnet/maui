@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Layouts
 			}
 		}
 
-		static Size Measure(double heightConstraint, int spacing, IReadOnlyList<IView> views)
+		static Size Measure(double heightConstraint, double spacing, IReadOnlyList<IView> views)
 		{
 			double totalRequestedWidth = 0;
 			double requestedHeight = 0;
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Layouts
 			return new Size(totalRequestedWidth, requestedHeight);
 		}
 
-		static void ArrangeLeftToRight(double height, int spacing, IReadOnlyList<IView> views)
+		static void ArrangeLeftToRight(double height, double spacing, IReadOnlyList<IView> views)
 		{
 			double xPosition = 0;
 
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Layouts
 			}
 		}
 
-		static void ArrangeRightToLeft(double height, int spacing, IReadOnlyList<IView> views)
+		static void ArrangeRightToLeft(double height, double spacing, IReadOnlyList<IView> views)
 		{
 			double xPostition = 0;
 
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Layouts
 			}
 		}
 
-		static double ArrangeChild(IView child, double height, int spacing, double x)
+		static double ArrangeChild(IView child, double height, double spacing, double x)
 		{
 			var destination = new Rectangle(x, 0, child.DesiredSize.Width, height);
 			child.Frame = child.ComputeFrame(destination);
