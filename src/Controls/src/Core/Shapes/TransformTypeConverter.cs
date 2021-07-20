@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			=> sourceType == typeof(string);
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-			=> true;
+			=> destinationType == typeof(string);
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 			=> new MatrixTransform

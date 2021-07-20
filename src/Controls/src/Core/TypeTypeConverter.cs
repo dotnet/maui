@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 			=> sourceType == typeof(string);
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-			=> true;
+			=> false;
 
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
