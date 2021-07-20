@@ -4,10 +4,10 @@
 	{
 		IView IScrollView.Content => Content;
 
-		double IScrollView.HorizontalOffset 
+		double IScrollView.HorizontalOffset
 		{ 
-			get => ScrollX; 
-			set 
+			get => ScrollX;
+			set
 			{
 				if (ScrollX != value)
 				{
