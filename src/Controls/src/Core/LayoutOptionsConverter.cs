@@ -9,8 +9,14 @@ namespace Microsoft.Maui.Controls
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.LayoutOptionsConverter")]
 	[Xaml.TypeConversion(typeof(LayoutOptions))]
-	public sealed class LayoutOptionsConverter : StringTypeConverterBase
+	public sealed class LayoutOptionsConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();

@@ -8,8 +8,14 @@ namespace Microsoft.Maui.Controls
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.ListStringTypeConverter")]
 	[Xaml.TypeConversion(typeof(List<string>))]
-	public class ListStringTypeConverter : StringTypeConverterBase
+	public class ListStringTypeConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();

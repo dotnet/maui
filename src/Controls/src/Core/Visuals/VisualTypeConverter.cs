@@ -11,8 +11,14 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.TypeConversion(typeof(IVisual))]
-	public class VisualTypeConverter : StringTypeConverterBase
+	public class VisualTypeConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		static Dictionary<string, IVisual> _visualTypeMappings;
 		void InitMappings()
 		{

@@ -6,8 +6,14 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public class PathFigureCollectionConverter : StringTypeConverterBase
+	public class PathFigureCollectionConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> false;
+
 		const bool AllowSign = true;
 		const bool AllowComma = true;
 

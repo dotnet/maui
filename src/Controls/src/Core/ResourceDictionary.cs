@@ -324,8 +324,14 @@ namespace Microsoft.Maui.Controls
 
 		[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.RDSourceTypeConverter")]
 		[TypeConversion(typeof(Uri))]
-		public class RDSourceTypeConverter : StringTypeConverterBase, IExtendedTypeConverter
+		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
 		{
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+				=> sourceType == typeof(string);
+
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+				=> true;
+
 			object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 			{
 				if (serviceProvider == null)

@@ -4,8 +4,14 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public class PathGeometryConverter : StringTypeConverterBase
+	public class PathGeometryConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> false;
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();

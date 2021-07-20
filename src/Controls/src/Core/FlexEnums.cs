@@ -7,8 +7,14 @@ using Flex = Microsoft.Maui.Layouts.Flex;
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.TypeConversion(typeof(FlexJustify))]
-	public class FlexJustifyTypeConverter : StringTypeConverterBase
+	public class FlexJustifyTypeConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -38,8 +44,14 @@ namespace Microsoft.Maui.Controls
 	}
 
 	[Xaml.TypeConversion(typeof(FlexDirection))]
-	public class FlexDirectionTypeConverter : StringTypeConverterBase
+	public class FlexDirectionTypeConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -65,8 +77,14 @@ namespace Microsoft.Maui.Controls
 	}
 
 	[Xaml.TypeConversion(typeof(FlexAlignContent))]
-	public class FlexAlignContentTypeConverter : StringTypeConverterBase
+	public class FlexAlignContentTypeConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -96,8 +114,14 @@ namespace Microsoft.Maui.Controls
 	}
 
 	[Xaml.TypeConversion(typeof(FlexAlignItems))]
-	public class FlexAlignItemsTypeConverter : StringTypeConverterBase
+	public class FlexAlignItemsTypeConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -123,8 +147,14 @@ namespace Microsoft.Maui.Controls
 	}
 
 	[Xaml.TypeConversion(typeof(FlexAlignSelf))]
-	public class FlexAlignSelfTypeConverter : StringTypeConverterBase
+	public class FlexAlignSelfTypeConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -150,8 +180,14 @@ namespace Microsoft.Maui.Controls
 	}
 
 	[Xaml.TypeConversion(typeof(FlexWrap))]
-	public class FlexWrapTypeConverter : StringTypeConverterBase
+	public class FlexWrapTypeConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -175,8 +211,14 @@ namespace Microsoft.Maui.Controls
 	}
 
 	[Xaml.TypeConversion(typeof(FlexBasis))]
-	public class FlexBasisTypeConverter : StringTypeConverterBase
+	public class FlexBasisTypeConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();

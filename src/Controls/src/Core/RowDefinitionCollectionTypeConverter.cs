@@ -6,8 +6,14 @@ using System.Linq;
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.TypeConversion(typeof(RowDefinitionCollection))]
-	public class RowDefinitionCollectionTypeConverter : StringTypeConverterBase
+	public class RowDefinitionCollectionTypeConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();

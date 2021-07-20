@@ -11,8 +11,14 @@ namespace Microsoft.Maui.Controls
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.BindablePropertyConverter")]
 	[Xaml.TypeConversion(typeof(BindableProperty))]
-	public sealed class BindablePropertyConverter : StringTypeConverterBase, IExtendedTypeConverter
+	public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
 			if (string.IsNullOrWhiteSpace(value))

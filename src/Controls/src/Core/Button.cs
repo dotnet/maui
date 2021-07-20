@@ -377,8 +377,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		[Xaml.TypeConversion(typeof(ButtonContentLayout))]
-		public sealed class ButtonContentTypeConverter : StringTypeConverterBase
+		public sealed class ButtonContentTypeConverter : TypeConverter
 		{
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+				=> sourceType == typeof(string);
+
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+				=> true;
+
 			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 			{
 				var strValue = value?.ToString();

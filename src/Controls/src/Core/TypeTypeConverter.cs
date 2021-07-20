@@ -7,8 +7,14 @@ namespace Microsoft.Maui.Controls
 {
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.TypeTypeConverter")]
 	[TypeConversion(typeof(Type))]
-	public sealed class TypeTypeConverter : StringTypeConverterBase, IExtendedTypeConverter
+	public sealed class TypeTypeConverter : TypeConverter, IExtendedTypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
 			if (serviceProvider == null)

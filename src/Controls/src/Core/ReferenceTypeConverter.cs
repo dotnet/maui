@@ -8,8 +8,15 @@ using Microsoft.Maui.Controls.Xaml.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public sealed class ReferenceTypeConverter : StringTypeConverterBase, IExtendedTypeConverter
+	public sealed class ReferenceTypeConverter : TypeConverter, IExtendedTypeConverter
 	{
+
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
 			if (serviceProvider == null)

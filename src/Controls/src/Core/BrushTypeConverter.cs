@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public class BrushTypeConverter : StringTypeConverterBase
+	public class BrushTypeConverter : TypeConverter
 	{
 		public const string LinearGradient = "linear-gradient";
 		public const string RadialGradient = "radial-gradient";
@@ -17,6 +17,12 @@ namespace Microsoft.Maui.Controls
 		public const string Hsla = "hsla";
 
 		readonly ColorTypeConverter _colorTypeConverter = new ColorTypeConverter();
+
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{

@@ -4,8 +4,14 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public class TransformTypeConverter : StringTypeConverterBase
+	public class TransformTypeConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 			=> new MatrixTransform
 			{

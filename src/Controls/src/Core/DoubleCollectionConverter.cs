@@ -5,8 +5,14 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
-	public class DoubleCollectionConverter : StringTypeConverterBase
+	public class DoubleCollectionConverter : TypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();

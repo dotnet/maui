@@ -6,8 +6,14 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls
 {
 	[TypeConversion(typeof(double))]
-	public class FontSizeConverter : StringTypeConverterBase, IExtendedTypeConverter
+	public class FontSizeConverter : TypeConverter, IExtendedTypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
 			if (value != null)
