@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -47,6 +48,39 @@ namespace Microsoft.Maui.Controls
 		IShape IFrameworkElement.Clip => Clip;
 
 		IFrameworkElement IFrameworkElement.Parent => Parent as IFrameworkElement;
+
+		public static readonly BindableProperty BorderBrushProperty = BindableProperty.Create(
+			nameof(BorderBrush), typeof(Paint), typeof(VisualElement), null);
+
+		public Paint BorderBrush
+		{
+			get => (Paint)GetValue(BorderBrushProperty);
+			set => SetValue(BorderBrushProperty, value);
+		}
+
+		public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create(
+			nameof(BorderWidth), typeof(double), typeof(VisualElement), 0.0d);
+
+		public double BorderWidth
+		{
+			get => (double)GetValue(BorderWidthProperty);
+			set => SetValue(BorderWidthProperty, value);
+		}
+
+		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(
+		   nameof(CornerRadius), typeof(CornerRadius), typeof(VisualElement), new CornerRadius());
+
+		public CornerRadius CornerRadius
+		{
+			get => (CornerRadius)GetValue(CornerRadiusProperty);
+			set => SetValue(CornerRadiusProperty, value);
+		}
+
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+			Handler?.UpdateValue(propertyName);
+		}
 
 		public Size DesiredSize { get; protected set; }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
@@ -25,28 +26,12 @@ namespace Microsoft.Maui.Controls
 				throw new XamlParseException("Property not set", serviceProvider);
 			var valueconverter = serviceProvider.GetService(typeof(IValueConverterProvider)) as IValueConverterProvider;
 
-			MemberInfo minforetriever()
-			{
-				MemberInfo minfo = null;
-				try
-				{
-					minfo = Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
-				}
-				catch (AmbiguousMatchException e)
-				{
-					throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", serviceProvider, innerException: e);
-				}
-				if (minfo != null)
-					return minfo;
-				try
-				{
-					return Property.DeclaringType.GetRuntimeMethod("Get" + Property.PropertyName, new[] { typeof(BindableObject) });
-				}
-				catch (AmbiguousMatchException e)
-				{
-					throw new XamlParseException($"Multiple methods with name '{Property.DeclaringType}.Get{Property.PropertyName}' found.", serviceProvider, innerException: e);
-				}
-			}
+			MemberInfo minforetriever() => (MemberInfo)Property.DeclaringType.GetRuntimeProperties().FirstOrDefault(pi => pi.Name == Property.PropertyName
+																													   && pi.PropertyType == Property.ReturnType)
+										?? (MemberInfo)Property.DeclaringType.GetRuntimeMethods().FirstOrDefault(mi => mi.Name == $"Get{Property.PropertyName}"
+																													&& mi.ReturnParameter.ParameterType == Property.ReturnType
+																													&& mi.GetParameters().Length == 1
+																													&& mi.GetParameters()[0].ParameterType == typeof(BindableObject));
 
 			object value = valueconverter.Convert(Value, Property.ReturnType, minforetriever, serviceProvider);
 			Value = value;

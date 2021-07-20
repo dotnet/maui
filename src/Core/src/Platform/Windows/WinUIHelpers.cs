@@ -28,6 +28,7 @@ namespace Microsoft.Maui
 				Bottom = all
 			};
 		}
+
 		public static WCornerRadius CreateCornerRadius(double left, double top, double right, double bottom)
 		{
 			return new WCornerRadius

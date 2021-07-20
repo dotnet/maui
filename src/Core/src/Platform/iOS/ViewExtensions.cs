@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using CoreAnimation;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -51,18 +52,12 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this UIView nativeView, IView view)
 		{
-			if (nativeView == null)
+			var background = view.Background;
+
+			if (background.IsNullOrEmpty())
 				return;
 
-			// Remove previous background gradient layer if any
-			nativeView.RemoveBackgroundLayer();
-
-			var paint = view.Background;
-
-			if (paint.IsNullOrEmpty())
-				return;
-
-			if (paint is SolidPaint solidPaint)
+			if (background is SolidPaint solidPaint)
 			{
 				Color backgroundColor = solidPaint.Color;
 
@@ -73,17 +68,41 @@ namespace Microsoft.Maui
 
 				return;
 			}
-			else if (paint is GradientPaint gradientPaint)
-			{
-				var backgroundLayer = gradientPaint?.ToCALayer(nativeView.Bounds);
 
-				if (backgroundLayer != null)
-				{
-					backgroundLayer.Name = BackgroundLayerName;
-					nativeView.BackgroundColor = UIColor.Clear;
-					nativeView.InsertBackgroundLayer(backgroundLayer, 0);
-				}
-			}
+			nativeView.UpdateMauiCALayer(view);
+		}
+
+		public static void UpdateBorderBrush(this UIView nativeView, IView view)
+		{
+			var borderBrush = view.BorderBrush;
+			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
+
+			if (backgroundLayer == null && borderBrush.IsNullOrEmpty())
+				return;
+
+			nativeView.UpdateMauiCALayer(view);
+		}
+
+		public static void UpdateBorderWidth(this UIView nativeView, IView view)
+		{
+			var borderWidth = view.BorderWidth;
+			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
+
+			if (backgroundLayer == null && borderWidth == 0)
+				return;
+
+			nativeView.UpdateMauiCALayer(view);
+		}
+
+		public static void UpdateCornerRadius(this UIView nativeView, IView view)
+		{
+			var cornerRadius = view.CornerRadius;
+			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
+
+			if (backgroundLayer == null && cornerRadius.TopLeft == 0 && cornerRadius.TopRight == 0 && cornerRadius.BottomLeft == 0 && cornerRadius.BottomRight == 0)
+				return;
+
+			nativeView.UpdateMauiCALayer(view);
 		}
 
 		public static void UpdateOpacity(this UIView nativeView, IView view)
@@ -236,6 +255,36 @@ namespace Microsoft.Maui
 			return false;
 		}
 
+		internal static void UpdateMauiCALayer(this UIView nativeView, IView view)
+		{
+			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
+
+			if (backgroundLayer == null)
+			{
+				backgroundLayer = nativeView.Layer?.Sublayers?
+					.FirstOrDefault(x => x is MauiCALayer);
+
+				if (backgroundLayer == null)
+				{
+					backgroundLayer = new MauiCALayer
+					{
+						Name = BackgroundLayerName
+					};
+
+					nativeView.BackgroundColor = UIColor.Clear;
+					nativeView.InsertBackgroundLayer(backgroundLayer, 0);
+				}
+			}
+
+			if (backgroundLayer is MauiCALayer mauiCALayer)
+			{
+				mauiCALayer.SetBackground(view.Background);
+				mauiCALayer.SetBorderBrush(view.BorderBrush);
+				mauiCALayer.SetBorderWidth(view.BorderWidth);
+				mauiCALayer.SetCornerRadius(view.CornerRadius);
+			}
+		}
+
 		static void InsertBackgroundLayer(this UIView control, CALayer backgroundLayer, int index = -1)
 		{
 			control.RemoveBackgroundLayer();
@@ -275,6 +324,6 @@ namespace Microsoft.Maui
 					break;
 				}
 			}
-		}
+		}	
 	}
 }

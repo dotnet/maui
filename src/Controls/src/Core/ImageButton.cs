@@ -16,9 +16,9 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty CommandParameterProperty = ButtonElement.CommandParameterProperty;
 
-		public static readonly BindableProperty CornerRadiusProperty = BorderElement.CornerRadiusProperty;
+		public static readonly new BindableProperty CornerRadiusProperty = BorderElement.CornerRadiusProperty;
 
-		public static readonly BindableProperty BorderWidthProperty = BorderElement.BorderWidthProperty;
+		public static readonly new BindableProperty BorderWidthProperty = BorderElement.BorderWidthProperty;
 
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
@@ -56,13 +56,13 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(BorderElement.BorderColorProperty, value); }
 		}
 
-		public int CornerRadius
+		public new int CornerRadius
 		{
 			get { return (int)GetValue(CornerRadiusProperty); }
 			set { SetValue(CornerRadiusProperty, value); }
 		}
 
-		public double BorderWidth
+		public new double BorderWidth
 		{
 			get { return (double)GetValue(BorderWidthProperty); }
 			set { SetValue(BorderWidthProperty, value); }

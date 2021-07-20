@@ -26,6 +26,12 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public Paint Background { get; set; }
 
+		public Paint BorderBrush { get; set; }
+
+		public double BorderWidth { get; set; }
+
+		public CornerRadius CornerRadius { get; set; }
+
 		public Rectangle Frame { get; set; } = new Rectangle(0, 0, 20, 20);
 
 		public double TranslationX { get; set; }

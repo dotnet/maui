@@ -12,6 +12,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(AlertsPage), "Alerts",
 				"Displaying an alert, asking a user to make a choice, or displaying a prompt."),
 
+			new SectionModel(typeof(BordersPage), "Borders and CornerRadius",
+				"The border that surrounds a View."),
+
 			new SectionModel(typeof(BrushesPage), "Brushes",
 				"A brush enables you to paint an area, such as the background of a control, using different approaches."),
 

@@ -37,34 +37,60 @@ namespace Microsoft.Maui
 			};
 		}
 
-		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackground = null)
+		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackgroundDrawable = null)
 		{
-			// Remove previous background gradient if any
-			if (nativeView.Background is MauiDrawable mauiDrawable)
+			var background = view.Background;
+
+			if (background.IsNullOrEmpty())
 			{
-				nativeView.Background = null;
-				mauiDrawable.Dispose();
+				nativeView.Background = defaultBackgroundDrawable;
+				return;
 			}
 
-			var paint = view.Background;
-			if (paint.IsNullOrEmpty())
+			if (background is SolidPaint solidPaint)
 			{
-				if (defaultBackground != null)
-					nativeView.Background = defaultBackground;
+				Color backgroundColor = solidPaint.Color;
+
+				if (backgroundColor != null)
+					nativeView.SetBackgroundColor(backgroundColor.ToNative());
+
+				return;
 			}
-			else
-			{
-				if (paint is SolidPaint solidPaint)
-				{
-					if (solidPaint.Color is Color backgroundColor)
-						nativeView.SetBackgroundColor(backgroundColor.ToNative());
-				}
-				else
-				{
-					if (paint!.ToDrawable() is Drawable drawable)
-						nativeView.Background = drawable;
-				}
-			}
+
+			nativeView.UpdateMauiDrawable(view);
+		}
+
+		public static void UpdateBorderBrush(this AView nativeView, IView view)
+		{
+			var borderBrush = view.BorderBrush;
+			MauiDrawable? background = nativeView.Background as MauiDrawable;
+
+			if (background == null && borderBrush.IsNullOrEmpty())
+				return;
+
+			nativeView.UpdateMauiDrawable(view);
+		}
+
+		public static void UpdateBorderWidth(this AView nativeView, IView view)
+		{
+			var borderWidth = view.BorderWidth;
+			MauiDrawable? background = nativeView.Background as MauiDrawable;
+
+			if (background == null && borderWidth == 0)
+				return;
+
+			nativeView.UpdateMauiDrawable(view);
+		}
+
+		public static void UpdateCornerRadius(this AView nativeView, IView view)
+		{
+			var cornerRadius = view.CornerRadius;
+			MauiDrawable? background = nativeView.Background as MauiDrawable;
+
+			if (background == null && cornerRadius.TopLeft == 0 && cornerRadius.TopRight == 0 && cornerRadius.BottomLeft == 0 && cornerRadius.BottomRight == 0)
+				return;
+
+			nativeView.UpdateMauiDrawable(view);
 		}
 
 		public static void UpdateOpacity(this AView nativeView, IView view)
@@ -129,10 +155,28 @@ namespace Microsoft.Maui
 		{
 			if (view == null)
 				return;
+
 			if (view.Parent == null)
 				return;
+
 			((ViewGroup)view.Parent).RemoveView(view);
 		}
 
+		internal static void UpdateMauiDrawable(this AView nativeView, IView view)
+		{
+			MauiDrawable? mauiDrawable = nativeView.Background as MauiDrawable;
+
+			if (mauiDrawable == null)
+			{
+				mauiDrawable = new MauiDrawable(nativeView.Context);
+
+				nativeView.Background = mauiDrawable;
+			}
+
+			mauiDrawable.SetBackground(view.Background);
+			mauiDrawable.SetBorderBrush(view.BorderBrush);
+			mauiDrawable.SetBorderWidth(view.BorderWidth);
+			mauiDrawable.SetCornerRadius(view.CornerRadius);
+		}
 	}
 }

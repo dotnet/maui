@@ -51,6 +51,12 @@ namespace Microsoft.Maui.UnitTests
 
 		public Paint Background { get; set; }
 
+		public Paint BorderBrush { get; set; }
+
+		public double BorderWidth { get; set; }
+
+		public CornerRadius CornerRadius { get; set; }
+
 		public double TranslationX { get; set; }
 
 		public double TranslationY { get; set; }

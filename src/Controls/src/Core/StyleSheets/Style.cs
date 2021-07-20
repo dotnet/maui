@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -14,7 +15,8 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		}
 
 		public IDictionary<string, string> Declarations { get; set; } = new Dictionary<string, string>();
-		Dictionary<KeyValuePair<string, string>, object> convertedValues = new Dictionary<KeyValuePair<string, string>, object>();
+
+		readonly Dictionary<KeyValuePair<string, string>, object> _convertedValues = new();
 
 		public static Style Parse(CssReader reader, char stopChar = '\0')
 		{
@@ -73,17 +75,15 @@ namespace Microsoft.Maui.Controls.StyleSheets
 					styleable.ClearValue(property, fromStyle: true);
 				else
 				{
-					object value;
-					if (!convertedValues.TryGetValue(decl, out value))
-						convertedValues[decl] = (value = Convert(styleable, decl.Value, property));
+					if (!_convertedValues.TryGetValue(decl, out var value))
+						_convertedValues[decl] = (value = Convert(styleable, decl.Value, property));
 					styleable.SetValue(property, value, fromStyle: true);
 				}
 			}
 
 			foreach (var child in styleable.LogicalChildrenInternal)
 			{
-				var ve = child as VisualElement;
-				if (ve == null)
+				if (child is not VisualElement ve)
 					continue;
 				Apply(ve, inheriting: true);
 			}
@@ -93,38 +93,20 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		static object Convert(object target, object value, BindableProperty property)
 		{
 			var serviceProvider = new StyleSheetServiceProvider(target, property);
-			Func<MemberInfo> minforetriever =
-				() =>
-				{
-					MemberInfo minfo = null;
-					try
-					{
-						minfo = property.DeclaringType.GetRuntimeProperty(property.PropertyName);
-					}
-					catch (AmbiguousMatchException e)
-					{
-						throw new XamlParseException($"Multiple properties with name '{property.DeclaringType}.{property.PropertyName}' found.", serviceProvider, innerException: e);
-					}
-					if (minfo != null)
-						return minfo;
-					try
-					{
-						return property.DeclaringType.GetRuntimeMethod("Get" + property.PropertyName, new[] { typeof(BindableObject) });
-					}
-					catch (AmbiguousMatchException e)
-					{
-						throw new XamlParseException($"Multiple methods with name '{property.DeclaringType}.Get{property.PropertyName}' found.", serviceProvider, innerException: e);
-					}
-				};
+			MemberInfo minforetriever() => (MemberInfo)property.DeclaringType.GetRuntimeProperties().FirstOrDefault(pi => pi.Name == property.PropertyName
+																													   && pi.PropertyType == property.ReturnType)
+										?? (MemberInfo)property.DeclaringType.GetRuntimeMethods().FirstOrDefault(mi => mi.Name == $"Get{property.PropertyName}"
+																													&& mi.ReturnParameter.ParameterType == property.ReturnType
+																													&& mi.GetParameters().Length == 1
+																													&& mi.GetParameters()[0].ParameterType == typeof(BindableObject));
+
 			var ret = value.ConvertTo(property.ReturnType, minforetriever, serviceProvider, out Exception exception);
 			if (exception != null)
 				throw exception;
 			return ret;
 		}
 
-		public void UnApply(IStylable styleable)
-		{
-			throw new NotImplementedException();
-		}
+		public void UnApply(IStylable styleable) => throw new NotImplementedException();
+		
 	}
 }
