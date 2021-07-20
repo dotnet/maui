@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Content is IFrameworkElement frameworkElement)
 			{
-				frameworkElement.Measure(widthConstraint, heightConstraint);
+				_ = frameworkElement.Handler?.GetDesiredSize(widthConstraint, heightConstraint);
 			}
 
 			return new Size(widthConstraint, heightConstraint);
