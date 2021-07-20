@@ -7,10 +7,8 @@
 
   <!-- Prevent Razor files from being packaged as bundle resources in iOS/MacCatalyst targets by declaring them
        as RazorComponent instead of Content. -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(DesignTimeBuild)' != 'true'">
     <Content Remove="**\*.razor" />
-  </ItemGroup>
-  <ItemGroup>
     <RazorComponent Include="**\*.razor" />
   </ItemGroup>
 

@@ -18,11 +18,23 @@ namespace Microsoft.Maui
 		{
 		}
 
+		protected override IStartup OnCreateStartup() => new TStartup();
+	}
+
+	public abstract class MauiApplication : Application
+	{
+		protected MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
+		{
+			Current = this;
+		}
+
+		protected abstract IStartup OnCreateStartup();
+
 		public override void OnCreate()
 		{
 			RegisterActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
 
-			var startup = new TStartup();
+			var startup = OnCreateStartup();
 
 			var host = startup
 				.CreateAppHostBuilder()
@@ -65,14 +77,6 @@ namespace Microsoft.Maui
 		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
 		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
 		{
-		}
-	}
-
-	public abstract class MauiApplication : Application
-	{
-		protected MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
-		{
-			Current = this;
 		}
 
 		public static MauiApplication Current { get; private set; } = null!;

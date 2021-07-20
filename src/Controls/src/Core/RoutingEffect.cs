@@ -11,6 +11,10 @@ namespace Microsoft.Maui.Controls
 			Inner = Resolve(effectId);
 		}
 
+		protected RoutingEffect()
+		{
+		}
+
 		protected override void OnAttached()
 		{
 		}
@@ -22,21 +26,25 @@ namespace Microsoft.Maui.Controls
 		internal override void ClearEffect()
 		{
 			Inner?.ClearEffect();
+			PlatformEffect?.ClearEffect();
 		}
 
 		internal override void SendAttached()
 		{
 			Inner?.SendAttached();
+			PlatformEffect?.SendAttached();
 		}
 
 		internal override void SendDetached()
 		{
 			Inner?.SendDetached();
+			PlatformEffect?.SendDetached();
 		}
 
 		internal override void SendOnElementPropertyChanged(PropertyChangedEventArgs args)
 		{
 			Inner?.SendOnElementPropertyChanged(args);
+			PlatformEffect?.SendOnElementPropertyChanged(args);
 		}
 	}
 }

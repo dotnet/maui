@@ -40,13 +40,13 @@
         "type": "parameter",
         "dataType": "string",
         "replaces": "MICROSOFT_EXTENSIONS_VERSION",
-        "defaultValue": "6.0.0-preview.5.*"
+        "defaultValue": "6.0.0-preview.6.*"
       },
       "projectReunionVersion": {
         "type": "parameter",
         "dataType": "string",
         "replaces": "PROJECT_REUNION_VERSION",
-        "defaultValue": "0.8.0"
+        "defaultValue": "0.8.1"
       }
     },
     "defaultName": "MauiApp1"

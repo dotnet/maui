@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -1078,6 +1080,56 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Since it's using GridLength.Star, we expect the view to be arranged at the full size of the grid
 			AssertArranged(view0, 0, 0, 300, 300);
+		}
+
+		[Fact]
+		public void IgnoresCollapsedViews()
+		{
+			var grid = CreateGridLayout();
+
+			var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			var collapsedView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			collapsedView.Visibility.Returns(Visibility.Collapsed);
+
+			var children = new List<IView>() { view, collapsedView }.AsReadOnly();
+			grid.Children.Returns(children);
+
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(100, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+
+			// View is visible, so we expect it to be measured and arranged
+			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			view.Received().Arrange(Arg.Any<Rectangle>());
+
+			// View is collapsed, so we expect it not to be measured or arranged
+			collapsedView.DidNotReceive().Measure(Arg.Any<double>(), Arg.Any<double>());
+			collapsedView.DidNotReceive().Arrange(Arg.Any<Rectangle>());
+		}
+
+		[Fact]
+		public void DoesNotIgnoreHiddenViews()
+		{
+			var grid = CreateGridLayout();
+
+			var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			var hiddenView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			hiddenView.Visibility.Returns(Visibility.Hidden);
+
+			var children = new List<IView>() { view, hiddenView }.AsReadOnly();
+			grid.Children.Returns(children);
+
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(100, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+
+			// View is visible, so we expect it to be measured and arranged
+			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			view.Received().Arrange(Arg.Any<Rectangle>());
+
+			// View is hidden, so we expect it to be measured and arranged (since it'll need to take up space)
+			hiddenView.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			hiddenView.Received().Arrange(Arg.Any<Rectangle>());
 		}
 	}
 }
