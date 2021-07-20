@@ -1,11 +1,12 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TypeConverter(typeof(ToBarConverter))]
+	[System.ComponentModel.TypeConverter(typeof(ToBarConverter))]
 	internal class Bar
 	{
 
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public static readonly BindableProperty BazProperty =
 			BindableProperty.Create(nameof(MockBindable.Baz), typeof(Baz), typeof(MockBindable), default(Baz));
 
-		[TypeConverter(typeof(ToBazConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ToBazConverter))]
 		public Baz Baz
 		{
 			get { return (Baz)GetValue(BazProperty); }
