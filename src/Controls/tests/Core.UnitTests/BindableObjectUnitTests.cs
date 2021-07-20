@@ -222,7 +222,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		[Description("When the BindingContext changes, any bindings should be immediately applied.")]
+		[NUnit.Framework.Description("When the BindingContext changes, any bindings should be immediately applied.")]
 		public void BindingContextChangedBindingsApplied()
 		{
 			var mock = new MockBindable();
@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		[Description("When the BindingContext changes, the new context needs to listen for updates.")]
+		[NUnit.Framework.Description("When the BindingContext changes, the new context needs to listen for updates.")]
 		public void BindingContextChangedBindingsListening()
 		{
 			var mock = new MockBindable();
@@ -256,7 +256,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		[Description("When an INPC implementer is unset as the BindingContext, its changes shouldn't be listened to any further.")]
+		[NUnit.Framework.Description("When an INPC implementer is unset as the BindingContext, its changes shouldn't be listened to any further.")]
 		public void BindingContextUnsetStopsListening()
 		{
 			var mock = new MockBindable();
