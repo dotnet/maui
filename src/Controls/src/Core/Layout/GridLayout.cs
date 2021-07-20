@@ -231,10 +231,10 @@ namespace Microsoft.Maui.Controls.Layout2
 			}
 		}
 
-		public override void Remove(IView child)
+		public override bool Remove(IView child)
 		{
 			_viewInfo.Remove(child);
-			base.Remove(child);
+			return base.Remove(child);
 		}
 
 		protected override ILayoutManager CreateLayoutManager() => new GridLayoutManager(this);
