@@ -21,7 +21,6 @@
         Include="net6.0-ios13.6"
         FullTfm="%(Identity)"
         Tfm="net6.0-ios"
-        Rid="iossimulator-x64"
         Profile="iOS"
     />
     <_TargetPlatform
@@ -29,7 +28,6 @@
         Include="net6.0-maccatalyst13.5"
         FullTfm="%(Identity)"
         Tfm="net6.0-maccatalyst"
-        Rid="maccatalyst-x64"
         Profile="MacCatalyst"
     />
     <_TargetPlatform
