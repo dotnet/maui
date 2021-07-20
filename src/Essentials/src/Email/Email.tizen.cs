@@ -19,15 +19,15 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 				Uri = "mailto:",
 			};
 
-			if (message.Bcc.Count > 0)
+			if (message.Bcc?.Count > 0)
 				appControl.ExtraData.Add(AppControlData.Bcc, message.Bcc);
 			if (!string.IsNullOrEmpty(message.Body))
 				appControl.ExtraData.Add(AppControlData.Text, message.Body);
-			if (message.Cc.Count > 0)
+			if (message.Cc?.Count > 0)
 				appControl.ExtraData.Add(AppControlData.Cc, message.Cc);
 			if (!string.IsNullOrEmpty(message.Subject))
 				appControl.ExtraData.Add(AppControlData.Subject, message.Subject);
-			if (message.To.Count > 0)
+			if (message.To?.Count > 0)
 				appControl.ExtraData.Add(AppControlData.To, message.To);
 
 			AppControl.SendLaunchRequest(appControl);

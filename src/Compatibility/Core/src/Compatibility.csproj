@@ -50,7 +50,7 @@
     <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'tizen'" >
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'net6.0-tizen'" >
     <Compile Include="$(TizenRoot)**\*.cs"></Compile>
     <EmbeddedResource Include="$(TizenRoot)Resources\*.resx" />
     <EmbeddedResource Include="$(TizenRoot)Resources\*.png" />

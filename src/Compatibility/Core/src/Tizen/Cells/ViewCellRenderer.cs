@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				if (element is Button || element is Switch)
 				{
-					var nativeView = Platform.GetRenderer(element).NativeView ?? null;
+					var nativeView = Platform.GetRenderer(element)?.NativeView ?? null;
 					if (nativeView != null)
 					{
 						nativeView.PropagateEvents = false;
