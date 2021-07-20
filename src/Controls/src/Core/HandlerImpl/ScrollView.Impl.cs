@@ -5,7 +5,7 @@
 		IView IScrollView.Content => Content;
 
 		double IScrollView.HorizontalOffset
-		{ 
+		{
 			get => ScrollX;
 			set
 			{
