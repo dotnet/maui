@@ -144,11 +144,12 @@ stages:
             - task: xamops.azdevex.provisionator-task.provisionator@1
               displayName: 'Provision VSWindows'
               inputs:
-                provisioning_script: $(provisionator.vs2019)
+                provisioning_script: $(provisionator.vs)
             - script: dotnet tool restore
               displayName: install dotnet tools
             - powershell: |
-                  & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildCondition }}
+                  $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+                  & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildCondition }} --msbuild="$msbuild"
               displayName: 'Build WinUI SLN'
             - task: CopyFiles@2
               displayName: 'Copy Bin Log Files'
@@ -249,7 +250,7 @@ stages:
               - task: xamops.azdevex.provisionator-task.provisionator@1
                 displayName: 'Provision VSWindows'
                 inputs:
-                  provisioning_script: $(provisionator.vs2019)
+                  provisioning_script: $(provisionator.vs)
 
             - script: dotnet tool restore
               displayName: install dotnet tools

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Graphics;
 
@@ -170,8 +171,13 @@ namespace Microsoft.Maui.Controls
 
 		internal static IAnimationManager? GetAnimationManager(this IAnimatable animatable)
 		{
-			if (animatable is Element e && e.FindParentOfType<Window>(true) is Window window)
-				return window.AnimationManager;
+			if (animatable is Element e && e.FindMauiContext() is IMauiContext mauiContext)
+			{
+				if (mauiContext is IScopedMauiContext scoped)
+					return scoped.AnimationManager;
+				else
+					return mauiContext.Services.GetService<IAnimationManager>();
+			}
 
 			throw new ArgumentException($"Unable to find {nameof(IAnimationManager)} for '{animatable.GetType().FullName}'.", nameof(animatable));
 		}

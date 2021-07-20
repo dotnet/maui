@@ -21,12 +21,12 @@
    <!-- Microsoft.Maui.Graphics related Packages -->
   <PropertyGroup>
     <_MicrosoftGraphicsWin2DVersion>0.8.0.21</_MicrosoftGraphicsWin2DVersion>
-    <_MicrosoftMauiGraphics>6.0.100-preview.5.246</_MicrosoftMauiGraphics>
-    <_MicrosoftMauiGraphicsWin2D>6.0.100-preview.5.229</_MicrosoftMauiGraphicsWin2D>
+    <_MicrosoftMauiGraphics>6.0.100-preview.6.299</_MicrosoftMauiGraphics>
+    <_MicrosoftMauiGraphicsWin2D>6.0.100-preview.6.299</_MicrosoftMauiGraphicsWin2D>
   </PropertyGroup>
    <!-- WINUI related Packages -->
   <PropertyGroup>
-    <_MicrosoftProjectReunionVersion>0.8.0</_MicrosoftProjectReunionVersion>
+    <_MicrosoftProjectReunionVersion>0.8.1</_MicrosoftProjectReunionVersion>
     <_MicrosoftWebWebView2Version>1.0.705.50</_MicrosoftWebWebView2Version>
   </PropertyGroup>
   <!-- Android related Packages -->

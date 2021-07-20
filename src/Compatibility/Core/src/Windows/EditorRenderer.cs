@@ -249,6 +249,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_fontApplied = true;
 		}
 
+		[PortHandler("Still pending to port IsSpellCheckEnabled")]
 		void UpdateInputScope()
 		{
 			Editor editor = Element;

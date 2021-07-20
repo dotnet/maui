@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 			foreach (var assembly in TestInstrumentation.TestAssemblies.Distinct())
 			{
 				// this is required to exist, but is not used
-				var path = Path.Combine(FileSystem.CacheDirectory, assembly.GetName().Name);
+				var path = Path.Combine(FileSystem.CacheDirectory, assembly.GetName().Name + ".dll");
 				File.Create(path).Close();
 
 				yield return new TestAssemblyInfo(assembly, path);

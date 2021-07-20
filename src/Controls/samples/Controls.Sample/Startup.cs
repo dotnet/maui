@@ -51,6 +51,10 @@ namespace Maui.Controls.Sample
 
 			// Use a "third party" library that brings in a massive amount of controls
 			appBuilder.UseBordelessEntry();
+			appBuilder.ConfigureEffects(builder =>
+			{
+				builder.Add<FocusRoutingEffect, FocusPlatformEffect>();
+			});
 
 #if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
