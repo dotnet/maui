@@ -1,0 +1,105 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Control Handlers",
+  "steps": [
+    {
+      "title": "Introduction",
+      "description": "In this CodeTour we will walk through how to add or modify a control, or View as they are referred to, implementation in .NET MAUI. Views are defined with interfaces and are implemented with platform handlers that expose native platform capabilities."
+    },
+    {
+      "file": "src/Core/src/Core/IButton.cs",
+      "description": "Every control in .NET MAUI has an interface that defines specific characteristic that need to be implemented in a platform handler. \r\n\r\nIn this instance `IButton` has several methods that need to be implemented for the button's state. It also inherits from other interfaces that define other pieces of functionality including text, padding, and more. Let's take a look at all parts that compose a Button.",
+      "line": 6,
+      "selection": {
+        "start": {
+          "line": 6,
+          "character": 19
+        },
+        "end": {
+          "line": 6,
+          "character": 26
+        }
+      },
+      "title": "Button Interface"
+    },
+    {
+      "file": "src/Core/src/Core/IView.cs",
+      "description": "An `IView` is a base interface for views that is used to place layouts and views on the screen. While an `IView` currently only has a single property on it, `Margin`, it also inherits from `IFrameworkElement`. Let's take a look next at that.",
+      "line": 6,
+      "title": "IView"
+    },
+    {
+      "file": "src/Core/src/Core/IFrameworkElement.cs",
+      "description": "An `IFrameworkElement` represents a framework-level set of properties, events, and methods for all .NET MAUI elements. This includes things such as if it is enabled, visible, and it's size on the screen. It also inherits from `ITransform` that provides functionality to be able to apply transformatiosn to a control. ",
+      "line": 10,
+      "title": "IFrameworkElement"
+    },
+    {
+      "file": "src/Core/src/Core/ITransform.cs",
+      "description": "At the root of the Button is the `ITransform`. This controls things including the translation of the element, the scale, rotation, and more.",
+      "line": 6,
+      "title": "ITransform"
+    },
+    {
+      "directory": "src/Core/src/Handlers/Button",
+      "description": "Implemention for each handler are add to the `Handlers` folder and have a folder for each control. In this case `Button`, which has several files inside of it to implement the functionality for Android, iOS (and macOS Catalyst), and Windows. It a `Button.cs`, which is the base for the `ButtonHandler` and contains a `Mapper` for properties. These properties are implemented in each of the platform files and a `Standard` file that contains the abstractions for each property to be mapped.",
+      "title": "Handler Structure"
+    },
+    {
+      "file": "src/Core/src/Handlers/Button/ButtonHandler.cs",
+      "selection": {
+        "start": {
+          "line": 6,
+          "character": 3
+        },
+        "end": {
+          "line": 16,
+          "character": 5
+        }
+      },
+      "description": "The `ButtonMapper` maps a propert to a method or proper to call at the platform level. New properties can be added here.",
+      "title": "Handler Mappers"
+    },
+    {
+      "file": "src/Core/src/Handlers/Button/ButtonHandler.Standard.cs",
+      "selection": {
+        "start": {
+          "line": 9,
+          "character": 3
+        },
+        "end": {
+          "line": 9,
+          "character": 72
+        }
+      },
+      "description": "The `.Standard` file has an abstraction of methods that the platforms must implement. In this instance a `MapText` method is specified and should be implemented on each platform. If it is not then nothing will execute.",
+      "title": "API Abstraction"
+    },
+    {
+      "file": "src/Core/src/Handlers/Button/ButtonHandler.Android.cs",
+      "selection": {
+        "start": {
+          "line": 69,
+          "character": 3
+        },
+        "end": {
+          "line": 72,
+          "character": 4
+        }
+      },
+      "description": "Here the MapText method  is implemented and set the native text on the button. This will be called on the Android platform.",
+      "title": "Platform implementation"
+    },
+    {
+      "directory": "src/Core/tests",
+      "description": "Device tests, unit tests, and benchmarks are all located inside of the `tests` folder. Each handler should have it's own tests implemented and as bugs and features are fixed or implemented additional tests should be added.",
+      "title": "Tests"
+    },
+    {
+      "directory": "src/Controls/samples",
+      "description": "The control gallery is the defacto sample app to demo new features and handlers that are implemented. Insure that new features and controls are added to the control gallery app.",
+      "title": "Control Gallery App"
+    }
+  ],
+  "ref": "main"
+}
