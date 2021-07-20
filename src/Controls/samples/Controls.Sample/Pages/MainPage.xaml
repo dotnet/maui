@@ -12,7 +12,7 @@
             <Style x:Key="TitleStyle" TargetType="Label">
                 <Setter Property="FontSize" Value="Title" />
                 <Setter Property="FontFamily" Value="Segoe UI Bold" />
-                <Setter Property="TextColor" Value="{StaticResource WhiteColor}" />
+                <Setter Property="TextColor" Value="{DynamicResource DarkTextPrimaryColor}" />
                 <Setter Property="HorizontalOptions" Value="Center" />
                 <Setter Property="Margin" Value="0, 24, 0, 0" />
             </Style>
@@ -20,7 +20,7 @@
             <Style x:Key="SubTitleStyle" TargetType="Label">
                 <Setter Property="FontSize" Value="Small" />
                 <Setter Property="FontFamily" Value="Segoe UI" />
-                <Setter Property="TextColor" Value="{StaticResource WhiteColor}" />
+                <Setter Property="TextColor" Value="{DynamicResource DarkTextPrimaryColor}" />
                 <Setter Property="HorizontalTextAlignment" Value="Center" />
                 <Setter Property="HorizontalOptions" Value="Center" />
                 <Setter Property="Margin" Value="24, 12" />
@@ -29,6 +29,7 @@
             <Color x:Key="SectionItemBorderColor">#C8C8C8</Color>
 
             <Style x:Key="SectionItemContainerStyle" TargetType="Frame">
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackgroundSecondaryColor}, Dark={StaticResource DarkBackgroundSecondaryColor}}" />
                 <Setter Property="BorderColor" Value="{StaticResource SectionItemBorderColor}" />
                 <Setter Property="CornerRadius" Value="0" />
                 <Setter Property="HasShadow" Value="False" />

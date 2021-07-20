@@ -181,7 +181,7 @@ Task("VS-WINUI")
 
         MSBuild(sln, msbuildSettings);
 
-        var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, Version = "[\"16.0\",\"17.0\"]"});
+        var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, Version = "[\"17.0\",\"19.0\"]"});
 
         if (vsLatest == null)
             throw new Exception("Unable to find Visual Studio!");
