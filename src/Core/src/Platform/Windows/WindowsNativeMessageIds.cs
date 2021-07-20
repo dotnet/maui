@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui
 {
-	public static class WindowsNativeMessageIds
+	internal static class WindowsNativeMessageIds
 	{
 		public const int WM_DPICHANGED = 0x02E0;
 		public const int WM_DISPLAYCHANGE = 0x007E;
