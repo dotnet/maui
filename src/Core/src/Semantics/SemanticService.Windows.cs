@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui
 {
-	public class SemanticService
+	public class SemanticService : ISemanticService
 	{
 	}
 }

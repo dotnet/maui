@@ -3,7 +3,7 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class SemanticService
+	public class SemanticService : ISemanticService
 	{
 		public void Announce(string text)
 		{
