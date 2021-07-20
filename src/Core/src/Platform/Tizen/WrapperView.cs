@@ -149,7 +149,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+<<<<<<< HEAD
 		void OnLayout(object? sender, LayoutEventArgs e)
+=======
+		void OnLayout(object? sender, Tizen.UIExtensions.Common.LayoutEventArgs e)
+>>>>>>> 69d66e477 (Fix build error (#60))
 		{
 			if (Content != null)
 			{
