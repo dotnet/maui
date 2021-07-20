@@ -128,6 +128,8 @@ namespace Microsoft.Maui.Controls
 				if (_content != null)
 					InternalChildren.Add(_content);
 				OnPropertyChanged();
+
+				Handler?.UpdateValue(nameof(Content));
 			}
 		}
 
@@ -276,9 +278,9 @@ namespace Microsoft.Maui.Controls
 
 			SizeRequest contentRequest;
 
-			if (Content is IFrameworkElement fe)
+			if (Content is IFrameworkElement fe && fe.Handler != null)
 			{
-				contentRequest = fe.Measure(widthConstraint, heightConstraint);
+				contentRequest = fe.Handler.GetDesiredSize(widthConstraint, heightConstraint);
 			}
 			else
 			{
@@ -361,6 +363,8 @@ namespace Microsoft.Maui.Controls
 		{
 			CheckTaskCompletionSource();
 			ScrollToRequested?.Invoke(this, e);
+
+			Handler?.Invoke(nameof(IScrollView.RequestScrollTo), e.ToRequest());
 		}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)

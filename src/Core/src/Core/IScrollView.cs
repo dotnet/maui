@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
-	public interface IScrollView : IView
+	public interface IScrollView : IView 
 	{
 		// TODO ezhart 2021-07-08 It might make sense for IPage and IScrollView to derive from (the not yet created) IContentView 
 
@@ -46,5 +46,7 @@ namespace Microsoft.Maui
 		/// Allows the native ScrollView to inform that cross-platform code that a scroll operation has completed.
 		/// </summary>
 		void ScrollFinished();
+
+		void RequestScrollTo(double horizontalOffset, double verticalOffset, bool instant);
 	}
 }

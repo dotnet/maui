@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
@@ -50,6 +49,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapOrientation(ScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.HorizontalScrollBarVisibility);
+		}
+
+		public static void MapRequestScrollTo(ScrollViewHandler handler, IScrollView scrollView, object? args)
+		{
+			if (args is ScrollToRequest request)
+			{
+				handler.NativeView.ChangeView(request.HoriztonalOffset, request.VerticalOffset, null, request.Instant);
+			}
 		}
 
 		void ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
