@@ -1,6 +1,10 @@
 using System.Globalization;
 using Windows.ApplicationModel;
+#if WINDOWS
 using Microsoft.UI.Xaml;
+#else
+using Windows.UI.Xaml;
+#endif
 
 namespace Microsoft.Maui.Essentials
 {

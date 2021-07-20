@@ -4,11 +4,12 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
-using Microsoft.UI.Xaml.Media.Imaging;
-#if NET6_0 || NET5_0
+#if WINDOWS
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media.Imaging;
 #else
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media.Imaging;
 #endif
 
 namespace Microsoft.Maui.Essentials
