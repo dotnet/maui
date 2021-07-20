@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui.Controls
 {
-	public partial class ScrollView : IScrollView 
+	public partial class ScrollView : IScrollView
 	{
 		IView IScrollView.Content => Content;
 
