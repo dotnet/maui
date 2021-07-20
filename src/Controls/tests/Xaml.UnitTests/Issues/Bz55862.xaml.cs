@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TypeConverter(typeof(ThicknessTypeConverter))]
+	[System.ComponentModel.TypeConverter(typeof(ThicknessTypeConverter))]
 	public struct Bz55862Bar
 	{
 	}
