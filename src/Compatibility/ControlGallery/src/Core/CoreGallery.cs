@@ -555,9 +555,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		bool registrarValidated;
 		CoreRootView CoreRootView { get; }
 
-		protected override void OnAttachedHandler()
+		private protected override void OnHandlerChangedCore()
 		{
-			base.OnAttachedHandler();
+			base.OnHandlerChangedCore();
 
 			if (!registrarValidated)
 				ValidateRegistrar();
