@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ViewChanged -= ViewChanged;
 		}
 
-		public static void MapContent(ScrollViewHandler handler, IScrollView scrollView) 
+		public static void MapContent(ScrollViewHandler handler, IScrollView scrollView)
 		{
 			if (handler.MauiContext == null)
 			{
@@ -36,12 +36,12 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView.Content = scrollView.Content.ToNative(handler.MauiContext);
 		}
 
-		public static void MapHorizontalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView) 
+		public static void MapHorizontalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.HorizontalScrollBarVisibility);
 		}
 
-		public static void MapVerticalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView) 
+		public static void MapVerticalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.NativeView.VerticalScrollBarVisibility = scrollView.VerticalScrollBarVisibility.ToWindowsScrollBarVisibility();
 		}
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.HorizontalScrollBarVisibility);
 		}
 
-		public static void MapRequestScrollTo(ScrollViewHandler handler, IScrollView scrollView, object? args) 
+		public static void MapRequestScrollTo(ScrollViewHandler handler, IScrollView scrollView, object? args)
 		{
 			if (args is ScrollToRequest request)
 			{

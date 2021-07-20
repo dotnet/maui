@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform.iOS
 				Superview?.SetNeedsLayout();
 			}
 		}
-		
+
 		public override CGSize SizeThatFits(CGSize size) => AddInsets(base.SizeThatFits(size));
 
 		CGSize AddInsets(CGSize size) => new CGSize(
