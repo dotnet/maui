@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Animations
 			}
 			
 			_context = SynchronizationContext.Current;
-			_timer = new Timer((object o) => HandleElapsed(o), this, Timeout.Infinite, Timeout.Infinite);
+			_timer = new Timer((object? o) => HandleElapsed(o), this, Timeout.Infinite, Timeout.Infinite);
 		}
 
 		public override void Start()
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Animations
 			_isRunning = false;
 		}
 
-		void HandleElapsed(object state)
+		void HandleElapsed(object? state)
 		{
 			_context?.Post((o) => Fire?.Invoke(), null);
 		}

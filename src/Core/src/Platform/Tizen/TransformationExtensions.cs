@@ -129,8 +129,9 @@ namespace Microsoft.Maui
 		{
 			var mapType = typeof(EvasMap);
 			var propInfo = mapType.GetProperty("Handle", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-			var handle = (IntPtr)propInfo.GetValue(map);
-			evas_map_util_3d_perspective(handle, px, py, z0, foc);
+			IntPtr? handle = (IntPtr?)propInfo?.GetValue(map);
+			if (handle != null)
+				evas_map_util_3d_perspective(handle.Value, px, py, z0, foc);
 		}
 
 		[DllImport("libevas.so.1")]

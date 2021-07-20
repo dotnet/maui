@@ -52,7 +52,7 @@ namespace Microsoft.Maui
 			_clipperView.Value.Invalidate();
 		}
 
-		void OnClipPaint(object sender, SKPaintSurfaceEventArgs e)
+		void OnClipPaint(object? sender, SKPaintSurfaceEventArgs e)
 		{
 			var canvas = e.Surface.Canvas;
 			canvas.Clear();
@@ -83,7 +83,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		void OnLayout(object sender, Tizen.UIExtensions.Common.LayoutEventArgs e)
+		void OnLayout(object? sender, Tizen.UIExtensions.Common.LayoutEventArgs e)
 		{
 			if (Content != null)
 			{

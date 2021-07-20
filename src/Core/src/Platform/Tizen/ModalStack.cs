@@ -77,7 +77,7 @@ namespace Microsoft.Maui
 			{
 				_lastTop?.Hide();
 				_lastTop = InternalStack.LastOrDefault();
-				_lastTop.Show();
+				_lastTop?.Show();
 				(_lastTop as Widget)?.SetFocus(true);
 			}
 		}
