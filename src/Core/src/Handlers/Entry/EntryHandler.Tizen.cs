@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.CursorPosition = position;
 		}
 
-		void OnSelectionCleared(object sender, EventArgs e)
+		void OnSelectionCleared(object? sender, EventArgs e)
 		{
 			if (VirtualView == null || NativeView == null)
 				return;
