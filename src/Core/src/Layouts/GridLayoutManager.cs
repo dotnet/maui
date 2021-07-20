@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Layouts
@@ -92,7 +91,26 @@ namespace Microsoft.Maui.Layouts
 					}
 				}
 
-				_children = _grid.Children.Where(child => child.Visibility != Visibility.Collapsed).ToArray();
+				// We could work out the _children array (with the Collapsed items filtered out) with a Linq 1-liner
+				// but doing it the hard way means we don't allocate extra enumerators, especially if we're in the 
+				// happy path where _none_ of the children are Collapsed.
+				var gridChildCount = _grid.Children.Count;
+
+				_children = new IView[gridChildCount];
+				int currentChild = 0;
+				for (int n = 0; n < gridChildCount; n++)
+				{
+					if (_grid.Children[n].Visibility != Visibility.Collapsed)
+					{
+						_children[currentChild] = _grid.Children[n];
+						currentChild += 1;
+					}
+				}
+
+				if (currentChild < gridChildCount)
+				{
+					Array.Resize(ref _children, currentChild);
+				}
 
 				// We'll ignore any collapsed child views during layout
 				_cells = new Cell[_children.Length];
