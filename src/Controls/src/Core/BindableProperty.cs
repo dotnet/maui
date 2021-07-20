@@ -12,7 +12,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[DebuggerDisplay("{PropertyName}")]
-	[TypeConverter(typeof(BindablePropertyConverter))]
+	[System.ComponentModel.TypeConverter(typeof(BindablePropertyConverter))]
 	public sealed class BindableProperty
 	{
 		public delegate void BindingPropertyChangedDelegate(BindableObject bindable, object oldValue, object newValue);

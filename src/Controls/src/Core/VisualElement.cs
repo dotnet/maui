@@ -390,7 +390,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(BackgroundColorProperty, value); }
 		}
 
-		[TypeConverter(typeof(BrushTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
 		public Brush Background
 		{
 			get { return (Brush)GetValue(BackgroundProperty); }
@@ -445,7 +445,7 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsFocused => (bool)GetValue(IsFocusedProperty);
 
-		[TypeConverter(typeof(VisibilityConverter))]
+		[System.ComponentModel.TypeConverter(typeof(VisibilityConverter))]
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
@@ -564,7 +564,7 @@ namespace Microsoft.Maui.Controls
 			private set { SetValue(YPropertyKey, value); }
 		}
 
-		[TypeConverter(typeof(PathGeometryConverter))]
+		[System.ComponentModel.TypeConverter(typeof(PathGeometryConverter))]
 		public Geometry Clip
 		{
 			get { return (Geometry)GetValue(ClipProperty); }

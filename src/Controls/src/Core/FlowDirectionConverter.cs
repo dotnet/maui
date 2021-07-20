@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	[TypeConverter(typeof(FlowDirectionConverter))]
+	[System.ComponentModel.TypeConverter(typeof(FlowDirectionConverter))]
 	public enum FlowDirection
 	{
 		MatchParent = 0,

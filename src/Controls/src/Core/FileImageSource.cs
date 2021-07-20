@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls
 {
-	[TypeConverter(typeof(FileImageSourceConverter))]
+	[System.ComponentModel.TypeConverter(typeof(FileImageSourceConverter))]
 	public sealed partial class FileImageSource : ImageSource
 	{
 		public static readonly BindableProperty FileProperty = BindableProperty.Create("File", typeof(string), typeof(FileImageSource), default(string));

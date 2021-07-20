@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		static string GetTypeConverterTypeName(this IEnumerable<CustomAttributeData> attributes)
 		{
 			var converterAttribute =
-				attributes.FirstOrDefault(cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName));
+				attributes.FirstOrDefault(cad => cad.AttributeType == typeof(System.ComponentModel.TypeConverterAttribute));
 			if (converterAttribute == null)
 				return null;
 			if (converterAttribute.ConstructorArguments[0].ArgumentType == typeof(string))

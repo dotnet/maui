@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 		ResourceDictionary _mergedInstance;
 		Uri _source;
 
-		[TypeConverter(typeof(RDSourceTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(RDSourceTypeConverter))]
 		public Uri Source
 		{
 			get { return _source; }

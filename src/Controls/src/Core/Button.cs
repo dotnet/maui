@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontFamilyProperty, value); }
 		}
 
-		[TypeConverter(typeof(FontSizeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
 			get { return (double)GetValue(FontSizeProperty); }
@@ -352,7 +352,7 @@ namespace Microsoft.Maui.Controls
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
 		[DebuggerDisplay("Image Position = {Position}, Spacing = {Spacing}")]
-		[TypeConverter(typeof(ButtonContentTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ButtonContentTypeConverter))]
 		public sealed class ButtonContentLayout
 		{
 			public enum ImagePosition

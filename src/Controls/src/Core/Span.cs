@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontElement.FontFamilyProperty, value); }
 		}
 
-		[TypeConverter(typeof(FontSizeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
 			get { return (double)GetValue(FontElement.FontSizeProperty); }
