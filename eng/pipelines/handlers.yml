@@ -252,13 +252,15 @@ stages:
                 displayName: 'Provision VSWindows'
                 inputs:
                   provisioning_script: $(provisionator.vs)
+              - pwsh: |
+                  $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+                  echo "MSBUILD_EXE: $msbuild"
+                  echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
+                displayName: set MSBUILD_EXE
 
             - script: dotnet tool restore
               displayName: install dotnet tools
-            - powershell: |
-                  $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
-                  $env:MSBUILD_EXE = "$msbuild"
-                  dotnet cake --configuration=Release
+            - powershell: dotnet cake --configuration=Release
               displayName: pack nugets
             - task: CopyFiles@2
               condition: always()

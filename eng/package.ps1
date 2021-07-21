@@ -4,7 +4,8 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-Write-Host $msbuild
+Write-Host "-msbuild: $msbuild"
+Write-Host "MSBUILD_EXE: $env:MSBUILD_EXE"
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
