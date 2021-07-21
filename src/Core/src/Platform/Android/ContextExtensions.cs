@@ -243,6 +243,11 @@ namespace Microsoft.Maui
 					return window;
 			}
 
+			if (nativeWindow is MauiAppCompatActivity mac && mac.VirtualWindow != null)
+			{
+				return mac.VirtualWindow;
+			}
+
 			throw new InvalidOperationException("Window Not Found");
 		}
 	}
