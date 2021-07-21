@@ -79,11 +79,11 @@ Task("dotnet-test")
     {
         var tests = new []
         {
-            "**/Controls.Core.UnitTests.csproj",
-            "**/Controls.Xaml.UnitTests.csproj",
-            "**/Core.UnitTests.csproj",
-            "**/Essentials.UnitTests.csproj",
-            "**/Resizetizer.UnitTests.csproj",
+            "**/Controls.Core.UnitTests-net6.csproj",
+            "**/Controls.Xaml.UnitTests-net6.csproj",
+            "**/Core.UnitTests-net6.csproj",
+            "**/Essentials.UnitTests-net6.csproj",
+            "**/Resizetizer.UnitTests-net6.csproj",
         };
 
         var success = true;
