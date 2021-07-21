@@ -1,10 +1,10 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
-using Tizen.UIExtensions.ElmSharp;
 using ERect = ElmSharp.Rect;
 using ESize = ElmSharp.Size;
 using TRect = Tizen.UIExtensions.Common.Rect;
 using TSize = Tizen.UIExtensions.Common.Size;
+using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 
 namespace Microsoft.Maui
 {

@@ -5,6 +5,7 @@ using Tizen.Applications;
 using ElmSharp;
 using ElmSharp.Wearable;
 using Tizen.UIExtensions.ElmSharp;
+using Tizen.UIExtensions.Common;
 using ELayout = ElmSharp.Layout;
 
 namespace Microsoft.Maui

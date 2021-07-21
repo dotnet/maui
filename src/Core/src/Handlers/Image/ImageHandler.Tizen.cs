@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System;
 using System.Threading.Tasks;
 using Tizen.UIExtensions.ElmSharp;
 
@@ -6,7 +7,12 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, Image>
 	{
-		protected override Image CreateNativeView() => new Image(NativeParent);
+		protected override Image CreateNativeView()
+		{
+			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
+
+			return new Image(NativeParent);
+		}
 
 		protected override void DisconnectHandler(Image nativeView)
 		{

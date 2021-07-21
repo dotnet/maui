@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Tizen.UIExtensions.ElmSharp;
 using TEntry = Tizen.UIExtensions.ElmSharp.Entry;
 using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
+using DeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 using EcoreMainloop = ElmSharp.EcoreMainloop;
 using List = ElmSharp.List;
 using ListItem = ElmSharp.ListItem;
@@ -15,13 +16,18 @@ namespace Microsoft.Maui.Handlers
 		Dialog? _dialog;
 		Dictionary<ListItem, int> _itemToItemNumber = new Dictionary<ListItem, int>();
 
-		protected override TEntry CreateNativeView() => new EditfieldEntry(NativeParent)
+		protected override TEntry CreateNativeView()
 		{
-			IsSingleLine = true,
-			InputPanelShowByOnDemand = true,
-			IsEditable = false,
-			HorizontalTextAlignment = TTextAlignment.Center
-		};
+			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
+
+			return new EditfieldEntry(NativeParent)
+			   {
+				   IsSingleLine = true,
+				   InputPanelShowByOnDemand = true,
+				   IsEditable = false,
+				   HorizontalTextAlignment = TTextAlignment.Center
+			   };
+		}
 
 		protected override void ConnectHandler(TEntry nativeView)
 		{
@@ -116,7 +122,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnTextBlockFocused(object? sender, EventArgs e)
 		{
-			if (VirtualView == null || NativeView == null)
+			if (VirtualView == null || NativeView == null || NativeParent == null)
 				return;
 
 			// For EFL Entry, the event will occur even if it is currently disabled.

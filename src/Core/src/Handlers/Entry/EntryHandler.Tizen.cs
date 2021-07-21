@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override Entry CreateNativeView()
 		{
+			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
+
 			return new EditfieldEntry(NativeParent)
 			{
 				IsSingleLine = true

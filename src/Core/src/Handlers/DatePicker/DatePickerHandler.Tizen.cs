@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override TEntry CreateNativeView()
 		{
+			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
+
 			var entry = new EditfieldEntry(NativeParent)
 			{
 				IsSingleLine = true,
@@ -27,6 +29,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(TEntry nativeView)
 		{
+			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
+
 			nativeView.TextBlockFocused += OnTextBlockFocused;
 			nativeView.EntryLayoutFocused += OnFocused;
 			nativeView.EntryLayoutUnfocused += OnUnfocused;

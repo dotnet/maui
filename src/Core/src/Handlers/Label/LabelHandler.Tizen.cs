@@ -1,10 +1,16 @@
+using System;
 using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ViewHandler<ILabel, Label>
 	{
-		protected override Label CreateNativeView() => new Label(NativeParent);
+		protected override Label CreateNativeView()
+		{
+			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
+
+			return new Label(NativeParent);
+		}
 
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
