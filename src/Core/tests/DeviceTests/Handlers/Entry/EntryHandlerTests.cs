@@ -187,7 +187,7 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize("Arial", fontSize)
 			};
 
-			await ValidatePropertyInitValue(entry, () => entry.Font.FontSize, GetNativeUnscaledFontSize, entry.Font.FontSize);
+			await ValidatePropertyInitValue(entry, () => entry.Font.Size, GetNativeUnscaledFontSize, entry.Font.Size);
 		}
 
 		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
@@ -204,7 +204,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(entry, () => entry.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(entry, () => entry.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(entry, () => entry.Font.Slant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
 
 		[Theory(DisplayName = "Validates clear button visibility.")]
