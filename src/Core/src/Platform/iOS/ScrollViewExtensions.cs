@@ -31,7 +31,7 @@ namespace Microsoft.Maui
 			scrollView.AddSubview(content);
 		}
 
-		public static void UpdateContentSize(this UIScrollView scrollView, Size contentSize) 
+		public static void UpdateContentSize(this UIScrollView scrollView, Size contentSize)
 		{
 			var nativeContentSize = contentSize.ToCGSize();
 
