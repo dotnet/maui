@@ -7,7 +7,6 @@
 
   <!-- Temporarily disable the linker for net6.0-ios and net6.0-maccatalyst until we get machine pools with Big Sur and Xcode 12.5 is stable -->
   <PropertyGroup Condition=" '$(CI)' == 'true' ">
-    <PublishTrimmed Condition=" '$(TargetFramework)' == 'net6.0-ios' or '$(TargetFramework)' == 'net6.0-maccatalyst' ">false</PublishTrimmed>
   </PropertyGroup>
 
   <!-- HACK: Prevent the Platform checks -->
