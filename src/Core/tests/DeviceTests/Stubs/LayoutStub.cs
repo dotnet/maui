@@ -61,8 +61,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public Thickness Padding { get; set; }
-		public int Count { get; }
-		public bool IsReadOnly { get; }
+		public int Count => _children.Count;
+		public bool IsReadOnly => _children.IsReadOnly;
 
 		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
 	}
