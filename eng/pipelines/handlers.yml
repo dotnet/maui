@@ -149,6 +149,7 @@ stages:
               displayName: install dotnet tools
             - powershell: |
                   $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+                  $env:MSBUILD_EXE = "$msbuild"
                   & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildCondition }} --msbuild="$msbuild"
               displayName: 'Build WinUI SLN'
             - task: CopyFiles@2
@@ -254,7 +255,10 @@ stages:
 
             - script: dotnet tool restore
               displayName: install dotnet tools
-            - script: dotnet cake --configuration=Release
+            - powershell: |
+                  $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+                  $env:MSBUILD_EXE = "$msbuild"
+                  dotnet cake --configuration=Release
               displayName: pack nugets
             - task: CopyFiles@2
               condition: always()

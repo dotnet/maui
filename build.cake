@@ -95,7 +95,7 @@ NUNIT_TEST_WHERE = ParseDevOpsInputs(NUNIT_TEST_WHERE);
 var ANDROID_HOME = EnvironmentVariable("ANDROID_HOME") ??
     (IsRunningOnWindows () ? "C:\\Program Files (x86)\\Android\\android-sdk\\" : "");
 
-string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", $"{envProgramFiles}\\Microsoft Visual Studio\\2022\\Preview\\MSBuild\\Current\\Bin\\MSBuild.exe"));
+string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string MSBuildArgumentsENV = EnvironmentVariable("MSBuildArguments", "");
 string MSBuildArgumentsARGS = Argument("MSBuildArguments", "");
 string MSBuildArguments;
