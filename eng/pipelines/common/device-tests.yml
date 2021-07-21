@@ -4,7 +4,7 @@ parameters:
   iosVmPool: '$(iosTestsVmPool)'
   iosVmImage: '$(iosTestsVmImage)'
   androidApiLevels: [ 30 ]
-  iosVersions: [ 'latest' ]
+  iosVersions: [ '15.0' ]
   projects:
     - name: name
       desc: Human Description
