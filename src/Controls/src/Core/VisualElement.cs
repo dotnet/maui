@@ -113,6 +113,7 @@ namespace Microsoft.Maui.Controls
 		static IVisual _defaultVisual = Microsoft.Maui.Controls.VisualMarker.Default;
 		IVisual _effectiveVisual = _defaultVisual;
 
+		[System.ComponentModel.TypeConverter(typeof(VisualTypeConverter))]
 		public IVisual Visual
 		{
 			get { return (IVisual)GetValue(VisualProperty); }
