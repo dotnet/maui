@@ -12,35 +12,15 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
-			var measure = Measure(heightConstraint, Stack.Spacing, Stack.Children);
+			var children = Stack.Children;
+			var padding = Stack.Padding;
+			
+			double measuredWidth = 0;
+			double measuredHeight = 0;
 
-			var finalWidth = ResolveConstraints(widthConstraint, Stack.Width, measure.Width);
-
-			return new Size(finalWidth, measure.Height);
-		}
-
-		public override void ArrangeChildren(Rectangle bounds)
-		{
-			if (Stack.FlowDirection == FlowDirection.LeftToRight)
+			for (int n = 0; n < children.Count; n++)
 			{
-				ArrangeLeftToRight(bounds.Height, Stack.Spacing, Stack.Children);
-			}
-			else
-			{
-				// We _could_ simply reverse the list of child views when arranging from right to left, 
-				// but this way we avoid extra list and enumerator allocations
-				ArrangeRightToLeft(bounds.Height, Stack.Spacing, Stack.Children);
-			}
-		}
-
-		static Size Measure(double heightConstraint, double spacing, IReadOnlyList<IView> views)
-		{
-			double totalRequestedWidth = 0;
-			double requestedHeight = 0;
-
-			for (int n = 0; n < views.Count; n++)
-			{
-				var child = views[n];
+				var child = children[n];
 
 				if (child.Visibility == Visibility.Collapsed)
 				{
@@ -48,53 +28,75 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				var measure = child.Measure(double.PositiveInfinity, heightConstraint);
-				totalRequestedWidth += measure.Width;
-				requestedHeight = Math.Max(requestedHeight, measure.Height);
+				measuredWidth += measure.Width;
+				measuredHeight = Math.Max(measuredHeight, measure.Height);
 			}
 
-			var accountForSpacing = MeasureSpacing(spacing, views.Count);
-			totalRequestedWidth += accountForSpacing;
+			measuredWidth += MeasureSpacing(Stack.Spacing, children.Count);
+			measuredWidth += padding.HorizontalThickness;
+			measuredHeight += padding.VerticalThickness;
 
-			return new Size(totalRequestedWidth, requestedHeight);
+			var finalWidth = ResolveConstraints(widthConstraint, Stack.Width, measuredWidth);
+			var finalHeight = ResolveConstraints(heightConstraint, Stack.Height, measuredHeight);
+
+			return new Size(finalWidth, finalHeight);
 		}
 
-		static void ArrangeLeftToRight(double height, double spacing, IReadOnlyList<IView> views)
+		public override void ArrangeChildren(Rectangle bounds)
 		{
-			double xPosition = 0;
+			var children = Stack.Children;
+			var padding = Stack.Padding;
+			var height = bounds.Height - padding.VerticalThickness;
 
-			for (int n = 0; n < views.Count; n++)
+			if (Stack.FlowDirection == FlowDirection.LeftToRight)
 			{
-				var child = views[n];
+				ArrangeLeftToRight(height, padding.Left, padding.Top, Stack.Spacing, children);
+			}
+			else
+			{
+				// We _could_ simply reverse the list of child views when arranging from right to left, 
+				// but this way we avoid extra list and enumerator allocations
+				ArrangeRightToLeft(height, padding.Left, padding.Top, Stack.Spacing, children);
+			}
+		}
+
+		static void ArrangeLeftToRight(double height, double left, double top, double spacing, IReadOnlyList<IView> children)
+		{
+			double xPosition = left;
+
+			for (int n = 0; n < children.Count; n++)
+			{
+				var child = children[n];
 
 				if (child.Visibility == Visibility.Collapsed)
 				{
 					continue;
 				}
 
-				xPosition += ArrangeChild(child, height, spacing, xPosition);
+				xPosition += ArrangeChild(child, height, top, spacing, xPosition);
 			}
 		}
 
-		static void ArrangeRightToLeft(double height, double spacing, IReadOnlyList<IView> views)
+		static void ArrangeRightToLeft(double height, double left, double top, double spacing, IReadOnlyList<IView> children)
 		{
-			double xPostition = 0;
+			double xPostition = left;
 
-			for (int n = views.Count - 1; n >= 0; n--)
+			for (int n = children.Count - 1; n >= 0; n--)
 			{
-				var child = views[n];
+				var child = children[n];
 
 				if (child.Visibility == Visibility.Collapsed)
 				{
 					continue;
 				}
 
-				xPostition += ArrangeChild(child, height, spacing, xPostition);
+				xPostition += ArrangeChild(child, height, top, spacing, xPostition);
 			}
 		}
 
-		static double ArrangeChild(IView child, double height, double spacing, double x)
+		static double ArrangeChild(IView child, double height, double top, double spacing, double x)
 		{
-			var destination = new Rectangle(x, 0, child.DesiredSize.Width, height);
+			var destination = new Rectangle(x, top, child.DesiredSize.Width, height);
 			child.Frame = child.ComputeFrame(destination);
 			child.Arrange(child.Frame);
 			return destination.Width + spacing;

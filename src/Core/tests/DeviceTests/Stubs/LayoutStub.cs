@@ -20,5 +20,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			_children.Remove(child);
 		}
+
+		public Thickness Padding { get; set; }
 	}
 }

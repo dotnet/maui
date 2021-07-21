@@ -31,5 +31,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var children = new List<IView>(views);
 			layout.Children.Returns(children.AsReadOnly());
 		}
+
+		public static void AssertArranged(IView view, double x, double y, double width, double height)
+		{
+			var expected = new Rectangle(x, y, width, height);
+			view.Received().Arrange(Arg.Is(expected));
+		}
 	}
 }
