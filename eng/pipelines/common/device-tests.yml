@@ -4,7 +4,7 @@ parameters:
   iosVmPool: '$(iosTestsVmPool)'
   iosVmImage: '$(iosTestsVmImage)'
   androidApiLevels: [ 30 ]
-  iosVersions: [ 'ios-simulator-64_15.0' ]
+  iosVersions: [ '15.0' ]
   projects:
     - name: name
       desc: Human Description
@@ -46,7 +46,7 @@ stages:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
-            - job: ios_device_tests_${{ project.name }}_${{ replace(replace(version, '-', '_'), '.', '_') }}
+            - job: ios_device_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
               workspace:
                 clean: all
               displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})

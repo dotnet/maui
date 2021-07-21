@@ -358,7 +358,7 @@ stages:
     parameters:
       ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
         androidApiLevels: [ 30, 29, 21 ]
-        iosVersions: [ 'ios-simulator-64_15.0' ]
+        iosVersions: [ '15.0' ]
       projects:
         - name: essentials
           desc: Essentials
