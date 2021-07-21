@@ -46,7 +46,7 @@ stages:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
-            - job: ios_device_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
+            - job: ios_device_tests_${{ project.name }}_${{ replace(replace(version, '-', '_'), '.', '_') }}
               workspace:
                 clean: all
               displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
