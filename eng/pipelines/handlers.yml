@@ -252,7 +252,7 @@ stages:
                 displayName: 'Provision VSWindows'
                 inputs:
                   provisioning_script: $(provisionator.vs)
-              - pwsh: |
+              - powershell: |
                   $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
                   echo "MSBUILD_EXE: $msbuild"
                   echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
