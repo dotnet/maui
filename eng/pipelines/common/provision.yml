@@ -66,6 +66,10 @@ steps:
       displayName: 'Provision Visual Studio'
       inputs:
         provisioning_script: $(provisionator.vs)
+    - pwsh: |
+        $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+        echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
+      displayName: 'Setup MSBuild Paths'
 
 
   # Prepare Both
