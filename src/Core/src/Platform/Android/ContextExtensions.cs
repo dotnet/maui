@@ -237,15 +237,13 @@ namespace Microsoft.Maui
 		{
 			var nativeWindow = context.GetActivity();
 
+			if (nativeWindow is MauiAppCompatActivity mac && mac.VirtualWindow != null)
+				return mac.VirtualWindow;
+
 			foreach (var window in MauiApplication.Current.Application.Windows)
 			{
 				if (window?.Handler?.NativeView is AActivity win && win == nativeWindow)
 					return window;
-			}
-
-			if (nativeWindow is MauiAppCompatActivity mac && mac.VirtualWindow != null)
-			{
-				return mac.VirtualWindow;
 			}
 
 			throw new InvalidOperationException("Window Not Found");
