@@ -11,7 +11,7 @@
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <NoWarn>1701;1702;CS8305;8305;CA1416</NoWarn>
     <EnableDefaultPageItems>true</EnableDefaultPageItems>
-    <EnableDefaultXamlItems>false</EnableDefaultXamlItems>
+    <EnableDefaultMauiXamlItems>false</EnableDefaultMauiXamlItems>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(OS)' != 'Windows_NT'">
