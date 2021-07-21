@@ -232,5 +232,18 @@ namespace Microsoft.Maui
 
 			return resources.GetIdentifier(title, "drawable", packageName);
 		}
+
+		public static IWindow GetWindow(this Context context)
+		{
+			var nativeWindow = context.GetActivity();
+
+			foreach (var window in MauiApplication.Current.Application.Windows)
+			{
+				if (window?.Handler?.NativeView is AActivity win && win == nativeWindow)
+					return window;
+			}
+
+			throw new InvalidOperationException("Window Not Found");
+		}
 	}
 }
