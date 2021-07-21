@@ -6,6 +6,7 @@ using System.Globalization;
 namespace Microsoft.Maui.Graphics
 {
 	[DebuggerDisplay("Width={Width}, Height={Height}")]
+	[TypeConverter(typeof(Converters.SizeTypeConverter))]
 	public partial struct Size
 	{
 		double _width;
@@ -118,5 +119,23 @@ namespace Microsoft.Maui.Graphics
 			height = Height;
 		}
 		public static implicit operator SizeF(Size s) => new SizeF((float)s.Width,(float)s.Height);
+
+		public static bool TryParse(string value, out Size size)
+		{
+			if (!string.IsNullOrEmpty(value))
+			{
+				string[] wh = value.Split(',');
+				if (wh.Length == 2
+					&& double.TryParse(wh[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double w)
+					&& double.TryParse(wh[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double h))
+				{
+					size = new Size(w, h);
+					return true;
+				}
+			}
+
+			size = default;
+			return false;
+		}
 	}
 }
