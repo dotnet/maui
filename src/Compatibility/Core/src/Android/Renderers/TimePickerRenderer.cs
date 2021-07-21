@@ -189,6 +189,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		abstract protected void UpdateTextColor();
 	}
 
@@ -206,6 +207,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		protected override EditText EditText => Control;
+
+		[PortHandler]
 		protected override void UpdateTextColor()
 		{
 			_textColorSwitcher = _textColorSwitcher ?? new TextColorSwitcher(EditText.TextColors, Element.UseLegacyColorManagement());
