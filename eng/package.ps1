@@ -23,6 +23,11 @@ if ($IsWindows)
 {
     if (-not $msbuild)
     {
+        $msbuild = $env:MSBUILD_EXE
+    }
+
+    if (-not $msbuild)
+    {
         # If MSBuild path isn't specified, use the standard location of 'vswhere' to determine an appropriate MSBuild to use.
         # Learn more about VSWhere here: https://github.com/microsoft/vswhere/wiki/Find-MSBuild
         $msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -prerelease -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
