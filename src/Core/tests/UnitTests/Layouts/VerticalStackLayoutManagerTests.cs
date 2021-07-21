@@ -83,7 +83,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void IgnoresCollapsedViews() 
+		public void IgnoresCollapsedViews()
 		{
 			var stack = CreateTestLayout();
 

@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Essentials
 			}
 #endif
 		}
-				
+
 		internal static bool OpenUrl(Uri uri)
 		{
 			// If we aren't waiting on a task, don't handle the url
