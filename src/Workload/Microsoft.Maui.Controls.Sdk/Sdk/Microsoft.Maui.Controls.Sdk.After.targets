@@ -1,12 +1,12 @@
 <Project>
   <PropertyGroup>
     <EnableDefaultMauiItems Condition=" '$(EnableDefaultMauiItems)' == '' ">$(EnableDefaultItems)</EnableDefaultMauiItems>
-    <EnableDefaultXamlItems Condition=" '$(EnableDefaultXamlItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultXamlItems>
-    <EnableDefaultCssItems  Condition=" '$(EnableDefaultCssItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultCssItems>
+    <EnableDefaultMauiXamlItems Condition=" '$(EnableDefaultMauiXamlItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultMauiXamlItems>
+    <EnableDefaultMauiCssItems  Condition=" '$(EnableDefaultMauiCssItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultMauiCssItems>
 
     <EnableDefaultMauiItems Condition=" '$(EnableDefaultItems)' != 'true' ">false</EnableDefaultMauiItems>
-    <EnableDefaultXamlItems Condition=" '$(EnableDefaultMauiItems)' != 'true' ">false</EnableDefaultXamlItems>
-    <EnableDefaultCssItems  Condition=" '$(EnableDefaultMauiItems)' != 'true' ">false</EnableDefaultCssItems>
+    <EnableDefaultMauiXamlItems Condition=" '$(EnableDefaultMauiItems)' != 'true' ">false</EnableDefaultMauiXamlItems>
+    <EnableDefaultMauiCssItems  Condition=" '$(EnableDefaultMauiItems)' != 'true' ">false</EnableDefaultMauiCssItems>
   </PropertyGroup>
   <Import Project="../targets/Microsoft.Maui.Controls.targets" />
   <Import Project="WinUI.targets" Condition=" '$(TargetPlatformIdentifier)' == 'windows' " />

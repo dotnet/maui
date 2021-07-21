@@ -5,8 +5,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <ItemGroup Condition=" '$(EnableDefaultMauiItems)' == 'true' ">
-    <MauiXaml Condition=" '$(EnableDefaultXamlItems)' == 'true' " Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
-    <MauiCss  Condition=" '$(EnableDefaultCssItems)' == 'true' "  Include="**\*.css"  Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+    <MauiXaml Condition=" '$(EnableDefaultMauiXamlItems)' == 'true' " Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+    <MauiCss  Condition=" '$(EnableDefaultMauiCssItems)' == 'true' "  Include="**\*.css"  Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
   </ItemGroup>
 
   <Import Project="Microsoft.Maui.Controls.SingleProject.props" />
