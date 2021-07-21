@@ -52,12 +52,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IEnumerator<IView> GetEnumerator()
 		{
-			throw new NotImplementedException();
+			return _children.GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			throw new NotImplementedException();
+			return _children.GetEnumerator();
 		}
 
 		public Thickness Padding { get; set; }
