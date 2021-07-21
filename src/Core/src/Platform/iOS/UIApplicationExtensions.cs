@@ -21,6 +21,9 @@ namespace Microsoft.Maui
 
 		public static IWindow GetWindow(this UIApplication application)
 		{
+			if (MauiUIApplicationDelegate.Current.VirtualWindow != null)
+				return MauiUIApplicationDelegate.Current.VirtualWindow;
+
 			var nativeWindow = application.GetKeyWindow();
 			foreach (var window in MauiUIApplicationDelegate.Current.Application.Windows)
 			{
@@ -28,8 +31,7 @@ namespace Microsoft.Maui
 					return window;
 			}
 
-			return MauiUIApplicationDelegate.Current.VirtualWindow ??
-				throw new InvalidOperationException("Window Not Found");
+			throw new InvalidOperationException("Window Not Found");
 		}
 	}
 }
