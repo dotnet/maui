@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
-	public interface IScrollView : IView 
+	public interface IScrollView : IView
 	{
 		// TODO ezhart 2021-07-08 It might make sense for IPage and IScrollView to derive from (the not yet created) IContentView 
 
