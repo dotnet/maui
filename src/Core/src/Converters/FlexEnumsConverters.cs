@@ -4,9 +4,8 @@ using System.Globalization;
 using Microsoft.Maui.Layouts;
 using Flex = Microsoft.Maui.Layouts.Flex;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Converters
 {
-	[Xaml.TypeConversion(typeof(FlexJustify))]
 	public class FlexJustifyTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -43,7 +42,6 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	[Xaml.TypeConversion(typeof(FlexDirection))]
 	public class FlexDirectionTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -76,7 +74,6 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	[Xaml.TypeConversion(typeof(FlexAlignContent))]
 	public class FlexAlignContentTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -113,7 +110,6 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	[Xaml.TypeConversion(typeof(FlexAlignItems))]
 	public class FlexAlignItemsTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -146,7 +142,6 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	[Xaml.TypeConversion(typeof(FlexAlignSelf))]
 	public class FlexAlignSelfTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -179,7 +174,6 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	[Xaml.TypeConversion(typeof(FlexWrap))]
 	public class FlexWrapTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -210,7 +204,6 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	[Xaml.TypeConversion(typeof(FlexBasis))]
 	public class FlexBasisTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

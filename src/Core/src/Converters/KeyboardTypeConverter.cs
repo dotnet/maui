@@ -3,11 +3,9 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Converters
 {
-	[Xaml.TypeConversion(typeof(Keyboard))]
 	public class KeyboardTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -22,15 +20,18 @@ namespace Microsoft.Maui.Controls
 			if (strValue != null)
 			{
 				string[] parts = strValue.Split('.');
-				if (parts.Length == 1 || (parts.Length == 2 && parts[0] == "Keyboard"))
+				if (parts != null && parts.Length == 1 || (parts != null && parts.Length == 2 && parts[0] == "Keyboard"))
 				{
+					var kbType = typeof(Keyboard);
+
 					string keyboard = parts[parts.Length - 1];
-					FieldInfo field = typeof(Keyboard).GetFields().FirstOrDefault(fi => fi.IsStatic && fi.Name == keyboard);
-					if (field != null)
-						return (Keyboard)field.GetValue(null);
-					PropertyInfo property = typeof(Keyboard).GetProperties().FirstOrDefault(pi => pi.Name == keyboard && pi.CanRead && pi.GetMethod.IsStatic);
-					if (property != null)
-						return (Keyboard)property.GetValue(null, null);
+					FieldInfo? field = kbType.GetFields()?.FirstOrDefault(fi => fi.IsStatic && fi.Name == keyboard);
+					if (field?.GetValue(null) is Keyboard kb)
+						return kb;
+
+					PropertyInfo? property = kbType.GetProperties()?.FirstOrDefault(pi => pi.Name == keyboard && pi.CanRead && pi.GetMethod.IsStatic);
+					if (property?.GetValue(null, null) is Keyboard propKb)
+						return propKb;
 				}
 			}
 

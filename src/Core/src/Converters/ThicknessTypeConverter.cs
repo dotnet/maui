@@ -2,10 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Converters
 {
-	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.ThicknessTypeConverter")]
-	[Xaml.TypeConversion(typeof(Thickness))]
 	public class ThicknessTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
