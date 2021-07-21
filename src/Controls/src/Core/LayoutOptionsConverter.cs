@@ -68,5 +68,23 @@ namespace Microsoft.Maui.Controls
 				return $"{nameof(LayoutAlignment.Fill)}{(options.Expands ? "AndExpand" : "")}";
 			throw new NotSupportedException();
 		}
+
+		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
+			=> true;
+
+		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
+			=> false;
+
+		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+			=> new(new[] {
+				"Start",
+				"Center",
+				"End",
+				"Fill",
+				"StartAndExpand",
+				"CenterAndExpand",
+				"EndAndExpand",
+				"FillAndExpand"
+			});
 	}
 }

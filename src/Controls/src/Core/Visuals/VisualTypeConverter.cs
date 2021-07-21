@@ -153,5 +153,14 @@ namespace Microsoft.Maui.Controls
 				return _visualTypeMappings.Keys.Skip(_visualTypeMappings.Values.IndexOf(visual)).First();
 			throw new NotSupportedException();
 		}
+
+		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
+			=> false;
+
+		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
+			=> true;
+
+		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+			=> new (new[] { "Default", "Material" });
 	}
 }

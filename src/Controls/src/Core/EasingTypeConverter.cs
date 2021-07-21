@@ -93,5 +93,26 @@ namespace Microsoft.Maui.Controls
 				return nameof(SpringOut);
 			throw new NotSupportedException();
 		}
+
+		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
+			=> true;
+
+		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
+			=> false;
+
+		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+			=> new(new [] {
+				"Linear",
+				"SinOut",
+				"SinIn",
+				"SinInOut",
+				"CubicIn",
+				"CubicOut",
+				"CubicInOut",
+				"BounceOut",
+				"BounceIn",
+				"SpringIn",
+				"SpringOut"
+			});
 	}
 }
