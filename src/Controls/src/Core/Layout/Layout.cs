@@ -8,7 +8,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls.Layout2
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout : View, Maui.ILayout, IList<IView>
+	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IPaddingElement
 	{
 		ILayoutManager _layoutManager;
 		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
@@ -28,6 +28,13 @@ namespace Microsoft.Maui.Controls.Layout2
 		IReadOnlyList<IView> IContainer.Children => _children.AsReadOnly();
 
 		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
+
+
+		public Thickness Padding
+		{
+			get => (Thickness)GetValue(PaddingElement.PaddingProperty);
+			set => SetValue(PaddingElement.PaddingProperty, value);
+		}
 
 		protected abstract ILayoutManager CreateLayoutManager();
 
@@ -186,6 +193,16 @@ namespace Microsoft.Maui.Controls.Layout2
 			LayoutHandler?.Remove(child);
 
 			return result;
+		}
+		
+		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
+		{
+			InvalidateMeasure();
+		}
+
+		Thickness IPaddingElement.PaddingDefaultValueCreator()
+		{
+			return new Thickness(0);
 		}
 	}
 }
