@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Foundation;
-using Microsoft.Maui.Controls.Compatibility.Platform.iOS.Resources;
+using Microsoft.Maui.Controls.Compatibility.iOS.Resources;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;

@@ -219,12 +219,14 @@ namespace Microsoft.Maui.Controls
 
 		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
 		{
-			DesiredSize = OnMeasure(widthConstraint, heightConstraint).Request;
-			return DesiredSize;
+			return MeasureOverride(widthConstraint, heightConstraint);
 		}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-			=> (this as IFrameworkElement).Measure(widthConstraint, heightConstraint);
+		{
+			DesiredSize = OnMeasure(widthConstraint, heightConstraint).Request;
+			return DesiredSize;
+		}
 
 		protected override void OnSizeAllocated(double width, double height)
 		{

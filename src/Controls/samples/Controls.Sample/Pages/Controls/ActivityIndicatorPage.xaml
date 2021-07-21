@@ -23,7 +23,7 @@
                 Style="{StaticResource Subhead}"/>
             <ActivityIndicator
                 IsRunning="True"
-                Color="{StaticResource AccentColor}" />
+                Color="{AppThemeBinding Light={StaticResource LightAccentColor}, Dark={StaticResource DarkAccentColor}}" />
         </VerticalStackLayout>
     </ContentPage.Content>
 </views:BasePage>

@@ -412,7 +412,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.SetContainer(this);
+			effect.Container = this;
 		}
 
 		void SetupAutomationDefaults()

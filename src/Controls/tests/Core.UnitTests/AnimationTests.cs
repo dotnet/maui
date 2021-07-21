@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		//https://bugzilla.xamarin.com/show_bug.cgi?id=51424
 		public async Task AnimationRepeats()
 		{
-			var box = AnimationReadyWindow.Prepare(new BoxView());
+			var box = AnimationReadyHandler.Prepare(new BoxView());
 			Assume.That(box.Rotation, Is.EqualTo(0d));
 			var sb = new Animation();
 			var animcount = 0;

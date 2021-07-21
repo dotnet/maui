@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.ContentViewPage"
+    xmlns:controls="clr-namespace:Maui.Controls.Sample.Controls"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="ContentView">
+    <views:BasePage.Content>
+        <ScrollView>
+            <StackLayout
+                Padding="12">
+                <controls:CardView 
+                    BorderColor="DarkGray"
+                    CardTitle="Slavko Vlasic"
+                    CardDescription="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla elit dolor, convallis non interdum."
+                    IconBackgroundColor="SlateGray"
+                    IconImageSource="dotnet_bot.png"/>
+                <controls:CardView
+                    BorderColor="DarkGray"
+                    CardTitle="Carolina Pena"
+                    CardDescription="Phasellus eu convallis mi. In tempus augue eu dignissim fermentum. Morbi ut lacus vitae eros lacinia."
+                    IconBackgroundColor="SlateGray"
+                    IconImageSource="dotnet_bot.png" />
+                <controls:CardView
+                    BorderColor="DarkGray"
+                    CardTitle="Wade Blanks"
+                    CardDescription="Aliquam sagittis, odio lacinia fermentum dictum, mi erat scelerisque erat, quis aliquet arcu."
+                    IconBackgroundColor="SlateGray"
+                    IconImageSource="dotnet_bot.png" />
+                <controls:CardView
+                    BorderColor="DarkGray"
+                    CardTitle="Colette Quint"
+                    CardDescription="In pellentesque odio eget augue elementum lobortis. Sed augue massa, rhoncus eu nisi vitae, egestas."
+                    IconBackgroundColor="SlateGray"
+                    IconImageSource="dotnet_bot.png" />
+            </StackLayout>
+        </ScrollView>
+    </views:BasePage.Content>
+</views:BasePage>

@@ -43,8 +43,10 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
+		static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
+			var url = webAuthenticatorOptions?.Url;
+			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
 			var packageName = Platform.AppContext.PackageName;
 
 			// Create an intent to see if the app developer wired up the callback activity correctly

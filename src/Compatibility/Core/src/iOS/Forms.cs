@@ -347,7 +347,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				// iOS docs say default button font size is 15, default label font size is 17 so we use those as the defaults.
 				var scalingFactor = _fontScalingFactor;
 
-				if (Application.Current?.On<iOS>().GetEnableAccessibilityScalingForNamedFontSizes() == false)
+				if (Application.Current?.On<PlatformConfiguration.iOS>().GetEnableAccessibilityScalingForNamedFontSizes() == false)
 				{
 					scalingFactor = 1;
 				}

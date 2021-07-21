@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportEffect(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomEffects.FooEffect), nameof(Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomEffects.FooEffect))]
 

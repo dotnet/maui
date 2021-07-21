@@ -17,6 +17,8 @@
 
 ## Current News
 
+[July 14, 2021 - Announcing .NET MAUI Preview 6](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-6/)
+
 [June 17, 2021 - Announcing .NET MAUI Preview 5](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-5/)
 
 [May 25, 2021 - Announcing .NET MAUI Preview 4](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-4/)

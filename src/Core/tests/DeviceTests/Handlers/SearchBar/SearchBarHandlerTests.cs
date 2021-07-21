@@ -91,7 +91,7 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize("Arial", fontSize)
 			};
 
-			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontSize, GetNativeUnscaledFontSize, searchBar.Font.FontSize);
+			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.Size, GetNativeUnscaledFontSize, searchBar.Font.Size);
 		}
 
 		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.Slant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
 
 		[Theory(DisplayName = "MaxLength Initializes Correctly")]

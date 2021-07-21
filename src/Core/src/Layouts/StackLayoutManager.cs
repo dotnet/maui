@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Layouts
 
 		public IStackLayout Stack { get; }
 
-		protected static int MeasureSpacing(int spacing, int childCount)
+		protected static double MeasureSpacing(double spacing, int childCount)
 		{
 			return childCount > 1 ? (childCount - 1) * spacing : 0;
 		}

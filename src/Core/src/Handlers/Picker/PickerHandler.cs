@@ -2,7 +2,7 @@
 {
 	public partial class PickerHandler
 	{
-		public static PropertyMapper<IPicker, PickerHandler> PickerMapper = new PropertyMapper<IPicker, PickerHandler>(ViewHandler.ViewMapper)
+		public static PropertyMapper<IPicker, PickerHandler> PickerMapper = new(ViewMapper)
 		{
 #if __ANDROID__
 			[nameof(IPicker.Background)] = MapBackground,
@@ -14,13 +14,14 @@
 			[nameof(IPicker.Title)] = MapTitle,
 			[nameof(IPicker.TitleColor)] = MapTitleColor,
 			[nameof(IPicker.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
-			Actions =
-			{
-				["Reload"] = MapReload,
-			}
 		};
 
-		public PickerHandler() : base(PickerMapper)
+		public static CommandMapper<IPicker, PickerHandler> PickerCommandMapper = new(ViewCommandMapper)
+		{
+			["Reload"] = MapReload
+		};
+
+		public PickerHandler() : base(PickerMapper, PickerCommandMapper)
 		{
 
 		}

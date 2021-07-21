@@ -16,6 +16,6 @@
 			InitializeComponent();
 		}
 
-		protected override IStartup OnCreateStartup() => new Startup();
+		protected override IStartup OnCreateStartup() => new WinUIStartup();
 	}
 }

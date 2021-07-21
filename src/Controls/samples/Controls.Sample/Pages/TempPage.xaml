@@ -11,6 +11,7 @@
                 Margin="12">
                 <Label 
                     Text="Welcome to .NET MAUI!"
+                    TextColor="{AppThemeBinding Light={StaticResource LightAccentColor}, Dark={StaticResource DarkAccentColor}}"
                     SemanticProperties.HeadingLevel="Level1"
                     FontSize="32"
                     HorizontalOptions="CenterAndExpand" />

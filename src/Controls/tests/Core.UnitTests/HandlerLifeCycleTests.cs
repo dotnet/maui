@@ -13,124 +13,78 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class HandlerLifeCycleTests : BaseTestFixture
 	{
 		[Test]
-		public void VirtualViewSet()
+		public void ChangingAndChangedBothFireInitially()
 		{
-			Button button = new Button();
-			HandlerStub handlerStub = new HandlerStub();
+			LifeCycleButton button = new LifeCycleButton();
+			bool changing = false;
+			bool changed = false;
 
-			button.Handler = handlerStub;
+			button.HandlerChanging += (_, __) => changing = true;
+			button.HandlerChanged += (_, __) =>
+			{
+				if (!changing)
+					Assert.Fail("Attached fired before changing");
 
-			Assert.IsNotNull(handlerStub.VirtualView);
+				changed = true;
+			};
+
+			Assert.AreEqual(0, button.changing);
+			Assert.AreEqual(0, button.changed);
+			Assert.IsFalse(changing);
+			Assert.IsFalse(changed);
+
+			button.Handler = new HandlerStub();
+
+			Assert.IsTrue(changing);
+			Assert.IsTrue(changed);
+			Assert.AreEqual(1, button.changing);
+			Assert.AreEqual(1, button.changed);
 		}
 
 		[Test]
-		public void BasicAttachEvents()
-		{
-			Button button = new Button();
-			bool attaching = false;
-			bool attached = false;
-
-			button.AttachingHandler += (_, __) => attaching = true;
-			button.AttachedHandler += (_, __) =>
-			{
-				if (!attaching)
-					Assert.Fail("Attached fired before attaching");
-
-				attached = true;
-			};
-
-			button.Handler = new HandlerStub();
-
-			Assert.IsTrue(attaching);
-			Assert.IsTrue(attached);
-		}
-
-
-		[TestCase(null)]
-		[TestCase(typeof(HandlerStub))]
-		public void BasicDetachEvents(Type handlerType)
-		{
-			Button button = new Button();
-			bool detaching = false;
-			bool detached = false;
-
-			button.DetachingHandler += (_, __) => detaching = true;
-			button.DetachedHandler += (_, __) =>
-			{
-				if (!detaching)
-					Assert.Fail("Detached fired before detaching");
-
-				detached = true;
-			};
-
-			button.Handler = new HandlerStub();
-
-			Assert.IsFalse(detaching);
-			Assert.IsFalse(detached);
-
-			if (handlerType != null)
-				button.Handler = (IViewHandler)Activator.CreateInstance(handlerType);
-			else
-				button.Handler = null;
-
-			Assert.IsTrue(detaching);
-			Assert.IsTrue(detached);
-		}
-
-
-		[Test]
-		public void BasicAttachMethods()
-		{
-			LifeCycleButton button = new LifeCycleButton();
-			button.Handler = new HandlerStub();
-
-			Assert.AreEqual(1, button.attaching);
-			Assert.AreEqual(1, button.attached);
-		}
-
-
-		[TestCase(null)]
-		[TestCase(typeof(HandlerStub))]
-		public void BasicDetachMethods(Type handlerType)
+		public void ChangingArgsAreSetCorrectly()
 		{
 			LifeCycleButton button = new LifeCycleButton();
 
-			button.Handler = new HandlerStub();
+			Assert.IsNull(button.Handler);
+			var firstHandler = new HandlerStub();
+			button.Handler = firstHandler;
 
-			Assert.Zero(button.detaching);
-			Assert.Zero(button.detached);
+			Assert.AreEqual(button.LastHandlerChangingEventArgs.NewHandler, firstHandler);
+			Assert.IsNull(button.LastHandlerChangingEventArgs.OldHandler);
 
-			if (handlerType != null)
-				button.Handler = (IViewHandler)Activator.CreateInstance(handlerType);
-			else
-				button.Handler = null;
+			var secondHandler = new HandlerStub();
+			button.Handler = secondHandler;
+			Assert.AreEqual(button.LastHandlerChangingEventArgs.OldHandler, firstHandler);
+			Assert.AreEqual(button.LastHandlerChangingEventArgs.NewHandler, secondHandler);
 
-			Assert.AreEqual(1, button.detached);
-			Assert.AreEqual(1, button.detaching);
+			button.Handler = null;
+			Assert.AreEqual(button.LastHandlerChangingEventArgs.OldHandler, secondHandler);
+			Assert.AreEqual(button.LastHandlerChangingEventArgs.NewHandler, null);
+
+			Assert.AreEqual(3, button.changing);
+			Assert.AreEqual(3, button.changed);
 		}
 
 		public class LifeCycleButton : Button
 		{
-			public int attaching = 0;
-			public int attached = 0;
-			public int detaching = 0;
-			public int detached = 0;
+			public int changing = 0;
+			public int changed = 0;
+			public HandlerChangingEventArgs LastHandlerChangingEventArgs { get; set; }
 
-			protected override void OnAttachedHandler()
+			protected override void OnHandlerChanging(HandlerChangingEventArgs args)
 			{
-				attached++;
-
-				if (attached != attaching)
-					Assert.Fail("Attaching/Attached fire mismatch");
+				LastHandlerChangingEventArgs = args;
+				changing++;
+				base.OnHandlerChanging(args);
 			}
 
-			protected override void OnAttachingHandler() => attaching++;
-			protected override void OnDetachingHandler() => detaching++;
-			protected override void OnDetachedHandler()
+			protected override void OnHandlerChanged()
 			{
-				detached++;
+				changed++;
+				base.OnHandlerChanged();
 
-				if (detached != detaching)
+				if (changed != changing)
 					Assert.Fail("Attaching/Attached fire mismatch");
 			}
 		}

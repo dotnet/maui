@@ -36,7 +36,7 @@
         "type": "parameter",
         "dataType": "string",
         "replaces": "PROJECT_REUNION_VERSION",
-        "defaultValue": "0.8.0"
+        "defaultValue": "0.8.1"
       }
     },
     "defaultName": "MauiApp1"

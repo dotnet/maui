@@ -1,12 +1,20 @@
 ﻿using System;
 using Microsoft.Maui.HotReload;
 using UIKit;
+
 namespace Microsoft.Maui
 {
 	public class ContainerViewController : UIViewController, IReloadHandler
 	{
-		IView? _view;
-		public IView? CurrentView
+		IElement? _view;
+		UIView? currentNativeView;
+
+		// The handler needs this view before LoadView is called on the controller
+		// So this is used to create the first view that the handler will use
+		// without forcing the VC to call LoadView
+		UIView? _pendingLoadedView;
+
+		public IElement? CurrentView
 		{
 			get => _view;
 			set => SetView(value);
@@ -17,17 +25,11 @@ namespace Microsoft.Maui
 
 		public IMauiContext? Context { get; set; }
 
-		UIView? currentNativeView;
-
-		// The handler needs this view before LoadView is called on the controller
-		// So this is used to create the first view that the handler will use
-		// without forcing the VC to call LoadView
-		UIView? _pendingLoadedView;
-
-		void SetView(IView? view, bool forceRefresh = false)
+		void SetView(IElement? view, bool forceRefresh = false)
 		{
 			if (view == _view && !forceRefresh)
 				return;
+
 			_view = view;
 
 			if (view is IPage page)
@@ -38,13 +40,15 @@ namespace Microsoft.Maui
 				ihr.ReloadHandler = this;
 				MauiHotReloadHelper.AddActiveView(ihr);
 			}
+
 			currentNativeView?.RemoveFromSuperview();
 			currentNativeView = null;
+
 			if (IsViewLoaded && _view != null)
 				LoadNativeView(_view);
 		}
 
-		internal UIView LoadFirstView(IView view)
+		internal UIView LoadFirstView(IElement view)
 		{
 			_pendingLoadedView = CreateNativeView(view);
 			return _pendingLoadedView;
@@ -57,16 +61,18 @@ namespace Microsoft.Maui
 				LoadNativeView(_view);
 		}
 
-		void LoadNativeView(IView view)
+		void LoadNativeView(IElement view)
 		{
 			currentNativeView = _pendingLoadedView ?? CreateNativeView(view);
 			_pendingLoadedView = null;
+
 			View!.AddSubview(currentNativeView);
-			if (view.Background == null)
+
+			if (view is IView v && v.Background == null)
 				View.BackgroundColor = UIColor.SystemBackgroundColor;
 		}
 
-		protected virtual UIView CreateNativeView(IView view)
+		protected virtual UIView CreateNativeView(IElement view)
 		{
 			_ = Context ?? throw new ArgumentNullException(nameof(Context));
 			_ = _view ?? throw new ArgumentNullException(nameof(view));

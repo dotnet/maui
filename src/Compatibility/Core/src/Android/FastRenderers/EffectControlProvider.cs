@@ -1,4 +1,5 @@
 using Android.Views;
+using Microsoft.Maui.Controls.Platform;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
@@ -28,8 +29,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				return;
 			}
 
-			platformEffect.SetControl(_control);
-			platformEffect.SetContainer(_container);
+			platformEffect.Container = _container;
+			platformEffect.Control = _control;
 		}
 	}
 }

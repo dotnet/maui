@@ -21,6 +21,20 @@ namespace Microsoft.Maui
 			nativeControl.Text = searchBar.Text;
 		}
 
+		public static void UpdateTextColor(this AutoSuggestBox nativeControl, ISearchBar searchBar, Brush? defaultTextColorBrush, Brush? defaultTextColorFocusBrush, MauiTextBox? queryTextBox)
+		{
+			if (queryTextBox == null)
+				return;
+
+			Color textColor = searchBar.TextColor;
+
+			BrushHelpers.UpdateColor(textColor, ref defaultTextColorBrush,
+				() => queryTextBox.Foreground, brush => queryTextBox.Foreground = brush);
+
+			BrushHelpers.UpdateColor(textColor, ref defaultTextColorFocusBrush,
+				() => queryTextBox.ForegroundFocusBrush, brush => queryTextBox.ForegroundFocusBrush = brush);
+		}
+
 		public static void UpdateFont(this AutoSuggestBox nativeControl, ISearchBar searchBar, IFontManager fontManager) =>
 			nativeControl.UpdateFont(searchBar.Font, fontManager);
 

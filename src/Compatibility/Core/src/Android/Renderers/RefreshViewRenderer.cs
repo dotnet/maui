@@ -272,8 +272,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.SetContainer(this);
-			effect.SetControl(this);
+			effect.Container = this;
+			effect.Control = this;
 		}
 	}
 }

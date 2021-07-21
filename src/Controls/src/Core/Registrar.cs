@@ -323,6 +323,28 @@ namespace Microsoft.Maui.Controls.Internals
 			return properties;
 		}
 
+		internal static void RegisterEffects(Assembly[] assemblies)
+		{
+			foreach (Assembly assembly in assemblies)
+			{
+				object[] effectAttributes = assembly.GetCustomAttributesSafe(typeof(ExportEffectAttribute));
+				if (effectAttributes == null || effectAttributes.Length == 0)
+				{
+					continue;
+				}
+
+				string resolutionName = assembly.FullName;
+				var resolutionNameAttribute = (ResolutionGroupNameAttribute)assembly.GetCustomAttribute(typeof(ResolutionGroupNameAttribute));
+				if (resolutionNameAttribute != null)
+					resolutionName = resolutionNameAttribute.ShortName;
+
+				//NOTE: a simple cast to ExportEffectAttribute[] failed on UWP, hence the Array.Copy
+				var typedEffectAttributes = new ExportEffectAttribute[effectAttributes.Length];
+				Array.Copy(effectAttributes, typedEffectAttributes, effectAttributes.Length);
+				RegisterEffects(resolutionName, typedEffectAttributes);
+			}
+		}
+
 		public static void RegisterEffects(string resolutionName, ExportEffectAttribute[] effectAttributes)
 		{
 			var exportEffectsLength = effectAttributes.Length;
@@ -411,22 +433,6 @@ namespace Microsoft.Maui.Controls.Internals
 						}
 					}
 				}
-
-				object[] effectAttributes = assembly.GetCustomAttributesSafe(typeof(ExportEffectAttribute));
-				if (effectAttributes == null || effectAttributes.Length == 0)
-				{
-					Profile.FrameEnd(frameName);
-					continue;
-				}
-
-				string resolutionName = assembly.FullName;
-				var resolutionNameAttribute = (ResolutionGroupNameAttribute)assembly.GetCustomAttribute(typeof(ResolutionGroupNameAttribute));
-				if (resolutionNameAttribute != null)
-					resolutionName = resolutionNameAttribute.ShortName;
-				//NOTE: a simple cast to ExportEffectAttribute[] failed on UWP, hence the Array.Copy
-				var typedEffectAttributes = new ExportEffectAttribute[effectAttributes.Length];
-				Array.Copy(effectAttributes, typedEffectAttributes, effectAttributes.Length);
-				RegisterEffects(resolutionName, typedEffectAttributes);
 
 				Profile.FrameEnd(frameName);
 			}

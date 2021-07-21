@@ -1,6 +1,7 @@
 using System;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 
@@ -20,7 +21,7 @@ namespace Microsoft.Maui
 
 			var crossPlatformSize = CrossPlatformMeasure(width, height);
 
-			return base.SizeThatFits(crossPlatformSize.ToCGSize());
+			return crossPlatformSize.ToCGSize();
 		}
 
 		public IView? View { get; set; }
@@ -29,6 +30,7 @@ namespace Microsoft.Maui
 		{
 			base.LayoutSubviews();
 
+			// TODO ezhart 2021-07-07 This Frame may not make sense if we're applying a transform to this UIView; we should determine the rectangle from Bounds/Center instead
 			var bounds = Frame.ToRectangle();
 			if (View is ISafeAreaView sav && !sav.IgnoreSafeArea && RespondsToSafeArea())
 			{
@@ -42,7 +44,9 @@ namespace Microsoft.Maui
 			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
 			CrossPlatformArrange?.Invoke(bounds);
 		}
+
 		static bool? respondsToSafeArea;
+
 		bool RespondsToSafeArea()
 		{
 			if (respondsToSafeArea.HasValue)
@@ -80,15 +84,27 @@ namespace Microsoft.Maui
 		{
 			CurrentView = page;
 			Context = mauiContext;
+
 			LoadFirstView(page);
 		}
 
-		protected override UIView CreateNativeView(IView view)
+		protected override UIView CreateNativeView(IElement view)
 		{
 			return new PageView
 			{
-				CrossPlatformArrange = view.Arrange,
+				CrossPlatformArrange = ((IPage)view).Arrange,
 			};
+		}
+
+		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
+		{
+			if (CurrentView?.Handler is ElementHandler handler)
+			{
+				var application = handler.GetRequiredService<IApplication>();
+				application?.ThemeChanged();
+			}
+
+			base.TraitCollectionDidChange(previousTraitCollection);
 		}
 	}
 }

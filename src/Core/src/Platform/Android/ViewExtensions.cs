@@ -47,20 +47,23 @@ namespace Microsoft.Maui
 			}
 
 			var paint = view.Background;
-
 			if (paint.IsNullOrEmpty())
-				nativeView.Background = defaultBackground;
+			{
+				if (defaultBackground != null)
+					nativeView.Background = defaultBackground;
+			}
 			else
 			{
 				if (paint is SolidPaint solidPaint)
 				{
-					Color backgroundColor = solidPaint.Color;
-
-					if (backgroundColor != null)
+					if (solidPaint.Color is Color backgroundColor)
 						nativeView.SetBackgroundColor(backgroundColor.ToNative());
 				}
 				else
-					nativeView.Background = paint!.ToDrawable();
+				{
+					if (paint!.ToDrawable() is Drawable drawable)
+						nativeView.Background = drawable;
+				}
 			}
 		}
 

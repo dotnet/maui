@@ -6,6 +6,10 @@
 		{
 			[nameof(IActivityIndicator.Color)] = MapColor,
 			[nameof(IActivityIndicator.IsRunning)] = MapIsRunning,
+#if __ANDROID__
+			// Android does not have the concept of IsRunning, so we are leveraging the Visibility
+			[nameof(IActivityIndicator.Visibility)] = MapIsRunning,
+#endif
 		};
 
 		public ActivityIndicatorHandler() : base(ActivityIndicatorMapper)

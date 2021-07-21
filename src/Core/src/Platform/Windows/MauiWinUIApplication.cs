@@ -23,9 +23,6 @@ namespace Microsoft.Maui
 		{
 			LaunchActivatedEventArgs = args;
 
-			// TODO: This should not be here. CreateWindow should do it.
-			MainWindow = new MauiWinUIWindow();
-
 			var startup = OnCreateStartup() ??
 				throw new InvalidOperationException($"A valid startup object must be provided by overriding {nameof(OnCreateStartup)}.");
 

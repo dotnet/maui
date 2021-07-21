@@ -134,8 +134,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.ViewDidLoad();
 
 			_tracker = new VisualElementTracker(this);
-			_events = new EventTracker(this);
-			_events.LoadEvents(View);
 
 			((FlyoutPage)Element).PropertyChanged += HandlePropertyChanged;
 

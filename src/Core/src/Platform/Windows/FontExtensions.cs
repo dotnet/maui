@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	public static class FontExtensions
 	{
 		public static FontStyle ToFontStyle(this Font fontAttributes) =>
-				fontAttributes.FontSlant switch
+				fontAttributes.Slant switch
 				{
 					FontSlant.Italic => FontStyle.Italic,
 					FontSlant.Oblique => FontStyle.Oblique,

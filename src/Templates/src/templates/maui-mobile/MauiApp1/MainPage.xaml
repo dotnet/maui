@@ -37,6 +37,7 @@
                     Source="dotnet_bot.png"
                     SemanticProperties.Description="Cute dotnet bot waving hi to you!"
                     WidthRequest="300"
+                    HeightRequest="372"
                     HorizontalOptions="Center" />
 
             </Grid>

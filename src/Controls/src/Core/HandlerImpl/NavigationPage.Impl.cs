@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
@@ -25,10 +26,10 @@ namespace Microsoft.Maui.Controls
 			// Update the Bounds (Frame) for this page
 			Layout(bounds);
 
-			if (Content is IFrameworkElement element)
+			if (Content is IFrameworkElement element and VisualElement visualElement)
 			{
-				element.Arrange(bounds);
-				element.Handler?.NativeArrange(element.Frame);
+				visualElement.Frame = element.ComputeFrame(bounds);
+				element.Handler?.NativeArrange(visualElement.Frame);
 			}
 
 			return Frame.Size;

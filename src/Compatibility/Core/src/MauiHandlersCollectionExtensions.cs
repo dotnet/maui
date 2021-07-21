@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -100,6 +101,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 				});
 #endif
 			return services;
+		}
+
+
+
+		public static IEffectsBuilder AddCompatibilityEffects(this IEffectsBuilder effectsBuilder, params global::System.Reflection.Assembly[] assemblies)
+		{
+			Internals.Registrar.RegisterEffects(assemblies);
+			return effectsBuilder;
 		}
 	}
 }

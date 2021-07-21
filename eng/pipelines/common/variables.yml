@@ -34,8 +34,8 @@ variables:
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
 - name: provisionator.path
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-- name: provisionator.vs2019
-  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs2019.csx'
+- name: provisionator.vs
+  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs.csx'
 - name: provisionator.extraArguments
   value: '--v'
 - name: DotNet.Dir

@@ -46,8 +46,8 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				bindable.SetValue(FontFamilyProperty, font.FontFamily);
-				bindable.SetValue(FontSizeProperty, font.FontSize);
+				bindable.SetValue(FontFamilyProperty, font.Family);
+				bindable.SetValue(FontSizeProperty, font.Size);
 				bindable.SetValue(FontAttributesProperty, font.GetFontAttributes());
 			}
 			SetCancelEvents(bindable, false);

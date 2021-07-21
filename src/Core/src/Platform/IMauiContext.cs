@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui
 {
@@ -15,5 +16,11 @@ namespace Microsoft.Maui
 #elif WINDOWS
 		UI.Xaml.Window? Window { get; }
 #endif
+	}
+
+	// TODO: This will be replaced with scoped services
+	internal interface IScopedMauiContext : IMauiContext
+	{
+		IAnimationManager AnimationManager { get; }
 	}
 }

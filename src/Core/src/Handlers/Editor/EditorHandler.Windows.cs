@@ -79,8 +79,10 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateTextColor(editor);
 
-		[MissingMapper]
-		public static void MapKeyboard(EditorHandler handler, IEditor editor) { }
+		public static void MapKeyboard(EditorHandler handler, IEditor editor) 
+		{
+			handler.NativeView?.UpdateKeyboard(editor); 
+		}
 		
 		void OnLostFocus(object? sender, RoutedEventArgs e)
 		{

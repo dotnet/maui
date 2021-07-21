@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Effects;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportEffect(typeof(AttachedStateEffectRenderer), AttachedStateEffect.EffectName)]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI

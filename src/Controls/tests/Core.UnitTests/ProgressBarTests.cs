@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestProgressTo()
 		{
-			var bar = AnimationReadyWindow.Prepare(new ProgressBar());
+			var bar = AnimationReadyHandler.Prepare(new ProgressBar());
 
 			bar.ProgressTo(0.8, 250, Easing.Linear);
 

@@ -8,6 +8,6 @@
 		/// <summary>
 		/// Identifies the Spacing between childs.
 		/// </summary>
-		int Spacing { get; }
+		double Spacing { get; }
 	}
 }

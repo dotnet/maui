@@ -15,7 +15,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	{
 		bool _appeared;
 		bool _disposed;
-		EventTracker _events;
 		VisualElementPackager _packager;
 		VisualElementTracker _tracker;
 
@@ -255,9 +254,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Element.PropertyChanged += OnHandlePropertyChanged;
 			_tracker = new VisualElementTracker(this, !(Element.Parent is BaseShellItem));
 
-			_events = new EventTracker(this);
-			_events.LoadEvents(NativeView);
-
 			Element.SendViewInitialized(NativeView);
 		}
 
@@ -287,7 +283,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Element = null;
 			}
 
-			_events?.Disconnect();
 			_packager?.Disconnect();
 			_tracker?.Disconnect();
 		}
@@ -301,10 +296,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				(this as IDisconnectable).Disconnect();
 
-				_events?.Dispose();
 				_packager?.Dispose();
 				_tracker?.Dispose();
-				_events = null;
 				_packager = null;
 				_tracker = null;
 

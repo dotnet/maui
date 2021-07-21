@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected override void OnRegisterEffect(PlatformEffect effect)
 		{
 			base.OnRegisterEffect(effect);
-			effect.SetControl(Control);
+			effect.Control = Control;
 		}
 
 		protected override void SetAccessibilityHint()

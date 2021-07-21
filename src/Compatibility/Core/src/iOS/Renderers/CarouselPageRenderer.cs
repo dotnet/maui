@@ -17,7 +17,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		bool _appeared;
 		Dictionary<Page, UIView> _containerMap;
 		bool _disposed;
-		EventTracker _events;
 		bool _ignoreNativeScrolling;
 		UIScrollView _scrollView;
 		VisualElementTracker _tracker;
@@ -126,8 +125,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.ViewDidLoad();
 
 			_tracker = new VisualElementTracker(this);
-			_events = new EventTracker(this);
-			_events.LoadEvents(View);
 
 			_scrollView = new UIScrollView { ShowsHorizontalScrollIndicator = false };
 
@@ -200,12 +197,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					_appeared = false;
 					PageController?.SendDisappearing();
-				}
-
-				if (_events != null)
-				{
-					_events.Dispose();
-					_events = null;
 				}
 
 				if (_tracker != null)

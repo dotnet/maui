@@ -111,9 +111,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 					_packager = new VisualElementPackager(this);
 					_packager.Load();
-
-					_events = new EventTracker(this);
-					_events.LoadEvents(this);
 				}
 
 				Load();

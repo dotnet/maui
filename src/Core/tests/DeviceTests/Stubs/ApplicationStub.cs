@@ -4,7 +4,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	class ApplicationStub : IApplication
 	{
-		List<IWindow> _windows = new List<IWindow>();
+		readonly List<IWindow> _windows = new List<IWindow>();
+
 		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
 
 		public IWindow CreateWindow(IActivationState state)
@@ -13,5 +14,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 			return _windows[0];
 		}
+
+		public void ThemeChanged() { }
 	}
 }

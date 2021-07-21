@@ -204,11 +204,6 @@ namespace Microsoft.Maui.Controls.Platform
 			SetupGestures();
 		}
 
-		internal void OnElementChanged(VisualElementChangedEventArgs e)
-		{
-			SetupElement(e.OldElement, e.NewElement);
-		}
-
 		void GestureCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			UpdateDragAndDrop();

@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void Kinetic()
 		{
-			var view = AnimationReadyWindow.Prepare(new View());
+			var view = AnimationReadyHandler.Prepare(new View());
 			var resultList = new List<Tuple<double, double>>();
 			view.AnimateKinetic(
 				name: "Kinetics",
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void KineticFinished()
 		{
-			var view = AnimationReadyWindow.Prepare(new View());
+			var view = AnimationReadyHandler.Prepare(new View());
 			bool finished = false;
 			view.AnimateKinetic(
 				name: "Kinetics",

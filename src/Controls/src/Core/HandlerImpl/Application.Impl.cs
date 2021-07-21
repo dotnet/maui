@@ -21,6 +21,19 @@ namespace Microsoft.Maui.Controls
 			return window;
 		}
 
+		public void ThemeChanged()
+		{
+			Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Current.RequestedTheme));
+		}
+
+		protected virtual Window CreateWindow(IActivationState activationState)
+		{
+			if (Windows.Count > 0)
+				return Windows[0];
+
+			throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
+		}
+
 		void AddWindow(Window window)
 		{
 			_windows.Add(window);
@@ -34,14 +47,6 @@ namespace Microsoft.Maui.Controls
 
 			if (window is NavigableElement ne)
 				ne.NavigationProxy.Inner = NavigationProxy;
-		}
-
-		protected virtual Window CreateWindow(IActivationState activationState)
-		{
-			if (Windows.Count > 0)
-				return Windows[0];
-
-			throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
 		}
 	}
 }

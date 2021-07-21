@@ -24,6 +24,7 @@
     <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" />
     <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" />
     <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
+    <PackageReference Include="Xamarin.AndroidX.Browser" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == '$(WindowsTargetFramework)' ">
