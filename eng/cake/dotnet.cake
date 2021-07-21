@@ -27,7 +27,7 @@ Task("dotnet-pack")
         var settings = new DotNetCoreToolSettings
         {
             DiagnosticOutput = true,
-            ArgumentCustomization = args => args.Append($"./eng/package.ps1 -configuration \"{configuration}\"")
+            ArgumentCustomization = args => args.Append($"./eng/package.ps1 -configuration \"{configuration}\" -msbuild \"{MSBuildExe}\"")
         };
 
         DotNetCoreTool("pwsh", settings);
