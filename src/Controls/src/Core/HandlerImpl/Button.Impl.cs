@@ -2,6 +2,10 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Button : IButton
 	{
+		Font ITextStyle.Font => Font;
+
+		IImageSource IButton.ImageSource => ImageSource;
+
 		void IButton.Clicked()
 		{
 			(this as IButtonController).SendClicked();
@@ -16,7 +20,5 @@ namespace Microsoft.Maui.Controls
 		{
 			(this as IButtonController).SendReleased();
 		}
-
-		Font ITextStyle.Font => Font;
 	}
 }

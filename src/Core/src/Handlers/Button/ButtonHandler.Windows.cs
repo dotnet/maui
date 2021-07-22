@@ -49,7 +49,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateText(button);
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			handler.NativeView?.UpdateContentAsync(button, provider)
+				.FireAndForget(handler);
 		}
 
 		public static void MapTextColor(ButtonHandler handler, IButton button)
@@ -72,6 +75,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPadding(ButtonHandler handler, IButton button)
 		{
 			handler.NativeView?.UpdatePadding(button, DefaultPadding);
+		}
+
+		public static void MapImageSource(ButtonHandler handler, IButton button) 
+		{
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			handler.NativeView?.UpdateContentAsync(button, provider)
+				.FireAndForget(handler);
 		}
 
 		void OnClick(object sender, UI.Xaml.RoutedEventArgs e)

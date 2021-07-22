@@ -15,6 +15,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Thickness Padding { get; set; }
 
+		public IImageSource ImageSource { get; set; }
+
 		public event EventHandler Pressed;
 		public event EventHandler Released;
 		public event EventHandler Clicked;
