@@ -544,7 +544,7 @@ namespace Microsoft.Maui.Controls
 
 		public override int GetContentTypeHashCode() => TypeHashCode ??= GetChidrensTypeHashCode();
 
-		int GetChidrensTypeHasCode()
+		int GetChidrensTypeHashCode()
 		{
 			int hashCode = base.GetContentTypeHashCode();
 			foreach (var v in Children)
