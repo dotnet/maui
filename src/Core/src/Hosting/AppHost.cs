@@ -1,4 +1,5 @@
 #nullable enable
+using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Hosting
 {
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Hosting
 			builder.ConfigureImageSources();
 			builder.ConfigureAnimations();
 			builder.ConfigureSemantics();
+			builder.ConfigureCrossPlatformLifecycleEvents();
 
 			return builder;
 		}

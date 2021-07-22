@@ -141,7 +141,7 @@ Task("VS-WINUI")
 
         MSBuild(sln, msbuildSettings);
 
-        var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, Version = "[\"16.0\",\"17.0\"]"});
+        var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, Version = "[\"17.0\",\"19.0\"]"});
 
         if (vsLatest == null)
             throw new Exception("Unable to find Visual Studio!");
@@ -197,6 +197,9 @@ Task("SAMPLE-MAC")
 
 string FindMSBuild()
 {
+    if (!string.IsNullOrWhiteSpace(MSBuildExe))
+        return MSBuildExe;
+
     if (IsRunningOnWindows())
     {
         var vsInstallation = VSWhereLatest(new VSWhereLatestSettings { Requires = "Microsoft.Component.MSBuild", IncludePrerelease = true });

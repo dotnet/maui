@@ -36,7 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize("Arial", fontSize)
 			};
 
-			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.FontSize, GetNativeUnscaledFontSize, timePicker.Font.FontSize);
+			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.Size, GetNativeUnscaledFontSize, timePicker.Font.Size);
 		}
 
 		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(timePicker, () => timePicker.Font.Slant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
 
 		[Fact(DisplayName = "Null Text Color Doesn't Crash")]

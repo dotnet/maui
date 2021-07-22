@@ -144,11 +144,13 @@ stages:
             - task: xamops.azdevex.provisionator-task.provisionator@1
               displayName: 'Provision VSWindows'
               inputs:
-                provisioning_script: $(provisionator.vs2019)
+                provisioning_script: $(provisionator.vs)
             - script: dotnet tool restore
               displayName: install dotnet tools
             - powershell: |
-                  & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildCondition }}
+                  $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+                  $env:MSBUILD_EXE = "$msbuild"
+                  & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildCondition }} --msbuild="$msbuild"
               displayName: 'Build WinUI SLN'
             - task: CopyFiles@2
               displayName: 'Copy Bin Log Files'
@@ -249,11 +251,16 @@ stages:
               - task: xamops.azdevex.provisionator-task.provisionator@1
                 displayName: 'Provision VSWindows'
                 inputs:
-                  provisioning_script: $(provisionator.vs2019)
+                  provisioning_script: $(provisionator.vs)
+              - powershell: |
+                  $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+                  echo "MSBUILD_EXE: $msbuild"
+                  echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
+                displayName: set MSBUILD_EXE
 
             - script: dotnet tool restore
               displayName: install dotnet tools
-            - script: dotnet cake --configuration=Release
+            - powershell: dotnet cake --configuration=Release
               displayName: pack nugets
             - task: CopyFiles@2
               condition: always()
@@ -347,25 +354,26 @@ stages:
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
-  - template: common/device-tests.yml
-    parameters:
-      ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
-        androidApiLevels: [ 30, 29, 21 ]
-        iosVersions: [ 'latest' ]
-      projects:
-        - name: essentials
-          desc: Essentials
-          android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
-          ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
-        - name: core
-          desc: Core
-          android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
-          ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
-        # - name: core_net6
-        #   desc: Core .NET 6
-        #   android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests-net6.csproj
-        #   ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests-net6.csproj
-        #   net6: true
+  - ${{ if ne(variables['System.TeamProject'], 'devdiv') }}: # bugs!
+    - template: common/device-tests.yml
+      parameters:
+        ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
+          androidApiLevels: [ 30, 29, 21 ]
+          iosVersions: [ 'latest' ]
+        projects:
+          - name: essentials
+            desc: Essentials
+            android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.Android/Essentials.DeviceTests.Android.csproj
+            ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests.iOS/Essentials.DeviceTests.iOS.csproj
+          - name: core
+            desc: Core
+            android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.Android/Core.DeviceTests.Android.csproj
+            ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests.iOS/Core.DeviceTests.iOS.csproj
+          # - name: core_net6
+          #   desc: Core .NET 6
+          #   android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests-net6.csproj
+          #   ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests-net6.csproj
+          #   net6: true
 
   - template: common/security_compliance.yml
   - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]

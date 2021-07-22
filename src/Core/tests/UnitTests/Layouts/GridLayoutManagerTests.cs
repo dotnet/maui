@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -119,12 +121,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			return measuredSize;
-		}
-
-		void AssertArranged(IView view, double x, double y, double width, double height)
-		{
-			var expected = new Rectangle(x, y, width, height);
-			view.Received().Arrange(Arg.Is(expected));
 		}
 
 		[Category(GridAutoSizing)]
@@ -1078,6 +1074,113 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Since it's using GridLength.Star, we expect the view to be arranged at the full size of the grid
 			AssertArranged(view0, 0, 0, 300, 300);
+		}
+
+		[Fact]
+		public void IgnoresCollapsedViews()
+		{
+			var grid = CreateGridLayout();
+
+			var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			var collapsedView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			collapsedView.Visibility.Returns(Visibility.Collapsed);
+
+			var children = new List<IView>() { view, collapsedView }.AsReadOnly();
+			grid.Children.Returns(children);
+
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(100, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+
+			// View is visible, so we expect it to be measured and arranged
+			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			view.Received().Arrange(Arg.Any<Rectangle>());
+
+			// View is collapsed, so we expect it not to be measured or arranged
+			collapsedView.DidNotReceive().Measure(Arg.Any<double>(), Arg.Any<double>());
+			collapsedView.DidNotReceive().Arrange(Arg.Any<Rectangle>());
+		}
+
+		[Fact]
+		public void DoesNotIgnoreHiddenViews()
+		{
+			var grid = CreateGridLayout();
+
+			var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			var hiddenView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			hiddenView.Visibility.Returns(Visibility.Hidden);
+
+			var children = new List<IView>() { view, hiddenView }.AsReadOnly();
+			grid.Children.Returns(children);
+
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(100, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+
+			// View is visible, so we expect it to be measured and arranged
+			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			view.Received().Arrange(Arg.Any<Rectangle>());
+
+			// View is hidden, so we expect it to be measured and arranged (since it'll need to take up space)
+			hiddenView.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			hiddenView.Received().Arrange(Arg.Any<Rectangle>());
+		}
+
+		IGridLayout BuildPaddedGrid(Thickness padding, double viewWidth, double viewHeight)
+		{
+			var grid = CreateGridLayout();
+			var view = CreateTestView(new Size(viewWidth, viewHeight));
+			AddChildren(grid, view);
+			SetLocation(grid, view);
+
+			grid.Padding.Returns(padding);
+
+			return grid;
+		}
+
+		[Theory]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(10, 0, 10, 0)]
+		[InlineData(0, 10, 0, 10)]
+		[InlineData(23, 5, 3, 15)]
+		public void MeasureAccountsForPadding(double left, double top, double right, double bottom)
+		{
+			var viewWidth = 100d;
+			var viewHeight = 100d;
+			var padding = new Thickness(left, top, right, bottom);
+
+			var expectedHeight = padding.VerticalThickness + viewHeight;
+			var expectedWidth = padding.HorizontalThickness + viewWidth;
+
+			var grid = BuildPaddedGrid(padding, viewWidth, viewHeight);
+
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedHeight, measuredSize.Height);
+			Assert.Equal(expectedWidth, measuredSize.Width);
+		}
+
+		[Theory]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(10, 0, 10, 0)]
+		[InlineData(0, 10, 0, 10)]
+		[InlineData(23, 5, 3, 15)]
+		public void ArrangeAccountsForPadding(double left, double top, double right, double bottom)
+		{
+			var viewWidth = 100d;
+			var viewHeight = 100d;
+			var padding = new Thickness(left, top, right, bottom);
+
+			var grid = BuildPaddedGrid(padding, viewWidth, viewHeight);
+
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+
+			AssertArranged(grid.Children[0], padding.Left, padding.Top, viewWidth, viewHeight);
 		}
 	}
 }

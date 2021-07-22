@@ -31,16 +31,16 @@ namespace Microsoft.Maui
 
 		public Typeface? GetTypeface(Font font)
 		{
-			if (font == Font.Default || (font.Weight == FontWeight.Regular && string.IsNullOrEmpty(font.FontFamily) && font.FontSlant == FontSlant.Default))
+			if (font == Font.Default || (font.Weight == FontWeight.Regular && string.IsNullOrEmpty(font.Family) && font.Slant == FontSlant.Default))
 				return DefaultTypeface;
 
-			return _typefaces.GetOrAdd((font.FontFamily, font.Weight, font.FontSlant != FontSlant.Default), CreateTypeface);
+			return _typefaces.GetOrAdd((font.Family, font.Weight, font.Slant != FontSlant.Default), CreateTypeface);
 		}
 
 		public float GetFontSize(Font font, float defaultFontSize = 0) =>
-			font.FontSize <= 0
+			font.Size <= 0
 				? (defaultFontSize > 0 ? defaultFontSize : 14f)
-				: (float)font.FontSize;
+				: (float)font.Size;
 
 
 		Typeface? GetFromAssets(string fontName)

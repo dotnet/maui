@@ -15,5 +15,9 @@ namespace Maui.Controls.Sample.SingleProject
 			_windows.Add(window);
 			return window;
 		}
+		
+		public void ThemeChanged()
+		{
+		}
 	}
 }

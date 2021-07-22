@@ -4,7 +4,8 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-Write-Host $msbuild
+Write-Host "-msbuild: $msbuild"
+Write-Host "MSBUILD_EXE: $env:MSBUILD_EXE"
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
@@ -21,6 +22,11 @@ $dotnet = (Get-Item $dotnet).FullName
 
 if ($IsWindows)
 {
+    if (-not $msbuild)
+    {
+        $msbuild = $env:MSBUILD_EXE
+    }
+
     if (-not $msbuild)
     {
         # If MSBuild path isn't specified, use the standard location of 'vswhere' to determine an appropriate MSBuild to use.

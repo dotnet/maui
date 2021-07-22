@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 			picker.ItemsSource = items;
 			picker.SelectedIndex = 0;
 
-			await ValidatePropertyInitValue(picker, () => picker.Font.FontSize, GetNativeUnscaledFontSize, picker.Font.FontSize);
+			await ValidatePropertyInitValue(picker, () => picker.Font.Size, GetNativeUnscaledFontSize, picker.Font.Size);
 		}
 
 		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 			picker.SelectedIndex = 0;
 
 			await ValidatePropertyInitValue(picker, () => picker.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(picker, () => picker.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(picker, () => picker.Font.Slant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
 
 		[Theory(DisplayName = "Updating Font Does Not Affect HorizontalTextAlignment")]

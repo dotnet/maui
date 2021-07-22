@@ -5,6 +5,7 @@ using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Primitives;
 using NSubstitute;
 using Xunit;
+using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
 
 namespace Microsoft.Maui.UnitTests.Layouts
 {
@@ -120,6 +121,108 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle0));
 			stack.Children[1].Received().Arrange(Arg.Is(expectedRectangle1));
+		}
+
+		[Fact]
+		public void IgnoresCollapsedViews()
+		{
+			var stack = CreateTestLayout();
+
+			var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			var collapsedView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			collapsedView.Visibility.Returns(Visibility.Collapsed);
+
+			var children = new List<IView>() { view, collapsedView }.AsReadOnly();
+			stack.Children.Returns(children);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measure = manager.Measure(double.PositiveInfinity, 100);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+
+			// View is visible, so we expect it to be measured and arranged
+			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			view.Received().Arrange(Arg.Any<Rectangle>());
+
+			// View is collapsed, so we expect it not to be measured or arranged
+			collapsedView.DidNotReceive().Measure(Arg.Any<double>(), Arg.Any<double>());
+			collapsedView.DidNotReceive().Arrange(Arg.Any<Rectangle>());
+		}
+
+		[Fact]
+		public void DoesNotIgnoreHiddenViews()
+		{
+			var stack = CreateTestLayout();
+
+			var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			var hiddenView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			hiddenView.Visibility.Returns(Visibility.Hidden);
+
+			var children = new List<IView>() { view, hiddenView }.AsReadOnly();
+			stack.Children.Returns(children);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measure = manager.Measure(double.PositiveInfinity, 100);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+
+			// View is visible, so we expect it to be measured and arranged
+			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			view.Received().Arrange(Arg.Any<Rectangle>());
+
+			// View is hidden, so we expect it to be measured and arranged (since it'll need to take up space)
+			hiddenView.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			hiddenView.Received().Arrange(Arg.Any<Rectangle>());
+		}
+
+		IStackLayout BuildPaddedStack(Thickness padding, double viewWidth, double viewHeight)
+		{
+			var stack = BuildStack(1, viewWidth, viewHeight);
+			stack.Padding.Returns(padding);
+			return stack;
+		}
+
+		[Theory]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(10, 0, 10, 0)]
+		[InlineData(0, 10, 0, 10)]
+		[InlineData(23, 5, 3, 15)]
+		public void MeasureAccountsForPadding(double left, double top, double right, double bottom)
+		{
+			var viewWidth = 100d;
+			var viewHeight = 100d;
+			var padding = new Thickness(left, top, right, bottom);
+
+			var expectedHeight = padding.VerticalThickness + viewHeight;
+			var expectedWidth = padding.HorizontalThickness + viewWidth;
+
+			var stack = BuildPaddedStack(padding, viewWidth, viewHeight);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedHeight, measuredSize.Height);
+			Assert.Equal(expectedWidth, measuredSize.Width);
+		}
+
+		[Theory]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(10, 0, 10, 0)]
+		[InlineData(0, 10, 0, 10)]
+		[InlineData(23, 5, 3, 15)]
+		public void ArrangeAccountsForPadding(double left, double top, double right, double bottom)
+		{
+			var viewWidth = 100d;
+			var viewHeight = 100d;
+			var padding = new Thickness(left, top, right, bottom);
+
+			var stack = BuildPaddedStack(padding, viewWidth, viewHeight);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+
+			AssertArranged(stack.Children[0], padding.Left, padding.Top, viewWidth, viewHeight);
 		}
 	}
 }

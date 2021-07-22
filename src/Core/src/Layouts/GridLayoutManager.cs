@@ -1,7 +1,6 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Layouts
@@ -49,18 +48,36 @@ namespace Microsoft.Maui.Layouts
 
 			Row[] _rows { get; }
 			Column[] _columns { get; }
-			IView[] _children;
+			IView[] _childrenToLayOut;
 			Cell[] _cells { get; }
+
+			readonly Thickness _padding;
+			readonly double _rowSpacing;
+			readonly double _columnSpacing;
+			readonly IReadOnlyList<IGridRowDefinition> _rowDefinitions;
+			readonly IReadOnlyList<IGridColumnDefinition> _columnDefinitions;
+			readonly IReadOnlyList<IView> _gridChildren;
 
 			readonly Dictionary<SpanKey, Span> _spans = new();
 
 			public GridStructure(IGridLayout grid, double widthConstraint, double heightConstraint)
 			{
 				_grid = grid;
+
 				_gridWidthConstraint = widthConstraint;
 				_gridHeightConstraint = heightConstraint;
 
-				if (_grid.RowDefinitions.Count == 0)
+				// Cache these GridLayout properties so we don't have to keep looking them up via _grid
+				// (Property access via _grid may have performance implications for some SDKs.)
+
+				_padding = grid.Padding;
+				_columnSpacing = grid.ColumnSpacing;
+				_rowSpacing = grid.RowSpacing;
+				_rowDefinitions = grid.RowDefinitions;
+				_columnDefinitions = grid.ColumnDefinitions;
+				_gridChildren = grid.Children;
+
+				if (_rowDefinitions.Count == 0)
 				{
 					// Since no rows are specified, we'll create an implied row 0 
 					_rows = new Row[1];
@@ -68,15 +85,15 @@ namespace Microsoft.Maui.Layouts
 				}
 				else
 				{
-					_rows = new Row[_grid.RowDefinitions.Count];
+					_rows = new Row[_rowDefinitions.Count];
 
-					for (int n = 0; n < _grid.RowDefinitions.Count; n++)
+					for (int n = 0; n < _rowDefinitions.Count; n++)
 					{
-						_rows[n] = new Row(_grid.RowDefinitions[n]);
+						_rows[n] = new Row(_rowDefinitions[n]);
 					}
 				}
 
-				if (_grid.ColumnDefinitions.Count == 0)
+				if (_columnDefinitions.Count == 0)
 				{
 					// Since no columns are specified, we'll create an implied column 0 
 					_columns = new Column[1];
@@ -84,18 +101,37 @@ namespace Microsoft.Maui.Layouts
 				}
 				else
 				{
-					_columns = new Column[_grid.ColumnDefinitions.Count];
+					_columns = new Column[_columnDefinitions.Count];
 
-					for (int n = 0; n < _grid.ColumnDefinitions.Count; n++)
+					for (int n = 0; n < _columnDefinitions.Count; n++)
 					{
-						_columns[n] = new Column(_grid.ColumnDefinitions[n]);
+						_columns[n] = new Column(_columnDefinitions[n]);
 					}
 				}
 
-				_children = _grid.Children.Where(child => child.Visibility != Visibility.Collapsed).ToArray();
+				// We could work out the _childrenToLayOut array (with the Collapsed items filtered out) with a Linq 1-liner
+				// but doing it the hard way means we don't allocate extra enumerators, especially if we're in the 
+				// happy path where _none_ of the children are Collapsed.
+				var gridChildCount = _gridChildren.Count;
+
+				_childrenToLayOut = new IView[gridChildCount];
+				int currentChild = 0;
+				for (int n = 0; n < gridChildCount; n++)
+				{
+					if (_gridChildren[n].Visibility != Visibility.Collapsed)
+					{
+						_childrenToLayOut[currentChild] = _gridChildren[n];
+						currentChild += 1;
+					}
+				}
+
+				if (currentChild < gridChildCount)
+				{
+					Array.Resize(ref _childrenToLayOut, currentChild);
+				}
 
 				// We'll ignore any collapsed child views during layout
-				_cells = new Cell[_children.Length];
+				_cells = new Cell[_childrenToLayOut.Length];
 
 				InitializeCells();
 
@@ -104,9 +140,9 @@ namespace Microsoft.Maui.Layouts
 
 			void InitializeCells()
 			{
-				for (int n = 0; n < _children.Length; n++)
+				for (int n = 0; n < _childrenToLayOut.Length; n++)
 				{
-					var view = _children[n];
+					var view = _childrenToLayOut[n];
 
 					if (view.Visibility == Visibility.Collapsed)
 					{
@@ -170,12 +206,12 @@ namespace Microsoft.Maui.Layouts
 
 			public double GridHeight()
 			{
-				return SumDefinitions(_rows, _grid.RowSpacing);
+				return SumDefinitions(_rows, _rowSpacing) + _padding.VerticalThickness;
 			}
 
 			public double GridWidth()
 			{
-				return SumDefinitions(_columns, _grid.ColumnSpacing);
+				return SumDefinitions(_columns, _columnSpacing) + _padding.HorizontalThickness;
 			}
 
 			double SumDefinitions(Definition[] definitions, double spacing)
@@ -219,7 +255,7 @@ namespace Microsoft.Maui.Layouts
 
 					if (cell.IsColumnSpanAuto || cell.IsRowSpanAuto)
 					{
-						var measure = _children[cell.ViewIndex].Measure(availableWidth, availableHeight);
+						var measure = _childrenToLayOut[cell.ViewIndex].Measure(availableWidth, availableHeight);
 
 						if (cell.IsColumnSpanAuto)
 						{
@@ -279,11 +315,11 @@ namespace Microsoft.Maui.Layouts
 				{
 					if (span.IsColumn)
 					{
-						ResolveSpan(_columns, span.Start, span.Length, _grid.ColumnSpacing, span.Requested);
+						ResolveSpan(_columns, span.Start, span.Length, _columnSpacing, span.Requested);
 					}
 					else
 					{
-						ResolveSpan(_rows, span.Start, span.Length, _grid.RowSpacing, span.Requested);
+						ResolveSpan(_rows, span.Start, span.Length, _rowSpacing, span.Requested);
 					}
 				}
 			}
@@ -337,12 +373,12 @@ namespace Microsoft.Maui.Layouts
 
 			double LeftEdgeOfColumn(int column)
 			{
-				double left = 0;
+				double left = _padding.Left;
 
 				for (int n = 0; n < column; n++)
 				{
 					left += _columns[n].Size;
-					left += _grid.ColumnSpacing;
+					left += _columnSpacing;
 				}
 
 				return left;
@@ -350,12 +386,12 @@ namespace Microsoft.Maui.Layouts
 
 			double TopEdgeOfRow(int row)
 			{
-				double top = 0;
+				double top = _padding.Top;
 
 				for (int n = 0; n < row; n++)
 				{
 					top += _rows[n].Size;
-					top += _grid.RowSpacing;
+					top += _rowSpacing;
 				}
 
 				return top;
@@ -393,7 +429,7 @@ namespace Microsoft.Maui.Layouts
 						if (cellCheck(cell)) // Check whether this cell should count toward the type of star value were measuring
 						{
 							// Update the star width if the view in this cell is bigger
-							starSize = Math.Max(starSize, dimension(_grid.Children[cell.ViewIndex].DesiredSize));
+							starSize = Math.Max(starSize, dimension(_gridChildren[cell.ViewIndex].DesiredSize));
 						}
 					}
 				}
@@ -448,7 +484,7 @@ namespace Microsoft.Maui.Layouts
 						width += _columns[n].Size;
 					}
 
-					_children[cell.ViewIndex].Measure(width, height);
+					_childrenToLayOut[cell.ViewIndex].Measure(width, height);
 				}
 			}
 		}
