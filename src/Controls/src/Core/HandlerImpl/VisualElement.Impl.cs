@@ -116,5 +116,7 @@ namespace Microsoft.Maui.Controls
 
 		double IFrameworkElement.Width => WidthRequest;
 		double IFrameworkElement.Height => HeightRequest;
+		protected int? TypeHashCode;
+		public virtual int GetContentTypeHashCode() => TypeHashCode ??= this.GetType().GetHashCode();
 	}
 }

@@ -413,6 +413,7 @@ namespace Microsoft.Maui.Controls
 
 		void InternalChildrenOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			TypeHashCode = null;
 			if (e.Action == NotifyCollectionChangedAction.Move)
 			{
 				return;
@@ -521,6 +522,16 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return Frame.Size;
+		}
+
+		public override int GetContentTypeHashCode() => TypeHashCode ??= GetChidrensTypeHashCode();
+
+		int GetChidrensTypeHashCode()
+		{
+			int hashCode = base.GetContentTypeHashCode();
+			foreach (var v in Children)
+				hashCode = (hashCode, v.GetType()).GetHashCode();
+			return hashCode;
 		}
 	}
 }

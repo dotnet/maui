@@ -51,6 +51,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		public override int GetContentTypeHashCode() => TypeHashCode ?? (this.GetType(), Content.GetContentTypeHashCode()).GetHashCode();
+
 		#region HotReload
 
 		IView IReplaceableView.ReplacedView => HotReload.MauiHotReloadHelper.GetReplacedView(this) ?? this;
