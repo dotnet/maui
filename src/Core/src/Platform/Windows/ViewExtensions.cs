@@ -11,7 +11,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui
 {
-	public static class ViewExtensions
+	public static partial class ViewExtensions
 	{
 		public static void TryMoveFocus(this FrameworkElement nativeView, FocusNavigationDirection direction)
 		{

@@ -6,7 +6,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
-	public static class ViewExtensions
+	public static partial class ViewExtensions
 	{
 		const int DefaultAutomationTagId = -1;
 		public static int AutomationTagId { get; set; } = DefaultAutomationTagId;
