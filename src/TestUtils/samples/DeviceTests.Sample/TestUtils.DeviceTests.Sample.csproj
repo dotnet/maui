@@ -13,6 +13,7 @@
     <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>MSIX</WindowsPackageType>
+    <NoWarn>$(NoWarn);NU1703</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
