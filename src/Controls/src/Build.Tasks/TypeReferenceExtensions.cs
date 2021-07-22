@@ -268,39 +268,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return typeRef.GetCustomAttribute(module.ImportReference(attributeType));
 		}
 
-		[Obsolete]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static MethodDefinition GetMethod(this TypeReference typeRef, Func<MethodDefinition, bool> predicate)
-		{
-			TypeReference declaringTypeReference;
-			return typeRef.GetMethod(predicate, out declaringTypeReference);
-		}
-
-		[Obsolete]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static MethodDefinition GetMethod(this TypeReference typeRef, Func<MethodDefinition, bool> predicate,
-			out TypeReference declaringTypeRef)
-		{
-			declaringTypeRef = typeRef;
-			var typeDef = typeRef.ResolveCached();
-			var methods = typeDef.Methods.Where(predicate);
-			if (methods.Any())
-				return methods.Single();
-			if (typeDef.BaseType != null && typeDef.BaseType.FullName == "System.Object")
-				return null;
-			if (typeDef.IsInterface)
-			{
-				foreach (var face in typeDef.Interfaces)
-				{
-					var m = face.InterfaceType.GetMethod(predicate);
-					if (m != null)
-						return m;
-				}
-				return null;
-			}
-			return typeDef.BaseType.GetMethod(predicate, out declaringTypeRef);
-		}
-
 		public static IEnumerable<Tuple<MethodDefinition, TypeReference>> GetMethods(this TypeReference typeRef,
 			Func<MethodDefinition, bool> predicate, ModuleDefinition module)
 		{

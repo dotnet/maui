@@ -20,9 +20,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		[Required]
 		public string Assembly { get; set; }
 		public string[] ReferencePath { get; set; }
-		[Obsolete("this is no longer used")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public int Verbosity { get; set; }
 		public bool DebugSymbols { get; set; }
 		public string DebugType { get; set; }
 

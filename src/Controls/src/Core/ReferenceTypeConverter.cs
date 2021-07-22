@@ -17,16 +17,8 @@ namespace Microsoft.Maui.Controls
 			if (referenceProvider != null)
 				return referenceProvider.FindByName(value) ?? throw new XamlParseException($"Can't resolve name '{value}' on Element", serviceProvider);
 
-#pragma warning disable CS0612 // Type or member is obsolete
-			//legacy path
 			if (!(serviceProvider.GetService(typeof(IProvideValueTarget)) is IProvideParentValues valueProvider))
 				throw new ArgumentException("serviceProvider does not provide an IProvideValueTarget");
-			if (serviceProvider.GetService(typeof(INameScopeProvider)) is INameScopeProvider namescopeprovider && namescopeprovider.NameScope != null)
-			{
-				var element = namescopeprovider.NameScope.FindByName(value);
-				if (element != null)
-					return element;
-			}
 
 			foreach (var target in valueProvider.ParentObjects)
 			{
@@ -37,7 +29,6 @@ namespace Microsoft.Maui.Controls
 					return element;
 			}
 			throw new Exception("Can't resolve name on Element");
-#pragma warning restore CS0612 // Type or member is obsolete
 		}
 
 		public override object ConvertFromInvariantString(string value) => throw new NotImplementedException();

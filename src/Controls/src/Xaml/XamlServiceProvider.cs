@@ -64,14 +64,6 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		public object GetService(Type serviceType) => services.TryGetValue(serviceType, out var service) ? service : null;
 
 		public void Add(Type type, object service) => services.Add(type, service);
-
-		[Obsolete]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		internal INameScopeProvider INameScopeProvider
-		{
-			get { return (INameScopeProvider)GetService(typeof(INameScopeProvider)); }
-			set { services[typeof(INameScopeProvider)] = value; }
-		}
 	}
 
 	class XamlValueTargetProvider : IProvideParentValues, IProvideValueTarget
@@ -267,13 +259,6 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			}
 			return null;
 		}
-	}
-
-	[Obsolete]
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class NameScopeProvider : INameScopeProvider
-	{
-		public INameScope NameScope { get; set; }
 	}
 
 	public class XmlNamespaceResolver : IXmlNamespaceResolver
