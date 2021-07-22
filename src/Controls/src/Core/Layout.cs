@@ -542,7 +542,7 @@ namespace Microsoft.Maui.Controls
 			return Frame.Size;
 		}
 
-		public override int GetContentTypeHashCode() => TypeHashCode ??= GetChidrensTypeHasCode();
+		public override int GetContentTypeHashCode() => TypeHashCode ??= GetChidrensTypeHashCode();
 
 		int GetChidrensTypeHasCode()
 		{
