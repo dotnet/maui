@@ -11,16 +11,6 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {
-	public class MauiApplication<TStartup> : MauiApplication
-		where TStartup : IStartup, new()
-	{
-		public MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
-		{
-		}
-
-		protected override IStartup OnCreateStartup() => new TStartup();
-	}
-
 	public abstract class MauiApplication : Application
 	{
 		protected MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
@@ -28,21 +18,25 @@ namespace Microsoft.Maui
 			Current = this;
 		}
 
-		protected abstract IStartup OnCreateStartup();
+		protected abstract MauiAppBuilder CreateAppBuilder();
 
 		public override void OnCreate()
 		{
 			RegisterActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
 
-			var startup = OnCreateStartup();
+			var builder = CreateAppBuilder();
 
-			var host = startup
-				.CreateAppHostBuilder()
-				.ConfigureServices(ConfigureNativeServices)
-				.ConfigureUsing(startup)
-				.Build();
+			//var startup = OnCreateStartup();
 
-			Services = host.Services;
+			//var host = startup
+			//	.CreateAppHostBuilder()
+			//	.ConfigureServices(ConfigureNativeServices)
+			//	.ConfigureUsing(startup)
+			//	.Build();
+
+			var mauiApp = builder.Build();
+
+			Services = mauiApp.Services;
 
 			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
 

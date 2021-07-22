@@ -1,36 +1,34 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.LifecycleEvents
 {
-	public static partial class AppHostBuilderExtensions
+	public class LifecycleEventRegistration
 	{
-		public static IAppHostBuilder ConfigureLifecycleEvents(this IAppHostBuilder builder, Action<ILifecycleBuilder> configureDelegate)
-		{
-			builder.ConfigureServices<LifecycleBuilder>((_, lifecycle) => configureDelegate(lifecycle));
+		private readonly Action<ILifecycleBuilder> _registerAction;
 
-			return builder;
+		public LifecycleEventRegistration(Action<ILifecycleBuilder> registerAction)
+		{
+			_registerAction = registerAction;
 		}
 
-		public static IAppHostBuilder ConfigureLifecycleEvents(this IAppHostBuilder builder, Action<HostBuilderContext, ILifecycleBuilder> configureDelegate)
+		internal void AddRegistration(ILifecycleBuilder effects)
 		{
-			builder.ConfigureServices<LifecycleBuilder>(configureDelegate);
+			_registerAction(effects);
+		}
+	}
+
+	public static partial class MauiAppHostBuilderExtensions
+	{
+		public static MauiAppBuilder ConfigureLifecycleEvents(this MauiAppBuilder builder, Action<ILifecycleBuilder>? configureDelegate)
+		{
+			builder.Services.AddSingleton<ILifecycleEventService, LifecycleEventService>();
+			if (configureDelegate != null)
+			{
+				builder.Services.AddSingleton<LifecycleEventRegistration>(new LifecycleEventRegistration(configureDelegate));
+			}
 
 			return builder;
-		}
-
-		class LifecycleBuilder : LifecycleEventService, ILifecycleBuilder, IMauiServiceBuilder
-		{
-			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
-			{
-				services.AddSingleton<ILifecycleEventService>(this);
-			}
-
-			public void Configure(HostBuilderContext context, IServiceProvider services)
-			{
-			}
 		}
 	}
 }

@@ -22,7 +22,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Sample.WinUI
         }
     }
 
-    public class MiddleApp : MauiWinUIApplication<Startup>
+    public class MiddleApp : MauiWinUIApplication
     {
-    }
+		protected override MauiAppBuilder CreateAppBuilder() => MauiProgram.CreateAppBuilder();
+	}
 }

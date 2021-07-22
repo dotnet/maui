@@ -7,16 +7,20 @@ using Microsoft.Maui.Hosting;
 
 namespace Maui.Controls.Sample.Profiling
 {
-	public class Startup : IStartup
+	public static class MauiProgram
 	{
-		public void Configure(IAppHostBuilder appBuilder)
+		public static MauiAppBuilder CreateAppBuilder()
 		{
+			var appBuilder = MauiApp.CreateBuilder();
+
 			appBuilder
 				.UseMauiApp<App>()
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				});
+
+			return appBuilder;
 		}
 	}
 }

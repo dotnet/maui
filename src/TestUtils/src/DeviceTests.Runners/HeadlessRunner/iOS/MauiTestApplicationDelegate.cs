@@ -9,20 +9,6 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {
-	public abstract class MauiTestApplicationDelegate<TStartup> : MauiTestApplicationDelegate
-		where TStartup : IStartup, new()
-	{
-		protected override IAppHost OnBuildAppHost()
-		{
-			var startup = new TStartup();
-
-			return startup
-				.CreateAppHostBuilder()
-				.ConfigureUsing(startup)
-				.Build();
-		}
-	}
-
 	public abstract class MauiTestApplicationDelegate : UIApplicationDelegate
 	{
 		public static bool IsHeadlessRunner(string[] args)
@@ -46,13 +32,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public override UIWindow? Window { get; set; }
 
-		protected abstract IAppHost OnBuildAppHost();
+		protected abstract MauiAppBuilder CreateAppBuilder();
 
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			var host = OnBuildAppHost();
+			var builder = CreateAppBuilder();
+			var mauiApp = builder.Build();
+			Services = mauiApp.Services;
 
-			Services = host.Services;
 			Options = Services.GetRequiredService<TestOptions>();
 			RunnerOptions = Services.GetRequiredService<HeadlessRunnerOptions>();
 

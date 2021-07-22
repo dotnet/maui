@@ -8,12 +8,6 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class MauiUIApplicationDelegate<TStartup> : MauiUIApplicationDelegate
-		where TStartup : IStartup, new()
-	{
-		protected override IStartup OnCreateStartup() => new TStartup();
-	}
-
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
 		WeakReference<IWindow>? _virtualWindow;
@@ -32,19 +26,23 @@ namespace Microsoft.Maui
 			Current = this;
 		}
 
-		protected abstract IStartup OnCreateStartup();
+		protected abstract MauiAppBuilder CreateAppBuilder();
 
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			var startup = OnCreateStartup();
+			var builder = CreateAppBuilder();
 
-			var host = startup
-				.CreateAppHostBuilder()
-				.ConfigureServices(ConfigureNativeServices)
-				.ConfigureUsing(startup)
-				.Build();
+			//var startup = OnCreateStartup();
 
-			Services = host.Services;
+			//var host = startup
+			//	.CreateAppHostBuilder()
+			//	.ConfigureServices(ConfigureNativeServices)
+			//	.ConfigureUsing(startup)
+			//	.Build();
+
+			var mauiApp = builder.Build();
+
+			Services = mauiApp.Services;
 
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
 

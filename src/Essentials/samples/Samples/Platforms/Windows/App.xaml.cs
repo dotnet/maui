@@ -2,8 +2,9 @@ using Microsoft.Maui;
 
 namespace Samples.UWP
 {
-	public class MiddleApp : MauiWinUIApplication<Startup>
+	public class MiddleApp : MauiWinUIApplication
 	{
+		protected override MauiAppBuilder CreateAppBuilder() => MauiProgram.CreateAppBuilder();
 	}
 
 	public partial class App : MiddleApp

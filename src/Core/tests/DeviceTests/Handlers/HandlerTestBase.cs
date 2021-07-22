@@ -13,23 +13,24 @@ namespace Microsoft.Maui.DeviceTests
 		where TStub : StubBase, IView, new()
 	{
 		IApplication _app;
-		IAppHost _host;
+		MauiApp _mauiApp;
+		IServiceProvider _servicesProvider;
 		IMauiContext _context;
 
 		public HandlerTestBase()
 		{
-			var appBuilder = AppHost
-				.CreateDefaultBuilder()
+			var appBuilder = MauiApp
+				.CreateBuilder()
 				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(SliderStub), typeof(SliderHandler));
 					handlers.AddHandler(typeof(ButtonStub), typeof(ButtonHandler));
 				})
-				.ConfigureImageSources((ctx, services) =>
+				.ConfigureImageSources(services =>
 				{
 					services.AddService<ICountedImageSourceStub, CountedImageSourceServiceStub>();
 				})
-				.ConfigureFonts((ctx, fonts) =>
+				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
 					fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
@@ -38,17 +39,19 @@ namespace Microsoft.Maui.DeviceTests
 					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 				});
 
-			_host = appBuilder.Build();
+			_mauiApp = appBuilder.Build();
+			_servicesProvider = _mauiApp.Services;
 
 			_app = new ApplicationStub();
 
-			_context = new ContextStub(_host.Services);
+			_context = new ContextStub(_servicesProvider);
 		}
 
 		public void Dispose()
 		{
-			_host.Dispose();
-			_host = null;
+			((IDisposable)_mauiApp).Dispose();
+			_mauiApp = null;
+			_servicesProvider = null;
 			_app = null;
 			_context = null;
 		}

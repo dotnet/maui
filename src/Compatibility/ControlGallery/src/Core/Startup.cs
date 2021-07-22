@@ -6,13 +6,14 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
-	public class Startup : IStartup
+	public static class MauiProgram
 	{
 		internal static bool UseBlazor = false;
 
-		public virtual void Configure(IAppHostBuilder appBuilder)
+		public static MauiAppBuilder CreateAppBuilder()
 		{
-			appBuilder
+			var builder = MauiApp.CreateBuilder();
+			builder
 				.UseMauiApp<App>()
 				.ConfigureMauiHandlers(handlers =>
 				{
@@ -26,14 +27,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				{
 					fonts.AddCompatibilityFonts(Device.GetAssemblies());
 				})
-				.ConfigureServices(services =>
-				{
-					DependencyService.Register(Device.GetAssemblies());
-				})
 				.ConfigureEffects(effects =>
 				{
 					effects.AddCompatibilityEffects(Device.GetAssemblies());
 				});
+
+			DependencyService.Register(Device.GetAssemblies());
+
+			return builder;
 		}
 	}
 }
