@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Graphics.Tests
 		[Fact]
 		public void ConvertStandardValuesAreComplete()
 		{
-			var colorTypeConverter = new ColorTypeConverter();
+			var colorTypeConverter = new Converters.ColorTypeConverter();
 
 			var standardValues = colorTypeConverter.GetStandardValues().Cast<string>().ToList();
 
