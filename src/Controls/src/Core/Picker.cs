@@ -40,6 +40,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		public static readonly BindableProperty FontScalingEnabledProperty = FontElement.FontScalingEnableProperty;
+
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
@@ -72,6 +74,12 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
+		public bool FontScalingEnabled
+		{
+			get => (bool)GetValue(FontScalingEnabledProperty);
+			set => SetValue(FontScalingEnabledProperty, value);
+		}
+
 		public TextTransform TextTransform
 		{
 			get => (TextTransform)GetValue(TextTransformProperty);
@@ -94,6 +102,9 @@ namespace Microsoft.Maui.Controls
 			Device.GetNamedSize(NamedSize.Default, (Picker)this);
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
+			HandleFontChanged();
+
+		void IFontElement.OnFontScalingEnableChanged(double oldValue, double newValue) =>
 			HandleFontChanged();
 
 		void HandleFontChanged()

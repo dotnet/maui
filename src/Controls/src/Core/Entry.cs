@@ -37,6 +37,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		public static readonly BindableProperty FontScalingEnabledProperty = FontElement.FontScalingEnableProperty;
+
 		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(Entry), true, BindingMode.OneTime);
 
 		public static readonly BindableProperty CursorPositionProperty = BindableProperty.Create(nameof(CursorPosition), typeof(int), typeof(Entry), 0, validateValue: (b, v) => (int)v >= 0);
@@ -87,6 +89,12 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (double)GetValue(FontSizeProperty); }
 			set { SetValue(FontSizeProperty, value); }
+		}
+
+		public bool FontScalingEnabled
+		{
+			get => (bool)GetValue(FontScalingEnabledProperty);
+			set => SetValue(FontScalingEnabledProperty, value);
 		}
 
 		public bool IsTextPredictionEnabled
@@ -145,6 +153,9 @@ namespace Microsoft.Maui.Controls
 
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
 			 HandleFontChanged();
+
+		void IFontElement.OnFontScalingEnableChanged(double oldValue, double newValue) =>
+			HandleFontChanged();
 
 		void HandleFontChanged()
 		{

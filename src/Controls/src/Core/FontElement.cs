@@ -24,6 +24,10 @@ namespace Microsoft.Maui.Controls
 		static readonly BindableProperty CancelEventsProperty =
 			BindableProperty.Create("CancelEvents", typeof(bool), typeof(FontElement), false);
 
+		public static readonly BindableProperty FontScalingEnableProperty =
+			BindableProperty.Create("EnableFontScaling", typeof(bool), typeof(IFontElement), true,
+									propertyChanged: OnEnableFontScalingChanged);
+
 		static bool GetCancelEvents(BindableObject bindable) => (bool)bindable.GetValue(CancelEventsProperty);
 		static void SetCancelEvents(BindableObject bindable, bool value)
 		{
@@ -43,12 +47,14 @@ namespace Microsoft.Maui.Controls
 				bindable.ClearValue(FontFamilyProperty);
 				bindable.ClearValue(FontSizeProperty);
 				bindable.ClearValue(FontAttributesProperty);
+				bindable.ClearValue(FontScalingEnableProperty);
 			}
 			else
 			{
 				bindable.SetValue(FontFamilyProperty, font.Family);
 				bindable.SetValue(FontSizeProperty, font.Size);
 				bindable.SetValue(FontAttributesProperty, font.GetFontAttributes());
+				bindable.SetValue(FontScalingEnableProperty, font.EnableScaling);
 			}
 			SetCancelEvents(bindable, false);
 		}
@@ -63,11 +69,12 @@ namespace Microsoft.Maui.Controls
 			var fontSize = (double)bindable.GetValue(FontSizeProperty);
 			var fontAttributes = (FontAttributes)bindable.GetValue(FontAttributesProperty);
 			var fontFamily = (string)newValue;
+			var enableAutoScaling = (bool)bindable.GetValue(FontScalingEnableProperty);
 
 			if (fontFamily != null)
-				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize).WithAttributes(fontAttributes));
+				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize, enableScaling: enableAutoScaling).WithAttributes(fontAttributes));
 			else
-				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize).WithAttributes(fontAttributes));
+				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize, enableScaling: enableAutoScaling).WithAttributes(fontAttributes));
 
 			SetCancelEvents(bindable, false);
 			((IFontElement)bindable).OnFontFamilyChanged((string)oldValue, (string)newValue);
@@ -83,11 +90,12 @@ namespace Microsoft.Maui.Controls
 			var fontSize = (double)newValue;
 			var fontAttributes = (FontAttributes)bindable.GetValue(FontAttributesProperty);
 			var fontFamily = (string)bindable.GetValue(FontFamilyProperty);
+			var enableAutoScaling = (bool)bindable.GetValue(FontScalingEnableProperty);
 
 			if (fontFamily != null)
-				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize).WithAttributes(fontAttributes));
+				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize, enableScaling: enableAutoScaling).WithAttributes(fontAttributes));
 			else
-				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize).WithAttributes(fontAttributes));
+				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize, enableScaling: enableAutoScaling).WithAttributes(fontAttributes));
 
 			SetCancelEvents(bindable, false);
 			((IFontElement)bindable).OnFontSizeChanged((double)oldValue, (double)newValue);
@@ -108,14 +116,36 @@ namespace Microsoft.Maui.Controls
 			var fontSize = (double)bindable.GetValue(FontSizeProperty);
 			var fontAttributes = (FontAttributes)newValue;
 			var fontFamily = (string)bindable.GetValue(FontFamilyProperty);
+			var enableAutoScaling = (bool)bindable.GetValue(FontScalingEnableProperty);
 
 			if (fontFamily != null)
-				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize).WithAttributes(fontAttributes));
+				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize, enableScaling: enableAutoScaling).WithAttributes(fontAttributes));
 			else
-				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize).WithAttributes(fontAttributes));
+				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize, enableScaling: enableAutoScaling).WithAttributes(fontAttributes));
 
 			SetCancelEvents(bindable, false);
 			((IFontElement)bindable).OnFontAttributesChanged((FontAttributes)oldValue, (FontAttributes)newValue);
+		}
+
+		static void OnEnableFontScalingChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (GetCancelEvents(bindable))
+				return;
+
+			SetCancelEvents(bindable, true);
+
+			var fontSize = (double)bindable.GetValue(FontSizeProperty);
+			var fontAttributes = (FontAttributes)bindable.GetValue(FontAttributesProperty);
+			var fontFamily = (string)bindable.GetValue(FontFamilyProperty);
+			var enableAutoScaling = (bool)newValue;
+
+			if (fontFamily != null)
+				bindable.SetValue(FontProperty, Font.OfSize(fontFamily, fontSize, enableScaling: enableAutoScaling).WithAttributes(fontAttributes));
+			else
+				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize, enableScaling: enableAutoScaling).WithAttributes(fontAttributes));
+
+			SetCancelEvents(bindable, false);
+			((IFontElement)bindable).OnFontScalingEnableChanged((double)oldValue, (double)newValue);
 		}
 	}
 }
