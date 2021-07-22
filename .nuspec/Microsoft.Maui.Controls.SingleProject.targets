@@ -57,13 +57,13 @@
     <_TargetPlatformProjectFolderNormalized Condition=" '$(TargetPlatformIdentifier)' == 'ios' ">$(iOSProjectFolder)</_TargetPlatformProjectFolderNormalized>
     <_TargetPlatformProjectFolderNormalized Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' ">$(MacCatalystProjectFolder)</_TargetPlatformProjectFolderNormalized>
     <_TargetPlatformProjectFolderNormalized Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">$(WindowsProjectFolder)</_TargetPlatformProjectFolderNormalized>
-    <_TargetPlatformProjectFolderNormalized Condition=" '$(_TargetPlatformProjectFolderNormalized)' != ''">$([MSBuild]::NormalizeDirectory('$(_TargetPlatformProjectFolder)'))</_TargetPlatformProjectFolderNormalized>
+    <_TargetPlatformProjectFolderNormalized Condition=" '$(_TargetPlatformProjectFolderNormalized)' != ''">$([MSBuild]::NormalizeDirectory('$(_TargetPlatformProjectFolderNormalized)'))</_TargetPlatformProjectFolderNormalized>
     <_PlatformsProjectFolderNormalized Condition=" '$(_PlatformsProjectFolderNormalized)' != ''">$([MSBuild]::NormalizeDirectory('$(PlatformsProjectFolder)'))</_PlatformsProjectFolderNormalized>
   </PropertyGroup>
 
   <!--
   Fix up the default compile items to exclude items for platforms other than the current platform
-  We do this by filtering the list and removing any items that are in PlatformsProjectFolder, except those that are in the _TargetPlatformProjectFolder
+  We do this by filtering the list and removing any items that are in PlatformsProjectFolder, except those that are in the _TargetPlatformProjectFolderNormalized
   That way it respects any removals, metadata updates etc
   -->
   <ItemGroup Condition=" '$(_TargetPlatformProjectFolderNormalized)' != '' and '$(EnableDefaultCompileItems)' == 'true' and '$(EnableDefaultItems)' == 'true' ">
