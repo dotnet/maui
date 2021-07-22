@@ -1,7 +1,7 @@
 {
   "profiles": {
     "Maui.Controls.Sample.WinUI": {
-      "commandName": "AppContainer"
+      "commandName": "MsixPackage"
     }
   }
 }

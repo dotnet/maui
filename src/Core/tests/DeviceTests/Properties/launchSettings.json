@@ -1,7 +1,7 @@
 {
   "profiles": {
     "Microsoft.Maui.Core.DeviceTests": {
-      "commandName": "AppContainer"
+      "commandName": "MsixPackage"
     }
   }
 }
