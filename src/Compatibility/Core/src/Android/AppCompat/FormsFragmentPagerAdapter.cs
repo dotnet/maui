@@ -5,6 +5,7 @@ using Android.OS;
 using AndroidX.Fragment.App;
 using Java.Lang;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using FragmentTransit = Android.App.FragmentTransit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat

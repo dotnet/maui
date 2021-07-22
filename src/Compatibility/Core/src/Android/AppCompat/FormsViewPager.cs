@@ -4,10 +4,11 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using AndroidX.ViewPager.Widget;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {
-	internal class FormsViewPager : ViewPager
+	internal class FormsViewPager : MauiViewPager
 	{
 		public FormsViewPager(Context context) : base(context)
 		{
@@ -19,21 +20,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 		protected FormsViewPager(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
-		}
-
-		public bool EnableGesture { get; set; } = true;
-
-		public override bool OnInterceptTouchEvent(MotionEvent ev)
-		{
-			// Same as:
-			// if (!EnableGesture) return false;
-			// However this is, at least in theory a tidge faster which in this particular area is good
-			return EnableGesture && base.OnInterceptTouchEvent(ev);
-		}
-
-		public override bool OnTouchEvent(MotionEvent e)
-		{
-			return EnableGesture && base.OnTouchEvent(e);
 		}
 	}
 }

@@ -45,7 +45,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			HandlerStub handlerStub = new HandlerStub();
 
-			Assert.Null(handlerStub.MauiContext);
+			Assert.Null((handlerStub as IViewHandler).MauiContext);
 
 			var ex = Assert.Throws<InvalidOperationException>(() => handlerStub.GetRequiredService<IFooService>());
 

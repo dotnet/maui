@@ -109,33 +109,38 @@
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\BottomTabLayout.axml">
-      <Link>Resources\layout\BottomTabLayout.axml</Link>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\FlyoutContent.axml">
-      <Link>Resources\layout\FlyoutContent.axml</Link>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\RootLayout.axml">
-      <Link>Resources\layout\RootLayout.axml</Link>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\ShellContent.axml">
-      <Link>Resources\layout\ShellContent.axml</Link>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\Tabbar.axml">
+    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\tabbar.axml">
       <Link>Resources\layout\Tabbar.axml</Link>
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\Toolbar.axml">
+    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\toolbar.axml">
       <Link>Resources\layout\Toolbar.axml</Link>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="..\..\src\Core\Platform\Android\Resources\layout\bottomtablayout.axml">
+      <Link>Resources\layout\bottomtablayout.axml</Link>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="..\..\src\Core\Platform\Android\Resources\layout\flyoutcontent.axml">
+      <Link>Resources\layout\flyoutcontent.axml</Link>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="..\..\src\Core\Platform\Android\Resources\layout\shellcontent.axml">
+      <Link>Resources\layout\shellcontent.axml</Link>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="..\..\src\Core\Platform\Android\Resources\layout\shellrootlayout.axml">
+      <Link>Resources\layout\shellrootlayout.axml</Link>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="..\..\..\Compatibility\Core\src\Android\Resources\layout\rootlayout.axml">
+      <Link>Resources\layout\rootlayout.axml</Link>
     </AndroidResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

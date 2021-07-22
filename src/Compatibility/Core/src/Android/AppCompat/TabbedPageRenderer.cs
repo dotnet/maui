@@ -658,7 +658,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				items,
 				currentIndex,
 				_bottomNavigationView,
-				Context);
+				Element.FindMauiContext());
 
 			if (Element.CurrentPage == null && Element.Children.Count > 0)
 				Element.CurrentPage = Element.Children[0];
@@ -863,7 +863,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			if (id == BottomNavigationViewUtils.MoreTabId)
 			{
 				var items = CreateTabList();
-				var bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(OnMoreItemSelected, Context, items, _bottomNavigationView.MaxItemCount);
+				var bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(OnMoreItemSelected, Element.FindMauiContext(), items, _bottomNavigationView.MaxItemCount);
 				bottomSheetDialog.DismissEvent += OnMoreSheetDismissed;
 				bottomSheetDialog.Show();
 			}

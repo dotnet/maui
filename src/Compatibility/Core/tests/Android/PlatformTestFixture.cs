@@ -69,6 +69,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			}
 		}
 
+		protected MauiContext MauiContext
+		{
+			get
+			{
+				throw new InvalidOperationException("MauiContext not wired up into Control Gallery yet");
+				//if (_mauiContext == null)
+				//{
+				//	_mauiContext = DependencyService.Resolve<Context>();
+				//}
+
+				//return _mauiContext;
+			}
+		}
+
 		[SetUp]
 		public virtual void Setup()
 		{

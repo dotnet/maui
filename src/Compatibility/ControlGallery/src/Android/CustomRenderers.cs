@@ -59,20 +59,20 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
-	public class ShellWithCustomRendererDisabledAnimationsRenderer : ShellRenderer
+	public class ShellWithCustomRendererDisabledAnimationsRenderer : ShellView
 	{
 		public ShellWithCustomRendererDisabledAnimationsRenderer(Context context) : base(context)
 		{
 		}
 
-		protected override IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
+		protected override IShellItemView CreateShellItemView(ShellItem shellItem)
 		{
 			return new ShellWithCustomRendererDisabledAnimationsShellItemRenderer(this);
 		}
 
-		public class ShellWithCustomRendererDisabledAnimationsShellItemRenderer : ShellItemRenderer
+		public class ShellWithCustomRendererDisabledAnimationsShellItemRenderer : ShellItemView
 		{
-			public ShellWithCustomRendererDisabledAnimationsShellItemRenderer(IShellContext shellContext) : base(shellContext)
+			public ShellWithCustomRendererDisabledAnimationsShellItemRenderer(Controls.Platform.IShellContext shellContext) : base(shellContext)
 			{
 			}
 

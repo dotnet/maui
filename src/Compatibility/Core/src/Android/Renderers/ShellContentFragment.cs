@@ -7,6 +7,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
+using Microsoft.Maui.Controls.Platform;
 using AndroidAnimation = Android.Views.Animations.Animation;
 using AnimationSet = Android.Views.Animations.AnimationSet;
 using AView = Android.Views.View;

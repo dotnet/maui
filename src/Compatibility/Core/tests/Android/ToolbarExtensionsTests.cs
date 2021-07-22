@@ -19,6 +19,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests;
 using Microsoft.Maui.Graphics;
 using AToolBar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			};
 
 			var settings = new ToolbarSettings(sortedItems);
-			SetupToolBar(settings, Context);
+			SetupToolBar(settings, MauiContext);
 
 
 			int i = 0;
@@ -59,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			};
 
 			// If this doesn't crash test has passed
-			SetupToolBar(new ToolbarSettings(sortedItems), Context);
+			SetupToolBar(new ToolbarSettings(sortedItems), MauiContext);
 		}
 
 		[Test, Category("ToolbarExtensions")]
@@ -76,7 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				};
 
 				var settings = new ToolbarSettings(sortedItems) { TintColor = Colors.Red };
-				SetupToolBar(settings, Context);
+				SetupToolBar(settings, MauiContext);
 				AToolBar aToolBar = settings.ToolBar;
 				List<IMenuItem> menuItemsCreated = settings.MenuItemsCreated;
 				Assert.IsTrue(menuItemsCreated[2].IsEnabled, "Initial state of menu Item is not enabled");
@@ -123,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			};
 
 			var settings = new ToolbarSettings(sortedItems) { TintColor = Colors.Red };
-			SetupToolBar(settings, Context);
+			SetupToolBar(settings, MauiContext);
 			AToolBar aToolBar = settings.ToolBar;
 			IMenuItem menuItem = settings.MenuItemsCreated.First();
 
@@ -147,7 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			}
 		}
 
-		static void SetupToolBar(ToolbarSettings settings, Context context)
+		static void SetupToolBar(ToolbarSettings settings, MauiContext context)
 		{
 			foreach(var item in settings.ToolbarItems)
 			{
@@ -155,7 +156,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 					item.AutomationId = item.Text;
 			}
 
-			settings.ToolBar = new AToolBar(context);
+			settings.ToolBar = new AToolBar(context.Context);
 
 			ToolbarExtensions.UpdateMenuItems(
 				settings.ToolBar,

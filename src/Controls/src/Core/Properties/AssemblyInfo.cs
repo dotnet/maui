@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.Design")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Android.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.iOS")]
@@ -39,6 +40,7 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen.UnitTests")]
 [assembly: InternalsVisibleTo("WinUI.UITests")]
+
 
 [assembly: Preserve]
 
