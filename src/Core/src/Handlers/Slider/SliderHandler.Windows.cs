@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
@@ -10,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		static Brush? DefaultForegroundColor;
 		static Brush? DefaultBackgroundColor;
+		static Brush? DefaultThumbColor;
 
 		PointerEventHandler? _pointerPressedHandler;
 		PointerEventHandler? _pointerReleasedHandler;
@@ -27,6 +29,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiSlider nativeView)
 		{
 			nativeView.ValueChanged += OnNativeValueChanged;
+			nativeView.Ready += OnNativeViewReady;
 
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
@@ -39,6 +42,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiSlider nativeView)
 		{
 			nativeView.ValueChanged -= OnNativeValueChanged;
+			nativeView.Ready -= OnNativeViewReady;
 
 			nativeView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
 			nativeView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
@@ -52,6 +56,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			DefaultForegroundColor = nativeView.Foreground;
 			DefaultBackgroundColor = nativeView.Background;
+			DefaultThumbColor = nativeView.Thumb?.Background;
 		}
 
 		public static void MapMinimum(SliderHandler handler, ISlider slider)
@@ -79,8 +84,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateMaximumTrackColor(slider, DefaultBackgroundColor);
 		}
 
-		[MissingMapper]
-		public static void MapThumbColor(SliderHandler handler, ISlider slider) { }
+		public static void MapThumbColor(SliderHandler handler, ISlider slider)
+		{
+			handler.NativeView?.UpdateThumbColor(slider, DefaultThumbColor);
+		}
 
 		public static void MapThumbImageSource(SliderHandler handler, ISlider slider)
 		{
@@ -104,6 +111,12 @@ namespace Microsoft.Maui.Handlers
 		void OnPointerReleased(object? sender, PointerRoutedEventArgs e)
 		{
 			VirtualView?.DragCompleted();
+		}
+
+		void OnNativeViewReady(object? sender, EventArgs e)
+		{
+			if (VirtualView != null)
+				NativeView?.UpdateThumbColor(VirtualView, DefaultThumbColor);
 		}
 	}
 }

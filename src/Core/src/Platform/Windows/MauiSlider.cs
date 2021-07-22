@@ -9,13 +9,18 @@ namespace Microsoft.Maui
 {
 	public class MauiSlider : Slider
 	{
+		public MauiSlider()
+		{
+			DefaultStyleKey = typeof(MauiSlider);
+		}
+
 		internal Thumb Thumb { get; set; }
 		internal Thumb ImageThumb { get; set; }
 
 		public static readonly DependencyProperty ThumbImageSourceProperty =
 			DependencyProperty.Register(nameof(ThumbImageSource), typeof(WImageSource),
 				typeof(MauiSlider), new PropertyMetadata(null, PropertyChangedCallback));
-
+        
 		static void PropertyChangedCallback(DependencyObject dependencyObject,
 			DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
 		{

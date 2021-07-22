@@ -43,11 +43,22 @@ namespace Microsoft.Maui
 		public static void UpdateMaximumTrackColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultBackgroundColor)
 		{
 			if (slider.MaximumTrackColor.IsDefault())
-				nativeSlider.Background = defaultBackgroundColor;
+				nativeSlider.BorderBrush = defaultBackgroundColor;
 			else
-				nativeSlider.Background = slider.MaximumTrackColor.ToNative();
+				nativeSlider.BorderBrush = slider.MaximumTrackColor.ToNative();
 		}
 
+		public static void UpdateThumbColor(this MauiSlider nativeSlider, ISlider slider, Brush? defaultThumbColor)
+		{
+			var thumb = nativeSlider?.Thumb;
+
+			if (thumb == null)
+				return;
+
+			BrushHelpers.UpdateColor(slider.ThumbColor, ref defaultThumbColor,
+				() => thumb.Background, brush => thumb.Background = brush);
+    }
+    
 		public static async Task UpdateThumbImageSourceAsync(this MauiSlider nativeSlider, ISlider slider, IImageSourceServiceProvider? provider)
 		{
 			var thumbImageSource = slider.ThumbImageSource;
