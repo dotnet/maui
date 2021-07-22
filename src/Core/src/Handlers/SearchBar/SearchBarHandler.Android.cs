@@ -1,13 +1,14 @@
-﻿using System;
-using Android.Graphics.Drawables;
+﻿using Android.Graphics.Drawables;
 using Android.Widget;
-using Microsoft.Extensions.DependencyInjection;
+using static AndroidX.AppCompat.Widget.SearchView;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, SearchView>
 	{
+		QueryTextListener QueryListener { get; } = new QueryTextListener();
+
 		static Drawable? DefaultBackground;
 
 		EditText? _editText;
@@ -22,11 +23,23 @@ namespace Microsoft.Maui.Handlers
 			return searchView;
 		}
 
+		protected override void ConnectHandler(SearchView nativeView)
+		{
+			QueryListener.Handler = this;
+
+			nativeView.SetOnQueryTextListener(QueryListener);
+		}
+
+		protected override void DisconnectHandler(SearchView nativeView)
+		{
+			nativeView.SetOnQueryTextListener(null);
+
+			QueryListener.Handler = null;
+		}
+
 		void SetupDefaults(SearchView nativeView)
 		{
 			DefaultBackground = nativeView.Background;
-
-
 		}
 
 		// This is a Android-specific mapping
@@ -81,6 +94,25 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.NativeView?.UpdateCancelButtonColor(searchBar);
+		}
+
+		public class QueryTextListener : Java.Lang.Object, IOnQueryTextListener
+		{
+			public SearchBarHandler? Handler { get; set; }
+
+			public bool OnQueryTextChange(string newText)
+			{
+				return true;
+			}
+
+			public bool OnQueryTextSubmit(string newText)
+			{
+				Handler?.VirtualView?.SearchButtonPressed();
+
+				// TODO: Clear focus
+
+				return true;
+			}
 		}
 	}
 }

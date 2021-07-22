@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return true;
 		}
 
+		[PortHandler("Partially ported")]
 		bool SearchView.IOnQueryTextListener.OnQueryTextSubmit(string query)
 		{
 			((ISearchBarController)Element).OnSearchButtonPressed();
