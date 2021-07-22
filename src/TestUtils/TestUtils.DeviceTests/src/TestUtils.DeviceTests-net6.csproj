@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.1;$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.TestUtils</RootNamespace>
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests</AssemblyName>
-
+    <NoWarn>$(NoWarn);NU1703</NoWarn>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

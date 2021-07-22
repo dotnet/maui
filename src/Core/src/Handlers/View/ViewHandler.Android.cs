@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		MauiAccessibilityDelegate? AccessibilityDelegate { get; set; }
 
-		partial void DisconnectingHandler(NativeView? nativeView)
+		partial void DisconnectingHandler(NativeView nativeView)
 		{
 			if (nativeView.IsAlive() && AccessibilityDelegate != null)
 			{
