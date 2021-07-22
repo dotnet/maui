@@ -47,6 +47,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			nativeView.StopLoading();
 
+			if (_webviewManager != null)
+			{
+				// Dispose this component's contents and block on completion so that user-written disposal logic and
+				// Blazor disposal logic will complete first. Then call base.Dispose(), which will dispose the WebView2
+				// control. This order is critical because once the WebView2 is disposed it will prevent and Blazor
+				// code from working because it requires the WebView to exist.
+				_webviewManager?
+					.DisposeAsync()
+					.AsTask()
+					.ConfigureAwait(false)
+					.GetAwaiter()
+					.GetResult();
+
+				_webviewManager = null;
+			}
+
 			_webViewClient?.Dispose();
 			_webChromeClient?.Dispose();
 		}

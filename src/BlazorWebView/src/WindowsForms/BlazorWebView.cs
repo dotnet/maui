@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
     /// <summary>
     /// A Windows Forms control for hosting Blazor web components locally in Windows desktop applications.
     /// </summary>
-    public class BlazorWebView : ContainerControl, IDisposable
+    public class BlazorWebView : ContainerControl
     {
         private readonly WebView2Control _webview;
         private WebView2WebViewManager _webviewManager;
@@ -177,9 +178,16 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         {
             if (disposing)
             {
-				// Dispose this component's contents before calling base.Dispose() because that will dispose the WebView2 control, likely
-				// preventing user-written disposal logic from working (because it might try to use Blazor stuff, which wouldn't work anymore).
-				_webviewManager?.Dispose();
+				// Dispose this component's contents and block on completion so that user-written disposal logic and
+				// Blazor disposal logic will complete first. Then call base.Dispose(), which will dispose the WebView2
+				// control. This order is critical because once the WebView2 is disposed it will prevent and Blazor
+				// code from working because it requires the WebView to exist.
+				_webviewManager?
+                    .DisposeAsync()
+                    .AsTask()
+                    .ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
             }
 			base.Dispose(disposing);
 		}
