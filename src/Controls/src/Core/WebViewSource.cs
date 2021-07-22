@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	public abstract class WebViewSource : BindableObject
+	public abstract class WebViewSource : BindableObject, IWebViewSource
 	{
 		public static implicit operator WebViewSource(Uri url)
 		{

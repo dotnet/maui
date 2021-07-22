@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Hosting
 			{ typeof(IStepper), typeof(StepperHandler) },
 			{ typeof(ISwitch), typeof(SwitchHandler) },
 			{ typeof(ITimePicker), typeof(TimePickerHandler) },
+			{ typeof(IWebView), typeof(WebViewHandler) },
 			{ typeof(IPage), typeof(PageHandler) },
 		};
 
