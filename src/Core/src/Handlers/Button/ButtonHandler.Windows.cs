@@ -1,27 +1,16 @@
 #nullable enable
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : ViewHandler<IButton, MauiButton>
+	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
-		static UI.Xaml.Thickness? DefaultPadding;
-		static UI.Xaml.Media.Brush? DefaultForeground;
-		static UI.Xaml.Media.Brush? DefaultBackground;
-
 		PointerEventHandler? _pointerPressedHandler;
 
-		protected override MauiButton CreateNativeView() 
-			=> new MauiButton();
+		protected override Button CreateNativeView() => new MauiButton();
 
-		void SetupDefaults(MauiButton nativeView)
-		{
-			DefaultPadding = (UI.Xaml.Thickness)MauiWinUIApplication.Current.Resources["ButtonPadding"];
-			DefaultForeground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonForegroundThemeBrush"];
-			DefaultBackground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonBackgroundThemeBrush"];
-		}
-
-		protected override void ConnectHandler(MauiButton nativeView)
+		protected override void ConnectHandler(Button nativeView)
 		{
 			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
 
@@ -31,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(nativeView);
 		}
 
-		protected override void DisconnectHandler(MauiButton nativeView)
+		protected override void DisconnectHandler(Button nativeView)
 		{
 			nativeView.Click -= OnClick;
 			nativeView.RemoveHandler(UI.Xaml.UIElement.PointerPressedEvent, _pointerPressedHandler);
@@ -41,10 +30,14 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		// This is a Windows-specific mapping
 		public static void MapBackground(ButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateBackground(button, DefaultBackground);
+			handler.NativeView?.UpdateBackground(button);
+		}
+
+		public static void MapCornerRadius(ButtonHandler handler, IButton button)
+		{
+			handler.NativeView?.UpdateCornerRadius(button);
 		}
 
 		public static void MapText(ButtonHandler handler, IButton button)
@@ -54,12 +47,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(ButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateTextColor(button, DefaultForeground);
+			handler.NativeView?.UpdateTextColor(button);
 		}
 
 		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(button.CharacterSpacing);
+			handler.NativeView?.UpdateCharacterSpacing(button);
 		}
 
 		public static void MapFont(ButtonHandler handler, IButton button)
@@ -71,7 +64,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPadding(ButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdatePadding(button, DefaultPadding);
+			handler.NativeView?.UpdatePadding(button);
 		}
 
 		void OnClick(object sender, UI.Xaml.RoutedEventArgs e)

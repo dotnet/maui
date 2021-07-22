@@ -44,6 +44,11 @@ namespace Microsoft.Maui.Handlers
 			ButtonTextColorDefaultDisabled = nativeView.TitleColor(UIControlState.Disabled);
 		}
 
+		[PortHandler]
+		public static void MapCornerRadius(ButtonHandler handler, IButton button)
+		{
+		}
+
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
 			handler.NativeView?.UpdateText(button);

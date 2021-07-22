@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui.Graphics;
 using WPoint = Windows.Foundation.Point;
 using WThickness = Microsoft.UI.Xaml.Thickness;
+using WCornerRadius = Microsoft.UI.Xaml.CornerRadius;
 
 namespace Microsoft.Maui
 {
@@ -15,5 +16,14 @@ namespace Microsoft.Maui
 				thickness.Top,
 				thickness.Right,
 				thickness.Bottom);
+
+		public static WCornerRadius? ToNative(this CornerRadius cornerRadius) =>
+			cornerRadius == new CornerRadius(-1)
+				? null
+				: new WCornerRadius(
+					cornerRadius.TopLeft,
+					cornerRadius.TopRight,
+					cornerRadius.BottomRight,
+					cornerRadius.BottomLeft);
 	}
 }

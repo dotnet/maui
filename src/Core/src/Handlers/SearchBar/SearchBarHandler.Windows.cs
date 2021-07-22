@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
 		{
-			_queryTextBox = NativeView?.GetFirstDescendant<MauiTextBox>();
+			_queryTextBox = NativeView?.GetChild<MauiTextBox>();
 
 			if(_queryTextBox != null)
 			{
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Handlers
 				_defaultTextColorFocusBrush = _queryTextBox.ForegroundFocusBrush;
 			}
 
-			_cancelButton = _queryTextBox?.GetFirstDescendant<MauiCancelButton>();
+			_cancelButton = _queryTextBox?.GetChild<MauiCancelButton>();
 
 			if (_cancelButton != null)
 			{

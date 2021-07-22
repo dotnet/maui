@@ -5,6 +5,8 @@ namespace Microsoft.Maui
 	/// </summary>
 	public interface IButton : IView, IText, IPadding
 	{
+		CornerRadius CornerRadius { get; }
+
 		/// <summary>
 		/// Occurs when the Button is pressed.
 		/// </summary>
