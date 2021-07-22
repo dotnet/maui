@@ -1,7 +1,7 @@
 <!-- "Single Project" support -->
 <Project>
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' ">
-    <EnableDefaultSingleProjectItems Condition="'$(EnableSingleProjectDefaultItems)' == ''">$(EnableDefaultItems)</EnableSingleProjectDefaultItems>
+    <EnableDefaultSingleProjectItems Condition="'$(EnableDefaultSingleProjectItems)' == ''">$(EnableDefaultItems)</EnableDefaultSingleProjectItems>
 
     <PlatformsProjectFolder Condition=" '$(PlatformsProjectFolder)' == '' ">Platforms\</PlatformsProjectFolder>
     <!-- Required - Enable Launch Profiles for .NET 6 iOS/Android -->
@@ -22,7 +22,7 @@
 
   <!-- ensure EnableDefaultSingleProjectItems is consistent -->
   <PropertyGroup>
-    <EnableDefaultSingleProjectItems Condition="'$(SingleProject)' != 'true' or '$(EnableDefaultItems)' != 'true'">false</EnableSingleProjectDefaultItems>
+    <EnableDefaultSingleProjectItems Condition="'$(SingleProject)' != 'true' or '$(EnableDefaultItems)' != 'true'">false</EnableDefaultSingleProjectItems>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$(TargetPlatformIdentifier)' == 'android' ">
