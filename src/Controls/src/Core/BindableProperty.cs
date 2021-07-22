@@ -8,6 +8,7 @@ using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls
 {

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls.Shapes
 {

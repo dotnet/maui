@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls
 {
