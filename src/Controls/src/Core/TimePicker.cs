@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		public static readonly BindableProperty FontScalingEnabledProperty = FontElement.FontScalingEnableProperty;
+
 		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<TimePicker>> _platformConfigurationRegistry;
@@ -76,6 +78,12 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
+		public bool FontScalingEnabled
+		{
+			get => (bool)GetValue(FontScalingEnabledProperty);
+			set => SetValue(FontScalingEnabledProperty, value);
+		}
+
 		public TextTransform TextTransform
 		{
 			get => (TextTransform)GetValue(TextTransformProperty);
@@ -98,6 +106,9 @@ namespace Microsoft.Maui.Controls
 			Device.GetNamedSize(NamedSize.Default, (TimePicker)this);
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+
+		void IFontElement.OnFontScalingEnableChanged(double oldValue, double newValue) =>
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		public IPlatformElementConfiguration<T, TimePicker> On<T>() where T : IConfigPlatform

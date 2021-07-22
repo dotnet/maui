@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using Android.Graphics;
+using Android.Util;
 using Microsoft.Extensions.Logging;
 using AApplication = Android.App.Application;
 
@@ -37,10 +38,21 @@ namespace Microsoft.Maui
 			return _typefaces.GetOrAdd((font.Family, font.Weight, font.Slant != FontSlant.Default), CreateTypeface);
 		}
 
-		public float GetFontSize(Font font, float defaultFontSize = 0) =>
-			font.Size <= 0
+		public FontSize GetFontSize(Font font, float defaultFontSize = 0)
+		{
+			var size = font.Size <= 0
 				? (defaultFontSize > 0 ? defaultFontSize : 14f)
 				: (float)font.Size;
+
+			ComplexUnitType units;
+
+			if (font.EnableScaling)
+				units = ComplexUnitType.Sp;
+			else
+				units = ComplexUnitType.Dip;
+
+			return new FontSize(size, units);
+		}
 
 
 		Typeface? GetFromAssets(string fontName)
