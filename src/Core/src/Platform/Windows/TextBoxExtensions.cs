@@ -78,14 +78,6 @@ namespace Microsoft.Maui
 		public static void UpdateFont(this MauiTextBox nativeControl, IText text, IFontManager fontManager) =>
 			nativeControl.UpdateFont(text.Font, fontManager);
 
-		public static void UpdateFont(this MauiTextBox nativeControl, Font font, IFontManager fontManager)
-		{
-			nativeControl.FontSize = fontManager.GetFontSize(font);
-			nativeControl.FontFamily = fontManager.GetFontFamily(font);
-			nativeControl.FontStyle = font.ToFontStyle();
-			nativeControl.FontWeight = font.ToFontWeight();
-		}
-
 		public static void UpdateIsReadOnly(this MauiTextBox textBox, IEditor editor)
 		{
 			textBox.IsReadOnly = editor.IsReadOnly;
