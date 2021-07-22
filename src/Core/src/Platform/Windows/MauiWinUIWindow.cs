@@ -7,6 +7,7 @@ namespace Microsoft.Maui
 {
 	public class MauiWinUIWindow : UI.Xaml.Window
 	{
+		bool _enableResumeEvent;
 		public MauiWinUIWindow()
 		{
 			NativeMessage += OnNativeMessage;
@@ -27,6 +28,14 @@ namespace Microsoft.Maui
 
 		protected virtual void OnActivated(object sender, UI.Xaml.WindowActivatedEventArgs args)
 		{
+			if (args.WindowActivationState != UI.Xaml.WindowActivationState.Deactivated)
+			{
+				if (_enableResumeEvent)
+					MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnResumed>(del => del(this));
+				else
+					_enableResumeEvent = true;
+			}
+
 			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnActivated>(del => del(this, args));
 		}
 
@@ -39,6 +48,7 @@ namespace Microsoft.Maui
 		{
 			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnVisibilityChanged>(del => del(this, args));
 		}
+
 		public event EventHandler<WindowsNativeMessageEventArgs> NativeMessage;
 
 		#region Native Window
