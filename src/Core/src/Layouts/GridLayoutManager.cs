@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Layouts
 		{
 			var structure = _gridStructure ?? new GridStructure(Grid, childBounds.Width, childBounds.Height);
 
-			foreach (var view in Grid.Children)
+			foreach (var view in Grid)
 			{
 				if (view.Visibility == Visibility.Collapsed)
 				{
@@ -56,7 +56,6 @@ namespace Microsoft.Maui.Layouts
 			readonly double _columnSpacing;
 			readonly IReadOnlyList<IGridRowDefinition> _rowDefinitions;
 			readonly IReadOnlyList<IGridColumnDefinition> _columnDefinitions;
-			readonly IReadOnlyList<IView> _gridChildren;
 
 			readonly Dictionary<SpanKey, Span> _spans = new();
 
@@ -75,7 +74,6 @@ namespace Microsoft.Maui.Layouts
 				_rowSpacing = grid.RowSpacing;
 				_rowDefinitions = grid.RowDefinitions;
 				_columnDefinitions = grid.ColumnDefinitions;
-				_gridChildren = grid.Children;
 
 				if (_rowDefinitions.Count == 0)
 				{
@@ -112,15 +110,15 @@ namespace Microsoft.Maui.Layouts
 				// We could work out the _childrenToLayOut array (with the Collapsed items filtered out) with a Linq 1-liner
 				// but doing it the hard way means we don't allocate extra enumerators, especially if we're in the 
 				// happy path where _none_ of the children are Collapsed.
-				var gridChildCount = _gridChildren.Count;
+				var gridChildCount = _grid.Count;
 
 				_childrenToLayOut = new IView[gridChildCount];
 				int currentChild = 0;
 				for (int n = 0; n < gridChildCount; n++)
 				{
-					if (_gridChildren[n].Visibility != Visibility.Collapsed)
+					if (_grid[n].Visibility != Visibility.Collapsed)
 					{
-						_childrenToLayOut[currentChild] = _gridChildren[n];
+						_childrenToLayOut[currentChild] = _grid[n];
 						currentChild += 1;
 					}
 				}
@@ -429,7 +427,7 @@ namespace Microsoft.Maui.Layouts
 						if (cellCheck(cell)) // Check whether this cell should count toward the type of star value were measuring
 						{
 							// Update the star width if the view in this cell is bigger
-							starSize = Math.Max(starSize, dimension(_gridChildren[cell.ViewIndex].DesiredSize));
+							starSize = Math.Max(starSize, dimension(_grid[cell.ViewIndex].DesiredSize));
 						}
 					}
 				}

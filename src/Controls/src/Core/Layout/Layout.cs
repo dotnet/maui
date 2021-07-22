@@ -25,10 +25,7 @@ namespace Microsoft.Maui.Controls.Layout2
 
 		public bool IsReadOnly => ((ICollection<IView>)_children).IsReadOnly;
 
-		IReadOnlyList<IView> IContainer.Children => _children.AsReadOnly();
-
 		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
-
 
 		public Thickness Padding
 		{
@@ -53,56 +50,44 @@ namespace Microsoft.Maui.Controls.Layout2
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			var margin = (this as IView)?.Margin ?? Thickness.Zero;
-
 			// Adjust the constraints to account for the margins
 			widthConstraint -= margin.HorizontalThickness;
 			heightConstraint -= margin.VerticalThickness;
-
 			var sizeWithoutMargins = LayoutManager.Measure(widthConstraint, heightConstraint);
 			DesiredSize = new Size(sizeWithoutMargins.Width + Margin.HorizontalThickness,
 				sizeWithoutMargins.Height + Margin.VerticalThickness);
-
 			return DesiredSize;
 		}
-
+		
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
 			base.ArrangeOverride(bounds);
-
 			Frame = bounds;
-
 			LayoutManager.ArrangeChildren(Frame);
-
 			foreach (var child in Children)
 			{
 				child.Handler?.NativeArrange(child.Frame);
 			}
-
 			return Frame.Size;
 		}
 
 		protected override void InvalidateMeasureOverride()
 		{
 			base.InvalidateMeasureOverride();
-
 			foreach (var child in Children)
 			{
 				child.InvalidateMeasure();
 			}
 		}
-
+		
 		public virtual void Add(IView child)
 		{
 			if (child == null)
 				return;
-
 			_children.Add(child);
-
 			if (child is Element element)
 				element.Parent = this;
-
 			InvalidateMeasure();
-
 			LayoutHandler?.Add(child);
 		}
 
@@ -144,12 +129,12 @@ namespace Microsoft.Maui.Controls.Layout2
 			LayoutHandler?.Add(child);
 		}
 
-		public virtual void Remove(IView child)
+		public virtual bool Remove(IView child)
 		{
 			if (child == null)
-				return;
+				return false;
 
-			_children.Remove(child);
+			var result = _children.Remove(child);
 
 			if (child is Element element)
 				element.Parent = null;
@@ -157,6 +142,8 @@ namespace Microsoft.Maui.Controls.Layout2
 			InvalidateMeasure();
 
 			LayoutHandler?.Remove(child);
+
+			return result;
 		}
 
 		public void RemoveAt(int index)
@@ -178,23 +165,6 @@ namespace Microsoft.Maui.Controls.Layout2
 			LayoutHandler?.Remove(child);
 		}
 
-		bool ICollection<IView>.Remove(IView child)
-		{
-			if (child == null)
-				return false;
-
-			var result = _children.Remove(child);
-
-			if (child is Element element)
-				element.Parent = null;
-
-			InvalidateMeasure();
-
-			LayoutHandler?.Remove(child);
-
-			return result;
-		}
-		
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
 		{
 			InvalidateMeasure();

@@ -33,6 +33,9 @@
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
 
     <DefineConstants Condition="$(TargetFramework.Contains('-windows'))">$(DefineConstants);WINDOWS</DefineConstants>
+
+    <!-- Workaround: https://github.com/dotnet/sdk/issues/19050 -->
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
   </PropertyGroup>
 
   <PropertyGroup>
