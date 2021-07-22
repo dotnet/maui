@@ -362,29 +362,25 @@ namespace Microsoft.Maui.Controls
 			OnAppLinkRequestReceived(uri);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendResume()
+		internal void SendResume()
 		{
 			Current = this;
 			OnResume();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendSleep()
+		internal void SendSleep()
 		{
 			OnSleep();
 			SavePropertiesAsFireAndForget();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Task SendSleepAsync()
+		internal Task SendSleepAsync()
 		{
 			OnSleep();
 			return SavePropertiesAsync();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendStart()
+		internal void SendStart()
 		{
 			OnStart();
 		}

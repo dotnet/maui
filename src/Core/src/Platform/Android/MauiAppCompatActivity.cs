@@ -8,6 +8,18 @@ namespace Microsoft.Maui
 {
 	public partial class MauiAppCompatActivity : AppCompatActivity
 	{
+		WeakReference<IWindow>? _virtualWindow;
+		internal IWindow? VirtualWindow
+		{
+			get
+			{
+				IWindow? window = null;
+				_virtualWindow?.TryGetTarget(out window);
+				return window;
+			}
+		}
+
+
 		// Override this if you want to handle the default Android behavior of restoring fragments on an application restart
 		protected virtual bool AllowFragmentRestore => false;
 
@@ -72,6 +84,7 @@ namespace Microsoft.Maui
 				window = mauiApp.CreateWindow(state);
 			}
 
+			_virtualWindow = new WeakReference<IWindow>(window);
 			this.SetWindow(window, mauiContext);
 		}
 	}

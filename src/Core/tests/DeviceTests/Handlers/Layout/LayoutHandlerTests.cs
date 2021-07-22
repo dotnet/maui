@@ -13,7 +13,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 		public async Task EmptyLayout()
 		{
 			var layout = new LayoutStub();
-			await ValidatePropertyInitValue(layout, () => layout.Children.Count, GetNativeChildCount, 0);
+			await ValidatePropertyInitValue(layout, () => layout.Count, GetNativeChildCount, 0);
 		}
 
 		[Fact(DisplayName = "Handler view count matches layout view count")]
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			layout.Add(new SliderStub());
 			layout.Add(new SliderStub());
 
-			await ValidatePropertyInitValue(layout, () => layout.Children.Count, GetNativeChildCount, 2);
+			await ValidatePropertyInitValue(layout, () => layout.Count, GetNativeChildCount, 2);
 		}
 
 		[Fact(DisplayName = "Handler removes child from native layout")]

@@ -5,11 +5,8 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Provides functionality to act as containers for views. 
 	/// </summary>
-	public interface IContainer
+	public interface IContainer : IList<IView>
 	{
-		/// <summary>
-		/// Gets the collection of children that the Container contains.
-		/// </summary>
-		IReadOnlyList<IView> Children { get; }
+		
 	}
 }

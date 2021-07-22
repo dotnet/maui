@@ -14,18 +14,6 @@ namespace Microsoft.Maui
 		ILayoutHandler LayoutHandler { get; }
 
 		/// <summary>
-		/// Add a child View to the Layout.
-		/// </summary>
-		/// <param name="child">The child View to add to the Layout.</param>
-		void Add(IView child);
-
-		/// <summary>
-		/// Remove a child View from the Layout.
-		/// </summary>
-		/// <param name="child">The child View to remove from the Layout.</param>
-		void Remove(IView child);
-
-		/// <summary>
 		/// The space between the outer edge of the ILayout's content area and its children.
 		/// </summary>
 		Thickness Padding { get; }

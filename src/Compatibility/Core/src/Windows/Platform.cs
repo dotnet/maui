@@ -109,15 +109,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return renderer;
 		}
 
-		internal static Platform Current
-		{
-			get
-			{
-				var frame = UI.Xaml.Window.Current?.Content as Microsoft.UI.Xaml.Controls.Frame;
-				var wbp = frame?.Content as WindowsBasePage;
-				return wbp?.Platform;
-			}
-		}
+		//internal static Platform Current
+		//{
+		//	get
+		//	{
+		//		var frame = UI.Xaml.Window.Current?.Content as Microsoft.UI.Xaml.Controls.Frame;
+		//		var wbp = frame?.Content as WindowsBasePage;
+		//		return wbp?.Platform;
+		//	}
+		//}
 
 		internal Platform(Microsoft.UI.Xaml.Window page)
 		{

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -10,11 +11,8 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout<T> : Layout, Microsoft.Maui.ILayout, IViewContainer<T> where T : View
+	public abstract partial class Layout<T> : Layout, Microsoft.Maui.ILayout, IViewContainer<T> where T : View
 	{
-		// TODO ezhart We should look for a way to optimize this a bit
-		IReadOnlyList<Microsoft.Maui.IView> Microsoft.Maui.IContainer.Children => Children.ToList();
-
 		readonly ElementCollection<T> _children;
 
 		protected Layout() => _children = new ElementCollection<T>(InternalChildren);
@@ -46,28 +44,10 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnRemoved(T view)
 		{
 		}
-
-		public void Add(IView child)
-		{
-			if (child is T view)
-			{
-				Children.Add(view);
-			}
-		}
-
-		public void Remove(IView child)
-		{
-			if (child is T view)
-			{
-				Children.Remove(view);
-			}
-		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement, Microsoft.Maui.IContainer
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement
 	{
-		IReadOnlyList<Microsoft.Maui.IView> Microsoft.Maui.IContainer.Children => InternalChildren.OfType<IView>().ToList();
-
 		public static readonly BindableProperty IsClippedToBoundsProperty =
 			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false);
 

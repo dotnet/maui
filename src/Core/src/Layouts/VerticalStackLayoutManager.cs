@@ -12,15 +12,14 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
-			var children = Stack.Children;
 			var padding = Stack.Padding;
 
 			double measuredHeight = 0;
 			double measuredWidth = 0;
 
-			for (int n = 0; n < children.Count; n++)
+			for (int n = 0; n < Stack.Count; n++)
 			{
-				var child = children[n];
+				var child = Stack[n];
 
 				if (child.Visibility == Visibility.Collapsed)
 				{
@@ -32,7 +31,7 @@ namespace Microsoft.Maui.Layouts
 				measuredWidth = Math.Max(measuredWidth, measure.Width);
 			}
 
-			measuredHeight += MeasureSpacing(Stack.Spacing, children.Count);
+			measuredHeight += MeasureSpacing(Stack.Spacing, Stack.Count);
 			measuredHeight += padding.VerticalThickness;
 			measuredWidth += padding.HorizontalThickness;
 
@@ -50,8 +49,10 @@ namespace Microsoft.Maui.Layouts
 			double left = padding.Left;
 			double width = bounds.Width - padding.HorizontalThickness;
 
-			foreach (var child in Stack.Children)
+			for (int n = 0; n < Stack.Count; n++)
 			{
+				var child = Stack[n];
+
 				if (child.Visibility == Visibility.Collapsed)
 				{
 					continue;

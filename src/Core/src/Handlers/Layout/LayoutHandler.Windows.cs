@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
 
 			NativeView.Children.Clear();
-			foreach (var child in VirtualView.Children)
+			foreach (var child in VirtualView)
 			{
 				Add(child);
 			}

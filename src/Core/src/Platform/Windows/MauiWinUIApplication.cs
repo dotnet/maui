@@ -16,9 +16,6 @@ namespace Microsoft.Maui
 	{
 		protected abstract IStartup OnCreateStartup();
 
-		public virtual UI.Xaml.Window CreateWindow() =>
-			new MauiWinUIWindow();
-
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
 			LaunchActivatedEventArgs = args;
@@ -59,6 +56,7 @@ namespace Microsoft.Maui
 			var window = Application.CreateWindow(activationState);
 
 			winuiWndow.SetWindow(window, mauiContext);
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnWindowCreated>(del => del(winuiWndow));
 
 			return winuiWndow;
 		}
