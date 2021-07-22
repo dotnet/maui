@@ -258,7 +258,7 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize("Arial", fontSize)
 			};
 
-			await ValidatePropertyInitValue(editor, () => editor.Font.FontSize, GetNativeUnscaledFontSize, editor.Font.FontSize);
+			await ValidatePropertyInitValue(editor, () => editor.Font.Size, GetNativeUnscaledFontSize, editor.Font.Size);
 		}
 
 		[Theory(DisplayName = "Validates Numeric Keyboard")]

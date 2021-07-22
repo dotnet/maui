@@ -7,15 +7,19 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IPage.Title)] = MapTitle,
 			[nameof(IPage.Content)] = MapContent,
-#if __IOS__
-			Actions =
-			{
-				[nameof(IFrameworkElement.Frame)] = MapFrame,
-			}
-#endif
 		};
 
+#if __IOS__
+		public static CommandMapper<IPicker, PickerHandler> PageCommandMapper = new(ViewCommandMapper)
+		{
+			[nameof(IFrameworkElement.Frame)] = MapFrame,
+		};
+
+		public PageHandler() : base(PageMapper, PageCommandMapper)
+#else
 		public PageHandler() : base(PageMapper)
+#endif
+
 		{
 
 		}

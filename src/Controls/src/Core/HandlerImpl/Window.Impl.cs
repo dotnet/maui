@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 
@@ -28,7 +27,6 @@ namespace Microsoft.Maui.Controls
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
-
 			InternalChildren.CollectionChanged += OnCollectionChanged;
 		}
 
@@ -51,14 +49,24 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
-
 		public event EventHandler<ModalPoppingEventArgs>? ModalPopping;
-
 		public event EventHandler<ModalPushedEventArgs>? ModalPushed;
-
 		public event EventHandler<ModalPushingEventArgs>? ModalPushing;
-
 		public event EventHandler? PopCanceled;
+
+		public event EventHandler? Created;
+		public event EventHandler? Resumed;
+		public event EventHandler? Activated;
+		public event EventHandler? Deactivated;
+		public event EventHandler? Stopped;
+		public event EventHandler? Destroying;
+
+		protected virtual void OnCreated() { }
+		protected virtual void OnResumed() { }
+		protected virtual void OnActivated() { }
+		protected virtual void OnDeactivated() { }
+		protected virtual void OnStopped() { }
+		protected virtual void OnDestroying() { }
 
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		{
@@ -82,6 +90,8 @@ namespace Microsoft.Maui.Controls
 
 		IView IWindow.Content =>
 			Page ?? throw new InvalidOperationException("No page was set on the window.");
+
+		Application? Application => Parent as Application;
 
 		void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -109,6 +119,84 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		void SendWindowAppearing()
+		{
+			Page?.SendAppearing();
+		}
+
+		void OnModalPopped(Page modalPage)
+		{
+			var args = new ModalPoppedEventArgs(modalPage);
+			ModalPopped?.Invoke(this, args);
+			Application?.NotifyOfWindowModalEvent(args);
+		}
+
+		bool OnModalPopping(Page modalPage)
+		{
+			var args = new ModalPoppingEventArgs(modalPage);
+			ModalPopping?.Invoke(this, args);
+			Application?.NotifyOfWindowModalEvent(args);
+			return args.Cancel;
+		}
+
+		void OnModalPushed(Page modalPage)
+		{
+			var args = new ModalPushedEventArgs(modalPage);
+			ModalPushed?.Invoke(this, args);
+			Application?.NotifyOfWindowModalEvent(args);
+		}
+
+		void OnModalPushing(Page modalPage)
+		{
+			var args = new ModalPushingEventArgs(modalPage);
+			ModalPushing?.Invoke(this, args);
+			Application?.NotifyOfWindowModalEvent(args);
+		}
+
+		void OnPopCanceled()
+		{
+			PopCanceled?.Invoke(this, EventArgs.Empty);
+		}
+
+		void IWindow.Created()
+		{
+			Created?.Invoke(this, EventArgs.Empty);
+			OnCreated();
+		}
+
+		void IWindow.Activated()
+		{
+			Activated?.Invoke(this, EventArgs.Empty);
+			OnActivated();
+			Application?.SendResume();
+		}
+
+		void IWindow.Deactivated()
+		{
+			Deactivated?.Invoke(this, EventArgs.Empty);
+			OnDeactivated();
+		}
+
+		void IWindow.Stopped()
+		{
+			Stopped?.Invoke(this, EventArgs.Empty);
+			OnStopped();
+			Application?.SendSleep();
+		}
+
+		void IWindow.Destroying()
+		{
+			Destroying?.Invoke(this, EventArgs.Empty);
+			OnDestroying();
+		}
+
+		void IWindow.Resumed()
+		{
+			Resumed?.Invoke(this, EventArgs.Empty);
+			OnResumed();
+		}
+
+
 		static void OnPageChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (bindable is not Window window)
@@ -118,8 +206,8 @@ namespace Microsoft.Maui.Controls
 			if (oldPage != null)
 			{
 				window.InternalChildren.Remove(oldPage);
-				oldPage.AttachedHandler -= OnPageAttachedHandler;
-				oldPage.DetachedHandler -= OnPageDetachedHandler;
+				oldPage.HandlerChanged -= OnPageHandlerChanged;
+				oldPage.HandlerChanging -= OnPageHandlerChanging;
 			}
 
 			var newPage = newValue as Page;
@@ -133,59 +221,23 @@ namespace Microsoft.Maui.Controls
 
 			if (newPage != null)
 			{
-				newPage.AttachedHandler += OnPageAttachedHandler;
-				newPage.DetachedHandler += OnPageDetachedHandler;
+				newPage.HandlerChanged += OnPageHandlerChanged;
+				newPage.HandlerChanging += OnPageHandlerChanging;
+
+				if (newPage.Handler != null)
+					OnPageHandlerChanged(newPage, EventArgs.Empty);
 			}
 
-			void OnPageAttachedHandler(object? sender, EventArgs e)
+			void OnPageHandlerChanged(object? sender, EventArgs e)
 			{
 				window.ModalNavigationManager.PageAttachedHandler();
 				window.AlertManager.Subscribe();
 			}
 
-			void OnPageDetachedHandler(object? sender, EventArgs e)
+			void OnPageHandlerChanging(object? sender, HandlerChangingEventArgs e)
 			{
 				window.AlertManager.Unsubscribe();
 			}
-		}
-
-		void SendWindowAppearing()
-		{
-			Page?.SendAppearing();
-		}
-
-		void OnModalPopped(Page modalPage)
-		{
-			var args = new ModalPoppedEventArgs(modalPage);
-			ModalPopped?.Invoke(this, args);
-			(Parent as Application)?.NotifyOfWindowModalEvent(args);
-		}
-
-		bool OnModalPopping(Page modalPage)
-		{
-			var args = new ModalPoppingEventArgs(modalPage);
-			ModalPopping?.Invoke(this, args);
-			(Parent as Application)?.NotifyOfWindowModalEvent(args);
-			return args.Cancel;
-		}
-
-		void OnModalPushed(Page modalPage)
-		{
-			var args = new ModalPushedEventArgs(modalPage);
-			ModalPushed?.Invoke(this, args);
-			(Parent as Application)?.NotifyOfWindowModalEvent(args);
-		}
-
-		void OnModalPushing(Page modalPage)
-		{
-			var args = new ModalPushingEventArgs(modalPage);
-			ModalPushing?.Invoke(this, args);
-			(Parent as Application)?.NotifyOfWindowModalEvent(args);
-		}
-
-		void OnPopCanceled()
-		{
-			PopCanceled?.Invoke(this, EventArgs.Empty);
 		}
 
 		class NavigationImpl : NavigationProxy

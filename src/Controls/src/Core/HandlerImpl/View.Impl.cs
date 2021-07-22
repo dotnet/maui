@@ -10,18 +10,21 @@ namespace Microsoft.Maui.Controls
 	public partial class View
 	{
 		GestureManager? _gestureManager;
-		private protected override void OnAttachedHandlerCore()
+		private protected override void OnHandlerChangedCore()
 		{
-			base.OnAttachedHandlerCore();
+			base.OnHandlerChangedCore();
 			_gestureManager?.Dispose();
-			_gestureManager = new GestureManager(Handler);
+
+			if (Handler != null)
+				_gestureManager = new GestureManager(Handler);
 		}
 
-		private protected override void OnDetachingHandlerCore()
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
-			base.OnDetachingHandlerCore();
 			_gestureManager?.Dispose();
 			_gestureManager = null;
+
+			base.OnHandlerChangingCore(args);
 		}
 	}
 }

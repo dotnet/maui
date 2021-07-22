@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFrame(PageHandler handler, IView view)
 		{
-			ViewHandler.MapFrame(handler, view);
+			ViewHandler.MapFrame(handler, view, null);
 
 			// TODO MAUI: Currently the background layer frame is tied to the layout system
 			// which needs to be investigated more

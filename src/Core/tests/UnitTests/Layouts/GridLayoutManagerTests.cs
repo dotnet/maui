@@ -123,12 +123,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			return measuredSize;
 		}
 
-		void AssertArranged(IView view, double x, double y, double width, double height)
-		{
-			var expected = new Rectangle(x, y, width, height);
-			view.Received().Arrange(Arg.Is(expected));
-		}
-
 		[Category(GridAutoSizing)]
 		[Fact]
 		public void OneAutoRowOneAutoColumn()
@@ -1130,6 +1124,63 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// View is hidden, so we expect it to be measured and arranged (since it'll need to take up space)
 			hiddenView.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
 			hiddenView.Received().Arrange(Arg.Any<Rectangle>());
+		}
+
+		IGridLayout BuildPaddedGrid(Thickness padding, double viewWidth, double viewHeight)
+		{
+			var grid = CreateGridLayout();
+			var view = CreateTestView(new Size(viewWidth, viewHeight));
+			AddChildren(grid, view);
+			SetLocation(grid, view);
+
+			grid.Padding.Returns(padding);
+
+			return grid;
+		}
+
+		[Theory]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(10, 0, 10, 0)]
+		[InlineData(0, 10, 0, 10)]
+		[InlineData(23, 5, 3, 15)]
+		public void MeasureAccountsForPadding(double left, double top, double right, double bottom)
+		{
+			var viewWidth = 100d;
+			var viewHeight = 100d;
+			var padding = new Thickness(left, top, right, bottom);
+
+			var expectedHeight = padding.VerticalThickness + viewHeight;
+			var expectedWidth = padding.HorizontalThickness + viewWidth;
+
+			var grid = BuildPaddedGrid(padding, viewWidth, viewHeight);
+
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedHeight, measuredSize.Height);
+			Assert.Equal(expectedWidth, measuredSize.Width);
+		}
+
+		[Theory]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(10, 0, 10, 0)]
+		[InlineData(0, 10, 0, 10)]
+		[InlineData(23, 5, 3, 15)]
+		public void ArrangeAccountsForPadding(double left, double top, double right, double bottom)
+		{
+			var viewWidth = 100d;
+			var viewHeight = 100d;
+			var padding = new Thickness(left, top, right, bottom);
+
+			var grid = BuildPaddedGrid(padding, viewWidth, viewHeight);
+
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+
+			AssertArranged(grid.Children[0], padding.Left, padding.Top, viewWidth, viewHeight);
 		}
 	}
 }

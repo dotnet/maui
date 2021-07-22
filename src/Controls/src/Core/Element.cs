@@ -145,12 +145,22 @@ namespace Microsoft.Maui.Controls
 				bool emitChange = Parent != value;
 
 				if (emitChange)
+				{
 					OnPropertyChanging(nameof(Parent));
+
+					if (value != null)
+						OnParentChangingCore(Parent, value);
+					else
+						OnParentChangingCore(Parent, RealParent);
+				}
 
 				_parentOverride = value;
 
 				if (emitChange)
+				{
 					OnPropertyChanged(nameof(Parent));
+					OnParentChangedCore();
+				}
 			}
 		}
 
@@ -175,6 +185,9 @@ namespace Microsoft.Maui.Controls
 					return;
 
 				OnPropertyChanging();
+
+				if (_parentOverride == null)
+					OnParentChangingCore(Parent, value);
 
 				if (RealParent != null)
 				{
@@ -202,6 +215,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 				OnParentSet();
+
+				if (_parentOverride == null)
+					OnParentChangedCore();
 
 				OnPropertyChanged();
 			}
@@ -598,6 +614,29 @@ namespace Microsoft.Maui.Controls
 		void OnResourceChanged(BindableProperty property, object value)
 		{
 			SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings);
+		}
+
+		public event EventHandler<ParentChangingEventArgs> ParentChanging;
+		public event EventHandler ParentChanged;
+
+		protected virtual void OnParentChanging(ParentChangingEventArgs args) { }
+
+		protected virtual void OnParentChanged() { }
+
+		private protected virtual void OnParentChangedCore()
+		{
+			ParentChanged?.Invoke(this, EventArgs.Empty);
+			OnParentChanged();
+		}
+
+		private protected virtual void OnParentChangingCore(Element oldParent, Element newParent)
+		{
+			if (oldParent == newParent)
+				return;
+
+			var args = new ParentChangingEventArgs(oldParent, newParent);
+			ParentChanging?.Invoke(this, args);
+			OnParentChanging(args);
 		}
 	}
 }
