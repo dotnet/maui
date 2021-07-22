@@ -205,12 +205,12 @@ stages:
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
-              - task: DownloadPipelineArtifact@2
+              - task: DownloadBuildArtifacts@0
                 displayName: 'Download Packages'
                 inputs:
-                  artifact: nuget
-                  patterns: '**/*.nupkg'
-                  path: $(System.DefaultWorkingDirectory)/artifacts
+                  artifactName: nuget
+                  itemPattern: '**/*.nupkg'
+                  downloadPath: $(System.DefaultWorkingDirectory)/artifacts
               - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
               - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
