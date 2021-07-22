@@ -5,21 +5,21 @@ using System.Text;
 
 namespace Microsoft.Maui.Controls
 {
-	public abstract partial class Layout<T>
+	public abstract partial class Layout<T> 
 	{
 		int ICollection<IView>.Count => _children.Count;
 		bool ICollection<IView>.IsReadOnly => ((ICollection<IView>) _children).IsReadOnly;
 		public IView this[int index] { get => _children[index]; set => _children[index] = (T)value; }
 
-		public void Add(IView child)
+		void ICollection<IView>.Add(IView child)
 		{
 			if (child is T view)
 			{
 				_children.Add(view);
 			}
 		}
-
-		public bool Remove(IView child)
+	
+		bool ICollection<IView>.Remove(IView child)
 		{
 			if (child is T view)
 			{
