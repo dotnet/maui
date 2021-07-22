@@ -14,28 +14,28 @@ namespace Microsoft.Maui.LifecycleEvents
 			iOS
 				.FinishedLaunching((app, launchOptions) =>
 				{
-					app.GetWindow().Created();
+					app.GetWindow()?.Created();
 					return true;
 				})
 				.WillEnterForeground(app =>
 				{
-					app.GetWindow().Resumed();
+					app.GetWindow()?.Resumed();
 				})
 				.OnActivated(app =>
 				{
-					app.GetWindow().Activated();
+					app.GetWindow()?.Activated();
 				})
 				.OnResignActivation(app =>
 				{
-					app.GetWindow().Deactivated();
+					app.GetWindow()?.Deactivated();
 				})
 				.DidEnterBackground(app =>
 				{
-					app.GetWindow().Stopped();
+					app.GetWindow()?.Stopped();
 				})
 				.WillTerminate(app =>
 				{
-					app.GetWindow().Destroying();
+					app.GetWindow()?.Destroying();
 				});
 		}
 	}
