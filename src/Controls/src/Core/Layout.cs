@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement//, Microsoft.Maui.IContainer
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement
 	{
 		public static readonly BindableProperty IsClippedToBoundsProperty =
 			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false);
