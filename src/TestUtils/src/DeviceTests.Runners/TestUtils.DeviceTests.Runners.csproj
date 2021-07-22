@@ -9,6 +9,7 @@
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.TestUtils.DeviceTests.Runners</RootNamespace>
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests.Runners</AssemblyName>
+    <NoWarn>$(NoWarn);NU1703</NoWarn>
     <!--<Nullable>enable</Nullable>-->
   </PropertyGroup>
 
