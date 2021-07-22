@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Graphics.Converters
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (value is not Rectangle r)
+			if (!(value is Rectangle r))
 				throw new NotSupportedException();
 			return $"{r.X.ToString(CultureInfo.InvariantCulture)}, {r.Y.ToString(CultureInfo.InvariantCulture)}, {r.Width.ToString(CultureInfo.InvariantCulture)}, {r.Height.ToString(CultureInfo.InvariantCulture)}";
 		}

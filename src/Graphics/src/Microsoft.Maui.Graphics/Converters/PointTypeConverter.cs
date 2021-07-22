@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Graphics.Converters
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (value is not Point p)
+			if (!(value is Point p))
 				throw new NotSupportedException();
 			return $"{p.X.ToString(CultureInfo.InvariantCulture)}, {p.Y.ToString(CultureInfo.InvariantCulture)}";
 		}

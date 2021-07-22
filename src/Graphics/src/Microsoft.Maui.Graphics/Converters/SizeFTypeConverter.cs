@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Graphics.Converters
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (value is not SizeF size)
+			if (!(value is SizeF size))
 				throw new NotSupportedException();
 			return $"{size.Width.ToString(CultureInfo.InvariantCulture)}, {size.Height.ToString(CultureInfo.InvariantCulture)}";
 		}
