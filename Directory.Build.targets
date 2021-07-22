@@ -5,6 +5,14 @@
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\Microsoft.Extensions.targets" />
 
+  <PropertyGroup>
+    <!--
+      NOTE: Ignore warnings for using Xamarin.iOS in Catalyst
+      error NU1703: 'xunit.core 2.4.1' was resolved as a dependency of 'Microsoft.Maui.TestUtils.DeviceTests', but the dependency is using 'Xamarin.iOS' while 'Microsoft.Maui.TestUtils.DeviceTests' is using 'net6.0-maccatalyst13.5' as its TargetFramework. There might be compatibility issues when MacCatalyst projects depend on Xamarin.iOS projects.
+    -->
+    <NoWarn Condition=" $(TargetFramework.Contains('maccatalyst')) ">$(NoWarn);NU1703</NoWarn>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(SingleProject)' == 'true'">
     <!-- Required - Enable Launch Profiles for .NET 6 iOS/Android -->
     <_KeepLaunchProfiles>true</_KeepLaunchProfiles>
