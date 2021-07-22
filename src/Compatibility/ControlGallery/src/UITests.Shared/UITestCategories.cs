@@ -27,7 +27,6 @@
 		public const string ListView = "ListView";
 		public const string UwpIgnore = "UwpIgnore";
 		public const string LifeCycle = "Lifecycle";
-		public const string MasterDetailPage = "MasterDetailPage";
 		public const string FlyoutPage = "FlyoutPage";
 		public const string Picker = "Picker";
 		public const string ProgressBar = "ProgressBar";

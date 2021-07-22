@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
-	[Issue(IssueTracker.Bugzilla, 32776, "MasterDetail page - page title not showing for Windows Phone 8.1 (any orientation) or in Windows 8.1 (portrait orientation).", PlatformAffected.WinRT, NavigationBehavior.PushModalAsync)]
+	[Issue(IssueTracker.Bugzilla, 32776, "FlyoutPage - page title not showing for Windows Phone 8.1 (any orientation) or in Windows 8.1 (portrait orientation).", PlatformAffected.WinRT, NavigationBehavior.PushModalAsync)]
 	public class Bugzilla32776
 		: FlyoutPage
 	{

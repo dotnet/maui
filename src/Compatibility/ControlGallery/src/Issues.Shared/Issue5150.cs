@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5150, "AutomationProperties.Name, AutomationProperties.HelpText on Button not read by Android TalkBack", PlatformAffected.Android)]
-	public class Issue5150 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue5150 : TestContentPage
 	{
 		void AddView(StackLayout layout, View view, string labelPrefix, string automationId, string buttonName = null, string buttonHelp = null)
 		{

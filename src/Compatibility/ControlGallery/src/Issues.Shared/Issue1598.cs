@@ -3,11 +3,11 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
-	public class MasterDetailToolbarBug : FlyoutPage
+	public class FlyoutPageToolbarBug : FlyoutPage
 	{
-		public MasterDetailToolbarBug()
+		public FlyoutPageToolbarBug()
 		{
-			Title = "MasterDetailToolbarBug";
+			Title = "FlyoutPageToolbarBug";
 
 			Flyout = new ContentPage()
 			{
@@ -26,16 +26,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 1598, "MasterDetailContainer does not handle adding of views which are already its children", PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 1598, "FlyoutPageContainer does not handle adding of views which are already its children", PlatformAffected.Android)]
 	public class Issue1598 : ContentPage
 	{
-		MasterDetailToolbarBug _secondPage = new MasterDetailToolbarBug();
+		FlyoutPageToolbarBug _secondPage = new FlyoutPageToolbarBug();
 
 		public Issue1598()
 		{
 			Title = "XamarinTest MainMenu";
 
-			var menu1 = new MainMenuCell("MasterDetail - Toolbar bug", "Icon.png");
+			var menu1 = new MainMenuCell("FlyoutPage - Toolbar bug", "Icon.png");
 			menu1.Tapped += (o, e) =>
 			{
 				Navigation.PushAsync(_secondPage);

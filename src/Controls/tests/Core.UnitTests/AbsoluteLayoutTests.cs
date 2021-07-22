@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.That(abs.Children, Is.Empty);
 
-			var sizeReq = abs.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(Size.Zero, sizeReq.Request);
 			Assert.AreEqual(Size.Zero, sizeReq.Minimum);
 		}
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// ChildSizeReq == 100x20
 			abs.Children.Add(child, new Rectangle(10, 20, 30, 40));
 
-			var sizeReq = abs.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.AreEqual(new Size(40, 60), sizeReq.Request);
 			Assert.AreEqual(new Size(40, 60), sizeReq.Minimum);
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// ChildSizeReq == 100x20
 			abs.Children.Add(child, new Rectangle(0.5, 0.5, 30, 40), AbsoluteLayoutFlags.PositionProportional);
 
-			var sizeReq = abs.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.AreEqual(new Size(30, 40), sizeReq.Request);
 			Assert.AreEqual(new Size(30, 40), sizeReq.Minimum);
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// ChildSizeReq == 100x20
 			abs.Children.Add(child, new Rectangle(0.5, 0.5, 0.5, 0.5), AbsoluteLayoutFlags.All);
 
-			var sizeReq = abs.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.AreEqual(new Size(200, 40), sizeReq.Request);
 			Assert.AreEqual(new Size(0, 0), sizeReq.Minimum);
@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// ChildSizeReq == 100x20
 			abs.Children.Add(child, new Rectangle(10, 20, 0.5, 0.5), AbsoluteLayoutFlags.SizeProportional);
 
-			var sizeReq = abs.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.AreEqual(new Size(210, 60), sizeReq.Request);
 			Assert.AreEqual(new Size(10, 20), sizeReq.Minimum);

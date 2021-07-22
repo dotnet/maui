@@ -498,13 +498,3 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 	}
 }
-
-namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
-{
-	public class MasterDetailPageRenderer : FlyoutPageRenderer
-	{
-		public MasterDetailPageRenderer(Context context) : base(context)
-		{
-		}
-	}
-}

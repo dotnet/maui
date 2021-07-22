@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			Assert.AreEqual(new Size(120, 220), contentView.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request);
+			Assert.AreEqual(new Size(120, 220), contentView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
 
 			contentView.Layout(new Rectangle(0, 0, 300, 300));
 
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				WidthRequest = 20
 			};
 
-			Assert.AreEqual(new Size(40, 220), contentView.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request);
+			Assert.AreEqual(new Size(40, 220), contentView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
 		}
 
 		[Test]
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				HeightRequest = 20
 			};
 
-			Assert.AreEqual(new Size(120, 40), contentView.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request);
+			Assert.AreEqual(new Size(120, 40), contentView.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
 		}
 
 		[Test]

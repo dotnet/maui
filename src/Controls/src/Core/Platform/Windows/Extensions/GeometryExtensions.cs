@@ -7,10 +7,6 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class GeometryExtensions
 	{
-		[Obsolete("ToWindows is obsolete. Please use ToNative instead")]
-		public static WMedia.Geometry ToWindows(this Geometry geometry) =>
-			geometry.ToNative();
-
 		public static WMedia.Geometry ToNative(this Geometry geometry)
 		{
 			WMedia.Geometry wGeometry = null;

@@ -6,7 +6,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.MasterDetailPage;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using Microsoft.Maui.Graphics;
@@ -199,9 +198,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				UpdateMaster();
 			else if (e.PropertyName == "Detail")
 				UpdateDetail();
-			else if (e.PropertyName == nameof(FlyoutPageControl.ShouldShowSplitMode)
-					 || e.PropertyName == Specifics.CollapseStyleProperty.PropertyName
-					 || e.PropertyName == Specifics.CollapsedPaneWidthProperty.PropertyName)
+			else if (e.PropertyName == nameof(FlyoutPageControl.ShouldShowSplitMode))
 				UpdateMode();
 			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName)
 				UpdateToolbarPlacement();
@@ -446,10 +443,5 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			return _detail;
 		}
-	}
-
-	public class MasterDetailPageRenderer : FlyoutPageRenderer
-	{
-
 	}
 }

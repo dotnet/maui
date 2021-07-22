@@ -181,12 +181,10 @@ namespace Microsoft.Maui.Controls
 			base.OnRemoved(view);
 		}
 
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
-			double mockWidth = double.IsPositiveInfinity(widthConstraint) ? ParentView.Width : widthConstraint;
-			double mockHeight = double.IsPositiveInfinity(heightConstraint) ? ParentView.Height : heightConstraint;
+			double mockWidth = double.IsPositiveInfinity(widthConstraint) ? (Parent as VisualElement).Width : widthConstraint;
+			double mockHeight = double.IsPositiveInfinity(heightConstraint) ? (Parent as VisualElement).Height : heightConstraint;
 			MockBounds(new Rectangle(0, 0, mockWidth, mockHeight));
 
 			var boundsRectangle = new Rectangle();

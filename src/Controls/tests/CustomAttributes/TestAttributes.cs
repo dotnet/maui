@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 		public enum Pages
 		{
 			NavigationPage,
-			MasterDetailPage,
+			FlyoutPage,
 			TabbedPage,
 			ContentPage,
 			CarouselPage
@@ -649,22 +649,6 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 			HtmlTextTypeMultipleLines,
 			HtmlTextLabelProperties,
 			TextTypeToggle,
-		}
-
-		public enum MasterDetailPage
-		{
-			Master,
-			Detail,
-			IsGestureEnabled,
-			IsPresented,
-			FlyoutLayoutBehavior
-		}
-
-		public enum OpenGlView
-		{
-			OnDisplay,
-			HasRenderLoop,
-			Display
 		}
 
 		public enum ProgressBar

@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 
 			if (initialLoad)
 			{
-				Device.BeginInvokeOnMainThread(() => masterDetailsPage_Clicked(this, EventArgs.Empty));
+				Device.BeginInvokeOnMainThread(() => flyoutPagesPage_Clicked(this, EventArgs.Empty));
 			}
 		}
 
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 			}
 		}
 
-		void masterDetailsPage_Clicked(object sender, EventArgs e)
+		void flyoutPagesPage_Clicked(object sender, EventArgs e)
 		{
 			App.Current.MainPage =
 				new FlyoutPage()
@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
 				NavigationPage.SetTitleIconImageSource(page, null);
 		}
 
-		void masterDetailsPageIcon_Clicked(object sender, EventArgs e)
+		void flyoutPagesPageIcon_Clicked(object sender, EventArgs e)
 		{
 			if (App.Current.MainPage is FlyoutPage mdp)
 			{

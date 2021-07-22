@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(fired);
 
-			var result = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
+			var result = view.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
 			Assert.AreEqual(new Size(200, 300), result);
 		}
 
@@ -513,7 +513,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.WidthRequest = 200;
 			view.MinimumWidthRequest = 100;
 
-			var result = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var result = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(new Size(200, 20), result.Request);
 			Assert.AreEqual(new Size(100, 20), result.Minimum);
 		}
@@ -530,7 +530,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.WidthRequest = 20;
 			view.MinimumHeightRequest = 100;
 
-			var result = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var result = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(new Size(20, 200), result.Request);
 			Assert.AreEqual(new Size(20, 100), result.Minimum);
 		}
@@ -681,7 +681,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var view = new View();
 			view.IsPlatformEnabled = true;
 			view.WidthRequest = 20;
-			var request = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var request = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.AreEqual(new Size(20, 50), request.Request);
 		}
@@ -699,7 +699,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var view = new View();
 			view.IsPlatformEnabled = true;
 			view.HeightRequest = 20;
-			var request = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var request = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.AreEqual(new Size(40, 20), request.Request);
 		}

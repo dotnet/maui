@@ -25,11 +25,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		Dictionary<string, Type> tests = new Dictionary<string, Type>
 		{
-			{ "Swap Main Page right after settings Details to Navigation Page", typeof(Issue2338_MasterDetailsPage_NavigationPage)},
-			{ "Main Page right after settings Details to Content Page", typeof(Issue2338_MasterDetailsPage_ContentPage)},
+			{ "Swap Main Page right after settings Details to Navigation Page", typeof(Issue2338_FlyoutPagesPage_NavigationPage)},
+			{ "Main Page right after settings Details to Content Page", typeof(Issue2338_FlyoutPagesPage_ContentPage)},
 			{ "Change Page in Constructor of Page Currently being set to Main Page", typeof(Issue2338_Ctor)},
 			{ "Change Page in Constructor with some added additional changes", typeof(Issue2338_Ctor_MultipleChanges)},
-			{ "Basic change Main Page when previous page is Flyout Details", typeof(Issue2338_MasterDetailsPage)},
+			{ "Basic change Main Page when previous page is Flyout Details", typeof(Issue2338_FlyoutPagesPage)},
 			{ "Swap Main Page during OnAppearing", typeof(Issue2338_SwapMainPageDuringAppearing)},
 			{ "Swap out Tabbed Page", typeof(Issue2338_TabbedPage)},
 		};
@@ -72,8 +72,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		public async Task SwapMainPageOut()
 		{
 			await TestForSuccess(RunningApp, typeof(Issue2338_SwapMainPageDuringAppearing));
-			await TestForSuccess(RunningApp, typeof(Issue2338_MasterDetailsPage_ContentPage));
-			await TestForSuccess(RunningApp, typeof(Issue2338_MasterDetailsPage_NavigationPage));
+			await TestForSuccess(RunningApp, typeof(Issue2338_FlyoutPagesPage_ContentPage));
+			await TestForSuccess(RunningApp, typeof(Issue2338_FlyoutPagesPage_NavigationPage));
 
 #if !__IOS__
 			await TestForSuccess(RunningApp, typeof(Issue2338_Ctor));
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			await TestForSuccess(RunningApp, typeof(Issue2338_TabbedPage));
 
 #if !__IOS__
-			await TestForSuccess(RunningApp, typeof(Issue2338_MasterDetailsPage));
+			await TestForSuccess(RunningApp, typeof(Issue2338_FlyoutPagesPage));
 #endif
 
 		}
@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Preserve(AllMembers = true)]
-		public class Issue2338_MasterDetailsPage : TestContentPage
+		public class Issue2338_FlyoutPagesPage : TestContentPage
 		{
 
 			protected override void Init()
@@ -279,13 +279,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			protected override void OnAppearing()
 			{
-				Application.Current.MainPage = new InternalMasterDetailsPage();
+				Application.Current.MainPage = new InternalFlyoutPagesPage();
 			}
 
 			[Preserve(AllMembers = true)]
-			class InternalMasterDetailsPage : FlyoutPage
+			class InternalFlyoutPagesPage : FlyoutPage
 			{
-				public InternalMasterDetailsPage()
+				public InternalFlyoutPagesPage()
 				{
 					Detail = new NavigationPage(new ContentPage() { Title = "Details" });
 					Flyout = new ContentPage() { Title = "Flyout" };
@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 					var navPage = new NavigationPage(new ContentPage() { Title = "Details" });
 					Detail = navPage;
-					Application.Current.MainPage = Issue2338TestHelper.CreateSuccessPage(nameof(Issue2338_MasterDetailsPage));
+					Application.Current.MainPage = Issue2338TestHelper.CreateSuccessPage(nameof(Issue2338_FlyoutPagesPage));
 #pragma warning disable 4014
 					navPage.PushAsync(new ContentPage() { Title = "Details 2" });
 #pragma warning restore 4014
@@ -311,7 +311,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Preserve(AllMembers = true)]
-		public class Issue2338_MasterDetailsPage_NavigationPage : TestContentPage
+		public class Issue2338_FlyoutPagesPage_NavigationPage : TestContentPage
 		{
 
 			protected override void Init()
@@ -320,13 +320,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			protected override void OnAppearing()
 			{
-				Application.Current.MainPage = new InternalMasterDetailsPage();
+				Application.Current.MainPage = new InternalFlyoutPagesPage();
 			}
 
 			[Preserve(AllMembers = true)]
-			class InternalMasterDetailsPage : FlyoutPage
+			class InternalFlyoutPagesPage : FlyoutPage
 			{
-				public InternalMasterDetailsPage()
+				public InternalFlyoutPagesPage()
 				{
 					Detail = new NavigationPage(new ContentPage() { Title = "Details" });
 					Flyout = new ContentPage() { Title = "Flyout" };
@@ -344,7 +344,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Detail = navPage;
 						Flyout = new ContentPage() { Title = "Flyout" };
 
-						Application.Current.MainPage = Issue2338TestHelper.CreateSuccessPage(nameof(Issue2338_MasterDetailsPage_NavigationPage));
+						Application.Current.MainPage = Issue2338TestHelper.CreateSuccessPage(nameof(Issue2338_FlyoutPagesPage_NavigationPage));
 
 						navPage.PushAsync(new ContentPage() { Title = "Details 2" });
 					};
@@ -357,7 +357,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Preserve(AllMembers = true)]
-		public class Issue2338_MasterDetailsPage_ContentPage : TestContentPage
+		public class Issue2338_FlyoutPagesPage_ContentPage : TestContentPage
 		{
 
 			protected override void Init()
@@ -366,13 +366,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			protected override void OnAppearing()
 			{
-				Application.Current.MainPage = new InternalMasterDetailsPage();
+				Application.Current.MainPage = new InternalFlyoutPagesPage();
 			}
 
 			[Preserve(AllMembers = true)]
-			class InternalMasterDetailsPage : FlyoutPage
+			class InternalFlyoutPagesPage : FlyoutPage
 			{
-				public InternalMasterDetailsPage()
+				public InternalFlyoutPagesPage()
 				{
 					Detail = new ContentPage() { Title = "Details" };
 					Flyout = new ContentPage() { Title = "Flyout" };
@@ -384,7 +384,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					Detail = new ContentPage() { Title = "Details" };
 					Flyout = new ContentPage() { Title = "Flyout" };
 
-					Application.Current.MainPage = Issue2338TestHelper.CreateSuccessPage(nameof(Issue2338_MasterDetailsPage_ContentPage));
+					Application.Current.MainPage = Issue2338TestHelper.CreateSuccessPage(nameof(Issue2338_FlyoutPagesPage_ContentPage));
 				}
 			}
 		}

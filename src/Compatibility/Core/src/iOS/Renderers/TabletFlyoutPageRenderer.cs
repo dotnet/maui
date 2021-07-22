@@ -600,16 +600,4 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			VisualElementRenderer<VisualElement>.RegisterEffect(effect, View);
 		}
 	}
-
-	public class TabletMasterDetailRenderer : TabletFlyoutPageRenderer
-	{
-		[Preserve(Conditional = true)]
-		public TabletMasterDetailRenderer()
-		{
-		}
-
-		[Obsolete("MasterDetailPage is obsolete as of version 5.0.0. Please use FlyoutPage instead.")]
-		protected MasterDetailPage MasterDetailPage => (MasterDetailPage)base.FlyoutPage;
-
-	}
 }

@@ -1425,9 +1425,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			Assert.AreEqual(new Size(0, 0), layout.GetSizeRequest(0, 0).Request);
-			Assert.AreEqual(new Size(0, 0), layout.GetSizeRequest(0, 10).Request);
-			Assert.AreEqual(new Size(0, 0), layout.GetSizeRequest(10, 0).Request);
+			Assert.AreEqual(new Size(0, 0), layout.Measure(0, 0).Request);
+			Assert.AreEqual(new Size(0, 0), layout.Measure(0, 10).Request);
+			Assert.AreEqual(new Size(0, 0), layout.Measure(10, 0).Request);
 		}
 
 		[Test]
@@ -1440,7 +1440,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				new View {IsPlatformEnabled = true}
 			});
 
-			var result = layout.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
+			var result = layout.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
 			Assert.AreEqual(new Size(100, 72), result);
 		}
 
@@ -1454,7 +1454,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				new View {IsPlatformEnabled = true}
 			});
 
-			var result = layout.GetSizeRequest(10, 10).Request;
+			var result = layout.Measure(10, 10).Request;
 			Assert.AreEqual(new Size(100, 72), result);
 		}
 
@@ -1468,7 +1468,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				new View {IsPlatformEnabled = true}
 			});
 
-			var result = layout.GetSizeRequest(10, double.PositiveInfinity).Request;
+			var result = layout.Measure(10, double.PositiveInfinity).Request;
 			Assert.AreEqual(new Size(100, 72), result);
 		}
 
@@ -1483,7 +1483,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				new View {IsPlatformEnabled = true}
 			});
 
-			var result = layout.GetSizeRequest(double.PositiveInfinity, 10).Request;
+			var result = layout.Measure(double.PositiveInfinity, 10).Request;
 			Assert.AreEqual(new Size(100, 72), result);
 		}
 
@@ -1525,7 +1525,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				new View {IsPlatformEnabled = true}
 			});
 
-			var result = layout.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
+			var result = layout.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
 			Assert.AreEqual(new Size(135, 87), result);
 		}
 
@@ -1700,7 +1700,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			layout.Children.Add(label2, 1, 1);
 			layout.Children.Add(label3, 2, 2);
 
-			var request = layout.GetSizeRequest(1002, 462);
+			var request = layout.Measure(1002, 462);
 			Assert.AreEqual(312, request.Request.Width);
 			Assert.AreEqual(72, request.Request.Height);
 
@@ -2015,7 +2015,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			grid.Children.Add(new Label { Text = "Baz", HorizontalTextAlignment = TextAlignment.End, IsPlatformEnabled = true }, 1, 0);
 			grid.Children.Add(new Label { Text = "Qux", HorizontalTextAlignment = TextAlignment.End, IsPlatformEnabled = true }, 1, 1);
 
-			var request = grid.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var request = grid.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(206, request.Request.Width);
 			Assert.AreEqual(46, request.Request.Height);
 
@@ -2179,8 +2179,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			grid.Children.Add(leftLabel, 0, 1);
 			grid.Children.Add(rightLabel, 1, 1);
 
-			var unboundRequest = grid.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
-			var widthBoundRequest = grid.GetSizeRequest(50, double.PositiveInfinity);
+			var unboundRequest = grid.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var widthBoundRequest = grid.Measure(50, double.PositiveInfinity);
 
 			Assert.AreEqual(new SizeRequest(new Size(20, 120), new Size(0, 120)), unboundRequest);
 			Assert.AreEqual(new SizeRequest(new Size(50, 60), new Size(0, 60)), widthBoundRequest);
@@ -2228,9 +2228,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			grid.Children.Add(label0);
 			grid.Children.Add(label1);
 
-			Assert.AreEqual(new SizeRequest(new Size(100, 20), new Size(0, 20)), grid.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity));
+			Assert.AreEqual(new SizeRequest(new Size(100, 20), new Size(0, 20)), grid.Measure(double.PositiveInfinity, double.PositiveInfinity));
 			grid.BindingContext = new { Height = 42 };
-			Assert.AreEqual(new SizeRequest(new Size(100, 62), new Size(0, 62)), grid.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity));
+			Assert.AreEqual(new SizeRequest(new Size(100, 62), new Size(0, 62)), grid.Measure(double.PositiveInfinity, double.PositiveInfinity));
 		}
 
 		[Test]
