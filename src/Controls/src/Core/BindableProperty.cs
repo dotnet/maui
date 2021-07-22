@@ -8,11 +8,12 @@ using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls
 {
 	[DebuggerDisplay("{PropertyName}")]
-	[TypeConverter(typeof(BindablePropertyConverter))]
+	[System.ComponentModel.TypeConverter(typeof(BindablePropertyConverter))]
 	public sealed class BindableProperty
 	{
 		public delegate void BindingPropertyChangedDelegate(BindableObject bindable, object oldValue, object newValue);

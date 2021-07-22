@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextAlignmentElement.VerticalTextAlignmentProperty, value); }
 		}
 
+		[System.ComponentModel.TypeConverter(typeof(Converters.KeyboardTypeConverter))]
 		public Keyboard Keyboard
 		{
 			get { return (Keyboard)GetValue(KeyboardProperty); }

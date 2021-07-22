@@ -1,11 +1,12 @@
 using System;
+using Microsoft.Maui.Converters;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TypeConverter(typeof(ThicknessTypeConverter))]
+	[System.ComponentModel.TypeConverter(typeof(ThicknessTypeConverter))]
 	public struct Bz55862Bar
 	{
 	}

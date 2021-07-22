@@ -1,6 +1,9 @@
 #nullable enable
+using System.ComponentModel;
+
 namespace Microsoft.Maui
 {
+	[TypeConverter(typeof(Converters.KeyboardTypeConverter))]
 	public class Keyboard
 	{
 		static Keyboard? s_plain;

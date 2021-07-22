@@ -97,14 +97,14 @@ namespace Microsoft.Maui.Controls.Layout2
 		IReadOnlyList<IGridRowDefinition> IGridLayout.RowDefinitions => _rowDefs ??= new(RowDefinitions);
 		IReadOnlyList<IGridColumnDefinition> IGridLayout.ColumnDefinitions => _colDefs ??= new(ColumnDefinitions);
 
-		[TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
 		public ColumnDefinitionCollection ColumnDefinitions
 		{
 			get { return (ColumnDefinitionCollection)GetValue(ColumnDefinitionsProperty); }
 			set { SetValue(ColumnDefinitionsProperty, value); }
 		}
 
-		[TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
 		public RowDefinitionCollection RowDefinitions
 		{
 			get { return (RowDefinitionCollection)GetValue(RowDefinitionsProperty); }

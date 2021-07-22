@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
@@ -46,7 +48,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	[TypeConverter(typeof(Bz45299UILengthTypeConverter))]
+	[System.ComponentModel.TypeConverter(typeof(Bz45299UILengthTypeConverter))]
 	public class Bz45299UILength
 	{
 		public static Bz45299UILength Zero => new Bz45299UILength { Value = 0 };
@@ -68,7 +70,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	public class Bz45299UILengthTypeConverter : TypeConverter
 	{
 		static readonly Type StringType = typeof(string);
-		public override bool CanConvertFrom(Type sourceType)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 		{
 			if (sourceType != StringType)
 				return false;
@@ -76,10 +78,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			return true;
 		}
 
-		public override object ConvertFromInvariantString(string value) => Bz45299UILength.Zero;
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) => Bz45299UILength.Zero;
 	}
 
-	[TypeConverter(typeof(Bz45299UISizeTypeConverter))]
+	[System.ComponentModel.TypeConverter(typeof(Bz45299UISizeTypeConverter))]
 	public class Bz45299UISize
 	{
 		public static Bz45299UISize Zero => new Bz45299UISize { Width = 0, Height = 0 };
@@ -96,7 +98,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	{
 		private static readonly Type StringType = typeof(string);
 
-		public override bool CanConvertFrom(Type sourceType)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 		{
 			if (sourceType != StringType)
 				return false;
@@ -104,15 +106,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			return true;
 		}
 
-		public override object ConvertFromInvariantString(string value) => Bz45299UISize.Zero;
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) => Bz45299UISize.Zero;
 	}
 
 	public partial class Bz45299 : ContentPage
 	{
-		public Bz45299()
-		{
-			InitializeComponent();
-		}
+		public Bz45299() => InitializeComponent();
 		public Bz45299(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time

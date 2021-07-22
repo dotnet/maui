@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Controls.Shapes
 {
-	[TypeConverter(typeof(TransformTypeConverter))]
+	[System.ComponentModel.TypeConverter(typeof(TransformTypeConverter))]
 	public class Transform : BindableObject
 	{
 		public static readonly BindableProperty ValueProperty =

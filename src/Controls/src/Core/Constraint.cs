@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq.Expressions;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	[TypeConverter(typeof(ConstraintTypeConverter))]
+	[System.ComponentModel.TypeConverter(typeof(ConstraintTypeConverter))]
 	public sealed class Constraint
 	{
 		Func<RelativeLayout, double> _measureFunc;

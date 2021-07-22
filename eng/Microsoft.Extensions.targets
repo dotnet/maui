@@ -21,8 +21,8 @@
    <!-- Microsoft.Maui.Graphics related Packages -->
   <PropertyGroup>
     <_MicrosoftGraphicsWin2DVersion>0.8.0.21</_MicrosoftGraphicsWin2DVersion>
-    <_MicrosoftMauiGraphics>6.0.100-preview.6.299</_MicrosoftMauiGraphics>
-    <_MicrosoftMauiGraphicsWin2D>6.0.100-preview.6.299</_MicrosoftMauiGraphicsWin2D>
+    <_MicrosoftMauiGraphics>6.0.100-preview.7.332</_MicrosoftMauiGraphics>
+    <_MicrosoftMauiGraphicsWin2D>6.0.100-preview.7.332</_MicrosoftMauiGraphicsWin2D>
   </PropertyGroup>
    <!-- WINUI related Packages -->
   <PropertyGroup>

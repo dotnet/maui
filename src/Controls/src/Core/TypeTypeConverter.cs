@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
@@ -7,6 +9,12 @@ namespace Microsoft.Maui.Controls
 	[TypeConversion(typeof(Type))]
 	public sealed class TypeTypeConverter : TypeConverter, IExtendedTypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> false;
+
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
 			if (serviceProvider == null)
@@ -17,8 +25,10 @@ namespace Microsoft.Maui.Controls
 			return typeResolver.Resolve(value, serviceProvider);
 		}
 
-		public override object ConvertFromInvariantString(string value) => throw new NotImplementedException();
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+			=> throw new NotImplementedException();
 
-		public override string ConvertToInvariantString(object value) => throw new NotSupportedException();
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+			=> throw new NotSupportedException();
 	}
 }

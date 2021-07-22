@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			BindableProperty.Create(nameof(RenderTransform), typeof(Transform), typeof(Path), null,
 				propertyChanged: OnTransformPropertyChanged);
 
-		[TypeConverter(typeof(PathGeometryConverter))]
+		[System.ComponentModel.TypeConverter(typeof(PathGeometryConverter))]
 		public Geometry Data
 		{
 			set { SetValue(DataProperty, value); }

@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(CommandParameterProperty, value); }
 		}
 
-		[TypeConverter(typeof(ImageSourceConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 		public ImageSource Source
 		{
 			get { return (ImageSource)GetValue(SourceProperty); }

@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		Unknown = 4
 	}
 
-	[TypeConverter(typeof(MatrixTypeConverter))]
+	[System.ComponentModel.TypeConverter(typeof(MatrixTypeConverter))]
 	public struct Matrix
 	{
 		internal double _m11;

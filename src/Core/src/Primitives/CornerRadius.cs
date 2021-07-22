@@ -1,9 +1,11 @@
 ﻿#nullable enable
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace Microsoft.Maui
 {
 	[DebuggerDisplay("TopLeft={TopLeft}, TopRight={TopRight}, BottomLeft={BottomLeft}, BottomRight={BottomRight}")]
+	[TypeConverter(typeof(Converters.CornerRadiusTypeConverter))]
 	public struct CornerRadius
 	{
 		bool _isParameterized;

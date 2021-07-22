@@ -1,10 +1,12 @@
 #nullable enable
+using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
 	[DebuggerDisplay("Left={Left}, Top={Top}, Right={Right}, Bottom={Bottom}, HorizontalThickness={HorizontalThickness}, VerticalThickness={VerticalThickness}")]
+	[TypeConverter(typeof(Converters.ThicknessTypeConverter))]
 	public struct Thickness
 	{
 		public double Left { get; set; }

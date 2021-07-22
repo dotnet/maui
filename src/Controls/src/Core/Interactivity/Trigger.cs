@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	[AcceptEmptyServiceProvider]
 	public sealed class Trigger : TriggerBase, IValueProvider
 	{
-		public Trigger([TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType) : base(new PropertyCondition(), targetType)
+		public Trigger([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType) : base(new PropertyCondition(), targetType)
 		{
 		}
 

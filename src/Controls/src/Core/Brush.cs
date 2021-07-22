@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Controls
 {
-	[TypeConverter(typeof(BrushTypeConverter))]
+	[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
 	public abstract partial class Brush : Element
 	{
 		public static Brush Default

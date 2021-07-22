@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsAnimationPlayingProperty, value); }
 		}
 
-		[TypeConverter(typeof(ImageSourceConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 		public ImageSource Source
 		{
 			get { return (ImageSource)GetValue(SourceProperty); }

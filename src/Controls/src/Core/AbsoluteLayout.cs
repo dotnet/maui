@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 			get { return _children; }
 		}
 
-		[TypeConverter(typeof(BoundsTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(BoundsTypeConverter))]
 		public static Rectangle GetLayoutBounds(BindableObject bindable)
 		{
 			return (Rectangle)bindable.GetValue(LayoutBoundsProperty);
