@@ -20,7 +20,6 @@
   </ItemGroup>
 
   <!-- HACK: Prevent the Platform checks -->
-  <Target Name="ValidateWinUIPlatform" />
   <Target Name="BinPlaceBootstrapDll" />
 
   <!-- semi HACK: by default, WinUI includes all @(None) with .bmp/.png as @(Content) and adds that to the .pri -->
