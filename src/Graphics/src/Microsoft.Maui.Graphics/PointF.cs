@@ -1,10 +1,12 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 
 namespace Microsoft.Maui.Graphics
 {
 	[DebuggerDisplay("X={X}, Y={Y}")]
+	[TypeConverter(typeof(Converters.PointFTypeConverter))]
 	public partial struct PointF
 	{
 		public float X { get; set; }
@@ -103,5 +105,22 @@ namespace Microsoft.Maui.Graphics
 			y = Y;
 		}
 		public static implicit operator Point(PointF p) => new Point(p.X, p.Y);
+
+		public static bool TryParse(string value, out PointF pointF)
+		{
+			if (!string.IsNullOrEmpty(value))
+			{
+				string[] xy = value.Split(',');
+				if (xy.Length == 2 && float.TryParse(xy[0], NumberStyles.Number, CultureInfo.InvariantCulture, out var x)
+					&& float.TryParse(xy[1], NumberStyles.Number, CultureInfo.InvariantCulture, out var y))
+				{
+					pointF = new PointF(x, y);
+					return true;
+				}
+			}
+
+			pointF = default;
+			return false;
+		}
 	}
 }

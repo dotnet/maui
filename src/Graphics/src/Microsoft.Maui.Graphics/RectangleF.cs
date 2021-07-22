@@ -1,10 +1,12 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 
 namespace Microsoft.Maui.Graphics
 {
 	[DebuggerDisplay("X={X}, Y={Y}, Width={Width}, Height={Height}")]
+	[TypeConverter(typeof(Converters.RectangleFTypeConverter))]
 	public partial struct RectangleF
 	{
 		public float X { get; set; }
@@ -217,5 +219,25 @@ namespace Microsoft.Maui.Graphics
 		}
 
 		public static implicit operator Rectangle(RectangleF rect) => new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
+
+		public static bool TryParse(string value, out RectangleF rectangleF)
+		{
+			if (!string.IsNullOrEmpty(value))
+			{
+				string[] xywh = value.Split(',');
+				if (xywh.Length == 4
+					&& float.TryParse(xywh[0], NumberStyles.Number, CultureInfo.InvariantCulture, out float x)
+					&& float.TryParse(xywh[1], NumberStyles.Number, CultureInfo.InvariantCulture, out float y)
+					&& float.TryParse(xywh[2], NumberStyles.Number, CultureInfo.InvariantCulture, out float w)
+					&& float.TryParse(xywh[3], NumberStyles.Number, CultureInfo.InvariantCulture, out float h))
+				{
+					rectangleF = new RectangleF(x, y, w, h);
+					return true;
+				}
+			}
+
+			rectangleF = default;
+			return false;
+		}
 	}
 }

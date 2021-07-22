@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 
-namespace Microsoft.Maui.Graphics
+namespace Microsoft.Maui.Graphics.Converters
 {
 	public class ColorTypeConverter : TypeConverter
 	{
