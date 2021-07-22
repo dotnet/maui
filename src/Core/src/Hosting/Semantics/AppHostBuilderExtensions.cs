@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Hosting
 		{
 			builder.ConfigureServices(services =>
 			{
-				services.AddTransient<ISemanticService>(svcs => new SemanticService());
+				services.AddSingleton<ISemanticService>(svcs => new SemanticService());
 			});
 
 			return builder;
