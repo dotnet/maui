@@ -119,11 +119,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				MainWindow = mainWindow;
 
-				if (mainWindow is WindowsBasePage windowsPage)
-				{
-					windowsPage.LoadApplication(windowsPage.CreateApplication());
-					windowsPage.Activate();
-				}
+				//if (mainWindow is WindowsBasePage windowsPage)
+				//{
+				//	windowsPage.LoadApplication(windowsPage.CreateApplication());
+				//	windowsPage.Activate();
+				//}
 			}
 
 			IsInitialized = true;

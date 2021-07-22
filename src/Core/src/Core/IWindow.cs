@@ -14,5 +14,17 @@ namespace Microsoft.Maui
 		/// Gets or sets the title displayed in the Window.
 		/// </summary>
 		string? Title { get; }
+
+		void Created();
+
+		void Resumed();
+
+		void Activated();
+
+		void Deactivated();
+
+		void Stopped();
+
+		void Destroying();
 	}
 }
