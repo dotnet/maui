@@ -43,7 +43,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			var expectedRectangle = new Rectangle(0, 0, 100, 100);
-			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle));
+			stack[0].Received().Arrange(Arg.Is(expectedRectangle));
 		}
 
 		[Theory("Spacing should affect arrangement with more than one item")]
@@ -59,10 +59,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			var expectedRectangle0 = new Rectangle(0, 0, 100, 100);
-			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle0));
+			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
 
 			var expectedRectangle1 = new Rectangle(100 + spacing, 0, 100, 100);
-			stack.Children[1].Received().Arrange(Arg.Is(expectedRectangle1));
+			stack[1].Received().Arrange(Arg.Is(expectedRectangle1));
 		}
 
 		[Theory]
@@ -71,13 +71,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(1250, -1, 1250)]
 		public void StackAppliesWidth(double viewWidth, double stackWidth, double expectedWidth)
 		{
-			var stack = CreateTestLayout();
-
 			var view = LayoutTestHelpers.CreateTestView(new Size(viewWidth, 100));
 
-			var children = new List<IView>() { view }.AsReadOnly();
-
-			stack.Children.Returns(children);
+			var stack = CreateTestLayout(new List<IView>() { view });
 			stack.Width.Returns(stackWidth);
 
 			var manager = new HorizontalStackLayoutManager(stack);
@@ -100,8 +96,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var expectedRectangle0 = new Rectangle(0, 0, 100, 100);
 			var expectedRectangle1 = new Rectangle(100, 0, 100, 100);
 
-			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle0));
-			stack.Children[1].Received().Arrange(Arg.Is(expectedRectangle1));
+			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
+			stack[1].Received().Arrange(Arg.Is(expectedRectangle1));
 		}
 
 		[Fact(DisplayName = "First View in RTL Horizontal Stack is on the right")]
@@ -119,21 +115,18 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var expectedRectangle0 = new Rectangle(100, 0, 100, 100);
 			var expectedRectangle1 = new Rectangle(0, 0, 100, 100);
 
-			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle0));
-			stack.Children[1].Received().Arrange(Arg.Is(expectedRectangle1));
+			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
+			stack[1].Received().Arrange(Arg.Is(expectedRectangle1));
 		}
 
 		[Fact]
 		public void IgnoresCollapsedViews()
 		{
-			var stack = CreateTestLayout();
-
 			var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
 			var collapsedView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
 			collapsedView.Visibility.Returns(Visibility.Collapsed);
 
-			var children = new List<IView>() { view, collapsedView }.AsReadOnly();
-			stack.Children.Returns(children);
+			var stack = CreateTestLayout(new List<IView>() { view, collapsedView });
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measure = manager.Measure(double.PositiveInfinity, 100);
@@ -151,14 +144,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Fact]
 		public void DoesNotIgnoreHiddenViews()
 		{
-			var stack = CreateTestLayout();
-
 			var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
 			var hiddenView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
 			hiddenView.Visibility.Returns(Visibility.Hidden);
 
-			var children = new List<IView>() { view, hiddenView }.AsReadOnly();
-			stack.Children.Returns(children);
+			var stack = CreateTestLayout(new List<IView>() { view, hiddenView });
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measure = manager.Measure(double.PositiveInfinity, 100);
@@ -222,7 +212,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
-			AssertArranged(stack.Children[0], padding.Left, padding.Top, viewWidth, viewHeight);
+			AssertArranged(stack[0], padding.Left, padding.Top, viewWidth, viewHeight);
 		}
 	}
 }
