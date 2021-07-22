@@ -29,7 +29,7 @@ namespace Microsoft.Maui.HotReload
 
 			if (view is IContainer layout)
 			{
-				foreach (var v in layout.Children)
+				foreach (var v in layout)
 					CheckHandlers(v);
 			}
 		}

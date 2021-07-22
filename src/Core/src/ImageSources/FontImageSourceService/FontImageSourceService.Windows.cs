@@ -54,7 +54,7 @@ namespace Microsoft.Maui
 			var dpi = scale * BaseLogicalDpi;
 
 			var fontFamily = GetFontSource(imageSource);
-			var fontSize = (float)imageSource.Font.FontSize;
+			var fontSize = (float)imageSource.Font.Size;
 			var color = (imageSource.Color ?? Colors.White).ToWindowsColor();
 
 			var textFormat = new CanvasTextFormat
@@ -102,7 +102,7 @@ namespace Microsoft.Maui
 				// There's really no perfect solution to handle font families with fallbacks (comma-separated)	
 				// So if the font family has fallbacks, only one is taken, because CanvasTextFormat	
 				// only supports one font family
-				var source = imageSource.Font.FontFamily;
+				var source = imageSource.Font.Family;
 
 				foreach (var family in allFamilies)
 				{

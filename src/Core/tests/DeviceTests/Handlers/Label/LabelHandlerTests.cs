@@ -71,7 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize("Arial", fontSize)
 			};
 
-			await ValidatePropertyInitValue(label, () => label.Font.FontSize, GetNativeUnscaledFontSize, label.Font.FontSize);
+			await ValidatePropertyInitValue(label, () => label.Font.Size, GetNativeUnscaledFontSize, label.Font.Size);
 		}
 
 		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(label, () => label.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(label, () => label.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
+			await ValidatePropertyInitValue(label, () => label.Font.Slant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]

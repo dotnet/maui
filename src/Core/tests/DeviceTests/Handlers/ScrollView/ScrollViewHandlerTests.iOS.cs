@@ -15,26 +15,27 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ContentInitializesCorrectly()
 		{
-			bool result = await InvokeOnMainThreadAsync(() => {
+			bool result = await InvokeOnMainThreadAsync(() =>
+			{
 
 				var entry = new EntryStub() { Text = "In a ScrollView" };
 				var entryHandler = Activator.CreateInstance<EntryHandler>();
 				entryHandler.SetMauiContext(MauiContext);
 				entryHandler.SetVirtualView(entry);
 				entry.Handler = entryHandler;
-			
+
 				var scrollView = new ScrollViewStub()
 				{
 					Content = entry
 				};
 
 				var scrollViewHandler = CreateHandler(scrollView);
-			
+
 				foreach (var nativeView in scrollViewHandler.NativeView.Subviews)
 				{
 					if (nativeView is MauiTextField)
 					{
-						return true; 
+						return true;
 					}
 				}
 

@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Handlers
 #endif
 		};
 
-		public static CommandMapper<IScrollView, ScrollViewHandler> ScrollViewCommandMapper = new(ViewCommandMapper) {
+		public static CommandMapper<IScrollView, ScrollViewHandler> ScrollViewCommandMapper = new(ViewCommandMapper)
+		{
 			[nameof(IScrollView.RequestScrollTo)] = MapRequestScrollTo
 		};
 

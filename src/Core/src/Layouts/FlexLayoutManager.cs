@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Layouts
 		{
 			FlexLayout.Layout(childBounds.Width, childBounds.Height);
 
-			foreach (var child in FlexLayout.Children)
+			foreach (var child in FlexLayout)
 			{
 				var frame = FlexLayout.GetFlexFrame(child);
 				if (double.IsNaN(frame.X)

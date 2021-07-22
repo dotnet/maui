@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			view.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
 			label.Handler = view;
 
-			stackLayout.Add(grid);
+			stackLayout.Children.Add(grid);
 			grid.Children.Add(label);
 			contentPage.Content = stackLayout;
 

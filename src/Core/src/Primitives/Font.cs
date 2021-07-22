@@ -5,13 +5,13 @@ namespace Microsoft.Maui
 {
 	public struct Font
 	{
-		public string FontFamily { get; private set; }
+		public string Family { get; private set; }
 
-		public double FontSize { get; private set; }
+		public double Size { get; private set; }
 
-		public FontSlant FontSlant { get; private set; }
+		public FontSlant Slant { get; private set; }
 
-		public bool IsDefault => FontFamily == null && FontSize == 0 && FontSlant == FontSlant.Default && Weight == FontWeight.Regular;
+		public bool IsDefault => Family == null && Size == 0 && Slant == FontSlant.Default && Weight == FontWeight.Regular;
 
 		static Font _default = default(Font).WithWeight(FontWeight.Regular);
 		public static Font Default => _default;
@@ -25,39 +25,39 @@ namespace Microsoft.Maui
 
 		public Font WithSize(double size)
 		{
-			return new Font { FontFamily = FontFamily, FontSize = size, FontSlant = FontSlant, Weight = Weight };
+			return new Font { Family = Family, Size = size, Slant = Slant, Weight = Weight };
 		}
 
 		public Font WithSlant(FontSlant fontSlant)
 		{
-			return new Font { FontFamily = FontFamily, FontSize = FontSize, FontSlant = fontSlant, Weight = Weight };
+			return new Font { Family = Family, Size = Size, Slant = fontSlant, Weight = Weight };
 		}
 
 		public Font WithWeight(FontWeight weight)
 		{
-			return new Font { FontFamily = FontFamily, FontSize = FontSize, FontSlant = FontSlant, Weight = weight };
+			return new Font { Family = Family, Size = Size, Slant = Slant, Weight = weight };
 		}
 
 		public Font WithWeight(FontWeight weight, FontSlant fontSlant)
 		{
-			return new Font { FontFamily = FontFamily, FontSize = FontSize, FontSlant = fontSlant, Weight = weight };
+			return new Font { Family = Family, Size = Size, Slant = fontSlant, Weight = weight };
 		}
 
 		public static Font OfSize(string name, double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default) =>
-			new() { FontFamily = name, FontSize = size, Weight = weight, FontSlant = fontSlant };
+			new() { Family = name, Size = size, Weight = weight, Slant = fontSlant };
 
 		public static Font SystemFontOfSize(double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default) =>
-			new() { FontSize = size, Weight = weight, FontSlant = fontSlant };
+			new() { Size = size, Weight = weight, Slant = fontSlant };
 
 		public static Font SystemFontOfWeight(FontWeight weight, FontSlant fontSlant = FontSlant.Default)
 		{
-			var result = new Font { Weight = weight, FontSlant = fontSlant };
+			var result = new Font { Weight = weight, Slant = fontSlant };
 			return result;
 		}
 
 		bool Equals(Font other)
 		{
-			return string.Equals(FontFamily, other.FontFamily) && FontSize.Equals(other.FontSize) && Weight == other.Weight && FontSlant == other.FontSlant;
+			return string.Equals(Family, other.Family) && Size.Equals(other.Size) && Weight == other.Weight && Slant == other.Slant;
 		}
 
 		public override bool Equals(object? obj)
@@ -73,7 +73,7 @@ namespace Microsoft.Maui
 			return Equals((Font)obj);
 		}
 
-		public override int GetHashCode() => (FontFamily, FontSize, Weight, FontSlant).GetHashCode();
+		public override int GetHashCode() => (Family, Size, Weight, Slant).GetHashCode();
 
 		public static bool operator ==(Font left, Font right)
 		{
@@ -86,6 +86,6 @@ namespace Microsoft.Maui
 		}
 
 		public override string ToString()
-			=> $"FontFamily: {FontFamily}, FontSize: {FontSize}, Weight: {Weight}, FontSlant: {FontSlant}";
+			=> $"Family: {Family}, Size: {Size}, Weight: {Weight}, Slant: {Slant}";
 	}
 }

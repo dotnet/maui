@@ -2,6 +2,7 @@
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
+using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
 
 namespace Microsoft.Maui.UnitTests.Layouts
 {
@@ -14,6 +15,13 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			stack.Width.Returns(-1);
 			stack.Spacing.Returns(0);
 
+			return stack;
+		}
+
+		protected IStackLayout CreateTestLayout(IList<IView> children)
+		{
+			var stack = CreateTestLayout();
+			SubstituteChildren(stack, children);
 			return stack;
 		}
 
@@ -51,7 +59,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				children.Add(view);
 			}
 
-			stack.Children.Returns(children.AsReadOnly());
+			SubstituteChildren(stack, children);
 
 			return stack;
 		}

@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 				child.RemoveFromSuperview();
 			}
 
-			foreach (var child in VirtualView.Children)
+			foreach (var child in VirtualView)
 			{
 				NativeView.AddSubview(child.ToNative(MauiContext));
 			}

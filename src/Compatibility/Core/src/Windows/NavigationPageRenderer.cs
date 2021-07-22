@@ -35,10 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		WImageSource _titleIcon;
 		VisualElementTracker<Page, PageControl> _tracker;
 		EntranceThemeTransition _transition;
-		Platform _platform;
 		bool _parentsLookedUp = false;
-
-		Platform Platform => _platform ?? (_platform = Platform.Current);
 
 		public NavigationPage Element { get; private set; }
 
@@ -676,7 +673,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_container.SetBackButtonTitle(Element);
 		}
 
-		async void UpdateTitleOnParents()
+		void UpdateTitleOnParents()
 		{
 			if (Element == null || _currentPage == null)
 				return;
@@ -710,10 +707,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (_showTitle || (render != null && render.ShowTitle))
 			{
-				if (Platform != null)
-				{
-					await Platform.UpdateToolbarItems();
-				}
+				//if (Platform != null)
+				//{
+				//	await Platform.UpdateToolbarItems();
+				//}
 			}
 		}
 	}

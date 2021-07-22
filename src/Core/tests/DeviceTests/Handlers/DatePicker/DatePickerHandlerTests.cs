@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 				Font = Font.OfSize("Arial", fontSize)
 			};
 
-			await ValidatePropertyInitValue(datePicker, () => datePicker.Font.FontSize, GetNativeUnscaledFontSize, datePicker.Font.FontSize);
+			await ValidatePropertyInitValue(datePicker, () => datePicker.Font.Size, GetNativeUnscaledFontSize, datePicker.Font.Size);
 		}
 	}
 }

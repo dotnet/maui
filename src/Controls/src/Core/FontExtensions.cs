@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 		public static FontAttributes GetFontAttributes(this Font font)
 		{
 			FontAttributes attributes = font.Weight == FontWeight.Bold ? FontAttributes.Bold : FontAttributes.None;
-			if (font.FontSlant != FontSlant.Default)
+			if (font.Slant != FontSlant.Default)
 			{
 				if (attributes == FontAttributes.None)
 					attributes = FontAttributes.Italic;

@@ -85,13 +85,13 @@ namespace Microsoft.Maui.Controls
 			if (!(value is Font font))
 				throw new NotSupportedException();
 			var parts = new List<string>();
-			if (!string.IsNullOrEmpty(font.FontFamily))
-				parts.Add(font.FontFamily);
+			if (!string.IsNullOrEmpty(font.Family))
+				parts.Add(font.Family);
 			if (font.Weight == FontWeight.Bold)
 				parts.Add("Bold");
-			if (font.FontSlant != FontSlant.Default)
+			if (font.Slant != FontSlant.Default)
 				parts.Add("Italic");
-			parts.Add($"{font.FontSize}");
+			parts.Add($"{font.Size}");
 			return string.Join(", ", parts);
 		}
 	}

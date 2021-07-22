@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Handlers
 			_mapper?.UpdateProperty(this, VirtualView, property);
 		}
 
-		public virtual void Invoke(string command, object? args) 
+		public virtual void Invoke(string command, object? args)
 		{
 			if (VirtualView == null)
 				return;

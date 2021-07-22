@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 {
 	public static class TaskExtensions
 	{
-		public static async void FireAndForget(
+		internal static async void FireAndForget(
 			this Task task,
 			Action<Exception>? errorCallback = null,
 			Action? finishedCallBack = null
@@ -28,10 +28,10 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void FireAndForget(this Task task, ILogger? logger, [CallerMemberName] string? callerName = null) =>
+		internal static void FireAndForget(this Task task, ILogger? logger, [CallerMemberName] string? callerName = null) =>
 			task.FireAndForget(ex => Log(logger, ex, callerName));
 
-		public static void FireAndForget<T>(this Task task, T? viewHandler, [CallerMemberName] string? callerName = null)
+		internal static void FireAndForget<T>(this Task task, T? viewHandler, [CallerMemberName] string? callerName = null)
 			where T : IViewHandler
 		{
 			task.FireAndForget(ex => Log(viewHandler?.CreateLogger<T>(), ex, callerName));

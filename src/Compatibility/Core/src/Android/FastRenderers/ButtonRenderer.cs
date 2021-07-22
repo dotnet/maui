@@ -337,7 +337,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			else
 			{
 				Typeface = font.ToTypeface();
-				SetTextSize(ComplexUnitType.Sp, (float)font.FontSize);
+				SetTextSize(ComplexUnitType.Sp, (float)font.Size);
 			}
 		}
 

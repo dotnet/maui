@@ -15,7 +15,8 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ContentInitializesCorrectly()
 		{
-			bool result = await InvokeOnMainThreadAsync(() => {
+			bool result = await InvokeOnMainThreadAsync(() =>
+			{
 
 				var entry = new EntryStub() { Text = "In a ScrollView" };
 				var entryHandler = Activator.CreateInstance<EntryHandler>();
