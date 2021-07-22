@@ -58,7 +58,7 @@
     <_TargetPlatformProjectFolderNormalized Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' ">$(MacCatalystProjectFolder)</_TargetPlatformProjectFolderNormalized>
     <_TargetPlatformProjectFolderNormalized Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">$(WindowsProjectFolder)</_TargetPlatformProjectFolderNormalized>
     <_TargetPlatformProjectFolderNormalized Condition=" '$(_TargetPlatformProjectFolderNormalized)' != ''">$([MSBuild]::NormalizeDirectory('$(_TargetPlatformProjectFolder)'))</_TargetPlatformProjectFolderNormalized>
-    <_PlatformsProjectFolderNormalized Condition=" '$(_PlatformsProjectFolderNormalized)' != ''">$([MSBuild]::NormalizeDirectory('$(PlatformsProjectFolder)'))</_TargetPlatformProjectFolderNormalized>
+    <_PlatformsProjectFolderNormalized Condition=" '$(_PlatformsProjectFolderNormalized)' != ''">$([MSBuild]::NormalizeDirectory('$(PlatformsProjectFolder)'))</_PlatformsProjectFolderNormalized>
   </PropertyGroup>
 
   <!--
