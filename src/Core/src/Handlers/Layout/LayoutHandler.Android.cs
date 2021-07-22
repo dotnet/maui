@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
 
 			NativeView.RemoveAllViews();
-			foreach (var child in VirtualView.Children)
+			foreach (var child in VirtualView)
 			{
 				NativeView.AddView(child.ToNative(MauiContext));
 			}

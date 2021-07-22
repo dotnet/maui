@@ -12,15 +12,14 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
-			var children = Stack.Children;
 			var padding = Stack.Padding;
 			
 			double measuredWidth = 0;
 			double measuredHeight = 0;
 
-			for (int n = 0; n < children.Count; n++)
+			for (int n = 0; n < Stack.Count; n++)
 			{
-				var child = children[n];
+				var child = Stack[n];
 
 				if (child.Visibility == Visibility.Collapsed)
 				{
@@ -32,7 +31,7 @@ namespace Microsoft.Maui.Layouts
 				measuredHeight = Math.Max(measuredHeight, measure.Height);
 			}
 
-			measuredWidth += MeasureSpacing(Stack.Spacing, children.Count);
+			measuredWidth += MeasureSpacing(Stack.Spacing, Stack.Count);
 			measuredWidth += padding.HorizontalThickness;
 			measuredHeight += padding.VerticalThickness;
 
@@ -44,23 +43,22 @@ namespace Microsoft.Maui.Layouts
 
 		public override void ArrangeChildren(Rectangle bounds)
 		{
-			var children = Stack.Children;
 			var padding = Stack.Padding;
 			var height = bounds.Height - padding.VerticalThickness;
 
 			if (Stack.FlowDirection == FlowDirection.LeftToRight)
 			{
-				ArrangeLeftToRight(height, padding.Left, padding.Top, Stack.Spacing, children);
+				ArrangeLeftToRight(height, padding.Left, padding.Top, Stack.Spacing, Stack);
 			}
 			else
 			{
 				// We _could_ simply reverse the list of child views when arranging from right to left, 
 				// but this way we avoid extra list and enumerator allocations
-				ArrangeRightToLeft(height, padding.Left, padding.Top, Stack.Spacing, children);
+				ArrangeRightToLeft(height, padding.Left, padding.Top, Stack.Spacing, Stack);
 			}
 		}
 
-		static void ArrangeLeftToRight(double height, double left, double top, double spacing, IReadOnlyList<IView> children)
+		static void ArrangeLeftToRight(double height, double left, double top, double spacing, IList<IView> children)
 		{
 			double xPosition = left;
 
@@ -77,7 +75,7 @@ namespace Microsoft.Maui.Layouts
 			}
 		}
 
-		static void ArrangeRightToLeft(double height, double left, double top, double spacing, IReadOnlyList<IView> children)
+		static void ArrangeRightToLeft(double height, double left, double top, double spacing, IList<IView> children)
 		{
 			double xPostition = left;
 
