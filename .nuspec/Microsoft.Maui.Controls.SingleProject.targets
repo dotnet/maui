@@ -3,6 +3,8 @@
 
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' ">
     <PlatformsProjectFolder Condition=" '$(PlatformsProjectFolder)' == '' ">Platforms\</PlatformsProjectFolder>
+    <!-- Required - Enable Launch Profiles for .NET 6 iOS/Android -->
+    <_KeepLaunchProfiles>true</_KeepLaunchProfiles>
     <!-- Android -->
     <EnableDefaultAndroidItems>false</EnableDefaultAndroidItems>
     <AndroidProjectFolder Condition=" '$(AndroidProjectFolder)' == '' ">$(PlatformsProjectFolder)Android\</AndroidProjectFolder>
@@ -78,6 +80,10 @@
   <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
     <ProjectCapability Include="MauiSingleProject" />
     <ProjectCapability Include="LaunchProfiles" />
+    <!-- If VS is older than Dev17 -->
+    <ProjectCapability Include="XamarinStaticLaunchProfiles" Condition=" '$(VisualStudioVersion)' != '' and '$(VisualStudioVersion)' &lt; '17.0' " />
+    <!-- Otherwise define LaunchProfilesGroupByPlatformFilters by default -->
+    <ProjectCapability Include="LaunchProfilesGroupByPlatformFilters" Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &gt;= '17.0' " />
   </ItemGroup>
 
 </Project>
