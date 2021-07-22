@@ -29,8 +29,8 @@ namespace Microsoft.Maui.Converters
 					if (field?.GetValue(null) is Keyboard kb)
 						return kb;
 
-					PropertyInfo? property = kbType.GetProperties()?.FirstOrDefault(pi => pi.Name == keyboard && pi.CanRead && pi.GetMethod.IsStatic);
-					if (property?.GetValue(null, null) is Keyboard propKb)
+					PropertyInfo? property = kbType.GetProperties()?.FirstOrDefault(pi => pi != null && pi.Name == keyboard && pi.CanRead && (pi.GetMethod?.IsStatic ?? false));
+					if (property != null && property?.GetValue(null, null) is Keyboard propKb)
 						return propKb;
 				}
 			}
