@@ -61,5 +61,16 @@ namespace Microsoft.Maui
 
 			base.DispatchDraw(canvas);
 		}
+
+		partial void ShadowChanged()
+		{
+			if (Shadow == null)
+				return;
+
+			if (Shadow.Value.IsEmpty)
+				this.ClearShadow();
+			else
+				this.SetShadow(Shadow.Value);
+		}
 	}
 }

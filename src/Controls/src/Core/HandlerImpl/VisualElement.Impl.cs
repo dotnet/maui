@@ -46,6 +46,16 @@ namespace Microsoft.Maui.Controls
 
 		IShape IFrameworkElement.Clip => Clip;
 
+
+		public static readonly BindableProperty ShadowProperty =
+			BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(VisualElement), defaultValue: null);
+
+		public Shadow Shadow
+		{
+			get { return (Shadow)GetValue(ShadowProperty); }
+			set { SetValue(ShadowProperty, value); }
+		}
+
 		IFrameworkElement IFrameworkElement.Parent => Parent as IFrameworkElement;
 
 		public Size DesiredSize { get; protected set; }

@@ -27,6 +27,26 @@ namespace Microsoft.Maui
 				wrapper.Clip = view.Clip;
 		}
 
+		public static void UpdateShadow(this AView nativeView, IView view)
+		{
+			var shadow = view.Shadow;
+			var clip = view.Clip;
+
+			// If there is a clip shape, then the shadow should be applied to the clip layer, not the view layer
+			if (clip == null)
+			{
+				if (shadow.IsEmpty)
+					nativeView.ClearShadow();
+				else
+					nativeView.SetShadow(shadow);
+			}
+			else
+			{
+				if (nativeView is WrapperView wrapperView)
+					wrapperView.Shadow = view.Shadow;
+			}
+		}
+
 		public static ViewStates ToNativeVisibility(this Visibility visibility)
 		{
 			return visibility switch
