@@ -10,7 +10,7 @@ using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, ITabStopElement
+	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController
 	{
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
 
@@ -286,34 +286,6 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FlowDirectionProperty = BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(VisualElement), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
-		public static readonly BindableProperty TabIndexProperty =
-			BindableProperty.Create(nameof(TabIndex),
-									typeof(int),
-									typeof(VisualElement),
-									defaultValue: 0,
-									propertyChanged: OnTabIndexPropertyChanged,
-									defaultValueCreator: TabIndexDefaultValueCreator);
-
-		public static readonly BindableProperty IsTabStopProperty =
-			BindableProperty.Create(nameof(IsTabStop),
-									typeof(bool),
-									typeof(VisualElement),
-									defaultValue: true,
-									propertyChanged: OnTabStopPropertyChanged,
-									defaultValueCreator: TabStopDefaultValueCreator);
-
-		static void OnTabIndexPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-			((VisualElement)bindable).OnTabIndexPropertyChanged((int)oldValue, (int)newValue);
-
-		static object TabIndexDefaultValueCreator(BindableObject bindable) =>
-			((VisualElement)bindable).TabIndexDefaultValueCreator();
-
-		static void OnTabStopPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-			((VisualElement)bindable).OnTabStopPropertyChanged((bool)oldValue, (bool)newValue);
-
-		static object TabStopDefaultValueCreator(BindableObject bindable) =>
-			((VisualElement)bindable).TabStopDefaultValueCreator();
-
 		IFlowDirectionController FlowController => this;
 
 		public FlowDirection FlowDirection
@@ -504,26 +476,6 @@ namespace Microsoft.Maui.Controls
 			get => (double)GetValue(ScaleYProperty);
 			set => SetValue(ScaleYProperty, value);
 		}
-
-		public int TabIndex
-		{
-			get => (int)GetValue(TabIndexProperty);
-			set => SetValue(TabIndexProperty, value);
-		}
-
-		protected virtual void OnTabIndexPropertyChanged(int oldValue, int newValue) { }
-
-		protected virtual int TabIndexDefaultValueCreator() => 0;
-
-		public bool IsTabStop
-		{
-			get => (bool)GetValue(IsTabStopProperty);
-			set => SetValue(IsTabStopProperty, value);
-		}
-
-		protected virtual void OnTabStopPropertyChanged(bool oldValue, bool newValue) { }
-
-		protected virtual bool TabStopDefaultValueCreator() => true;
 
 		public double TranslationX
 		{

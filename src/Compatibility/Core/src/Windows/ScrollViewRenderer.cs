@@ -10,7 +10,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrollViewer>, IDontGetFocus
+	public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrollViewer>
 	{
 		VisualElement _currentView;
 		bool _checkedForRtlScroll = false;

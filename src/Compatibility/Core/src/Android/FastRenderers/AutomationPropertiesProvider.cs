@@ -86,24 +86,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			SetBasicContentDescription(control, element, defaultContentDescription);
 		}
 
-		internal static void SetFocusable(AView control, Element element, ref bool? defaultFocusable, ref ImportantForAccessibility? defaultImportantForAccessibility)
+		internal static void SetFocusable(AView control, Element element, ref ImportantForAccessibility? defaultImportantForAccessibility)
 		{
 			if (element == null || control == null)
 			{
 				return;
 			}
 
-			if (!defaultFocusable.HasValue)
-			{
-				defaultFocusable = control.Focusable;
-			}
 			if (!defaultImportantForAccessibility.HasValue)
 			{
 				defaultImportantForAccessibility = control.ImportantForAccessibility;
 			}
 
 			bool? isInAccessibleTree = (bool?)element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
-			control.Focusable = (bool)(isInAccessibleTree ?? defaultFocusable);
 			control.ImportantForAccessibility = !isInAccessibleTree.HasValue ? (ImportantForAccessibility)defaultImportantForAccessibility : (bool)isInAccessibleTree ? ImportantForAccessibility.Yes : ImportantForAccessibility.No;
 		}
 
@@ -158,7 +153,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		}
 
 		string _defaultContentDescription;
-		bool? _defaultFocusable;
 		ImportantForAccessibility? _defaultImportantForAccessibility;
 		string _defaultHint;
 		bool _disposed;
@@ -209,17 +203,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			=> SetContentDescription(Control, Element, _defaultContentDescription, _defaultHint);
 
 		void SetFocusable()
-			=> SetFocusable(Control, Element, ref _defaultFocusable, ref _defaultImportantForAccessibility);
+			=> SetFocusable(Control, Element, ref _defaultImportantForAccessibility);
 
 		void SetLabeledBy()
 			=> SetLabeledBy(Control, Element);
 
-		internal static void AccessibilitySettingsChanged(AView control, Element element, string _defaultHint, string _defaultContentDescription, ref bool? _defaultFocusable, ref ImportantForAccessibility? _defaultImportantForAccessibility)
+		internal static void AccessibilitySettingsChanged(AView control, Element element, string _defaultHint, string _defaultContentDescription, ref ImportantForAccessibility? _defaultImportantForAccessibility)
 		{
 			SetHint(control, element, _defaultHint);
 			SetAutomationId(control, element);
 			SetContentDescription(control, element, _defaultContentDescription, _defaultHint);
-			SetFocusable(control, element, ref _defaultFocusable, ref _defaultImportantForAccessibility);
+			SetFocusable(control, element, ref _defaultImportantForAccessibility);
 			SetLabeledBy(control, element);
 		}
 
@@ -227,9 +221,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		{
 			string _defaultHint = String.Empty;
 			string _defaultContentDescription = String.Empty;
-			bool? _defaultFocusable = null;
 			ImportantForAccessibility? _defaultImportantForAccessibility = null;
-			AccessibilitySettingsChanged(control, element, _defaultHint, _defaultContentDescription, ref _defaultFocusable, ref _defaultImportantForAccessibility);
+			AccessibilitySettingsChanged(control, element, _defaultHint, _defaultContentDescription, ref _defaultImportantForAccessibility);
 		}
 
 
@@ -286,7 +279,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 
 			SetupDefaults();
-			AccessibilitySettingsChanged(Control, Element, _defaultHint, _defaultContentDescription, ref _defaultFocusable, ref _defaultImportantForAccessibility);
+			AccessibilitySettingsChanged(Control, Element, _defaultHint, _defaultContentDescription, ref _defaultImportantForAccessibility);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

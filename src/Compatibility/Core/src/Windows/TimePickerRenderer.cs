@@ -12,7 +12,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class TimePickerRenderer : ViewRenderer<TimePicker, Microsoft.UI.Xaml.Controls.TimePicker>, ITabStopOnDescendants
+	public class TimePickerRenderer : ViewRenderer<TimePicker, Microsoft.UI.Xaml.Controls.TimePicker>
 	{
 		WBrush _defaultBrush;
 		bool _fontApplied;

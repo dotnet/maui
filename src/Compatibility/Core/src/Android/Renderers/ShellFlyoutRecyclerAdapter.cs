@@ -109,13 +109,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			elementHolder.Element = item.Element;
 		}
 
-		class LinearLayoutWithFocus : LinearLayout, ITabStop, IVisualElementRenderer
+		class LinearLayoutWithFocus : LinearLayout, IVisualElementRenderer
 		{
 			public LinearLayoutWithFocus(global::Android.Content.Context context) : base(context)
 			{
 			}
-
-			AView ITabStop.TabStop => this;
 
 			#region IVisualElementRenderer
 
@@ -142,38 +140,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			internal View Content { get; set; }
 
-			public override AView FocusSearch([GeneratedEnum] FocusSearchDirection direction)
-			{
-				var element = Content?.BindingContext as ITabStopElement;
-				if (element == null)
-					return base.FocusSearch(direction);
-
-				int maxAttempts = 0;
-				var tabIndexes = element?.GetTabIndexesOnParentPage(out maxAttempts);
-				if (tabIndexes == null)
-					return base.FocusSearch(direction);
-
-				// use OS default--there's no need for us to keep going if there's one or fewer tab indexes!
-				if (tabIndexes.Count <= 1)
-					return base.FocusSearch(direction);
-
-				int tabIndex = element.TabIndex;
-				AView control = null;
-				int attempt = 0;
-				bool forwardDirection = !(
-					(direction & FocusSearchDirection.Backward) != 0 ||
-					(direction & FocusSearchDirection.Left) != 0 ||
-					(direction & FocusSearchDirection.Up) != 0);
-
-				do
-				{
-					element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
-					var renderer = (element as BindableObject).GetValue(Platform.RendererProperty);
-					control = (renderer as ITabStop)?.TabStop;
-				} while (!(control?.Focusable == true || ++attempt >= maxAttempts));
-
-				return control?.Focusable == true ? control : null;
-			}
 		}
 
 		public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
