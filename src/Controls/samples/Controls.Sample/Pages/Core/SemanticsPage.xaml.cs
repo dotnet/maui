@@ -27,10 +27,5 @@ namespace Maui.Controls.Sample.Pages
 		{
 			await Navigation.PushAsync(new SemanticsPage());
 		}
-
-		void Announce_Clicked(object sender, EventArgs e)
-		{
-			this.GetSemanticService().Announce("This is the announcement text");
-		}
 	}
 }

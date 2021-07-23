@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Hosting
 			builder.ConfigureFonts();
 			builder.ConfigureImageSources();
 			builder.ConfigureAnimations();
-			builder.ConfigureSemantics();
 			builder.ConfigureCrossPlatformLifecycleEvents();
 
 			return builder;

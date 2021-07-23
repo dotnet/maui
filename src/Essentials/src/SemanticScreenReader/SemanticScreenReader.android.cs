@@ -1,13 +1,13 @@
 ﻿using Android.Views.Accessibility;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Essentials
 {
-	public class SemanticService : ISemanticService
+	public static partial class SemanticScreenReader
 	{
-		public void Announce(string text)
+		static void PlatformAnnounce(string text)
 		{
-			AccessibilityManager? manager = Android.App.Application.Context.GetSystemService(Android.Content.Context.AccessibilityService) as AccessibilityManager;
-			AccessibilityEvent? announcement = AccessibilityEvent.Obtain();
+			AccessibilityManager manager = Android.App.Application.Context.GetSystemService(Android.Content.Context.AccessibilityService) as AccessibilityManager;
+			AccessibilityEvent announcement = AccessibilityEvent.Obtain();
 
 			if (manager == null || announcement == null)
 				return;
