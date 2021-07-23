@@ -211,6 +211,8 @@ stages:
                   artifactName: nuget
                   itemPattern: '**/*.nupkg'
                   downloadPath: $(System.DefaultWorkingDirectory)/artifacts
+              - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
+                displayName: Move the downloaded artifacts
               - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
               - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
