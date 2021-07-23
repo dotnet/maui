@@ -98,7 +98,7 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/main # still defaults to master even though main is the main branch
+      ref: refs/heads/pjc/vsredist-manifest-packs # still defaults to master even though main is the main branch
 
 stages:
 
@@ -396,7 +396,7 @@ stages:
             displayName: Sign Phase
             condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
 
-        - template: nuget-msi-convert/job/v1.yml@xamarin-templates
+        - template: nuget-msi-convert/job/v2.yml@xamarin-templates
           parameters:
             yamlResourceName: xamarin-templates
             dependsOn: signing

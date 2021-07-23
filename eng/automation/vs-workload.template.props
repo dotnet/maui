@@ -8,29 +8,14 @@
     <ShortNames Include="@PACK_VERSION_LONG@">
       <Replacement>@VS_COMPONENT_VERSION@</Replacement>
     </ShortNames>
-
-    <ComponentResources Include="maui" Category=".NET" Title=".NET MAUI SDK" Description=".NET SDK Workload for building all types of MAUI applications." />
-    <ComponentVersions Include="maui" Version="@VS_COMPONENT_VERSION@" />
-
-    <ComponentResources Include="maui-mobile" Category=".NET" Title=".NET MAUI SDK for Mobile" Description=".NET SDK Workload for building MAUI applications that target mobile platforms." />
-    <ComponentVersions Include="maui-mobile" Version="@VS_COMPONENT_VERSION@" />
-
-    <ComponentResources Include="maui-desktop" Category=".NET" Title=".NET MAUI SDK for Desktop" Description=".NET SDK Workload for building MAUI applications that target desktop platforms." />
-    <ComponentVersions Include="maui-deskotp" Version="@VS_COMPONENT_VERSION@" />
-
-    <ComponentResources Include="maui-core" Category=".NET" Title=".NET MAUI SDK Core" Description=".NET SDK Workload containing core MAUI SDK packages." />
-    <ComponentVersions Include="maui-core" Version="@VS_COMPONENT_VERSION@" />
-
-    <ComponentResources Include="maui-android" Category=".NET" Title=".NET MAUI SDK for Android" Description=".NET SDK Workload for building MAUI applications that target Android." />
-    <ComponentVersions Include="maui-android" Version="@VS_COMPONENT_VERSION@" />
-
-    <ComponentResources Include="maui-maccatalyst" Category=".NET" Title=".NET MAUI SDK for Mac Catalyst" Description=".NET SDK Workload for building MAUI applications that target Mac Catalyst." />
-    <ComponentVersions Include="maui-maccatalyst" Version="@VS_COMPONENT_VERSION@" />
-
-    <ComponentResources Include="maui-ios" Category=".NET" Title=".NET MAUI SDK for iOS" Description=".NET SDK Workload for building MAUI applications that target iOS." />
-    <ComponentVersions Include="maui-ios" Version="@VS_COMPONENT_VERSION@" />
-
-    <ComponentResources Include="maui-windows" Category=".NET" Title=".NET MAUI SDK for Windows" Description=".NET SDK Workload for building MAUI applications that target Windows." />
-    <ComponentVersions Include="maui-windows" Version="@VS_COMPONENT_VERSION@" />
+    <ComponentResources Include="maui"              Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK" Description=".NET SDK Workload for building all types of MAUI applications." />
+    <ComponentResources Include="maui-mobile"       Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for Mobile" Description=".NET SDK Workload for building MAUI applications that target mobile platforms." />
+    <ComponentResources Include="maui-desktop"      Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for Desktop" Description=".NET SDK Workload for building MAUI applications that target desktop platforms." />
+    <ComponentResources Include="maui-core"         Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK Core" Description=".NET SDK Workload containing core MAUI SDK packages." />
+    <ComponentResources Include="maui-android"      Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for Android" Description=".NET SDK Workload for building MAUI applications that target Android." />
+    <ComponentResources Include="maui-maccatalyst"  Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for Mac Catalyst" Description=".NET SDK Workload for building MAUI applications that target Mac Catalyst." />
+    <ComponentResources Include="maui-ios"          Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for iOS" Description=".NET SDK Workload for building MAUI applications that target iOS." />
+    <ComponentResources Include="maui-windows"      Version="@VS_COMPONENT_VERSION@" Category=".NET" Title=".NET MAUI SDK for Windows" Description=".NET SDK Workload for building MAUI applications that target Windows." />
+    <WorkloadPackages Include="**\Microsoft.NET.Sdk.Maui.Manifest*.nupkg" Version="@VS_COMPONENT_VERSION@" />
   </ItemGroup>
 </Project>
