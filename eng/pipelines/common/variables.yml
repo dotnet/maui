@@ -44,3 +44,5 @@ variables:
   value: $(System.DefaultWorkingDirectory)/bin/dotnet
 - name: DotNet.Path
   value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
+- name: POWERSHELL_VERSION
+  value: 7.1.3
