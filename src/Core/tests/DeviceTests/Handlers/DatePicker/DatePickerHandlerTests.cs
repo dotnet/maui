@@ -43,21 +43,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAsync(datePicker);
 		}
-
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
-		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
-		{
-			var datePicker = new DatePickerStub()
-			{
-				Date = DateTime.Today,
-				Font = Font.OfSize("Arial", fontSize)
-			};
-
-			await ValidatePropertyInitValue(datePicker, () => datePicker.Font.Size, GetNativeUnscaledFontSize, datePicker.Font.Size);
-		}
 	}
 }
