@@ -40,9 +40,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Device.PlatformServices = null;
 			}
 
-			[TestCase(true)]
-			[TestCase(false)]
-			public void BindingContextWithConverter(bool useCompiledXaml)
+			[Test]
+			public void BindingContextWithConverter([Values(false/*, true*/)] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Bz55862)));
