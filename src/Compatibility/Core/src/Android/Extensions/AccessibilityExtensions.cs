@@ -25,30 +25,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return _defaultContentDescription;
 		}
 
-		public static bool? SetFocusable(this global::Android.Views.View Control, Element Element, bool? _defaultFocusable)
+		public static void SetFocusable(this global::Android.Views.View Control, Element Element, ImportantForAccessibility? _defaultImportantForAccessibility = null)
 		{
-			return Control.SetFocusable(Element, _defaultFocusable, null);
-		}
-
-		public static bool? SetFocusable(this global::Android.Views.View Control, Element Element, bool? _defaultFocusable = null, ImportantForAccessibility? _defaultImportantForAccessibility = null)
-		{
-			if (Element == null)
-				return _defaultFocusable;
-
-			if (!_defaultFocusable.HasValue)
-			{
-				_defaultFocusable = Control.Focusable;
-			}
 			if (!_defaultImportantForAccessibility.HasValue)
 			{
 				_defaultImportantForAccessibility = Control.ImportantForAccessibility;
 			}
 
 			bool? isInAccessibleTree = (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
-			Control.Focusable = (bool)(isInAccessibleTree ?? _defaultFocusable);
 			Control.ImportantForAccessibility = !isInAccessibleTree.HasValue ? (ImportantForAccessibility)_defaultImportantForAccessibility : (bool)isInAccessibleTree ? ImportantForAccessibility.Yes : ImportantForAccessibility.No;
 
-			return _defaultFocusable;
 		}
 
 		public static string SetHint(this global::Android.Widget.TextView Control, Element Element, string _defaultHint)

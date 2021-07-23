@@ -300,11 +300,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		List<GalleryPageFactory> _pages = new List<GalleryPageFactory> {
 				new GalleryPageFactory(() => new GalleryPages.LayoutGalleries.LayoutGallery(), ".NET MAUI Layouts"),
-				new GalleryPageFactory(() => new TabIndexTest.TabIndex(), "Accessibility TabIndex (2)"),
 				new GalleryPageFactory(() => new PlatformTestsConsole(), "Platform Automated Tests"),
 				new GalleryPageFactory(() => new EmbeddedFonts(), "Embedded Fonts"),
 				new GalleryPageFactory(() => new MemoryLeakGallery(), "Memory Leak"),
-				new GalleryPageFactory(() => new Issues.A11yTabIndex(), "Accessibility TabIndex"),
 				new GalleryPageFactory(() => new RadioButtonGalleries(), "RadioButton Gallery"),
 				new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Core Gallery"),
 				new GalleryPageFactory(() => new FontImageSourceGallery(), "Font ImageSource"),
@@ -587,7 +585,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			{
 				Text = "Go to Test Cases",
 				AutomationId = "GoToTestButton",
-				TabIndex = -2,
 				Command = new Command(async () =>
 				{
 					if (!string.IsNullOrEmpty(searchBar.Text))
@@ -616,7 +613,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					searchBar,
 					new Button {
 						Text = "Click to Force GC",
-						TabIndex = -2,
 						Command = new Command(() => {
 							GC.Collect ();
 							GC.WaitForPendingFinalizers ();
