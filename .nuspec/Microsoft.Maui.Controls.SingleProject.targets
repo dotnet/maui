@@ -75,8 +75,8 @@
     <_MauiCompileToRemove Remove="@(_MauiCompileWithAnnotations->WithMetadataValue('RemoveItems', 'true')->WithMetadataValue('ExceptItems', 'false')->ClearMetadata())" />
     <Compile Remove="@(_MauiCompileToRemove)" />
     <None Include="@(_MauiCompileToRemove)" Condition="'$(EnableDefaultNoneItems)' == 'true'" />
-    <_MauiCompileToRemove Remove="@(_MauiCompileToRemove)" />
-    <_MauiCompileWithAnnotations Remove="@(_MauiCompileWithAnnotations)" />
+    <!-- <_MauiCompileToRemove Remove="@(_MauiCompileToRemove)" /> -->
+    <!-- <_MauiCompileWithAnnotations Remove="@(_MauiCompileWithAnnotations)" /> -->
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' and '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' ">
