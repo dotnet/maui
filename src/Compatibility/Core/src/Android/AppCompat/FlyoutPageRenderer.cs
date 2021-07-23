@@ -216,20 +216,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (!_defaultAutomationSet)
 			{
 				_defaultAutomationSet = true;
-				AutomationPropertiesProvider.SetupDefaults(this, ref _defaultContentDescription);
+				Controls.Platform.AutomationPropertiesProvider.SetupDefaults(this, ref _defaultContentDescription);
 			}
 		}
 
 		protected virtual void SetAutomationId(string id)
 		{
 			SetupAutomationDefaults();
-			AutomationPropertiesProvider.SetAutomationId(this, Element, id);
+			Controls.Platform.AutomationPropertiesProvider.SetAutomationId(this, Element, id);
 		}
 
 		protected virtual void SetContentDescription()
 		{
 			SetupAutomationDefaults();
-			AutomationPropertiesProvider.SetContentDescription(this, Element, _defaultContentDescription, null);
+			Controls.Platform.AutomationPropertiesProvider.SetContentDescription(this, Element, _defaultContentDescription, null);
 		}
 
 		protected override void Dispose(bool disposing)
