@@ -108,6 +108,6 @@ namespace Microsoft.Maui
 		}
 
 		public override string ToString()
-			=> $"Family: {Family}, Size: {Size}, Weight: {Weight}, Slant: {Slant}";
+			=> $"Family: {Family}, Size: {Size}, Weight: {Weight}, Slant: {Slant}, AutoScalingEnabled: {AutoScalingEnabled}";
 	}
 }

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			{ ActivityIndicator.IsRunningProperty, Tuple.Create (new[] { "isAnimating" }, false) },
 			{ Button.CornerRadiusProperty, Tuple.Create (new[] { "layer", "cornerRadius" }, false) },
 			{ Button.BorderWidthProperty, Tuple.Create (new[] { "layer", "borderWidth" }, false) },
-			{ Button.FontProperty, Tuple.Create (new[] { "titleLabel", "font" }, false) },
+			{ FontElement.FontProperty, Tuple.Create (new[] { "titleLabel", "font" }, false) },
 			{ Button.TextProperty, Tuple.Create (new[] { "titleLabel", "text" }, false) },
 			{ Button.TextColorProperty, Tuple.Create (new[] { "titleLabel", "textColor" }, false) },
 			{ ImageButton.CornerRadiusProperty, Tuple.Create (new[] { "layer", "cornerRadius" }, false) },
