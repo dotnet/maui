@@ -168,7 +168,6 @@ namespace Microsoft.Maui.Controls
 		{
 			Activated?.Invoke(this, EventArgs.Empty);
 			OnActivated();
-			Application?.SendResume();
 		}
 
 		void IWindow.Deactivated()
@@ -194,6 +193,7 @@ namespace Microsoft.Maui.Controls
 		{
 			Resumed?.Invoke(this, EventArgs.Empty);
 			OnResumed();
+			Application?.SendResume();
 		}
 
 

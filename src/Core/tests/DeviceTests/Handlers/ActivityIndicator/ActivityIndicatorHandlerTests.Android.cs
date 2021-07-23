@@ -28,6 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Visibility is set correctly")]
+		[InlineData(Visibility.Visible)]
 		[InlineData(Visibility.Collapsed)]
 		[InlineData(Visibility.Hidden)]
 		public override async Task SetVisibility(Visibility visibility)

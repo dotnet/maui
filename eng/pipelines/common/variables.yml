@@ -27,9 +27,11 @@ variables:
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 # Common Agent Pools in use
 - name: HostedWinVS2019
-  value: Hosted Windows 2019 with VS2019 
+  value: Hosted Windows 2019 with VS2019
 - name: LogDirectory
   value: $(Build.ArtifactStagingDirectory)/logs
+- name: TestResultsDirectory
+  value: $(Build.ArtifactStagingDirectory)/test-results
 - name: provisionator.xcode
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
 - name: provisionator.path
@@ -42,3 +44,5 @@ variables:
   value: $(System.DefaultWorkingDirectory)/bin/dotnet
 - name: DotNet.Path
   value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
+- name: POWERSHELL_VERSION
+  value: 7.1.3

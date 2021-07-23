@@ -4,7 +4,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class Platform
 	{
-		public static Context DefaultContext { get; set; }
+		public static Context DefaultContext { get; private set; }
 
 		public static void Init(Context context)
 		{

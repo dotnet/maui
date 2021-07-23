@@ -1,3 +1,0 @@
-<Project>
-  <Import Project="..\Nuget.targets" Condition="$(FromSource) == 'false'" />
-</Project>

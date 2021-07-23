@@ -1,8 +1,16 @@
 <Project>
   <PropertyGroup>
     <SampleProject>true</SampleProject>
+    <UseMaui Condition=" '$(UseWorkload)' == 'true' ">true</UseMaui>
   </PropertyGroup>
-  <Import Project="..\..\..\Directory.Build.props" />
-  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.props"/>
-  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.props"/>
+  <Import Project="../../../Directory.Build.props" />
+  <!--
+    We don't want to use cached Microsoft.Maui.* runtime packs.
+    This can be removed when we get: https://github.com/dotnet/sdk/issues/14044
+  -->
+  <PropertyGroup Condition=" '$(UseMaui)' == 'true' ">
+    <RestoreNoCache>true</RestoreNoCache>
+    <RestorePackagesPath>$(MauiRootDirectory)packages/</RestorePackagesPath>
+  </PropertyGroup>
+  <Import Project="Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 </Project>

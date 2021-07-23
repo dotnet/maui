@@ -233,7 +233,7 @@ namespace Microsoft.Maui
 			return resources.GetIdentifier(title, "drawable", packageName);
 		}
 
-		public static IWindow GetWindow(this Context context)
+		public static IWindow? GetWindow(this Context context)
 		{
 			var nativeWindow = context.GetActivity();
 
@@ -246,7 +246,7 @@ namespace Microsoft.Maui
 					return window;
 			}
 
-			throw new InvalidOperationException("Window Not Found");
+			return null;
 		}
 	}
 }

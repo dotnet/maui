@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "path": "Microsoft.Maui-winui.sln",
+    "projects": [
+      "src\\BlazorWebView\\src\\WebView2\\Microsoft.AspNetCore.Components.WebView.WebView2.csproj",
+      "src\\BlazorWebView\\src\\WindowsForms\\Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj",
+      "src\\BlazorWebView\\src\\Wpf\\Microsoft.AspNetCore.Components.WebView.Wpf.csproj"
+    ]
+  }
+}

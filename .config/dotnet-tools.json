@@ -8,12 +8,6 @@
         "dotnet-cake"
       ]
     },
-    "microsoft.dotnet.xharness.cli": {
-      "version": "1.0.0-prerelease.21165.2",
-      "commands": [
-        "xharness"
-      ]
-    },
     "powershell": {
       "version": "7.1.2",
       "commands": [

@@ -75,9 +75,8 @@ var BUILD_TASKS_PROJ ="Microsoft.Maui.BuildTasks.sln";
 
 var XamarinFormsVersion = Argument("XamarinFormsVersion", "");
 var packageVersion = GetBuildVariable("packageVersion", "0.1.0-p2");
-var releaseChannelArg = Argument("CHANNEL", "Stable");
-releaseChannelArg = EnvironmentVariable("CHANNEL") ?? releaseChannelArg;
-var teamProject = Argument("TeamProject", "");
+var releaseChannelArg = GetBuildVariable("CHANNEL", "Stable");
+var teamProject = GetBuildVariable("TeamProject", GetBuildVariable("SYSTEM_TEAMPROJECT", ""));
 bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.StartsWith("Hosted Agent");
 
 var MAUI_SLN = "./Microsoft.Maui.sln";

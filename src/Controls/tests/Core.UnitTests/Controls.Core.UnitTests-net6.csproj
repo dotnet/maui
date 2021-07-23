@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(BuildForNet6)' != 'true'">netcoreapp3.1</TargetFramework>
-    <TargetFramework Condition="'$(BuildForNet6)' == 'true'">net6.0</TargetFramework>
-		<AssemblyName>Microsoft.Maui.Controls.Core.UnitTests</AssemblyName>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>Microsoft.Maui.Controls.Core.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
     <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998;4014</NoWarn>
   </PropertyGroup>
@@ -15,16 +14,16 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="NSubstitute" Version="4.2.2" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
-    <PackageReference Include="NUnit" Version="3.13.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
-    <ProjectReference Include="..\..\Maps\src\Controls.Maps-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
-    <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
-    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml-net6.csproj" />
   </ItemGroup>
 
 </Project>
