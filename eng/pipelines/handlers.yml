@@ -226,7 +226,8 @@ stages:
       ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
         androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24 ]
         # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # TODO: Disable until .NET 6 supports API 21: https://github.com/dotnet/runtime/issues/54182
-        iosVersions: [ '12.4', '13.7', '14.5', 'latest' ]
+        iosVersions: [ '13.7', '14.5', 'latest' ]
+        # iosVersions: [ '12.4', '13.7', '14.5', 'latest' ]
       projects:
         - name: essentials
           desc: Essentials
