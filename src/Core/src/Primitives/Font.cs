@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 {
 	public readonly struct Font
 	{
-		public string Family { get; }
+		public string? Family { get; }
 
 		public double Size { get; }
 
@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 			get => _weight <= 0 ? FontWeight.Regular : _weight;
 		}
 
-		private Font(string family, double size, FontSlant slant, FontWeight weight, bool enableScaling) : this()
+		private Font(string? family, double size, FontSlant slant, FontWeight weight, bool enableScaling) : this()
 		{
 			Family = family;
 			Size = size;
@@ -64,14 +64,14 @@ namespace Microsoft.Maui
 			return new Font(Family, Size, fontSlant, weight, AutoScalingEnabled);
 		}
 
-		public static Font OfSize(string name, double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
+		public static Font OfSize(string? name, double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
 			new(name, size, fontSlant, weight, enableScaling);
 
 		public static Font SystemFontOfSize(double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
-			new(String.Empty, size, fontSlant, weight, enableScaling);
+			new(null, size, fontSlant, weight, enableScaling);
 
 		public static Font SystemFontOfWeight(FontWeight weight, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
-			new(String.Empty, default(double), fontSlant, weight, enableScaling);
+			new(null, default(double), fontSlant, weight, enableScaling);
 
 		bool Equals(Font other)
 		{

@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var button = new Button();
 
 			button.FontSize = 1000;
-			Assert.AreEqual((button as ITextStyle), Font.SystemFontOfSize(1000));
+			Assert.AreEqual((button as ITextStyle).Font, Font.SystemFontOfSize(1000));
 		}
 
 		[Test]
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var button = new Button();
 
 			button.FontAttributes = FontAttributes.Italic | FontAttributes.Bold;
-			Assert.AreEqual((button as ITextStyle), Font.SystemFontOfSize(button.FontSize, FontWeight.Bold, FontSlant.Italic));
+			Assert.AreEqual((button as ITextStyle).Font, Font.SystemFontOfSize(button.FontSize, FontWeight.Bold, FontSlant.Italic));
 		}
 
 		[Test]

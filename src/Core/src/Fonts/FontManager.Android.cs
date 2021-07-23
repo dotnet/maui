@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 			"fonts/",
 		};
 
-		readonly ConcurrentDictionary<(string fontFamilyName, FontWeight weight, bool italic), Typeface?> _typefaces = new();
+		readonly ConcurrentDictionary<(string? fontFamilyName, FontWeight weight, bool italic), Typeface?> _typefaces = new();
 		readonly IFontRegistrar _fontRegistrar;
 		readonly ILogger<FontManager>? _logger;
 
@@ -114,7 +114,7 @@ namespace Microsoft.Maui
 			return name != null && (name.Contains(".ttf#") || name.Contains(".otf#"));
 		}
 
-		Typeface? CreateTypeface((string fontFamilyName, FontWeight weight, bool italic) fontData)
+		Typeface? CreateTypeface((string? fontFamilyName, FontWeight weight, bool italic) fontData)
 		{
 			var (fontFamily, weight, italic) = fontData;
 			fontFamily ??= string.Empty;
