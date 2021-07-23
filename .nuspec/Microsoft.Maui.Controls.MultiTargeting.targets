@@ -23,7 +23,7 @@
     <Compile Remove="**\Android\**\*.cs" />
     <None Include="**\Android\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard')) != true OR '$(TargetFramework)' == 'net6.0'">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard')) != true AND '$(TargetFramework)' != 'net6.0'">
     <Compile Remove="**\*.Standard.cs" />
     <None Include="**\*.Standard.cs" />
     <Compile Remove="**\Standard\**\*.cs" />
@@ -61,6 +61,11 @@
     <AndroidProjectFolder>Platform\Android\</AndroidProjectFolder>
     <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
     <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
+  </PropertyGroup>
+
+  <!-- .NET Standard or .NET 6 -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <DefineConstants>$(DefineConstants);NETSTANDARD</DefineConstants>
   </PropertyGroup>
 
   <!-- Android -->

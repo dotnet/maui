@@ -64,6 +64,25 @@ Task("dotnet-build")
         }
     });
 
+Task("dotnet-build-winui")
+    .IsDependentOn("dotnet")
+    .Description("Build the solutions")
+    .Does(() =>
+    {
+        RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf", new Dictionary<string, string> {
+            ["BuildForWinUI"] = bool.TrueString,
+        });
+        RunMSBuildWithLocalDotNet("./Microsoft.Maui-winui.sln");
+    });
+
+Task("dotnet-build-net6")
+    .IsDependentOn("dotnet")
+    .Does(() =>
+    {
+        RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
+        RunMSBuildWithLocalDotNet("./Microsoft.Maui-net6.sln");
+    });
+
 Task("dotnet-samples")
     .Does(() =>
     {
