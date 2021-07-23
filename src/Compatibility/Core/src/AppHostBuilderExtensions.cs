@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Hosting
 
 			return builder;
 		}
-		
+
 
 		static IAppHostBuilder SetupDefaults(this IAppHostBuilder builder)
 		{

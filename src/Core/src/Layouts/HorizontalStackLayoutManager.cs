@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Layouts
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
 			var padding = Stack.Padding;
-			
+
 			double measuredWidth = 0;
 			double measuredHeight = 0;
 

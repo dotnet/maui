@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Layout2
 				sizeWithoutMargins.Height + Margin.VerticalThickness);
 			return DesiredSize;
 		}
-		
+
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
 			base.ArrangeOverride(bounds);
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Layout2
 				child.InvalidateMeasure();
 			}
 		}
-		
+
 		public virtual void Add(IView child)
 		{
 			if (child == null)

@@ -7,6 +7,6 @@ namespace Microsoft.Maui
 	/// </summary>
 	public interface IContainer : IList<IView>
 	{
-		
+
 	}
 }
