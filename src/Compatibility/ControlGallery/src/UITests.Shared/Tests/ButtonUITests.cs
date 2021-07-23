@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			remote.GoTo();
 
 #if __ANDROID__
-			var isBold = remote.GetProperty<bool> (Button.FontProperty);
+			var isBold = remote.GetProperty<bool> (FontElement.FontProperty);
 			Assert.True (isBold);
 #elif __MACOS__
 			Assert.Inconclusive("needs testing");

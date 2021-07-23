@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 				{ Button.CornerRadiusProperty, Tuple.Create(new[] { "getBackground" }, false) },
 				{ Button.BorderWidthProperty, Tuple.Create(new[] { "getBackground" }, false) },
 				{ Button.ImageSourceProperty, Tuple.Create(new[] { "getBackground" }, false) },
-				{ Button.FontProperty, Tuple.Create(new[] { "getTypeface", "isBold" }, false) },
+				{ FontElement.FontProperty, Tuple.Create(new[] { "getTypeface", "isBold" }, false) },
 				{ Button.TextProperty, Tuple.Create(new[] { "getText" }, false) },
 				{ Button.TextColorProperty, Tuple.Create(new[] { "getCurrentTextColor" }, false) },
 				{ ImageButton.CornerRadiusProperty, Tuple.Create(new[] { "getBackground" }, false) },
