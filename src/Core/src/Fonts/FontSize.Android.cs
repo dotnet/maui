@@ -5,7 +5,7 @@ using Android.Util;
 
 namespace Microsoft.Maui
 {
-	public struct FontSize
+	public readonly struct FontSize
 	{
 		public FontSize(float value, ComplexUnitType unit)
 		{
@@ -13,7 +13,7 @@ namespace Microsoft.Maui
 			Unit = unit;
 		}
 
-		public float Value { get; set; }
-		public ComplexUnitType Unit { get; set; }
+		public float Value { get; }
+		public ComplexUnitType Unit { get; }
 	}
 }

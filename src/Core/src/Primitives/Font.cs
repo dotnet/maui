@@ -3,7 +3,7 @@ using System;
 
 namespace Microsoft.Maui
 {
-	public readonly struct Font
+	public readonly struct Font : IEquatable<Font>
 	{
 		public string? Family { get; }
 
@@ -109,5 +109,10 @@ namespace Microsoft.Maui
 
 		public override string ToString()
 			=> $"Family: {Family}, Size: {Size}, Weight: {Weight}, Slant: {Slant}, AutoScalingEnabled: {AutoScalingEnabled}";
+
+		bool IEquatable<Font>.Equals(Font other)
+		{
+			return Equals(other);
+		}
 	}
 }
