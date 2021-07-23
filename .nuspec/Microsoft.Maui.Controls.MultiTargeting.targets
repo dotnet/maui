@@ -23,7 +23,7 @@
     <Compile Remove="**\Android\**\*.cs" />
     <None Include="**\Android\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard')) != true ">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard')) != true OR '$(TargetFramework) == 'net6.0'">
     <Compile Remove="**\*.Standard.cs" />
     <None Include="**\*.Standard.cs" />
     <Compile Remove="**\Standard\**\*.cs" />
@@ -82,9 +82,6 @@
     <DefineConstants>$(DefineConstants);MACCATALYST;IOS</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-  </PropertyGroup>
   <!-- If this becomes part of the product we will remove these but for now it's useful having them all in one place -->
   <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) == true OR '$(TargetPlatformIdentifier)' == 'android' OR '$(TargetFramework)' == 'net6.0-android'">
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
