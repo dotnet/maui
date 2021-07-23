@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls
 				bindable.SetValue(FontProperty, Font.SystemFontOfSize(fontSize, enableScaling: enableAutoScaling).WithAttributes(fontAttributes));
 
 			SetCancelEvents(bindable, false);
-			((IFontElement)bindable).OnFontScalingEnableChanged((double)oldValue, (double)newValue);
+			((IFontElement)bindable).OnFontScalingEnableChanged((bool)oldValue, (bool)newValue);
 		}
 	}
 }

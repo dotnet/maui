@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
-		void IFontElement.OnFontScalingEnableChanged(double oldValue, double newValue) =>
+		void IFontElement.OnFontScalingEnableChanged(bool oldValue, bool newValue) =>
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		public IPlatformElementConfiguration<T, TimePicker> On<T>() where T : IConfigPlatform
