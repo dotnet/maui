@@ -205,7 +205,7 @@ namespace Microsoft.Maui.Controls
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
-		void IFontElement.OnFontScalingEnableChanged(double oldValue, double newValue) =>
+		void IFontElement.OnFontScalingEnableChanged(bool oldValue, bool newValue) =>
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		double IFontElement.FontSizeDefaultValueCreator() =>

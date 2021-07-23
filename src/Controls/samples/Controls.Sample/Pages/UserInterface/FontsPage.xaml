@@ -8,6 +8,7 @@
         <ScrollView>
             <VerticalStackLayout
                 Margin="12">
+                <Label Text="EnableScaling disabled" FontScalingEnabled="False"></Label>
                 <Label
                     Text="Font attributes"
                     Style="{StaticResource Headline}"/>
