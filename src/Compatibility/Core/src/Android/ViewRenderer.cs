@@ -35,7 +35,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		ViewGroup _container;
 		bool _defaultAutomationSet;
 		string _defaultContentDescription;
-		bool? _defaultFocusable;
 		ImportantForAccessibility? _defaultImportantForAccessibility;
 		string _defaultHint;
 
@@ -260,7 +259,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return;
 			}
 
-			Controls.Platform.AutomationPropertiesProvider.SetFocusable(ControlUsedForAutomation, Element, ref _defaultFocusable, ref _defaultImportantForAccessibility);
+			Controls.Platform.AutomationPropertiesProvider.SetFocusable(ControlUsedForAutomation, Element, ref _defaultImportantForAccessibility);
 		}
 
 		protected void SetNativeControl(TNativeView control)

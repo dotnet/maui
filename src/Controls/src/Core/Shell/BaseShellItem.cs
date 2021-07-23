@@ -11,7 +11,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[DebuggerDisplay("Title = {Title}, Route = {Route}")]
-	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController, ITabStopElement
+	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController
 	{
 		public event EventHandler Appearing;
 		public event EventHandler Disappearing;
@@ -42,36 +42,8 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TitleProperty =
 			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.OneTime);
 
-		public static readonly BindableProperty TabIndexProperty =
-			BindableProperty.Create(nameof(TabIndex),
-							typeof(int),
-							typeof(BaseShellItem),
-							defaultValue: 0,
-							propertyChanged: OnTabIndexPropertyChanged,
-							defaultValueCreator: TabIndexDefaultValueCreator);
-
-		public static readonly BindableProperty IsTabStopProperty =
-			BindableProperty.Create(nameof(IsTabStop),
-									typeof(bool),
-									typeof(BaseShellItem),
-									defaultValue: true,
-									propertyChanged: OnTabStopPropertyChanged,
-									defaultValueCreator: TabStopDefaultValueCreator);
-
 		public static readonly BindableProperty IsVisibleProperty =
 			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BaseShellItem), true);
-
-		static void OnTabIndexPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-			((BaseShellItem)bindable).OnTabIndexPropertyChanged((int)oldValue, (int)newValue);
-
-		static object TabIndexDefaultValueCreator(BindableObject bindable) =>
-			((BaseShellItem)bindable).TabIndexDefaultValueCreator();
-
-		static void OnTabStopPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-			((BaseShellItem)bindable).OnTabStopPropertyChanged((bool)oldValue, (bool)newValue);
-
-		static object TabStopDefaultValueCreator(BindableObject bindable) =>
-			((BaseShellItem)bindable).TabStopDefaultValueCreator();
 
 		public ImageSource FlyoutIcon
 		{
@@ -103,22 +75,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (string)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
-		}
-
-		public int TabIndex
-		{
-			get => (int)GetValue(TabIndexProperty);
-			set => SetValue(TabIndexProperty, value);
-		}
-
-		protected virtual void OnTabIndexPropertyChanged(int oldValue, int newValue) { }
-
-		protected virtual int TabIndexDefaultValueCreator() => 0;
-
-		public bool IsTabStop
-		{
-			get => (bool)GetValue(IsTabStopProperty);
-			set => SetValue(IsTabStopProperty, value);
 		}
 
 		public bool IsVisible
@@ -202,10 +158,6 @@ namespace Microsoft.Maui.Controls
 				this.Appearing += eventHandler;
 			}
 		}
-
-		protected virtual void OnTabStopPropertyChanged(bool oldValue, bool newValue) { }
-
-		protected virtual bool TabStopDefaultValueCreator() => true;
 
 		IVisual _effectiveVisual = Microsoft.Maui.Controls.VisualMarker.Default;
 		IVisual IVisualController.EffectiveVisual
