@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create("FontAutoScalingEnable", typeof(bool), typeof(FontImageSource), false,
 				propertyChanged: (b, o, n) => ((FontImageSource)b).OnSourceChanged());
 
-		public bool FontAutoScalingEnable
+		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
 			set => SetValue(FontAutoScalingEnabledProperty, value);
