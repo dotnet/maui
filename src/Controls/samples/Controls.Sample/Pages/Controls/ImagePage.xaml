@@ -29,7 +29,7 @@
                     Background="Green">
                     <Image.Source>
                         <FontImageSource
-                            FontAutoScalingEnable="True"
+                            FontAutoScalingEnabled="True"
                             FontFamily = "Ionicons" 
                             Glyph = "&#xf30c;">
                         </FontImageSource>
@@ -42,7 +42,7 @@
                     Background="Green">
                     <Image.Source>
                         <FontImageSource
-                            FontAutoScalingEnable="False"
+                            FontAutoScalingEnabled="False"
                             FontFamily = "Ionicons" 
                             Glyph = "&#xf30c;">
                         </FontImageSource>

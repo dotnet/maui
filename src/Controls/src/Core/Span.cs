@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnableProperty;
+		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
 		public static readonly BindableProperty LineHeightProperty = LineHeightElement.LineHeightProperty;
 
