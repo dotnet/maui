@@ -47,6 +47,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			self.FontFamily == null && self.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Label), true) && self.FontAttributes == FontAttributes.None;
 
 		static Font AsFont(this IFontElement element) =>
-			Font.OfSize(element.FontFamily, element.FontSize).WithAttributes(element.FontAttributes);
+			Font.OfSize(element.FontFamily, element.FontSize, enableScaling: element.FontScalingEnabled).WithAttributes(element.FontAttributes);
 	}
 }

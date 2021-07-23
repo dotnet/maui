@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				UpdateTextColor();
 			}
-			else if (e.PropertyName == Button.FontProperty.PropertyName)
+			else if (e.PropertyName == FontElement.FontProperty.PropertyName)
 			{
 				UpdateFont();
 			}
@@ -295,13 +295,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void UpdateFont()
 		{
-			if (Control == null || Element == null)
+			if (Control == null || Element is not ITextStyle textStyle)
 				return;
 
-			if (Element.Font == Font.Default && !_fontApplied)
+			if (textStyle.Font == Font.Default && !_fontApplied)
 				return;
 
-			Font fontToApply = Element.Font == Font.Default ? Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)) : Element.Font;
+			Font fontToApply = textStyle.Font == Font.Default ? Font.SystemFontOfSize(Device.GetNamedSize(NamedSize.Medium, Element.GetType(), false)) : textStyle.Font;
 
 			Control.ApplyFont(fontToApply);
 			_fontApplied = true;
