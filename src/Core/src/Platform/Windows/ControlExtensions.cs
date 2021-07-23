@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 			nativeControl.FontFamily = fontManager.GetFontFamily(font);
 			nativeControl.FontStyle = font.ToFontStyle();
 			nativeControl.FontWeight = font.ToFontWeight();
-			nativeControl.IsTextScaleFactorEnabled = font.EnableScaling;
+			nativeControl.IsTextScaleFactorEnabled = font.AutoScalingEnabled;
 		}
 
 		public static void UpdateIsEnabled(this Control nativeControl, bool isEnabled) =>
