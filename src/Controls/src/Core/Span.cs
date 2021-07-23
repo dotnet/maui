@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		void IFontElement.OnFontAutoScalingEnableChanged(bool oldValue, bool newValue) { }
+		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) { }
 
 		internal override void ValidateGesture(IGestureRecognizer gesture)
 		{

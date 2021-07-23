@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			UpdateAutoSizeOption();
 
-		void IFontElement.OnFontAutoScalingEnableChanged(bool oldValue, bool newValue) =>
+		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) =>
 			UpdateAutoSizeOption();
 
 		public event EventHandler Completed;
