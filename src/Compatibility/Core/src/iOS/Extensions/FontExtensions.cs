@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			=> CompatServiceProvider.FontManager.GetFont(self);
 
 		internal static UIFont ToUIFont(this IFontElement self)
-			=> CompatServiceProvider.FontManager.GetFont(Font.OfSize(self.FontFamily, self.FontSize).WithAttributes(self.FontAttributes));
+			=> CompatServiceProvider.FontManager.GetFont(Font.OfSize(self.FontFamily, self.FontSize, enableScaling: self.FontScalingEnabled).WithAttributes(self.FontAttributes));
 
 		internal static bool IsDefault(this IFontElement self)
 			=> self.FontFamily == null && self.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Label), true) && self.FontAttributes == FontAttributes.None;

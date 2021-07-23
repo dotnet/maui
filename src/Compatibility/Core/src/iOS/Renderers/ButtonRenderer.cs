@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (e.PropertyName == Button.TextColorProperty.PropertyName)
 				UpdateTextColor();
-			else if (e.PropertyName == Button.FontProperty.PropertyName)
+			else if (e.PropertyName == FontElement.FontProperty.PropertyName)
 				UpdateFont();
 		}
 
