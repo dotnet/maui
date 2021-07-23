@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls
 			if (!OnChanged(bindable))
 				return;
 
-			((IFontElement)bindable).OnFontScalingEnableChanged((bool)oldValue, (bool)newValue);
+			((IFontElement)bindable).OnFontAutoScalingEnableChanged((bool)oldValue, (bool)newValue);
 		}
 	}
 }

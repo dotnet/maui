@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		void IFontElement.OnFontScalingEnableChanged(bool oldValue, bool newValue)
+		void IFontElement.OnFontAutoScalingEnableChanged(bool oldValue, bool newValue)
 		{
 		}
 

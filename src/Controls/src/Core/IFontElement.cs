@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Internals
 		//note to implementor: but implement these methods explicitly
 		void OnFontFamilyChanged(string oldValue, string newValue);
 		void OnFontSizeChanged(double oldValue, double newValue);
-		void OnFontScalingEnableChanged(bool oldValue, bool newValue);
+		void OnFontAutoScalingEnableChanged(bool oldValue, bool newValue);
 		double FontSizeDefaultValueCreator();
 		void OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue);
 		void OnFontChanged(Font oldValue, Font newValue);
