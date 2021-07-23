@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool _isDisposed;
 		bool _inputTransparent;
 		Lazy<TextColorSwitcher> _textColorSwitcher;
-		AutomationPropertiesProvider _automationPropertiesProvider;
+		FastRenderers.AutomationPropertiesProvider _automationPropertiesProvider;
 		VisualElementTracker _tracker;
 		VisualElementRenderer _visualElementRenderer;
 		BorderBackgroundManager _backgroundTracker;
@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void Initialize()
 		{
-			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
+			_automationPropertiesProvider = new FastRenderers.AutomationPropertiesProvider(this);
 			_backgroundTracker = new BorderBackgroundManager(this);
 
 			SoundEffectsEnabled = false;

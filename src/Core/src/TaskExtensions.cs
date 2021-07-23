@@ -6,9 +6,34 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui
 {
-	public static class TaskExtensions
+	internal static class TaskExtensions
 	{
-		internal static async void FireAndForget(
+		public static async void FireAndForget<TResult>(
+			   this Task<TResult> task,
+			   Action<Exception>? errorCallback = null,
+			   Action<TResult?>? finishedCallBack = null
+			   )
+		{
+			TResult? result = default;
+			try
+			{
+				result = await task.ConfigureAwait(false);
+			}
+			catch (Exception exc)
+			{
+				errorCallback?.Invoke(exc);
+			}
+			finally
+			{
+				try
+				{
+					finishedCallBack?.Invoke(result);
+				}
+				catch (Exception fe) { errorCallback?.Invoke(fe); }
+			}
+		}
+
+		public static async void FireAndForget(
 			this Task task,
 			Action<Exception>? errorCallback = null,
 			Action? finishedCallBack = null
@@ -24,14 +49,18 @@ namespace Microsoft.Maui
 			}
 			finally
 			{
-				finishedCallBack?.Invoke();
+				try
+				{
+					finishedCallBack?.Invoke();
+				}
+				catch (Exception fe) { errorCallback?.Invoke(fe); }
 			}
 		}
 
-		internal static void FireAndForget(this Task task, ILogger? logger, [CallerMemberName] string? callerName = null) =>
+		public static void FireAndForget(this Task task, ILogger? logger, [CallerMemberName] string? callerName = null) =>
 			task.FireAndForget(ex => Log(logger, ex, callerName));
 
-		internal static void FireAndForget<T>(this Task task, T? viewHandler, [CallerMemberName] string? callerName = null)
+		public static void FireAndForget<T>(this Task task, T? viewHandler, [CallerMemberName] string? callerName = null)
 			where T : IViewHandler
 		{
 			task.FireAndForget(ex => Log(viewHandler?.CreateLogger<T>(), ex, callerName));
