@@ -579,6 +579,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				}
 				_containingPage = parent as Microsoft.UI.Xaml.Controls.Page;
 			}
+
+			if (_containingPage != null)
+			{
+				// Cache the tabstop setting
+				var wasTabStop = _containingPage.IsTabStop;
+
+				// Controls can only get focus if they're a tabstop
+				_containingPage.IsTabStop = true;
+				_containingPage.Focus(FocusState.Programmatic);
+
+				// Restore the tabstop setting; that may cause the Page to lose focus,
+				// but it won't restore the focus to Control
+				_containingPage.IsTabStop = wasTabStop;
+			}
 		}
 
 		void OnControlGotFocus(object sender, RoutedEventArgs args)
