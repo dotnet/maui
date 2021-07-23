@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		public static readonly BindableProperty FontScalingEnabledProperty = FontElement.FontScalingEnableProperty;
+		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnableProperty;
 
 		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
@@ -78,10 +78,10 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
-		public bool FontScalingEnabled
+		public bool FontAutoScalingEnabled
 		{
-			get => (bool)GetValue(FontScalingEnabledProperty);
-			set => SetValue(FontScalingEnabledProperty, value);
+			get => (bool)GetValue(FontAutoScalingEnabledProperty);
+			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
 		public TextTransform TextTransform
@@ -94,22 +94,29 @@ namespace Microsoft.Maui.Controls
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, (TimePicker)this);
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontScalingEnableChanged(bool oldValue, bool newValue) =>
+			HandleFontChanged();
+
+		void HandleFontChanged()
+		{
+			// Null out the Maui font value so it will be recreated next time it's accessed
+			_font = null;
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		}
 
 		public IPlatformElementConfiguration<T, TimePicker> On<T>() where T : IConfigPlatform
 		{

@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 
 			ComplexUnitType units;
 
-			if (font.EnableScaling)
+			if (font.AutoScalingEnabled)
 				units = ComplexUnitType.Sp;
 			else
 				units = ComplexUnitType.Dip;

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Internals
 		[TypeConverter(typeof(FontSizeConverter))]
 		double FontSize { get; }
 
-		bool FontScalingEnabled { get; }
+		bool FontAutoScalingEnabled { get; }
 
 		//note to implementor: but implement these methods explicitly
 		void OnFontFamilyChanged(string oldValue, string newValue);

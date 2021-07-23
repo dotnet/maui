@@ -34,7 +34,7 @@ namespace Microsoft.Maui
 
 
 		readonly bool _disableScaling;
-		public bool EnableScaling
+		public bool AutoScalingEnabled
 		{
 			get => !_disableScaling;
 		}
@@ -46,22 +46,22 @@ namespace Microsoft.Maui
 
 		public Font WithSize(double size)
 		{
-			return new Font(Family, size, Slant, Weight, EnableScaling);
+			return new Font(Family, size, Slant, Weight, AutoScalingEnabled);
 		}
 
 		public Font WithSlant(FontSlant fontSlant)
 		{
-			return new Font(Family, Size, fontSlant, Weight, EnableScaling);
+			return new Font(Family, Size, fontSlant, Weight, AutoScalingEnabled);
 		}
 
 		public Font WithWeight(FontWeight weight)
 		{
-			return new Font(Family, Size, Slant, weight, EnableScaling);
+			return new Font(Family, Size, Slant, weight, AutoScalingEnabled);
 		}
 
 		public Font WithWeight(FontWeight weight, FontSlant fontSlant)
 		{
-			return new Font(Family, Size, fontSlant, weight, EnableScaling);
+			return new Font(Family, Size, fontSlant, weight, AutoScalingEnabled);
 		}
 
 		public static Font OfSize(string name, double size, FontWeight weight = FontWeight.Regular, FontSlant fontSlant = FontSlant.Default, bool enableScaling = true) =>
@@ -79,7 +79,7 @@ namespace Microsoft.Maui
 				&& Size.Equals(other.Size)
 				&& Weight == other.Weight
 				&& Slant == other.Slant
-				&& EnableScaling == other.EnableScaling;
+				&& AutoScalingEnabled == other.AutoScalingEnabled;
 		}
 
 		public override bool Equals(object? obj)
@@ -95,7 +95,7 @@ namespace Microsoft.Maui
 			return Equals((Font)obj);
 		}
 
-		public override int GetHashCode() => (Family, Size, Weight, Slant, EnableScaling).GetHashCode();
+		public override int GetHashCode() => (Family, Size, Weight, Slant, AutoScalingEnabled).GetHashCode();
 
 		public static bool operator ==(Font left, Font right)
 		{

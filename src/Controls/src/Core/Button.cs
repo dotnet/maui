@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		public static readonly BindableProperty FontScalingEnabledProperty = FontElement.FontScalingEnableProperty;
+		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnableProperty;
 
 		public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create("BorderWidth", typeof(double), typeof(Button), -1d);
 
@@ -187,10 +187,10 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
-		public bool FontScalingEnabled
+		public bool FontAutoScalingEnabled
 		{
-			get => (bool)GetValue(FontScalingEnabledProperty);
-			set => SetValue(FontScalingEnabledProperty, value);
+			get => (bool)GetValue(FontAutoScalingEnabledProperty);
+			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
 		public TextTransform TextTransform
@@ -255,6 +255,7 @@ namespace Microsoft.Maui.Controls
 
 		void HandleFontChanged()
 		{
+			_font = null;
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 

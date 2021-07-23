@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
-		public static readonly BindableProperty FontScalingEnabledProperty = FontElement.FontScalingEnableProperty;
+		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnableProperty;
 
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
@@ -135,10 +135,10 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
-		public bool FontScalingEnabled
+		public bool FontAutoScalingEnabled
 		{
-			get => (bool)GetValue(FontScalingEnabledProperty);
-			set => SetValue(FontScalingEnabledProperty, value);
+			get => (bool)GetValue(FontAutoScalingEnabledProperty);
+			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
 		public double BorderWidth
@@ -194,19 +194,25 @@ namespace Microsoft.Maui.Controls
 			=> InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontScalingEnableChanged(bool oldValue, bool newValue) =>
+			HandleFontChanged();
+
+		void HandleFontChanged()
+		{
+			_font = null;
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		}
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, this);

@@ -26,6 +26,6 @@ namespace Microsoft.Maui.Controls
 
 	public partial class FontImageSource : IFontImageSource
 	{
-		Font IFontImageSource.Font => Font.OfSize(FontFamily, Size, enableScaling: FontScalingEnable);
+		Font IFontImageSource.Font => Font.OfSize(FontFamily, Size, enableScaling: FontAutoScalingEnable);
 	}
 }

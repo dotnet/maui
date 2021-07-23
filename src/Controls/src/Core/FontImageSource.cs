@@ -43,14 +43,14 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(SizeProperty, value);
 		}
 
-		public static readonly BindableProperty FontScalingEnableProperty =
-			BindableProperty.Create("ScalingEnable", typeof(bool), typeof(FontImageSource), false,
+		public static readonly BindableProperty FontAutoScalingEnableProperty =
+			BindableProperty.Create("FontAutoScalingEnable", typeof(bool), typeof(FontImageSource), false,
 				propertyChanged: (b, o, n) => ((FontImageSource)b).OnSourceChanged());
 
-		public bool FontScalingEnable
+		public bool FontAutoScalingEnable
 		{
-			get => (bool)GetValue(FontScalingEnableProperty);
-			set => SetValue(FontScalingEnableProperty, value);
+			get => (bool)GetValue(FontAutoScalingEnableProperty);
+			set => SetValue(FontAutoScalingEnableProperty, value);
 		}
 	}
 }

@@ -4,7 +4,7 @@
 	{
 		Font? _font;
 
-		Font ITextStyle.Font => _font ??= Font.OfSize(FontFamily, FontSize, enableScaling: FontScalingEnabled).WithAttributes(FontAttributes);
+		Font ITextStyle.Font => _font ??= this.ToFont();
 
 		void IEntry.Completed()
 		{

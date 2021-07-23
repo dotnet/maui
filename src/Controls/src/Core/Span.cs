@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		public static readonly BindableProperty FontScalingEnabledProperty = FontElement.FontScalingEnableProperty;
+		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnableProperty;
 
 		public static readonly BindableProperty LineHeightProperty = LineHeightElement.LineHeightProperty;
 
@@ -99,10 +99,10 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontElement.FontSizeProperty, value); }
 		}
 
-		public bool FontScalingEnabled
+		public bool FontAutoScalingEnabled
 		{
-			get => (bool)GetValue(FontScalingEnabledProperty);
-			set => SetValue(FontScalingEnabledProperty, value);
+			get => (bool)GetValue(FontAutoScalingEnabledProperty);
+			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
 		public TextDecorations TextDecorations
