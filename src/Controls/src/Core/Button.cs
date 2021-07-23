@@ -27,8 +27,6 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
-		public static readonly BindableProperty FontProperty = FontElement.FontProperty;
-
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
@@ -116,12 +114,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return GetValue(CommandParameterProperty); }
 			set { SetValue(CommandParameterProperty, value); }
-		}
-
-		public Font Font
-		{
-			get { return (Font)GetValue(FontProperty); }
-			set { SetValue(FontProperty, value); }
 		}
 
 		public ImageSource ImageSource
