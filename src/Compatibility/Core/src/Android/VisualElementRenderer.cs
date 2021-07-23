@@ -420,24 +420,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (!_defaultAutomationSet)
 			{
 				_defaultAutomationSet = true;
-				AutomationPropertiesProvider.SetupDefaults(this, ref _defaultContentDescription, ref _defaultHint);
+				Controls.Platform.AutomationPropertiesProvider.SetupDefaults(this, ref _defaultContentDescription, ref _defaultHint);
 			}
 		}
 
 		protected virtual void SetAutomationId(string id)
 		{
 			SetupAutomationDefaults();
-			AutomationPropertiesProvider.SetAutomationId(this, Element, id);
+			Controls.Platform.AutomationPropertiesProvider.SetAutomationId(this, Element, id);
 		}
 
 		protected virtual void SetContentDescription()
 		{
 			SetupAutomationDefaults();
-			AutomationPropertiesProvider.SetContentDescription(this, Element, _defaultContentDescription, _defaultHint);
+			Controls.Platform.AutomationPropertiesProvider.SetContentDescription(this, Element, _defaultContentDescription, _defaultHint);
 		}
 
 		protected virtual void SetFocusable()
-			=> AutomationPropertiesProvider.SetFocusable(this, Element, ref _defaultFocusable, ref _defaultImportantForAccessibility);
+			=> Controls.Platform.AutomationPropertiesProvider.SetFocusable(this, Element, ref _defaultFocusable, ref _defaultImportantForAccessibility);
 
 		void UpdateInputTransparent()
 		{

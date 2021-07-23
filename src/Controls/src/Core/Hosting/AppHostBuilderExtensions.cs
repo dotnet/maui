@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Hosting
 	{
 		static readonly Dictionary<Type, Type> DefaultMauiControlHandlers = new Dictionary<Type, Type>
 		{
-#if WINDOWS
+#if WINDOWS || __ANDROID__
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif
 			{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
