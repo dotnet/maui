@@ -6,8 +6,13 @@ namespace Microsoft.Maui.Resizetizer.Tests
 {
 	public class GetMauiAssetsPathTests : MSBuildTaskTestFixture<GetMauiAssetPath>
 	{
+#if WINDOWS
 		const string ProjectDirectory = @"C:\src\code\MyProject";
 		const string LibraryProjectDirectory = ProjectDirectory + @"\ClassLibrary1";
+#else
+		const string ProjectDirectory = @"/usr/code/MyProject";
+		const string LibraryProjectDirectory = ProjectDirectory + @"/ClassLibrary1";
+#endif
 
 		protected GetMauiAssetPath GetNewTask(string folderName, params ITaskItem[] input) => new()
 		{
@@ -20,9 +25,13 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		[InlineData("foo.mp3", "foo.mp3")]
 		[InlineData("foo.mp3", @"Assets\foo.mp3", "Assets")]
 		[InlineData("Resources/Assets/foo.mp3", "Resources/Assets/foo.mp3")]
-		[InlineData(@"Resources\Assets\foo.mp3", @"Resources\Assets\foo.mp3")]
+		[InlineData(@"Resources\Assets\foo.mp3", @"Resources/Assets/foo.mp3")]
 		[InlineData(ProjectDirectory + @"\foo.mp3", "foo.mp3")]
+		[InlineData(ProjectDirectory + @"\foo.mp3", @"Assets/foo.mp3", "Assets")]
+#if WINDOWS
+		[InlineData(@"Resources\Assets\foo.mp3", @"Resources\Assets\foo.mp3")]
 		[InlineData(ProjectDirectory + @"\foo.mp3", @"Assets\foo.mp3", "Assets")]
+#endif
 		public void LinkMetadataIsBlank(string input, string output, string folderName = null)
 		{
 			var item = new TaskItem(input);
@@ -34,11 +43,18 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		[Theory]
 		[InlineData(@"C:\Program Files\foo.mp3", "foo.mp3", "foo.mp3")]
-		[InlineData(@"C:\Program Files\foo.mp3", "foo.mp3", @"Assets\foo.mp3", "Assets")]
+		[InlineData(@"\Program Files\foo.mp3", "foo.mp3", @"Assets/foo.mp3", "Assets")]
+		[InlineData(@"/Program Files/foo.mp3", "foo.mp3", @"Assets/foo.mp3", "Assets")]
 		[InlineData("/Resources/Assets/foo.mp3", "Resources/Assets/foo.mp3", "Resources/Assets/foo.mp3")]
-		[InlineData(@"C:\Resources\Assets\foo.mp3", @"Resources\Assets\foo.mp3", @"Resources\Assets\foo.mp3")]
+		[InlineData(@"\Resources\Assets\foo.mp3", @"Resources\Assets\foo.mp3", @"Resources\Assets\foo.mp3")]
+		[InlineData(@"/Resources/Assets/foo.mp3", @"Resources\Assets\foo.mp3", @"Resources\Assets\foo.mp3")]
 		[InlineData("foo.mp3", ProjectDirectory + @"\foo.mp3", "foo.mp3")]
 		[InlineData("foo.mp3", ProjectDirectory + @"\foo.mp3", @"Assets\foo.mp3", "Assets")]
+#if WINDOWS
+		[InlineData(@"C:\Program Files\foo.mp3", "foo.mp3", @"Assets\foo.mp3", "Assets")]
+		[InlineData(@"C:\Resources\Assets\foo.mp3", @"Resources\Assets\foo.mp3", @"Resources/Assets/foo.mp3")]
+		[InlineData("foo.mp3", ProjectDirectory + @"\foo.mp3", @"Assets/foo.mp3", "Assets")]
+#endif
 		public void UseLinkMetadata(string input, string link, string output, string folderName = null)
 		{
 			var item = new TaskItem(input);
@@ -64,9 +80,16 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		[Theory]
 		[InlineData(LibraryProjectDirectory + @"\foo.mp3", "foo.mp3")]
-		[InlineData(LibraryProjectDirectory + @"\foo.mp3", @"Assets\foo.mp3", "Assets")]
+		[InlineData(LibraryProjectDirectory + @"\foo.mp3", "foo.mp3", null, @"/")]
 		[InlineData(LibraryProjectDirectory + @"\foo.mp3", "foo.mp3", null, @"\")]
+		[InlineData(LibraryProjectDirectory + @"\foo.mp3", @"Assets/foo.mp3", "Assets")]
+		[InlineData(LibraryProjectDirectory + @"\foo.mp3", @"Assets/foo.mp3", "Assets", @"\")]
+		[InlineData(LibraryProjectDirectory + @"\foo.mp3", @"Assets/foo.mp3", "Assets", @"/")]
+#if WINDOWS
+		[InlineData(LibraryProjectDirectory + @"\foo.mp3", @"Assets\foo.mp3", "Assets")]
 		[InlineData(LibraryProjectDirectory + @"\foo.mp3", @"Assets\foo.mp3", "Assets", @"\")]
+		[InlineData(LibraryProjectDirectory + @"\foo.mp3", @"Assets\foo.mp3", "Assets", @"/")]
+#endif
 		public void UseProjectDirectory(string input, string output, string folderName = null, string suffix = null)
 		{
 			var item = new TaskItem(input);
