@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Button modal = new Button
 			{
 				Text = "Modal Push Pop Test",
-				FontAttributes = FontWeight.Bold,
+				FontAttributes = FontAttributes.Bold,
 				FontSize = 25,
 				HorizontalOptions = LayoutOptions.Center
 			};
