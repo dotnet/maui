@@ -23,7 +23,7 @@
     <Compile Remove="**\Android\**\*.cs" />
     <None Include="**\Android\**\*.cs" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard')) != true OR '$(TargetFramework) == 'net6.0'">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard')) != true OR '$(TargetFramework)' == 'net6.0'">
     <Compile Remove="**\*.Standard.cs" />
     <None Include="**\*.Standard.cs" />
     <Compile Remove="**\Standard\**\*.cs" />
