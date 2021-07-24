@@ -37,16 +37,19 @@ namespace Microsoft.Maui.Controls
 
 		INavigationPageController NavigationPageController => this;
 
+		partial void Init();
 		public NavigationPage()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<NavigationPage>>(() => new PlatformConfigurationRegistry<NavigationPage>(this));
 
 			Navigation = new NavigationImpl(this);
+			Init();
 		}
 
 		public NavigationPage(Page root) : this()
 		{
 			PushPage(root);
+			Init();
 		}
 
 		public Color BarBackgroundColor
