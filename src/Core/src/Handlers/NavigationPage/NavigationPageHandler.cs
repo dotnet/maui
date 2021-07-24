@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Handlers;
 
-#if WINDOWS
-using static Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Page;
-#endif
 
 namespace Microsoft.Maui.Handlers
 {
@@ -27,17 +24,17 @@ namespace Microsoft.Maui.Handlers
 #endif
 			   };
 
-		public static CommandMapper<INavigationView, NavigationPageHandler> ScrollViewCommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<INavigationView, NavigationPageHandler> NavigationViewCommandMapper = new(ViewCommandMapper)
 		{
 			[nameof(INavigationView.PushAsync)] = PushAsyncTo,
 			[nameof(INavigationView.PopAsync)] = PopAsyncTo
 		};
 
-		public NavigationPageHandler() : base(NavigationPageMapper)
+		public NavigationPageHandler() : base(NavigationPageMapper, NavigationViewCommandMapper)
 		{
 		}
 
-		public NavigationPageHandler(PropertyMapper? mapper = null) : base(mapper ?? NavigationPageMapper)
+		public NavigationPageHandler(PropertyMapper? mapper = null) : base(mapper ?? NavigationPageMapper, NavigationViewCommandMapper)
 		{
 
 		}
