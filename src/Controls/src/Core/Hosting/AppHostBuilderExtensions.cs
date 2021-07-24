@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Shapes.Rectangle), typeof(ShapeViewHandler) },
 			{ typeof(Layout), typeof(LayoutHandler) },
 			{ typeof(Window), typeof(WindowHandler) },
-			{ typeof(NavigationPage), typeof(NavigationPageHandler) },
+			//{ typeof(NavigationPage), typeof(NavigationPageHandler) },
 		};
 
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
