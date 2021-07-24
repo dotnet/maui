@@ -9,10 +9,12 @@
         <VerticalStackLayout>
             <Label
                 Text="We hope the all-new SemanticProperties will enable you to develop accessible apps more seamlessly"
+                TextColor="RoyalBlue"
                 FontSize="20"
                 HorizontalTextAlignment="Center"/>
             <Label
                 Text="Turn on your screen reader and listen for what is read aloud. The text-based controls below are labeled to indicate what is expected to be read aloud: T refers to the Text, D is the Description text, and H is the Hint text."
+                TextColor="RoyalBlue"
                 FontAttributes="Bold"
                 FontSize="16"
                 Margin="0,10"/>
@@ -156,6 +158,13 @@
                 TextColor="DodgerBlue"
                 FontSize="14"
                 SemanticProperties.HeadingLevel="Level3"/>
+
+            <Label
+                Text="Explore SemanticProperties on controls within layouts below"
+                TextColor="RoyalBlue"
+                FontAttributes="Bold"
+                FontSize="16"
+                Margin="0,10"/>
             <VerticalStackLayout SemanticProperties.Description="Layout description text">
                 <Label
                     Text="Label in StackLayout with semantic description"
@@ -172,7 +181,6 @@
                     Text="Button in StackLayout with semantic description"
                     FontSize="14"/>
             </VerticalStackLayout>
-
         </VerticalStackLayout>
     </ScrollView>
 </views:BasePage>
