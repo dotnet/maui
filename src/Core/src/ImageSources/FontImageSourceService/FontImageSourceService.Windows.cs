@@ -102,7 +102,7 @@ namespace Microsoft.Maui
 				// There's really no perfect solution to handle font families with fallbacks (comma-separated)	
 				// So if the font family has fallbacks, only one is taken, because CanvasTextFormat	
 				// only supports one font family
-				var source = imageSource.Font.Family;
+				var source = imageSource.Font.Family ?? String.Empty;
 
 				foreach (var family in allFamilies)
 				{
