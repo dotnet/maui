@@ -76,6 +76,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
+
 		public static readonly BindableProperty LineHeightProperty = LineHeightElement.LineHeightProperty;
 
 		public FontAttributes FontAttributes
@@ -95,6 +97,12 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (double)GetValue(FontElement.FontSizeProperty); }
 			set { SetValue(FontElement.FontSizeProperty, value); }
+		}
+
+		public bool FontAutoScalingEnabled
+		{
+			get => (bool)GetValue(FontAutoScalingEnabledProperty);
+			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
 		public TextDecorations TextDecorations
@@ -145,6 +153,8 @@ namespace Microsoft.Maui.Controls
 		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
 		{
 		}
+
+		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) { }
 
 		internal override void ValidateGesture(IGestureRecognizer gesture)
 		{

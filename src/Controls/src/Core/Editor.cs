@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
+
 		public new static readonly BindableProperty TextColorProperty = InputView.TextColorProperty;
 
 		public new static readonly BindableProperty CharacterSpacingProperty = InputView.CharacterSpacingProperty;
@@ -60,6 +62,12 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
+		public bool FontAutoScalingEnabled
+		{
+			get => (bool)GetValue(FontAutoScalingEnabledProperty);
+			set => SetValue(FontAutoScalingEnabledProperty, value);
+		}
+
 		protected void UpdateAutoSizeOption()
 		{
 			// Null out the Maui font value so it will be recreated next time it's accessed
@@ -71,28 +79,23 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
-		{
+		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
 			UpdateAutoSizeOption();
-		}
 
-		void IFontElement.OnFontSizeChanged(double oldValue, double newValue)
-		{
+		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
 			UpdateAutoSizeOption();
-		}
 
-		void IFontElement.OnFontChanged(Font oldValue, Font newValue)
-		{
+		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
 			UpdateAutoSizeOption();
-		}
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, (Editor)this);
 
-		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
-		{
+		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			UpdateAutoSizeOption();
-		}
+
+		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) =>
+			UpdateAutoSizeOption();
 
 		public event EventHandler Completed;
 
