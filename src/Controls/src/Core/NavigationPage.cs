@@ -49,7 +49,6 @@ namespace Microsoft.Maui.Controls
 		public NavigationPage(Page root) : this()
 		{
 			PushPage(root);
-			Init();
 		}
 
 		public Color BarBackgroundColor

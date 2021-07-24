@@ -27,12 +27,51 @@ namespace Microsoft.Maui.Handlers
 		}
 		private static void PushAsyncTo(NavigationPageHandler arg1, INavigationView arg2, object? arg3)
 		{
-			throw new NotImplementedException();
+			if (arg3 is MauiNavigationRequestedEventArgs args)
+				arg1.OnPushRequested(args);
 		}
 
 		private static void PopAsyncTo(NavigationPageHandler arg1, INavigationView arg2, object? arg3)
 		{
-			throw new NotImplementedException();
+			if (arg3 is MauiNavigationRequestedEventArgs args)
+				arg1.OnPopRequested(args);
+		}
+
+		void OnPushRequested(MauiNavigationRequestedEventArgs e)
+		{
+			_controlsNavigationController?
+				.OnPushRequested(e, this.MauiContext!);
+		}
+
+		void OnPopRequested(MauiNavigationRequestedEventArgs e)
+		{
+			_controlsNavigationController?
+				.OnPopRequestedAsync(e)
+				.FireAndForget((exc) => { });
+		}
+
+		internal void SendPopping(Task popTask)
+		{
+			if (VirtualView == null)
+				return;
+
+			// TODO MAUI
+			VirtualView
+				.PopAsync()
+				.FireAndForget((e) =>
+				{
+					//Log.Warning(nameof(NavigationPageHandler), $"{e}");
+				});
+		}
+
+		protected override void ConnectHandler(UIView nativeView)
+		{
+			base.ConnectHandler(nativeView);
+
+			if (VirtualView == null || MauiContext == null || _controlsNavigationController == null)
+				return;
+
+			_controlsNavigationController.LoadPages(this.MauiContext);
 		}
 
 		//public static void MapPadding(NavigationPageHandler handler, INavigationView view) { }

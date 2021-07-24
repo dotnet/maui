@@ -107,8 +107,7 @@ namespace Microsoft.Maui
 
 			var poppedPage = NavigationStack[NavigationStack.Count - 1];
 			
-			// TODO IOS FIX
-			//_handler.SendPopping(popTask);
+			_handler.SendPopping(popTask);
 
 			await popTask;
 

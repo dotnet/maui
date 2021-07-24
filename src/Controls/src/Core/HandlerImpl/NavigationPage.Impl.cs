@@ -104,7 +104,8 @@ namespace Microsoft.Maui.Controls
 
 		IReadOnlyList<IView> INavigationView.ModalStack => throw new NotImplementedException();
 
-		IReadOnlyList<IView> INavigationView.NavigationStack => throw new NotImplementedException();
+		IReadOnlyList<IView> INavigationView.NavigationStack =>
+			this.Navigation.NavigationStack;
 	}
 
 }
