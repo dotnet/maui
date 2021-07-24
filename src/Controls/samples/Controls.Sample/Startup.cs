@@ -53,9 +53,7 @@ namespace Maui.Controls.Sample
 			appBuilder.UseBordelessEntry();
 			appBuilder.ConfigureEffects(builder =>
 			{
-#if !NETSTANDARD
 				builder.Add<FocusRoutingEffect, FocusPlatformEffect>();
-#endif
 			});
 
 #if DEBUG && !WINDOWS
