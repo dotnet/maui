@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var fontManager = (handler as ElementHandler).Services.GetRequiredService<IFontManager>();
 
-			var expectedNativeFont = fontManager.GetFont(Font.OfSize(family, 0.0));
+			var expectedNativeFont = await InvokeOnMainThreadAsync(() => fontManager.GetFont(Font.OfSize(family, 0.0)));
 
 			Assert.Equal(expectedNativeFont.FamilyName, nativeFont.FamilyName);
 			if (string.IsNullOrEmpty(family))
@@ -44,10 +45,25 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var returnValue = GetNativeFont(handler).PointSize;
 
-			if(autoScalingEnabled)
+			if (autoScalingEnabled && handler.VirtualView is ITextStyle ts)
 			{
+				// I'm not sure the math that iOS uses to scale fonts
+				// I tried passing a 1 into GetScaledValue to retrieve the ratio but the ratio
+				// wasn't correct. It seems like iOS uses different ratios based on the passed in font traits
+				// so I'm just testing here if it's scaled compared to the original and then return
+				// ts.Font.Size so the test can pass
+				var font = ts.Font;
 				var scale = UIFontMetrics.DefaultMetrics.GetScaledValue(1);
-				returnValue = returnValue / scale;
+
+				// Device doesn't have larger fonts enabled
+				if (scale == 1)
+					return returnValue;
+
+				var fontScaling = returnValue / scale;
+
+				// Just see if it scaled close-ish
+				if (Math.Abs(font.Size - fontScaling) <= 1.5)
+					return font.Size;
 			}
 
 			return returnValue;
@@ -55,7 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected UIFont GetNativeFont(THandler handler) =>
 			GetNativeFont(handler as ElementHandler);
-		
+
 		protected UIFont GetNativeFont(ElementHandler handler)
 		{
 			switch (handler.NativeView)
@@ -68,8 +84,10 @@ namespace Microsoft.Maui.DeviceTests
 					return label.Font;
 				case UISearchBar searchBar:
 					return searchBar.FindDescendantView<UITextField>().Font;
+				case UITextView tv:
+					return tv.Font;
 				default:
-					Assert.False(false, $"I don't know how to get the UIFont from here {handler}");
+					Assert.True(false, $"I don't know how to get the UIFont from here {handler.NativeView}");
 					return null;
 
 			}

@@ -39,7 +39,7 @@ namespace Microsoft.Maui
 			get => !_disableScaling;
 		}
 
-		public Font WithScaling(bool enabled)
+		public Font WithAutoScaling(bool enabled)
 		{
 			return new Font(Family, Size, Slant, Weight, enabled);
 		}

@@ -678,7 +678,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public FlyoutIconDrawerDrawable(Context context, Color defaultColor, Drawable icon, string text) : base(context)
 			{
-				TintColor = defaultColor;		
+				TintColor = defaultColor;
 				if (context.TryResolveAttribute(AndroidResource.Attribute.TextSize, out float? value) &&
 					value != null)
 				{
