@@ -176,7 +176,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.UITests.Share
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{95BF8553-3D9D-4831-ACDD-A3E697BC08A6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.Sample", "src\Essentials\samples\Sample\Essentials.Sample.csproj", "{C677BF3D-B234-491D-BA48-D9742DB564F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.Sample", "src\Essentials\samples\Samples\Essentials.Sample.csproj", "{C677BF3D-B234-491D-BA48-D9742DB564F8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.Sample.Server.WebAuthenticator", "src\Essentials\samples\Sample.Server.WebAuthenticator\Essentials.Sample.Server.WebAuthenticator.csproj", "{F7DB0CB3-D244-403A-8C3B-B1ED5E5838EC}"
 EndProject
