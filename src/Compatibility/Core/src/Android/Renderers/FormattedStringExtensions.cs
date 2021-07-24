@@ -103,7 +103,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				paint.SetTypeface(Font.ToTypeface());
 				float value = (float)Font.Size;
-				paint.TextSize = TypedValue.ApplyDimension(ComplexUnitType.Sp, value, TextView.Resources.DisplayMetrics);
+
+				paint.TextSize = TypedValue.ApplyDimension(
+					Font.AutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip, 
+					value, TextView.Resources.DisplayMetrics);
+
 				if (Forms.IsLollipopOrNewer)
 				{
 					paint.LetterSpacing = CharacterSpacing;

@@ -26,6 +26,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
+
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
@@ -90,6 +92,12 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
+		public bool FontAutoScalingEnabled
+		{
+			get => (bool)GetValue(FontAutoScalingEnabledProperty);
+			set => SetValue(FontAutoScalingEnabledProperty, value);
+		}
+
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, (SearchBar)this);
 
@@ -103,6 +111,9 @@ namespace Microsoft.Maui.Controls
 			HandleFontChanged();
 
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
+			HandleFontChanged();
+
+		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) =>
 			HandleFontChanged();
 
 		void HandleFontChanged()

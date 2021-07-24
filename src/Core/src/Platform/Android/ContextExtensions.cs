@@ -121,6 +121,9 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static bool TryResolveAttribute(this Context context, int id, out float? value) =>
+			context.Theme.TryResolveAttribute(id, out value);
+
 		public static bool TryResolveAttribute(this Context context, int id)
 		{
 			return context.Theme.TryResolveAttribute(id);
