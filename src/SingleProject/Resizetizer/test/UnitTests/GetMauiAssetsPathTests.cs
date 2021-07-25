@@ -23,12 +23,14 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		[Theory]
 		[InlineData("foo.mp3", "foo.mp3")]
-		[InlineData("foo.mp3", @"Assets\foo.mp3", "Assets")]
 		[InlineData(ProjectDirectory + @"\foo.mp3", "foo.mp3")]
 #if WINDOWS
+		[InlineData("foo.mp3", @"Assets\foo.mp3", "Assets")]
+		[InlineData("Resources/Assets/foo.mp3", "Resources\Assets\foo.mp3")]
 		[InlineData(@"Resources\Assets\foo.mp3", @"Resources\Assets\foo.mp3")]
 		[InlineData(ProjectDirectory + @"\foo.mp3", @"Assets\foo.mp3", "Assets")]
 #else
+		[InlineData("foo.mp3", @"Assets/foo.mp3", "Assets")]
 		[InlineData("Resources/Assets/foo.mp3", "Resources/Assets/foo.mp3")]
 		[InlineData(@"Resources\Assets\foo.mp3", @"Resources/Assets/foo.mp3")]
 		[InlineData(ProjectDirectory + @"\foo.mp3", @"Assets/foo.mp3", "Assets")]
@@ -70,7 +72,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		[Theory]
 		[InlineData("foo.mp3", "foo.mp3")]
+#if WINDOWS
 		[InlineData("foo.mp3", @"Assets\foo.mp3", "Assets")]
+#else
+		[InlineData("foo.mp3", @"Assets/foo.mp3", "Assets")]
+#endif
 		public void UseTargetPath(string input, string output, string folderName = null)
 		{
 			var item = new TaskItem(input);
