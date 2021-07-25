@@ -26,12 +26,12 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		[InlineData(ProjectDirectory + @"\foo.mp3", "foo.mp3")]
 #if WINDOWS
 		[InlineData("foo.mp3", @"Assets\foo.mp3", "Assets")]
-		[InlineData("Resources/Assets/foo.mp3", "Resources\Assets\foo.mp3")]
+		[InlineData("Resources/Assets/foo.mp3", @"Resources\Assets\foo.mp3")]
 		[InlineData(@"Resources\Assets\foo.mp3", @"Resources\Assets\foo.mp3")]
 		[InlineData(ProjectDirectory + @"\foo.mp3", @"Assets\foo.mp3", "Assets")]
 #else
 		[InlineData("foo.mp3", @"Assets/foo.mp3", "Assets")]
-		[InlineData("Resources/Assets/foo.mp3", "Resources/Assets/foo.mp3")]
+		[InlineData("Resources/Assets/foo.mp3", @"Resources/Assets/foo.mp3")]
 		[InlineData(@"Resources\Assets\foo.mp3", @"Resources/Assets/foo.mp3")]
 		[InlineData(ProjectDirectory + @"\foo.mp3", @"Assets/foo.mp3", "Assets")]
 #endif

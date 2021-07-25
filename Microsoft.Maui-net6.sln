@@ -46,7 +46,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestUtils", "TestUtils", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils", "src\TestUtils\src\TestUtils\TestUtils.csproj", "{FBB3270F-1924-4A72-845E-A6DF39C402F6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.UnitTests", "src\Core\tests\UnitTests\Core.UnitTests-net6.csproj", "{92644F6F-5946-48FC-A21A-A3D6EE24E8B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.UnitTests-net6", "src\Core\tests\UnitTests\Core.UnitTests-net6.csproj", "{92644F6F-5946-48FC-A21A-A3D6EE24E8B3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E8AD265B-3C67-4640-AC58-A522F9FB3361}"
 EndProject
@@ -72,7 +72,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F3FFE2E4-E89
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E25E7929-2423-4C8A-9B03-DC4C8B19A2E5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resizetizer.UnitTests", "src\SingleProject\Resizetizer\test\UnitTests\Resizetizer.UnitTests-net6.csproj", "{05DB57B8-D0A5-499B-AD35-7093C2E9C9D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resizetizer.UnitTests-net6", "src\SingleProject\Resizetizer\test\UnitTests\Resizetizer.UnitTests-net6.csproj", "{05DB57B8-D0A5-499B-AD35-7093C2E9C9D7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A8E9400E-70DD-421F-8609-1C2FA4AE8E71}"
 EndProject
@@ -126,15 +126,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{420BC8CC-E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.DeviceTests", "src\Essentials\test\DeviceTests\Essentials.DeviceTests.csproj", "{66528BE6-FF53-4A3B-8675-46C0B929C83B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.UnitTests", "src\Essentials\test\UnitTests\Essentials.UnitTests-net6.csproj", "{A9BAB840-A53E-405A-9458-CA0E02319FB4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.UnitTests-net6", "src\Essentials\test\UnitTests\Essentials.UnitTests-net6.csproj", "{A9BAB840-A53E-405A-9458-CA0E02319FB4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Maps-net6", "src\Controls\Maps\src\Controls.Maps-net6.csproj", "{5C40FA00-7D48-4F54-898C-01C8942E451D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{25D0D27A-C5FE-443D-8B65-D6C987F4A80E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.UnitTests", "src\Controls\tests\Core.UnitTests\Controls.Core.UnitTests-net6.csproj", "{094FB109-1CBC-4B84-8CFB-072E7B3EC637}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.UnitTests-net6", "src\Controls\tests\Core.UnitTests\Controls.Core.UnitTests-net6.csproj", "{094FB109-1CBC-4B84-8CFB-072E7B3EC637}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests", "src\Controls\tests\Xaml.UnitTests\Controls.Xaml.UnitTests-net6.csproj", "{F7A258F6-F4CB-4209-9E63-AECDB2E1F4ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests-net6", "src\Controls\tests\Xaml.UnitTests\Controls.Xaml.UnitTests-net6.csproj", "{F7A258F6-F4CB-4209-9E63-AECDB2E1F4ED}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.CustomAttributes", "src\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj", "{F7B6C73A-6019-4EAE-9258-E08C0C57829F}"
 EndProject
