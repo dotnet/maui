@@ -28,8 +28,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.iOS-ne
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.MacCatalyst-net6", "src\Controls\samples\Controls.Sample.MacCatalyst\Maui.Controls.Sample.MacCatalyst-net6.csproj", "{D7FE9FD0-144A-4199-93FC-3AD62325F1D6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Sample.NoPlatform", "src\Controls\samples\Controls.Sample.NoPlatform\Controls.Sample.NoPlatform.csproj", "{0DA1B960-AF55-4416-AA95-F06E5ABC7023}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.SingleProject", "src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj", "{CB495F62-CFE6-4975-AED8-F26B6C5D0113}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compatibility", "Compatibility", "{123AA89E-1638-4E0E-B828-B8F9F9F906A2}"
@@ -303,10 +301,6 @@ Global
 		{A1B1052C-740D-4733-BB3F-8558B661E78D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1B1052C-740D-4733-BB3F-8558B661E78D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1B1052C-740D-4733-BB3F-8558B661E78D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0DA1B960-AF55-4416-AA95-F06E5ABC7023}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0DA1B960-AF55-4416-AA95-F06E5ABC7023}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0DA1B960-AF55-4416-AA95-F06E5ABC7023}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0DA1B960-AF55-4416-AA95-F06E5ABC7023}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
