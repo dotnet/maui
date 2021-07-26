@@ -592,15 +592,8 @@ namespace Microsoft.Maui.Controls
 		public Shell()
 		{
 			_navigationManager = new ShellNavigationManager(this);
-			_navigationManager.Navigated += (_, args) =>
-			{
-				SendNavigated(args);
-			};
-
-			_navigationManager.Navigating += (_, args) =>
-			{
-				SendNavigating(args);
-			};
+			_navigationManager.Navigated += (_, args) => SendNavigated(args);
+			_navigationManager.Navigating += (_, args) => SendNavigating(args);
 
 			_flyoutManager = new ShellFlyoutItemsManager(this);
 			Navigation = new NavigationImpl(this);
