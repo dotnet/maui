@@ -26,11 +26,5 @@ namespace Microsoft.Maui.Controls
 
 			base.OnHandlerChangingCore(args);
 		}
-
-		void IView.NavigatedTo() { }
-
-		void IView.NavigatingFrom() { }
-
-		void IView.NavigatedFrom() { }
 	}
 }
