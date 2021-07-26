@@ -14,21 +14,28 @@ namespace Microsoft.Maui.Controls
 		internal void SendNavigatedTo(NavigatedToEventArgs args)
 		{
 			NavigatedTo?.Invoke(this, args);
+			OnNavigatedTo();
 		}
 
 		internal void SendNavigatingFrom(NavigatingFromEventArgs args)
 		{
 			NavigatingFrom?.Invoke(this, args);
+			OnNavigatingFrom();
 		}
 
 		internal void SendNavigatedFrom(NavigatedFromEventArgs args)
 		{
 			NavigatedFrom?.Invoke(this, args);
+			OnNavigatedFrom();
 		}
 
 		public event EventHandler<NavigatedToEventArgs> NavigatedTo;
 		public event EventHandler<NavigatingFromEventArgs> NavigatingFrom;
 		public event EventHandler<NavigatedFromEventArgs> NavigatedFrom;
+
+		protected virtual void OnNavigatedTo() { }
+		protected virtual void OnNavigatingFrom() { }
+		protected virtual void OnNavigatedFrom() { }
 	}
 
 	public sealed class NavigatingFromEventArgs : EventArgs
