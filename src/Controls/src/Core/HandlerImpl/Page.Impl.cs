@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls
 			PreviousPage = previousPage;
 		}
 
-		public Page PreviousPage { get; }
+		internal Page PreviousPage { get; }
 	}
 
 	public sealed class NavigatedFromEventArgs : EventArgs
@@ -60,6 +60,6 @@ namespace Microsoft.Maui.Controls
 			DestinationPage = destinationPage;
 		}
 
-		public Page DestinationPage { get; }
+		internal Page DestinationPage { get; }
 	}
 }
