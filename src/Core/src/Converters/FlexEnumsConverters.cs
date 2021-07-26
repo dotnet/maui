@@ -4,6 +4,7 @@ using System.Globalization;
 using Microsoft.Maui.Layouts;
 using Flex = Microsoft.Maui.Layouts.Flex;
 
+#nullable disable
 namespace Microsoft.Maui.Converters
 {
 	public class FlexJustifyTypeConverter : TypeConverter

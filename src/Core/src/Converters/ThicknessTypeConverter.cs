@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 
+#nullable disable
+
 namespace Microsoft.Maui.Converters
 {
 	public class ThicknessTypeConverter : TypeConverter

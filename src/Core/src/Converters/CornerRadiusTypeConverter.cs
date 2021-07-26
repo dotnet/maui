@@ -6,13 +6,13 @@ namespace Microsoft.Maui.Converters
 {
 	public class CornerRadiusTypeConverter : TypeConverter
 	{
-		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
 
-		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> destinationType == typeof(string);
 
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
 		{
 			var strValue = value?.ToString();
 			if (strValue != null)
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Converters
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(CornerRadius)}");
 		}
 
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
 			if (value is not CornerRadius cr)
 				throw new NotSupportedException();
