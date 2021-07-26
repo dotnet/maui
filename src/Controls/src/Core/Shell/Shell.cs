@@ -890,7 +890,7 @@ namespace Microsoft.Maui.Controls
 			OnNavigated(args);
 
 			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
-			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
 			_previousPage = null;
 		}
 
@@ -902,7 +902,7 @@ namespace Microsoft.Maui.Controls
 			if (!args.Cancelled)
 			{
 				_previousPage = CurrentPage;
-				CurrentPage.SendNavigatingFrom(new NavigatingFromEventArgs());
+				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs());
 			}
 		}
 
