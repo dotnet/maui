@@ -188,42 +188,43 @@
                 FontAttributes="Bold"
                 FontSize="16"
                 Margin="0,10"/>
-            <VerticalStackLayout AutomationProperties.ExcludedWithChildren="False">
-                <Label
-                    AutomationProperties.IsInAccessibleTree="True"
-                    Text="Label with IsInAccessibleTree=True in StackLayout with ExcludedWithChildren=False"
-                    FontSize="14"/>
-                <Label
-                    AutomationProperties.IsInAccessibleTree="False"
-                    Text="Label with IsInAccessibleTree=False in StackLayout with ExcludedWithChildren=False"
-                    FontSize="14"/>
-                <Button
-                    AutomationProperties.IsInAccessibleTree="True"
-                    Text="Button with IsInAccessibleTree=True in StackLayout with ExcludedWithChildren=False"
-                    FontSize="14"/>
-                <Button
-                    AutomationProperties.IsInAccessibleTree="False"
-                    Text="Button with IsInAccessibleTree=False in StackLayout with ExcludedWithChildren=False"
-                    FontSize="14"/>
-            </VerticalStackLayout>
-            <VerticalStackLayout AutomationProperties.ExcludedWithChildren="True">
-                <Label
-                    AutomationProperties.IsInAccessibleTree="True"
-                    Text="Label with IsInAccessibleTree=True in StackLayout with ExcludedWithChildren=True"
-                    FontSize="14"/>
-                <Label
-                    AutomationProperties.IsInAccessibleTree="False"
-                    Text="Label with IsInAccessibleTree=False in StackLayout with ExcludedWithChildren=True"
-                    FontSize="14"/>
-                <Button
-                    AutomationProperties.IsInAccessibleTree="True"
-                    Text="Button with IsInAccessibleTree=True in StackLayout with ExcludedWithChildren=True"
-                    FontSize="14"/>
-                <Button
-                    AutomationProperties.IsInAccessibleTree="False"
-                    Text="Button with IsInAccessibleTree=False in StackLayout with ExcludedWithChildren=True"
-                    FontSize="14"/>
-            </VerticalStackLayout>
+            <Label
+                AutomationProperties.IsInAccessibleTree="True"
+                Text="Label with IsInAccessibleTree=True and ExcludedWithChildren=False"
+                FontSize="14"/>
+            <Label
+                AutomationProperties.IsInAccessibleTree="False"
+                Text="Label with IsInAccessibleTree=False and ExcludedWithChildren=False"
+                FontSize="14"/>
+            <Button
+                AutomationProperties.IsInAccessibleTree="True"
+                Text="Button with IsInAccessibleTree=True and ExcludedWithChildren=False"
+                FontSize="14"/>
+            <Button
+                AutomationProperties.IsInAccessibleTree="False"
+                Text="Button with IsInAccessibleTree=False and ExcludedWithChildren=False"
+                FontSize="14"/>
+            <Label
+                AutomationProperties.IsInAccessibleTree="True"
+                AutomationProperties.ExcludedWithChildren="True"
+                Text="Label with IsInAccessibleTree=True and ExcludedWithChildren=False"
+                FontSize="14"/>
+            <Label
+                AutomationProperties.IsInAccessibleTree="False"
+                AutomationProperties.ExcludedWithChildren="True"
+                Text="Label with IsInAccessibleTree=False and ExcludedWithChildren=False"
+                FontSize="14"/>
+            <Button
+                AutomationProperties.IsInAccessibleTree="True"
+                AutomationProperties.ExcludedWithChildren="True"
+                Text="Button with IsInAccessibleTree=True and ExcludedWithChildren=False"
+                FontSize="14"/>
+            <Button
+                AutomationProperties.IsInAccessibleTree="False"
+                AutomationProperties.ExcludedWithChildren="True"
+                Text="Button with IsInAccessibleTree=False and ExcludedWithChildren=False"
+                FontSize="14"/>
+            
         </VerticalStackLayout>
     </ScrollView>
 </views:BasePage>
