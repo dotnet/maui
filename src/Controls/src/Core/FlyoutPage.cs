@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls
 				OnPropertyChanged();
 
 				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout));
-				_flyout.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout));
+				_flyout?.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout));
 			}
 		}
 

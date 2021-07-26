@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls
 				OnCurrentPageChanged();
 
 				previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(_current));
-				_current.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
+				_current?.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
 			}
 		}
 
