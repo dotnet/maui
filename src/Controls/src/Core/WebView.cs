@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(CookiesProperty, value); }
 		}
 
-		[TypeConverter(typeof(WebViewSourceTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(WebViewSourceTypeConverter))]
 		public WebViewSource Source
 		{
 			get { return (WebViewSource)GetValue(SourceProperty); }

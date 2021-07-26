@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Graphics;
 
@@ -8,12 +9,20 @@ namespace Microsoft.Maui.Controls
 	[Xaml.TypeConversion(typeof(Rectangle))]
 	public sealed class BoundsTypeConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+
+			if (strValue != null)
 			{
 				double x = -1, y = -1, w = -1, h = -1;
-				string[] xywh = value.Split(',');
+				string[] xywh = strValue.Split(',');
 				bool hasX, hasY, hasW, hasH;
 
 				hasX = (xywh.Length == 2 || xywh.Length == 4) && double.TryParse(xywh[0], NumberStyles.Number, CultureInfo.InvariantCulture, out x);
@@ -42,9 +51,9 @@ namespace Microsoft.Maui.Controls
 			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Rectangle)}");
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is Rectangle rect))
+			if (value is not Rectangle rect)
 				throw new NotSupportedException();
 			return $"{rect.X.ToString(CultureInfo.InvariantCulture)}, {rect.Y.ToString(CultureInfo.InvariantCulture)}, {(rect.Width == AbsoluteLayout.AutoSize ? nameof(AbsoluteLayout.AutoSize) : rect.Width.ToString(CultureInfo.InvariantCulture))}, {(rect.Height == AbsoluteLayout.AutoSize ? nameof(AbsoluteLayout.AutoSize) : rect.Height.ToString(CultureInfo.InvariantCulture))}";
 		}

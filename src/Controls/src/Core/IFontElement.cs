@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Internals
 		FontAttributes FontAttributes { get; }
 		string FontFamily { get; }
 
-		[TypeConverter(typeof(FontSizeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		double FontSize { get; }
 
 		bool FontAutoScalingEnabled { get; }
