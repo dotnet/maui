@@ -86,7 +86,9 @@ namespace Microsoft.Maui.Controls
 					throw new InvalidOperationException("Flyout must not already have a parent.");
 
 				// TODO MAUI refine this to fire earlier
-				var previousFlyout = value;
+				var previousFlyout = _flyout;
+				// TODO MAUI refine this to fire earlier
+				_flyout?.SendNavigatingFrom(new NavigatingFromEventArgs());
 
 				OnPropertyChanging();
 				if (_flyout != null)

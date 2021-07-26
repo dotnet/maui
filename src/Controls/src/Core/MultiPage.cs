@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 				if (_current == value)
 					return;
 
-				var previousPage = value;
+				var previousPage = _current;
 				OnPropertyChanging();
 
 				// TODO MAUI refine this to fire earlier

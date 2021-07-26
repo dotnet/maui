@@ -87,8 +87,7 @@ namespace Microsoft.Maui.Controls
 			return (Page)InternalChildren[InternalChildren.Count - depth - 1];
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public IEnumerable<Page> Pages => InternalChildren.Cast<Page>();
+		IEnumerable<Page> INavigationPageController.Pages => InternalChildren.Cast<Page>();
 
 		int INavigationPageController.StackDepth
 		{
@@ -298,6 +297,10 @@ namespace Microsoft.Maui.Controls
 			remove => _insertPageBeforeRequested -= value;
 		}
 
+		internal void InitialNativeNavigationStackLoaded()
+		{
+			SendNavigated(null);
+		}
 
 		internal async Task<Page> PopAsyncInner(
 			bool animated,
