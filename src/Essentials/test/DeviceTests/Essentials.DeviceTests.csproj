@@ -4,7 +4,7 @@
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(MauiPlatforms.Replace('net6.0-maccatalyst', ''))</TargetFrameworks>
+    <TargetFrameworks>$(MauiPlatformsNoMacCat)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.Essentials.DeviceTests</RootNamespace>
