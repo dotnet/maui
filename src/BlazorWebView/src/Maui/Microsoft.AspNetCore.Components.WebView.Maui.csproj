@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>net6.0;$(MauiPlatforms)</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <Description>Build .NET MAUI applications with Blazor web UI in the BlazorWebView control.</Description>
