@@ -71,18 +71,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 		}
 
-
-
-
-
-
-
-
-
-
-
-
-
 		private void OnRootComponentsCollectionChanged(object? sender, global::System.Collections.Specialized.NotifyCollectionChangedEventArgs eventArgs)
 		{
 			// If we haven't initialized yet, this is a no-op
