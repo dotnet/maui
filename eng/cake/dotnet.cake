@@ -60,7 +60,9 @@ Task("dotnet-build")
         else
         {
             RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
-            RunMSBuildWithLocalDotNet("./Microsoft.Maui-net6.sln");
+            RunMSBuildWithLocalDotNet("./Microsoft.Maui-net6.sln", new Dictionary<string, string> {
+                ["PublishTrimmed"] = bool.FalseString,
+            });
         }
     });
 
@@ -88,7 +90,8 @@ Task("dotnet-samples")
     {
         RunMSBuildWithLocalDotNet("./Microsoft.Maui.Samples-net6.slnf", new Dictionary<string, string> {
             ["UseWorkload"] = bool.TrueString,
-        });;
+            ["PublishTrimmed"] = bool.FalseString,
+        });
     });
 
 Task("dotnet-test")
