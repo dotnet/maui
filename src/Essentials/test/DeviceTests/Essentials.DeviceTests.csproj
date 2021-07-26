@@ -4,12 +4,11 @@
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>$(MauiPlatformsNoMacCat)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.Essentials.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Essentials.DeviceTests</AssemblyName>
-    <NoWarn>$(NoWarn);NU1703</NoWarn>
 
     <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
     <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
