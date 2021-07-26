@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			{
 				UpdateTextColor();
 			}
-			else if (e.PropertyName == Button.FontProperty.PropertyName)
+			else if (e.PropertyName == FontElement.FontProperty.PropertyName)
 			{
 				UpdateFont();
 			}
@@ -316,7 +316,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				return;
 			}
 
-			Font font = Button.Font;
+			Font font = (Button as ITextStyle).Font;
 
 			if (font == Font.Default && _defaultFontSize == 0f)
 			{

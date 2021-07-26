@@ -5,6 +5,7 @@ using Android.Graphics;
 using Android.Util;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using AColor = Android.Graphics.Color;
@@ -118,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				UpdateTextColor();
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateEnabled();
-			else if (e.PropertyName == Button.FontProperty.PropertyName)
+			else if (e.PropertyName == FontElement.FontProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == Button.CharacterSpacingProperty.PropertyName)
 				UpdateCharacterSpacing();
@@ -153,7 +154,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 		void UpdateFont()
 		{
 			Button button = Element;
-			Font font = button.Font;
+			Font font = (button as ITextStyle).Font;
 
 			if (font == Font.Default && _defaultFontSize == 0f)
 				return;

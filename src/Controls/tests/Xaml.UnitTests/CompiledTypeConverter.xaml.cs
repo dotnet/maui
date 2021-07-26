@@ -17,14 +17,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		public Rectangle RectangleP { get; set; }
 
-		[TypeConverter(typeof(ListStringTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> List { get; set; }
 
 
-		public CompiledTypeConverter()
-		{
-			InitializeComponent();
-		}
+		public CompiledTypeConverter() => InitializeComponent();
 
 		public CompiledTypeConverter(bool useCompiledXaml)
 		{

@@ -252,7 +252,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return;
 			}
 
-			Font font = Font.OfSize(Element.FontFamily, Element.FontSize).WithAttributes(Element.FontAttributes);
+			Font font = Element.ToFont();
 
 			if (font == Font.Default && _defaultFontSize == 0f)
 			{
@@ -273,7 +273,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else
 			{
 				Typeface = font.ToTypeface();
-				SetTextSize(ComplexUnitType.Sp, (float)font.Size);
+				if (font.AutoScalingEnabled)
+					SetTextSize(ComplexUnitType.Sp, (float)font.Size);
+				else
+					SetTextSize(ComplexUnitType.Dip, (float)font.Size);
 			}
 		}
 

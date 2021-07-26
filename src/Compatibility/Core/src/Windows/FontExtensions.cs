@@ -20,13 +20,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			CompatServiceProvider.FontManager.GetFontFamily(Font.OfSize(fontFamily, 0.0));
 
 		internal static void ApplyFont(this Control self, IFontElement element) =>
-			self.UpdateFont(element.AsFont(), CompatServiceProvider.FontManager);
+			self.UpdateFont(element.ToFont(), CompatServiceProvider.FontManager);
 
 		internal static void ApplyFont(this TextBlock self, IFontElement element) =>
-			self.UpdateFont(element.AsFont(), CompatServiceProvider.FontManager);
+			self.UpdateFont(element.ToFont(), CompatServiceProvider.FontManager);
 
 		internal static void ApplyFont(this UI.Xaml.Documents.TextElement self, IFontElement element) =>
-			self.UpdateFont(element.AsFont(), CompatServiceProvider.FontManager);
+			self.UpdateFont(element.ToFont(), CompatServiceProvider.FontManager);
 
 		internal static double GetFontSize(this NamedSize size) => size switch
 		{
@@ -45,8 +45,5 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		internal static bool IsDefault(this IFontElement self) =>
 			self.FontFamily == null && self.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Label), true) && self.FontAttributes == FontAttributes.None;
-
-		static Font AsFont(this IFontElement element) =>
-			Font.OfSize(element.FontFamily, element.FontSize).WithAttributes(element.FontAttributes);
 	}
 }

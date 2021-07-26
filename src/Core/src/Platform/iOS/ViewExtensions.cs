@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public static class ViewExtensions
+	public static partial class ViewExtensions
 	{
 		const string BackgroundLayerName = "MauiBackgroundLayer";
 

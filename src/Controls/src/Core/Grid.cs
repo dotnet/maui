@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls
 			get { return _children; }
 		}
 
-		[TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
 		public ColumnDefinitionCollection ColumnDefinitions
 		{
 			get { return (ColumnDefinitionCollection)GetValue(ColumnDefinitionsProperty); }
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ColumnSpacingProperty, value); }
 		}
 
-		[TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
 		public RowDefinitionCollection RowDefinitions
 		{
 			get { return (RowDefinitionCollection)GetValue(RowDefinitionsProperty); }
