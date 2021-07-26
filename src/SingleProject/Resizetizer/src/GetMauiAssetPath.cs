@@ -43,8 +43,10 @@ namespace Microsoft.Maui.Resizetizer
 			{
 				foreach (var item in Input)
 				{
-					var link = Normalize(item.GetMetadata("Link"));
-					var path = string.IsNullOrEmpty(link) ? item.ItemSpec : link;
+					var link = item.GetMetadata("Link");
+					var path = string.IsNullOrEmpty(link)
+						? Normalize(item.ItemSpec)
+						: Normalize(link);
 					if (Path.IsPathRooted(path))
 					{
 						path = Path.GetFullPath(path);
