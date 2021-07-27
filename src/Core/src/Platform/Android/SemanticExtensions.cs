@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 		{
 			var view = element.GetViewForAccessibility();
 
-			view?.SendAccessibilityEvent(EventTypes.ViewAccessibilityFocused);
+			view?.SendAccessibilityEvent(EventTypes.ViewFocused);
 		}
 
 		internal static View? GetViewForAccessibility(this IFrameworkElement element)
