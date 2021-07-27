@@ -460,7 +460,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void PushExistingNavigationStack()
 		{
-			foreach (var page in Element.Pages)
+			INavigationPageController navigationPageController = Element;
+			foreach (var page in navigationPageController.Pages)
 			{
 				SetPage(page, false, false);
 			}

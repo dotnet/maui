@@ -582,6 +582,7 @@ namespace Microsoft.Maui.Controls
 		View _flyoutFooterView;
 		ShellNavigationManager _navigationManager;
 		ShellFlyoutItemsManager _flyoutManager;
+		Page _previousPage;
 
 		ObservableCollection<Element> _logicalChildren = new ObservableCollection<Element>();
 
@@ -591,17 +592,8 @@ namespace Microsoft.Maui.Controls
 		public Shell()
 		{
 			_navigationManager = new ShellNavigationManager(this);
-			_navigationManager.Navigated += (_, args) =>
-			{
-				OnNavigated(args);
-				Navigated?.Invoke(this, args);
-			};
-
-			_navigationManager.Navigating += (_, args) =>
-			{
-				Navigating?.Invoke(this, args);
-				OnNavigating(args);
-			};
+			_navigationManager.Navigated += (_, args) => SendNavigated(args);
+			_navigationManager.Navigating += (_, args) => SendNavigating(args);
 
 			_flyoutManager = new ShellFlyoutItemsManager(this);
 			Navigation = new NavigationImpl(this);
@@ -891,6 +883,28 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool ValidDefaultShellItem(Element child) => !(child is MenuShellItem);
+
+		void SendNavigated(ShellNavigatedEventArgs args)
+		{
+			Navigated?.Invoke(this, args);
+			OnNavigated(args);
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+		}
+
+		void SendNavigating(ShellNavigatingEventArgs args)
+		{
+			Navigating?.Invoke(this, args);
+			OnNavigating(args);
+
+			if (!args.Cancelled)
+			{
+				_previousPage = CurrentPage;
+				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs());
+			}
+		}
 
 		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
 		{
