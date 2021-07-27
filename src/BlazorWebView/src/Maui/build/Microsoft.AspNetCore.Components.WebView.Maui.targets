@@ -105,4 +105,19 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="_FixUpMauiReference"
+    BeforeTargets="ComputeReferencedProjectsPublishAssets"
+    AfterTargets="LoadStaticWebAssetsBuildManifest">
+
+    <ItemGroup>
+      <_MauiManifestsToUpdate Include="@(StaticWebAssetManifest)" Condition="'%(ManifestType)' == 'Publish'" />
+      <_MauiManifestsToUpdate>
+        <AdditionalPublishPropertiesToRemove>@(_MauiManifestsToUpdate->'%(AdditionalPublishPropertiesToRemove)');TargetFramework</AdditionalPublishPropertiesToRemove>
+      </_MauiManifestsToUpdate>
+
+      <StaticWebAssetManifest Remove="@(_MauiManifestsToUpdate)" />
+      <StaticWebAssetManifest Include="@(_MauiManifestsToUpdate)" />
+    </ItemGroup>
+
+  </Target>
 </Project>
