@@ -410,3 +410,4 @@ stages:
     - template: vs-insertion/stage/v1.yml@xamarin-templates
       parameters:
         dependsOn: nuget_signing
+        approvalTimeoutInMinutes: 30
