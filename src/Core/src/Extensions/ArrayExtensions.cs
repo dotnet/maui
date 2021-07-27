@@ -1,7 +1,6 @@
 using System;
-using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Platform
+namespace Microsoft.Maui
 {
 	internal static class ArrayExtensions
 	{

@@ -5,35 +5,7 @@
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\Microsoft.Extensions.targets" />
 
-  <PropertyGroup>
-    <!--
-      NOTE: Ignore warnings for using Xamarin.iOS in Catalyst
-      error NU1703: 'xunit.core 2.4.1' was resolved as a dependency of 'Microsoft.Maui.TestUtils.DeviceTests', but the dependency is using 'Xamarin.iOS' while 'Microsoft.Maui.TestUtils.DeviceTests' is using 'net6.0-maccatalyst13.5' as its TargetFramework. There might be compatibility issues when MacCatalyst projects depend on Xamarin.iOS projects.
-    -->
-    <NoWarn Condition=" $(TargetFramework.Contains('maccatalyst')) ">$(NoWarn);NU1703</NoWarn>
-  </PropertyGroup>
-
-  <!-- Temporarily disable the linker for net6.0-ios and net6.0-maccatalyst until we get machine pools with Big Sur and Xcode 12.5 is stable -->
-  <PropertyGroup Condition=" '$(CI)' == 'true' ">
-    <PublishTrimmed Condition=" '$(TargetFramework)' == 'net6.0-ios' or '$(TargetFramework)' == 'net6.0-maccatalyst' ">false</PublishTrimmed>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(SingleProject)' == 'true'">
-    <!-- Required - Enable Launch Profiles for .NET 6 iOS/Android -->
-    <_KeepLaunchProfiles>true</_KeepLaunchProfiles>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(SingleProject)' == 'true'">
-    <!-- Required - Setup Single Project features -->
-    <ProjectCapability Include="MauiSingleProject" />
-
-    <!-- Optional - Enables a list of TFM's and device categories in the debug menu -->
-    <!-- This allows easily toggling of debug target TFM by selecting the platform -->
-    <!-- If removed, Top level debug targets show as a list of devices for the selected TFM -->
-    <ProjectCapability Include="XamarinStaticLaunchProfiles" />
-  </ItemGroup>
-
   <!-- HACK: Prevent the Platform checks -->
-  <Target Name="ValidateWinUIPlatform" />
   <Target Name="BinPlaceBootstrapDll" />
 
   <!-- semi HACK: by default, WinUI includes all @(None) with .bmp/.png as @(Content) and adds that to the .pri -->

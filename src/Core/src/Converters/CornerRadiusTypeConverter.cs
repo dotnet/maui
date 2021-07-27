@@ -1,19 +1,26 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Converters
 {
-	[Xaml.TypeConversion(typeof(CornerRadius))]
 	public class CornerRadiusTypeConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
+			=> destinationType == typeof(string);
+
+		public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+			if (strValue != null)
 			{
-				value = value.Trim();
-				if (value.Contains(","))
+				value = strValue.Trim();
+				if (strValue.Contains(","))
 				{ //Xaml
-					var cornerRadius = value.Split(',');
+					var cornerRadius = strValue.Split(',');
 					if (cornerRadius.Length == 4
 						&& double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double tl)
 						&& double.TryParse(cornerRadius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double tr)
@@ -25,9 +32,9 @@ namespace Microsoft.Maui.Controls
 						&& double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
 						return new CornerRadius(l);
 				}
-				else if (value.Trim().Contains(" "))
+				else if (strValue.Trim().Contains(" "))
 				{ //CSS
-					var cornerRadius = value.Split(' ');
+					var cornerRadius = strValue.Split(' ');
 					if (cornerRadius.Length == 2
 						&& double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double t)
 						&& double.TryParse(cornerRadius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double b))
@@ -46,17 +53,17 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{ //single uniform CornerRadius
-					if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
+					if (double.TryParse(strValue, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
 						return new CornerRadius(l);
 				}
 			}
 
-			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(CornerRadius)}");
+			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(CornerRadius)}");
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
-			if (!(value is CornerRadius cr))
+			if (value is not CornerRadius cr)
 				throw new NotSupportedException();
 			return $"{cr.TopLeft.ToString(CultureInfo.InvariantCulture)}, {cr.TopRight.ToString(CultureInfo.InvariantCulture)}, {cr.BottomLeft.ToString(CultureInfo.InvariantCulture)}, {cr.BottomRight.ToString(CultureInfo.InvariantCulture)}";
 

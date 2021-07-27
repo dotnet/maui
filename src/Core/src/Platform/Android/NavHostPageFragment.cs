@@ -12,22 +12,26 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
-using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Handlers;
 using AView = Android.Views.View;
 
-namespace Microsoft.Maui.Controls.Platform
+namespace Microsoft.Maui
 {
 	class NavHostPageFragment : Fragment
 	{
+		private MauiFragmentNavDestination? _navDestination;
+
 		ProcessBackClick BackClick { get; }
 
 		NavHostFragment NavHost =>
-			   (NavHostFragment)
-				   Context
-					   .GetFragmentManager()
-					   .FindFragmentById(Resource.Id.nav_host);
+				   (Context?.GetFragmentManager()?.FindFragmentById(Resource.Id.nav_host)
+			  as NavHostFragment) ?? throw new InvalidOperationException($"NavHost cannot be null here");
 
-		MauiFragmentNavDestination NavDestination { get; set; }
+		MauiFragmentNavDestination NavDestination 
+		{ 
+			get => _navDestination ?? throw new InvalidOperationException($"NavDestination cannot be null here"); 
+			set => _navDestination = value; 
+		}
 
 		protected NavHostPageFragment(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
@@ -41,7 +45,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
-			if (NavDestination == null)
+			if (_navDestination == null)
 			{
 				NavDestination =
 					(MauiFragmentNavDestination)
@@ -73,16 +77,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 			UpdateToolbar();
 			NavDestination.NavigationPageHandler.Toolbar
-				.Title = NavDestination.Page.Title;
+				.Title = (NavDestination.Page as IPage)?.Title;
 
 			if (Context.GetActivity() is AppCompatActivity aca)
 			{
-				aca.SupportActionBar.Title = NavDestination.Page.Title;
+				aca.SupportActionBar.Title = (NavDestination.Page as IPage)?.Title;
 
 				// TODO MAUI put this elsewhere once we figure out how attached property handlers work
-				bool showNavBar = false;
-				if (NavDestination.Page is BindableObject bo)
-					showNavBar = NavigationPage.GetHasNavigationBar(bo);
+				bool showNavBar = true;
+				//if (NavDestination.Page is BindableObject bo)
+				//	showNavBar = NavigationPage.GetHasNavigationBar(bo);
 
 				var appBar = NavDestination.NavigationPageHandler.AppBar;
 				if (!showNavBar)
@@ -161,7 +165,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_navHostPageFragment.HandleOnBackPressed();
 			}
 
-			public void OnClick(AView v)
+			public void OnClick(AView? v)
 			{
 				HandleOnBackPressed();
 			}

@@ -57,7 +57,7 @@
       <_WorkloadFiles Include="$(_InstallTempDirectory)data/WorkloadManifest.*" />
     </ItemGroup>
     <CopyWorkloadFiles
-        Name="Microsoft.NET.Sdk.Maui"
+        Name="microsoft.net.sdk.maui"
         Files="@(_WorkloadFiles)"
         WorkloadDirectory="$(MSBuildExtensionsPath)../../sdk-manifests/$(DotNetPreviewVersionBand)"
         VersionBand="$(DotNetPreviewVersionBand)"

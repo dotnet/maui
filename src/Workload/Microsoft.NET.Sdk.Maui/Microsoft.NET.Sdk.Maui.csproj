@@ -21,10 +21,18 @@
   <Target Name="SetVersions" />
 
   <Target Name="_GenerateWorkloadManifest" BeforeTargets="Build;AssignTargetPaths" DependsOnTargets="SetVersions" Inputs="$(MSBuildProjectFile);WorkloadManifest.in.json" Outputs="$(IntermediateOutputPath)WorkloadManifest.json">
-    <ReplaceText Input="WorkloadManifest.in.json" Output="$(IntermediateOutputPath)WorkloadManifest.json" OldValue="@VERSION@" NewValue="$(PackageVersion)" />
+    <ReplaceText Input="WorkloadManifest.in.json" Output="$(IntermediateOutputPath)WorkloadManifest.json" OldValue="@VERSION@" NewValue="$(PackageReferenceVersion)" />
     <ItemGroup>
       <None Include="$(IntermediateOutputPath)WorkloadManifest.json" Link="WorkloadManifest.json" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="data" Visible="false" />
       <FileWrites Include="$(IntermediateOutputPath)WorkloadManifest.json" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateVSWorkloadProps" AfterTargets="Build" Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/automation/vs-workload.template.props" Outputs="$(PackageOutputPath)/vs-workload.temp.props;$(PackageOutputPath)/vs-workload.props">
+    <ReplaceText Input="$(MauiRootDirectory)eng/automation/vs-workload.template.props" Output="$(PackageOutputPath)/vs-workload.temp.props" OldValue="@PACK_VERSION_LONG@" NewValue="$(PackageReferenceVersion)" />
+    <ReplaceText Input="$(PackageOutputPath)/vs-workload.temp.props" Output="$(PackageOutputPath)/vs-workload.props" OldValue="@VS_COMPONENT_VERSION@" NewValue="$(VSComponentVersion)" />
+    <ItemGroup>
+      <FileWrites Include="$(PackageOutputPath)/vs-workload.props" />
     </ItemGroup>
   </Target>
 

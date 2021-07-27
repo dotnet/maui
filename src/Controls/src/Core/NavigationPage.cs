@@ -37,11 +37,13 @@ namespace Microsoft.Maui.Controls
 
 		INavigationPageController NavigationPageController => this;
 
+		partial void Init();
 		public NavigationPage()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<NavigationPage>>(() => new PlatformConfigurationRegistry<NavigationPage>(this));
 
 			Navigation = new NavigationImpl(this);
+			Init();
 		}
 
 		public NavigationPage(Page root) : this()
@@ -85,8 +87,7 @@ namespace Microsoft.Maui.Controls
 			return (Page)InternalChildren[InternalChildren.Count - depth - 1];
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public IEnumerable<Page> Pages => InternalChildren.Cast<Page>();
+		IEnumerable<Page> INavigationPageController.Pages => InternalChildren.Cast<Page>();
 
 		int INavigationPageController.StackDepth
 		{
@@ -236,7 +237,7 @@ namespace Microsoft.Maui.Controls
 				tcs.SetResult(true);
 				return;
 			}
-
+			
 			CurrentNavigationTask = PushAsyncInner(page, animated);
 			await CurrentNavigationTask;
 		}
@@ -296,6 +297,10 @@ namespace Microsoft.Maui.Controls
 			remove => _insertPageBeforeRequested -= value;
 		}
 
+		internal void InitialNativeNavigationStackLoaded()
+		{
+			SendNavigated(null);
+		}
 
 		internal async Task<Page> PopAsyncInner(
 			bool animated,
@@ -308,7 +313,11 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var page = (Page)InternalChildren.Last();
-			return await RemoveAsyncInner(page, animated, fast, requestedFromHandler);
+			var previousPage = CurrentPage;
+			SendNavigating();
+			var removedPage = await RemoveAsyncInner(page, animated, fast, requestedFromHandler);
+			SendNavigated(previousPage);
+			return removedPage;
 		}
 
 		internal async Task<Page> RemoveAsyncInner(
@@ -352,6 +361,18 @@ namespace Microsoft.Maui.Controls
 
 			return page;
 		}
+
+		void SendNavigated(Page previousPage)
+		{
+			previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
+		}
+
+		void SendNavigating()
+		{
+			CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs());
+		}
+
 
 		Task<Page> INavigationPageController.PopAsyncInner(bool animated, bool fast)
 		{
@@ -407,6 +428,8 @@ namespace Microsoft.Maui.Controls
 			if (NavigationPageController.StackDepth == 1)
 				return;
 
+			var previousPage = CurrentPage;
+			SendNavigating();
 			FireDisappearing(CurrentPage);
 			FireAppearing((Page)InternalChildren[0]);
 
@@ -428,6 +451,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			PoppedToRoot?.Invoke(this, new PoppedToRootEventArgs(RootPage, childrenToRemove.OfType<Page>().ToList()));
+			SendNavigated(previousPage);
 		}
 
 		void FireDisappearing(Page page)
@@ -447,6 +471,8 @@ namespace Microsoft.Maui.Controls
 			if (InternalChildren.Contains(page))
 				return;
 
+			var previousPage = CurrentPage;
+			SendNavigating();
 			FireDisappearing(CurrentPage);
 			FireAppearing(page);
 
@@ -463,6 +489,7 @@ namespace Microsoft.Maui.Controls
 					await args.Task;
 			}
 
+			SendNavigated(previousPage);
 			Pushed?.Invoke(this, args);
 		}
 

@@ -4,26 +4,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
-using Microsoft.Maui.Controls.Handlers;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Platform
+namespace Microsoft.Maui
 {
-	public class ControlsNavigationController : UINavigationController
+	internal class ControlsNavigationController : UINavigationController
 	{
 		readonly NavigationPageHandler _handler;
 		Dictionary<UIViewController, TaskCompletionSource<bool>> _completionTasks =
 							new Dictionary<UIViewController, TaskCompletionSource<bool>>();
-		TaskCompletionSource<bool> _popCompletionTask;
+		TaskCompletionSource<bool>? _popCompletionTask;
 
 		// This holds the view controllers for each page
-		readonly Dictionary<IPage, INativeViewHandler> _trackers =
-			new Dictionary<IPage, INativeViewHandler>();
+		readonly Dictionary<IView, INativeViewHandler> _trackers =
+			new Dictionary<IView, INativeViewHandler>();
 
-		IReadOnlyList<Page> NavigationStack => _handler.VirtualView.Navigation.NavigationStack;
+		IReadOnlyList<IView> NavigationStack => _handler.VirtualView.NavigationStack;
 
 		public ControlsNavigationController(NavigationPageHandler handler) : base()
 		{
@@ -39,12 +37,14 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		[Export("navigationBar:shouldPopItem:")]
-		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public bool ShouldPopItem(UINavigationBar navigationBar, UINavigationItem item) =>
 			SendPop();
 
 		internal bool SendPop()
 		{
+			if (ViewControllers == null)
+				return false;
+
 			// this means the pop is already done, nothing we can do
 			if (ViewControllers.Length < NavigationBar.Items.Length)
 				return true;
@@ -106,6 +106,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var poppedPage = NavigationStack[NavigationStack.Count - 1];
+			
 			_handler.SendPopping(popTask);
 
 			await popTask;
@@ -113,18 +114,24 @@ namespace Microsoft.Maui.Controls.Platform
 			DisposePage(poppedPage);
 		}
 
-		void DisposePage(IPage page, bool calledFromDispose = false)
+		void DisposePage(IView page, bool calledFromDispose = false)
 		{
+			if (ViewControllers == null)
+				return;
+
 			if (_trackers.TryGetValue(page, out var tracker))
 			{
-				if (!calledFromDispose && tracker.ViewController != null && ViewControllers.Contains(tracker.ViewController))
-					ViewControllers = ViewControllers.Remove(_trackers[page].ViewController);
+				if (!calledFromDispose && tracker.ViewController != null && ViewControllers.Contains(tracker.ViewController) &&
+					_trackers[page].ViewController != null)
+				{
+					ViewControllers = ViewControllers.Remove(_trackers[page].ViewController!);
+				}
 
 				_trackers.Remove(page);
 			}
 		}
 
-		internal async Task OnPopRequestedAsync(NavigationRequestedEventArgs e)
+		internal async Task OnPopRequestedAsync(MauiNavigationRequestedEventArgs e)
 		{
 			var page = e.Page;
 			var animated = e.Animated;
@@ -145,7 +152,7 @@ namespace Microsoft.Maui.Controls.Platform
 				PushPage(page, false, mauiContext);
 		}
 
-		internal void OnPushRequested(NavigationRequestedEventArgs e, IMauiContext mauiContext)
+		internal void OnPushRequested(MauiNavigationRequestedEventArgs e, IMauiContext mauiContext)
 		{
 			var page = e.Page;
 			var animated = e.Animated;
@@ -157,10 +164,10 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 
-		void PushPage(IPage page, bool animated, IMauiContext mauiContext, TaskCompletionSource<bool> completionSource = null)
+		void PushPage(IView page, bool animated, IMauiContext mauiContext, TaskCompletionSource<bool>? completionSource = null)
 		{
 			var viewController = page.ToUIViewController(mauiContext);
-			var handler = (INativeViewHandler)page.Handler;
+			var handler = (INativeViewHandler)page.Handler!;
 
 			_trackers[page] = handler;
 
@@ -170,7 +177,7 @@ namespace Microsoft.Maui.Controls.Platform
 			PushViewController(viewController, animated);
 		}
 
-		IPage ElementForViewController(UIViewController viewController)
+		IView? ElementForViewController(UIViewController viewController)
 		{
 			foreach (var child in _trackers)
 			{
@@ -196,7 +203,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// https://github.com/xamarin/Microsoft.Maui.Controls.Compatibility/issues/10519
 			[Export("navigationController:animationControllerForOperation:fromViewController:toViewController:")]
 			[Foundation.Preserve(Conditional = true)]
-			public new IUIViewControllerAnimatedTransitioning GetAnimationControllerForOperation(UINavigationController navigationController, UINavigationControllerOperation operation, UIViewController fromViewController, UIViewController toViewController)
+			public new IUIViewControllerAnimatedTransitioning? GetAnimationControllerForOperation(UINavigationController navigationController, UINavigationControllerOperation operation, UIViewController fromViewController, UIViewController toViewController)
 			{
 				return null;
 			}
@@ -223,8 +230,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 				bool navBarVisible = true;
 
-				if (element is BindableObject bo)
-					navBarVisible = NavigationPage.GetHasNavigationBar(bo);
+				//if (element is BindableObject bo)
+				//	navBarVisible = NavigationPage.GetHasNavigationBar(bo);
 
 				navigationController.SetNavigationBarHidden(!navBarVisible, true);
 

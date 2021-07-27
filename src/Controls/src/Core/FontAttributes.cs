@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
@@ -14,23 +16,31 @@ namespace Microsoft.Maui.Controls
 	[Xaml.TypeConversion(typeof(FontAttributes))]
 	public sealed class FontAttributesConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (string.IsNullOrEmpty(value))
+			var strValue = value?.ToString();
+
+			if (string.IsNullOrEmpty(strValue))
 				return FontAttributes.None;
 
 			FontAttributes attributes = FontAttributes.None;
-			value = value.Trim();
-			if (value.Contains(","))
+			strValue = strValue.Trim();
+			if (strValue.Contains(","))
 			{ //Xaml
-				foreach (var part in value.Split(','))
-					attributes |= ParseSingleAttribute(part, value);
+				foreach (var part in strValue.Split(','))
+					attributes |= ParseSingleAttribute(part, strValue);
 
 			}
 			else
 			{ //CSS or single value
-				foreach (var part in value.Split(' '))
-					attributes |= ParseSingleAttribute(part, value);
+				foreach (var part in strValue.Split(' '))
+					attributes |= ParseSingleAttribute(part, strValue);
 			}
 			return attributes;
 		}
@@ -48,9 +58,9 @@ namespace Microsoft.Maui.Controls
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", originalvalue, typeof(FontAttributes)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is FontAttributes attr))
+			if (value is not FontAttributes attr)
 				throw new NotSupportedException();
 			if (attr == FontAttributes.None)
 				return "";
