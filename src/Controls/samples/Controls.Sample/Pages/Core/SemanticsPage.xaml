@@ -184,7 +184,20 @@
                     Text="Button in StackLayout with semantic description"
                     FontSize="14"/>
             </VerticalStackLayout>
-
+			<Label
+                Text="Explore SemanticExtensions below"
+                TextColor="RoyalBlue"
+                FontAttributes="Bold"
+                FontSize="16"
+                Margin="0,10"/>
+            <Button
+                Text="Click to set semantic focus to label below"
+                FontSize="14"
+                Clicked="SetSemanticFocusButton_Clicked"/>
+            <Label
+                x:Name="semanticFocusLabel"
+                Text="Label receiving semantic focus"
+                FontSize="14"/>
             <Label
                 Text="Explore AutomationProperties on controls within layouts below"
                 TextColor="RoyalBlue"
