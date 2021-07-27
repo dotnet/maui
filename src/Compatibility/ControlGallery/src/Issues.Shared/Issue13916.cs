@@ -1,24 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
-
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
-using Xamarin.Forms.Core.UITests;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls.Issues
+namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 13916, "[iOS] iOS Application crashes on Back press when navigated to using GoToAsync with \"//\" or \"///\" route if 2 or more things are removed from the navigation stack",
 		PlatformAffected.iOS)]
 #if UITEST
-	[NUnit.Framework.Category(Core.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.Shell)]
 #endif
 	public class Issue13916 : TestShell
