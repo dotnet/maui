@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,13 +42,6 @@ namespace Microsoft.Maui.Controls
 		{
 			// Update the Bounds (Frame) for this page
 			Layout(bounds);
-
-			if (Content is IFrameworkElement element and VisualElement visualElement)
-			{
-				visualElement.Frame = element.ComputeFrame(bounds);
-				element.Handler?.NativeArrange(visualElement.Frame);
-			}
-
 			return Frame.Size;
 		}
 

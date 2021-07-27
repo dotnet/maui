@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Layouts
 			return new Size(finalWidth, finalHeight);
 		}
 
-		public override void ArrangeChildren(Rectangle bounds) 
+		public override Size ArrangeChildren(Rectangle bounds) 
 		{
 			var padding = Stack.Padding;
 
@@ -59,10 +59,11 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				var destination = new Rectangle(left, stackHeight, width, child.DesiredSize.Height);
-				child.Frame = child.ComputeFrame(destination);
-				child.Arrange(child.Frame);
+				child.Arrange(destination);
 				stackHeight += destination.Height + Stack.Spacing;
 			}
+
+			return new Size(width, stackHeight);
 		}
 	}
 }

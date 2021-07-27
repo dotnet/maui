@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Handlers
 
 			var viewGroup = new LayoutViewGroup(Context!)
 			{
-				CrossPlatformMeasure = VirtualView.Measure,
-				CrossPlatformArrange = VirtualView.Arrange
+				CrossPlatformMeasure = VirtualView.LayoutManager.Measure,
+				CrossPlatformArrange = VirtualView.LayoutManager.ArrangeChildren
 			};
 
 			return viewGroup;
@@ -29,8 +29,8 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.CrossPlatformMeasure = VirtualView.Measure;
-			NativeView.CrossPlatformArrange = VirtualView.Arrange;
+			NativeView.CrossPlatformMeasure = VirtualView.LayoutManager.Measure;
+			NativeView.CrossPlatformArrange = VirtualView.LayoutManager.ArrangeChildren;
 
 			NativeView.RemoveAllViews();
 			foreach (var child in VirtualView)

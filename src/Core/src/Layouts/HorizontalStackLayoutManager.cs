@@ -41,24 +41,27 @@ namespace Microsoft.Maui.Layouts
 			return new Size(finalWidth, finalHeight);
 		}
 
-		public override void ArrangeChildren(Rectangle bounds)
+		public override Size ArrangeChildren(Rectangle bounds)
 		{
 			var padding = Stack.Padding;
 			var height = bounds.Height - padding.VerticalThickness;
+			double stackWidth = 0;
 
 			if (Stack.FlowDirection == FlowDirection.LeftToRight)
 			{
-				ArrangeLeftToRight(height, padding.Left, padding.Top, Stack.Spacing, Stack);
+				stackWidth = ArrangeLeftToRight(height, padding.Left, padding.Top, Stack.Spacing, Stack);
 			}
 			else
 			{
 				// We _could_ simply reverse the list of child views when arranging from right to left, 
 				// but this way we avoid extra list and enumerator allocations
-				ArrangeRightToLeft(height, padding.Left, padding.Top, Stack.Spacing, Stack);
+				stackWidth = ArrangeRightToLeft(height, padding.Left, padding.Top, Stack.Spacing, Stack);
 			}
+
+			return new Size(height, stackWidth);
 		}
 
-		static void ArrangeLeftToRight(double height, double left, double top, double spacing, IList<IView> children)
+		static double ArrangeLeftToRight(double height, double left, double top, double spacing, IList<IView> children)
 		{
 			double xPosition = left;
 
@@ -73,9 +76,11 @@ namespace Microsoft.Maui.Layouts
 
 				xPosition += ArrangeChild(child, height, top, spacing, xPosition);
 			}
+
+			return xPosition;
 		}
 
-		static void ArrangeRightToLeft(double height, double left, double top, double spacing, IList<IView> children)
+		static double ArrangeRightToLeft(double height, double left, double top, double spacing, IList<IView> children)
 		{
 			double xPostition = left;
 
@@ -90,13 +95,14 @@ namespace Microsoft.Maui.Layouts
 
 				xPostition += ArrangeChild(child, height, top, spacing, xPostition);
 			}
+
+			return xPostition;
 		}
 
 		static double ArrangeChild(IView child, double height, double top, double spacing, double x)
 		{
 			var destination = new Rectangle(x, top, child.DesiredSize.Width, height);
-			child.Frame = child.ComputeFrame(destination);
-			child.Arrange(child.Frame);
+			child.Arrange(destination);
 			return destination.Width + spacing;
 		}
 	}
