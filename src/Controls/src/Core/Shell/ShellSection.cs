@@ -115,7 +115,6 @@ namespace Microsoft.Maui.Controls
 			await poppingCompleted;
 
 			RemovePage(page);
-			SendUpdateCurrentState(ShellNavigationSource.Pop);
 		}
 
 		async void IShellSectionController.SendPoppingToRoot(Task finishedPopping)
@@ -134,13 +133,47 @@ namespace Microsoft.Maui.Controls
 
 			for (int i = 1; i < oldStack.Count; i++)
 				RemovePage(oldStack[i]);
+		}
 
-			SendUpdateCurrentState(ShellNavigationSource.PopToRoot);
+		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+
+		void IShellSectionController.SendPopped()
+		{
+			if (_navStack.Count <= 1)
+				throw new Exception("Nav Stack consistency error");
+
+			var last = _navStack[_navStack.Count - 1];
+			_navStack.Remove(last);
+
+			RemovePage(last);
 		}
 
 		// we want the list returned from here to remain point in time accurate
 		ReadOnlyCollection<ShellContent> IShellSectionController.GetItems()
 			=> new ReadOnlyCollection<ShellContent>(((ShellContentCollection)Items).VisibleItemsReadOnly.ToList());
+
+		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		void IShellSectionController.SendPopping(Page page)
+		{
+			if (_navStack.Count <= 1)
+				throw new Exception("Nav Stack consistency error");
+
+			_navStack.Remove(page);
+			SendAppearanceChanged();
+		}
+
+		[Obsolete]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		void IShellSectionController.SendPopped(Page page)
+		{
+			if (_navStack.Contains(page))
+				_navStack.Remove(page);
+
+			RemovePage(page);
+		}
+
 
 		event NotifyCollectionChangedEventHandler IShellSectionController.ItemsCollectionChanged
 		{
@@ -532,7 +565,7 @@ namespace Microsoft.Maui.Controls
 
 			if (Parent?.Parent is IShellController shell)
 			{
-				shell.UpdateCurrentState(ShellNavigationSource.ShellSectionChanged);
+				//shell.UpdateCurrentState(ShellNavigationSource.ShellSectionChanged);
 			}
 		}
 
@@ -602,6 +635,9 @@ namespace Microsoft.Maui.Controls
 			base.OnChildAdded(child);
 			OnVisibleChildAdded(child);
 		}
+
+		[Obsolete("OnChildRemoved(Element) is obsolete as of version 4.8.0. Please use OnChildRemoved(Element, int) instead.")]
+		protected override void OnChildRemoved(Element child) => OnChildRemoved(child, -1);
 
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
@@ -681,8 +717,6 @@ namespace Microsoft.Maui.Controls
 			};
 
 			_navigationRequested?.Invoke(this, args);
-
-			SendUpdateCurrentState(ShellNavigationSource.Insert);
 		}
 
 		protected async virtual Task<Page> OnPopAsync(bool animated)
@@ -718,8 +752,6 @@ namespace Microsoft.Maui.Controls
 			if (args.Task != null)
 				await args.Task;
 			RemovePage(page);
-
-			SendUpdateCurrentState(ShellNavigationSource.Pop);
 
 			return page;
 		}
@@ -761,7 +793,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			PresentedPageAppearing();
-			SendUpdateCurrentState(ShellNavigationSource.PopToRoot);
 		}
 
 		protected virtual Task OnPushAsync(Page page, bool animated)
@@ -790,8 +821,6 @@ namespace Microsoft.Maui.Controls
 			PresentedPageAppearing();
 			AddPage(page);
 			_navigationRequested?.Invoke(this, args);
-
-			SendUpdateCurrentState(ShellNavigationSource.Push);
 
 			if (args.Task == null)
 				return Task.FromResult(true);
@@ -824,8 +853,6 @@ namespace Microsoft.Maui.Controls
 					bool isAnimated = animated ?? (Shell.GetPresentationMode(pageToPop) & PresentationMode.NotAnimated) != PresentationMode.NotAnimated;
 					await Navigation.PopModalAsync(isAnimated);
 				}
-
-				((IShellController)Shell).UpdateCurrentState(ShellNavigationSource.ShellSectionChanged);
 			}
 			finally
 			{
@@ -868,8 +895,6 @@ namespace Microsoft.Maui.Controls
 				RequestType = NavigationRequestType.Remove
 			};
 			_navigationRequested?.Invoke(this, args);
-
-			SendUpdateCurrentState(ShellNavigationSource.Remove);
 		}
 
 		internal bool IsVisibleSection => Parent?.Parent is Shell shell && shell.CurrentItem?.CurrentItem == this;
@@ -970,14 +995,6 @@ namespace Microsoft.Maui.Controls
 
 		void SendAppearanceChanged() => ((IShellController)Parent?.Parent)?.AppearanceChanged(this, false);
 
-		void SendUpdateCurrentState(ShellNavigationSource source)
-		{
-			if (Parent?.Parent is IShellController shell)
-			{
-				shell.UpdateCurrentState(source);
-			}
-		}
-
 		protected override void OnBindingContextChanged()
 		{
 			base.OnBindingContextChanged();
@@ -1007,8 +1024,6 @@ namespace Microsoft.Maui.Controls
 			public NavigationImpl(ShellSection owner) => _owner = owner;
 
 			protected override IReadOnlyList<Page> GetNavigationStack() => _owner.GetNavigationStack();
-
-			protected override void OnInsertPageBefore(Page page, Page before) => _owner.OnInsertPageBefore(page, before);
 
 			protected override async Task<Page> OnPopAsync(bool animated)
 			{
@@ -1073,7 +1088,64 @@ namespace Microsoft.Maui.Controls
 				return _owner.Shell.NavigationManager.GoToAsync(navigationParameters);
 			}
 
-			protected override void OnRemovePage(Page page) => _owner.OnRemovePage(page);
+			protected override void OnRemovePage(Page page)
+			{
+				if (!_owner.IsVisibleSection || _owner.Shell.NavigationManager.AccumulateNavigatedEvents)
+				{
+					_owner.OnRemovePage(page);
+					return;
+				}
+
+				var stack = _owner.Stack.ToList();
+				stack.Remove(page);
+				var navigationState = GetUpdatedStatus(stack);
+
+				ShellNavigatingEventArgs shellNavigatingEventArgs = new ShellNavigatingEventArgs(
+					_owner.Shell.CurrentState,
+					navigationState.Location,
+					ShellNavigationSource.Remove,
+					false);
+
+				_owner.Shell.NavigationManager.HandleNavigating(shellNavigatingEventArgs);
+				_owner.OnRemovePage(page);
+				(_owner.Shell as IShellController).UpdateCurrentState(ShellNavigationSource.Remove);
+			}
+
+			protected override void OnInsertPageBefore(Page page, Page before)
+			{
+				if (!_owner.IsVisibleSection || _owner.Shell.NavigationManager.AccumulateNavigatedEvents)
+				{
+					_owner.OnInsertPageBefore(page, before);
+					return;
+				}
+
+				var stack = _owner.Stack.ToList();
+				var index = stack.IndexOf(before);
+				if (index == -1)
+					throw new ArgumentException("Page not found in nav stack");
+
+				stack.Insert(index, page);
+				var navigationState = GetUpdatedStatus(stack);
+
+				ShellNavigatingEventArgs shellNavigatingEventArgs = new ShellNavigatingEventArgs(
+					_owner.Shell.CurrentState,
+					navigationState.Location,
+					ShellNavigationSource.Insert,
+					false);
+
+				_owner.Shell.NavigationManager.HandleNavigating(shellNavigatingEventArgs);
+				_owner.OnInsertPageBefore(page, before);
+				(_owner.Shell as IShellController).UpdateCurrentState(ShellNavigationSource.Insert);
+			}
+
+			ShellNavigationState GetUpdatedStatus(IReadOnlyList<Page> stack)
+			{
+				var shellItem = _owner.Shell.CurrentItem;
+				var shellSection = shellItem?.CurrentItem;
+				var shellContent = shellSection?.CurrentItem;
+				var modalStack = shellSection?.Navigation?.ModalStack;
+				return ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, stack, modalStack);
+			}
 		}
 	}
 }
