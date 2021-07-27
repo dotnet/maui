@@ -159,7 +159,7 @@
                 FontSize="14"
                 SemanticProperties.HeadingLevel="Level3"/>
             <HorizontalStackLayout>
-                <Label Text="Checkbox on iOS will read as a switch"></Label>
+                <Label AutomationProperties.IsInAccessibleTree="False" Text="Checkbox on iOS will read as a switch"></Label>
                 <CheckBox SemanticProperties.Description="Checkbox on iOS will read as a switch"></CheckBox>
                 <CheckBox SemanticProperties.Description="Checkbox on iOS will read as a switch" Color="DodgerBlue"></CheckBox>
             </HorizontalStackLayout>
