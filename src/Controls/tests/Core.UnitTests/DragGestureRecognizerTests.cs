@@ -125,7 +125,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[TestCase(typeof(Label), "LabelTest")]
 		[TestCase(typeof(Editor), "EditorTest")]
 		[TestCase(typeof(TimePicker), "01:00:00")]
-		[TestCase(typeof(DatePicker), "12/12/2020 12:00:00 AM")]
 		[TestCase(typeof(CheckBox), "True")]
 		[TestCase(typeof(Switch), "True")]
 		[TestCase(typeof(RadioButton), "True")]
