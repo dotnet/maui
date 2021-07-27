@@ -5,9 +5,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Core.UnitTests
+namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	[TestFixture]
 	public class ShellNavigatedArgsTests : ShellTestBase
