@@ -7,11 +7,11 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[System.ComponentModel.TypeConverter(typeof(ConstraintTypeConverter))]
-	public sealed class Constraint
+	public class Constraint
 	{
 		Func<RelativeLayout, double> _measureFunc;
 
-		Constraint()
+		public Constraint()
 		{
 		}
 

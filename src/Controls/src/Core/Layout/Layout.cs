@@ -27,6 +27,8 @@ namespace Microsoft.Maui.Controls
 
 		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
 
+		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
+
 		public Thickness Padding
 		{
 			get => (Thickness)GetValue(PaddingElement.PaddingProperty);
