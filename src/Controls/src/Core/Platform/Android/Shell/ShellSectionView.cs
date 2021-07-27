@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (SectionController.GetItems().Count == 1)
 			{
-				_tablayout.Visibility = ViewStates.Gone;
+				UpdateTablayoutVisibility();
 			}
 
 			_tablayout.LayoutChange += OnTabLayoutChange;
@@ -262,8 +262,19 @@ namespace Microsoft.Maui.Controls.Platform
 			AnimationFinished?.Invoke(this, e);
 		}
 
-		protected virtual void OnItemsCollectionChagned(object sender, NotifyCollectionChangedEventArgs e) =>
+		protected virtual void OnItemsCollectionChagned(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			UpdateTablayoutVisibility();
+		}
+
+		void UpdateTablayoutVisibility()
+		{
 			_tablayout.Visibility = (SectionController.GetItems().Count > 1) ? ViewStates.Visible : ViewStates.Gone;
+			if (_tablayout.Visibility == ViewStates.Gone)
+				_viewPager.ImportantForAccessibility = ImportantForAccessibility.No;
+			else
+				_viewPager.ImportantForAccessibility = ImportantForAccessibility.Auto;
+		}
 
 		protected virtual void OnShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
