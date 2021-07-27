@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Layouts
 			return new Size(_gridStructure.GridWidth(), _gridStructure.GridHeight());
 		}
 
-		public override void ArrangeChildren(Rectangle childBounds)
+		public override Size ArrangeChildren(Rectangle childBounds)
 		{
 			var structure = _gridStructure ?? new GridStructure(Grid, childBounds.Width, childBounds.Height);
 
@@ -35,9 +35,10 @@ namespace Microsoft.Maui.Layouts
 
 				var cell = structure.GetCellBoundsFor(view);
 
-				view.Frame = view.ComputeFrame(cell);
-				view.Arrange(view.Frame);
+				view.Arrange(cell);
 			}
+
+			return new Size(structure.GridWidth(), structure.GridHeight());
 		}
 
 		class GridStructure

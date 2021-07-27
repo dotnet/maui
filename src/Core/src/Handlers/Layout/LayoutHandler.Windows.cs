@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
@@ -22,8 +23,8 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.CrossPlatformMeasure = VirtualView.Measure;
-			NativeView.CrossPlatformArrange = VirtualView.Arrange;
+			NativeView.CrossPlatformMeasure = VirtualView.LayoutManager.Measure;
+			NativeView.CrossPlatformArrange = VirtualView.LayoutManager.ArrangeChildren;
 
 			NativeView.Children.Clear();
 			foreach (var child in VirtualView)
@@ -52,8 +53,8 @@ namespace Microsoft.Maui.Handlers
 
 			var view = new LayoutPanel
 			{
-				CrossPlatformMeasure = VirtualView.Measure,
-				CrossPlatformArrange = VirtualView.Arrange,
+				CrossPlatformMeasure = VirtualView.LayoutManager.Measure,
+				CrossPlatformArrange = VirtualView.LayoutManager.ArrangeChildren,
 			};
 
 			return view;

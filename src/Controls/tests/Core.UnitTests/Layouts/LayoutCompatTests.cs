@@ -32,59 +32,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		}
 
 		[Test]
-		public void VerticalStackLayoutInsideStackLayout()
-		{
-			var stackLayout = new StackLayout() { IsPlatformEnabled = true };
-			var verticalStackLayout = new VerticalStackLayout() { IsPlatformEnabled = true };
-			var button = new Button() { IsPlatformEnabled = true, HeightRequest = 100, WidthRequest = 100 };
-			var expectedSize = new Size(100, 100);
-
-			var buttonHandler = Substitute.For<IViewHandler>();
-			buttonHandler.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
-			button.Handler = buttonHandler;
-
-			stackLayout.Children.Add(verticalStackLayout);
-			verticalStackLayout.Add(button);
-
-			var rect = new Rectangle(0, 0, 100, 100);
-			Layout.LayoutChildIntoBoundingRegion(stackLayout, rect);
-
-			// Normally this would get called from the native platform
-			(verticalStackLayout as IFrameworkElement).Arrange(rect);
-
-			Assert.AreEqual(expectedSize, button.Bounds.Size);
-		}
-
-		[Test]
-		public void StackLayoutInsideVerticalStackLayout()
-		{
-			var expectedSize = new Size(100, 100);
-			var expectedRect = new Rectangle(Point.Zero, expectedSize);
-
-			var stackLayout = new StackLayout() { IsPlatformEnabled = true };
-			var slHandler = Substitute.For<ILayoutHandler>();
-			stackLayout.Handler = slHandler;
-
-			var verticalStackLayout = new VerticalStackLayout() { IsPlatformEnabled = true };
-			var vslHandler = Substitute.For<ILayoutHandler>();
-			verticalStackLayout.Handler = vslHandler;
-
-			var button = new Button() { IsPlatformEnabled = true, HeightRequest = 100, WidthRequest = 100 };
-			var buttonHandler = Substitute.For<IViewHandler>();
-			buttonHandler.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
-			button.Handler = buttonHandler;
-
-			verticalStackLayout.Add(stackLayout);
-			stackLayout.Children.Add(button);
-
-			(verticalStackLayout as IFrameworkElement).Measure(expectedRect.Width, expectedRect.Height);
-			(verticalStackLayout as IFrameworkElement).Arrange(expectedRect);
-
-			slHandler.Received().NativeArrange(expectedRect);
-			Assert.AreEqual(expectedSize, stackLayout.Bounds.Size);
-		}
-
-		[Test]
 		public void GridInsideStackLayout()
 		{
 			ContentPage contentPage = new ContentPage();

@@ -1,11 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class LayoutStub : StubBase, ILayout
 	{
+		ILayoutManager _layoutManager;
 		IList<IView> _children = new List<IView>();
 
 		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
@@ -63,6 +66,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Thickness Padding { get; set; }
 		public int Count => _children.Count;
 		public bool IsReadOnly => _children.IsReadOnly;
+
+		public ILayoutManager LayoutManager => _layoutManager ??= new LayoutManagerStub();
 
 		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
 	}

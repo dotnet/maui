@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Layout2
 	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IPaddingElement
 	{
 		ILayoutManager _layoutManager;
-		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
+		public ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
 
 		// The actual backing store for the IViews in the ILayout
 		readonly List<IView> _children = new();
@@ -45,30 +45,6 @@ namespace Microsoft.Maui.Controls.Layout2
 		{
 			var size = (this as IFrameworkElement).Measure(widthConstraint, heightConstraint);
 			return new SizeRequest(size);
-		}
-
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-		{
-			var margin = (this as IView)?.Margin ?? Thickness.Zero;
-			// Adjust the constraints to account for the margins
-			widthConstraint -= margin.HorizontalThickness;
-			heightConstraint -= margin.VerticalThickness;
-			var sizeWithoutMargins = LayoutManager.Measure(widthConstraint, heightConstraint);
-			DesiredSize = new Size(sizeWithoutMargins.Width + Margin.HorizontalThickness,
-				sizeWithoutMargins.Height + Margin.VerticalThickness);
-			return DesiredSize;
-		}
-		
-		protected override Size ArrangeOverride(Rectangle bounds)
-		{
-			base.ArrangeOverride(bounds);
-			Frame = bounds;
-			LayoutManager.ArrangeChildren(Frame);
-			foreach (var child in Children)
-			{
-				child.Handler?.NativeArrange(child.Frame);
-			}
-			return Frame.Size;
 		}
 
 		protected override void InvalidateMeasureOverride()
