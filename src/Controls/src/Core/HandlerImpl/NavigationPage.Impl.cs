@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Layouts;
+﻿using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -25,18 +20,10 @@ namespace Microsoft.Maui.Controls
 		{
 			// Update the Bounds (Frame) for this page
 			Layout(bounds);
-
-			if (Content is IFrameworkElement element and VisualElement visualElement)
-			{
-				visualElement.Frame = element.ComputeFrame(bounds);
-				element.Handler?.NativeArrange(visualElement.Frame);
-			}
-
 			return Frame.Size;
 		}
 
-		IFrameworkElement Content =>
-			this.CurrentPage;
+		IFrameworkElement Content => CurrentPage;
 	}
 
 }

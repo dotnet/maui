@@ -259,11 +259,6 @@ namespace Microsoft.Maui.Controls
 				if (child == null)
 					continue;
 
-				if (child is Layout2.Layout)
-				{
-					continue;
-				}
-
 				var page = child as Page;
 				if (page != null && page.IgnoresContainerArea)
 					Maui.Controls.Layout.LayoutChildIntoBoundingRegion(child, originalArea);

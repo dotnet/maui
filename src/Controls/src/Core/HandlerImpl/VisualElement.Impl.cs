@@ -60,10 +60,12 @@ namespace Microsoft.Maui.Controls
 			return ArrangeOverride(bounds);
 		}
 
-		// ArrangeOverride provides a way to allow subclasses (e.g., Layout) to override Arrange even though
+		// ArrangeOverride provides a way to allow subclasses (e.g., ScrollView) to override Arrange even though
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
+			Frame = this.ComputeFrame(bounds);
+			Handler?.NativeArrange(Frame);
 			return Frame.Size;
 		}
 
