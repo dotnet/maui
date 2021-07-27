@@ -56,10 +56,12 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			Layout(this.ComputeFrame(bounds));
+			var frame = this.ComputeFrame(bounds);
 
 			// Force a native arrange call; otherwise, the native bookkeeping won't be done and things won't lay out correctly
-			Handler?.NativeArrange(Frame);
+			Handler?.NativeArrange(frame);
+
+			Layout(frame);
 
 			return Frame.Size;
 		}

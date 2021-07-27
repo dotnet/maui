@@ -40,7 +40,6 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Shapes.Polygon), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Polyline), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Rectangle), typeof(ShapeViewHandler) },
-			{ typeof(Layout), typeof(LayoutHandler) },
 			{ typeof(Window), typeof(WindowHandler) },
 			//{ typeof(NavigationPage), typeof(NavigationPageHandler) },
 		};
