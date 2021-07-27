@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>
+	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeHelper
 	{
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		Task<IDictionary<string, object>> _propertiesTask;
@@ -437,5 +437,7 @@ namespace Microsoft.Maui.Controls
 
 			NavigationProxy = null;
 		}
+
+		IReadOnlyList<object> IVisualTreeHelper.GetVisualChildren() => new List<object> { MainPage }.AsReadOnly();
 	}
 }

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController
+	public class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeHelper
 	{
 		#region PropertyKeys
 
@@ -1075,5 +1075,7 @@ namespace Microsoft.Maui.Controls
 
 			protected override void OnRemovePage(Page page) => _owner.OnRemovePage(page);
 		}
+
+		IReadOnlyList<object> IVisualTreeHelper.GetVisualChildren() => AllChildren.ToList().AsReadOnly();
 	}
 }

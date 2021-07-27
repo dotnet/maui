@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	public sealed class TableSection : TableSectionBase<Cell>
+	public sealed class TableSection : TableSectionBase<Cell>, IVisualTreeHelper
 	{
 		public TableSection()
 		{
@@ -134,5 +134,8 @@ namespace Microsoft.Maui.Controls
 		public TableSection(string title) : base(title)
 		{
 		}
+
+		IReadOnlyList<object> IVisualTreeHelper.GetVisualChildren() => new List<object> { this }.AsReadOnly();
+
 	}
 }

@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController
+	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController, IVisualTreeHelper
 	{
 		#region PropertyKeys
 
@@ -310,5 +310,7 @@ namespace Microsoft.Maui.Controls
 				CurrentItem.SendDisappearing();
 			}
 		}
+
+		IReadOnlyList<object> IVisualTreeHelper.GetVisualChildren() => Items.ToList().AsReadOnly();
 	}
 }

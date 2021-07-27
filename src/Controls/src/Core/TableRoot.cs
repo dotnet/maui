@@ -1,10 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	public sealed class TableRoot : TableSectionBase<TableSection>
+	public sealed class TableRoot : TableSectionBase<TableSection>, IVisualTreeHelper
 	{
 		public TableRoot()
 		{
@@ -56,5 +57,8 @@ namespace Microsoft.Maui.Controls
 				}
 			};
 		}
+
+		IReadOnlyList<object> IVisualTreeHelper.GetVisualChildren() => new List<object> { this }.AsReadOnly();
+
 	}
 }

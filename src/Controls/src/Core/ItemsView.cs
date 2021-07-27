@@ -1,10 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public abstract class ItemsView<TVisual> : View, ITemplatedItemsView<TVisual> where TVisual : BindableObject
+	public abstract class ItemsView<TVisual> : View, IVisualTreeHelper, ITemplatedItemsView<TVisual> where TVisual : BindableObject
 	{
 		/*
 		public static readonly BindableProperty InfiniteScrollingProperty =
@@ -76,5 +77,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		protected virtual bool ValidateItemTemplate(DataTemplate template) => true;
+
+		IReadOnlyList<object> IVisualTreeHelper.GetVisualChildren() => new List<object> { this }.AsReadOnly();
 	}
 }
