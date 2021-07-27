@@ -65,7 +65,7 @@
     <Company>Microsoft</Company>
     <Product>Microsoft MAUI</Product>
     <ProduceReferenceAssembly Condition="'$(UsingMicrosoftNETSdk)' == 'True' AND '$(Configuration)' == 'Debug'">True</ProduceReferenceAssembly>
-    <ProduceReferenceAssemblyInOutDir Condition="'$(ProduceReferenceAssembly)' == 'True'">True</ProduceReferenceAssemblyInOutDir>
+    <ProduceReferenceAssemblyInOutDir>True</ProduceReferenceAssemblyInOutDir>
     <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == '' and $(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
   </PropertyGroup>
