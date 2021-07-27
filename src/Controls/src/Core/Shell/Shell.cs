@@ -714,7 +714,7 @@ namespace Microsoft.Maui.Controls
 
 		public ShellNavigationState CurrentState => (ShellNavigationState)GetValue(CurrentStateProperty);
 
-		[TypeConverter(typeof(ImageSourceConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 		public ImageSource FlyoutBackgroundImage
 		{
 			get => (ImageSource)GetValue(FlyoutBackgroundImageProperty);

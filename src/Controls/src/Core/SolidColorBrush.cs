@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Controls
 {
-	[TypeConverter(typeof(BrushTypeConverter))]
+	[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
 	public class SolidColorBrush : Brush
 	{
 		public SolidColorBrush()

@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public partial class DefaultCtorRouting2 : ContentPage
 	{
-		[TypeConverter(typeof(IsCompiledTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(IsCompiledTypeConverter))]
 		public bool IsCompiled { get; set; }
 
 		public DefaultCtorRouting2()
