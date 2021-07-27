@@ -40,12 +40,19 @@ namespace Microsoft.Maui.Controls
 				if (value.RealParent != null)
 					throw new InvalidOperationException("Detail must not already have a parent.");
 
+				var previousDetail = _detail;
+				// TODO MAUI refine this to fire earlier
+				_detail?.SendNavigatingFrom(new NavigatingFromEventArgs());
+
 				OnPropertyChanging();
 				if (_detail != null)
 					InternalChildren.Remove(_detail);
 				_detail = value;
 				InternalChildren.Add(_detail);
 				OnPropertyChanged();
+
+				previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(_detail));
+				_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousDetail));
 			}
 		}
 
@@ -78,12 +85,20 @@ namespace Microsoft.Maui.Controls
 				if (value.RealParent != null)
 					throw new InvalidOperationException("Flyout must not already have a parent.");
 
+				// TODO MAUI refine this to fire earlier
+				var previousFlyout = _flyout;
+				// TODO MAUI refine this to fire earlier
+				_flyout?.SendNavigatingFrom(new NavigatingFromEventArgs());
+
 				OnPropertyChanging();
 				if (_flyout != null)
 					InternalChildren.Remove(_flyout);
 				_flyout = value;
 				InternalChildren.Add(_flyout);
 				OnPropertyChanged();
+
+				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout));
+				_flyout?.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout));
 			}
 		}
 
