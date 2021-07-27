@@ -89,9 +89,6 @@
     <Compile Update="GalleryPages\RadioButtonGalleries\RadioButtonGroupGallery.xaml.cs">
       <DependentUpon>RadioButtonGroupGallery.xaml</DependentUpon>
     </Compile>
-    <Compile Update="TabIndexTest\DaysOfWeekView.xaml.cs">
-      <DependentUpon>DaysOfWeekView.xaml</DependentUpon>
-    </Compile>
     <Compile Update="GalleryPages\IndicatorViewGalleries\IndicatorGalleries.cs">
       <SubType></SubType>
     </Compile>
@@ -104,15 +101,6 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\RadioButtonGalleries\TemplateFromStyle.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="TabIndexTest\DayView.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="TabIndexTest\TabIndex.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="TabIndexTest\DaysOfWeekView.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

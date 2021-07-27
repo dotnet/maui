@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		VisualElementRendererFlags _flags = VisualElementRendererFlags.AutoPackage | VisualElementRendererFlags.AutoTrack;
 
 		string _defaultContentDescription;
-		bool? _defaultFocusable;
 		ImportantForAccessibility? _defaultImportantForAccessibility;
 		string _defaultHint;
 		bool _cascadeInputTransparent = true;
@@ -128,68 +127,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Performance.Stop(reference);
 		}
 
-		protected int TabIndex { get; set; } = 0;
-
-		protected bool TabStop { get; set; } = true;
-
-		protected void UpdateTabStop()
-		{
-			TabStop = Element.IsTabStop;
-			UpdateParentPageTraversalOrder();
-		}
-
-		protected void UpdateTabIndex()
-		{
-			TabIndex = Element.TabIndex;
-			UpdateParentPageTraversalOrder();
-		}
-
-		bool CheckCustomNextFocus(AView focused, FocusSearchDirection direction)
-		{
-			return direction == FocusSearchDirection.Forward && focused.NextFocusForwardId != NoId ||
-				direction == FocusSearchDirection.Down && focused.NextFocusDownId != NoId ||
-				direction == FocusSearchDirection.Left && focused.NextFocusLeftId != NoId ||
-				direction == FocusSearchDirection.Right && focused.NextFocusRightId != NoId ||
-				direction == FocusSearchDirection.Up && focused.NextFocusUpId != NoId;
-		}
-
-		public override AView FocusSearch(AView focused, [GeneratedEnum] FocusSearchDirection direction)
-		{
-			if (CheckCustomNextFocus(focused, direction))
-				return base.FocusSearch(focused, direction);
-
-			var element = Element as ITabStopElement;
-			int maxAttempts = 0;
-			var tabIndexes = element?.GetTabIndexesOnParentPage(out maxAttempts);
-			if (tabIndexes == null)
-				return base.FocusSearch(focused, direction);
-
-			// use OS default--there's no need for us to keep going if there's one or fewer tab indexes!
-			if (tabIndexes.Count <= 1)
-				return base.FocusSearch(focused, direction);
-
-			int tabIndex = element.TabIndex;
-			AView control = null;
-			int attempt = 0;
-			bool forwardDirection = !(
-				(direction & FocusSearchDirection.Backward) != 0 ||
-				(direction & FocusSearchDirection.Left) != 0 ||
-				(direction & FocusSearchDirection.Up) != 0);
-
-			do
-			{
-				element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
-				var renderer = (element as VisualElement)?.GetRenderer();
-				control = (renderer as ITabStop)?.TabStop;
-			} while (!(control?.Focusable == true || ++attempt >= maxAttempts));
-
-			// when the user focuses on picker show a popup dialog
-			if (control is IPopupTrigger popupElement)
-				popupElement.ShowPopupOnFocus = true;
-
-			return control?.Focusable == true ? control : null;
-		}
-
 		AView IVisualElementRenderer.View => this;
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
@@ -248,8 +185,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SetFocusable();
 			UpdateInputTransparent();
 			UpdateInputTransparentInherited();
-			UpdateTabStop();
-			UpdateTabIndex();
 
 			Performance.Stop(reference);
 		}
@@ -359,12 +294,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				UpdateInputTransparent();
 			else if (e.PropertyName == Microsoft.Maui.Controls.Layout.CascadeInputTransparentProperty.PropertyName)
 				UpdateInputTransparentInherited();
-			else if (e.PropertyName == VisualElement.IsTabStopProperty.PropertyName)
-				UpdateTabStop();
-			else if (e.PropertyName == VisualElement.TabIndexProperty.PropertyName)
-				UpdateTabIndex();
-			else if (e.PropertyName == nameof(Element.Parent))
-				UpdateParentPageTraversalOrder();
 
 			ElementPropertyChanged?.Invoke(this, e);
 		}
@@ -400,16 +329,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
-		void UpdateParentPageTraversalOrder()
-		{
-			IViewParent parentRenderer = Parent;
-			while (parentRenderer != null && !(parentRenderer is IOrderedTraversalController))
-				parentRenderer = parentRenderer.Parent;
-
-			if (parentRenderer is IOrderedTraversalController controller)
-				controller.UpdateTraversalOrder();
-		}
-
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
 		{
 			effect.Container = this;
@@ -437,7 +356,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		protected virtual void SetFocusable()
-			=> Controls.Platform.AutomationPropertiesProvider.SetFocusable(this, Element, ref _defaultFocusable, ref _defaultImportantForAccessibility);
+			=> Controls.Platform.AutomationPropertiesProvider.SetFocusable(this, Element, ref _defaultImportantForAccessibility);
 
 		void UpdateInputTransparent()
 		{

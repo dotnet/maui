@@ -122,39 +122,6 @@ namespace Microsoft.Maui.DeviceTests
 			return editText.TextAlignment;
 		}
 
-		double GetNativeUnscaledFontSize(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
-
-			if (editText == null)
-				return -1;
-
-			return editText.TextSize / editText.Resources.DisplayMetrics.Density;
-		}
-
-		bool GetNativeIsBold(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
-
-			if (editText == null)
-				return false;
-
-			return editText.Typeface.GetFontWeight() == FontWeight.Bold;
-		}
-
-		bool GetNativeIsItalic(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
-
-			if (editText == null)
-				return false;
-
-			return editText.Typeface.IsItalic;
-		}
-
 		Task ValidateHasColor(ISearchBar searchBar, Color color, Action action = null)
 		{
 			return InvokeOnMainThreadAsync(() =>

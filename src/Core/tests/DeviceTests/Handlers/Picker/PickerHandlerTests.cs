@@ -9,59 +9,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Picker)]
 	public partial class PickerHandlerTests : HandlerTestBase<PickerHandler, PickerStub>
 	{
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
-		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
-		{
-			var items = new List<string>
-			{
-				"Item 1",
-				"Item 2",
-				"Item 3"
-			};
-
-			var picker = new PickerStub()
-			{
-				Title = "Select an Item",
-				Font = Font.OfSize("Arial", fontSize)
-			};
-
-			picker.ItemsSource = items;
-			picker.SelectedIndex = 0;
-
-			await ValidatePropertyInitValue(picker, () => picker.Font.Size, GetNativeUnscaledFontSize, picker.Font.Size);
-		}
-
-		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontWeight.Regular, false, false)]
-		[InlineData(FontWeight.Bold, true, false)]
-		[InlineData(FontWeight.Regular, false, true)]
-		[InlineData(FontWeight.Bold, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontWeight weight, bool isBold, bool isItalic)
-		{
-			var items = new List<string>
-			{
-				"Item 1",
-				"Item 2",
-				"Item 3"
-			};
-
-			var picker = new PickerStub()
-			{
-				Title = "Select an Item",
-				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
-			};
-
-			picker.ItemsSource = items;
-			picker.SelectedIndex = 0;
-
-			await ValidatePropertyInitValue(picker, () => picker.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(picker, () => picker.Font.Slant == FontSlant.Italic, GetNativeIsItalic, isItalic);
-		}
-
 		[Theory(DisplayName = "Updating Font Does Not Affect HorizontalTextAlignment")]
 		[InlineData(10, 20)]
 		[InlineData(20, 10)]

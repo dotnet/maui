@@ -12,7 +12,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	public class PageRenderer : VisualElementRenderer<Page>, IOrderedTraversalController
+	public class PageRenderer : VisualElementRenderer<Page>
 	{
 		public PageRenderer(Context context) : base(context)
 		{
@@ -26,8 +26,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		IPageController PageController => Element as IPageController;
-
-		IOrderedTraversalController OrderedTraversalController => this;
 
 		double _previousHeight;
 		bool _isDisposed = false;
@@ -159,68 +157,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			});
 		}
 
-		void IOrderedTraversalController.UpdateTraversalOrder()
-		{
-			// traversal order wasn't added until API 22
-			if ((int)Forms.SdkInt < 22)
-				return;
-
-			// since getting and updating the traversal order is expensive, let's only do it when a screen reader is active
-			// note that this does NOT get auto updated when you enable TalkBack, so the page will need to be reloaded to enable this path 
-			var am = AccessibilityManager.FromContext(Context);
-			if (!am.IsEnabled)
-				return;
-
-			SortedDictionary<int, List<ITabStopElement>> tabIndexes = null;
-			foreach (var child in Element.LogicalChildren)
-			{
-				if (!(child is VisualElement ve))
-					continue;
-
-				tabIndexes = ve.GetSortedTabIndexesOnParentPage();
-				break;
-			}
-
-			if (tabIndexes == null)
-				return;
-
-			// Let the page handle tab order itself
-			if (tabIndexes.Count <= 1)
-				return;
-
-			AView prevControl = null;
-			foreach (var idx in tabIndexes?.Keys)
-			{
-				var tabGroup = tabIndexes[idx];
-				foreach (var child in tabGroup)
-				{
-					if (!(child is VisualElement ve && ve.GetRenderer()?.View is AView view))
-						continue;
-
-					AView thisControl = null;
-
-					if (view is ITabStop tabStop)
-						thisControl = tabStop.TabStop;
-
-					if (thisControl == null)
-						continue;
-
-					// this element should be the first thing focused after the root
-					if (prevControl == null)
-					{
-						thisControl.AccessibilityTraversalAfter = NoId;
-					}
-					else
-					{
-						if (thisControl != prevControl)
-							thisControl.AccessibilityTraversalAfter = prevControl.Id;
-					}
-
-					prevControl = thisControl;
-				}
-			}
-		}
-
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			var deviceIndependentLeft = Context.FromPixels(l);
@@ -233,7 +169,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			(Element as IFrameworkElement)?.Arrange(destination);
 			base.OnLayout(changed, l, t, r, b);
-			OrderedTraversalController.UpdateTraversalOrder();
 		}
 	}
 }

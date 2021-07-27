@@ -263,9 +263,24 @@ namespace Microsoft.Maui.Controls
 					return null;
 				}
 
+				modal.SendNavigatingFrom(new NavigatingFromEventArgs());
+				Page? nextPage;
+				if (modal.NavigationProxy.ModalStack.Count == 1)
+				{
+					nextPage = _owner.Page;
+				}
+				else
+				{
+					nextPage = _owner.ModalNavigationManager.ModalStack[_owner.ModalNavigationManager.ModalStack.Count - 2];
+				}
+
 				Page result = await _owner.ModalNavigationManager.PopModalAsync(animated);
 				result.Parent = null;
 				_owner.OnModalPopped(result);
+
+				modal.SendNavigatedFrom(new NavigatedFromEventArgs(nextPage));
+				nextPage?.SendNavigatedTo(new NavigatedToEventArgs(modal));
+
 				return result;
 			}
 
@@ -277,13 +292,20 @@ namespace Microsoft.Maui.Controls
 
 				if (modal.NavigationProxy.ModalStack.Count == 0)
 				{
+					_owner.Page?.SendNavigatingFrom(new NavigatingFromEventArgs());
 					modal.NavigationProxy.Inner = this;
 					await _owner.ModalNavigationManager.PushModalAsync(modal, animated);
+					_owner.Page?.SendNavigatedFrom(new NavigatedFromEventArgs(modal));
+					modal.SendNavigatedTo(new NavigatedToEventArgs(_owner.Page));
 				}
 				else
 				{
+					var previousModalPage = modal.NavigationProxy.ModalStack[modal.NavigationProxy.ModalStack.Count - 1];
+					previousModalPage.SendNavigatingFrom(new NavigatingFromEventArgs());
 					await _owner.ModalNavigationManager.PushModalAsync(modal, animated);
 					modal.NavigationProxy.Inner = this;
+					previousModalPage.SendNavigatedFrom(new NavigatedFromEventArgs(modal));
+					modal.SendNavigatedTo(new NavigatedToEventArgs(previousModalPage));
 				}
 
 				_owner.OnModalPushed(modal);
