@@ -112,7 +112,7 @@
     <ItemGroup>
       <_MauiManifestsToUpdate Include="@(StaticWebAssetManifest)" Condition="'%(ManifestType)' == 'Publish'" />
       <_MauiManifestsToUpdate>
-        <AdditionalPublishPropertiesToRemove>@(_MauiManifestsToUpdate->'%(AdditionalPublishPropertiesToRemove)');TargetFramework</AdditionalPublishPropertiesToRemove>
+       <AdditionalPublishPropertiesToRemove Condition="$([System.String]::Copy('%(_MauiManifestsToUpdate.AdditionalPublishProperties)').Contains('TargetFramework')) == 'false'">@(_MauiManifestsToUpdate->'%(AdditionalPublishPropertiesToRemove)');TargetFramework</AdditionalPublishPropertiesToRemove>      
       </_MauiManifestsToUpdate>
 
       <StaticWebAssetManifest Remove="@(_MauiManifestsToUpdate)" />
