@@ -21,7 +21,7 @@
       <_MauiXamarinFormsReferencePath Include="@(ReferencePath)" Condition="'%(Filename)%(Extension)' == 'Xamarin.Forms.Platform.dll'" />
       <_MauiXamarinFormsReferencePath Include="@(ReferencePath)" Condition="'%(Filename)%(Extension)' == 'Xamarin.Forms.Xaml.dll'" />
     </ItemGroup>
-    <Error Text="Xamarin.Forms was referenced in the project. .NET MAUI is not binary compatible with Xamarin.Forms. Make sure that all references are updated."
+    <Error Text="Xamarin.Forms was referenced in the project either directly or via a transitive dependency. .NET MAUI is not binary compatible with Xamarin.Forms. Make sure that all packages are updated, making sure to check dependencies as well as transitive dependencies."
            Condition="'@(_MauiXamarinFormsReferencePath->Count())' &gt; '0'" />
   </Target>
 
