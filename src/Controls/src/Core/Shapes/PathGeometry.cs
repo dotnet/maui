@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty FillRuleProperty =
 			BindableProperty.Create(nameof(FillRule), typeof(FillRule), typeof(PathGeometry), FillRule.EvenOdd);
 
-		[TypeConverter(typeof(PathFigureCollectionConverter))]
+		[System.ComponentModel.TypeConverter(typeof(PathFigureCollectionConverter))]
 		public PathFigureCollection Figures
 		{
 			set { SetValue(FiguresProperty, value); }

@@ -1,5 +1,6 @@
-﻿using Maui.Controls.Sample.Controls;
+﻿using System;
 using Maui.Controls.Sample.Pages.Base;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Pages

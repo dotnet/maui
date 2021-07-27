@@ -58,39 +58,6 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync(label);
 		}
 
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
-		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
-		{
-			var label = new LabelStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", fontSize)
-			};
-
-			await ValidatePropertyInitValue(label, () => label.Font.Size, GetNativeUnscaledFontSize, label.Font.Size);
-		}
-
-		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontWeight.Regular, false, false)]
-		[InlineData(FontWeight.Bold, true, false)]
-		[InlineData(FontWeight.Regular, false, true)]
-		[InlineData(FontWeight.Bold, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontWeight weight, bool isBold, bool isItalic)
-		{
-			var label = new LabelStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
-			};
-
-			await ValidatePropertyInitValue(label, () => label.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(label, () => label.Font.Slant == FontSlant.Italic, GetNativeIsItalic, isItalic);
-		}
-
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{

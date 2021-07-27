@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 			return (bool?)bindable.GetValue(IsInAccessibleTreeProperty);
 		}
 
-		[TypeConverter(typeof(ReferenceTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ReferenceTypeConverter))]
 		public static VisualElement GetLabeledBy(BindableObject bindable)
 		{
 			return (VisualElement)bindable.GetValue(LabeledByProperty);

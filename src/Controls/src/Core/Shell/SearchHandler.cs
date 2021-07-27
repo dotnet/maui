@@ -132,6 +132,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
+
 		public static readonly BindableProperty PlaceholderProperty = PlaceholderElement.PlaceholderProperty;
 
 		public static readonly BindableProperty PlaceholderColorProperty = PlaceholderElement.PlaceholderColorProperty;
@@ -176,11 +178,17 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextElement.CharacterSpacingProperty, value); }
 		}
 
-		[TypeConverter(typeof(FontSizeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
 			get { return (double)GetValue(FontSizeProperty); }
 			set { SetValue(FontSizeProperty, value); }
+		}
+
+		public bool FontAutoScalingEnabled
+		{
+			get => (bool)GetValue(FontAutoScalingEnabledProperty);
+			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
@@ -188,6 +196,10 @@ namespace Microsoft.Maui.Controls
 		}
 
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue)
+		{
+		}
+
+		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue)
 		{
 		}
 

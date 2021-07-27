@@ -158,8 +158,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void IVisualElementRenderer.SetElement(VisualElement element)
 		{
 			SetElement((TElement)element);
-			UpdateTabStop();
-			UpdateTabIndex();
 		}
 
 		public void SetElementSize(Size size)
@@ -170,88 +168,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		public virtual NativeViewController ViewController => null;
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
-
-		protected int TabIndex { get; set; } = 0;
-
-		protected bool TabStop { get; set; } = true;
-
-		protected void UpdateTabStop()
-		{
-			if (Element == null)
-				return;
-
-			TabStop = Element.IsTabStop;
-			UpdateParentPageAccessibilityElements();
-		}
-
-		protected void UpdateTabIndex()
-		{
-			if (Element == null)
-				return;
-
-			TabIndex = Element.TabIndex;
-			UpdateParentPageAccessibilityElements();
-		}
-
-		public NativeView FocusSearch(bool forwardDirection)
-		{
-			VisualElement element = Element as VisualElement;
-			int maxAttempts = 0;
-			var tabIndexes = element?.GetTabIndexesOnParentPage(out maxAttempts);
-			if (tabIndexes == null)
-				return null;
-
-			int tabIndex = Element.TabIndex;
-			int attempt = 0;
-
-			do
-			{
-				element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex) as VisualElement;
-				if (element == null)
-					break;
-#if __MACOS__
-				var renderer = Platform.GetRenderer(element);
-				var control = (renderer as ITabStop)?.TabStop;
-				if (control != null && control.AcceptsFirstResponder())
-					return control;
-#endif
-				element.Focus();
-			} while (!(element.IsFocused || ++attempt >= maxAttempts));
-			return null;
-		}
-
-#if __MACOS__
-		public override void KeyDown(NSEvent theEvent)
-		{
-			if (theEvent.KeyCode == (ushort)NSKey.Tab)
-			{
-				bool shift = (theEvent.ModifierFlags & NSEventModifierMask.ShiftKeyMask) == NSEventModifierMask.ShiftKeyMask;
-				var nextControl = FocusSearch(forwardDirection: !shift);
-				if (nextControl != null)
-				{
-					Window?.MakeFirstResponder(nextControl);
-					return;
-				}
-			}
-			base.KeyUp(theEvent);
-		}
-#else
-		UIKeyCommand[] tabCommands = {
-			UIKeyCommand.Create ((Foundation.NSString)"\t", 0, new ObjCRuntime.Selector ("tabForward:")),
-			UIKeyCommand.Create ((Foundation.NSString)"\t", UIKeyModifierFlags.Shift, new ObjCRuntime.Selector ("tabBackward:"))
-		};
-
-		public override UIKeyCommand[] KeyCommands => tabCommands;
-
-
-		[Foundation.Export("tabForward:")]
-		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-		void TabForward(UIKeyCommand cmd) => FocusSearch(forwardDirection: true);
-
-		[Foundation.Export("tabBackward:")]
-		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-		void TabBackward(UIKeyCommand cmd) => FocusSearch(forwardDirection: false);
-#endif
 
 		public void SetElement(TElement element)
 		{
@@ -425,10 +341,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				SetBackground(Element.Background);
 			else if (e.PropertyName == Layout.IsClippedToBoundsProperty.PropertyName)
 				UpdateClipToBounds();
-			else if (e.PropertyName == VisualElement.IsTabStopProperty.PropertyName)
-				UpdateTabStop();
-			else if (e.PropertyName == VisualElement.TabIndexProperty.PropertyName)
-				UpdateTabIndex();
 #if __MOBILE__
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.VisualElement.BlurEffectProperty.PropertyName)
 				SetBlur((BlurEffectStyle)Element.GetValue(PlatformConfiguration.iOSSpecific.VisualElement.BlurEffectProperty));
@@ -439,8 +351,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				SetAccessibilityLabel();
 			else if (e.PropertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName)
 				SetIsAccessibilityElement();
-			else if (e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
-				UpdateParentPageAccessibilityElements();
 		}
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
@@ -546,23 +456,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var clippableLayout = Element as Layout;
 			if (clippableLayout != null)
 				ClipsToBounds = clippableLayout.IsClippedToBounds;
-#endif
-		}
-
-		void UpdateParentPageAccessibilityElements()
-		{
-#if __MOBILE__
-			UIView parentRenderer = Superview;
-			while (parentRenderer != null)
-			{
-				if (parentRenderer is PageContainer container)
-				{
-					container.ClearAccessibilityElements();
-					break;
-				}
-
-				parentRenderer = parentRenderer.Superview;
-			}
 #endif
 		}
 

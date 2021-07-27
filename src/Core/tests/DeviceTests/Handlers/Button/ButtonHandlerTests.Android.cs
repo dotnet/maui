@@ -37,33 +37,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
 		}
 
-		[Theory(DisplayName = "Font Family Initializes Correctly")]
-		[InlineData(null)]
-		[InlineData("monospace")]
-		[InlineData("Dokdo")]
-		public async Task FontFamilyInitializesCorrectly(string family)
-		{
-			var button = new ButtonStub
-			{
-				Text = "Test",
-				Font = Font.OfSize(family, 10)
-			};
-
-			var handler = await CreateHandlerAsync(button);
-			var nativeButton = GetNativeButton(handler);
-
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
-
-			var nativeFont = fontManager.GetTypeface(Font.OfSize(family, 0.0));
-
-			Assert.Equal(nativeFont, nativeButton.Typeface);
-
-			if (string.IsNullOrEmpty(family))
-				Assert.Equal(fontManager.DefaultTypeface, nativeButton.Typeface);
-			else
-				Assert.NotEqual(fontManager.DefaultTypeface, nativeButton.Typeface);
-		}
-
 		[Fact(DisplayName = "Button Padding Initializing")]
 		public async Task PaddingInitializesCorrectly()
 		{
@@ -126,18 +99,6 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeButton(CreateHandler(button)).PerformClick();
 			});
 		}
-
-		double GetNativeUnscaledFontSize(ButtonHandler buttonHandler)
-		{
-			var textView = GetNativeButton(buttonHandler);
-			return textView.TextSize / textView.Resources.DisplayMetrics.Density;
-		}
-
-		bool GetNativeIsBold(ButtonHandler buttonHandler) =>
-			GetNativeButton(buttonHandler).Typeface.GetFontWeight() == FontWeight.Bold;
-
-		bool GetNativeIsItalic(ButtonHandler buttonHandler) =>
-			GetNativeButton(buttonHandler).Typeface.IsItalic;
 
 		double GetNativeCharacterSpacing(ButtonHandler buttonHandler)
 		{

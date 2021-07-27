@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Xaml;
@@ -12,7 +14,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class DefaultCtorRouting : ContentPage
 	{
-		[TypeConverter(typeof(IsCompiledTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(IsCompiledTypeConverter))]
 		public bool IsCompiled { get; set; }
 
 		public DefaultCtorRouting()
@@ -47,9 +49,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.IsCompiledTypeConverter")]
 	class IsCompiledTypeConverter : TypeConverter, ICompiledTypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) => true;
+		
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != "IsCompiled?")
+			if ((string)value != "IsCompiled?")
 				throw new Exception();
 			return false;
 		}

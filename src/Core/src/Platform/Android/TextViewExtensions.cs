@@ -48,8 +48,8 @@ namespace Microsoft.Maui
 			var tf = fontManager.GetTypeface(font);
 			textView.Typeface = tf;
 
-			var sp = fontManager.GetFontSize(font);
-			textView.SetTextSize(ComplexUnitType.Sp, sp);
+			var fontSize = fontManager.GetFontSize(font);
+			textView.SetTextSize(fontSize.Unit, fontSize.Value);
 		}
 
 		public static void UpdateCharacterSpacing(this TextView textView, ITextStyle textStyle) =>

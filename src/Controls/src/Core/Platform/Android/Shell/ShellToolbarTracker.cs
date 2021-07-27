@@ -27,6 +27,7 @@ using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
 using R = Android.Resource;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
+using AndroidResource = Android.Resource;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -377,7 +378,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (fid == null)
 					{
-						fid = new FlyoutIconDrawerDrawable(MauiContext, tintColor, customIcon, text);
+						fid = new FlyoutIconDrawerDrawable(MauiContext.Context, tintColor, customIcon, text);
 					}
 					else
 					{
@@ -393,7 +394,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (!string.IsNullOrWhiteSpace(text) && icon == null)
 			{
-				icon = new FlyoutIconDrawerDrawable(MauiContext, tintColor, null, text);
+				icon = new FlyoutIconDrawerDrawable(MauiContext.Context, tintColor, null, text);
 			}
 
 			if (icon == null && (_flyoutBehavior == FlyoutBehavior.Flyout || CanNavigateBack))
@@ -675,11 +676,19 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			public FlyoutIconDrawerDrawable(IMauiContext context, Color defaultColor, Drawable icon, string text) : base(context.Context)
+			public FlyoutIconDrawerDrawable(Context context, Color defaultColor, Drawable icon, string text) : base(context)
 			{
-				var fontManager = context.Services.GetRequiredService<IFontManager>();
 				TintColor = defaultColor;
-				_defaultSize = fontManager.GetFontSize(Font.OfSize("Roboto", 0));
+				if (context.TryResolveAttribute(AndroidResource.Attribute.TextSize, out float? value) &&
+					value != null)
+				{
+					_defaultSize = value.Value;
+				}
+				else
+				{
+					_defaultSize = 50;
+				}
+
 				IconBitmap = icon;
 				Text = text;
 			}
