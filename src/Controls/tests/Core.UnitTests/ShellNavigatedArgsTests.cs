@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 
 		[Test]
-		public async Task RemovePageFromINavigationSetsCorrectNavigationSource()
+		public async Task RemovePageFromNavigationSetsCorrectNavigationSource()
 		{
 			Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
 			Routing.RegisterRoute("page", typeof(ContentPage));
