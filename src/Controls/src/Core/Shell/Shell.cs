@@ -469,10 +469,13 @@ namespace Microsoft.Maui.Controls
 			var modalStack = shellSection?.Navigation?.ModalStack;
 			var result = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, stack, modalStack);
 
-			SetValueFromRenderer(CurrentStatePropertyKey, result);
-
-			_navigationManager.HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
+			if (result?.Location != oldState?.Location)
+			{
+				SetValueFromRenderer(CurrentStatePropertyKey, result);
+				_navigationManager.HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
+			}
 		}
+
 		ReadOnlyCollection<ShellItem> IShellController.GetItems() =>
 			new ReadOnlyCollection<ShellItem>(((ShellItemCollection)Items).VisibleItemsReadOnly.ToList());
 
