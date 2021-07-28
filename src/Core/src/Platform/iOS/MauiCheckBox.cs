@@ -267,8 +267,8 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-				// Accessibility Traits are none if VO isn't turned off
-				// So we just return None until the user turns on VO
+				// Accessibility Traits are none if VO is off
+				// So we return None until we detect that it's been turned on
 				if (base.AccessibilityTraits == UIAccessibilityTrait.None)
 					return UIAccessibilityTrait.None;
 
