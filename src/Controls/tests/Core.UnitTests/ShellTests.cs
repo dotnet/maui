@@ -1316,5 +1316,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Greater(count, previousCount, "StructureChanged not fired when adding Shell Content");
 		}
 
+		[Test]
+		public void VisualTreeHelperCount()
+		{
+			Shell shell = new Shell();
+			shell.Items.Add(CreateShellItem());
+			shell.CurrentItem.Items.Add(CreateShellSection());
+			shell.CurrentItem.CurrentItem.Items.Add(CreateShellContent());
+			var shellCount = shell.GetVisualChildren().Count;
+			var shellItemCount = shell.CurrentItem.GetVisualChildren().Count;
+			Assert.Greater(shellCount, 0);
+			Assert.Greater(shellItemCount, 0);
+		}
 	}
 }
