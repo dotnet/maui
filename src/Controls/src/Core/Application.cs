@@ -438,6 +438,6 @@ namespace Microsoft.Maui.Controls
 			NavigationProxy = null;
 		}
 
-		IReadOnlyList<Maui.IElement> IVisualTreeHelper.GetVisualChildren() => new List<Maui.IElement> { MainPage }.AsReadOnly();
+		public override IReadOnlyList<Maui.IElement> GetVisualChildren() => this.Windows;
 	}
 }

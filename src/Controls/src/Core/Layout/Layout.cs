@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -8,7 +9,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls.Layout2
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IPaddingElement
+	public abstract class Layout : View, Microsoft.Maui.ILayout, Maui.IVisualTreeHelper, IList<IView>, IPaddingElement
 	{
 		ILayoutManager _layoutManager;
 		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
@@ -32,6 +33,8 @@ namespace Microsoft.Maui.Controls.Layout2
 			get => (Thickness)GetValue(PaddingElement.PaddingProperty);
 			set => SetValue(PaddingElement.PaddingProperty, value);
 		}
+
+		public override IReadOnlyList<Maui.IElement> GetVisualChildren() => Children.ToList().AsReadOnly();
 
 		protected abstract ILayoutManager CreateLayoutManager();
 

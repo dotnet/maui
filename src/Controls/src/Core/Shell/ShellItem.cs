@@ -311,6 +311,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		IReadOnlyList<Maui.IElement> IVisualTreeHelper.GetVisualChildren() => Items.ToList().AsReadOnly();
+		public override IReadOnlyList<Maui.IElement> GetVisualChildren() => Items.ToList().AsReadOnly();
 	}
 }

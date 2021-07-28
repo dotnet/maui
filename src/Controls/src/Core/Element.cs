@@ -639,6 +639,6 @@ namespace Microsoft.Maui.Controls
 			OnParentChanging(args);
 		}
 
-		IReadOnlyList<Maui.IElement> IVisualTreeHelper.GetVisualChildren() => LogicalChildren;		
+		public virtual IReadOnlyList<Maui.IElement> GetVisualChildren() => LogicalChildren;		
 	}
 }

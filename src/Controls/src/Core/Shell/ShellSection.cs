@@ -1076,6 +1076,6 @@ namespace Microsoft.Maui.Controls
 			protected override void OnRemovePage(Page page) => _owner.OnRemovePage(page);
 		}
 
-		IReadOnlyList<Maui.IElement> IVisualTreeHelper.GetVisualChildren() => AllChildren.ToList().AsReadOnly();
+		public override IReadOnlyList<Maui.IElement> GetVisualChildren() => AllChildren.ToList().AsReadOnly();
 	}
 }
