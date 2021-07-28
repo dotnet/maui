@@ -13,6 +13,8 @@ namespace Microsoft.Maui
 
 		static UIImage? Checked;
 		static UIImage? Unchecked;
+		static UIAccessibilityTrait? s_switchAccessibilityTraits;
+		UIAccessibilityTrait _accessibilityTraits;
 
 		Color? _tintColor;
 		bool _isChecked;
@@ -43,6 +45,8 @@ namespace Microsoft.Maui
 			AdjustsImageWhenHighlighted = false;
 
 			TouchUpInside += OnTouchUpInside;
+			s_switchAccessibilityTraits ??= new UISwitch().AccessibilityTraits;
+			_accessibilityTraits = s_switchAccessibilityTraits.Value;
 		}
 
 		void OnTouchUpInside(object? sender, EventArgs e)
@@ -263,11 +267,10 @@ namespace Microsoft.Maui
 		}
 
 
-		static UIAccessibilityTrait? _uIAccessibilityTraits;
 		public override UIAccessibilityTrait AccessibilityTraits
 		{
-			get => _uIAccessibilityTraits ??= new UISwitch().AccessibilityTraits;
-			set { }
+			get => _accessibilityTraits;
+			set => _accessibilityTraits = value;
 		}
 
 		public override string? AccessibilityValue
