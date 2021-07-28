@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var page = new Unreported006();
 				Assert.NotNull(page.GenericProperty);
-				Assert.That(page.GenericProperty, Is.TypeOf<StackLayout>());
+				Assert.That(page.GenericProperty, Is.TypeOf<Compatibility.StackLayout>());
 			}
 		}
 	}

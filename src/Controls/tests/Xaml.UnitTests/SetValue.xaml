@@ -13,7 +13,7 @@
 			<Color x:Key="purple">Purple</Color>
 		</ResourceDictionary>
 	</ContentPage.Resources>
-	<StackLayout>
+	<cmp:StackLayout>
 		<Label x:Name="label0" Text="Foo"/>
 		<Label x:Name="label1" Text="{Binding Path=labeltext}"/>
 		<Button x:Name="button0" Clicked="onButtonClicked" />
@@ -29,24 +29,24 @@
 		<ContentView x:Name="contentview1">
 			<Label x:Name="label4"/>
 		</ContentView>
-		<StackLayout x:Name="stack0">
-			<StackLayout.Children>
+        <cmp:StackLayout x:Name="stack0">
+            <cmp:StackLayout.Children>
 				<Label x:Name="label5"/>
 				<Label x:Name="label6"/>
-			</StackLayout.Children>
-		</StackLayout>
-		<StackLayout x:Name="stack1">
+			</cmp:StackLayout.Children>
+		</cmp:StackLayout>
+        <cmp:StackLayout x:Name="stack1">
 			<Label x:Name="label7"/>
 			<Label x:Name="label8"/>
-		</StackLayout>
-		<StackLayout x:Name="stack2">
-			<StackLayout.Children>
+		</cmp:StackLayout>
+        <cmp:StackLayout x:Name="stack2">
+            <cmp:StackLayout.Children>
 				<Label x:Name="label9"/>
-			</StackLayout.Children>
-		</StackLayout>
-		<StackLayout x:Name="stack3">
+			</cmp:StackLayout.Children>
+		</cmp:StackLayout>
+        <cmp:StackLayout x:Name="stack3">
 			<Label x:Name="label10"/>
-		</StackLayout>
+		</cmp:StackLayout>
 		<Label x:Name="label11" Text="{Binding labeltext}"/>
 		<ListView x:Name="listView">
 			<ListView.ItemsSource>
@@ -75,9 +75,9 @@
 		<ContentView x:Name="content0">
 			<local:ConvertibleToView/>
 		</ContentView>
-		<StackLayout x:Name="stack4">
+        <cmp:StackLayout x:Name="stack4">
 			<local:ConvertibleToView/>
-		</StackLayout>
+		</cmp:StackLayout>
 		<ContentView x:Name="contentview2">
 			<ContentView.Content>
 				<Label />
@@ -98,5 +98,5 @@
 			</local:MockViewWithValues.Bar>
 		</local:MockViewWithValues>
 		<local:MockViewWithValues x:Name="implicit3" Foo="Foo" />
-	</StackLayout>
+	</cmp:StackLayout>
 </ContentPage>
