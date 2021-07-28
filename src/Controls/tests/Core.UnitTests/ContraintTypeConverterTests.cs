@@ -1,3 +1,4 @@
+using Microsoft.Maui.Controls.Compatibility;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
