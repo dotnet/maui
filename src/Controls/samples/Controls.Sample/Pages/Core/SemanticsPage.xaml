@@ -158,7 +158,10 @@
                 TextColor="DodgerBlue"
                 FontSize="14"
                 SemanticProperties.HeadingLevel="Level3"/>
-
+            <HorizontalStackLayout>
+                <CheckBox SemanticProperties.Description="Checkbox on iOS will read as a switch"></CheckBox>
+                <CheckBox SemanticProperties.Description="Checkbox on iOS will read as a switch" Color="DodgerBlue"></CheckBox>
+            </HorizontalStackLayout>
             <Label
                 Text="Explore SemanticProperties on controls within layouts below"
                 TextColor="RoyalBlue"
