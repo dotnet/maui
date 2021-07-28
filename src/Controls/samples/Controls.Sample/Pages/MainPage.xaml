@@ -56,15 +56,15 @@
             Text="Settings" />
     </views:BasePage.ToolbarItems>
     <ScrollView>
-        <Grid
+        <!--<Grid
             RowDefinitions="150, *, Auto"
-            RowSpacing="0">
+            RowSpacing="0">-->
             <!-- HEADER -->
-            <Image
+            <!--<Image
                 Grid.Row="0"
                 Aspect="AspectFill"
-                Source="header_background"/>
-            <Grid
+                Source="header_background"/>-->
+            <!--<Grid
                 RowSpacing="0"
                 Grid.Row="0">
                 <Grid.RowDefinitions>
@@ -78,11 +78,11 @@
                     Grid.Row="1"
                     Text="An open-source framework for building iOS, Android, macOS and Windows apps"
                     Style="{StaticResource SubTitleStyle}"/>
-            </Grid>
+            </Grid>-->
             <!-- SECTIONS -->
             <Grid
                 Grid.Row="1"
-                Margin="12">
+                Margin="0">
                 <CollectionView 
                     x:Name="HomeSections"
                     BackgroundColor="Transparent"
@@ -100,8 +100,8 @@
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Frame
-                               Style="{StaticResource SectionItemContainerStyle}">
+                            <!--<Frame
+                               Style="{StaticResource SectionItemContainerStyle}">-->
                                 <Grid
                                    RowSpacing="0"
                                    RowDefinitions="Auto, *">
@@ -113,16 +113,16 @@
                                        Text="{Binding Description}"
                                        Style="{StaticResource GalleryItemDescriptionStyle}"/>
                                 </Grid>
-                            </Frame>
+                            <!--</Frame>-->
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </Grid>
             <!-- FOOTER -->
-            <Label
+            <!--<Label
                 Grid.Row="2"
                 Text="Microsoft Corporation © 2021"
-                Style="{StaticResource FooterStyle}" />
-        </Grid>
+                Style="{StaticResource FooterStyle}" />-->
+        <!--</Grid>-->
     </ScrollView>
 </views:BasePage>

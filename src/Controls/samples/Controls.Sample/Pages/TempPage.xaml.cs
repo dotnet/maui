@@ -11,12 +11,13 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		async void OnButtonClicked(object sender, EventArgs e)
+		//async 
+		void OnButtonClicked(object sender, EventArgs e)
 		{
 			_counter++;
 			string message = $"You clicked {_counter} times!";
 			CounterLabel.Text = message;
-			await DisplayAlert("Alert", message, "Ok");
+			//await DisplayAlert("Alert", message, "Ok");
 		}
 	}
 }

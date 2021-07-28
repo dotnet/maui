@@ -6,6 +6,9 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	using RelativeLayout = Microsoft.Maui.Controls.Compatibility.RelativeLayout;
+	using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
+
 	public partial class Unreported007 : ContentPage
 	{
 		public Unreported007()

@@ -6,6 +6,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	using AbsoluteLayout = Microsoft.Maui.Controls.Compatibility.AbsoluteLayout;
+
 	public class ConvertibleToView
 	{
 		public static implicit operator View(ConvertibleToView source)

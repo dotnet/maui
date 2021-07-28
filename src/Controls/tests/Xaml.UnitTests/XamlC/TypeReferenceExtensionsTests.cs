@@ -13,6 +13,10 @@ namespace Microsoft.Maui.Controls
 }
 namespace Microsoft.Maui.Controls.XamlcUnitTests
 {
+	using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
+	using ConstraintExpression = Microsoft.Maui.Controls.Compatibility.ConstraintExpression;
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[TestFixture]
 	public class TypeReferenceExtensionsTests
 	{

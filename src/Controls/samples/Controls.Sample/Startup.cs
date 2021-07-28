@@ -104,7 +104,7 @@ namespace Maui.Controls.Sample
 #if WINDOWS
 							PageType.Main => typeof(TempPage),
 #else
-							PageType.Main => typeof(CustomNavigationPage),
+							PageType.Main => typeof(TempPage),
 #endif
 							PageType.Blazor =>
 #if NET6_0_OR_GREATER
