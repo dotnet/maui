@@ -261,5 +261,19 @@ namespace Microsoft.Maui
 			SetImage(GetCheckBoximage(), UIControlState.Normal);
 			SetNeedsDisplay();
 		}
+
+
+		static UIAccessibilityTrait? _uIAccessibilityTraits;
+		public override UIAccessibilityTrait AccessibilityTraits
+		{
+			get => _uIAccessibilityTraits ??= new UISwitch().AccessibilityTraits;
+			set { }
+		}
+
+		public override string? AccessibilityValue
+		{
+			get => (IsChecked) ? "1" : "0";
+			set { }
+		}
 	}
 }
