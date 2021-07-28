@@ -10,6 +10,7 @@ using NUnit.Framework.Constraints;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using Grid = Microsoft.Maui.Controls.Compatibility.Grid;
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
 	[TestFixture]
 	public class GridTests : BaseTestFixture

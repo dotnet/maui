@@ -6,6 +6,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 {
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[TestFixture]
 	public class StyleTests
 	{
