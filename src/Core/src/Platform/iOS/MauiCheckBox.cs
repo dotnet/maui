@@ -13,7 +13,6 @@ namespace Microsoft.Maui
 
 		static UIImage? Checked;
 		static UIImage? Unchecked;
-		static UIAccessibilityTrait? s_switchAccessibilityTraits;
 		UIAccessibilityTrait _accessibilityTraits;
 
 		Color? _tintColor;
@@ -24,6 +23,23 @@ namespace Microsoft.Maui
 
 		public EventHandler? CheckedChanged;
 
+		public MauiCheckBox()
+		{
+			ContentMode = UIViewContentMode.Center;
+			ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
+			HorizontalAlignment = UIControlContentHorizontalAlignment.Left;
+			VerticalAlignment = UIControlContentVerticalAlignment.Center;
+			AdjustsImageWhenDisabled = false;
+			AdjustsImageWhenHighlighted = false;
+			TouchUpInside += OnTouchUpInside;
+		}
+
+		void OnTouchUpInside(object? sender, EventArgs e)
+		{
+			IsChecked = !IsChecked;
+			CheckedChanged?.Invoke(this, EventArgs.Empty);
+		}
+
 		internal float MinimumViewSize
 		{
 			get { return _minimumViewSize; }
@@ -33,26 +49,6 @@ namespace Microsoft.Maui
 				var xOffset = (value - DefaultSize + LineWidth) / 4;
 				ContentEdgeInsets = new UIEdgeInsets(0, xOffset, 0, 0);
 			}
-		}
-
-		public MauiCheckBox()
-		{
-			ContentMode = UIViewContentMode.Center;
-			ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
-			HorizontalAlignment = UIControlContentHorizontalAlignment.Left;
-			VerticalAlignment = UIControlContentVerticalAlignment.Center;
-			AdjustsImageWhenDisabled = false;
-			AdjustsImageWhenHighlighted = false;
-
-			TouchUpInside += OnTouchUpInside;
-			s_switchAccessibilityTraits ??= new UISwitch().AccessibilityTraits;
-			_accessibilityTraits = s_switchAccessibilityTraits.Value;
-		}
-
-		void OnTouchUpInside(object? sender, EventArgs e)
-		{
-			IsChecked = !IsChecked;
-			CheckedChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		public bool IsChecked
@@ -266,11 +262,30 @@ namespace Microsoft.Maui
 			SetNeedsDisplay();
 		}
 
+		static UIKit.UIAccessibilityTrait? s_switchAccessibilityTraits;
+		UIKit.UIAccessibilityTrait SwitchAccessibilityTraits
+		{
+			get
+			{
+				// Accessibility Traits are none if VO isn't turned off
+				// So we just return None until the user turns on VO
+				if (base.AccessibilityTraits == UIAccessibilityTrait.None)
+					return UIAccessibilityTrait.None;
+
+				if (s_switchAccessibilityTraits == null ||
+					s_switchAccessibilityTraits == UIKit.UIAccessibilityTrait.None)
+				{
+					s_switchAccessibilityTraits = new UIKit.UISwitch().AccessibilityTraits;
+				}
+
+				return s_switchAccessibilityTraits ?? UIKit.UIAccessibilityTrait.None;
+			}
+		}
 
 		public override UIAccessibilityTrait AccessibilityTraits
 		{
-			get => (_accessibilityTraits |= (s_switchAccessibilityTraits ?? new UISwitch().AccessibilityTraits));
-			set => _accessibilityTraits = value;
+			get => _accessibilityTraits |= SwitchAccessibilityTraits;
+			set => _accessibilityTraits = value | SwitchAccessibilityTraits;
 		}
 
 		public override string? AccessibilityValue
