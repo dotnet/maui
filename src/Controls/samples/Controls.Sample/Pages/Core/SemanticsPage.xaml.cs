@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample.Pages
 
 		private void SetSemanticFocusButton_Clicked(object sender, System.EventArgs e)
 		{
-			SemanticExtensions.SetSemanticFocus(semanticFocusLabel);
+			semanticFocusLabel.SetSemanticFocus();
 		}
 	}
 }
