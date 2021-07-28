@@ -48,13 +48,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			app.MainPage = page;
 
-			var window = iapp.CreateWindow(null) as Window;
+			var window = iapp.CreateWindow(null);
 
 			var appChildren = app.GetVisualChildren();
-
+			var windowChildren = window.GetVisualChildren();
 			Assert.Greater(appChildren.Count, 0);
 			Assert.IsTrue(appChildren[0] is IWindow);
-			Assert.Greater(window.GetVisualChildren().Count, 0);
+			Assert.AreEqual(windowChildren.Count, 1);
 		}
 	}
 }

@@ -1323,10 +1323,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(CreateShellItem());
 			shell.CurrentItem.Items.Add(CreateShellSection());
 			shell.CurrentItem.CurrentItem.Items.Add(CreateShellContent());
-			var shellCount = shell.GetVisualChildren().Count;
-			var shellItemCount = shell.CurrentItem.GetVisualChildren().Count;
-			Assert.Greater(shellCount, 0);
-			Assert.Greater(shellItemCount, 0);
+			var shellCount = shell.GetVisualChildren();
+			var shellItemCount = shell.CurrentItem.GetVisualChildren();
+			Assert.AreEqual(shellCount.Count, 1);
+			Assert.AreEqual(shellItemCount.Count, 2);
 		}
 	}
 }
