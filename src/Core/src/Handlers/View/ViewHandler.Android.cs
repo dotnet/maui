@@ -131,8 +131,13 @@ namespace Microsoft.Maui.Handlers
 			if (!string.IsNullOrEmpty(desc))
 			{
 				// Edit Text fields won't read anything for the content description
-				if (host is EditText)
-					newText = $"{desc}, {((EditText)host).Text}";
+				if (host is EditText et)
+				{
+					if (!string.IsNullOrEmpty(et.Text))
+						newText = $"{desc}, {et.Text}";
+					else
+						newText = $"{desc}";
+				}
 				else
 					newContentDescription = desc;
 			}
@@ -150,10 +155,25 @@ namespace Microsoft.Maui.Handlers
 				}
 				else
 				{
-					if (host is TextView tv)
+					if (host is EditText et)
 					{
-						newText = newText ?? tv.Text;
+						newText = newText ?? et.Text;
 						newText = $"{newText}, {hint}";
+					}
+					else if (host is TextView tv)
+					{
+						if (newContentDescription != null)
+						{
+							newText = $"{newContentDescription}, {hint}";
+						}
+						else if (!string.IsNullOrEmpty(tv.Text))
+						{
+							newText = $"{tv.Text}, {hint}";
+						}
+						else
+						{
+							newText = $"{hint}";
+						}
 					}
 					else
 					{
@@ -171,10 +191,10 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			if (!String.IsNullOrWhiteSpace(newContentDescription))
+			if (!string.IsNullOrWhiteSpace(newContentDescription))
 				info.ContentDescription = newContentDescription;
 
-			if (!String.IsNullOrWhiteSpace(newText))
+			if (!string.IsNullOrWhiteSpace(newText))
 				info.Text = newText;
 		}
 
