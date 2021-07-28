@@ -14,7 +14,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class ShellContent : BaseShellItem, IShellContentController, IVisualTreeHelper
+	public class ShellContent : BaseShellItem, IShellContentController
 	{
 		static readonly BindablePropertyKey MenuItemsPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(MenuItems), typeof(MenuItemCollection), typeof(ShellContent), null,

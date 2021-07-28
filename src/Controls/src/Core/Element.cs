@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-	public abstract partial class Element : BindableObject, IElement, INameScope, IElementController, IVisualTreeHelper
+	public abstract partial class Element : BindableObject, IElement, INameScope, IElementController
 	{
 		public static readonly BindableProperty MenuProperty = BindableProperty.CreateAttached(nameof(Menu), typeof(Menu), typeof(Element), null);
 

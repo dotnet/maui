@@ -9,7 +9,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls.Layout2
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout : View, Microsoft.Maui.ILayout, Maui.IVisualTreeHelper, IList<IView>, IPaddingElement
+	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IPaddingElement
 	{
 		ILayoutManager _layoutManager;
 		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();

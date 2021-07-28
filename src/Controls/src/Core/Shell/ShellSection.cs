@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeHelper
+	public class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController
 	{
 		#region PropertyKeys
 
