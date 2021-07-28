@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IVisualTreeHelper
 	{
-		IReadOnlyList<Maui.IElement> GetVisualChildren();
+		IReadOnlyList<IElement> GetVisualChildren();
 	}
 }
