@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls.Platform
 			AnimationFinished?.Invoke(this, e);
 		}
 
-		protected virtual void OnItemsCollectionChagned(object sender, NotifyCollectionChangedEventArgs e)
+		protected virtual void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			UpdateTablayoutVisibility();
 		}
@@ -309,14 +309,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HookEvents()
 		{
-			SectionController.ItemsCollectionChanged += OnItemsCollectionChagned;
+			SectionController.ItemsCollectionChanged += OnItemsCollectionChanged;
 			((IShellController)_shellContext.Shell).AddAppearanceObserver(this, ShellSection);
 			ShellSection.PropertyChanged += OnShellItemPropertyChanged;
 		}
 
 		void UnhookEvents()
 		{
-			SectionController.ItemsCollectionChanged -= OnItemsCollectionChagned;
+			SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 			((IShellController)_shellContext?.Shell)?.RemoveAppearanceObserver(this);
 			ShellSection.PropertyChanged -= OnShellItemPropertyChanged;
 		}

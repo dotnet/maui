@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 
 		[Test]
-		public async Task InsertPageFromINavigationSetsCorrectNavigationSource()
+		public async Task InsertPageFromNavigationSetsCorrectNavigationSource()
 		{
 			Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
 			Routing.RegisterRoute("page", typeof(ContentPage));

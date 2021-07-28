@@ -562,11 +562,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			await PushStackOfPages(nonModalPageStacks, animate);
-
-			if (Parent?.Parent is IShellController shell)
-			{
-				//shell.UpdateCurrentState(ShellNavigationSource.ShellSectionChanged);
-			}
 		}
 
 		Task PopModalAsync(bool isAnimated)
@@ -1159,11 +1154,13 @@ namespace Microsoft.Maui.Controls
 				stack.Remove(page);
 				var navigationState = GetUpdatedStatus(stack);
 
-				ShellNavigatingEventArgs shellNavigatingEventArgs = new ShellNavigatingEventArgs(
-					_owner.Shell.CurrentState,
-					navigationState.Location,
-					ShellNavigationSource.Remove,
-					false);
+				ShellNavigatingEventArgs shellNavigatingEventArgs = 
+					new ShellNavigatingEventArgs(
+						_owner.Shell.CurrentState,
+						navigationState.Location,
+						ShellNavigationSource.Remove,
+						false
+					);
 
 				_owner.Shell.NavigationManager.HandleNavigating(shellNavigatingEventArgs);
 				_owner.OnRemovePage(page);
@@ -1186,11 +1183,13 @@ namespace Microsoft.Maui.Controls
 				stack.Insert(index, page);
 				var navigationState = GetUpdatedStatus(stack);
 
-				ShellNavigatingEventArgs shellNavigatingEventArgs = new ShellNavigatingEventArgs(
-					_owner.Shell.CurrentState,
-					navigationState.Location,
-					ShellNavigationSource.Insert,
-					false);
+				ShellNavigatingEventArgs shellNavigatingEventArgs = 
+					new ShellNavigatingEventArgs(
+						_owner.Shell.CurrentState,
+						navigationState.Location,
+						ShellNavigationSource.Insert,
+						false
+					);
 
 				_owner.Shell.NavigationManager.HandleNavigating(shellNavigatingEventArgs);
 				_owner.OnInsertPageBefore(page, before);
