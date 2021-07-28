@@ -269,7 +269,7 @@ namespace Microsoft.Maui
 
 		public override UIAccessibilityTrait AccessibilityTraits
 		{
-			get => _accessibilityTraits;
+			get => (_accessibilityTraits |= (s_switchAccessibilityTraits ?? new UISwitch().AccessibilityTraits));
 			set => _accessibilityTraits = value;
 		}
 
