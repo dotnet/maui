@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Platform
 			SetBasicContentDescription(control, element, defaultContentDescription);
 		}
 
-		internal static void SetFocusable(AView control, Element element, ref ImportantForAccessibility? defaultImportantForAccessibility)
+		internal static void SetImportantForAccessibility(AView control, Element element, ref ImportantForAccessibility? defaultImportantForAccessibility)
 		{
 			if (element == null || control == null)
 			{
@@ -157,6 +157,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool? isInAccessibleTree = (bool?)element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
 			control.ImportantForAccessibility = !isInAccessibleTree.HasValue ? (ImportantForAccessibility)defaultImportantForAccessibility : (bool)isInAccessibleTree ? ImportantForAccessibility.Yes : ImportantForAccessibility.No;
+
+			bool? excludedWithChildren = (bool?)element.GetValue(AutomationProperties.ExcludedWithChildrenProperty);
+			if (excludedWithChildren == true)
+				control.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
 		}
 
 		// TODO MAUI
@@ -218,7 +222,7 @@ namespace Microsoft.Maui.Controls.Platform
 			SetHint(control, element, _defaultHint);
 			SetAutomationId(control, element);
 			SetContentDescription(control, element, _defaultContentDescription, _defaultHint);
-			SetFocusable(control, element, ref _defaultImportantForAccessibility);
+			SetImportantForAccessibility(control, element, ref _defaultImportantForAccessibility);
 			SetLabeledBy(control, element);
 		}
 

@@ -59,8 +59,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		void SetContentDescription()
 			=> Controls.Platform.AutomationPropertiesProvider.SetContentDescription(Control, Element, _defaultContentDescription, _defaultHint);
 
-		void SetFocusable()
-			=> Controls.Platform.AutomationPropertiesProvider.SetFocusable(Control, Element, ref _defaultImportantForAccessibility);
+		void SetImportantForAccessibility()
+			=> Controls.Platform.AutomationPropertiesProvider.SetImportantForAccessibility(Control, Element, ref _defaultImportantForAccessibility);
 
 		void SetLabeledBy()
 			=> Controls.Platform.AutomationPropertiesProvider.SetLabeledBy(Control, Element);
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			}
 			else if (e.PropertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName)
 			{
-				SetFocusable();
+				SetImportantForAccessibility();
 			}
 			else if (e.PropertyName == AutomationProperties.LabeledByProperty.PropertyName)
 			{
