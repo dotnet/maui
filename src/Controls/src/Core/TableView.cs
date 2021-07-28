@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Root))]
-	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, IVisualTreeHelper
+	public class TableView : View, ITableViewController, IElementConfiguration<TableView>
 	{
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create("RowHeight", typeof(int), typeof(TableView), -1);
 
@@ -248,7 +248,5 @@ namespace Microsoft.Maui.Controls
 				item.SetValue(PathProperty, index);
 			}
 		}
-		IReadOnlyList<object> IVisualTreeHelper.GetVisualChildren() => new List<object> { Root }.AsReadOnly();
-
 	}
 }

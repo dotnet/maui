@@ -7,6 +7,6 @@ namespace Microsoft.Maui.Controls
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IVisualTreeHelper
 	{
-		IReadOnlyList<object> GetVisualChildren();
+		IReadOnlyList<Maui.IElement> GetVisualChildren();
 	}
 }

@@ -310,7 +310,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		IReadOnlyList<object> IVisualTreeHelper.GetVisualChildren() => new List<object> { ((IShellContentController)this).Page }.AsReadOnly();
+		IReadOnlyList<Maui.IElement> IVisualTreeHelper.GetVisualChildren() => new List<Maui.IElement> { ((IShellContentController)this).Page }.AsReadOnly();
 
 	}
 }

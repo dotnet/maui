@@ -78,6 +78,6 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual bool ValidateItemTemplate(DataTemplate template) => true;
 
-		IReadOnlyList<object> IVisualTreeHelper.GetVisualChildren() => new List<object> { this }.AsReadOnly();
+		IReadOnlyList<Maui.IElement> IVisualTreeHelper.GetVisualChildren() => new List<Maui.IElement> { this }.AsReadOnly();
 	}
 }
