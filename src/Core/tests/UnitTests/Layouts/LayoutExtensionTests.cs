@@ -94,14 +94,14 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			margin = new Thickness(10);
 			yield return new object[] { LayoutAlignment.Start, point, margin, 10, 80 };
 			yield return new object[] { LayoutAlignment.Center, point, margin, 100, 80 };
-			yield return new object[] { LayoutAlignment.End, point, margin, 190, 80 };
+			yield return new object[] { LayoutAlignment.End, point, margin, 210, 80 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 10, 280 };
 
 			// Lopsided margin
 			margin = new Thickness(5, 5, 10, 10);
 			yield return new object[] { LayoutAlignment.Start, point, margin, 5, 85 };
 			yield return new object[] { LayoutAlignment.Center, point, margin, 97.5, 85 };
-			yield return new object[] { LayoutAlignment.End, point, margin, 190, 85 };
+			yield return new object[] { LayoutAlignment.End, point, margin, 205, 85 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 5, 285 };
 
 			// X and Y offsets (e.g., GridLayout columns and rows)
@@ -144,12 +144,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var widthConstraint = 50;
 			var heightConstraint = 300;
-			var viewSize = new Size(50, 100);
+			var viewSizeIncludingMargins = new Size(50, 100);
 
 			var element = Substitute.For<IView>();
 
 			element.Margin.Returns(margin);
-			element.DesiredSize.Returns(viewSize);
+			element.DesiredSize.Returns(viewSizeIncludingMargins);
 			element.VerticalLayoutAlignment.Returns(layoutAlignment);
 			element.Width.Returns(-1);
 			element.Height.Returns(-1);
@@ -173,14 +173,14 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Even margin
 			margin = new Thickness(10);
-			yield return new object[] { LayoutAlignment.Start, point, margin, 190, 80 };
+			yield return new object[] { LayoutAlignment.Start, point, margin, 210, 80 };
 			yield return new object[] { LayoutAlignment.Center, point, margin, 100, 80 };
 			yield return new object[] { LayoutAlignment.End, point, margin, 10, 80 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 10, 280 };
 
 			// Lopsided margin
 			margin = new Thickness(5, 5, 10, 10);
-			yield return new object[] { LayoutAlignment.Start, point, margin, 195, 85 };
+			yield return new object[] { LayoutAlignment.Start, point, margin, 210, 85 };
 			yield return new object[] { LayoutAlignment.Center, point, margin, 102.5, 85 };
 			yield return new object[] { LayoutAlignment.End, point, margin, 10, 85 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 10, 285 };

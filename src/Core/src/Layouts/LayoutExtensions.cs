@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Layouts
 					break;
 				case LayoutAlignment.End:
 
-					frameX = startX + boundsWidth - endMargin - desiredWidth;
+					frameX = startX + boundsWidth - desiredWidth + startMargin;
 					break;
 			}
 
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Layouts
 
 				case LayoutAlignment.End:
 
-					frameY = startY + bounds.Height - margin.Bottom - frameworkElement.DesiredSize.Height;
+					frameY = startY + bounds.Height - frameworkElement.DesiredSize.Height + margin.Top;
 					break;
 			}
 
