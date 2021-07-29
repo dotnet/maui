@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Represents a framework-level set of properties, events, and methods for .NET MAUI elements. 
 	/// </summary>
-	public interface IFrameworkElement : IElement, ITransform
+	public interface IFrameworkElement : IElement, ITransform, ISemantic
 	{
 		/// <summary>
 		/// Id used by automation tools to interact with this FrameworkElement
@@ -28,11 +28,6 @@ namespace Microsoft.Maui
 		/// Determines the vertical aspect of this element's arrangement in a container
 		/// </summary>
 		LayoutAlignment VerticalLayoutAlignment { get; }
-
-		/// <summary>
-		/// Adds semantics to every FrameworkElement for accessibility
-		/// </summary>
-		Semantics Semantics { get; }
 
 		/// <summary>
 		/// Gets the Path used to define the outline of the contents of a View.

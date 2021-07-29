@@ -82,134 +82,25 @@ namespace Microsoft.Maui.Handlers
 			if (handler.NativeView == null)
 				return;
 
-			if (view.Semantics != null &&
-				handler is ViewHandler viewHandler &&
-				viewHandler.AccessibilityDelegate == null &&
-				ViewCompat.GetAccessibilityDelegate(handler.NativeView as NativeView) == null)
+
+			if (handler.NativeView is not NativeView nativeView)
+				return;
+
+			if (nativeView is AndroidX.AppCompat.Widget.SearchView sv)
+				nativeView = sv.FindViewById(Resource.Id.search_button) ?? nativeView;
+
+			if (view.Semantics != null)
 			{
-				if (handler.NativeView is not NativeView nativeView)
-					return;
-
-				if (nativeView is AndroidX.AppCompat.Widget.SearchView sv)
-					nativeView = sv.FindViewById(Resource.Id.search_button)!;
-
 				if (!string.IsNullOrWhiteSpace(view.Semantics.Hint) || !string.IsNullOrWhiteSpace(view.Semantics.Description))
-				{
-					if (viewHandler.AccessibilityDelegate == null)
-					{
-						viewHandler.AccessibilityDelegate = new MauiAccessibilityDelegate() { Handler = viewHandler };
-						ViewCompat.SetAccessibilityDelegate(nativeView, viewHandler.AccessibilityDelegate);
-					}
-				}
-				else if (viewHandler.AccessibilityDelegate != null)
-				{
-					viewHandler.AccessibilityDelegate = null;
-					ViewCompat.SetAccessibilityDelegate(nativeView, null);
-				}
-
-				if (viewHandler.AccessibilityDelegate != null)
-				{
 					nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
-				}
-			}
-		}
-
-		public void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)
-		{
-			var semantics = VirtualView?.Semantics;
-
-			if (semantics == null)
-				return;
-
-			if (info == null)
-				return;
-
-			string? newText = null;
-			string? newContentDescription = null;
-
-			var desc = semantics.Description;
-			if (!string.IsNullOrEmpty(desc))
-			{
-				// Edit Text fields won't read anything for the content description
-				if (host is EditText et)
-				{
-					if (!string.IsNullOrEmpty(et.Text))
-						newText = $"{desc}, {et.Text}";
-					else
-						newText = $"{desc}";
-				}
 				else
-					newContentDescription = desc;
+					nativeView.ImportantForAccessibility = ImportantForAccessibility.Auto;
 			}
 
-			var hint = semantics.Hint;
-			if (!string.IsNullOrEmpty(hint))
+			if (handler.AccessibilityDelegate == null)
 			{
-				// info HintText won't read anything back when using TalkBack pre API 26
-				if (NativeVersion.IsAtLeast(26))
-				{
-					info.HintText = hint;
-
-					if (host is EditText)
-						info.ShowingHintText = false;
-				}
-				else
-				{
-					if (host is EditText et)
-					{
-						newText = newText ?? et.Text;
-						newText = $"{newText}, {hint}";
-					}
-					else if (host is TextView tv)
-					{
-						if (newContentDescription != null)
-						{
-							newText = $"{newContentDescription}, {hint}";
-						}
-						else if (!string.IsNullOrEmpty(tv.Text))
-						{
-							newText = $"{tv.Text}, {hint}";
-						}
-						else
-						{
-							newText = $"{hint}";
-						}
-					}
-					else
-					{
-						if (newContentDescription != null)
-						{
-							newText = $"{newContentDescription}, {hint}";
-						}
-						else
-						{
-							newText = $"{hint}";
-						}
-					}
-
-					newContentDescription = null;
-				}
-			}
-
-			if (!string.IsNullOrWhiteSpace(newContentDescription))
-				info.ContentDescription = newContentDescription;
-
-			if (!string.IsNullOrWhiteSpace(newText))
-				info.Text = newText;
-		}
-
-		class MauiAccessibilityDelegate : AccessibilityDelegateCompat
-		{
-			public ViewHandler? Handler { get; set; }
-
-			public MauiAccessibilityDelegate()
-			{
-			}
-
-			public override void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)
-			{
-				base.OnInitializeAccessibilityNodeInfo(host, info);
-				Handler?.OnInitializeAccessibilityNodeInfo(host, info);
+				handler.AccessibilityDelegate = new MauiAccessibilityDelegate() { Handler = handler };
+				ViewCompat.SetAccessibilityDelegate(nativeView, handler.AccessibilityDelegate);
 			}
 		}
 	}

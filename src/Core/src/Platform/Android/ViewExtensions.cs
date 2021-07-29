@@ -92,16 +92,6 @@ namespace Microsoft.Maui
 			nativeView.SetTag(AutomationTagId, view.AutomationId);
 		}
 
-		public static void UpdateSemantics(this AView nativeView, IView view)
-		{
-			var semantics = view.Semantics;
-
-			if (semantics == null)
-				return;
-
-			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
-		}
-
 		public static void InvalidateMeasure(this AView nativeView, IView view)
 		{
 			nativeView.RequestLayout();

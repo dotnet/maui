@@ -150,15 +150,12 @@ namespace Microsoft.Maui.Controls.Platform
 			if (View == null)
 				return;
 
-			AView? nativeView = (_handler?.NativeView as AView);
-
-			if (nativeView == null)
+			if (_handler?.NativeView is not AView nativeView)
 				return;
 
 			if (View.GestureRecognizers.Count == 0)
 			{
 				nativeView.Touch -= OnNativeViewTouched;
-
 			}
 			else
 			{

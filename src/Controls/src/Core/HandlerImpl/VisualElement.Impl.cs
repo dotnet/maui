@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -106,17 +107,39 @@ namespace Microsoft.Maui.Controls
 
 		Visibility IFrameworkElement.Visibility => IsVisible.ToVisibility();
 
-		Semantics IFrameworkElement.Semantics
+		double IFrameworkElement.Width => WidthRequest;
+		double IFrameworkElement.Height => HeightRequest;
+
+		Semantics ISemantic.Semantics
 		{
 			get => _semantics;
 		}
+
+		void ISemantic.UpdateSemanticInfo(SemanticInfoRequest request)
+		{
+			UpdateSemanticInfoCore(request);
+		}
+
+		private protected virtual void UpdateSemanticInfoCore(SemanticInfoRequest request)
+		{
+			UpdateSemanticInfo?.Invoke(this, new SemanticInfoRequestEventArgs(request));
+		}
+
+		public event EventHandler<SemanticInfoRequestEventArgs> UpdateSemanticInfo;
 
 		// We don't want to initialize Semantics until someone explicitly 
 		// wants to modify some aspect of the semantics class
 		internal Semantics SetupSemantics() =>
 			_semantics ??= new Semantics();
+	}
 
-		double IFrameworkElement.Width => WidthRequest;
-		double IFrameworkElement.Height => HeightRequest;
+	public class SemanticInfoRequestEventArgs : EventArgs
+	{
+		public SemanticInfoRequestEventArgs(SemanticInfoRequest semanticInfoRequest)
+		{
+			SemanticInfoRequest = semanticInfoRequest;
+		}
+
+		public SemanticInfoRequest SemanticInfoRequest  { get;}
 	}
 }
