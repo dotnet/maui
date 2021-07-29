@@ -1,13 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement
+	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement
 	{
 		protected ILayoutManager _layoutManager;
 		public ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
@@ -152,5 +153,7 @@ namespace Microsoft.Maui.Controls
 		{
 			return new Thickness(0);
 		}
+
+		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.Cast<IVisualTreeElement>().ToList().AsReadOnly();
 	}
 }
