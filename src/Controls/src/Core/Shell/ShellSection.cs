@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController
+	public class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement
 	{
 		#region PropertyKeys
 
@@ -1205,5 +1205,7 @@ namespace Microsoft.Maui.Controls
 				return ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, stack, modalStack);
 			}
 		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => AllChildren.ToList().AsReadOnly();
 	}
 }

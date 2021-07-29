@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-	public abstract partial class Element : BindableObject, IElement, INameScope, IElementController
+	public abstract partial class Element : BindableObject, IElement, INameScope, IElementController, IVisualTreeElement
 	{
 		public static readonly BindableProperty MenuProperty = BindableProperty.CreateAttached(nameof(Menu), typeof(Menu), typeof(Element), null);
 
@@ -318,6 +318,10 @@ namespace Microsoft.Maui.Controls
 		{
 			base.SetDynamicResource(property, key);
 		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => LogicalChildren;
+
+		IVisualTreeElement IVisualTreeElement.GetVisualParent() => this.Parent;
 
 		protected override void OnBindingContextChanged()
 		{
