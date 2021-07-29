@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (
 					(typeConverterAttribute =
 						attributeProvider.CustomAttributes.FirstOrDefault(
-							cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName))) != null)
+							cad => cad.AttributeType.FullName == "System.ComponentModel.TypeConverterAttribute")) != null)
 				{
 					typeConverter = typeConverterAttribute.ConstructorArguments[0].Value as TypeReference;
 					break;
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (
 					(typeConverterAttribute =
 						attributeProvider.CustomAttributes.FirstOrDefault(
-							cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName))) != null)
+							cad => cad.AttributeType.FullName == "System.ComponentModel.TypeConverterAttribute")) != null)
 				{
 					typeConverter = typeConverterAttribute.ConstructorArguments[0].Value as TypeReference;
 					break;

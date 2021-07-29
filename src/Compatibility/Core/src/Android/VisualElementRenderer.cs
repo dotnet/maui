@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				SetAutomationId(element.AutomationId);
 
 			SetContentDescription();
-			SetFocusable();
+			SetImportantForAccessibility();
 			UpdateInputTransparent();
 			UpdateInputTransparentInherited();
 
@@ -289,10 +289,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
 				SetContentDescription();
 			else if (e.PropertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName)
-				SetFocusable();
+				SetImportantForAccessibility();
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 				UpdateInputTransparent();
-			else if (e.PropertyName == Microsoft.Maui.Controls.Layout.CascadeInputTransparentProperty.PropertyName)
+			else if (e.PropertyName == Microsoft.Maui.Controls.Compatibility.Layout.CascadeInputTransparentProperty.PropertyName)
 				UpdateInputTransparentInherited();
 
 			ElementPropertyChanged?.Invoke(this, e);
@@ -355,8 +355,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Controls.Platform.AutomationPropertiesProvider.SetContentDescription(this, Element, _defaultContentDescription, _defaultHint);
 		}
 
-		protected virtual void SetFocusable()
-			=> Controls.Platform.AutomationPropertiesProvider.SetFocusable(this, Element, ref _defaultImportantForAccessibility);
+		protected virtual void SetImportantForAccessibility()
+			=> Controls.Platform.AutomationPropertiesProvider.SetImportantForAccessibility(this, Element, ref _defaultImportantForAccessibility);
 
 		void UpdateInputTransparent()
 		{

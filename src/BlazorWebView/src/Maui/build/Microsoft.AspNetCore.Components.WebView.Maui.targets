@@ -37,7 +37,6 @@
     </ItemGroup>
   </Target>
 
-
   <!-- Targets for converting Static Web Assets to embedded resources -->
   <Target Name="CopyStaticWebAssetsToOutputFolder" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="ResolveStaticWebAssetsInputs">
     <ItemGroup>
@@ -52,57 +51,43 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="ConvertToEmbeddedFilesManifestItems" BeforeTargets="AssignTargetPaths" DependsOnTargets="ResolveStaticWebAssetsInputs">
+  <Target Name="ConvertToEmbeddedFilesManifestItems" DependsOnTargets="ResolveStaticWebAssetsInputs" BeforeTargets="SplitResourcesByCulture">
     <ItemGroup>
       <!-- Prevent any previously-existing embedded resources from being included in the manifest. We want only
            StaticWebAssets to be included in the manifest. -->
       <EmbeddedResource>
         <ExcludeFromManifest>true</ExcludeFromManifest>
-      </EmbeddedResource>
+      </EmbeddedResource>      
+    </ItemGroup>
 
-      <EmbeddedResource Condition="'%(StaticWebAsset.SourceType)' != ''"
-                        Include="%(StaticWebAsset.Identity)"
-                        Link="$([System.String]::Copy('wwwroot\%(StaticWebAsset.BasePath)\%(StaticWebAsset.RelativePath)').Replace('/','\').Replace('\\\','\').Replace('\\','\'))" />
+    <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_MauiStaticWebAssetWithTargetPath" />
+    </ComputeStaticWebAssetsTargetPaths>
 
-      <EmbeddedResource Condition="'%(StaticWebAsset.SourceType)' == ''"
-                        Include="%(StaticWebAsset.Identity)"
-                        Link="wwwroot\%(StaticWebAsset.RelativePath)" />
+    <ItemGroup>
+      <EmbeddedResource
+        Include="%(_MauiStaticWebAssetWithTargetPath.Identity)"
+        Link="%(_MauiStaticWebAssetWithTargetPath.TargetPath)"
+        TargetPath="%(_MauiStaticWebAssetWithTargetPath.TargetPath)"
+        OriginalItemSpec="%(_MauiStaticWebAssetWithTargetPath.OriginalItemSpec)" />
     </ItemGroup>
   </Target>
 
   <Target Name="EnsureBundles" BeforeTargets="CoreCompile" DependsOnTargets="BundleScopedCssFiles" />
 
-  <Target Name="_BlazorDesktopReplaceBundle" AfterTargets="_AddGeneratedScopedCssFilesForReference" DependsOnTargets="_ComputeCssBundles">
+  <Target Name="_FixUpMauiReference"
+    BeforeTargets="ComputeReferencedProjectsPublishAssets"
+    AfterTargets="LoadStaticWebAssetsBuildManifest">
+
     <ItemGroup>
-      <StaticWebAsset Include="@(_AppBundleStaticWebAsset)">
-        <SourceType></SourceType>
-      </StaticWebAsset>
-      <Staticwebasset Remove="@(_ProjectBundleStaticWebAsset)" />
+      <_MauiManifestsToUpdate Include="@(StaticWebAssetManifest)" Condition="'%(ManifestType)' == 'Publish'" />
+      <_MauiManifestsToUpdate>
+       <AdditionalPublishPropertiesToRemove Condition="$([System.String]::Copy('%(_MauiManifestsToUpdate.AdditionalPublishProperties)').Contains('TargetFramework')) == 'false'">@(_MauiManifestsToUpdate->'%(AdditionalPublishPropertiesToRemove)');TargetFramework</AdditionalPublishPropertiesToRemove>      
+      </_MauiManifestsToUpdate>
+
+      <StaticWebAssetManifest Remove="@(_MauiManifestsToUpdate)" />
+      <StaticWebAssetManifest Include="@(_MauiManifestsToUpdate)" />
     </ItemGroup>
+
   </Target>
-
-  <PropertyGroup>
-    <GetCurrentProjectStaticWebAssetsDependsOn>
-      $(GetCurrentProjectStaticWebAssets);
-      _BlazorDesktopReplaceBundle2;
-    </GetCurrentProjectStaticWebAssetsDependsOn>
-  </PropertyGroup>
-
-  <Target Name="_BlazorDesktopReplaceBundle2" DependsOnTargets="_PrepareForBundling">
-    <ItemGroup>
-      <_AppBundleStaticWebAsset Include="$(_ScopedCssOutputPath)" Condition="Exists('$(_ScopedCssOutputPath)')">
-        <SourceType></SourceType>
-        <SourceId>$(PackageId)</SourceId>
-        <ContentRoot>$(_ScopedCssBundleContentRoot)</ContentRoot>
-        <BasePath>$(_ScopedCssBundleBasePath)</BasePath>
-        <RelativePath>$(PackageId).styles.css</RelativePath>
-      </_AppBundleStaticWebAsset>
-
-      <StaticWebAsset Include="@(_AppBundleStaticWebAsset)">
-        <SourceType></SourceType>
-      </StaticWebAsset>
-
-    </ItemGroup>
-  </Target>
-
 </Project>

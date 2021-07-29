@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
+using Compatibility = Microsoft.Maui.Controls.Compatibility;
 
 [assembly: InternalsVisibleTo("iOSUnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery")]
@@ -78,7 +79,8 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: StyleProperty("text-transform", typeof(ITextElement), nameof(TextElement.TextTransformProperty), Inherited = true)]
 [assembly: StyleProperty("color", typeof(ProgressBar), nameof(ProgressBar.ProgressColorProperty))]
 [assembly: StyleProperty("color", typeof(Switch), nameof(Switch.OnColorProperty))]
-[assembly: StyleProperty("column-gap", typeof(Grid), nameof(Grid.ColumnSpacingProperty))]
+[assembly: StyleProperty("column-gap", typeof(Compatibility.Grid), nameof(Compatibility.Grid.ColumnSpacingProperty))]
+[assembly: StyleProperty("column-gap", typeof(GridLayout), nameof(GridLayout.ColumnSpacingProperty))]
 [assembly: StyleProperty("direction", typeof(VisualElement), nameof(VisualElement.FlowDirectionProperty), Inherited = true)]
 [assembly: StyleProperty("font-family", typeof(IFontElement), nameof(FontElement.FontFamilyProperty), Inherited = true)]
 [assembly: StyleProperty("font-size", typeof(IFontElement), nameof(FontElement.FontSizeProperty), Inherited = true)]
@@ -98,7 +100,8 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: StyleProperty("padding-top", typeof(IPaddingElement), nameof(PaddingElement.PaddingTopProperty), PropertyOwnerType = typeof(PaddingElement))]
 [assembly: StyleProperty("padding-right", typeof(IPaddingElement), nameof(PaddingElement.PaddingRightProperty), PropertyOwnerType = typeof(PaddingElement))]
 [assembly: StyleProperty("padding-bottom", typeof(IPaddingElement), nameof(PaddingElement.PaddingBottomProperty), PropertyOwnerType = typeof(PaddingElement))]
-[assembly: StyleProperty("row-gap", typeof(Grid), nameof(Grid.RowSpacingProperty))]
+[assembly: StyleProperty("row-gap", typeof(Compatibility.Grid), nameof(Compatibility.Grid.RowSpacingProperty))]
+[assembly: StyleProperty("row-gap", typeof(GridLayout), nameof(GridLayout.RowSpacingProperty))]
 [assembly: StyleProperty("text-align", typeof(ITextAlignmentElement), nameof(TextAlignmentElement.HorizontalTextAlignmentProperty), Inherited = true)]
 [assembly: StyleProperty("text-decoration", typeof(IDecorableTextElement), nameof(DecorableTextElement.TextDecorationsProperty))]
 [assembly: StyleProperty("transform", typeof(VisualElement), nameof(VisualElement.TransformProperty))]
@@ -122,6 +125,19 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: StyleProperty("order", typeof(VisualElement), nameof(FlexLayout.OrderProperty), PropertyOwnerType = typeof(FlexLayout))]
 [assembly: StyleProperty("position", typeof(FlexLayout), nameof(FlexLayout.PositionProperty))]
 
+// compatibility flex
+[assembly: StyleProperty("align-content", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.AlignContentProperty))]
+[assembly: StyleProperty("align-items", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.AlignItemsProperty))]
+[assembly: StyleProperty("align-self", typeof(VisualElement), nameof(Compatibility.FlexLayout.AlignSelfProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
+[assembly: StyleProperty("flex-direction", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.DirectionProperty))]
+[assembly: StyleProperty("flex-basis", typeof(VisualElement), nameof(Compatibility.FlexLayout.BasisProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
+[assembly: StyleProperty("flex-grow", typeof(VisualElement), nameof(Compatibility.FlexLayout.GrowProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
+[assembly: StyleProperty("flex-shrink", typeof(VisualElement), nameof(Compatibility.FlexLayout.ShrinkProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
+[assembly: StyleProperty("flex-wrap", typeof(VisualElement), nameof(Compatibility.FlexLayout.WrapProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
+[assembly: StyleProperty("justify-content", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.JustifyContentProperty))]
+[assembly: StyleProperty("order", typeof(VisualElement), nameof(Compatibility.FlexLayout.OrderProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
+[assembly: StyleProperty("position", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.PositionProperty))]
+
 //xf specific
 [assembly: StyleProperty("-xf-placeholder", typeof(IPlaceholderElement), nameof(PlaceholderElement.PlaceholderProperty))]
 [assembly: StyleProperty("-xf-placeholder-color", typeof(IPlaceholderElement), nameof(PlaceholderElement.PlaceholderColorProperty))]
@@ -134,8 +150,15 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: StyleProperty("-xf-min-track-color", typeof(Slider), nameof(Slider.MinimumTrackColorProperty))]
 [assembly: StyleProperty("-xf-max-track-color", typeof(Slider), nameof(Slider.MaximumTrackColorProperty))]
 [assembly: StyleProperty("-xf-thumb-color", typeof(Slider), nameof(Slider.ThumbColorProperty))]
-[assembly: StyleProperty("-xf-spacing", typeof(StackLayout), nameof(StackLayout.SpacingProperty))]
-[assembly: StyleProperty("-xf-orientation", typeof(StackLayout), nameof(StackLayout.OrientationProperty))]
+[assembly: StyleProperty("-xf-spacing", typeof(Compatibility.StackLayout), nameof(Compatibility.StackLayout.SpacingProperty))]
+[assembly: StyleProperty("-xf-orientation", typeof(Compatibility.StackLayout), nameof(Compatibility.StackLayout.OrientationProperty))]
+
+// TODO ezhart 2021-07-16 When we fix #1634, we'll need to enable this so the CSS applies 
+//[assembly: StyleProperty("-xf-spacing", typeof(StackLayout), nameof(StackLayout.SpacingProperty))]
+
+// TODO ezhart 2021-07-16 When we create the new composed StackLayout, we'll need to ensure we have this enabled 
+//[assembly: StyleProperty("-xf-orientation", typeof(StackLayout), nameof(StackLayout.OrientationProperty))]
+
 [assembly: StyleProperty("-xf-visual", typeof(VisualElement), nameof(VisualElement.VisualProperty))]
 [assembly: StyleProperty("-xf-vertical-text-alignment", typeof(Label), nameof(TextAlignmentElement.VerticalTextAlignmentProperty))]
 [assembly: StyleProperty("-xf-thumb-color", typeof(Switch), nameof(Switch.ThumbColorProperty))]

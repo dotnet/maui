@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_drawerToggle == null)
 			{
-				_drawerToggle = new ActionBarDrawerToggle(context.GetActivity(), drawerLayout, toolbar, R.String.Ok, R.String.Ok)
+				_drawerToggle = new ActionBarDrawerToggle(context.GetActivity(), drawerLayout, toolbar, Resource.String.nav_app_bar_open_drawer_description, R.String.Ok)
 				{
 					ToolbarNavigationClickListener = this,
 				};
@@ -458,7 +458,10 @@ namespace Microsoft.Maui.Controls.Platform
 			else if (image == null ||
 				toolbar.SetNavigationContentDescription(image) == null)
 			{
-				toolbar.SetNavigationContentDescription(R.String.Ok);
+				if (CanNavigateBack)
+					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
+				else
+					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
 			}
 		}
 

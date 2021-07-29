@@ -100,11 +100,11 @@ namespace Microsoft.Maui.Controls.Internals
 			var scrollView = new ScrollView();
 			var label = new Label();
 
-			var controls = new Grid();
+			var controls = new Compatibility.Grid();
 			var buttonA = new Button() { Text = "0s", HeightRequest = 62 };
 			controls.Children.AddHorizontal(new[] { buttonA });
 
-			var grid = new Grid
+			var grid = new Compatibility.Grid
 			{
 				RowDefinitions = new RowDefinitionCollection {
 				new RowDefinition { Height = new GridLength(1, GridUnitType.Star) },

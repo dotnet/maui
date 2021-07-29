@@ -7,6 +7,9 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+	using Grid = Microsoft.Maui.Controls.Compatibility.Grid;
+
 	[TestFixture]
 	public class NotifiedPropertiesTests : BaseTestFixture
 	{

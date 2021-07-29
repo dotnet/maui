@@ -10,6 +10,12 @@
 
   <ItemGroup>
     <_TargetPlatform
+        Condition=" '$(MauiPlatformName)' == 'any' "
+        Include="net6.0"
+        FullTfm="%(Identity)"
+        Tfm="net6.0"
+    />
+    <_TargetPlatform
         Condition=" '$(MauiPlatformName)' == 'android' "
         Include="net6.0-android30.0"
         FullTfm="%(Identity)"
@@ -42,7 +48,7 @@
   <Import Condition=" '$(MauiPlatformName)' != '' " Project="FrameworkList.targets" />
 
   <ItemGroup>
-    <_Platforms Include="android;maccatalyst;ios" />
+    <_Platforms Include="any;android;maccatalyst;ios" />
     <_Platforms Include="win" Condition=" '$(BuildForWinUI)' == 'true' or '$(Packing)' == 'true' " />
   </ItemGroup>
 

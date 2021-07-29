@@ -1,5 +1,4 @@
-﻿using System;
-using Maui.Controls.Sample.Pages.Base;
+﻿using Maui.Controls.Sample.Pages.Base;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -26,6 +25,11 @@ namespace Maui.Controls.Sample.Pages
 		private async void PushButton_Clicked(object sender, System.EventArgs e)
 		{
 			await Navigation.PushAsync(new SemanticsPage());
+		}
+
+		private void SetSemanticFocusButton_Clicked(object sender, System.EventArgs e)
+		{
+			semanticFocusLabel.SetSemanticFocus();
 		}
 	}
 }

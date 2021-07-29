@@ -3,11 +3,12 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public partial class ScrollView : Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
+	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
 	{
 		#region IScrollViewController
 
@@ -280,7 +281,7 @@ namespace Microsoft.Maui.Controls
 
 			if (Content is IFrameworkElement fe && fe.Handler != null)
 			{
-				contentRequest = fe.Handler.GetDesiredSize(widthConstraint, heightConstraint);
+				contentRequest = fe.Measure(widthConstraint, heightConstraint);
 			}
 			else
 			{
@@ -365,20 +366,6 @@ namespace Microsoft.Maui.Controls
 			ScrollToRequested?.Invoke(this, e);
 
 			Handler?.Invoke(nameof(IScrollView.RequestScrollTo), e.ToRequest());
-		}
-
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-		{
-			// We call OnSizeRequest so that the content gets measured appropriately
-			// and then use the standard GetDesiredSize from the handler so the ScrollView's
-			// backing control gets measured. 
-
-			// TODO ezhart 2021-07-14 Verify that we've got the naming correct on this after we resolve the OnSizeRequest obsolete stuff
-#pragma warning disable CS0618 // Type or member is obsolete
-			_ = OnSizeRequest(widthConstraint, heightConstraint);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-			return Handler.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 	}
 }

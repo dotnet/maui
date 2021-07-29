@@ -1,18 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
-// This is a temporary namespace until we rename everything and move the legacy layouts
-namespace Microsoft.Maui.Controls.Layout2
+namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IPaddingElement, IVisualTreeElement
+	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement
 	{
-		ILayoutManager _layoutManager;
-		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
+		protected ILayoutManager _layoutManager;
+		public ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
 
 		// The actual backing store for the IViews in the ILayout
 		readonly List<IView> _children = new();
@@ -21,20 +19,21 @@ namespace Microsoft.Maui.Controls.Layout2
 		public IList<IView> Children => this;
 
 		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
-
+		IList IBindableLayout.Children => _children;
+		
 		public int Count => _children.Count;
 
 		public bool IsReadOnly => ((ICollection<IView>)_children).IsReadOnly;
 
 		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
 
+		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
+
 		public Thickness Padding
 		{
 			get => (Thickness)GetValue(PaddingElement.PaddingProperty);
 			set => SetValue(PaddingElement.PaddingProperty, value);
 		}
-
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.Cast<IVisualTreeElement>().ToList().AsReadOnly();
 
 		protected abstract ILayoutManager CreateLayoutManager();
 
@@ -48,30 +47,6 @@ namespace Microsoft.Maui.Controls.Layout2
 		{
 			var size = (this as IFrameworkElement).Measure(widthConstraint, heightConstraint);
 			return new SizeRequest(size);
-		}
-
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-		{
-			var margin = (this as IView)?.Margin ?? Thickness.Zero;
-			// Adjust the constraints to account for the margins
-			widthConstraint -= margin.HorizontalThickness;
-			heightConstraint -= margin.VerticalThickness;
-			var sizeWithoutMargins = LayoutManager.Measure(widthConstraint, heightConstraint);
-			DesiredSize = new Size(sizeWithoutMargins.Width + Margin.HorizontalThickness,
-				sizeWithoutMargins.Height + Margin.VerticalThickness);
-			return DesiredSize;
-		}
-		
-		protected override Size ArrangeOverride(Rectangle bounds)
-		{
-			base.ArrangeOverride(bounds);
-			Frame = bounds;
-			LayoutManager.ArrangeChildren(Frame);
-			foreach (var child in Children)
-			{
-				child.Handler?.NativeArrange(child.Frame);
-			}
-			return Frame.Size;
 		}
 
 		protected override void InvalidateMeasureOverride()

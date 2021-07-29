@@ -52,6 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		IPageController PageController => Element as IPageController;
 
 		NavigationPage NavPage => Element as NavigationPage;
+		INavigationPageController NavPageController => NavPage;
 
 		public VisualElement Element { get; private set; }
 
@@ -237,7 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				SetNeedsUpdateOfHomeIndicatorAutoHidden();
 
 			// If there is already stuff on the stack we need to push it
-			navPage.Pages.ForEach(async p => await PushPageAsync(p, false));
+			NavPageController.Pages.ForEach(async p => await PushPageAsync(p, false));
 
 			_tracker = new VisualElementTracker(this);
 
@@ -883,6 +884,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			uIBarButtonItem.IsAccessibilityElement = (bool)((bool?)element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) ?? _defaultIsAccessibilityElement);
 		}
 
+		static void SetAccessibilityElementsHidden(UIBarButtonItem uIBarButtonItem, Element element)
+		{
+			if (element == null)
+				return;
+
+			if (!_defaultAccessibilityElementsHidden.HasValue)
+				_defaultAccessibilityElementsHidden = uIBarButtonItem.AccessibilityElementsHidden;
+
+			uIBarButtonItem.AccessibilityElementsHidden = (bool)((bool?)element.GetValue(AutomationProperties.ExcludedWithChildrenProperty) ?? _defaultAccessibilityElementsHidden);
+		}
+
 		static void SetAutomationId(UIBarButtonItem uIBarButtonItem, string id)
 		{
 			uIBarButtonItem.AccessibilityIdentifier = id;
@@ -891,6 +903,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		static string _defaultAccessibilityLabel;
 		static string _defaultAccessibilityHint;
 		static bool? _defaultIsAccessibilityElement;
+		static bool? _defaultAccessibilityElementsHidden;
 
 		internal void ValidateInsets()
 		{
@@ -1218,7 +1231,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					return;
 
 				var currentChild = this.Child;
-				var firstPage = n.NavPage.Pages.FirstOrDefault();
+				var firstPage = n.NavPageController.Pages.FirstOrDefault();
 
 
 				if (n._parentFlyoutPage == null)

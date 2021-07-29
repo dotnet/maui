@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 

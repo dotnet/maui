@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextElement.CharacterSpacingProperty, value); }
 		}
 
-		[TypeConverter(typeof(FontSizeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
 			get { return (double)GetValue(FontSizeProperty); }
