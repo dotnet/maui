@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
 	public class RelativeLayout : Layout<View>, IElementConfiguration<RelativeLayout>

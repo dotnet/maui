@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	internal class NaiveLayout : Layout<View>
+	internal class NaiveLayout : Compatibility.Layout<View>
 	{
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{

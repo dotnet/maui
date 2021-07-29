@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual(new Rectangle(4, 8, 16, 32), p.RectangleBP);
 				Assert.AreEqual(Colors.Pink, p.BackgroundColor);
 				Assert.AreEqual(LayoutOptions.EndAndExpand, p.label.GetValue(View.HorizontalOptionsProperty));
-				var xConstraint = RelativeLayout.GetXConstraint(p.label);
+				var xConstraint = Microsoft.Maui.Controls.Compatibility.RelativeLayout.GetXConstraint(p.label);
 				Assert.AreEqual(2, xConstraint.Compute(null));
 				Assert.AreEqual(new Thickness(2, 3), p.label.Margin);
 				Assert.AreEqual(2, p.List.Count);

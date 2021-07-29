@@ -292,17 +292,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void UpdateIndicatorTemplate()
 		{
-			if (IndicatorView.IndicatorLayout == null)
+			if (IndicatorView.IndicatorLayout is not VisualElement indicatorLayout)
 				return;
-
-			var renderer = IndicatorView.IndicatorLayout.GetRenderer() ?? Platform.CreateRendererWithContext(IndicatorView.IndicatorLayout, Context);
-			Platform.SetRenderer(IndicatorView.IndicatorLayout, renderer);
+			
+			var renderer = indicatorLayout.GetRenderer() ?? Platform.CreateRendererWithContext(indicatorLayout, Context);
+			Platform.SetRenderer(indicatorLayout, renderer);
 
 			RemoveAllViews();
 			AddView(renderer.View);
 
-			var indicatorLayoutSizeRequest = IndicatorView.IndicatorLayout.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			IndicatorView.IndicatorLayout.Layout(new Rectangle(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
+			var indicatorLayoutSizeRequest = indicatorLayout.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+			indicatorLayout.Layout(new Rectangle(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
 		}
 
 		void UpdateIndicators()

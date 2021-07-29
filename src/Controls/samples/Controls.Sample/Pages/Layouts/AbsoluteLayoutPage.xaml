@@ -3,29 +3,30 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.AbsoluteLayoutPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
     Title="AbsoluteLayout">
     <views:BasePage.Content>
-        <AbsoluteLayout>
+        <cmp:AbsoluteLayout>
             <BoxView 
                 Color="Blue"
-                AbsoluteLayout.LayoutBounds="0.5,0,100,25"
-                AbsoluteLayout.LayoutFlags="PositionProportional" />
+                cmp:AbsoluteLayout.LayoutBounds="0.5,0,100,25"
+                cmp:AbsoluteLayout.LayoutFlags="PositionProportional" />
             <BoxView 
                 Color="Green"
-                AbsoluteLayout.LayoutBounds="0,0.5,25,100"
-                AbsoluteLayout.LayoutFlags="PositionProportional" />
+                cmp:AbsoluteLayout.LayoutBounds="0,0.5,25,100"
+                cmp:AbsoluteLayout.LayoutFlags="PositionProportional" />
             <BoxView 
                 Color="Red"
-                AbsoluteLayout.LayoutBounds="1,0.5,25,100"
-                AbsoluteLayout.LayoutFlags="PositionProportional" />
+                cmp:AbsoluteLayout.LayoutBounds="1,0.5,25,100"
+                cmp:AbsoluteLayout.LayoutFlags="PositionProportional" />
             <BoxView 
                 Color="Black"
-                AbsoluteLayout.LayoutBounds="0.5,1,100,25"
-                AbsoluteLayout.LayoutFlags="PositionProportional" />
+                cmp:AbsoluteLayout.LayoutBounds="0.5,1,100,25"
+                cmp:AbsoluteLayout.LayoutFlags="PositionProportional" />
             <Label 
                 Text="Centered text"
-                AbsoluteLayout.LayoutBounds="0.5,0.5,110,25"
-                AbsoluteLayout.LayoutFlags="PositionProportional" />
-        </AbsoluteLayout>
+                cmp:AbsoluteLayout.LayoutBounds="0.5,0.5,110,25"
+                cmp:AbsoluteLayout.LayoutFlags="PositionProportional" />
+        </cmp:AbsoluteLayout>
     </views:BasePage.Content>
 </views:BasePage>

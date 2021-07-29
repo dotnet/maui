@@ -7,6 +7,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[TestFixture]
 	public class DesignTimeLoaderTests
 	{
@@ -469,6 +471,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var xaml = @"
 				<ContentPage xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
+					xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
 					xmlns:local=""clr-namespace:MissingNamespace;assembly=MissingAssembly"">
 					<ContentPage.Resources>
 						<StyleSheet>
@@ -479,16 +482,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 							]]>
 						</StyleSheet>
 					</ContentPage.Resources>
-					<StackLayout>
+					<cmp:StackLayout>
 						<Button />
 						<MyCustomButton />
-					</StackLayout>
+					</cmp:StackLayout>
 				</ContentPage>";
 
 			var page = (ContentPage)XamlLoader.Create(xaml, true);
 
-			var button = ((StackLayout)page.Content).Children[0];
-			var myButton = ((StackLayout)page.Content).Children[1];
+			var button = ((Compatibility.StackLayout)page.Content).Children[0];
+			var myButton = ((Compatibility.StackLayout)page.Content).Children[1];
 
 			Assert.That(button.BackgroundColor, Is.EqualTo(Colors.Red));
 			Assert.That(myButton.BackgroundColor, Is.Not.EqualTo(Colors.Red));
