@@ -318,6 +318,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.SetDynamicResource(property, key);
 		}
+
 		public virtual IReadOnlyList<Maui.IElement> GetVisualChildren() => LogicalChildren;
 
 		protected override void OnBindingContextChanged()
