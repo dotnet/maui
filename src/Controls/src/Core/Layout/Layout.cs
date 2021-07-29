@@ -9,7 +9,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls.Layout2
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IPaddingElement
+	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IPaddingElement, IVisualTreeElement
 	{
 		ILayoutManager _layoutManager;
 		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			set => SetValue(PaddingElement.PaddingProperty, value);
 		}
 
-		public override IReadOnlyList<Maui.IElement> GetVisualChildren() => Children.ToList().AsReadOnly();
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.Cast<IVisualTreeElement>().ToList().AsReadOnly();
 
 		protected abstract ILayoutManager CreateLayoutManager();
 

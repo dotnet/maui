@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui
 {
-	public interface IElement : IVisualTreeHelper
+	public interface IElement
 	{
 		/// <summary>
 		/// Gets or sets the View Handler of the Element.

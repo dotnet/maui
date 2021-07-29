@@ -4,8 +4,8 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui
 {
-	public interface IVisualTreeHelper
+	public interface IVisualTreeElement
 	{
-		IReadOnlyList<IElement> GetVisualChildren();
+		IReadOnlyList<IVisualTreeElement> GetVisualChildren();
 	}
 }

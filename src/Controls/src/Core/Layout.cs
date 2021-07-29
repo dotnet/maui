@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement, IVisualTreeElement
 	{
 		public static readonly BindableProperty IsClippedToBoundsProperty =
 			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false);
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls
 
 		public void ForceLayout() => SizeAllocated(Width, Height);
 
-		public override IReadOnlyList<Maui.IElement> GetVisualChildren() => Children.ToList().AsReadOnly();
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.ToList().AsReadOnly();
 
 		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
