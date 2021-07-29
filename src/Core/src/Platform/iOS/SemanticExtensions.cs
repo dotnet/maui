@@ -22,7 +22,10 @@ namespace Microsoft.Maui
 			var semantics = view.Semantics;
 
 			if (semantics == null)
+			{
+				view.UpdateSemanticInfo(new SemanticInfoRequest(nativeView));
 				return;
+			}
 
 			nativeView.AccessibilityLabel = semantics.Description;
 			nativeView.AccessibilityHint = semantics.Hint;
