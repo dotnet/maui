@@ -80,9 +80,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
-			var fileProvider = new MauiAssetFileProvider(contentRootDir);
+			var compositeFileProvider = new MauiAssetFileProvider(contentRootDir);
 
-			_webviewManager = new AndroidWebKitWebViewManager(this, NativeView, Services!, MauiDispatcher.Instance, fileProvider, hostPageRelativePath);
+			_webviewManager = new AndroidWebKitWebViewManager(this, NativeView, Services!, MauiDispatcher.Instance, compositeFileProvider, hostPageRelativePath);
 			if (RootComponents != null)
 			{
 				foreach (var rootComponent in RootComponents)
@@ -114,7 +114,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				=> new AndroidMauiAssetDirectoryContents(Path.Combine(_contentRootDir, subpath));
 
 			public IFileInfo GetFileInfo(string subpath)
-				=> new AndroidMauiAssetFileInfo(Path.Combine(_contentRootDir, subpath));
+			{
+				var path = Path.Combine(_contentRootDir, subpath);
+				try
+				{
+					var file = Android.App.Application.Context.Assets!.Open(path);
+					Func<Stream> stream = () => Android.App.Application.Context.Assets!.Open(path);
+					return new AndroidMauiAssetFileInfo(Path.GetFileName(path), stream);
+				}
+				catch (Exception)
+				{
+					return new NotFoundFileInfo(Path.GetFileName(subpath));
+				}
+			}
 
 			public IChangeToken? Watch(string filter)
 				=> null;
@@ -122,54 +134,45 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		class AndroidMauiAssetFileInfo : IFileInfo
 		{
-			public AndroidMauiAssetFileInfo(string asset)
-			{
-				var itemsCount = Android.App.Application.Context.Assets?.List(asset)?.Length ?? 0;
+			private Func<Stream> _factory;
 
-				PhysicalPath = asset;
-				IsDirectory = itemsCount > 0;
-				Length = IsDirectory ? itemsCount : 1;
-				Name = IsDirectory
-					? new DirectoryInfo(asset)?.Name ?? asset
-					: Path.GetFileName(asset);
+			public AndroidMauiAssetFileInfo(string name, Func<Stream> factory)
+			{
+				Name = name;
+				_factory = factory;
+				using var stream = factory();
+				using var memoryStream = new MemoryStream();
+				stream.CopyTo(memoryStream);
+				memoryStream.Seek(0, SeekOrigin.Begin);
+				Length = memoryStream.Length;
 			}
 
 			public bool Exists => true;
 			public long Length { get; }
-			public string PhysicalPath { get; }
+			public string PhysicalPath { get; } = null!;
 			public string Name { get; }
-			public DateTimeOffset LastModified { get; }
-			public bool IsDirectory { get; }
+			public DateTimeOffset LastModified { get; } = DateTimeOffset.FromUnixTimeSeconds(0);
+			public bool IsDirectory { get; } = false;
 
 			public Stream CreateReadStream()
-				=> Android.App.Application.Context.Assets?.Open(PhysicalPath)
-					?? throw new FileNotFoundException();
+				=> _factory();
 		}
 
 		class AndroidMauiAssetDirectoryContents : IDirectoryContents
 		{
 			public AndroidMauiAssetDirectoryContents(string subpath)
 			{
-				var sep = Java.IO.File.Separator ?? "/";
-
-				var dir = subpath.Replace("/", sep);
-
-				var assets = Android.App.Application.Context.Assets?.List(dir);
-
-				foreach (var a in assets ?? Array.Empty<string>())
-					files.Add(new AndroidMauiAssetFileInfo(subpath.TrimEnd(sep.ToCharArray()) + sep + a));
 			}
 
 			List<AndroidMauiAssetFileInfo> files = new List<AndroidMauiAssetFileInfo>();
 
-			public bool Exists
-				=> files.Any();
+			public bool Exists => false;
 
 			public IEnumerator<IFileInfo> GetEnumerator()
-				=> files.GetEnumerator();
+				=> throw new NotImplementedException();
 
 			IEnumerator IEnumerable.GetEnumerator()
-				=> files.GetEnumerator();
+				=> throw new NotImplementedException();
 		}
 	}
 }
