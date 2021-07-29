@@ -9,6 +9,9 @@ using NUnit.Framework.Constraints;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using Grid = Microsoft.Maui.Controls.Compatibility.Grid;
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[TestFixture]
 	public class GridTests : BaseTestFixture
 	{
@@ -1921,10 +1924,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var view = new View();
 			var grid = new Grid();
 			Assert.AreEqual(0, grid.Children.Count);
-			(grid as Layout<View>).Children.Add(view);
+			(grid as Compatibility.Layout<View>).Children.Add(view);
 			Assert.AreEqual(1, grid.Children.Count);
-			Assert.AreEqual(1, (grid as Layout<View>).Children.Count);
-			Assert.AreSame(view, (grid as Layout<View>).Children.First());
+			Assert.AreEqual(1, (grid as Compatibility.Layout<View>).Children.Count);
+			Assert.AreSame(view, (grid as Compatibility.Layout<View>).Children.First());
 			Assert.AreSame(view, grid.Children.First());
 		}
 

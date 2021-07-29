@@ -7,6 +7,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using Grid = Microsoft.Maui.Controls.Compatibility.Grid;
+
 	[TestFixture]
 	public class ShellFlyoutItemTemplateTests : ShellTestBase
 	{

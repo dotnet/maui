@@ -6,7 +6,7 @@ using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
 	public partial class Grid : Layout<View>, IGridController, IElementConfiguration<Grid>, IGridLayout

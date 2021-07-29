@@ -245,7 +245,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		static void UpdateFlyoutItemStyles(Grid flyoutItemCell, IStyleSelectable source)
+		static void UpdateFlyoutItemStyles(Compatibility.Grid flyoutItemCell, IStyleSelectable source)
 		{
 			List<string> bindableObjectStyle = new List<string>() {
 				DefaultFlyoutItemLabelStyle,
@@ -455,7 +455,7 @@ namespace Microsoft.Maui.Controls
 		{
 			return new DataTemplate(() =>
 			{
-				var grid = new Grid();
+				var grid = new Compatibility.Grid();
 				if (Device.RuntimePlatform == Device.UWP)
 					grid.ColumnSpacing = grid.RowSpacing = 0;
 
@@ -477,7 +477,7 @@ namespace Microsoft.Maui.Controls
 					Class = DefaultFlyoutItemImageStyle,
 				};
 
-				var defaultGridClass = new Style(typeof(Grid))
+				var defaultGridClass = new Style(typeof(Compatibility.Grid))
 				{
 					Class = DefaultFlyoutItemLayoutStyle,
 				};
@@ -520,9 +520,9 @@ namespace Microsoft.Maui.Controls
 				defaultGridClass.Setters.Add(new Setter { Property = VisualStateManager.VisualStateGroupsProperty, Value = groups });
 
 				if (Device.RuntimePlatform == Device.Android)
-					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 50 });
+					defaultGridClass.Setters.Add(new Setter { Property = Compatibility.Grid.HeightRequestProperty, Value = 50 });
 				else
-					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 44 });
+					defaultGridClass.Setters.Add(new Setter { Property = Compatibility.Grid.HeightRequestProperty, Value = 44 });
 
 
 				ColumnDefinitionCollection columnDefinitions = new ColumnDefinitionCollection();
@@ -535,7 +535,7 @@ namespace Microsoft.Maui.Controls
 					columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
 				columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
-				defaultGridClass.Setters.Add(new Setter { Property = Grid.ColumnDefinitionsProperty, Value = columnDefinitions });
+				defaultGridClass.Setters.Add(new Setter { Property = Compatibility.Grid.ColumnDefinitionsProperty, Value = columnDefinitions });
 
 				var image = new Image();
 
@@ -596,7 +596,7 @@ namespace Microsoft.Maui.Controls
 
 				grid.BindingContextChanged += (sender, __) =>
 				{
-					if (sender is Grid g)
+					if (sender is Compatibility.Grid g)
 					{
 						var bo = g.BindingContext as BindableObject;
 						var styleClassSource = Shell.GetBindableObjectWithFlyoutItemTemplate(bo) as IStyleSelectable;

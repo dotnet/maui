@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls.Compatibility
 {
 	public partial class Grid
 	{

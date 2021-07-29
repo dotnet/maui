@@ -6,6 +6,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[System.ComponentModel.TypeConverter(typeof(ToBarConverter))]
 	internal class Bar
 	{

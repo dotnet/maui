@@ -9,6 +9,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+	
 	[TestFixture]
 	public class BindableLayoutTests : BaseTestFixture
 	{
@@ -385,7 +387,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		// Checks if for every item in the items source there's a corresponding view
-		static bool IsLayoutWithItemsSource(IEnumerable itemsSource, Layout layout)
+		static bool IsLayoutWithItemsSource(IEnumerable itemsSource, Compatibility.Layout layout)
 		{
 			if (itemsSource == null)
 			{
