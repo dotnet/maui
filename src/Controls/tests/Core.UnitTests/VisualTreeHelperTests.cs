@@ -56,5 +56,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsTrue(appChildren[0] is IWindow);
 			Assert.AreEqual(windowChildren.Count, 1);
 		}
+
+		[Test]
+		public void VisualElementParent()
+		{
+			var app = new Application();
+			var iapp = app as IApplication;
+			var page = new ContentPage();
+			app.MainPage = page;
+			var window = iapp.CreateWindow(null);
+			var appParent = (app as IVisualTreeElement).GetVisualParent();
+			var windowParent = (window as IVisualTreeElement).GetVisualParent();
+			Assert.IsNull(appParent);
+			Assert.IsNotNull(windowParent);
+		}
 	}
 }

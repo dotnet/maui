@@ -321,6 +321,8 @@ namespace Microsoft.Maui.Controls
 
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => LogicalChildren;
 
+		IVisualTreeElement IVisualTreeElement.GetVisualParent() => this.Parent;
+
 		protected override void OnBindingContextChanged()
 		{
 			this.PropagateBindingContext(LogicalChildrenInternal, (child, bc) =>

@@ -7,5 +7,7 @@ namespace Microsoft.Maui
 	public interface IVisualTreeElement
 	{
 		IReadOnlyList<IVisualTreeElement> GetVisualChildren();
+
+		IVisualTreeElement? GetVisualParent();
 	}
 }
