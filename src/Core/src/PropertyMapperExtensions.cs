@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 
 			void newMethod(TViewHandler handler, TVirtualView view)
 			{
-				previousMethod(handler, view);
+				previousMethod?.Invoke(handler, view);
 				method(handler, view);
 			}
 
@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 			void newMethod(TViewHandler handler, TVirtualView view)
 			{
 				method(handler, view);
-				previousMethod(handler, view);
+				previousMethod?.Invoke(handler, view);
 			}
 
 			propertyMapper[key] = newMethod;
