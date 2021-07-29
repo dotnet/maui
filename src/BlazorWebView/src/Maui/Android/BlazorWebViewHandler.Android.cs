@@ -1,8 +1,13 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 using Android.Webkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Maui.Handlers;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
@@ -75,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
-			var fileProvider = new ManifestEmbeddedFileProvider(assetConfig.AssetsAssembly, root: contentRootDir);
+			var fileProvider = new MauiAssetFileProvider(contentRootDir);
 
 			_webviewManager = new AndroidWebKitWebViewManager(this, NativeView, Services!, MauiDispatcher.Instance, fileProvider, hostPageRelativePath);
 			if (RootComponents != null)
@@ -95,5 +100,76 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		protected virtual WebChromeClient GetWebChromeClient() =>
 			new WebChromeClient();
+
+		public partial class MauiAssetFileProvider : IFileProvider
+		{
+			private string _contentRootDir;
+
+			public MauiAssetFileProvider(string contentRootDir)
+			{
+				_contentRootDir = contentRootDir;
+			}
+
+			public IDirectoryContents GetDirectoryContents(string subpath)
+				=> new AndroidMauiAssetDirectoryContents(Path.Combine(_contentRootDir, subpath));
+
+			public IFileInfo GetFileInfo(string subpath)
+				=> new AndroidMauiAssetFileInfo(Path.Combine(_contentRootDir, subpath));
+
+			public IChangeToken? Watch(string filter)
+				=> null;
+		}
+
+		class AndroidMauiAssetFileInfo : IFileInfo
+		{
+			public AndroidMauiAssetFileInfo(string asset)
+			{
+				var itemsCount = Android.App.Application.Context.Assets?.List(asset)?.Length ?? 0;
+
+				PhysicalPath = asset;
+				IsDirectory = itemsCount > 0;
+				Length = IsDirectory ? itemsCount : 1;
+				Name = IsDirectory
+					? new DirectoryInfo(asset)?.Name ?? asset
+					: Path.GetFileName(asset);
+			}
+
+			public bool Exists => true;
+			public long Length { get; }
+			public string PhysicalPath { get; }
+			public string Name { get; }
+			public DateTimeOffset LastModified { get; }
+			public bool IsDirectory { get; }
+
+			public Stream CreateReadStream()
+				=> Android.App.Application.Context.Assets?.Open(PhysicalPath)
+					?? throw new FileNotFoundException();
+		}
+
+		class AndroidMauiAssetDirectoryContents : IDirectoryContents
+		{
+			public AndroidMauiAssetDirectoryContents(string subpath)
+			{
+				var sep = Java.IO.File.Separator ?? "/";
+
+				var dir = subpath.Replace("/", sep);
+
+				var assets = Android.App.Application.Context.Assets?.List(dir);
+
+				foreach (var a in assets ?? Array.Empty<string>())
+					files.Add(new AndroidMauiAssetFileInfo(subpath.TrimEnd(sep.ToCharArray()) + sep + a));
+			}
+
+			List<AndroidMauiAssetFileInfo> files = new List<AndroidMauiAssetFileInfo>();
+
+			public bool Exists
+				=> files.Any();
+
+			public IEnumerator<IFileInfo> GetEnumerator()
+				=> files.GetEnumerator();
+
+			IEnumerator IEnumerable.GetEnumerator()
+				=> files.GetEnumerator();
+		}
 	}
 }
