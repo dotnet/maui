@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Controls
 			base.OnHandlerChangingCore(args);
 		}
 
-#if __ANDROID__
 		private protected override void UpdateSemanticInfoCore(SemanticInfoRequest request)
 		{
 			base.UpdateSemanticInfoCore(request);
@@ -36,14 +35,18 @@ namespace Microsoft.Maui.Controls
 			foreach (var gesture in this.GestureRecognizers)
 			{
 				//Accessibility can't handle Tap Recognizers with > 1 tap
-				if (gesture is TapGestureRecognizer tgr && tgr.NumberOfTapsRequired == 1 && request.info != null)
+				if (gesture is TapGestureRecognizer tgr && tgr.NumberOfTapsRequired == 1)
 				{
-					request.info.AddAction(AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick);
+#if __ANDROID__
+					if(request.info != null)
+						request.info.AddAction(AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick);
+#elif __IOS__
+					request.view.AccessibilityTraits |= UIKit.UIAccessibilityTrait.Button;
+#endif
 				}
 			}
 
 		}
-#endif
 
 	}
 }
