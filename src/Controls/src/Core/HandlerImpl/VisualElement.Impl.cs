@@ -110,36 +110,14 @@ namespace Microsoft.Maui.Controls
 		double IFrameworkElement.Width => WidthRequest;
 		double IFrameworkElement.Height => HeightRequest;
 
-		Semantics ISemantic.Semantics
+		Semantics IFrameworkElement.Semantics
 		{
 			get => _semantics;
 		}
-
-		void ISemantic.UpdateSemanticInfo(SemanticInfoRequest request)
-		{
-			UpdateSemanticInfoCore(request);
-		}
-
-		private protected virtual void UpdateSemanticInfoCore(SemanticInfoRequest request)
-		{
-			UpdateSemanticInfo?.Invoke(this, new SemanticInfoRequestEventArgs(request));
-		}
-
-		public event EventHandler<SemanticInfoRequestEventArgs> UpdateSemanticInfo;
 
 		// We don't want to initialize Semantics until someone explicitly 
 		// wants to modify some aspect of the semantics class
 		internal Semantics SetupSemantics() =>
 			_semantics ??= new Semantics();
-	}
-
-	public class SemanticInfoRequestEventArgs : EventArgs
-	{
-		public SemanticInfoRequestEventArgs(SemanticInfoRequest semanticInfoRequest)
-		{
-			SemanticInfoRequest = semanticInfoRequest;
-		}
-
-		public SemanticInfoRequest SemanticInfoRequest  { get;}
 	}
 }

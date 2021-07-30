@@ -22,10 +22,7 @@ namespace Microsoft.Maui
 			var semantics = view.Semantics;
 
 			if (semantics == null)
-			{
-				view.UpdateSemanticInfo(new SemanticInfoRequest());
 				return;
-			}
 
 			nativeView.AccessibilityLabel = semantics.Description;
 			nativeView.AccessibilityHint = semantics.Hint;
@@ -38,8 +35,6 @@ namespace Microsoft.Maui
 				nativeView.AccessibilityTraits |= UIAccessibilityTrait.Header;
 			else
 				nativeView.AccessibilityTraits &= ~UIAccessibilityTrait.Header;
-
-			view.UpdateSemanticInfo(new SemanticInfoRequest());
 		}
 	}
 }

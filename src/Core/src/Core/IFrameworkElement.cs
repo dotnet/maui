@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Represents a framework-level set of properties, events, and methods for .NET MAUI elements. 
 	/// </summary>
-	public interface IFrameworkElement : IElement, ITransform, ISemantic
+	public interface IFrameworkElement : IElement, ITransform
 	{
 		/// <summary>
 		/// Id used by automation tools to interact with this FrameworkElement
@@ -108,5 +108,10 @@ namespace Microsoft.Maui
 		/// Method that is called to invalidate the layout of this FrameworkElement.
 		/// </summary>
 		void InvalidateArrange();
+
+		/// <summary>
+		/// Adds semantics to every FrameworkElement for accessibility
+		/// </summary>
+		Semantics Semantics { get; }
 	}
 }

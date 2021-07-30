@@ -178,9 +178,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			MappingSemantics(handler, view);
 			((NativeView?)handler.NativeView)?.UpdateSemantics(view);
-#if !__ANDROID__
-			view.UpdateSemanticInfo(new SemanticInfoRequest(handler));
-#endif
 		}
 
 		public static void MapInvalidateMeasure(ViewHandler handler, IView view, object? args)

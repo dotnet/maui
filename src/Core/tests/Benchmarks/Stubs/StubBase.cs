@@ -107,7 +107,5 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			return new Size(widthConstraint, heightConstraint);
 		}
-
-		public void UpdateSemanticInfo(SemanticInfoRequest request) { }
 	}
 }

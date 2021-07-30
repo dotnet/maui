@@ -27,7 +27,9 @@ namespace Microsoft.Maui
 
 			if (semantics == null)
 			{
-				virtualView?.UpdateSemanticInfo(new SemanticInfoRequest(nativeView, info));
+				if (virtualView is IAccessibilityNodeInfoListener nodeInfoListener)
+					nodeInfoListener.InitializeAccessibilityNodeInfo(info);
+
 				return;
 			}
 
@@ -104,7 +106,8 @@ namespace Microsoft.Maui
 			if (!string.IsNullOrWhiteSpace(newText))
 				info.Text = newText;
 
-			virtualView?.UpdateSemanticInfo(new SemanticInfoRequest(info));
+			if (virtualView is IAccessibilityNodeInfoListener listener)
+				listener.InitializeAccessibilityNodeInfo(info);
 		}
 
 		public static void UpdateSemantics(this View nativeView, IView view)

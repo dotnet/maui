@@ -103,7 +103,5 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			return new Size(widthConstraint, heightConstraint);
 		}
-
-		public void UpdateSemanticInfo(SemanticInfoRequest request) { }
 	}
 }

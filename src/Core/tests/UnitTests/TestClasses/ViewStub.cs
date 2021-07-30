@@ -79,7 +79,5 @@ namespace Microsoft.Maui.UnitTests
 
 		public Size Measure(double widthConstraint, double heightConstraint) =>
 			Size.Zero;
-
-		public void UpdateSemanticInfo(SemanticInfoRequest request) { }
 	}
 }
