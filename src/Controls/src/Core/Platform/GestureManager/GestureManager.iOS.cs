@@ -610,7 +610,7 @@ namespace Microsoft.Maui.Controls.Platform
 #if __MOBILE__
 					nativeRecognizer.ShouldReceiveTouch = _shouldReceiveTouch;
 #endif
-					_nativeView.Subviews[0].AddGestureRecognizer(nativeRecognizer);
+					_nativeView.AddGestureRecognizer(nativeRecognizer);
 
 					_gestureRecognizers[recognizer] = nativeRecognizer;
 				}
