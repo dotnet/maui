@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using AndroidX.Core.View.Accessibility;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Platform
 {
-#if __ANDROID__
-	using AndroidX.Core.View.Accessibility;
 	public interface IAccessibilityNodeInfoListener
 	{
 		void InitializeAccessibilityNodeInfo(AccessibilityNodeInfoCompat? nodeInfo);
 	}
-#endif
 }
