@@ -71,24 +71,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webviewManager?.MessageReceivedInternal(uri, message);
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			SetDesiredSize(widthConstraint, heightConstraint);
-
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
-		}
-
-		void SetDesiredSize(double width, double height)
-		{
-			if (NativeView != null)
-			{
-				var x = NativeView.Frame.X;
-				var y = NativeView.Frame.Y;
-
-				NativeView.Frame = new RectangleF(x, y, width, height);
-			}
-		}
-
 		protected override void DisconnectHandler(WKWebView nativeView)
 		{
 			//nativeView.StopLoading();
