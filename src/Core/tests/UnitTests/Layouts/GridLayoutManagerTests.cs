@@ -1181,5 +1181,30 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			AssertArranged(grid[0], padding.Left, padding.Top, viewWidth, viewHeight);
 		}
+
+		[Category(GridStarSizing)]
+		[Fact]
+		public void StarValuesAreMeasuredTwiceWhenConstraintsAreInfinite()
+		{
+			// A one-row, one-column grid
+			var grid = CreateGridLayout();
+
+			// A 100x100 IView
+			var view = CreateTestView(new Size(100, 100));
+
+			// Set up the grid to have a single child
+			SubstituteChildren(grid, view);
+
+			// Set up the row/column values and spans
+			SetLocation(grid, view);
+
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			// View must be measured to figure out the Auto value
+			view.Received().Measure(Arg.Is(double.PositiveInfinity), Arg.Is(double.PositiveInfinity));
+
+			// And again at the final size
+			view.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(100));
+		}
 	}
 }
