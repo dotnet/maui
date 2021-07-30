@@ -42,8 +42,7 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.RemoveAllViews();
 
-			var view = (VirtualView as IContentView)?.Content ?? VirtualView;
-			if (view is not null)
+			if (VirtualView is IContentView cv && cv.Content is IView view)
 				NativeView.AddView(view.ToNative(MauiContext));
 		}
 

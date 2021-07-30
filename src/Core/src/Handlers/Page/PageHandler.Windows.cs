@@ -25,8 +25,7 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.Children.Clear();
 
-			var view = (VirtualView as IContentView)?.Content ?? VirtualView;
-			if (view is not null)
+			if (VirtualView is IContentView cv && cv.Content is IView view)
 				NativeView.Children.Add(view.ToNative(MauiContext));
 		}
 

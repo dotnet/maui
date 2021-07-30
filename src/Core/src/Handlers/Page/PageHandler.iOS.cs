@@ -42,8 +42,7 @@ namespace Microsoft.Maui.Handlers
 			var oldChildren = NativeView.Subviews.ToList();
 			oldChildren.ForEach(x => x.RemoveFromSuperview());
 
-			var view = (VirtualView as IContentView)?.Content ?? VirtualView;
-			if (view is not null)
+			if (VirtualView is IContentView cv && cv.Content is IView view)
 				NativeView.AddSubview(view.ToNative(MauiContext));
 		}
 
