@@ -104,7 +104,7 @@ namespace Microsoft.Maui
 			if (!string.IsNullOrWhiteSpace(newText))
 				info.Text = newText;
 
-			virtualView?.UpdateSemanticInfo(new SemanticInfoRequest(nativeView, info));
+			virtualView?.UpdateSemanticInfo(new SemanticInfoRequest(info));
 		}
 
 		public static void UpdateSemantics(this View nativeView, IView view)

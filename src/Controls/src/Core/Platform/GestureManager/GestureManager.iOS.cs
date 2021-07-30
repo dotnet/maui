@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool _disposed;
 		NativeView? _nativeView;
+		UIAccessibilityTrait _addedFlags;
+		bool? _defaultAccessibilityRespondsToUserInteraction;
 
 		double _previousScale = 1.0;
 #if __MOBILE__
@@ -554,22 +556,20 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (ElementGestureRecognizers == null)
 				return;
-
+			
 #if __MOBILE__
 			if (_shouldReceiveTouch == null)
 			{
 				// Cache this so we don't create a new UITouchEventArgs instance for every recognizer
 				_shouldReceiveTouch = ShouldReceiveTouch;
 			}
-#endif
 
-#if __MOBILE__
 			UIDragInteraction? uIDragInteraction = null;
 			UIDropInteraction? uIDropInteraction = null;
 
-			if (_dragAndDropDelegate != null && _handler.NativeView != null)
+			if (_dragAndDropDelegate != null && _nativeView != null)
 			{
-				foreach (var interaction in _handler.NativeView.Interactions)
+				foreach (var interaction in _nativeView.Interactions)
 				{
 					if (interaction is UIDragInteraction uIDrag && uIDrag.Delegate == _dragAndDropDelegate)
 						uIDragInteraction = uIDrag;
@@ -585,6 +585,22 @@ namespace Microsoft.Maui.Controls.Platform
 			for (int i = 0; i < ElementGestureRecognizers.Count; i++)
 			{
 				IGestureRecognizer recognizer = ElementGestureRecognizers[i];
+				
+				// If the user adds a TapGestureRecognizer that activates as a single click then
+				// we tell Voice Over to treat that element as a button. If the users
+				// wants to add any other gestures then they'll need to add custom actions themselves
+				// and describe the actions.
+				if (_nativeView != null && 
+					recognizer is TapGestureRecognizer tpr && 
+					tpr.NumberOfTapsRequired == 1 &&
+					(_nativeView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
+				{
+					_nativeView.AccessibilityTraits |= UIAccessibilityTrait.Button;
+					_addedFlags |= UIAccessibilityTrait.Button;
+					_defaultAccessibilityRespondsToUserInteraction = _nativeView.AccessibilityRespondsToUserInteraction;
+					_nativeView.AccessibilityRespondsToUserInteraction = true;
+				}
+
 				if (_gestureRecognizers.ContainsKey(recognizer))
 					continue;
 
@@ -594,7 +610,7 @@ namespace Microsoft.Maui.Controls.Platform
 #if __MOBILE__
 					nativeRecognizer.ShouldReceiveTouch = _shouldReceiveTouch;
 #endif
-					_nativeView.AddGestureRecognizer(nativeRecognizer);
+					_nativeView.Subviews[0].AddGestureRecognizer(nativeRecognizer);
 
 					_gestureRecognizers[recognizer] = nativeRecognizer;
 				}
@@ -682,6 +698,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void ModelGestureRecognizersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
+			if (_nativeView != null)
+			{
+				_nativeView.AccessibilityTraits &= ~_addedFlags;
+
+				if (_defaultAccessibilityRespondsToUserInteraction != null)
+					_nativeView.AccessibilityRespondsToUserInteraction = _defaultAccessibilityRespondsToUserInteraction.Value;
+			}
+
+			_addedFlags = UIAccessibilityTrait.None;
+			_defaultAccessibilityRespondsToUserInteraction = null;
 			LoadRecognizers();
 		}
 
