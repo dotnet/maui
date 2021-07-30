@@ -8,9 +8,6 @@ using Microsoft.Maui.Controls.Platform;
 namespace Microsoft.Maui.Controls
 {
 	public partial class View
-#if __ANDROID__
-		: IAccessibilityNodeInfoListener
-#endif
 	{
 		GestureManager? _gestureManager;
 		private protected override void OnHandlerChangedCore()
@@ -29,22 +26,5 @@ namespace Microsoft.Maui.Controls
 
 			base.OnHandlerChangingCore(args);
 		}
-
-
-#if __ANDROID__
-		void IAccessibilityNodeInfoListener.InitializeAccessibilityNodeInfo(AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? nodeInfo)
-		{
-			foreach (var gesture in this.GestureRecognizers)
-			{
-				//Accessibility can't handle Tap Recognizers with > 1 tap
-				if (gesture is TapGestureRecognizer tgr && tgr.NumberOfTapsRequired == 1)
-				{
-					if (nodeInfo != null)
-						nodeInfo.AddAction(AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick);
-
-				}
-			}
-		}
-#endif
 	}
 }
