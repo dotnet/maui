@@ -3,9 +3,9 @@ using Microsoft.Maui.HotReload;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class ContentPage : IPage, HotReload.IHotReloadableView
+	public partial class ContentPage : IContentView, HotReload.IHotReloadableView
 	{
-		IView IPage.Content => Content;
+		IView IContentView.Content => Content;
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{

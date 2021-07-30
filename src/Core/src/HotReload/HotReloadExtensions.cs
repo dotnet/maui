@@ -22,7 +22,7 @@ namespace Microsoft.Maui.HotReload
 			//}
 			view.Handler = null;
 
-			if (view is IPage p)
+			if (view is IContentView p)
 			{
 				CheckHandlers(p.Content);
 			}

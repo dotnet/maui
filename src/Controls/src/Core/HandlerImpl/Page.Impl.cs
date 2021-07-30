@@ -4,10 +4,8 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Page : IPage
+	public partial class Page : IView, ITitledElement
 	{
-		IView IPage.Content => null;
-
 		internal void SendNavigatedTo(NavigatedToEventArgs args)
 		{
 			NavigatedTo?.Invoke(this, args);

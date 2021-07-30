@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, PagePanel>
+	public partial class PageHandler : ViewHandler<IView, PagePanel>
 	{
 		public override void SetVirtualView(IView view)
 		{
@@ -45,11 +45,11 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
-		public static void MapTitle(PageHandler handler, IPage page)
+		public static void MapTitle(PageHandler handler, IView page)
 		{
 		}
 
-		public static void MapContent(PageHandler handler, IPage page)
+		public static void MapContent(PageHandler handler, IView page)
 		{
 			handler.UpdateContent();
 		}

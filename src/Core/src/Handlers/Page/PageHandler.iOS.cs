@@ -5,7 +5,7 @@ using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, PageView>, INativeViewHandler
+	public partial class PageHandler : ViewHandler<IView, PageView>, INativeViewHandler
 	{
 		PageViewController? _pageViewController;
 		UIViewController? INativeViewHandler.ViewController => _pageViewController;
@@ -42,17 +42,18 @@ namespace Microsoft.Maui.Handlers
 			var oldChildren = NativeView.Subviews.ToList();
 			oldChildren.ForEach(x => x.RemoveFromSuperview());
 
-			if (VirtualView.Content != null)
-				NativeView.AddSubview(VirtualView.Content.ToNative(MauiContext));
+			var view = (VirtualView as IContentView)?.Content ?? VirtualView;
+			if (view is not null)
+				NativeView.AddSubview(view.ToNative(MauiContext));
 		}
 
-		public static void MapTitle(PageHandler handler, IPage page)
+		public static void MapTitle(PageHandler handler, IView page)
 		{
-			if (handler._pageViewController != null)
-				handler._pageViewController.Title = page.Title;
+			if (handler._pageViewController != null && page is ITitledElement titled)
+				handler._pageViewController.Title = titled.Title;
 		}
 
-		public static void MapContent(PageHandler handler, IPage page)
+		public static void MapContent(PageHandler handler, IView page)
 		{
 			handler.UpdateContent();
 		}

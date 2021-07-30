@@ -3,9 +3,9 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class ScrollView : IScrollView
+	public partial class ScrollView : IScrollView, IContentView
 	{
-		IView IScrollView.Content => Content;
+		IView IContentView.Content => Content;
 
 		double IScrollView.HorizontalOffset
 		{
