@@ -36,6 +36,8 @@ namespace Microsoft.Maui.Controls
 		Primitives.LayoutAlignment IView.HorizontalLayoutAlignment => HorizontalOptions.ToCore();
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => VerticalOptions.ToCore();
 
+		#region HotReload
+
 		IView IReplaceableView.ReplacedView =>
 			MauiHotReloadHelper.GetReplacedView(this) ?? this;
 
@@ -59,5 +61,7 @@ namespace Microsoft.Maui.Controls
 				//TODO: if reload handler is null, Do a manual reload?
 			});
 		}
+
+		#endregion
 	}
 }
