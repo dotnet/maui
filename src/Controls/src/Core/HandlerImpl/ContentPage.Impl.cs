@@ -5,9 +5,6 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class ContentPage : IPage, HotReload.IHotReloadableView
 	{
-		// TODO ezhart That there's a layout alignment here tells us this hierarchy needs work :) 
-		public Primitives.LayoutAlignment HorizontalLayoutAlignment => Primitives.LayoutAlignment.Fill;
-
 		IView IPage.Content => Content;
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)

@@ -8,9 +8,6 @@ namespace Microsoft.Maui.Controls
 	{
 		IView IPage.Content => null;
 
-		// TODO ezhart super sus
-		public Thickness Margin => Thickness.Zero;
-
 		internal void SendNavigatedTo(NavigatedToEventArgs args)
 		{
 			NavigatedTo?.Invoke(this, args);
