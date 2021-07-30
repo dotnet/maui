@@ -15,6 +15,8 @@ namespace Maui.Controls.Sample.ViewModels
 #endif
 			new SectionModel(typeof(GraphicsViewPage), "GraphicsView",
 				"Allow to draw directly in a Canvas. You can combine a canvas and native Views on the same page.")
+			new SectionModel(typeof(StyleSheetsPage), "StyleSheets",
+				"Demonstrates the usage of CSS in XAML.")
 		};
 	}
 }
