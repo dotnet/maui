@@ -25,8 +25,9 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.Children.Clear();
 
-			if (VirtualView.Content != null)
-				NativeView.Children.Add(VirtualView.Content.ToNative(MauiContext));
+			var view = (VirtualView as IContentView)?.Content ?? VirtualView;
+			if (view is not null)
+				NativeView.Children.Add(view.ToNative(MauiContext));
 		}
 
 		protected override PagePanel CreateNativeView()
