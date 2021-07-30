@@ -5,6 +5,7 @@
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <Description>Build .NET MAUI applications with Blazor web UI in the BlazorWebView control.</Description>
+    <DefineConstants>$(DefineConstants);MAUI_INCLUDE</DefineConstants>
   </PropertyGroup>
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
@@ -23,6 +24,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\WebView2\Internal\StaticContentProvider.cs" Link="Windows\SharedSource\StaticContentProvider.cs" />
   </ItemGroup>
 
   <ItemGroup>
