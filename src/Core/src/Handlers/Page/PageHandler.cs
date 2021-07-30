@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 #if __IOS__
 		public static CommandMapper<IPicker, PickerHandler> PageCommandMapper = new(ViewCommandMapper)
 		{
-			[nameof(IFrameworkElement.Frame)] = MapFrame,
+			[nameof(IView.Frame)] = MapFrame,
 		};
 
 		public PageHandler() : base(PageMapper, PageCommandMapper)

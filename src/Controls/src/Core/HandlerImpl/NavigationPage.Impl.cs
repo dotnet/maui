@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView frameworkElement)
 			{
 				frameworkElement.Measure(widthConstraint, heightConstraint);
 			}
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 			throw new NotImplementedException();
 		}
 
-		IFrameworkElement Content =>
+		IView Content =>
 			this.CurrentPage;
 
 		IReadOnlyList<IView> INavigationView.ModalStack => throw new NotImplementedException();

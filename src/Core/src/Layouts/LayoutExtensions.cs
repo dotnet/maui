@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Layouts
 {
 	public static class LayoutExtensions
 	{
-		public static Size ComputeDesiredSize(this IFrameworkElement frameworkElement, double widthConstraint, double heightConstraint)
+		public static Size ComputeDesiredSize(this IView frameworkElement, double widthConstraint, double heightConstraint)
 		{
 			_ = frameworkElement ?? throw new ArgumentNullException(nameof(frameworkElement));
 
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Layouts
 				measureWithMargins.Height + margin.VerticalThickness);
 		}
 
-		public static Rectangle ComputeFrame(this IFrameworkElement frameworkElement, Rectangle bounds)
+		public static Rectangle ComputeFrame(this IView frameworkElement, Rectangle bounds)
 		{
 			Thickness margin = frameworkElement.GetMargin();
 
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Layouts
 			return new Rectangle(frameX, frameY, frameWidth, frameHeight);
 		}
 
-		static Thickness GetMargin(this IFrameworkElement frameworkElement)
+		static Thickness GetMargin(this IView frameworkElement)
 		{
 			if (frameworkElement is IView view)
 				return view.Margin;
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Layouts
 			return Thickness.Zero;
 		}
 
-		static double AlignHorizontal(IFrameworkElement frameworkElement, Rectangle bounds, Thickness margin)
+		static double AlignHorizontal(IView frameworkElement, Rectangle bounds, Thickness margin)
 		{
 			var alignment = frameworkElement.HorizontalLayoutAlignment;
 			var desiredWidth = frameworkElement.DesiredSize.Width;
@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Layouts
 			return frameX;
 		}
 
-		static double AlignVertical(IFrameworkElement frameworkElement, Rectangle bounds, Thickness margin)
+		static double AlignVertical(IView frameworkElement, Rectangle bounds, Thickness margin)
 		{
 			double frameY = 0;
 			var startY = bounds.Y;
