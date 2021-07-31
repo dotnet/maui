@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
@@ -22,8 +23,13 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			// Update the other stuff on this page (basically the content)
-			Layout(bounds);
+			Frame = this.ComputeFrame(bounds);
+
+			if (Content is IFrameworkElement frameworkElement)
+			{
+				_ = frameworkElement.Arrange(Frame);
+			}
+
 			return Frame.Size;
 		}
 
