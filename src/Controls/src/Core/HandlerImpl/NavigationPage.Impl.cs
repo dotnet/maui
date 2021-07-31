@@ -40,8 +40,13 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			// Update the Bounds (Frame) for this page
-			Layout(bounds);
+			Frame = this.ComputeFrame(bounds);
+
+			if (Content is IFrameworkElement frameworkElement)
+			{
+				_ = frameworkElement.Arrange(Frame);
+			}
+
 			return Frame.Size;
 		}
 
