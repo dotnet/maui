@@ -25,9 +25,6 @@ namespace Microsoft.Maui
 		static AccessibilityDelegateCompat? s_blankDelegate;
 		static AccessibilityDelegateCompat BlankDelegate => s_blankDelegate ??= new AccessibilityDelegateCompat();
 
-		public static AccessibilityDelegateCompatWrapper Wrap(NativeView nativeView) =>
-			new AccessibilityDelegateCompatWrapper(ViewCompat.GetAccessibilityDelegate(nativeView));
-
 		public AccessibilityDelegateCompatWrapper(AccessibilityDelegateCompat? originalDelegate)
 		{
 			_originalDelegate = originalDelegate ?? BlankDelegate;
