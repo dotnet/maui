@@ -1,11 +1,7 @@
 ﻿#nullable enable
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
-using Microsoft.Maui.Handlers;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
