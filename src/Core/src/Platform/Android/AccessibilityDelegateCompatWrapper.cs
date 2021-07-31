@@ -5,6 +5,9 @@ using NativeView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
+	// This allows you to take an existing delegate and wrap it if you want to retain
+	// the behavior of the Accessibility Delegate that's already assigned.
+	// We use this inside controls if we want to add additional accessibility delegate behavior
 	public class AccessibilityDelegateCompatWrapper : AccessibilityDelegateCompat
 	{
 		readonly AccessibilityDelegateCompat _originalDelegate;
@@ -21,6 +24,9 @@ namespace Microsoft.Maui
 
 		static AccessibilityDelegateCompat? s_blankDelegate;
 		static AccessibilityDelegateCompat BlankDelegate => s_blankDelegate ??= new AccessibilityDelegateCompat();
+
+		public static AccessibilityDelegateCompatWrapper Wrap(NativeView nativeView) =>
+			new AccessibilityDelegateCompatWrapper(ViewCompat.GetAccessibilityDelegate(nativeView));
 
 		public AccessibilityDelegateCompatWrapper(AccessibilityDelegateCompat? originalDelegate)
 		{

@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			base.OnInitializeAccessibilityNodeInfo(host, info);
 
-			if (Handler?.NativeView is NativeView nativeView && Handler?.VirtualView is View v)
+			if (Handler?.VirtualView is View v)
 				v.UpdateSemanticNodeInfo(info);
 		}
 	}
