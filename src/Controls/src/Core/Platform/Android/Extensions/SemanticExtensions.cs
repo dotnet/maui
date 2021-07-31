@@ -6,7 +6,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public static class SemanticExtensions
+	public static partial class SemanticExtensions
 	{
 		public static void UpdateSemanticNodeInfo(this View virtualView, AccessibilityNodeInfoCompat? info)
 		{
@@ -15,19 +15,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if(virtualView.TapGestureRecognizerNeedsDelegate())
 				info.AddAction(AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick);
-		}
-
-		static bool TapGestureRecognizerNeedsDelegate(this View virtualView)
-		{
-			foreach (var gesture in virtualView.GestureRecognizers)
-			{
-				//Accessibility can't handle Tap Recognizers with > 1 tap
-				if (gesture is TapGestureRecognizer tgr && tgr.NumberOfTapsRequired == 1)
-				{
-					return true;
-				}
-			}
-			return false;
 		}
 
 		internal static void ApplyControlsAccessibilityDelegateIfNeeded(this View virtualView)

@@ -556,7 +556,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (ElementGestureRecognizers == null)
 				return;
-			
+
 #if __MOBILE__
 			if (_shouldReceiveTouch == null)
 			{
@@ -582,24 +582,20 @@ namespace Microsoft.Maui.Controls.Platform
 			bool dragFound = false;
 			bool dropFound = false;
 #endif
+			if (_nativeView != null &&
+				_handler.VirtualView is View v &&
+				v.TapGestureRecognizerNeedsDelegate() &&
+				(_nativeView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
+			{
+				_nativeView.AccessibilityTraits |= UIAccessibilityTrait.Button;
+				_addedFlags |= UIAccessibilityTrait.Button;
+				_defaultAccessibilityRespondsToUserInteraction = _nativeView.AccessibilityRespondsToUserInteraction;
+				_nativeView.AccessibilityRespondsToUserInteraction = true;
+			}
+
 			for (int i = 0; i < ElementGestureRecognizers.Count; i++)
 			{
 				IGestureRecognizer recognizer = ElementGestureRecognizers[i];
-				
-				// If the user adds a TapGestureRecognizer that activates as a single click then
-				// we tell Voice Over to treat that element as a button. If the users
-				// wants to add any other gestures then they'll need to add custom actions themselves
-				// and describe the actions.
-				if (_nativeView != null && 
-					recognizer is TapGestureRecognizer tpr && 
-					tpr.NumberOfTapsRequired == 1 &&
-					(_nativeView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
-				{
-					_nativeView.AccessibilityTraits |= UIAccessibilityTrait.Button;
-					_addedFlags |= UIAccessibilityTrait.Button;
-					_defaultAccessibilityRespondsToUserInteraction = _nativeView.AccessibilityRespondsToUserInteraction;
-					_nativeView.AccessibilityRespondsToUserInteraction = true;
-				}
 
 				if (_gestureRecognizers.ContainsKey(recognizer))
 					continue;
