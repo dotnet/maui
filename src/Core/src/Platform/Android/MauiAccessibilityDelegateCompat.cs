@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Android.Views.Accessibility;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Handlers;
@@ -9,64 +8,6 @@ using NativeView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
-	public class AccessibilityDelegateCompatWrapper : AccessibilityDelegateCompat
-	{
-		readonly AccessibilityDelegateCompat _originalDelegate;
-		public AccessibilityDelegateCompat? WrappedDelegate
-		{
-			get
-			{
-				if (_originalDelegate == s_blankDelegate)
-					return null;
-
-				return _originalDelegate;
-			}
-		}
-
-		static AccessibilityDelegateCompat? s_blankDelegate;
-		static AccessibilityDelegateCompat BlankDelegate => s_blankDelegate ??= new AccessibilityDelegateCompat();
-
-		public AccessibilityDelegateCompatWrapper(AccessibilityDelegateCompat? originalDelegate)
-		{
-			_originalDelegate = originalDelegate ?? BlankDelegate;
-		}
-
-		public override void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)
-		{
-			_originalDelegate.OnInitializeAccessibilityNodeInfo(host, info);
-		}
-
-		public override void SendAccessibilityEvent(NativeView host, int eventType)
-		{
-			_originalDelegate.SendAccessibilityEvent(host, eventType);
-		}
-
-		public override void SendAccessibilityEventUnchecked(NativeView host, AccessibilityEvent e)
-		{
-			_originalDelegate.SendAccessibilityEventUnchecked(host, e);
-		}
-
-		public override bool DispatchPopulateAccessibilityEvent(NativeView host, AccessibilityEvent e)
-		{
-			return _originalDelegate.DispatchPopulateAccessibilityEvent(host, e);
-		}
-
-		public override void OnPopulateAccessibilityEvent(NativeView host, AccessibilityEvent e)
-		{
-			_originalDelegate.OnPopulateAccessibilityEvent(host, e);
-		}
-
-		public override void OnInitializeAccessibilityEvent(NativeView host, AccessibilityEvent e)
-		{
-			_originalDelegate.OnInitializeAccessibilityEvent(host, e);
-		}
-
-		public override bool OnRequestSendAccessibilityEvent(Android.Views.ViewGroup host, NativeView child, AccessibilityEvent e)
-		{
-			return _originalDelegate.OnRequestSendAccessibilityEvent(host, child, e);
-		}
-	}
-
 	public class MauiAccessibilityDelegateCompat : AccessibilityDelegateCompatWrapper
 	{
 		public IViewHandler? Handler { get; set; }
