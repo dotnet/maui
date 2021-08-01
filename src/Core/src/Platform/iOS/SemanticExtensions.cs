@@ -1,6 +1,6 @@
-﻿using Foundation;
+﻿using System;
+using Foundation;
 using UIKit;
-using System;
 
 namespace Microsoft.Maui
 {

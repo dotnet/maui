@@ -451,7 +451,7 @@ namespace Microsoft.Maui.Controls
 		//		return grid;
 		//	});
 
-			internal static DataTemplate CreateDefaultFlyoutItemCell(string textBinding, string iconBinding)
+		internal static DataTemplate CreateDefaultFlyoutItemCell(string textBinding, string iconBinding)
 		{
 			return new DataTemplate(() =>
 			{

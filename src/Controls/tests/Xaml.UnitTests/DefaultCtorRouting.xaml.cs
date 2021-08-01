@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	class IsCompiledTypeConverter : TypeConverter, ICompiledTypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) => true;
-		
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			if ((string)value != "IsCompiled?")

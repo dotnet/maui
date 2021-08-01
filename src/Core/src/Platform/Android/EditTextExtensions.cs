@@ -135,7 +135,7 @@ namespace Microsoft.Maui
 		{
 			editText.UpdatePlaceholderColor(editor.PlaceholderColor, defaultColor);
 		}
-		
+
 		public static void UpdatePlaceholderColor(this AppCompatEditText editText, Graphics.Color placeholderTextColor, ColorStateList? defaultColor)
 		{
 			if (placeholderTextColor == null)

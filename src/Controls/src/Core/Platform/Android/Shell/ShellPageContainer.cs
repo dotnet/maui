@@ -1,9 +1,9 @@
 using Android.Content;
+using AndroidX.Core.Content;
 using Microsoft.Maui.Graphics;
-using AView = Android.Views.View;
 using AColor = Android.Graphics.Color;
 using AColorRes = Android.Resource.Color;
-using AndroidX.Core.Content;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	public class StackLayout : StackBase, IStackLayout 
+	public class StackLayout : StackBase, IStackLayout
 	{
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(StackOrientation), typeof(StackLayout), StackOrientation.Vertical,
 			propertyChanged: OrientationChanged);
