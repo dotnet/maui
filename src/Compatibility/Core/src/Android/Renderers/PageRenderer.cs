@@ -72,8 +72,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			UpdateBackground(false);
-
-			Clickable = true;
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
