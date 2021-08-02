@@ -21,13 +21,11 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapTrackColor(SwitchHandler handler, ISwitch view) { }
 
-		[MissingMapper]
 		public static void MapThumbColor(SwitchHandler handler, ISwitch view)
 		{
 			if (handler.NativeView is not { } nativeView)
 				return;
 
-			// this don't work cause slider is an icon
 			nativeView.SetColor(view.ThumbColor, "color", "slider");
 		}
 	}

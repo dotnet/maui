@@ -79,7 +79,10 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholderColor(EditorHandler handler, IEditor editor) { }
 
 		[MissingMapper]
-		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor) { }
+		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
+		{
+			// see: https://developer.gnome.org/gtk3/stable/GtkTextTag.html#GtkTextTag--letter-spacing
+		}
 
 		[MissingMapper]
 		public static void MapMaxLength(EditorHandler handler, IEditor editor) { }
