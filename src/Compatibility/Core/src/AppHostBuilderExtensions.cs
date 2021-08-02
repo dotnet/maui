@@ -40,7 +40,6 @@ using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platf
 using Microsoft.Maui.Graphics.Native.Gtk;
 using Microsoft.Maui.Controls.Compatibility.Platform.Gtk;
 using Microsoft.Maui.Controls.Handlers;
-using ScrollViewHandler = Microsoft.Maui.Handlers.ScrollView.ScrollViewHandler;
 
 #endif
 
@@ -175,9 +174,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					DependencyService.Register<ResourcesProvider>();
 					DependencyService.Register<Xaml.ValueConverterProvider>();
 					
-					handlers.AddHandler<ScrollView, ScrollViewHandler>();
-					handlers.AddHandler<NavigationPage, NavigationPageHandler>();
-
 					DependencyService.Register<NativeBindingService>();
 					DependencyService.Register<NativeValueConverterService>();
 
@@ -225,7 +221,7 @@ namespace Microsoft.Maui.Controls.Hosting
 #elif __ANDROID__
 				services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
 #elif WINDOWS
-				services.AddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
+                services.AddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
 #elif GTK
 				services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
 #endif

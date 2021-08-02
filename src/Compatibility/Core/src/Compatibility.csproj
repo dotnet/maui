@@ -9,9 +9,6 @@
     <WindowsRoot>Windows\</WindowsRoot>
     <GtkRoot>Gtk\</GtkRoot>
   </PropertyGroup>
-  <PropertyGroup Condition="$(MauiGtkTargets.Contains($(TargetFramework))) == true AND $(TargetFramework.StartsWith('MonoAndroid')) != true ">
-    <DefineConstants>$(DefineConstants);LINUX;GTK</DefineConstants>
-  </PropertyGroup>
   <PropertyGroup>
     <PackageId>Microsoft.Maui.Controls.Compatibility</PackageId>
   </PropertyGroup>
@@ -19,15 +16,15 @@
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 
   <ItemGroup>
-    <Compile Remove="GTK\**" />
+    <Compile Remove="Gtk2\**" />
     <Compile Remove="MacOS\**" />
     <Compile Remove="Tizen\**" />
     <Compile Remove="WPF\**" />
-    <EmbeddedResource Remove="GTK\**" />
+    <EmbeddedResource Remove="Gtk2\**" />
     <EmbeddedResource Remove="MacOS\**" />
     <EmbeddedResource Remove="Tizen\**" />
     <EmbeddedResource Remove="WPF\**" />
-    <None Remove="GTK\**" />
+    <None Remove="Gtk2\**" />
     <None Remove="MacOS\**" />
     <None Remove="Tizen\**" />
     <None Remove="WPF\**" />
@@ -40,7 +37,7 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Net.Http" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\rootlayout.axml" />
+    <AndroidResource Include="$(AndroidRoot)Resources\Layout\rootlayout.axml"  />
     <AndroidResource Include="$(AndroidRoot)Resources\Layout\tabbar.axml" />
     <AndroidResource Include="$(AndroidRoot)Resources\Layout\toolbar.axml" />
 
@@ -55,15 +52,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http" />
   </ItemGroup>
-  <ItemGroup Condition="$(DefineConstants.Contains('GTK')) == true ">
-    <Compile Include="$(GtkRoot)**\*.cs" />
-    <Reference Include="Microsoft.Maui.Graphics.Gtk">
-      <HintPath>$(SolutionDir)\src\Microsoft.Maui.Graphics.Gtk\Microsoft.Maui.Graphics.Gtk.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net48' ">
-    <Reference Include="System.Net.Http" />
-  </ItemGroup>
+
   <ItemGroup>    
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
