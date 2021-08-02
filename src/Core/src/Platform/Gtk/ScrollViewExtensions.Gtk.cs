@@ -1,8 +1,7 @@
 using System;
 using Gtk;
-using Microsoft.Maui.Controls;
 
-namespace Microsoft.Maui.Handlers.ScrollView
+namespace Microsoft.Maui
 {
 
 	public static class ScrollViewExtensions
