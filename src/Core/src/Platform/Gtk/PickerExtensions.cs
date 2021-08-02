@@ -41,7 +41,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateCharacterSpacing(this Gtk.ComboBox? nativeView, double spacing)
 		{
-			if (nativeView == null || spacing == 0)
+			if (nativeView == null)
 				return;
 
 			if (nativeView.HasEntry)
