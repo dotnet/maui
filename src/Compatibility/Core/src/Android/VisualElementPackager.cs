@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			var sameChildrenTypes = false;
 
-			ReadOnlyCollection<Element> newChildren = null, oldChildren = null;
+			IReadOnlyList<Element> newChildren = null, oldChildren = null;
 
 			RendererPool pool = null;
 

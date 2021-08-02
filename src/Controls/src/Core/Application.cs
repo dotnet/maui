@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal
+		internal override IReadOnlyList<Element> LogicalChildrenInternal
 		{
 			get { return _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren)); }
 		}
