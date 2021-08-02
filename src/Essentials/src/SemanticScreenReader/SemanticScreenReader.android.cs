@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Essentials
 
 			if (manager == null || announcement == null)
 				return;
-			
+
 			if (!(manager.IsEnabled || manager.IsTouchExplorationEnabled))
 				return;
 

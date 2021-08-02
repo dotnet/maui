@@ -27,10 +27,10 @@ namespace Microsoft.Maui
 				   (Context?.GetFragmentManager()?.FindFragmentById(Resource.Id.nav_host)
 			  as NavHostFragment) ?? throw new InvalidOperationException($"NavHost cannot be null here");
 
-		MauiFragmentNavDestination NavDestination 
-		{ 
-			get => _navDestination ?? throw new InvalidOperationException($"NavDestination cannot be null here"); 
-			set => _navDestination = value; 
+		MauiFragmentNavDestination NavDestination
+		{
+			get => _navDestination ?? throw new InvalidOperationException($"NavDestination cannot be null here");
+			set => _navDestination = value;
 		}
 
 		protected NavHostPageFragment(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)

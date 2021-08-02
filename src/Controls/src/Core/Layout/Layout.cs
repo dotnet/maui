@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 
 		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
 		IList IBindableLayout.Children => _children;
-		
+
 		public int Count => _children.Count;
 
 		public bool IsReadOnly => ((ICollection<IView>)_children).IsReadOnly;
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls
 				child.InvalidateMeasure();
 			}
 		}
-		
+
 		public virtual void Add(IView child)
 		{
 			if (child == null)

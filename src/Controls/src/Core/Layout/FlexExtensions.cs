@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Graphics;
-using Flex = Microsoft.Maui.Layouts.Flex;
 using Microsoft.Maui.Layouts;
+using Flex = Microsoft.Maui.Layouts.Flex;
 
 namespace Microsoft.Maui.Controls
 {

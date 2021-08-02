@@ -10,7 +10,7 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
-	
+
 	[TestFixture]
 	public class BindableLayoutTests : BaseTestFixture
 	{
