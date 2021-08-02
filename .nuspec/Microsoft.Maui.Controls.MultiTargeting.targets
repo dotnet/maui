@@ -57,8 +57,8 @@
   <ItemGroup Condition="$(DefineConstants.Contains('GTK')) != true ">
     <Compile Remove="**\*.Gtk.cs" />
     <None Include="**\*.Gtk.cs" />
-    <Compile Remove="**\Gtk\*.cs" />
-    <None Include="**\Gtk\*.cs" />
+    <Compile Remove="**\Gtk\**\*.cs" />
+    <None Include="**\Gtk\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="bin\**;obj\**" />
