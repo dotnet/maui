@@ -43,12 +43,16 @@ namespace Microsoft.Maui.Controls
 					oldElement.Parent = null;
 				}
 
+				LayoutHandler?.Remove(old);
+
 				_children[index] = value;
 
 				if (value is Element newElement)
 				{
 					newElement.Parent = this;
 				}
+
+				LayoutHandler?.Add(value);
 
 				InvalidateMeasure();
 			}
