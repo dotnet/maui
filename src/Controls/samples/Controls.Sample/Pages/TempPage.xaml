@@ -3,54 +3,67 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.TempPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    BackgroundColor="{DynamicResource PageBackgroundColor}"
     Title="Gallery">
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+
+            <Color x:Key="PageBackgroundColor">#512bdf</Color>
+            <Color x:Key="PrimaryTextColor">White</Color>
+
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+                <Setter Property="FontFamily" Value="OpenSansRegular" />
+            </Style>
+
+            <Style TargetType="Button">
+                <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+                <Setter Property="FontFamily" Value="OpenSansRegular" />
+                <Setter Property="BackgroundColor" Value="#2b0b98" />
+                <Setter Property="Padding" Value="14,10" />
+            </Style>
+
+        </ResourceDictionary>
+    </views:BasePage.Resources>
     <views:BasePage.Content>
-        <ScrollView 
-            Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
-            <VerticalStackLayout
-                Margin="12">
-                <Label 
-                    Text="Welcome to .NET MAUI!"
-                    TextColor="{AppThemeBinding Light={StaticResource LightAccentColor}, Dark={StaticResource DarkAccentColor}}"
+        <ScrollView Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
+            <StackLayout>
+                <Grid RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,*">
+
+                    <Label Text="Hello, World!"
+                    Grid.Row="0"
                     SemanticProperties.HeadingLevel="Level1"
                     FontSize="32"
                     HorizontalOptions="CenterAndExpand" />
-                <Label 
-                    Text="Click the button. You know you want to!" 
-                    FontSize="18"
-                    x:Name="CounterLabel"
+
+                    <Label Text="Welcome to .NET Multi-platform App UI"
+                    Grid.Row="1"
+                    SemanticProperties.Hint="Counts the number of times you click" 
+                    FontSize="16"
                     HorizontalOptions="CenterAndExpand" />
-                <Button
-                    Text="Click Me!" 
-                    Clicked="OnButtonClicked"
-                    SemanticProperties.Hint="Counts the number of times you click"/>
-                <Label
-                    Text="Entry" 
-                    TextColor="{DynamicResource PrimaryTextColor}"  />
-                <Entry 
-                    x:Name="entry"
-                    Text="Entry" />
-                <Label 
-                    Text="Slider" 
-                    TextColor="{DynamicResource PrimaryTextColor}"  />
-                <Slider
-                    Minimum="0"
-                    Maximum="100"
-                    Value="50"/>
-                <Label
-                    Text="Switch" />
-                <Switch 
-                    HorizontalOptions="Start" />
-                <Label 
-                    Text="Image" />
-                <Image 
+
+                    <Label Text="Current count: 0"
+                    Grid.Row="2"
+                    SemanticProperties.Hint="Counts the number of times you click"
+                    FontSize="18"
+                    FontAttributes="Bold"
+                    x:Name="CounterLabel"
+                    HorizontalOptions="Center" />
+
+                    <Button Text="Click me"
+                    Grid.Row="3"
+                    SemanticProperties.Hint="Counts the number of times you click"
+                    Clicked="OnCounterClicked"
+                    HorizontalOptions="Center" />
+
+                    <Image Grid.Row="4"
                     Source="dotnet_bot.png"
                     SemanticProperties.Description="Cute dotnet bot waving hi to you!"
-                    HorizontalOptions="Center"
-                    HeightRequest="150"
-                    WidthRequest="150"
-                    Margin="48, 0" />
-            </VerticalStackLayout>
+                    WidthRequest="300"
+                    HorizontalOptions="Center" />
+
+                </Grid>
+            </StackLayout>
         </ScrollView>
     </views:BasePage.Content>
 </views:BasePage>
