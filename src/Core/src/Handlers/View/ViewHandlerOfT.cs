@@ -3,6 +3,8 @@ using System;
 using NativeView = UIKit.UIView;
 #elif MONOANDROID
 using NativeView = Android.Views.View;
+#elif GTK
+using NativeView = Gtk.Widget;
 #elif WINDOWS
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
@@ -13,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ViewHandler<TVirtualView, TNativeView> : ViewHandler, IViewHandler
 		where TVirtualView : class, IView
-#if !NETSTANDARD || IOS || ANDROID || WINDOWS
+#if !NETSTANDARD || IOS || ANDROID || GTK || WINDOWS
 		where TNativeView : NativeView
 #else
 		where TNativeView : class

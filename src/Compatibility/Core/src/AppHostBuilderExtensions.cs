@@ -36,6 +36,12 @@ using TabbedPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Ta
 using FlyoutPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.PhoneFlyoutPageRenderer;
 using RadioButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
 using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
+#elif GTK
+using Microsoft.Maui.Graphics.Native.Gtk;
+using Microsoft.Maui.Controls.Compatibility.Platform.Gtk;
+using Microsoft.Maui.Controls.Handlers;
+using ScrollViewHandler = Microsoft.Maui.Handlers.ScrollView.ScrollViewHandler;
+
 #endif
 
 namespace Microsoft.Maui.Controls.Hosting
@@ -161,6 +167,21 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
+#if GTK
+					DependencyService.Register<Xaml.ResourcesLoader>();
+					DependencyService.Register<NativeBindingService>();
+					DependencyService.Register<NativeValueConverterService>();
+					DependencyService.Register<Deserializer>();
+					DependencyService.Register<ResourcesProvider>();
+					DependencyService.Register<Xaml.ValueConverterProvider>();
+					
+					handlers.AddHandler<ScrollView, ScrollViewHandler>();
+					handlers.AddHandler<NavigationPage, NavigationPageHandler>();
+
+					DependencyService.Register<NativeBindingService>();
+					DependencyService.Register<NativeValueConverterService>();
+
+#endif
 				})
 				.ConfigureServices<MauiCompatBuilder>();
 
@@ -171,7 +192,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			public void Configure(HostBuilderContext context, IServiceProvider services)
 			{
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
+#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST || GTK
 				CompatServiceProvider.SetServiceProvider(services);
 #endif
 
@@ -205,6 +226,8 @@ namespace Microsoft.Maui.Controls.Hosting
 				services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
 #elif WINDOWS
 				services.AddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
+#elif GTK
+				services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
 #endif
 			}
 

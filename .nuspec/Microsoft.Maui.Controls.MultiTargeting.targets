@@ -1,4 +1,9 @@
 <Project>
+  <!-- Linux -->
+  <PropertyGroup Condition="$(MauiGtkTargets.Contains($(TargetFramework))) == true AND $(TargetFramework.StartsWith('MonoAndroid')) != true">
+    <DefineConstants>$(DefineConstants);LINUX;GTK</DefineConstants>
+  </PropertyGroup>
+  
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true ">
     <Compile Remove="**\**\*.iOS.cs" />
     <None Include="**\**\*.iOS.cs" />
@@ -49,11 +54,16 @@
     <Compile Remove="**\*.uwp.cs" />
     <None Include="**\*.uwp.cs" />
   </ItemGroup>
+  <ItemGroup Condition="$(DefineConstants.Contains('GTK')) != true ">
+    <Compile Remove="**\*.Gtk.cs" />
+    <None Include="**\*.Gtk.cs" />
+    <Compile Remove="**\Gtk\*.cs" />
+    <None Include="**\Gtk\*.cs" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Remove="bin\**;obj\**" />
     <None Remove="bin\**;obj\**" />
   </ItemGroup>
-  
   <PropertyGroup>
     <!-- Windows -->
     <WindowsProjectFolder>Platform\Windows\</WindowsProjectFolder>
@@ -112,5 +122,15 @@
     <PackageReference Include="Microsoft.ProjectReunion.InteractiveExperiences" NoWarn="NU1701" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
+  </ItemGroup>
+  <ItemGroup Condition="$(DefineConstants.Contains('GTK')) == true ">
+    <PackageReference Include="GtkSharp" Version="3.24.24.64" />
+    <Reference Include="Microsoft.Maui.Graphics.Gtk">
+      <HintPath>$(SolutionDir)\src\Microsoft.Maui.Graphics.Gtk\Microsoft.Maui.Graphics.Gtk.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net48' ">
+    <Reference Include="System.Net.Http"/>
   </ItemGroup>
 </Project>
