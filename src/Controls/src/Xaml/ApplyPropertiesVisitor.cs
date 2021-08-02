@@ -775,7 +775,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		void SetTemplate(ElementTemplate dt, INode node)
 		{
-			((ElementTemplate)dt).LoadTemplate = () =>
+			dt.LoadTemplate = () =>
 			{
 				var cnode = node.Clone();
 				var context = new HydrationContext { ParentContext = Context, RootAssembly = Context.RootAssembly, RootElement = Context.RootElement, ExceptionHandler = Context.ExceptionHandler };
