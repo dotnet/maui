@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls
 	{
 		Thickness IView.Margin => Margin;
 
+		partial void HandlerChangedPartial();
 		GestureManager? _gestureManager;
 		private protected override void OnHandlerChangedCore()
 		{
@@ -16,6 +17,8 @@ namespace Microsoft.Maui.Controls
 
 			if (Handler != null)
 				_gestureManager = new GestureManager(Handler);
+
+			HandlerChangedPartial();
 		}
 
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)

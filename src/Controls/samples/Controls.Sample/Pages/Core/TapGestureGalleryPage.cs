@@ -64,6 +64,20 @@ namespace Maui.Controls.Sample.Pages
 				Text = "Tap Gesture Gallery"
 			};
 			vertical.Add(changeColorBoxView);
+
+
+			vertical.Add(new Button()
+			{
+				Text = "Toggle Single Tap Gesture",
+				Command = new Command(() =>
+				{
+					if (singleTapLabel.GestureRecognizers.Count > 0)
+						singleTapLabel.GestureRecognizers.RemoveAt(0);
+					else
+						singleTapLabel.GestureRecognizers.Add(singleTapGesture);
+				})
+			});
+
 			Content = vertical;
 		}
 

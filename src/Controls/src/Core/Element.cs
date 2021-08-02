@@ -81,24 +81,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		[Obsolete("ParentView is obsolete as of version 2.1.0. Please use Parent instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public VisualElement ParentView
-		{
-			get
-			{
-				Element parent = Parent;
-				while (parent != null)
-				{
-					var parentView = parent as VisualElement;
-					if (parentView != null)
-						return parentView;
-					parent = parent.RealParent;
-				}
-				return null;
-			}
-		}
-
 		public string StyleId
 		{
 			get { return _styleId; }
@@ -113,7 +95,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal virtual ReadOnlyCollection<Element> LogicalChildrenInternal => EmptyChildren;
+		internal virtual IReadOnlyList<Element> LogicalChildrenInternal => EmptyChildren;
+
 		internal IEnumerable<Element> AllChildren
 		{
 			get
@@ -128,9 +111,9 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual IEnumerable<Element> ChildrenNotDrawnByThisElement => EmptyChildren;
 
+		IReadOnlyList<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ReadOnlyCollection<Element> LogicalChildren => LogicalChildrenInternal;
+		internal IReadOnlyList<Element> LogicalChildren => LogicalChildrenInternal;
 
 		internal bool Owned { get; set; }
 
@@ -404,7 +387,7 @@ namespace Microsoft.Maui.Controls
 
 			while (queue.Count > 0)
 			{
-				ReadOnlyCollection<Element> children = queue.Dequeue().LogicalChildrenInternal;
+				IReadOnlyList<Element> children = queue.Dequeue().LogicalChildrenInternal;
 				for (var i = 0; i < children.Count; i++)
 				{
 					Element child = children[i];
@@ -506,7 +489,7 @@ namespace Microsoft.Maui.Controls
 
 			while (queue.Count > 0)
 			{
-				ReadOnlyCollection<Element> children = queue.Dequeue().LogicalChildrenInternal;
+				IReadOnlyList<Element> children = queue.Dequeue().LogicalChildrenInternal;
 				for (var i = 0; i < children.Count; i++)
 				{
 					var child = children[i] as VisualElement;
