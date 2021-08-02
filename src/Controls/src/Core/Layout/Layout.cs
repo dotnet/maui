@@ -26,7 +26,33 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsReadOnly => ((ICollection<IView>)_children).IsReadOnly;
 
-		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
+		public IView this[int index]
+		{
+			get => _children[index]; 
+			set
+			{
+				var old = _children[index];
+
+				if (old == value)
+				{
+					return;
+				}
+
+				if (old is Element oldElement)
+				{
+					oldElement.Parent = null;
+				}
+
+				_children[index] = value;
+
+				if (value is Element newElement)
+				{
+					newElement.Parent = this;
+				}
+
+				InvalidateMeasure();
+			}
+		}
 
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
