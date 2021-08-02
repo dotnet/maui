@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Graphics.Native.Gtk
 			var spacing = letterspacing.ScaledToPango();
 
 			if (letterspacing <= 1)
-				return list;
+				return null;
 
 			var l = new Pango.AttrList();
 
