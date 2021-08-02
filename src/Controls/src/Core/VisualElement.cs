@@ -682,9 +682,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<FocusEventArgs> Focused;
 
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public virtual SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
+		SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
 		{
 			var constraintSize = new Size(widthConstraint, heightConstraint);
 			if (_measureCache.TryGetValue(constraintSize, out SizeRequest cachedResult))
@@ -735,7 +733,7 @@ namespace Microsoft.Maui.Controls
 			return r;
 		}
 
-		public SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
+		public virtual SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
 			bool includeMargins = (flags & MeasureFlags.IncludeMargins) != 0;
 			Thickness margin = default(Thickness);
@@ -746,9 +744,8 @@ namespace Microsoft.Maui.Controls
 				widthConstraint = Math.Max(0, widthConstraint - margin.HorizontalThickness);
 				heightConstraint = Math.Max(0, heightConstraint - margin.VerticalThickness);
 			}
-#pragma warning disable 0618 // retain until GetSizeRequest removed
+
 			SizeRequest result = GetSizeRequest(widthConstraint, heightConstraint);
-#pragma warning restore 0618
 
 			if (includeMargins && !margin.IsEmpty)
 			{
@@ -803,23 +800,15 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
-#pragma warning disable 0618 // retain until OnSizeRequest removed
-			return OnSizeRequest(widthConstraint, heightConstraint);
-#pragma warning restore 0618
-		}
 
-		protected virtual void OnSizeAllocated(double width, double height)
-		{
-		}
-
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected virtual SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
-		{
 			if (!IsPlatformEnabled)
 				return new SizeRequest(new Size(-1, -1));
 
 			return Device.PlatformServices.GetNativeSize(this, widthConstraint, heightConstraint);
+		}
+
+		protected virtual void OnSizeAllocated(double width, double height)
+		{
 		}
 
 		protected void SizeAllocated(double width, double height) => OnSizeAllocated(width, height);

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	[Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 30835, "Navigating to and from the Carousel page with MasterDetail page creates an Out of memory exception")]
+	[Issue(IssueTracker.Bugzilla, 30835, "Navigating to and from the Carousel page with FlyoutPage creates an Out of memory exception")]
 	public class Bugzilla30835 : TestFlyoutPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()

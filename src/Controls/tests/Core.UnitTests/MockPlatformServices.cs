@@ -48,15 +48,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return Internals.Crc64.GetHash(input);
 		}
 
-		string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
-
-		static int hex(int v)
-		{
-			if (v < 10)
-				return '0' + v;
-			return 'a' + v - 10;
-		}
-
 		public double GetNamedSize(NamedSize size, Type targetElement, bool useOldSizes)
 		{
 			switch (size)
