@@ -1,8 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -10,7 +8,10 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Children))]
 	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement
 	{
+		ReadOnlyCastingList<Element, IView> _logicalChildren;
+
 		protected ILayoutManager _layoutManager;
+
 		public ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
 
 		// The actual backing store for the IViews in the ILayout
@@ -21,7 +22,10 @@ namespace Microsoft.Maui.Controls
 
 		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
 		IList IBindableLayout.Children => _children;
-		
+
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
+			_logicalChildren ??= new ReadOnlyCastingList<Element, IView>(_children);
+
 		public int Count => _children.Count;
 
 		public bool IsReadOnly => ((ICollection<IView>)_children).IsReadOnly;
@@ -58,7 +62,7 @@ namespace Microsoft.Maui.Controls
 				child.InvalidateMeasure();
 			}
 		}
-		
+
 		public virtual void Add(IView child)
 		{
 			if (child == null)
