@@ -89,7 +89,7 @@ namespace Microsoft.Maui
 
 		public double GetFontSize(Font font)
 		{
-			return font.FontSize;
+			return font.Size;
 		}
 
 		private IEnumerable<(Pango.FontFamily family, Pango.FontDescription description)> GetAvailableFamilyFaces(Pango.FontFamily family)
