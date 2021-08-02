@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
+		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
 
 		public event EventHandler LayoutChanged;
 
@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
-			ReadOnlyCollection<Element> children = LogicalChildrenInternal;
+			IReadOnlyList<Element> children = LogicalChildrenInternal;
 			int count = children.Count;
 			for (var index = 0; index < count; index++)
 			{

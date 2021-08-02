@@ -113,7 +113,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal virtual ReadOnlyCollection<Element> LogicalChildrenInternal => EmptyChildren;
+		internal virtual IReadOnlyList<Element> LogicalChildrenInternal => EmptyChildren;
+
 		internal IEnumerable<Element> AllChildren
 		{
 			get
@@ -128,9 +129,8 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual IEnumerable<Element> ChildrenNotDrawnByThisElement => EmptyChildren;
 
-
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public ReadOnlyCollection<Element> LogicalChildren => LogicalChildrenInternal;
+		public IReadOnlyList<Element> LogicalChildren => LogicalChildrenInternal;
 
 		internal bool Owned { get; set; }
 
@@ -404,7 +404,7 @@ namespace Microsoft.Maui.Controls
 
 			while (queue.Count > 0)
 			{
-				ReadOnlyCollection<Element> children = queue.Dequeue().LogicalChildrenInternal;
+				IReadOnlyList<Element> children = queue.Dequeue().LogicalChildrenInternal;
 				for (var i = 0; i < children.Count; i++)
 				{
 					Element child = children[i];
@@ -506,7 +506,7 @@ namespace Microsoft.Maui.Controls
 
 			while (queue.Count > 0)
 			{
-				ReadOnlyCollection<Element> children = queue.Dequeue().LogicalChildrenInternal;
+				IReadOnlyList<Element> children = queue.Dequeue().LogicalChildrenInternal;
 				for (var i = 0; i < children.Count; i++)
 				{
 					var child = children[i] as VisualElement;

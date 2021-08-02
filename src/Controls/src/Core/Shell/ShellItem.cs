@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Controls
 
 		internal bool IsVisibleItem => Parent is Shell shell && shell?.CurrentItem == this;
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(_children));
+		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(_children));
 
 		internal void SendStructureChanged()
 		{

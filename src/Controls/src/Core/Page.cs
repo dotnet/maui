@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			_logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
 
 		public event EventHandler LayoutChanged;
