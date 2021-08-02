@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_tapAndPanAndSwipeDetector.IsValueCreated)
 				_tapAndPanAndSwipeDetector.Value.UpdateLongPressSettings();
 
-			View?.ApplyControlsAccessibilityDelegateIfNeeded();
+			View?.AddOrRemoveControlsAccessibilityDelegate();
 		}
 
 		void UpdateDragAndDrop()

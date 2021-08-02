@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	{
 		partial void HandlerChangedPartial()
 		{
-			this.ApplyControlsAccessibilityDelegateIfNeeded();
+			this.AddOrRemoveControlsAccessibilityDelegate();
 		}
 	}
 }

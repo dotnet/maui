@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_nativeView == null)
 				throw new ArgumentNullException(nameof(handler.NativeView));
 
-			_collectionChangedHandler = ModelGestureRecognizersOnCollectionChanged;
+			_collectionChangedHandler = GestureRecognizersOnCollectionChanged;
 
 			// In XF this was called inside ViewDidLoad
 			if (_handler.VirtualView is View view)
@@ -692,7 +692,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 #endif
 
-		void ModelGestureRecognizersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+		void GestureRecognizersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
 			if (_nativeView != null)
 			{

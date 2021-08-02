@@ -13,16 +13,16 @@ namespace Microsoft.Maui.Controls.Platform
 			if (info == null)
 				return;
 
-			if(virtualView.TapGestureRecognizerNeedsDelegate())
+			if (virtualView.TapGestureRecognizerNeedsDelegate())
 				info.AddAction(AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick);
 		}
 
-		internal static void ApplyControlsAccessibilityDelegateIfNeeded(this View virtualView)
+		internal static void AddOrRemoveControlsAccessibilityDelegate(this View virtualView)
 		{
 			if (virtualView?.Handler?.NativeView is not AView view)
 				return;
 
-			bool needsDelegate = virtualView.TapGestureRecognizerNeedsDelegate();
+			bool needsDelegate = virtualView.ControlsAccessibilityDelegateNeeded();
 			var currentDelegate = ViewCompat.GetAccessibilityDelegate(view);
 
 			if (needsDelegate)
