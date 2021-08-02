@@ -108,12 +108,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
-			if (view.Handler.NativeView is Widget w)
+			if (view.Handler?.NativeView is Widget w)
 			{
 				return view.Handler.GetDesiredSize(widthConstraint, heightConstraint);
 			}
 
-			return new SizeRequest(new Size(widthConstraint, heightConstraint));
+			return new SizeRequest();
 		}
 
 	}
