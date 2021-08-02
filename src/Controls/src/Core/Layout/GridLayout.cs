@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public void Add(IView view, int left, int top)
+		internal void Add(IView view, int left, int top)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Controls
 			Add(view, left, left + 1, top, top + 1);
 		}
 
-		public void Add(IView view, int left, int right, int top, int bottom)
+		internal void Add(IView view, int left, int right, int top, int bottom)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
