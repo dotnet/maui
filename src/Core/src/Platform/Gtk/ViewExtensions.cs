@@ -22,11 +22,10 @@ namespace Microsoft.Maui
 			}
 
 			var css = view.Background.ToCss();
-			
-			
+
 			var disposePixbuf = false;
 			var pixbuf = css == null ? view.Background?.ToPixbuf(out disposePixbuf) : default;
-			
+
 			// create a temporary file 
 			var tempFile = pixbuf?.TempFileFor();
 
@@ -118,6 +117,12 @@ namespace Microsoft.Maui
 				return;
 
 			nativeView.TooltipText = semantics.Hint;
+
+			if (nativeView.Accessible is { } accessible and not Atk.NoOpObject && semantics.Description != null)
+			{
+				accessible.Description = semantics.Description;
+			}
+
 		}
 
 		public static void UpdateOpacity(this Widget nativeView, IView view)
@@ -132,6 +137,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateClip(this Widget nativeView, IView view)
 		{ }
+
 	}
 
 }
