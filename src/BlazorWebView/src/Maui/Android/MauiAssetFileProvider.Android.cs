@@ -2,77 +2,100 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Android.Content.Res;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
-	internal sealed class MauiAssetFileProvider : IFileProvider
+	/// <summary>
+	/// A minimal implementation of an IFileProvider to be used by the BlazorWebView and WebViewManager types.
+	/// </summary>
+	internal sealed class AndroidMauiAssetFileProvider : IFileProvider
 	{
-		private string _contentRootDir;
+		private readonly AssetManager _assets;
+		private readonly string _contentRootDir;
 
-		public MauiAssetFileProvider(string contentRootDir)
+		public AndroidMauiAssetFileProvider(AssetManager? assets, string contentRootDir)
 		{
+			_assets = assets ?? throw new ArgumentNullException(nameof(assets));
 			_contentRootDir = contentRootDir;
 		}
 
 		public IDirectoryContents GetDirectoryContents(string subpath)
-			=> new AndroidMauiAssetDirectoryContents(Path.Combine(_contentRootDir, subpath));
+			=> new AndroidMauiAssetDirectoryContents(_assets, Path.Combine(_contentRootDir, subpath));
 
 		public IFileInfo GetFileInfo(string subpath)
-		{
-			var path = Path.Combine(_contentRootDir, subpath);
-			try
-			{
-				var file = Android.App.Application.Context.Assets!.Open(path);
-				Func<Stream> stream = () => Android.App.Application.Context.Assets!.Open(path);
-				return new AndroidMauiAssetFileInfo(Path.GetFileName(path), stream);
-			}
-			catch (Exception)
-			{
-				return new NotFoundFileInfo(Path.GetFileName(subpath));
-			}
-		}
+			=> new AndroidMauiAssetFileInfo(_assets, Path.Combine(_contentRootDir, subpath));
 
 		public IChangeToken? Watch(string filter)
 			=> null;
 
 		private sealed class AndroidMauiAssetFileInfo : IFileInfo
 		{
-			private Func<Stream> _factory;
+			private readonly AssetManager _assets;
+			private readonly string _filePath;
+			private readonly Lazy<bool> _lazyAssetExists;
+			private readonly Lazy<long> _lazyAssetLength;
 
-			public AndroidMauiAssetFileInfo(string name, Func<Stream> factory)
+
+			public AndroidMauiAssetFileInfo(AssetManager assets, string filePath)
 			{
-				Name = name;
-				_factory = factory;
-				using var stream = factory();
-				using var memoryStream = new MemoryStream();
-				stream.CopyTo(memoryStream);
-				memoryStream.Seek(0, SeekOrigin.Begin);
-				Length = memoryStream.Length;
+				_assets = assets;
+				_filePath = filePath;
+
+				Name = Path.GetFileName(filePath);
+
+				_lazyAssetExists = new Lazy<bool>(() =>
+				{
+					try
+					{
+						using var stream = _assets.Open(_filePath);
+						return true;
+					}
+					catch
+					{
+						return false;
+					}
+				});
+
+
+				_lazyAssetLength = new Lazy<long>(() =>
+				{
+					try
+					{
+						// The stream returned by AssetManager.Open() is not seekable, so we have to read
+						// the contents to get its length. In practice, Length is never called by BlazorWebView,
+						// so it's here "just in case."
+						using var stream = _assets.Open(_filePath);
+						using var memoryStream = new MemoryStream();
+						stream.CopyTo(memoryStream);
+						return memoryStream.Length;
+					}
+					catch
+					{
+						return -1;
+					}
+				});
 			}
 
-			public bool Exists => true;
-			public long Length { get; }
+			public bool Exists => _lazyAssetExists.Value;
+			public long Length => _lazyAssetLength.Value;
 			public string PhysicalPath { get; } = null!;
 			public string Name { get; }
 			public DateTimeOffset LastModified { get; } = DateTimeOffset.FromUnixTimeSeconds(0);
-			public bool IsDirectory { get; } = false;
+			public bool IsDirectory => false;
 
 			public Stream CreateReadStream()
-				=> _factory();
+				=> _assets.Open(_filePath);
 		}
 
+		// This is never used by BlazorWebView or WebViewManager
 		private sealed class AndroidMauiAssetDirectoryContents : IDirectoryContents
 		{
-			public AndroidMauiAssetDirectoryContents(string subpath)
+			public AndroidMauiAssetDirectoryContents(AssetManager assets, string filePath)
 			{
 			}
-
-			List<AndroidMauiAssetFileInfo> files = new List<AndroidMauiAssetFileInfo>();
 
 			public bool Exists => false;
 
