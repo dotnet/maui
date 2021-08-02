@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.ClearChildren();
 
-			foreach (var child in VirtualView.Children)
+			foreach (var child in VirtualView)
 			{
 				if (child.ToNative(MauiContext) is { } nativeChild)
 					NativeView.Add(child, nativeChild);
