@@ -43,9 +43,9 @@ namespace Microsoft.Maui.Controls
 		{
 			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
 
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView view)
 			{
-				_ = frameworkElement.Measure(widthConstraint, heightConstraint);
+				_ = view.Measure(widthConstraint, heightConstraint);
 			}
 
 			return DesiredSize;

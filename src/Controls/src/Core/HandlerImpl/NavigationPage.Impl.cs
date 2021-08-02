@@ -42,9 +42,9 @@ namespace Microsoft.Maui.Controls
 		{
 			Frame = this.ComputeFrame(bounds);
 
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView view)
 			{
-				_ = frameworkElement.Arrange(Frame);
+				_ = view.Arrange(Frame);
 			}
 
 			return Frame.Size;
