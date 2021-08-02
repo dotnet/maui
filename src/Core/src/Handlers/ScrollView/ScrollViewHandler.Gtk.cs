@@ -1,6 +1,7 @@
 using System;
 using Gdk;
 using Gtk;
+using Microsoft.Maui.Native;
 using Point = Microsoft.Maui.Graphics.Point;
 
 namespace Microsoft.Maui.Handlers

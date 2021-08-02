@@ -2,6 +2,7 @@
 using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Native;
 
 namespace Microsoft.Maui.Handlers
 {

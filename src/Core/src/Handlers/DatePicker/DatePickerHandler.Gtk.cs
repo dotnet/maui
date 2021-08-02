@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Handlers
+﻿using Microsoft.Maui.Native;
+
+namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{

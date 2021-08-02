@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Native
 {
 	
 	[Obsolete("use MauiGtkApplication")]

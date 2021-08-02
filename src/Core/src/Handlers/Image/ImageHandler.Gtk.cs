@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Native;
 
 namespace Microsoft.Maui.Handlers
 {

@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Handlers
+﻿using Microsoft.Maui.Native;
+
+namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{

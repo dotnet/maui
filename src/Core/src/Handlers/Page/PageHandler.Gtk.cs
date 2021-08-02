@@ -1,5 +1,6 @@
 ﻿using System;
 using Gtk;
+using Microsoft.Maui.Native;
 
 namespace Microsoft.Maui.Handlers
 {

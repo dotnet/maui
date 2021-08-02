@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics.Native.Gtk;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 using Size = Microsoft.Maui.Graphics.Size;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Native
 {
 
 	// refactored from: https://github.com/mono/xwt/blob/501f6b529fca632655295169094f637627c74c47/Xwt.Gtk/Xwt.GtkBackend/BoxBackend.cs
