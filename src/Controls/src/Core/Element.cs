@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual IEnumerable<Element> ChildrenNotDrawnByThisElement => EmptyChildren;
 
-		IReadOnlyCollection<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
+		IReadOnlyList<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
 
 		internal IReadOnlyList<Element> LogicalChildren => LogicalChildrenInternal;
 
