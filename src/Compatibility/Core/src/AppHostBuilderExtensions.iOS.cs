@@ -1,6 +1,6 @@
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls.Hosting
 {

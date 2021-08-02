@@ -121,7 +121,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			hiddenView.Received().Arrange(Arg.Any<Rectangle>());
 		}
 
-		IStackLayout BuildPaddedStack(Thickness padding, double viewWidth, double viewHeight) 
+		IStackLayout BuildPaddedStack(Thickness padding, double viewWidth, double viewHeight)
 		{
 			var stack = BuildStack(1, viewWidth, viewHeight);
 			stack.Padding.Returns(padding);

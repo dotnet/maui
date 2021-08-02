@@ -117,67 +117,67 @@ namespace Microsoft.Maui.Controls.Platform
 
 			AView ITabStop.TabStop => this;
 
-//			#region IVisualElementRenderer
+			//			#region IVisualElementRenderer
 
-//			VisualElement IVisualElementRenderer.Element => Content?.BindingContext as VisualElement;
+			//			VisualElement IVisualElementRenderer.Element => Content?.BindingContext as VisualElement;
 
-//			VisualElementTracker IVisualElementRenderer.Tracker => null;
+			//			VisualElementTracker IVisualElementRenderer.Tracker => null;
 
-//			ViewGroup IVisualElementRenderer.ViewGroup => this;
+			//			ViewGroup IVisualElementRenderer.ViewGroup => this;
 
-//			AView IVisualElementRenderer.View => this;
+			//			AView IVisualElementRenderer.View => this;
 
-//			SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint) => new SizeRequest(new Size(100, 100));
+			//			SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint) => new SizeRequest(new Size(100, 100));
 
-//			void IVisualElementRenderer.SetElement(VisualElement element) { }
+			//			void IVisualElementRenderer.SetElement(VisualElement element) { }
 
-//			void IVisualElementRenderer.SetLabelFor(int? id) { }
+			//			void IVisualElementRenderer.SetLabelFor(int? id) { }
 
-//			void IVisualElementRenderer.UpdateLayout() { }
+			//			void IVisualElementRenderer.UpdateLayout() { }
 
-//#pragma warning disable 67
-//			public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
-//			public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
-//#pragma warning restore 67
+			//#pragma warning disable 67
+			//			public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
+			//			public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
+			//#pragma warning restore 67
 
-//			#endregion IVisualElementRenderer
+			//			#endregion IVisualElementRenderer
 
 			internal View Content { get; set; }
 
 
-		// TODO MAUI Is this right for focus order?
-		//	public override AView FocusSearch([GeneratedEnum] FocusSearchDirection direction)
-		//	{
-		//		var element = Content?.BindingContext as ITabStopElement;
-		//		if (element == null)
-		//			return base.FocusSearch(direction);
+			// TODO MAUI Is this right for focus order?
+			//	public override AView FocusSearch([GeneratedEnum] FocusSearchDirection direction)
+			//	{
+			//		var element = Content?.BindingContext as ITabStopElement;
+			//		if (element == null)
+			//			return base.FocusSearch(direction);
 
-		//		int maxAttempts = 0;
-		//		var tabIndexes = element?.GetTabIndexesOnParentPage(out maxAttempts);
-		//		if (tabIndexes == null)
-		//			return base.FocusSearch(direction);
+			//		int maxAttempts = 0;
+			//		var tabIndexes = element?.GetTabIndexesOnParentPage(out maxAttempts);
+			//		if (tabIndexes == null)
+			//			return base.FocusSearch(direction);
 
-		//		// use OS default--there's no need for us to keep going if there's one or fewer tab indexes!
-		//		if (tabIndexes.Count <= 1)
-		//			return base.FocusSearch(direction);
+			//		// use OS default--there's no need for us to keep going if there's one or fewer tab indexes!
+			//		if (tabIndexes.Count <= 1)
+			//			return base.FocusSearch(direction);
 
-		//		int tabIndex = element.TabIndex;
-		//		AView control = null;
-		//		int attempt = 0;
-		//		bool forwardDirection = !(
-		//			(direction & FocusSearchDirection.Backward) != 0 ||
-		//			(direction & FocusSearchDirection.Left) != 0 ||
-		//			(direction & FocusSearchDirection.Up) != 0);
+			//		int tabIndex = element.TabIndex;
+			//		AView control = null;
+			//		int attempt = 0;
+			//		bool forwardDirection = !(
+			//			(direction & FocusSearchDirection.Backward) != 0 ||
+			//			(direction & FocusSearchDirection.Left) != 0 ||
+			//			(direction & FocusSearchDirection.Up) != 0);
 
-		//		do
-		//		{
-		//			element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
-		//			var renderer = (element as BindableObject).GetValue(AppCompat.Platform.RendererProperty);
-		//			control = (renderer as ITabStop)?.TabStop;
-		//		} while (!(control?.Focusable == true || ++attempt >= maxAttempts));
+			//		do
+			//		{
+			//			element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
+			//			var renderer = (element as BindableObject).GetValue(AppCompat.Platform.RendererProperty);
+			//			control = (renderer as ITabStop)?.TabStop;
+			//		} while (!(control?.Focusable == true || ++attempt >= maxAttempts));
 
-		//		return control?.Focusable == true ? control : null;
-		//	}
+			//		return control?.Focusable == true ? control : null;
+			//	}
 		}
 
 		public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)

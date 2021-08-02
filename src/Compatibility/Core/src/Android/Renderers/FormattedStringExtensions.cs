@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				float value = (float)Font.Size;
 
 				paint.TextSize = TypedValue.ApplyDimension(
-					Font.AutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip, 
+					Font.AutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip,
 					value, TextView.Resources.DisplayMetrics);
 
 				if (Forms.IsLollipopOrNewer)

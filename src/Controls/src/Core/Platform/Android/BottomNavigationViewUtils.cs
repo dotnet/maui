@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Controls.Platform
 					var services = mauiContext.Services;
 					var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 					image.UpdateSourceAsync(new ShellImagePart() { Source = shellContent.icon }, provider)
-						.FireAndForget(e => Internals.Log.Warning("MenuItem", $"{e}"));					
+						.FireAndForget(e => Internals.Log.Warning("MenuItem", $"{e}"));
 
 					innerLayout.AddView(image);
 

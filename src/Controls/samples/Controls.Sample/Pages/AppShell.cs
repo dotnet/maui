@@ -11,7 +11,9 @@ namespace Maui.Controls.Sample.Pages
 		{
 			Items.Add(new FlyoutItem() { Title = "Flyout Item 1", Items = { new SemanticsPage(), new ButtonPage(), } });
 			Items.Add(new FlyoutItem() { Title = "Flyout Item 2", Items = { new ButtonPage(), new SemanticsPage() } });
-			Items.Add(new ShellSection() { Title = "Flyout Item 3", 
+			Items.Add(new ShellSection()
+			{
+				Title = "Flyout Item 3",
 				Items = {
 					new ShellContent()
 					{
@@ -23,7 +25,8 @@ namespace Maui.Controls.Sample.Pages
 						Title = "Button Page",
 						Content = new ButtonPage() { Title = "Button Page" }
 					},
-				}});
+				}
+			});
 
 		}
 	}
