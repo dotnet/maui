@@ -1,3 +1,4 @@
+using System;
 using Gtk;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
@@ -13,6 +14,7 @@ namespace Maui.SimpleSampleApp
 			// TopContainerOverride = OnTopContainerOverride;
 		}
 
+		[Obsolete("TopContainerOverride is dismissed")]
 		Widget OnTopContainerOverride(Widget nativePage)
 		{
 			var b = new Box(Orientation.Vertical, 0)
@@ -23,7 +25,7 @@ namespace Maui.SimpleSampleApp
 
 			};
 
-			var txt = $"{typeof(Startup).Namespace} {nameof(TopContainerOverride)}";
+			var txt = $"{typeof(Startup).Namespace}";
 			var t = new Label(txt);
 			t.SetBackgroundColor(Colors.White);
 			t.SetForegroundColor(Colors.Coral);

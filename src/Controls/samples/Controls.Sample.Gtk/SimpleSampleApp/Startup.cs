@@ -86,11 +86,10 @@ namespace Maui.SimpleSampleApp
 					events.AddEvent<Action<string>>("CustomEventName", value => LogEvent("CustomEventName"));
 
 					// Log everything in this one
-					events.AddGtk(windows => windows
+					events.AddGtk(gtk => gtk
 					   .OnActivated((a, b) => LogEvent(nameof(GtkLifecycle.OnApplicationActivated)))
 					   .OnClosed((a, b) => LogEvent(nameof(GtkLifecycle.OnHidden)))
 					   .OnLaunched((a, b) => LogEvent(nameof(GtkLifecycle.OnLaunched)))
-					   .OnVisibilityChanged((a, b) => LogEvent(nameof(GtkLifecycle.OnVisibilityChanged)))
 					   .OnShown((a, b) =>
 						{
 							LogEvent(nameof(GtkLifecycle.OnShown));
