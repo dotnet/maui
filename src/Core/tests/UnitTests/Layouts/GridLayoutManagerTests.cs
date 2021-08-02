@@ -36,6 +36,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			}
 
 			var grid = Substitute.For<IGridLayout>();
+			grid.Width.Returns(-1);
+			grid.Height.Returns(-1);
 
 			grid.RowSpacing.Returns(rowSpacing);
 			grid.ColumnSpacing.Returns(colSpacing);
@@ -1205,6 +1207,38 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// And again at the final size
 			view.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(100));
+		}
+
+		[Fact]
+		public void GridMeasureShouldUseExplicitHeight() 
+		{
+			var grid = CreateGridLayout();
+			var view = CreateTestView(new Size(10, 10));
+			SubstituteChildren(grid, view);
+			SetLocation(grid, view);
+
+			grid.Height.Returns(50);
+
+			var gridLayoutManager = new GridLayoutManager(grid);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(50, measure.Height);
+		}
+
+		[Fact]
+		public void GridMeasureShouldUseExplicitWidth()
+		{
+			var grid = CreateGridLayout();
+			var view = CreateTestView(new Size(10, 10));
+			SubstituteChildren(grid, view);
+			SetLocation(grid, view);
+
+			grid.Width.Returns(50);
+
+			var gridLayoutManager = new GridLayoutManager(grid);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(50, measure.Width);
 		}
 	}
 }

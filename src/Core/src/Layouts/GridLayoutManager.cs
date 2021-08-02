@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Layouts
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
 			_gridStructure = new GridStructure(Grid, widthConstraint, heightConstraint);
-			return new Size(_gridStructure.GridWidth(), _gridStructure.GridHeight());
+			return new Size(_gridStructure.MeasuredGridWidth(), _gridStructure.MeasuredGridHeight());
 		}
 
 		public override Size ArrangeChildren(Rectangle childBounds)
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Layouts
 				view.Arrange(cell);
 			}
 
-			return new Size(structure.GridWidth(), structure.GridHeight());
+			return new Size(structure.MeasuredGridWidth(), structure.MeasuredGridHeight());
 		}
 
 		class GridStructure
@@ -46,6 +46,8 @@ namespace Microsoft.Maui.Layouts
 			readonly IGridLayout _grid;
 			readonly double _gridWidthConstraint;
 			readonly double _gridHeightConstraint;
+			readonly double _explicitGridHeight;
+			readonly double _explicitGridWidth;
 
 			Row[] _rows { get; }
 			Column[] _columns { get; }
@@ -66,6 +68,9 @@ namespace Microsoft.Maui.Layouts
 
 				_gridWidthConstraint = widthConstraint;
 				_gridHeightConstraint = heightConstraint;
+
+				_explicitGridHeight = _grid.Height;
+				_explicitGridWidth = _grid.Width;
 
 				// Cache these GridLayout properties so we don't have to keep looking them up via _grid
 				// (Property access via _grid may have performance implications for some SDKs.)
@@ -221,6 +226,16 @@ namespace Microsoft.Maui.Layouts
 			public double GridWidth()
 			{
 				return SumDefinitions(_columns, _columnSpacing) + _padding.HorizontalThickness;
+			}
+
+			public double MeasuredGridHeight() 
+			{
+				return _explicitGridHeight > -1 ? _explicitGridHeight : GridHeight();
+			}
+
+			public double MeasuredGridWidth()
+			{
+				return _explicitGridWidth > -1 ? _explicitGridWidth : GridWidth();
 			}
 
 			double SumDefinitions(Definition[] definitions, double spacing)
