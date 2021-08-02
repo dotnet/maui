@@ -28,13 +28,6 @@ namespace Microsoft.Maui
 
 		public abstract string ApplicationId { get; }
 
-		/// <summary>
-		/// overrides creation of rootcontainer
-		/// rootcontainer is MainWindow 's <see cref="Gtk.Window.Child"/>
-		/// paramter is Maui's Mainwindows <see cref="IWindow.Page"/> as Gtk.Widget
-		/// </summary>
-		public Func<Widget, Widget> TopContainerOverride { get; set; } = null!;
-
 		string? _name;
 
 		// https://developer.gnome.org/gio/stable/GApplication.html#g-application-id-is-valid
@@ -75,9 +68,6 @@ namespace Microsoft.Maui
 
 		protected void OnStartup(object sender, EventArgs args)
 		{
-
-			CreateMainWindow();
-
 			Services.InvokeLifecycleEvents<GtkLifecycle.OnStartup>(del => del(CurrentGtkApplication, args));
 		}
 
@@ -116,18 +106,6 @@ namespace Microsoft.Maui
 			// future use: to have notifications at cross platform Window level
 		}
 
-		Widget CreateRootContainer(Widget nativePage)
-		{
-			var b = new Box(Orientation.Vertical, 0)
-			{
-				Expand = true,
-			};
-
-			b.PackStart(nativePage, true, true, 0);
-
-			return b;
-		}
-
 		protected abstract IStartup OnCreateStartup();
 
 		protected void StartupLauch(object sender, EventArgs args)
@@ -141,38 +119,36 @@ namespace Microsoft.Maui
 			   .Build();
 
 			Services = host.Services;
+			Services.InvokeLifecycleEvents<GtkLifecycle.OnLaunching>(del => del(this, args));
 
 			var mauiContext = new MauiContext(Services);
 			Services.InvokeLifecycleEvents<GtkLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
 			var activationState = new ActivationState(mauiContext);
 
-			Services.InvokeLifecycleEvents<GtkLifecycle.OnLaunching>(del => del(this, new ActivationEventArgs(activationState)));
-
 			Application = Services.GetRequiredService<IApplication>();
 
 			var window = Application.CreateWindow(activationState);
 
-			var content = window.Content;
-			var nativeContent = content.ToNative(mauiContext);
+			CreateMainWindow(window, mauiContext);
 
-			var canvas = TopContainerOverride?.Invoke(nativeContent) ?? CreateRootContainer(nativeContent);
-#if DEBUG
-			nativeContent.SetBackgroundColor(Colors.White);
-#endif
-			MainWindow.Child = canvas;
 			MainWindow.QueueDraw();
 			MainWindow.ShowAll();
 
 			MainWindow.Present();
 
-			Services?.InvokeLifecycleEvents<GtkLifecycle.OnLaunched>(del => del(CurrentGtkApplication, new ActivationEventArgs(activationState)));
+			Services?.InvokeLifecycleEvents<GtkLifecycle.OnLaunched>(del => del(CurrentGtkApplication, args));
 		}
 
-		void CreateMainWindow()
+		void CreateMainWindow(IWindow window, MauiContext context)
 		{
 			MainWindow = new MauiGtkMainWindow();
 			CurrentGtkApplication.AddWindow(MainWindow);
+
+			context.Window = MainWindow;
+
+			MainWindow.SetWindow(window, context);
+			Services.InvokeLifecycleEvents<GtkLifecycle.OnCreated>(del => del(MainWindow, new EventArgs()));
 
 		}
 
@@ -221,7 +197,7 @@ namespace Microsoft.Maui
 		public static void Invoke(System.Action action)
 		{
 			if (action == null)
-				throw new ArgumentNullException("action");
+				throw new ArgumentNullException(nameof(action));
 
 			// Switch to no Invoke(Action) once a gtk# release is done.
 			Gtk.Application.Invoke((o, args) =>
