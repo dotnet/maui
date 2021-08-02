@@ -69,7 +69,6 @@ namespace Microsoft.Maui.Layouts
 
 				// Cache these GridLayout properties so we don't have to keep looking them up via _grid
 				// (Property access via _grid may have performance implications for some SDKs.)
-
 				_padding = grid.Padding;
 				_columnSpacing = grid.ColumnSpacing;
 				_rowSpacing = grid.RowSpacing;
@@ -139,9 +138,16 @@ namespace Microsoft.Maui.Layouts
 
 			void InitializeCells()
 			{
+				// If the width/height constraints are infinity, then Star rows/columns won't really make any sense.
+				// When that happens, we need to tag the cells so they can be measured as Auto cells instead.
+				bool isGridWidthConstraintInfinite = double.IsInfinity(_gridWidthConstraint);
+				bool isGridHeightConstraintInfinite = double.IsInfinity(_gridHeightConstraint);
+
 				for (int n = 0; n < _childrenToLayOut.Length; n++)
 				{
 					var view = _childrenToLayOut[n];
+
+					bool measureStarAsAuto = false;
 
 					if (view.Visibility == Visibility.Collapsed)
 					{
@@ -168,7 +174,11 @@ namespace Microsoft.Maui.Layouts
 						rowGridLengthType |= ToGridLengthType(_rows[rowIndex].RowDefinition.Height.GridUnitType);
 					}
 
-					_cells[n] = new Cell(n, row, column, rowSpan, columnSpan, columnGridLengthType, rowGridLengthType);
+					// Check for infinite constraints and Stars, so we can mark them for measurement as if they were Auto
+					measureStarAsAuto = (isGridHeightConstraintInfinite && IsStar(rowGridLengthType))
+						|| (isGridWidthConstraintInfinite && IsStar(columnGridLengthType));
+
+					_cells[n] = new Cell(n, row, column, rowSpan, columnSpan, columnGridLengthType, rowGridLengthType, measureStarAsAuto);
 				}
 			}
 
@@ -252,7 +262,7 @@ namespace Microsoft.Maui.Layouts
 					var availableWidth = _gridWidthConstraint - GridWidth();
 					var availableHeight = _gridHeightConstraint - GridHeight();
 
-					if (cell.IsColumnSpanAuto || cell.IsRowSpanAuto)
+					if (cell.IsColumnSpanAuto || cell.IsRowSpanAuto || cell.MeasureStarAsAuto)
 					{
 						var measure = _childrenToLayOut[cell.ViewIndex].Measure(availableWidth, availableHeight);
 
@@ -519,11 +529,26 @@ namespace Microsoft.Maui.Layouts
 			public int RowSpan { get; }
 			public int ColumnSpan { get; }
 
+			/// <summary>
+			/// A combination of all the measurement types in the columns this cell spans
+			/// </summary>
 			public GridLengthType ColumnGridLengthType { get; }
+
+			/// <summary>
+			/// A combination of all the measurement types in the rows this cell spans
+			/// </summary>
 			public GridLengthType RowGridLengthType { get; }
 
+			/// <summary>
+			/// Marks the cell as requiring initial measurement even though the measurement type is Star
+			/// Star measurements don't make sense when the axis constraint is infinity; when that happens, we treat them 
+			/// Auto instead. We need to tag that situation in the Cell so the Auto measurement can happen; otherwise, we 
+			/// can end up with un-measured controls when resolving the Star cells.
+			/// </summary>
+			public bool MeasureStarAsAuto { get; }
+
 			public Cell(int viewIndex, int row, int column, int rowSpan, int columnSpan,
-				GridLengthType columnGridLengthType, GridLengthType rowGridLengthType)
+				GridLengthType columnGridLengthType, GridLengthType rowGridLengthType, bool measureStarAsAuto)
 			{
 				ViewIndex = viewIndex;
 				Row = row;
@@ -532,6 +557,7 @@ namespace Microsoft.Maui.Layouts
 				ColumnSpan = columnSpan;
 				ColumnGridLengthType = columnGridLengthType;
 				RowGridLengthType = rowGridLengthType;
+				MeasureStarAsAuto = measureStarAsAuto;
 			}
 
 			public bool IsColumnSpanAuto => HasFlag(ColumnGridLengthType, GridLengthType.Auto);
@@ -564,6 +590,11 @@ namespace Microsoft.Maui.Layouts
 				GridUnitType.Auto => GridLengthType.Auto,
 				_ => GridLengthType.None,
 			};
+		}
+
+		static bool IsStar(GridLengthType gridLengthType)
+		{
+			return (gridLengthType & GridLengthType.Star) == GridLengthType.Star;
 		}
 
 		abstract class Definition
