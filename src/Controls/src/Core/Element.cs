@@ -129,8 +129,9 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual IEnumerable<Element> ChildrenNotDrawnByThisElement => EmptyChildren;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public IReadOnlyList<Element> LogicalChildren => LogicalChildrenInternal;
+		IReadOnlyList<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
+
+		internal IReadOnlyList<Element> LogicalChildren => LogicalChildrenInternal;
 
 		internal bool Owned { get; set; }
 
