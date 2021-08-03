@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.SingleProject
 		public void Configure(IAppHostBuilder appBuilder)
 		{
 			appBuilder
-				.RegisterBlazorMauiWebView(typeof(Startup).Assembly)
+				.RegisterBlazorMauiWebView()
 				.UseMauiApp<MyApp>();
 
 			if (UseBlazor)

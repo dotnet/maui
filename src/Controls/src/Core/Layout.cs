@@ -226,7 +226,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			DesiredSize = OnMeasure(widthConstraint, heightConstraint).Request;
+			var sansMargins = OnMeasure(widthConstraint, heightConstraint).Request;
+			DesiredSize = new Size(sansMargins.Width + Margin.HorizontalThickness, sansMargins.Height + Margin.VerticalThickness);
 			return DesiredSize;
 		}
 

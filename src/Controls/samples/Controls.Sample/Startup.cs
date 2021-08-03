@@ -74,7 +74,7 @@ namespace Maui.Controls.Sample
 
 #if NET6_0_OR_GREATER
 			appBuilder
-				.RegisterBlazorMauiWebView(typeof(Startup).Assembly);
+				.RegisterBlazorMauiWebView();
 #endif
 
 			appBuilder

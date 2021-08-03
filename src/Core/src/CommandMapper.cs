@@ -89,14 +89,14 @@ namespace Microsoft.Maui
 			SetPropertyCore(key, (h, v, o) => action?.Invoke((TViewHandler)h, (TVirtualView)v, o));
 	}
 
-	public class CommandMapper<TVirtualView> : PropertyMapper<TVirtualView, IElementHandler>
+	public class CommandMapper<TVirtualView> : CommandMapper<TVirtualView, IElementHandler>
 		where TVirtualView : IElement
 	{
 		public CommandMapper()
 		{
 		}
 
-		public CommandMapper(PropertyMapper chained)
+		public CommandMapper(CommandMapper chained)
 			: base(chained)
 		{
 		}
