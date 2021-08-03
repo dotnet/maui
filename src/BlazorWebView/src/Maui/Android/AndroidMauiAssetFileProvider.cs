@@ -75,6 +75,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						{
 							// just read the stream to get its length; we don't need the contents here
 						}
+						ArrayPool<byte>.Shared.Return(buffer);
 						return length;
 					}
 					catch
