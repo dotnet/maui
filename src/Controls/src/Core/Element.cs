@@ -113,7 +113,8 @@ namespace Microsoft.Maui.Controls
 
 		IReadOnlyList<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
 
-		internal IReadOnlyList<Element> LogicalChildren => LogicalChildrenInternal;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public IReadOnlyList<Element> LogicalChildren => LogicalChildrenInternal;
 
 		internal bool Owned { get; set; }
 
