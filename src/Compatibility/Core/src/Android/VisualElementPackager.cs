@@ -258,7 +258,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				if (_childPackagers != null && _childPackagers.TryGetValue(view, out VisualElementPackager packager))
 				{
-					foreach (var child in view.LogicalChildren)
+					foreach (var child in ((IElementController)view).LogicalChildren)
 					{
 						if (child is VisualElement ve)
 							packager.RemoveChild(ve);

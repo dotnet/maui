@@ -323,7 +323,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				IVisualElementRenderer renderer = Platform.GetRenderer(visualElement);
 				if (renderer == null && CompressedLayout.GetIsHeadless(visualElement))
-					UpdateLayout(visualElement.LogicalChildren);
+					UpdateLayout(((IElementController)visualElement).LogicalChildren);
 
 				renderer?.UpdateLayout();
 			}
