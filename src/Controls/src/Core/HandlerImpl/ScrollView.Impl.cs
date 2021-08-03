@@ -50,5 +50,15 @@ namespace Microsoft.Maui.Controls
 
 			return DesiredSize;
 		}
+
+		protected override Size ArrangeOverride(Rectangle bounds)
+		{
+			// We can't call base.ArrangeOverride here because ScrollView is based on Layout<T>, and that will call UpdateChildrenLayout.
+			// Which we don't want; that's only for legacy layouts and causes all kinds of trouble if we have any padding defined.
+
+			Frame = this.ComputeFrame(bounds);
+			Handler?.NativeArrange(Frame);
+			return Frame.Size;
+		}
 	}
 }
