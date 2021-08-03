@@ -3,9 +3,9 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class ScrollView : IScrollView
+	public partial class ScrollView : IScrollView, IContentView
 	{
-		IView IScrollView.Content => Content;
+		IView IContentView.Content => Content;
 
 		double IScrollView.HorizontalOffset
 		{
@@ -43,12 +43,22 @@ namespace Microsoft.Maui.Controls
 		{
 			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
 
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView view)
 			{
-				_ = frameworkElement.Measure(widthConstraint, heightConstraint);
+				_ = view.Measure(widthConstraint, heightConstraint);
 			}
 
 			return DesiredSize;
+		}
+
+		protected override Size ArrangeOverride(Rectangle bounds)
+		{
+			// We can't call base.ArrangeOverride here because ScrollView is based on Layout<T>, and that will call UpdateChildrenLayout.
+			// Which we don't want; that's only for legacy layouts and causes all kinds of trouble if we have any padding defined.
+
+			Frame = this.ComputeFrame(bounds);
+			Handler?.NativeArrange(Frame);
+			return Frame.Size;
 		}
 	}
 }

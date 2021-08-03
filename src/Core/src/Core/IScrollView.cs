@@ -3,15 +3,8 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
-	public interface IScrollView : IView
+	public interface IScrollView : IContentView
 	{
-		// TODO ezhart 2021-07-08 It might make sense for IPage and IScrollView to derive from (the not yet created) IContentView 
-
-		/// <summary>
-		/// Gets the view that contains the content of the ScrollView.
-		/// </summary>
-		public IView Content { get; }
-
 		/// <summary>
 		/// Gets a value indicating the visibility rules for the horizontal scroll bar.
 		/// </summary>

@@ -2,6 +2,6 @@
 {
 	public static partial class SemanticExtensions
 	{
-		public static void SetSemanticFocus(this IFrameworkElement element) { }
+		public static void SetSemanticFocus(this IView element) { }
 	}
 }

@@ -227,7 +227,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var deviceIndependentWidth = widthMeasureSpec.ToDouble(Context);
 				var deviceIndependentHeight = heightMeasureSpec.ToDouble(Context);
-				var size = (_modal as IFrameworkElement).Measure(deviceIndependentWidth, deviceIndependentHeight);
+				var size = (_modal as IView).Measure(deviceIndependentWidth, deviceIndependentHeight);
 
 				var nativeWidth = Context.ToPixels(size.Width);
 				var nativeHeight = Context.ToPixels(size.Height);
@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Controls.Platform
 					var destination = Rectangle.FromLTRB(deviceIndependentLeft, deviceIndependentTop,
 						deviceIndependentRight, deviceIndependentBottom);
 
-					(_modal as IFrameworkElement).Arrange(destination);
+					(_modal as IView).Arrange(destination);
 					(_modal.Handler as INativeViewHandler)?.NativeArrange(_modal.Frame);
 					_backgroundView.Layout(0, 0, r - l, b - t);
 				}

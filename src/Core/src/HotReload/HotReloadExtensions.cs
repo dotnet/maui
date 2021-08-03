@@ -9,7 +9,7 @@ namespace Microsoft.Maui.HotReload
 {
 	public static class HotReloadExtensions
 	{
-		public static void CheckHandlers(this IView view)
+		public static void CheckHandlers(this IView? view)
 		{
 			if (view?.Handler == null)
 				return;
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.HotReload
 			//}
 			view.Handler = null;
 
-			if (view is IPage p)
+			if (view is IContentView p)
 			{
 				CheckHandlers(p.Content);
 			}

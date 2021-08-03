@@ -6,7 +6,7 @@ using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Handlers.Benchmarks
 {
-	public class StubBase : IFrameworkElement
+	public class StubBase : IView
 	{
 		IElementHandler IElement.Handler
 		{
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public IViewHandler Handler { get; set; }
 
-		public IFrameworkElement Parent { get; set; }
+		public IView Parent { get; set; }
 
 		public Size DesiredSize { get; set; } = new Size(20, 20);
 
