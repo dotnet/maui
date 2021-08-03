@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -38,7 +39,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			private readonly Lazy<bool> _lazyAssetExists;
 			private readonly Lazy<long> _lazyAssetLength;
 
-
 			public AndroidMauiAssetFileInfo(AssetManager assets, string filePath)
 			{
 				_assets = assets;
@@ -68,9 +68,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						// the contents to get its length. In practice, Length is never called by BlazorWebView,
 						// so it's here "just in case."
 						using var stream = _assets.Open(_filePath);
-						using var memoryStream = new MemoryStream();
-						stream.CopyTo(memoryStream);
-						return memoryStream.Length;
+
+						var buffer = ArrayPool<byte>.Shared.Rent(4096);
+						long length = 0;
+						while (length != (length += stream.Read(buffer)))
+						{
+							// just read the stream to get its length; we don't need the contents here
+						}
+						return length;
 					}
 					catch
 					{

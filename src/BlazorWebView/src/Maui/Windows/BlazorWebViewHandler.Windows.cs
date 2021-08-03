@@ -47,6 +47,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
 
+			// On Windows we don't use IFileProvider because it is sync-only, whereas in WinUI all the
+			// file storage APIs are async-only. So instead we override HandleWebResourceRequest in
+			// WinUIWebViewManager so that loading static assets is done entirely there.
 			var mauiAssetFileProvider = new NullFileProvider();
 
 			_webviewManager = new WinUIWebViewManager(NativeView, new WinUIWebView2Wrapper(NativeView), Services!, MauiDispatcher.Instance, mauiAssetFileProvider, hostPageRelativePath, contentRootDir);

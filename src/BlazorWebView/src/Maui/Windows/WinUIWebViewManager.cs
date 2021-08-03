@@ -42,7 +42,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (TryGetResponseContent(eventArgs.Request.Uri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers)
 				&& statusCode != 404)
 			{
-				// NOTE: This is stream copying is to work around a hanging bug in WinRT with managed streams
+				// NOTE: This is stream copying is to work around a hanging bug in WinRT with managed streams.
+				// See issue https://github.com/microsoft/CsWinRT/issues/670
 				var memStream = new MemoryStream();
 				content.CopyTo(memStream);
 				var ms = new InMemoryRandomAccessStream();
