@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls
 			if (parent != null)
 			{
 				// Traverse logical children
-				IEnumerable children = parent.LogicalChildren;
+				IEnumerable children = ((IElementController)parent).LogicalChildren;
 				IEnumerator itor = children.GetEnumerator();
 				while (itor.MoveNext())
 				{
