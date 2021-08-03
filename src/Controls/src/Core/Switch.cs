@@ -12,14 +12,14 @@ namespace Microsoft.Maui.Controls
 		{
 			((Switch)bindable).Toggled?.Invoke(bindable, new ToggledEventArgs((bool)newValue));
 			((Switch)bindable).ChangeVisualState();
-			((IFrameworkElement)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
+			((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
 
 		}, defaultBindingMode: BindingMode.TwoWay);
 
 		public static readonly BindableProperty OnColorProperty = BindableProperty.Create(nameof(OnColor), typeof(Color), typeof(Switch), null,
 			propertyChanged: (bindable, oldValue, newValue) =>
 			{
-				((IFrameworkElement)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
+				((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
 			});
 
 		public static readonly BindableProperty ThumbColorProperty = BindableProperty.Create(nameof(ThumbColor), typeof(Color), typeof(Switch), null);

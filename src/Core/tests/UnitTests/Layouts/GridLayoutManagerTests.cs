@@ -36,6 +36,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			}
 
 			var grid = Substitute.For<IGridLayout>();
+			grid.Width.Returns(-1);
+			grid.Height.Returns(-1);
 
 			grid.RowSpacing.Returns(rowSpacing);
 			grid.ColumnSpacing.Returns(colSpacing);
@@ -1180,6 +1182,63 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			AssertArranged(grid[0], padding.Left, padding.Top, viewWidth, viewHeight);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact]
+		public void StarValuesAreMeasuredTwiceWhenConstraintsAreInfinite()
+		{
+			// A one-row, one-column grid
+			var grid = CreateGridLayout();
+
+			// A 100x100 IView
+			var view = CreateTestView(new Size(100, 100));
+
+			// Set up the grid to have a single child
+			SubstituteChildren(grid, view);
+
+			// Set up the row/column values and spans
+			SetLocation(grid, view);
+
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			// View must be measured to figure out the Auto value
+			view.Received().Measure(Arg.Is(double.PositiveInfinity), Arg.Is(double.PositiveInfinity));
+
+			// And again at the final size
+			view.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(100));
+		}
+
+		[Fact]
+		public void GridMeasureShouldUseExplicitHeight() 
+		{
+			var grid = CreateGridLayout();
+			var view = CreateTestView(new Size(10, 10));
+			SubstituteChildren(grid, view);
+			SetLocation(grid, view);
+
+			grid.Height.Returns(50);
+
+			var gridLayoutManager = new GridLayoutManager(grid);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(50, measure.Height);
+		}
+
+		[Fact]
+		public void GridMeasureShouldUseExplicitWidth()
+		{
+			var grid = CreateGridLayout();
+			var view = CreateTestView(new Size(10, 10));
+			SubstituteChildren(grid, view);
+			SetLocation(grid, view);
+
+			grid.Width.Returns(50);
+
+			var gridLayoutManager = new GridLayoutManager(grid);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(50, measure.Width);
 		}
 	}
 }

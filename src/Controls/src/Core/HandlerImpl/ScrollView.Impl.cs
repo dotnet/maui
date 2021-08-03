@@ -3,9 +3,9 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class ScrollView : IScrollView
+	public partial class ScrollView : IScrollView, IContentView
 	{
-		IView IScrollView.Content => Content;
+		IView IContentView.Content => Content;
 
 		double IScrollView.HorizontalOffset
 		{
@@ -41,28 +41,23 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			// We call OnSizeRequest so that the content gets measured appropriately
-			// and then use the standard GetDesiredSize from the handler so the ScrollView's
-			// backing control gets measured. 
-
-			// TODO ezhart 2021-07-14 Verify that we've got the naming correct on this after we resolve the OnSizeRequest obsolete stuff
-#pragma warning disable CS0618 // Type or member is obsolete
-			var request = OnSizeRequest(widthConstraint, heightConstraint);
-#pragma warning restore CS0618 // Type or member is obsolete
-
 			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
+
+			if (Content is IView view)
+			{
+				_ = view.Measure(widthConstraint, heightConstraint);
+			}
+
 			return DesiredSize;
 		}
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			var frame = this.ComputeFrame(bounds);
+			// We can't call base.ArrangeOverride here because ScrollView is based on Layout<T>, and that will call UpdateChildrenLayout.
+			// Which we don't want; that's only for legacy layouts and causes all kinds of trouble if we have any padding defined.
 
-			// Force a native arrange call; otherwise, the native bookkeeping won't be done and things won't lay out correctly
-			Handler?.NativeArrange(frame);
-
-			Layout(frame);
-
+			Frame = this.ComputeFrame(bounds);
+			Handler?.NativeArrange(Frame);
 			return Frame.Size;
 		}
 	}

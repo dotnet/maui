@@ -2,12 +2,11 @@ using System;
 using System.Diagnostics;
 using System.Windows.Input;
 using Maui.Controls.Sample.Models;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages.Base
 {
-	public class BasePage : ContentPage, IPage
+	public class BasePage : ContentPage
 	{
 		SectionModel _selectedItem;
 

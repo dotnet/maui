@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	public class AppearingGalleryPage : ContentPage
 	{
 		const string NavPageTitle = "NavAppearingPage";
-		const string MasterPageTitle = "MasterAppearingPage";
+		const string FlyoutPageTitle = "FlyoutPageAppearingPage";
 		const string TabbedPageTitle = "TabbedAppearingPage";
 		const string CarouselPageTitle = "CarouselAppearingPage";
 
@@ -27,9 +27,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 						Application.Current.MainPage = new NavAppearingPage(initalPage);
 						})
 					},
-					new Button { Text = MasterPageTitle, Command = new Command (() => {
+					new Button { Text = FlyoutPageTitle, Command = new Command (() => {
 						var page = new FlyoutPage {
-							Title = MasterPageTitle,
+							Title = FlyoutPageTitle,
 							Flyout = new ContentPage { Title = "Flyout", BackgroundColor = Colors.Red },
 							Detail =  new NavAppearingPage(initalPage)
 						};

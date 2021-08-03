@@ -76,12 +76,14 @@ namespace Microsoft.Maui
 			NavDestination.NavigationPageHandler.Toolbar.SetNavigationOnClickListener(BackClick);
 
 			UpdateToolbar();
-			NavDestination.NavigationPageHandler.Toolbar
-				.Title = (NavDestination.Page as IPage)?.Title;
+
+			var titledElement = NavDestination.Page as ITitledElement;
+
+			NavDestination.NavigationPageHandler.Toolbar.Title = titledElement?.Title;
 
 			if (Context.GetActivity() is AppCompatActivity aca)
 			{
-				aca.SupportActionBar.Title = (NavDestination.Page as IPage)?.Title;
+				aca.SupportActionBar.Title = titledElement?.Title;
 
 				// TODO MAUI put this elsewhere once we figure out how attached property handlers work
 				bool showNavBar = true;

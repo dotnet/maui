@@ -4,43 +4,41 @@
              BackgroundColor="{DynamicResource PageBackgroundColor}">
 
     <ScrollView Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
-        <StackLayout>
-            <Grid RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,*">
-            
-                <Label Text="Hello, World!"
-                    Grid.Row="0"
-                    SemanticProperties.HeadingLevel="Level1"
-                    FontSize="32"
-                    HorizontalOptions="CenterAndExpand" />
+        <Grid RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,*">
 
-                <Label Text="Welcome to .NET Multi-platform App UI"
-                    Grid.Row="1"
-                    SemanticProperties.Hint="Counts the number of times you click" 
-                    FontSize="16"
-                    HorizontalOptions="CenterAndExpand" />
+            <Label Text="Hello, World!"
+                Grid.Row="0"
+                SemanticProperties.HeadingLevel="Level1"
+                FontSize="32"
+                HorizontalOptions="CenterAndExpand" />
 
-                <Label Text="Current count: 0"
-                    Grid.Row="2"
-                    SemanticProperties.Hint="Counts the number of times you click"
-                    FontSize="18"
-                    FontAttributes="Bold"
-                    x:Name="CounterLabel"
-                    HorizontalOptions="Center" />
+            <Label Text="Welcome to .NET Multi-platform App UI"
+                Grid.Row="1"
+                SemanticProperties.Hint="Counts the number of times you click"
+                FontSize="16"
+                HorizontalOptions="CenterAndExpand" />
 
-                <Button Text="Click me"
-                    Grid.Row="3"
-                    SemanticProperties.Hint="Counts the number of times you click"
-                    Clicked="OnCounterClicked"
-                    HorizontalOptions="Center" />
+            <Label Text="Current count: 0"
+                Grid.Row="2"
+                SemanticProperties.Hint="Counts the number of times you click"
+                FontSize="18"
+                FontAttributes="Bold"
+                x:Name="CounterLabel"
+                HorizontalOptions="Center" />
 
-                <Image Grid.Row="4"
-                    Source="dotnet_bot.png"
-                    SemanticProperties.Description="Cute dotnet bot waving hi to you!"
-                    WidthRequest="300"
-                    HeightRequest="372"
-                    HorizontalOptions="Center" />
+            <Button Text="Click me"
+                Grid.Row="3"
+                SemanticProperties.Hint="Counts the number of times you click"
+                Clicked="OnCounterClicked"
+                HorizontalOptions="Center" />
 
-            </Grid>
-        </StackLayout>
+            <Image Grid.Row="4"
+                Source="dotnet_bot.png"
+                SemanticProperties.Description="Cute dotnet bot waving hi to you!"
+                WidthRequest="300"
+                HeightRequest="372"
+                HorizontalOptions="Center" />
+
+        </Grid>
     </ScrollView>
 </ContentPage>

@@ -1,7 +1,7 @@
 using Microsoft.Maui.Graphics;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
-#elif MONOANDROID
+#elif __ANDROID__
 using NativeView = Android.Views.View;
 #elif WINDOWS
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;

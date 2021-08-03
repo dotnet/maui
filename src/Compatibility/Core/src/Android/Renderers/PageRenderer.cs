@@ -72,8 +72,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			UpdateBackground(false);
-
-			Clickable = true;
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -167,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var destination = Rectangle.FromLTRB(deviceIndependentLeft, deviceIndependentTop,
 				deviceIndependentRight, deviceIndependentBottom);
 
-			(Element as IFrameworkElement)?.Arrange(destination);
+			(Element as IView)?.Arrange(destination);
 			base.OnLayout(changed, l, t, r, b);
 		}
 	}

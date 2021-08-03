@@ -228,6 +228,39 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		internal void Add(IView view, int left, int top)
+		{
+			if (view == null)
+				throw new ArgumentNullException(nameof(view));
+			if (left < 0)
+				throw new ArgumentOutOfRangeException(nameof(left));
+			if (top < 0)
+				throw new ArgumentOutOfRangeException(nameof(top));
+
+			Add(view, left, left + 1, top, top + 1);
+		}
+
+		internal void Add(IView view, int left, int right, int top, int bottom)
+		{
+			if (view == null)
+				throw new ArgumentNullException(nameof(view));
+			if (left < 0)
+				throw new ArgumentOutOfRangeException(nameof(left));
+			if (top < 0)
+				throw new ArgumentOutOfRangeException(nameof(top));
+			if (left >= right)
+				throw new ArgumentOutOfRangeException(nameof(right));
+			if (top >= bottom)
+				throw new ArgumentOutOfRangeException(nameof(bottom));
+
+			SetRow(view, top);
+			SetRowSpan(view, bottom - top);
+			SetColumn(view, left);
+			SetColumnSpan(view, right - left);
+
+			Add(view);
+		}
+
 		public override bool Remove(IView child)
 		{
 			_viewInfo.Remove(child);

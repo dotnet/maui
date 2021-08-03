@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
-		MauiAccessibilityDelegate? AccessibilityDelegate { get; set; }
+		MauiAccessibilityDelegateCompat? AccessibilityDelegate { get; set; }
 
 		partial void DisconnectingHandler(NativeView nativeView)
 		{
@@ -84,8 +84,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (view.Semantics != null &&
 				handler is ViewHandler viewHandler &&
-				viewHandler.AccessibilityDelegate == null &&
-				ViewCompat.GetAccessibilityDelegate(handler.NativeView as NativeView) == null)
+				viewHandler.AccessibilityDelegate == null)
 			{
 				if (handler.NativeView is not NativeView nativeView)
 					return;
@@ -97,7 +96,16 @@ namespace Microsoft.Maui.Handlers
 				{
 					if (viewHandler.AccessibilityDelegate == null)
 					{
-						viewHandler.AccessibilityDelegate = new MauiAccessibilityDelegate() { Handler = viewHandler };
+						var currentDelegate = ViewCompat.GetAccessibilityDelegate(nativeView);
+						if (currentDelegate is MauiAccessibilityDelegateCompat)
+							currentDelegate = null;
+
+						var mauiDelegate = new MauiAccessibilityDelegateCompat(currentDelegate)
+						{
+							Handler = viewHandler
+						};
+
+						viewHandler.AccessibilityDelegate = mauiDelegate;
 						ViewCompat.SetAccessibilityDelegate(nativeView, viewHandler.AccessibilityDelegate);
 					}
 				}
@@ -108,108 +116,9 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				if (viewHandler.AccessibilityDelegate != null)
-				{
 					nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
-				}
-			}
-		}
-
-		public void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)
-		{
-			var semantics = VirtualView?.Semantics;
-
-			if (semantics == null)
-				return;
-
-			if (info == null)
-				return;
-
-			string? newText = null;
-			string? newContentDescription = null;
-
-			var desc = semantics.Description;
-			if (!string.IsNullOrEmpty(desc))
-			{
-				// Edit Text fields won't read anything for the content description
-				if (host is EditText et)
-				{
-					if (!string.IsNullOrEmpty(et.Text))
-						newText = $"{desc}, {et.Text}";
-					else
-						newText = $"{desc}";
-				}
 				else
-					newContentDescription = desc;
-			}
-
-			var hint = semantics.Hint;
-			if (!string.IsNullOrEmpty(hint))
-			{
-				// info HintText won't read anything back when using TalkBack pre API 26
-				if (NativeVersion.IsAtLeast(26))
-				{
-					info.HintText = hint;
-
-					if (host is EditText)
-						info.ShowingHintText = false;
-				}
-				else
-				{
-					if (host is EditText et)
-					{
-						newText = newText ?? et.Text;
-						newText = $"{newText}, {hint}";
-					}
-					else if (host is TextView tv)
-					{
-						if (newContentDescription != null)
-						{
-							newText = $"{newContentDescription}, {hint}";
-						}
-						else if (!string.IsNullOrEmpty(tv.Text))
-						{
-							newText = $"{tv.Text}, {hint}";
-						}
-						else
-						{
-							newText = $"{hint}";
-						}
-					}
-					else
-					{
-						if (newContentDescription != null)
-						{
-							newText = $"{newContentDescription}, {hint}";
-						}
-						else
-						{
-							newText = $"{hint}";
-						}
-					}
-
-					newContentDescription = null;
-				}
-			}
-
-			if (!string.IsNullOrWhiteSpace(newContentDescription))
-				info.ContentDescription = newContentDescription;
-
-			if (!string.IsNullOrWhiteSpace(newText))
-				info.Text = newText;
-		}
-
-		class MauiAccessibilityDelegate : AccessibilityDelegateCompat
-		{
-			public ViewHandler? Handler { get; set; }
-
-			public MauiAccessibilityDelegate()
-			{
-			}
-
-			public override void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)
-			{
-				base.OnInitializeAccessibilityNodeInfo(host, info);
-				Handler?.OnInitializeAccessibilityNodeInfo(host, info);
+					nativeView.ImportantForAccessibility = ImportantForAccessibility.Auto;
 			}
 		}
 	}

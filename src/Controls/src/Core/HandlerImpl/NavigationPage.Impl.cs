@@ -30,9 +30,9 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView view)
 			{
-				frameworkElement.Measure(widthConstraint, heightConstraint);
+				view.Measure(widthConstraint, heightConstraint);
 			}
 
 			return new Size(widthConstraint, heightConstraint);
@@ -40,8 +40,13 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			// Update the Bounds (Frame) for this page
-			Layout(bounds);
+			Frame = this.ComputeFrame(bounds);
+
+			if (Content is IView view)
+			{
+				_ = view.Arrange(Frame);
+			}
+
 			return Frame.Size;
 		}
 
@@ -92,7 +97,7 @@ namespace Microsoft.Maui.Controls
 			throw new NotImplementedException();
 		}
 
-		IFrameworkElement Content =>
+		IView Content =>
 			this.CurrentPage;
 
 		IReadOnlyList<IView> INavigationView.ModalStack => throw new NotImplementedException();

@@ -81,7 +81,7 @@ namespace Microsoft.Maui
 
 	public class PageViewController : ContainerViewController
 	{
-		public PageViewController(IPage page, IMauiContext mauiContext)
+		public PageViewController(IView page, IMauiContext mauiContext)
 		{
 			CurrentView = page;
 			Context = mauiContext;
@@ -93,8 +93,8 @@ namespace Microsoft.Maui
 		{
 			return new PageView
 			{
-				CrossPlatformArrange = ((IPage)view).Arrange,
-				CrossPlatformMeasure = ((IPage)view).Measure
+				CrossPlatformArrange = ((IView)view).Arrange,
+				CrossPlatformMeasure = ((IView)view).Measure
 			};
 		}
 

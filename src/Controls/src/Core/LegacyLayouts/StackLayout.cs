@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
-	public class StackLayout : Layout<View>, IElementConfiguration<StackLayout>, IFrameworkElement
+	public class StackLayout : Layout<View>, IElementConfiguration<StackLayout>, IView
 	{
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(StackOrientation), typeof(StackLayout), StackOrientation.Vertical,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
@@ -68,9 +68,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (!HasVisibleChildren())
 			{
