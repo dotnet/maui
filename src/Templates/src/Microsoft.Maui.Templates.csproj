@@ -14,7 +14,6 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <!-- This project has no .NET assemblies, so disable the warning for that -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
-    <NoBuild>true</NoBuild>
   </PropertyGroup>
 
   <ItemGroup>
