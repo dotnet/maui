@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <PackageType>Template</PackageType>
     <PackageId>Microsoft.Maui.Templates</PackageId>
     <Title>.NET MAUI Templates</Title>
@@ -20,6 +20,33 @@
     <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**" />
     <Compile Remove="**\*" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <BeforePack>_UpdateTemplateVersions</BeforePack>
+  </PropertyGroup>
+
+  <!-- Eventually replaced by eng/Version.targets -->
+  <Target Name="SetVersions" />
+
+  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions">
+    <ItemGroup>
+      <_TemplateJsonFile Include="templates\*\.template.config\template.json" />
+      <_TemplateJsonFileWithContent
+          Include="@(_TemplateJsonFile)"
+          Contents="$([System.IO.File]::ReadAllText('%(FullPath)')
+              .Replace('MICROSOFT_EXTENSIONS_VERSION_VALUE', '$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)')
+              .Replace('PROJECT_REUNION_VERSION_VALUE', '$(_MicrosoftProjectReunionVersion)'))" />
+    </ItemGroup>
+    <WriteLinesToFile
+        File="@(_TemplateJsonFileWithContent -> '$(IntermediateOutputPath)%(Identity)')"
+        Lines="%(Contents)"
+        Overwrite="true" />
+    <ItemGroup>
+      <FileWrites Include="@(_TemplateJsonFile -> '$(IntermediateOutputPath)%(Identity)')" />
+      <Content Remove="@(_TemplateJsonFile)" />
+      <Content Include="@(_TemplateJsonFile -> '$(IntermediateOutputPath)%(Identity)')" PackagePath="$(ContentTargetFolders)\%(Identity)" Pack="true" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="_CopyToTemplatePacks" AfterTargets="Pack">
     <ItemGroup>
