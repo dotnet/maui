@@ -8,6 +8,6 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the view that contains the actual contents of this view.
 		/// </summary>
-		IView Content { get; }
+		IView? Content { get; }
 	}
 }
