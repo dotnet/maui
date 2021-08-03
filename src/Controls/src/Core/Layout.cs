@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement, IVisualTreeElement
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement
 	{
 		public static readonly BindableProperty IsClippedToBoundsProperty =
 			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false);
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (child.Parent is IFlowDirectionController parent && (isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer && parent.EffectiveFlowDirection.IsRightToLeft()))
 				region = new Rectangle(parent.Width - region.Right, region.Y, region.Width, region.Height);
 
-			if (child is IFrameworkElement fe && fe.Handler != null)
+			if (child is IView fe && fe.Handler != null)
 			{
 				// The new arrange methods will take care of all the alignment and margins and such
 				fe.Arrange(region);
@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 		}
 
-		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
+		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
 			return MeasureOverride(widthConstraint, heightConstraint);
 		}
@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (child.Parent is IFlowDirectionController parent && (isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer && parent.EffectiveFlowDirection.IsRightToLeft()))
 				region = new Rectangle(parent.Width - region.Right, region.Y, region.Width, region.Height);
 
-			if (child is IFrameworkElement fe && fe.Handler != null)
+			if (child is IView fe && fe.Handler != null)
 			{
 				// The new arrange methods will take care of all the alignment and margins and such
 				fe.Arrange(region);
@@ -523,7 +523,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			foreach (var child in LogicalChildren)
 			{
-				if (child is IFrameworkElement fe)
+				if (child is IView fe)
 				{
 					fe.InvalidateMeasure();
 				}

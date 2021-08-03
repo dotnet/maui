@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	{
 		IAppHostBuilder _builder;
 
-		Registrar<IFrameworkElement, IViewHandler> _registrar;
+		Registrar<IView, IViewHandler> _registrar;
 
 		[Params(100_000)]
 		public int N { get; set; }
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[IterationSetup(Target = nameof(RegisterHandlerUsingRegistrar))]
 		public void SetupForRegistrar()
 		{
-			_registrar = new Registrar<IFrameworkElement, IViewHandler>();
+			_registrar = new Registrar<IView, IViewHandler>();
 		}
 
 		[Benchmark]

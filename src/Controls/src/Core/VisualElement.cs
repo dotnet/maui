@@ -885,9 +885,9 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue)
 		{
-			if (this is IFrameworkElement fe)
+			if (this is IView fe)
 			{
-				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Visibility));
+				fe.Handler?.UpdateValue(nameof(IView.Visibility));
 			}
 
 			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
@@ -1033,10 +1033,10 @@ namespace Microsoft.Maui.Controls
 
 			element.SelfConstraint = constraint;
 
-			if (element is IFrameworkElement fe)
+			if (element is IView fe)
 			{
-				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Width));
-				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Height));
+				fe.Handler?.UpdateValue(nameof(IView.Width));
+				fe.Handler?.UpdateValue(nameof(IView.Height));
 			}
 
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.SizeRequestChanged);

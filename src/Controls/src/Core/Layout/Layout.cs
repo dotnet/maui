@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls
 
 		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
-			var size = (this as IFrameworkElement).Measure(widthConstraint, heightConstraint);
+			var size = (this as IView).Measure(widthConstraint, heightConstraint);
 			return new SizeRequest(size);
 		}
 
