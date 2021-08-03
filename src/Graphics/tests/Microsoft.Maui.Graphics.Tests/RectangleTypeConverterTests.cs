@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Maui.Graphics.Converters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Graphics.Tests
 		[MemberData(nameof(RectangleConvertData))]
 		public void ConvertsRectangleFromString(string from, bool expectedSuccess, Rectangle expectedResult)
 		{
-			var ok = Rectangle.TryParse(from, out var p);
+			var ok = from.TryConvertFrom<RectangleTypeConverter, Rectangle>(out var p);
 			Assert.Equal(expectedSuccess, ok);
 
 			if (expectedSuccess)
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Graphics.Tests
 		[MemberData(nameof(RectangleFConvertData))]
 		public void ConvertsRectangleFFromString(string from, bool expectedSuccess, RectangleF expectedResult)
 		{
-			var ok = RectangleF.TryParse(from, out var p);
+			var ok = from.TryConvertFrom<RectangleFTypeConverter, RectangleF>(out var p);
 			Assert.Equal(expectedSuccess, ok);
 
 			if (expectedSuccess)

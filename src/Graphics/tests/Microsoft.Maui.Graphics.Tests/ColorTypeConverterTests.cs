@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Maui.Graphics.Converters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,9 @@ namespace Microsoft.Maui.Graphics.Tests
 		[MemberData(nameof(ColorConvertData))]
 		public void ConvertsFromString(string from, Color expected)
 		{
-			Assert.Equal(expected, Color.Parse(from));
+			bool ok = from.TryConvertFrom<ColorTypeConverter, Color>(out var c);
+			Assert.True(ok);
+			Assert.Equal(expected, c);
 		}
 
 		// Supported inputs
