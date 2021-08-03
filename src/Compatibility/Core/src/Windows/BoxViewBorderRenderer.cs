@@ -105,5 +105,28 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			Control.CornerRadius = WinUIHelpers.CreateCornerRadius(cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight, cornerRadius.BottomLeft);
 		}
+
+		static Size DefaultSize = new(40, 40);
+
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			// Creating a custom override for measuring the BoxView on Windows; this reports the same default size that's 
+			// specified in the old OnMeasure method. Normally we'd just do this centrally in the xplat code or override
+			// GetDesiredSize in a BoxViewHandler. But BoxView is a legacy control (replaced by Shapes), so we don't want
+			// to bring that into the new stuff. 
+
+			if (Element != null)
+			{
+				var heightRequest = Element.HeightRequest;
+				var widthRequest = Element.WidthRequest;
+
+				heightRequest = heightRequest >= 0 ? heightRequest : 40;
+				widthRequest = widthRequest >= 0 ? widthRequest : 40;
+
+				return new Size(widthRequest, heightRequest);
+			}
+
+			return DefaultSize;
+		}
 	}
 }
