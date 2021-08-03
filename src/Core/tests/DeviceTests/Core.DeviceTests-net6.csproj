@@ -31,6 +31,9 @@
   <ItemGroup>
     <!-- xunit.runner.devices is using the fallback -->
     <PackageReference Include="xunit.runner.devices" Version="2.5.25" NoWarn="NU1701" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xamarin.AndroidX.Migration" />
   </ItemGroup>
 
