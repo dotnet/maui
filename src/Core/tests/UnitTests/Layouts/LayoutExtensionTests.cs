@@ -72,7 +72,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var desiredSize = element.ComputeDesiredSize(widthConstraint, heightConstraint);
 
 			// Because the actual ("native") measurement comes back with (100,50)
-			// and the margin on the IFrameworkElement is 20, the expected width is (100 + 20 + 20) = 140
+			// and the margin on the IView is 20, the expected width is (100 + 20 + 20) = 140
 			// and the expected height is (50 + 20 + 20) = 90
 
 			Assert.Equal(140, desiredSize.Width);

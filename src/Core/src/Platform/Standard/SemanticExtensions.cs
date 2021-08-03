@@ -6,6 +6,6 @@
 		/// Force semantic screen reader focus to specified element
 		/// </summary>
 		/// <param name="element"></param>
-		public static void SetSemanticFocus(this IFrameworkElement element) { }
+		public static void SetSemanticFocus(this IView element) { }
 	}
 }

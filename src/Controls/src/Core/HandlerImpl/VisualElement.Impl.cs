@@ -3,7 +3,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class VisualElement : IFrameworkElement
+	public partial class VisualElement : IView
 	{
 		Semantics _semantics;
 
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls
 			IsPlatformEnabled = Handler != null;
 		}
 
-		Paint IFrameworkElement.Background
+		Paint IView.Background
 		{
 			get
 			{
@@ -44,9 +44,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		IShape IFrameworkElement.Clip => Clip;
+		IShape IView.Clip => Clip;
 
-		IFrameworkElement IFrameworkElement.Parent => Parent as IFrameworkElement;
+		IView IView.Parent => Parent as IView;
 
 		public Size DesiredSize { get; protected set; }
 
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls
 			Layout(bounds);
 		}
 
-		Size IFrameworkElement.Arrange(Rectangle bounds)
+		Size IView.Arrange(Rectangle bounds)
 		{
 			return ArrangeOverride(bounds);
 		}
@@ -74,20 +74,20 @@ namespace Microsoft.Maui.Controls
 			Bounds = bounds;
 		}
 
-		void IFrameworkElement.InvalidateMeasure()
+		void IView.InvalidateMeasure()
 		{
 			InvalidateMeasureOverride();
 		}
 
 		// InvalidateMeasureOverride provides a way to allow subclasses (e.g., Layout) to override InvalidateMeasure even though
 		// the interface has to be explicitly implemented to avoid conflict with the VisualElement.InvalidateMeasure method
-		protected virtual void InvalidateMeasureOverride() => Handler?.Invoke(nameof(IFrameworkElement.InvalidateMeasure));
+		protected virtual void InvalidateMeasureOverride() => Handler?.Invoke(nameof(IView.InvalidateMeasure));
 
-		void IFrameworkElement.InvalidateArrange()
+		void IView.InvalidateArrange()
 		{
 		}
 
-		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
+		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
 			return MeasureOverride(widthConstraint, heightConstraint);
 		}
@@ -100,13 +100,13 @@ namespace Microsoft.Maui.Controls
 			return DesiredSize;
 		}
 
-		Maui.FlowDirection IFrameworkElement.FlowDirection => FlowDirection.ToPlatformFlowDirection();
-		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => default;
-		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => default;
+		Maui.FlowDirection IView.FlowDirection => FlowDirection.ToPlatformFlowDirection();
+		Primitives.LayoutAlignment IView.HorizontalLayoutAlignment => default;
+		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => default;
 
-		Visibility IFrameworkElement.Visibility => IsVisible.ToVisibility();
+		Visibility IView.Visibility => IsVisible.ToVisibility();
 
-		Semantics IFrameworkElement.Semantics
+		Semantics IView.Semantics
 		{
 			get => _semantics;
 		}
@@ -116,7 +116,9 @@ namespace Microsoft.Maui.Controls
 		internal Semantics SetupSemantics() =>
 			_semantics ??= new Semantics();
 
-		double IFrameworkElement.Width => WidthRequest;
-		double IFrameworkElement.Height => HeightRequest;
+		double IView.Width => WidthRequest;
+		double IView.Height => HeightRequest;
+
+		Thickness IView.Margin => Thickness.Zero;
 	}
 }

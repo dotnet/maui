@@ -27,8 +27,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			button.Handler = buttonHandler;
 
 			page.Content = button;
-			(page as IFrameworkElement).Measure(expectedSize.Width, expectedSize.Height);
-			(page as IFrameworkElement).Arrange(expectedRect);
+			(page as IView).Measure(expectedSize.Width, expectedSize.Height);
+			(page as IView).Arrange(expectedRect);
 
 			buttonHandler.Received().NativeArrange(expectedRect);
 			Assert.AreEqual(expectedSize, button.Bounds.Size);
@@ -52,11 +52,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			contentPage.Content = stackLayout;
 
 			var rect = new Rectangle(0, 0, 50, 100);
-			(contentPage as IFrameworkElement).Measure(expectedSize.Width, expectedSize.Height);
-			(contentPage as IFrameworkElement).Arrange(rect);
+			(contentPage as IView).Measure(expectedSize.Width, expectedSize.Height);
+			(contentPage as IView).Arrange(rect);
 
 			// This simulates the arrange call that happens from the native LayoutViewGroup
-			(grid as IFrameworkElement).Arrange(rect);
+			(grid as IView).Arrange(rect);
 
 			Assert.AreEqual(expectedSize, grid.Bounds.Size);
 		}
