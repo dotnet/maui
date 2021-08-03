@@ -113,7 +113,10 @@ namespace Microsoft.Maui.Controls
 
 		IReadOnlyList<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
 
-		internal IReadOnlyList<Element> LogicalChildren => LogicalChildrenInternal;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Do not use! This is to be removed! Just used by Hot Reload! To be replaced with IVisualTreeElement!")]
+		public ReadOnlyCollection<Element> LogicalChildren =>
+			new ReadOnlyCollection<Element>(new TemporaryWrapper(LogicalChildrenInternal));
 
 		internal bool Owned { get; set; }
 
@@ -302,7 +305,7 @@ namespace Microsoft.Maui.Controls
 			base.SetDynamicResource(property, key);
 		}
 
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => LogicalChildren;
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => LogicalChildrenInternal;
 
 		IVisualTreeElement IVisualTreeElement.GetVisualParent() => this.Parent;
 
@@ -624,6 +627,42 @@ namespace Microsoft.Maui.Controls
 			var args = new ParentChangingEventArgs(oldParent, newParent);
 			ParentChanging?.Invoke(this, args);
 			OnParentChanging(args);
+		}
+
+		class TemporaryWrapper : IList<Element>
+		{
+			IReadOnlyList<Element> _inner;
+
+			public TemporaryWrapper(IReadOnlyList<Element> inner)
+			{
+				_inner = inner;
+			}
+
+			Element IList<Element>.this[int index] { get => _inner[index]; set => throw new NotSupportedException(); }
+
+			int ICollection<Element>.Count => _inner.Count;
+
+			bool ICollection<Element>.IsReadOnly => true;
+
+			void ICollection<Element>.Add(Element item) => throw new NotSupportedException();
+
+			void ICollection<Element>.Clear() => throw new NotSupportedException();
+
+			bool ICollection<Element>.Contains(Element item) => _inner.IndexOf(item) != -1;
+
+			void ICollection<Element>.CopyTo(Element[] array, int arrayIndex) => throw new NotSupportedException();
+
+			IEnumerator<Element> IEnumerable<Element>.GetEnumerator() => _inner.GetEnumerator();
+
+			System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _inner.GetEnumerator();
+
+			int IList<Element>.IndexOf(Element item) => _inner.IndexOf(item);
+
+			void IList<Element>.Insert(int index, Element item) => throw new NotSupportedException();
+
+			bool ICollection<Element>.Remove(Element item) => throw new NotSupportedException();
+
+			void IList<Element>.RemoveAt(int index) => throw new NotSupportedException();
 		}
 	}
 }

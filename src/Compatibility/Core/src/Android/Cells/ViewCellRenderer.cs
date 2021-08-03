@@ -317,7 +317,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			static bool HasTapGestureRecognizers(View view)
 			{
 				return view.GestureRecognizers.Any(t => t is TapGestureRecognizer)
-					|| view.LogicalChildren.OfType<View>().Any(HasTapGestureRecognizers);
+					|| ((IElementController)view).LogicalChildren.OfType<View>().Any(HasTapGestureRecognizers);
 			}
 
 			void TriggerClick()

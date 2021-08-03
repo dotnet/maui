@@ -522,7 +522,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			base.InvalidateMeasureOverride();
 
-			foreach (var child in LogicalChildren)
+			foreach (var child in ((IElementController)this).LogicalChildren)
 			{
 				if (child is IView fe)
 				{
