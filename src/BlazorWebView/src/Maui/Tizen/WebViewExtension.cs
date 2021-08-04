@@ -17,23 +17,28 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				ewk_context_intercept_request_callback_set(contextHandle.Value, callback, IntPtr.Zero);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
-        public static bool SetInterceptRequestResponse(this TWebView webView, IntPtr request, string header, string body, uint length)
+		public static void SetInspectorStart(this TWebView webView, uint port)
+		{
+			var context = webView.GetContext();
+			var handleField = context.GetType().GetField("_handle", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+			var contextHandle = (IntPtr?)handleField?.GetValue(context);
+			if (contextHandle != null)
+				ewk_context_inspector_server_start(contextHandle.Value, port);
+		}
+
+		public static bool SetInterceptRequestResponse(this TWebView webView, IntPtr request, string header, string body, uint length)
 #pragma warning restore IDE0060 // Remove unused parameter
         {
             return ewk_intercept_request_response_set(request, header, body, length);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
         public static bool IgnoreInterceptRequest(this TWebView webView, IntPtr request)
 #pragma warning restore IDE0060 // Remove unused parameter
         {
             return ewk_intercept_request_ignore(request);
         }
 
-#pragma warning disable IDE0060 // Remove unused parameter
 		public static string GetInterceptRequestUrl(this TWebView webView, IntPtr request)
-#pragma warning restore IDE0060 // Remove unused parameter
 		{
 			return Marshal.PtrToStringAnsi(_ewk_intercept_request_url_get(request)) ?? string.Empty;
         }
@@ -58,12 +63,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return Marshal.PtrToStringAnsi(_ewk_intercept_request_http_method_get(request)) ?? string.Empty;
         }
 
-        [DllImport(ChromiumEwk)]
+		[DllImport(ChromiumEwk)]
+		public static extern uint ewk_context_inspector_server_start(IntPtr context, uint port);
+
+		[DllImport(ChromiumEwk)]
 		internal static extern bool ewk_intercept_request_ignore(IntPtr request);
 
-#pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
 		[DllImport(ChromiumEwk)]
-#pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
 		internal static extern bool ewk_intercept_request_response_set(IntPtr request, string header, string body, uint length);
 	}
 }

@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Handlers;
+using Tizen.WebView;
 using TChromium = Tizen.WebView.Chromium;
 using TWebView = Tizen.WebView.WebView;
 
@@ -10,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WebViewContainer>
 	{
-		private const string AppOrigin = "app://0.0.0.0/";
+		private const string AppOrigin = "http://0.0.0.0/";
 		private const string BlazorInitScript = @"
 			window.__receiveMessageCallbacks = [];
 			window.__dispatchMessageCallback = function(message) {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			};
 			window.external = {
 				sendMessage: function(message) {
-					window.webkit.messageHandlers.webwindowinterop.postMessage(message);
+					window.BlazorHandler.postMessage(message);
 				},
 				receiveMessage: function(callback) {
 					window.__receiveMessageCallbacks.push(callback);
@@ -56,17 +57,29 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected override void ConnectHandler(WebViewContainer nativeView)
 		{
 			_interceptRequestCallback = OnRequestInterceptCallback;
-			NativeWebView.LoadStarted += OnLoadStarted;
 			NativeWebView.LoadFinished += OnLoadFinished;
-			//NativeWebView.AddJavaScriptMessageHandler("BlazorHandler", PostMessageFromJS);
+			NativeWebView.AddJavaScriptMessageHandler("BlazorHandler", PostMessageFromJS);
 			NativeWebView.SetInterceptRequestCallback(_interceptRequestCallback);
 			NativeWebView.GetSettings().JavaScriptEnabled = true;
-
 		}
 
 		protected override void DisconnectHandler(WebViewContainer nativeView)
 		{
+			NativeWebView.LoadFinished -= OnLoadFinished;
 			base.DisconnectHandler(nativeView);
+		}
+
+		public void PostMessageFromJS(JavaScriptMessage message)
+		{
+			if (message is null)
+			{
+				throw new ArgumentNullException(nameof(message));
+			}
+
+			if (message.Name.Equals("BlazorHandler", StringComparison.Ordinal))
+			{
+				_webviewManager!.MessageReceivedInternal(new Uri(NativeWebView.Url), message.GetBodyAsString());
+			}
 		}
 
 		private void StartWebViewCoreIfPossible()
@@ -106,19 +119,22 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			if (request == IntPtr.Zero)
 			{
-				throw new ArgumentNullException(nameof(request));
+				return;
 			}
 
 			var url = NativeWebView.GetInterceptRequestUrl(request);
-			var urlScheme = url.Substring(0, url.IndexOf(':'));
 
-			if (urlScheme == "app")
+			if (url.StartsWith(AppOrigin))
 			{
 				var allowFallbackOnHostPage = url.EndsWith("/");
 				if (_webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 				{
-					var contentType = headers["Content-Type"];
-					var header = $"HTTP/1.0 200 OK\r\nContent-Type:{contentType}; charset=utf-8\r\nCache-Control:no-cache, max-age=0, must-revalidate, no-store\r\n\r\n";
+					var header = $"HTTP/1.0 200 OK\r\n";
+					foreach (var item in headers)
+					{
+						header += $"{item.Key}:{item.Value}\r\n";
+					}
+					header += "\r\n";
 					var body = new StreamReader(content).ReadToEnd();
 					NativeWebView.SetInterceptRequestResponse(request, header, body, (uint)body.Length);
 					return;
@@ -128,15 +144,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			NativeWebView.IgnoreInterceptRequest(request);
 		}
 
-		private void OnLoadStarted(object? sender, EventArgs e)
-		{
-		}
-
 		private void OnLoadFinished(object? sender, EventArgs e)
 		{
 			NativeWebView.SetFocus(true);
-
 			var url = NativeWebView.Url;
+
 			if (url == AppOrigin)
 				NativeWebView.Eval(BlazorInitScript);
 		}

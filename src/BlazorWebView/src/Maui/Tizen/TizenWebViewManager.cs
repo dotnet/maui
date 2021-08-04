@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Encodings.Web;
 using Microsoft.Extensions.FileProviders;
 using TWebView = Tizen.WebView.WebView;
 
@@ -8,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public class TizenWebViewManager : WebViewManager
 	{
-		private const string AppOrigin = "app://0.0.0.0/";
+		private const string AppOrigin = "http://0.0.0.0/";
 
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
 		private readonly TWebView _webview;
@@ -27,11 +28,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void NavigateCore(Uri absoluteUri)
 		{
+			_webview.LoadUrl(absoluteUri.ToString());
 		}
 
 		/// <inheritdoc />
 		protected override void SendMessage(string message)
 		{
+			var messageJSStringLiteral = JavaScriptEncoder.Default.Encode(message);
+			_webview.Eval($"__dispatchMessageCallback(\"{messageJSStringLiteral}\")");
+		}
+
+		internal void MessageReceivedInternal(Uri uri, string message)
+		{
+			MessageReceived(uri, message);
 		}
 	}
 }
