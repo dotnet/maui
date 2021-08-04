@@ -97,14 +97,10 @@ namespace Microsoft.Maui
 		[PortHandler]
 		public static void UpdateSelectionLength(this Entry nativeEntry, IEntry entry)
 		{
-			var start = GetSelectionStart(nativeEntry, entry);
-			var end = GetSelectionEnd(nativeEntry, entry, start);
-			var selectionLength = end - start;
+			int start = GetSelectionStart(nativeEntry, entry);
+			int end = GetSelectionEnd(nativeEntry, entry, start);
 
-			if (selectionLength != entry.SelectionLength)
-				entry.SelectionLength = selectionLength;
-
-			if (selectionLength > 0)
+			if (start < end)
 			{
 				nativeEntry.SetSelectionRegion(start, end);
 			}
@@ -116,10 +112,10 @@ namespace Microsoft.Maui
 
 		static int GetSelectionStart(Entry nativeEntry, IEntry entry)
 		{
-			var start = entry.Text?.Length ?? 0;
-			var cursorPosition = entry.CursorPosition;
+			int start = nativeEntry.Text?.Length ?? 0;
+			int cursorPosition = entry.CursorPosition;
 
-			if (entry.CursorPosition > 0)
+			if (!string.IsNullOrEmpty(nativeEntry.Text))
 				start = Math.Min(start, cursorPosition);
 
 			if (start != cursorPosition)
@@ -130,11 +126,10 @@ namespace Microsoft.Maui
 
 		static int GetSelectionEnd(Entry nativeEntry, IEntry entry, int start)
 		{
-			var end = start;
-
-			if (entry.SelectionLength > 0)
-				end = Math.Min((start + entry.SelectionLength), entry.Text?.Length ?? 0);
-
+			int end = Math.Max(start, Math.Min(nativeEntry.Text?.Length ?? 0, start + entry.SelectionLength));
+			int selectionLength = end - start;
+			if (selectionLength != entry.SelectionLength)
+				entry.SelectionLength = selectionLength;
 			return end;
 		}
 
