@@ -319,9 +319,9 @@ namespace Microsoft.Maui.Controls.Platform
 			prompt.Dismissed += (s, e) => _alerts.Remove(prompt);
 		}
 
-		bool PageIsInThisContext(IPage page)
+		bool PageIsInThisContext(IView sender)
 		{
-			var context = page.Handler?.MauiContext ?? null;
+			var context = sender.Handler?.MauiContext ?? null;
 			return context == MauiContext;
 		}
 	}

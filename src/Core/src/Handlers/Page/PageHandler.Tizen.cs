@@ -6,7 +6,7 @@ using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, Page>, INativeViewHandler
+	public partial class PageHandler : ViewHandler<IView, Page>, INativeViewHandler
 	{
 		INativeViewHandler? _contentHandler;
 
@@ -35,11 +35,11 @@ namespace Microsoft.Maui.Handlers
 			nativeView.LayoutUpdated -= OnLayoutUpdated;
 		}
 
-		public static void MapTitle(PageHandler handler, IPage page)
+		public static void MapTitle(PageHandler handler, IView page)
 		{
 		}
 
-		public static void MapContent(PageHandler handler, IPage page)
+		public static void MapContent(PageHandler handler, IView page)
 		{
 			handler.UpdateContent();
 		}
@@ -76,11 +76,15 @@ namespace Microsoft.Maui.Handlers
 			_contentHandler?.Dispose();
 			_contentHandler = null;
 
-			NativeView.Children.Add(VirtualView.Content.ToNative(MauiContext));
-			if (VirtualView.Content.Handler is INativeViewHandler thandler)
+			if (VirtualView is IContentView cv && cv.Content is IView view)
 			{
-				thandler?.SetParent(this);
-				_contentHandler = thandler;
+				NativeView.Children.Add(view.ToNative(MauiContext));
+
+				if (view.Handler is INativeViewHandler thandler)
+				{
+					thandler?.SetParent(this);
+					_contentHandler = thandler;
+				}
 			}
 		}
 	}
