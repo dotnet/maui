@@ -34,31 +34,25 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapAdd(ILayoutHandler handler, ILayout layout, object? arg)
 		{
-			if (arg is not IView view)
+			if (arg is LayoutHandlerUpdateArgs args)
 			{
-				throw new ArgumentException($"{nameof(arg)} must be of type {nameof(IView)}");
+				handler.Add(args.View);
 			}
-
-			handler.Add(view);
 		}
 
 		public static void MapRemove(ILayoutHandler handler, ILayout layout, object? arg)
 		{
-			if (arg is not IView view)
+			if (arg is LayoutHandlerUpdateArgs args)
 			{
-				throw new ArgumentException($"{nameof(arg)} must be of type {nameof(IView)}");
+				handler.Remove(args.View);
 			}
-
-			handler.Remove(view);
 		}
 
 		public static void MapInsert(ILayoutHandler handler, ILayout layout, object? arg)
 		{
-			if (arg is ValueTuple<int, IView> insertArgs)
+			if (arg is LayoutHandlerUpdateArgs args)
 			{
-				(int index, IView view) = insertArgs;
-
-				handler.Insert(index, view);
+				handler.Insert(args.Index, args.View);
 			}
 		}
 
@@ -69,11 +63,9 @@ namespace Microsoft.Maui.Handlers
 
 		private static void MapUpdate(ILayoutHandler handler, ILayout layout, object? arg)
 		{
-			if (arg is ValueTuple<int, IView> updateArgs)
+			if (arg is LayoutHandlerUpdateArgs args)
 			{
-				(int index, IView view) = updateArgs;
-
-				handler.Update(index, view);
+				handler.Update(args.Index, args.View);
 			}
 		}
 	}

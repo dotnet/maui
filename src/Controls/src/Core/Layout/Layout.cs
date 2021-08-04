@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls
 				VisualDiagnostics.OnChildAdded(this, element);
 			}
 
-			AddToHandler(child);
+			AddToHandler(_children.Count, child);
 		}
 
 		public void Clear()
@@ -156,17 +156,15 @@ namespace Microsoft.Maui.Controls
 				return false;
 
 			var index = _children.IndexOf(child);
-			var result = _children.Remove(child);
 
-			if (child is Element element)
+			if (index == -1)
 			{
-				element.Parent = null;
-				VisualDiagnostics.OnChildRemoved(this, element, index);
+				return false;
 			}
 
-			RemoveFromHandler(child);
+			RemoveAt(index);
 
-			return result;
+			return true;
 		}
 
 		public void RemoveAt(int index)
@@ -186,7 +184,7 @@ namespace Microsoft.Maui.Controls
 				VisualDiagnostics.OnChildRemoved(this, element, index);
 			}
 
-			RemoveFromHandler(child);
+			RemoveFromHandler(index, child);
 		}
 
 		void RemoveFromHandler(IView view)
@@ -194,9 +192,10 @@ namespace Microsoft.Maui.Controls
 			Handler?.Invoke(nameof(ILayoutHandler.Remove), view);
 		}
 
-		void AddToHandler(IView view)
-		{
-			Handler?.Invoke(nameof(ILayoutHandler.Add), view);
+		void AddToHandler(int index, IView view)
+{
+			var args = new Maui.Handlers.LayoutHandlerUpdateArgs { Index = index, View = view };
+			Handler?.Invoke(nameof(ILayoutHandler.Add), args);
 		}
 
 		void ClearHandler() 
@@ -204,19 +203,22 @@ namespace Microsoft.Maui.Controls
 			Handler?.Invoke(nameof(ILayoutHandler.Clear));
 		}
 
-		void RemoveFromHandler(IView view)
-		{
-			Handler?.Invoke(nameof(ILayoutHandler.Remove), view);
+		void RemoveFromHandler(int index, IView view)
+{
+			var args = new Maui.Handlers.LayoutHandlerUpdateArgs { Index = index, View = view };
+			Handler?.Invoke(nameof(ILayoutHandler.Remove), args);
 		}
 
 		void InsertIntoHandler(int index, IView view)
 		{
-			Handler?.Invoke(nameof(ILayoutHandler.Insert), (index, view));
+			var args = new Maui.Handlers.LayoutHandlerUpdateArgs { Index = index, View = view };
+			Handler?.Invoke(nameof(ILayoutHandler.Insert), args);
 		}
 
 		void UpdateInHandler(int index, IView view)
 		{
-			Handler?.Invoke(nameof(ILayoutHandler.Update), (index, view));
+			var args = new Maui.Handlers.LayoutHandlerUpdateArgs { Index = index, View = view };
+			Handler?.Invoke(nameof(ILayoutHandler.Update), args);
 		}
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
