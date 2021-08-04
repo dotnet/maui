@@ -38,9 +38,9 @@
     />
     <_TargetPlatform
         Condition=" '$(MauiPlatformName)' == 'win' "
-        Include="$(WindowsTargetFramework)"
+        Include="net6.0-windows10.0.18362"
         FullTfm="%(Identity)"
-        Tfm="$(WindowsTargetFramework)"
+        Tfm="net6.0-windows10.0.18362"
         Profile="Windows"
     />
   </ItemGroup>
