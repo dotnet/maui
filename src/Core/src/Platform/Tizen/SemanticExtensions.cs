@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 {
 	public static partial class SemanticExtensions
 	{
-		public static void SetSemanticFocus(this IFrameworkElement element)
+		public static void SetSemanticFocus(this IView element)
 		{
 			if (element?.Handler?.NativeView == null)
 				throw new NullReferenceException("Can't access view from a null handler");

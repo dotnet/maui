@@ -41,11 +41,15 @@ namespace Microsoft.Maui.Handlers
 			_contentHandler?.Dispose();
 			_contentHandler = null;
 
-			NativeView.Children.Add(VirtualView.Content.ToNative(MauiContext));
-			if (VirtualView.Content.Handler is INativeViewHandler thandler)
+			if (VirtualView is IContentView cv && cv.Content is IView view)
 			{
-				thandler?.SetParent(this);
-				_contentHandler = thandler;
+				NativeView.Children.Add(view.ToNative(MauiContext));
+
+				if (view.Handler is INativeViewHandler thandler)
+				{
+					thandler?.SetParent(this);
+					_contentHandler = thandler;
+				}
 			}
 		}
 	}

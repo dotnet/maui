@@ -266,13 +266,13 @@ namespace Microsoft.Maui.Handlers
 
 		string SpanTitle(IView view)
 		{
-			if (view is not IPage page)
+			if (view is not ITitledElement page)
 				return string.Empty;
 			else
 			{
 				var span = new TSpan
 				{
-					Text = page.Title,
+					Text = page.Title??string.Empty,
 					HorizontalTextAlignment = TTextAlignment.Center,
 					//ForegroundColor = VirtualView.BarTextColor.ToNative()
 				};
