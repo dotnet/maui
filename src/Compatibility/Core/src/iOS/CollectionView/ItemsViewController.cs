@@ -502,7 +502,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_emptyUIView.Tag = EmptyTag;
 			CollectionView.AddSubview(_emptyUIView);
 
-			if (ItemsView.LogicalChildren.IndexOf(_emptyViewFormsElement) == -1)
+			if (((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) == -1)
 			{
 				ItemsView.AddLogicalChild(_emptyViewFormsElement);
 			}
@@ -547,7 +547,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			_emptyUIView.Frame = frame;
 
-			if (_emptyViewFormsElement != null && ItemsView.LogicalChildren.IndexOf(_emptyViewFormsElement) != -1)
+			if (_emptyViewFormsElement != null && ((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) != -1)
 				_emptyViewFormsElement.Layout(frame.ToRectangle());
 		}
 

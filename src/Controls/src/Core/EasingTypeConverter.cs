@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls
 			=> false;
 
 		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
-			=> new(new [] {
+			=> new(new[] {
 				"Linear",
 				"SinOut",
 				"SinIn",

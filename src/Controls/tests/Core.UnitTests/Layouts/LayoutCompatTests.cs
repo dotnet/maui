@@ -9,8 +9,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
-	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 	using Grid = Microsoft.Maui.Controls.Compatibility.Grid;
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
 	public class LayoutCompatTests : BaseTestFixture
 	{
