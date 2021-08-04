@@ -18,8 +18,6 @@
     <MicrosoftExtensionsLoggingPackageVersion>6.0.0-preview.7.21377.19</MicrosoftExtensionsLoggingPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>6.0.0-preview.7.21377.19</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingDebugPackageVersion>6.0.0-preview.7.21377.19</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>6.0.0-preview.7.21377.19</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>6.0.0-preview.7.21378.6</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
     <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.0-preview.7.21378.6</MicrosoftAspNetCoreAuthorizationPackageVersion>
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.0-preview.7.21378.6</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.0-preview.7.21378.6</MicrosoftAspNetCoreComponentsWebPackageVersion>

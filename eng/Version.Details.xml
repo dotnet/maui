@@ -72,14 +72,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>91ba01788d4d83475fec3aea7c830376e08585da</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="6.0.0-preview.7.21377.19" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>91ba01788d4d83475fec3aea7c830376e08585da</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.0-preview.7.21378.6" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>330c2397160929d6d3275ade03cee436265258e8</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="6.0.0-preview.7.21378.6" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>330c2397160929d6d3275ade03cee436265258e8</Sha>
