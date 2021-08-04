@@ -15,7 +15,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions"   GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"   GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Extensions.Primitives"             GeneratePathProperty="true" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Configuration)/lib/netstandard2.0/Microsoft.Extensions.Configuration.dll" />
@@ -30,8 +29,6 @@
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Hosting_Abstractions)/lib/netstandard2.1/Microsoft.Extensions.Hosting.Abstractions.xml" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_FileProviders_Abstractions)/lib/netstandard2.0/Microsoft.Extensions.FileProviders.Abstractions.dll" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_FileProviders_Abstractions)/lib/netstandard2.0/Microsoft.Extensions.FileProviders.Abstractions.xml" />
-    <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_FileProviders_Embedded)/lib/netstandard2.0/Microsoft.Extensions.FileProviders.Embedded.dll" />
-    <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_FileProviders_Embedded)/lib/netstandard2.0/Microsoft.Extensions.FileProviders.Embedded.xml" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Logging_Abstractions)/lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Logging_Abstractions)/lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.xml" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Primitives)/lib/netstandard2.0/Microsoft.Extensions.Primitives.dll" />
