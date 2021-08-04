@@ -91,6 +91,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 		}
 
+		public void PostMessageFromJS(JavaScriptMessage message)
+		{
+			if (message is null)
+			{
+				throw new ArgumentNullException(nameof(message));
+			}
+
+			if (message.Name.Equals("BlazorHandler", StringComparison.Ordinal))
+			{
+				_webviewManager!.MessageReceivedInternal(new Uri(NativeWebView.Url), message.GetBodyAsString());
+			}
+		}
+
 		private void StartWebViewCoreIfPossible()
 		{
 			if (!RequiredStartupPropertiesSet ||
