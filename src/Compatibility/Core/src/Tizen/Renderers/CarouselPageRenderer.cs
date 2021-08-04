@@ -173,8 +173,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnCurrentPageChanged(object sender, EventArgs e)
 		{
-			CustomFocusManager.StartReorderTabIndex();
-
 			Element.UpdateFocusTreePolicy();
 
 			if (IsChangedByScroll())

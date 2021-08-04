@@ -4,6 +4,6 @@
 	{
 		string GetFont(Font font);
 
-		string GetFontFamily(string font);
+		string GetFontFamily(string? font);
 	}
 }

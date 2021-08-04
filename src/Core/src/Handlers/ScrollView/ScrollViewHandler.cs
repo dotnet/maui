@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IScrollView.HorizontalScrollBarVisibility)] = MapHorizontalScrollBarVisibility,
 			[nameof(IScrollView.VerticalScrollBarVisibility)] = MapVerticalScrollBarVisibility,
 			[nameof(IScrollView.Orientation)] = MapOrientation,
-#if __IOS__
+#if __IOS__ || TIZEN
 			[nameof(IScrollView.ContentSize)] = MapContentSize,
 			[nameof(IScrollView.IsEnabled)] = MapIsEnabled,
 #endif

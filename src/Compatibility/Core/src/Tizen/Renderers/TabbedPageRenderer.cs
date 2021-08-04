@@ -417,9 +417,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnCurrentPageChanged()
 		{
-			// To update TabIndex order
-			CustomFocusManager.StartReorderTabIndex();
-
 			if (_isUpdateByScroller || _isUpdateByToolbar || !_isInitialized)
 				return;
 

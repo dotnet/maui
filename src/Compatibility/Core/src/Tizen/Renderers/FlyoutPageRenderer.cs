@@ -141,9 +141,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateIsPresented()
 		{
-			// To update TabIndex order
-			CustomFocusManager.StartReorderTabIndex();
-
 			_flyoutPage.IsPresented = Element.IsPresented;
 		}
 

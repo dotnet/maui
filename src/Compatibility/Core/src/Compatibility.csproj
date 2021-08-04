@@ -22,15 +22,12 @@
   <ItemGroup>
     <Compile Remove="GTK\**" />
     <Compile Remove="MacOS\**" />
-    <Compile Remove="Tizen\**" />
     <Compile Remove="WPF\**" />
     <EmbeddedResource Remove="GTK\**" />
     <EmbeddedResource Remove="MacOS\**" />
-    <EmbeddedResource Remove="Tizen\**" />
     <EmbeddedResource Remove="WPF\**" />
     <None Remove="GTK\**" />
     <None Remove="MacOS\**" />
-    <None Remove="Tizen\**" />
     <None Remove="WPF\**" />
     <Content Remove="GTK\**" />
     <Content Remove="MacOS\**" />

@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 {
 	public class FontManager : IFontManager
 	{
-		readonly ConcurrentDictionary<(string family, float size, FontSlant slant), string> _fonts = new();
+		readonly ConcurrentDictionary<(string? family, float size, FontSlant slant), string> _fonts = new();
 
 		readonly IFontRegistrar _fontRegistrar;
 		readonly ILogger<FontManager>? _logger;
@@ -21,17 +21,17 @@ namespace Microsoft.Maui
 
 		public string GetFont(Font font)
 		{
-			var size = (float)font.FontSize;
+			var size = (float)font.Size;
 
-			return GetFont(font.FontFamily, size, font.FontSlant, GetNativeFontFamily);
+			return GetFont(font.Family, size, font.Slant, GetNativeFontFamily);
 		}
 
-		public string GetFontFamily(string fontFamliy)
+		public string GetFontFamily(string? fontFamliy)
 		{
 			if (string.IsNullOrEmpty(fontFamliy))
 				return "";
 
-			var cleansedFont = CleanseFontName(fontFamliy);
+			var cleansedFont = CleanseFontName(fontFamliy??string.Empty);
 			if (cleansedFont == null)
 				return "";
 
@@ -48,17 +48,17 @@ namespace Microsoft.Maui
 			}
 		}
 
-		string GetFont(string family, float size, FontSlant slant, Func<(string, float, FontSlant), string> factory)
+		string GetFont(string? family, float size, FontSlant slant, Func<(string?, float, FontSlant), string> factory)
 		{
 			return _fonts.GetOrAdd((family, size, slant), factory);
 		}
 
-		string GetNativeFontFamily((string family, float size, FontSlant slant) fontKey)
+		string GetNativeFontFamily((string? family, float size, FontSlant slant) fontKey)
 		{
 			if (string.IsNullOrEmpty(fontKey.family))
 				return "";
 
-			var cleansedFont = CleanseFontName(fontKey.family);
+			var cleansedFont = CleanseFontName(fontKey.family??string.Empty);
 
 			if (cleansedFont == null)
 				return "";

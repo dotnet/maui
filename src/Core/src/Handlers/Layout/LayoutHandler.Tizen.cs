@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.Children.Clear();
 
-			foreach (var child in VirtualView.Children)
+			foreach (var child in VirtualView)
 			{
 				NativeView.Children.Add(child.ToNative(MauiContext));
 				if (child.Handler is INativeViewHandler thandler)
@@ -139,8 +139,8 @@ namespace Microsoft.Maui.Handlers
 					nativeGeometry.X -= VirtualView.Margin.Left;
 					nativeGeometry.Y -= VirtualView.Margin.Top;
 
-					VirtualView.Measure(nativeGeometry.Width, nativeGeometry.Height);
-					VirtualView.Arrange(nativeGeometry);
+					VirtualView.LayoutManager.Measure(nativeGeometry.Width, nativeGeometry.Height);
+					VirtualView.LayoutManager.ArrangeChildren(nativeGeometry);
 				}
 			}
 		}

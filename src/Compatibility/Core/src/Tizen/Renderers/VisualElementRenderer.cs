@@ -74,8 +74,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			RegisterPropertyHandler(VisualElement.RotationYProperty, UpdateTransformation);
 			RegisterPropertyHandler(VisualElement.TranslationXProperty, UpdateTransformation);
 			RegisterPropertyHandler(VisualElement.TranslationYProperty, UpdateTransformation);
-			RegisterPropertyHandler(VisualElement.TabIndexProperty, UpdateTabIndex);
-			RegisterPropertyHandler(VisualElement.IsTabStopProperty, UpdateIsTabStop);
 
 			RegisterPropertyHandler(AutomationProperties.NameProperty, SetAccessibilityName);
 			RegisterPropertyHandler(AutomationProperties.HelpTextProperty, SetAccessibilityDescription);
@@ -506,29 +504,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				accessibleObject.SetLabeledBy(Element);
 			}
-		}
-
-		protected Widget FocusSearch(bool forwardDirection)
-		{
-			VisualElement element = Element as VisualElement;
-			int maxAttempts = 0;
-			var tabIndexes = element?.GetTabIndexesOnParentPage(out maxAttempts);
-			if (tabIndexes == null)
-				return null;
-
-			int tabIndex = Element.TabIndex;
-			int attempt = 0;
-
-			do
-			{
-				element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex) as VisualElement;
-				var renderer = Platform.GetRenderer(element);
-				if (renderer?.NativeView is Widget widget && widget.IsFocusAllowed)
-				{
-					return widget;
-				}
-			} while (!(element.IsFocused || ++attempt >= maxAttempts));
-			return null;
 		}
 
 		internal virtual void SendVisualElementInitialized(VisualElement element, EvasObject nativeView)
@@ -1208,32 +1183,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				{
 					_movedCallbackEnabled = false;
 					NativeView.Moved -= OnMoved;
-				}
-			}
-		}
-
-		void UpdateTabIndex()
-		{
-			if (!Forms.Flags.Contains(Flags.DisableTabIndex))
-			{
-				if (Element is View && NativeView is Widget widget && widget.IsFocusAllowed)
-				{
-					_customFocusManager.Value.TabIndex = Element.TabIndex;
-				}
-			}
-		}
-
-		void UpdateIsTabStop(bool init)
-		{
-			if (init && Element.IsTabStop)
-			{
-				return;
-			}
-			if (!Forms.Flags.Contains(Flags.DisableTabIndex))
-			{
-				if (Element is View && NativeView is Widget widget && widget.IsFocusAllowed)
-				{
-					_customFocusManager.Value.IsTabStop = Element.IsTabStop;
 				}
 			}
 		}

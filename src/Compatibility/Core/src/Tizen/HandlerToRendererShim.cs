@@ -176,6 +176,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				throw new NotImplementedException();
 			}
+
+			public void Invoke(string command, object args)
+			{
+				throw new NotImplementedException();
+			}
 		}
 
 	}

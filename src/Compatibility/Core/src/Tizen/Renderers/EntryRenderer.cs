@@ -121,14 +121,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void OnCompleted(object sender, EventArgs e)
 		{
-			if (Element.ReturnType == ReturnType.Next)
-			{
-				FocusSearch(true)?.SetFocus(true);
-			}
-			else
-			{
-				Control.SetFocus(false);
-			}
+			Control.SetFocus(false);
 			((IEntryController)Element).SendCompleted();
 		}
 

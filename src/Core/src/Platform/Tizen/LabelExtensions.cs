@@ -20,9 +20,9 @@ namespace Microsoft.Maui
 		public static void UpdateFont(this Label nativeLabel, ILabel label, IFontManager fontManager)
 		{
 			nativeLabel.BatchBegin();
-			nativeLabel.FontSize = label.Font.FontSize;
+			nativeLabel.FontSize = label.Font.Size;
 			nativeLabel.FontAttributes = label.Font.GetFontAttributes();
-			nativeLabel.FontFamily = fontManager.GetFontFamily(label.Font.FontFamily)??"";
+			nativeLabel.FontFamily = fontManager.GetFontFamily(label.Font.Family)??"";
 			nativeLabel.BatchCommit();
 		}
 
@@ -49,7 +49,7 @@ namespace Microsoft.Maui
 		public static FontAttributes GetFontAttributes(this Font font)
 		{
 			FontAttributes attributes = font.Weight == FontWeight.Bold ? FontAttributes.Bold : FontAttributes.None;
-			if (font.FontSlant != FontSlant.Default)
+			if (font.Slant != FontSlant.Default)
 			{
 				if (attributes == FontAttributes.None)
 					attributes = FontAttributes.Italic;
