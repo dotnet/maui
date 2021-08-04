@@ -48,8 +48,6 @@ namespace Microsoft.Maui.Controls
 					VisualDiagnostics.OnChildRemoved(this, oldElement, index);
 				}
 
-				RemoveFromHandler(old);
-
 				_children[index] = value;
 
 				if (value is Element newElement)
@@ -58,9 +56,7 @@ namespace Microsoft.Maui.Controls
 					VisualDiagnostics.OnChildAdded(this, newElement);
 				}
 
-				AddToHandler(value);
-
-				InvalidateMeasure();
+				UpdateInHandler(index, value);
 			}
 		}
 
@@ -213,9 +209,14 @@ namespace Microsoft.Maui.Controls
 			Handler?.Invoke(nameof(ILayoutHandler.Remove), view);
 		}
 
-		void InsertIntoHandler(int index, IView view) 
+		void InsertIntoHandler(int index, IView view)
 		{
 			Handler?.Invoke(nameof(ILayoutHandler.Insert), (index, view));
+		}
+
+		void UpdateInHandler(int index, IView view)
+		{
+			Handler?.Invoke(nameof(ILayoutHandler.Update), (index, view));
 		}
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui;
+﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Shapes = Microsoft.Maui.Controls.Shapes;
@@ -16,6 +13,7 @@ namespace Maui.Controls.Sample.Pages
 
 			root.RowDefinitions = new RowDefinitionCollection()
 			{
+				new RowDefinition(){ Height = GridLength.Auto },
 				new RowDefinition(){ Height = GridLength.Auto },
 				new RowDefinition(){ Height = GridLength.Auto },
 				new RowDefinition(){ Height = GridLength.Auto }
@@ -43,6 +41,10 @@ namespace Maui.Controls.Sample.Pages
 			root.SetColumn(clearButton, 1);
 			root.SetRow(clearButton, 1);
 
+			var updateButton = new Button { Text = "Update" };
+			root.Add(updateButton);
+			root.SetRow(updateButton, 2);
+
 			var stack = new VerticalStackLayout();
 
 			double shapeWidth = 200;
@@ -57,7 +59,7 @@ namespace Maui.Controls.Sample.Pages
 			stack.Add(r2);
 
 			root.Add(stack);
-			root.SetRow(stack, 2);
+			root.SetRow(stack, 3);
 			root.SetColumnSpan(stack, 2);
 
 			addButton.Clicked += (sender, args) => {
@@ -87,6 +89,15 @@ namespace Maui.Controls.Sample.Pages
 				if (stack.Count > 0)
 				{
 					stack.RemoveAt(stack.Count - 1);
+				}
+			};
+
+			updateButton.Clicked += (sender, args) => {
+				if (stack.Count > 0) 
+				{ 
+					var left = leftMarginIncrement * stack.Count;
+					var rect = new Shapes.Rectangle() { WidthRequest = shapeWidth, HeightRequest = shapeHeight, Fill = new SolidColorBrush(NextColor()), Margin = new Thickness(left, overlap, 0, 0) };
+					stack[0] = rect;
 				}
 			};
 
