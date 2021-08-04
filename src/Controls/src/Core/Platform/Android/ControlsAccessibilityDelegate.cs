@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public IViewHandler Handler { get; }
 
-		public ControlsAccessibilityDelegate(AccessibilityDelegateCompat? originalDelegate, IViewHandler viewHandler) 
+		public ControlsAccessibilityDelegate(AccessibilityDelegateCompat? originalDelegate, IViewHandler viewHandler)
 			: base(originalDelegate)
 		{
 			Handler = viewHandler;

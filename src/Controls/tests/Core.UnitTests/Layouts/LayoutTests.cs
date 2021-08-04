@@ -3,10 +3,10 @@
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
 	[TestFixture, Category("Layout")]
-	public class LayoutTests : BaseTestFixture 
+	public class LayoutTests : BaseTestFixture
 	{
 		[Test]
-		public void UsingIndexUpdatesParent() 
+		public void UsingIndexUpdatesParent()
 		{
 			var layout = new VerticalStackLayout();
 
