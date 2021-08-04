@@ -789,7 +789,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void AddHeadlessChild(VisualElement element, IContainable<EvasObject> parent)
 		{
-			foreach (var child in element.LogicalChildren)
+			foreach (var child in (element as IVisualTreeElement).GetVisualChildren())
 			{
 				if (child is VisualElement visualChild)
 				{

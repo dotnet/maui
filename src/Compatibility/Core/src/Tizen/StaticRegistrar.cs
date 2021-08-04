@@ -80,9 +80,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			Registered.Register(typeof(CarouselPage), () => new CarouselPageRenderer());
 			Registered.Register(typeof(Page), () => new PageRenderer());
 			Registered.Register(typeof(NavigationPage), () => new NavigationPageRenderer());
-#pragma warning disable CS0618 // Type or member is obsolete
-			Registered.Register(typeof(MasterDetailPage), () => new MasterDetailPageRenderer());
-#pragma warning restore CS0618 // Type or member is obsolete
 			Registered.Register(typeof(FlyoutPage), () => new FlyoutPageRenderer());
 			Registered.Register(typeof(TabbedPage), () => new TabbedPageRenderer());
 			Registered.Register(typeof(Label), () => new LabelRenderer());
