@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdatePlaceholderColor()
 		{
-			_editText.UpdatePlaceholderColor(_searchHandler.PlaceholderColor, DefaultPlaceholderTextColors);			
+			_editText.UpdatePlaceholderColor(_searchHandler.PlaceholderColor, DefaultPlaceholderTextColors);
 		}
 
 		void UpdateHorizontalTextAlignment()

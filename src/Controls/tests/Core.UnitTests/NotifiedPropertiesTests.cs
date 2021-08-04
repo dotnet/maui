@@ -7,6 +7,9 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using Grid = Microsoft.Maui.Controls.Compatibility.Grid;
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[TestFixture]
 	public class NotifiedPropertiesTests : BaseTestFixture
 	{
@@ -149,7 +152,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<TapGestureRecognizer, int> ("NumberOfTapsRequired", t => t.NumberOfTapsRequired, (t, o) => t.NumberOfTapsRequired = o, () => 1, 3),
 			new PropertyTestCase<TapGestureRecognizer, object> ("CommandParameter", t => t.CommandParameter, (t, o) => t.CommandParameter = o, () => null, "Test"),
 			new PropertyTestCase<TapGestureRecognizer, ICommand> ("Command", t => t.Command, (t, o) => t.Command = o, () => null, new Command(()=>{})),
-			new PropertyTestCase<MasterDetailPage, bool> ("IsGestureEnabled", md => md.IsGestureEnabled, (md, v) => md.IsGestureEnabled = v, () => true, false),
 			new PropertyTestCase<FlyoutPage, bool> ("IsGestureEnabled", fp => fp.IsGestureEnabled, (fp, v) => fp.IsGestureEnabled = v, () => true, false),
 			new PropertyTestCase<Entry, bool> ("IsReadOnly", v => v.IsReadOnly, (v, o) => v.IsReadOnly = o, () => false, true),
 			new PropertyTestCase<Editor, bool> ("IsReadOnly", v => v.IsReadOnly, (v, o) => v.IsReadOnly = o, () => false, true)

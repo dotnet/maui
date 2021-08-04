@@ -183,14 +183,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		}
 	}
 
-	public class NativeDroidFlyoutPage : Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.MasterDetailPageRenderer
+	public class NativeDroidFlyoutPage : FlyoutPageRenderer
 	{
 		FlyoutPage _page;
 		bool _disposed;
 
 		public NativeDroidFlyoutPage(Context context) : base(context)
 		{
-			System.Diagnostics.Debug.WriteLine($">>>>> NativeDroidMasterDetail NativeDroidMasterDetail 53: This is the obsolete constructor being selected");
 		}
 
 		protected override void OnElementChanged(VisualElement oldElement, VisualElement newElement)

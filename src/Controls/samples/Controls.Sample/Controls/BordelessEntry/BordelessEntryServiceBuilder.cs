@@ -13,7 +13,7 @@ namespace Maui.Controls.Sample.Controls
 		static readonly Dictionary<Type, Type> PendingHandlers = new();
 
 		public static void TryAddHandler<TType, TTypeRender>()
-			where TType : IFrameworkElement
+			where TType : IView
 			where TTypeRender : IViewHandler
 		{
 			if (HandlersCollection == null)

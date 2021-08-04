@@ -7,11 +7,11 @@ namespace Microsoft.Maui
 {
 	public static class Registrar
 	{
-		public static Registrar<IFrameworkElement, IViewHandler> Handlers { get; private set; }
+		public static Registrar<IView, IViewHandler> Handlers { get; private set; }
 
 		static Registrar()
 		{
-			Handlers = new Registrar<IFrameworkElement, IViewHandler>();
+			Handlers = new Registrar<IView, IViewHandler>();
 		}
 	}
 

@@ -1,7 +1,7 @@
 using System;
-using Microsoft.Maui.Converters;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Converters;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests

@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool _disposed;
 		NativeView? _nativeView;
+		UIAccessibilityTrait _addedFlags;
+		bool? _defaultAccessibilityRespondsToUserInteraction;
 
 		double _previousScale = 1.0;
 #if __MOBILE__
@@ -42,7 +44,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_nativeView == null)
 				throw new ArgumentNullException(nameof(handler.NativeView));
 
-			_collectionChangedHandler = ModelGestureRecognizersOnCollectionChanged;
+			_collectionChangedHandler = GestureRecognizersOnCollectionChanged;
 
 			// In XF this was called inside ViewDidLoad
 			if (_handler.VirtualView is View view)
@@ -561,15 +563,13 @@ namespace Microsoft.Maui.Controls.Platform
 				// Cache this so we don't create a new UITouchEventArgs instance for every recognizer
 				_shouldReceiveTouch = ShouldReceiveTouch;
 			}
-#endif
 
-#if __MOBILE__
 			UIDragInteraction? uIDragInteraction = null;
 			UIDropInteraction? uIDropInteraction = null;
 
-			if (_dragAndDropDelegate != null && _handler.NativeView != null)
+			if (_dragAndDropDelegate != null && _nativeView != null)
 			{
-				foreach (var interaction in _handler.NativeView.Interactions)
+				foreach (var interaction in _nativeView.Interactions)
 				{
 					if (interaction is UIDragInteraction uIDrag && uIDrag.Delegate == _dragAndDropDelegate)
 						uIDragInteraction = uIDrag;
@@ -582,9 +582,21 @@ namespace Microsoft.Maui.Controls.Platform
 			bool dragFound = false;
 			bool dropFound = false;
 #endif
+			if (_nativeView != null &&
+				_handler.VirtualView is View v &&
+				v.TapGestureRecognizerNeedsDelegate() &&
+				(_nativeView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
+			{
+				_nativeView.AccessibilityTraits |= UIAccessibilityTrait.Button;
+				_addedFlags |= UIAccessibilityTrait.Button;
+				_defaultAccessibilityRespondsToUserInteraction = _nativeView.AccessibilityRespondsToUserInteraction;
+				_nativeView.AccessibilityRespondsToUserInteraction = true;
+			}
+
 			for (int i = 0; i < ElementGestureRecognizers.Count; i++)
 			{
 				IGestureRecognizer recognizer = ElementGestureRecognizers[i];
+
 				if (_gestureRecognizers.ContainsKey(recognizer))
 					continue;
 
@@ -680,8 +692,18 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 #endif
 
-		void ModelGestureRecognizersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+		void GestureRecognizersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
+			if (_nativeView != null)
+			{
+				_nativeView.AccessibilityTraits &= ~_addedFlags;
+
+				if (_defaultAccessibilityRespondsToUserInteraction != null)
+					_nativeView.AccessibilityRespondsToUserInteraction = _defaultAccessibilityRespondsToUserInteraction.Value;
+			}
+
+			_addedFlags = UIAccessibilityTrait.None;
+			_defaultAccessibilityRespondsToUserInteraction = null;
 			LoadRecognizers();
 		}
 

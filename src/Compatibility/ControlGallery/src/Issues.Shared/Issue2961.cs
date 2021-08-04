@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	[Ignore("This test is looking for an invalid behavior; the second tap *should* keep the drawer open.")] 
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 2961, "MasterDetail NavigationDrawer Does Not Hide On DoubleTap of Item", PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 2961, "FlyoutPage NavigationDrawer Does Not Hide On DoubleTap of Item", PlatformAffected.Android)]
 	public class Issue2961 : TestFlyoutPage
 	{
 		static FlyoutPage s_mdp;

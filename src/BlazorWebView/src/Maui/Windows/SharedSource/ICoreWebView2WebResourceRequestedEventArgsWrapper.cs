@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
+using Windows.Storage.Streams;
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
@@ -33,6 +33,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         /// <param name="statusCode"></param>
         /// <param name="statusMessage"></param>
         /// <param name="headerString"></param>
-        void SetResponse(Stream content, int statusCode, string statusMessage, string headerString);
+        void SetResponse(IRandomAccessStream content, int statusCode, string statusMessage, string headerString);
     }
 }

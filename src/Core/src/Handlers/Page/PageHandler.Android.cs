@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, PageViewGroup>
+	public partial class PageHandler : ViewHandler<IView, PageViewGroup>
 	{
 		//Graphics.Color? DefaultBackgroundColor;
 
@@ -42,15 +42,15 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.RemoveAllViews();
 
-			if (VirtualView.Content != null)
-				NativeView.AddView(VirtualView.Content.ToNative(MauiContext));
+			if (VirtualView is IContentView cv && cv.Content is IView view)
+				NativeView.AddView(view.ToNative(MauiContext));
 		}
 
-		public static void MapTitle(PageHandler handler, IPage page)
+		public static void MapTitle(PageHandler handler, IView page)
 		{
 		}
 
-		public static void MapContent(PageHandler handler, IPage page)
+		public static void MapContent(PageHandler handler, IView page)
 		{
 			handler.UpdateContent();
 		}

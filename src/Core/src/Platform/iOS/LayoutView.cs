@@ -41,7 +41,6 @@ namespace Microsoft.Maui
 				bounds.Width -= safe.Left + safe.Right;
 			}
 
-			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
 			CrossPlatformArrange?.Invoke(bounds);
 		}
 
@@ -72,15 +71,17 @@ namespace Microsoft.Maui
 			var width = Frame.Width;
 			var height = Frame.Height;
 
+			CrossPlatformMeasure?.Invoke(width, height);
 			CrossPlatformArrange?.Invoke(Frame.ToRectangle());
 		}
 
+		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
 	}
 
 	public class PageViewController : ContainerViewController
 	{
-		public PageViewController(IPage page, IMauiContext mauiContext)
+		public PageViewController(IView page, IMauiContext mauiContext)
 		{
 			CurrentView = page;
 			Context = mauiContext;
@@ -92,7 +93,8 @@ namespace Microsoft.Maui
 		{
 			return new PageView
 			{
-				CrossPlatformArrange = ((IPage)view).Arrange,
+				CrossPlatformArrange = ((IView)view).Arrange,
+				CrossPlatformMeasure = ((IView)view).Measure
 			};
 		}
 

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui
 {
@@ -17,5 +17,10 @@ namespace Microsoft.Maui
 		/// The space between the outer edge of the ILayout's content area and its children.
 		/// </summary>
 		Thickness Padding { get; }
+
+		/// <summary>
+		/// The LayoutManager responsible for laying out the children of this ILayout
+		/// </summary>
+		ILayoutManager LayoutManager { get; }
 	}
 }

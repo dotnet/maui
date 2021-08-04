@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return _defaultContentDescription;
 		}
 
-		public static void SetFocusable(this global::Android.Views.View Control, Element Element, ImportantForAccessibility? _defaultImportantForAccessibility = null)
+		public static void SetImportantForAccessibility(this global::Android.Views.View Control, Element Element, ImportantForAccessibility? _defaultImportantForAccessibility = null)
 		{
 			if (!_defaultImportantForAccessibility.HasValue)
 			{
@@ -35,6 +35,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			bool? isInAccessibleTree = (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
 			Control.ImportantForAccessibility = !isInAccessibleTree.HasValue ? (ImportantForAccessibility)_defaultImportantForAccessibility : (bool)isInAccessibleTree ? ImportantForAccessibility.Yes : ImportantForAccessibility.No;
 
+			bool? excludedWithChildren = (bool?)Element.GetValue(AutomationProperties.ExcludedWithChildrenProperty);
+			if (excludedWithChildren == true)
+				Control.ImportantForAccessibility = ImportantForAccessibility.NoHideDescendants;
 		}
 
 		public static string SetHint(this global::Android.Widget.TextView Control, Element Element, string _defaultHint)

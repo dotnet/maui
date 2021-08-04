@@ -161,6 +161,6 @@ namespace Microsoft.Maui.Controls
 			=> true;
 
 		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
-			=> new (new[] { "Default", "Material" });
+			=> new(new[] { "Default", "Material" });
 	}
 }

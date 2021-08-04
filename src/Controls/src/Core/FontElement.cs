@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 
 		static void OnFontFamilyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (!OnChanged(bindable)) 
+			if (!OnChanged(bindable))
 				return;
 
 			((IFontElement)bindable).OnFontFamilyChanged((string)oldValue, (string)newValue);

@@ -158,7 +158,10 @@
                 TextColor="DodgerBlue"
                 FontSize="14"
                 SemanticProperties.HeadingLevel="Level3"/>
-
+            <HorizontalStackLayout>
+                <CheckBox SemanticProperties.Description="Checkbox on iOS will read as a switch"></CheckBox>
+                <CheckBox SemanticProperties.Description="Checkbox on iOS will read as a switch" Color="DodgerBlue"></CheckBox>
+            </HorizontalStackLayout>
             <Label
                 Text="Explore SemanticProperties on controls within layouts below"
                 TextColor="RoyalBlue"
@@ -181,6 +184,62 @@
                     Text="Button in StackLayout with semantic description"
                     FontSize="14"/>
             </VerticalStackLayout>
+			<Label
+                Text="Explore SemanticExtensions below"
+                TextColor="RoyalBlue"
+                FontAttributes="Bold"
+                FontSize="16"
+                Margin="0,10"/>
+            <Button
+                Text="Click to set semantic focus to label below"
+                FontSize="14"
+                Clicked="SetSemanticFocusButton_Clicked"/>
+            <Label
+                x:Name="semanticFocusLabel"
+                Text="Label receiving semantic focus"
+                FontSize="14"/>
+            <Label
+                Text="Explore AutomationProperties on controls within layouts below"
+                TextColor="RoyalBlue"
+                FontAttributes="Bold"
+                FontSize="16"
+                Margin="0,10"/>
+            <Label
+                AutomationProperties.IsInAccessibleTree="True"
+                Text="Label with IsInAccessibleTree=True"
+                FontSize="14"/>
+            <Label
+                AutomationProperties.IsInAccessibleTree="False"
+                Text="Label with IsInAccessibleTree=False"
+                FontSize="14"/>
+            <Button
+                AutomationProperties.IsInAccessibleTree="True"
+                Text="Button with IsInAccessibleTree=True"
+                FontSize="14"/>
+            <Button
+                AutomationProperties.IsInAccessibleTree="False"
+                Text="Button with IsInAccessibleTree=False"
+                FontSize="14"/>
+            <Label
+                AutomationProperties.IsInAccessibleTree="True"
+                AutomationProperties.ExcludedWithChildren="True"
+                Text="Label with IsInAccessibleTree=True and ExcludedWithChildren=True"
+                FontSize="14"/>
+            <Label
+                AutomationProperties.IsInAccessibleTree="False"
+                AutomationProperties.ExcludedWithChildren="True"
+                Text="Label with IsInAccessibleTree=False and ExcludedWithChildren=True"
+                FontSize="14"/>
+            <Button
+                AutomationProperties.IsInAccessibleTree="True"
+                AutomationProperties.ExcludedWithChildren="True"
+                Text="Button with IsInAccessibleTree=True and ExcludedWithChildren=True"
+                FontSize="14"/>
+            <Button
+                AutomationProperties.IsInAccessibleTree="False"
+                AutomationProperties.ExcludedWithChildren="True"
+                Text="Button with IsInAccessibleTree=False and ExcludedWithChildren=True"
+                FontSize="14"/>
         </VerticalStackLayout>
     </ScrollView>
 </views:BasePage>

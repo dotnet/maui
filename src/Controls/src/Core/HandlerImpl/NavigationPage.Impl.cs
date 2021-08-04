@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,9 +30,9 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView view)
 			{
-				frameworkElement.Measure(widthConstraint, heightConstraint);
+				view.Measure(widthConstraint, heightConstraint);
 			}
 
 			return new Size(widthConstraint, heightConstraint);
@@ -40,13 +40,11 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			// Update the Bounds (Frame) for this page
-			Layout(bounds);
+			Frame = this.ComputeFrame(bounds);
 
-			if (Content is IFrameworkElement element and VisualElement visualElement)
+			if (Content is IView view)
 			{
-				visualElement.Frame = element.ComputeFrame(bounds);
-				element.Handler?.NativeArrange(visualElement.Frame);
+				_ = view.Arrange(Frame);
 			}
 
 			return Frame.Size;
@@ -99,7 +97,7 @@ namespace Microsoft.Maui.Controls
 			throw new NotImplementedException();
 		}
 
-		IFrameworkElement Content =>
+		IView Content =>
 			this.CurrentPage;
 
 		IReadOnlyList<IView> INavigationView.ModalStack => throw new NotImplementedException();

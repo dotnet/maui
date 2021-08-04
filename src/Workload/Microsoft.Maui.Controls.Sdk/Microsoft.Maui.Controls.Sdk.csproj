@@ -54,7 +54,7 @@
         Input="Sdk/BundledVersions.in.targets"
         Output="$(IntermediateOutputPath)BundledVersions.targets"
         OldValue="@VERSION@"
-        NewValue="$(PackageVersion)"
+        NewValue="$(PackageReferenceVersion)"
     />
     <ItemGroup>
       <None

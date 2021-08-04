@@ -7,11 +7,12 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
-	public abstract partial class Layout<T> : Layout, Microsoft.Maui.ILayout, IViewContainer<T> where T : View
+	public abstract partial class Layout<T> : Layout, Microsoft.Maui.ILayout, ILayoutManager, IBindableLayout, IViewContainer<T> where T : View
 	{
 		readonly ElementCollection<T> _children;
 
@@ -20,6 +21,9 @@ namespace Microsoft.Maui.Controls
 		public new IList<T> Children => _children;
 
 		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
+
+		ILayoutManager Maui.ILayout.LayoutManager => this;
+		IList IBindableLayout.Children => _children;
 
 		protected override void OnChildAdded(Element child)
 		{
@@ -44,9 +48,20 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnRemoved(T view)
 		{
 		}
+
+		Size ILayoutManager.Measure(double widthConstraint, double heightConstraint)
+		{
+			return OnMeasure(widthConstraint, heightConstraint);
+		}
+
+		Size ILayoutManager.ArrangeChildren(Rectangle childBounds)
+		{
+			LayoutChildren(childBounds.X, childBounds.Y, childBounds.Width, childBounds.Height);
+			return childBounds.Size;
+		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement
 	{
 		public static readonly BindableProperty IsClippedToBoundsProperty =
 			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false);
@@ -98,7 +113,7 @@ namespace Microsoft.Maui.Controls
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
+		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
 
 		public event EventHandler LayoutChanged;
 
@@ -107,11 +122,11 @@ namespace Microsoft.Maui.Controls
 
 		public void ForceLayout() => SizeAllocated(Width, Height);
 
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public sealed override SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.ToList().AsReadOnly();
+
+		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
-			SizeRequest size = base.GetSizeRequest(widthConstraint - Padding.HorizontalThickness, heightConstraint - Padding.VerticalThickness);
+			SizeRequest size = base.Measure(widthConstraint - Padding.HorizontalThickness, heightConstraint - Padding.VerticalThickness, flags);
 			return new SizeRequest(new Size(size.Request.Width + Padding.HorizontalThickness, size.Request.Height + Padding.VerticalThickness),
 				new Size(size.Minimum.Width + Padding.HorizontalThickness, size.Minimum.Height + Padding.VerticalThickness));
 		}
@@ -121,6 +136,13 @@ namespace Microsoft.Maui.Controls
 			bool isRightToLeft = false;
 			if (child.Parent is IFlowDirectionController parent && (isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer && parent.EffectiveFlowDirection.IsRightToLeft()))
 				region = new Rectangle(parent.Width - region.Right, region.Y, region.Width, region.Height);
+
+			if (child is IView fe && fe.Handler != null)
+			{
+				// The new arrange methods will take care of all the alignment and margins and such
+				fe.Arrange(region);
+				return;
+			}
 
 			if (!(child is View view))
 			{
@@ -197,14 +219,15 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
+		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
 			return MeasureOverride(widthConstraint, heightConstraint);
 		}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			DesiredSize = OnMeasure(widthConstraint, heightConstraint).Request;
+			var sansMargins = OnMeasure(widthConstraint, heightConstraint).Request;
+			DesiredSize = new Size(sansMargins.Width + Margin.HorizontalThickness, sansMargins.Height + Margin.VerticalThickness);
 			return DesiredSize;
 		}
 
@@ -268,6 +291,13 @@ namespace Microsoft.Maui.Controls
 			if (child.Parent is IFlowDirectionController parent && (isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer && parent.EffectiveFlowDirection.IsRightToLeft()))
 				region = new Rectangle(parent.Width - region.Right, region.Y, region.Width, region.Height);
 
+			if (child is IView fe && fe.Handler != null)
+			{
+				// The new arrange methods will take care of all the alignment and margins and such
+				fe.Arrange(region);
+				return;
+			}
+
 			if (region.Size != childSizeRequest.Request)
 			{
 				bool canUseAlreadyDoneRequest = region.Width >= childSizeRequest.Request.Width && region.Height >= childSizeRequest.Request.Height;
@@ -305,7 +335,7 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
-			ReadOnlyCollection<Element> children = LogicalChildrenInternal;
+			IReadOnlyList<Element> children = LogicalChildrenInternal;
 			int count = children.Count;
 			for (var index = 0; index < count; index++)
 			{
@@ -492,9 +522,9 @@ namespace Microsoft.Maui.Controls
 		{
 			base.InvalidateMeasureOverride();
 
-			foreach (var child in LogicalChildren)
+			foreach (var child in ((IElementController)this).LogicalChildren)
 			{
-				if (child is IFrameworkElement fe)
+				if (child is IView fe)
 				{
 					fe.InvalidateMeasure();
 				}
@@ -503,22 +533,14 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			var size = base.ArrangeOverride(bounds);
+			base.ArrangeOverride(bounds);
 
 			// The SholdLayoutChildren check will catch impossible sizes (negative widths/heights), not-yet-loaded controls,
 			// and other weirdness that comes from the legacy layouts trying to run layout before the native side is ready. 
 			if (!ShouldLayoutChildren())
-				return size;
+				return bounds.Size;
 
 			UpdateChildrenLayout();
-
-			foreach (var child in Children)
-			{
-				if (child is IFrameworkElement frameworkElement)
-				{
-					frameworkElement.Handler?.NativeArrange(frameworkElement.Frame);
-				}
-			}
 
 			return Frame.Size;
 		}

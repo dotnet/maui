@@ -17,8 +17,8 @@ namespace Microsoft.Maui.Controls.Platform
 		IMauiContext _mauiContext;
 
 		public ShellFragmentStateAdapter(
-			ShellSection shellSection, 
-			AndroidX.Fragment.App.FragmentManager fragmentManager, 
+			ShellSection shellSection,
+			AndroidX.Fragment.App.FragmentManager fragmentManager,
 			IMauiContext mauiContext) : base(fragmentManager, (mauiContext.Context.GetActivity() as AppCompatActivity).Lifecycle)
 		{
 			_mauiContext = mauiContext;

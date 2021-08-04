@@ -27,10 +27,10 @@ namespace Microsoft.Maui
 				   (Context?.GetFragmentManager()?.FindFragmentById(Resource.Id.nav_host)
 			  as NavHostFragment) ?? throw new InvalidOperationException($"NavHost cannot be null here");
 
-		MauiFragmentNavDestination NavDestination 
-		{ 
-			get => _navDestination ?? throw new InvalidOperationException($"NavDestination cannot be null here"); 
-			set => _navDestination = value; 
+		MauiFragmentNavDestination NavDestination
+		{
+			get => _navDestination ?? throw new InvalidOperationException($"NavDestination cannot be null here");
+			set => _navDestination = value;
 		}
 
 		protected NavHostPageFragment(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -76,12 +76,14 @@ namespace Microsoft.Maui
 			NavDestination.NavigationPageHandler.Toolbar.SetNavigationOnClickListener(BackClick);
 
 			UpdateToolbar();
-			NavDestination.NavigationPageHandler.Toolbar
-				.Title = (NavDestination.Page as IPage)?.Title;
+
+			var titledElement = NavDestination.Page as ITitledElement;
+
+			NavDestination.NavigationPageHandler.Toolbar.Title = titledElement?.Title;
 
 			if (Context.GetActivity() is AppCompatActivity aca)
 			{
-				aca.SupportActionBar.Title = (NavDestination.Page as IPage)?.Title;
+				aca.SupportActionBar.Title = titledElement?.Title;
 
 				// TODO MAUI put this elsewhere once we figure out how attached property handlers work
 				bool showNavBar = true;

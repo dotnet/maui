@@ -20,6 +20,7 @@ using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ActionBarDrawerToggle = AndroidX.AppCompat.App.ActionBarDrawerToggle;
 using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
+using AndroidResource = Android.Resource;
 using ATextView = global::Android.Widget.TextView;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
@@ -27,7 +28,6 @@ using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
 using R = Android.Resource;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
-using AndroidResource = Android.Resource;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_drawerToggle == null)
 			{
-				_drawerToggle = new ActionBarDrawerToggle(context.GetActivity(), drawerLayout, toolbar, R.String.Ok, R.String.Ok)
+				_drawerToggle = new ActionBarDrawerToggle(context.GetActivity(), drawerLayout, toolbar, Resource.String.nav_app_bar_open_drawer_description, R.String.Ok)
 				{
 					ToolbarNavigationClickListener = this,
 				};
@@ -458,7 +458,10 @@ namespace Microsoft.Maui.Controls.Platform
 			else if (image == null ||
 				toolbar.SetNavigationContentDescription(image) == null)
 			{
-				toolbar.SetNavigationContentDescription(R.String.Ok);
+				if (CanNavigateBack)
+					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
+				else
+					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
 			}
 		}
 

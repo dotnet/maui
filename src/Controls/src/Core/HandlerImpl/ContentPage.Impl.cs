@@ -1,23 +1,18 @@
-﻿using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Hosting;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class ContentPage : IPage, HotReload.IHotReloadableView
+	public partial class ContentPage : IContentView, HotReload.IHotReloadableView
 	{
-		// TODO ezhart That there's a layout alignment here tells us this hierarchy needs work :) 
-		public Primitives.LayoutAlignment HorizontalLayoutAlignment => Primitives.LayoutAlignment.Fill;
-
-		IView IPage.Content => Content;
+		IView IContentView.Content => Content;
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView view)
 			{
-				_ = frameworkElement.Handler?.GetDesiredSize(widthConstraint, heightConstraint);
+				_ = view.Measure(widthConstraint, heightConstraint);
 			}
 
 			return new Size(widthConstraint, heightConstraint);
@@ -25,18 +20,11 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			// Update the Bounds (Frame) for this page
-			Layout(bounds);
+			Frame = this.ComputeFrame(bounds);
 
-			if (Content is IFrameworkElement element and VisualElement visualElement)
+			if (Content is IView view)
 			{
-				// The size checks here are a guard against legacy layouts which try to lay things out before the
-				// native side is ready. We just ignore those invalid values.
-				if (bounds.Size.Width >= 0 && bounds.Size.Height >= 0)
-				{
-					visualElement.Frame = element.ComputeFrame(bounds);
-					element.Handler?.NativeArrange(visualElement.Frame);
-				}
+				_ = view.Arrange(Frame);
 			}
 
 			return Frame.Size;
@@ -45,9 +33,9 @@ namespace Microsoft.Maui.Controls
 		protected override void InvalidateMeasureOverride()
 		{
 			base.InvalidateMeasureOverride();
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView view)
 			{
-				frameworkElement.InvalidateMeasure();
+				view.InvalidateMeasure();
 			}
 		}
 
