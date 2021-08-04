@@ -16,14 +16,17 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(ILayoutHandler.Add)] = MapAdd,
 			[nameof(ILayoutHandler.Remove)] = MapRemove,
+			[nameof(ILayoutHandler.Clear)] = MapClear,
+			[nameof(ILayoutHandler.Insert)] = Mapinsert,
 		};
 
-		public LayoutHandler() : base(LayoutMapper)
+		public LayoutHandler() : base(LayoutMapper, LayoutCommandMapper)
 		{
 
 		}
 
-		public LayoutHandler(PropertyMapper? mapper = null) : base(mapper ?? LayoutMapper)
+		public LayoutHandler(PropertyMapper? mapper = null, CommandMapper? commandMapper = null) 
+			: base(mapper ?? LayoutMapper, commandMapper ?? LayoutCommandMapper)
 		{
 
 		}
@@ -46,6 +49,21 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			handler.Remove(view);
+		}
+
+		public static void Mapinsert(ILayoutHandler handler, ILayout layout, object? arg)
+		{
+			if (arg is ValueTuple<int, IView> insertArgs)
+			{
+				(int index, IView view) = insertArgs;
+
+				handler.Insert(index, view);
+			}
+		}
+
+		public static void MapClear(ILayoutHandler handler, ILayout layout, object? arg)
+		{
+			handler.Clear();
 		}
 	}
 }

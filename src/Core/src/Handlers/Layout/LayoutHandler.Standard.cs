@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Handlers
 		public void Add(IView view) => throw new NotImplementedException();
 		public void Remove(IView view) => throw new NotImplementedException();
 		public void Clear() => throw new NotImplementedException();
+		public void Insert(int index, IView view) => throw new NotImplementedException();
 
 		protected override object CreateNativeView() => throw new NotImplementedException();
 	}

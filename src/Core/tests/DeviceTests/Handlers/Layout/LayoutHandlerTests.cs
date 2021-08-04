@@ -90,5 +90,32 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			Assert.Equal(0, count);
 		}
+
+		[Fact]
+		public async Task InsertAddsChildToNativeLayout()
+		{
+			var layout = new LayoutStub();
+			var slider = new SliderStub();
+			var button = new ButtonStub();
+
+			layout.Add(slider);
+			
+			var handler = await CreateHandlerAsync(layout);
+
+			var count = await InvokeOnMainThreadAsync(() =>
+			{
+				return GetNativeChildCount(handler);
+			});
+
+			Assert.Equal(1, count);
+
+			count = await InvokeOnMainThreadAsync(() =>
+			{
+				handler.Insert(0, button);
+				return GetNativeChildCount(handler);
+			});
+
+			Assert.Equal(2, count);
+		}
 	}
 }
