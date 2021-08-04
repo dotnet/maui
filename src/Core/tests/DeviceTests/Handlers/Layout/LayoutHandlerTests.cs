@@ -62,5 +62,33 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			Assert.Equal(0, count);
 		}
+
+		[Fact]
+		public async Task ClearRemovesChildrenFromNativeLayout()
+		{
+			var layout = new LayoutStub();
+			var slider = new SliderStub();
+			var button = new ButtonStub();
+			
+			layout.Add(slider);
+			layout.Add(button);
+
+			var handler = await CreateHandlerAsync(layout);
+
+			var count = await InvokeOnMainThreadAsync(() =>
+			{
+				return GetNativeChildCount(handler);
+			});
+
+			Assert.Equal(2, count);
+
+			count = await InvokeOnMainThreadAsync(() =>
+			{
+				handler.Clear();
+				return GetNativeChildCount(handler);
+			});
+
+			Assert.Equal(0, count);
+		}
 	}
 }

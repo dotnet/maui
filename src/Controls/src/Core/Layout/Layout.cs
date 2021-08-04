@@ -114,10 +114,15 @@ namespace Microsoft.Maui.Controls
 
 		public void Clear()
 		{
-			for (int n = _children.Count - 1; n >= 0; n--)
+			foreach (var child in this)
 			{
-				Remove(this[n]);
+				if (child is Element element)
+					element.Parent = null;
 			}
+
+			_children.Clear();
+			ClearHandler();
+			InvalidateMeasure();
 		}
 
 		public bool Contains(IView item)
@@ -204,6 +209,11 @@ namespace Microsoft.Maui.Controls
 		void AddToHandler(IView view)
 		{
 			Handler?.Invoke(nameof(ILayoutHandler.Add), view);
+		}
+
+		void ClearHandler() 
+		{
+			Handler?.Invoke(nameof(ILayoutHandler.Clear));
 		}
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)

@@ -4,5 +4,6 @@ namespace Microsoft.Maui
 	{
 		void Add(IView view);
 		void Remove(IView view);
+		void Clear();
 	}
 }
