@@ -62,6 +62,7 @@ namespace Microsoft.Maui
 			var activationState = new ActivationState(mauiContext);
 			var window = Application.CreateWindow(activationState);
 
+			_virtualWindow = new WeakReference<IWindow>(window);
 			tizenWindow.SetWindow(window, mauiContext);
 
 			return tizenWindow;
