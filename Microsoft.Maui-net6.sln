@@ -124,6 +124,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.UnitTests-net
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Benchmarks-net6", "src\Core\tests\Benchmarks\Core.Benchmarks-net6.csproj", "{A1B1052C-740D-4733-BB3F-8558B661E78D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Xaml.UnitTests-net6", "src\Controls\tests\Xaml.UnitTests\Controls.Xaml.UnitTests-net6.csproj", "{DF58AB4A-E695-429C-9519-B0AF9141EE20}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -301,6 +303,10 @@ Global
 		{A1B1052C-740D-4733-BB3F-8558B661E78D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1B1052C-740D-4733-BB3F-8558B661E78D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1B1052C-740D-4733-BB3F-8558B661E78D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF58AB4A-E695-429C-9519-B0AF9141EE20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF58AB4A-E695-429C-9519-B0AF9141EE20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF58AB4A-E695-429C-9519-B0AF9141EE20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF58AB4A-E695-429C-9519-B0AF9141EE20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -355,6 +361,7 @@ Global
 		{41CF73B5-D60E-4644-BA72-904CFF43C4AF} = {50C758FE-4E10-409A-94F5-A75480960864}
 		{DCA77B3F-73C2-488C-8D16-F5055DC3098C} = {D8CD878F-34BC-4393-881A-E3DD7348A13E}
 		{A1B1052C-740D-4733-BB3F-8558B661E78D} = {C564DDD6-DE79-45CD-88EA-3F690481572A}
+		{DF58AB4A-E695-429C-9519-B0AF9141EE20} = {D8CD878F-34BC-4393-881A-E3DD7348A13E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

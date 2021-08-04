@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework Condition="'$(BuildForNet6)' != 'true'">netcoreapp3.1</TargetFramework>
+    <TargetFramework Condition="'$(BuildForNet6)' == 'true'">net6.0</TargetFramework>
+    <AssemblyName>Microsoft.Maui.Controls.Xaml.UnitTests</AssemblyName>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>0672;0219;0414;CS0436</NoWarn>
+    <IsPackable>false</IsPackable>
+    <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+    <PackageReference Include="JetBrains.DotMemoryUnit" Version="3.1.20200127.214830" />
+    <PackageReference Include="NUnit" Version="3.13.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.3" />
+    <PackageReference Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
+    <PackageReference Include="Microsoft.Build" Version="16.9.0" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.9.0" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.9.0" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\src\Build.Tasks\Controls.Build.Tasks.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Core.UnitTests\MockDispatcherProvider.cs">
+      <Link>MockDispatcherProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Core.UnitTests\MockDispatcher.cs">
+      <Link>MockDispatcher.cs</Link>
+    </Compile>
+    <Compile Include="..\Core.UnitTests\MockPlatformServices.cs">
+      <Link>MockPlatformServices.cs</Link>
+    </Compile>
+    <Compile Include="..\Core.UnitTests\BaseTestFixture.cs">
+      <Link>BaseTestFixture.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+</Project>
