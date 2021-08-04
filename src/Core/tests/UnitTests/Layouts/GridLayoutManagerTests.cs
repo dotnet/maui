@@ -1273,10 +1273,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0, row, col);
 
-			// Using 300,300 - the implied row/column are GridLength.Star
 			MeasureAndArrange(grid, 100 * cols, 100 * rows);
 
-			// Since it's using GridLength.Star, we expect the view to be arranged at the full size of the grid
 			AssertArranged(view0, 100 * actualCol, 100 * actualRow, 100, 100);
 		}
 	}
