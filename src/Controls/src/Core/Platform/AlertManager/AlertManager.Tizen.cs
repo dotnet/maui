@@ -276,10 +276,10 @@ namespace Microsoft.Maui.Controls.Platform
 			layout.Parent = sender;
 			var nativeView = layout.ToNative(MauiContext);
 
-			var request = layout.Measure(sender.Width, sender.Height);
+			var request = layout.LayoutManager.Measure(sender.Width, sender.Height);
 			(layout.Handler as IRegisterLayoutUpdate)?.RegisterOnLayoutUpdated();
-			nativeView.MinimumHeight = request.Request.Height.ToScaledPixel();
-			nativeView.MinimumWidth = request.Request.Width.ToScaledPixel();
+			nativeView.MinimumHeight = request.Height.ToScaledPixel();
+			nativeView.MinimumWidth = request.Width.ToScaledPixel();
 
 			prompt.Content = nativeView;
 
