@@ -100,7 +100,7 @@ namespace Microsoft.Maui
 
 		static Window CreateDefaultWindow()
 		{
-			return GetPreloadedWindow() ?? new Window("XamarinWindow");
+			return GetPreloadedWindow() ?? new Window("MauiDefaultWindow");
 		}
 
 		static Window? GetPreloadedWindow()
