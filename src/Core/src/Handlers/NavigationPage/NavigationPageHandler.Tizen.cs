@@ -210,7 +210,7 @@ namespace Microsoft.Maui.Handlers
 		//	}
 		//}
 
-		void OnAnimationFinished(object sender, EventArgs e)
+		void OnAnimationFinished(object? sender, EventArgs e)
 		{
 			CompleteCurrentNavigationTask();
 		}
@@ -311,7 +311,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = _naviItemMap ?? throw new InvalidOperationException($"{nameof(_naviItemMap)} cannot be null.");
 
-			NaviItem item;
+			NaviItem? item;
 			if (_naviItemMap.TryGetValue(page, out item))
 			{
 				return item;
