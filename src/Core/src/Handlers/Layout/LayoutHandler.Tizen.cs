@@ -133,12 +133,6 @@ namespace Microsoft.Maui.Handlers
 						nativeGeometry.Y = VirtualView.Frame.Y;
 					}
 
-					// revoke margin area, we need to assign area including margin
-					nativeGeometry.Width += VirtualView.Margin.HorizontalThickness;
-					nativeGeometry.Height += VirtualView.Margin.VerticalThickness;
-					nativeGeometry.X -= VirtualView.Margin.Left;
-					nativeGeometry.Y -= VirtualView.Margin.Top;
-
 					VirtualView.LayoutManager.Measure(nativeGeometry.Width, nativeGeometry.Height);
 					VirtualView.LayoutManager.ArrangeChildren(nativeGeometry);
 				}

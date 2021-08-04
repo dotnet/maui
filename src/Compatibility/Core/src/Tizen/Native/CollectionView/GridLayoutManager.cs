@@ -404,7 +404,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 		public int GetVisibleItemIndex(int x, int y)
 		{
 			int index = 0;
-			if (x < 0 || y < 0)
+			if (x < 0 || y < 0 || _accumulatedItemSizes == null)
 				return index;
 			if (_scrollCanvasSize.Width < x || _scrollCanvasSize.Height < y)
 				return CollectionView.Count - 1;
