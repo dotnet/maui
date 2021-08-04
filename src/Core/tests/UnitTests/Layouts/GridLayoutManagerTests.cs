@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -1239,6 +1240,44 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.Equal(50, measure.Width);
+		}
+
+		[Theory]
+		// at 0, 0
+		[InlineData(1, 1, 0, 0)]
+		[InlineData(1, 2, 0, 0)]
+		[InlineData(2, 1, 0, 0)]
+		[InlineData(2, 2, 0, 0)]
+		// at 1, 0
+		[InlineData(1, 1, 1, 0)]
+		[InlineData(1, 2, 1, 0)]
+		[InlineData(2, 1, 1, 0)]
+		[InlineData(2, 2, 1, 0)]
+		// at 0, 1
+		[InlineData(1, 1, 0, 1)]
+		[InlineData(1, 2, 0, 1)]
+		[InlineData(2, 1, 0, 1)]
+		[InlineData(2, 2, 0, 1)]
+		// at 1, 1
+		[InlineData(1, 1, 1, 1)]
+		[InlineData(1, 2, 1, 1)]
+		[InlineData(2, 1, 1, 1)]
+		[InlineData(2, 2, 1, 1)]
+		public void ViewOutsideRowsAndColsClampsToGrid(int rows, int cols, int row = 0, int col = 0, int rowSpan = 1, int colSpan = 1)
+		{
+			var r = string.Join(",", Enumerable.Repeat("Auto", rows));
+			var c = string.Join(",", Enumerable.Repeat("Auto", cols));
+
+			var grid = CreateGridLayout(rows: r, columns: c);
+			var view0 = CreateTestView(new Size(100, 100));
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, row, col, rowSpan, colSpan);
+
+			// Using 300,300 - the implied row/column are GridLength.Star
+			MeasureAndArrange(grid, 300, 300);
+
+			// Since it's using GridLength.Star, we expect the view to be arranged at the full size of the grid
+			AssertArranged(view0, 0, 0, 100, 100);
 		}
 	}
 }

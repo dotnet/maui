@@ -159,8 +159,8 @@ namespace Microsoft.Maui.Layouts
 						continue;
 					}
 
-					var column = _grid.GetColumn(view);
-					var columnSpan = _grid.GetColumnSpan(view);
+					var column = _grid.GetColumn(view).Clamp(0, _columns.Length - 1);
+					var columnSpan = _grid.GetColumnSpan(view).Clamp(1, _columns.Length - column);
 
 					var columnGridLengthType = GridLengthType.None;
 
@@ -169,8 +169,8 @@ namespace Microsoft.Maui.Layouts
 						columnGridLengthType |= ToGridLengthType(_columns[columnIndex].ColumnDefinition.Width.GridUnitType);
 					}
 
-					var row = _grid.GetRow(view);
-					var rowSpan = _grid.GetRowSpan(view);
+					var row = _grid.GetRow(view).Clamp(0, _rows.Length - 1);
+					var rowSpan = _grid.GetRowSpan(view).Clamp(1, _rows.Length - row);
 
 					var rowGridLengthType = GridLengthType.None;
 
@@ -189,11 +189,11 @@ namespace Microsoft.Maui.Layouts
 
 			public Rectangle GetCellBoundsFor(IView view)
 			{
-				var firstColumn = _grid.GetColumn(view);
-				var lastColumn = firstColumn + _grid.GetColumnSpan(view);
+				var firstColumn = _grid.GetColumn(view).Clamp(0, _columns.Length - 1);
+				var lastColumn = firstColumn + _grid.GetColumnSpan(view).Clamp(1, _columns.Length - firstColumn);
 
-				var firstRow = _grid.GetRow(view);
-				var lastRow = firstRow + _grid.GetRowSpan(view);
+				var firstRow = _grid.GetRow(view).Clamp(0, _rows.Length - 1);
+				var lastRow = firstRow + _grid.GetRowSpan(view).Clamp(1, _rows.Length - firstRow);
 
 				double top = TopEdgeOfRow(firstRow);
 				double left = LeftEdgeOfColumn(firstColumn);
