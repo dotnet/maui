@@ -33,7 +33,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authorization" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <PackageReference Include="Microsoft.JSInterop" />
   </ItemGroup>
 
