@@ -1,16 +1,18 @@
 parameters:
   platform : ''
+  skipXcode: false
 
 steps:
 
   # Prepare macOS
   - ${{ if eq(parameters.platform, 'macos') }}:
     # Provision Xcode
-    - task: xamops.azdevex.provisionator-task.provisionator@1
-      displayName: 'Provision Xcode'
-      condition: ne(variables['REQUIRED_XCODE'], '')
-      inputs:
-        provisioning_script: $(provisionator.xcode)
+    - ${{ if ne(parameters.skipXcode, 'true') }}:
+      - task: xamops.azdevex.provisionator-task.provisionator@1
+        displayName: 'Provision Xcode'
+        condition: ne(variables['REQUIRED_XCODE'], '')
+        inputs:
+          provisioning_script: $(provisionator.xcode)
     # Provision Additional Software
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Additional Software'

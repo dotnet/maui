@@ -9,6 +9,7 @@ steps:
   - template: provision.yml
     parameters:
       platform: macos
+      skipXcode: ${{ eq(parameters.platform, 'android') }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release"
     displayName: 'Install .NET'
