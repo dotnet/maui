@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0-android</TargetFramework>
-    <RootNamespace>Microsoft.Maui.Controls.Compatibility.Android.UnitTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility.Android.UnitTests</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Controls.Compatibility.Android.UnitTests</RootNamespace>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
+    <NoWarn>0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

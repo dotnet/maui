@@ -6,6 +6,7 @@
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.Android.AppLinks</RootNamespace>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
+    <NoWarn>0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

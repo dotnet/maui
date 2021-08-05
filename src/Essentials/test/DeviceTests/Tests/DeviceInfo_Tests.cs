@@ -83,7 +83,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public void App_Theme_Is_Correct()
 		{
-#if WINDOWS_UWP || WINDOWS || __IOS__ || __ANDROID__
+#if __IOS__
+			if (DeviceInfo.Version.Major >= 13)
+				Assert.NotEqual(AppTheme.Unspecified, AppInfo.RequestedTheme);
+			else
+				Assert.Equal(AppTheme.Unspecified, AppInfo.RequestedTheme);
+#elif WINDOWS_UWP || WINDOWS || __ANDROID__
 			Assert.NotEqual(AppTheme.Unspecified, AppInfo.RequestedTheme);
 #else
 			Assert.Equal(AppTheme.Unspecified, AppInfo.RequestedTheme);
