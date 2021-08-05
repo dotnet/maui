@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Shapes.Polyline), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Rectangle), typeof(ShapeViewHandler) },
 			{ typeof(Window), typeof(WindowHandler) },
+			{ typeof(IndicatorView), typeof(IndicatorViewHandler) },
 			//{ typeof(NavigationPage), typeof(NavigationPageHandler) },
 		};
 

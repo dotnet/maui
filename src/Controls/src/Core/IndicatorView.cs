@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(IndicatorLayout))]
-	public class IndicatorView : TemplatedView
+	public partial class IndicatorView : TemplatedView
 	{
 		const int DefaultPadding = 4;
 
@@ -25,9 +25,9 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty HideSingleProperty = BindableProperty.Create(nameof(HideSingle), typeof(bool), typeof(IndicatorView), true);
 
-		public static readonly BindableProperty IndicatorColorProperty = BindableProperty.Create(nameof(IndicatorColor), typeof(Color), typeof(IndicatorView), null);
+		public static readonly BindableProperty IndicatorColorProperty = BindableProperty.Create(nameof(IndicatorColor), typeof(Color), typeof(IndicatorView), Colors.Black);
 
-		public static readonly BindableProperty SelectedIndicatorColorProperty = BindableProperty.Create(nameof(SelectedIndicatorColor), typeof(Color), typeof(IndicatorView), null);
+		public static readonly BindableProperty SelectedIndicatorColorProperty = BindableProperty.Create(nameof(SelectedIndicatorColor), typeof(Color), typeof(IndicatorView), Colors.Pink);
 
 		public static readonly BindableProperty IndicatorSizeProperty = BindableProperty.Create(nameof(IndicatorSize), typeof(double), typeof(IndicatorView), 6.0);
 
@@ -106,7 +106,6 @@ namespace Microsoft.Maui.Controls
 			get => (IEnumerable)GetValue(ItemsSourceProperty);
 			set => SetValue(ItemsSourceProperty, value);
 		}
-
 
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{

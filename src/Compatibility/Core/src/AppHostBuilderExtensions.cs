@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(ListView), typeof(ListViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CollectionView), typeof(CollectionViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CarouselView), typeof(CarouselViewRenderer));
-					handlers.TryAddCompatibilityRenderer(typeof(IndicatorView), typeof(IndicatorViewRenderer));
+					//handlers.TryAddCompatibilityRenderer(typeof(IndicatorView), typeof(IndicatorViewRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Path), typeof(PathRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Ellipse), typeof(EllipseRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Line), typeof(LineRenderer));
