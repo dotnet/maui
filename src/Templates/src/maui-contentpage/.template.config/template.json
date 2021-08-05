@@ -2,7 +2,7 @@
     "$schema": "http://json.schemastore.org/template",
     "author": "David Ortinau",
     "classifications": [ "Common", "Code" ],
-    "identity": "Maui.ContentPage",
+    "identity": "Microsoft.Maui.ContentPage",
     "name": ".NET MAUI ContentPage",
     "shortName": "maui-page",
     "tags": {
@@ -10,5 +10,12 @@
       "type": "item"
     },
     "sourceName": "NewPage1",
-    "defaultName": "NewPage1"
+    "defaultName": "NewPage1",
+    "symbols": {
+      "namespace": {
+        "description": "namespace for the generated code",
+        "replaces": "MauiApp1",
+        "type": "parameter"
+      }
+    }
   }
