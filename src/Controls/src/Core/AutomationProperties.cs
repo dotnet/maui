@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty HelpTextProperty = BindableProperty.Create("HelpText", typeof(string), typeof(AutomationProperties), default(string));
 
 		public static readonly BindableProperty IsInAccessibleTreeProperty = BindableProperty.Create("IsInAccessibleTree", typeof(bool?), typeof(AutomationProperties), null);
-		
+
 		public static readonly BindableProperty ExcludedWithChildrenProperty = BindableProperty.Create("ExcludedWithChildren", typeof(bool?), typeof(AutomationProperties), null);
 
 		public static readonly BindableProperty LabeledByProperty = BindableProperty.Create("LabeledBy", typeof(VisualElement), typeof(AutomationProperties), default(VisualElement));

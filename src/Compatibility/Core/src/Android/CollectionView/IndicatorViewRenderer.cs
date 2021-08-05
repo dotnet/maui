@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (IndicatorView.IndicatorLayout is not VisualElement indicatorLayout)
 				return;
-			
+
 			var renderer = indicatorLayout.GetRenderer() ?? Platform.CreateRendererWithContext(indicatorLayout, Context);
 			Platform.SetRenderer(indicatorLayout, renderer);
 

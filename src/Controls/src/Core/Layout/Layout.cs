@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 
 		public IView this[int index]
 		{
-			get => _children[index]; 
+			get => _children[index];
 			set
 			{
 				var old = _children[index];

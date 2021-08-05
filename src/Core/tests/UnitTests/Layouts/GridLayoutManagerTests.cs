@@ -1211,7 +1211,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void GridMeasureShouldUseExplicitHeight() 
+		public void GridMeasureShouldUseExplicitHeight()
 		{
 			var grid = CreateGridLayout();
 			var view = CreateTestView(new Size(10, 10));

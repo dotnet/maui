@@ -1154,7 +1154,7 @@ namespace Microsoft.Maui.Controls
 				stack.Remove(page);
 				var navigationState = GetUpdatedStatus(stack);
 
-				ShellNavigatingEventArgs shellNavigatingEventArgs = 
+				ShellNavigatingEventArgs shellNavigatingEventArgs =
 					new ShellNavigatingEventArgs(
 						_owner.Shell.CurrentState,
 						navigationState.Location,
@@ -1183,7 +1183,7 @@ namespace Microsoft.Maui.Controls
 				stack.Insert(index, page);
 				var navigationState = GetUpdatedStatus(stack);
 
-				ShellNavigatingEventArgs shellNavigatingEventArgs = 
+				ShellNavigatingEventArgs shellNavigatingEventArgs =
 					new ShellNavigatingEventArgs(
 						_owner.Shell.CurrentState,
 						navigationState.Location,

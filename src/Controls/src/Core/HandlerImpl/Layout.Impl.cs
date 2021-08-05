@@ -5,10 +5,10 @@ using System.Text;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
-	public abstract partial class Layout<T> 
+	public abstract partial class Layout<T>
 	{
 		int ICollection<IView>.Count => _children.Count;
-		bool ICollection<IView>.IsReadOnly => ((ICollection<IView>) _children).IsReadOnly;
+		bool ICollection<IView>.IsReadOnly => ((ICollection<IView>)_children).IsReadOnly;
 		public IView this[int index] { get => _children[index]; set => _children[index] = (T)value; }
 
 		void ICollection<IView>.Add(IView child)
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				_children.Add(view);
 			}
 		}
-	
+
 		bool ICollection<IView>.Remove(IView child)
 		{
 			if (child is T view)

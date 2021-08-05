@@ -237,7 +237,7 @@ namespace Microsoft.Maui.Controls
 				tcs.SetResult(true);
 				return;
 			}
-			
+
 			CurrentNavigationTask = PushAsyncInner(page, animated);
 			await CurrentNavigationTask;
 		}

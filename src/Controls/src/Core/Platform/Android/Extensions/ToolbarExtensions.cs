@@ -9,8 +9,8 @@ using Android.Views;
 using Microsoft.Maui.Graphics;
 using ATextView = global::Android.Widget.TextView;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
-using Color = Microsoft.Maui.Graphics.Color;
 using AView = global::Android.Views.View;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Platform
 {

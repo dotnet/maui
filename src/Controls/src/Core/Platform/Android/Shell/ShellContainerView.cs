@@ -114,11 +114,11 @@ namespace Microsoft.Maui.Controls.Platform
 				//maxHeight = measureHeight;
 				measureHeight = MeasureSpecMode.Unspecified.MakeMeasureSpec(0);
 			}
-			else if(MatchWidth)
+			else if (MatchWidth)
 			{
 				measureWidth = widthMeasureSpec;
 			}
-			else if(MatchHeight)
+			else if (MatchHeight)
 			{
 				measureHeight = heightMeasureSpec;
 				maxHeight = heightMeasureSpec.GetSize();

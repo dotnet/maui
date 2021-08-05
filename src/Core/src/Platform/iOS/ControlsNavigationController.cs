@@ -106,7 +106,7 @@ namespace Microsoft.Maui
 			}
 
 			var poppedPage = NavigationStack[NavigationStack.Count - 1];
-			
+
 			_handler.SendPopping(popTask);
 
 			await popTask;

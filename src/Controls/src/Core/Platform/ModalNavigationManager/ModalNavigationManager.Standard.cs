@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (ModalStack.Count == 0)
 				throw new InvalidOperationException();
-			
+
 			return Task.FromResult(_navModel.PopModal());
 		}
 

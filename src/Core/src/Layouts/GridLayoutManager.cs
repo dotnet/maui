@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Layouts
 				return SumDefinitions(_columns, _columnSpacing) + _padding.HorizontalThickness;
 			}
 
-			public double MeasuredGridHeight() 
+			public double MeasuredGridHeight()
 			{
 				return _explicitGridHeight > -1 ? _explicitGridHeight : GridHeight();
 			}

@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 {
 	public class NavigationLayout : CoordinatorLayout
 	{
-		#pragma warning disable CS0618 //FIXME: [Preserve] is obsolete
+#pragma warning disable CS0618 //FIXME: [Preserve] is obsolete
 		[Preserve(Conditional = true)]
 		public NavigationLayout(Context context) : base(context)
 		{
@@ -28,6 +28,6 @@ namespace Microsoft.Maui
 		protected NavigationLayout(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
 		}
-		#pragma warning restore CS0618 //FIXME: [Preserve] is obsolete
+#pragma warning restore CS0618 //FIXME: [Preserve] is obsolete
 	}
 }
