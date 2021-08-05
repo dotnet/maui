@@ -469,10 +469,13 @@ namespace Microsoft.Maui.Controls
 			var modalStack = shellSection?.Navigation?.ModalStack;
 			var result = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, stack, modalStack);
 
-			SetValueFromRenderer(CurrentStatePropertyKey, result);
-
-			_navigationManager.HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
+			if (result?.Location != oldState?.Location)
+			{
+				SetValueFromRenderer(CurrentStatePropertyKey, result);
+				_navigationManager.HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
+			}
 		}
+
 		ReadOnlyCollection<ShellItem> IShellController.GetItems() =>
 			new ReadOnlyCollection<ShellItem>(((ShellItemCollection)Items).VisibleItemsReadOnly.ToList());
 
@@ -586,7 +589,7 @@ namespace Microsoft.Maui.Controls
 
 		ObservableCollection<Element> _logicalChildren = new ObservableCollection<Element>();
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			new ReadOnlyCollection<Element>(_logicalChildren);
 
 		public Shell()
@@ -1212,7 +1215,7 @@ namespace Microsoft.Maui.Controls
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, LogicalChildren);
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IElementController)this).LogicalChildren);
 			if (FlyoutHeaderView != null)
 				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutHeaderView });
 			if (FlyoutFooterView != null)

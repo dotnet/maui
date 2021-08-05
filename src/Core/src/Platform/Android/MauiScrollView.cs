@@ -187,7 +187,7 @@ namespace Microsoft.Maui
 
 			if (_hScrollView != null && _hScrollView.Parent == this)
 			{
-				_hScrollView.Layout(left, top, right, bottom);
+				_hScrollView.Layout(0, 0, right - left, bottom - top);
 			}
 		}
 

@@ -251,15 +251,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SetContentDescription(true);
 		}
 
-		protected override void SetFocusable()
+		protected override void SetImportantForAccessibility()
 		{
 			if (Control == null)
 			{
-				base.SetFocusable();
+				base.SetImportantForAccessibility();
 				return;
 			}
 
-			Controls.Platform.AutomationPropertiesProvider.SetFocusable(ControlUsedForAutomation, Element, ref _defaultImportantForAccessibility);
+			Controls.Platform.AutomationPropertiesProvider.SetImportantForAccessibility(ControlUsedForAutomation, Element, ref _defaultImportantForAccessibility);
 		}
 
 		protected void SetNativeControl(TNativeView control)

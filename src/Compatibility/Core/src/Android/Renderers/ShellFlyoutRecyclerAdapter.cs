@@ -262,16 +262,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			bool _disposed;
 			Shell _shell;
 
-			[Obsolete]
-			public ElementViewHolder(View view, AView itemView, AView bar, Action<Element> selectedCallback) : this(view, itemView, bar, selectedCallback, null)
-			{
-				_itemView = itemView;
-				itemView.Click += OnClicked;
-				View = view;
-				Bar = bar;
-				_selectedCallback = selectedCallback;
-			}
-
 			public ElementViewHolder(View view, AView itemView, AView bar, Action<Element> selectedCallback, Shell shell) : base(itemView)
 			{
 				_itemView = itemView;

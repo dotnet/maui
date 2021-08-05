@@ -6,7 +6,7 @@ using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class StubBase : IFrameworkElement
+	public class StubBase : IView
 	{
 		IElementHandler IElement.Handler
 		{
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IShape Clip { get; set; }
 
-		public IFrameworkElement Parent { get; set; }
+		public IView Parent { get; set; }
 
 		public Size DesiredSize { get; set; } = new Size(50, 50);
 

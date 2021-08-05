@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;$(TargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks>net6.0;$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>

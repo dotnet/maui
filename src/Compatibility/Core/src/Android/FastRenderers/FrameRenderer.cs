@@ -260,13 +260,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				UpdateCornerRadius();
 			else if (e.PropertyName == Frame.BorderColorProperty.PropertyName)
 				UpdateBorderColor();
-			else if (e.Is(Microsoft.Maui.Controls.Layout.IsClippedToBoundsProperty))
+			else if (e.Is(Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBoundsProperty))
 				UpdateClippedToBounds();
 		}
 
 		void UpdateClippedToBounds()
 		{
-			var shouldClip = Element.IsSet(Microsoft.Maui.Controls.Layout.IsClippedToBoundsProperty)
+			var shouldClip = Element.IsSet(Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBoundsProperty)
 					? Element.IsClippedToBounds : Element.CornerRadius > 0f;
 
 			this.SetClipToOutline(shouldClip);

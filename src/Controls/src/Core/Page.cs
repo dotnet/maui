@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			_logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
 
 		public event EventHandler LayoutChanged;
@@ -252,7 +252,7 @@ namespace Microsoft.Maui.Controls
 				area.Height = Math.Max(0, area.Height);
 			}
 
-			List<Element> elements = LogicalChildren.ToList();
+			List<Element> elements = ((IElementController)this).LogicalChildren.ToList();
 			foreach (Element element in elements)
 			{
 				var child = element as VisualElement;
@@ -261,9 +261,9 @@ namespace Microsoft.Maui.Controls
 
 				var page = child as Page;
 				if (page != null && page.IgnoresContainerArea)
-					Maui.Controls.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
+					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
 				else
-					Maui.Controls.Layout.LayoutChildIntoBoundingRegion(child, area);
+					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, area);
 			}
 		}
 
@@ -330,8 +330,9 @@ namespace Microsoft.Maui.Controls
 			if (!ShouldLayoutChildren())
 				return;
 
-			var startingLayout = new List<Rectangle>(LogicalChildren.Count);
-			foreach (Element el in LogicalChildren)
+			var logicalChildren = ((IElementController)this).LogicalChildren;
+			var startingLayout = new List<Rectangle>(logicalChildren.Count);
+			foreach (Element el in logicalChildren)
 			{
 				if (el is VisualElement c)
 					startingLayout.Add(c.Bounds);
@@ -344,9 +345,9 @@ namespace Microsoft.Maui.Controls
 
 			LayoutChildren(x, y, w, h);
 
-			for (var i = 0; i < LogicalChildren.Count; i++)
+			for (var i = 0; i < logicalChildren.Count; i++)
 			{
-				var element = LogicalChildren[i];
+				var element = logicalChildren[i];
 				if (element is VisualElement c)
 				{
 					if (startingLayout.Count <= i || c.Bounds != startingLayout[i])
@@ -369,9 +370,10 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				for (var i = 0; i < LogicalChildren.Count; i++)
+				var logicalChildren = ((IElementController)this).LogicalChildren;
+				for (var i = 0; i < logicalChildren.Count; i++)
 				{
-					var v = LogicalChildren[i] as VisualElement;
+					var v = logicalChildren[i] as VisualElement;
 					if (v != null && v.IsVisible && (!v.IsPlatformEnabled || !v.IsNativeStateConsistent))
 						return;
 				}
@@ -507,7 +509,8 @@ namespace Microsoft.Maui.Controls
 
 		bool ShouldLayoutChildren()
 		{
-			if (!LogicalChildren.Any() || Width <= 0 || Height <= 0 || !IsNativeStateConsistent)
+			var logicalChildren = ((IElementController)this).LogicalChildren;
+			if (logicalChildren.Count == 0 || Width <= 0 || Height <= 0 || !IsNativeStateConsistent)
 				return false;
 
 			var container = this as IPageContainer<Page>;
@@ -519,9 +522,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var any = false;
-			for (var i = 0; i < LogicalChildren.Count; i++)
+			for (var i = 0; i < logicalChildren.Count; i++)
 			{
-				var v = LogicalChildren[i] as VisualElement;
+				var v = logicalChildren[i] as VisualElement;
 				if (v != null && (!v.IsPlatformEnabled || !v.IsNativeStateConsistent))
 				{
 					any = true;

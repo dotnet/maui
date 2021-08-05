@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_busyCount = 0;
 			}
 
-			void OnPageBusy(IPage sender, bool enabled)
+			void OnPageBusy(IView sender, bool enabled)
 			{
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateProgressBarVisibility(_busyCount > 0);
 			}
 
-			void OnActionSheetRequested(IPage sender, ActionSheetArguments arguments)
+			void OnActionSheetRequested(IView sender, ActionSheetArguments arguments)
 			{
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			void OnAlertRequested(IPage sender, AlertArguments arguments)
+			void OnAlertRequested(IView sender, AlertArguments arguments)
 			{
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Platform
 					parentView.LayoutDirection = GetLayoutDirection(sender, arguments.FlowDirection);
 			}
 
-			LayoutDirection GetLayoutDirection(IPage sender, FlowDirection flowDirection)
+			LayoutDirection GetLayoutDirection(IView sender, FlowDirection flowDirection)
 			{
 				if (flowDirection == FlowDirection.LeftToRight)
 					return LayoutDirection.Ltr;
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return LayoutDirection.Ltr;
 			}
 
-			TextDirection GetTextDirection(IPage sender, FlowDirection flowDirection)
+			TextDirection GetTextDirection(IView sender, FlowDirection flowDirection)
 			{
 				if (flowDirection == FlowDirection.LeftToRight)
 					return TextDirection.Ltr;
@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return TextDirection.Ltr;
 			}
 
-			void OnPromptRequested(IPage sender, PromptArguments arguments)
+			void OnPromptRequested(IView sender, PromptArguments arguments)
 			{
 				// Verify that the page making the request is part of this activity 
 				if (!PageIsInThisContext(sender))
@@ -299,7 +299,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			bool PageIsInThisContext(IPage page)
+			bool PageIsInThisContext(IView page)
 			{
 				var nativeView = page.ToNative(MauiContext);
 

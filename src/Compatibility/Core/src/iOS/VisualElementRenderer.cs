@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		string _defaultAccessibilityLabel;
 		string _defaultAccessibilityHint;
 		bool? _defaultIsAccessibilityElement;
+		bool? _defaultAccessibilityElementsHidden;
 		EventTracker _events;
 
 		VisualElementRendererFlags _flags = VisualElementRendererFlags.AutoPackage | VisualElementRendererFlags.AutoTrack;
@@ -228,6 +229,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			SetAccessibilityHint();
 			SetIsAccessibilityElement();
+			SetAccessibilityElementsHidden();
 			Performance.Stop(reference);
 		}
 
@@ -351,6 +353,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				SetAccessibilityLabel();
 			else if (e.PropertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName)
 				SetIsAccessibilityElement();
+			else if (e.PropertyName == AutomationProperties.ExcludedWithChildrenProperty.PropertyName)
+				SetAccessibilityElementsHidden();
 		}
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
@@ -371,6 +375,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		protected virtual void SetIsAccessibilityElement()
 		{
 			_defaultIsAccessibilityElement = this.SetIsAccessibilityElement(Element, _defaultIsAccessibilityElement);
+		}
+
+		protected virtual void SetAccessibilityElementsHidden()
+		{
+			_defaultAccessibilityElementsHidden = this.SetAccessibilityElementsHidden(Element, _defaultAccessibilityElementsHidden);
 		}
 
 		protected virtual void SetAutomationId(string id)

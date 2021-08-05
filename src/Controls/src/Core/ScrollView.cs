@@ -8,7 +8,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public partial class ScrollView : Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
+	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
 	{
 		#region IScrollViewController
 
@@ -252,9 +252,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (Content == null)
 				return new SizeRequest();
@@ -279,7 +277,7 @@ namespace Microsoft.Maui.Controls
 
 			SizeRequest contentRequest;
 
-			if (Content is IFrameworkElement fe && fe.Handler != null)
+			if (Content is IView fe && fe.Handler != null)
 			{
 				contentRequest = fe.Measure(widthConstraint, heightConstraint);
 			}

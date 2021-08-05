@@ -1,20 +1,18 @@
 ﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class ContentPage : IPage, HotReload.IHotReloadableView
+	public partial class ContentPage : IContentView, HotReload.IHotReloadableView
 	{
-		// TODO ezhart That there's a layout alignment here tells us this hierarchy needs work :) 
-		public Primitives.LayoutAlignment HorizontalLayoutAlignment => Primitives.LayoutAlignment.Fill;
-
-		IView IPage.Content => Content;
+		IView IContentView.Content => Content;
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView view)
 			{
-				_ = frameworkElement.Measure(widthConstraint, heightConstraint);
+				_ = view.Measure(widthConstraint, heightConstraint);
 			}
 
 			return new Size(widthConstraint, heightConstraint);
@@ -22,17 +20,22 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			// Update the other stuff on this page (basically the content)
-			Layout(bounds);
+			Frame = this.ComputeFrame(bounds);
+
+			if (Content is IView view)
+			{
+				_ = view.Arrange(Frame);
+			}
+
 			return Frame.Size;
 		}
 
 		protected override void InvalidateMeasureOverride()
 		{
 			base.InvalidateMeasureOverride();
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView view)
 			{
-				frameworkElement.InvalidateMeasure();
+				view.InvalidateMeasure();
 			}
 		}
 

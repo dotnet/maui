@@ -14,7 +14,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class ShellContent : BaseShellItem, IShellContentController
+	public class ShellContent : BaseShellItem, IShellContentController, IVisualTreeElement
 	{
 		static readonly BindablePropertyKey MenuItemsPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(MenuItems), typeof(MenuItemCollection), typeof(ShellContent), null,
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls
 		public ShellContent() => ((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
 
 		internal bool IsVisibleContent => Parent is ShellSection shellSection && shellSection.IsVisibleSection && shellSection.CurrentItem == this;
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(_logicalChildren));
+		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(_logicalChildren));
 
 		internal override void SendDisappearing()
 		{
@@ -309,5 +309,8 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> GetVisualChildren() => new List<Maui.IVisualTreeElement> { ((IShellContentController)this).Page }.AsReadOnly();
+
 	}
 }

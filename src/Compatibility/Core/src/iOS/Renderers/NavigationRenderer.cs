@@ -884,6 +884,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			uIBarButtonItem.IsAccessibilityElement = (bool)((bool?)element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) ?? _defaultIsAccessibilityElement);
 		}
 
+		static void SetAccessibilityElementsHidden(UIBarButtonItem uIBarButtonItem, Element element)
+		{
+			if (element == null)
+				return;
+
+			if (!_defaultAccessibilityElementsHidden.HasValue)
+				_defaultAccessibilityElementsHidden = uIBarButtonItem.AccessibilityElementsHidden;
+
+			uIBarButtonItem.AccessibilityElementsHidden = (bool)((bool?)element.GetValue(AutomationProperties.ExcludedWithChildrenProperty) ?? _defaultAccessibilityElementsHidden);
+		}
+
 		static void SetAutomationId(UIBarButtonItem uIBarButtonItem, string id)
 		{
 			uIBarButtonItem.AccessibilityIdentifier = id;
@@ -892,6 +903,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		static string _defaultAccessibilityLabel;
 		static string _defaultAccessibilityHint;
 		static bool? _defaultIsAccessibilityElement;
+		static bool? _defaultAccessibilityElementsHidden;
 
 		internal void ValidateInsets()
 		{

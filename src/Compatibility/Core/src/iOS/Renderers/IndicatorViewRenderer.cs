@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			ClearIndicators();
 
 			var control = (Element.IndicatorTemplate != null)
-				? (UIView)Element.IndicatorLayout.GetRenderer()
+				? (UIView)(Element.IndicatorLayout as VisualElement).GetRenderer()
 				: CreateNativeControl();
 
 			SetNativeControl(control);
@@ -156,15 +156,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateIndicatorTemplate()
 		{
-			if (Element.IndicatorLayout == null)
+			if (Element.IndicatorLayout is not VisualElement indicatorLayout)
 				return;
 
 			ClearIndicators();
-			var control = (UIView)Element.IndicatorLayout.GetRenderer();
+			var control = (UIView)indicatorLayout.GetRenderer();
 			AddSubview(control);
 
-			var indicatorLayoutSizeRequest = Element.IndicatorLayout.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-			Element.IndicatorLayout.Layout(new Rectangle(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
+			var indicatorLayoutSizeRequest = indicatorLayout.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
+			indicatorLayout.Layout(new Rectangle(0, 0, indicatorLayoutSizeRequest.Request.Width, indicatorLayoutSizeRequest.Request.Height));
 		}
 
 		void UIPagerValueChanged(object sender, System.EventArgs e)

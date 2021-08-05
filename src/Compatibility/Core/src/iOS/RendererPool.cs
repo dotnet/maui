@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 			var sameChildrenTypes = true;
 
-			var oldChildren = _oldElement.LogicalChildren;
+			var oldChildren = ((IElementController)_oldElement).LogicalChildren;
 			var oldNativeChildren = _parent.NativeView.Subviews;
 			var newChildren = ((IElementController)newElement).LogicalChildren;
 

@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var template = listview.ItemTemplate;
 				var cell = template.CreateContent() as ViewCell;
 				cell.BindingContext = "Foo";
-				Assert.AreEqual("ooF", ((Label)((StackLayout)cell.View).Children[0]).Text);
+				Assert.AreEqual("ooF", ((Label)((Compatibility.StackLayout)cell.View).Children[0]).Text);
 			}
 		}
 	}
