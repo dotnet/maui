@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.Children.Insert(index, child.ToNative(MauiContext));
 		}
 
-		public void Update(int index, IView view) 
+		public void Update(int index, IView child) 
 		{
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
