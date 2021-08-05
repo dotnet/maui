@@ -8,7 +8,7 @@
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <!--<DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>-->
-    <MtouchLink Condition="'$(CI)' == 'true'">Full</MtouchLink>
+    <!--<MtouchLink Condition="'$(CI)' == 'true'">Full</MtouchLink>-->
     <RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>
   </PropertyGroup>
 
