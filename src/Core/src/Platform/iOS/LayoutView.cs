@@ -41,6 +41,7 @@ namespace Microsoft.Maui
 				bounds.Width -= safe.Left + safe.Right;
 			}
 
+			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
 			CrossPlatformArrange?.Invoke(bounds);
 		}
 
