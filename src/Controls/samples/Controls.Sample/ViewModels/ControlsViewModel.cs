@@ -57,7 +57,7 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(TimePickerPage), "TimePicker",
 				"A view that allows the user to select a time."),
 
-			new SectionModel(typeof(IndicatorViewPage), "IndicatorView",
+			new SectionModel(typeof(IndicatorPage), "IndicatorView",
 				"A view that shows dots indicators."),
 		};
 	}

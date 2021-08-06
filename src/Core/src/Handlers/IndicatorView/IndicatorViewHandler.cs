@@ -5,13 +5,19 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static PropertyMapper<IIndicatorView, IndicatorViewHandler> IndicatorViewMapper = new(ViewMapper)
 		{
-			//[nameof(ITitledElement.Title)] = MapTitle,
-			//[nameof(IContentView.Content)] = MapContent,
+			[nameof(IIndicatorView.Count)] = MapCount,
+			[nameof(IIndicatorView.Position)] = MapPosition,
+			[nameof(IIndicatorView.HideSingle)] = MapHideSingle,
+			[nameof(IIndicatorView.MaximumVisible)] = MapMaximumVisible,
+			[nameof(IIndicatorView.IndicatorSize)] = MapIndicatorSize,
 		};
 
-		public IndicatorViewHandler(PropertyMapper? mapper = null) : base(mapper ?? IndicatorViewMapper)
+		public IndicatorViewHandler() : base(IndicatorViewMapper)
 		{
+		}
 
+		public IndicatorViewHandler(PropertyMapper mapper) : base(mapper ?? IndicatorViewMapper)
+		{
 		}
 	}
 }

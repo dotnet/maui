@@ -116,7 +116,9 @@ namespace Microsoft.Maui.Controls
 
 			var defaultSize = IndicatorSize + DefaultPadding + DefaultPadding + 1;
 			var items = Count;
-			var sizeRequest = new SizeRequest(new Size(items * defaultSize, IndicatorSize), new Size(10, 10));
+			//	var sizeRequest = new SizeRequest(new Size(items * defaultSize, IndicatorSize), new Size(10, 10));
+
+			var sizeRequest = new SizeRequest(new Size(items * defaultSize, 100), new Size(10, 10));
 			return sizeRequest;
 		}
 

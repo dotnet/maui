@@ -10,7 +10,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1"/>
+    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +30,18 @@
     <MauiFont Include="Resources\Fonts\*" />
     <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
     <AndroidResource Remove="Resources\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Pages\Controls\IndicatorPage.xaml.cs">
+      <DependentUpon>IndicatorPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Update="Pages\Controls\IndicatorPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
   </ItemGroup>
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />

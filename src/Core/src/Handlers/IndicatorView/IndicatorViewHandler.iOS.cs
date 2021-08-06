@@ -11,5 +11,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			return new UIView();
 		}
+
+		public static void MapCount(IndicatorViewHandler handler, IIndicatorView indicator) { }
+		public static void MapPosition(IndicatorViewHandler handler, IIndicatorView indicator) { }
+		public static void MapHideSingle(IndicatorViewHandler handler, IIndicatorView indicator) { }
+		public static void MapMaximumVisible(IndicatorViewHandler handler, IIndicatorView indicator) { }
+		public static void MapIndicatorSize(IndicatorViewHandler handler, IIndicatorView indicator) { }
 	}
 }
