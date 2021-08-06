@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = WrappedNativeView;
+			var nativeView = NativeView;
 
 			if (nativeView == null || VirtualView == null)
 			{
@@ -90,15 +90,15 @@ namespace Microsoft.Maui.Handlers
 				measured = Measure(availableWidth, availableHeight);
 			}
 
-			return new SizeRequest(measured, MinimumSize());
+			return measured;
 		}
 
 		protected virtual Size MinimumSize()
 		{
 
-			if (WrappedNativeView is IMeasurable im)
+			if (NativeView is IMeasurable im)
 			{
-				return im.Measure(WrappedNativeView.MinimumWidth, WrappedNativeView.MinimumHeight).ToDP();
+				return im.Measure(NativeView.MinimumWidth, NativeView.MinimumHeight).ToDP();
 			}
 			else
 			{

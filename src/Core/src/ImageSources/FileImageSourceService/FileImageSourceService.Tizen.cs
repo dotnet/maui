@@ -20,7 +20,6 @@ namespace Microsoft.Maui
 				return null;
 
 			var filename = imageSource.File;
-
 			try
 			{
 				if (!string.IsNullOrEmpty(filename))
@@ -59,11 +58,14 @@ namespace Microsoft.Maui
 
 			foreach (AppFW.ResourceManager.Category category in Enum.GetValues(typeof(AppFW.ResourceManager.Category)))
 			{
-				var path = AppFW.ResourceManager.TryGetPath(category, res);
-
-				if (path != null)
+				foreach (var file in new[] { res, res + ".jpg", res + ".png", res + ".gif" })
 				{
-					return path;
+					var path = AppFW.ResourceManager.TryGetPath(category, file);
+
+					if (path != null)
+					{
+						return path;
+					}
 				}
 			}
 
@@ -71,9 +73,13 @@ namespace Microsoft.Maui
 			if (app != null)
 			{
 				string resPath = app.DirectoryInfo.Resource + res;
-				if (File.Exists(resPath))
+
+				foreach (var file in new []{ resPath, resPath + ".jpg", resPath + ".png", resPath + ".gif" })
 				{
-					return resPath;
+					if (File.Exists(file))
+					{
+						return resPath;
+					}
 				}
 			}
 
