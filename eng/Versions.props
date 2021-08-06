@@ -4,10 +4,10 @@
     <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-preview.7.21379.14</MicrosoftDotnetSdkInternalPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>6.0.0-preview.7.21377.19</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftAndroidSdkWindowsPackageVersion>30.0.100-preview.7.110</MicrosoftAndroidSdkWindowsPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>15.0.100-preview.7227</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>15.0.100-preview.7227</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>15.0.100-preview.7227</MicrosofttvOSSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>12.0.100-preview.7227</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>15.0.100-preview.7.229</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>15.0.100-preview.7.229</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>15.0.100-preview.7.229</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>12.0.100-preview.7.229</MicrosoftmacOSSdkPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>6.0.0-preview.7.21377.19</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftExtensionsHostingAbstractionsPackageVersion>6.0.0-preview.7.21377.19</MicrosoftExtensionsHostingAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>6.0.0-preview.7.21377.19</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
