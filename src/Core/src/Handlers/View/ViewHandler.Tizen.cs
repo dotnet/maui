@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		partial void DisconnectingHandler(NativeView? nativeView)
+		partial void DisconnectingHandler(NativeView nativeView)
 		{
 			if (nativeView == null)
 				return;
