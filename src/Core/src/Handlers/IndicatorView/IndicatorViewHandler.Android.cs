@@ -30,18 +30,16 @@ namespace Microsoft.Maui.Handlers
 		private protected override void OnConnectHandler(View nativeView)
 		{
 			base.OnConnectHandler(nativeView);
-			NativeView.SetBackgroundColor(Colors.Red.ToNative());
-			//NativeView.Layout(0, 0, 200, 200);
-			UpdateItemsSource();
-
-			UpdateIndicators();
+	 		UpdateItemsSource();
+			//UpdateIndicators();
 			//UpdateHidesForSinglePage();
 		}
 
 		public override void NativeArrange(Rectangle frame)
 		{
 			base.NativeArrange(frame);
-		
+			UpdateItemsSource();
+
 		}
 		public static void MapCount(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
@@ -55,7 +53,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			//handler.UpdateItemsSource();
 		}
-		public static void MapMaximumVisible(IndicatorViewHandler handler, IIndicatorView indicator) {
+		public static void MapMaximumVisible(IndicatorViewHandler handler, IIndicatorView indicator)
+		{
 			//handler.UpdateItemsSource();
 		}
 		public static void MapIndicatorSize(IndicatorViewHandler handler, IIndicatorView indicator) { }
@@ -88,26 +87,24 @@ namespace Microsoft.Maui.Handlers
 			for (int i = childCount; i < count; i++)
 			{
 				var imageView = new ImageView(Context);
-				
+
 				if (NativeView.Orientation == Orientation.Horizontal)
 					imageView.SetPadding((int)Context.ToPixels(DefaultPadding), 0, (int)Context.ToPixels(DefaultPadding), 0);
 				else
 					imageView.SetPadding(0, (int)Context.ToPixels(DefaultPadding), 0, (int)Context.ToPixels(DefaultPadding));
 
 				imageView.SetImageDrawable(index == i ? _currentPageShape : _pageShape);
+
+				NativeView.AddView(imageView,50,40);
 			}
 
-			childCount = NativeView.ChildCount;
+			//childCount = NativeView.ChildCount;
 
-			for (int i = count; i < childCount; i++)
-			{
-				NativeView.RemoveViewAt(NativeView.ChildCount - 1);
-			}
+			//for (int i = count; i < childCount; i++)
+			//{
+			//	NativeView.RemoveViewAt(NativeView.ChildCount - 1);
+			//}
 			//IndicatorView.NativeSizeChanged();
-			//VirtualView.InvalidateMeasure();
-			//VirtualView.InvalidateArrange();
-			NativeView.Invalidate();
-		
 		}
 
 		void ResetIndicators()
@@ -126,7 +123,7 @@ namespace Microsoft.Maui.Handlers
 			//else
 			//	UpdateIndicatorTemplate();
 
-			UpdateIndicators();
+			//UpdateIndicators();
 		}
 
 		void UpdateIndicators()
@@ -175,7 +172,7 @@ namespace Microsoft.Maui.Handlers
 			AShapeDrawable shape;
 
 			//if (_shapeType == AShapeType.Oval)
-				shape = new AShapeDrawable(new AShapes.OvalShape());
+			shape = new AShapeDrawable(new AShapes.OvalShape());
 			//else
 			//shape = new AShapeDrawable(new AShapes.RectShape());
 

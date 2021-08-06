@@ -10,7 +10,7 @@
             <Label
                 Text="Basic"
                 Style="{StaticResource Headline}"/>
-            <IndicatorView Count="5" Position="2"/>
+            <IndicatorView Count="5" Position="2" Background="Pink"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
