@@ -35,6 +35,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		public override void NativeArrange(Rectangle frame)
+		{
+			base.NativeArrange(frame);
+			VisualElementRenderer.UpdateLayout();
+		}
+
 		public override ERect GetNativeContentGeometry()
 		{
 			return VisualElementRenderer?.GetNativeContentGeometry() ?? new ERect();

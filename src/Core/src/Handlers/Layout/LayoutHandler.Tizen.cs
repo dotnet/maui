@@ -1,7 +1,6 @@
 ﻿using System;
 using ElmSharp;
 using Tizen.UIExtensions.Common;
-using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -10,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 		void RegisterOnLayoutUpdated();
 	}
 
-	public partial class LayoutHandler : ViewHandler<ILayout, Canvas>, IRegisterLayoutUpdate
+	public partial class LayoutHandler : ViewHandler<ILayout, LayoutCanvas>, IRegisterLayoutUpdate
 	{
 		bool _layoutUpdatedRegistered;
 		Graphics.Rectangle _arrangeCache;
@@ -26,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 			handler.WrappedNativeView?.UpdateBackground(layout);
 		}
 
-		protected override Canvas CreateNativeView()
+		protected override LayoutCanvas CreateNativeView()
 		{
 			if (VirtualView == null)
 			{
@@ -38,7 +37,11 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
 			}
 
-			var view = new Canvas(NativeParent);
+			var view = new LayoutCanvas(NativeParent)
+			{
+				CrossPlatformMeasure = VirtualView.LayoutManager.Measure,
+				CrossPlatformArrange = VirtualView.LayoutManager.ArrangeChildren
+			};
 
 			view.Show();
 			return view;
@@ -51,6 +54,9 @@ namespace Microsoft.Maui.Handlers
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			NativeView.CrossPlatformMeasure = VirtualView.LayoutManager.Measure;
+			NativeView.CrossPlatformArrange = VirtualView.LayoutManager.ArrangeChildren;
 
 			NativeView.Children.Clear();
 
@@ -100,13 +106,13 @@ namespace Microsoft.Maui.Handlers
 			return base.ComputeAbsolutePoint(frame);
 		}
 
-		protected override void ConnectHandler(Canvas nativeView)
+		protected override void ConnectHandler(LayoutCanvas nativeView)
 		{
 			base.ConnectHandler(nativeView);
 			nativeView.LayoutUpdated += OnLayoutUpdated;
 		}
 
-		protected override void DisconnectHandler(Canvas nativeView)
+		protected override void DisconnectHandler(LayoutCanvas nativeView)
 		{
 			base.DisconnectHandler(nativeView);
 			nativeView.LayoutUpdated -= OnLayoutUpdated;

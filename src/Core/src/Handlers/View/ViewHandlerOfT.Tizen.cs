@@ -93,19 +93,6 @@ namespace Microsoft.Maui.Handlers
 			return measured;
 		}
 
-		protected virtual Size MinimumSize()
-		{
-
-			if (NativeView is IMeasurable im)
-			{
-				return im.Measure(NativeView.MinimumWidth, NativeView.MinimumHeight).ToDP();
-			}
-			else
-			{
-				return new ESize(NativeView!.MinimumWidth, NativeView!.MinimumHeight).ToDP();
-			}
-		}
-
 		public virtual ERect GetNativeContentGeometry()
 		{
 			var nativeView = WrappedNativeView;
