@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Layouts
 		{
 			var padding = Stack.Padding;
 
-			double stackHeight = padding.Top;
-			double left = padding.Left;
+			double stackHeight = padding.Top + bounds.Top;
+			double left = padding.Left + bounds.X;
 			double width = bounds.Width - padding.HorizontalThickness;
 
 			for (int n = 0; n < Stack.Count; n++)
