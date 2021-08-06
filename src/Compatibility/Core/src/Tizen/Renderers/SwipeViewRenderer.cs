@@ -4,6 +4,7 @@ using ElmSharp;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using ERect = ElmSharp.Rect;
+using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -244,7 +245,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		void UpdateItems()
 		{
 			CurrentItems = GetSwipedItems();
-			var itemsLayout = new StackLayout
+			var itemsLayout = new XStackLayout
 			{
 				Spacing = 0,
 				Orientation = IsHorizontalSwipe ? StackOrientation.Horizontal : StackOrientation.Vertical,
@@ -345,7 +346,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		static View CreateItemView(SwipeItemView item)
 		{
-			return new StackLayout
+			return new XStackLayout
 			{
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
@@ -389,7 +390,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				label.VerticalTextAlignment = TextAlignment.End;
 			}
 
-			var layout = new StackLayout
+			var layout = new XStackLayout
 			{
 				Padding = 5,
 				BackgroundColor = item.BackgroundColor,

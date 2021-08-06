@@ -8,6 +8,7 @@ using EvasObject = ElmSharp.EvasObject;
 using GestureLayer = ElmSharp.GestureLayer;
 using Scroller = ElmSharp.Scroller;
 using TWebView = Tizen.WebView.WebView;
+using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -86,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		}
 	}
 
-	class RefreshLayout : StackLayout
+	class RefreshLayout : XStackLayout
 	{
 		static readonly int MaximumDistance = 100;
 

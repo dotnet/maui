@@ -6,6 +6,7 @@ using ElmSharp;
 using ESize = ElmSharp.Size;
 using XLabel = Microsoft.Maui.Controls.Label;
 using XColor = Microsoft.Maui.Graphics.Color;
+using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 				};
 				label.SetBinding(XLabel.TextProperty, new Binding(".", converter: new ToTextConverter()));
 
-				return new StackLayout
+				return new XStackLayout
 				{
 					BackgroundColor = XColor.FromRgb(255, 255, 255),
 					Padding = 30,

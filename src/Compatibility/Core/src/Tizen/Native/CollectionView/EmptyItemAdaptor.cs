@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ElmSharp;
 using ESize = ElmSharp.Size;
 using XLabel = Microsoft.Maui.Controls.Label;
+using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 {
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 			var header = CreateHeaderView();
 			var footer = CreateFooterView();
-			var layout = new StackLayout();
+			var layout = new XStackLayout();
 
 			if (header != null)
 			{
@@ -79,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 			native.Unrealize();
 		}
 
-		class EmptyView : StackLayout
+		class EmptyView : XStackLayout
 		{
 			public EmptyView()
 			{

@@ -7,6 +7,7 @@ using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
 using EProgressBar = ElmSharp.ProgressBar;
 using Color = Microsoft.Maui.Graphics.Color;
+using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -227,7 +228,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				entry.MaxLength = args.MaxLength;
 			}
 
-			var layout = new StackLayout
+			var layout = new XStackLayout
 			{
 				Spacing = 10,
 				Children =

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ElmSharp;
+using XStackLayout = Microsoft.Maui.Controls.StackLayout;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				entry.SetBinding(InputView.KeyboardProperty, new Binding(EntryCell.KeyboardProperty.PropertyName));
 				entry.SetBinding(Entry.HorizontalTextAlignmentProperty, new Binding(EntryCell.HorizontalTextAlignmentProperty.PropertyName));
 
-				var layout = new StackLayout()
+				var layout = new XStackLayout()
 				{
 					Orientation = StackOrientation.Horizontal,
 					Children = {
