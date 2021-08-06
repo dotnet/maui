@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Handlers;
 using Tizen.WebView;
+using TApplication = Tizen.Applications.Application;
 using TChromium = Tizen.WebView.Chromium;
 using TWebView = Tizen.WebView.WebView;
 
@@ -94,16 +94,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				throw new InvalidOperationException($"Can't start {nameof(BlazorWebView)} without native web view instance.");
 			}
 
-			var assetConfig = Services!.GetRequiredService<BlazorAssetsAssemblyConfiguration>()!;
-
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
 			var contentRootDir = Path.GetDirectoryName(HostPage!) ?? string.Empty;
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
+			var resContentRootDir = Path.Combine(TApplication.Current.DirectoryInfo.Resource, contentRootDir);
+			var mauiAssetFileProvider = new PhysicalFileProvider(resContentRootDir);
 
-			var fileProvider = new ManifestEmbeddedFileProvider(assetConfig.AssetsAssembly, root: contentRootDir);
-
-			_webviewManager = new TizenWebViewManager(this, NativeWebView, Services!, MauiDispatcher.Instance, fileProvider, hostPageRelativePath);
+			_webviewManager = new TizenWebViewManager(this, NativeWebView, Services!, MauiDispatcher.Instance, mauiAssetFileProvider, hostPageRelativePath);
 			if (RootComponents != null)
 			{
 				foreach (var rootComponent in RootComponents)
