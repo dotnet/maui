@@ -14,11 +14,11 @@ namespace Microsoft.Maui.LifecycleEvents
 			windows
 				.OnWindowCreated(window =>
 				{
-					window.GetWindow().Created();
+					window.GetWindow()?.Created();
 				})
 				.OnResumed(window =>
 				{
-					window.GetWindow().Resumed();
+					window.GetWindow()?.Resumed();
 				})
 				.OnActivated((window, args) =>
 				{
@@ -26,21 +26,21 @@ namespace Microsoft.Maui.LifecycleEvents
 					{
 						case UI.Xaml.WindowActivationState.CodeActivated:
 						case UI.Xaml.WindowActivationState.PointerActivated:
-							window.GetWindow().Activated();
+							window.GetWindow()?.Activated();
 							break;
 						case UI.Xaml.WindowActivationState.Deactivated:
-							window.GetWindow().Deactivated();
+							window.GetWindow()?.Deactivated();
 							break;
 					}
 				})
 				.OnVisibilityChanged((window, args) =>
 				{
 					if (!args.Visible)
-						window.GetWindow().Stopped();
+						window.GetWindow()?.Stopped();
 				})
 				.OnClosed((window, args) =>
 				{
-					window.GetWindow().Destroying();
+					window.GetWindow()?.Destroying();
 				});
 		}
 	}

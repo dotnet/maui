@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		public static IWindow GetWindow(this UIApplication application)
+		public static IWindow? GetWindow(this UIApplication application)
 		{
 			if (MauiUIApplicationDelegate.Current.VirtualWindow != null)
 				return MauiUIApplicationDelegate.Current.VirtualWindow;
@@ -31,7 +31,7 @@ namespace Microsoft.Maui
 					return window;
 			}
 
-			throw new InvalidOperationException("Window Not Found");
+			return null;
 		}
 	}
 }

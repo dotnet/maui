@@ -6,22 +6,34 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>Maui.Controls.Sample.WinUI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x86;x64;arm64</Platforms>
-    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>MSIX</WindowsPackageType>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(UseMaui)' != 'true' " >
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.ProjectReunion" />
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
     <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
-    <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
     <ProjectReference Include="..\Controls.Sample\Maui.Controls.Sample-net6.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Images\SplashScreen.scale-200.png" />
+    <Content Include="Images\LockScreenLogo.scale-200.png" />
+    <Content Include="Images\Square150x150Logo.scale-200.png" />
+    <Content Include="Images\Square44x44Logo.scale-200.png" />
+    <Content Include="Images\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Images\StoreLogo.png" />
+    <Content Include="Images\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
 
 </Project>
