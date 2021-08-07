@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
 using NUnit.Framework;
@@ -44,6 +45,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(windowChildren.Count, 2);
 			Assert.AreEqual(page, windowChildren[0]);
 			Assert.AreEqual(modalPage, windowChildren[1]);
+		}
+
+		[Test]
+		public async Task ModalChildrenFiresDiagnosticEvents()
+		{
+			var app = new Application();
+			var iapp = app as IApplication;
+			var page = new ContentPage();
+			app.MainPage = page;
+			var window = (Window)iapp.CreateWindow(null);
+			var modalPage = new ContentPage();
+			VisualDiagnostics.VisualTreeChanged += OnVisualTreeChanged;
+			VisualTreeChangeEventArgs lastArgs = null;
+
+			await window.Navigation.PushModalAsync(modalPage);
+			Assert.AreEqual(window, lastArgs.Parent);
+			Assert.AreEqual(modalPage, lastArgs.Child);
+			Assert.AreEqual(1, lastArgs.ChildIndex);
+			lastArgs = null;
+
+			await window.Navigation.PopModalAsync();
+			Assert.AreEqual(window, lastArgs.Parent);
+			Assert.AreEqual(modalPage, lastArgs.Child);
+			Assert.AreEqual(1, lastArgs.ChildIndex);
+
+			void OnVisualTreeChanged(object s, VisualTreeChangeEventArgs e)
+			{
+				lastArgs = e;
+			}
 		}
 
 		[Test]
