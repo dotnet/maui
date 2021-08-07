@@ -66,13 +66,12 @@ namespace Microsoft.Maui.Handlers
 			var deviceIndependentRight = Context.FromPixels(r);
 			var deviceIndependentBottom = Context.FromPixels(b);
 
-			var destination = Rectangle.FromLTRB(deviceIndependentLeft, deviceIndependentTop,
-				deviceIndependentRight, deviceIndependentBottom);
+			var finalSize = new Size(deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
 
-			CrossPlatformArrange(destination);
+			CrossPlatformArrange(finalSize);
 		}
 
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
+		internal Func<Size, Size>? CrossPlatformArrange { get; set; }
 	}
 }
