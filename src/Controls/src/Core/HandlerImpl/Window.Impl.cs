@@ -11,7 +11,7 @@ using Microsoft.Maui.Controls.Platform;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow
+	public partial class Window : NavigableElement, IWindow, IVisualTreeElement
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
@@ -194,6 +194,13 @@ namespace Microsoft.Maui.Controls
 		{
 			Resumed?.Invoke(this, EventArgs.Empty);
 			OnResumed();
+		}
+
+		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren()
+		{
+			List<IVisualTreeElement> elements = new List<IVisualTreeElement>(InternalChildren);
+			elements.AddRange(ModalNavigationManager.ModalStack);
+			return elements.AsReadOnly();
 		}
 
 
