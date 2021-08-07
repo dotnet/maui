@@ -3,7 +3,7 @@
     "author": "Microsoft",
     "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI", "Blazor" ],
     "identity": "Microsoft.Maui.BlazorApp",
-    "groupIdentity": "Microsoft.Maui.Blazor",
+    "groupIdentity": "Microsoft.Maui.BlazorApp",
     "name": ".NET MAUI Blazor App",
     "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, and WinUI using Blazor",
     "shortName": "maui-blazor",
