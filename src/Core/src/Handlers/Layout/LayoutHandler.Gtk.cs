@@ -2,6 +2,7 @@
 using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Native;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.ClearChildren();
 
-			foreach (var child in VirtualView.Children)
+			foreach (var child in VirtualView)
 			{
 				if (child.ToNative(MauiContext) is { } nativeChild)
 					NativeView.Add(child, nativeChild);

@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics.Native.Gtk;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 using Size = Microsoft.Maui.Graphics.Size;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Native
 {
 
 	// refactored from: https://github.com/mono/xwt/blob/501f6b529fca632655295169094f637627c74c47/Xwt.Gtk/Xwt.GtkBackend/BoxBackend.cs
@@ -150,11 +150,10 @@ namespace Microsoft.Maui
 
 		protected void ArrangeAllocation(Rectangle allocation)
 		{
-			if (VirtualView is not { } virtualView)
+			if (VirtualView is not { LayoutManager: { } layoutManager } virtualView)
 				return;
 
-			virtualView.InvalidateArrange();
-			virtualView.Arrange(allocation);
+			layoutManager.ArrangeChildren(allocation);
 
 		}
 
@@ -216,11 +215,10 @@ namespace Microsoft.Maui
 		public SizeRequest Measure(double widthConstraint, double heightConstraint, SizeRequestMode mode)
 		{
 
-			if (VirtualView is not { } virtualView)
+			if (VirtualView is not { LayoutManager: { } layoutManager } virtualView)
 				return Size.Zero;
 
-			virtualView.InvalidateMeasure();
-			var size1 = virtualView.Measure(widthConstraint, heightConstraint);
+			var size1 = layoutManager.Measure(widthConstraint, heightConstraint);
 			sr++;
 
 			return new SizeRequest(size1, size1);

@@ -1,4 +1,4 @@
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Native
 {
 
 	// https://developer.gnome.org/gtk3/stable/GtkImage.html

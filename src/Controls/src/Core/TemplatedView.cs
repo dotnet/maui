@@ -5,7 +5,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public class TemplatedView : Layout, IControlTemplated
+	public class TemplatedView : Compatibility.Layout, IControlTemplated
 	{
 		public static readonly BindableProperty ControlTemplateProperty = BindableProperty.Create(nameof(ControlTemplate), typeof(ControlTemplate), typeof(TemplatedView), null,
 			propertyChanged: TemplateUtilities.OnControlTemplateChanged);

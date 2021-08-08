@@ -36,14 +36,14 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(StyleProperty, value); }
 		}
 
-		[TypeConverter(typeof(ListStringTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> StyleClass
 		{
 			get { return @class; }
 			set { @class = value; }
 		}
 
-		[TypeConverter(typeof(ListStringTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> @class
 		{
 			get { return _mergedStyle.StyleClass; }

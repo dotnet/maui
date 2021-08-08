@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui
 {
@@ -8,22 +8,19 @@ namespace Microsoft.Maui
 	/// </summary>
 	public interface ILayout : IView, IContainer
 	{
-
 		/// <summary>
 		/// Gets the Layout Handler.
 		/// </summary>
 		ILayoutHandler LayoutHandler { get; }
 
 		/// <summary>
-		/// Add a child View to the Layout.
+		/// The space between the outer edge of the ILayout's content area and its children.
 		/// </summary>
-		/// <param name="child">The child View to add to the Layout.</param>
-		void Add(IView child);
+		Thickness Padding { get; }
 
 		/// <summary>
-		/// Remove a child View from the Layout.
+		/// The LayoutManager responsible for laying out the children of this ILayout
 		/// </summary>
-		/// <param name="child">The child View to remove from the Layout.</param>
-		void Remove(IView child);
+		ILayoutManager LayoutManager { get; }
 	}
 }

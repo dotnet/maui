@@ -1,11 +1,14 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[TypeConverter(typeof(ToBarConverter))]
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
+	[System.ComponentModel.TypeConverter(typeof(ToBarConverter))]
 	internal class Bar
 	{
 
@@ -43,7 +46,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public static readonly BindableProperty BazProperty =
 			BindableProperty.Create(nameof(MockBindable.Baz), typeof(Baz), typeof(MockBindable), default(Baz));
 
-		[TypeConverter(typeof(ToBazConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ToBazConverter))]
 		public Baz Baz
 		{
 			get { return (Baz)GetValue(BazProperty); }
@@ -221,7 +224,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		[Description("When the BindingContext changes, any bindings should be immediately applied.")]
+		[NUnit.Framework.Description("When the BindingContext changes, any bindings should be immediately applied.")]
 		public void BindingContextChangedBindingsApplied()
 		{
 			var mock = new MockBindable();
@@ -237,7 +240,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		[Description("When the BindingContext changes, the new context needs to listen for updates.")]
+		[NUnit.Framework.Description("When the BindingContext changes, the new context needs to listen for updates.")]
 		public void BindingContextChangedBindingsListening()
 		{
 			var mock = new MockBindable();
@@ -255,7 +258,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		[Description("When an INPC implementer is unset as the BindingContext, its changes shouldn't be listened to any further.")]
+		[NUnit.Framework.Description("When an INPC implementer is unset as the BindingContext, its changes shouldn't be listened to any further.")]
 		public void BindingContextUnsetStopsListening()
 		{
 			var mock = new MockBindable();

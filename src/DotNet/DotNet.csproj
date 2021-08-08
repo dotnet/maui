@@ -57,7 +57,7 @@
       <_WorkloadFiles Include="$(_InstallTempDirectory)data/WorkloadManifest.*" />
     </ItemGroup>
     <CopyWorkloadFiles
-        Name="Microsoft.NET.Sdk.Maui"
+        Name="microsoft.net.sdk.maui"
         Files="@(_WorkloadFiles)"
         WorkloadDirectory="$(MSBuildExtensionsPath)../../sdk-manifests/$(DotNetPreviewVersionBand)"
         VersionBand="$(DotNetPreviewVersionBand)"
@@ -138,11 +138,11 @@
     <_PacksToRemove Include="Microsoft.NET.Workload.tvOS" />
     <_PacksToRemove Include="Microsoft.NET.Workload.macOS" />
     <!-- Ids for 'dotnet workload install' -->
-    <_WorkloadIds Include="microsoft-android-sdk-full" />
-    <_WorkloadIds Include="microsoft-maccatalyst-sdk-full" />
-    <_WorkloadIds Include="microsoft-macos-sdk-full" />
-    <_WorkloadIds Include="microsoft-ios-sdk-full" />
-    <_WorkloadIds Include="microsoft-tvos-sdk-full" />
+    <_WorkloadIds Include="android-aot" />
+    <_WorkloadIds Include="maccatalyst" />
+    <_WorkloadIds Include="macos" />
+    <_WorkloadIds Include="ios" />
+    <_WorkloadIds Include="tvos" />
   </ItemGroup>
 
   <Target Name="_AcquireWorkloadManifests"

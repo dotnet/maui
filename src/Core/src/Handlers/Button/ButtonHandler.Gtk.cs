@@ -1,15 +1,18 @@
 ﻿using System;
 using Gtk;
+using Microsoft.Maui.Graphics.Native.Gtk;
 
 namespace Microsoft.Maui.Handlers
 {
+
+	// https://developer.gnome.org/gtk3/stable/GtkButton.html
 
 	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
 
 		protected override Button CreateNativeView()
 		{
-			return new Button();
+			return Button.NewWithLabel(string.Empty);
 		}
 
 		protected override void ConnectHandler(Button nativeView)
@@ -36,8 +39,13 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateTextColor(button.TextColor);
 		}
 
-		[MissingMapper]
-		public static void MapCharacterSpacing(ButtonHandler handler, IButton button) { }
+		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)
+		{
+			if (handler.NativeView.Child is Label nativeView)
+			{
+				nativeView.Attributes = nativeView.Attributes.AttrListFor(button.CharacterSpacing);
+			}
+		}
 
 		public static void MapFont(ButtonHandler handler, IButton button)
 		{

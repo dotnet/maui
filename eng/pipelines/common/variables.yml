@@ -8,7 +8,7 @@ variables:
 - name: DOTNET_VERSION
   value: 5.0.201
 - name: XHARNESS_VERSION
-  value: 1.0.0-prerelease.21317.1
+  value: 1.0.0-prerelease.21372.1
 - name: LocBranchPrefix
   value: 'loc-hb'
 - name: LocBranch
@@ -34,11 +34,13 @@ variables:
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/xcode.csx'
 - name: provisionator.path
   value: '$(System.DefaultWorkingDirectory)/eng/provisioning/provisioning.csx'
-- name: provisionator.vs2019
-  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs2019.csx'
+- name: provisionator.vs
+  value: '$(System.DefaultWorkingDirectory)/eng/provisioning/vs.csx'
 - name: provisionator.extraArguments
   value: '--v'
 - name: DotNet.Dir
   value: $(System.DefaultWorkingDirectory)/bin/dotnet
 - name: DotNet.Path
   value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
+- name: TeamName
+  value: Maui

@@ -311,12 +311,13 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (weakRecognizer.Target is IPinchGestureController pinchGestureRecognizer &&
 						weakEventTracker.Target is GestureManager eventTracker &&
-						eventTracker._handler?.VirtualView is View view)
+						eventTracker._handler?.VirtualView is View view &&
+						UIApplication.SharedApplication.GetKeyWindow() is UIWindow window)
 					{
 						var oldScale = eventTracker._previousScale;
 						var originPoint = r.LocationInView(null);
 #if __MOBILE__
-						originPoint = UIApplication.SharedApplication.GetKeyWindow().ConvertPointToView(originPoint, eventTracker._nativeView);
+						originPoint = window.ConvertPointToView(originPoint, eventTracker._nativeView);
 #else
 						originPoint = NSApplication.SharedApplication.KeyWindow.ContentView.ConvertPointToView(originPoint, eventTracker._handler.NativeView);
 #endif

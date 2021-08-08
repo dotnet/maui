@@ -6,6 +6,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[TestFixture]
 	public class StackLayoutUnitTests : BaseTestFixture
 	{
@@ -232,9 +234,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			stack.Layout(new Rectangle(0, 0, 200, 200));
 
-			Assert.AreEqual(new Rectangle(0, 0, 20, 30), stack.Children[0].Bounds);
-			Assert.AreEqual(new Rectangle(90, 36, 20, 30), stack.Children[1].Bounds);
-			Assert.AreEqual(new Rectangle(180, 72, 20, 30), stack.Children[2].Bounds);
+			Assert.AreEqual(new Rectangle(0, 0, 20, 30), stack.Children[0].Frame);
+			Assert.AreEqual(new Rectangle(90, 36, 20, 30), stack.Children[1].Frame);
+			Assert.AreEqual(new Rectangle(180, 72, 20, 30), stack.Children[2].Frame);
 		}
 
 		[Test]
@@ -274,9 +276,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			stack.Layout(new Rectangle(0, 0, 100, 250));
 
-			Assert.That(stack.Children.ToArray()[0].Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(stack.Children.ToArray()[1].Bounds, Is.EqualTo(new Rectangle(0, 110, 100, 100)));
-			Assert.That(stack.Children.ToArray()[2].Bounds, Is.EqualTo(new Rectangle(0, 220, 100, 30)));
+			Assert.That(stack.Children.ToArray()[0].Frame, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
+			Assert.That(stack.Children.ToArray()[1].Frame, Is.EqualTo(new Rectangle(0, 110, 100, 100)));
+			Assert.That(stack.Children.ToArray()[2].Frame, Is.EqualTo(new Rectangle(0, 220, 100, 30)));
 		}
 
 		[Test]
@@ -296,9 +298,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			stack.Layout(new Rectangle(0, 0, 250, 100));
 
-			Assert.That(stack.Children.ToArray()[0].Bounds, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
-			Assert.That(stack.Children.ToArray()[1].Bounds, Is.EqualTo(new Rectangle(110, 0, 100, 100)));
-			Assert.That(stack.Children.ToArray()[2].Bounds, Is.EqualTo(new Rectangle(220, 0, 30, 100)));
+			Assert.That(stack.Children.ToArray()[0].Frame, Is.EqualTo(new Rectangle(0, 0, 100, 100)));
+			Assert.That(stack.Children.ToArray()[1].Frame, Is.EqualTo(new Rectangle(110, 0, 100, 100)));
+			Assert.That(stack.Children.ToArray()[2].Frame, Is.EqualTo(new Rectangle(220, 0, 30, 100)));
 		}
 
 		[Test]

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls
 		ResourceDictionary _mergedInstance;
 		Uri _source;
 
-		[TypeConverter(typeof(RDSourceTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(RDSourceTypeConverter))]
 		public Uri Source
 		{
 			get { return _source; }
@@ -325,6 +326,12 @@ namespace Microsoft.Maui.Controls
 		[TypeConversion(typeof(Uri))]
 		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
 		{
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+				=> sourceType == typeof(string);
+
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+				=> true;
+
 			object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 			{
 				if (serviceProvider == null)
@@ -370,14 +377,12 @@ namespace Microsoft.Maui.Controls
 				return resourceUri.AbsolutePath.Substring(1);
 			}
 
-			public override object ConvertFromInvariantString(string value)
-			{
-				throw new NotImplementedException();
-			}
+			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+				=> throw new NotImplementedException();
 
-			public override string ConvertToInvariantString(object value)
+			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 			{
-				if (!(value is Uri uri))
+				if (value is not Uri uri)
 					throw new NotSupportedException();
 				return uri.ToString();
 			}

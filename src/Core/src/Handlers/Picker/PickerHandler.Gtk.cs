@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapReload(PickerHandler handler, IPicker picker)
+		public static void MapReload(PickerHandler handler, IPicker picker, object? args)
 		{
 			var nativeView = handler.NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = picker ?? throw new InvalidOperationException($"{nameof(picker)} should have been set by base class.");

@@ -2,7 +2,7 @@ using System;
 using Gtk;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Native
 {
 
 	public class PageView : Gtk.Box

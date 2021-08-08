@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -6,15 +7,13 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout<T> : Layout, Microsoft.Maui.ILayout, IViewContainer<T> where T : View
+	public abstract partial class Layout<T> : Layout, Microsoft.Maui.ILayout, ILayoutManager, IBindableLayout, IViewContainer<T> where T : View
 	{
-		// TODO ezhart We should look for a way to optimize this a bit
-		IReadOnlyList<Microsoft.Maui.IView> Microsoft.Maui.IContainer.Children => Children.ToList();
-
 		readonly ElementCollection<T> _children;
 
 		protected Layout() => _children = new ElementCollection<T>(InternalChildren);
@@ -22,6 +21,9 @@ namespace Microsoft.Maui.Controls
 		public new IList<T> Children => _children;
 
 		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
+
+		ILayoutManager Maui.ILayout.LayoutManager => this;
+		IList IBindableLayout.Children => _children;
 
 		protected override void OnChildAdded(Element child)
 		{
@@ -47,27 +49,20 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		public void Add(IView child)
+		Size ILayoutManager.Measure(double widthConstraint, double heightConstraint)
 		{
-			if (child is T view)
-			{
-				Children.Add(view);
-			}
+			return OnMeasure(widthConstraint, heightConstraint);
 		}
 
-		public void Remove(IView child)
+		Size ILayoutManager.ArrangeChildren(Rectangle childBounds)
 		{
-			if (child is T view)
-			{
-				Children.Remove(view);
-			}
+			LayoutChildren(childBounds.X, childBounds.Y, childBounds.Width, childBounds.Height);
+			return childBounds.Size;
 		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement, Microsoft.Maui.IContainer
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IFrameworkElement, IVisualTreeElement
 	{
-		IReadOnlyList<Microsoft.Maui.IView> Microsoft.Maui.IContainer.Children => InternalChildren.OfType<IView>().ToList();
-
 		public static readonly BindableProperty IsClippedToBoundsProperty =
 			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false);
 
@@ -127,6 +122,8 @@ namespace Microsoft.Maui.Controls
 
 		public void ForceLayout() => SizeAllocated(Width, Height);
 
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.ToList().AsReadOnly();
+
 		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public sealed override SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
@@ -141,6 +138,13 @@ namespace Microsoft.Maui.Controls
 			bool isRightToLeft = false;
 			if (child.Parent is IFlowDirectionController parent && (isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer && parent.EffectiveFlowDirection.IsRightToLeft()))
 				region = new Rectangle(parent.Width - region.Right, region.Y, region.Width, region.Height);
+
+			if (child is IFrameworkElement fe && fe.Handler != null)
+			{
+				// The new arrange methods will take care of all the alignment and margins and such
+				fe.Arrange(region);
+				return;
+			}
 
 			if (!(child is View view))
 			{
@@ -219,12 +223,14 @@ namespace Microsoft.Maui.Controls
 
 		Size IFrameworkElement.Measure(double widthConstraint, double heightConstraint)
 		{
-			DesiredSize = OnMeasure(widthConstraint, heightConstraint).Request;
-			return DesiredSize;
+			return MeasureOverride(widthConstraint, heightConstraint);
 		}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-			=> (this as IFrameworkElement).Measure(widthConstraint, heightConstraint);
+		{
+			DesiredSize = OnMeasure(widthConstraint, heightConstraint).Request;
+			return DesiredSize;
+		}
 
 		protected override void OnSizeAllocated(double width, double height)
 		{
@@ -285,6 +291,13 @@ namespace Microsoft.Maui.Controls
 			bool isRightToLeft = false;
 			if (child.Parent is IFlowDirectionController parent && (isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer && parent.EffectiveFlowDirection.IsRightToLeft()))
 				region = new Rectangle(parent.Width - region.Right, region.Y, region.Width, region.Height);
+
+			if (child is IFrameworkElement fe && fe.Handler != null)
+			{
+				// The new arrange methods will take care of all the alignment and margins and such
+				fe.Arrange(region);
+				return;
+			}
 
 			if (region.Size != childSizeRequest.Request)
 			{
@@ -521,22 +534,14 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			var size = base.ArrangeOverride(bounds);
+			base.ArrangeOverride(bounds);
 
 			// The SholdLayoutChildren check will catch impossible sizes (negative widths/heights), not-yet-loaded controls,
 			// and other weirdness that comes from the legacy layouts trying to run layout before the native side is ready. 
 			if (!ShouldLayoutChildren())
-				return size;
+				return bounds.Size;
 
 			UpdateChildrenLayout();
-
-			foreach (var child in Children)
-			{
-				if (child is IFrameworkElement frameworkElement)
-				{
-					frameworkElement.Handler?.NativeArrange(frameworkElement.Frame);
-				}
-			}
 
 			return Frame.Size;
 		}

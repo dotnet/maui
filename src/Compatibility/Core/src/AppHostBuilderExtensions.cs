@@ -40,13 +40,12 @@ using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platf
 using Microsoft.Maui.Graphics.Native.Gtk;
 using Microsoft.Maui.Controls.Compatibility.Platform.Gtk;
 using Microsoft.Maui.Controls.Handlers;
-using ScrollViewHandler = Microsoft.Maui.Handlers.ScrollView.ScrollViewHandler;
 
 #endif
 
 namespace Microsoft.Maui.Controls.Hosting
 {
-	public static class AppHostBuilderExtensions
+	public static partial class AppHostBuilderExtensions
 	{
 		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder)
 			where TApp : class, IApplication
@@ -74,89 +73,10 @@ namespace Microsoft.Maui.Controls.Hosting
 			return builder;
 		}
 
+
 		static IAppHostBuilder SetupDefaults(this IAppHostBuilder builder)
 		{
-			builder.ConfigureLifecycleEvents(events =>
-			{
-#if __ANDROID__
-				events.AddAndroid(android => android
-					.OnApplicationCreating((app) =>
-					{
-						// This is the initial Init to set up any system services registered by
-						// Forms.Init(). This happens in the Application's OnCreate - before
-						// any UI has appeared.
-						// This creates a dummy MauiContext that wraps the Application.
-
-						var services = MauiApplication.Current.Services;
-						var mauiContext = new MauiContext(services, app);
-						var state = new ActivationState(mauiContext);
-						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
-					})
-					.OnMauiContextCreated((mauiContext) =>
-					{
-						// This is the final Init that sets up the real context from the activity.
-
-						var state = new ActivationState(mauiContext);
-						Forms.Init(state);
-					}));
-#elif __IOS__
-				events.AddiOS(iOS => iOS
-					.WillFinishLaunching((app, options) =>
-					{
-						// This is the initial Init to set up any system services registered by
-						// Forms.Init(). This happens before any UI has appeared.
-						// This creates a dummy MauiContext.
-
-						var services = MauiUIApplicationDelegate.Current.Services;
-						var mauiContext = new MauiContext(services);
-						var state = new ActivationState(mauiContext);
-						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
-						return true;
-					})
-					.OnMauiContextCreated((mauiContext) =>
-					{
-						// This is the final Init that sets up the real context from the application.
-
-						var state = new ActivationState(mauiContext);
-						Forms.Init(state);
-					}));
-#elif WINDOWS
-				events.AddWindows(windows => windows
-					.OnLaunching((app, args) =>
-					{
-						// This is the initial Init to set up any system services registered by
-						// Forms.Init(). This happens before any UI has appeared.
-						// This creates a dummy MauiContext.
-						// We need to call this so the Window and Root Page can new up successfully
-						// The dispatcher that's inside of Forms.Init needs to be setup before the initial
-						// window and root page start creating.
-						// Inside OnLaunched we grab the MauiContext that's on the window so we can have the correct
-						// MauiContext inside Forms
-
-						var services = MauiWinUIApplication.Current.Services;
-						var mauiContext = new MauiContext(services);
-						var state = new ActivationState(mauiContext, args);
-						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
-					})
-					.OnMauiContextCreated((mauiContext) =>
-					{
-						// This is the final Init that sets up the real context from the application.
-
-						var state = new ActivationState(mauiContext);
-						Forms.Init(state);
-					}));
-#elif GTK
-
-				events.AddGtk(gtk => gtk
-					.OnMauiContextCreated((mauiContext) =>
-						{
-							var state = new ActivationState(mauiContext);
-							Forms.Init(state);
-						}
-					));
-#endif
-			});
-
+			builder.ConfigureCompatibilityLifecycleEvents();
 			builder
 				.ConfigureMauiHandlers(handlers =>
 				{
@@ -198,8 +118,8 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(ActivityIndicator), typeof(ActivityIndicatorRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CheckBox), typeof(CheckBoxRenderer));
-#if !WINDOWS
 					handlers.TryAddCompatibilityRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer));
+#if !WINDOWS
 					handlers.TryAddCompatibilityRenderer(typeof(Shell), typeof(ShellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer));
 #else
@@ -254,9 +174,6 @@ namespace Microsoft.Maui.Controls.Hosting
 					DependencyService.Register<ResourcesProvider>();
 					DependencyService.Register<Xaml.ValueConverterProvider>();
 					
-					handlers.AddHandler<ScrollView, ScrollViewHandler>();
-					handlers.AddHandler<NavigationPage, NavigationPageHandler>();
-
 					DependencyService.Register<NativeBindingService>();
 					DependencyService.Register<NativeValueConverterService>();
 
@@ -292,7 +209,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					AddLibraryResources("MicrosoftMauiControlsIncluded", "ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
 
 					// Microsoft.Maui.Controls.Compatibility
-					AddLibraryResources("MicrosoftMauiControlsCompatibilityIncluded", "ms-appx:///Microsoft.Maui.Controls.Compatibility/WinUI/Resources.xbf");
+					AddLibraryResources("MicrosoftMauiControlsCompatibilityIncluded", "ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Resources.xbf");
 				}
 #endif
 			}
@@ -304,8 +221,7 @@ namespace Microsoft.Maui.Controls.Hosting
 #elif __ANDROID__
 				services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
 #elif WINDOWS
-				// TODO: Implement GetPathBounds in Microsoft.Maui.Graphics
-				//services.AddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
+                services.AddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
 #elif GTK
 				services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
 #endif

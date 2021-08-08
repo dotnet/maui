@@ -34,6 +34,10 @@ namespace Maui.SimpleSampleApp
 			return window;
 		}
 
+		public void ThemeChanged()
+		{
+		}
+
 	}
 
 }

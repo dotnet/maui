@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -18,7 +20,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		const string GridSpan = "GridSpan";
 
 		IGridLayout CreateGridLayout(int rowSpacing = 0, int colSpacing = 0,
-			string rows = null, string columns = null)
+			string rows = null, string columns = null, IList<IView> children = null)
 		{
 			IEnumerable<IGridRowDefinition> rowDefs = null;
 			IEnumerable<IGridColumnDefinition> colDefs = null;
@@ -40,6 +42,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			SubRowDefs(grid, rowDefs);
 			SubColDefs(grid, colDefs);
+
+			if (children != null)
+			{
+				SubstituteChildren(grid, children);
+			}
 
 			return grid;
 		}
@@ -121,12 +128,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			return measuredSize;
 		}
 
-		void AssertArranged(IView view, double x, double y, double width, double height)
-		{
-			var expected = new Rectangle(x, y, width, height);
-			view.Received().Arrange(Arg.Is(expected));
-		}
-
 		[Category(GridAutoSizing)]
 		[Fact]
 		public void OneAutoRowOneAutoColumn()
@@ -138,7 +139,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view = CreateTestView(new Size(100, 100));
 
 			// Set up the grid to have a single child
-			AddChildren(grid, view);
+			SubstituteChildren(grid, view);
 
 			// Set up the row/column values and spans
 			SetLocation(grid, view);
@@ -161,7 +162,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(viewSize);
 			var view1 = CreateTestView(viewSize);
 
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
@@ -189,7 +190,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view2 = CreateTestView(viewSize);
 			var view3 = CreateTestView(viewSize);
 
-			AddChildren(grid, view0, view1, view2, view3);
+			SubstituteChildren(grid, view0, view1, view2, view3);
 
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
@@ -229,7 +230,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(viewSize);
 			var view1 = CreateTestView(viewSize);
 
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
@@ -255,7 +256,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(viewSize);
 			var view1 = CreateTestView(viewSize);
 
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, row: 1);
@@ -276,7 +277,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var grid = CreateGridLayout(rowSpacing: 10);
 			var view = CreateTestView(new Size(100, 100));
-			AddChildren(grid, view);
+			SubstituteChildren(grid, view);
 			SetLocation(grid, view);
 
 			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
@@ -290,7 +291,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "100, 100", rowSpacing: 10);
 			var view0 = CreateTestView(new Size(100, 100));
 			var view1 = CreateTestView(new Size(100, 100));
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, row: 1);
 
@@ -308,7 +309,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "100, 100", rowSpacing: 10);
 			var view0 = CreateTestView(new Size(100, 100));
 			var view1 = CreateTestView(new Size(100, 100));
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, row: 1);
 
@@ -326,7 +327,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(new Size(100, 100));
 			var view2 = CreateTestView(new Size(100, 100));
 
-			AddChildren(grid, view0, view2);
+			SubstituteChildren(grid, view0, view2);
 			SetLocation(grid, view0);
 			SetLocation(grid, view2, row: 2);
 
@@ -349,7 +350,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(new Size(100, 100));
 			var view2 = CreateTestView(new Size(100, 100));
 
-			AddChildren(grid, view0, view2);
+			SubstituteChildren(grid, view0, view2);
 			SetLocation(grid, view0);
 			SetLocation(grid, view2, row: 2);
 
@@ -366,7 +367,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var grid = CreateGridLayout(colSpacing: 10);
 			var view = CreateTestView(new Size(100, 100));
-			AddChildren(grid, view);
+			SubstituteChildren(grid, view);
 			SetLocation(grid, view);
 
 			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
@@ -379,7 +380,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(columns: "100, 100", colSpacing: 10);
 			var view0 = CreateTestView(new Size(100, 100));
 			var view1 = CreateTestView(new Size(100, 100));
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
 
@@ -396,7 +397,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(columns: "100, 100", colSpacing: 10);
 			var view0 = CreateTestView(new Size(100, 100));
 			var view1 = CreateTestView(new Size(100, 100));
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
 
@@ -414,7 +415,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(new Size(100, 100));
 			var view2 = CreateTestView(new Size(100, 100));
 
-			AddChildren(grid, view0, view2);
+			SubstituteChildren(grid, view0, view2);
 			SetLocation(grid, view0);
 			SetLocation(grid, view2, col: 2);
 
@@ -437,7 +438,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(new Size(100, 100));
 			var view2 = CreateTestView(new Size(100, 100));
 
-			AddChildren(grid, view0, view2);
+			SubstituteChildren(grid, view0, view2);
 			SetLocation(grid, view0);
 			SetLocation(grid, view2, col: 2);
 
@@ -455,7 +456,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var grid = CreateGridLayout(rows: "auto, auto");
 			var view0 = CreateTestView(new Size(100, 100));
-			AddChildren(grid, view0);
+			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0, rowSpan: 2);
 
 			var measuredSize = MeasureAndArrange(grid);
@@ -474,7 +475,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, auto");
 			var view0 = CreateTestView(new Size(100, 100));
 			var view1 = CreateTestView(new Size(50, 50));
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0, rowSpan: 2);
 			SetLocation(grid, view1, row: 1, col: 1);
@@ -497,7 +498,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(new Size(100, 100));
 			var view1 = CreateTestView(new Size(50, 50));
 			var view2 = CreateTestView(new Size(50, 50));
-			AddChildren(grid, view0, view1, view2);
+			SubstituteChildren(grid, view0, view1, view2);
 
 			SetLocation(grid, view0, rowSpan: 2);
 			SetLocation(grid, view1, row: 0, col: 1);
@@ -520,7 +521,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, auto");
 			var view0 = CreateTestView(new Size(100, 100));
 			var view1 = CreateTestView(new Size(50, 50));
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0, colSpan: 2);
 			SetLocation(grid, view1, row: 1, col: 1);
@@ -543,7 +544,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(new Size(100, 100));
 			var view1 = CreateTestView(new Size(50, 50));
 			var view2 = CreateTestView(new Size(50, 50));
-			AddChildren(grid, view0, view1, view2);
+			SubstituteChildren(grid, view0, view1, view2);
 
 			SetLocation(grid, view0, colSpan: 2);
 			SetLocation(grid, view1, row: 1, col: 0);
@@ -566,7 +567,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, auto");
 			var view0 = CreateTestView(new Size(30, 30));
 			var view1 = CreateTestView(new Size(50, 50));
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0, rowSpan: 2);
 			SetLocation(grid, view1, row: 0, col: 1);
@@ -587,7 +588,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, auto");
 			var view0 = CreateTestView(new Size(30, 30));
 			var view1 = CreateTestView(new Size(50, 50));
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0, colSpan: 2);
 			SetLocation(grid, view1, row: 1, col: 0);
@@ -607,7 +608,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var grid = CreateGridLayout(rows: "10, 40", columns: "15, 85");
 			var view0 = CreateTestView(new Size(30, 30));
-			AddChildren(grid, view0);
+			SubstituteChildren(grid, view0);
 
 			SetLocation(grid, view0, row: 1, col: 1);
 
@@ -626,7 +627,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, auto");
 			var view0 = CreateTestView(new Size(60, 30));
 			var view1 = CreateTestView(new Size(30, 60));
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0, row: 0, col: 0, colSpan: 2);
 			SetLocation(grid, view1, row: 0, col: 1, rowSpan: 2);
@@ -647,7 +648,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "auto, 20", columns: "auto, auto");
 			var view0 = CreateTestView(new Size(100, 100));
 			var view1 = CreateTestView(new Size(50, 10));
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0, rowSpan: 2);
 			SetLocation(grid, view1, row: 1, col: 1);
@@ -671,7 +672,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "auto, auto", columns: "auto, 20");
 			var view0 = CreateTestView(new Size(100, 100));
 			var view1 = CreateTestView(new Size(50, 10));
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0, colSpan: 2);
 			SetLocation(grid, view1, row: 1, col: 1);
@@ -694,7 +695,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var grid = CreateGridLayout(rows: "auto", columns: "100,100");
 			var view0 = CreateTestView(new Size(150, 100));
-			AddChildren(grid, view0);
+			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0, colSpan: 2);
 			var manager = new GridLayoutManager(grid);
 
@@ -712,7 +713,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "100,100", columns: "auto");
 			var view0 = CreateTestView(new Size(100, 150));
 
-			AddChildren(grid, view0);
+			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0, rowSpan: 2);
 			var manager = new GridLayoutManager(grid);
 
@@ -733,7 +734,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "auto", columns: $"*");
 			var view0 = CreateTestView(new Size(100, 100));
 
-			AddChildren(grid, view0);
+			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0);
 
 			MeasureAndArrange(grid, screenWidth, screenHeight);
@@ -753,7 +754,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "auto", columns: $"3*");
 			var view0 = CreateTestView(new Size(100, 100));
 
-			AddChildren(grid, view0);
+			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0);
 
 			MeasureAndArrange(grid, screenWidth, screenHeight);
@@ -776,7 +777,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view1 = CreateTestView(viewSize);
 			var view2 = CreateTestView(viewSize);
 
-			AddChildren(grid, view0, view1, view2);
+			SubstituteChildren(grid, view0, view1, view2);
 
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
@@ -811,7 +812,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(viewSize);
 			var view1 = CreateTestView(viewSize);
 
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
@@ -845,7 +846,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "auto", columns: $"*");
 			var view0 = CreateTestView(new Size(100, 50));
 
-			AddChildren(grid, view0);
+			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0);
 
 			var manager = new GridLayoutManager(grid);
@@ -864,7 +865,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view1 = CreateTestView(new Size(75, 50));
 			var view2 = CreateTestView(new Size(50, 50));
 
-			AddChildren(grid, view0, view1, view2);
+			SubstituteChildren(grid, view0, view1, view2);
 
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
@@ -890,7 +891,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "*", columns: "auto");
 			var view0 = CreateTestView(new Size(100, 100));
 
-			AddChildren(grid, view0);
+			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0);
 
 			MeasureAndArrange(grid, screenWidth, screenHeight);
@@ -910,7 +911,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "3*", columns: "auto");
 			var view0 = CreateTestView(new Size(100, 100));
 
-			AddChildren(grid, view0);
+			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0);
 
 			MeasureAndArrange(grid, screenWidth, screenHeight);
@@ -933,7 +934,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view1 = CreateTestView(viewSize);
 			var view2 = CreateTestView(viewSize);
 
-			AddChildren(grid, view0, view1, view2);
+			SubstituteChildren(grid, view0, view1, view2);
 
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, row: 1);
@@ -962,7 +963,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(viewSize);
 			var view1 = CreateTestView(viewSize);
 
-			AddChildren(grid, view0, view1);
+			SubstituteChildren(grid, view0, view1);
 
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, row: 1);
@@ -996,7 +997,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var grid = CreateGridLayout(rows: "*", columns: $"auto");
 			var view0 = CreateTestView(new Size(100, 50));
 
-			AddChildren(grid, view0);
+			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0);
 
 			var manager = new GridLayoutManager(grid);
@@ -1015,7 +1016,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view1 = CreateTestView(new Size(50, 75));
 			var view2 = CreateTestView(new Size(50, 50));
 
-			AddChildren(grid, view0, view1, view2);
+			SubstituteChildren(grid, view0, view1, view2);
 
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, row: 1);
@@ -1045,7 +1046,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view1 = CreateTestView(viewSize);
 			var view2 = CreateTestView(viewSize);
 
-			AddChildren(grid, view0, view1, view2);
+			SubstituteChildren(grid, view0, view1, view2);
 
 			SetLocation(grid, view0);
 			SetLocation(grid, view1, col: 1);
@@ -1070,7 +1071,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var grid = CreateGridLayout();
 			var view0 = CreateTestView(new Size(100, 100));
-			AddChildren(grid, view0);
+			SubstituteChildren(grid, view0);
 			SetLocation(grid, view0);
 
 			// Using 300,300 - the implied row/column are GridLength.Star
@@ -1078,6 +1079,107 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Since it's using GridLength.Star, we expect the view to be arranged at the full size of the grid
 			AssertArranged(view0, 0, 0, 300, 300);
+		}
+
+		[Fact]
+		public void IgnoresCollapsedViews()
+		{
+			var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			var collapsedView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			collapsedView.Visibility.Returns(Visibility.Collapsed);
+
+			var grid = CreateGridLayout(children: new List<IView>() { view, collapsedView });
+
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(100, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+
+			// View is visible, so we expect it to be measured and arranged
+			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			view.Received().Arrange(Arg.Any<Rectangle>());
+
+			// View is collapsed, so we expect it not to be measured or arranged
+			collapsedView.DidNotReceive().Measure(Arg.Any<double>(), Arg.Any<double>());
+			collapsedView.DidNotReceive().Arrange(Arg.Any<Rectangle>());
+		}
+
+		[Fact]
+		public void DoesNotIgnoreHiddenViews()
+		{
+			var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			var hiddenView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
+			hiddenView.Visibility.Returns(Visibility.Hidden);
+
+			var grid = CreateGridLayout(children: new List<IView>() { view, hiddenView });
+
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(100, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+
+			// View is visible, so we expect it to be measured and arranged
+			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			view.Received().Arrange(Arg.Any<Rectangle>());
+
+			// View is hidden, so we expect it to be measured and arranged (since it'll need to take up space)
+			hiddenView.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
+			hiddenView.Received().Arrange(Arg.Any<Rectangle>());
+		}
+
+		IGridLayout BuildPaddedGrid(Thickness padding, double viewWidth, double viewHeight)
+		{
+			var grid = CreateGridLayout();
+			var view = CreateTestView(new Size(viewWidth, viewHeight));
+			SubstituteChildren(grid, view);
+			SetLocation(grid, view);
+
+			grid.Padding.Returns(padding);
+
+			return grid;
+		}
+
+		[Theory]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(10, 0, 10, 0)]
+		[InlineData(0, 10, 0, 10)]
+		[InlineData(23, 5, 3, 15)]
+		public void MeasureAccountsForPadding(double left, double top, double right, double bottom)
+		{
+			var viewWidth = 100d;
+			var viewHeight = 100d;
+			var padding = new Thickness(left, top, right, bottom);
+
+			var expectedHeight = padding.VerticalThickness + viewHeight;
+			var expectedWidth = padding.HorizontalThickness + viewWidth;
+
+			var grid = BuildPaddedGrid(padding, viewWidth, viewHeight);
+
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedHeight, measuredSize.Height);
+			Assert.Equal(expectedWidth, measuredSize.Width);
+		}
+
+		[Theory]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(10, 0, 10, 0)]
+		[InlineData(0, 10, 0, 10)]
+		[InlineData(23, 5, 3, 15)]
+		public void ArrangeAccountsForPadding(double left, double top, double right, double bottom)
+		{
+			var viewWidth = 100d;
+			var viewHeight = 100d;
+			var padding = new Thickness(left, top, right, bottom);
+
+			var grid = BuildPaddedGrid(padding, viewWidth, viewHeight);
+
+			var manager = new GridLayoutManager(grid);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+
+			AssertArranged(grid[0], padding.Left, padding.Top, viewWidth, viewHeight);
 		}
 	}
 }

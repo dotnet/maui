@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Native
 {
 	public class MauiTimePicker : Gtk.Label
 	{

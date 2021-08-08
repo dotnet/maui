@@ -2,12 +2,12 @@ We have created a detailed list to easily show the **.NET MAUI - Gtk status** an
 
 Note that only the Gtk-Section is actual in this Page.
 
-Icon | Description
--- | --
-⚠️ | Pending
-⏳ | Underway
-✅ | Done
-💔 | Never implemented in Maui.Controls for this platform
+| Icon | Description |
+| ----|:-------|
+| ⚠️ | Pending
+| ⏳ | Underway
+| ✅ | Done
+| 💔 | Never implemented in Maui.Controls for this platform
 
 ## Overview
 
@@ -38,12 +38,12 @@ To track ongoing progress, filter on the [handlers label](https://github.com/xam
 | BackgroundColor  | ✅  | ✅  | ✅  | ✅  | 
 | BorderColor  | ⚠️  | ⚠️  | ⚠️  | ✅  | 
 | BorderWidth  | ⚠️  | ⚠️  | ⚠️  |  ⚠️  | 
-| CharacterSpacing  | ✅  | ✅  | ✅  |  ⚠️  | 
+| CharacterSpacing  | ✅  | ✅  | ✅  | ✅ | 
 | Clicked  | ✅  | ✅  | ✅  | ✅  | 
 | Command  | ✅  | ✅  | ✅  | ✅  | 
-| CommandParameter  | ✅  | ✅  | ✅  | 
-| ContentLayout  | ⚠️  | ⚠️  | ⚠️  | 
-| CornerRadius  | ⚠️  | ⚠️  | ⚠️  | 
+| CommandParameter  | ✅  | ✅  | ✅  |  ⚠️ |
+| ContentLayout  | ⚠️  | ⚠️  | ⚠️  |  ⚠️ |
+| CornerRadius  | ⚠️  | ⚠️  | ⚠️  |  ⚠️ |
 | FontAttributes  | ✅  | ✅  | ✅  | ✅  | 
 | FontFamily  | ✅  | ✅  | ✅  | ✅  | 
 | FontSize  | ✅  | ✅  | ✅  | ✅  | 
@@ -263,16 +263,16 @@ To track ongoing progress, filter on the [handlers label](https://github.com/xam
 
 | API | Android | iOS / Mac Catalyst | Windows | Gtk |
 | ----|:-------:|:------------------:|:-------:|:----:|
-| CharacterSpacing  | ✅  | ✅  | ✅  |  ⚠️   | 
+| CharacterSpacing  | ✅  | ✅  | ✅  | ✅  | 
 | FontAttributes  | ✅  | ✅  | ✅  | ✅  | 
 | FontFamily  | ✅  | ✅  | ✅  | ✅  | 
 | FontSize  | ✅  | ✅  | ✅  | ✅  | 
-| HorizontalTextAlignment  | ✅  | ✅  | ✅  |   ⚠️   | 
+| HorizontalTextAlignment  | ✅  | ✅  | ✅  | ✅  | 
 | ItemDisplayBinding  | ✅  | ✅  | ✅  |   ✅   | 
 | Items  | ✅  | ✅  | ✅  | ✅
 | ItemsSource  | ✅  | ✅  | ✅  | ✅
 | SelectedIndex  | ✅  | ✅  | ✅  | ✅
-| SelectedIndexChanged  | ✅  | ✅  | ✅  |   ⚠️  | 
+| SelectedIndexChanged  | ✅  | ✅  | ✅  | ✅ | 
 | SelectedItem  | ✅  | ✅  | ⚠️  | ✅
 | TextColor  | ✅  | ✅  | ⏳  | ✅
 | Title  | ✅  | ✅  | ✅  | ⚠️ 
@@ -282,7 +282,7 @@ To track ongoing progress, filter on the [handlers label](https://github.com/xam
 ### ⚠️ ProgressBar
 
 | API | Android | iOS / Mac Catalyst | Windows | Gtk |
-| ----|:-------:|:------------------:|:-------:|:----:|
+| ----|:-------:|:------------------:|:-------:|:----:| 
 | Progress  | ✅  | ✅  | ✅  |  ✅  |
 | ProgressColor  | ⏳  | ⏳  | ⏳  |  ✅  |
 | ProgressTo  | ✅  | ✅  | ✅  |  ✅  |
@@ -313,13 +313,13 @@ To track ongoing progress, filter on the [handlers label](https://github.com/xam
 | ----|:-------:|:------------------:|:-------:|:----:|
 | BackgroundColor  | ✅  | ✅  | ✅  |  ✅  | 
 | CharacterSpacing  | ✅  | ✅  | ✅  | ✅  | 
-| CancelButtonColor  | ⏳  | ⏳  | ✅  | 
+| CancelButtonColor  | ⏳  | ⏳  | ✅  |  ⚠️ |
 | FontAttributes  | ✅  | ✅  | ⏳  |  ✅  |
 | FontSize  | ✅  | ✅  | ⏳  |  ✅  |
 | HorizontalTextAlignment  | ✅  | ✅  | ✅  | ✅  |
 | MaxLength  | ✅  | ✅  | ⏳ |  ✅  |
-| SearchCommand  | ⏳  | ✅  | ✅  | 
-| SearchCommandParameter  | ⏳  | ✅  | ✅  |
+| SearchCommand  | ⏳  | ✅  | ✅  |  ⚠️ |
+| SearchCommandParameter  | ⏳  | ✅  | ✅  | ⚠️ |
 | Text  | ✅  | ✅  | ✅  |  ✅  |
 | TextColor  | ✅  | ✅  | ⏳  | ✅  |
 | VerticalTextAlignment  | ⚠️  | ⚠️  | ⚠️  |  ⚠️  | 
@@ -341,14 +341,14 @@ To track ongoing progress, filter on the [handlers label](https://github.com/xam
 
 | API | Android | iOS / Mac Catalyst | Windows | Gtk |
 | ----|:-------:|:------------------:|:-------:|:----:|
-| DragCompleted  | ✅  | ✅  | ✅  |  
-| DragCompletedCommand  | ✅  | ✅  | ✅  | 
-| DragStarted  | ✅  | ✅  | ✅  | 
-| DragStartedCommand  | ✅  | ✅  | ✅  | 
+| DragCompleted  | ✅  | ✅  | ✅  |   ⚠️ |
+| DragCompletedCommand  | ✅  | ✅  | ✅  |  ⚠️ |
+| DragStarted  | ✅  | ✅  | ✅  |  ⚠️ |
+| DragStartedCommand  | ✅  | ✅  | ✅  |  ⚠️ |
 | Maximum  | ✅  | ✅  | ✅  | ✅  | 
-| MaximumTrackColor  | ✅  | ✅  | ✅  | 
+| MaximumTrackColor  | ✅  | ✅  | ✅  |  ⚠️ |
 | Minimum  | ✅  | ✅  | ✅  |  ✅  | 
-| MinimumTrackColor  | ✅  | ✅  | ✅  | 
+| MinimumTrackColor  | ✅  | ✅  | ✅  |  ⚠️ |
 | ThumbColor  | ✅  | ✅  | ⏳  |  ✅  | 
 | ThumbImageSource  | ⏳  | ⏳  | ✅  |  ✅  | 
 | Value  | ✅  | ✅  | ✅  |  ✅  |  ✅  | 
@@ -426,15 +426,15 @@ To track ongoing progress, filter on the [handlers label](https://github.com/xam
 
 | API | Android | iOS / Mac Catalyst | Windows | Gtk |
 | ----|:-------:|:------------------:|:-------:|:----:|
-| AbsoluteLayout | ✅  | ✅  | ✅  |
+| AbsoluteLayout | ✅  | ✅  | ✅  | ⚠️ |
 | ContentPresenter | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
 | ContentView | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
 | FlexLayout | ✅  | ✅  | ✅  | ✅  |
 | Grid | ✅  | ✅  | ✅  | ✅  |
-| RelativeLayout | ✅  | ✅  | ✅  |
+| RelativeLayout | ✅  | ✅  | ✅  | ⚠️ |
 | ScrollView | ✅  | ✅  | ✅  | ✅  |
 | StackLayout | ✅  | ✅  | ✅  | ✅  |
-| TemplatedView | ⚠️  | ⚠️  | ⚠️  |
+| TemplatedView | ⚠️  | ⚠️  | ⚠️  | ⚠️ |
 
 ### Features
 

@@ -11,7 +11,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[DebuggerDisplay("Title = {Title}, Route = {Route}")]
-	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController, ITabStopElement
+	public class BaseShellItem : NavigableElement, IPropertyPropagationController, IVisualController, IFlowDirectionController
 	{
 		public event EventHandler Appearing;
 		public event EventHandler Disappearing;
@@ -42,36 +42,8 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TitleProperty =
 			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.OneTime);
 
-		public static readonly BindableProperty TabIndexProperty =
-			BindableProperty.Create(nameof(TabIndex),
-							typeof(int),
-							typeof(BaseShellItem),
-							defaultValue: 0,
-							propertyChanged: OnTabIndexPropertyChanged,
-							defaultValueCreator: TabIndexDefaultValueCreator);
-
-		public static readonly BindableProperty IsTabStopProperty =
-			BindableProperty.Create(nameof(IsTabStop),
-									typeof(bool),
-									typeof(BaseShellItem),
-									defaultValue: true,
-									propertyChanged: OnTabStopPropertyChanged,
-									defaultValueCreator: TabStopDefaultValueCreator);
-
 		public static readonly BindableProperty IsVisibleProperty =
 			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BaseShellItem), true);
-
-		static void OnTabIndexPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-			((BaseShellItem)bindable).OnTabIndexPropertyChanged((int)oldValue, (int)newValue);
-
-		static object TabIndexDefaultValueCreator(BindableObject bindable) =>
-			((BaseShellItem)bindable).TabIndexDefaultValueCreator();
-
-		static void OnTabStopPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-			((BaseShellItem)bindable).OnTabStopPropertyChanged((bool)oldValue, (bool)newValue);
-
-		static object TabStopDefaultValueCreator(BindableObject bindable) =>
-			((BaseShellItem)bindable).TabStopDefaultValueCreator();
 
 		public ImageSource FlyoutIcon
 		{
@@ -103,22 +75,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (string)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
-		}
-
-		public int TabIndex
-		{
-			get => (int)GetValue(TabIndexProperty);
-			set => SetValue(TabIndexProperty, value);
-		}
-
-		protected virtual void OnTabIndexPropertyChanged(int oldValue, int newValue) { }
-
-		protected virtual int TabIndexDefaultValueCreator() => 0;
-
-		public bool IsTabStop
-		{
-			get => (bool)GetValue(IsTabStopProperty);
-			set => SetValue(IsTabStopProperty, value);
 		}
 
 		public bool IsVisible
@@ -202,10 +158,6 @@ namespace Microsoft.Maui.Controls
 				this.Appearing += eventHandler;
 			}
 		}
-
-		protected virtual void OnTabStopPropertyChanged(bool oldValue, bool newValue) { }
-
-		protected virtual bool TabStopDefaultValueCreator() => true;
 
 		IVisual _effectiveVisual = Microsoft.Maui.Controls.VisualMarker.Default;
 		IVisual IVisualController.EffectiveVisual
@@ -293,7 +245,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		static void UpdateFlyoutItemStyles(Grid flyoutItemCell, IStyleSelectable source)
+		static void UpdateFlyoutItemStyles(Compatibility.Grid flyoutItemCell, IStyleSelectable source)
 		{
 			List<string> bindableObjectStyle = new List<string>() {
 				DefaultFlyoutItemLabelStyle,
@@ -331,11 +283,179 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		// Attempt to use Grid Layout
+		//internal static DataTemplate CreateDefaultFlyoutItemCell(string textBinding, string iconBinding)
+		//{
+		//	return new DataTemplate(() =>
+		//	{
+		//		var grid = new GridLayout();
+		//		if (Device.RuntimePlatform == Device.UWP)
+		//			grid.ColumnSpacing = grid.RowSpacing = 0;
+
+		//		grid.Resources = new ResourceDictionary();
+
+		//		var defaultLabelClass = new Style(typeof(Label))
+		//		{
+		//			Setters = {
+		//				new Setter { Property = Label.VerticalTextAlignmentProperty, Value = TextAlignment.Center }
+		//			},
+		//			Class = DefaultFlyoutItemLabelStyle,
+		//		};
+
+		//		var defaultImageClass = new Style(typeof(Image))
+		//		{
+		//			Setters = {
+		//				new Setter { Property = Image.VerticalOptionsProperty, Value = LayoutOptions.Center }
+		//			},
+		//			Class = DefaultFlyoutItemImageStyle,
+		//		};
+
+		//		var defaultGridClass = new Style(typeof(GridLayout))
+		//		{
+		//			Class = DefaultFlyoutItemLayoutStyle,
+		//		};
+
+
+		//		var groups = new VisualStateGroupList();
+
+		//		var commonGroup = new VisualStateGroup();
+		//		commonGroup.Name = "CommonStates";
+		//		groups.Add(commonGroup);
+
+		//		var normalState = new VisualState();
+		//		normalState.Name = "Normal";
+		//		commonGroup.States.Add(normalState);
+
+		//		var selectedState = new VisualState();
+		//		selectedState.Name = "Selected";
+
+		//		if (Device.RuntimePlatform != Device.UWP)
+		//		{
+		//			selectedState.Setters.Add(new Setter
+		//			{
+		//				Property = VisualElement.BackgroundColorProperty,
+		//				Value = new Color(0.95f)
+
+		//			});
+		//		}
+
+		//		if (Device.RuntimePlatform == Device.UWP)
+		//		{
+		//			normalState.Setters.Add(new Setter
+		//			{
+		//				Property = VisualElement.BackgroundColorProperty,
+		//				Value = Colors.Transparent
+		//			});
+		//		}
+
+		//		commonGroup.States.Add(selectedState);
+
+		//		defaultGridClass.Setters.Add(new Setter { Property = VisualStateManager.VisualStateGroupsProperty, Value = groups });
+
+		//		int height;
+		//		if (Device.RuntimePlatform == Device.Android)
+		//			height = 50;
+		//		else
+		//			height = 44;
+
+		//		defaultGridClass.Setters.Add(new Setter { Property = GridLayout.HeightRequestProperty, Value = height });
+
+		//		ColumnDefinitionCollection columnDefinitions = new ColumnDefinitionCollection();
+
+		//		if (Device.RuntimePlatform == Device.Android)
+		//			columnDefinitions.Add(new ColumnDefinition { Width = 54 });
+		//		else if (Device.RuntimePlatform == Device.iOS)
+		//			columnDefinitions.Add(new ColumnDefinition { Width = 50 });
+		//		else if (Device.RuntimePlatform == Device.UWP)
+		//			columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+		//		columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+		//		// TODO MAUI
+		//		//columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+
+		//		// TODO MAUI HOW?
+		//		//defaultGridClass.Setters.Add(new Setter { Property = GridLayout.ColumnDefinitionsProperty, Value = columnDefinitions });
+		//		grid.AddColumnDefinition(columnDefinitions[0]);
+		//		grid.AddColumnDefinition(columnDefinitions[1]);
+		//		grid.AddRowDefinition(new RowDefinition() { Height = height });
+
+		//		var image = new Image();
+
+		//		double sizeRequest = -1;
+		//		if (Device.RuntimePlatform == Device.Android)
+		//			sizeRequest = 24;
+		//		else if (Device.RuntimePlatform == Device.iOS)
+		//			sizeRequest = 22;
+		//		else if (Device.RuntimePlatform == Device.UWP)
+		//			sizeRequest = 16;
+
+		//		if (sizeRequest > 0)
+		//		{
+		//			defaultImageClass.Setters.Add(new Setter() { Property = Image.HeightRequestProperty, Value = sizeRequest });
+		//			defaultImageClass.Setters.Add(new Setter() { Property = Image.WidthRequestProperty, Value = sizeRequest });
+		//		}
+
+		//		if (Device.RuntimePlatform == Device.UWP)
+		//		{
+		//			defaultImageClass.Setters.Add(new Setter { Property = Image.HorizontalOptionsProperty, Value = LayoutOptions.Start });
+		//			defaultImageClass.Setters.Add(new Setter { Property = Image.MarginProperty, Value = new Thickness(12, 0, 12, 0) });
+		//		}
+
+		//		Binding imageBinding = new Binding(iconBinding);
+		//		defaultImageClass.Setters.Add(new Setter { Property = Image.SourceProperty, Value = imageBinding });
+
+		//		grid.Add(image);
+
+		//		var label = new Label();
+		//		Binding labelBinding = new Binding(textBinding);
+		//		defaultLabelClass.Setters.Add(new Setter { Property = Label.TextProperty, Value = labelBinding });
+
+		//		grid.Add(label);
+		//		grid.SetColumn(label, 1);
+
+		//		if (Device.RuntimePlatform == Device.Android)
+		//		{
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.TextColorProperty, Value = Colors.Black.MultiplyAlpha(0.87f) });
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = "sans-serif-medium" });
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.MarginProperty, Value = new Thickness(20, 0, 0, 0) });
+		//		}
+		//		else if (Device.RuntimePlatform == Device.iOS)
+		//		{
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = Device.GetNamedSize(NamedSize.Small, label) });
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.FontAttributesProperty, Value = FontAttributes.Bold });
+		//		}
+		//		else if (Device.RuntimePlatform == Device.UWP)
+		//		{
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalOptionsProperty, Value = LayoutOptions.Start });
+		//			defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Start });
+		//		}
+
+		//		INameScope nameScope = new NameScope();
+		//		NameScope.SetNameScope(grid, nameScope);
+		//		nameScope.RegisterName("FlyoutItemLayout", grid);
+		//		nameScope.RegisterName("FlyoutItemImage", image);
+		//		nameScope.RegisterName("FlyoutItemLabel", label);
+
+		//		grid.BindingContextChanged += (sender, __) =>
+		//		{
+		//			if (sender is Grid g)
+		//			{
+		//				var bo = g.BindingContext as BindableObject;
+		//				var styleClassSource = Shell.GetBindableObjectWithFlyoutItemTemplate(bo) as IStyleSelectable;
+		//				UpdateFlyoutItemStyles(g, styleClassSource);
+		//			}
+		//		};
+
+		//		grid.Resources = new ResourceDictionary() { defaultGridClass, defaultLabelClass, defaultImageClass };
+		//		return grid;
+		//	});
+
 		internal static DataTemplate CreateDefaultFlyoutItemCell(string textBinding, string iconBinding)
 		{
 			return new DataTemplate(() =>
 			{
-				var grid = new Grid();
+				var grid = new Compatibility.Grid();
 				if (Device.RuntimePlatform == Device.UWP)
 					grid.ColumnSpacing = grid.RowSpacing = 0;
 
@@ -357,7 +477,7 @@ namespace Microsoft.Maui.Controls
 					Class = DefaultFlyoutItemImageStyle,
 				};
 
-				var defaultGridClass = new Style(typeof(Grid))
+				var defaultGridClass = new Style(typeof(Compatibility.Grid))
 				{
 					Class = DefaultFlyoutItemLayoutStyle,
 				};
@@ -400,9 +520,9 @@ namespace Microsoft.Maui.Controls
 				defaultGridClass.Setters.Add(new Setter { Property = VisualStateManager.VisualStateGroupsProperty, Value = groups });
 
 				if (Device.RuntimePlatform == Device.Android)
-					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 50 });
+					defaultGridClass.Setters.Add(new Setter { Property = Compatibility.Grid.HeightRequestProperty, Value = 50 });
 				else
-					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 44 });
+					defaultGridClass.Setters.Add(new Setter { Property = Compatibility.Grid.HeightRequestProperty, Value = 44 });
 
 
 				ColumnDefinitionCollection columnDefinitions = new ColumnDefinitionCollection();
@@ -415,7 +535,7 @@ namespace Microsoft.Maui.Controls
 					columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
 				columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
-				defaultGridClass.Setters.Add(new Setter { Property = Grid.ColumnDefinitionsProperty, Value = columnDefinitions });
+				defaultGridClass.Setters.Add(new Setter { Property = Compatibility.Grid.ColumnDefinitionsProperty, Value = columnDefinitions });
 
 				var image = new Image();
 
@@ -476,7 +596,7 @@ namespace Microsoft.Maui.Controls
 
 				grid.BindingContextChanged += (sender, __) =>
 				{
-					if (sender is Grid g)
+					if (sender is Compatibility.Grid g)
 					{
 						var bo = g.BindingContext as BindableObject;
 						var styleClassSource = Shell.GetBindableObjectWithFlyoutItemTemplate(bo) as IStyleSelectable;

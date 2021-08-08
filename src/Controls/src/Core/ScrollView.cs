@@ -3,11 +3,12 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class ScrollView : Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
+	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
 	{
 		#region IScrollViewController
 
@@ -128,6 +129,8 @@ namespace Microsoft.Maui.Controls
 				if (_content != null)
 					InternalChildren.Add(_content);
 				OnPropertyChanged();
+
+				Handler?.UpdateValue(nameof(Content));
 			}
 		}
 
@@ -274,7 +277,17 @@ namespace Microsoft.Maui.Controls
 					break;
 			}
 
-			SizeRequest contentRequest = Content.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
+			SizeRequest contentRequest;
+
+			if (Content is IFrameworkElement fe && fe.Handler != null)
+			{
+				contentRequest = fe.Measure(widthConstraint, heightConstraint);
+			}
+			else
+			{
+				contentRequest = Content.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
+			}
+
 			contentRequest.Minimum = new Size(Math.Min(40, contentRequest.Minimum.Width), Math.Min(40, contentRequest.Minimum.Height));
 
 			return contentRequest;
@@ -351,6 +364,8 @@ namespace Microsoft.Maui.Controls
 		{
 			CheckTaskCompletionSource();
 			ScrollToRequested?.Invoke(this, e);
+
+			Handler?.Invoke(nameof(IScrollView.RequestScrollTo), e.ToRequest());
 		}
 	}
 }

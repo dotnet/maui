@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>
+	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeElement
 	{
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		Task<IDictionary<string, object>> _propertiesTask;
@@ -362,29 +362,25 @@ namespace Microsoft.Maui.Controls
 			OnAppLinkRequestReceived(uri);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendResume()
+		internal void SendResume()
 		{
 			Current = this;
 			OnResume();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendSleep()
+		internal void SendSleep()
 		{
 			OnSleep();
 			SavePropertiesAsFireAndForget();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Task SendSleepAsync()
+		internal Task SendSleepAsync()
 		{
 			OnSleep();
 			return SavePropertiesAsync();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendStart()
+		internal void SendStart()
 		{
 			OnStart();
 		}
@@ -441,5 +437,7 @@ namespace Microsoft.Maui.Controls
 
 			NavigationProxy = null;
 		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => this.Windows;
 	}
 }

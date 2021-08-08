@@ -144,11 +144,13 @@ stages:
             - task: xamops.azdevex.provisionator-task.provisionator@1
               displayName: 'Provision VSWindows'
               inputs:
-                provisioning_script: $(provisionator.vs2019)
+                provisioning_script: $(provisionator.vs)
             - script: dotnet tool restore
               displayName: install dotnet tools
             - powershell: |
-                  & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildCondition }}
+                  $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+                  $env:MSBUILD_EXE = "$msbuild"
+                  & dotnet cake --target=VS-WINUI-CI --configuration=${{ BuildCondition }} --msbuild="$msbuild"
               displayName: 'Build WinUI SLN'
             - task: CopyFiles@2
               displayName: 'Copy Bin Log Files'
@@ -249,11 +251,16 @@ stages:
               - task: xamops.azdevex.provisionator-task.provisionator@1
                 displayName: 'Provision VSWindows'
                 inputs:
-                  provisioning_script: $(provisionator.vs2019)
+                  provisioning_script: $(provisionator.vs)
+              - powershell: |
+                  $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+                  echo "MSBUILD_EXE: $msbuild"
+                  echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
+                displayName: set MSBUILD_EXE
 
             - script: dotnet tool restore
               displayName: install dotnet tools
-            - script: dotnet cake --configuration=Release
+            - powershell: dotnet cake --configuration=Release
               displayName: pack nugets
             - task: CopyFiles@2
               condition: always()
@@ -261,6 +268,7 @@ stages:
               inputs:
                 Contents: |
                   artifacts/*nupkg
+                  artifacts/vs-workload.props
                   **/SignList.xml
                 TargetFolder: $(build.artifactstagingdirectory)
                 flattenFolders: true
@@ -380,10 +388,26 @@ stages:
         - template: sign-artifacts/jobs/v2.yml@xamarin-templates
           parameters:
             signType: Real
-            teamName: Maui
+            teamName: $(TeamName)
             usePipelineArtifactTasks: false
             targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
             signedArtifactName: nuget
             signedArtifactPath: signed
             displayName: Sign Phase
             condition: and(succeeded(), or(eq(variables['Sign'], 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), or(startsWith(variables['Build.SourceBranch'],'refs/tags/'),  startsWith(variables['Build.SourceBranch'],'refs/heads/release/') ))))
+
+        - template: nuget-msi-convert/job/v2.yml@xamarin-templates
+          parameters:
+            yamlResourceName: xamarin-templates
+            dependsOn: signing
+            artifactName: nuget
+            artifactPatterns: |
+              **/signed/*.nupkg
+            artifactPath: signed
+            propsArtifactName: nuget
+            signType: Real
+
+    - template: vs-insertion/stage/v1.yml@xamarin-templates
+      parameters:
+        dependsOn: nuget_signing
+        approvalTimeoutInMinutes: 30

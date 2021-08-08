@@ -13,11 +13,11 @@ namespace Microsoft.Maui.Layouts
 			FlexLayout = flexLayout;
 		}
 
-		public void ArrangeChildren(Rectangle childBounds)
+		public Size ArrangeChildren(Rectangle childBounds)
 		{
 			FlexLayout.Layout(childBounds.Width, childBounds.Height);
 
-			foreach (var child in FlexLayout.Children)
+			foreach (var child in FlexLayout)
 			{
 				var frame = FlexLayout.GetFlexFrame(child);
 				if (double.IsNaN(frame.X)
@@ -28,6 +28,8 @@ namespace Microsoft.Maui.Layouts
 				frame = frame.Offset(childBounds.X, childBounds.Y);
 				child.Arrange(frame);
 			}
+
+			return childBounds.Size;
 		}
 
 		public Size Measure(double widthConstraint, double heightConstraint)

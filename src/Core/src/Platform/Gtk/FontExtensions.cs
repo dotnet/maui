@@ -58,9 +58,9 @@ namespace Microsoft.Maui
 		public static Pango.FontDescription ToFontDescription(this Font it)
 			=> new()
 			{
-				Family = it.FontFamily,
-				Size = (int)(it.FontSize * Pango.Scale.PangoScale),
-				Style = it.FontSlant.ToFontStyle(),
+				Family = it.Family,
+				Size = (int)(it.Size * Pango.Scale.PangoScale),
+				Style = it.Slant.ToFontStyle(),
 				Weight = it.Weight.ToFontWeight(),
 				Stretch = it.ToFontStretch()
 			};

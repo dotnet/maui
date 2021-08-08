@@ -35,7 +35,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		ViewGroup _container;
 		bool _defaultAutomationSet;
 		string _defaultContentDescription;
-		bool? _defaultFocusable;
 		ImportantForAccessibility? _defaultImportantForAccessibility;
 		string _defaultHint;
 
@@ -206,7 +205,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (!_defaultAutomationSet)
 			{
 				_defaultAutomationSet = true;
-				AutomationPropertiesProvider.SetupDefaults(ControlUsedForAutomation, ref _defaultContentDescription, ref _defaultHint);
+				Controls.Platform.AutomationPropertiesProvider.SetupDefaults(ControlUsedForAutomation, ref _defaultContentDescription, ref _defaultHint);
 			}
 		}
 
@@ -226,7 +225,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				ImportantForAccessibility = ImportantForAccessibility.No;
 			}
 
-			AutomationPropertiesProvider.SetAutomationId(ControlUsedForAutomation, Element, id);
+			Controls.Platform.AutomationPropertiesProvider.SetAutomationId(ControlUsedForAutomation, Element, id);
 		}
 
 		private protected void SetContentDescription(bool includeHint)
@@ -234,10 +233,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SetupAutomationDefaults();
 
 			if (includeHint)
-				AutomationPropertiesProvider.SetContentDescription(
+				Controls.Platform.AutomationPropertiesProvider.SetContentDescription(
 					ControlUsedForAutomation, Element, _defaultContentDescription, _defaultHint);
 			else
-				AutomationPropertiesProvider.SetBasicContentDescription(
+				Controls.Platform.AutomationPropertiesProvider.SetBasicContentDescription(
 					ControlUsedForAutomation, Element, _defaultContentDescription);
 		}
 
@@ -252,15 +251,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			SetContentDescription(true);
 		}
 
-		protected override void SetFocusable()
+		protected override void SetImportantForAccessibility()
 		{
 			if (Control == null)
 			{
-				base.SetFocusable();
+				base.SetImportantForAccessibility();
 				return;
 			}
 
-			AutomationPropertiesProvider.SetFocusable(ControlUsedForAutomation, Element, ref _defaultFocusable, ref _defaultImportantForAccessibility);
+			Controls.Platform.AutomationPropertiesProvider.SetImportantForAccessibility(ControlUsedForAutomation, Element, ref _defaultImportantForAccessibility);
 		}
 
 		protected void SetNativeControl(TNativeView control)
@@ -334,7 +333,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		void SetLabeledBy()
-			=> AutomationPropertiesProvider.SetLabeledBy(Control, Element);
+			=> Controls.Platform.AutomationPropertiesProvider.SetLabeledBy(Control, Element);
 
 		void UpdateIsEnabled()
 		{

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native.Gtk;
+using Microsoft.Maui.Native;
 
 namespace Microsoft.Maui
 {

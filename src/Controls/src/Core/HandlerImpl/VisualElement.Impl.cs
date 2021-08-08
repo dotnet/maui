@@ -25,9 +25,9 @@ namespace Microsoft.Maui.Controls
 			set => base.Handler = value;
 		}
 
-		private protected override void OnHandlerSet()
+		private protected override void OnHandlerChangedCore()
 		{
-			base.OnHandlerSet();
+			base.OnHandlerChangedCore();
 
 			IsPlatformEnabled = Handler != null;
 		}
@@ -60,10 +60,12 @@ namespace Microsoft.Maui.Controls
 			return ArrangeOverride(bounds);
 		}
 
-		// ArrangeOverride provides a way to allow subclasses (e.g., Layout) to override Arrange even though
+		// ArrangeOverride provides a way to allow subclasses (e.g., ScrollView) to override Arrange even though
 		// the interface has to be explicitly implemented to avoid conflict with the old Arrange method
 		protected virtual Size ArrangeOverride(Rectangle bounds)
 		{
+			Frame = this.ComputeFrame(bounds);
+			Handler?.NativeArrange(Frame);
 			return Frame.Size;
 		}
 
@@ -79,7 +81,7 @@ namespace Microsoft.Maui.Controls
 
 		// InvalidateMeasureOverride provides a way to allow subclasses (e.g., Layout) to override InvalidateMeasure even though
 		// the interface has to be explicitly implemented to avoid conflict with the VisualElement.InvalidateMeasure method
-		protected virtual void InvalidateMeasureOverride() => Handler?.UpdateValue(nameof(IFrameworkElement.InvalidateMeasure));
+		protected virtual void InvalidateMeasureOverride() => Handler?.Invoke(nameof(IFrameworkElement.InvalidateMeasure));
 
 		void IFrameworkElement.InvalidateArrange()
 		{

@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					(l, t, r, b) = Context.ToPixels(ipc.ContainerArea);
 				}
 
+				pageViewGroup.Measure(r - l, b - t);
 				pageViewGroup.Layout(l, t, r, b);
 			}
 		}

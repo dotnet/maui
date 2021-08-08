@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public partial class BlazorWebViewHandler
 	{
-		public static PropertyMapper<IBlazorWebView, BlazorWebViewHandler> BlazorWebViewMapper = new PropertyMapper<IBlazorWebView, BlazorWebViewHandler>(ViewHandler.ViewMapper)
+		public static PropertyMapper<IBlazorWebView, BlazorWebViewHandler> BlazorWebViewMapper = new(ViewHandler.ViewMapper)
 		{
 			[nameof(IBlazorWebView.HostPage)] = MapHostPage,
 			[nameof(IBlazorWebView.RootComponents)] = MapRootComponents,
@@ -21,6 +21,23 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 		}
 
+		public static void MapHostPage(BlazorWebViewHandler handler, IBlazorWebView webView)
+		{
+#if !NETSTANDARD
+			handler.HostPage = webView.HostPage;
+			handler.StartWebViewCoreIfPossible();
+#endif
+		}
+
+		public static void MapRootComponents(BlazorWebViewHandler handler, IBlazorWebView webView)
+		{
+#if !NETSTANDARD
+			handler.RootComponents = webView.RootComponents;
+			handler.StartWebViewCoreIfPossible();
+#endif
+		}
+
+#if !NETSTANDARD
 		private string? HostPage { get; set; }
 
 		private ObservableCollection<RootComponent>? _rootComponents;
@@ -54,18 +71,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 		}
 
-		public static void MapHostPage(BlazorWebViewHandler handler, IBlazorWebView webView)
-		{
-			handler.HostPage = webView.HostPage;
-			handler.StartWebViewCoreIfPossible();
-		}
-
-		public static void MapRootComponents(BlazorWebViewHandler handler, IBlazorWebView webView)
-		{
-			handler.RootComponents = webView.RootComponents;
-			handler.StartWebViewCoreIfPossible();
-		}
-
 		private void OnRootComponentsCollectionChanged(object? sender, global::System.Collections.Specialized.NotifyCollectionChangedEventArgs eventArgs)
 		{
 			// If we haven't initialized yet, this is a no-op
@@ -89,5 +94,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				});
 			}
 		}
+#endif
 	}
 }

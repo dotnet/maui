@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Graphics.Native.Gtk;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Native
 {
 	public class MauiShapeView : GtkGraphicsView
 	{

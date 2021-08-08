@@ -15,7 +15,8 @@ namespace Microsoft.Maui
 			WindowStateEvent += OnWindowStateEvent;
 			Shown += OnShown;
 			Hidden += OnHidden;
-			VisibilityNotifyEvent += OnVisibilityNotifyEvent;
+			//GtkWidget::visibility-notify-event has been deprecated since version 3.12
+			// VisibilityNotifyEvent += OnVisibilityNotifyEvent;
 			DeleteEvent += OnDeleteEvent;
 
 		}
@@ -33,10 +34,11 @@ namespace Microsoft.Maui
 			}
 		}
 
-		void OnVisibilityNotifyEvent(object o, VisibilityNotifyEventArgs args)
-		{
-			MauiGtkApplication.Current.Services?.InvokeLifecycleEvents<GtkLifecycle.OnVisibilityChanged>(del => del(this, args));
-		}
+		//GtkWidget::visibility-notify-event has been deprecated since version 3.12
+		// void OnVisibilityNotifyEvent(object o, VisibilityNotifyEventArgs args)
+		// {
+		// 	MauiGtkApplication.Current.Services?.InvokeLifecycleEvents<GtkLifecycle.OnVisibilityChanged>(del => del(this, args));
+		// }
 
 		void OnHidden(object? sender, EventArgs args)
 		{

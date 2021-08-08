@@ -36,12 +36,11 @@ namespace Maui.SimpleSampleApp
 
 			// SetupMauiLayoutSimple();
 			SetupMauiLayout();
-			// SetupCompatibilityLayout();
 		}
 
 		void SetupMauiLayoutLayouts()
 		{
-			void Fill(Microsoft.Maui.Controls.Layout2.Layout l, string m, int count, Color bkCol)
+			void Fill(Layout l, string m, int count, Color bkCol)
 			{
 				var i = 0;
 
@@ -107,23 +106,13 @@ namespace Maui.SimpleSampleApp
 
 		}
 
-		void SetupMauiLayoutSimple()
+		void SetupMauiLayoutButtonSpacing()
 		{
 			var verticalStack = new VerticalStackLayout()
 			{
 				Spacing = 5,
 				BackgroundColor = Colors.WhiteSmoke,
 			};
-
-			var button = new Button
-			{
-				Padding = new Thickness(10),
-				Text = "Change the label!",
-				BackgroundColor = Colors.Red,
-				TextColor = Colors.Yellow,
-			};
-
-			verticalStack.Add(button);
 
 			var label = new Label
 			{
@@ -133,19 +122,6 @@ namespace Maui.SimpleSampleApp
 			};
 
 			verticalStack.Add(label);
-
-			const string ltext = "changed";
-
-			button.Clicked += (s, e) =>
-			{
-				label.Text = label.Text == ltext ? $"{ltext} again" : ltext;
-
-				if (s is Button sender)
-				{
-					label.TextColor = sender.BackgroundColor;
-					label.BackgroundColor = sender.TextColor;
-				}
-			};
 
 			var label1 = new Label
 			{
@@ -162,13 +138,49 @@ namespace Maui.SimpleSampleApp
 			verticalStack.Add(label1);
 
 			var entry = new Entry { Placeholder = "write something" };
+			const string ltext = "changed";
+			verticalStack.Add(entry);
+
+			var button = new Button
+			{
+				Padding = new Thickness(10),
+				Text = "Change the label!",
+				BackgroundColor = Colors.Red,
+				TextColor = Colors.Yellow,
+				CharacterSpacing = 2
+			};
+
+			verticalStack.Add(button);
+
+			button.Clicked += (s, e) =>
+			{
+				label.Text = label.Text == ltext ? $"{ltext} again" : ltext;
+
+				if (s is Button sender)
+				{
+					label.TextColor = sender.BackgroundColor;
+					label.BackgroundColor = sender.TextColor;
+				}
+			};
 
 			button.Clicked += (s, e) =>
 			{
 				entry.Text = string.IsNullOrEmpty(entry.Text) ? "entry text" : null;
 			};
 
-			verticalStack.Add(entry);
+			var button2 = new Button
+			{
+				Padding = new Thickness(10),
+				Text = "Change the button!",
+				BackgroundColor = Colors.Green,
+				TextColor = Colors.Yellow,
+			};
+
+			button2.Clicked += (sender, args) =>
+			{
+				button.CharacterSpacing = button.CharacterSpacing > 1 ? 1 : 2;
+			};
+			verticalStack.Add(button2);
 
 			var activityIndicator = new ActivityIndicator { Color = Colors.Chartreuse };
 
@@ -218,10 +230,10 @@ namespace Maui.SimpleSampleApp
 			{
 				Text = "End-aligned text",
 				BackgroundColor = Colors.Fuchsia,
-				HorizontalTextAlignment = TextAlignment.End
+				HorizontalTextAlignment = TextAlignment.End,
+				Margin = new Thickness(15, 10, 20, 15)
 			};
 
-			label.Margin = new Thickness(15, 10, 20, 15);
 
 			SemanticProperties.SetHint(label, "Hint Text");
 			SemanticProperties.SetDescription(label, "Description Text");
@@ -385,8 +397,6 @@ namespace Maui.SimpleSampleApp
 				Margin = new Thickness(12),
 			};
 
-
-
 			horizontalStack.Add(button);
 			horizontalStack.Add(button2);
 
@@ -399,12 +409,10 @@ namespace Maui.SimpleSampleApp
 
 			verticalStack.Add(horizontalStack);
 
-			verticalStack.Add(new Button { Text = "CharacterSpacing" });
-
 			verticalStack.Add(new Button
 			{
-				CharacterSpacing = 8,
-				Text = "CharacterSpacing"
+				CharacterSpacing = 4,
+				Text = "CharacterSpacing 4"
 			});
 
 			var checkbox = new CheckBox();
@@ -515,7 +523,7 @@ namespace Maui.SimpleSampleApp
 
 				spacingEntry.CharacterSpacing = spacingEntry.CharacterSpacing == 10 ? 5 : 10;
 			};
-			
+
 			verticalStack.Add(new Entry
 			{
 				Keyboard = Keyboard.Numeric,
@@ -542,13 +550,20 @@ namespace Maui.SimpleSampleApp
 				ProgressColor = Colors.Purple
 			});
 
-			var searchBar = new SearchBar();
-			searchBar.CharacterSpacing = 4;
-			searchBar.Text = "A search query";
+			var searchBar = new SearchBar
+			{
+				CharacterSpacing = 4,
+				Text = "A search query"
+			};
+
 			verticalStack.Add(searchBar);
 
-			var placeholderSearchBar = new SearchBar();
-			placeholderSearchBar.Placeholder = "Placeholder";
+			var placeholderSearchBar = new SearchBar
+			{
+				Placeholder = "Placeholder",
+				BackgroundColor = Colors.Plum
+			};
+
 			verticalStack.Add(placeholderSearchBar);
 
 			var monkeyList = new List<string>
@@ -568,10 +583,11 @@ namespace Maui.SimpleSampleApp
 				FontFamily = "Dokdo",
 				TextColor = Colors.Chartreuse,
 				BackgroundColor = Colors.Yellow,
-				HorizontalTextAlignment = TextAlignment.Center
+				HorizontalTextAlignment = TextAlignment.Center,
+				CharacterSpacing = 2,
+				ItemsSource = monkeyList,
 			};
 
-			picker.ItemsSource = monkeyList;
 			verticalStack.Add(picker);
 
 			verticalStack.Add(new Slider
@@ -602,7 +618,7 @@ namespace Maui.SimpleSampleApp
 
 			verticalStack.Add(new GraphicsView
 			{
-				Drawable = new TestDrawable(),
+				Drawable = new TextDrawable(),
 				HeightRequest = 50,
 				WidthRequest = 200
 			});
@@ -626,81 +642,11 @@ namespace Maui.SimpleSampleApp
 			Content = new ScrollView { Content = verticalStack };
 		}
 
-		void SetupCompatibilityLayout()
-		{
-			var verticalStack = new StackLayout()
-			{
-				Spacing = 5,
-				BackgroundColor = Colors.AntiqueWhite
-			};
-
-			var horizontalStack = new StackLayout()
-			{
-				Orientation = StackOrientation.Horizontal,
-				Spacing = 2,
-				BackgroundColor = Colors.CornflowerBlue
-			};
-
-			var label = new Label
-			{
-				Text = "This will disappear in ~5 seconds",
-				BackgroundColor = Colors.Fuchsia
-			};
-
-			label.Margin = new Thickness(15, 10, 20, 15);
-
-			verticalStack.Add(label);
-
-			var button = new Button()
-			{
-				Text = _viewModel.Text,
-				WidthRequest = 200
-			};
-
-			var button2 = new Button()
-			{
-				TextColor = Colors.Green,
-				Text = "Hello I'm a button",
-				BackgroundColor = Colors.Purple,
-				Margin = new Thickness(12)
-			};
-
-			horizontalStack.Add(button);
-			horizontalStack.Add(button2);
-			horizontalStack.Add(new Label { Text = "And these buttons are in a HorizontalStackLayout" });
-
-			verticalStack.Add(horizontalStack);
-			verticalStack.Add(new Slider());
-			verticalStack.Add(new Switch());
-			verticalStack.Add(new Switch() { OnColor = Colors.Green });
-			verticalStack.Add(new Switch() { ThumbColor = Colors.Yellow });
-
-			verticalStack.Add(new Switch()
-			{
-				OnColor = Colors.Green,
-				ThumbColor = Colors.Yellow
-			});
-
-			verticalStack.Add(new GraphicsView
-			{
-				Drawable = new TestDrawable(),
-				HeightRequest = 50,
-				WidthRequest = 200
-			});
-
-			verticalStack.Add(new DatePicker());
-			verticalStack.Add(new TimePicker());
-
-			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
-
-			Content = verticalStack;
-		}
-
 		public IView View { get => (IView)Content; set => Content = (View)value; }
 
 		IView CreateSampleGrid()
 		{
-			var layout = new Microsoft.Maui.Controls.Layout2.GridLayout()
+			var layout = new GridLayout()
 			{
 				ColumnSpacing = 5,
 				RowSpacing = 8
@@ -847,7 +793,7 @@ namespace Maui.SimpleSampleApp
 
 	}
 
-	class TestDrawable : IDrawable
+	class TextDrawable : IDrawable
 	{
 
 		public void Draw(ICanvas canvas, RectangleF dirtyRect)
