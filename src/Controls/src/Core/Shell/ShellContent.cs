@@ -64,8 +64,8 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				result = ContentCache ?? (Page)template.CreateContent(content, this);
-ContentCache = result;
-}
+				ContentCache = result;
+			}
 
 			if (result == null)
 				throw new InvalidOperationException($"No Content found for {nameof(ShellContent)}, Title:{Title}, Route {Route}");

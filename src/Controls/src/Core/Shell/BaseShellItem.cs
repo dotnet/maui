@@ -444,6 +444,6 @@ namespace Microsoft.Maui.Controls
 
 	public interface IQueryAttributable
 	{
-		void ApplyQueryAttributes(Dictionary<string, object> query);
+		void ApplyQueryAttributes(IDictionary<string, object> query);
 	}
 }
