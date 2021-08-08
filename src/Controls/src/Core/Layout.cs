@@ -25,6 +25,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		ILayoutManager Maui.ILayout.LayoutManager => this;
 		IList IBindableLayout.Children => _children;
 
+		bool ISafeAreaView.IgnoreSafeArea => false;
+
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
