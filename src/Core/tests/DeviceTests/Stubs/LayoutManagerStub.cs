@@ -5,9 +5,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class LayoutManagerStub : ILayoutManager
 	{
-		public Size ArrangeChildren(Rectangle childBounds)
+		public Size ArrangeChildren(Size finalSize)
 		{
-			return childBounds.Size;
+			return finalSize;
 		}
 
 		public Size Measure(double widthConstraint, double heightConstraint)
