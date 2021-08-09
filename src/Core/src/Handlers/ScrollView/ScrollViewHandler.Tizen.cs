@@ -31,6 +31,11 @@ namespace Microsoft.Maui.Handlers
 			Canvas.LayoutUpdated += OnContentLayoutUpdated;
 		}
 
+		public override ElmSharp.Rect GetNativeContentGeometry()
+		{
+			return Canvas?.Geometry ?? NativeView.Geometry;
+		}
+
 		protected override void DisconnectHandler(ScrollView nativeView)
 		{
 			base.DisconnectHandler(nativeView);
@@ -84,6 +89,10 @@ namespace Microsoft.Maui.Handlers
 
 			handler.Canvas.UnPackAll();
 			handler.Canvas.PackEnd(scrollView.Content.ToNative(handler.MauiContext));
+			if (scrollView.Content.Handler is INativeViewHandler thandler)
+			{
+				thandler?.SetParent(handler);
+			}
 			handler.UpdateContentSize();
 		}
 
