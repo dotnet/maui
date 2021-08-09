@@ -48,7 +48,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="EnsureBundles" BeforeTargets="CoreCompile" DependsOnTargets="BundleScopedCssFiles" />
+  <Target Name="EnsureBundles" BeforeTargets="CoreCompile" DependsOnTargets="_ResolveBundlingConfiguration;BundleScopedCssFiles" />
 
   <Target Name="_FixUpMauiReference"
     BeforeTargets="ComputeReferencedProjectsPublishAssets"
