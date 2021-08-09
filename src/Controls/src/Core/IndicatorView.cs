@@ -107,8 +107,6 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ItemsSourceProperty, value);
 		}
 
-
-
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			var baseRequest = base.OnMeasure(widthConstraint, heightConstraint);
@@ -120,6 +118,10 @@ namespace Microsoft.Maui.Controls
 			var items = Count;
 			
 			var sizeRequest = new SizeRequest(new Size(items * defaultSize, IndicatorSize), new Size(10, 10));
+
+			// Make sure the native control gets measured
+			_ = Handler?.GetDesiredSize(sizeRequest.Request.Width, sizeRequest.Request.Height);
+
 			return sizeRequest;
 		}
 

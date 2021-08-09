@@ -32,7 +32,6 @@ namespace Microsoft.Maui.Handlers
 
 		public override void NativeArrange(Rectangle frame)
 		{
-			NativeView.Measure((int)frame.Width, (int)frame.Height);
 			base.NativeArrange(frame);
 		}
 
