@@ -61,14 +61,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			var nativeView = NativeView;
 
-			if (nativeView == null || VirtualView == null)
+			if (nativeView == null || VirtualView == null || NativeParent == null)
 			{
-				return Size.Zero;
-			}
-
-			if (NativeParent == null)
-			{
-				return new Size(widthConstraint, heightConstraint);
+				return VirtualView == null ? Size.Zero : new Size(VirtualView.Width, VirtualView.Height);
 			}
 
 			int availableWidth = widthConstraint.ToScaledPixel();
@@ -79,9 +74,13 @@ namespace Microsoft.Maui.Handlers
 			if (availableHeight < 0)
 				availableHeight = int.MaxValue;
 
+			var explicitWidth = VirtualView.Width;
+			var explicitHeight = VirtualView.Height;
+			var hasExplicitWidth = explicitWidth >= 0;
+			var hasExplicitHeight = explicitHeight >= 0;
+
 			Size measured;
-			var nativeViewMeasurable = nativeView as IMeasurable;
-			if (nativeViewMeasurable != null)
+			if (nativeView is IMeasurable nativeViewMeasurable)
 			{
 				measured = nativeViewMeasurable.Measure(availableWidth, availableHeight).ToDP();
 			}
@@ -90,7 +89,8 @@ namespace Microsoft.Maui.Handlers
 				measured = Measure(availableWidth, availableHeight);
 			}
 
-			return measured;
+			return new Size(hasExplicitWidth ? explicitWidth : measured.Width,
+				hasExplicitHeight ? explicitHeight : measured.Height);
 		}
 
 		public virtual ERect GetNativeContentGeometry()
