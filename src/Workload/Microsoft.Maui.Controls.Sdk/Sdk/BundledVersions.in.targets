@@ -11,7 +11,7 @@
   <ItemGroup>
     <_MauiRuntimeIdentifiers Include="android;ios;maccatalyst;win" />
     <KnownFrameworkReference
-        Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
+        Condition="'$(UseMauiCore)' == 'true'"
         Include="Microsoft.Maui.Extensions"
         TargetFramework="net6.0"
         RuntimeFrameworkName="Microsoft.Maui.Extensions"
@@ -23,7 +23,7 @@
         RuntimePackRuntimeIdentifiers="any"
     />
     <KnownFrameworkReference
-        Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
+        Condition="'$(UseMauiCore)' == 'true'"
         Include="Microsoft.Maui.Core"
         TargetFramework="net6.0"
         RuntimeFrameworkName="Microsoft.Maui.Core"
@@ -36,7 +36,7 @@
         Profile="$(TargetPlatformIdentifier)"
     />
     <KnownFrameworkReference
-        Condition=" '$(UseMaui)' == 'true' "
+        Condition="'$(_UseMauiControls)' == 'true'"
         Include="Microsoft.Maui.Controls"
         TargetFramework="net6.0"
         RuntimeFrameworkName="Microsoft.Maui.Controls"
@@ -49,7 +49,7 @@
         Profile="$(TargetPlatformIdentifier)"
     />
     <KnownFrameworkReference
-        Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' "
+        Condition="'$(UseMauiEssentials)' == 'true'"
         Include="Microsoft.Maui.Essentials"
         TargetFramework="net6.0"
         RuntimeFrameworkName="Microsoft.Maui.Essentials"
@@ -64,10 +64,10 @@
   </ItemGroup>
 
   <!-- These implicit <PackageReference/> pull dependencies from NuGet transitively -->
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' ">
+  <ItemGroup Condition="'$(UseMauiEssentials)' == 'true' ">
     <PackageReference Include="Microsoft.Maui.Dependencies" Version="$(MicrosoftMauiSdkVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
+  <ItemGroup Condition="'$(_UseMauiControls)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true'">
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MicrosoftMauiSdkVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 

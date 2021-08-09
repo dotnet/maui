@@ -1,10 +1,16 @@
 <Project>
+  <PropertyGroup>
+    <!-- UseMaui implies UseMauiAssets and UseMauiCore, and UseMauiCore implies UseMauiEssentials. -->
+    <UseMauiCore Condition="'$(UseMaui)'=='true'">true</UseMauiCore>
+    <UseMauiAssets Condition="'$(UseMaui)'=='true'">true</UseMauiAssets>
+    <UseMauiEssentials Condition="'$(UseMauiCore)'=='true'">true</UseMauiEssentials>
+  </PropertyGroup>
   <Import
-      Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' "
+      Condition="'$(UseMauiEssentials)' == 'true'"
       Project="Sdk.targets" Sdk="Microsoft.Maui.Controls.Sdk"
   />
   <Import
-      Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' "
+      Condition="'$(UseMauiAssets)' == 'true'"
       Project="Sdk.targets" Sdk="Microsoft.Maui.Resizetizer.Sdk"
   />
 </Project>
