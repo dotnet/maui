@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Controls
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
 		double IFlowDirectionController.Width => (Parent as VisualElement)?.Width ?? 0;
 
-		internal virtual void ApplyQueryAttributes(IDictionary<string, string> query)
+		internal virtual void ApplyQueryAttributes(ShellRouteParameters query)
 		{
 		}
 
@@ -444,6 +444,6 @@ namespace Microsoft.Maui.Controls
 
 	public interface IQueryAttributable
 	{
-		void ApplyQueryAttributes(IDictionary<string, string> query);
+		void ApplyQueryAttributes(IDictionary<string, object> query);
 	}
 }
