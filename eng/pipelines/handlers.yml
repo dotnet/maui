@@ -252,6 +252,7 @@ stages:
       jobs:
         - template: sign-artifacts/jobs/v2.yml@xamarin-templates
           parameters:
+            templateBranch: pjc/sign-ttf
             signType: Real
             teamName: $(TeamName)
             usePipelineArtifactTasks: false

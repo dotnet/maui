@@ -6,6 +6,7 @@
     <FirstParty Include="FormsViewGroup.dll" />
     <FirstParty Include="Microsoft.AspNetCore.Components.WebView.*.dll" />
     <FirstParty Include="Microsoft.Extensions*.dll" />
+    <FirstParty Include="open-iconic.ttf" />
     <FirstParty Include="OpenSans-Regular.ttf" />
     <FirstParty Include="System.CodeDom.dll" />
 
