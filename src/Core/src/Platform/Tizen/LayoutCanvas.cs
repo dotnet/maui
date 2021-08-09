@@ -18,6 +18,6 @@ namespace Microsoft.Maui
 		}
 
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
+		internal Func<Size, Size>? CrossPlatformArrange { get; set; }
 	}
 }
