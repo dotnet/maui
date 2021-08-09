@@ -40,7 +40,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new HorizontalStackLayoutManager(stack);
 
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(measuredSize);
 
 			var expectedRectangle = new Rectangle(0, 0, 100, 100);
 			stack[0].Received().Arrange(Arg.Is(expectedRectangle));
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new HorizontalStackLayoutManager(stack);
 
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(measuredSize);
 
 			var expectedRectangle0 = new Rectangle(0, 0, 100, 100);
 			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(measuredSize);
 
 			// We expect that the starting view (0) should be arranged on the left,
 			// and the next rectangle (1) should be on the right
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(measuredSize);
 
 			// We expect that the starting view (0) should be arranged on the right,
 			// and the next rectangle (1) should be on the left
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measure = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+			manager.ArrangeChildren(measure);
 
 			// View is visible, so we expect it to be measured and arranged
 			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measure = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+			manager.ArrangeChildren(measure);
 
 			// View is visible, so we expect it to be measured and arranged
 			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
@@ -210,7 +210,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new HorizontalStackLayoutManager(stack);
 			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(measuredSize);
 
 			AssertArranged(stack[0], padding.Left, padding.Top, viewWidth, viewHeight);
 		}

@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls
 			return (ShellSection)(ShellContent)page;
 		}
 
-		async Task PrepareCurrentStackForBeingReplaced(NavigationRequest request, IDictionary<string, string> queryData, bool? animate, List<string> globalRoutes, bool isRelativePopping)
+		async Task PrepareCurrentStackForBeingReplaced(NavigationRequest request, ShellRouteParameters queryData, bool? animate, List<string> globalRoutes, bool isRelativePopping)
 		{
 			string route = "";
 			List<Page> navStack = null;
@@ -468,7 +468,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		Page GetOrCreateFromRoute(string route, IDictionary<string, string> queryData, bool isLast, bool isPopping)
+		Page GetOrCreateFromRoute(string route, ShellRouteParameters queryData, bool isLast, bool isPopping)
 		{
 			var content = Routing.GetOrCreateContent(route) as Page;
 			if (content == null)
@@ -480,7 +480,7 @@ namespace Microsoft.Maui.Controls
 			return content;
 		}
 
-		internal async Task GoToAsync(NavigationRequest request, IDictionary<string, string> queryData, bool? animate, bool isRelativePopping)
+		internal async Task GoToAsync(NavigationRequest request, ShellRouteParameters queryData, bool? animate, bool isRelativePopping)
 		{
 			List<string> globalRoutes = request.Request.GlobalRoutes;
 			if (globalRoutes == null || globalRoutes.Count == 0)

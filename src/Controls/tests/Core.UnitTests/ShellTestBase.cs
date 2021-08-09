@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[QueryProperty("DoubleQueryParameter", "DoubleQueryParameter")]
 		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
 		[QueryProperty("CancelNavigationOnBackButtonPressed", "CancelNavigationOnBackButtonPressed")]
+		[QueryProperty("ComplexObject", "ComplexObject")]
 		public class ShellTestPage : ContentPage
 		{
 			public string CancelNavigationOnBackButtonPressed { get; set; }
@@ -100,6 +101,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			public double DoubleQueryParameter
+			{
+				get;
+				set;
+			}
+
+			public object ComplexObject
 			{
 				get;
 				set;

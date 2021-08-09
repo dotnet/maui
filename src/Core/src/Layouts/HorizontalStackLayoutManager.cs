@@ -41,10 +41,10 @@ namespace Microsoft.Maui.Layouts
 			return new Size(finalWidth, finalHeight);
 		}
 
-		public override Size ArrangeChildren(Rectangle bounds)
+		public override Size ArrangeChildren(Size finalSize)
 		{
 			var padding = Stack.Padding;
-			var height = bounds.Height - padding.VerticalThickness;
+			var height = finalSize.Height - padding.VerticalThickness;
 			double stackWidth = 0;
 
 			if (Stack.FlowDirection == FlowDirection.LeftToRight)

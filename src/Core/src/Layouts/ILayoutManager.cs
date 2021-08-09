@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Layouts
 	public interface ILayoutManager
 	{
 		Size Measure(double widthConstraint, double heightConstraint);
-		Size ArrangeChildren(Rectangle childBounds);
+
+		Size ArrangeChildren(Size finalSize);
 	}
 }

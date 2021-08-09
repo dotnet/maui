@@ -22,9 +22,9 @@ namespace Microsoft.Maui.Layouts
 			return new Size(_gridStructure.MeasuredGridWidth(), _gridStructure.MeasuredGridHeight());
 		}
 
-		public override Size ArrangeChildren(Rectangle childBounds)
+		public override Size ArrangeChildren(Size finalSize)
 		{
-			var structure = _gridStructure ?? new GridStructure(Grid, childBounds.Width, childBounds.Height);
+			var structure = _gridStructure ?? new GridStructure(Grid, finalSize.Width, finalSize.Height);
 
 			foreach (var view in Grid)
 			{
