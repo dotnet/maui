@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
@@ -119,10 +120,28 @@ namespace Microsoft.Maui.Controls
 			
 			var sizeRequest = new SizeRequest(new Size(items * defaultSize, IndicatorSize), new Size(10, 10));
 
-			// Make sure the native control gets measured
-			_ = Handler?.GetDesiredSize(sizeRequest.Request.Width, sizeRequest.Request.Height);
-
 			return sizeRequest;
+		}
+
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		{
+			var margin = Margin;
+
+			// Adjust the constraints to account for the margins
+			widthConstraint -= margin.HorizontalThickness;
+			heightConstraint -= margin.VerticalThickness;
+
+			// Use the old measurement override to figure out the xplat size
+			var measure = OnMeasure(widthConstraint, heightConstraint).Request;
+
+			// Make sure the native control gets measured
+			var nativeMeasure = Handler?.GetDesiredSize(measure.Width, measure.Height);
+
+			// Account for the margins when reporting the desired size value
+			DesiredSize = new Size(measure.Width + margin.HorizontalThickness,
+				measure.Height + margin.VerticalThickness);
+
+			return DesiredSize;
 		}
 
 		static void UpdateIndicatorLayout(IndicatorView indicatorView, object newValue)
