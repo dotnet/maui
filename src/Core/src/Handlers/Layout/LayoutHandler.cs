@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapAdd(ILayoutHandler handler, ILayout layout, object? arg)
 		{
-			if (arg is LayoutHandlerUpdateArgs args)
+			if (arg is LayoutHandlerUpdate args)
 			{
 				handler.Add(args.View);
 			}
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapRemove(ILayoutHandler handler, ILayout layout, object? arg)
 		{
-			if (arg is LayoutHandlerUpdateArgs args)
+			if (arg is LayoutHandlerUpdate args)
 			{
 				handler.Remove(args.View);
 			}
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapInsert(ILayoutHandler handler, ILayout layout, object? arg)
 		{
-			if (arg is LayoutHandlerUpdateArgs args)
+			if (arg is LayoutHandlerUpdate args)
 			{
 				handler.Insert(args.Index, args.View);
 			}
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Handlers
 
 		private static void MapUpdate(ILayoutHandler handler, ILayout layout, object? arg)
 		{
-			if (arg is LayoutHandlerUpdateArgs args)
+			if (arg is LayoutHandlerUpdate args)
 			{
 				handler.Update(args.Index, args.View);
 			}

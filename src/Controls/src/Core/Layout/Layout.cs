@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls
 
 		void AddToHandler(int index, IView view)
 {
-			var args = new Maui.Handlers.LayoutHandlerUpdateArgs { Index = index, View = view };
+			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
 			Handler?.Invoke(nameof(ILayoutHandler.Add), args);
 		}
 
@@ -205,19 +205,19 @@ namespace Microsoft.Maui.Controls
 
 		void RemoveFromHandler(int index, IView view)
 {
-			var args = new Maui.Handlers.LayoutHandlerUpdateArgs { Index = index, View = view };
+			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
 			Handler?.Invoke(nameof(ILayoutHandler.Remove), args);
 		}
 
 		void InsertIntoHandler(int index, IView view)
 		{
-			var args = new Maui.Handlers.LayoutHandlerUpdateArgs { Index = index, View = view };
+			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
 			Handler?.Invoke(nameof(ILayoutHandler.Insert), args);
 		}
 
 		void UpdateInHandler(int index, IView view)
 		{
-			var args = new Maui.Handlers.LayoutHandlerUpdateArgs { Index = index, View = view };
+			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
 			Handler?.Invoke(nameof(ILayoutHandler.Update), args);
 		}
 
