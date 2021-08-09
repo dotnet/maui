@@ -25,6 +25,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		ILayoutManager Maui.ILayout.LayoutManager => this;
 		IList IBindableLayout.Children => _children;
 
+		bool ISafeAreaView.IgnoreSafeArea => false;
+
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
@@ -54,10 +56,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return OnMeasure(widthConstraint, heightConstraint);
 		}
 
-		Size ILayoutManager.ArrangeChildren(Rectangle childBounds)
+		Size ILayoutManager.ArrangeChildren(Size finalSize)
 		{
-			LayoutChildren(childBounds.X, childBounds.Y, childBounds.Width, childBounds.Height);
-			return childBounds.Size;
+			LayoutChildren(0, 0, finalSize.Width, finalSize.Height);
+			return finalSize;
 		}
 	}
 
