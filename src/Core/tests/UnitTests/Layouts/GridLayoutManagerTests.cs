@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -36,6 +37,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			}
 
 			var grid = Substitute.For<IGridLayout>();
+			grid.Width.Returns(-1);
+			grid.Height.Returns(-1);
 
 			grid.RowSpacing.Returns(rowSpacing);
 			grid.ColumnSpacing.Returns(colSpacing);
@@ -123,7 +126,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var manager = new GridLayoutManager(grid);
 			var measuredSize = manager.Measure(widthConstraint, heightConstraint);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(measuredSize);
 
 			return measuredSize;
 		}
@@ -333,7 +336,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			manager.ArrangeChildren(new Rectangle(0, 0, measure.Width, measure.Height));
+			manager.ArrangeChildren(new Size(measure.Width, measure.Height));
 
 			// Because the auto row has no content, we expect it to have height zero
 			Assert.Equal(100 + 100, measure.Height);
@@ -421,7 +424,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			manager.ArrangeChildren(new Rectangle(0, 0, measure.Width, measure.Height));
+			manager.ArrangeChildren(new Size(measure.Width, measure.Height));
 
 			// Because the auto column has no content, we expect it to have width zero
 			Assert.Equal(100 + 100, measure.Width);
@@ -700,7 +703,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new GridLayoutManager(grid);
 
 			manager.Measure(200, 100);
-			manager.ArrangeChildren(new Rectangle(0, 0, 200, 100));
+			manager.ArrangeChildren(new Size(200, 100));
 
 			// View should be arranged to span both columns (200 points)
 			AssertArranged(view0, 0, 0, 200, 100);
@@ -718,7 +721,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new GridLayoutManager(grid);
 
 			manager.Measure(100, 200);
-			manager.ArrangeChildren(new Rectangle(0, 0, 100, 200));
+			manager.ArrangeChildren(new Size(100, 200));
 
 			// View should be arranged to span both rows (200 points)
 			AssertArranged(view0, 0, 0, 100, 200);
@@ -1092,7 +1095,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(100, double.PositiveInfinity);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+			manager.ArrangeChildren(measure);
 
 			// View is visible, so we expect it to be measured and arranged
 			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
@@ -1114,7 +1117,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(100, double.PositiveInfinity);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
+			manager.ArrangeChildren(measure);
 
 			// View is visible, so we expect it to be measured and arranged
 			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
@@ -1177,9 +1180,152 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new GridLayoutManager(grid);
 			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(measuredSize);
 
 			AssertArranged(grid[0], padding.Left, padding.Top, viewWidth, viewHeight);
+		}
+
+		[Category(GridStarSizing)]
+		[Fact]
+		public void StarValuesAreMeasuredTwiceWhenConstraintsAreInfinite()
+		{
+			// A one-row, one-column grid
+			var grid = CreateGridLayout();
+
+			// A 100x100 IView
+			var view = CreateTestView(new Size(100, 100));
+
+			// Set up the grid to have a single child
+			SubstituteChildren(grid, view);
+
+			// Set up the row/column values and spans
+			SetLocation(grid, view);
+
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			// View must be measured to figure out the Auto value
+			view.Received().Measure(Arg.Is(double.PositiveInfinity), Arg.Is(double.PositiveInfinity));
+
+			// And again at the final size
+			view.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(100));
+		}
+
+		[Fact]
+		public void GridMeasureShouldUseExplicitHeight() 
+		{
+			var grid = CreateGridLayout();
+			var view = CreateTestView(new Size(10, 10));
+			SubstituteChildren(grid, view);
+			SetLocation(grid, view);
+
+			grid.Height.Returns(50);
+
+			var gridLayoutManager = new GridLayoutManager(grid);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(50, measure.Height);
+		}
+
+		[Fact]
+		public void GridMeasureShouldUseExplicitWidth()
+		{
+			var grid = CreateGridLayout();
+			var view = CreateTestView(new Size(10, 10));
+			SubstituteChildren(grid, view);
+			SetLocation(grid, view);
+
+			grid.Width.Returns(50);
+
+			var gridLayoutManager = new GridLayoutManager(grid);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(50, measure.Width);
+		}
+
+		[Theory]
+		// at 0, 0
+		[InlineData(1, 1, 0, 0, 0, 0)]
+		[InlineData(1, 2, 0, 0, 0, 0)]
+		[InlineData(2, 1, 0, 0, 0, 0)]
+		[InlineData(2, 2, 0, 0, 0, 0)]
+		// at 1, 0
+		[InlineData(1, 1, 1, 0, 0, 0)]
+		[InlineData(1, 2, 1, 0, 0, 0)]
+		[InlineData(2, 1, 1, 0, 1, 0)]
+		[InlineData(2, 2, 1, 0, 1, 0)]
+		// at 0, 1
+		[InlineData(1, 1, 0, 1, 0, 0)]
+		[InlineData(1, 2, 0, 1, 0, 1)]
+		[InlineData(2, 1, 0, 1, 0, 0)]
+		[InlineData(2, 2, 0, 1, 0, 1)]
+		// at 1, 1
+		[InlineData(1, 1, 1, 1, 0, 0)]
+		[InlineData(1, 2, 1, 1, 0, 1)]
+		[InlineData(2, 1, 1, 1, 1, 0)]
+		[InlineData(2, 2, 1, 1, 1, 1)]
+		public void ViewOutsideRowsAndColsClampsToGrid(int rows, int cols, int row, int col, int actualRow, int actualCol)
+		{
+			var r = string.Join(",", Enumerable.Repeat("100", rows));
+			var c = string.Join(",", Enumerable.Repeat("100", cols));
+
+			var grid = CreateGridLayout(rows: r, columns: c);
+			var view0 = CreateTestView(new Size(10, 10));
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, row, col);
+
+			MeasureAndArrange(grid, 100 * cols, 100 * rows);
+
+			AssertArranged(view0, 100 * actualCol, 100 * actualRow, 100, 100);
+		}
+
+		[Theory]
+		// normal
+		[InlineData(0, 0, 1, 1, 0, 0, 1, 1)]
+		[InlineData(1, 1, 1, 1, 1, 1, 1, 1)]
+		[InlineData(1, 1, 2, 1, 1, 1, 2, 1)]
+		// negative origin
+		[InlineData(-1, 0, 1, 1, 0, 0, 1, 1)]
+		[InlineData(0, -1, 1, 1, 0, 0, 1, 1)]
+		[InlineData(-1, -1, 1, 1, 0, 0, 1, 1)]
+		// negative span
+		[InlineData(1, 1, -1, 0, 1, 1, 1, 1)]
+		[InlineData(1, 1, 0, -1, 1, 1, 1, 1)]
+		[InlineData(1, 1, -1, -1, 1, 1, 1, 1)]
+		// positive origin
+		[InlineData(5, 0, 1, 1, 3, 0, 1, 1)]
+		[InlineData(0, 5, 1, 1, 0, 3, 1, 1)]
+		[InlineData(5, 5, 1, 1, 3, 3, 1, 1)]
+		// positive span
+		[InlineData(0, 0, 1, 5, 0, 0, 1, 4)]
+		[InlineData(0, 0, 5, 1, 0, 0, 4, 1)]
+		[InlineData(0, 0, 5, 5, 0, 0, 4, 4)]
+		// normal origin + positive span
+		[InlineData(1, 1, 1, 5, 1, 1, 1, 3)]
+		[InlineData(1, 1, 5, 1, 1, 1, 3, 1)]
+		[InlineData(1, 1, 5, 5, 1, 1, 3, 3)]
+		// positive origin + positive span
+		[InlineData(5, 5, 1, 5, 3, 3, 1, 1)]
+		[InlineData(5, 5, 5, 1, 3, 3, 1, 1)]
+		[InlineData(5, 5, 5, 5, 3, 3, 1, 1)]
+		public void SpansOutsideRowsAndColsClampsToGrid(int row, int col, int rowSpan, int colSpan, int actualRow, int actualCol, int actualRowSpan, int actualColSpan)
+		{
+			const int GridSize = 4;
+			var r = string.Join(",", Enumerable.Repeat("100", GridSize));
+			var c = string.Join(",", Enumerable.Repeat("100", GridSize));
+
+			var grid = CreateGridLayout(rows: r, columns: c);
+			var view0 = CreateTestView(new Size(10, 10));
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, row, col, rowSpan, colSpan);
+
+			MeasureAndArrange(grid, 100 * GridSize, 100 * GridSize);
+
+			AssertArranged(
+				view0,
+				100 * actualCol,
+				100 * actualRow,
+				100 * actualColSpan,
+				100 * actualRowSpan);
 		}
 	}
 }

@@ -6,7 +6,7 @@
 	public interface IStackLayout : ILayout
 	{
 		/// <summary>
-		/// Identifies the Spacing between childs.
+		/// Specifies the amount of space between children.
 		/// </summary>
 		double Spacing { get; }
 	}

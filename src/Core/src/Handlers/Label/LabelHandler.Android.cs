@@ -1,24 +1,17 @@
-using System;
-using Android.Content;
-using Android.Runtime;
-using Android.Util;
-using Android.Views;
-using Android.Widget;
-using Java.Lang;
-using Microsoft.Extensions.DependencyInjection;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LabelHandler : ViewHandler<ILabel, TextView>
+	public partial class LabelHandler : ViewHandler<ILabel, AppCompatTextView>
 	{
 		static Color? DefaultTextColor { get; set; }
 		static float? LineSpacingAddDefault { get; set; }
 		static float? LineSpacingMultDefault { get; set; }
 
-		protected override TextView CreateNativeView() => new TextView(Context);
+		protected override AppCompatTextView CreateNativeView() => new AppCompatTextView(Context);
 
-		void SetupDefaults(TextView nativeView)
+		void SetupDefaults(AppCompatTextView nativeView)
 		{
 			if (nativeView.TextColors == null)
 			{

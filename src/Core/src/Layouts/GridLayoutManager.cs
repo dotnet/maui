@@ -19,12 +19,12 @@ namespace Microsoft.Maui.Layouts
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
 			_gridStructure = new GridStructure(Grid, widthConstraint, heightConstraint);
-			return new Size(_gridStructure.GridWidth(), _gridStructure.GridHeight());
+			return new Size(_gridStructure.MeasuredGridWidth(), _gridStructure.MeasuredGridHeight());
 		}
 
-		public override void ArrangeChildren(Rectangle childBounds)
+		public override Size ArrangeChildren(Size finalSize)
 		{
-			var structure = _gridStructure ?? new GridStructure(Grid, childBounds.Width, childBounds.Height);
+			var structure = _gridStructure ?? new GridStructure(Grid, finalSize.Width, finalSize.Height);
 
 			foreach (var view in Grid)
 			{
@@ -35,9 +35,10 @@ namespace Microsoft.Maui.Layouts
 
 				var cell = structure.GetCellBoundsFor(view);
 
-				view.Frame = view.ComputeFrame(cell);
-				view.Arrange(view.Frame);
+				view.Arrange(cell);
 			}
+
+			return new Size(structure.MeasuredGridWidth(), structure.MeasuredGridHeight());
 		}
 
 		class GridStructure
@@ -45,6 +46,8 @@ namespace Microsoft.Maui.Layouts
 			readonly IGridLayout _grid;
 			readonly double _gridWidthConstraint;
 			readonly double _gridHeightConstraint;
+			readonly double _explicitGridHeight;
+			readonly double _explicitGridWidth;
 
 			Row[] _rows { get; }
 			Column[] _columns { get; }
@@ -66,9 +69,11 @@ namespace Microsoft.Maui.Layouts
 				_gridWidthConstraint = widthConstraint;
 				_gridHeightConstraint = heightConstraint;
 
+				_explicitGridHeight = _grid.Height;
+				_explicitGridWidth = _grid.Width;
+
 				// Cache these GridLayout properties so we don't have to keep looking them up via _grid
 				// (Property access via _grid may have performance implications for some SDKs.)
-
 				_padding = grid.Padding;
 				_columnSpacing = grid.ColumnSpacing;
 				_rowSpacing = grid.RowSpacing;
@@ -138,17 +143,24 @@ namespace Microsoft.Maui.Layouts
 
 			void InitializeCells()
 			{
+				// If the width/height constraints are infinity, then Star rows/columns won't really make any sense.
+				// When that happens, we need to tag the cells so they can be measured as Auto cells instead.
+				bool isGridWidthConstraintInfinite = double.IsInfinity(_gridWidthConstraint);
+				bool isGridHeightConstraintInfinite = double.IsInfinity(_gridHeightConstraint);
+
 				for (int n = 0; n < _childrenToLayOut.Length; n++)
 				{
 					var view = _childrenToLayOut[n];
+
+					bool measureStarAsAuto = false;
 
 					if (view.Visibility == Visibility.Collapsed)
 					{
 						continue;
 					}
 
-					var column = _grid.GetColumn(view);
-					var columnSpan = _grid.GetColumnSpan(view);
+					var column = _grid.GetColumn(view).Clamp(0, _columns.Length - 1);
+					var columnSpan = _grid.GetColumnSpan(view).Clamp(1, _columns.Length - column);
 
 					var columnGridLengthType = GridLengthType.None;
 
@@ -157,8 +169,8 @@ namespace Microsoft.Maui.Layouts
 						columnGridLengthType |= ToGridLengthType(_columns[columnIndex].ColumnDefinition.Width.GridUnitType);
 					}
 
-					var row = _grid.GetRow(view);
-					var rowSpan = _grid.GetRowSpan(view);
+					var row = _grid.GetRow(view).Clamp(0, _rows.Length - 1);
+					var rowSpan = _grid.GetRowSpan(view).Clamp(1, _rows.Length - row);
 
 					var rowGridLengthType = GridLengthType.None;
 
@@ -167,17 +179,21 @@ namespace Microsoft.Maui.Layouts
 						rowGridLengthType |= ToGridLengthType(_rows[rowIndex].RowDefinition.Height.GridUnitType);
 					}
 
-					_cells[n] = new Cell(n, row, column, rowSpan, columnSpan, columnGridLengthType, rowGridLengthType);
+					// Check for infinite constraints and Stars, so we can mark them for measurement as if they were Auto
+					measureStarAsAuto = (isGridHeightConstraintInfinite && IsStar(rowGridLengthType))
+						|| (isGridWidthConstraintInfinite && IsStar(columnGridLengthType));
+
+					_cells[n] = new Cell(n, row, column, rowSpan, columnSpan, columnGridLengthType, rowGridLengthType, measureStarAsAuto);
 				}
 			}
 
 			public Rectangle GetCellBoundsFor(IView view)
 			{
-				var firstColumn = _grid.GetColumn(view);
-				var lastColumn = firstColumn + _grid.GetColumnSpan(view);
+				var firstColumn = _grid.GetColumn(view).Clamp(0, _columns.Length - 1);
+				var lastColumn = firstColumn + _grid.GetColumnSpan(view).Clamp(1, _columns.Length - firstColumn);
 
-				var firstRow = _grid.GetRow(view);
-				var lastRow = firstRow + _grid.GetRowSpan(view);
+				var firstRow = _grid.GetRow(view).Clamp(0, _rows.Length - 1);
+				var lastRow = firstRow + _grid.GetRowSpan(view).Clamp(1, _rows.Length - firstRow);
 
 				double top = TopEdgeOfRow(firstRow);
 				double left = LeftEdgeOfColumn(firstColumn);
@@ -210,6 +226,16 @@ namespace Microsoft.Maui.Layouts
 			public double GridWidth()
 			{
 				return SumDefinitions(_columns, _columnSpacing) + _padding.HorizontalThickness;
+			}
+
+			public double MeasuredGridHeight() 
+			{
+				return _explicitGridHeight > -1 ? _explicitGridHeight : GridHeight();
+			}
+
+			public double MeasuredGridWidth()
+			{
+				return _explicitGridWidth > -1 ? _explicitGridWidth : GridWidth();
 			}
 
 			double SumDefinitions(Definition[] definitions, double spacing)
@@ -251,7 +277,7 @@ namespace Microsoft.Maui.Layouts
 					var availableWidth = _gridWidthConstraint - GridWidth();
 					var availableHeight = _gridHeightConstraint - GridHeight();
 
-					if (cell.IsColumnSpanAuto || cell.IsRowSpanAuto)
+					if (cell.IsColumnSpanAuto || cell.IsRowSpanAuto || cell.MeasureStarAsAuto)
 					{
 						var measure = _childrenToLayOut[cell.ViewIndex].Measure(availableWidth, availableHeight);
 
@@ -518,11 +544,26 @@ namespace Microsoft.Maui.Layouts
 			public int RowSpan { get; }
 			public int ColumnSpan { get; }
 
+			/// <summary>
+			/// A combination of all the measurement types in the columns this cell spans
+			/// </summary>
 			public GridLengthType ColumnGridLengthType { get; }
+
+			/// <summary>
+			/// A combination of all the measurement types in the rows this cell spans
+			/// </summary>
 			public GridLengthType RowGridLengthType { get; }
 
+			/// <summary>
+			/// Marks the cell as requiring initial measurement even though the measurement type is Star
+			/// Star measurements don't make sense when the axis constraint is infinity; when that happens, we treat them 
+			/// Auto instead. We need to tag that situation in the Cell so the Auto measurement can happen; otherwise, we 
+			/// can end up with un-measured controls when resolving the Star cells.
+			/// </summary>
+			public bool MeasureStarAsAuto { get; }
+
 			public Cell(int viewIndex, int row, int column, int rowSpan, int columnSpan,
-				GridLengthType columnGridLengthType, GridLengthType rowGridLengthType)
+				GridLengthType columnGridLengthType, GridLengthType rowGridLengthType, bool measureStarAsAuto)
 			{
 				ViewIndex = viewIndex;
 				Row = row;
@@ -531,6 +572,7 @@ namespace Microsoft.Maui.Layouts
 				ColumnSpan = columnSpan;
 				ColumnGridLengthType = columnGridLengthType;
 				RowGridLengthType = rowGridLengthType;
+				MeasureStarAsAuto = measureStarAsAuto;
 			}
 
 			public bool IsColumnSpanAuto => HasFlag(ColumnGridLengthType, GridLengthType.Auto);
@@ -563,6 +605,11 @@ namespace Microsoft.Maui.Layouts
 				GridUnitType.Auto => GridLengthType.Auto,
 				_ => GridLengthType.None,
 			};
+		}
+
+		static bool IsStar(GridLengthType gridLengthType)
+		{
+			return (gridLengthType & GridLengthType.Star) == GridLengthType.Star;
 		}
 
 		abstract class Definition

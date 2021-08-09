@@ -7,11 +7,12 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow
+	public partial class Window : NavigableElement, IWindow, IVisualTreeElement
 	{
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
@@ -21,9 +22,11 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: OnPageChanged);
 
 		ReadOnlyCollection<Element>? _logicalChildren;
+		List<IVisualTreeElement> _visualChildren;
 
 		public Window()
 		{
+			_visualChildren = new List<IVisualTreeElement>();
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
@@ -78,7 +81,7 @@ namespace Microsoft.Maui.Controls
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
 
 		internal AlertManager AlertManager { get; }
@@ -100,6 +103,10 @@ namespace Microsoft.Maui.Controls
 				for (var i = 0; i < e.OldItems.Count; i++)
 				{
 					var item = (Element?)e.OldItems[i];
+
+					if (item != null)
+						_visualChildren.Remove(item);
+
 					OnChildRemoved(item, e.OldStartingIndex + i);
 				}
 			}
@@ -108,8 +115,8 @@ namespace Microsoft.Maui.Controls
 			{
 				foreach (Element item in e.NewItems)
 				{
+					_visualChildren.Add(item);
 					OnChildAdded(item);
-
 					// TODO once we have better life cycle events on pages 
 					if (item is Page)
 					{
@@ -126,9 +133,14 @@ namespace Microsoft.Maui.Controls
 
 		void OnModalPopped(Page modalPage)
 		{
+			int index = _visualChildren.IndexOf(modalPage);
+			_visualChildren.Remove(modalPage);
+
 			var args = new ModalPoppedEventArgs(modalPage);
 			ModalPopped?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
+
+			VisualDiagnostics.OnChildRemoved(this, modalPage, index);
 		}
 
 		bool OnModalPopping(Page modalPage)
@@ -141,9 +153,11 @@ namespace Microsoft.Maui.Controls
 
 		void OnModalPushed(Page modalPage)
 		{
+			_visualChildren.Add(modalPage);
 			var args = new ModalPushedEventArgs(modalPage);
 			ModalPushed?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
+			VisualDiagnostics.OnChildAdded(this, modalPage);
 		}
 
 		void OnModalPushing(Page modalPage)
@@ -196,6 +210,11 @@ namespace Microsoft.Maui.Controls
 			OnResumed();
 		}
 
+		// Currently this returns MainPage + ModalStack
+		// Depending on how we want this to show up inside LVT
+		// we might want to change this to only return the currently visible page
+		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() =>
+			_visualChildren;
 
 		static void OnPageChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -263,9 +282,24 @@ namespace Microsoft.Maui.Controls
 					return null;
 				}
 
+				modal.SendNavigatingFrom(new NavigatingFromEventArgs());
+				Page? nextPage;
+				if (modal.NavigationProxy.ModalStack.Count == 1)
+				{
+					nextPage = _owner.Page;
+				}
+				else
+				{
+					nextPage = _owner.ModalNavigationManager.ModalStack[_owner.ModalNavigationManager.ModalStack.Count - 2];
+				}
+
 				Page result = await _owner.ModalNavigationManager.PopModalAsync(animated);
 				result.Parent = null;
 				_owner.OnModalPopped(result);
+
+				modal.SendNavigatedFrom(new NavigatedFromEventArgs(nextPage));
+				nextPage?.SendNavigatedTo(new NavigatedToEventArgs(modal));
+
 				return result;
 			}
 
@@ -277,13 +311,20 @@ namespace Microsoft.Maui.Controls
 
 				if (modal.NavigationProxy.ModalStack.Count == 0)
 				{
+					_owner.Page?.SendNavigatingFrom(new NavigatingFromEventArgs());
 					modal.NavigationProxy.Inner = this;
 					await _owner.ModalNavigationManager.PushModalAsync(modal, animated);
+					_owner.Page?.SendNavigatedFrom(new NavigatedFromEventArgs(modal));
+					modal.SendNavigatedTo(new NavigatedToEventArgs(_owner.Page));
 				}
 				else
 				{
+					var previousModalPage = modal.NavigationProxy.ModalStack[modal.NavigationProxy.ModalStack.Count - 1];
+					previousModalPage.SendNavigatingFrom(new NavigatingFromEventArgs());
 					await _owner.ModalNavigationManager.PushModalAsync(modal, animated);
 					modal.NavigationProxy.Inner = this;
+					previousModalPage.SendNavigatedFrom(new NavigatedFromEventArgs(modal));
+					modal.SendNavigatedTo(new NavigatedToEventArgs(previousModalPage));
 				}
 
 				_owner.OnModalPushed(modal);

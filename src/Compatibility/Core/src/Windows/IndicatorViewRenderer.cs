@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void UpdateControl()
 		{
 			var control = (Element.IndicatorTemplate != null)
-				? (FrameworkElement)Element.IndicatorLayout.GetOrCreateRenderer()
+				? (FrameworkElement)(Element.IndicatorLayout as VisualElement).GetOrCreateRenderer()
 				: CreateNativeControl();
 
 			SetNativeControl(control);

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>$(MSBuildProjectName)</PackageId>
     <Description>.NET MAUI NuGet dependencies pack</Description>
-    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>net6.0;$(MauiPlatforms)</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <IncludeSymbols>false</IncludeSymbols>
@@ -27,7 +27,7 @@
     <PackageReference Include="Xamarin.AndroidX.Browser" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == '$(WindowsTargetFramework)' ">
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
     <PackageReference Include="Microsoft.ProjectReunion" />
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" />

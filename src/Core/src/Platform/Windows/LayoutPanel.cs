@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 	public class LayoutPanel : Panel
 	{
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
+		internal Func<Size, Size>? CrossPlatformArrange { get; set; }
 
 		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
 		{
@@ -38,7 +38,7 @@ namespace Microsoft.Maui
 			var width = finalSize.Width;
 			var height = finalSize.Height;
 
-			var actual = CrossPlatformArrange(new Rectangle(0, 0, width, height));
+			var actual = CrossPlatformArrange(new Size(width, height));
 
 			return new Windows.Foundation.Size(actual.Width, actual.Height);
 		}

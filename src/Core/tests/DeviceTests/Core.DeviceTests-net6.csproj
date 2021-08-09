@@ -33,6 +33,10 @@
     <PackageReference Include="xunit.runner.devices" Version="2.5.25" NoWarn="NU1701" />
   </ItemGroup>
 
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <PackageReference Include="Xamarin.AndroidX.Migration" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.utility" Version="2.4.1" />

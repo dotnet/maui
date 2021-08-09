@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	internal class IndicatorStackLayout : StackLayout
+	internal class IndicatorStackLayout : Compatibility.StackLayout
 	{
 		IndicatorView _indicatorView;
 		public IndicatorStackLayout(IndicatorView indicatorView)

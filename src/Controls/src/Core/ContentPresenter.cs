@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public class ContentPresenter : Layout
+	public class ContentPresenter : Compatibility.Layout
 	{
 		public static BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
 			typeof(ContentPresenter), null, propertyChanged: OnContentChanged);
@@ -32,9 +32,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			double widthRequest = WidthRequest;
 			double heightRequest = HeightRequest;

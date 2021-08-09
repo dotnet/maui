@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample
 
 	public class Startup : IStartup
 	{
-		enum PageType { Main, Blazor, Shell }
+		enum PageType { Main, Blazor, Shell, Template }
 		readonly PageType _pageType = PageType.Main;
 
 		public void Configure(IAppHostBuilder appBuilder)
@@ -74,7 +74,7 @@ namespace Maui.Controls.Sample
 
 #if NET6_0_OR_GREATER
 			appBuilder
-				.RegisterBlazorMauiWebView(typeof(Startup).Assembly);
+				.RegisterBlazorMauiWebView();
 #endif
 
 			appBuilder
@@ -100,6 +100,7 @@ namespace Maui.Controls.Sample
 						serviceType: typeof(Page),
 						implementationType: _pageType switch
 						{
+							PageType.Template => typeof(TemplatePage),
 							PageType.Shell => typeof(AppShell),
 #if WINDOWS
 							PageType.Main => typeof(TempPage),

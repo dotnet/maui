@@ -393,7 +393,7 @@ namespace Microsoft.Maui.Controls
 				{
 					MessagingCenter.Subscribe<RadioButton, RadioButtonGroupSelectionChanged>(this,
 						RadioButtonGroup.GroupSelectionChangedMessage, HandleRadioButtonGroupSelectionChanged);
-					MessagingCenter.Subscribe<Layout<View>, RadioButtonGroupValueChanged>(this,
+					MessagingCenter.Subscribe<Compatibility.Layout<View>, RadioButtonGroupValueChanged>(this,
 						RadioButtonGroup.GroupValueChangedMessage, HandleRadioButtonGroupValueChanged);
 				}
 
@@ -405,7 +405,7 @@ namespace Microsoft.Maui.Controls
 				if (!string.IsNullOrEmpty(oldGroupName))
 				{
 					MessagingCenter.Unsubscribe<RadioButton, RadioButtonGroupSelectionChanged>(this, RadioButtonGroup.GroupSelectionChangedMessage);
-					MessagingCenter.Unsubscribe<Layout<View>, RadioButtonGroupValueChanged>(this, RadioButtonGroup.GroupValueChangedMessage);
+					MessagingCenter.Unsubscribe<Compatibility.Layout<View>, RadioButtonGroupValueChanged>(this, RadioButtonGroup.GroupValueChangedMessage);
 				}
 			}
 		}
@@ -425,7 +425,7 @@ namespace Microsoft.Maui.Controls
 			IsChecked = false;
 		}
 
-		void HandleRadioButtonGroupValueChanged(Layout<View> layout, RadioButtonGroupValueChanged args)
+		void HandleRadioButtonGroupValueChanged(Compatibility.Layout<View> layout, RadioButtonGroupValueChanged args)
 		{
 			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || Value != args.Value || !MatchesScope(args))
 			{
@@ -503,9 +503,9 @@ namespace Microsoft.Maui.Controls
 			contentPresenter.SetBinding(BackgroundColorProperty, new Binding(BackgroundColorProperty.PropertyName,
 				source: RelativeBindingSource.TemplatedParent));
 
-			grid.Children.Add(normalEllipse);
-			grid.Children.Add(checkMark);
-			grid.Children.Add(contentPresenter, 1, 0);
+			grid.Add(normalEllipse);
+			grid.Add(checkMark);
+			grid.Add(contentPresenter, 1, 0);
 
 			frame.Content = grid;
 

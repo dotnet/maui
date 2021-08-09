@@ -5,8 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Layouts;
 using Flex = Microsoft.Maui.Layouts.Flex;
 
-// This is a temporary namespace until we rename everything and move the legacy layouts
-namespace Microsoft.Maui.Controls.Layout2
+namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Children))]
 	public class FlexLayout : Layout, IFlexLayout
@@ -425,7 +424,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			// TODO ezhart The Core layout interfaces don't have the padding property yet; when that's available, we should add a check for it here
 			if (view is FlexLayout && view is Controls.Layout layout)
 			{
-				var (pleft, ptop, pright, pbottom) = (Thickness)layout.GetValue(Controls.Layout.PaddingProperty);
+				var (pleft, ptop, pright, pbottom) = (Thickness)layout.GetValue(Compatibility.Layout.PaddingProperty);
 				item.PaddingLeft = (float)pleft;
 				item.PaddingTop = (float)ptop;
 				item.PaddingRight = (float)pright;

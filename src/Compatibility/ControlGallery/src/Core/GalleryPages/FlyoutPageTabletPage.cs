@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	{
 		public FlyoutPageTabletPage()
 		{
-			Title = "MasterDetail FlyoutLayoutBehavior Gallery";
+			Title = "FlyoutPage FlyoutLayoutBehavior Gallery";
 
 			var btn = new Button { Text = "Default (old behavior)" };
 			btn.Clicked += async (sender, e) => await Navigation.PushModalAsync(new Issue1461Page(FlyoutLayoutBehavior.Default, null));

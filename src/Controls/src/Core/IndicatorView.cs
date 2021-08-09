@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(IndicatorView), null, propertyChanged: (bindable, oldValue, newValue)
 			=> ((IndicatorView)bindable).ResetItemsSource((IEnumerable)oldValue));
 
-		static readonly BindableProperty IndicatorLayoutProperty = BindableProperty.Create(nameof(IndicatorLayout), typeof(Layout<View>), typeof(IndicatorView), null, propertyChanged: TemplateUtilities.OnContentChanged);
+		static readonly BindableProperty IndicatorLayoutProperty = BindableProperty.Create(nameof(IndicatorLayout), typeof(IBindableLayout), typeof(IndicatorView), null, propertyChanged: TemplateUtilities.OnContentChanged);
 
 		public IndicatorView()
 		{
@@ -47,9 +47,9 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IndicatorsShapeProperty, value); }
 		}
 
-		public Layout<View> IndicatorLayout
+		public IBindableLayout IndicatorLayout
 		{
-			get => (Layout<View>)GetValue(IndicatorLayoutProperty);
+			get => (IBindableLayout)GetValue(IndicatorLayoutProperty);
 			set => SetValue(IndicatorLayoutProperty, value);
 		}
 

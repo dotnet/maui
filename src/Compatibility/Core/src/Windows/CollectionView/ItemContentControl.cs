@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			visualElement.IsNativeStateConsistent = true;
 
-			foreach (var child in visualElement.LogicalChildren)
+			foreach (var child in ((IElementController)visualElement).LogicalChildren)
 			{
 				if (!(child is VisualElement ve))
 				{

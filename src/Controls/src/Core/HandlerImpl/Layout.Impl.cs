@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls.Compatibility
 {
 	public abstract partial class Layout<T> 
 	{
