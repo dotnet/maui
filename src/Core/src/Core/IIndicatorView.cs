@@ -4,7 +4,6 @@ namespace Microsoft.Maui
 {
 	public interface IIndicatorView : IView
 	{
-
 		int Count { get; }
 
 		int Position { get; }
@@ -17,6 +16,13 @@ namespace Microsoft.Maui
 
 		Paint IndicatorsColor { get; }
 
-		Paint PositionIndicatorColor { get;  }
+		Paint PositionIndicatorColor { get; }
+
+		IShapeView IndicatorShape { get; }
+	}
+
+	public interface ITemplatedIndicatorView : IIndicatorView
+	{
+		ILayout? IndicatorsLayoutOverride { get; }
 	}
 }

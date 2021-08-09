@@ -15,49 +15,53 @@ using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Handlers
 {
+
 	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, LinearLayout>
 	{
 		const int DefaultPadding = 4;
 
-		Drawable? _currentPageShape = null;
-		Drawable? _pageShape = null;
+		Drawable? _currentPageShape;
+		Drawable? _pageShape;
 
-		protected override LinearLayout CreateNativeView()
+		protected override LinearLayout CreateNativeView() => new LinearLayout(Context);
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return new LinearLayout(Context);
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
+		}
+
+		public override void NativeArrange(Rectangle frame)
+		{
+			//	if (VirtualView.IndicatorTemplate != null)
+			NativeView.Measure((int)frame.Width, (int)frame.Height);
+			base.NativeArrange(frame);
 		}
 
 		private protected override void OnConnectHandler(View nativeView)
 		{
 			base.OnConnectHandler(nativeView);
-	 		UpdateItemsSource();
-			//UpdateIndicators();
-			//UpdateHidesForSinglePage();
 		}
 
-		public override void NativeArrange(Rectangle frame)
-		{
-			base.NativeArrange(frame);
-			UpdateItemsSource();
-
-		}
 		public static void MapCount(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			//handler.UpdateItemsSource();
+			handler.UpdateItemsSource();
 		}
 		public static void MapPosition(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			//handler.UpdateIndicators();
+			handler.UpdateIndicators();
 		}
 		public static void MapHideSingle(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			//handler.UpdateItemsSource();
+			handler.UpdateIndicatorCount();
 		}
 		public static void MapMaximumVisible(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			//handler.UpdateItemsSource();
+			handler.UpdateIndicatorCount();
 		}
-		public static void MapIndicatorSize(IndicatorViewHandler handler, IIndicatorView indicator) { }
+		public static void MapIndicatorSize(IndicatorViewHandler handler, IIndicatorView indicator)
+		{
+			handler.UpdateItemsSource();
+		}
 
 		void UpdateItemsSource()
 		{
@@ -75,9 +79,6 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateIndicatorCount()
 		{
-			//if (!IsVisible)
-			//	return;
-
 			var index = GetIndexFromPosition();
 
 			var count = GetMaximumVisible();
@@ -95,41 +96,44 @@ namespace Microsoft.Maui.Handlers
 
 				imageView.SetImageDrawable(index == i ? _currentPageShape : _pageShape);
 
-				NativeView.AddView(imageView,50,40);
+				NativeView.AddView(imageView);
 			}
 
-			//childCount = NativeView.ChildCount;
-
-			//for (int i = count; i < childCount; i++)
-			//{
-			//	NativeView.RemoveViewAt(NativeView.ChildCount - 1);
-			//}
-			//IndicatorView.NativeSizeChanged();
+			for (int i = count; i < NativeView.ChildCount; i++)
+			{
+				NativeView.RemoveViewAt(NativeView.ChildCount - 1);
+			}
 		}
 
 		void ResetIndicators()
 		{
-			//if (!IsVisible)
-			//	return;
-
-			//_pageIndicatorTintColor = IndicatorView.IndicatorColor.ToAndroid();
-			//_currentPageIndicatorTintColor = IndicatorView.SelectedIndicatorColor.ToAndroid();
-			//_shapeType = IndicatorView.IndicatorsShape == IndicatorShape.Circle ? AShapeType.Oval : AShapeType.Rectangle;
 			_pageShape = null;
 			_currentPageShape = null;
 
-			//if (IndicatorView.IndicatorTemplate == null)
-			UpdateShapes();
-			//else
-			//	UpdateIndicatorTemplate();
+			var templatedIndicatorView = VirtualView as ITemplatedIndicatorView;
+			if (templatedIndicatorView == null || templatedIndicatorView.IndicatorsLayoutOverride == null)
+				UpdateShapes();
+			else
+				UpdateIndicatorTemplate(templatedIndicatorView.IndicatorsLayoutOverride);
+		}
 
-			//UpdateIndicators();
+		void UpdateIndicatorTemplate(ILayout? layout)
+		{
+			if (layout == null)
+				return;
+
+			AView? handler;
+			if (MauiContext != null)
+			{
+				handler = layout.ToNative(MauiContext);
+
+				NativeView.RemoveAllViews();
+				NativeView.AddView(handler);
+			}
 		}
 
 		void UpdateIndicators()
 		{
-			//if (!IsVisible)
-			//	return;
 			var index = GetIndexFromPosition();
 			var count = NativeView.ChildCount;
 			for (int i = 0; i < count; i++)
@@ -145,25 +149,23 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateShapes()
 		{
-			//if (_currentPageShape != null)
-			//	return;
-			//var indicatorColor = VirtualView.IndicatorsColor;
-			//if (indicatorColor is SolidPaint solidPaint)
-			//{
-			//	if (solidPaint.Color is Color c)
-			//		_currentPageShape = GetShape(c.ToNative());
+			if (_currentPageShape != null)
+				return;
 
-			//}
-			//var indicatorPositionColor = VirtualView.PositionIndicatorColor;
-			//if (indicatorColor is SolidPaint solidPaint1)
-			//{
-			//	if (solidPaint1.Color is Color c)
-			//		_pageShape = GetShape(c.ToNative());
+			var indicatorColor = VirtualView.IndicatorsColor;
+			if (indicatorColor is SolidPaint indicatorPaint)
+			{
+				if (indicatorPaint.Color is Color c)
+					_pageShape = GetShape(c.ToNative());
 
-			//}
+			}
+			var indicatorPositionColor = VirtualView.PositionIndicatorColor;
+			if (indicatorPositionColor is SolidPaint indicatorPositionPaint)
+			{
+				if (indicatorPositionPaint.Color is Color c)
+					_currentPageShape = GetShape(c.ToNative());
 
-			_currentPageShape = GetShape(Colors.Black.ToNative());
-			_pageShape = GetShape(Colors.Gray.ToNative());
+			}
 		}
 
 		Drawable GetShape(AColor color)
