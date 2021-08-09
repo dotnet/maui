@@ -42,9 +42,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var modalPage = new ContentPage();
 			await window.Navigation.PushModalAsync(modalPage);
 			var windowChildren = (window as IVisualTreeElement).GetVisualChildren();
+			var modalParent = (modalPage as IVisualTreeElement).GetVisualParent();
+
 			Assert.AreEqual(windowChildren.Count, 2);
 			Assert.AreEqual(page, windowChildren[0]);
 			Assert.AreEqual(modalPage, windowChildren[1]);
+			Assert.AreEqual(window, modalParent);
 		}
 
 		[Test]
