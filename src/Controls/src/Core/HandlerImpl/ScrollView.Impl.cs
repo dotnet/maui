@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls
 			// Account for the ScrollView's margins and use the rest of the available space to measure the actual Content
 			var contentWidthConstraint = widthConstraint - Margin.HorizontalThickness;
 			var contentHeightConstraint = heightConstraint - Margin.VerticalThickness;
-			MeasureContent(contentWidthConstraint, contentHeightConstraint);			
+			MeasureContent(contentWidthConstraint, contentHeightConstraint);
 
 			// Now measure the ScrollView itself (ComputeDesiredSize will account for the ScrollView margins)
 			var defaultSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls
 			return DesiredSize;
 		}
 
-		void MeasureContent(double contentWidthConstraint, double contentHeightConstraint) 
+		void MeasureContent(double contentWidthConstraint, double contentHeightConstraint)
 		{
 			if (Content is not IView content)
 			{
@@ -105,8 +105,8 @@ namespace Microsoft.Maui.Controls
 				// So in each dimension, we assume the larger of the two values.
 
 				content.Arrange(
-					new Rectangle(0, 0, 
-					Math.Max(Frame.Width, content.DesiredSize.Width), 
+					new Rectangle(0, 0,
+					Math.Max(Frame.Width, content.DesiredSize.Width),
 					Math.Max(Frame.Height, content.DesiredSize.Height)));
 			}
 

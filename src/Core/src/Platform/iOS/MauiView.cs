@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public abstract class MauiView : UIView 
+	public abstract class MauiView : UIView
 	{
 		static bool? _respondsToSafeArea;
 
@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 			{
 				return frame;
 			}
-			
+
 			return SafeAreaInsets.InsetRect(frame);
 		}
 	}
