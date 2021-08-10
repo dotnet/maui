@@ -14,7 +14,7 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.Legacy.Support.V4"
-        Version="1.0.0.7$(_AndroidXVersion)"
+        Version="1.0.0.8$(_AndroidXVersion)"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Lifecycle.LiveData"
