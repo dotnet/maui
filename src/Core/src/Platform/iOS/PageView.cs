@@ -15,9 +15,7 @@ namespace Microsoft.Maui
 		{
 			base.LayoutSubviews();
 
-			Frame = AdjustForSafeArea(Frame);
-
-			var bounds = Frame.ToRectangle();
+			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
 
 			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
 			CrossPlatformArrange?.Invoke(bounds);

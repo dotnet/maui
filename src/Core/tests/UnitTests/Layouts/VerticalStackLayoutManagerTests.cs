@@ -38,7 +38,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new VerticalStackLayoutManager(stack);
 
 			var measuredSize = manager.Measure(100, double.PositiveInfinity);
-			manager.ArrangeChildren(measuredSize);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			var expectedRectangle = new Rectangle(0, 0, 100, 100);
 			stack[0].Received().Arrange(Arg.Is(expectedRectangle));
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new VerticalStackLayoutManager(stack);
 
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
-			manager.ArrangeChildren(measuredSize);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			AssertArranged(stack[0], 0, 0, 100, 100);
 			AssertArranged(stack[1], 0, 100 + spacing, 100, 100);
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new VerticalStackLayoutManager(stack);
 			var measure = manager.Measure(100, double.PositiveInfinity);
-			manager.ArrangeChildren(measure);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
 
 			// View is visible, so we expect it to be measured and arranged
 			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new VerticalStackLayoutManager(stack);
 			var measure = manager.Measure(100, double.PositiveInfinity);
-			manager.ArrangeChildren(measure);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
 
 			// View is visible, so we expect it to be measured and arranged
 			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
@@ -168,9 +168,23 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new VerticalStackLayoutManager(stack);
 			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			manager.ArrangeChildren(measuredSize);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			AssertArranged(stack[0], padding.Left, padding.Top, viewWidth, viewHeight);
+		}
+
+		[Fact]
+		public void ArrangeRespectsBounds()
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+
+			var manager = new VerticalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
+			manager.ArrangeChildren(new Rectangle(new Point(10, 15), measuredSize));
+
+			var expectedRectangle0 = new Rectangle(10, 15, 100, 100);
+
+			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
 		}
 	}
 }
