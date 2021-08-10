@@ -75,7 +75,7 @@
   <packageSources>
     <clear />
     <add key="local"   value="$(PackageOutputPath)" />
-    <add key="dotnet6" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json" />
+    <add key="dotnet6" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/6.0.100-preview.7.21379.14-shipping/nuget/v3/index.json" />
     <add key="xamarin" value="https://pkgs.dev.azure.com/azure-public/vside/_packaging/xamarin-impl/nuget/v3/index.json" />
   </packageSources>
 </configuration>
