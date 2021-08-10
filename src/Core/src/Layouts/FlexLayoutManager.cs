@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Layouts
 					|| double.IsNaN(frame.Width)
 					|| double.IsNaN(frame.Height))
 					throw new Exception("something is deeply wrong");
-				
+
 				child.Arrange(frame);
 			}
 

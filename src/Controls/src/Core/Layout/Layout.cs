@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls
 			get => (Thickness)GetValue(PaddingElement.PaddingProperty);
 			set => SetValue(PaddingElement.PaddingProperty, value);
 		}
-		
+
 		public bool IgnoreSafeArea { get; set; }
 
 		protected abstract ILayoutManager CreateLayoutManager();
