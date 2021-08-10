@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Controls
 
 			if (Content is IView view)
 			{
-				_ = view.Arrange(Frame);
+				// TODO ezhart 2021-08-07 When we implement Padding for the ContentPage new layout stuff, the padding will adjust this rectangle
+				_ = view.Arrange(new Rectangle(0, 0, Frame.Width, Frame.Height));
 			}
 
 			return Frame.Size;

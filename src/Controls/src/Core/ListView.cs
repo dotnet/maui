@@ -11,9 +11,10 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>
+	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
 	{
 		readonly List<Element> _logicalChildren = new List<Element>();
+		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => _logicalChildren;
 
 		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement => _logicalChildren;
 

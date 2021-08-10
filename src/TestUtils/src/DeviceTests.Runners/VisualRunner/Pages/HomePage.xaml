@@ -1,0 +1,31 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages.HomePage"
+             Title="Test Runner">
+
+    <Grid RowDefinitions="*,30,120">
+
+        <TableView Intent="Settings" x:Name="table">
+            <TableView.Root>
+                <TableRoot>
+                    <TableSection Title="Loading Test Suites...." x:Name="root" />
+                    <TableSection>
+                        <!--<TextCell Text="Options" Command="{Binding OptionsCommand}" />-->
+                        <TextCell Text="Credits" Command="{Binding CreditsCommand}" />
+                    </TableSection>
+                </TableRoot>
+            </TableView.Root>
+        </TableView>
+
+        <ActivityIndicator IsRunning="{Binding IsBusy}" VerticalOptions="Start" />
+
+        <Label Text="Diagnostic Information:" Grid.Row="1" Padding="20, 0, 20, 0" />
+
+        <ScrollView Grid.Row="2" Padding="20, 10, 20, 10">
+            <Label Text="{Binding DiagnosticMessages}" />
+        </ScrollView>
+
+    </Grid>
+
+
+</ContentPage>

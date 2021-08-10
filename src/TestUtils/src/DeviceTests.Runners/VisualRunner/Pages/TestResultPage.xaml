@@ -1,0 +1,21 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages.TestResultPage"
+             Title="Test Result">
+
+    <ScrollView>
+        <StackLayout>
+            <Label Text="{Binding TestCase.DisplayName}" FontSize="14" FontAttributes="Bold" />
+
+            <Frame IsVisible="{Binding HasOutput}" Padding="0,0,0,10">
+                <StackLayout>
+                    <Label Text="Test Output" />
+                    <Label Text="{Binding Output}" />
+                </StackLayout>
+            </Frame>
+            <Label Text="{Binding ErrorMessage}" />
+            <Label Text="{Binding ErrorStackTrace}"/>
+        </StackLayout>
+    </ScrollView>
+
+</ContentPage>

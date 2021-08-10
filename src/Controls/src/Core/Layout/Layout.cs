@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement
+	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView
 	{
 		ReadOnlyCastingList<Element, IView> _logicalChildren;
 
@@ -45,6 +46,7 @@ namespace Microsoft.Maui.Controls
 				if (old is Element oldElement)
 				{
 					oldElement.Parent = null;
+					VisualDiagnostics.OnChildRemoved(this, oldElement, index);
 				}
 
 				LayoutHandler?.Remove(old);
@@ -54,6 +56,7 @@ namespace Microsoft.Maui.Controls
 				if (value is Element newElement)
 				{
 					newElement.Parent = this;
+					VisualDiagnostics.OnChildAdded(this, newElement);
 				}
 
 				LayoutHandler?.Add(value);
@@ -69,6 +72,8 @@ namespace Microsoft.Maui.Controls
 			get => (Thickness)GetValue(PaddingElement.PaddingProperty);
 			set => SetValue(PaddingElement.PaddingProperty, value);
 		}
+
+		public bool IgnoreSafeArea { get; set; }
 
 		protected abstract ILayoutManager CreateLayoutManager();
 
@@ -95,9 +100,15 @@ namespace Microsoft.Maui.Controls
 		{
 			if (child == null)
 				return;
+
 			_children.Add(child);
+
 			if (child is Element element)
+			{
 				element.Parent = this;
+				VisualDiagnostics.OnChildAdded(this, element);
+			}
+
 			InvalidateMeasure();
 			LayoutHandler?.Add(child);
 		}
@@ -133,7 +144,10 @@ namespace Microsoft.Maui.Controls
 			_children.Insert(index, child);
 
 			if (child is Element element)
+			{
 				element.Parent = this;
+				VisualDiagnostics.OnChildAdded(this, element);
+			}
 
 			InvalidateMeasure();
 
@@ -145,10 +159,14 @@ namespace Microsoft.Maui.Controls
 			if (child == null)
 				return false;
 
+			var index = _children.IndexOf(child);
 			var result = _children.Remove(child);
 
 			if (child is Element element)
+			{
 				element.Parent = null;
+				VisualDiagnostics.OnChildRemoved(this, element, index);
+			}
 
 			InvalidateMeasure();
 
@@ -169,7 +187,10 @@ namespace Microsoft.Maui.Controls
 			_children.RemoveAt(index);
 
 			if (child is Element element)
+			{
 				element.Parent = null;
+				VisualDiagnostics.OnChildRemoved(this, element, index);
+			}
 
 			InvalidateMeasure();
 

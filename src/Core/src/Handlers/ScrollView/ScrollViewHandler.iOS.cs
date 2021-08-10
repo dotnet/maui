@@ -30,6 +30,30 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ScrollAnimationEnded -= ScrollAnimationEnded;
 		}
 
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			var nativeView = WrappedNativeView;
+
+			if (nativeView == null)
+			{
+				return new Size(widthConstraint, heightConstraint);
+			}
+
+			var explicitWidth = VirtualView.Width;
+			var explicitHeight = VirtualView.Height;
+			var hasExplicitWidth = explicitWidth >= 0;
+			var hasExplicitHeight = explicitHeight >= 0;
+
+			var sizeThatFits = nativeView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
+
+			var size = new Size(
+				sizeThatFits.Width > 0 ? sizeThatFits.Width : NativeView.ContentSize.Width,
+				sizeThatFits.Height > 0 ? sizeThatFits.Height : NativeView.ContentSize.Height);
+
+			return new Size(hasExplicitWidth ? explicitWidth : size.Width,
+				hasExplicitHeight ? explicitHeight : size.Height);
+		}
+
 		void ScrollAnimationEnded(object? sender, EventArgs e)
 		{
 			VirtualView.ScrollFinished();

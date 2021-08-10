@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -121,11 +122,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			grid.GetColumnSpan(view).Returns(colSpan);
 		}
 
-		Size MeasureAndArrange(IGridLayout grid, double widthConstraint = double.PositiveInfinity, double heightConstraint = double.PositiveInfinity)
+		Size MeasureAndArrange(IGridLayout grid, double widthConstraint = double.PositiveInfinity, double heightConstraint = double.PositiveInfinity, double left = 0, double top = 0)
 		{
 			var manager = new GridLayoutManager(grid);
 			var measuredSize = manager.Measure(widthConstraint, heightConstraint);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(new Rectangle(new Point(left, top), measuredSize));
 
 			return measuredSize;
 		}
@@ -1239,6 +1240,108 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.Equal(50, measure.Width);
+		}
+
+		[Theory]
+		// at 0, 0
+		[InlineData(1, 1, 0, 0, 0, 0)]
+		[InlineData(1, 2, 0, 0, 0, 0)]
+		[InlineData(2, 1, 0, 0, 0, 0)]
+		[InlineData(2, 2, 0, 0, 0, 0)]
+		// at 1, 0
+		[InlineData(1, 1, 1, 0, 0, 0)]
+		[InlineData(1, 2, 1, 0, 0, 0)]
+		[InlineData(2, 1, 1, 0, 1, 0)]
+		[InlineData(2, 2, 1, 0, 1, 0)]
+		// at 0, 1
+		[InlineData(1, 1, 0, 1, 0, 0)]
+		[InlineData(1, 2, 0, 1, 0, 1)]
+		[InlineData(2, 1, 0, 1, 0, 0)]
+		[InlineData(2, 2, 0, 1, 0, 1)]
+		// at 1, 1
+		[InlineData(1, 1, 1, 1, 0, 0)]
+		[InlineData(1, 2, 1, 1, 0, 1)]
+		[InlineData(2, 1, 1, 1, 1, 0)]
+		[InlineData(2, 2, 1, 1, 1, 1)]
+		public void ViewOutsideRowsAndColsClampsToGrid(int rows, int cols, int row, int col, int actualRow, int actualCol)
+		{
+			var r = string.Join(",", Enumerable.Repeat("100", rows));
+			var c = string.Join(",", Enumerable.Repeat("100", cols));
+
+			var grid = CreateGridLayout(rows: r, columns: c);
+			var view0 = CreateTestView(new Size(10, 10));
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, row, col);
+
+			MeasureAndArrange(grid, 100 * cols, 100 * rows);
+
+			AssertArranged(view0, 100 * actualCol, 100 * actualRow, 100, 100);
+		}
+
+		[Theory]
+		// normal
+		[InlineData(0, 0, 1, 1, 0, 0, 1, 1)]
+		[InlineData(1, 1, 1, 1, 1, 1, 1, 1)]
+		[InlineData(1, 1, 2, 1, 1, 1, 2, 1)]
+		// negative origin
+		[InlineData(-1, 0, 1, 1, 0, 0, 1, 1)]
+		[InlineData(0, -1, 1, 1, 0, 0, 1, 1)]
+		[InlineData(-1, -1, 1, 1, 0, 0, 1, 1)]
+		// negative span
+		[InlineData(1, 1, -1, 0, 1, 1, 1, 1)]
+		[InlineData(1, 1, 0, -1, 1, 1, 1, 1)]
+		[InlineData(1, 1, -1, -1, 1, 1, 1, 1)]
+		// positive origin
+		[InlineData(5, 0, 1, 1, 3, 0, 1, 1)]
+		[InlineData(0, 5, 1, 1, 0, 3, 1, 1)]
+		[InlineData(5, 5, 1, 1, 3, 3, 1, 1)]
+		// positive span
+		[InlineData(0, 0, 1, 5, 0, 0, 1, 4)]
+		[InlineData(0, 0, 5, 1, 0, 0, 4, 1)]
+		[InlineData(0, 0, 5, 5, 0, 0, 4, 4)]
+		// normal origin + positive span
+		[InlineData(1, 1, 1, 5, 1, 1, 1, 3)]
+		[InlineData(1, 1, 5, 1, 1, 1, 3, 1)]
+		[InlineData(1, 1, 5, 5, 1, 1, 3, 3)]
+		// positive origin + positive span
+		[InlineData(5, 5, 1, 5, 3, 3, 1, 1)]
+		[InlineData(5, 5, 5, 1, 3, 3, 1, 1)]
+		[InlineData(5, 5, 5, 5, 3, 3, 1, 1)]
+		public void SpansOutsideRowsAndColsClampsToGrid(int row, int col, int rowSpan, int colSpan, int actualRow, int actualCol, int actualRowSpan, int actualColSpan)
+		{
+			const int GridSize = 4;
+			var r = string.Join(",", Enumerable.Repeat("100", GridSize));
+			var c = string.Join(",", Enumerable.Repeat("100", GridSize));
+
+			var grid = CreateGridLayout(rows: r, columns: c);
+			var view0 = CreateTestView(new Size(10, 10));
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, row, col, rowSpan, colSpan);
+
+			MeasureAndArrange(grid, 100 * GridSize, 100 * GridSize);
+
+			AssertArranged(
+				view0,
+				100 * actualCol,
+				100 * actualRow,
+				100 * actualColSpan,
+				100 * actualRowSpan);
+		}
+
+		[Fact]
+		public void ArrangeRespectsBounds() 
+		{
+			var grid = CreateGridLayout();
+			var view = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view);
+			SetLocation(grid, view);
+
+			var measure = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity, 10, 15);
+
+			var expectedRectangle = new Rectangle(10, 15, measure.Width, measure.Height);
+			
+			view.Received().Arrange(Arg.Is(expectedRectangle));
 		}
 	}
 }

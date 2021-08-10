@@ -27,7 +27,7 @@
     <PackageReference Include="Xamarin.AndroidX.Browser" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == '$(WindowsTargetFramework)' ">
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
     <PackageReference Include="Microsoft.ProjectReunion" />
     <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
