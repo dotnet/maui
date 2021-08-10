@@ -25,21 +25,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override LinearLayout CreateNativeView() => new LinearLayout(Context);
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
-		}
-
-		public override void NativeArrange(Rectangle frame)
-		{
-			base.NativeArrange(frame);
-		}
-
-		private protected override void OnConnectHandler(View nativeView)
-		{
-			base.OnConnectHandler(nativeView);
-		}
-
 		public static void MapCount(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
 			handler.UpdateItemsSource();
@@ -73,7 +58,6 @@ namespace Microsoft.Maui.Handlers
 			var position = VirtualView.Position;
 			return Math.Max(0, position >= maxVisible ? maxVisible - 1 : position);
 		}
-
 
 		void UpdateIndicatorCount()
 		{
@@ -168,13 +152,15 @@ namespace Microsoft.Maui.Handlers
 
 		Drawable GetShape(AColor color)
 		{
-			var indicatorSize = VirtualView.IndicatorSize;
 			AShapeDrawable shape;
+			var isCircle = IsCircleShape();
 
-			//if (_shapeType == AShapeType.Oval)
-			shape = new AShapeDrawable(new AShapes.OvalShape());
-			//else
-			//shape = new AShapeDrawable(new AShapes.RectShape());
+			if (isCircle)
+				shape = new AShapeDrawable(new AShapes.OvalShape());
+			else
+				shape = new AShapeDrawable(new AShapes.RectShape());
+
+			var indicatorSize = VirtualView.IndicatorSize;
 
 			shape.SetIntrinsicHeight((int)Context.ToPixels(indicatorSize));
 			shape.SetIntrinsicWidth((int)Context.ToPixels(indicatorSize));
@@ -182,6 +168,19 @@ namespace Microsoft.Maui.Handlers
 				shape.Paint.Color = color;
 
 			return shape;
+		}
+
+		bool IsCircleShape()
+		{
+			var sH = VirtualView.IndicatorShape.Shape;
+			var pointsCount = 13;
+			if (sH != null)
+			{
+				var path = sH.PathForBounds(new Rectangle(0, 0, 6, 6));
+				pointsCount = path.Count;
+			}
+
+			return pointsCount == 13;
 		}
 
 		int GetMaximumVisible()

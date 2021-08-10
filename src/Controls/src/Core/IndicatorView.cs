@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty HideSingleProperty = BindableProperty.Create(nameof(HideSingle), typeof(bool), typeof(IndicatorView), true);
 
-		public static readonly BindableProperty IndicatorColorProperty = BindableProperty.Create(nameof(IndicatorColor), typeof(Color), typeof(IndicatorView), Colors.Gray);
+		public static readonly BindableProperty IndicatorColorProperty = BindableProperty.Create(nameof(IndicatorColor), typeof(Color), typeof(IndicatorView), Colors.LightGrey);
 
 		public static readonly BindableProperty SelectedIndicatorColorProperty = BindableProperty.Create(nameof(SelectedIndicatorColor), typeof(Color), typeof(IndicatorView), Colors.Black);
 
@@ -115,8 +115,8 @@ namespace Microsoft.Maui.Controls
 			if (IndicatorTemplate != null)
 				return baseRequest;
 
-			var defaultSize = IndicatorSize + DefaultPadding + DefaultPadding + 1;
-			var items = Count;
+			var defaultSize = IndicatorSize + DefaultPadding + DefaultPadding;
+			var items = GetMaximumVisible();
 			
 			var sizeRequest = new SizeRequest(new Size(items * defaultSize, IndicatorSize), new Size(10, 10));
 
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (newValue != null)
 			{
-				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView) { Spacing = 6 };
+				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView) { Spacing = DefaultPadding };
 			}
 			else if (indicatorView.IndicatorLayout == null)
 			{
@@ -184,6 +184,18 @@ namespace Microsoft.Maui.Controls
 				count++;
 			}
 			Count = count;
+		}
+
+		int GetMaximumVisible()
+		{
+			var minValue = Math.Min(MaximumVisible, Count);
+			var maximumVisible = minValue <= 0 ? 0 : minValue;
+			bool hideSingle = HideSingle;
+
+			if (maximumVisible == 1 && hideSingle)
+				maximumVisible = 0;
+
+			return maximumVisible;
 		}
 	}
 }
