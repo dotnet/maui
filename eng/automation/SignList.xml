@@ -6,8 +6,6 @@
     <FirstParty Include="FormsViewGroup.dll" />
     <FirstParty Include="Microsoft.AspNetCore.Components.WebView.*.dll" />
     <FirstParty Include="Microsoft.Extensions*.dll" />
-    <FirstParty Include="open-iconic.ttf" />
-    <FirstParty Include="OpenSans-Regular.ttf" />
     <FirstParty Include="System.CodeDom.dll" />
 
     <!-- SkiaSharp -->
@@ -27,6 +25,8 @@
     <ThirdParty Include="webkit-sharp.dll" />
     <ThirdParty Include="Mono.Cecil.dll" />
     <ThirdParty Include="Mono.Cecil.*.dll" />
+    <ThirdParty Include="open-iconic.ttf" />
+    <ThirdParty Include="OpenSans-Regular.ttf" />
   </ItemGroup>
 
   <ItemGroup>
