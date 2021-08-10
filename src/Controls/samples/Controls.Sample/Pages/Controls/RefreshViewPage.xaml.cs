@@ -22,16 +22,17 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void OnToggleRefreshBackgroundColorClicked(object sender, System.EventArgs e)
+		private async void OnToggleRefreshBackgroundColorClicked(object sender, System.EventArgs e)
 		{
-			if (refreshView.Background == SolidColorBrush.Yellow)
-			{
-				refreshView.Background = SolidColorBrush.Green;
-			}
-			else
-			{
-				refreshView.Background = SolidColorBrush.Yellow;
-			}
+			await Navigation.PushAsync(new ContentPage());
+			//if (refreshView.Background == SolidColorBrush.Yellow)
+			//{
+			//	refreshView.Background = SolidColorBrush.Green;
+			//}
+			//else
+			//{
+			//	refreshView.Background = SolidColorBrush.Yellow;
+			//}
 		}
 
 		private void OnTriggerRefreshClicked(object sender, System.EventArgs e) =>
