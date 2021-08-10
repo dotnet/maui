@@ -4,13 +4,36 @@
     x:Class="Maui.Controls.Sample.Pages.IndicatorPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="IndicatorView">
+    <views:BasePage.Resources>
+        <Style x:Key="IndicatorLabelStyle"
+               TargetType="Label">
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="TextColor"
+                                        Value="LightGray" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Selected">
+                            <VisualState.Setters>
+                                <Setter Property="TextColor"
+                                        Value="Black" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </views:BasePage.Resources>
     <views:BasePage.Content>
         <VerticalStackLayout
             Margin="12">
             <Label
                 Text="Basic"
                 Style="{StaticResource Headline}"/>
-            <IndicatorView Count="5" Position="2"  HorizontalOptions="Center" />
+            <IndicatorView Count="5" Position="2"  HorizontalOptions="Center"  />
             <Label
                 Text="Colors"
                 Style="{StaticResource Headline}"/>
@@ -19,6 +42,18 @@
                 Text="Indicator Shape"
                 Style="{StaticResource Headline}"/>
             <IndicatorView Count="5" Position="2"  HorizontalOptions="Center"  IndicatorsShape="Square"/>
+            <Label
+                Text="Indicator Size"
+                Style="{StaticResource Headline}"/>
+            <IndicatorView Count="5" Position="2"  HorizontalOptions="Center"  IndicatorSize="20"/>
+            <Label
+                Text="Indicator HideSingle"
+                Style="{StaticResource Headline}"/>
+            <IndicatorView Count="1" HorizontalOptions="Center" HideSingle="True"/>
+            <Label
+                Text="Indicator MaximumVisible -  7 of 10"
+                Style="{StaticResource Headline}"/>
+            <IndicatorView Count="10" Position="3" MaximumVisible="7" HorizontalOptions="Center"/>
             <Label
                 Text="Indicator Template"
                 Style="{StaticResource Headline}"/>
@@ -29,7 +64,7 @@
                    HorizontalOptions="Center">
                 <IndicatorView.IndicatorTemplate>
                     <DataTemplate>
-                        <Label FontFamily="Ionicons" Text="&#xf30c;" />
+                        <Label Text="&#xf30c;" FontFamily="Ionicons" Style="{StaticResource IndicatorLabelStyle}" />
                     </DataTemplate>
                 </IndicatorView.IndicatorTemplate>
             </IndicatorView>
