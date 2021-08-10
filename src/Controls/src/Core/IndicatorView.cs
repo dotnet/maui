@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (newValue != null)
 			{
-				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView);
+				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView) { Spacing = 6 };
 			}
 			else if (indicatorView.IndicatorLayout == null)
 			{
