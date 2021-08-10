@@ -15,6 +15,9 @@ namespace Microsoft.Maui.Controls
 		// This shouldn't need be needed once TemplatedView inherits from Controls.Layout
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
+			if (Content == null)
+				return new Size(100, 100);
+
 			var margin = Margin;
 
 			// Adjust the constraints to account for the margins
