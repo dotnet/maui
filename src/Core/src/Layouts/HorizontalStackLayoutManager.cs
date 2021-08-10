@@ -41,21 +41,23 @@ namespace Microsoft.Maui.Layouts
 			return new Size(finalWidth, finalHeight);
 		}
 
-		public override Size ArrangeChildren(Size finalSize)
+		public override Size ArrangeChildren(Rectangle bounds)
 		{
 			var padding = Stack.Padding;
-			var height = finalSize.Height - padding.VerticalThickness;
-			double stackWidth = 0;
+			double top = padding.Top + bounds.Top;
+			double left = padding.Left + bounds.Left;
+			var height = bounds.Height - padding.VerticalThickness;
+			double stackWidth;
 
 			if (Stack.FlowDirection == FlowDirection.LeftToRight)
 			{
-				stackWidth = ArrangeLeftToRight(height, padding.Left, padding.Top, Stack.Spacing, Stack);
+				stackWidth = ArrangeLeftToRight(height, left, top, Stack.Spacing, Stack);
 			}
 			else
 			{
 				// We _could_ simply reverse the list of child views when arranging from right to left, 
 				// but this way we avoid extra list and enumerator allocations
-				stackWidth = ArrangeRightToLeft(height, padding.Left, padding.Top, Stack.Spacing, Stack);
+				stackWidth = ArrangeRightToLeft(height, left, top, Stack.Spacing, Stack);
 			}
 
 			return new Size(height, stackWidth);

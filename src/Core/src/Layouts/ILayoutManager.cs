@@ -1,4 +1,3 @@
-using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Layouts
@@ -7,6 +6,6 @@ namespace Microsoft.Maui.Layouts
 	{
 		Size Measure(double widthConstraint, double heightConstraint);
 
-		Size ArrangeChildren(Size finalSize);
+		Size ArrangeChildren(Rectangle bounds);
 	}
 }

@@ -22,9 +22,9 @@ namespace Microsoft.Maui.Layouts
 			return new Size(_gridStructure.MeasuredGridWidth(), _gridStructure.MeasuredGridHeight());
 		}
 
-		public override Size ArrangeChildren(Size finalSize)
+		public override Size ArrangeChildren(Rectangle bounds)
 		{
-			var structure = _gridStructure ?? new GridStructure(Grid, finalSize.Width, finalSize.Height);
+			var structure = _gridStructure ?? new GridStructure(Grid, bounds.Width, bounds.Height);
 
 			foreach (var view in Grid)
 			{
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Layouts
 					continue;
 				}
 
-				var cell = structure.GetCellBoundsFor(view);
+				var cell = structure.GetCellBoundsFor(view, bounds.Left, bounds.Top);
 
 				view.Arrange(cell);
 			}
@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			public Rectangle GetCellBoundsFor(IView view)
+			public Rectangle GetCellBoundsFor(IView view, double xOffset, double yOffset)
 			{
 				var firstColumn = _grid.GetColumn(view).Clamp(0, _columns.Length - 1);
 				var lastColumn = firstColumn + _grid.GetColumnSpan(view).Clamp(1, _columns.Length - firstColumn);
@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Layouts
 				// TODO ezhart this isn't correctly accounting for row spacing when spanning multiple rows
 				// (and column spacing is probably wrong, too)
 
-				return new Rectangle(left, top, width, height);
+				return new Rectangle(left + xOffset, top + yOffset, width, height);
 			}
 
 			public double GridHeight()

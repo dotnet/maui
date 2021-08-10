@@ -13,9 +13,9 @@ namespace Microsoft.Maui.Layouts
 			FlexLayout = flexLayout;
 		}
 
-		public Size ArrangeChildren(Size finalSize)
+		public Size ArrangeChildren(Rectangle bounds)
 		{
-			FlexLayout.Layout(finalSize.Width, finalSize.Height);
+			FlexLayout.Layout(bounds.Width, bounds.Height);
 
 			foreach (var child in FlexLayout)
 			{
@@ -25,11 +25,11 @@ namespace Microsoft.Maui.Layouts
 					|| double.IsNaN(frame.Width)
 					|| double.IsNaN(frame.Height))
 					throw new Exception("something is deeply wrong");
-				
+				frame = frame.Offset(bounds.Left, bounds.Top);
 				child.Arrange(frame);
 			}
 
-			return finalSize;
+			return bounds.Size;
 		}
 
 		public Size Measure(double widthConstraint, double heightConstraint)
