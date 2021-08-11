@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			if (child is null)
 				return;
 
-			var index = parent?.AllChildren.IndexOf(child) ?? -1;
+			var index = (parent as IVisualTreeElement)?.GetVisualChildren().IndexOf(child) ?? -1;
 			VisualTreeChanged?.Invoke(parent, new VisualTreeChangeEventArgs(parent, child, index, VisualTreeChangeType.Add));
 		}
 

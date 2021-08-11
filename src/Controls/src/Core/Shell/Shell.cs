@@ -498,6 +498,16 @@ namespace Microsoft.Maui.Controls
 			return _navigationManager.GoToAsync(state, animate, false);
 		}
 
+		public Task GoToAsync(ShellNavigationState state, IDictionary<string, object> parameters)
+		{
+			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(parameters));
+		}
+
+		public Task GoToAsync(ShellNavigationState state, bool animate, IDictionary<string, object> parameters)
+		{
+			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
+		}
+
 		public void AddLogicalChild(Element element)
 		{
 			if (element == null)

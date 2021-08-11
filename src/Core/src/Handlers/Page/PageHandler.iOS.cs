@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Handlers
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
+			NativeView.View = view;
 			NativeView.CrossPlatformArrange = VirtualView.Arrange;
 		}
 

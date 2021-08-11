@@ -122,11 +122,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			grid.GetColumnSpan(view).Returns(colSpan);
 		}
 
-		Size MeasureAndArrange(IGridLayout grid, double widthConstraint = double.PositiveInfinity, double heightConstraint = double.PositiveInfinity)
+		Size MeasureAndArrange(IGridLayout grid, double widthConstraint = double.PositiveInfinity, double heightConstraint = double.PositiveInfinity, double left = 0, double top = 0)
 		{
 			var manager = new GridLayoutManager(grid);
 			var measuredSize = manager.Measure(widthConstraint, heightConstraint);
-			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+			manager.ArrangeChildren(new Rectangle(new Point(left, top), measuredSize));
 
 			return measuredSize;
 		}
@@ -1326,6 +1326,22 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				100 * actualRow,
 				100 * actualColSpan,
 				100 * actualRowSpan);
+		}
+
+		[Fact]
+		public void ArrangeRespectsBounds() 
+		{
+			var grid = CreateGridLayout();
+			var view = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view);
+			SetLocation(grid, view);
+
+			var measure = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity, 10, 15);
+
+			var expectedRectangle = new Rectangle(10, 15, measure.Width, measure.Height);
+			
+			view.Received().Arrange(Arg.Is(expectedRectangle));
 		}
 	}
 }

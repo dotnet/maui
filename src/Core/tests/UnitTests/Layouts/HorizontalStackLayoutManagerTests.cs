@@ -214,5 +214,19 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			AssertArranged(stack[0], padding.Left, padding.Top, viewWidth, viewHeight);
 		}
+
+		[Fact]
+		public void ArrangeRespectsBounds()
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+
+			var manager = new HorizontalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
+			manager.ArrangeChildren(new Rectangle(new Point(10, 15), measuredSize));
+
+			var expectedRectangle0 = new Rectangle(10, 15, 100, 100);
+
+			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
+		}
 	}
 }

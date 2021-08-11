@@ -69,6 +69,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public ILayoutManager LayoutManager => _layoutManager ??= new LayoutManagerStub();
 
+		public bool IgnoreSafeArea => false;
+
 		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
 	}
 }

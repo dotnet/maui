@@ -15,6 +15,7 @@
     <MicrosoftExtensionsLoggingPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingDebugPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
   </PropertyGroup>
    <!-- Microsoft.Maui.Graphics related Packages -->
   <PropertyGroup>
@@ -63,6 +64,10 @@
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection.Abstractions"
         Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.FileProviders.Abstractions"
+        Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Hosting.Abstractions"
