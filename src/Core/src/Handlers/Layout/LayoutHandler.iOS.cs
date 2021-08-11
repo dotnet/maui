@@ -53,7 +53,6 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			NativeView.AddSubview(child.ToNative(MauiContext));
-			NativeView.SetNeedsLayout();
 		}
 
 		public void Remove(IView child)
@@ -61,22 +60,50 @@ namespace Microsoft.Maui.Handlers
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child?.Handler?.NativeView is NativeView nativeView)
+			if (child?.Handler?.NativeView is NativeView childView)
 			{
-				nativeView.RemoveFromSuperview();
-				NativeView.SetNeedsLayout();
+				childView.RemoveFromSuperview();
 			}
 		}
 
-		protected override void DisconnectHandler(LayoutView nativeView)
+		public void Clear() 
 		{
-			base.DisconnectHandler(nativeView);
-			var subViews = nativeView.Subviews;
+			if (NativeView == null)
+			{
+				return;
+			}
+
+			var subViews = NativeView.Subviews;
 
 			foreach (var subView in subViews)
 			{
 				subView.RemoveFromSuperview();
 			}
+		}
+
+		public void Insert(int index, IView child)
+		{
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			NativeView.InsertSubview(child.ToNative(MauiContext), index);
+		}
+
+		public void Update(int index, IView child)
+		{
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			NativeView.Subviews[index] = child.ToNative(MauiContext);
+			NativeView.SetNeedsLayout();
+		}
+
+		protected override void DisconnectHandler(LayoutView nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+			Clear();
 		}
 	}
 }

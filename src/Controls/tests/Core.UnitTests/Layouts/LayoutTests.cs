@@ -26,5 +26,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Null(child0.Parent);
 			Assert.AreEqual(layout, child1.Parent);
 		}
+
+		[Test]
+		public void ClearUpdatesParent() 
+		{
+			var layout = new VerticalStackLayout();
+
+			var child0 = new Button();
+			var child1 = new Button();
+
+			layout.Add(child0);
+			layout.Add(child1);
+
+			Assert.AreEqual(layout, child0.Parent);
+			Assert.AreEqual(layout, child1.Parent);
+
+			layout.Clear();
+
+			Assert.Null(child0.Parent);
+			Assert.Null(child1.Parent);
+		}
 	}
 }

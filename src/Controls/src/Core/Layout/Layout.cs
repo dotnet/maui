@@ -21,7 +21,6 @@ namespace Microsoft.Maui.Controls
 		// This provides a Children property for XAML 
 		public IList<IView> Children => this;
 
-		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
 		IList IBindableLayout.Children => _children;
 
 		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
@@ -49,8 +48,6 @@ namespace Microsoft.Maui.Controls
 					VisualDiagnostics.OnChildRemoved(this, oldElement, index);
 				}
 
-				LayoutHandler?.Remove(old);
-
 				_children[index] = value;
 
 				if (value is Element newElement)
@@ -59,9 +56,7 @@ namespace Microsoft.Maui.Controls
 					VisualDiagnostics.OnChildAdded(this, newElement);
 				}
 
-				LayoutHandler?.Add(value);
-
-				InvalidateMeasure();
+				UpdateInHandler(index, value);
 			}
 		}
 
@@ -109,16 +104,19 @@ namespace Microsoft.Maui.Controls
 				VisualDiagnostics.OnChildAdded(this, element);
 			}
 
-			InvalidateMeasure();
-			LayoutHandler?.Add(child);
+			AddToHandler(_children.Count, child);
 		}
 
 		public void Clear()
 		{
-			for (int n = _children.Count - 1; n >= 0; n--)
+			foreach (var child in this)
 			{
-				Remove(this[n]);
+				if (child is Element element)
+					element.Parent = null;
 			}
+
+			_children.Clear();
+			ClearHandler();
 		}
 
 		public bool Contains(IView item)
@@ -149,9 +147,7 @@ namespace Microsoft.Maui.Controls
 				VisualDiagnostics.OnChildAdded(this, element);
 			}
 
-			InvalidateMeasure();
-
-			LayoutHandler?.Add(child);
+			AddToHandler(index, child);
 		}
 
 		public virtual bool Remove(IView child)
@@ -160,19 +156,15 @@ namespace Microsoft.Maui.Controls
 				return false;
 
 			var index = _children.IndexOf(child);
-			var result = _children.Remove(child);
 
-			if (child is Element element)
+			if (index == -1)
 			{
-				element.Parent = null;
-				VisualDiagnostics.OnChildRemoved(this, element, index);
+				return false;
 			}
 
-			InvalidateMeasure();
+			RemoveAt(index);
 
-			LayoutHandler?.Remove(child);
-
-			return result;
+			return true;
 		}
 
 		public void RemoveAt(int index)
@@ -192,14 +184,46 @@ namespace Microsoft.Maui.Controls
 				VisualDiagnostics.OnChildRemoved(this, element, index);
 			}
 
-			InvalidateMeasure();
+			RemoveFromHandler(index, child);
+		}
 
-			LayoutHandler?.Remove(child);
+		void RemoveFromHandler(IView view)
+		{
+			Handler?.Invoke(nameof(ILayoutHandler.Remove), view);
+		}
+
+		void AddToHandler(int index, IView view)
+{
+			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
+			Handler?.Invoke(nameof(ILayoutHandler.Add), args);
+		}
+
+		void ClearHandler() 
+		{
+			Handler?.Invoke(nameof(ILayoutHandler.Clear));
+		}
+
+		void RemoveFromHandler(int index, IView view)
+{
+			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
+			Handler?.Invoke(nameof(ILayoutHandler.Remove), args);
+		}
+
+		void InsertIntoHandler(int index, IView view)
+		{
+			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
+			Handler?.Invoke(nameof(ILayoutHandler.Insert), args);
+		}
+
+		void UpdateInHandler(int index, IView view)
+		{
+			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
+			Handler?.Invoke(nameof(ILayoutHandler.Update), args);
 		}
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
 		{
-			InvalidateMeasure();
+			(this as IView).InvalidateMeasure();
 		}
 
 		Thickness IPaddingElement.PaddingDefaultValueCreator()
