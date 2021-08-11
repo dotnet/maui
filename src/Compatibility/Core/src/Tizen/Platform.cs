@@ -92,16 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					{
 						vh.SetParent(nvh);
 					}
-
-					if (handler is LayoutHandler layoutHandler)
-					{
-						renderer = new LayoutHandlerToRendererShim(layoutHandler);
-					}
-					else
-					{
-						renderer = new HandlerToRendererShim(vh);
-					}
-
+					renderer = new HandlerToRendererShim(vh);
 					element.Handler = handler;
 				}
 			}
