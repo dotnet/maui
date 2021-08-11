@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,14 +14,14 @@ namespace Microsoft.Maui.Controls
 	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeElement
 	{
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
-		Task<IDictionary<string, object>> _propertiesTask;
+		Task<IDictionary<string, object>>? _propertiesTask;
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
 		readonly Lazy<IResourceDictionary> _systemResources;
 
 		public override IDispatcher Dispatcher => this.GetDispatcher();
 
-		IAppIndexingProvider _appIndexProvider;
-		ReadOnlyCollection<Element> _logicalChildren;
+		IAppIndexingProvider? _appIndexProvider;
+		ReadOnlyCollection<Element>? _logicalChildren;
 
 		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
@@ -61,9 +62,9 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetCurrentApplication(Application value) => Current = value;
 
-		public static Application Current { get; set; }
+		public static Application? Current { get; set; }
 
-		public Page MainPage
+		public Page? MainPage
 		{
 			get
 			{
@@ -130,13 +131,11 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal override IReadOnlyList<Element> LogicalChildrenInternal
-		{
-			get { return _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren)); }
-		}
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
+			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public NavigationProxy NavigationProxy { get; private set; }
+		public NavigationProxy? NavigationProxy { get; private set; }
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int PanGestureId { get; set; }
@@ -151,7 +150,7 @@ namespace Microsoft.Maui.Controls
 			_appIndexProvider = provider;
 		}
 
-		ResourceDictionary _resources;
+		ResourceDictionary? _resources;
 		bool IResourcesProvider.IsResourcesCreated => _resources != null;
 
 		public ResourceDictionary Resources
@@ -191,7 +190,7 @@ namespace Microsoft.Maui.Controls
 		}
 		public OSAppTheme RequestedTheme => UserAppTheme == OSAppTheme.Unspecified ? Device.PlatformServices.RequestedTheme : UserAppTheme;
 
-		public static Color AccentColor { get; set; }
+		public static Color? AccentColor { get; set; }
 
 		public event EventHandler<AppThemeChangedEventArgs> RequestedThemeChanged
 		{
@@ -232,13 +231,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public event EventHandler<ModalPoppedEventArgs> ModalPopped;
+		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
 
-		public event EventHandler<ModalPoppingEventArgs> ModalPopping;
+		public event EventHandler<ModalPoppingEventArgs>? ModalPopping;
 
-		public event EventHandler<ModalPushedEventArgs> ModalPushed;
+		public event EventHandler<ModalPushedEventArgs>? ModalPushed;
 
-		public event EventHandler<ModalPushingEventArgs> ModalPushing;
+		public event EventHandler<ModalPushingEventArgs>? ModalPushing;
 
 		internal void NotifyOfWindowModalEvent(EventArgs eventArgs)
 		{
@@ -261,9 +260,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public event EventHandler<Page> PageAppearing;
+		public event EventHandler<Page>? PageAppearing;
 
-		public event EventHandler<Page> PageDisappearing;
+		public event EventHandler<Page>? PageDisappearing;
 
 		async void SaveProperties()
 		{
