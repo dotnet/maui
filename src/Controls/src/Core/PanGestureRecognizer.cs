@@ -6,6 +6,9 @@ namespace Microsoft.Maui.Controls
 {
 	public class PanGestureRecognizer : GestureRecognizer, IPanGestureController
 	{
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static AutoId CurrentId { get; } = new();
+
 		public static readonly BindableProperty TouchPointsProperty = BindableProperty.Create("TouchPoints", typeof(int), typeof(PanGestureRecognizer), 1);
 
 		public int TouchPoints
