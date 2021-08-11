@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 			var deviceIndependentRight = Context.FromPixels(r);
 			var deviceIndependentBottom = Context.FromPixels(b);
 
-			var destination = Rectangle.FromLTRB(0, 0, 
+			var destination = Rectangle.FromLTRB(0, 0,
 				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
 
 			CrossPlatformArrange(destination);
