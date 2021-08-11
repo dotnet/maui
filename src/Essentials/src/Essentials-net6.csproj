@@ -8,10 +8,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <Import Project="..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
-    <!-- remove other AndroidX packages from the MultiTargeting -->
-    <PackageReference Remove="*" />
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Graphics" />
     <None Include="..\..\..\LICENSE" PackagePath="" Pack="true" />
