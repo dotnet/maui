@@ -64,6 +64,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var jsComponents = new JSComponentConfigurationStore();
 			_webviewManager = new WinUIWebViewManager(NativeView, new WinUIWebView2Wrapper(NativeView), Services!, MauiDispatcher.Instance, mauiAssetFileProvider, jsComponents, hostPageRelativePath, contentRootDir);
+
 			if (RootComponents != null)
 			{
 				foreach (var rootComponent in RootComponents)

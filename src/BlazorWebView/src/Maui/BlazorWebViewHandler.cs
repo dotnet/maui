@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
@@ -95,5 +96,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 		}
 #endif
+
+		public event EventHandler<WebViewManagerCreatedEventArgs>? WebViewManagerCreated;
+
+		protected virtual void OnWebViewManagerCreated(WebViewManagerCreatedEventArgs webViewManagerCreatedEventArgs)
+		{
+			WebViewManagerCreated?.Invoke(this, webViewManagerCreatedEventArgs);
+		}
 	}
 }
