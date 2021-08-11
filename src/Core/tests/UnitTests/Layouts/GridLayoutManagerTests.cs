@@ -1329,7 +1329,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void ArrangeRespectsBounds() 
+		public void ArrangeRespectsBounds()
 		{
 			var grid = CreateGridLayout();
 			var view = CreateTestView(new Size(100, 100));
@@ -1340,7 +1340,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var measure = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity, 10, 15);
 
 			var expectedRectangle = new Rectangle(10, 15, measure.Width, measure.Height);
-			
+
 			view.Received().Arrange(Arg.Is(expectedRectangle));
 		}
 	}
