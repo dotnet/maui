@@ -32,11 +32,11 @@
         "datatype": "string",
         "replaces": "com.companyname.MauiApp1"
       },
-      "projectReunionVersion": {
+      "windowsAppSdkVersion": {
         "type": "parameter",
         "dataType": "string",
-        "replaces": "PROJECT_REUNION_VERSION",
-        "defaultValue": "PROJECT_REUNION_VERSION_VALUE"
+        "replaces": "WINDOWSAPPSDK_VERSION",
+        "defaultValue": "WINDOWSAPPSDK_VERSION_VALUE"
       }
     },
     "defaultName": "MauiApp1"

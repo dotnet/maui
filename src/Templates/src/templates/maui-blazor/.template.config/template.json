@@ -42,11 +42,11 @@
         "replaces": "MICROSOFT_EXTENSIONS_VERSION",
         "defaultValue": "MICROSOFT_EXTENSIONS_VERSION_VALUE"
       },
-      "projectReunionVersion": {
+      "windowsAppSdkVersion": {
         "type": "parameter",
         "dataType": "string",
-        "replaces": "PROJECT_REUNION_VERSION",
-        "defaultValue": "PROJECT_REUNION_VERSION_VALUE"
+        "replaces": "WINDOWSAPPSDK_VERSION",
+        "defaultValue": "WINDOWSAPPSDK_VERSION_VALUE"
       }
     },
     "defaultName": "MauiApp1"

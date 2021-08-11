@@ -36,9 +36,9 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.ProjectReunion" />
-    <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
-    <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
   </ItemGroup>
 
   <ItemGroup>
