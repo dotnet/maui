@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Maui.Graphics.Converters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Graphics.Tests
 		[MemberData(nameof(PointConvertData))]
 		public void ConvertsPointFromString(string from, bool expectedSuccess, Point expectedResult)
 		{
-			var ok = Point.TryParse(from, out var p);
+			var ok = from.TryConvertFrom<PointTypeConverter, Point>(out var p);
 			Assert.Equal(expectedSuccess, ok);
 
 			if (expectedSuccess)
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Graphics.Tests
 		[MemberData(nameof(PointFConvertData))]
 		public void ConvertsPointFFromString(string from, bool expectedSuccess, PointF expectedResult)
 		{
-			var ok = PointF.TryParse(from, out var p);
+			var ok = from.TryConvertFrom<PointFTypeConverter, PointF>(out var p);
 			Assert.Equal(expectedSuccess, ok);
 
 			if (expectedSuccess)

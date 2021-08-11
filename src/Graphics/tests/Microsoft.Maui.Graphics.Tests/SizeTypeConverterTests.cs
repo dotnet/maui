@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Maui.Graphics.Converters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Graphics.Tests
 		[MemberData(nameof(SizeConvertData))]
 		public void ConvertsSizeFromString(string from, bool expectedSuccess, Size expectedResult)
 		{
-			var ok = Size.TryParse(from, out var p);
+			var ok = from.TryConvertFrom<SizeTypeConverter, Size>(out var p);
 			Assert.Equal(expectedSuccess, ok);
 
 			if (expectedSuccess)
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Graphics.Tests
 		[MemberData(nameof(SizeFConvertData))]
 		public void ConvertsSizeFFromString(string from, bool expectedSuccess, SizeF expectedResult)
 		{
-			var ok = SizeF.TryParse(from, out var p);
+			var ok = from.TryConvertFrom<SizeFTypeConverter, SizeF>(out var p); 
 			Assert.Equal(expectedSuccess, ok);
 
 			if (expectedSuccess)

@@ -10,8 +10,8 @@
     <description>SkiaSharp implementation for Microsoft.Maui.Graphics.Skia</description>
     <summary>This allows you to use SkiaSharp as a Microsoft.Maui.Graphics.Skia target.</summary>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
-    <projectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics.Skia</projectUrl>
-    <repository type="git" url="https://github.com/dotnet/Microsoft.Maui.Graphics.Skia"/>
+    <projectUrl>https://github.com/dotnet/Microsoft.Maui.Graphics</projectUrl>
+    <repository type="git" url="https://github.com/dotnet/Microsoft.Maui.Graphics"/>
     <license type="expression">MIT</license>
     <language>C#</language>
     <dependencies>

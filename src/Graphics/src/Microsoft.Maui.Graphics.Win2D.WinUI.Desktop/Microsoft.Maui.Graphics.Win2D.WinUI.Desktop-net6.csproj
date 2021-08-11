@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <PackageReference Include="Microsoft.ProjectReunion" Version="0.8.0" />
+      <PackageReference Include="Microsoft.ProjectReunion" Version="0.8.1" />
       <PackageReference Include="Microsoft.Graphics.Win2D" Version="0.8.0.21" />
   </ItemGroup>
 

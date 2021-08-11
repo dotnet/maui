@@ -1,9 +1,9 @@
 variables:
   BuildVersion: $[counter('release-counter', 1)]
   IsRunningOnCI: true
-  DotNet.Version: 6.0.100-preview.6.21355.2
+  DotNet.Version: 6.0.100-preview.7.21379.14
   DotNet.Cli.Telemetry.OptOut: true
-  MauiCheck.Version: 0.6.1
+  MauiCheck.Version: 0.6.7
   Maui.Version: --preview
   Tizen.Version: 6.5.100-preview.5.57
 
