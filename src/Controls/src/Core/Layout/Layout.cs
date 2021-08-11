@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls
 				VisualDiagnostics.OnChildAdded(this, element);
 			}
 
-			AddToHandler(child);
+			AddToHandler(index, child);
 		}
 
 		public virtual bool Remove(IView child)
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
 		{
-			InvalidateMeasure();
+			(this as IView).InvalidateMeasure();
 		}
 
 		Thickness IPaddingElement.PaddingDefaultValueCreator()
