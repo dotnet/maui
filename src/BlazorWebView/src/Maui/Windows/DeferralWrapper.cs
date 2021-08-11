@@ -5,16 +5,21 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	internal class DeferralWrapper : IDeferralWrapper
 	{
-		private Deferral _deferral;
+		private readonly Deferral _deferral;
 
 		public DeferralWrapper(Deferral deferral)
 		{
-			_deferral = deferral;
+			_deferral = deferral ?? throw new System.ArgumentNullException(nameof(deferral));
 		}
 
 		public void Complete()
 		{
 			_deferral.Complete();
+		}
+
+		public void Dispose()
+		{
+			_deferral.Dispose();
 		}
 	}
 }

@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Other; // e.g., dev tools requesting page source
 
 			// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
-			var deferral = eventArgs.GetDeferral();
+			using var deferral = eventArgs.GetDeferral();
 
 			// First, call into WebViewManager to see if it has a framework file for this request. It will
 			// fall back to an IFileProvider, but on WinUI it's always a NullFileProvider, so that will never
