@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
     <!-- Base application theme. -->
-    <style name="Maui.MainTheme" parent="Theme.MaterialComponents.DayNigh">
+    <style name="Maui.MainTheme" parent="Theme.MaterialComponents.DayNight">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
