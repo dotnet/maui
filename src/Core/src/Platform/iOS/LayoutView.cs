@@ -1,8 +1,8 @@
 using System;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
-using UIKit;
 using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui
 {
