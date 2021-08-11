@@ -9,32 +9,18 @@ using EvasObject = ElmSharp.EvasObject;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
-	public class LayoutHandlerToRendererShim : HandlerToRendererShim, ILayoutRenderer
-	{
-		LayoutHandler _layoutHandler;
-		public LayoutHandlerToRendererShim(LayoutHandler vh) : base(vh)
-		{
-			_layoutHandler = vh;
-		}
-
-		public void RegisterOnLayoutUpdated()
-		{
-			_layoutHandler.RegisterOnLayoutUpdated();
-		}
-	}
-
 	public class HandlerToRendererShim : IVisualElementRenderer
 	{
-		public HandlerToRendererShim(IViewHandler vh)
+		public HandlerToRendererShim(INativeViewHandler vh)
 		{
 			ViewHandler = vh;
 		}
 
-		IViewHandler ViewHandler { get; }
+		INativeViewHandler ViewHandler { get; }
 
 		public VisualElement Element { get; private set; }
 
-		public EvasObject NativeView => ((INativeViewHandler)ViewHandler).NativeView;
+		public EvasObject NativeView => ViewHandler.ContainerView ?? ViewHandler.NativeView;
 
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
@@ -42,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public void Dispose()
 		{
-			(ViewHandler as INativeViewHandler)?.Dispose();
+			ViewHandler.Dispose();
 		}
 
 		public void SetElement(VisualElement element)
@@ -62,14 +48,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			}
 
 			Element = element;
-			ViewHandler.SetVirtualView((IView)element);
 			((IView)element).Handler = ViewHandler;
 
-			Platform.SetRenderer(element, this);
+			if (ViewHandler.VirtualView != element)
+				ViewHandler.SetVirtualView((IView)element);
+
+			if (element.RealParent is IView view && view.Handler is INativeViewHandler nvh)
+			{
+				ViewHandler.SetParent(nvh);
+			}
+			else
+			{
+				ViewHandler.SetParent(new MockParentHandler(element.RealParent as VisualElement));
+			}
 
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
 
-			(ViewHandler as INativeViewHandler)?.SetParent(new MockParentHandler(element.RealParent as VisualElement));
 		}
 
 		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
@@ -84,8 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var size = ViewHandler.GetDesiredSize(widthConstraint, heightConstraint);
-			return new SizeRequest(size, size);
+			return ViewHandler.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		public void SetElementSize(Size size)

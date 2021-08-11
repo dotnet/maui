@@ -85,16 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					{
 						vh.SetParent(nvh);
 					}
-
-					if (handler is LayoutHandler layoutHandler)
-					{
-						renderer = new LayoutHandlerToRendererShim(layoutHandler);
-					}
-					else
-					{
-						renderer = new HandlerToRendererShim(vh);
-					}
-
+					renderer = new HandlerToRendererShim(vh);
 					element.Handler = handler;
 					SetRenderer(element, renderer);
 				}
@@ -124,9 +115,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			var renderView = GetRenderer(view);
 			if (renderView == null || renderView.NativeView == null)
 			{
-				if (view is IView iView)
-					return new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint));
-				 return new SizeRequest(Graphics.Size.Zero);
+				return (view is IView iView) ? new SizeRequest(iView.Handler.GetDesiredSize(widthConstraint, heightConstraint)) : new SizeRequest(Graphics.Size.Zero);
 			}
 
 			return Platform.GetRenderer(view).GetDesiredSize(width, height);
