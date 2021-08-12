@@ -10,14 +10,14 @@
                 Grid.Row="0"
                 SemanticProperties.HeadingLevel="Level1"
                 FontSize="32"
-                HorizontalOptions="CenterAndExpand" />
+                HorizontalOptions="Center" />
 
             <Label Text="Welcome to .NET Multi-platform App UI"
                 Grid.Row="1"
                 SemanticProperties.HeadingLevel="Level1"
                 SemanticProperties.Description="Welcome to dot net Multi platform App U I"
                 FontSize="16"
-                HorizontalOptions="CenterAndExpand" />
+                HorizontalOptions="Center" />
 
             <Label Text="Current count: 0"
                 Grid.Row="2"
