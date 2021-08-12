@@ -9,11 +9,6 @@ namespace Microsoft.Maui
 	public interface ILayout : IView, IContainer, ISafeAreaView
 	{
 		/// <summary>
-		/// Gets the Layout Handler.
-		/// </summary>
-		ILayoutHandler LayoutHandler { get; }
-
-		/// <summary>
 		/// The space between the outer edge of the ILayout's content area and its children.
 		/// </summary>
 		Thickness Padding { get; }
