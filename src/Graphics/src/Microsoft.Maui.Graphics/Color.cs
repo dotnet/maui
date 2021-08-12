@@ -836,7 +836,8 @@ namespace Microsoft.Maui.Graphics
 						"white" => Colors.White,
 						"whitesmoke" => Colors.WhiteSmoke,
 						"yellow" => Colors.Yellow,
-						"yellowgreen" => Colors.YellowGreen
+						"yellowgreen" => Colors.YellowGreen,
+						_ => null
 					};
 
 					if (namedColor != null)

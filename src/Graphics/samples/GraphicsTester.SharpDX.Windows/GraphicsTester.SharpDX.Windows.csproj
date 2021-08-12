@@ -9,7 +9,7 @@
     <AssemblyName>GraphicsTester.SharpDX.Windows</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <WarningLevel>4</WarningLevel>
-    <TargetFramework>net5.0-windows10.0.17763.0</TargetFramework>
+    <TargetFramework>net5.0-windows10.0.18362.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <Version>1.0.0.0</Version>
   </PropertyGroup>

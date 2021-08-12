@@ -3,9 +3,9 @@ variables:
   IsRunningOnCI: true
   DotNet.Version: 6.0.100-preview.7.21379.14
   DotNet.Cli.Telemetry.OptOut: true
-  MauiCheck.Version: 0.6.7
-  Maui.Version: --preview
-  Tizen.Version: 6.5.100-preview.5.57
+  MauiCheck.Version: 0.7.3
+  Maui.Version: ''
+  Tizen.Version: 6.5.100-preview.7.84
 
 parameters:
   - name: BuildConfigurations
@@ -86,10 +86,6 @@ stages:
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
 
-            - pwsh:
-                dotnet boots --url https://workload-bin.s3.ap-northeast-2.amazonaws.com/windows/Samsung.NET.Workload.Tizen.$(Tizen.Version).msi
-              displayName: install tizen
-
             - pwsh: |
                 # Update the installer installer
                 Invoke-WebRequest -UseBasicParsing -Uri "https://aka.ms/vs/install/latest/vs_setup.exe" -OutFile vs_setup.exe
@@ -104,6 +100,10 @@ stages:
                 & maui-check $(Maui.Version) --ci --non-interactive --fix --skip androidsdk --skip xcode --skip vswin --skip vsmac --skip edgewebview2
               displayName: maui-check
               errorActionPreference: stop
+
+            - pwsh:
+                dotnet boots --url https://workload-bin.s3.ap-northeast-2.amazonaws.com/windows/Samsung.NET.Workload.Tizen.$(Tizen.Version).msi
+              displayName: install tizen
 
             - pwsh: |
                 $vs = & dotnet vs where --preview --prop=InstallationPath
@@ -121,7 +121,7 @@ stages:
               displayName: 'Pack nupkg'
               inputs:
                 command: 'pack'
-                packagesToPack: '**\\Microsoft.Maui.*.nuspec'
+                packagesToPack: '**\Microsoft.Maui.*.nuspec'
                 packDestination: '$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}'
                 configuration: ${{ BuildConfiguration }}
                 basePath: '$(System.DefaultWorkingDirectory)'
