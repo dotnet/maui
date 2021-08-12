@@ -4,7 +4,7 @@
              BackgroundColor="{DynamicResource PageBackgroundColor}">
 
     <ScrollView Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
-        <Grid RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,*">
+        <Grid Margin="0,50" RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,*">
 
             <Label Text="Hello, World!"
                 Grid.Row="0"
