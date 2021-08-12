@@ -3,8 +3,8 @@
     "author": "Microsoft",
     "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI", "Xaml", "Code" ],
     "identity": "Microsoft.Maui.ContentPage",
-    "name": ".NET MAUI ContentPage",
-    "shortName": "maui-page",
+    "name": ".NET MAUI ContentPage (C#)",
+    "shortName": "maui-page-csharp",
     "tags": {
       "language": "C#",
       "type": "item"
