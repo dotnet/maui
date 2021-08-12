@@ -14,13 +14,13 @@
 
             <Label Text="Welcome to .NET Multi-platform App UI"
                 Grid.Row="1"
-                SemanticProperties.Hint="Counts the number of times you click"
+                SemanticProperties.HeadingLevel="Level1"
+                SemanticProperties.Description="Welcome to dot net Multi platform App U I"
                 FontSize="16"
                 HorizontalOptions="CenterAndExpand" />
 
             <Label Text="Current count: 0"
                 Grid.Row="2"
-                SemanticProperties.Hint="Counts the number of times you click"
                 FontSize="18"
                 FontAttributes="Bold"
                 x:Name="CounterLabel"
@@ -34,7 +34,7 @@
 
             <Image Grid.Row="4"
                 Source="dotnet_bot.png"
-                SemanticProperties.Description="Cute dotnet bot waving hi to you!"
+                SemanticProperties.Description="Cute dot net bot waving hi to you!"
                 WidthRequest="300"
                 HeightRequest="372"
                 HorizontalOptions="Center" />
