@@ -53,6 +53,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task ModalChildrenFiresDiagnosticEvents()
 		{
+			if (!DebuggerHelper.DebuggerIsAttached)
+				return;
+
 			var app = new Application();
 			var iapp = app as IApplication;
 			var page = new ContentPage();

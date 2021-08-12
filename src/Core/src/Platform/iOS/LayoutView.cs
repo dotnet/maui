@@ -1,6 +1,7 @@
 using System;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -25,16 +26,25 @@ namespace Microsoft.Maui
 		{
 			base.LayoutSubviews();
 
-			// TODO ezhart 2021-07-07 This Frame may not make sense if we're applying a transform to this UIView; we should determine the rectangle from Bounds/Center instead
-			Frame = AdjustForSafeArea(Frame);
-
-			var bounds = Frame.ToRectangle();
+			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
 
 			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
-			CrossPlatformArrange?.Invoke(bounds.Size);
+			CrossPlatformArrange?.Invoke(bounds);
+		}
+
+		public override void SubviewAdded(UIView uiview)
+		{
+			base.SubviewAdded(uiview);
+			Superview?.SetNeedsLayout();
+		}
+
+		public override void WillRemoveSubview(UIView uiview)
+		{
+			base.WillRemoveSubview(uiview);
+			Superview?.SetNeedsLayout();
 		}
 
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Size, Size>? CrossPlatformArrange { get; set; }
+		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
 	}
 }

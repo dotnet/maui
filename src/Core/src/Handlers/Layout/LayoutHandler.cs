@@ -12,14 +12,61 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		public LayoutHandler() : base(LayoutMapper)
+		public static CommandMapper<ILayout, ILayoutHandler> LayoutCommandMapper = new(ViewCommandMapper)
+		{
+			[nameof(ILayoutHandler.Add)] = MapAdd,
+			[nameof(ILayoutHandler.Remove)] = MapRemove,
+			[nameof(ILayoutHandler.Clear)] = MapClear,
+			[nameof(ILayoutHandler.Insert)] = MapInsert,
+			[nameof(ILayoutHandler.Update)] = MapUpdate,
+		};
+
+		public LayoutHandler() : base(LayoutMapper, LayoutCommandMapper)
 		{
 
 		}
 
-		public LayoutHandler(PropertyMapper? mapper = null) : base(mapper ?? LayoutMapper)
+		public LayoutHandler(PropertyMapper? mapper = null, CommandMapper? commandMapper = null) 
+			: base(mapper ?? LayoutMapper, commandMapper ?? LayoutCommandMapper)
 		{
 
+		}
+
+		public static void MapAdd(ILayoutHandler handler, ILayout layout, object? arg)
+		{
+			if (arg is LayoutHandlerUpdate args)
+			{
+				handler.Add(args.View);
+			}
+		}
+
+		public static void MapRemove(ILayoutHandler handler, ILayout layout, object? arg)
+		{
+			if (arg is LayoutHandlerUpdate args)
+			{
+				handler.Remove(args.View);
+			}
+		}
+
+		public static void MapInsert(ILayoutHandler handler, ILayout layout, object? arg)
+		{
+			if (arg is LayoutHandlerUpdate args)
+			{
+				handler.Insert(args.Index, args.View);
+			}
+		}
+
+		public static void MapClear(ILayoutHandler handler, ILayout layout, object? arg)
+		{
+			handler.Clear();
+		}
+
+		private static void MapUpdate(ILayoutHandler handler, ILayout layout, object? arg)
+		{
+			if (arg is LayoutHandlerUpdate args)
+			{
+				handler.Update(args.Index, args.View);
+			}
 		}
 	}
 }

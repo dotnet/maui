@@ -56,10 +56,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return OnMeasure(widthConstraint, heightConstraint);
 		}
 
-		Size ILayoutManager.ArrangeChildren(Size finalSize)
+		Size ILayoutManager.ArrangeChildren(Rectangle bounds)
 		{
-			LayoutChildren(0, 0, finalSize.Width, finalSize.Height);
-			return finalSize;
+			LayoutChildren(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+			return bounds.Size;
 		}
 	}
 

@@ -122,11 +122,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			grid.GetColumnSpan(view).Returns(colSpan);
 		}
 
-		Size MeasureAndArrange(IGridLayout grid, double widthConstraint = double.PositiveInfinity, double heightConstraint = double.PositiveInfinity)
+		Size MeasureAndArrange(IGridLayout grid, double widthConstraint = double.PositiveInfinity, double heightConstraint = double.PositiveInfinity, double left = 0, double top = 0)
 		{
 			var manager = new GridLayoutManager(grid);
 			var measuredSize = manager.Measure(widthConstraint, heightConstraint);
-			manager.ArrangeChildren(measuredSize);
+			manager.ArrangeChildren(new Rectangle(new Point(left, top), measuredSize));
 
 			return measuredSize;
 		}
@@ -336,7 +336,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			manager.ArrangeChildren(new Size(measure.Width, measure.Height));
+			manager.ArrangeChildren(new Rectangle(0, 0, measure.Width, measure.Height));
 
 			// Because the auto row has no content, we expect it to have height zero
 			Assert.Equal(100 + 100, measure.Height);
@@ -424,7 +424,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			manager.ArrangeChildren(new Size(measure.Width, measure.Height));
+			manager.ArrangeChildren(new Rectangle(0, 0, measure.Width, measure.Height));
 
 			// Because the auto column has no content, we expect it to have width zero
 			Assert.Equal(100 + 100, measure.Width);
@@ -703,7 +703,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new GridLayoutManager(grid);
 
 			manager.Measure(200, 100);
-			manager.ArrangeChildren(new Size(200, 100));
+			manager.ArrangeChildren(new Rectangle(0, 0, 200, 100));
 
 			// View should be arranged to span both columns (200 points)
 			AssertArranged(view0, 0, 0, 200, 100);
@@ -721,7 +721,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var manager = new GridLayoutManager(grid);
 
 			manager.Measure(100, 200);
-			manager.ArrangeChildren(new Size(100, 200));
+			manager.ArrangeChildren(new Rectangle(0, 0, 100, 200));
 
 			// View should be arranged to span both rows (200 points)
 			AssertArranged(view0, 0, 0, 100, 200);
@@ -1095,7 +1095,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(100, double.PositiveInfinity);
-			manager.ArrangeChildren(measure);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
 
 			// View is visible, so we expect it to be measured and arranged
 			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
@@ -1117,7 +1117,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(100, double.PositiveInfinity);
-			manager.ArrangeChildren(measure);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measure));
 
 			// View is visible, so we expect it to be measured and arranged
 			view.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
@@ -1180,7 +1180,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var manager = new GridLayoutManager(grid);
 			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			manager.ArrangeChildren(measuredSize);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			AssertArranged(grid[0], padding.Left, padding.Top, viewWidth, viewHeight);
 		}
@@ -1326,6 +1326,22 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				100 * actualRow,
 				100 * actualColSpan,
 				100 * actualRowSpan);
+		}
+
+		[Fact]
+		public void ArrangeRespectsBounds()
+		{
+			var grid = CreateGridLayout();
+			var view = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view);
+			SetLocation(grid, view);
+
+			var measure = MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity, 10, 15);
+
+			var expectedRectangle = new Rectangle(10, 15, measure.Width, measure.Height);
+
+			view.Received().Arrange(Arg.Is(expectedRectangle));
 		}
 	}
 }
