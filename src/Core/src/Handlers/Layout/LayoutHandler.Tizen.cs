@@ -1,7 +1,6 @@
 ﻿using System;
 using ElmSharp;
 using Tizen.UIExtensions.Common;
-using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -141,7 +140,7 @@ namespace Microsoft.Maui.Handlers
 					}
 
 					VirtualView.LayoutManager.Measure(nativeGeometry.Width, nativeGeometry.Height);
-					VirtualView.LayoutManager.ArrangeChildren(new Size(nativeGeometry.Width, nativeGeometry.Height));
+					VirtualView.LayoutManager.ArrangeChildren(nativeGeometry);
 				}
 			}
 		}
