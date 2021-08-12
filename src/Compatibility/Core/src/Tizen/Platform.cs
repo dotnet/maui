@@ -87,7 +87,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 					}
 					renderer = new HandlerToRendererShim(vh);
 					element.Handler = handler;
-					SetRenderer(element, renderer);
 				}
 			}
 			renderer.SetElement(element);

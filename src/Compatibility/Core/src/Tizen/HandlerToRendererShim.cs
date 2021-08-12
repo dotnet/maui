@@ -49,6 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			Element = element;
 			((IView)element).Handler = ViewHandler;
+			Platform.SetRenderer(element, this);
 
 			if (ViewHandler.VirtualView != element)
 				ViewHandler.SetVirtualView((IView)element);

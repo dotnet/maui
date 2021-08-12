@@ -4,16 +4,8 @@ using Tizen.UIExtensions.Common;
 
 namespace Microsoft.Maui.Handlers
 {
-	public interface IRegisterLayoutUpdate
+	public partial class LayoutHandler : ViewHandler<ILayout, LayoutCanvas>
 	{
-		void RegisterOnLayoutUpdated();
-	}
-
-	public partial class LayoutHandler : ViewHandler<ILayout, LayoutCanvas>, IRegisterLayoutUpdate
-	{
-		bool _layoutUpdatedRegistered;
-		Graphics.Rectangle _arrangeCache;
-
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||
 			VirtualView?.Clip != null ||
@@ -37,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(NativeParent)} cannot be null");
 			}
 
-			var view = new LayoutCanvas(NativeParent)
+			var view = new LayoutCanvas(NativeParent, VirtualView)
 			{
 				CrossPlatformMeasure = VirtualView.LayoutManager.Measure,
 				CrossPlatformArrange = VirtualView.LayoutManager.ArrangeChildren
@@ -76,12 +68,10 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			_arrangeCache = default(Graphics.Rectangle);
-
 			NativeView.Children.Add(child.ToNative(MauiContext));
-			if (child.Handler is INativeViewHandler thandler)
+			if (child.Handler is INativeViewHandler childHandler)
 			{
-				thandler?.SetParent(this);
+				childHandler?.SetParent(this);
 			}
 		}
 
@@ -90,64 +80,43 @@ namespace Microsoft.Maui.Handlers
 			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			_arrangeCache = default(Graphics.Rectangle);
-
-			if (child.Handler is INativeViewHandler thandler && thandler.NativeView is EvasObject nativeView)
+			if (child.Handler is INativeViewHandler thandler && thandler.NativeView is EvasObject childView)
 			{
-				NativeView.Children.Remove(nativeView);
+				NativeView.Children.Remove(childView);
 				thandler.Dispose();
 			}
 		}
 
-		protected override Graphics.Point ComputeAbsolutePoint(Graphics.Rectangle frame)
+		public void Clear()
 		{
-			if (_layoutUpdatedRegistered)
-				return frame.Location;
-			return base.ComputeAbsolutePoint(frame);
+			NativeView?.Clear();
 		}
 
-		protected override void ConnectHandler(LayoutCanvas nativeView)
+		public void Insert(int index, IView child)
 		{
-			base.ConnectHandler(nativeView);
-			nativeView.LayoutUpdated += OnLayoutUpdated;
-		}
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-		protected override void DisconnectHandler(LayoutCanvas nativeView)
-		{
-			base.DisconnectHandler(nativeView);
-			nativeView.LayoutUpdated -= OnLayoutUpdated;
-		}
-
-		protected void OnLayoutUpdated(object? sender, LayoutEventArgs e)
-		{
-			if (VirtualView != null && NativeView != null)
+			NativeView.Children.Insert(index, child.ToNative(MauiContext));
+			if (child.Handler is INativeViewHandler childHandler)
 			{
-				var nativeGeometry = NativeView.Geometry.ToDP();
-				if (_arrangeCache == nativeGeometry)
-					return;
-
-				_arrangeCache = nativeGeometry;
-
-				if (nativeGeometry.Width > 0 && nativeGeometry.Height > 0)
-				{
-					VirtualView.InvalidateMeasure();
-					VirtualView.InvalidateArrange();
-
-					if (!_layoutUpdatedRegistered)
-					{
-						nativeGeometry.X = VirtualView.Frame.X;
-						nativeGeometry.Y = VirtualView.Frame.Y;
-					}
-
-					VirtualView.LayoutManager.Measure(nativeGeometry.Width, nativeGeometry.Height);
-					VirtualView.LayoutManager.ArrangeChildren(nativeGeometry);
-				}
+				childHandler?.SetParent(this);
 			}
 		}
 
-		public void RegisterOnLayoutUpdated()
+		public void Update(int index, IView child)
 		{
-			_layoutUpdatedRegistered = true;
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			NativeView.Children.RemoveAt(index);
+			NativeView.Children.Insert(index, child.ToNative(MauiContext));
+			if (child.Handler is INativeViewHandler childHandler)
+			{
+				childHandler?.SetParent(this);
+			}
 		}
 	}
 }
