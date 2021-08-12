@@ -9,7 +9,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
 
-			return new Label(NativeParent);
+			var label = new Label(NativeParent)
+			{
+				// Fix me : it is workaround code, LineBreakMode is not working when Label was measured but we set LineBreakMode as WordWrap at initialize time, it works
+				LineBreakMode = Tizen.UIExtensions.Common.LineBreakMode.WordWrap
+			};
+			return label;
 		}
 
 		public static void MapText(LabelHandler handler, ILabel label)
