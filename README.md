@@ -6,7 +6,7 @@
 
 ## Getting Started ##
 
-* [Install .NET MAUI](https://github.com/dotnet/maui/wiki/Getting-Started)
+* [Install .NET MAUI](https://docs.microsoft.com/dotnet/maui/get-started/first-app?pivots=windows)
 * [.NET MAUI documentation](https://docs.microsoft.com/dotnet/maui)
 * [.NET MAUI samples](https://github.com/dotnet/maui-samples)
 * [Contributor Guide](DEVELOPMENT.md)
