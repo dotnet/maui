@@ -8,7 +8,8 @@ namespace Microsoft.Maui
 {
 	public partial class WrapperView : UIView
 	{
-		SizeF _lastMaskSize;
+		CAShapeLayer? _maskLayer;
+		CAShapeLayer? _shadowLayer;
 
 		public WrapperView()
 		{
@@ -19,10 +20,34 @@ namespace Microsoft.Maui
 		{
 		}
 
-		CAShapeLayer? Mask
+		CAShapeLayer? MaskLayer
 		{
-			get => Layer.Mask as CAShapeLayer;
-			set => Layer.Mask = value;
+			get => _maskLayer;
+			set
+			{
+				var layer = GetLayer();
+
+				if (layer != null && _maskLayer != null)
+					layer.Mask = null;
+
+				_maskLayer = value;
+
+				if (layer != null)
+					layer.Mask = value;
+			}
+		}
+
+		CAShapeLayer? ShadowLayer
+		{
+			get => _shadowLayer;
+			set
+			{
+				_shadowLayer?.RemoveFromSuperLayer();
+				_shadowLayer = value;
+
+				if (_shadowLayer != null)
+					Layer.InsertSublayer(_shadowLayer, 0);
+			}
 		}
 
 		public override void LayoutSubviews()
@@ -36,10 +61,14 @@ namespace Microsoft.Maui
 
 			child.Frame = Bounds;
 
-			if (Mask != null)
-				Mask.Frame = Bounds;
+			if (MaskLayer != null)
+				MaskLayer.Frame = Bounds;
+
+			if (ShadowLayer != null)
+				ShadowLayer.Frame = Bounds;
 
 			SetClip();
+			SetShadow();
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
@@ -61,29 +90,64 @@ namespace Microsoft.Maui
 
 		partial void ClipChanged()
 		{
-			_lastMaskSize = SizeF.Zero;
+			SetClip();
+		}
 
-			if (Frame == CGRect.Empty)
-				return;
+		partial void ShadowChanged()
+		{
+			SetShadow();
 		}
 
 		void SetClip()
 		{
-			var mask = Mask;
+			var mask = MaskLayer;
 
 			if (mask == null && Clip == null)
 				return;
 
-			mask ??= Mask = new CAShapeLayer();
+			mask ??= MaskLayer = new CAShapeLayer();
 			var frame = Frame;
 			var bounds = new RectangleF(0, 0, (float)frame.Width, (float)frame.Height);
 
-			if (bounds.Size == _lastMaskSize)
+			var path = _clip?.PathForBounds(bounds);
+			var nativePath = path?.AsCGPath();
+			mask.Path = nativePath;
+		}
+
+		void SetShadow()
+		{
+			var shadowLayer = ShadowLayer;
+
+			if (shadowLayer == null && (Shadow == null || Shadow.Value.IsEmpty))
 				return;
 
-			_lastMaskSize = bounds.Size;
+			shadowLayer ??= ShadowLayer = new CAShapeLayer();
+
+			var frame = Frame;
+			var bounds = new RectangleF(0, 0, (float)frame.Width, (float)frame.Height);
+
+			shadowLayer.FillColor = new CGColor(0, 0, 0, 1);
+
 			var path = _clip?.PathForBounds(bounds);
-			mask.Path = path?.AsCGPath();
+			var nativePath = path?.AsCGPath();
+			shadowLayer.Path = nativePath;
+
+			if (Shadow!.Value.IsEmpty)
+				shadowLayer.ClearShadow();
+			else
+				shadowLayer.SetShadow(Shadow!.Value);
+		}
+
+		CALayer? GetLayer()
+		{
+			if (Layer == null || Layer.Sublayers == null)
+				return null;
+
+			foreach (var subLayer in Layer.Sublayers)
+				if (subLayer.Delegate != null)
+					return subLayer;
+
+			return Layer;
 		}
 	}
 }

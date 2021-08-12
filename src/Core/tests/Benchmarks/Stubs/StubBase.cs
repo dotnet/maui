@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public IShape Clip { get; set; }
 
+		public Shadow Shadow { get; set; } = Shadow.Zero;
+
 		public double Opacity { get; set; } = 1.0d;
 
 		public Paint Background { get; set; }

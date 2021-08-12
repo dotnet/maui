@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.ShadowPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="Shadows">
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+
+            <Style x:Key="InfoStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="8" />
+            </Style>
+
+        </ResourceDictionary>
+    </views:BasePage.Resources>
+    <Grid
+         Padding="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="300" />
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid
+            RowDefinitions="Auto, Auto, Auto, Auto, Auto, *">
+            <Label
+                Grid.Row="0"
+                Text="Label"
+                Style="{StaticResource Headline}"/>
+            <Label 
+                x:Name="LabelShadowView"  
+                Grid.Row="1"
+                FontSize="Large"
+                Text="Label with a Shadow"/>
+            <Label
+                Grid.Row="2"
+                Text="View"
+                Style="{StaticResource Headline}"/>
+            <Rectangle 
+                x:Name="ShadowView"
+                Grid.Row="3"
+                HeightRequest="100"
+                WidthRequest="150"
+                RadiusX="12"
+                RadiusY="12"
+                Margin="12"/>
+            <Label
+                Grid.Row="4"
+                Text="Clipped View"
+                Style="{StaticResource Headline}"/>
+            <Image   
+                x:Name="ClippedShadowView"
+                Grid.Row="5"
+                Aspect="AspectFill"
+                Source="header_background.png" 
+                HeightRequest="100"
+                WidthRequest="100">
+                <Image.Clip>
+                    <EllipseGeometry            
+                        Center="50, 50"
+                        RadiusX="50"
+                        RadiusY="50"/>
+                </Image.Clip>
+            </Image>
+        </Grid>
+        <ScrollView
+             Grid.Row="1">
+            <StackLayout>
+                <Label
+                     Text="Background"
+                     Style="{StaticResource Headline}"/>
+                <Entry 
+                    x:Name="FillColor" 
+                    Text="#00B4DB"
+                    Placeholder="Background Color Hex"
+                    TextChanged="OnBackgroundChanged" />
+                <Label
+                     Text="Shadow"
+                     Style="{StaticResource Headline}"/>
+                <Label
+                     Text="Shadow Color"
+                     Style="{StaticResource InfoStyle}"/>
+                <Entry     
+                    x:Name="ShadowColor" 
+                     Text="#FF0000"
+                     Placeholder="Shadow Color Hex"
+                     TextChanged="OnShadowColorChanged" />
+                <Label
+                     Text="Shadow Offset"
+                     Style="{StaticResource InfoStyle}"/>
+                <Label 
+                     Text="{Binding Source={x:Reference ShadowOffsetXSlider}, Path=Value, StringFormat='{}Offset X: {0}'}"
+                     Style="{StaticResource InfoStyle}" />
+                <Slider
+                    x:Name="ShadowOffsetXSlider"
+                    Minimum="-20"
+                    Maximum="20"
+                    Value="10"
+                    ValueChanged="OnShadowOffsetXChanged"/>
+                <Label 
+                     Text="{Binding Source={x:Reference ShadowOffsetYSlider}, Path=Value, StringFormat='{}Offset Y: {0}'}"
+                     Style="{StaticResource InfoStyle}" />
+                <Slider
+                    x:Name="ShadowOffsetYSlider"
+                    Minimum="-20"
+                    Maximum="20"
+                    Value="10"
+                    ValueChanged="OnShadowOffsetYChanged"/>
+                <Label
+                     Text="Shadow Radius"
+                     Style="{StaticResource InfoStyle}"/>
+                <Label 
+                     Text="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value, StringFormat='{}Radius: {0}'}"
+                     Style="{StaticResource InfoStyle}" />
+                <Slider
+                    x:Name="ShadowRadiusSlider"
+                    Minimum="0"
+                    Maximum="20"
+                    Value="10"
+                    ValueChanged="OnShadowRadiusChanged"/>
+                <Label
+                     Text="Shadow Opacity"
+                     Style="{StaticResource InfoStyle}"/>
+                <Label 
+                     Text="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value, StringFormat='{}Opacity: {0}'}"
+                     Style="{StaticResource InfoStyle}" />
+                <Slider
+                    x:Name="ShadowOpacitySlider"
+                    Minimum="0"
+                    Maximum="1"
+                    Value="1"
+                    ValueChanged="OnShadowOpacityChanged"/>
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+</views:BasePage>

@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿#nullable disable
+using Android.Content;
 using Android.Graphics;
 using Android.Views;
 using Microsoft.Maui.Graphics;
@@ -9,12 +10,35 @@ namespace Microsoft.Maui
 {
 	public partial class WrapperView : ViewGroup
 	{
-		APath? _currentPath;
+		readonly Rect _viewBounds;
+
+		APath _currentPath;
 		SizeF _lastPathSize;
+
+		Bitmap _shadowBitmap;
+		Canvas _shadowCanvas;
+		Android.Graphics.Paint _shadowPaint;
+		bool _invalidateShadow;
 
 		public WrapperView(Context context)
 			: base(context)
 		{
+			_viewBounds = new Rect();
+
+			SetClipChildren(false);
+			SetClipToPadding(false);
+			SetWillNotDraw(false);
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			base.OnDetachedFromWindow();
+
+			if (_shadowBitmap != null)
+			{
+				_shadowBitmap.Recycle();
+				_shadowBitmap = null;
+			}
 		}
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
@@ -37,14 +61,112 @@ namespace Microsoft.Maui
 				return;
 			}
 
+			_viewBounds.Set(
+				0, 0, MeasureSpec.GetSize(widthMeasureSpec), MeasureSpec.GetSize(heightMeasureSpec));
+
 			child.Measure(widthMeasureSpec, heightMeasureSpec);
 
 			SetMeasuredDimension(child.MeasuredWidth, child.MeasuredHeight);
 		}
 
-		protected override void DispatchDraw(Canvas? canvas)
+		public override void RequestLayout()
 		{
-			if (canvas != null && Clip != null)
+			// Redraw shadow (if exists)
+			_invalidateShadow = true;
+
+			base.RequestLayout();
+		}
+
+		protected override void DispatchDraw(Canvas canvas)
+		{
+			// If is not shadowed, skip
+			if (Shadow != null)
+			{
+				if (_shadowCanvas == null)
+					_shadowCanvas = new Canvas();
+
+				if (_shadowPaint == null)
+					_shadowPaint = new Android.Graphics.Paint
+					{
+						AntiAlias = true,
+						Dither = true,
+						FilterBitmap = true
+					};
+
+				// If need to redraw shadow
+				if (_invalidateShadow)
+				{
+					// If bounds is zero
+					if (_viewBounds.Width() != 0 && _viewBounds.Height() != 0)
+					{
+						// Reset bitmap to bounds
+						_shadowBitmap = Bitmap.CreateBitmap(
+							_viewBounds.Width(), _viewBounds.Height(), Bitmap.Config.Argb8888
+						);
+
+						// Reset Canvas
+						_shadowCanvas.SetBitmap(_shadowBitmap);
+
+						_invalidateShadow = false;
+
+						// Create the local copy of all content to draw bitmap as a
+						// bottom layer of natural canvas.
+						base.DispatchDraw(_shadowCanvas);
+
+						// Get the alpha bounds of bitmap
+						Bitmap extractAlpha = _shadowBitmap.ExtractAlpha();
+
+						// Clear past content content to draw shadow
+						_shadowCanvas.DrawColor(Android.Graphics.Color.Black, PorterDuff.Mode.Clear);
+
+						var shadowOpacity = Shadow.Value.Opacity;
+
+						// Draw extracted alpha bounds of our local canvas
+						_shadowPaint.Color = Shadow.Value.Color.WithAlpha(shadowOpacity).ToNative();
+
+						// Apply the shadow radius using ScriptIntrinsicBlur
+						float radius = Shadow.Value.Radius;
+
+						if (radius <= 0)
+							radius = 0.01f;
+
+						_shadowPaint.SetMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.Normal));
+
+						float shadowOffsetX = (float)Shadow.Value.Offset.Width;
+						float shadowOffsetY = (float)Shadow.Value.Offset.Height;
+
+						if (Clip == null)
+							_shadowCanvas.DrawBitmap(extractAlpha, shadowOffsetX, shadowOffsetY, _shadowPaint);
+						else
+						{
+							var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
+							var path = Clip.PathForBounds(bounds)?.AsAndroidPath();
+
+							path.Offset(shadowOffsetX, shadowOffsetY);
+
+							_shadowCanvas.DrawPath(path, _shadowPaint);
+						}
+
+						// Recycle and clear extracted alpha
+						extractAlpha.Recycle();
+					}
+					else
+					{
+						// Create placeholder bitmap when size is zero and wait until new size coming up
+						_shadowBitmap = Bitmap.CreateBitmap(1, 1, Bitmap.Config.Rgb565!);
+					}
+				}
+
+				// Reset alpha to draw child with full alpha
+				_shadowPaint.Color = Shadow.Value.Color.ToNative();
+
+				// Draw shadow bitmap
+				if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)
+					canvas.DrawBitmap(_shadowBitmap, 0.0F, 0.0F, _shadowPaint);
+			}
+
+			// Clip the child view
+			if (Clip != null)
 			{
 				var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
 
@@ -59,7 +181,20 @@ namespace Microsoft.Maui
 					canvas.ClipPath(_currentPath);
 			}
 
+			// Draw child`s
 			base.DispatchDraw(canvas);
+		}
+
+		partial void ClipChanged()
+		{
+			_invalidateShadow = true;
+			PostInvalidate();
+		}
+
+		partial void ShadowChanged()
+		{
+			_invalidateShadow = true;
+			PostInvalidate();
 		}
 	}
 }

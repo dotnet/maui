@@ -67,6 +67,11 @@ namespace Microsoft.Maui
 			visual.Clip = geometricClip;
 		}
 
+		public static void UpdateShadow(this FrameworkElement nativeView, IView view)
+		{
+			// TODO: Implement Shadows on Windows
+		}
+		
 		public static void UpdateOpacity(this FrameworkElement nativeView, IView view)
 		{
 			nativeView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
