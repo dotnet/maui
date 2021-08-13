@@ -3,8 +3,6 @@ using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform.Android;
-using static Android.Views.View;
 using AColor = Android.Graphics.Color;
 using AShapeDrawable = Android.Graphics.Drawables.ShapeDrawable;
 using AShapes = Android.Graphics.Drawables.Shapes;
@@ -26,9 +24,13 @@ namespace Microsoft.Maui.Platform.Android
 		{
 		}
 
-		public void SetIndicatorView(IIndicatorView indicatorView)
+		public void SetIndicatorView(IIndicatorView? indicatorView)
 		{
 			_indicatorView = indicatorView;
+			if(indicatorView == null)
+			{
+				RemoveViews(0);
+			}
 		}
 
 		public void ResetIndicators()
@@ -40,6 +42,7 @@ namespace Microsoft.Maui.Platform.Android
 				UpdateShapes();
 			else
 				UpdateIndicatorTemplate((_indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride);
+
 			UpdatePosition();
 		}
 
@@ -95,12 +98,7 @@ namespace Microsoft.Maui.Platform.Android
 				AddView(imageView);
 			}
 
-			for (int i = count; i < ChildCount; i++)
-			{
-				var imageView = GetChildAt(ChildCount - 1);
-				imageView?.SetOnClickListener(null);
-				RemoveView(imageView);
-			}
+			RemoveViews(count);
 		}
 
 		void UpdateIndicatorTemplate(ILayout? layout)
@@ -141,11 +139,8 @@ namespace Microsoft.Maui.Platform.Android
 				return null;
 
 			AShapeDrawable shape;
-			var isCircle = IsCircleShape();
-
-			//var drawable = VirtualView.IndicatorColor?.ToDrawable();
-
-			if (isCircle)
+			
+			if (IsCircleShape())
 				shape = new AShapeDrawable(new AShapes.OvalShape());
 			else
 				shape = new AShapeDrawable(new AShapes.RectShape());
@@ -200,6 +195,16 @@ namespace Microsoft.Maui.Platform.Android
 			var maxVisible = GetMaximumVisible();
 			var position = _indicatorView.Position;
 			return Math.Max(0, position >= maxVisible ? maxVisible - 1 : position);
+		}
+
+		void RemoveViews(int startAt)
+		{
+			for (int i = startAt; i < ChildCount; i++)
+			{
+				var imageView = GetChildAt(ChildCount - 1);
+				imageView?.SetOnClickListener(null);
+				RemoveView(imageView);
+			}
 		}
 
 		class TEditClickListener : Java.Lang.Object, IOnClickListener

@@ -27,6 +27,12 @@ namespace Microsoft.Maui.Handlers
 			NativeView.SetIndicatorView(VirtualView);
 		}
 
+		private protected override void OnDisconnectHandler(AView nativeView)
+		{
+			base.OnDisconnectHandler(nativeView);
+			NativeView.SetIndicatorView(null);
+		}
+
 		public static void MapCount(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
 			handler.NativeView.UpdateIndicatorCount();

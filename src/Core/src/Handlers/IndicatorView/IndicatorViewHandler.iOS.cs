@@ -62,7 +62,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdateCurrentPagesIndicatorTintColor(indicator);
 		}
-
 		public static void MapIndicatorShape(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
 			handler.UIPager?.UpdateIndicatorShape(indicator);
@@ -87,20 +86,6 @@ namespace Microsoft.Maui.Handlers
 					child.RemoveFromSuperview();
 			}
 		}
-
-		//void UpdateIndicatorTemplate(ILayout? layout)
-		//{
-		//	if (layout == null)
-		//		return;
-
-		//	UIView? handler;
-		//	if (MauiContext != null)
-		//	{
-		//		ClearIndicators();
-		//		handler = layout.ToNative(MauiContext);
-		//		NativeView.AddSubview(handler);
-		//	}
-		//}
 
 		void UIPagerValueChanged(object sender, EventArgs e)
 		{
@@ -130,39 +115,6 @@ namespace Microsoft.Maui.Handlers
 			NativeView?.UpdatePages(GetMaximumVisible());
 			UpdatePosition();
 		}
-
-		//void UpdateHidesForSinglePage()
-		//{
-		//	if (UIPager == null)
-		//		return;
-
-		//	UIPager.HidesForSinglePage = VirtualView.HideSingle;
-		//}
-
-		//void UpdatePagesIndicatorTintColor()
-		//{
-		//	if (UIPager == null)
-		//		return;
-
-		//	var color = VirtualView.IndicatorColor;
-		//	UIPager.PageIndicatorTintColor = color?.ToColor()?.ToNative();
-		//}
-
-		//void UpdateCurrentPagesIndicatorTintColor()
-		//{
-		//	if (UIPager == null)
-		//		return;
-
-		//	var color = VirtualView.SelectedIndicatorColor;
-		//	UIPager.CurrentPageIndicatorTintColor = color?.ToColor()?.ToNative();
-		//}
-
-		//void UpdateMaximumVisible()
-		//{
-		//	UpdatePages();
-		//	UpdateCurrentPage();
-		//}
-
 
 		int GetMaximumVisible()
 		{
