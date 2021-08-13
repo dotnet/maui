@@ -836,7 +836,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			mockApp.MainPage = new ContentPage { Content = layout };
+			mockApp.LoadPage(new ContentPage { Content = layout });
 			//Assert.That(label0.TextColor, Is.EqualTo(Color.Pink));
 			//Assert.That(label1.TextColor, Is.EqualTo(null));
 
@@ -864,10 +864,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var mockApp = new MockApplication();
 			mockApp.Resources = rd0;
-			mockApp.MainPage = new MyPage()
+			mockApp.LoadPage(new MyPage()
 			{
 				Content = new Button()
-			};
+			});
 
 			Application.Current = mockApp;
 
@@ -892,13 +892,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var mockApp = new MockApplication();
 			mockApp.Resources = rd0;
-			mockApp.MainPage = new ContentPage()
+			mockApp.LoadPage(new ContentPage()
 			{
 				Content = new MyContentView()
 				{
 					Content = new Button()
 				}
-			};
+			});
 
 			Application.Current = mockApp;
 
