@@ -120,6 +120,11 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
+            ${{ if eq(BuildPlatform.name, 'macOS') }}:
+              # https://github.com/dotnet/msbuild/issues/6753
+              variables:
+                MSBUILDENSURESTDOUTFORTASKPROCESSES: 1
+                MSBUILDNOINPROCNODE: 1
             steps:
               - template: common/provision.yml
                 parameters:
