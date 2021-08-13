@@ -118,9 +118,6 @@ namespace Microsoft.Maui.Controls
 			var padding = DefaultPadding;
 #if __IOS__
 			padding += 7;
-			if (IndicatorsShape == Controls.IndicatorShape.Square)
-				padding += 2;
-
 #endif
 			var defaultSize = IndicatorSize + padding + padding;
 			var items = GetMaximumVisible();

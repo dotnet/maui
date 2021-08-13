@@ -24,9 +24,6 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(FramePage), "Frame",
 				"The Frame class derives from ContentView and displays a border, or frame, around its child."),
 
-			new SectionModel(typeof(IndicatorViewPage), "IndicatorView",
-				"IndicatorView displays indicators that represent the number of items in a CarouselView. Set the CarouselView.IndicatorView property to the IndicatorView object to display indicators for the CarouselView."),
-
 			new SectionModel(typeof(ListViewPage), "ListView",
 				"ListView derives from ItemsView and displays a scrollable list of selectable data items."),
 

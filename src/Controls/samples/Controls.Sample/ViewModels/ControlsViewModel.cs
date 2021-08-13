@@ -58,7 +58,7 @@ namespace Maui.Controls.Sample.ViewModels
 				"A view that allows the user to select a time."),
 
 			new SectionModel(typeof(IndicatorPage), "IndicatorView",
-				"A view that shows dots indicators."),
+				"IndicatorView displays indicators. It can also represent the number of items in a CarouselView. Set the CarouselView.IndicatorView property to the IndicatorView object to display indicators for the CarouselView."),
 		};
 	}
 }
