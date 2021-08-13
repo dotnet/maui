@@ -115,9 +115,16 @@ namespace Microsoft.Maui.Controls
 			if (IndicatorTemplate != null)
 				return baseRequest;
 
-			var defaultSize = IndicatorSize + DefaultPadding + DefaultPadding;
+			var padding = DefaultPadding;
+#if __IOS__
+			padding += 7;
+			if (IndicatorsShape == Controls.IndicatorShape.Square)
+				padding += 2;
+
+#endif
+			var defaultSize = IndicatorSize + padding + padding;
 			var items = GetMaximumVisible();
-			
+
 			var sizeRequest = new SizeRequest(new Size(items * defaultSize, IndicatorSize), new Size(10, 10));
 
 			return sizeRequest;

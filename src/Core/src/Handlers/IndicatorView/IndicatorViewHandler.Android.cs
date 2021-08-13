@@ -1,198 +1,63 @@
 ﻿using System;
-using Android.Views;
-using System.ComponentModel;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform.Android;
+using static Android.Views.View;
 using AColor = Android.Graphics.Color;
 using AShapeDrawable = Android.Graphics.Drawables.ShapeDrawable;
 using AShapes = Android.Graphics.Drawables.Shapes;
-using AShapeType = Android.Graphics.Drawables.ShapeType;
 using AView = Android.Views.View;
-using Android.Graphics;
 using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Handlers
 {
 
-	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, LinearLayout>
+	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, MauiPageControl>
 	{
-		const int DefaultPadding = 4;
+		protected override MauiPageControl CreateNativeView()
+		{
+			return new MauiPageControl(Context);
+		}
 
-		Drawable? _currentPageShape;
-		Drawable? _pageShape;
-
-		protected override LinearLayout CreateNativeView() => new LinearLayout(Context);
+		private protected override void OnConnectHandler(AView nativeView)
+		{
+			base.OnConnectHandler(nativeView);
+			NativeView.SetIndicatorView(VirtualView);
+		}
 
 		public static void MapCount(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.UpdateItemsSource();
+			handler.NativeView.UpdateIndicatorCount();
 		}
 		public static void MapPosition(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.UpdateIndicators();
+			handler.NativeView.UpdatePosition();
 		}
 		public static void MapHideSingle(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.UpdateIndicatorCount();
+			handler.NativeView.UpdateIndicatorCount();
 		}
 		public static void MapMaximumVisible(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.UpdateIndicatorCount();
+			handler.NativeView.UpdateIndicatorCount();
 		}
 		public static void MapIndicatorSize(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.UpdateItemsSource();
+			handler.NativeView.ResetIndicators();
 		}
-
-		void UpdateItemsSource()
+		public static void MapIndicatorColor(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			ResetIndicators();
-			UpdateIndicatorCount();
+			handler.NativeView.ResetIndicators();
 		}
-
-		int GetIndexFromPosition()
+		public static void MapSelectedIndicatorColor(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			var maxVisible = GetMaximumVisible();
-			var position = VirtualView.Position;
-			return Math.Max(0, position >= maxVisible ? maxVisible - 1 : position);
+			handler.NativeView.ResetIndicators();
 		}
-
-		void UpdateIndicatorCount()
+		public static void MapIndicatorShape(IndicatorViewHandler handler, IIndicatorView indicator) 
 		{
-			var index = GetIndexFromPosition();
-
-			var count = GetMaximumVisible();
-
-			var childCount = NativeView.ChildCount;
-
-			for (int i = childCount; i < count; i++)
-			{
-				var imageView = new ImageView(Context);
-
-				if (NativeView.Orientation == Orientation.Horizontal)
-					imageView.SetPadding((int)Context.ToPixels(DefaultPadding), 0, (int)Context.ToPixels(DefaultPadding), 0);
-				else
-					imageView.SetPadding(0, (int)Context.ToPixels(DefaultPadding), 0, (int)Context.ToPixels(DefaultPadding));
-
-				imageView.SetImageDrawable(index == i ? _currentPageShape : _pageShape);
-
-				NativeView.AddView(imageView);
-			}
-
-			for (int i = count; i < NativeView.ChildCount; i++)
-			{
-				NativeView.RemoveViewAt(NativeView.ChildCount - 1);
-			}
-		}
-
-		void ResetIndicators()
-		{
-			_pageShape = null;
-			_currentPageShape = null;
-
-			var templatedIndicatorView = VirtualView as ITemplatedIndicatorView;
-			if (templatedIndicatorView == null || templatedIndicatorView.IndicatorsLayoutOverride == null)
-				UpdateShapes();
-			else
-				UpdateIndicatorTemplate(templatedIndicatorView.IndicatorsLayoutOverride);
-		}
-
-		void UpdateIndicatorTemplate(ILayout? layout)
-		{
-			if (layout == null)
-				return;
-
-			AView? handler;
-			if (MauiContext != null)
-			{
-				handler = layout.ToNative(MauiContext);
-
-				NativeView.RemoveAllViews();
-				NativeView.AddView(handler);
-			}
-		}
-
-		void UpdateIndicators()
-		{
-			var index = GetIndexFromPosition();
-			var count = NativeView.ChildCount;
-			for (int i = 0; i < count; i++)
-			{
-				ImageView? view = NativeView.GetChildAt(i) as ImageView;
-				if (view == null)
-					continue;
-				var drawableToUse = index == i ? _currentPageShape : _pageShape;
-				if (drawableToUse != view.Drawable)
-					view.SetImageDrawable(drawableToUse);
-			}
-		}
-
-		void UpdateShapes()
-		{
-			if (_currentPageShape != null)
-				return;
-
-			var indicatorColor = VirtualView.IndicatorsColor;
-			if (indicatorColor is SolidPaint indicatorPaint)
-			{
-				if (indicatorPaint.Color is Color c)
-					_pageShape = GetShape(c.ToNative());
-
-			}
-			var indicatorPositionColor = VirtualView.PositionIndicatorColor;
-			if (indicatorPositionColor is SolidPaint indicatorPositionPaint)
-			{
-				if (indicatorPositionPaint.Color is Color c)
-					_currentPageShape = GetShape(c.ToNative());
-
-			}
-		}
-
-		Drawable GetShape(AColor color)
-		{
-			AShapeDrawable shape;
-			var isCircle = IsCircleShape();
-
-			if (isCircle)
-				shape = new AShapeDrawable(new AShapes.OvalShape());
-			else
-				shape = new AShapeDrawable(new AShapes.RectShape());
-
-			var indicatorSize = VirtualView.IndicatorSize;
-
-			shape.SetIntrinsicHeight((int)Context.ToPixels(indicatorSize));
-			shape.SetIntrinsicWidth((int)Context.ToPixels(indicatorSize));
-			if (shape.Paint != null)
-				shape.Paint.Color = color;
-
-			return shape;
-		}
-
-		bool IsCircleShape()
-		{
-			var sH = VirtualView.IndicatorShape.Shape;
-			var pointsCount = 13;
-			if (sH != null)
-			{
-				var path = sH.PathForBounds(new Rectangle(0, 0, 6, 6));
-				pointsCount = path.Count;
-			}
-
-			return pointsCount == 13;
-		}
-
-		int GetMaximumVisible()
-		{
-			var minValue = Math.Min(VirtualView.MaximumVisible, VirtualView.Count);
-			var maximumVisible = minValue <= 0 ? 0 : minValue;
-			bool hideSingle = VirtualView.HideSingle;
-
-			if (maximumVisible == 1 && hideSingle)
-				maximumVisible = 0;
-
-			return maximumVisible;
+			handler.NativeView.ResetIndicators();
 		}
 	}
 }

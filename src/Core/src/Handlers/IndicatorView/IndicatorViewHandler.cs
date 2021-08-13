@@ -10,6 +10,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IIndicatorView.HideSingle)] = MapHideSingle,
 			[nameof(IIndicatorView.MaximumVisible)] = MapMaximumVisible,
 			[nameof(IIndicatorView.IndicatorSize)] = MapIndicatorSize,
+			[nameof(IIndicatorView.IndicatorColor)] = MapIndicatorColor,
+			[nameof(IIndicatorView.SelectedIndicatorColor)] = MapSelectedIndicatorColor,
+			[nameof(IIndicatorView.IndicatorsShape)] = MapIndicatorShape
 		};
 
 		public IndicatorViewHandler() : base(IndicatorViewMapper)

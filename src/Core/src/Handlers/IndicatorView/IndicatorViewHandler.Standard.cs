@@ -11,5 +11,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHideSingle(IndicatorViewHandler handler, IIndicatorView indicator) { }
 		public static void MapMaximumVisible(IndicatorViewHandler handler, IIndicatorView indicator) { }
 		public static void MapIndicatorSize(IndicatorViewHandler handler, IIndicatorView indicator) { }
+		public static void MapIndicatorColor(IndicatorViewHandler handler, IIndicatorView indicator) { }
+		public static void MapSelectedIndicatorColor(IndicatorViewHandler handler, IIndicatorView indicator) { }
+		public static void MapIndicatorShape(IndicatorViewHandler handler, IIndicatorView indicator) { }
 	}
 }

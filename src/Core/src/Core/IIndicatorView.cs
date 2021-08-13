@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 	{
 		int Count { get; }
 
-		int Position { get; }
+		int Position { get; set; }
 
 		double IndicatorSize { get; }
 
@@ -14,11 +14,11 @@ namespace Microsoft.Maui
 
 		bool HideSingle { get; }
 
-		Paint IndicatorsColor { get; }
+		Paint? IndicatorColor { get; }
 
-		Paint PositionIndicatorColor { get; }
+		Paint? SelectedIndicatorColor { get; }
 
-		IShapeView IndicatorShape { get; }
+		IShapeView IndicatorsShape { get; }
 	}
 
 	public interface ITemplatedIndicatorView : IIndicatorView
