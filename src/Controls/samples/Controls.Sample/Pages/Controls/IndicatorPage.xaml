@@ -63,7 +63,7 @@
                 Grid.Row="3"
                 Text="Indicator Size"
                 Style="{StaticResource Headline}"/>
-            <IndicatorView  Grid.Row="3" GridLayout.Column="1" Count="5" Position="2"  HorizontalOptions="Center"  IndicatorSize="20"/>
+            <IndicatorView  Grid.Row="3" GridLayout.Column="1" Count="5" Position="2"  HorizontalOptions="Center"  IndicatorSize="15"/>
             <Label
                 Grid.Row="4"
                 Text="Indicator HideSingle"

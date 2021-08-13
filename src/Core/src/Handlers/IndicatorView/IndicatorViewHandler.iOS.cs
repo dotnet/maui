@@ -18,7 +18,6 @@ namespace Microsoft.Maui.Handlers
 			base.NativeArrange(rect);
 			if (UIPager != null)
 				UIPager.Frame = new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
-			//UIPager?.LayoutSubviews();
 		}
 
 		protected override void ConnectHandler(UIPageControl nativeView)

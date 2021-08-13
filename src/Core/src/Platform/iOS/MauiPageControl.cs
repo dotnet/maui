@@ -10,6 +10,11 @@ namespace Microsoft.Maui.Platform.iOS
 		public MauiPageControl()
 		{
 			ValueChanged += MauiPageControlValueChanged;
+			if (NativeVersion.IsAtLeast(14))
+			{
+				AllowsContinuousInteraction = false;
+				BackgroundStyle = UIPageControlBackgroundStyle.Minimal;
+			}
 		}
 
 		public bool IsSquare { get; set; }
@@ -59,13 +64,13 @@ namespace Microsoft.Maui.Platform.iOS
 
 		void UpdateIndicatorSize()
 		{
-			if (IndicatorSize != DefaultIndicatorSize)
-			{
-				float scale = (float)IndicatorSize / DefaultIndicatorSize;
-				var newTransform = CGAffineTransform.MakeScale(scale, scale);
+			if (IndicatorSize == 0 || IndicatorSize == DefaultIndicatorSize)
+				return;
 
-				Transform = newTransform;
-			}
+			float scale = (float)IndicatorSize / DefaultIndicatorSize;
+			var newTransform = CGAffineTransform.MakeScale(scale, scale);
+
+			Transform = newTransform;
 		}
 
 		void UpdateCornerRadius()
