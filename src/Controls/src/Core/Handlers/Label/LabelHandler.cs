@@ -10,8 +10,8 @@
 			[nameof(Label.TextDecorations)] = MapTextDecorations,
 			[nameof(Label.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(Label.LineHeight)] = MapLineHeight,
-			[nameof(ILabel.Font)] = MapFont,
-			[nameof(ILabel.TextColor)] = MapTextColor
+			[nameof(Label.Font)] = MapFont,
+			[nameof(Label.TextColor)] = MapTextColor
 #endif
 		};
 
