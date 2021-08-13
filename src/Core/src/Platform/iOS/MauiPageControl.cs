@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Platform.iOS
 			}
 		}
 
-		void MauiPageControlValueChanged(object sender, System.EventArgs e)
+		void MauiPageControlValueChanged(object? sender, System.EventArgs e)
 		{
 			//if we are iOS13 or lower and we are using a Square shape
 			//we need to update the CornerRadius of the new shape.

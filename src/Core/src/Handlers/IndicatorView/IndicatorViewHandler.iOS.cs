@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void UIPagerValueChanged(object sender, EventArgs e)
+		void UIPagerValueChanged(object? sender, EventArgs e)
 		{
 			if (_updatingPosition || UIPager == null)
 				return;
