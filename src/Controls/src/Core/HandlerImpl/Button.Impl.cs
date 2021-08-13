@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Controls
 {
-	public partial class Button : IButton
+	public partial class Button : IButton, IButtonContentLayout
 	{
 		void IButton.Clicked()
 		{
@@ -20,5 +20,10 @@ namespace Microsoft.Maui.Controls
 		Font? _font;
 
 		Font ITextStyle.Font => _font ??= this.ToFont();
+
+		IImageSource IButton.ImageSource => ImageSource;
+
+		Maui.ButtonContentLayout IButtonContentLayout.ContentLayout =>
+			new Maui.ButtonContentLayout((Maui.ButtonContentLayout.ImagePosition)(int)ContentLayout.Position, ContentLayout.Spacing);
 	}
 }

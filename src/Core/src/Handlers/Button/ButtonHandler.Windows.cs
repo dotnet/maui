@@ -74,6 +74,8 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdatePadding(button, DefaultPadding);
 		}
 
+		public static void MapImageSource(ButtonHandler handler, IButton image) { }
+
 		void OnClick(object sender, UI.Xaml.RoutedEventArgs e)
 		{
 			VirtualView?.Clicked();

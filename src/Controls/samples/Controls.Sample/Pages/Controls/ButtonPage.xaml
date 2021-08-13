@@ -7,6 +7,10 @@
     <views:BasePage.Content>
         <VerticalStackLayout
             Margin="12">
+            <Button ContentLayout="Top, 10" TextColor="White" Background="Black" ImageSource="settings" Text="settings" Padding="16, 9, 16, 9" />
+            <Button ContentLayout="Bottom, 10" TextColor="White" Background="Black" ImageSource="settings" Text="settings" Padding="16, 9, 16, 9" />
+            <Button ContentLayout="Left, 10" HeightRequest="200" TextColor="White" Background="Black" ImageSource="settings" Text="settings" Padding="16, 9, 16, 9" />
+            <Button ContentLayout="Right, 10" HeightRequest="200" TextColor="White" Background="Black" ImageSource="settings" Text="settings" Padding="16, 9, 16, 9" />
             <Label
                 Text="Default"
                 Style="{StaticResource Headline}"/>
