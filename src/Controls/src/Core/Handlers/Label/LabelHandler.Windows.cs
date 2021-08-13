@@ -8,5 +8,8 @@ namespace Microsoft.Maui.Controls.Handlers
 	{
 		public static void MapTextType(LabelHandler handler, Label label) =>
 			Platform.TextBlockExtensions.UpdateText(handler.NativeView, label);
+
+		public static void MapText(LabelHandler handler, Label label) =>
+			Platform.TextBlockExtensions.UpdateText(handler.NativeView, label);
 	}
 }

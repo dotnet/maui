@@ -9,9 +9,21 @@ namespace Microsoft.Maui
 {
 	public static class TextViewExtensions
 	{
-		public static void UpdateText(this TextView textView, ILabel label)
+		public static void UpdateTextPlainText(this TextView textView, ILabel label)
 		{
 			textView.Text = label.Text;
+		}
+
+		public static void UpdateTextHtml(this TextView textView, ILabel label) 
+		{
+			var newText = label.Text;
+
+			if (NativeVersion.IsAtLeast(24))
+				textView.SetText(Html.FromHtml(newText, FromHtmlOptions.ModeCompact), BufferType.Spannable);
+			else
+#pragma warning disable CS0618 // Type or member is obsolete
+				textView.SetText(Html.FromHtml(newText), BufferType.Spannable);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle, Graphics.Color defaultColor)

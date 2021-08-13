@@ -22,16 +22,5 @@ namespace Controls.Core.Platform.iOS.Extensions
 					break;
 			}
 		}
-
-		public static void UpdateTextDecorations(this UILabel nativeLabel, Label label)
-		{
-			if (label?.TextType != TextType.Text)
-				return;
-
-			var modAttrText = nativeLabel.AttributedText?.WithDecorations(label.TextDecorations);
-
-			if (modAttrText != null)
-				nativeLabel.AttributedText = modAttrText;
-		}
 	}
 }
