@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -60,5 +61,35 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(clicked);
 		}
+
+// Once I can run device tests again locally I'll uncomment this and create PR
+//#if __ANDROID__
+//		[Theory()]
+//		[InlineData("red.png", "#FF0000")]
+//		[InlineData("green.png", "#00FF00")]
+//		[InlineData("black.png", "#000000")]
+//		public async Task ImageSourceInitializesCorrectly(string filename, string colorHex)
+//		{
+//			var image = new ButtonStub
+//			{
+//				Background = new SolidPaintStub(Colors.Black),
+//				ImageSource = new FileImageSourceStub(filename),
+//			};
+
+//			var order = new List<string>();
+
+//			await InvokeOnMainThreadAsync(async () =>
+//			{
+//				var handler = CreateHandler(image);
+
+//				await Wait(() => ImageSourceLoaded(handler));
+
+//				var expectedColor = Color.FromArgb(colorHex);
+//				await handler.NativeView.AssertContainsColor(expectedColor);
+//			});
+
+//			Assert.Equal(new[] { "LoadingStarted", "LoadingCompleted(True)" }, order);
+//		}
+//#endif
 	}
 }

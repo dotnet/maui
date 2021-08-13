@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Handlers
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
 		public static void MapContentLayout(ButtonHandler handler, IButton image) =>
-			handler.UpdateContentLayout();
+			handler.NativeView.UpdateContentLayout(image);
 
 		public static Task MapImageSourceAsync(ButtonHandler handler, IButton image)
 		{
@@ -178,59 +178,12 @@ namespace Microsoft.Maui.Handlers
 			var deviceSize = (int)Context!.ToPixels(size);
 			return MeasureSpecMode.Exactly.MakeMeasureSpec(deviceSize);
 		}
-
-		void UpdateContentLayout()
-		{
-			var icon = NativeView.Icon ??
-						TextViewCompat.GetCompoundDrawablesRelative(NativeView)[3];
-
-			if (icon != null &&
-				!String.IsNullOrEmpty(VirtualView.Text) &&
-				VirtualView is IButtonContentLayout cl)
-			{
-				var contentLayout = cl.ContentLayout;
-
-				// IconPadding calls NativeView.CompoundDrawablePadding				
-				// Which is why we don't have to worry about calling setCompoundDrawablePadding
-				// ourselves for our custom implemented IconGravityBottom
-				NativeView.IconPadding = (int)Context.ToPixels(contentLayout.Spacing);
-
-				switch (contentLayout.Position)
-				{
-					case ButtonContentLayout.ImagePosition.Top:
-						NativeView.Icon = icon;
-						NativeView.IconGravity = MaterialButton.IconGravityTop;
-						break;
-					case ButtonContentLayout.ImagePosition.Bottom:
-						NativeView.Icon = null;
-						TextViewCompat.SetCompoundDrawablesRelative(NativeView, null, null, null, icon);
-						icon?.SetBounds(0, 0, icon.IntrinsicWidth, icon.IntrinsicHeight);
-						NativeView.IconGravity = MauiMaterialButton.IconGravityBottom;
-						break;
-					case ButtonContentLayout.ImagePosition.Left:
-						NativeView.Icon = icon;
-						NativeView.IconGravity = MaterialButton.IconGravityStart;
-						break;
-					case ButtonContentLayout.ImagePosition.Right:
-						NativeView.Icon = icon;
-						NativeView.IconGravity = MaterialButton.IconGravityEnd;
-						break;
-				}
-			}
-			else
-			{
-				// Don't remove this otherwise the button occasionally measures wrong
-				// on first load
-				NativeView.Icon = icon;
-				NativeView.IconPadding = 0;
-				NativeView.IconGravity = MaterialButton.IconGravityTextStart;
-			}
-		}
+		
 
 		void OnSetImageSourceDrawable(Drawable? obj)
 		{
 			NativeView.Icon = obj;
-			UpdateContentLayout();
+			NativeView.UpdateContentLayout(VirtualView);
 		}
 
 		bool OnTouch(IButton? button, AView? v, MotionEvent? e)
