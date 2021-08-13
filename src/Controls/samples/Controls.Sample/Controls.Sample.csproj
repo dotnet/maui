@@ -32,17 +32,6 @@
     <AndroidResource Remove="Resources\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Pages\Controls\IndicatorPage.xaml.cs">
-      <DependentUpon>IndicatorPage.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <MauiXaml Update="Pages\Controls\IndicatorPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-  </ItemGroup>
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 

@@ -28,7 +28,7 @@
         </Style>
     </views:BasePage.Resources>
     <views:BasePage.Content>
-        <Grid Padding="0,40,0,0" Margin="12">
+        <Grid Margin="12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
@@ -41,6 +41,7 @@
                 <RowDefinition Height="50"/>
                 <RowDefinition Height="50"/>
                 <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Label
                 Text="Basic"
@@ -90,6 +91,38 @@
                     </DataTemplate>
                 </IndicatorView.IndicatorTemplate>
             </IndicatorView>
+            <Label
+                Grid.Row="7" 
+                Text="Using with CarouselView"
+                Style="{StaticResource Headline}" VerticalOptions="Start" />
+            <StackLayout Grid.Row="7"  Grid.Column="1"  VerticalOptions="Start" >
+                <CarouselView IndicatorView="indicatorView" VerticalOptions="Start" HeightRequest="100" Loop="False">
+                    <CarouselView.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Item 1</x:String>
+                            <x:String>Item 2</x:String>
+                            <x:String>Item 3</x:String>
+                        </x:Array>
+                    </CarouselView.ItemsSource>
+                    <CarouselView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Background="Pink">
+                                <Label 
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                FontSize="Large"
+                                Text="{Binding}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </CarouselView.ItemTemplate>
+                </CarouselView>
+                <IndicatorView 
+                            Margin="0,20,0,0"
+                            x:Name="indicatorView"
+                            IndicatorColor="LightGray"
+                            SelectedIndicatorColor="DarkGray"
+                HorizontalOptions="Center" />
+            </StackLayout>
         </Grid>
     </views:BasePage.Content>
 </views:BasePage>
