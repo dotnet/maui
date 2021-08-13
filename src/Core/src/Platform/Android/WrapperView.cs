@@ -124,7 +124,7 @@ namespace Microsoft.Maui
 						// Draw extracted alpha bounds of our local canvas
 						_shadowPaint.Color = Shadow.Value.Color.WithAlpha(shadowOpacity).ToNative();
 
-						// Apply the shadow radius using ScriptIntrinsicBlur
+						// Apply the shadow radius 
 						float radius = Shadow.Value.Radius;
 
 						if (radius <= 0)
