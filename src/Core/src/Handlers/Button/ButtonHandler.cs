@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IButton.Text)] = MapText,
 			[nameof(IButton.TextColor)] = MapTextColor,
 			[nameof(IButton.ImageSource)] = MapImageSource,
-			[nameof(IButtonContentLayout.ContentLayout)] = MapImageSource,
+#if __ANDROID__
+			[nameof(IButtonContentLayout.ContentLayout)] = MapContentLayout,
+#endif
 		};
 
 		public ButtonHandler() : base(ButtonMapper)
