@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Views;
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MaterialButton CreateNativeView()
 		{
-			MaterialButton nativeButton = new MaterialButton(Context)
+			MaterialButton nativeButton = new MauiMaterialButton(Context)
 			{
 				IconGravity = MaterialButton.IconGravityTextStart,
 				IconTintMode = Android.Graphics.PorterDuff.Mode.Add,
@@ -177,31 +178,32 @@ namespace Microsoft.Maui.Handlers
 
 		void OnSetImageSourceDrawable(Drawable? obj)
 		{
-			if (VirtualView is IButtonContentLayout cl)
+			NativeView.Icon = obj;
+			if (!String.IsNullOrEmpty(VirtualView.Text) &&
+				VirtualView is IButtonContentLayout cl)
 			{
 				var contentLayout = cl.ContentLayout;
+
+				// IconPadding calls NativeView.CompoundDrawablePadding				
+				// Which is why we don't have to worry about calling setCompoundDrawablePadding
+				// ourselves for our custom implemented IconGravityBottom
 				NativeView.IconPadding = (int)Context.ToPixels(contentLayout.Spacing);
 
 				switch (contentLayout.Position)
 				{
 					case ButtonContentLayout.ImagePosition.Top:
-						NativeView.Icon = obj;
 						NativeView.IconGravity = MaterialButton.IconGravityTop;
 						break;
-
-					// Currently Material doesn't have any bottom gravity options
 					case ButtonContentLayout.ImagePosition.Bottom:
 						NativeView.Icon = null;
 						TextViewCompat.SetCompoundDrawablesRelative(NativeView, null, null, null, obj);
-						NativeView.CompoundDrawablePadding = NativeView.IconPadding;
-						NativeView.IconGravity = 0;
+						obj?.SetBounds(0, 0, obj.IntrinsicWidth, obj.IntrinsicHeight);
+						NativeView.IconGravity = MauiMaterialButton.IconGravityBottom;
 						break;
 					case ButtonContentLayout.ImagePosition.Left:
-						NativeView.Icon = obj;
 						NativeView.IconGravity = MaterialButton.IconGravityStart;
 						break;
 					case ButtonContentLayout.ImagePosition.Right:
-						NativeView.Icon = obj;
 						NativeView.IconGravity = MaterialButton.IconGravityEnd;
 						break;
 
@@ -209,7 +211,11 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
+				// Don't remove this otherwise the button occasionally measures wrong
+				// on first load
 				NativeView.Icon = obj;
+				NativeView.IconPadding = 0;
+				NativeView.IconGravity = MaterialButton.IconGravityTextStart;
 			}
 		}
 
