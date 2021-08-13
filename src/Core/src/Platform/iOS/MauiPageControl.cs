@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Platform.iOS
 					{
 						imageview.Image = UIImage.GetSystemImage("squareshape.fill");
 						var frame = imageview.Frame;
-						//the scare shape is not the same size as the circle so we might need to correct the frame
+						//the square shape is not the same size as the circle so we might need to correct the frame
 						imageview.Frame = new CGRect(frame.X - 6, frame.Y, frame.Width, frame.Height);
 					}
 				}
