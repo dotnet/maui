@@ -145,6 +145,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			UpdateCharacterSpacing();
 		}
 
+		[PortHandler]
 		void UpdateEnabled()
 		{
 			Control.Enabled = Element.IsEnabled;
@@ -177,11 +178,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			}
 		}
 
+		[PortHandler]
 		void UpdateTextColor()
 		{
 			_textColorSwitcher?.UpdateTextColor(Control, Element.TextColor);
 		}
 
+		[PortHandler]
 		void UpdateCharacterSpacing()
 		{
 			if (Forms.IsLollipopOrNewer)

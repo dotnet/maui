@@ -11,5 +11,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(ButtonHandler handler, IButton button) { }
 		public static void MapFont(ButtonHandler handler, IButton button) { }
 		public static void MapPadding(ButtonHandler handler, IButton button) { }
+		public static void MapImageSource(ButtonHandler handler, IButton image) { }
 	}
 }

@@ -1,4 +1,6 @@
 using System;
+using System.Threading.Tasks;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using UIKit;
 
@@ -11,6 +13,10 @@ namespace Microsoft.Maui.Handlers
 		static UIColor? ButtonTextColorDefaultDisabled;
 		static UIColor? ButtonTextColorDefaultHighlighted;
 		static UIColor? ButtonTextColorDefaultNormal;
+		ImageSourcePartWrapper<ButtonHandler>? _imageSourcePartWrapper;
+		ImageSourcePartWrapper<ButtonHandler> ImageSourcePartWrapper =>
+			_imageSourcePartWrapper ??= new ImageSourcePartWrapper<ButtonHandler>(
+				this, (h) => h.VirtualView.ImageSource, null, null, OnSetImageSourceDrawable);
 
 		protected override UIButton CreateNativeView()
 		{
@@ -44,6 +50,19 @@ namespace Microsoft.Maui.Handlers
 			ButtonTextColorDefaultDisabled = nativeView.TitleColor(UIControlState.Disabled);
 		}
 
+		private void OnSetImageSourceDrawable(UIImage? image)
+		{
+			if (image != null)
+			{
+				NativeView.SetImage(image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
+				NativeView.ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
+			}
+			else
+			{
+				NativeView.SetImage(null, UIControlState.Normal);
+			}
+		}
+		
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
 			handler.NativeView?.UpdateText(button);
@@ -78,6 +97,20 @@ namespace Microsoft.Maui.Handlers
 		{
 			// Update all of the attributed text formatting properties
 			handler.NativeView?.UpdateCharacterSpacing(button);
+		}
+
+		public static void MapImageSource(ButtonHandler handler, IButton image) =>
+			MapImageSourceAsync(handler, image).FireAndForget(handler);
+
+		public static Task MapImageSourceAsync(ButtonHandler handler, IButton image)
+		{
+			if (image.ImageSource == null)
+			{
+				handler.OnSetImageSourceDrawable(null);
+				return Task.CompletedTask;
+			}
+
+			return handler.ImageSourcePartWrapper.UpdateImageSource();
 		}
 
 		static void SetControlPropertiesFromProxy(UIButton nativeView)
