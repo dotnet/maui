@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public LayoutHandler(PropertyMapper? mapper = null, CommandMapper? commandMapper = null) 
+		public LayoutHandler(PropertyMapper? mapper = null, CommandMapper? commandMapper = null)
 			: base(mapper ?? LayoutMapper, commandMapper ?? LayoutCommandMapper)
 		{
 

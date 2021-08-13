@@ -193,18 +193,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		void AddToHandler(int index, IView view)
-{
+		{
 			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
 			Handler?.Invoke(nameof(ILayoutHandler.Add), args);
 		}
 
-		void ClearHandler() 
+		void ClearHandler()
 		{
 			Handler?.Invoke(nameof(ILayoutHandler.Clear));
 		}
 
 		void RemoveFromHandler(int index, IView view)
-{
+		{
 			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
 			Handler?.Invoke(nameof(ILayoutHandler.Remove), args);
 		}

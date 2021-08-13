@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		}
 
 		[Test]
-		public void ClearUpdatesParent() 
+		public void ClearUpdatesParent()
 		{
 			var layout = new VerticalStackLayout();
 

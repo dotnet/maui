@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public void Clear() 
+		public void Clear()
 		{
 			if (NativeView == null)
 			{
