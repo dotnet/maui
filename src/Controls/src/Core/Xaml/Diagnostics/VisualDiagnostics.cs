@@ -19,16 +19,6 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 				sourceInfos.Add(target, new XamlSourceInfo(uri, lineNumber, linePosition));
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete("use OnChildAdded/Removed")]
-		internal static void SendVisualTreeChanged(object parent, object child)
-		{
-			if (!DebuggerHelper.DebuggerIsAttached)
-				return;
-
-			VisualTreeChanged?.Invoke(parent, new VisualTreeChangeEventArgs(parent, child, -1, child != null ? VisualTreeChangeType.Add : VisualTreeChangeType.Remove));
-		}
-
 		internal static void OnChildAdded(Element parent, Element child)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
@@ -37,7 +27,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			if (child is null)
 				return;
 
-			var index = parent?.AllChildren.IndexOf(child) ?? -1;
+			var index = (parent as IVisualTreeElement)?.GetVisualChildren().IndexOf(child) ?? -1;
 			VisualTreeChanged?.Invoke(parent, new VisualTreeChangeEventArgs(parent, child, index, VisualTreeChangeType.Add));
 		}
 

@@ -469,10 +469,13 @@ namespace Microsoft.Maui.Controls
 			var modalStack = shellSection?.Navigation?.ModalStack;
 			var result = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, stack, modalStack);
 
-			SetValueFromRenderer(CurrentStatePropertyKey, result);
-
-			_navigationManager.HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
+			if (result?.Location != oldState?.Location)
+			{
+				SetValueFromRenderer(CurrentStatePropertyKey, result);
+				_navigationManager.HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
+			}
 		}
+
 		ReadOnlyCollection<ShellItem> IShellController.GetItems() =>
 			new ReadOnlyCollection<ShellItem>(((ShellItemCollection)Items).VisibleItemsReadOnly.ToList());
 
@@ -493,6 +496,16 @@ namespace Microsoft.Maui.Controls
 		public Task GoToAsync(ShellNavigationState state, bool animate)
 		{
 			return _navigationManager.GoToAsync(state, animate, false);
+		}
+
+		public Task GoToAsync(ShellNavigationState state, IDictionary<string, object> parameters)
+		{
+			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(parameters));
+		}
+
+		public Task GoToAsync(ShellNavigationState state, bool animate, IDictionary<string, object> parameters)
+		{
+			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
 
 		public void AddLogicalChild(Element element)
@@ -582,26 +595,18 @@ namespace Microsoft.Maui.Controls
 		View _flyoutFooterView;
 		ShellNavigationManager _navigationManager;
 		ShellFlyoutItemsManager _flyoutManager;
+		Page _previousPage;
 
 		ObservableCollection<Element> _logicalChildren = new ObservableCollection<Element>();
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			new ReadOnlyCollection<Element>(_logicalChildren);
 
 		public Shell()
 		{
 			_navigationManager = new ShellNavigationManager(this);
-			_navigationManager.Navigated += (_, args) =>
-			{
-				OnNavigated(args);
-				Navigated?.Invoke(this, args);
-			};
-
-			_navigationManager.Navigating += (_, args) =>
-			{
-				Navigating?.Invoke(this, args);
-				OnNavigating(args);
-			};
+			_navigationManager.Navigated += (_, args) => SendNavigated(args);
+			_navigationManager.Navigating += (_, args) => SendNavigating(args);
 
 			_flyoutManager = new ShellFlyoutItemsManager(this);
 			Navigation = new NavigationImpl(this);
@@ -714,7 +719,7 @@ namespace Microsoft.Maui.Controls
 
 		public ShellNavigationState CurrentState => (ShellNavigationState)GetValue(CurrentStateProperty);
 
-		[TypeConverter(typeof(ImageSourceConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 		public ImageSource FlyoutBackgroundImage
 		{
 			get => (ImageSource)GetValue(FlyoutBackgroundImageProperty);
@@ -891,6 +896,28 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool ValidDefaultShellItem(Element child) => !(child is MenuShellItem);
+
+		void SendNavigated(ShellNavigatedEventArgs args)
+		{
+			Navigated?.Invoke(this, args);
+			OnNavigated(args);
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+		}
+
+		void SendNavigating(ShellNavigatingEventArgs args)
+		{
+			Navigating?.Invoke(this, args);
+			OnNavigating(args);
+
+			if (!args.Cancelled)
+			{
+				_previousPage = CurrentPage;
+				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs());
+			}
+		}
 
 		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
 		{
@@ -1198,7 +1225,7 @@ namespace Microsoft.Maui.Controls
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, LogicalChildren);
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IElementController)this).LogicalChildren);
 			if (FlyoutHeaderView != null)
 				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutHeaderView });
 			if (FlyoutFooterView != null)

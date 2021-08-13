@@ -6,7 +6,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
-	public static class ViewExtensions
+	public static partial class ViewExtensions
 	{
 		const int DefaultAutomationTagId = -1;
 		public static int AutomationTagId { get; set; } = DefaultAutomationTagId;
@@ -116,16 +116,6 @@ namespace Microsoft.Maui
 			}
 
 			nativeView.SetTag(AutomationTagId, view.AutomationId);
-		}
-
-		public static void UpdateSemantics(this AView nativeView, IView view)
-		{
-			var semantics = view.Semantics;
-
-			if (semantics == null)
-				return;
-
-			ViewCompat.SetAccessibilityHeading(nativeView, semantics.IsHeading);
 		}
 
 		public static void InvalidateMeasure(this AView nativeView, IView view)

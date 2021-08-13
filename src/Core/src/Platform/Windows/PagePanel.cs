@@ -17,22 +17,9 @@ namespace Microsoft.Maui
 				return base.MeasureOverride(availableSize);
 			}
 
-			var width = availableSize.Width;
-			var height = availableSize.Height;
+			CrossPlatformMeasure(availableSize.Width, availableSize.Height);
 
-			if (double.IsInfinity(width))
-			{
-				width = XamlRoot.Size.Width;
-			}
-
-			if (double.IsInfinity(height))
-			{
-				height = XamlRoot.Size.Height;
-			}
-
-			CrossPlatformMeasure(width, height);
-
-			return new Windows.Foundation.Size(width, height);
+			return availableSize;
 		}
 
 		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)

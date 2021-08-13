@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 //using Microsoft.Maui.Controls.Shapes;
@@ -10,7 +11,7 @@ using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, ITabStopElement
+	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController
 	{
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
 
@@ -112,6 +113,7 @@ namespace Microsoft.Maui.Controls
 		static IVisual _defaultVisual = Microsoft.Maui.Controls.VisualMarker.Default;
 		IVisual _effectiveVisual = _defaultVisual;
 
+		[System.ComponentModel.TypeConverter(typeof(VisualTypeConverter))]
 		public IVisual Visual
 		{
 			get { return (IVisual)GetValue(VisualProperty); }
@@ -286,34 +288,6 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FlowDirectionProperty = BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(VisualElement), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
-		public static readonly BindableProperty TabIndexProperty =
-			BindableProperty.Create(nameof(TabIndex),
-									typeof(int),
-									typeof(VisualElement),
-									defaultValue: 0,
-									propertyChanged: OnTabIndexPropertyChanged,
-									defaultValueCreator: TabIndexDefaultValueCreator);
-
-		public static readonly BindableProperty IsTabStopProperty =
-			BindableProperty.Create(nameof(IsTabStop),
-									typeof(bool),
-									typeof(VisualElement),
-									defaultValue: true,
-									propertyChanged: OnTabStopPropertyChanged,
-									defaultValueCreator: TabStopDefaultValueCreator);
-
-		static void OnTabIndexPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-			((VisualElement)bindable).OnTabIndexPropertyChanged((int)oldValue, (int)newValue);
-
-		static object TabIndexDefaultValueCreator(BindableObject bindable) =>
-			((VisualElement)bindable).TabIndexDefaultValueCreator();
-
-		static void OnTabStopPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-			((VisualElement)bindable).OnTabStopPropertyChanged((bool)oldValue, (bool)newValue);
-
-		static object TabStopDefaultValueCreator(BindableObject bindable) =>
-			((VisualElement)bindable).TabStopDefaultValueCreator();
-
 		IFlowDirectionController FlowController => this;
 
 		public FlowDirection FlowDirection
@@ -389,7 +363,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(BackgroundColorProperty, value); }
 		}
 
-		[TypeConverter(typeof(BrushTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
 		public Brush Background
 		{
 			get { return (Brush)GetValue(BackgroundProperty); }
@@ -413,8 +387,6 @@ namespace Microsoft.Maui.Controls
 				Y = value.Y;
 				SetSize(value.Width, value.Height);
 				BatchCommit();
-
-				Handler?.UpdateValue(nameof(IFrameworkElement.Frame));
 			}
 		}
 
@@ -444,7 +416,7 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsFocused => (bool)GetValue(IsFocusedProperty);
 
-		[TypeConverter(typeof(VisibilityConverter))]
+		[System.ComponentModel.TypeConverter(typeof(VisibilityConverter))]
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
@@ -505,26 +477,6 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ScaleYProperty, value);
 		}
 
-		public int TabIndex
-		{
-			get => (int)GetValue(TabIndexProperty);
-			set => SetValue(TabIndexProperty, value);
-		}
-
-		protected virtual void OnTabIndexPropertyChanged(int oldValue, int newValue) { }
-
-		protected virtual int TabIndexDefaultValueCreator() => 0;
-
-		public bool IsTabStop
-		{
-			get => (bool)GetValue(IsTabStopProperty);
-			set => SetValue(IsTabStopProperty, value);
-		}
-
-		protected virtual void OnTabStopPropertyChanged(bool oldValue, bool newValue) { }
-
-		protected virtual bool TabStopDefaultValueCreator() => true;
-
 		public double TranslationX
 		{
 			get { return (double)GetValue(TranslationXProperty); }
@@ -563,7 +515,7 @@ namespace Microsoft.Maui.Controls
 			private set { SetValue(YPropertyKey, value); }
 		}
 
-		[TypeConverter(typeof(PathGeometryConverter))]
+		[System.ComponentModel.TypeConverter(typeof(PathGeometryConverter))]
 		public Geometry Clip
 		{
 			get { return (Geometry)GetValue(ClipProperty); }
@@ -730,9 +682,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<FocusEventArgs> Focused;
 
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public virtual SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
+		SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
 		{
 			var constraintSize = new Size(widthConstraint, heightConstraint);
 			if (_measureCache.TryGetValue(constraintSize, out SizeRequest cachedResult))
@@ -783,7 +733,7 @@ namespace Microsoft.Maui.Controls
 			return r;
 		}
 
-		public SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
+		public virtual SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
 			bool includeMargins = (flags & MeasureFlags.IncludeMargins) != 0;
 			Thickness margin = default(Thickness);
@@ -794,9 +744,8 @@ namespace Microsoft.Maui.Controls
 				widthConstraint = Math.Max(0, widthConstraint - margin.HorizontalThickness);
 				heightConstraint = Math.Max(0, heightConstraint - margin.VerticalThickness);
 			}
-#pragma warning disable 0618 // retain until GetSizeRequest removed
+
 			SizeRequest result = GetSizeRequest(widthConstraint, heightConstraint);
-#pragma warning restore 0618
 
 			if (includeMargins && !margin.IsEmpty)
 			{
@@ -851,23 +800,15 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
-#pragma warning disable 0618 // retain until OnSizeRequest removed
-			return OnSizeRequest(widthConstraint, heightConstraint);
-#pragma warning restore 0618
-		}
 
-		protected virtual void OnSizeAllocated(double width, double height)
-		{
-		}
-
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected virtual SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
-		{
 			if (!IsPlatformEnabled)
 				return new SizeRequest(new Size(-1, -1));
 
 			return Device.PlatformServices.GetNativeSize(this, widthConstraint, heightConstraint);
+		}
+
+		protected virtual void OnSizeAllocated(double width, double height)
+		{
 		}
 
 		protected void SizeAllocated(double width, double height) => OnSizeAllocated(width, height);
@@ -944,9 +885,9 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue)
 		{
-			if (this is IFrameworkElement fe)
+			if (this is IView fe)
 			{
-				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Visibility));
+				fe.Handler?.UpdateValue(nameof(IView.Visibility));
 			}
 
 			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
@@ -1092,10 +1033,10 @@ namespace Microsoft.Maui.Controls
 
 			element.SelfConstraint = constraint;
 
-			if (element is IFrameworkElement fe)
+			if (element is IView fe)
 			{
-				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Width));
-				fe.Handler?.UpdateValue(nameof(IFrameworkElement.Height));
+				fe.Handler?.UpdateValue(nameof(IView.Width));
+				fe.Handler?.UpdateValue(nameof(IView.Height));
 			}
 
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.SizeRequestChanged);
@@ -1107,7 +1048,7 @@ namespace Microsoft.Maui.Controls
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, LogicalChildren);
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IElementController)this).LogicalChildren);
 		}
 
 		void SetSize(double width, double height)
@@ -1131,28 +1072,35 @@ namespace Microsoft.Maui.Controls
 
 		public class VisibilityConverter : TypeConverter
 		{
-			public override object ConvertFromInvariantString(string value)
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+				=> sourceType == typeof(string);
+
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+				=> true;
+
+			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 			{
-				value = value?.Trim();
-				if (!string.IsNullOrEmpty(value))
+				var strValue = value?.ToString()?.Trim();
+
+				if (!string.IsNullOrEmpty(strValue))
 				{
-					if (value.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
+					if (strValue.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
 						return true;
-					if (value.Equals("visible", StringComparison.OrdinalIgnoreCase))
+					if (strValue.Equals("visible", StringComparison.OrdinalIgnoreCase))
 						return true;
-					if (value.Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
+					if (strValue.Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
 						return false;
-					if (value.Equals("hidden", StringComparison.OrdinalIgnoreCase))
+					if (strValue.Equals("hidden", StringComparison.OrdinalIgnoreCase))
 						return false;
-					if (value.Equals("collapse", StringComparison.OrdinalIgnoreCase))
+					if (strValue.Equals("collapse", StringComparison.OrdinalIgnoreCase))
 						return false;
 				}
-				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}.", value, typeof(bool)));
+				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}.", strValue, typeof(bool)));
 			}
 
-			public override string ConvertToInvariantString(object value)
+			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 			{
-				if (!(value is bool visibility))
+				if (value is not bool visibility)
 					throw new NotSupportedException();
 				return visibility.ToString();
 			}

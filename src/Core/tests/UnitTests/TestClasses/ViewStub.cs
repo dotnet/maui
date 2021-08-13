@@ -25,7 +25,7 @@ namespace Microsoft.Maui.UnitTests
 
 		public IViewHandler Handler { get; set; }
 
-		public IFrameworkElement Parent { get; set; }
+		public IView Parent { get; set; }
 
 		public Size DesiredSize { get; set; }
 

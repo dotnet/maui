@@ -8,11 +8,21 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class ShellHandler : ViewHandler<Shell, AView>
+	public partial class ShellHandler : ViewHandler<Shell, ShellFlyoutView>
 	{
-		protected override AView CreateNativeView()
+		ShellView _shellView;
+		protected override ShellFlyoutView CreateNativeView()
 		{
-			throw new NotImplementedException();
+			var drawerLayout = (_shellView as IShellContext)?.CurrentDrawerLayout;
+			return (ShellFlyoutView)drawerLayout;
+		}
+
+
+		public override void SetVirtualView(IView view)
+		{
+			_shellView = new ShellView(Context);
+			_shellView.SetVirtualView((Shell)view);
+			base.SetVirtualView(view);
 		}
 	}
 }

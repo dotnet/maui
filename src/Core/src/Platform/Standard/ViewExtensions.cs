@@ -1,6 +1,6 @@
 namespace Microsoft.Maui
 {
-	static class ViewExtensions
+	static partial class ViewExtensions
 	{
 		public static void UpdateIsEnabled(this object nativeView, IView view) { }
 

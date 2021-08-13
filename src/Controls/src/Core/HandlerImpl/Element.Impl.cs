@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Controls
 	public partial class Element : Maui.IElement, IEffectControlProvider
 	{
 		IElementHandler _handler;
-		EventHandler _attachedHandler;
 		EffectsFactory _effectsFactory;
 
 		Maui.IElement Maui.IElement.Parent => Parent;
@@ -19,49 +18,25 @@ namespace Microsoft.Maui.Controls
 			set => SetHandler(value);
 		}
 
-		public event EventHandler AttachingHandler;
+		public event EventHandler<HandlerChangingEventArgs> HandlerChanging;
+		public event EventHandler HandlerChanged;
 
-		public event EventHandler AttachedHandler
+		protected virtual void OnHandlerChanging(HandlerChangingEventArgs args) { }
+
+		protected virtual void OnHandlerChanged() { }
+
+		private protected virtual void OnHandlerChangedCore()
 		{
-			add
-			{
-				_attachedHandler += value;
-				if (Handler != null)
-					value?.Invoke(this, EventArgs.Empty);
-			}
-			remove
-			{
-				_attachedHandler -= value;
-			}
+			EffectControlProvider = (Handler != null) ? this : null;
+			HandlerChanged?.Invoke(this, EventArgs.Empty);
+			OnHandlerChanged();
 		}
 
-		public event EventHandler DetachingHandler;
-
-		public event EventHandler DetachedHandler;
-
-		protected virtual void OnAttachingHandler() { }
-
-		protected virtual void OnAttachedHandler() { }
-
-		protected virtual void OnDetachingHandler() { }
-
-		protected virtual void OnDetachedHandler() { }
-
-		private protected virtual void OnAttachedHandlerCore()
+		private protected virtual void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
-			OnAttachedHandler();
-			AttachNativeEffects();
+			HandlerChanging?.Invoke(this, args);
+			OnHandlerChanging(args);
 		}
-
-		private protected virtual void OnDetachingHandlerCore() => OnDetachingHandler();
-
-		private protected virtual void OnDetachedHandlerCore()
-		{
-			OnDetachedHandler();
-			DetachNativeEffects();
-		}
-
-		private protected virtual void OnHandlerSet() { }
 
 		void SetHandler(IElementHandler newHandler)
 		{
@@ -70,36 +45,14 @@ namespace Microsoft.Maui.Controls
 
 			var previousHandler = _handler;
 
-			if (_handler != null)
-			{
-				DetachingHandler?.Invoke(this, EventArgs.Empty);
-				OnDetachingHandlerCore();
-			}
-
-			if (newHandler != null)
-			{
-				AttachingHandler?.Invoke(this, EventArgs.Empty);
-				OnAttachingHandler();
-			}
+			OnHandlerChangingCore(new HandlerChangingEventArgs(previousHandler, newHandler));
 
 			_handler = newHandler;
 
 			if (_handler?.VirtualView != this)
 				_handler?.SetVirtualView(this);
 
-			OnHandlerSet();
-
-			if (_handler != null)
-			{
-				_attachedHandler?.Invoke(this, EventArgs.Empty);
-				OnAttachedHandlerCore();
-			}
-
-			if (previousHandler != null)
-			{
-				DetachedHandler?.Invoke(this, EventArgs.Empty);
-				OnDetachedHandlerCore();
-			}
+			OnHandlerChangedCore();
 		}
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
@@ -122,16 +75,6 @@ namespace Microsoft.Maui.Controls
 			{
 				effect.Element = this;
 			}
-		}
-
-		void AttachNativeEffects()
-		{
-			EffectControlProvider = this;
-		}
-
-		void DetachNativeEffects()
-		{
-			EffectControlProvider = null;
 		}
 	}
 }

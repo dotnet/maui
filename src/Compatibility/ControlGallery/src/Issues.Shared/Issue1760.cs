@@ -126,9 +126,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					};
 
 					headerLayout.Children.Add(_headerLabel,
-						Microsoft.Maui.Controls.Constraint.Constant(0),
-						Microsoft.Maui.Controls.Constraint.Constant(0),
-						Microsoft.Maui.Controls.Constraint.RelativeToParent(parent => parent.Width));
+						Compatibility.Constraint.Constant(0),
+						Compatibility.Constraint.Constant(0),
+						Compatibility.Constraint.RelativeToParent(parent => parent.Width));
 
 					Content = new StackLayout
 					{

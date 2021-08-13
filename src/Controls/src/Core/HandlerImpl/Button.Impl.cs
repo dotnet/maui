@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Controls
 			(this as IButtonController).SendReleased();
 		}
 
-		Font ITextStyle.Font => Font;
+		Font? _font;
+
+		Font ITextStyle.Font => _font ??= this.ToFont();
 	}
 }

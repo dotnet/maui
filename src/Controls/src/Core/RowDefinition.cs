@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 			MinimumHeight = -1;
 		}
 
-		[TypeConverter(typeof(GridLengthTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(GridLengthTypeConverter))]
 		public GridLength Height
 		{
 			get { return (GridLength)GetValue(HeightProperty); }

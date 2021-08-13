@@ -1,7 +1,7 @@
 using Microsoft.Maui.Graphics;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
-#elif MONOANDROID
+#elif __ANDROID__
 using NativeView = Android.Views.View;
 #elif WINDOWS
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
@@ -38,17 +38,18 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.AnchorX)] = MapAnchorX,
 			[nameof(IView.AnchorY)] = MapAnchorY,
 			[nameof(IViewHandler.ContainerView)] = MapContainerView,
-			Actions =
-			{
-				[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
-				[nameof(IView.Frame)] = MapFrame,
-			}
+		};
+
+		public static CommandMapper<IView, ViewHandler> ViewCommandMapper = new()
+		{
+			[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
+			[nameof(IView.Frame)] = MapFrame,
 		};
 
 		bool _hasContainer;
 
-		protected ViewHandler(PropertyMapper mapper)
-			: base(mapper)
+		protected ViewHandler(PropertyMapper mapper, CommandMapper? commandMapper = null)
+			: base(mapper, commandMapper ?? ViewCommandMapper)
 		{
 		}
 
@@ -211,9 +212,9 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateSemantics(view);
 		}
 
-		public static void MapInvalidateMeasure(ViewHandler handler, IView view)
+		public static void MapInvalidateMeasure(ViewHandler handler, IView view, object? args)
 		{
-			((NativeView?)handler.NativeView)?.InvalidateMeasure(view);
+			handler.NativeView?.InvalidateMeasure(view);
 		}
 
 		public static void MapContainerView(ViewHandler handler, IView view)
@@ -224,7 +225,7 @@ namespace Microsoft.Maui.Handlers
 
 		static partial void MappingFrame(ViewHandler handler, IView view);
 
-		public static void MapFrame(ViewHandler handler, IView view)
+		public static void MapFrame(ViewHandler handler, IView view, object? args)
 		{
 			MappingFrame(handler, view);
 #if WINDOWS

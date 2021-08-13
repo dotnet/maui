@@ -7,6 +7,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using FlexLayout = Microsoft.Maui.Controls.Compatibility.FlexLayout;
+
 	[TestFixture]
 	public class FlexLayoutTests : BaseTestFixture
 	{
@@ -111,7 +113,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			double totalWidth = 0;
 			foreach (var view in layout.Children)
 			{
-				totalWidth += view.Bounds.Width;
+				totalWidth += view.Frame.Width;
 			}
 
 			Assert.AreEqual(layoutSize.Width, totalWidth, 2);
@@ -143,7 +145,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
 
 			foreach (var view in layout.Children)
-				Assert.That(view.Bounds.Width, Is.EqualTo(100));
+				Assert.That(view.Frame.Width, Is.EqualTo(100));
 
 			layout.Children.Remove(label3);
 
@@ -310,11 +312,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.That(layout.Bounds, Is.EqualTo(new Rectangle(0, 0, 300, 600)));
 			Assert.That(header.Bounds, Is.EqualTo(new Rectangle(0, 0, 300, 50)));
 			Assert.That(inner.Bounds, Is.EqualTo(new Rectangle(0, 50, 300, 500)));
-			Assert.That(inner.Children[0].Bounds, Is.EqualTo(new Rectangle(5, 5, 50, 490)));
-			Assert.That(inner.Children[1].Bounds, Is.EqualTo(new Rectangle(65, 5, 50, 490)));
-			Assert.That(inner.Children[2].Bounds, Is.EqualTo(new Rectangle(125, 5, 50, 490)));
-			Assert.That(inner.Children[3].Bounds, Is.EqualTo(new Rectangle(185, 5, 50, 490)));
-			Assert.That(inner.Children[4].Bounds, Is.EqualTo(new Rectangle(245, 5, 50, 490)));
+			Assert.That(inner.Children[0].Frame, Is.EqualTo(new Rectangle(5, 5, 50, 490)));
+			Assert.That(inner.Children[1].Frame, Is.EqualTo(new Rectangle(65, 5, 50, 490)));
+			Assert.That(inner.Children[2].Frame, Is.EqualTo(new Rectangle(125, 5, 50, 490)));
+			Assert.That(inner.Children[3].Frame, Is.EqualTo(new Rectangle(185, 5, 50, 490)));
+			Assert.That(inner.Children[4].Frame, Is.EqualTo(new Rectangle(245, 5, 50, 490)));
 
 			Assert.That(footer.Bounds, Is.EqualTo(new Rectangle(0, 550, 300, 50)));
 		}
@@ -480,7 +482,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				FlexLayout.SetGrow(box, 1f);
 			}
 
-			Assert.That(layout.Children[2].Bounds, Is.EqualTo(new Rectangle(0, 200, 300, 100)));
+			Assert.That(layout.Children[2].Frame, Is.EqualTo(new Rectangle(0, 200, 300, 100)));
 		}
 
 		[Test]
@@ -514,8 +516,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			layout.Layout(new Rectangle(0, 0, 500, 300));
-			Assert.That(layout.Children[0].Bounds, Is.EqualTo(new Rectangle(20, 10, 100, 20)));
-			Assert.That(layout.Children[2].Bounds, Is.EqualTo(new Rectangle(380, 10, 100, 20)));
+			Assert.That(layout.Children[0].Frame, Is.EqualTo(new Rectangle(20, 10, 100, 20)));
+			Assert.That(layout.Children[2].Frame, Is.EqualTo(new Rectangle(380, 10, 100, 20)));
 		}
 	}
 }

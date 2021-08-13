@@ -35,10 +35,10 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (WrappedNativeView == null)
-				return Size.Zero;
-
 			var nativeView = WrappedNativeView;
+
+			if (nativeView == null)
+				return Size.Zero;
 
 			if (widthConstraint < 0 || heightConstraint < 0)
 				return Size.Zero;

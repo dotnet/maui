@@ -4,7 +4,7 @@
 	{
 		Font? _font;
 
-		Font ITextStyle.Font => _font ??= Font.OfSize(FontFamily, FontSize).WithAttributes(FontAttributes);
+		Font ITextStyle.Font => _font ??= this.ToFont();
 
 		int IItemDelegate<string>.GetCount() => Items?.Count ?? ItemsSource?.Count ?? 0;
 

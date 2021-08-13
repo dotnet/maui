@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public static class ViewExtensions
+	public static partial class ViewExtensions
 	{
 		const string BackgroundLayerName = "MauiBackgroundLayer";
 
@@ -119,26 +119,6 @@ namespace Microsoft.Maui
 				wrapper.Clip = view.Clip;
 		}
 
-		public static void UpdateSemantics(this UIView nativeView, IView view)
-		{
-			var semantics = view.Semantics;
-
-			if (semantics == null)
-				return;
-
-			nativeView.AccessibilityLabel = semantics.Description;
-			nativeView.AccessibilityHint = semantics.Hint;
-
-			// UIControl elements automatically have IsAccessibilityElement set to true
-			if (nativeView is not UIControl && (!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description)))
-				nativeView.IsAccessibilityElement = true;
-
-			if (semantics.IsHeading)
-				nativeView.AccessibilityTraits |= UIAccessibilityTrait.Header;
-			else
-				nativeView.AccessibilityTraits &= ~UIAccessibilityTrait.Header;
-		}
-
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView
 		{
 			var queue = new Queue<UIView>();
@@ -181,6 +161,7 @@ namespace Microsoft.Maui
 		public static void InvalidateMeasure(this UIView nativeView, IView view)
 		{
 			nativeView.SetNeedsLayout();
+			nativeView.Superview.SetNeedsLayout();
 		}
 
 		public static void UpdateWidth(this UIView nativeView, IView view)

@@ -28,21 +28,21 @@ namespace Microsoft.Maui.Essentials
 			var phoneNumber = string.Empty;
 #if __ANDROID_24__
 			if (Platform.HasApiLevelN)
-				phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.GetDefault(Java.Util.Locale.Category.Format).Country);
+				phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.GetDefault(Java.Util.Locale.Category.Format).Country) ?? phoneNumber;
 			else if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
 #else
 			if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
 #endif
 
-				phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.Default.Country);
+				phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.Default.Country) ?? phoneNumber;
 			else
 #pragma warning disable CS0618
-				phoneNumber = PhoneNumberUtils.FormatNumber(number);
+				phoneNumber = PhoneNumberUtils.FormatNumber(number) ?? phoneNumber;
 #pragma warning restore CS0618
 
 			// if we are an extension then we need to encode
 			if (phoneNumber.Contains(',') || phoneNumber.Contains(';'))
-				phoneNumber = URLEncoder.Encode(phoneNumber, "UTF-8");
+				phoneNumber = URLEncoder.Encode(phoneNumber, "UTF-8") ?? phoneNumber;
 
 			var dialIntent = ResolveDialIntent(phoneNumber);
 

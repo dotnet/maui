@@ -4,15 +4,17 @@ using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
-using Microsoft.Maui.Controls.ControlGallery.Issues;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(Issue5724.CustomButton), typeof(CustomButtonRenderer5724))]
 namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public class CustomButtonRenderer5724 :
 #if !LEGACY_RENDERERS
-		Platform.Android.FastRenderers.ButtonRenderer
+		Compatibility.Platform.Android.FastRenderers.ButtonRenderer
 #else
 		ButtonRenderer
 #endif
@@ -21,7 +23,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Android
 		{
 		}
 
-		protected override void OnElementChanged(Platform.Android.ElementChangedEventArgs<Button> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<Button> e)
 		{
 			base.OnElementChanged(e);
 		}
@@ -33,7 +35,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Android
 
 	public class CustomImageRenderer5724 :
 #if !LEGACY_RENDERERS
-		Platform.Android.FastRenderers.ImageRenderer
+		Compatibility.Platform.Android.FastRenderers.ImageRenderer
 #else
 		ImageRenderer
 #endif
@@ -42,7 +44,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Android
 		{
 		}
 
-		protected override void OnElementChanged(Platform.Android.ElementChangedEventArgs<Image> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<Image> e)
 		{
 			base.OnElementChanged(e);
 		}
@@ -54,7 +56,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Android
 
 	public class CustomFrameRenderer5724 :
 #if !LEGACY_RENDERERS
-		Platform.Android.FastRenderers.FrameRenderer
+		Compatibility.Platform.Android.FastRenderers.FrameRenderer
 #else
 		FrameRenderer
 #endif
@@ -63,7 +65,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Android
 		{
 		}
 
-		protected override void OnElementChanged(Platform.Android.ElementChangedEventArgs<Frame> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)
 		{
 			base.OnElementChanged(e);
 		}
@@ -77,7 +79,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Android
 
 	public class CustomLabelRenderer5724 :
 #if !LEGACY_RENDERERS
-		Platform.Android.FastRenderers.LabelRenderer
+		Compatibility.Platform.Android.FastRenderers.LabelRenderer
 #else
 		LabelRenderer
 #endif
@@ -86,7 +88,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Android
 		{
 		}
 
-		protected override void OnElementChanged(Platform.Android.ElementChangedEventArgs<Label> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<Label> e)
 		{
 			base.OnElementChanged(e);
 		}

@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "Maui.Controls.Sample.WinUI": {
+      "commandName": "MsixPackage"
+    }
+  }
+}

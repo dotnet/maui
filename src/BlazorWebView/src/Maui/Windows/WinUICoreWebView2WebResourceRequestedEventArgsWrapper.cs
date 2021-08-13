@@ -25,15 +25,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		public CoreWebView2WebResourceContextWrapper ResourceContext { get; }
 
-		public void SetResponse(Stream content, int statusCode, string statusMessage, string headerString)
+		public void SetResponse(IRandomAccessStream content, int statusCode, string statusMessage, string headerString)
 		{
-			// NOTE: This is stream copying is to work around a hanging bug in WinRT with managed streams
-			var memStream = new MemoryStream();
-			content.CopyTo(memStream);
-			var ms = new InMemoryRandomAccessStream();
-			ms.WriteAsync(memStream.GetWindowsRuntimeBuffer()).AsTask().Wait();
-
-			_webResourceRequestedEventArgs.Response = _environment.CreateWebResourceResponse(ms, statusCode, statusMessage, headerString);
+			_webResourceRequestedEventArgs.Response = _environment.CreateWebResourceResponse(content, statusCode, statusMessage, headerString);
 		}
 	}
 }

@@ -26,10 +26,24 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			return view;
 		}
 
-		public static void AddChildren(ILayout layout, params IView[] views)
+		public static void SubstituteChildren(ILayout layout, params IView[] views)
 		{
 			var children = new List<IView>(views);
-			layout.Children.Returns(children.AsReadOnly());
+
+			SubstituteChildren(layout, children);
+		}
+
+		public static void SubstituteChildren(ILayout layout, IList<IView> children)
+		{
+			layout[Arg.Any<int>()].Returns(args => children[(int)args[0]]);
+			layout.GetEnumerator().Returns(children.GetEnumerator());
+			layout.Count.Returns(children.Count);
+		}
+
+		public static void AssertArranged(IView view, double x, double y, double width, double height)
+		{
+			var expected = new Rectangle(x, y, width, height);
+			view.Received().Arrange(Arg.Is(expected));
 		}
 	}
 }

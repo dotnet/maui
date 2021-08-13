@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using Microsoft.Maui.Layouts;
 
-// This is a temporary namespace until we rename everything and move the legacy layouts
-namespace Microsoft.Maui.Controls.Layout2
+namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Children))]
 	public class GridLayout : Layout, IGridLayout
@@ -13,7 +10,7 @@ namespace Microsoft.Maui.Controls.Layout2
 		readonly Dictionary<IView, GridInfo> _viewInfo = new();
 
 		public static readonly BindableProperty ColumnDefinitionsProperty = BindableProperty.Create("ColumnDefinitions",
-			typeof(ColumnDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
+			typeof(ColumnDefinitionCollection), typeof(GridLayout), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
 			{
 				var colDef = new ColumnDefinitionCollection();
@@ -22,7 +19,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			});
 
 		public static readonly BindableProperty RowDefinitionsProperty = BindableProperty.Create("RowDefinitions",
-			typeof(RowDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
+			typeof(RowDefinitionCollection), typeof(GridLayout), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
 			{
 				var rowDef = new RowDefinitionCollection();
@@ -97,14 +94,14 @@ namespace Microsoft.Maui.Controls.Layout2
 		IReadOnlyList<IGridRowDefinition> IGridLayout.RowDefinitions => _rowDefs ??= new(RowDefinitions);
 		IReadOnlyList<IGridColumnDefinition> IGridLayout.ColumnDefinitions => _colDefs ??= new(ColumnDefinitions);
 
-		[TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
 		public ColumnDefinitionCollection ColumnDefinitions
 		{
 			get { return (ColumnDefinitionCollection)GetValue(ColumnDefinitionsProperty); }
 			set { SetValue(ColumnDefinitionsProperty, value); }
 		}
 
-		[TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
 		public RowDefinitionCollection RowDefinitions
 		{
 			get { return (RowDefinitionCollection)GetValue(RowDefinitionsProperty); }
@@ -231,10 +228,43 @@ namespace Microsoft.Maui.Controls.Layout2
 			}
 		}
 
-		public override void Remove(IView child)
+		internal void Add(IView view, int left, int top)
+		{
+			if (view == null)
+				throw new ArgumentNullException(nameof(view));
+			if (left < 0)
+				throw new ArgumentOutOfRangeException(nameof(left));
+			if (top < 0)
+				throw new ArgumentOutOfRangeException(nameof(top));
+
+			Add(view, left, left + 1, top, top + 1);
+		}
+
+		internal void Add(IView view, int left, int right, int top, int bottom)
+		{
+			if (view == null)
+				throw new ArgumentNullException(nameof(view));
+			if (left < 0)
+				throw new ArgumentOutOfRangeException(nameof(left));
+			if (top < 0)
+				throw new ArgumentOutOfRangeException(nameof(top));
+			if (left >= right)
+				throw new ArgumentOutOfRangeException(nameof(right));
+			if (top >= bottom)
+				throw new ArgumentOutOfRangeException(nameof(bottom));
+
+			SetRow(view, top);
+			SetRowSpan(view, bottom - top);
+			SetColumn(view, left);
+			SetColumnSpan(view, right - left);
+
+			Add(view);
+		}
+
+		public override bool Remove(IView child)
 		{
 			_viewInfo.Remove(child);
-			base.Remove(child);
+			return base.Remove(child);
 		}
 
 		protected override ILayoutManager CreateLayoutManager() => new GridLayoutManager(this);

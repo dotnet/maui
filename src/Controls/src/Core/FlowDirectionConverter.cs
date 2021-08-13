@@ -1,8 +1,10 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	[TypeConverter(typeof(FlowDirectionConverter))]
+	[System.ComponentModel.TypeConverter(typeof(FlowDirectionConverter))]
 	public enum FlowDirection
 	{
 		MatchParent = 0,
@@ -13,26 +15,34 @@ namespace Microsoft.Maui.Controls
 	[Xaml.TypeConversion(typeof(FlowDirection))]
 	public class FlowDirectionConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+
+			if (strValue != null)
 			{
-				if (Enum.TryParse(value, out FlowDirection direction))
+				if (Enum.TryParse(strValue, out FlowDirection direction))
 					return direction;
 
-				if (value.Equals("ltr", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("ltr", StringComparison.OrdinalIgnoreCase))
 					return FlowDirection.LeftToRight;
-				if (value.Equals("rtl", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("rtl", StringComparison.OrdinalIgnoreCase))
 					return FlowDirection.RightToLeft;
-				if (value.Equals("inherit", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("inherit", StringComparison.OrdinalIgnoreCase))
 					return FlowDirection.MatchParent;
 			}
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(FlowDirection)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(FlowDirection)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is FlowDirection direction))
+			if (value is not FlowDirection direction)
 				throw new NotSupportedException();
 			return direction.ToString();
 		}

@@ -43,7 +43,6 @@ string testResultsDirectory = EnvironmentVariable("TestResultsDirectory", $"{art
 string workingDirectory = EnvironmentVariable("SYSTEM_DEFAULTWORKINGDIRECTORY", ".");
 string envProgramFiles = EnvironmentVariable("ProgramFiles(x86)");
 var configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
-var msbuildPath = GetBuildVariable("msbuild", $"{envProgramFiles}\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin\\MSBuild.exe");
 
 var target = Argument("target", "Default");
 if(String.IsNullOrWhiteSpace(target))
@@ -76,9 +75,8 @@ var BUILD_TASKS_PROJ ="Microsoft.Maui.BuildTasks.sln";
 
 var XamarinFormsVersion = Argument("XamarinFormsVersion", "");
 var packageVersion = GetBuildVariable("packageVersion", "0.1.0-p2");
-var releaseChannelArg = Argument("CHANNEL", "Stable");
-releaseChannelArg = EnvironmentVariable("CHANNEL") ?? releaseChannelArg;
-var teamProject = Argument("TeamProject", "");
+var releaseChannelArg = GetBuildVariable("CHANNEL", "Stable");
+var teamProject = GetBuildVariable("TeamProject", GetBuildVariable("SYSTEM_TEAMPROJECT", ""));
 bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.StartsWith("Hosted Agent");
 
 var MAUI_SLN = "./Microsoft.Maui.sln";
@@ -96,6 +94,7 @@ NUNIT_TEST_WHERE = ParseDevOpsInputs(NUNIT_TEST_WHERE);
 var ANDROID_HOME = EnvironmentVariable("ANDROID_HOME") ??
     (IsRunningOnWindows () ? "C:\\Program Files (x86)\\Android\\android-sdk\\" : "");
 
+string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string MSBuildArgumentsENV = EnvironmentVariable("MSBuildArguments", "");
 string MSBuildArgumentsARGS = Argument("MSBuildArguments", "");
 string MSBuildArguments;
@@ -168,7 +167,7 @@ Information ("artifactStagingDirectory: {0}", artifactStagingDirectory);
 Information("workingDirectory: {0}", workingDirectory);
 Information("NUNIT_TEST_WHERE: {0}", NUNIT_TEST_WHERE);
 Information("TARGET: {0}", target);
-Information("MSBUILD: {0}", msbuildPath);
+Information("MSBUILD: {0}", MSBuildExe);
 
 
 var releaseChannel = ReleaseChannel.Stable;
