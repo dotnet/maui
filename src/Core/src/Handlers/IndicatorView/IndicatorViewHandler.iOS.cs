@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override void NativeArrange(Rectangle rect)
 		{
-			//base.NativeArrange(rect);
+			base.NativeArrange(rect);
 			if (UIPager != null)
 				UIPager.Frame = new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
 			//UIPager?.LayoutSubviews();
