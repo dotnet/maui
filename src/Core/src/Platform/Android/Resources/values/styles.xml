@@ -30,9 +30,6 @@
     <style name="MauiMaterialButton" parent="Widget.MaterialComponents.Button.Icon">
       <item name="android:insetTop">0dp</item>
       <item name="android:insetBottom">0dp</item>
-      <item name="android:minHeight">36dp</item>
-      <item name="android:paddingTop">8dp</item>
-      <item name="android:paddingBottom">8dp</item>
     </style>
   
   <!-- 
