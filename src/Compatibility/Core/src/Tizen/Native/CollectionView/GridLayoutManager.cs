@@ -111,8 +111,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native
 
 		int ItemSpacing => IsHorizontal ? HorizontalItemSpacing : VerticalItemSpacing;
 
-		int ItemWidthConstraint => IsHorizontal ? _allocatedSize.Width * 100 : ColumnSize;
-		int ItemHeightConstraint => IsHorizontal ? ColumnSize : _allocatedSize.Height * 100;
+		// It is a rule, if you want to fit with a content natural size, constraint should be infinity
+		int ItemWidthConstraint => IsHorizontal ? int.MaxValue : ColumnSize;
+		int ItemHeightConstraint => IsHorizontal ? ColumnSize : int.MaxValue;
 
 		int ColumnSize
 		{

@@ -1,6 +1,5 @@
 ﻿using System;
 using ElmSharp;
-using Tizen.UIExtensions.Common;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -37,6 +36,11 @@ namespace Microsoft.Maui.Handlers
 
 			view.Show();
 			return view;
+		}
+
+		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			return VirtualView.LayoutManager.Measure(widthConstraint, heightConstraint);
 		}
 
 		public override void SetVirtualView(IView view)

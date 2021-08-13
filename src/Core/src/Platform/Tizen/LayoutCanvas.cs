@@ -2,9 +2,9 @@
 using ElmSharp;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
-using TSize = Tizen.UIExtensions.Common.Size;
-using Size = Microsoft.Maui.Graphics.Size;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
+using Size = Microsoft.Maui.Graphics.Size;
+using TSize = Tizen.UIExtensions.Common.Size;
 
 namespace Microsoft.Maui
 {
@@ -37,8 +37,8 @@ namespace Microsoft.Maui
 
 			if (nativeGeometry.Width > 0 && nativeGeometry.Height > 0)
 			{
-				nativeGeometry.X = _virtualView.Frame.X;
-				nativeGeometry.Y = _virtualView.Frame.Y;
+				nativeGeometry.X = 0;
+				nativeGeometry.Y = 0;
 				CrossPlatformMeasure!(nativeGeometry.Width, nativeGeometry.Height);
 				CrossPlatformArrange!(nativeGeometry);
 			}
