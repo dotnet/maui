@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public void Clear() 
+		public void Clear()
 		{
 			NativeView?.RemoveAllViews();
 		}
