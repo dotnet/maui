@@ -69,19 +69,21 @@ namespace Microsoft.Maui
 			if (button.ImageSource != null && button is IButtonContentLayout bcl)
 			{
 				if (bcl.ContentLayout.IsHorizontal())
-					spacingHorizontal = bcl.ContentLayout.Spacing;
-				else if (bcl.ContentLayout.Position == ButtonContentLayout.ImagePosition.Top)
 				{
-					spacingVertical = bcl.ContentLayout.Spacing + 
+					spacingHorizontal = bcl.ContentLayout.Spacing;
+				}
+				else
+				{
+					spacingVertical = bcl.ContentLayout.Spacing +
 						nativeButton.GetTitleBoundingRect().Height;
 				}
 			}
 
 			nativeButton.ContentEdgeInsets = new UIEdgeInsets(
 				(float)(button.Padding.Top + spacingVertical / 2),
-				(float)(button.Padding.Left + spacingHorizontal),
+				(float)(button.Padding.Left + spacingHorizontal / 2),
 				(float)(button.Padding.Bottom + spacingVertical / 2),
-				(float)(button.Padding.Right + spacingHorizontal));
+				(float)(button.Padding.Right + spacingHorizontal / 2));
 		}
 
 		public static void UpdateContentLayout(this UIButton nativeButton, IButton button)
@@ -140,8 +142,15 @@ namespace Microsoft.Maui
 					imageInsets.Left -= invert * (buttonWidth - imageWidth) / 2;
 					imageInsets.Right += invert * (buttonWidth - imageWidth) / 2;
 
-					titleInsets.Left += invert * (imageWidth / 2 + spacing);
-					titleInsets.Right -= invert * imageWidth / 2;
+					if (layout.Position == ButtonContentLayout.ImagePosition.Right)
+						titleInsets.Left += invert * (imageWidth / 2 + spacing);
+					else
+						titleInsets.Left += invert * (imageWidth / 2);
+
+					if (layout.Position == ButtonContentLayout.ImagePosition.Left)
+						titleInsets.Right -= invert * (imageWidth / 2 + spacing);
+					else
+						titleInsets.Right -= invert * (imageWidth / 2);
 				}
 			}
 
