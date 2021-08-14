@@ -45,16 +45,27 @@ namespace Microsoft.Maui
 
 		public static void UpdatePadding(this UIButton nativeButton, IButton button)
 		{
+			double spacingVertical = 0;
+			double spacingHorizontal = 0;
+
+			if (button.ImageSource != null && button is IButtonContentLayout bcl)
+			{
+				if (bcl.ContentLayout.IsHorizontal())
+					spacingHorizontal = bcl.ContentLayout.Spacing;
+				else
+					spacingVertical = bcl.ContentLayout.Spacing;
+			}
+
 			nativeButton.ContentEdgeInsets = new UIEdgeInsets(
-				(float)button.Padding.Top,
-				(float)button.Padding.Left,
-				(float)button.Padding.Bottom,
-				(float)button.Padding.Right);
+				(float)(button.Padding.Top + spacingVertical),
+				(float)(button.Padding.Left + spacingHorizontal),
+				(float)(button.Padding.Bottom + spacingVertical),
+				(float)(button.Padding.Right + spacingHorizontal));
 		}
 
 		public static void UpdateContentLayout(this UIButton nativeButton, IButton button)
 		{
-			if (nativeButton.Bounds.Width == 0 || 
+			if (nativeButton.Bounds.Width == 0 ||
 				button is not IButtonContentLayout bcl)
 			{
 				return;
@@ -123,6 +134,8 @@ namespace Microsoft.Maui
 
 			nativeButton.ImageEdgeInsets = imageInsets;
 			nativeButton.TitleEdgeInsets = titleInsets;
+
+			nativeButton.UpdatePadding(button);
 		}
 	}
 }
