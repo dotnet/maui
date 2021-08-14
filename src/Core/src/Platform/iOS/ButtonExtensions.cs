@@ -154,19 +154,19 @@ namespace Microsoft.Maui
 				}
 			}
 
+			nativeButton.UpdatePadding(button);
+
 			if (nativeButton.ImageEdgeInsets != imageInsets)
 			{
 				nativeButton.ImageEdgeInsets = imageInsets;
-				nativeButton.SetNeedsLayout();
+				nativeButton.Superview?.SetNeedsLayout();
 			}
 
 			if (nativeButton.TitleEdgeInsets != titleInsets)
 			{
 				nativeButton.TitleEdgeInsets = titleInsets;
-				nativeButton.SetNeedsLayout();
+				nativeButton.Superview?.SetNeedsLayout();
 			}
-
-			nativeButton.UpdatePadding(button);
 		}
 	}
 }
