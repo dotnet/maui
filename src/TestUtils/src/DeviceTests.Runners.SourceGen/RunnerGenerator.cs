@@ -146,7 +146,7 @@ namespace " + RootNamespace + @"
 {
 	[global::Android.App.Activity(
 		Name = """ + ApplicationId + "." + headlessActivityName + @""",
-		Theme = ""@style/Theme.AppCompat"",
+		Theme = ""@style/Theme.MaterialComponents"",
 		ConfigurationChanges =
 			global::Android.Content.PM.ConfigChanges.ScreenSize |
 			global::Android.Content.PM.ConfigChanges.Orientation |
