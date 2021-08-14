@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -61,8 +62,21 @@ namespace Microsoft.Maui.Handlers
 			{
 				NativeView.SetImage(null, UIControlState.Normal);
 			}
+
+			NativeView.UpdateContentLayout(VirtualView);
+		}
+
+		public override void NativeArrange(Rectangle rect)
+		{
+			base.NativeArrange(rect);
+			NativeView.UpdateContentLayout(VirtualView);
 		}
 		
+		public static void MapContentLayout(ButtonHandler handler, IButton button)
+		{
+			handler.NativeView.UpdateContentLayout(button);
+		}
+
 		public static void MapText(ButtonHandler handler, IButton button)
 		{
 			handler.NativeView?.UpdateText(button);

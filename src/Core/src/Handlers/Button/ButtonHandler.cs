@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IButton.Text)] = MapText,
 			[nameof(IButton.TextColor)] = MapTextColor,
 			[nameof(IButton.ImageSource)] = MapImageSource,
-#if __ANDROID__
+#if __ANDROID__ || __IOS__
 			[nameof(IButtonContentLayout.ContentLayout)] = MapContentLayout,
 #endif
 		};

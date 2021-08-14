@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Microsoft.Maui
 {
-	internal class ButtonContentLayout
+	internal struct ButtonContentLayout
 	{
 		public enum ImagePosition
 		{
@@ -26,5 +26,9 @@ namespace Microsoft.Maui
 		public double Spacing { get; }
 
 		public override string ToString() => $"Image Position = {Position}, Spacing = {Spacing}";
+
+		public bool IsHorizontal() =>
+			Position == ImagePosition.Left ||
+			Position == ImagePosition.Right;
 	}
 }
