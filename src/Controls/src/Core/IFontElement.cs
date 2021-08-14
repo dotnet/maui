@@ -22,4 +22,9 @@ namespace Microsoft.Maui.Controls.Internals
 		void OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue);
 		void OnFontChanged(Font oldValue, Font newValue);
 	}
+
+	internal interface INotifyFontChanging 
+	{
+		void FontChanging();
+	}
 }
