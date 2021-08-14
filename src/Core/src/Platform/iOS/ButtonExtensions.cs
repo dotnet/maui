@@ -1,4 +1,5 @@
 using System;
+using CoreGraphics;
 using Foundation;
 using UIKit;
 
@@ -14,7 +15,6 @@ namespace Microsoft.Maui
 
 		public static void UpdateTextColor(this UIButton nativeButton, IButton button, UIColor? buttonTextColorDefaultNormal, UIColor? buttonTextColorDefaultHighlighted, UIColor? buttonTextColorDefaultDisabled)
 		{
-
 			if (button.TextColor == null)
 			{
 				nativeButton.SetTitleColor(buttonTextColorDefaultNormal, UIControlState.Normal);
@@ -43,6 +43,24 @@ namespace Microsoft.Maui
 			nativeButton.TitleLabel.UpdateFont(textStyle, fontManager, UIFont.ButtonFontSize);
 		}
 
+		static CGRect GetTitleBoundingRect(this UIButton nativeButton)
+		{
+			if (nativeButton.CurrentAttributedTitle != null ||
+					   nativeButton.CurrentTitle != null)
+			{
+				var title =
+					   nativeButton.CurrentAttributedTitle ??
+					   new NSAttributedString(nativeButton.CurrentTitle, new UIStringAttributes { Font = nativeButton.TitleLabel.Font });
+
+				return title.GetBoundingRect(
+					nativeButton.Bounds.Size,
+					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading,
+					null);
+			}
+
+			return CGRect.Empty;
+		}
+
 		public static void UpdatePadding(this UIButton nativeButton, IButton button)
 		{
 			double spacingVertical = 0;
@@ -52,14 +70,17 @@ namespace Microsoft.Maui
 			{
 				if (bcl.ContentLayout.IsHorizontal())
 					spacingHorizontal = bcl.ContentLayout.Spacing;
-				else
-					spacingVertical = bcl.ContentLayout.Spacing;
+				else if (bcl.ContentLayout.Position == ButtonContentLayout.ImagePosition.Top)
+				{
+					spacingVertical = bcl.ContentLayout.Spacing + 
+						nativeButton.GetTitleBoundingRect().Height;
+				}
 			}
 
 			nativeButton.ContentEdgeInsets = new UIEdgeInsets(
-				(float)(button.Padding.Top + spacingVertical),
+				(float)(button.Padding.Top + spacingVertical / 2),
 				(float)(button.Padding.Left + spacingHorizontal),
-				(float)(button.Padding.Bottom + spacingVertical),
+				(float)(button.Padding.Bottom + spacingVertical / 2),
 				(float)(button.Padding.Right + spacingHorizontal));
 		}
 
@@ -84,15 +105,7 @@ namespace Microsoft.Maui
 				//       if we move the image, then we technically have more
 				//       space and will require a new layout pass.
 
-				var title =
-					nativeButton.CurrentAttributedTitle ??
-					new NSAttributedString(nativeButton.CurrentTitle, new UIStringAttributes { Font = nativeButton.TitleLabel.Font });
-
-				var titleRect = title.GetBoundingRect(
-					nativeButton.Bounds.Size,
-					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading,
-					null);
-
+				var titleRect = nativeButton.GetTitleBoundingRect();
 				var titleWidth = titleRect.Width;
 				var imageWidth = image.Size.Width;
 				var imageHeight = image.Size.Height;
@@ -132,8 +145,17 @@ namespace Microsoft.Maui
 				}
 			}
 
-			nativeButton.ImageEdgeInsets = imageInsets;
-			nativeButton.TitleEdgeInsets = titleInsets;
+			if (nativeButton.ImageEdgeInsets != imageInsets)
+			{
+				nativeButton.ImageEdgeInsets = imageInsets;
+				nativeButton.SetNeedsLayout();
+			}
+
+			if (nativeButton.TitleEdgeInsets != titleInsets)
+			{
+				nativeButton.TitleEdgeInsets = titleInsets;
+				nativeButton.SetNeedsLayout();
+			}
 
 			nativeButton.UpdatePadding(button);
 		}
