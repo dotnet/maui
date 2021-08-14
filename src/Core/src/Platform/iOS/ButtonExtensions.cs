@@ -75,8 +75,14 @@ namespace Microsoft.Maui
 				}
 				else
 				{
-					spacingVertical = bcl.ContentLayout.Spacing +
-						nativeButton.GetTitleBoundingRect().Height;
+					var imageHeight = nativeButton.ImageView.Image?.Size.Height ?? 0f;
+
+					if (imageHeight < nativeButton.Bounds.Height)
+					{
+						spacingVertical = bcl.ContentLayout.Spacing +
+							nativeButton.GetTitleBoundingRect().Height;
+					}
+					
 				}
 			}
 
@@ -102,6 +108,13 @@ namespace Microsoft.Maui
 			var spacing = (nfloat)layout.Spacing;
 
 			var image = nativeButton.CurrentImage;
+
+
+			// if the image is too large then we just position at the edge of the button
+			// depending on the position the user has picked
+			// This makes the behavior consistent with android
+			var contentMode = UIViewContentMode.Center;
+
 			if (image != null && !string.IsNullOrEmpty(nativeButton.CurrentTitle))
 			{
 				// TODO: Do not use the title label as it is not yet updated and
@@ -122,38 +135,80 @@ namespace Microsoft.Maui
 				titleInsets.Left -= imageWidth / 2;
 				titleInsets.Right += imageWidth / 2;
 
-				if (layout.Position == ButtonContentLayout.ImagePosition.Top ||
-					layout.Position == ButtonContentLayout.ImagePosition.Bottom)
+				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
 				{
-					int invert = (layout.Position == ButtonContentLayout.ImagePosition.Top) ?
-						1 : -1;
+					if (imageHeight > buttonHeight)
+					{
+						contentMode = UIViewContentMode.Top;
+					}
+					else
+					{
+						imageInsets.Top -= (buttonHeight - imageHeight) / 2;
+						imageInsets.Bottom += (buttonHeight - imageHeight) / 2;
 
-					imageInsets.Top -= invert * (buttonHeight - imageHeight) / 2;
-					imageInsets.Bottom += invert * (buttonHeight - imageHeight) / 2;
-
-					titleInsets.Top += invert * (imageHeight / 2 + spacing);
-					titleInsets.Bottom -= invert * imageHeight / 2;
+						titleInsets.Top += (imageHeight / 2 + spacing);
+						titleInsets.Bottom -= imageHeight / 2;
+					}
 				}
-				else if (layout.Position == ButtonContentLayout.ImagePosition.Left ||
-					layout.Position == ButtonContentLayout.ImagePosition.Right)
+				else if (layout.Position == ButtonContentLayout.ImagePosition.Bottom)
 				{
-					int invert = (layout.Position == ButtonContentLayout.ImagePosition.Left) ?
-						1 : -1;
-
-					imageInsets.Left -= invert * (buttonWidth - imageWidth) / 2;
-					imageInsets.Right += invert * (buttonWidth - imageWidth) / 2;
-
-					if (layout.Position == ButtonContentLayout.ImagePosition.Right)
-						titleInsets.Left += invert * (imageWidth / 2 + spacing);
+					if (imageHeight > buttonHeight)
+					{
+						contentMode = UIViewContentMode.Bottom;
+					}
 					else
-						titleInsets.Left += invert * (imageWidth / 2);
+					{
+						imageInsets.Top += (buttonHeight - imageHeight) / 2;
+						imageInsets.Bottom -= (buttonHeight - imageHeight) / 2;
+					}
 
-					if (layout.Position == ButtonContentLayout.ImagePosition.Left)
-						titleInsets.Right -= invert * (imageWidth / 2 + spacing);
+					titleInsets.Top -= (imageHeight / 2 + spacing);
+					titleInsets.Bottom += imageHeight / 2;
+				}
+				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
+				{
+					if (imageWidth > buttonWidth)
+					{
+						contentMode = UIViewContentMode.Left;
+					}
 					else
-						titleInsets.Right -= invert * (imageWidth / 2);
+					{
+						imageInsets.Left -= (buttonWidth - imageWidth) / 2;
+						imageInsets.Right += (buttonWidth - imageWidth) / 2;
+					}
+
+					titleInsets.Left += (imageWidth / 2);
+					titleInsets.Right -= (imageWidth / 2 + spacing);
+				}
+				else if (layout.Position == ButtonContentLayout.ImagePosition.Right)
+				{
+					if (imageWidth > buttonWidth)
+					{
+						contentMode = UIViewContentMode.Right;
+					}
+					else
+					{
+						imageInsets.Left += (buttonWidth - imageWidth) / 2;
+						imageInsets.Right -= (buttonWidth - imageWidth) / 2;
+					}
+
+					titleInsets.Left -= (imageWidth / 2 + spacing);
+					titleInsets.Right += (imageWidth / 2);
 				}
 			}
+
+			nativeButton.ImageView.ContentMode = contentMode;
+
+			// This is used to match the behavior between platforms.
+			// If the image is too big then we just hide the label because
+			// the image is pushing the title out of the visible view.
+			// We can't use insets because then the title shows up outside the 
+			// bounds of the UIButton. We could set the UIButton to clip bounds
+			// but that feels like it might cause confusing side effects
+			if (contentMode == UIViewContentMode.Center)
+				nativeButton.TitleLabel.Layer.Hidden = false;
+			else
+				nativeButton.TitleLabel.Layer.Hidden = true;
 
 			nativeButton.UpdatePadding(button);
 

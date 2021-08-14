@@ -55,8 +55,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (image != null)
 			{
-				NativeView.SetImage(image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
-				NativeView.ImageView.ContentMode = UIViewContentMode.Center;
+				NativeView.SetImage(image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);				
 			}
 			else
 			{
