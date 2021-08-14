@@ -1,5 +1,6 @@
 using System;
 using Android.Content;
+using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
@@ -63,7 +64,6 @@ namespace Microsoft.Maui
 					case ButtonContentLayout.ImagePosition.Bottom:
 						materialButton.Icon = null;
 						TextViewCompat.SetCompoundDrawablesRelative(materialButton, null, null, null, icon);
-						icon?.SetBounds(0, 0, icon.IntrinsicWidth, icon.IntrinsicHeight);
 						materialButton.IconGravity = MauiMaterialButton.IconGravityBottom;
 						break;
 					case ButtonContentLayout.ImagePosition.Left:

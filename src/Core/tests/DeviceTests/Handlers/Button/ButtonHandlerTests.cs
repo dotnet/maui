@@ -62,7 +62,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(clicked);
 		}
 
-#if __ANDROID__
 		[Theory()]
 		[InlineData("red.png", "#FF0000")]
 		[InlineData("green.png", "#00FF00")]
@@ -88,6 +87,5 @@ namespace Microsoft.Maui.DeviceTests
 				await handler.NativeView.AssertContainsColor(expectedColor);
 			});
 		}
-#endif
 	}
 }

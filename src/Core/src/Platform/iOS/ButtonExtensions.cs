@@ -66,7 +66,8 @@ namespace Microsoft.Maui
 			double spacingVertical = 0;
 			double spacingHorizontal = 0;
 
-			if (button.ImageSource != null && button is IButtonContentLayout bcl)
+			if (button.ImageSource != null &&
+				button is IButtonContentLayout bcl)
 			{
 				if (bcl.ContentLayout.IsHorizontal())
 				{
@@ -156,14 +157,10 @@ namespace Microsoft.Maui
 
 			nativeButton.UpdatePadding(button);
 
-			if (nativeButton.ImageEdgeInsets != imageInsets)
+			if (nativeButton.ImageEdgeInsets != imageInsets ||
+				nativeButton.TitleEdgeInsets != titleInsets)
 			{
 				nativeButton.ImageEdgeInsets = imageInsets;
-				nativeButton.Superview?.SetNeedsLayout();
-			}
-
-			if (nativeButton.TitleEdgeInsets != titleInsets)
-			{
 				nativeButton.TitleEdgeInsets = titleInsets;
 				nativeButton.Superview?.SetNeedsLayout();
 			}
