@@ -1,21 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-
+#nullable enable
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public interface ITestListener
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="result"></param>
-        void RecordResult(TestResultViewModel result);
-    }
+	public interface ITestListener
+	{
+		void RecordResult(TestResultViewModel result);
+	}
 }

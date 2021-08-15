@@ -1,10 +1,18 @@
 ﻿using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Sample
 {
 	public class UnitTests
 	{
+		readonly ITestOutputHelper _output;
+
+		public UnitTests(ITestOutputHelper output)
+		{
+			_output = output;
+		}
+
 		[Fact]
 		public void SuccessfulTest()
 		{
@@ -29,6 +37,19 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Sample
 		public void ParameterizedTest(int number)
 		{
 			Assert.NotEqual(0, number);
+		}
+
+		[Fact]
+		public void OutputTest()
+		{
+			_output.WriteLine("This is test output.");
+		}
+
+		[Fact]
+		public void FailingOutputTest()
+		{
+			_output.WriteLine("This is test output.");
+			throw new Exception("This is meant to fail.");
 		}
 	}
 }

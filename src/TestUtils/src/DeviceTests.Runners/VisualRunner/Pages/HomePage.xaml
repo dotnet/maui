@@ -3,29 +3,64 @@
              x:Class="Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages.HomePage"
              Title="Test Runner">
 
-    <Grid RowDefinitions="*,30,120">
+    <Grid RowDefinitions="Auto,*,Auto,Auto,120" Padding="20" RowSpacing="10">
 
-        <TableView Intent="Settings" x:Name="table">
-            <TableView.Root>
-                <TableRoot>
-                    <TableSection Title="Loading Test Suites...." x:Name="root" />
-                    <TableSection>
-                        <!--<TextCell Text="Options" Command="{Binding OptionsCommand}" />-->
-                        <TextCell Text="Credits" Command="{Binding CreditsCommand}" />
-                    </TableSection>
-                </TableRoot>
-            </TableView.Root>
-        </TableView>
+        <Label Text="Test Assemblies:" FontAttributes="Bold" />
 
-        <ActivityIndicator IsRunning="{Binding IsBusy}" VerticalOptions="Start" />
+        <Grid Margin="-20,0" Grid.Row="1">
 
-        <Label Text="Diagnostic Information:" Grid.Row="1" Padding="20, 0, 20, 0" />
+            <!-- assembly list -->
+            <CollectionView x:Name="assemblyList"
+                            ItemsSource="{Binding TestAssemblies}"
+                            SelectionMode="Single"
+                            SelectionChangedCommand="{Binding NavigateToTestAssemblyCommand}"
+                            SelectionChangedCommandParameter="{Binding SelectedItem, Source={Reference assemblyList}}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <StackLayout Padding="20,10" Spacing="5">
+                            <Label Text="{Binding DisplayName}" TextColor="{Binding RunStatus, Converter={StaticResource RunStatusToColorConverter}}" />
+                            <StackLayout Orientation="Horizontal" Spacing="5">
 
-        <ScrollView Grid.Row="2" Padding="20, 10, 20, 10">
+                                <Label Text="✔" TextColor="{StaticResource VisualRunnerSuccessfulTestsColor}" />
+                                <Label Text="{Binding Passed}" TextColor="{StaticResource VisualRunnerSuccessfulTestsColor}" Margin="0,0,15,0" />
+
+                                <Label Text="⛔" TextColor="{StaticResource VisualRunnerFailedTestsColor}" />
+                                <Label Text="{Binding Failed}" TextColor="{StaticResource VisualRunnerFailedTestsColor}" Margin="0,0,15,0" />
+
+                                <Label Text="⚠" TextColor="{StaticResource VisualRunnerSkippedTestsColor}" />
+                                <Label Text="{Binding Skipped}" TextColor="{StaticResource VisualRunnerSkippedTestsColor}" Margin="0,0,15,0" />
+
+                                <Label Text="🔷" TextColor="{StaticResource VisualRunnerNotRunTestsColor}" />
+                                <Label Text="{Binding NotRun}" TextColor="{StaticResource VisualRunnerNotRunTestsColor}" />
+
+                            </StackLayout>
+                        </StackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- busy indicator -->
+            <Grid IsVisible="{Binding IsBusy}" Background="#CCFFFFFF" InputTransparent="False">
+                <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="20">
+                    <Label Text="Working..." />
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" />
+                </StackLayout>
+            </Grid>
+
+        </Grid>
+
+        <!-- additional controls -->
+        <StackLayout Orientation="Horizontal" Grid.Row="2">
+            <Button Text="Run All Tests" Command="{Binding RunEverythingCommand}" />
+            <Button Text="Credits" Command="{Binding CreditsCommand}" />
+        </StackLayout>
+
+        <!-- additional output -->
+        <Label Text="Diagnostic Information:" FontAttributes="Bold" Grid.Row="3" />
+        <ScrollView Grid.Row="4">
             <Label Text="{Binding DiagnosticMessages}" />
         </ScrollView>
 
     </Grid>
-
 
 </ContentPage>
