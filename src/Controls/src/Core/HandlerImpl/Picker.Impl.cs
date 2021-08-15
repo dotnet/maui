@@ -1,12 +1,8 @@
-﻿using Microsoft.Maui.Controls.Internals;
-
-namespace Microsoft.Maui.Controls
+﻿namespace Microsoft.Maui.Controls
 {
-	public partial class Picker : IPicker, INotifyFontChanging
+	public partial class Picker : IPicker
 	{
-		Font? _font;
-
-		Font ITextStyle.Font => _font ??= this.ToFont();
+		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
 
 		int IItemDelegate<string>.GetCount() => Items?.Count ?? ItemsSource?.Count ?? 0;
 
@@ -19,12 +15,6 @@ namespace Microsoft.Maui.Controls
 			if (index < ItemsSource?.Count)
 				return GetDisplayMember(ItemsSource[index]);
 			return "";
-		}
-
-		void INotifyFontChanging.FontChanging()
-		{
-			// Null out the Maui font value so it will be recreated next time it's accessed
-			_font = null;
 		}
 	}
 }

@@ -1,22 +1,12 @@
-﻿using Microsoft.Maui.Controls.Internals;
-
-namespace Microsoft.Maui.Controls
+﻿namespace Microsoft.Maui.Controls
 {
-	public partial class Entry : IEntry, INotifyFontChanging
+	public partial class Entry : IEntry
 	{
-		Font? _font;
-
-		Font ITextStyle.Font => _font ??= this.ToFont();
+		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
 
 		void IEntry.Completed()
 		{
 			(this as IEntryController).SendCompleted();
-		}
-
-		void INotifyFontChanging.FontChanging()
-		{
-			// Null out the Maui font value so it will be recreated next time it's accessed
-			_font = null;
 		}
 	}
 }

@@ -1,8 +1,6 @@
-using Microsoft.Maui.Controls.Internals;
-
 namespace Microsoft.Maui.Controls
 {
-	public partial class Button : IButton, INotifyFontChanging
+	public partial class Button : IButton
 	{
 		void IButton.Clicked()
 		{
@@ -19,14 +17,6 @@ namespace Microsoft.Maui.Controls
 			(this as IButtonController).SendReleased();
 		}
 
-		Font? _font;
-
-		Font ITextStyle.Font => _font ??= this.ToFont();
-
-		void INotifyFontChanging.FontChanging()
-		{
-			// Null out the Maui font value so it will be recreated next time it's accessed
-			_font = null;
-		}
+		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
 	}
 }

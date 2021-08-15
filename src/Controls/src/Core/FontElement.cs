@@ -6,23 +6,19 @@ namespace Microsoft.Maui.Controls
 	{
 		public static readonly BindableProperty FontProperty =
 			BindableProperty.Create("Font", typeof(Font), typeof(IFontElement), default(Font),
-									propertyChanging: OnFontChanging,
 									propertyChanged: OnFontPropertyChanged);
 
 		public static readonly BindableProperty FontFamilyProperty =
 			BindableProperty.Create("FontFamily", typeof(string), typeof(IFontElement), default(string),
-									propertyChanging: OnFontChanging,
 									propertyChanged: OnFontFamilyChanged);
 
 		public static readonly BindableProperty FontSizeProperty =
 			BindableProperty.Create("FontSize", typeof(double), typeof(IFontElement), -1.0,
-									propertyChanging: OnFontChanging,
 									propertyChanged: OnFontSizeChanged,
 									defaultValueCreator: FontSizeDefaultValueCreator);
 
 		public static readonly BindableProperty FontAttributesProperty =
 			BindableProperty.Create("FontAttributes", typeof(FontAttributes), typeof(IFontElement), FontAttributes.None,
-									propertyChanging: OnFontChanging,
 									propertyChanged: OnFontAttributesChanged);
 
 		static readonly BindableProperty CancelEventsProperty =
@@ -30,7 +26,6 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAutoScalingEnabledProperty =
 			BindableProperty.Create("FontAutoScalingEnabled", typeof(bool), typeof(IFontElement), true,
-									propertyChanging: OnFontChanging,
 									propertyChanged: OnFontAutoScalingEnabledChanged);
 
 		static bool GetCancelEvents(BindableObject bindable) => (bool)bindable.GetValue(CancelEventsProperty);
@@ -114,14 +109,6 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			((IFontElement)bindable).OnFontAutoScalingEnabledChanged((bool)oldValue, (bool)newValue);
-		}
-
-		static void OnFontChanging(BindableObject bindable, object oldValue, object newValue) 
-		{
-			if (bindable is INotifyFontChanging element)
-			{
-				element.FontChanging();
-			}
 		}
 	}
 }
