@@ -33,6 +33,9 @@
                 FontSize="32"
                 HorizontalOptions="CenterAndExpand" />
 
+
+            <Label TextType="Html" x:Name="HTMLLabel"/>
+
             <Label Text="Welcome to .NET Multi-platform App UI"
                 Grid.Row="1"
                 SemanticProperties.Hint="Counts the number of times you click"

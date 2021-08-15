@@ -1,12 +1,15 @@
 ﻿using Microsoft.Maui;
 using Controls.Core.Platform.iOS.Extensions;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class LabelHandler : Maui.Handlers.LabelHandler
+	public static partial class ControlsLabelMappings 
 	{
-		public static void MapTextType(LabelHandler handler, Label label)
+		public static void MapTextType(LabelHandler handler, ILabel label)
 		{
+			// We could conceivably make this work by casting label to Label,
+			// but that seems gross
 			handler.NativeView?.UpdateText(label);
 		}
 

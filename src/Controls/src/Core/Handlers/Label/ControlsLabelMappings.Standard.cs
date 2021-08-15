@@ -7,7 +7,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class LabelHandler : Microsoft.Maui.Handlers.LabelHandler
+	public static partial class ControlsLabelMappings
 	{
 		public static void MapTextType(LabelHandler handler, Label label) { }
 		public static void MapText(LabelHandler handler, Label label) { }

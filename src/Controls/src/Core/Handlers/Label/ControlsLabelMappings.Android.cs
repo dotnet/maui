@@ -1,8 +1,9 @@
-﻿using static Controls.Core.Platform.Android.Extensions.TextViewExtensions;
+﻿using Microsoft.Maui.Handlers;
+using static Controls.Core.Platform.Android.Extensions.TextViewExtensions;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class LabelHandler : Microsoft.Maui.Handlers.LabelHandler
+	public static partial class ControlsLabelMappings
 	{
 		public static void MapTextType(LabelHandler handler, Label label)
 		{
