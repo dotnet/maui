@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public static partial class ControlsLabelMappings 
 	{
-		public static void MapTextType(LabelHandler handler, ILabel label)
+		public static void MapTextType(LabelHandler handler, Label label)
 		{
 			// We could conceivably make this work by casting label to Label,
 			// but that seems gross

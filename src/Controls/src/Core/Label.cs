@@ -383,11 +383,11 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
-		public static void RemapForControls() 
+		public static void RemapForControls()
 		{
 			// Full Replacement
 
-			PropertyMapper<Label, LabelHandler> ControlsLabelMapper = new(LabelHandler.LabelMapper)
+			IPropertyMapper<ILabel, LabelHandler> ControlsLabelMapper = new PropertyMapper<Label, LabelHandler>(LabelHandler.LabelMapper)
 			{
 				[nameof(Label.TextType)] = Handlers.ControlsLabelMappings.MapTextType,
 				[nameof(Label.Text)] = Handlers.ControlsLabelMappings.MapText,
@@ -403,9 +403,8 @@ namespace Microsoft.Maui.Controls
 			// Doesn't work because the generic types don't match
 			LabelHandler.LabelMapper = ControlsLabelMapper;
 
-
-			// Or individual method remapping, same problem
-			LabelHandler.LabelMapper[nameof(Label.TextType)] = Handlers.ControlsLabelMappings.MapTextType;
+			//// Or individual method remapping, same problem
+			//LabelHandler.LabelMapper[nameof(Label.TextType)] = Handlers.ControlsLabelMappings.MapTextType;
 		}
 	}
 }
