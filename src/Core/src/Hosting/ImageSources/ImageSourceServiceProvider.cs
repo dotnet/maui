@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Hosting
 
 		public IServiceProvider HostServiceProvider { get; }
 
-		public IImageSourceService? GetImageSourceService(Type imageSource) => 
+		public IImageSourceService? GetImageSourceService(Type imageSource) =>
 			(IImageSourceService?)GetService(GetImageSourceServiceType(imageSource));
 
 		public Type GetImageSourceServiceType(Type imageSource) =>
