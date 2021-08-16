@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -381,30 +380,6 @@ namespace Microsoft.Maui.Controls
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
 		{
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		}
-
-		public static void RemapForControls()
-		{
-			// Full Replacement
-
-			IPropertyMapper<ILabel, LabelHandler> ControlsLabelMapper = new PropertyMapper<Label, LabelHandler>(LabelHandler.LabelMapper)
-			{
-				[nameof(Label.TextType)] = Handlers.ControlsLabelMappings.MapTextType,
-				[nameof(Label.Text)] = Handlers.ControlsLabelMappings.MapText,
-#if __IOS__
-				[nameof(Label.TextDecorations)] = Handlers.ControlsLabelMappings.MapTextDecorations,
-				[nameof(Label.CharacterSpacing)] = Handlers.ControlsLabelMappings.MapCharacterSpacing,
-				[nameof(Label.LineHeight)] = Handlers.ControlsLabelMappings.MapLineHeight,
-				[nameof(ILabel.Font)] = Handlers.ControlsLabelMappings.MapFont,
-				[nameof(Label.TextColor)] = Handlers.ControlsLabelMappings.MapTextColor
-#endif
-			};
-
-			// Doesn't work because the generic types don't match
-			LabelHandler.LabelMapper = ControlsLabelMapper;
-
-			//// Or individual method remapping, same problem
-			//LabelHandler.LabelMapper[nameof(Label.TextType)] = Handlers.ControlsLabelMappings.MapTextType;
 		}
 	}
 }
