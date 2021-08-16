@@ -22,11 +22,19 @@ namespace Microsoft.Maui.Hosting
 
 		public IServiceProvider HostServiceProvider { get; }
 
-		public IImageSourceService? GetImageSourceService(Type imageSource) =>
+		public IImageSourceService? GetImageSourceService(Type imageSource) => 
 			(IImageSourceService?)GetService(GetImageSourceServiceType(imageSource));
 
 		public Type GetImageSourceServiceType(Type imageSource) =>
-			_serviceCache.GetOrAdd(imageSource, type => ImageSourceServiceType.MakeGenericType(GetImageSourceType(type)));
+			_serviceCache.GetOrAdd(imageSource, type =>
+			{
+				var genericConcreteType = ImageSourceServiceType.MakeGenericType(type);
+
+				if (genericConcreteType != null && GetServiceDescriptor(genericConcreteType) != null)
+					return genericConcreteType;
+
+				return ImageSourceServiceType.MakeGenericType(GetImageSourceType(type));
+			});
 
 		public Type GetImageSourceType(Type imageSource) =>
 			_imageSourceCache.GetOrAdd(imageSource, CreateImageSourceTypeCacheEntry);
