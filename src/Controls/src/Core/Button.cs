@@ -256,7 +256,6 @@ namespace Microsoft.Maui.Controls
 
 		void HandleFontChanged()
 		{
-			_font = null;
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
