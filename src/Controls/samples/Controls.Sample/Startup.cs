@@ -27,7 +27,7 @@ namespace Maui.Controls.Sample
 	public class Startup : IStartup
 	{
 		enum PageType { Main, Blazor, Shell, Template }
-		readonly PageType _pageType = PageType.Template;
+		readonly PageType _pageType = PageType.Main;
 
 		public void Configure(IAppHostBuilder appBuilder)
 		{

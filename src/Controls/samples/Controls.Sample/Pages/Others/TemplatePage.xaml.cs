@@ -7,8 +7,6 @@ namespace Maui.Controls.Sample.Pages
 		public TemplatePage()
 		{
 			InitializeComponent();
-
-			HTMLLabel.Text = "<h1>Test</h1><p style=\"color:red\">red</p>";
 		}
 
 		int count = 0;
