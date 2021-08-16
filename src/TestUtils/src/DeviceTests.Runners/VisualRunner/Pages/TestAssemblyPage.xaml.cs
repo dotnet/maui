@@ -3,9 +3,9 @@ using Microsoft.Maui.Controls;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 {
-	partial class HomePage : ContentPage
+	partial class TestAssemblyPage : ContentPage
 	{
-		public HomePage()
+		public TestAssemblyPage()
 		{
 			InitializeComponent();
 		}
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 		{
 			base.OnAppearing();
 
-			assemblyList.SelectedItem = null;
+			testsList.SelectedItem = null;
 
 			if (BindingContext is ViewModelBase vm)
 				vm.OnAppearing();
