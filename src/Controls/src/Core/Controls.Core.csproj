@@ -11,11 +11,8 @@
 	<Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
 	<ItemGroup>
 		<Compile Remove="Internals\Legacy\**" />
-		<Compile Remove="obj\**" />
 		<EmbeddedResource Remove="Internals\Legacy\**" />
-		<EmbeddedResource Remove="obj\**" />
 		<None Remove="Internals\Legacy\**" />
-		<None Remove="obj\**" />
 	</ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
     <AndroidResource Include="$(AndroidRoot)Resources\Layout\bottomtablayout.axml" />
