@@ -340,6 +340,8 @@ void RunMSBuildWithLocalDotNet(string sln, Dictionary<string, string> properties
         {
             ToolPath = dotnetPath,
             MSBuildSettings = msbuildSettings,
+            DiagnosticOutput = true,
+            Verbosity = DotNetCoreVerbosity.Diagnostic
         };
 
         DotNetCoreBuild(sln, dotnetBuildSettings);

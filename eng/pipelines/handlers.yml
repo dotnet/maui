@@ -221,8 +221,9 @@ stages:
                 displayName: Move the downloaded artifacts
               - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
-              - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+              - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic  | Out-File -FilePath $(Build.ArtifactStagingDirectory)/SamplesBuild.txt
                 displayName: 'Build .NET 6 Samples'
+                timeoutInMinutes: 12
               - task: PublishBuildArtifacts@1
                 condition: always()
                 displayName: publish artifacts
