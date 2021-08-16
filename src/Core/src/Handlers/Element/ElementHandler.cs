@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == view)
 				return;
 
-			if (VirtualView?.Handler != null && VirtualView.Handler != this)
+			if (VirtualView?.Handler != null && VirtualView.Handler == this)
 				VirtualView.Handler = null;
 
 			bool setupNativeView = VirtualView == null;
