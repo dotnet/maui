@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateLineHeight(label);
 		}
 
-		bool NeedsExactMeasure() 
+		bool NeedsExactMeasure()
 		{
 			if (VirtualView.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill
 				&& VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill)

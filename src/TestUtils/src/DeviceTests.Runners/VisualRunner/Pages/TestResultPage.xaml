@@ -4,17 +4,21 @@
              Title="Test Result">
 
     <ScrollView>
-        <StackLayout>
-            <Label Text="{Binding TestCase.DisplayName}" FontSize="14" FontAttributes="Bold" />
+        <StackLayout Spacing="10" Padding="20">
+            <Label Text="{Binding TestCase.DisplayName}" FontAttributes="Bold" />
 
-            <Frame IsVisible="{Binding HasOutput}" Padding="0,0,0,10">
-                <StackLayout>
-                    <Label Text="Test Output" />
+            <Label Text="{Binding TestCase.Message}" TextColor="{Binding TestCase.RunStatus, Converter={StaticResource RunStatusToColorConverter}}" />
+
+            <Frame IsVisible="{Binding HasOutput}" Padding="10" HasShadow="False" BorderColor="DarkGray" CornerRadius="5" Margin="0,10">
+                <StackLayout Spacing="5">
+                    <Label Text="Test Output" FontAttributes="Bold" />
                     <Label Text="{Binding Output}" />
                 </StackLayout>
             </Frame>
-            <Label Text="{Binding ErrorMessage}" />
+
+            <Label Text="{Binding ErrorMessage}" FontAttributes="Bold" />
             <Label Text="{Binding ErrorStackTrace}"/>
+
         </StackLayout>
     </ScrollView>
 
