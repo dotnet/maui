@@ -67,7 +67,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void AbsolutePositionAndSizeUsingRectangle()
+		public void AbsolutePositionAndSize()
 		{
 			var abs = CreateTestLayout();
 			var child = CreateTestView();
@@ -131,7 +131,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			child.Received().Arrange(Arg.Is<Rectangle>(r => r.X == 10 && r.Y == 20 && r.Width == 40 && r.Height == 50));
 		}
 
-
 		[InlineData(30, 40, 0.2, 0.3)]
 		[InlineData(35, 45, 0.5, 0.5)]
 		[InlineData(35, 45, 0, 0)]
@@ -184,6 +183,40 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			double expectedY = (100 - expectedHeight) * propY;
 
 			var expectedRectangle = new Rectangle(expectedX, expectedY, expectedWidth, expectedHeight);
+			child.Received().Arrange(Arg.Is(expectedRectangle));
+		}
+
+		[Theory]
+		[InlineData(0, 0, 0, 0, 40, 40)]
+		[InlineData(5, 5, 5, 5, 40, 40)]
+		[InlineData(10, 10, 0, 0, 45, 45)]
+		public void RelativePositionRespectsPadding(double left, double top, 
+			double right, double bottom, double expectedX, double expectedY)
+		{
+			double width = 20;
+			double height = 20;
+			double propX = 0.5;
+			double propY = 0.5;
+
+			var abs = CreateTestLayout();
+
+			var padding = new Thickness(left, top, right, bottom);
+			abs.Padding.Returns(padding);
+
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+
+			var childBounds = new Rectangle(propX, propY, width, height);
+
+			SetLayoutBounds(abs, child, childBounds);
+			SetLayoutFlags(abs, child, AbsoluteLayoutFlags.PositionProportional);
+
+			var manager = new AbsoluteLayoutManager(abs);
+
+			manager.Measure(100, 100);
+			manager.ArrangeChildren(new Rectangle(0, 0, 100, 100));
+
+			var expectedRectangle = new Rectangle(expectedX, expectedY, width, height);
 			child.Received().Arrange(Arg.Is(expectedRectangle));
 		}
 	}

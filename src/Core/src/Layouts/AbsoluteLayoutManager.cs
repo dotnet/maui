@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Layouts
 	{
 		public IAbsoluteLayout AbsoluteLayout { get; }
 
-		static double AutoSize = -1;
+		static readonly double AutoSize = -1;
 
 		public AbsoluteLayoutManager(IAbsoluteLayout absoluteLayout) : base(absoluteLayout)
 		{
@@ -18,9 +18,11 @@ namespace Microsoft.Maui.Layouts
 		{
 			var padding = AbsoluteLayout.Padding;
 
+			var availableWidth = widthConstraint - padding.HorizontalThickness;
+			var availableHeight = heightConstraint - padding.VerticalThickness;
+
 			double measuredHeight = 0;
 			double measuredWidth = 0;
-
 
 			for (int n = 0; n < AbsoluteLayout.Count; n++)
 			{
@@ -31,43 +33,16 @@ namespace Microsoft.Maui.Layouts
 					continue;
 				}
 
-				var measure = child.Measure(widthConstraint, heightConstraint);
+				var measure = child.Measure(availableWidth, availableHeight);
 
 				var bounds = AbsoluteLayout.GetLayoutBounds(child);
-				var width = bounds.Width;
-				var height = bounds.Height;
-
 				var flags = AbsoluteLayout.GetLayoutFlags(child);
 
-				if (flags.HasFlag(AbsoluteLayoutFlags.WidthProportional))
-				{
-					if (!double.IsInfinity(widthConstraint))
-					{
-						width *= widthConstraint;
-					}
-				}
-				else
-				{
-					if (width == -1)
-					{
-						width = measure.Width;
-					}
-				}
+				bool isWidthProportional = HasFlag(flags, AbsoluteLayoutFlags.WidthProportional);
+				bool isHeightProportional = HasFlag(flags, AbsoluteLayoutFlags.HeightProportional);
 
-				if (flags.HasFlag(AbsoluteLayoutFlags.HeightProportional))
-				{
-					if (!double.IsInfinity(heightConstraint))
-					{
-						height *= heightConstraint;
-					}
-				}
-				else
-				{
-					if (height == -1)
-					{
-						height = measure.Height;
-					}
-				}
+				var width = ResolveDimension(isWidthProportional, bounds.Width, availableWidth, measure.Width);
+				var height = ResolveDimension(isHeightProportional, bounds.Height, availableHeight, measure.Height);
 
 				measuredHeight = Math.Max(measuredHeight, bounds.Top + height);
 				measuredWidth = Math.Max(measuredWidth, bounds.Left + width);
@@ -85,8 +60,8 @@ namespace Microsoft.Maui.Layouts
 
 			double top = padding.Top + bounds.Y;
 			double left = padding.Left + bounds.X;
-			double width = bounds.Width - padding.HorizontalThickness;
-			double height = bounds.Height - padding.VerticalThickness;
+			double availableWidth = bounds.Width - padding.HorizontalThickness;
+			double availableHeight = bounds.Height - padding.VerticalThickness;
 
 			for (int n = 0; n < AbsoluteLayout.Count; n++)
 			{
@@ -100,44 +75,52 @@ namespace Microsoft.Maui.Layouts
 				var destination = AbsoluteLayout.GetLayoutBounds(child);
 				var flags = AbsoluteLayout.GetLayoutFlags(child);
 
-				if (flags.HasFlag(AbsoluteLayoutFlags.WidthProportional))
+				bool isWidthProportional = HasFlag(flags, AbsoluteLayoutFlags.WidthProportional);
+				bool isHeightProportional = HasFlag(flags, AbsoluteLayoutFlags.HeightProportional);
+
+				destination.Width = ResolveDimension(isWidthProportional, destination.Width, availableWidth, child.DesiredSize.Width);
+				destination.Height = ResolveDimension(isHeightProportional, destination.Height, availableHeight, child.DesiredSize.Height);
+
+				if (HasFlag(flags, AbsoluteLayoutFlags.XProportional))
 				{
-					destination.Width *= bounds.Width;
-				}
-				else
-				{
-					if (destination.Width == AutoSize)
-					{
-						destination.Width = child.DesiredSize.Width;
-					}
+					destination.X = (availableWidth - destination.Width) * destination.X;
 				}
 
-				if (flags.HasFlag(AbsoluteLayoutFlags.HeightProportional))
+				if (HasFlag(flags, AbsoluteLayoutFlags.YProportional))
 				{
-					destination.Height *= bounds.Height;
-				}
-				else
-				{
-					if (destination.Height == AutoSize)
-					{
-						destination.Height = child.DesiredSize.Height;
-					}
-				}
-
-				if (flags.HasFlag(AbsoluteLayoutFlags.XProportional))
-				{
-					destination.X = (bounds.Width - destination.Width) * destination.X;
-				}
-
-				if (flags.HasFlag(AbsoluteLayoutFlags.YProportional))
-				{
-					destination.Y = (bounds.Height - destination.Height) * destination.Y;
+					destination.Y = (availableHeight - destination.Height) * destination.Y;
 				}
 
 				child.Arrange(destination.Offset(left, top));
 			}
 
-			return new Size(width, height);
+			return new Size(availableWidth, availableHeight);
+		}
+
+		static bool HasFlag(AbsoluteLayoutFlags a, AbsoluteLayoutFlags b)
+		{
+			// Avoiding Enum.HasFlag here for performance reasons; we don't need the type check
+			return (a & b) == b;
+		}
+
+		static double ResolveDimension(bool isProportional, double fromBounds, double available, double measured)
+		{
+			// By default, we use the absolute value from LayoutBounds
+			var value = fromBounds;
+
+			if (isProportional && !double.IsInfinity(available))
+			{
+				// If this dimension is marked proportional, then the value is a percentage of the available space
+				// Multiple it by the available space to figure out the final value
+				value *= available;
+			}
+			else if (value == AutoSize)
+			{
+				// No absolute or proportional value specified, so we use the measured value
+				value = measured;
+			}
+
+			return value;
 		}
 	}
 }
