@@ -292,7 +292,11 @@ namespace Microsoft.Maui.Graphics.Skia
 				_shader = null;
 			}
 
-			if (paint is LinearGradientPaint linearGradientPaint)
+			if (paint is SolidPaint solidPaint)
+			{
+				FillColor = solidPaint.Color;
+			}
+			else if (paint is LinearGradientPaint linearGradientPaint)
 			{
 				float x1 = (float)(linearGradientPaint.StartPoint.X * rectangle.Width) + rectangle.X;
 				float y1 = (float)(linearGradientPaint.StartPoint.Y * rectangle.Height) + rectangle.Y;
