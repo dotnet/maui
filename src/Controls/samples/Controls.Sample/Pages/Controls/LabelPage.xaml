@@ -18,6 +18,16 @@
             <Label
                 TextColor="Red"
                 Text="TextColor"/>
+            <Label
+                Text="Custom Border"
+                Style="{StaticResource Headline}" />
+            <Label
+                Text="Label"
+                TextColor="White"
+                Background="Red"
+                BorderBrush="Orange"
+                BorderWidth="4"
+                BorderShape="12, 0, 0, 24" />
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
