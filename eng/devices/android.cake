@@ -81,7 +81,7 @@ Setup(context =>
 			else
 				DEVICE_ARCH = "arm64-v8a";
 		}
-		sdk = api >= 24 ? "google_apis_playstore" : "google_apis";
+		var sdk = api >= 24 ? "google_apis_playstore" : "google_apis";
 		DEVICE_ID = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
 
 		// we are not using a virtual device, so quit
