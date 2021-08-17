@@ -94,7 +94,7 @@ namespace Microsoft.Maui
 		public virtual IReadOnlyCollection<string> UpdateKeys =>
 			_updateKeys ?? PopulateKeys(ref _updateKeys);
 
-		IEnumerable<string> GetKeys()
+		public IEnumerable<string> GetKeys()
 		{
 			foreach (var key in _mapper.Keys)
 				yield return key;
@@ -105,8 +105,6 @@ namespace Microsoft.Maui
 					yield return key;
 			}
 		}
-
-		IEnumerable<string> IPropertyMapper.GetKeys() => _mapper.Keys;
 	}
 
 	public interface IPropertyMapper
