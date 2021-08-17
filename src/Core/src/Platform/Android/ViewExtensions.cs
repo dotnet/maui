@@ -81,6 +81,28 @@ namespace Microsoft.Maui
 			nativeView.UpdateMauiDrawable(view);
 		}
 
+		public static void UpdateBorderDashArray(this AView nativeView, IView view)
+		{
+			var borderDashArray = view.BorderDashArray;
+			MauiDrawable? background = nativeView.Background as MauiDrawable;
+
+			if (background == null && (borderDashArray == null || borderDashArray.Count == 0))
+				return;
+
+			nativeView.UpdateMauiDrawable(view);
+		}
+
+		public static void UpdateBorderDashOffset(this AView nativeView, IView view) 
+		{
+			var borderDashOffset = view.BorderDashOffset;
+			MauiDrawable? background = nativeView.Background as MauiDrawable;
+
+			if (background == null && borderDashOffset == 0)
+				return;
+
+			nativeView.UpdateMauiDrawable(view);
+		}
+
 		public static void UpdateBorderShape(this AView nativeView, IView view)
 		{
 			var borderShape = view.BorderShape;
@@ -165,6 +187,7 @@ namespace Microsoft.Maui
 			mauiDrawable.SetBackground(view.Background);
 			mauiDrawable.SetBorderBrush(view.BorderBrush);
 			mauiDrawable.SetBorderWidth(view.BorderWidth);
+			mauiDrawable.SetBorderDash(view.BorderDashArray, view.BorderDashOffset);
 			mauiDrawable.SetBorderShape(view.BorderShape);
 		}
 	}

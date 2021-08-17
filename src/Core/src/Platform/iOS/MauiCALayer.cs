@@ -4,6 +4,8 @@ using CoreGraphics;
 using UIKit;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native;
+using System.Drawing.Drawing2D;
+using System.Drawing;
 
 namespace Microsoft.Maui
 {
@@ -19,6 +21,9 @@ namespace Microsoft.Maui
 		float _borderWidth;
 		UIColor? _borderColor;
 		Paint? _border;
+
+		nfloat[]? _borderDash;
+		nfloat _borderDashOffset;
 
 		public MauiCALayer()
 		{
@@ -172,6 +177,40 @@ namespace Microsoft.Maui
 			SetNeedsDisplay();
 		}
 
+		public void SetBorderDash(DoubleCollection borderDashArray, double borderDashOffset)
+		{
+			_borderDashOffset = (float)borderDashOffset;
+
+			if (borderDashArray != null && borderDashArray.Count > 0)
+			{
+				nfloat[] dashArray;
+				double[] array;
+
+				if (borderDashArray.Count % 2 == 0)
+				{
+					array = new double[borderDashArray.Count];
+					dashArray = new nfloat[borderDashArray.Count];
+					borderDashArray.CopyTo(array, 0);
+				}
+				else
+				{
+					array = new double[2 * borderDashArray.Count];
+					dashArray = new nfloat[2 * borderDashArray.Count];
+					borderDashArray.CopyTo(array, 0);
+					borderDashArray.CopyTo(array, borderDashArray.Count);
+				}
+
+				double thickness = _borderWidth;
+
+				for (int i = 0; i < array.Length; i++)
+					dashArray[i] = new nfloat(thickness * array[i]);
+
+				_borderDash = dashArray;
+			}
+
+			SetNeedsDisplay();
+		}
+
 		CGPath? GetClipPath()
 		{
 			if (_shape != null)
@@ -200,6 +239,9 @@ namespace Microsoft.Maui
 		{
 			if (_borderWidth == 0)
 				return;
+
+			if (IsBorderDashed())
+				ctx.SetLineDash(_borderDashOffset * _borderWidth, _borderDash);
 
 			ctx.SetLineWidth(2 * _borderWidth);
 			ctx.AddPath(GetClipPath());
@@ -232,7 +274,7 @@ namespace Microsoft.Maui
 
 					for (int index = 0; index < gradientPaint.GradientStops.Length; index++)
 					{
-						Color color = gradientPaint.GradientStops[index].Color;
+						Graphics.Color color = gradientPaint.GradientStops[index].Color;
 						colors[index] = new CGColor(new nfloat(color.Red), new nfloat(color.Green), new nfloat(color.Blue), new nfloat(color.Alpha));
 						locations[index] = new nfloat(gradientPaint.GradientStops[index].Offset);
 					}
@@ -260,6 +302,11 @@ namespace Microsoft.Maui
 					}
 				}
 			}
+		}
+
+		bool IsBorderDashed()
+		{
+			return _borderDash != null && _borderDashOffset > 0;
 		}
 	}
 }

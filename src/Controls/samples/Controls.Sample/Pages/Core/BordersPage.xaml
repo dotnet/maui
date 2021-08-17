@@ -48,7 +48,6 @@
                             <x:String>Rectangle</x:String>
                             <x:String>RoundRectangle</x:String>
                             <x:String>Ellipse</x:String>
-                            <x:String>Path</x:String>
                         </x:Array>
                     </Picker.ItemsSource>
                 </Picker>
@@ -99,6 +98,15 @@
                     Minimum="0" 
                     Value="5"
                     ValueChanged="OnBorderWidthChanged" />
+                <Label 
+                    Text="{Binding Source={x:Reference BorderDashSlider}, Path=Value, StringFormat='{}Border Dash: {0}'}"
+                    Style="{StaticResource InfoStyle}" />
+                <Slider
+                    x:Name="BorderDashSlider" 
+                    Maximum="2" 
+                    Minimum="0" 
+                    Value="1"
+                    ValueChanged="OnBorderDashChanged" />
                 <StackLayout
                     x:Name="CornerRadiusLayout">
                     <Label

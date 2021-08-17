@@ -92,6 +92,16 @@ namespace Microsoft.Maui
 			// TODO: Implement Borders on Windows.
 		}
 
+		public static void UpdateBorderDashArray(this FrameworkElement nativeView, IView view)
+		{
+			// TODO: Implement Borders on Windows.
+		}
+
+		public static void UpdateBorderDashOffset(this FrameworkElement nativeView, IView view)
+		{
+			// TODO: Implement Borders on Windows.
+		}
+
 		public static void UpdateBorderShape(this FrameworkElement nativeView, IView view)
 		{
 			// TODO: Implement Borders on Windows.

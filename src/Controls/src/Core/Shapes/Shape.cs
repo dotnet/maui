@@ -154,7 +154,16 @@ namespace Microsoft.Maui.Controls.Shapes
 			var path = GetPath();
 
 #if !NETSTANDARD
-			var pathBounds = path.GetBoundsByFlattening();
+			RectangleF pathBounds = viewBounds;
+
+			try
+			{
+				pathBounds = path.GetBoundsByFlattening();
+			}
+			catch(Exception exc)
+			{
+				Internals.Log.Warning(nameof(Shape), $"Exception while getting shape Bounds: {exc}");
+			}
 
 			AffineTransform transform = null;
 

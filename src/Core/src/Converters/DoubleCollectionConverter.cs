@@ -1,9 +1,9 @@
+﻿#nullable disable
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Converters
 {
 	public class DoubleCollectionConverter : TypeConverter
 	{

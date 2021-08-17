@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			UpdateBorderShape();
 		}
-		
+
 		void OnBackgroundChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateBackground();
@@ -37,6 +37,11 @@ namespace Maui.Controls.Sample.Pages
 		}
 
 		void OnBorderWidthChanged(object sender, ValueChangedEventArgs e)
+		{
+			UpdateBorder();
+		}
+
+		void OnBorderDashChanged(object sender, ValueChangedEventArgs e)
 		{
 			UpdateBorder();
 		}
@@ -98,9 +103,6 @@ namespace Maui.Controls.Sample.Pages
 				case 2:
 					borderShape = new Ellipse();
 					break;
-				case 3:
-					borderShape = null;
-					break;
 			}
 
 			BorderView.BorderShape = borderShape;
@@ -117,6 +119,9 @@ namespace Maui.Controls.Sample.Pages
 			};
 
 			BorderView.BorderWidth = BorderWidthSlider.Value;
+
+			BorderView.BorderDashArray = new DoubleCollection { 1, 1, 1 };
+			BorderView.BorderDashOffset = BorderDashSlider.Value;
 		}
 
 		void UpdateCornerRadius()

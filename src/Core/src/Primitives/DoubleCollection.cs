@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
-using System.Linq;
+using System.ComponentModel;
+using Microsoft.Maui.Converters;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui
 {
-	[System.ComponentModel.TypeConverter(typeof(DoubleCollectionConverter))]
+	[TypeConverter(typeof(DoubleCollectionConverter))]
 	public sealed class DoubleCollection : ObservableCollection<double>
 	{
 		public DoubleCollection()

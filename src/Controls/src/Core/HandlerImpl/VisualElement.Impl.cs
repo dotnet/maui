@@ -79,6 +79,25 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(BorderWidthProperty, value);
 		}
 
+		public static readonly BindableProperty BorderDashArrayProperty = BindableProperty.Create(
+			nameof(BorderDashArray), typeof(DoubleCollection), typeof(VisualElement), null,
+				defaultValueCreator: bindable => new DoubleCollection());
+
+		public DoubleCollection BorderDashArray
+		{
+			get => (DoubleCollection)GetValue(BorderDashArrayProperty);
+			set => SetValue(BorderDashArrayProperty, value);
+		}
+
+		public static readonly BindableProperty BorderDashOffsetProperty = BindableProperty.Create(
+			nameof(BorderDashOffset), typeof(double), typeof(VisualElement), 0.0d);
+
+		public double BorderDashOffset
+		{
+			get => (double)GetValue(BorderDashOffsetProperty);
+			set => SetValue(BorderDashOffsetProperty, value);
+		}
+
 		public static readonly BindableProperty BorderShapeProperty = BindableProperty.Create(
 		   nameof(BorderShape), typeof(IShape), typeof(VisualElement), null);
 

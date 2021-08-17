@@ -21,6 +21,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Background)] = MapBackground,
 			[nameof(IView.BorderBrush)] = MapBorderBrush,
 			[nameof(IView.BorderWidth)] = MapBorderWidth,
+			[nameof(IView.BorderDashArray)] = MapBorderDashArray,
+			[nameof(IView.BorderDashOffset)] = MapBorderDashOffset,
 			[nameof(IView.BorderShape)] = MapBorderShape,
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
@@ -76,7 +78,7 @@ namespace Microsoft.Maui.Handlers
 
 		public virtual bool NeedsContainer =>
 #if WINDOWS
-			VirtualView?.BorderBrush != null || VirtualView?.BorderWidth > 0 || VirtualView?.BorderShape != null;
+			VirtualView?.BorderBrush != null || VirtualView?.BorderWidth > 0 || VirtualView?.BorderShape != null || VirtualView?.BorderDashOffset > 0;
 #else
 			VirtualView?.Clip != null;
 #endif
@@ -172,6 +174,26 @@ namespace Microsoft.Maui.Handlers
 			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateBorderWidth(view);
 #else
 			((NativeView?)handler.NativeView)?.UpdateBorderWidth(view);
+#endif
+		}
+
+		public static void MapBorderDashArray(IViewHandler handler, IView view)
+		{
+#if WINDOWS
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateBorderDashArray(view);
+#else
+			((NativeView?)handler.NativeView)?.UpdateBorderDashArray(view);
+#endif
+		}
+
+		public static void MapBorderDashOffset(IViewHandler handler, IView view)
+		{
+#if WINDOWS
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateBorderDashOffset(view);
+#else
+			((NativeView?)handler.NativeView)?.UpdateBorderDashOffset(view);
 #endif
 		}
 

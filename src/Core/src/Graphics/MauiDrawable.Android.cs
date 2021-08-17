@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Graphics
 
 		GPaint? _border;
 		AColor? _borderColor;
+		PathEffect? _borderPathEffect;
 
 		float _borderWidth;
 
@@ -208,6 +209,23 @@ namespace Microsoft.Maui.Graphics
 			InvalidateSelf();
 		}
 
+		public void SetBorderDash(DoubleCollection strokeDashArray,  double strokeDashOffset)
+		{
+			if (strokeDashArray == null || strokeDashArray.Count == 0 || strokeDashOffset <= 0)
+				_borderPathEffect = null;
+			else
+			{
+				float[] strokeDash = new float[strokeDashArray.Count];
+
+				for (int i = 0; i < strokeDashArray.Count; i++)
+					strokeDash[i] = (float)strokeDashArray[i] * _borderWidth;
+
+				_borderPathEffect = new DashPathEffect(strokeDash, (float)strokeDashOffset * _borderWidth);
+			}
+
+			InvalidateSelf();
+		}
+
 		protected override void OnBoundsChange(ARect? bounds)
 		{
 			if (bounds != null)
@@ -246,6 +264,7 @@ namespace Microsoft.Maui.Graphics
 			if (_borderPaint != null && HasBorder())
 			{
 				_borderPaint.StrokeWidth = _borderWidth;
+				_borderPaint.SetPathEffect(_borderPathEffect);
 
 				if (_borderColor != null)
 					_borderPaint.Color = _borderColor.Value;
@@ -318,6 +337,12 @@ namespace Microsoft.Maui.Graphics
 
 			if (disposing)
 			{
+				if (_borderPathEffect != null)
+				{
+					_borderPathEffect.Dispose();
+					_borderPathEffect = null;
+				}
+
 				if (_clipPath != null)
 				{
 					_clipPath.Dispose();
