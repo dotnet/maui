@@ -7,6 +7,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override ItemsViewController<TItemsView> CreateController(TItemsView itemsView, ItemsViewLayout layout)
 				=> new StructuredItemsViewController<TItemsView>(itemsView, layout);
 
+		protected override void ConnectHandler(UIView nativeView)
+		{
+			base.ConnectHandler(nativeView);
+			(Controller as StructuredItemsViewController<TItemsView>)?.UpdateHeaderView();
+			(Controller as StructuredItemsViewController<TItemsView>)?.UpdateFooterView();
+		}
+
 		protected override ItemsViewLayout SelectLayout()
 		{
 			var itemSizingStrategy = ItemsView.ItemSizingStrategy;
@@ -43,7 +50,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
-			handler.UpdateLayout();
+			handler.UpdateItemSizingStrategy();
 		}
 	}
 }
