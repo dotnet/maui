@@ -25,8 +25,9 @@ stages:
                 clean: all
               displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
               pool:
-                name: ${{ parameters.androidVmPool }}
-                vmImage: ${{ parameters.androidVmImage }}
+                # name: ${{ parameters.androidVmPool }}
+                # vmImage: ${{ parameters.androidVmImage }}
+                vmImage: macOS-latest
               variables:
                 ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
                 REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
