@@ -88,13 +88,13 @@ namespace Microsoft.Maui
 			var borderWidth = view.BorderWidth;
 			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
 
-			if (backgroundLayer == null && borderWidth == 0)
+			if (backgroundLayer == null && borderWidth <= 0)
 				return;
 
 			nativeView.UpdateMauiCALayer(view);
 		}
 
-		public static void UpdateBorderDashArray(this UIView nativeView, IView view) 
+		public static void UpdateBorderDashArray(this UIView nativeView, IView view)
 		{
 			var borderDashArray = view.BorderDashArray;
 			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
@@ -328,6 +328,6 @@ namespace Microsoft.Maui
 					break;
 				}
 			}
-		}	
+		}
 	}
 }

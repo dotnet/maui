@@ -4,8 +4,6 @@ using CoreGraphics;
 using UIKit;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native;
-using System.Drawing.Drawing2D;
-using System.Drawing;
 
 namespace Microsoft.Maui
 {
@@ -64,25 +62,24 @@ namespace Microsoft.Maui
 		{
 			if (paint is SolidPaint solidPaint)
 				SetBackground(solidPaint);
-
-			if (paint is LinearGradientPaint linearGradientPaint)
+			else if (paint is LinearGradientPaint linearGradientPaint)
 				SetBackground(linearGradientPaint);
-
-			if (paint is RadialGradientPaint radialGradientPaint)
+			else if (paint is RadialGradientPaint radialGradientPaint)
 				SetBackground(radialGradientPaint);
-
-			if (paint is ImagePaint imagePaint)
+			else if (paint is ImagePaint imagePaint)
 				SetBackground(imagePaint);
-
-			if (paint is PatternPaint patternPaint)
+			else if (paint is PatternPaint patternPaint)
 				SetBackground(patternPaint);
+			else
+				SetDefaultBackgroundColor();
 		}
 
 		public void SetBackground(SolidPaint solidPaint)
 		{
-			_backgroundColor = solidPaint.Color == null
-				? (UIColor?)null
-				: solidPaint.Color.ToNative();
+			if (solidPaint.Color == null)
+				SetDefaultBackgroundColor();
+			else
+				_backgroundColor = solidPaint.Color.ToNative();
 
 			_background = null;
 
@@ -221,6 +218,11 @@ namespace Microsoft.Maui
 			}
 
 			return null;
+		}
+
+		void SetDefaultBackgroundColor()
+		{
+			_backgroundColor = UIColor.Clear;
 		}
 
 		void DrawBackground(CGContext ctx)

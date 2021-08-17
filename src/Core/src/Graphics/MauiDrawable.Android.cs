@@ -1,10 +1,12 @@
 ﻿using System;
-using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
+using Android.Util;
+using AndroidX.Core.Content;
 using Microsoft.Maui.Graphics.Native;
 using AColor = Android.Graphics.Color;
+using AContext = Android.Content.Context;
 using ARect = Android.Graphics.Rect;
 using APaint = Android.Graphics.Paint;
 using GPaint = Microsoft.Maui.Graphics.Paint;
@@ -13,6 +15,7 @@ namespace Microsoft.Maui.Graphics
 {
 	public class MauiDrawable : PaintDrawable
 	{
+		readonly AContext? _context;
 		readonly double _density;
 
 		bool _invalidatePath;
@@ -38,7 +41,7 @@ namespace Microsoft.Maui.Graphics
 
 		float _borderWidth;
 
-		public MauiDrawable(Context? context)
+		public MauiDrawable(AContext? context)
 		{
 			Shape = new RectShape();
 
@@ -46,6 +49,7 @@ namespace Microsoft.Maui.Graphics
 
 			_clipPath = new Path();
 
+			_context = context;
 			_density = context?.Resources?.DisplayMetrics?.Density ?? 1.0f;
 		}
 
@@ -60,31 +64,31 @@ namespace Microsoft.Maui.Graphics
 		{
 			if (paint is SolidPaint solidPaint)
 				SetBackground(solidPaint);
-
-			if (paint is LinearGradientPaint linearGradientPaint)
+			else if (paint is LinearGradientPaint linearGradientPaint)
 				SetBackground(linearGradientPaint);
-
-			if (paint is RadialGradientPaint radialGradientPaint)
+			else if (paint is RadialGradientPaint radialGradientPaint)
 				SetBackground(radialGradientPaint);
-
-			if (paint is ImagePaint imagePaint)
+			else if (paint is ImagePaint imagePaint)
 				SetBackground(imagePaint);
-
-			if (paint is PatternPaint patternPaint)
+			else if (paint is PatternPaint patternPaint)
 				SetBackground(patternPaint);
+			else
+				SetDefaultBackgroundColor();
 		}
 
 		public void SetBackground(SolidPaint solidPaint)
 		{
 			_invalidatePath = true;
 			_backgroundColor = null;
-
-			var color = solidPaint.Color == null
-				? (AColor?)null
-				: solidPaint.Color.ToNative();
-
 			_background = null;
-			SetBackgroundColor(color);
+
+			if (solidPaint.Color == null)
+				SetDefaultBackgroundColor();
+			else
+			{
+				var backgroundColor = solidPaint.Color.ToNative();
+				SetBackgroundColor(backgroundColor);
+			}
 		}
 
 		public void SetBackground(LinearGradientPaint linearGradientPaint)
@@ -411,6 +415,27 @@ namespace Microsoft.Maui.Graphics
 			{
 				_borderPaint = new APaint(PaintFlags.AntiAlias);
 				_borderPaint.SetStyle(APaint.Style.Stroke);
+			}
+		}
+
+		void SetDefaultBackgroundColor()
+		{
+			using (var background = new TypedValue())
+			{
+				if (_context == null || _context.Theme == null || _context.Resources == null)
+					return;
+
+				if (_context.Theme.ResolveAttribute(global::Android.Resource.Attribute.WindowBackground, background, true))
+				{
+					var resource = _context.Resources.GetResourceTypeName(background.ResourceId);
+					var type = resource?.ToLower();
+
+					if (type == "color")
+					{
+						var color = new AColor(ContextCompat.GetColor(_context, background.ResourceId));
+						_backgroundColor = color;
+					}
+				}
 			}
 		}
 

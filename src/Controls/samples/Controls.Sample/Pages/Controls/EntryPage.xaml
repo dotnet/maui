@@ -75,13 +75,10 @@
                     Text="Custom Border"
                     Style="{StaticResource Headline}" />
                 <Entry
+                    TextColor="Green"
                     BorderBrush="Green"
-                    BorderWidth="4">
-                    <Entry.BorderShape>
-                        <RoundRectangle 
-                            CornerRadius="12, 0, 0, 12"/>
-                    </Entry.BorderShape>
-                </Entry>
+                    BorderWidth="4"
+                    BorderShape="12, 0, 0, 24" />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

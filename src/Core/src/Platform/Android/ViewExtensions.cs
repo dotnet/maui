@@ -8,6 +8,7 @@ namespace Microsoft.Maui
 	public static partial class ViewExtensions
 	{
 		const int DefaultAutomationTagId = -1;
+
 		public static int AutomationTagId { get; set; } = DefaultAutomationTagId;
 
 		public static void UpdateIsEnabled(this AView nativeView, IView view)
@@ -75,7 +76,7 @@ namespace Microsoft.Maui
 			var borderWidth = view.BorderWidth;
 			MauiDrawable? background = nativeView.Background as MauiDrawable;
 
-			if (background == null && borderWidth == 0)
+			if (background == null && borderWidth <= 0)
 				return;
 
 			nativeView.UpdateMauiDrawable(view);
