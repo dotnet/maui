@@ -128,8 +128,13 @@ stages:
                 displayName: 'Install .NET'
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
+                ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                  timeoutInMinutes: 15
+                  continueOnError: true
               - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Run Unit Tests'
+                ${{ if eq(BuildPlatform.name, 'macOS') }}:
+                  continueOnError: true
               - task: PublishTestResults@2
                 condition: always()
                 inputs:
@@ -218,6 +223,8 @@ stages:
                 displayName: 'Install .NET (Local Workloads)'
               - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET 6 Samples'
+                timeoutInMinutes: 20
+                continueOnError: true
               - task: PublishBuildArtifacts@1
                 condition: always()
                 displayName: publish artifacts

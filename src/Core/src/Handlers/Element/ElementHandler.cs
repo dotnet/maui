@@ -38,10 +38,11 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == view)
 				return;
 
-			if (VirtualView?.Handler != null && VirtualView.Handler != this)
-				VirtualView.Handler = null;
+			var oldVirtualView = VirtualView;
+			if (oldVirtualView?.Handler != null)
+				oldVirtualView.Handler = null;
 
-			bool setupNativeView = VirtualView == null;
+			bool setupNativeView = oldVirtualView == null;
 
 			VirtualView = view;
 			NativeView ??= CreateNativeElement();
