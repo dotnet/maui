@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Background)] = MapBackground,
 			[nameof(IView.BorderBrush)] = MapBorderBrush,
 			[nameof(IView.BorderWidth)] = MapBorderWidth,
-			[nameof(IView.CornerRadius)] = MapCornerRadius,
+			[nameof(IView.BorderShape)] = MapBorderShape,
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Handlers
 
 		public virtual bool NeedsContainer =>
 #if WINDOWS
-			VirtualView?.BorderBrush != null || VirtualView?.BorderWidth > 0 || VirtualView?.CornerRadius != default(CornerRadius);
+			VirtualView?.BorderBrush != null || VirtualView?.BorderWidth > 0 || VirtualView?.BorderShape != null;
 #else
 			VirtualView?.Clip != null;
 #endif
@@ -175,13 +175,13 @@ namespace Microsoft.Maui.Handlers
 #endif
 		}
 
-		public static void MapCornerRadius(IViewHandler handler, IView view)
+		public static void MapBorderShape(IViewHandler handler, IView view)
 		{
 #if WINDOWS
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateCornerRadius(view);
+			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateBorderShape(view);
 #else
-			((NativeView?)handler.NativeView)?.UpdateCornerRadius(view);
+			((NativeView?)handler.NativeView)?.UpdateBorderShape(view);
 #endif
 		}
 

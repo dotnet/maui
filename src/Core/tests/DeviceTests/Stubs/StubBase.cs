@@ -28,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public double BorderWidth { get; set; }
 
-		public CornerRadius CornerRadius { get; set; }
+		public IShape BorderShape { get; set; }
 
 		public Rectangle Frame { get; set; }
 

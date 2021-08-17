@@ -24,70 +24,34 @@
             Orientation="Horizontal"
             HorizontalScrollBarVisibility="Default"
             VerticalScrollBarVisibility="Never">
-            <StackLayout
-                Orientation="Horizontal"
+            <Grid
                 Padding="6">
-                <Grid
-                    RowDefinitions="Auto, *">
-                    <Label
-                        Text="Grid" 
-                        Style="{StaticResource Headline}"/>
-                    <Grid
-                        Grid.Row="1"
-                        x:Name="GridBorderView"
-                        WidthRequest="150"/>
-                </Grid>
-                <Grid 
-                    RowDefinitions="Auto, *">
-                    <Label
-                        Text="DatePicker" 
-                        Style="{StaticResource Headline}"/>
-                    <DatePicker
-                        Grid.Row="1"
-                        x:Name="DatePickerBorderView"
-                        TextColor="White"
-                        WidthRequest="150"/>
-                </Grid>
-                <Grid
-                    RowDefinitions="Auto, *">
-                    <Label
-                        Text="Entry" 
-                        Style="{StaticResource Headline}"/>
-                    <Entry
-                        Grid.Row="1"
-                        x:Name="EntryBorderView"
-                        Text="Entry"
-                        TextColor="White"
-                        WidthRequest="150"/>
-                </Grid>
-                <Grid
-                    RowDefinitions="Auto, *">
-                    <Label
-                        Text="SearchBar" 
-                        Style="{StaticResource Headline}"/>
-                    <SearchBar
-                        Grid.Row="1"
-                        x:Name="SearchBarBorderView"
-                        TextColor="White"
-                        Text="SearchBar"
-                        WidthRequest="150"/>
-                </Grid>
-                <Grid
-                    RowDefinitions="Auto, *">
-                    <Label
-                        Text="TimePicker" 
-                        Style="{StaticResource Headline}"/>
-                    <TimePicker
-                        Grid.Row="1"
-                        x:Name="TimePickerBorderView"
-                        TextColor="White"
-                        WidthRequest="150"/>
-                </Grid>
-            </StackLayout>
+                <Entry
+                    x:Name="BorderView"
+                    Text="Entry"
+                    TextColor="White"
+                    HeightRequest="50"
+                    WidthRequest="150"/>
+            </Grid>
         </ScrollView>
         <ScrollView
             Grid.Row="1">
             <StackLayout>
+                <Label
+                    Text="Border Shape"
+                    Style="{StaticResource Headline}"/>
+                <Picker
+                    x:Name="BorderShapePicker"
+                    SelectedIndexChanged="OnBorderShapeSelectedIndexChanged">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Rectangle</x:String>
+                            <x:String>RoundRectangle</x:String>
+                            <x:String>Ellipse</x:String>
+                            <x:String>Path</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
                 <Label
                     Text="Background"
                     Style="{StaticResource Headline}"/>
@@ -135,43 +99,46 @@
                     Minimum="0" 
                     Value="5"
                     ValueChanged="OnBorderWidthChanged" />
-                <Label
-                    Text="Corner Radius"
-                    Style="{StaticResource Headline}"/>
-                <Label 
-                    Text="{Binding Source={x:Reference TopLeftCornerSlider}, Path=Value, StringFormat='{}Top Left Corner Radius: {0}'}"
-                    Style="{StaticResource InfoStyle}"/>
-                <Slider 
-                    x:Name="TopLeftCornerSlider"
-                    Maximum="60" 
-                    Minimum="0" 
-                    Value="20"
-                    ValueChanged="OnCornerRadiusChanged" />
-                <Label 
-                    Text="{Binding Source={x:Reference TopRightCornerSlider}, Path=Value, StringFormat='{}Top Right Corner Radius: {0}'}"
-                    Style="{StaticResource InfoStyle}" />
-                <Slider
-                    x:Name="TopRightCornerSlider" 
-                    Maximum="60" 
-                    Minimum="6" 
-                    ValueChanged="OnCornerRadiusChanged" />
-                <Label 
-                    Text="{Binding Source={x:Reference BottomLeftCornerSlider}, Path=Value, StringFormat='{}Bottom Left Corner Radius: {0}'}"
-                    Style="{StaticResource InfoStyle}" />
-                <Slider 
-                    x:Name="BottomLeftCornerSlider" 
-                    Maximum="60" 
-                    Minimum="6" 
-                    ValueChanged="OnCornerRadiusChanged" />
-                <Label 
-                    Text="{Binding Source={x:Reference BottomRightCornerSlider}, Path=Value, StringFormat='{}Bottom Right Corner Radius: {0}'}"
-                    Style="{StaticResource InfoStyle}" />
-                <Slider 
-                    x:Name="BottomRightCornerSlider" 
-                    Maximum="60"
-                    Minimum="0"
-                    Value="12"
-                    ValueChanged="OnCornerRadiusChanged" />
+                <StackLayout
+                    x:Name="CornerRadiusLayout">
+                    <Label
+                        Text="Corner Radius"
+                        Style="{StaticResource Headline}"/>
+                    <Label 
+                        Text="{Binding Source={x:Reference TopLeftCornerSlider}, Path=Value, StringFormat='{}Top Left Corner Radius: {0}'}"
+                        Style="{StaticResource InfoStyle}"/>
+                    <Slider 
+                        x:Name="TopLeftCornerSlider"
+                        Maximum="60" 
+                        Minimum="0" 
+                        Value="20"
+                        ValueChanged="OnCornerRadiusChanged" />
+                    <Label 
+                        Text="{Binding Source={x:Reference TopRightCornerSlider}, Path=Value, StringFormat='{}Top Right Corner Radius: {0}'}"
+                        Style="{StaticResource InfoStyle}" />
+                    <Slider
+                        x:Name="TopRightCornerSlider" 
+                        Maximum="60" 
+                        Minimum="6" 
+                        ValueChanged="OnCornerRadiusChanged" />
+                    <Label 
+                        Text="{Binding Source={x:Reference BottomLeftCornerSlider}, Path=Value, StringFormat='{}Bottom Left Corner Radius: {0}'}"
+                        Style="{StaticResource InfoStyle}" />
+                    <Slider 
+                        x:Name="BottomLeftCornerSlider" 
+                        Maximum="60" 
+                        Minimum="6" 
+                        ValueChanged="OnCornerRadiusChanged" />
+                    <Label 
+                        Text="{Binding Source={x:Reference BottomRightCornerSlider}, Path=Value, StringFormat='{}Bottom Right Corner Radius: {0}'}"
+                        Style="{StaticResource InfoStyle}" />
+                    <Slider 
+                        x:Name="BottomRightCornerSlider" 
+                        Maximum="60"
+                        Minimum="0"
+                        Value="12"
+                        ValueChanged="OnCornerRadiusChanged" />
+                </StackLayout>
             </StackLayout>
         </ScrollView>
     </Grid>

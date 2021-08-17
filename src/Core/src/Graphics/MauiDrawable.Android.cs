@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
+using Microsoft.Maui.Graphics.Native;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
 using APaint = Android.Graphics.Paint;
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Graphics
 		APaint? _maskPaint;
 		APaint? _borderPaint;
 
-		CornerRadius _cornerRadius;
+		IShape? _shape;
 
 		GPaint? _background;
 		AColor? _backgroundColor;
@@ -117,11 +118,11 @@ namespace Microsoft.Maui.Graphics
 			throw new NotImplementedException();
 		}
 
-		public void SetCornerRadius(CornerRadius cornerRadius)
+		public void SetBorderShape(IShape shape)
 		{
 			_invalidatePath = true;
 
-			_cornerRadius = cornerRadius;
+			_shape = shape;
 
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
@@ -155,7 +156,7 @@ namespace Microsoft.Maui.Graphics
 		public void SetBorderBrush(SolidPaint solidPaint)
 		{
 			_invalidatePath = true;
-			_borderColor = null;                                                                
+			_borderColor = null;
 
 			var borderColor = solidPaint.Color == null
 				? (AColor?)null
@@ -254,26 +255,31 @@ namespace Microsoft.Maui.Graphics
 						SetPaint(_borderPaint, _border);
 				}
 			}
-			
+
 			if (_invalidatePath)
 			{
 				_invalidatePath = false;
 
-				var clipPath = GetRoundCornersPath(_width, _height, _borderWidth, _cornerRadius);
-
-				if (clipPath == null)
-					return;
-
-				if (_clipPath != null)
+				if (_shape != null)
 				{
-					_clipPath.Reset();
-					_clipPath.Set(clipPath);
+					var bounds = new Rectangle(0, 0, _width, _height);
+					var path = _shape.PathForBounds(bounds);
+					var clipPath = path?.AsAndroidPath();
 
-					if (_maskPath != null && HasBorder())
+					if (clipPath == null)
+						return;
+
+					if (_clipPath != null)
 					{
-						_maskPath.Reset();
-						_maskPath.AddRect(0, 0, _width, _height, Path.Direction.Cw!);
-						_maskPath.InvokeOp(_clipPath, Path.Op.Difference!);
+						_clipPath.Reset();
+						_clipPath.Set(clipPath);
+
+						if (_maskPath != null && HasBorder())
+						{
+							_maskPath.Reset();
+							_maskPath.AddRect(0, 0, _width, _height, Path.Direction.Cw!);
+							_maskPath.InvokeOp(_clipPath, Path.Op.Difference!);
+						}
 					}
 				}
 			}
@@ -382,35 +388,6 @@ namespace Microsoft.Maui.Graphics
 				_borderPaint.SetStyle(APaint.Style.Stroke);
 			}
 		}
-
-		Path GetRoundCornersPath(int width, int height, float borderWidth, CornerRadius cornerRadius)
-		{
-			var path = new Path();
-
-			var cornerRadii = new[]
-			{
-				ToPixels(cornerRadius.TopLeft, _density),
-				ToPixels(cornerRadius.TopLeft, _density),
-
-				ToPixels(cornerRadius.TopRight, _density),
-				ToPixels(cornerRadius.TopRight, _density),
-
-				ToPixels(cornerRadius.BottomRight, _density),
-				ToPixels(cornerRadius.BottomRight, _density),
-
-				ToPixels(cornerRadius.BottomLeft, _density),
-				ToPixels(cornerRadius.BottomLeft, _density)
-			};
-
-			var xPlatBorderWidth = (float)(borderWidth / _density / 2);
-
-			path.AddRoundRect(xPlatBorderWidth, xPlatBorderWidth, width - xPlatBorderWidth, height - xPlatBorderWidth, cornerRadii, Path.Direction.Cw!);
-
-			return path;
-		}
-
-		float ToPixels(double units, double density) =>
-			(float)(units * density);
 
 		void SetPaint(APaint nativePaint, GPaint paint)
 		{

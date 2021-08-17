@@ -13,11 +13,6 @@ namespace Microsoft.Maui
             return cornerRadius == null;
         }
 
-        public static bool IsAllRadius(this ICornerRadius cornerRadius)
-        {
-            return cornerRadius.CornerRadius.IsAllRadius();
-        }
-
         public static bool IsAllRadius(this CornerRadius cornerRadius)
         {
             return Math.Abs((

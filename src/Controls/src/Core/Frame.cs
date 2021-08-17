@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty HasShadowProperty = BindableProperty.Create("HasShadow", typeof(bool), typeof(Frame), true);
 
-		public static readonly new BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(CornerRadius), typeof(float), typeof(Frame), -1.0f,
+		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(CornerRadius), typeof(float), typeof(Frame), -1.0f,
 									validateValue: (bindable, value) => ((float)value) == -1.0f || ((float)value) >= 0f);
 
 		readonly Lazy<PlatformConfigurationRegistry<Frame>> _platformConfigurationRegistry;
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(BorderElement.BorderColorProperty, value); }
 		}
 
-		public new float CornerRadius
+		public float CornerRadius
 		{
 			get { return (float)GetValue(CornerRadiusProperty); }
 			set { SetValue(CornerRadiusProperty, value); }

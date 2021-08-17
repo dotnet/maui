@@ -1,6 +1,5 @@
 using Android.Graphics.Drawables;
 using Android.Views;
-using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 
@@ -82,12 +81,12 @@ namespace Microsoft.Maui
 			nativeView.UpdateMauiDrawable(view);
 		}
 
-		public static void UpdateCornerRadius(this AView nativeView, IView view)
+		public static void UpdateBorderShape(this AView nativeView, IView view)
 		{
-			var cornerRadius = view.CornerRadius;
+			var borderShape = view.BorderShape;
 			MauiDrawable? background = nativeView.Background as MauiDrawable;
 
-			if (background == null && cornerRadius.TopLeft == 0 && cornerRadius.TopRight == 0 && cornerRadius.BottomLeft == 0 && cornerRadius.BottomRight == 0)
+			if (background == null && borderShape == null)
 				return;
 
 			nativeView.UpdateMauiDrawable(view);
@@ -166,7 +165,7 @@ namespace Microsoft.Maui
 			mauiDrawable.SetBackground(view.Background);
 			mauiDrawable.SetBorderBrush(view.BorderBrush);
 			mauiDrawable.SetBorderWidth(view.BorderWidth);
-			mauiDrawable.SetCornerRadius(view.CornerRadius);
+			mauiDrawable.SetBorderShape(view.BorderShape);
 		}
 	}
 }

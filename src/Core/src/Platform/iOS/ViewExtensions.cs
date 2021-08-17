@@ -94,12 +94,12 @@ namespace Microsoft.Maui
 			nativeView.UpdateMauiCALayer(view);
 		}
 
-		public static void UpdateCornerRadius(this UIView nativeView, IView view)
+		public static void UpdateBorderShape(this UIView nativeView, IView view)
 		{
-			var cornerRadius = view.CornerRadius;
+			var borderShape = view.BorderShape;
 			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
 
-			if (backgroundLayer == null && cornerRadius.TopLeft == 0 && cornerRadius.TopRight == 0 && cornerRadius.BottomLeft == 0 && cornerRadius.BottomRight == 0)
+			if (backgroundLayer == null && borderShape != null)
 				return;
 
 			nativeView.UpdateMauiCALayer(view);
@@ -262,7 +262,7 @@ namespace Microsoft.Maui
 				mauiCALayer.SetBackground(view.Background);
 				mauiCALayer.SetBorderBrush(view.BorderBrush);
 				mauiCALayer.SetBorderWidth(view.BorderWidth);
-				mauiCALayer.SetCornerRadius(view.CornerRadius);
+				mauiCALayer.SetBorderShape(view.BorderShape);
 			}
 		}
 

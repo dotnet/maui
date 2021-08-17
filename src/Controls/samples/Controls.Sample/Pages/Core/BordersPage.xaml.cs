@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
@@ -11,6 +12,8 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 
+			BorderShapePicker.SelectedIndex = 1;
+
 			UpdateBackground();
 			UpdateBorder();
 			UpdateCornerRadius();
@@ -18,6 +21,11 @@ namespace Maui.Controls.Sample.Pages
 
 		public Type SelectedView { get; set; }
 
+		void OnBorderShapeSelectedIndexChanged(object sender, EventArgs e)
+		{
+			UpdateBorderShape();
+		}
+		
 		void OnBackgroundChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateBackground();
@@ -38,6 +46,13 @@ namespace Maui.Controls.Sample.Pages
 			UpdateCornerRadius();
 		}
 
+		void UpdateBorderShape()
+		{
+			CornerRadiusLayout.IsVisible = BorderShapePicker.SelectedIndex == 1;
+
+			UpdateBorder();
+		}
+
 		void UpdateBackground()
 		{
 			var startColor = GetColorFromString(BackgroundStartColor.Text);
@@ -46,7 +61,7 @@ namespace Maui.Controls.Sample.Pages
 			BackgroundStartColor.BackgroundColor = startColor;
 			BackgroundEndColor.BackgroundColor = endColor;
 
-			GridBorderView.Background = DatePickerBorderView.Background = EntryBorderView.Background = SearchBarBorderView.Background = TimePickerBorderView.Background = new LinearGradientBrush
+			BorderView.Background = new LinearGradientBrush
 			{
 				StartPoint = new Point(0, 0),
 				EndPoint = new Point(1, 0),
@@ -66,7 +81,31 @@ namespace Maui.Controls.Sample.Pages
 			BorderStartColor.BackgroundColor = startColor;
 			BorderEndColor.BackgroundColor = endColor;
 
-			GridBorderView.BorderBrush = DatePickerBorderView.BorderBrush = EntryBorderView.BorderBrush = SearchBarBorderView.BorderBrush = TimePickerBorderView.BorderBrush = new LinearGradientBrush
+			Shape borderShape = null;
+
+			switch (BorderShapePicker.SelectedIndex)
+			{
+				case 0:
+					borderShape = new Microsoft.Maui.Controls.Shapes.Rectangle();
+					break;
+				case 1:
+					borderShape = new RoundRectangle
+					{
+						CornerRadius = new CornerRadius(TopLeftCornerSlider.Value, TopRightCornerSlider.Value,
+						BottomLeftCornerSlider.Value, BottomRightCornerSlider.Value)
+					};
+					break;
+				case 2:
+					borderShape = new Ellipse();
+					break;
+				case 3:
+					borderShape = null;
+					break;
+			}
+
+			BorderView.BorderShape = borderShape;
+
+			BorderView.BorderBrush = new LinearGradientBrush
 			{
 				StartPoint = new Point(0, 0),
 				EndPoint = new Point(1, 0),
@@ -77,13 +116,12 @@ namespace Maui.Controls.Sample.Pages
 				}
 			};
 
-			GridBorderView.BorderWidth = DatePickerBorderView.BorderWidth = EntryBorderView.BorderWidth = SearchBarBorderView.BorderWidth = TimePickerBorderView.BorderWidth = BorderWidthSlider.Value;
+			BorderView.BorderWidth = BorderWidthSlider.Value;
 		}
 
 		void UpdateCornerRadius()
 		{
-			GridBorderView.CornerRadius = DatePickerBorderView.CornerRadius = EntryBorderView.CornerRadius = SearchBarBorderView.CornerRadius = TimePickerBorderView.CornerRadius = new CornerRadius(TopLeftCornerSlider.Value, TopRightCornerSlider.Value,
-				BottomLeftCornerSlider.Value, BottomRightCornerSlider.Value);
+			UpdateBorder();
 		}
 
 		Color GetColorFromString(string value)

@@ -16,5 +16,10 @@ namespace Microsoft.Maui
 		/// Gets the the width of a view's border.
 		/// </summary>
 		double BorderWidth { get; }
+
+		/// <summary>
+		/// Gets the shape that define a view's border.
+		/// </summary>
+		IShape BorderShape { get; }
 	}
 }

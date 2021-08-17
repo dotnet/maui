@@ -71,6 +71,17 @@
                 <Entry 
                     Text="Text"
                     Background="Orange"/>
+                <Label
+                    Text="Custom Border"
+                    Style="{StaticResource Headline}" />
+                <Entry
+                    BorderBrush="Green"
+                    BorderWidth="4">
+                    <Entry.BorderShape>
+                        <RoundRectangle 
+                            CornerRadius="12, 0, 0, 12"/>
+                    </Entry.BorderShape>
+                </Entry>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

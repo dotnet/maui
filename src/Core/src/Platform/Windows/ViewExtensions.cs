@@ -84,23 +84,17 @@ namespace Microsoft.Maui
 
 		public static void UpdateBorderBrush(this FrameworkElement nativeView, IView view) 
 		{
-			if (nativeView is Border wrapperView)
-				wrapperView.BorderBrush = view.BorderBrush?.ToNative();
+			// TODO: Implement Borders on Windows.
 		}
 
 		public static void UpdateBorderWidth(this FrameworkElement nativeView, IView view)
 		{
-			if (nativeView is Border wrapperView)
-				wrapperView.BorderThickness = new UI.Xaml.Thickness(view.BorderWidth);
+			// TODO: Implement Borders on Windows.
 		}
 
-		public static void UpdateCornerRadius(this FrameworkElement nativeView, IView view)
+		public static void UpdateBorderShape(this FrameworkElement nativeView, IView view)
 		{
-			if (nativeView is Border wrapperView)
-			{
-				CornerRadius cornerRadius = view.CornerRadius;
-				wrapperView.CornerRadius = WinUIHelpers.CreateCornerRadius(cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight, cornerRadius.BottomRight);
-			}
+			// TODO: Implement Borders on Windows.
 		}
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>

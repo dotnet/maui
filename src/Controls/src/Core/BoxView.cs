@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	{
 		public static readonly BindableProperty ColorProperty = ColorElement.ColorProperty;
 
-		public static readonly new BindableProperty CornerRadiusProperty = CornerElement.CornerRadiusProperty;
+		public static readonly BindableProperty CornerRadiusProperty = CornerElement.CornerRadiusProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<BoxView>> _platformConfigurationRegistry;
 
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ColorElement.ColorProperty, value);
 		}
 
-		public new CornerRadius CornerRadius
+		public CornerRadius CornerRadius
 		{
 			get => (CornerRadius)GetValue(CornerElement.CornerRadiusProperty);
 			set => SetValue(CornerElement.CornerRadiusProperty, value);

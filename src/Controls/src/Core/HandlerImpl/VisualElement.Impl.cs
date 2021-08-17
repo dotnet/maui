@@ -49,12 +49,24 @@ namespace Microsoft.Maui.Controls
 
 		IView IView.Parent => Parent as IView;
 
-		public static readonly BindableProperty BorderBrushProperty = BindableProperty.Create(
-			nameof(BorderBrush), typeof(Paint), typeof(VisualElement), null);
-
-		public Paint BorderBrush
+		Paint IBorder.BorderBrush
 		{
-			get => (Paint)GetValue(BorderBrushProperty);
+			get
+			{
+				if (!Brush.IsNullOrEmpty(BorderBrush))
+					return BorderBrush;
+
+				return null;
+			}
+		}
+
+		public static readonly BindableProperty BorderBrushProperty = BindableProperty.Create(
+			nameof(BorderBrush), typeof(Brush), typeof(VisualElement), null);
+
+		[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
+		public Brush BorderBrush
+		{
+			get => (Brush)GetValue(BorderBrushProperty);
 			set => SetValue(BorderBrushProperty, value);
 		}
 
@@ -67,13 +79,14 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(BorderWidthProperty, value);
 		}
 
-		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(
-		   nameof(CornerRadius), typeof(CornerRadius), typeof(VisualElement), new CornerRadius());
+		public static readonly BindableProperty BorderShapeProperty = BindableProperty.Create(
+		   nameof(BorderShape), typeof(IShape), typeof(VisualElement), null);
 
-		public CornerRadius CornerRadius
+		[System.ComponentModel.TypeConverter(typeof(Shapes.BorderShapeTypeConverter))]
+		public IShape BorderShape
 		{
-			get => (CornerRadius)GetValue(CornerRadiusProperty);
-			set => SetValue(CornerRadiusProperty, value);
+			get => (IShape)GetValue(BorderShapeProperty);
+			set => SetValue(BorderShapeProperty, value);
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)

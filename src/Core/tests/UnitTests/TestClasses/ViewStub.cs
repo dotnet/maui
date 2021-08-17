@@ -55,7 +55,7 @@ namespace Microsoft.Maui.UnitTests
 
 		public double BorderWidth { get; set; }
 
-		public CornerRadius CornerRadius { get; set; }
+		public IShape BorderShape { get; set; }
 
 		public double TranslationX { get; set; }
 

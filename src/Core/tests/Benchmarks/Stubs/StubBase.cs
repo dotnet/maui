@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public double BorderWidth { get; set; }
 
-		public CornerRadius CornerRadius { get; set; }
+		public IShape BorderShape { get; set; }
 
 		public Rectangle Frame { get; set; } = new Rectangle(0, 0, 20, 20);
 

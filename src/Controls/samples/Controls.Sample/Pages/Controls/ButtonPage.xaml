@@ -31,6 +31,13 @@
                 BackgroundColor="Red"
                 TextColor="White"
                 Text="Button"/>
+            <Label
+                Text="Custom Border"
+                Style="{StaticResource Headline}" />
+            <Button
+                BorderBrush="Green"
+                BorderWidth="4"
+                BorderShape="12, 0, 0, 12" />
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

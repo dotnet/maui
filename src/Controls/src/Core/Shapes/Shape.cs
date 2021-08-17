@@ -148,6 +148,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IShape.PathForBounds(Graphics.Rectangle viewBounds)
 		{
+			if (HeightRequest < 0 && WidthRequest < 0)
+				Frame = viewBounds;
+
 			var path = GetPath();
 
 #if !NETSTANDARD

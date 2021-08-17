@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateBorderWidth(this object nativeView, IView view) { }
 
-		public static void UpdateCornerRadius(this object nativeView, IView view) { }
+		public static void UpdateBorderShape(this object nativeView, IView view) { }
 
 		public static void UpdateAutomationId(this object nativeView, IView view) { }
 
