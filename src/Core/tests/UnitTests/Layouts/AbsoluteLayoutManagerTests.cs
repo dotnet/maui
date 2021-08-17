@@ -10,8 +10,6 @@ using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
 
 namespace Microsoft.Maui.UnitTests.Layouts
 {
-	// TODO ezhart don't forget to create categories and tag the tests
-
 	[Category(TestCategory.Core, TestCategory.Layout)]
 	public class AbsoluteLayoutManagerTests
 	{
