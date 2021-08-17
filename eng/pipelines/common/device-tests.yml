@@ -28,9 +28,9 @@ stages:
                 name: ${{ parameters.androidVmPool }}
                 vmImage: ${{ parameters.androidVmImage }}
               variables:
-                ${{ if ge(24, api) }}:
+                ${{ if ge(api, 24) }}:
                   ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
-                ${{ if lt(24, api) }}:
+                ${{ if lt(api, 24) }}:
                   ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
                 REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
               steps:
