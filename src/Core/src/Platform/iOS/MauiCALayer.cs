@@ -44,7 +44,11 @@ namespace Microsoft.Maui
 		{
 			base.DrawInContext(ctx);
 
-			ctx.AddPath(GetClipPath());
+			var clipPath = GetClipPath();
+
+			if (clipPath != null)
+				ctx.AddPath(clipPath);
+
 			ctx.Clip();
 
 			DrawBackground(ctx);
@@ -232,7 +236,11 @@ namespace Microsoft.Maui
 			else if (_backgroundColor != null)
 			{
 				ctx.SetFillColor(_backgroundColor.CGColor);
-				ctx.AddPath(GetClipPath());
+				var clipPath = GetClipPath();
+
+				if (clipPath != null)
+					ctx.AddPath(clipPath);
+
 				ctx.DrawPath(CGPathDrawingMode.Fill);
 			}
 		}

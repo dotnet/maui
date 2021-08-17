@@ -287,6 +287,8 @@ namespace Microsoft.Maui
 				mauiCALayer.SetBorderDash(view.BorderDashArray, view.BorderDashOffset);
 				mauiCALayer.SetBorderShape(view.BorderShape);
 			}
+
+			nativeView.UpdateNativeBorder(view);
 		}
 
 		static void InsertBackgroundLayer(this UIView control, CALayer backgroundLayer, int index = -1)
@@ -328,6 +330,15 @@ namespace Microsoft.Maui
 					break;
 				}
 			}
+		}
+
+		static void UpdateNativeBorder(this UIView nativeView, IView view)
+		{
+			bool hasBorder = view.BorderBrush != null && view.BorderWidth > 0;
+
+			// If we apply a custom border, remove the border from the NativeView
+			if(nativeView is UITextField textField)
+				textField.BorderStyle = hasBorder ? UITextBorderStyle.None : UITextBorderStyle.RoundedRect;
 		}
 	}
 }

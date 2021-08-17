@@ -2,6 +2,7 @@
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Converters;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
@@ -41,7 +42,12 @@ namespace Maui.Controls.Sample.Pages
 			UpdateBorder();
 		}
 
-		void OnBorderDashChanged(object sender, ValueChangedEventArgs e)
+		void OnBorderDashArrayChanged(object sender, TextChangedEventArgs e)
+		{
+			UpdateBorder();
+		}
+
+		void OnBorderDashOffsetChanged(object sender, ValueChangedEventArgs e)
 		{
 			UpdateBorder();
 		}
@@ -120,8 +126,18 @@ namespace Maui.Controls.Sample.Pages
 
 			BorderView.BorderWidth = BorderWidthSlider.Value;
 
-			BorderView.BorderDashArray = new DoubleCollection { 1, 1, 1 };
-			BorderView.BorderDashOffset = BorderDashSlider.Value;
+			var borderDashArrayString = BorderDashArrayEntry.Text;
+
+			if (string.IsNullOrEmpty(borderDashArrayString))
+				BorderView.BorderDashArray = new DoubleCollection();
+			else
+			{
+				var doubleCollectionConverter = new DoubleCollectionConverter();
+				var doubleCollection = (DoubleCollection)doubleCollectionConverter.ConvertFromString(borderDashArrayString);
+				BorderView.BorderDashArray = doubleCollection;
+			}
+
+			BorderView.BorderDashOffset = BorderDashOffsetSlider.Value;
 		}
 
 		void UpdateCornerRadius()
