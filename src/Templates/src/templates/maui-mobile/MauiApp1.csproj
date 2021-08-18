@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<!-- iOS, Android, MacCatalyst -->
 		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
+		<TargetFrameworks Condition="'$(OS)' != 'Unix' and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks>
 		<OutputType>Exe</OutputType>
 		<UseMaui>true</UseMaui>
 		<SingleProject>true</SingleProject>
@@ -37,11 +37,26 @@
 		<MauiFont Include="Resources\Fonts\*" />
 	</ItemGroup>
 
+	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+		<PackageReference Include="Microsoft.ProjectReunion" Version="PROJECT_REUNION_VERSION_VALUE" />
+		<PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="PROJECT_REUNION_VERSION_VALUE" />
+		<PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="PROJECT_REUNION_VERSION_VALUE" />
+		<PackageReference Include="Microsoft.ProjectReunion.InteractiveExperiences" Version="PROJECT_REUNION_VERSION_VALUE" NoWarn="NU1701" />
+	</ItemGroup>
+
 	<PropertyGroup>
 		<InvariantGlobalization Condition="$(TargetFramework.Contains('-maccatalyst'))">true</InvariantGlobalization>
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64</RuntimeIdentifier>
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
+		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-windows'))">win-x64</RuntimeIdentifier>
 		<UseInterpreter Condition="$(TargetFramework.Contains('-android'))">False</UseInterpreter>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- Required - WinUI can't deploy in a multi-targeting environment -->
+		<AppxPackageRecipe>bin\$(Configuration)\net6.0-windows10.0.19041\win-x64\$(ProjectName).build.appxrecipe</AppxPackageRecipe>
+		<!-- Required - Enable Single Project for WinUI -->
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 	</PropertyGroup>
 
 </Project>

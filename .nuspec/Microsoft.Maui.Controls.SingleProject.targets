@@ -44,6 +44,7 @@
     <EnableDefaultPageItems>False</EnableDefaultPageItems>
     <EnableDefaultApplicationDefinition>False</EnableDefaultApplicationDefinition>
     <_SingleProjectWindowsExcludes>$(WindowsProjectFolder)/**/.*/**</_SingleProjectWindowsExcludes>
+    <WindowsPackageType>MSIX</WindowsPackageType>
   </PropertyGroup>
 
   <!-- Removals -->
@@ -78,6 +79,7 @@
 
   <!-- IDE capabilities -->
   <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
+    <ProjectCapability Include="Msix"/>
     <ProjectCapability Include="MauiSingleProject" />
     <ProjectCapability Include="LaunchProfiles" />
     <!-- If VS is older than Dev17 -->
