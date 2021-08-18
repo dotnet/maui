@@ -16,10 +16,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override CGSize Measure()
 		{
-			var measure = (NativeHandler.VirtualView as VisualElement).Measure(ConstrainedDimension,
-				double.PositiveInfinity, MeasureFlags.IncludeMargins);
+			var measure = NativeHandler.VirtualView.Measure(ConstrainedDimension, double.PositiveInfinity);
 
-			return new CGSize(ConstrainedDimension, measure.Request.Height);
+			return new CGSize(ConstrainedDimension, measure.Height);
 		}
 
 		protected override bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes)
