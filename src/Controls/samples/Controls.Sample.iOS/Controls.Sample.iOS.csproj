@@ -98,5 +98,19 @@
       <Name>Controls.Sample</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <BundleResource Include="Resources\cover1.jpg" />
+    <BundleResource Include="Resources\FlowerBuds.jpg" />
+    <BundleResource Include="Resources\FlowerBuds%402x.jpg" />
+    <BundleResource Include="Resources\Fruits.jpg" />
+    <BundleResource Include="Resources\Fruits%402x.jpg" />
+    <BundleResource Include="Resources\Legumes.jpg" />
+    <BundleResource Include="Resources\Legumes%402x.jpg" />
+    <BundleResource Include="Resources\oasis.jpg" />
+    <BundleResource Include="Resources\photo.jpg" />
+    <BundleResource Include="Resources\Vegetables.jpg" />
+    <BundleResource Include="Resources\Vegetables%402x.jpg" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>

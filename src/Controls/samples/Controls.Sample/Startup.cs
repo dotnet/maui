@@ -105,7 +105,8 @@ namespace Maui.Controls.Sample
 #if WINDOWS
 							PageType.Main => typeof(TempPage),
 #else
-							PageType.Main => typeof(CustomNavigationPage),
+							PageType.Main => typeof(Pages.CollectionViewGalleries.CollectionViewGalleryNavigation),
+							//PageType.Main => typeof(Pages.CollectionViewGalleries.SelectionGalleries.PreselectedItemGallery),
 #endif
 							PageType.Blazor =>
 #if NET6_0_OR_GREATER

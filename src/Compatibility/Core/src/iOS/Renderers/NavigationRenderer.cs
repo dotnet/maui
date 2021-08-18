@@ -1489,7 +1489,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				(Current.Handler as INativeViewHandler)?.ViewController;
 		}
 
-		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden => Platform.GetRenderer(Current).ViewController;
+		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden => Platform.GetRenderer(Current).ViewController ??
+				(Current.Handler as INativeViewHandler)?.ViewController;
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
