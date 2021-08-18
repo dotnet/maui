@@ -175,6 +175,10 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
+
+					// Update the mappings for ILabel/Label to work specifically for Controls
+					Label.RemapForControls();
+					
 				})
 				.ConfigureServices<MauiCompatBuilder>();
 
