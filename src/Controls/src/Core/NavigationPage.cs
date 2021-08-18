@@ -182,8 +182,9 @@ namespace Microsoft.Maui.Controls
 				tcs.SetResult(true);
 				return result;
 			}
-			catch (Exception)
+			catch (Exception e)
 			{
+				Log.Warning(nameof(NavigationPage), $"{e}");
 				CurrentNavigationTask = null;
 				tcs.SetCanceled();
 
@@ -352,7 +353,7 @@ namespace Microsoft.Maui.Controls
 			if (!removed && !fast)
 				return CurrentPage;
 
-			InternalChildren.Remove(page);
+			RemoveFromInnerChildren(page);
 
 			CurrentPage = (Page)InternalChildren.Last();
 
@@ -435,7 +436,9 @@ namespace Microsoft.Maui.Controls
 
 			Element[] childrenToRemove = InternalChildren.Skip(1).ToArray();
 			foreach (Element child in childrenToRemove)
-				InternalChildren.Remove(child);
+			{
+				RemoveFromInnerChildren(child);
+			}
 
 			CurrentPage = RootPage;
 
@@ -510,6 +513,7 @@ namespace Microsoft.Maui.Controls
 
 			if (page == CurrentPage && CurrentPage == RootPage)
 				throw new InvalidOperationException("Cannot remove root page when it is also the currently displayed page.");
+
 			if (page == CurrentPage)
 			{
 				Log.Warning("NavigationPage", "RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
@@ -520,12 +524,17 @@ namespace Microsoft.Maui.Controls
 			if (!InternalChildren.Contains(page))
 				throw new ArgumentException("Page to remove must be contained on this Navigation Page");
 
-			EventHandler<NavigationRequestedEventArgs> handler = RemovePageRequested;
-			handler?.Invoke(this, new NavigationRequestedEventArgs(page, true));
+			RemovePageRequested?.Invoke(this, new NavigationRequestedEventArgs(page, true));
+			RemoveFromInnerChildren(page);
 
-			InternalChildren.Remove(page);
 			if (RootPage == page)
 				RootPage = (Page)InternalChildren.First();
+		}
+
+		void RemoveFromInnerChildren(Element page)
+		{
+			InternalChildren.Remove(page);
+			page.Handler = null;
 		}
 
 		void SafePop()

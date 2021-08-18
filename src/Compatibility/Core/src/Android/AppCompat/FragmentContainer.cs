@@ -62,6 +62,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 				_onCreateCallback?.Invoke(_pageContainer);
 
+				container.Invalidate();
+				container.RequestLayout();
 				return _pageContainer;
 			}
 
@@ -74,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			{
 				if (_visualElementRenderer != null)
 				{
-					if (_visualElementRenderer.View.Handle != IntPtr.Zero)
+					if (_visualElementRenderer.View.IsAlive())
 					{
 						_visualElementRenderer.View.RemoveFromParent();
 					}
