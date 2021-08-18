@@ -7,29 +7,6 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels"
     >
-
-    <!--<Shell.Resources>
-        <Color x:Key="Text_Light">#0000FF</Color>
-        <Color x:Key="Text_Dark">#FF0000</Color>
-
-        <Style
-            TargetType="Label"
-            Class="FlyoutItemLabelStyle">
-            <Setter
-            Property="FontSize"
-            Value="18" />
-            <Setter
-            Property="TextColor"
-            Value="{AppThemeBinding Dark={StaticResource Text_Dark}, Light={StaticResource Text_Light}}" />
-            <Setter
-                Property="FontFamily"
-                Value="OpenSansRegular"/>
-            <Setter
-                Property="HeightRequest"
-                Value="44" />
-        </Style>
-
-    </Shell.Resources>-->
     <FlyoutItem Title = "Flyout Item 1">
         <ShellContent Title = "Semantics Page"  ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>
         <ShellContent Title = "Button Page" ContentTemplate="{DataTemplate pages:ButtonPage}"></ShellContent>
