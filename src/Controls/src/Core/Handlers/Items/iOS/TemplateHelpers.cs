@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal static class TemplateHelpers
 	{
-
 		public static INativeViewHandler GetHandler(View view, IMauiContext context)
 		{
 			if (view == null)
@@ -16,9 +15,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			var handler = view.Handler;
 
-			if (handler == null)
+			if(handler == null)
 				handler = view.ToHandler(context);
-
+			
 			(handler.NativeView as UIView).Frame = view.Bounds.ToCGRect();
 
 			return (INativeViewHandler)handler;
