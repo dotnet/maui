@@ -43,6 +43,11 @@ pr:
 variables:
   - template: /eng/pipelines/common/variables.yml
 
+parameters:
+  - name: BuildEverything
+    type: boolean
+    default: false
+
 stages:
 
   - template: common/device-tests.yml
