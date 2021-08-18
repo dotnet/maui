@@ -25,7 +25,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			handler.UpdateItemsSource();
 		}
-
 		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 			handler.UpdateHorizontalScrollBarVisibility();
