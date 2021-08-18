@@ -614,8 +614,11 @@ namespace Microsoft.Maui.Controls
 			Initialize();
 			InternalChildren.CollectionChanged += OnInternalChildrenCollectionChanged;
 
-			this.SetAppThemeColor(Shell.FlyoutBackgroundColorProperty, Colors.White, Colors.Black);
-			this.SetOnAppTheme<Brush>(Shell.FlyoutBackgroundProperty, Brush.White, Brush.Black);
+			if (Application.Current != null)
+			{
+				this.SetAppThemeColor(Shell.FlyoutBackgroundColorProperty, Colors.White, Colors.Black);
+				this.SetOnAppTheme<Brush>(Shell.FlyoutBackgroundProperty, Brush.White, Brush.Black);
+			}
 		}
 
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
