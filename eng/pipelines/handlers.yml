@@ -54,6 +54,9 @@ parameters:
   - name: BuildEverything
     type: boolean
     default: false
+  - name: PipelineRunType
+    type: string
+    default: $(PipelineRunType) # all, device-tests, build
   - name: BuildConfigurations
     type: object
     default:
@@ -101,6 +104,8 @@ resources:
       ref: refs/heads/main # still defaults to master even though main is the main branch
 
 stages:
+
+- ${{ if or(eq(parameters.PipelineRunType, 'build'), eq(parameters.PipelineRunType, 'all')) }}:
 
   - stage: build_net6
     displayName: Build .NET 6
@@ -231,22 +236,6 @@ stages:
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
-  - template: common/device-tests.yml
-    parameters:
-      ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
-        androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]
-        # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
-        iosVersions: [ 'latest', '14.5', '13.7', '12.4', '11.4' ]
-      projects:
-        - name: essentials
-          desc: Essentials
-          android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
-          ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
-        - name: core
-          desc: Core
-          android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
-          ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
-
   - template: common/security_compliance.yml
   - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
   - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
@@ -283,3 +272,21 @@ stages:
       parameters:
         dependsOn: nuget_signing
         approvalTimeoutInMinutes: 30
+
+- ${{ if or(eq(parameters.PipelineRunType, 'device-tests'), eq(parameters.PipelineRunType, 'all')) }}:
+
+  - template: common/device-tests.yml
+    parameters:
+      ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
+        androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]
+        # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
+        iosVersions: [ 'latest', '14.5', '13.7', '12.4', '11.4' ]
+      projects:
+        - name: essentials
+          desc: Essentials
+          android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+        - name: core
+          desc: Core
+          android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
