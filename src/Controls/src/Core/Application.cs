@@ -94,6 +94,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.")]
 		public IDictionary<string, object> Properties
 		{
 			get
@@ -254,6 +255,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.")]
 		public async Task SavePropertiesAsync()
 		{
 			if (Dispatcher.IsInvokeRequired)
