@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
@@ -109,9 +110,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 
         private void OnServicesPropertyChanged() => StartWebViewCoreIfPossible();
 
-        private bool IsAncestorSiteInDesignMode =>
-            GetSitedParentSite(this) is ISite parentSite && parentSite.DesignMode;
-
         private ISite GetSitedParentSite(Control control) =>
             control is null
                 ? throw new ArgumentNullException(nameof(control))
@@ -140,7 +138,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
             var fileProvider = new PhysicalFileProvider(contentRootDir);
 
-            _webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, Dispatcher, fileProvider, hostPageRelativePath);
+			var jsComponents = new JSComponentConfigurationStore();
+			_webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, Dispatcher, fileProvider, jsComponents, hostPageRelativePath);
             foreach (var rootComponent in RootComponents)
             {
                 // Since the page isn't loaded yet, this will always complete synchronously

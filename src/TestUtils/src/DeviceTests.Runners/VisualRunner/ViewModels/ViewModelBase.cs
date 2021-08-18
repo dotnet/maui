@@ -1,34 +1,35 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 {
-    public abstract class ViewModelBase : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler PropertyChanged;
+	public abstract class ViewModelBase : INotifyPropertyChanged
+	{
+		public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            var evt = PropertyChanged;
-            evt?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+		public virtual void OnAppearing()
+		{
+		}
 
-        protected bool Set<T>(ref T destination, T value, [CallerMemberName] string propertyName = null)
-        {
-            if (!EqualityComparer<T>.Default.Equals(destination, value))
-            {
-                destination = value;
+		protected void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
 
-                RaisePropertyChanged(propertyName);
+		protected bool Set<T>(ref T destination, T value, Action? onChanged = null, [CallerMemberName] string? propertyName = null)
+		{
+			if (EqualityComparer<T>.Default.Equals(destination, value))
+				return false;
 
-                return true;
-            }
-            return false;
-        }
-    }
+			destination = value;
+
+			RaisePropertyChanged(propertyName);
+			onChanged?.Invoke();
+
+			return true;
+		}
+	}
 }

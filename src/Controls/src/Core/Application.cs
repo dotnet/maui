@@ -63,55 +63,32 @@ namespace Microsoft.Maui.Controls
 
 		public static Application Current { get; set; }
 
+		Page _pendingMainPage;
+
 		public Page MainPage
 		{
 			get
 			{
 				if (Windows.Count == 0)
-					return null;
+					return _pendingMainPage;
 
 				return Windows[0].Page;
 			}
 			set
 			{
-				if (value == null)
-					throw new ArgumentNullException(nameof(value));
-
 				if (MainPage == value)
 					return;
 
 				OnPropertyChanging();
 
-				var previousPage = MainPage;
-
-				if (previousPage != null)
-					previousPage.Parent = null;
-
 				if (Windows.Count == 0)
 				{
-					// there are no windows, so add a new window
-
-					AddWindow(new Window(value));
+					_pendingMainPage = value;
 				}
 				else
 				{
-					// find the best window and replace the page
-
-					var theWindow = Windows[0];
-					foreach (var window in Windows)
-					{
-						if (window.Page == previousPage)
-						{
-							theWindow = window;
-							break;
-						}
-					}
-
-					theWindow.Page = value;
+					Windows[0].Page = value;
 				}
-
-				if (previousPage != null)
-					previousPage.NavigationProxy.Inner = NavigationProxy;
 
 				OnPropertyChanged();
 			}
