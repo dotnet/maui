@@ -9,6 +9,54 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, UIView> where TItemsView : ItemsView
 	{
+		private protected override UIView OnCreateNativeView()
+		{
+			UpdateLayout();
+			Controller = CreateController(ItemsView, _layout);
+			return base.OnCreateNativeView();
+		}
+		protected TItemsView ItemsView => VirtualView;
+		protected ItemsViewController<TItemsView> Controller { get; private set; }
+
+		protected override UIView CreateNativeView() => Controller?.View;
+
+		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateItemsSource();
+		}
+		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateHorizontalScrollBarVisibility();
+		}
+		public static void MapVerticalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateVerticalScrollBarVisibility();
+		}
+		public static void MapItemTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateLayout();
+		}
+		public static void MapEmptyView(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateEmptyView();
+		}
+		public static void MapEmptyViewTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateEmptyView();
+		}
+		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateFlowDirection();
+		}
+		public static void MapIsVisible(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateVisibility();
+		}
+		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.UpdateItemsUpdatingScrollMode();
+		}
+
 		ItemsViewLayout _layout;
 
 		protected override void DisconnectHandler(UIView nativeView)
