@@ -158,6 +158,11 @@
                 TextColor="DodgerBlue"
                 FontSize="14"
                 SemanticProperties.HeadingLevel="Level3"/>
+            <Label
+                Text="Heading 4 with semantic description and hint"
+                SemanticProperties.HeadingLevel="Level4"
+                SemanticProperties.Description="Description"
+                SemanticProperties.Hint="Hint"/>
             <HorizontalStackLayout>
                 <CheckBox SemanticProperties.Description="Checkbox on iOS will read as a switch"></CheckBox>
                 <CheckBox SemanticProperties.Description="Checkbox on iOS will read as a switch" Color="DodgerBlue"></CheckBox>

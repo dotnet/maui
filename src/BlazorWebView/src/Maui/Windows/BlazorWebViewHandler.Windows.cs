@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -61,7 +62,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// WinUIWebViewManager so that loading static assets is done entirely there.
 			var mauiAssetFileProvider = new NullFileProvider();
 
-			_webviewManager = new WinUIWebViewManager(NativeView, new WinUIWebView2Wrapper(NativeView), Services!, MauiDispatcher.Instance, mauiAssetFileProvider, hostPageRelativePath, contentRootDir);
+			var jsComponents = new JSComponentConfigurationStore();
+			_webviewManager = new WinUIWebViewManager(NativeView, new WinUIWebView2Wrapper(NativeView), Services!, MauiDispatcher.Instance, mauiAssetFileProvider, jsComponents, hostPageRelativePath, contentRootDir);
 			if (RootComponents != null)
 			{
 				foreach (var rootComponent in RootComponents)

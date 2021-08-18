@@ -128,6 +128,9 @@ stages:
                 displayName: 'Install .NET'
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
+                ${{ if and(eq(BuildPlatform.name, 'macOS'), ne(variables['System.TeamProject'], 'devdiv')) }}:
+                  timeoutInMinutes: 15
+                  continueOnError: true
               - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Run Unit Tests'
               - task: PublishTestResults@2
@@ -218,27 +221,14 @@ stages:
                 displayName: 'Install .NET (Local Workloads)'
               - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET 6 Samples'
+                ${{ if and(eq(BuildPlatform.name, 'macOS'), ne(variables['System.TeamProject'], 'devdiv')) }}:
+                  timeoutInMinutes: 15
+                  continueOnError: true
               - task: PublishBuildArtifacts@1
                 condition: always()
                 displayName: publish artifacts
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
-
-  - template: common/device-tests.yml
-    parameters:
-      ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
-        androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]
-        # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
-        iosVersions: [ 'latest', '14.5', '13.7', '12.4', '11.4' ]
-      projects:
-        - name: essentials
-          desc: Essentials
-          android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
-          ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
-        - name: core
-          desc: Core
-          android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
-          ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
 
   - template: common/security_compliance.yml
   - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]

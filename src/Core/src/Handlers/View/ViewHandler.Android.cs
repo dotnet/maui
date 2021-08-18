@@ -117,8 +117,6 @@ namespace Microsoft.Maui.Handlers
 
 				if (viewHandler.AccessibilityDelegate != null)
 					nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
-				else
-					nativeView.ImportantForAccessibility = ImportantForAccessibility.Auto;
 			}
 		}
 	}

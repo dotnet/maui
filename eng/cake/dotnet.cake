@@ -185,7 +185,7 @@ Task("VS-WINUI")
             }
         }.WithRestore().WithProperty("BuildForWinUI", "true");
 
-        MSBuild("./Microsoft.Maui.BuildTasks-net6.sln", msbuildSettings);
+        MSBuild("./Microsoft.Maui.BuildTasks-net6.slnf", msbuildSettings);
 
         msbuildSettings = new MSBuildSettings
         {

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
 using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
@@ -156,7 +157,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
             var fileProvider = new PhysicalFileProvider(contentRootDir);
 
-            _webviewManager = new WebView2WebViewManager(new WpfWebView2Wrapper(_webview), Services, WpfDispatcher.Instance, fileProvider, hostPageRelativePath);
+			var jsComponents = new JSComponentConfigurationStore();
+			_webviewManager = new WebView2WebViewManager(new WpfWebView2Wrapper(_webview), Services, WpfDispatcher.Instance, fileProvider, jsComponents, hostPageRelativePath);
             foreach (var rootComponent in RootComponents)
             {
                 // Since the page isn't loaded yet, this will always complete synchronously

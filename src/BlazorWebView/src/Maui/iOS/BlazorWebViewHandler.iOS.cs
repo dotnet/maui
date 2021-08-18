@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Foundation;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Controls;
@@ -114,7 +115,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var mauiAssetFileProvider = new iOSMauiAssetFileProvider(contentRootDir);
 
-			_webviewManager = new IOSWebViewManager(this, NativeView, Services!, MauiDispatcher.Instance, mauiAssetFileProvider, hostPageRelativePath);
+			var jsComponents = new JSComponentConfigurationStore();
+			_webviewManager = new IOSWebViewManager(this, NativeView, Services!, MauiDispatcher.Instance, mauiAssetFileProvider, jsComponents, hostPageRelativePath);
 			if (RootComponents != null)
 			{
 				foreach (var rootComponent in RootComponents)

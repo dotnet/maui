@@ -1,5 +1,7 @@
 using System;
 using Microsoft.UI.Xaml;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 
@@ -19,9 +21,11 @@ namespace Microsoft.Maui
 		public static void UpdateFont(this TextBlock nativeControl, IText text, IFontManager fontManager) =>
 			nativeControl.UpdateFont(text.Font, fontManager);
 
-		public static void UpdateText(this TextBlock nativeControl, IText text) =>
-			nativeControl.Text = text.Text;
-
+		public static void UpdateText(this TextBlock nativeControl, ILabel label)
+		{
+			nativeControl.UpdateTextPlainText(label);
+		}
+		
 		public static void UpdateTextColor(this TextBlock nativeControl, IText text) =>
 			nativeControl.UpdateProperty(TextBlock.ForegroundProperty, text.TextColor);
 
@@ -93,6 +97,29 @@ namespace Microsoft.Maui
 		{
 			nativeControl.VerticalAlignment = label.VerticalTextAlignment.ToNativeVerticalAlignment();
 		}
+		
+		internal static void UpdateTextHtml(this TextBlock nativeControl, ILabel label)
+		{
+			var text = label.Text ?? string.Empty;
+
+			// Just in case we are not given text with elements.
+			var modifiedText = string.Format("<div>{0}</div>", text);
+			modifiedText = Regex.Replace(modifiedText, "<br>", "<br></br>", RegexOptions.IgnoreCase);
+
+			// Reset the text because we will add to it.
+			nativeControl.Inlines.Clear();
+
+			try
+			{
+				var element = XElement.Parse(modifiedText);
+				LabelHtmlHelper.ParseText(element, nativeControl.Inlines, label);
+			}
+			catch (Exception)
+			{
+				// If anything goes wrong just show the html
+				nativeControl.Text = Windows.Data.Html.HtmlUtilities.ConvertToText(label.Text);
+			}
+		}
 
 		public static void UpdateLineBreakMode(this TextBlock nativeControl, ILabel label)
 		{
@@ -133,5 +160,10 @@ namespace Microsoft.Maui
 
 		internal static void DetermineTruncatedTextWrapping(this TextBlock textBlock) =>	 
 			textBlock.TextWrapping = textBlock.MaxLines > 1 ? TextWrapping.Wrap : TextWrapping.NoWrap;
+			
+		internal static void UpdateTextPlainText(this TextBlock nativeControl, ILabel label)
+		{
+			nativeControl.Text = label.Text;
+		}
 	}
 }
