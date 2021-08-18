@@ -404,6 +404,17 @@ namespace Microsoft.Maui.Controls
 
 				if (Device.RuntimePlatform == Device.Android)
 				{
+					object textColor;
+					
+					if (Application.Current == null)
+					{
+						textColor = Colors.Black.MultiplyAlpha(0.87f);
+					}
+					else
+					{
+						textColor = new AppThemeBinding { Light = Colors.Black.MultiplyAlpha(0.87f), Dark = Colors.White } };
+					}
+					
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.TextColorProperty, Value = new AppThemeBinding { Light = Colors.Black.MultiplyAlpha(0.87f), Dark = Colors.White } });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = "sans-serif-medium" });
