@@ -62,8 +62,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 				_onCreateCallback?.Invoke(_pageContainer);
 
-				container.Invalidate();
-				container.RequestLayout();
 				return _pageContainer;
 			}
 
