@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Set the binding context _before_ we create the renderer; that way, it's available during OnElementChanged
 				view.BindingContext = bindingContext;
 
-				var renderer = TemplateHelpers.CreateRenderer(view);
+				var renderer = TemplateHelpers.GetHandler(view, itemsView.FindMauiContext());
 				SetRenderer(renderer);
 
 				// And make the new Element a "child" of the ItemsView

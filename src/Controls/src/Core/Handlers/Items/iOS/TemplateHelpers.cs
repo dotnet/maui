@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using UIKit;
 
@@ -6,21 +7,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal static class TemplateHelpers
 	{
-		public static INativeViewHandler CreateRenderer(View view)
+		
+		public static INativeViewHandler GetHandler(View view, IMauiContext context)
 		{
 			if (view == null)
 			{
 				throw new ArgumentNullException(nameof(view));
 			}
-			var renderer = view.Handler;
+			var handler = view.Handler;
 
-			//Platform.GetRenderer(view)?.DisposeRendererAndChildren();
-			//var renderer = Platform.CreateRenderer(view);
-			//Platform.SetRenderer(view, renderer);
+			if(handler == null)
+				handler = view.ToHandler(context);
+			
+			(handler.NativeView as UIView).Frame = view.Bounds.ToCGRect();
 
-			//renderer.NativeView.Bounds = view.Bounds.ToRectangleF();
-
-			return (INativeViewHandler)renderer;
+			return (INativeViewHandler)handler;
 		}
 
 		public static (UIView NativeView, VisualElement FormsElement) RealizeView(object view, DataTemplate viewTemplate, ItemsView itemsView)
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Make sure the Visual property is available when the renderer is created
 				PropertyPropagationExtensions.PropagatePropertyChanged(null, templateElement, itemsView);
 
-				var renderer = CreateRenderer(templateElement);
+				var renderer = GetHandler(templateElement, itemsView.FindMauiContext());
 
 				var element = renderer.VirtualView as VisualElement;
 
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				PropertyPropagationExtensions.PropagatePropertyChanged(null, formsView, itemsView);
 
 				// No template, and the EmptyView is a Forms view; use that
-				var renderer = CreateRenderer(formsView);
+				var renderer = GetHandler(formsView, itemsView.FindMauiContext());
 				var element = renderer.VirtualView as VisualElement;
 
 				return ((UIView)renderer.NativeView, element);
