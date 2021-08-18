@@ -46,6 +46,7 @@ namespace Microsoft.Maui
 		public static void UpdateClip(this FrameworkElement nativeView, IView view)
 		{
 			var clipGeometry = view.Clip;
+
 			if (clipGeometry == null)
 				return;
 
@@ -82,29 +83,54 @@ namespace Microsoft.Maui
 				panel.UpdateBackground(view.Background);
 		}
 
-		public static void UpdateBorderBrush(this FrameworkElement nativeView, IView view) 
+		public static void UpdateBorderBrush(this WrapperView nativeView, IView view) 
 		{
-			// TODO: Implement Borders on Windows.
+			var borderBrush = view.BorderBrush;
+
+			if (borderBrush == null)
+				return;
+
+			nativeView.SetBorderBrush(borderBrush);
 		}
 
-		public static void UpdateBorderWidth(this FrameworkElement nativeView, IView view)
+		public static void UpdateBorderWidth(this WrapperView nativeView, IView view)
 		{
-			// TODO: Implement Borders on Windows.
+			var borderWidth = view.BorderWidth;
+
+			if (borderWidth < 0)
+				return;
+
+			nativeView.SetBorderWidth(borderWidth);
 		}
 
-		public static void UpdateBorderDashArray(this FrameworkElement nativeView, IView view)
+		public static void UpdateBorderDashArray(this WrapperView nativeView, IView view)
 		{
-			// TODO: Implement Borders on Windows.
+			var borderDashArray = view.BorderDashArray;
+
+			if (borderDashArray == null)
+				return;
+
+			nativeView.SetBorderDashArray(borderDashArray);
 		}
 
-		public static void UpdateBorderDashOffset(this FrameworkElement nativeView, IView view)
+		public static void UpdateBorderDashOffset(this WrapperView nativeView, IView view)
 		{
-			// TODO: Implement Borders on Windows.
+			var borderDashOffset = view.BorderDashOffset;
+
+			if (borderDashOffset < 0)
+				return;
+
+			nativeView.SetBorderDashOffset(borderDashOffset);
 		}
 
-		public static void UpdateBorderShape(this FrameworkElement nativeView, IView view)
+		public static void UpdateBorderShape(this WrapperView nativeView, IView view)
 		{
-			// TODO: Implement Borders on Windows.
+			var borderShape = view.BorderShape;
+
+			if (borderShape == null)
+				return;
+
+			nativeView.SetBorderShape(borderShape);
 		}
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>

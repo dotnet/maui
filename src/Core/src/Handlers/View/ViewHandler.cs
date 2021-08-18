@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Handlers
 		{
 #if WINDOWS		
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateBorderBrush(view);
+			((WrapperView?)handler.ContainerView)?.UpdateBorderBrush(view);
 #else
 			((NativeView?)handler.NativeView)?.UpdateBorderBrush(view);
 #endif
@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Handlers
 		{
 #if WINDOWS
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateBorderWidth(view);
+			((WrapperView?)handler.ContainerView)?.UpdateBorderWidth(view);
 #else
 			((NativeView?)handler.NativeView)?.UpdateBorderWidth(view);
 #endif
@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Handlers
 		{
 #if WINDOWS
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateBorderDashArray(view);
+			((WrapperView?)handler.ContainerView)?.UpdateBorderDashArray(view);
 #else
 			((NativeView?)handler.NativeView)?.UpdateBorderDashArray(view);
 #endif
@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Handlers
 		{
 #if WINDOWS
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateBorderDashOffset(view);
+			((WrapperView?)handler.ContainerView)?.UpdateBorderDashOffset(view);
 #else
 			((NativeView?)handler.NativeView)?.UpdateBorderDashOffset(view);
 #endif
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Handlers
 		{
 #if WINDOWS
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			((UI.Xaml.Controls.Border?)handler.ContainerView)?.UpdateBorderShape(view);
+			((WrapperView?)handler.ContainerView)?.UpdateBorderShape(view);
 #else
 			((NativeView?)handler.NativeView)?.UpdateBorderShape(view);
 #endif

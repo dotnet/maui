@@ -30,6 +30,7 @@
                     x:Name="BorderView"
                     Text="Entry"
                     TextColor="White"
+                    HorizontalOptions="Center"
                     HeightRequest="50"
                     WidthRequest="150"/>
             </Grid>

@@ -71,7 +71,7 @@ namespace Microsoft.Maui
 		{
 			var mask = Mask;
 
-			if (mask == null && Clip == null)
+			if (mask == null && ClipShape == null)
 				return;
 
 			mask ??= Mask = new CAShapeLayer();
@@ -82,7 +82,7 @@ namespace Microsoft.Maui
 				return;
 
 			_lastMaskSize = bounds.Size;
-			var path = _clip?.PathForBounds(bounds);
+			var path = ClipShape?.PathForBounds(bounds);
 			mask.Path = path?.AsCGPath();
 		}
 	}

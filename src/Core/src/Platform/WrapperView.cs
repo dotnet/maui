@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 	{
 		IShape? _clip;
 
-		public IShape? Clip
+		public IShape? ClipShape
 		{
 			get => _clip;
 			set
