@@ -365,6 +365,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(100 + 100 + 10, measure.Height);
 		}
 
+		[Category(GridSpacing)]
 		[Fact(DisplayName = "Column spacing shouldn't affect a single-column grid")]
 		public void SingleColumnIgnoresColumnSpacing()
 		{
@@ -377,6 +378,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view, 0, 0, 100, 100);
 		}
 
+		[Category(GridSpacing)]
 		[Fact(DisplayName = "Two columns should include the column spacing once")]
 		public void TwoColumnsWithSpacing()
 		{
@@ -492,8 +494,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view1, 100, 25, 50, 75);
 		}
 
-		[Category(GridSpan)]
-		[Category(GridSpacing)]
+		[Category(GridSpacing, GridSpan)]
 		[Fact(DisplayName = "Row spanning with row spacing")]
 		public void RowSpanningShouldAccountForSpacing()
 		{
@@ -512,9 +513,15 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(150, measuredSize.Width);
 			Assert.Equal(50 + 50 + 5, measuredSize.Height);
 
-			AssertArranged(view0, 0, 0, 100, 100);
+			// Starts a Y = 0
 			AssertArranged(view1, 100, 0, 50, 50);
+
+			// Starts at the first row's height + the row spacing value, so Y = 50 + 5 = 55
 			AssertArranged(view2, 100, 55, 50, 50);
+
+			// We expect the height for the view spanning the rows to include the space between the rows,
+			// so 50 + 5 + 50 = 105
+			AssertArranged(view0, 0, 0, 100, 105);
 		}
 
 		[Category(GridSpan)]
@@ -558,9 +565,14 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(50 + 50 + 5, measuredSize.Width);
 			Assert.Equal(100 + 50, measuredSize.Height);
 
-			AssertArranged(view0, 0, 0, 100, 100);
+			// Starts a X = 0
 			AssertArranged(view1, 0, 100, 50, 50);
+			// Starts at the first column's width + the column spacing, so X = 50 + 5 = 55
 			AssertArranged(view2, 55, 100, 50, 50);
+
+			// We expect the width for the view spanning the columns to include the space between the columns,
+			// so 50 + 5 + 50 = 105
+			AssertArranged(view0, 0, 0, 105, 100);
 		}
 
 		[Category(GridSpan)]
@@ -1210,6 +1222,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			view.Received().Measure(Arg.Is<double>(100), Arg.Is<double>(100));
 		}
 
+		[Category(GridAbsoluteSizing)]
 		[Fact]
 		public void GridMeasureShouldUseExplicitHeight()
 		{
@@ -1226,6 +1239,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(50, measure.Height);
 		}
 
+		[Category(GridAbsoluteSizing)]
 		[Fact]
 		public void GridMeasureShouldUseExplicitWidth()
 		{

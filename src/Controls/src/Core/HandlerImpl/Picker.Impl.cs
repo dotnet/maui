@@ -2,9 +2,7 @@
 {
 	public partial class Picker : IPicker
 	{
-		Font? _font;
-
-		Font ITextStyle.Font => _font ??= this.ToFont();
+		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
 
 		int IItemDelegate<string>.GetCount() => Items?.Count ?? ItemsSource?.Count ?? 0;
 
@@ -18,6 +16,5 @@
 				return GetDisplayMember(ItemsSource[index]);
 			return "";
 		}
-
 	}
 }

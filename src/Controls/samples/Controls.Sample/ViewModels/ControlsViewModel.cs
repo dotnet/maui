@@ -39,6 +39,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ProgressBarPage), "ProgressBar",
 				"The ProgressBar control visually represents progress as a horizontal bar that is filled to a percentage represented by a float value."),
 
+			new SectionModel(typeof(RefreshViewPage), "RefreshView",
+				"RefreshView is a container control that provides pull-to-refresh functionality for scrollable content."),
+
 			new SectionModel(typeof(SearchBarPage), "SearchBar",
 				"The SearchBar is a user input control used to initiating a search."),
 
