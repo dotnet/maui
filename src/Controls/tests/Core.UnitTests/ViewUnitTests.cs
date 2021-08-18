@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using NUnit.Framework;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
@@ -740,6 +741,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.Clip = null;
 
 			Assert.Null(view.Clip);
+		}
+
+		[Test]
+		public void UpdatingBackgroundColorTriggersHandler()
+		{
+			var view = new View();
+
+			var handler = Substitute.For<IViewHandler>();
+			view.Handler = handler;
+
+			view.BackgroundColor = Colors.Green;
+
+			handler.Received().UpdateValue("BackgroundColor");
+			handler.Received().UpdateValue("Background");
+		}
+
+
+		[Test]
+		public void UpdatingBackgroundTriggersHandler()
+		{
+			var view = new View();
+
+			var handler = Substitute.For<IViewHandler>();
+			view.Handler = handler;
+
+			view.Background = new SolidColorBrush(Colors.Green);
+
+			handler.Received(1).UpdateValue("Background");
 		}
 	}
 }
