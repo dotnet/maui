@@ -2,7 +2,6 @@ using System;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using UIKit;
-using ObjCRuntime;
 
 namespace Microsoft.Maui
 {
@@ -31,6 +30,18 @@ namespace Microsoft.Maui
 
 			CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
 			CrossPlatformArrange?.Invoke(bounds);
+		}
+
+		public override void SubviewAdded(UIView uiview)
+		{
+			base.SubviewAdded(uiview);
+			Superview?.SetNeedsLayout();
+		}
+
+		public override void WillRemoveSubview(UIView uiview)
+		{
+			base.WillRemoveSubview(uiview);
+			Superview?.SetNeedsLayout();
 		}
 
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }

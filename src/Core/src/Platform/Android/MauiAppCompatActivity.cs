@@ -63,7 +63,7 @@ namespace Microsoft.Maui
 				throw new InvalidOperationException($"The {nameof(IApplication)} instance was not found.");
 
 			var services = MauiApplication.Current.Services;
-			if (mauiApp == null)
+			if (services == null)
 				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
 
 			var mauiContext = new MauiContext(services, this);

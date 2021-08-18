@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					}
 				}
 			};
-			MainPage = new Bz54334(useCompiledXaml);
+			this.LoadPage(new Bz54334(useCompiledXaml));
 			MessagingCenter.Subscribe<ContentPage>(this, "ChangeTheme", (s) =>
 			{
 				ToggleTheme();

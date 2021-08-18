@@ -38,6 +38,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(VerticalStackLayoutPage), "VerticalStackLayout",
 				"A VerticalStackLayout organizes child views in a one-dimensional vertical stack."),
+
+			new SectionModel(typeof(LayoutUpdatesPage), "Layout Updates",
+				"Demonstrations of updating layouts"),
 		};
 	}
 }

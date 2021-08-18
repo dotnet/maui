@@ -59,8 +59,6 @@ namespace Microsoft.Maui.Handlers
 			=> handler.UpdateRefreshColor();
 
 		public static void MapIsEnabled(RefreshViewHandler handler, IRefreshView refreshView)
-		{
-			handler.NativeView?.UpdateIsEnabled(refreshView.IsEnabled);
-		}
+			=> handler.NativeView?.UpdateIsEnabled(refreshView.IsEnabled);
 	}
 }

@@ -20,6 +20,5 @@ namespace Microsoft.Maui.DeviceTests
 			};
 			await ValidatePropertyInitValue(RefreshView, () => isRefreshing, GetNativeIsRefreshing, isRefreshing);
 		}
-
 	}
 }

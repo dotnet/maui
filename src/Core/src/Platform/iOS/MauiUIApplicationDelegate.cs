@@ -69,7 +69,7 @@ namespace Microsoft.Maui
 		UIWindow CreateNativeWindow()
 		{
 			var uiWindow = new UIWindow();
-			
+
 			var mauiContext = new MauiContext(Services, uiWindow);
 
 			Services.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));

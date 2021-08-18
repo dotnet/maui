@@ -10,6 +10,5 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsRefreshing(RefreshViewHandler RefreshViewHandler) =>
 			GetNativeRefreshView(RefreshViewHandler).IsRefreshing;
-
 	}
 }
