@@ -125,11 +125,11 @@ namespace Microsoft.Maui.Controls.Platform
 			var defaultList = GetDefaultTabColorList(_shellContext.AndroidContext);
 
 			var disabledInt = disabledColor == null ?
-				defaultList.GetColorForState(new[] { -R.Attribute.StateEnabled }, AColor.Pink) :
+				defaultList.GetColorForState(new[] { -R.Attribute.StateEnabled }, AColor.Gray) :
 				disabledColor.ToNative().ToArgb();
 
 			var checkedInt = titleColor == null ?
-				defaultList.GetColorForState(new[] { R.Attribute.StateChecked }, AColor.Pink) :
+				defaultList.GetColorForState(new[] { R.Attribute.StateChecked }, AColor.Black) :
 				titleColor.ToNative().ToArgb();
 
 			var defaultColor = unselectedColor == null ?
