@@ -148,7 +148,13 @@ namespace Microsoft.Maui
 		}
 
 		public void Add(string key, Action<TViewHandler, TVirtualView> action) =>
-			SetPropertyCore(key, (h, v) => action?.Invoke((TViewHandler)h, (TVirtualView)v));
+			SetPropertyCore(key, (h, v) =>
+			{
+				if (v is TVirtualView vv)
+					action?.Invoke((TViewHandler)h, vv);
+				else
+					Chained?.UpdateProperty(h, v, key);
+			});
 	}
 
 	public class PropertyMapper<TVirtualView> : PropertyMapper<TVirtualView, IElementHandler>

@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 		{
 			appHostBuilder.UseMauiApp(svc => new MauiVisualRunnerApp(
 				svc.GetRequiredService<TestOptions>(),
-				svc.GetRequiredService<ILoggerFactory>().CreateLogger("TestRun")), false);
+				svc.GetRequiredService<ILoggerFactory>().CreateLogger("TestRun")));
 
 			return appHostBuilder;
 		}
