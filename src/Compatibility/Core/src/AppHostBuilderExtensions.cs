@@ -58,12 +58,18 @@ namespace Microsoft.Maui.Controls.Hosting
 		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
 			where TApp : class, IApplication
 		{
+			return builder.UseMauiApp(implementationFactory, true);
+		}
+
+		internal static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder, Func<IServiceProvider, TApp> implementationFactory, bool includeControlsSpecificRemaps)
+			where TApp : class, IApplication
+		{
 			builder.ConfigureServices((context, collection) =>
 			{
 				collection.AddSingleton<IApplication>(implementationFactory);
 			});
 
-			builder.SetupDefaults();
+			builder.SetupDefaults(includeControlsSpecificRemaps);
 
 			return builder;
 		}
@@ -82,7 +88,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			return builder;
 		}
 
-		static IAppHostBuilder SetupDefaults(this IAppHostBuilder builder)
+		static IAppHostBuilder SetupDefaults(this IAppHostBuilder builder, bool includeControlsSpecificRemaps = true)
 		{
 			builder.ConfigureCompatibilityLifecycleEvents();
 			builder.ConfigureImageSourceHandlers();
@@ -177,7 +183,8 @@ namespace Microsoft.Maui.Controls.Hosting
 #endif
 
 					// Update the mappings for ILabel/Label to work specifically for Controls
-					Label.RemapForControls();
+					if (includeControlsSpecificRemaps)
+						Label.RemapForControls();
 					
 				})
 				.ConfigureServices<MauiCompatBuilder>();
