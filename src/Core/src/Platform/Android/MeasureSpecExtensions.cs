@@ -17,8 +17,6 @@ namespace Microsoft.Maui
 			return MeasureSpec.GetMode(measureSpec);
 		}
 
-		// Need a method to extract mode, so we can see if the viewgroup is calling measure twice with different modes
-
 		public static int MakeMeasureSpec(this MeasureSpecMode mode, int size)
 		{
 			return size + (int)mode;

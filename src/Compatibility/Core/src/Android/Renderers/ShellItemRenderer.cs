@@ -9,6 +9,7 @@ using Android.Views;
 using Android.Widget;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
+using Google.Android.Material.Navigation;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -19,16 +20,16 @@ using Orientation = Android.Widget.Orientation;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
-	public class ShellItemRenderer : ShellItemRendererBase, BottomNavigationView.IOnNavigationItemSelectedListener, IAppearanceObserver
+	public class ShellItemRenderer : ShellItemRendererBase, NavigationBarView.IOnItemSelectedListener, IAppearanceObserver
 	{
-		#region IOnNavigationItemSelectedListener
+		#region IOnItemSelectedListener
 
-		bool BottomNavigationView.IOnNavigationItemSelectedListener.OnNavigationItemSelected(IMenuItem item)
+		bool NavigationBarView.IOnItemSelectedListener.OnNavigationItemSelected(IMenuItem item)
 		{
 			return OnItemSelected(item);
 		}
 
-		#endregion IOnNavigationItemSelectedListener
+		#endregion IOnItemSelectedListener
 
 		#region IAppearanceObserver
 
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_navigationArea = _outerLayout.FindViewById<FrameLayout>(Resource.Id.bottomtab_navarea);
 
 			_bottomView.SetBackgroundColor(Colors.White.ToAndroid());
-			_bottomView.SetOnNavigationItemSelectedListener(this);
+			_bottomView.SetOnItemSelectedListener(this);
 
 			if (ShellItem == null)
 				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
@@ -104,7 +105,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (_bottomView != null)
 			{
-				_bottomView?.SetOnNavigationItemSelectedListener(null);
+				_bottomView?.SetOnItemSelectedListener(null);
 				_bottomView?.Background?.Dispose();
 				_bottomView?.Dispose();
 			}

@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 			{
 				return bounds;
 			}
-			
+
 			return SafeAreaInsets.InsetRect(bounds);
 		}
 	}

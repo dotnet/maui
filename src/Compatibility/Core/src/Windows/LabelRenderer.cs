@@ -301,6 +301,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				textBlock.TextWrapping = TextWrapping.NoWrap;
 		}
 
+		[PortHandler]
 		void UpdateText(TextBlock textBlock)
 		{
 			_perfectSizeValid = false;

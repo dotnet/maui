@@ -1,90 +1,48 @@
+#nullable enable
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public class TestResultViewModel : ViewModelBase
-    {
-        TimeSpan duration;
-        string errorMessage = string.Empty;
-        string errorStackTrace = string.Empty;
-        TestCaseViewModel testCase;
-        ITestResultMessage testResultMessage;
+	public class TestResultViewModel : ViewModelBase
+	{
+		TimeSpan _duration;
+		string? _errorMessage;
+		string? _errorStackTrace;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="testCase"></param>
-        /// <param name="testResult"></param>
-        public TestResultViewModel(TestCaseViewModel testCase, ITestResultMessage testResult)
-        {
-            TestCase = testCase ?? throw new ArgumentNullException(nameof(testCase));
-            TestResultMessage = testResult;
+		public TestResultViewModel(TestCaseViewModel testCase, ITestResultMessage? testResult)
+		{
+			TestCase = testCase ?? throw new ArgumentNullException(nameof(testCase));
+			TestResultMessage = testResult;
 
-            if (testResult != null)
-                testCase.UpdateTestState(this);
-        }
+			if (testResult != null)
+				testCase.UpdateTestState(this);
+		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public TimeSpan Duration
-        {
-            get { return duration; }
-            set
-            {
-                if (Set(ref duration, value))
-                {
-                    testCase?.UpdateTestState(this);
-                }
-            }
-        }
+		public TestCaseViewModel TestCase { get; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public string ErrorMessage
-        {
-            get { return errorMessage; }
-            set { Set(ref errorMessage, value); }
-        }
+		public ITestResultMessage? TestResultMessage { get; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public string ErrorStackTrace
-        {
-            get { return errorStackTrace; }
-            set { Set(ref errorStackTrace, value); }
-        }
+		public TimeSpan Duration
+		{
+			get => _duration;
+			set => Set(ref _duration, value, () => TestCase?.UpdateTestState(this));
+		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public TestCaseViewModel TestCase
-        {
-            get { return testCase; }
-            private set { Set(ref testCase, value); }
-        }
+		public string? ErrorMessage
+		{
+			get => _errorMessage;
+			set => Set(ref _errorMessage, value);
+		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public ITestResultMessage TestResultMessage
-        {
-            get { return testResultMessage; }
-            private set { Set(ref testResultMessage, value); }
-        }
+		public string? ErrorStackTrace
+		{
+			get => _errorStackTrace;
+			set => Set(ref _errorStackTrace, value);
+		}
 
-        public string Output => TestResultMessage?.Output ?? string.Empty;
+		public string? Output => TestResultMessage?.Output;
 
-        public bool HasOutput => !string.IsNullOrWhiteSpace(Output);
-    }
+		public bool HasOutput => !string.IsNullOrWhiteSpace(Output);
+	}
 }
