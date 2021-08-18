@@ -23,11 +23,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="5.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="5.0.4" />
-    <PackageReference Include="Microsoft.JSInterop.WebAssembly" Version="5.0.4" />
+      <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.8" />
   </ItemGroup>
 
   <ItemGroup>
