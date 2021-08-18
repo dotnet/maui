@@ -54,9 +54,6 @@ parameters:
   - name: BuildEverything
     type: boolean
     default: false
-  - name: PipelineRunType
-    type: string
-    default: $(PipelineRunType) # all, device-tests, build
   - name: BuildConfigurations
     type: object
     default:
@@ -104,8 +101,6 @@ resources:
       ref: refs/heads/main # still defaults to master even though main is the main branch
 
 stages:
-
-- ${{ if or(eq(parameters.PipelineRunType, 'build'), eq(parameters.PipelineRunType, 'all')) }}:
 
   - stage: build_net6
     displayName: Build .NET 6
@@ -272,8 +267,6 @@ stages:
       parameters:
         dependsOn: nuget_signing
         approvalTimeoutInMinutes: 30
-
-- ${{ if or(eq(parameters.PipelineRunType, 'device-tests'), eq(parameters.PipelineRunType, 'all')) }}:
 
   - template: common/device-tests.yml
     parameters:
