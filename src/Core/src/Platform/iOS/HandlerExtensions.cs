@@ -17,6 +17,18 @@ namespace Microsoft.Maui
 
 		public static UIView ToNative(this IElement view, IMauiContext context)
 		{
+			var handler = view.ToHandler(context);
+
+			if (handler.NativeView is not UIView result)
+			{
+				throw new InvalidOperationException($"Unable to convert {view} to {typeof(UIView)}");
+			}
+
+			return result;
+		}
+
+		public static INativeViewHandler ToHandler(this IElement view, IMauiContext context)
+		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
 
