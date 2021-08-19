@@ -159,8 +159,8 @@ stages:
             vmImage: ${{ BuildPlatform.vmImage }}
           steps:
             - template: common/provision.yml
-                parameters:
-                  platform: ${{ BuildPlatform.name }}
+              parameters:
+                platform: ${{ BuildPlatform.name }}
             - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
               displayName: 'Pack .NET Maui'
             - task: CopyFiles@2
