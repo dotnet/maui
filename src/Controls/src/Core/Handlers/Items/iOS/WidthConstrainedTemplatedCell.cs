@@ -34,16 +34,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return (false, size);
 			}
 
-			var desiredBounds = (NativeHandler.VirtualView as VisualElement).Measure(bounds.Width, double.PositiveInfinity,
-				MeasureFlags.IncludeMargins);
+			var desiredBounds = NativeHandler.VirtualView.Measure(bounds.Width, double.PositiveInfinity);
 
-			if (desiredBounds.Request.Height == currentSize.Height)
+			if (desiredBounds.Height == currentSize.Height)
 			{
 				// Nothing in the cell needs more room, so leave it as it is
 				return (false, size);
 			}
 
-			return (true, desiredBounds.Request);
+			return (true, desiredBounds);
 		}
 	}
 }
