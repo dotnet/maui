@@ -2,6 +2,7 @@
 
 var ext = IsRunningOnWindows() ? ".exe" : "";
 var dotnetPath = $"./bin/dotnet/dotnet{ext}";
+var localDotnet = GetBuildVariable("dotnet", "local") == "local";
 
 // Tasks for CI
 
@@ -9,6 +10,9 @@ Task("dotnet")
     .Description("Provisions .NET 6 into bin/dotnet based on eng/Versions.props")
     .Does(() =>
     {
+        if (!localDotnet) 
+            return;
+
         DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
@@ -20,6 +24,9 @@ Task("dotnet")
 Task("dotnet-local-workloads")
     .Does(() =>
     {
+        if (!localDotnet) 
+            return;
+        
         DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
@@ -162,7 +169,9 @@ Task("VS-NET6")
     {
         // VS has trouble building all the references correctly so this makes sure everything is built
         // and we're ready to go right when VS launches
+        
         RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample-net6.csproj");
+        RunMSBuildWithLocalDotNet("./src/Core/tests/DeviceTests/Core.DeviceTests.csproj");
         StartVisualStudioForDotNet6();
     });
 
@@ -301,11 +310,20 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
         return;
     }
 
-    var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = true, });
+    bool includePrerelease = true;
+
+    if (!String.IsNullOrEmpty(vsVersion))
+        includePrerelease = (vsVersion == "preview");
+
+    var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, });
     if (vsLatest == null)
         throw new Exception("Unable to find Visual Studio!");
-    SetDotNetEnvironmentVariables();
-    SetEnvironmentVariable("_ExcludeMauiProjectCapability", "true");
+    if(localDotnet)
+    {
+        SetDotNetEnvironmentVariables();
+        SetEnvironmentVariable("_ExcludeMauiProjectCapability", "true");
+    }
+
     StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
 }
 
@@ -316,7 +334,8 @@ void RunMSBuildWithLocalDotNet(string sln, Dictionary<string, string> properties
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var binlog = $"{logDirectory}/{name}-{configuration}.binlog";
 
-    SetDotNetEnvironmentVariables();
+    if(localDotnet)
+        SetDotNetEnvironmentVariables();
 
     // If we're not on Windows, use ./bin/dotnet/dotnet
     if (!IsRunningOnWindows() || deployAndRun)
@@ -370,7 +389,8 @@ void RunTestWithLocalDotNet(string csproj)
     var binlog = $"{logDirectory}/{name}-{configuration}.binlog";
     var results = $"{name}-{configuration}.trx";
 
-    SetDotNetEnvironmentVariables();
+    if(localDotnet)
+        SetDotNetEnvironmentVariables();
 
     DotNetCoreTest(csproj,
         new DotNetCoreTestSettings

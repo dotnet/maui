@@ -79,6 +79,8 @@ var releaseChannelArg = GetBuildVariable("CHANNEL", "Stable");
 var teamProject = GetBuildVariable("TeamProject", GetBuildVariable("SYSTEM_TEAMPROJECT", ""));
 bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.StartsWith("Hosted Agent");
 
+var vsVersion = GetBuildVariable("VS", "");
+
 var MAUI_SLN = "./Microsoft.Maui.sln";
 
 var CONTROLGALLERY_SLN = "./ControlGallery.sln";
@@ -168,6 +170,7 @@ Information("workingDirectory: {0}", workingDirectory);
 Information("NUNIT_TEST_WHERE: {0}", NUNIT_TEST_WHERE);
 Information("TARGET: {0}", target);
 Information("MSBUILD: {0}", MSBuildExe);
+Information("vsVersion: {0}", vsVersion);
 
 
 var releaseChannel = ReleaseChannel.Stable;
@@ -756,7 +759,7 @@ Task("Android100")
     });
 
 Task("VS")
-    .Description("Builds projects necessary so solution compiles on VS")
+    .Description("Builds projects necessary so solution compiles on VS Preview")
     .IsDependentOn("Clean")
     .IsDependentOn("VSMAC")
     .IsDependentOn("VSWINDOWS");
@@ -767,6 +770,17 @@ Task("VS-CG")
     .IsDependentOn("VSMAC")
     .IsDependentOn("VSWINDOWS");
 
+Task("VS-CG-STABLE")
+    .Description("Builds projects necessary so solution compiles on VS")
+    .IsDependentOn("Clean")
+    .IsDependentOn("VSMAC")
+    .IsDependentOn("VSWINDOWS");
+
+Task("VS-STABLE")
+    .Description("Builds projects necessary so solution compiles on VS Stable")
+    .IsDependentOn("Clean")
+    .IsDependentOn("VSMAC")
+    .IsDependentOn("VSWINDOWS");
 
 Task("VSWINDOWS")
     .Description("Builds projects necessary so solution compiles on VS Windows")
@@ -774,15 +788,22 @@ Task("VSWINDOWS")
     .WithCriteria(IsRunningOnWindows())
     .Does(() =>
     {
-        string sln = "Microsoft.Maui.sln";
-        if (target == "VS-CG")
-            sln = "Compatibility.ControlGallery.sln";
+        bool includePrerelease = !target.ToLower().Contains("stable");
 
-        MSBuild(sln,
+        if (target.ToLower().StartsWith("vs-cg"))
+        {
+            MSBuild("Compatibility.ControlGallery.sln",
                 GetMSBuildSettings()
                     .WithRestore());
-
-        StartVisualStudio(sln);
+            StartVisualStudio("Compatibility.ControlGallery.sln", includePrerelease: includePrerelease);
+        }
+        else
+        {
+            MSBuild(@"src\Compatibility\Core\src\Compatibility.csproj",
+                GetMSBuildSettings()
+                    .WithRestore());
+            StartVisualStudio("Microsoft.Maui.sln", includePrerelease: includePrerelease);
+        }
     });
 
 Task("VSMAC")
@@ -1054,20 +1075,21 @@ void RunTests(string unitTestLibrary, NUnit3Settings settings, ICakeContext ctx)
     }
 }
 
-void StartVisualStudio(string sln = "./Microsoft.Maui.sln")
+void StartVisualStudio(string sln = "./Microsoft.Maui.sln", bool includePrerelease = true)
 {
     if(isCIBuild)
         return;
 
+    if (!String.IsNullOrWhiteSpace(vsVersion))
+        includePrerelease = (vsVersion == "preview");
+    
     if(IsRunningOnWindows())
     {
-        StartProcess("powershell",
-            new ProcessSettings
-            {
-                Arguments = new ProcessArgumentBuilder()
-                    .Append("start")
-                    .Append(sln)
-            });
+        var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, });
+        if (vsLatest == null)
+            throw new Exception("Unable to find Visual Studio!");
+
+        StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
     }
     else
          StartProcess("open", new ProcessSettings{ Arguments = sln });
