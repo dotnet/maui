@@ -2,7 +2,7 @@ parameters:
   platform: '' # [ android, ios ]
   path: '' # path to csproj
   device: '' # the xharness device to use
-  cakeArgs: '--verbosity=diagnostic' # additional cake args
+  cakeArgs: '' # additional cake args
 
 steps:
 
