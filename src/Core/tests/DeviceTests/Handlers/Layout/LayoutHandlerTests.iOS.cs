@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 	{
 		double GetNativeChildCount(LayoutHandler layoutHandler)
 		{
-			return layoutHandler.NativeView.Subviews.Length;
+			return ((layoutHandler as IElementHandler).NativeView as UIView).Subviews.Length;
 		}
 
 		IReadOnlyList<UIView> GetNativeChildren(LayoutHandler layoutHandler)
