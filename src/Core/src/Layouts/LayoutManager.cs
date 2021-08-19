@@ -15,16 +15,21 @@ namespace Microsoft.Maui.Layouts
 		public abstract Size Measure(double widthConstraint, double heightConstraint);
 		public abstract Size ArrangeChildren(Rectangle bounds);
 
-		public static double ResolveConstraints(double externalConstraint, double explicitLength, double measuredLength)
+		public static double ResolveConstraints(double externalConstraint, double explicitLength, double measuredLength, double min = -1, double max = -1)
 		{
-			if (explicitLength == -1)
+			var length = explicitLength >= 0 ? explicitLength : measuredLength;
+
+			if (max >= 0 && max < length)
 			{
-				// No user-specified length, so the measured value will be limited by the external constraint
-				return Math.Min(measuredLength, externalConstraint);
+				length = max;
 			}
 
-			// User-specified length wins, subject to external constraints
-			return Math.Min(explicitLength, externalConstraint);
+			if (min >= 0 && min > length)
+			{
+				length = min;
+			}
+
+			return Math.Min(length, externalConstraint);
 		}
 	}
 }

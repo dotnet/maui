@@ -37,6 +37,14 @@ namespace Microsoft.Maui.UnitTests
 
 		public double Height { get; set; }
 
+		public double MinimumHeight { get; set; }
+		
+		public double MinimumWidth { get; set; }
+		
+		public double MaximumHeight { get; set; }
+		
+		public double MaximumWidth { get; set; }
+
 		public Thickness Margin { get; set; }
 
 		public string AutomationId { get; set; }

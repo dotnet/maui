@@ -118,6 +118,10 @@ namespace Microsoft.Maui.Controls
 
 		double IView.Width => WidthRequest;
 		double IView.Height => HeightRequest;
+		double IView.MinimumWidth => MinimumWidthRequest == -1 ? 0 : MinimumWidthRequest;
+		double IView.MinimumHeight => MinimumHeightRequest == -1 ? 0 : MinimumHeightRequest;
+		double IView.MaximumWidth => MaximumWidthRequest;
+		double IView.MaximumHeight => MaximumHeightRequest;
 
 		Thickness IView.Margin => Thickness.Zero;
 	}

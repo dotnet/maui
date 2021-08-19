@@ -118,6 +118,40 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.RotationY, rY);
 		}
 
+		[Theory]
+		[InlineData(0)]
+		[InlineData(100)]
+		[InlineData(-1)]
+		public async Task MinimumHeightInitializes(double minHeight) 
+		{
+			var view = new TStub()
+			{
+				MinimumHeight = minHeight
+			};
+
+			var expected = view.MinimumHeight == -1 ? 0 : view.MinimumHeight;
+			var result = await GetValueAsync(view, handler => GetMinHeight(handler));
+
+			Assert.Equal(expected, result, 4);
+		}
+
+		[Theory]
+		[InlineData(0)]
+		[InlineData(100)]
+		[InlineData(-1)]
+		public async Task MinimumWidthInitializes(double minWidth)
+		{
+			var view = new TStub()
+			{
+				MinimumWidth = minWidth
+			};
+
+			var expected = view.MinimumWidth == -1 ? 0 : view.MinimumWidth;
+			var result = await GetValueAsync(view, handler => GetMinWidth(handler));
+
+			Assert.Equal(expected, result, 4);
+		}
+
 		protected string GetAutomationId(IViewHandler viewHandler) =>
 			$"{((View)viewHandler.NativeView).GetTag(ViewExtensions.AutomationTagId)}";
 
@@ -186,6 +220,28 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = (View)viewHandler.NativeView;
 
 			return Math.Floor(nativeView.RotationY);
+		}
+
+		double GetMinHeight(IViewHandler viewHandler)
+		{
+			var nativeView = (View)viewHandler.NativeView;
+
+			var nativeHeight = nativeView.MinimumHeight;
+
+			var xplatHeight = nativeView.Context.FromPixels(nativeHeight);
+
+			return xplatHeight;
+		}
+
+		double GetMinWidth(IViewHandler viewHandler)
+		{
+			var nativeView = (View)viewHandler.NativeView;
+
+			var nativeWidth = nativeView.MinimumWidth;
+
+			var xplatWidth = nativeView.Context.FromPixels(nativeWidth);
+
+			return xplatWidth;
 		}
 
 		protected Visibility GetVisibility(IViewHandler viewHandler)

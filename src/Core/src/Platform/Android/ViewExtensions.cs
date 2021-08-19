@@ -115,6 +115,59 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateMinimumHeight(this AView nativeView, IView view)
+		{
+			var xplatMinHeight = view.MinimumHeight;
+
+			if (xplatMinHeight < 0)
+			{
+				xplatMinHeight = 0;
+			}
+			
+			var value = (int)nativeView.Context!.ToPixels(xplatMinHeight);
+			nativeView.SetMinimumHeight(value);
+
+			if (!nativeView.IsInLayout)
+			{
+				nativeView.RequestLayout();
+			}
+		}
+
+		public static void UpdateMinimumWidth(this AView nativeView, IView view)
+		{
+			var xplatMinWidth = view.MinimumWidth;
+			if (xplatMinWidth < 0)
+			{
+				xplatMinWidth = 0;
+			}
+
+			var value = (int)nativeView.Context!.ToPixels(xplatMinWidth);
+			nativeView.SetMinimumWidth(value);
+
+			if (!nativeView.IsInLayout)
+			{
+				nativeView.RequestLayout();
+			}
+		}
+
+		public static void UpdateMaximumHeight(this AView nativeView, IView view)
+		{
+			// GetDesiredSize will take the specified Height into account during the layout
+			if (!nativeView.IsInLayout)
+			{
+				nativeView.RequestLayout();
+			}
+		}
+
+		public static void UpdateMaximumWidth(this AView nativeView, IView view)
+		{
+			// GetDesiredSize will take the specified Height into account during the layout
+			if (!nativeView.IsInLayout)
+			{
+				nativeView.RequestLayout();
+			}
+		}
+
 		public static void RemoveFromParent(this AView view)
 		{
 			if (view == null)
@@ -123,6 +176,5 @@ namespace Microsoft.Maui
 				return;
 			((ViewGroup)view.Parent).RemoveView(view);
 		}
-
 	}
 }

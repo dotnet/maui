@@ -55,8 +55,8 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// Create a spec to handle the native measure
-			var widthSpec = CreateMeasureSpec(widthConstraint, VirtualView.Width);
-			var heightSpec = CreateMeasureSpec(heightConstraint, VirtualView.Height);
+			var widthSpec = CreateMeasureSpec(widthConstraint, VirtualView.Width, VirtualView.MaximumWidth);
+			var heightSpec = CreateMeasureSpec(heightConstraint, VirtualView.Height, VirtualView.MaximumHeight);
 
 			nativeView.Measure(widthSpec, heightSpec);
 
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Handlers
 			return Context.FromPixels(nativeView.MeasuredWidth, nativeView.MeasuredHeight);
 		}
 
-		int CreateMeasureSpec(double constraint, double explicitSize)
+		int CreateMeasureSpec(double constraint, double explicitSize, double maximumSize)
 		{
 			var mode = MeasureSpecMode.AtMost;
 
@@ -73,6 +73,11 @@ namespace Microsoft.Maui.Handlers
 				// We have a set value (i.e., a Width or Height)
 				mode = MeasureSpecMode.Exactly;
 				constraint = explicitSize;
+			}
+			else if (maximumSize >= 0)
+			{
+				mode = MeasureSpecMode.AtMost;
+				constraint = maximumSize;
 			}
 			else if (double.IsInfinity(constraint))
 			{

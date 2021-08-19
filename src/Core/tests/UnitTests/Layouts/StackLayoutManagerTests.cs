@@ -13,6 +13,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var stack = Substitute.For<IStackLayout>();
 			stack.Height.Returns(-1);
 			stack.Width.Returns(-1);
+			stack.MinimumHeight.Returns(-1);
+			stack.MinimumWidth.Returns(-1);
+			stack.MaximumHeight.Returns(-1);
+			stack.MaximumWidth.Returns(-1);
 			stack.Spacing.Returns(0);
 
 			return stack;
