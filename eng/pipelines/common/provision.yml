@@ -1,11 +1,10 @@
 parameters:
-  platform : ''
   skipXcode: false
 
 steps:
 
   # Prepare macOS
-  - ${{ if eq(parameters.platform, 'macos') }}:
+  - ${{ if eq(variables['Agent.OS'], 'Darwin') }}:
     # Provision Xcode
     - ${{ if ne(parameters.skipXcode, 'true') }}:
       - task: xamops.azdevex.provisionator-task.provisionator@1
@@ -63,7 +62,7 @@ steps:
 
 
   # Prepare Windows
-  - ${{ if eq(parameters.platform, 'windows') }}:
+  - ${{ if eq(variables['Agent.OS'], 'Windows') }}:
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Visual Studio'
       inputs:
