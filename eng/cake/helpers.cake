@@ -63,7 +63,9 @@ public void PrintEnvironmentVariables()
 
 void SetDotNetEnvironmentVariables(string dotnetDir)
 {
-    var dotnet = dotnetDir ?? MakeAbsolute(Directory("./bin/dotnet/")).ToString();
+    var dotnet = string.IsNullOrEmpty(dotnetDir)
+        ? MakeAbsolute(Directory("./bin/dotnet/")).ToString()
+        : dotnetDir.Trim();
 
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
