@@ -1,7 +1,12 @@
 ﻿using System;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
+using Android.Util;
+using AndroidX.AppCompat.Content.Res;
+using AndroidX.Core.View;
 using Google.Android.Material.BottomNavigation;
+using Google.Android.Material.Shape;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -13,7 +18,9 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		IShellContext _shellContext;
 		ShellItem _shellItem;
-		ColorStateList _defaultList;
+		static ColorStateList _defaultListLight;
+		static ColorStateList _defaultListDark;
+
 		bool _disposed;
 		ColorStateList _colorStateList;
 
@@ -23,15 +30,16 @@ namespace Microsoft.Maui.Controls.Platform
 			_shellContext = shellContext;
 		}
 
+		static ColorStateList GetDefaultTabColorList(Context context) =>
+			ShellView.IsDarkTheme ?
+			_defaultListDark ??= MakeDefaultColorStateList(context)
+			: _defaultListLight ??= MakeDefaultColorStateList(context);
+
 		public virtual void ResetAppearance(BottomNavigationView bottomView)
 		{
-			if (_defaultList != null)
-			{
-				bottomView.ItemTextColor = _defaultList;
-				bottomView.ItemIconTintList = _defaultList;
-			}
-
-			SetBackgroundColor(bottomView, Colors.White);
+			bottomView.ItemIconTintList = GetDefaultTabColorList(_shellContext.AndroidContext);
+			bottomView.ItemTextColor = GetDefaultTabColorList(_shellContext.AndroidContext);
+			SetBackgroundColor(bottomView, null);
 		}
 
 		public virtual void SetAppearance(BottomNavigationView bottomView, IShellAppearanceElement appearance)
@@ -42,16 +50,6 @@ namespace Microsoft.Maui.Controls.Platform
 			var disabledColor = controller.EffectiveTabBarDisabledColor;
 			var unselectedColor = controller.EffectiveTabBarUnselectedColor;
 			var titleColor = controller.EffectiveTabBarTitleColor;
-
-			if (_defaultList == null)
-			{
-#if __ANDROID_28__
-				_defaultList = bottomView.ItemTextColor ?? bottomView.ItemIconTintList
-					?? MakeColorStateList(titleColor.ToNative().ToArgb(), disabledColor.ToNative().ToArgb(), unselectedColor.ToNative().ToArgb());
-#else
-				_defaultList = bottomView.ItemTextColor ?? bottomView.ItemIconTintList;
-#endif
-			}
 
 			_colorStateList = MakeColorStateList(titleColor, disabledColor, unselectedColor);
 			bottomView.ItemTextColor = _colorStateList;
@@ -70,7 +68,7 @@ namespace Microsoft.Maui.Controls.Platform
 			AColor newColor;
 
 			if (color == null)
-				newColor = Colors.White.ToNative();
+				newColor = ShellView.DefaultBottomNavigationViewBackgroundColor.ToNative();
 			else
 				newColor = color.ToNative();
 
@@ -81,7 +79,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (lastColor != newColor || colorDrawable == null)
 				{
-					bottomView.SetBackground(new ColorDrawable(newColor));
+					// taken from android source code
+					var backgroundColor = new MaterialShapeDrawable();
+					backgroundColor.FillColor = ColorStateList.ValueOf(newColor);
+					backgroundColor.InitializeElevationOverlay(bottomView.Context);
+
+					ViewCompat.SetBackground(bottomView, backgroundColor);
 				}
 			}
 			else
@@ -99,28 +102,44 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var touchPoint = new Point(child.Left + (child.Right - child.Left) / 2, child.Top + (child.Bottom - child.Top) / 2);
 
-				bottomView.SetBackground(new ColorChangeRevealDrawable(lastColor, newColor, touchPoint));
+				ViewCompat.SetBackground(bottomView, new ColorChangeRevealDrawable(lastColor, newColor, touchPoint));
 			}
+		}
+
+		static ColorStateList MakeDefaultColorStateList(Context context)
+		{
+			TypedValue mTypedValue = new TypedValue();
+			if (context.Theme?.ResolveAttribute(R.Attribute.TextColorSecondary, mTypedValue, true) == false)
+				return null;
+
+			var baseCSL = AppCompatResources.GetColorStateList(context, mTypedValue.ResourceId);
+			var colorPrimary = (ShellView.IsDarkTheme) ? AColor.White : ShellView.DefaultBackgroundColor.ToNative();
+			int defaultColor = baseCSL.DefaultColor;
+			var disabledcolor = baseCSL.GetColorForState(new[] { -R.Attribute.StateEnabled }, AColor.Gray);
+
+			return MakeColorStateList(colorPrimary, disabledcolor, defaultColor);
 		}
 
 		ColorStateList MakeColorStateList(Color titleColor, Color disabledColor, Color unselectedColor)
 		{
+			var defaultList = GetDefaultTabColorList(_shellContext.AndroidContext);
+
 			var disabledInt = disabledColor == null ?
-				_defaultList.GetColorForState(new[] { -R.Attribute.StateEnabled }, AColor.Gray) :
+				defaultList.GetColorForState(new[] { -R.Attribute.StateEnabled }, AColor.Gray) :
 				disabledColor.ToNative().ToArgb();
 
 			var checkedInt = titleColor == null ?
-				_defaultList.GetColorForState(new[] { R.Attribute.StateChecked }, AColor.Black) :
+				defaultList.GetColorForState(new[] { R.Attribute.StateChecked }, AColor.Black) :
 				titleColor.ToNative().ToArgb();
 
 			var defaultColor = unselectedColor == null ?
-				_defaultList.DefaultColor :
+				defaultList.DefaultColor :
 				unselectedColor.ToNative().ToArgb();
 
 			return MakeColorStateList(checkedInt, disabledInt, defaultColor);
 		}
 
-		ColorStateList MakeColorStateList(int titleColorInt, int disabledColorInt, int defaultColor)
+		static ColorStateList MakeColorStateList(int titleColorInt, int disabledColorInt, int defaultColor)
 		{
 			var states = new int[][] {
 				new int[] { -R.Attribute.StateEnabled },
@@ -149,12 +168,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (disposing)
 			{
-				_defaultList?.Dispose();
 				_colorStateList?.Dispose();
 
 				_shellItem = null;
 				_shellContext = null;
-				_defaultList = null;
 				_colorStateList = null;
 			}
 		}

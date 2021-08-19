@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler
 	{
-		public static PropertyMapper<ILabel, LabelHandler> LabelMapper = new PropertyMapper<ILabel, LabelHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<ILabel, LabelHandler> LabelMapper = new PropertyMapper<ILabel, LabelHandler>(ViewHandler.ViewMapper)
 		{
 #if WINDOWS || __IOS__
 			[nameof(ILabel.Background)] = MapBackground,
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public LabelHandler(PropertyMapper? mapper = null) : base(mapper ?? LabelMapper)
+		public LabelHandler(IPropertyMapper? mapper = null) : base(mapper ?? LabelMapper)
 		{
 
 		}
