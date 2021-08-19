@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		private void OnRefresh(object sender, EventArgs e)
+		private void OnRefresh(object? sender, EventArgs e)
 		{
 			VirtualView.IsRefreshing = true;
 		}
