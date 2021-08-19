@@ -2,7 +2,6 @@
 
 var ext = IsRunningOnWindows() ? ".exe" : "";
 var dotnetPath = $"./bin/dotnet/dotnet{ext}";
-var localDotnet = GetBuildVariable("dotnet", "local") == "local";
 
 // Tasks for CI
 
@@ -333,7 +332,7 @@ void RunMSBuildWithLocalDotNet(string sln, Dictionary<string, string> properties
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var binlog = $"{logDirectory}/{name}-{configuration}.binlog";
-
+    
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
@@ -357,9 +356,11 @@ void RunMSBuildWithLocalDotNet(string sln, Dictionary<string, string> properties
 
         var dotnetBuildSettings = new DotNetCoreBuildSettings
         {
-            ToolPath = dotnetPath,
             MSBuildSettings = msbuildSettings,
         };
+
+        if (localDotnet)
+            dotnetBuildSettings.ToolPath = dotnetPath;
 
         DotNetCoreBuild(sln, dotnetBuildSettings);
     }
