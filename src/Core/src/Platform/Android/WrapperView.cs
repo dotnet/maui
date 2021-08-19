@@ -10,6 +10,8 @@ namespace Microsoft.Maui
 {
 	public partial class WrapperView : ViewGroup
 	{
+		const int MaximumRadius = 100;
+
 		readonly Rect _viewBounds;
 
 		APath _currentPath;
@@ -26,8 +28,7 @@ namespace Microsoft.Maui
 			_viewBounds = new Rect();
 
 			SetClipChildren(false);
-			SetClipToPadding(false);
-			SetWillNotDraw(false);
+			SetWillNotDraw(true);
 		}
 
 		protected override void OnDetachedFromWindow()
@@ -99,9 +100,12 @@ namespace Microsoft.Maui
 					// If bounds is zero
 					if (_viewBounds.Width() != 0 && _viewBounds.Height() != 0)
 					{
+						var bitmapHeight = _viewBounds.Height() + MaximumRadius;
+						var bitmapWidth = _viewBounds.Width() + MaximumRadius;
+
 						// Reset bitmap to bounds
 						_shadowBitmap = Bitmap.CreateBitmap(
-							_viewBounds.Width(), _viewBounds.Height(), Bitmap.Config.Argb8888
+							bitmapWidth, bitmapHeight, Bitmap.Config.Argb8888
 						);
 
 						// Reset Canvas
@@ -129,6 +133,9 @@ namespace Microsoft.Maui
 
 						if (radius <= 0)
 							radius = 0.01f;
+
+						if (radius > 100)
+							radius = MaximumRadius;
 
 						_shadowPaint.SetMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.Normal));
 

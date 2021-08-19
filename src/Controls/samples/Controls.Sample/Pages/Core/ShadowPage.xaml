@@ -42,7 +42,7 @@
                 WidthRequest="150"
                 RadiusX="12"
                 RadiusY="12"
-                Margin="12"/>
+                Margin="0"/>
             <Label
                 Grid.Row="4"
                 Text="Clipped View"
