@@ -9,7 +9,7 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
-var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
+var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net6.0-ios" : ""));
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
@@ -22,6 +22,7 @@ string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iossimul
 string CONFIGURATION = "Release";
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 
+Information(".NET Root: {0}", DOTNET_ROOT);
 Information("Project File: {0}", PROJECT);
 Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
@@ -34,7 +35,7 @@ Setup(context =>
 	// only install when an explicit version is specified
 	if (TEST_DEVICE.IndexOf("_") != -1) {
 		var settings = new DotNetCoreToolSettings {
-			ToolPath = DOTNET_PATH,
+			ToolPath = DOTNET_ROOT,
 			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
 				$"\"{TEST_DEVICE}\" " +
@@ -86,7 +87,7 @@ Task("Build")
 
 	if (USE_DOTNET)
 	{
-		SetDotNetEnvironmentVariables(DOTNET_PATH);
+		SetDotNetEnvironmentVariables(DOTNET_ROOT);
 
 		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
 			Configuration = CONFIGURATION,

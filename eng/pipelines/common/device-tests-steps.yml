@@ -19,7 +19,7 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
     displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" --dotnet-root="$(DotNet.Dir)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
 
   - task: PublishTestResults@2

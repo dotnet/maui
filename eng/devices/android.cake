@@ -11,7 +11,7 @@ string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
-var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
+var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net6.0-android" : ""));
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
@@ -35,7 +35,7 @@ SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/tools/bin", prepend: true);
 SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/platform-tools", prepend: true);
 SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/emulator", prepend: true);
 
-Information(".NET Path: {0}", DOTNET_PATH);
+Information(".NET Root: {0}", DOTNET_ROOT);
 Information("Android SDK Root: {0}", ANDROID_SDK_ROOT);
 Information("Project File: {0}", PROJECT);
 Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
@@ -141,7 +141,7 @@ Task("Build")
 
 	if (USE_DOTNET)
 	{
-		SetDotNetEnvironmentVariables(DOTNET_PATH);
+		SetDotNetEnvironmentVariables(DOTNET_ROOT);
 
 		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
 			Configuration = CONFIGURATION,
