@@ -21,12 +21,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return CGSize.Empty;
 			}
 
-			var measure = (NativeHandler.VirtualView as VisualElement)?.Measure(double.PositiveInfinity,
-				ConstrainedDimension, MeasureFlags.IncludeMargins);
+			var measure = NativeHandler.VirtualView.Measure(double.PositiveInfinity, ConstrainedDimension);
 
 
 			var width = NativeHandler.VirtualView.Width > 0
-				? NativeHandler.VirtualView.Width : measure.Value.Request.Width;
+				? NativeHandler.VirtualView.Width : measure.Width;
 
 			return new CGSize(width, ConstrainedDimension);
 		}

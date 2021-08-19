@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public virtual void UpdateFlowDirection()
 		{
-		//	CollectionView.UpdateFlowDirection(ItemsView);
+		//CollectionView.UpdateFlowDirection(ItemsView);
 
 			if (_emptyViewDisplayed)
 			{
