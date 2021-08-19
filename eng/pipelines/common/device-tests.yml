@@ -1,6 +1,6 @@
 parameters:
-  androidVmPool: '$(androidTestsVmPool)'
-  androidVmImage: '$(androidTestsVmImage)'
+  androidVmPool: 'XamarinForms'
+  androidVmImage: 'XamarinForms'
   iosVmPool: '$(iosTestsVmPool)'
   iosVmImage: '$(iosTestsVmImage)'
   androidApiLevels: [ 30 ]
@@ -36,6 +36,7 @@ stages:
               steps:
                 - template: device-tests-steps.yml
                   parameters:
+                    hostPlatform: windows
                     platform: android
                     path: ${{ project.android }}
                     device: android-emulator-32_${{ api }}

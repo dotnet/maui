@@ -1,5 +1,6 @@
 parameters:
   platform: '' # [ android, ios ]
+  hostPlatform: 'macos' # [ macos, windows ]
   path: '' # path to csproj
   device: '' # the xharness device to use
   cakeArgs: '' # additional cake args
@@ -8,7 +9,7 @@ steps:
 
   - template: provision.yml
     parameters:
-      platform: macos
+      platform: ${{ parameters.hostPlatform }}
       skipXcode: ${{ eq(parameters.platform, 'android') }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release"
@@ -20,7 +21,7 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
     displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" --dotnet-root="$(DotNet.Dir)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
 
   - task: PublishTestResults@2
