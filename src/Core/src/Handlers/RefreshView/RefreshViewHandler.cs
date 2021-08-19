@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IRefreshView.Content)] = MapContent,
 			[nameof(IRefreshView.RefreshColor)] = MapRefreshColor,
 			[nameof(IView.Background)] = MapBackground,
+			[nameof(IView.IsEnabled)] = MapIsEnabled,
 		};
 
 		public RefreshViewHandler() : base(RefreshMapper)
