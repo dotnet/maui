@@ -45,6 +45,7 @@
     <EnableDefaultApplicationDefinition>False</EnableDefaultApplicationDefinition>
     <_SingleProjectWindowsExcludes>$(WindowsProjectFolder)/**/.*/**</_SingleProjectWindowsExcludes>
     <WindowsPackageType>MSIX</WindowsPackageType>
+    <OutputType Condition="'$(OutputType)' == 'Exe'">WinExe</OutputType>
   </PropertyGroup>
 
   <!-- Removals -->
