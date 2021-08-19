@@ -1,6 +1,6 @@
 parameters:
-  androidVmPool: '$(androidTestsVmPool)'
-  androidVmImage: '$(androidTestsVmImage)'
+  androidVmPool: XamarinForms
+  androidVmImage: XamarinForms
   iosVmPool: '$(iosTestsVmPool)'
   iosVmImage: '$(iosTestsVmImage)'
   androidApiLevels: [ 30 ]

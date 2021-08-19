@@ -149,7 +149,6 @@ Task("Build")
 			ArgumentCustomization = args => args
 				.Append("/p:EmbedAssembliesIntoApk=true")
 				.Append("/bl:" + binlog),
-			ToolPath = DOTNET_PATH,
 		});
 	}
 	else
