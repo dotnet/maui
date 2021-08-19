@@ -356,7 +356,9 @@ namespace Microsoft.Maui.Controls
 		internal Task SendSleepAsync()
 		{
 			OnSleep();
+#pragma warning disable CS0618 // Type or member is obsolete
 			return SavePropertiesAsync();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		internal void SendStart()
@@ -392,7 +394,9 @@ namespace Microsoft.Maui.Controls
 			await SaveSemaphore.WaitAsync();
 			try
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				await DependencyService.Get<IDeserializer>().SerializePropertiesAsync(Properties);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 			finally
 			{
