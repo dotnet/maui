@@ -9,7 +9,7 @@
     "shortName": "maui",
     "tags": {
       "language": "C#",
-      "type": "project"
+      "type": "solution"
     },
     "sourceName": "MauiApp1",
     "sources": [
@@ -21,6 +21,7 @@
     ],
     "preferNameDirectory": true,
     "guids": [
+      "07CD65EF-6238-4365-AF5D-F6D433967F48",
       "919dc1f9-17a9-48b3-81f8-0b8016bdfbf7"
     ],
     "symbols": {
