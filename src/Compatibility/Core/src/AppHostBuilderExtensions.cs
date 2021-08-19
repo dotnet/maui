@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls.Hosting
 
 					// Update the mappings for ILabel/Label to work specifically for Controls
 					Label.RemapForControls();
-					
+
 				})
 				.ConfigureServices<MauiCompatBuilder>();
 
