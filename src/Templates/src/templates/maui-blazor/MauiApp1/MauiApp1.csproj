@@ -51,7 +51,7 @@
 
 	<PropertyGroup>
 		<!-- Required - WinUI can't deploy in a multi-targeting environment -->
-		<AppxPackageRecipe>bin\$(Configuration)\net6.0-windows10.0.19041\win-x64\$(ProjectName).build.appxrecipe</AppxPackageRecipe>
+		<AppxPackageRecipe>bin\$(Configuration)\net6.0-windows10.0.19041\win-x64\MauiApp1.build.appxrecipe</AppxPackageRecipe>
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-windows'))">win-x64</RuntimeIdentifier>
 	</PropertyGroup>
 
