@@ -20,6 +20,9 @@
 		<!-- Versions -->
 		<ApplicationVersion>1.0</ApplicationVersion>
 		<AndroidVersionCode>1</AndroidVersionCode>
+
+		<!-- Required for C# Hot Reload -->
+		<UseInterpreter>True</UseInterpreter>
 	</PropertyGroup>
 
 	<ItemGroup>
