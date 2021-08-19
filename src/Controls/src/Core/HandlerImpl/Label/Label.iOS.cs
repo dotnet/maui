@@ -1,10 +1,10 @@
-﻿using Microsoft.Maui;
-using Controls.Core.Platform.iOS.Extensions;
+﻿using Controls.Core.Platform.iOS.Extensions;
+using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Label 
+	public partial class Label
 	{
 		public static void RemapForControls()
 		{

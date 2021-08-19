@@ -14,7 +14,7 @@ namespace Microsoft.Maui
 			textView.Text = label.Text;
 		}
 
-		public static void UpdateTextHtml(this TextView textView, ILabel label) 
+		public static void UpdateTextHtml(this TextView textView, ILabel label)
 		{
 			var newText = label.Text;
 
