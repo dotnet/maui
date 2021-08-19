@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "MauiApp1.WinUI": {
+    "Windows Machine": {
       "commandName": "MsixPackage",
       "nativeDebugging": false
     }
