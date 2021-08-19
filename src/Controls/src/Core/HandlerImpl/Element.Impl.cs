@@ -47,6 +47,8 @@ namespace Microsoft.Maui.Controls
 
 			try
 			{
+				// If a handler is getting changed before the end of this method
+				// Something is wired up correctly
 				if (_previousHandler != null)
 					throw new InvalidOperationException("Handler is already being set elsewhere");
 
@@ -55,6 +57,8 @@ namespace Microsoft.Maui.Controls
 				OnHandlerChangingCore(new HandlerChangingEventArgs(_previousHandler, newHandler));
 
 				_handler = newHandler;
+
+				// Disconnect the handler after the changing event fire
 				_previousHandler?.DisconnectHandler();
 
 				if (_handler?.VirtualView != this)
