@@ -66,6 +66,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.AreEqual(3, button.changed);
 		}
 
+		[Test]
+		public void DisconnectCalledOnPreviousHandler()
+		{
+			LifeCycleButton button = new LifeCycleButton();
+
+			Assert.IsNull(button.Handler);
+			var firstHandler = new HandlerStub();
+			button.Handler = firstHandler;
+			var secondHandler = new HandlerStub();
+			button.Handler = secondHandler;
+
+			Assert.AreEqual(1, firstHandler.ConnectHandlerCount);
+			Assert.AreEqual(1, firstHandler.DisconnectHandlerCount);
+			Assert.AreEqual(1, secondHandler.ConnectHandlerCount);
+			Assert.AreEqual(0, secondHandler.DisconnectHandlerCount);
+		}
+
 		public class LifeCycleButton : Button
 		{
 			public int changing = 0;

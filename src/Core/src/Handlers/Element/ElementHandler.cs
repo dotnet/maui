@@ -101,7 +101,8 @@ namespace Microsoft.Maui.Handlers
 		void DisconnectHandler(object nativeView)
 		{
 			OnDisconnectHandler(nativeView);
-
+			
+			// VirtualView has already been changed over to a new handler
 			if (VirtualView != null && VirtualView.Handler == this)
 				VirtualView.Handler = null;
 
