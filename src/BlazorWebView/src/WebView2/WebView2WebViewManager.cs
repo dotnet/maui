@@ -7,8 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebView.WebView2.Internal;
-using Microsoft.AspNetCore.Components.WebView.WebView2.Tmp;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
@@ -25,7 +23,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         private const string AppOrigin = "https://0.0.0.0/";
 
         private readonly IWebView2Wrapper _webview;
-		private readonly StaticContentProvider _staticContentProvider = null;
 		private readonly Task _webviewReadyTask;
 
         /// <summary>
@@ -40,7 +37,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
             : base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
         {
             _webview = webview ?? throw new ArgumentNullException(nameof(webview));
-			_staticContentProvider = StaticContentProvider.ResolveFromStaticWebAssetsManifest(fileProvider, new Uri(AppOrigin), hostPageRelativePath);
 
 			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
 			// We want the external API to behave as if initalization is synchronous,
@@ -78,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
                     eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Document ||
                     eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Other; // e.g., dev tools requesting page source
 
-				if (TryGetResponseContentNewManifest(eventArgs.Request.Uri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
+				if (TryGetResponseContent(eventArgs.Request.Uri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 				{
 					var headerString = GetHeaderString(headers);
 					eventArgs.SetResponse(content, statusCode, statusMessage, headerString);
@@ -136,8 +132,5 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
                 }
             });
         }
-
-		private bool TryGetResponseContentNewManifest(string uri, bool allowFallbackOnHostPage, out int statusCode, out string statusMessage, out Stream content, out IDictionary<string, string> headers) =>
-			_staticContentProvider.TryGetResponseContent(uri, allowFallbackOnHostPage, out statusCode, out statusMessage, out content, out headers);
 	}
 }
