@@ -173,8 +173,8 @@ Information("TARGET: {0}", target);
 Information("MSBUILD: {0}", MSBuildExe);
 Information("vsVersion: {0}", vsVersion);
 Information("localDotnet: {0}", localDotnet);
-Information("dotnet: {0}", GetBuildVariable("dotnet"));
-Information("workloads: {0}", GetBuildVariable("workloads"));
+Information("dotnet: {0}", GetBuildVariable("dotnet", ""));
+Information("workloads: {0}", GetBuildVariable("workloads", ""));
 
 
 var releaseChannel = ReleaseChannel.Stable;
