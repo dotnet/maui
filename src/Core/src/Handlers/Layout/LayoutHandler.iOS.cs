@@ -69,12 +69,12 @@ namespace Microsoft.Maui.Handlers
 
 		void Clear(UIView nativeView)
 		{
-			if (NativeView == null)
+			if (nativeView == null)
 			{
 				return;
 			}
 
-			var subViews = NativeView.Subviews;
+			var subViews = nativeView.Subviews;
 
 			foreach (var subView in subViews)
 			{
