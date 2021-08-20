@@ -7,7 +7,7 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
-#elif TIZEN || __TIZEN__
+#elif TIZEN
 using PlatformView = ElmSharp.EvasObject;
 #elif NETSTANDARD
 using PlatformView = System.Object;
@@ -197,7 +197,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(IViewHandler handler, IView view)
 		{
+#if TIZEN
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.WrappedNativeView?.UpdateBackground(view);
+#else
 			((PlatformView?)handler.PlatformView)?.UpdateBackground(view);
+#endif
 		}
 
 		public static void MapFlowDirection(IViewHandler handler, IView view)

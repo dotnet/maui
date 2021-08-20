@@ -10,12 +10,6 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Clip != null ||
 			base.NeedsContainer;
 
-		public static void MapBackground(LayoutHandler handler, ILayout layout)
-		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			handler.WrappedNativeView?.UpdateBackground(layout);
-		}
-
 		protected override LayoutCanvas CreateNativeView()
 		{
 			if (VirtualView == null)
@@ -93,7 +87,14 @@ namespace Microsoft.Maui.Handlers
 
 		public void Clear()
 		{
-			NativeView?.Clear();
+			if (NativeView == null)
+				return;
+
+			foreach (var child in NativeView.Children)
+			{
+				child.Unrealize();
+			}
+			NativeView.Children.Clear();
 		}
 
 		public void Insert(int index, IView child)
@@ -115,7 +116,10 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
+			var toBeRemoved = NativeView.Children[index];
 			NativeView.Children.RemoveAt(index);
+			toBeRemoved.Unrealize();
+
 			NativeView.Children.Insert(index, child.ToNative(MauiContext));
 			if (child.Handler is INativeViewHandler childHandler)
 			{
