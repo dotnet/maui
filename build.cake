@@ -78,7 +78,7 @@ var packageVersion = GetBuildVariable("packageVersion", "0.1.0-p2");
 var releaseChannelArg = GetBuildVariable("CHANNEL", "Stable");
 var teamProject = GetBuildVariable("TeamProject", GetBuildVariable("SYSTEM_TEAMPROJECT", ""));
 bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.StartsWith("Hosted Agent");
-var localDotnet = GetBuildVariable("dotnet", "local") == "local";
+var localDotnet = GetBuildVariable("workloads", "local") == "local";
 
 var vsVersion = GetBuildVariable("VS", "");
 
@@ -173,6 +173,8 @@ Information("TARGET: {0}", target);
 Information("MSBUILD: {0}", MSBuildExe);
 Information("vsVersion: {0}", vsVersion);
 Information("localDotnet: {0}", localDotnet);
+Information("dotnet: {0}", GetBuildVariable("dotnet"));
+Information("workloads: {0}", GetBuildVariable("workloads"));
 
 
 var releaseChannel = ReleaseChannel.Stable;
