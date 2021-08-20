@@ -54,7 +54,9 @@ namespace Microsoft.Maui.Controls
 		protected override void OnHandlerChanged()
 		{
 			// Because the navigation handler is shimmed we disconnect from it so it disposes
-			_previousHandler?.DisconnectHandler();
+			if (_previousHandler?.VirtualView == this)
+				_previousHandler?.DisconnectHandler();
+
 			_previousHandler = null;
 			base.OnHandlerChanged();
 		}
