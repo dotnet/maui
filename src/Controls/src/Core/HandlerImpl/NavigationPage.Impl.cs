@@ -50,6 +50,22 @@ namespace Microsoft.Maui.Controls
 			return Frame.Size;
 		}
 
+		IElementHandler _previousHandler;
+		protected override void OnHandlerChanged()
+		{
+			// Because the navigation handler is shimmed we disconnect from it so it disposes
+			_previousHandler?.DisconnectHandler();
+			_previousHandler = null;
+			base.OnHandlerChanged();
+		}
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			_previousHandler = args.OldHandler;
+		}
+
 		void INavigationView.InsertPageBefore(IView page, IView before)
 		{
 			throw new NotImplementedException();
