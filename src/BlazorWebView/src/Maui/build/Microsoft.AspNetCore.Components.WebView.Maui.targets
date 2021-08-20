@@ -9,7 +9,7 @@
        as RazorComponent instead of Content. -->
   <ItemGroup Condition="'$(DesignTimeBuild)' != 'true'">
     <Content Remove="**\*.razor" />
-    <RazorComponent Include="**\*.razor" />
+    <RazorComponent Include="**\*.razor" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
 
   <PropertyGroup>
