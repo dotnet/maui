@@ -48,7 +48,7 @@ Task("dotnet-buildtasks")
     .IsDependentOn("dotnet")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
+        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
     });
 
 Task("dotnet-build")
@@ -58,15 +58,15 @@ Task("dotnet-build")
     {
         if (IsRunningOnWindows())
         {
-            RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf", new Dictionary<string, string> {
+            RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf", new Dictionary<string, string> {
                 ["BuildForWinUI"] = bool.TrueString,
             });
-            RunMSBuildWithLocalDotNet("./Microsoft.Maui-winui.sln");
+            RunMSBuildWithDotNet("./Microsoft.Maui-winui.sln");
         }
         else
         {
-            RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
-            RunMSBuildWithLocalDotNet("./Microsoft.Maui-net6.sln");
+            RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
+            RunMSBuildWithDotNet("./Microsoft.Maui-net6.sln");
         }
     });
 
@@ -75,24 +75,24 @@ Task("dotnet-build-winui")
     .Description("Build the solutions")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf", new Dictionary<string, string> {
+        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf", new Dictionary<string, string> {
             ["BuildForWinUI"] = bool.TrueString,
         });
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui-winui.sln");
+        RunMSBuildWithDotNet("./Microsoft.Maui-winui.sln");
     });
 
 Task("dotnet-build-net6")
     .IsDependentOn("dotnet")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui-net6.sln");
+        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
+        RunMSBuildWithDotNet("./Microsoft.Maui-net6.sln");
     });
 
 Task("dotnet-samples")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./Microsoft.Maui.Samples-net6.slnf", new Dictionary<string, string> {
+        RunMSBuildWithDotNet("./Microsoft.Maui.Samples-net6.slnf", new Dictionary<string, string> {
             ["UseWorkload"] = bool.TrueString,
         });;
     });
@@ -169,8 +169,8 @@ Task("VS-NET6")
         // VS has trouble building all the references correctly so this makes sure everything is built
         // and we're ready to go right when VS launches
         
-        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample-net6.csproj");
-        RunMSBuildWithLocalDotNet("./src/Core/tests/DeviceTests/Core.DeviceTests.csproj");
+        RunMSBuildWithDotNet("./src/Compatibility/Android.FormsViewGroup/src/Compatibility.Android.FormsViewGroup-net6.csproj");
+        RunMSBuildWithDotNet("./src/Compatibility/Core/src/Compatibility-net6.csproj");
         StartVisualStudioForDotNet6();
     });
 
@@ -230,7 +230,7 @@ Task("VS-ANDROID")
 
         // VS has trouble building all the references correctly so this makes sure everything is built
         // and we're ready to go right when VS launches
-        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample-net6.csproj");
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample/Maui.Controls.Sample-net6.csproj");
         StartVisualStudioForDotNet6("./Microsoft.Maui.Droid.sln");
     });
 
@@ -240,7 +240,7 @@ Task("SAMPLE-ANDROID")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj", deployAndRun: true);
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.Droid/Maui.Controls.Sample.Droid-net6.csproj", deployAndRun: true);
     });
 
 Task("SAMPLE-IOS")
@@ -249,7 +249,7 @@ Task("SAMPLE-IOS")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj", deployAndRun: true);
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.iOS/Maui.Controls.Sample.iOS-net6.csproj", deployAndRun: true);
     });
 
 Task("SAMPLE-MAC")
@@ -258,7 +258,7 @@ Task("SAMPLE-MAC")
     .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        RunMSBuildWithLocalDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj", deployAndRun: true);
+        RunMSBuildWithDotNet("./src/Controls/samples/Controls.Sample.MacCatalyst/Maui.Controls.Sample.MacCatalyst-net6.csproj", deployAndRun: true);
     });
 
 
@@ -328,7 +328,7 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
 
 // NOTE: These methods work as long as the "dotnet" target has already run
 
-void RunMSBuildWithLocalDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false)
+void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var binlog = $"{logDirectory}/{name}-{configuration}.binlog";
