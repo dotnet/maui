@@ -68,40 +68,6 @@
     <TizenSharedPrefix>$(TizenProjectFolder)shared</TizenSharedPrefix>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
-    <!-- Add metadata indicating that the platform-specific files are not part of every build configuration. -->
-    <Compile Update="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)">
-      <ExcludeFromCurrentConfiguration>true</ExcludeFromCurrentConfiguration>
-    </Compile>
-
-    <!-- Add metadata for the files that are actually part of the current build configuration. -->
-    <Compile
-        Condition=" '$(TargetPlatformIdentifier)' == 'android' "
-        Update="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)">
-      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
-    </Compile>
-    <Compile
-        Condition=" '$(TargetPlatformIdentifier)' == 'ios' "
-        Update="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)">
-      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
-    </Compile>
-    <Compile
-        Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' "
-        Update="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)">
-      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
-    </Compile>
-    <Compile
-        Condition=" '$(TargetPlatformIdentifier)' == 'windows' "
-        Update="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)">
-      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
-    </Compile>
-    <Compile
-        Condition=" '$(TargetPlatformIdentifier)' == 'tizen' "
-        Update="$(TizenProjectFolder)**/*$(DefaultLanguageSourceExtension)">
-      <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
-    </Compile>
-  </ItemGroup>
-
   <!--
     Run before both _MauiInjectXamlCssAdditionalFiles and GenerateMSBuildEditorConfigFileShouldRun because
     if for some reason the _MauiInjectXamlCssAdditionalFiles target is not run, we still get in at the
@@ -111,12 +77,25 @@
           BeforeTargets="_MauiInjectXamlCssAdditionalFiles;GenerateMSBuildEditorConfigFileShouldRun"
           Condition=" '$(EnableDefaultItems)' == 'true' and '$(SingleProject)' == 'true' ">
 
-    <!-- Removals -->
+  <!-- Removals -->
     <ItemGroup>
-      <!-- Remove everything that isn't part of this platform -->
+      <Compile Remove="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+    <!-- Explicitly include the platform code -->
       <Compile
-          Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' "
-          Remove="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+        Condition=" '$(TargetPlatformIdentifier)' == 'android' and '$(AndroidProjectFolder)' != '' "
+        Include="$(AndroidProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+      <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'ios' and '$(iOSProjectFolder)' != '' "
+        Include="$(iOSProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+      <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'maccatalyst' and '$(MacCatalystProjectFolder)' != '' "
+        Include="$(MacCatalystProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+      <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' "
+        Include="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+      <Compile
+        Condition=" '$(TargetPlatformIdentifier)' == 'tizen' and '$(TizenProjectFolder)' != '' "
+        Include="$(TizenProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
 
       <!-- Remove all Windows (WinUI) XAML Files from the Windows folder -->
       <_MauiXamlToRemove
