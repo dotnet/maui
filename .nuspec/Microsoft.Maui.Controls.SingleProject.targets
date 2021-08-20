@@ -22,6 +22,9 @@
     <EnableDefaultWindowsItems>false</EnableDefaultWindowsItems>
     <WindowsProjectFolder Condition=" '$(WindowsProjectFolder)' == '' ">$(PlatformsProjectFolder)Windows\</WindowsProjectFolder>
     <WindowsProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(WindowsProjectFolder)'))</WindowsProjectFolder>
+    <!-- Tizen -->
+    <EnableDefaultTizenItems>false</EnableDefaultTizenItems>
+    <TizenProjectFolder Condition=" '$(TizenProjectFolder)' == '' ">$(PlatformsProjectFolder)Tizen\</TizenProjectFolder>
   </PropertyGroup>
 
   <ItemGroup>
@@ -82,6 +85,9 @@
       <Compile
           Condition=" '$(TargetPlatformIdentifier)' == 'windows' and '$(WindowsProjectFolder)' != '' "
           Include="$(WindowsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+      <Compile
+          Condition=" '$(TargetPlatformIdentifier)' == 'tizen' and '$(TizenProjectFolder)' != '' "
+          Include="$(TizenProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
 
       <!-- Remove all Windows (WinUI) XAML Files from the Windows folder -->
       <_MauiXamlToRemove
