@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsEnabled(RefreshViewHandler handler, IRefreshView refreshView)
 			=> handler.NativeView?.UpdateIsEnabled(refreshView.IsEnabled);
-			
+
 		void OnRefresh(object? sender, EventArgs e)
 		{
 			VirtualView.IsRefreshing = true;
