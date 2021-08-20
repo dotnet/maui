@@ -10,12 +10,11 @@ namespace Microsoft.Maui
 {
 	public class LayoutCanvas : Canvas, IMeasurable
 	{
-		Rectangle _arrangeCache;
 		IView _virtualView;
+		Size _measureCache;
 
 		public LayoutCanvas(EvasObject parent, IView view) : base(parent)
 		{
-			_arrangeCache = default(Rectangle);
 			_virtualView = view;
 			LayoutUpdated += OnLayoutUpdated;
 		}
@@ -32,14 +31,17 @@ namespace Microsoft.Maui
 		{
 			var nativeGeometry = Geometry.ToDP();
 
-			if (_arrangeCache == nativeGeometry)
-				return;
+			var measured = CrossPlatformMeasure!(nativeGeometry.Width, nativeGeometry.Height);
+			if (measured != _measureCache)
+			{
+				_virtualView?.Parent?.InvalidateMeasure();
+			}
+			_measureCache = measured;
 
 			if (nativeGeometry.Width > 0 && nativeGeometry.Height > 0)
 			{
 				nativeGeometry.X = 0;
 				nativeGeometry.Y = 0;
-				CrossPlatformMeasure!(nativeGeometry.Width, nativeGeometry.Height);
 				CrossPlatformArrange!(nativeGeometry);
 			}
 		}
