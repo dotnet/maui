@@ -25,10 +25,10 @@
     <_Files Include="$(PkgSystem_IO_UnmanagedMemoryStream)\lib\netstandard1.3\System.IO.UnmanagedMemoryStream.dll" />
     <_Files Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll" />
     <_Files Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.pdb" />
-    <_Files Include="$(PkgSkiaSharp)\runtimes\osx\native\libSkiaSharp.dylib" />
-    <_Files Include="$(PkgSkiaSharp)\runtimes\win-x86\native\libSkiaSharp.dll"   Arch="x86/" />
-    <_Files Include="$(PkgSkiaSharp)\runtimes\win-x64\native\libSkiaSharp.dll"   Arch="x64/" />
-    <_Files Include="$(PkgSkiaSharp)\runtimes\win-arm64\native\libSkiaSharp.dll" Arch="arm64/" />
+    <_Files Include="$(PkgSkiaSharp_NativeAssets_macOS)\runtimes\osx\native\libSkiaSharp.dylib" />
+    <_Files Include="$(PkgSkiaSharp_NativeAssets_Win32)\runtimes\win-x86\native\libSkiaSharp.dll"   Arch="x86/" />
+    <_Files Include="$(PkgSkiaSharp_NativeAssets_Win32)\runtimes\win-x64\native\libSkiaSharp.dll"   Arch="x64/" />
+    <_Files Include="$(PkgSkiaSharp_NativeAssets_Win32)\runtimes\win-arm64\native\libSkiaSharp.dll" Arch="arm64/" />
     <_Files Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-arm\native\libSkiaSharp.so"      Arch="arm/" />
     <_Files Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-arm64\native\libSkiaSharp.so"    Arch="arm64/" />
     <_Files Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-musl-x64\native\libSkiaSharp.so" Arch="musl-x64/" />

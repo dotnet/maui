@@ -29,10 +29,10 @@
     <None Include="$(PkgSystem_IO_UnmanagedMemoryStream)\lib\netstandard1.3\System.IO.UnmanagedMemoryStream.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.pdb" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(PkgSkiaSharp)\runtimes\osx\native\libSkiaSharp.dylib" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(PkgSkiaSharp)\runtimes\win-x86\native\libSkiaSharp.dll" Link="x86\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x86" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(PkgSkiaSharp)\runtimes\win-x64\native\libSkiaSharp.dll" Link="x64\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x64" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="$(PkgSkiaSharp)\runtimes\win-arm64\native\libSkiaSharp.dll" Link="arm64\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\arm64" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgSkiaSharp_NativeAssets_macOS)\runtimes\osx\native\libSkiaSharp.dylib" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgSkiaSharp_NativeAssets_Win32)\runtimes\win-x86\native\libSkiaSharp.dll" Link="x86\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x86" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgSkiaSharp_NativeAssets_Win32)\runtimes\win-x64\native\libSkiaSharp.dll" Link="x64\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\x64" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgSkiaSharp_NativeAssets_Win32)\runtimes\win-arm64\native\libSkiaSharp.dll" Link="arm64\libSkiaSharp.dll" Visible="False" Pack="True" PackagePath="buildTransitive\arm64" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-x64\native\libSkiaSharp.so" Link="x64\libSkiaSharp.so" Visible="False" Pack="True" PackagePath="buildTransitive\x64" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSkiaSharp_HarfBuzz)\lib\net462\SkiaSharp.HarfBuzz.dll" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgSkiaSharp_HarfBuzz)\lib\net462\SkiaSharp.HarfBuzz.pdb" Visible="False" Pack="True" PackagePath="buildTransitive" CopyToOutputDirectory="PreserveNewest" />
