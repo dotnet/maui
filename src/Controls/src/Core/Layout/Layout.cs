@@ -96,15 +96,16 @@ namespace Microsoft.Maui.Controls
 			if (child == null)
 				return;
 
+			var index = _children.Count;
 			_children.Add(child);
 
 			if (child is Element element)
 			{
 				element.Parent = this;
-				VisualDiagnostics.OnChildAdded(this, element, _children.Count - 1);
+				VisualDiagnostics.OnChildAdded(this, element, index);
 			}
 
-			AddToHandler(_children.Count, child);
+			AddToHandler(index, child);
 		}
 
 		public void Clear()
