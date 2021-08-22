@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls
 			if (child is Element element)
 			{
 				element.Parent = this;
-				VisualDiagnostics.OnChildAdded(this, element);
+				VisualDiagnostics.OnChildAdded(this, element, _children.Count - 1);
 			}
 
 			AddToHandler(_children.Count, child);
@@ -109,10 +109,13 @@ namespace Microsoft.Maui.Controls
 
 		public void Clear()
 		{
-			foreach (var child in this)
+			for (var index = Count - 1; index >= 0; index--)
 			{
-				if (child is Element element)
+				if (this[index] is Element element)
+				{
 					element.Parent = null;
+					VisualDiagnostics.OnChildRemoved(this, element, index);
+				}
 			}
 
 			_children.Clear();
