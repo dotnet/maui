@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls
 				VisualDiagnostics.OnChildAdded(this, element);
 			}
 
-			AddToHandler(index, child);
+			InsertIntoHandler(index, child);
 		}
 
 		public virtual bool Remove(IView child)
