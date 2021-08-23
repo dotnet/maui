@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Controls
 		RightToLeft = 2,
 	}
 
-	[Xaml.TypeConversion(typeof(FlowDirection))]
 	public class FlowDirectionConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
