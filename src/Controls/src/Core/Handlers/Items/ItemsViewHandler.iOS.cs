@@ -10,8 +10,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, UIView> where TItemsView : ItemsView
 	{
 		ItemsViewLayout _layout;
-		bool? _defaultHorizontalScrollVisibility;
-		bool? _defaultVerticalScrollVisibility;
+	
+		protected override void DisconnectHandler(UIView nativeView)
+		{
+			ItemsView.ScrollToRequested -= ScrollToRequested;
+			base.DisconnectHandler(nativeView);
+		}
+
+		protected override void ConnectHandler(UIView nativeView)
+		{
+			base.ConnectHandler(nativeView);
+			Controller.CollectionView.BackgroundColor = UIColor.Clear;
+			ItemsView.ScrollToRequested += ScrollToRequested;
+		}
 
 		private protected override UIView OnCreateNativeView()
 		{
@@ -19,8 +30,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			Controller = CreateController(ItemsView, _layout);
 			return base.OnCreateNativeView();
 		}
+
 		protected TItemsView ItemsView => VirtualView;
+
 		protected ItemsViewController<TItemsView> Controller { get; private set; }
+
+		protected abstract ItemsViewLayout SelectLayout();
+
+		protected abstract ItemsViewController<TItemsView> CreateController(TItemsView newElement, ItemsViewLayout layout);
 
 		protected override UIView CreateNativeView() => Controller?.View;
 
@@ -32,12 +49,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.UpdateHorizontalScrollBarVisibility();
+			handler.Controller?.CollectionView?.UpdateHorizontalScrollBarVisibility(itemsView.HorizontalScrollBarVisibility);
 		}
 
 		public static void MapVerticalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.UpdateVerticalScrollBarVisibility();
+			handler.Controller?.CollectionView?.UpdateVerticalScrollBarVisibility(itemsView.VerticalScrollBarVisibility);
 		}
 
 		public static void MapItemTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
@@ -47,12 +64,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapEmptyView(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.UpdateEmptyView();
+			handler.Controller?.UpdateEmptyView();
 		}
 
 		public static void MapEmptyViewTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.UpdateEmptyView();
+			handler.Controller?.UpdateEmptyView();
 		}
 
 		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
@@ -70,93 +87,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			handler._layout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
 		}
 
-		public static void MapItemsLayout(ItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
-		{
-			handler.UpdateLayout();
-		}
-
-		public static void MapItemSizingStrategy(ItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
-		{
-			handler.UpdateLayout();
-		}
-
-		protected abstract ItemsViewLayout SelectLayout();
-
-		protected override void DisconnectHandler(UIView nativeView)
-		{
-			ItemsView.ScrollToRequested -= ScrollToRequested;
-			base.DisconnectHandler(nativeView);
-		}
-
-		protected override void ConnectHandler(UIView nativeView)
-		{
-			base.ConnectHandler(nativeView);
-			Controller.CollectionView.BackgroundColor = UIColor.Clear;
-			ItemsView.ScrollToRequested += ScrollToRequested;
-		}
-
-		internal void UpdateEmptyView()
-		{
-			//if (!_initialized)
-			//{
-			//	return;
-			//}
-
-			//// Get rid of the old view
-			//TearDownEmptyView();
-
-			//// Set up the new empty view
-			//UpdateView(ItemsView?.EmptyView, ItemsView?.EmptyViewTemplate, ref _emptyUIView, ref _emptyViewFormsElement);
-
-			//// We may need to show the updated empty view
-			//UpdateEmptyViewVisibility(ItemsSource?.ItemCount == 0);
-		}
-
 		protected virtual void UpdateLayout()
 		{
 			_layout = SelectLayout();
 			Controller?.UpdateLayout(_layout);
-		}
-
-		protected abstract ItemsViewController<TItemsView> CreateController(TItemsView newElement, ItemsViewLayout layout);
-
-
-		void UpdateVerticalScrollBarVisibility()
-		{
-			if (_defaultVerticalScrollVisibility == null)
-				_defaultVerticalScrollVisibility = Controller.CollectionView.ShowsVerticalScrollIndicator;
-
-			switch (ItemsView.VerticalScrollBarVisibility)
-			{
-				case ScrollBarVisibility.Always:
-					Controller.CollectionView.ShowsVerticalScrollIndicator = true;
-					break;
-				case ScrollBarVisibility.Never:
-					Controller.CollectionView.ShowsVerticalScrollIndicator = false;
-					break;
-				case ScrollBarVisibility.Default:
-					Controller.CollectionView.ShowsVerticalScrollIndicator = _defaultVerticalScrollVisibility.Value;
-					break;
-			}
-		}
-
-		void UpdateHorizontalScrollBarVisibility()
-		{
-			if (_defaultHorizontalScrollVisibility == null)
-				_defaultHorizontalScrollVisibility = Controller.CollectionView.ShowsHorizontalScrollIndicator;
-
-			switch (ItemsView.HorizontalScrollBarVisibility)
-			{
-				case ScrollBarVisibility.Always:
-					Controller.CollectionView.ShowsHorizontalScrollIndicator = true;
-					break;
-				case ScrollBarVisibility.Never:
-					Controller.CollectionView.ShowsHorizontalScrollIndicator = false;
-					break;
-				case ScrollBarVisibility.Default:
-					Controller.CollectionView.ShowsHorizontalScrollIndicator = _defaultHorizontalScrollVisibility.Value;
-					break;
-			}
 		}
 
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
