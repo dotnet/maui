@@ -30,6 +30,21 @@ namespace Samples
 					essentials.OnAppAction(App.HandleAppActions);
 				});
 
+#if TIZEN
+			builder
+				.ConfigureServices(services =>
+				{
+					services.AddTransient((_) =>
+					{
+						var option = new InitializationOptions
+						{
+							DisplayResolutionUnit = DisplayResolutionUnit.DP(true),
+						};
+						return option;
+					});
+#endif
+				});
+
 			return builder.Build();
 		}
 	}
