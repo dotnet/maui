@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Label
 	{
-		public static void RemapForControls()
+		public static new void RemapForControls()
 		{
 		}
 
