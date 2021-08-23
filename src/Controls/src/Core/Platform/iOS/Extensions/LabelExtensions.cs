@@ -2,7 +2,7 @@
 using Microsoft.Maui.Controls;
 using UIKit;
 
-namespace Controls.Core.Platform.iOS.Extensions
+namespace Microsoft.Maui.Controls.Platform
 {
 	public static class LabelExtensions
 	{
