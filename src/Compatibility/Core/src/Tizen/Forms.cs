@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 	{
 		public CoreApplication Context { get; set; }
 		public bool UseDeviceIndependentPixel { get; set; }
-		public bool UseSkiaSharp { get; set; }
+		public bool UseSkiaSharp { get; set; } = true;
 		public HandlerAttribute[] Handlers { get; set; }
 		public Dictionary<Type, Func<IRegisterable>> CustomHandlers { get; set; } // for static registers
 		public Assembly[] Assemblies { get; set; }
@@ -498,7 +498,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 					//TODO: ExportFont
 
 					// renderers
-					Registrar.RegisterRenderers(handlers);
+					if (handlers != null)
+					{
+						Registrar.RegisterRenderers(handlers);
+					}
 
 					// effects
 					if (effectScopes != null)
