@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls
 			try
 			{
 				// If a handler is getting changed before the end of this method
-				// Something is wired up correctly
+				// Something is wired up incorrectly
 				if (_previousHandler != null)
 					throw new InvalidOperationException("Handler is already being set elsewhere");
 
