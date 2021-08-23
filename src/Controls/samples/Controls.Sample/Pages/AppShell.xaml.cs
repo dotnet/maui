@@ -1,8 +1,8 @@
 ﻿namespace Maui.Controls.Sample.Pages
 {
-	public partial class RefreshViewPage
+	public partial class AppShell
 	{
-		public RefreshViewPage()
+		public AppShell()
 		{
 			InitializeComponent();
 		}

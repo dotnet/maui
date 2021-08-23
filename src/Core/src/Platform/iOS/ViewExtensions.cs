@@ -183,6 +183,38 @@ namespace Microsoft.Maui
 			return Array.IndexOf(nativeView.Subviews, subview);
 		}
 
+		public static UIImage? ConvertToImage(this UIView view)
+		{
+			if (!NativeVersion.IsAtLeast(10))
+			{
+				UIGraphics.BeginImageContext(view.Frame.Size);
+				view.Layer.RenderInContext(UIGraphics.GetCurrentContext());
+				var image = UIGraphics.GetImageFromCurrentImageContext();
+				UIGraphics.EndImageContext();
+
+				if (image.CGImage == null)
+					return null;
+
+				return new UIImage(image.CGImage);
+			}
+
+			var imageRenderer = new UIGraphicsImageRenderer(view.Bounds.Size);
+
+			return imageRenderer.CreateImage((a) =>
+			{
+				view.Layer.RenderInContext(a.CGContext);
+			});
+		}
+
+		public static UINavigationController? GetNavigationController(this UIView view)
+		{
+			var rootController = view.Window?.RootViewController;
+			if (rootController is UINavigationController nc)
+				return nc;
+
+			return rootController?.NavigationController;
+		}
+
 		internal static void Collapse(this UIView view)
 		{
 			// See if this view already has a collapse constraint we can use

@@ -89,16 +89,6 @@
     />
     <Delete Files="$(_NuGetConfig)" />
 
-    <!--
-      HACK: temporarily put runtime packs in 'library-packs', until they can be resolved from 'packs'
-      See: https://github.com/dotnet/sdk/issues/14044
-    -->
-    <ItemGroup>
-      <_RuntimePacks Include="$(PackageOutputPath)/*.Runtime.*.nupkg" />
-      <_RuntimePacks Include="$(PackageOutputPath)/Microsoft.Maui.Extensions.*.nupkg" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_RuntimePacks)" DestinationFolder="$(MSBuildExtensionsPath)../../library-packs" SkipUnchangedFiles="true" />
-
   </Target>
 
   <!-- Eventually replaced by eng/Version.targets -->

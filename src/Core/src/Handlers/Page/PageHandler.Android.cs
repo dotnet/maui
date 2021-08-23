@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a PageViewGroup");
 			}
 
-			var viewGroup = new PageViewGroup(Context!)
+			var viewGroup = new PageViewGroup(Context)
 			{
 				CrossPlatformMeasure = VirtualView.Measure,
 				CrossPlatformArrange = VirtualView.Arrange

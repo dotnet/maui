@@ -4,7 +4,7 @@
              BackgroundColor="{DynamicResource SecondaryColor}">
 
     <ScrollView Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
-        <Grid Margin="0,50" RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,*">
+        <Grid RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,*">
 
             <Label 
                 Text="Hello, World!"
@@ -40,8 +40,8 @@
             <Image Grid.Row="4"
                 Source="dotnet_bot.png"
                 SemanticProperties.Description="Cute dot net bot waving hi to you!"
-                WidthRequest="300"
-                HeightRequest="372"
+                WidthRequest="250"
+                HeightRequest="310"
                 HorizontalOptions="Center" />
 
         </Grid>
