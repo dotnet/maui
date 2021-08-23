@@ -1,19 +1,10 @@
 using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Tizen.NET.MaterialComponents;
-using Xamarin.Forms.Platform.Tizen;
 
 namespace Samples.Tizen
 {
-	class Program : MauiApplication<Startup>
+	class Program : MauiApplication
 	{
-		protected override void OnCreate()
-		{
-			base.OnCreate();
-
-			MaterialComponents.Init(DirectoryInfo.Resource);
-			Microsoft.Maui.Essentials.Platform.Init(CoreUIAppContext.GetInstance(this).MainWindow);
-		}
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 
 		static void Main(string[] args)
 		{
