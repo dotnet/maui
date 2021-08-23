@@ -321,7 +321,9 @@ namespace Microsoft.Maui.Platform
 
 	public class SKClipperView : SKCanvasView
 	{
-		public SKClipperView(EvasObject parent) : base(parent) { }
+		public SKClipperView(EvasObject parent) : base(parent) {
+			IgnorePixelScaling = true;
+		}
 
 		public bool ClippingRequired { get; set; }
 
