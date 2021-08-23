@@ -1,11 +1,19 @@
-﻿using System;
+﻿using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
-using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class ShellHandler : ViewHandler<Shell, NavigationDrawer>
+	public partial class ShellHandler : ViewHandler<Shell, ShellView>
 	{
-		protected override NavigationDrawer CreateNativeView() => new NavigationDrawer(NativeParent);
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+			NativeView.SetElement((Shell)view, MauiContext);
+		}
+
+		protected override ShellView CreateNativeView()
+		{
+			return new ShellView(NativeParent);
+		}
 	}
 }
