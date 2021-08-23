@@ -73,11 +73,7 @@ namespace Microsoft.Maui.Handlers
 		protected abstract void RemoveContainer();
 
 		public virtual bool NeedsContainer =>
-#if WINDOWS
-			false;
-#else
 			VirtualView?.Clip != null || (VirtualView?.Shadow != null && !VirtualView.Shadow.IsEmpty);
-#endif
 
 		public NativeView? ContainerView { get; private protected set; }
 
@@ -165,11 +161,19 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapClip(ViewHandler handler, IView view)
 		{
-#if WINDOWS
-			((NativeView?)handler.NativeView)?.UpdateClip(view);
-#else
-			((NativeView?)handler.WrappedNativeView)?.UpdateClip(view);
-#endif
+			var clipShape = view.Clip;
+
+			if (clipShape != null)
+			{
+				handler.HasContainer = true;
+			}
+			else
+			{
+				if (handler is ViewHandler viewHandler)
+					handler.HasContainer = viewHandler.NeedsContainer;
+			}
+
+			((NativeView?)handler.ContainerView)?.UpdateClip(view);
 		}
 
 		public static void MapShadow(ViewHandler handler, IView view)
@@ -214,7 +218,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			MappingFrame(handler, view);
 #if WINDOWS
+			// Both Clip and Shadow depend on the Control size.
 			MapClip(handler, view);
+			MapShadow(handler, view);
 #endif
 		}
 	}

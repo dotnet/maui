@@ -7,7 +7,11 @@ namespace Microsoft.Maui
 		IShape? _clip;
 		Shadow? _shadow;
 
+#if WINDOWS
+		public new IShape? Clip
+#else
 		public IShape? Clip
+#endif
 		{
 			get => _clip;
 			set
@@ -20,7 +24,12 @@ namespace Microsoft.Maui
 			}
 		}
 
+#if WINDOWS
+		public new Shadow? Shadow
+#else
 		public Shadow? Shadow
+#endif
+
 		{
 			get => _shadow;
 			set

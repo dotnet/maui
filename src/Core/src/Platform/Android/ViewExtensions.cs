@@ -125,11 +125,11 @@ namespace Microsoft.Maui
 		{
 			if (view == null)
 				return;
+
 			if (view.Parent == null)
 				return;
 
 			((ViewGroup)view.Parent).RemoveView(view);
 		}
-
 	}
 }

@@ -1,5 +1,4 @@
 #nullable enable
-using System.Net;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -14,9 +13,9 @@ namespace Microsoft.Maui.Handlers
 		protected new FrameworkElement? WrappedNativeView =>
 			(FrameworkElement?)base.WrappedNativeView;
 
-		public new Border? ContainerView
+		public new WrapperView? ContainerView
 		{
-			get => (Border?)base.ContainerView;
+			get => (WrapperView?)base.ContainerView;
 			protected set => base.ContainerView = value;
 		}
 
@@ -60,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 			var oldIndex = oldParent?.Children.IndexOf(NativeView);
 			oldParent?.Children.Remove(NativeView);
 
-			ContainerView ??= new Border();
+			ContainerView ??= new WrapperView();
 			ContainerView.Child = NativeView;
 
 			if (oldIndex is int idx && idx >= 0)
