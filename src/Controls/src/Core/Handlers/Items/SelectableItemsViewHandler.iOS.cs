@@ -12,42 +12,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override ItemsViewController<TItemsView> CreateController(TItemsView itemsView, ItemsViewLayout layout)
 			=> new SelectableItemsViewController<TItemsView>(itemsView, layout);
 
-		protected override void ConnectHandler(UIView nativeView)
+		public static void MapItemsSource(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
-			base.ConnectHandler(nativeView);
-			UpdateSelectionMode();
-			UpdateNativeSelection();
-		}
-
-		protected virtual void UpdateNativeSelection()
-		{
-			(Controller as SelectableItemsViewController<TItemsView>)?.UpdateNativeSelection();
-		}
-
-		protected virtual void UpdateSelectionMode()
-		{
-			(Controller as SelectableItemsViewController<TItemsView>)?.UpdateSelectionMode();
-		}
-
-		protected override void UpdateItemsSource()
-		{
-			base.UpdateItemsSource();
-			UpdateNativeSelection();
+			ItemsViewHandler<TItemsView>.MapItemsSource(handler, itemsView);
+			MapSelectedItem(handler, itemsView);
 		}
 
 		public static void MapSelectedItem(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
-			handler.UpdateNativeSelection();
+			(handler.Controller as SelectableItemsViewController<TItemsView>)?.UpdateNativeSelection();
 		}
 
 		public static void MapSelectedItems(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
-			handler.UpdateNativeSelection();
+			 (handler.Controller as SelectableItemsViewController<TItemsView>)?.UpdateNativeSelection();
 		}
 
 		public static void MapSelectionMode(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
 		{
-			handler.UpdateSelectionMode();
+			(handler.Controller as SelectableItemsViewController<TItemsView>)?.UpdateSelectionMode();
 		}
 	}
 }

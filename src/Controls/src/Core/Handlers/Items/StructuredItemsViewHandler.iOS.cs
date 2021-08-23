@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
-			handler.UpdateItemSizingStrategy();
+			handler.UpdateLayout();
 		}
 	}
 }
