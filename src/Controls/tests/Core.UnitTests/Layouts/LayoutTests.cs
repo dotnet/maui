@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 		class NonThrowingLayoutHandler : LayoutHandler
 		{
-			public NonThrowingLayoutHandler(PropertyMapper? mapper = null, CommandMapper? commandMapper = null)
+			public NonThrowingLayoutHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
 				: base(mapper, commandMapper)
 			{
 			}

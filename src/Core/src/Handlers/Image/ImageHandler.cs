@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly ImageSourceServiceResultManager _sourceManager = new ImageSourceServiceResultManager();
 
-		public static PropertyMapper<IImage, ImageHandler> ImageMapper = new PropertyMapper<IImage, ImageHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IImage, ImageHandler> ImageMapper = new PropertyMapper<IImage, ImageHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IImage.Background)] = MapBackground,
 			[nameof(IImage.Aspect)] = MapAspect,
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public ImageHandler(PropertyMapper mapper) : base(mapper ?? ImageMapper)
+		public ImageHandler(IPropertyMapper mapper) : base(mapper ?? ImageMapper)
 		{
 		}
 	}
