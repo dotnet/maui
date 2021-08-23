@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 		public static void UpdateFont(this Label nativeLabel, ILabel label, IFontManager fontManager)
 		{
 			nativeLabel.BatchBegin();
-			nativeLabel.FontSize = label.Font.Size;
+			nativeLabel.FontSize = label.Font.Size > 0 ? label.Font.Size : 25.ToDPFont();
 			nativeLabel.FontAttributes = label.Font.GetFontAttributes();
 			nativeLabel.FontFamily = fontManager.GetFontFamily(label.Font.Family)??"";
 			nativeLabel.BatchCommit();

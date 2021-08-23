@@ -80,6 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				Control.FormattedText = ConvertFormattedText(Element.FormattedText);
 		}
 
+		[PortHandler]
 		void UpdateText()
 		{
 			Control.Text = Element.Text ?? "";

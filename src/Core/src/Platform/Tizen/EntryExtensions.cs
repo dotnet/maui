@@ -61,7 +61,7 @@ namespace Microsoft.Maui
 		public static void UpdateFont(this Entry nativeEntry, ITextStyle textStyle, IFontManager fontManager)
 		{
 			nativeEntry.BatchBegin();
-			nativeEntry.FontSize = textStyle.Font.Size;
+			nativeEntry.FontSize = textStyle.Font.Size > 0 ? textStyle.Font.Size : 25.ToDPFont();
 			nativeEntry.FontAttributes = textStyle.Font.GetFontAttributes();
 			nativeEntry.FontFamily = fontManager.GetFontFamily(textStyle.Font.Family) ?? "";
 			nativeEntry.BatchCommit();

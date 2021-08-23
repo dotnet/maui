@@ -16,8 +16,6 @@ namespace Microsoft.Maui.Controls
 				[nameof(TextType)] = MapTextType,
 				[nameof(Text)] = MapText,
 				[nameof(TextDecorations)] = MapTextDecorations,
-				[nameof(CharacterSpacing)] = MapCharacterSpacing,
-				[nameof(LineHeight)] = MapLineHeight,
 				[nameof(ILabel.Font)] = MapFont,
 				[nameof(TextColor)] = MapTextColor
 			};
@@ -43,26 +41,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			LabelHandler.MapTextDecorations(handler, label);
-		}
-
-		public static void MapCharacterSpacing(LabelHandler handler, Label label)
-		{
-			if (label?.TextType == TextType.Html)
-			{
-				return;
-			}
-
-			LabelHandler.MapCharacterSpacing(handler, label);
-		}
-
-		public static void MapLineHeight(LabelHandler handler, Label label)
-		{
-			if (label?.TextType == TextType.Html)
-			{
-				return;
-			}
-
-			LabelHandler.MapLineHeight(handler, label);
 		}
 
 		public static void MapFont(LabelHandler handler, Label label)
