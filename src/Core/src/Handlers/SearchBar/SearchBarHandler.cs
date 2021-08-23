@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler
 	{
-		public static PropertyMapper<ISearchBar, SearchBarHandler> SearchBarMapper = new PropertyMapper<ISearchBar, SearchBarHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<ISearchBar, SearchBarHandler> SearchBarMapper = new PropertyMapper<ISearchBar, SearchBarHandler>(ViewHandler.ViewMapper)
 		{
 #if __ANDROID__
 			[nameof(ISearchBar.Background)] = MapBackground,
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public SearchBarHandler(PropertyMapper? mapper = null) : base(mapper ?? SearchBarMapper)
+		public SearchBarHandler(IPropertyMapper? mapper = null) : base(mapper ?? SearchBarMapper)
 		{
 
 		}
