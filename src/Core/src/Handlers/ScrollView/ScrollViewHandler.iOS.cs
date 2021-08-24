@@ -9,9 +9,25 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, UIScrollView>
 	{
+		public new class Factory : ViewHandler.Factory
+		{
+			public virtual UIScrollView CreateNativeView(ScrollViewHandler scrollViewHandler, IScrollView scrollView)
+			{
+				return new UIScrollView();
+			}
+		}
+
+		public static Factory ScrollViewFactory { get; set; } = new Factory();
+
+		public static FactoryMapper<IScrollView, ScrollViewHandler> FactoryMapper = new()
+		{
+			// we wrap the lambda call in case the user has replaced the scrollviewfactory
+			[nameof(ScrollViewHandler.CreateNativeView)] = (h, v) => ScrollViewFactory.CreateNativeView(h,v)
+		};
+
 		protected override UIScrollView CreateNativeView()
 		{
-			return new UIScrollView();
+			return (UIScrollView)FactoryMapper[nameof(ScrollViewHandler.CreateNativeView)].Invoke(this, VirtualView)!;
 		}
 
 		protected override void ConnectHandler(UIScrollView nativeView)
