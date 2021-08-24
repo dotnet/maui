@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 	[Register("AppDelegate")]
 	public partial class AppDelegate : MauiUIApplicationDelegate
 	{
-		protected override MauiAppBuilder CreateAppBuilder() => MauiProgram.CreateAppBuilder();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 
 		public override bool FinishedLaunching(UIApplication uiApplication, NSDictionary launchOptions)
 		{

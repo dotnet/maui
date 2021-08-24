@@ -16,6 +16,6 @@
 			InitializeComponent();
 		}
 
-		protected override MauiAppBuilder CreateAppBuilder() => WinUIMauiProgram.CreateAppBuilder();
+		protected override MauiApp CreateMauiApp() => WinUIMauiProgram.CreateMauiApp();
 	}
 }

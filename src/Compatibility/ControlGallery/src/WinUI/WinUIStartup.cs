@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
 	public class WinUIMauiProgram
 	{
-		public static MauiAppBuilder CreateAppBuilder()
+		public static MauiApp CreateMauiApp()
 		{
 			var builder = MauiProgram.CreateAppBuilder();
 
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 					})
 					.OnActivated(WinUIPageStartup.OnActivated)));
 
-			return builder;
+			return builder.Build();
 		}
 	}
 

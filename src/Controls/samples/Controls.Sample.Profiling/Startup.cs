@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample.Profiling
 {
 	public static class MauiProgram
 	{
-		public static MauiAppBuilder CreateAppBuilder()
+		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
 
@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.Profiling
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				});
 
-			return appBuilder;
+			return builder.Build();
 		}
 	}
 }

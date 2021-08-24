@@ -8,14 +8,13 @@ namespace Microsoft.Maui
 {
 	public abstract class MauiWinUIApplication : UI.Xaml.Application
 	{
-		protected abstract MauiAppBuilder CreateAppBuilder();
+		protected abstract MauiApp CreateMauiApp();
 
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
 			LaunchActivatedEventArgs = args;
 
-			var builder = CreateAppBuilder();
-			var mauiApp = builder.Build();
+			var mauiApp = CreateMauiApp();
 
 			//var startup = OnCreateStartup() ??
 			//	throw new InvalidOperationException($"A valid startup object must be provided by overriding {nameof(OnCreateStartup)}.");

@@ -6,6 +6,6 @@ namespace Samples.iOS
 	[Register(nameof(AppDelegate))]
 	public partial class AppDelegate : MauiUIApplicationDelegate
 	{
-		protected override MauiAppBuilder CreateAppBuilder() => MauiProgram.CreateAppBuilder();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }

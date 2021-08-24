@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample
 		enum PageType { Main, Blazor, Shell, Template }
 		readonly static PageType _pageType = PageType.Main;
 
-		public static MauiAppBuilder CreateAppBuilder()
+		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
 
@@ -213,7 +213,7 @@ namespace Maui.Controls.Sample
 					}
 				});
 
-			return appBuilder;
+			return appBuilder.Build();
 		}
 	}
 }

@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample.SingleProject
 	{
 		internal static bool UseBlazor = false;
 
-		public static MauiAppBuilder CreateAppBuilder()
+		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
 			appBuilder
@@ -21,7 +21,7 @@ namespace Maui.Controls.Sample.SingleProject
 				appBuilder.Services.AddBlazorWebView();
 			}
 
-			return appBuilder;
+			return appBuilder.Build();
 		}
 	}
 }

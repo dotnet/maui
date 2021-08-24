@@ -6,7 +6,7 @@ namespace Samples
 {
 	public static class MauiProgram
 	{
-		public static MauiAppBuilder CreateAppBuilder()
+		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
 
@@ -36,7 +36,7 @@ namespace Samples
 				})
 				.UseMauiApp<App>();
 
-			return appBuilder;
+			return appBuilder.Build();
 		}
 	}
 }

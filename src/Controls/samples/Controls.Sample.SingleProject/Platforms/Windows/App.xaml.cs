@@ -24,6 +24,6 @@ namespace Maui.Controls.Sample.SingleProject.WinUI
 
     public class MiddleApp : MauiWinUIApplication
     {
-		protected override MauiAppBuilder CreateAppBuilder() => MauiProgram.CreateAppBuilder();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }

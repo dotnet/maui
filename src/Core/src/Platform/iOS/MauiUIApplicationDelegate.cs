@@ -26,11 +26,11 @@ namespace Microsoft.Maui
 			Current = this;
 		}
 
-		protected abstract MauiAppBuilder CreateAppBuilder();
+		protected abstract MauiApp CreateMauiApp();
 
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			var builder = CreateAppBuilder();
+			var mauiApp = CreateMauiApp();
 
 			//var startup = OnCreateStartup();
 
@@ -39,8 +39,6 @@ namespace Microsoft.Maui
 			//	.ConfigureServices(ConfigureNativeServices)
 			//	.ConfigureUsing(startup)
 			//	.Build();
-
-			var mauiApp = builder.Build();
 
 			Services = mauiApp.Services;
 

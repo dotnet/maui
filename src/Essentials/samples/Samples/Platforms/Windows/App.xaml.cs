@@ -4,7 +4,7 @@ namespace Samples.UWP
 {
 	public class MiddleApp : MauiWinUIApplication
 	{
-		protected override MauiAppBuilder CreateAppBuilder() => MauiProgram.CreateAppBuilder();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 
 	public partial class App : MiddleApp

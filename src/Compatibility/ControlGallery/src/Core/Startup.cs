@@ -10,7 +10,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	{
 		internal static bool UseBlazor = false;
 
-		public static MauiAppBuilder CreateAppBuilder()
+		public static MauiApp CreateMauiApp()
+		{
+			var builder = CreateMauiAppBuilder();
+			return builder.Build();
+		}
+
+		public static MauiAppBuilder CreateMauiAppBuilder()
 		{
 			var builder = MauiApp.CreateBuilder();
 			builder

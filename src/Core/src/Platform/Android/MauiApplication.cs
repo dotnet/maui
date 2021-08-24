@@ -18,13 +18,13 @@ namespace Microsoft.Maui
 			Current = this;
 		}
 
-		protected abstract MauiAppBuilder CreateAppBuilder();
+		protected abstract MauiApp CreateMauiApp();
 
 		public override void OnCreate()
 		{
 			RegisterActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
 
-			var builder = CreateAppBuilder();
+			var mauiApp = CreateMauiApp();
 
 			//var startup = OnCreateStartup();
 
@@ -33,8 +33,6 @@ namespace Microsoft.Maui
 			//	.ConfigureServices(ConfigureNativeServices)
 			//	.ConfigureUsing(startup)
 			//	.Build();
-
-			var mauiApp = builder.Build();
 
 			Services = mauiApp.Services;
 

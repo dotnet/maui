@@ -32,12 +32,11 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public override UIWindow? Window { get; set; }
 
-		protected abstract MauiAppBuilder CreateAppBuilder();
+		protected abstract MauiApp CreateMauiApp();
 
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			var builder = CreateAppBuilder();
-			var mauiApp = builder.Build();
+			var mauiApp = CreateMauiApp();
 			Services = mauiApp.Services;
 
 			Options = Services.GetRequiredService<TestOptions>();

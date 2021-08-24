@@ -12,6 +12,6 @@ namespace Maui.Controls.Sample.Profiling
 		{
 		}
 
-		protected override MauiAppBuilder CreateAppBuilder() => MauiProgram.CreateAppBuilder();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }

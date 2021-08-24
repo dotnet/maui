@@ -6,7 +6,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static class MauiProgram
 	{
-		public static MauiAppBuilder CreateAppBuilder()
+		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
 			appBuilder
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 				})
 				.UseVisualRunner();
 
-			return appBuilder;
+			return appBuilder.Build();
 		}
 	}
 }

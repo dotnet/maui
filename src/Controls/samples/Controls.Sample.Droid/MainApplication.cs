@@ -13,6 +13,6 @@ namespace Maui.Controls.Sample.Droid
 		{
 		}
 
-		protected override MauiAppBuilder CreateAppBuilder() => MauiProgram.CreateAppBuilder();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }
