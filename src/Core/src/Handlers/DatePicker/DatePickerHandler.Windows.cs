@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		WBrush? _defaultForeground;
 
-		protected override CalendarDatePicker CreateNativeView() => new CalendarDatePicker();
+		protected override CalendarDatePicker CreateNativeView() => 
+			new CalendarDatePicker { Style = UI.Xaml.Application.Current.Resources["MauiCalendarDatePickerStyle"] as UI.Xaml.Style };
 
 		protected override void ConnectHandler(CalendarDatePicker nativeView)
 		{

@@ -8,11 +8,12 @@
         <ResourceDictionary Source="MauiActivityIndicatorStyle.xaml" />
         <ResourceDictionary Source="MauiAutoSuggestBoxStyle.xaml" />
         <ResourceDictionary Source="MauiButtonStyle.xaml" />
+        <ResourceDictionary Source="MauiCalendarDatePickerStyle.xaml" />
+        <ResourceDictionary Source="MauiCheckBoxStyle.xaml" />
         <ResourceDictionary Source="MauiComboBoxStyle.xaml" />
         <ResourceDictionary Source="MauiSliderStyle.xaml" />
         <ResourceDictionary Source="MauiStepperStyle.xaml" />
         <ResourceDictionary Source="MauiTextBoxStyle.xaml" />
-        <ResourceDictionary Source="MauiCheckBoxStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
     <x:Boolean x:Key="MicrosoftMauiCoreIncluded">true</x:Boolean>

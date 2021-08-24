@@ -137,19 +137,26 @@ namespace Microsoft.Maui
 			if (Child == null || _borderPath == null)
 				return;
 
+			bool hasBorder = _borderShape != null && _borderPath.Stroke != null && _borderPath.StrokeThickness > 0;
+
 			if (Child is Control control)
 			{
 				control.BorderThickness =
-					new UI.Xaml.Thickness(_borderPath.StrokeThickness > 0 ? 0 : 1);
+					new UI.Xaml.Thickness(hasBorder ? 0 : 1);
 			}
 
 			if (Child is MauiTextBox textBox)
 			{
-				bool hasBorder = _borderShape != null && _borderPath.Stroke != null && _borderPath.StrokeThickness > 0;
-
 				textBox.Style = hasBorder ?
 					Application.Current.Resources["MauiBorderlessTextBoxStyle"] as Style :
 					Application.Current.Resources["MauiTextBoxStyle"] as Style;
+			}
+
+			if (Child is CalendarDatePicker calendarDatePicker)
+			{
+				calendarDatePicker.Style = hasBorder ?
+					Application.Current.Resources["MauiBorderlessCalendarDatePickerStyle"] as Style :
+					Application.Current.Resources["MauiCalendarDatePickerStyle"] as Style;
 			}
 		}
 	}

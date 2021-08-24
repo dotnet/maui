@@ -269,6 +269,9 @@ namespace Microsoft.Maui
 
 		string Obfuscate(string text, bool leaveLastVisible = false)
 		{
+			if (string.IsNullOrEmpty(text))
+				return string.Empty;
+
 			if (!leaveLastVisible)
 				return new string(ObfuscationCharacter, text.Length);
 
