@@ -6,7 +6,7 @@ steps:
 
   - task: UseDotNet@2
     displayName: 'Install .net core $(DOTNET_VERSION)'
-    condition: and(ne(variables['DOTNET_VERSION'], '')
+    condition: ne(variables['DOTNET_VERSION'], '')
 
   # Prepare macOS
   - ${{ if eq(parameters.platform, 'macos') }}:
