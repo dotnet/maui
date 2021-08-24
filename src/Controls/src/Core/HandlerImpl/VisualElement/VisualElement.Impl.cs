@@ -100,7 +100,9 @@ namespace Microsoft.Maui.Controls
 			return DesiredSize;
 		}
 
-		Maui.FlowDirection IView.FlowDirection => FlowDirection.ToPlatformFlowDirection();
+		Maui.FlowDirection IView.FlowDirection
+			=> (this as IFlowDirectionController).EffectiveFlowDirection.ToPlatformFlowDirection(Handler?.MauiContext);
+
 		Primitives.LayoutAlignment IView.HorizontalLayoutAlignment => default;
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => default;
 

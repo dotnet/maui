@@ -1,7 +1,10 @@
 using Android.Graphics.Drawables;
 using Android.Views;
+using Android.Widget;
 using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
+using ALayoutDirection = Android.Views.LayoutDirection;
+using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -70,6 +73,31 @@ namespace Microsoft.Maui
 		public static void UpdateOpacity(this AView nativeView, IView view)
 		{
 			nativeView.Alpha = (float)view.Opacity;
+		}
+
+		public static void UpdateFlowDirection(this AView nativeView, IView view)
+		{
+			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection())
+			{
+				nativeView.LayoutDirection = ALayoutDirection.Inherit;
+
+				if (nativeView is TextView textView)
+					textView.TextDirection = ATextDirection.Inherit;
+			}
+			else if (view.FlowDirection == FlowDirection.RightToLeft)
+			{
+				nativeView.LayoutDirection = ALayoutDirection.Rtl;
+
+				if (nativeView is TextView textView)
+					textView.TextDirection = ATextDirection.Rtl;
+			}
+			else if (view.FlowDirection == FlowDirection.LeftToRight)
+			{
+				nativeView.LayoutDirection = ALayoutDirection.Ltr;
+
+				if (nativeView is TextView textView)
+					textView.TextDirection = ATextDirection.Ltr;
+			}
 		}
 
 		public static bool GetClipToOutline(this AView view)
