@@ -1,0 +1,87 @@
+﻿<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.RefreshViewPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    Title="RefreshView">
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+
+            <DataTemplate x:Key="ColorItemTemplate">
+                <Grid 
+                    Margin="5"
+                    HeightRequest="120"
+                    WidthRequest="105">
+                    <BoxView 
+                        Color="{Binding Color}" />
+                    <Label 
+                        Text="{Binding Name}"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center" />
+                </Grid>
+            </DataTemplate>
+
+        </ResourceDictionary>
+    </views:BasePage.Resources>
+    <views:BasePage.BindingContext>
+        <viewmodels:RefreshViewModel />
+    </views:BasePage.BindingContext>
+    <views:BasePage.Content>
+        <!--
+        https://github.com/dotnet/maui/issues/2022
+        <VerticalStackLayout
+            Margin="12">
+            <Label 
+                Text="Pull the items down to refresh the ScrollView."
+                Style="{StaticResource Headline}" />
+            <Label 
+                Text="{Binding Items.Count, StringFormat='Number of items: {0}'}" />-->
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <VerticalStackLayout Grid.Row="0">
+                <HorizontalStackLayout>
+                    <Button FontSize="10" Text="Toggle Refresh Color" Clicked="OnToggleRefreshColorClicked"></Button>
+                    <Button FontSize="10" Text="Toggle Background Color" Clicked="OnToggleRefreshBackgroundColorClicked"></Button>
+                </HorizontalStackLayout>
+                <HorizontalStackLayout>
+                    <Button FontSize="10" Text="Toggle Refresh" Clicked="OnTriggerRefreshClicked"></Button>
+                    <Button FontSize="10" Text="Toggle Is Enabled" Clicked="OnToggleEnabledClicked"></Button>
+                </HorizontalStackLayout>
+                <HorizontalStackLayout>
+                    <Label FontSize="10" Text="{Binding RefreshText}"></Label>
+                    <Label FontSize="10" Text="{Binding EnabledText}"></Label>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+            <RefreshView  Grid.Row="1"
+                x:Name="refreshView"
+                IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}"
+                IsEnabled="{Binding IsEnabled, Mode=TwoWay}"
+                RefreshColor="Teal"
+                Command="{Binding RefreshCommand}">
+                <ScrollView>
+                    <StackLayout 
+                        BindableLayout.ItemsSource="{Binding Items}"
+                        BindableLayout.ItemTemplate="{StaticResource ColorItemTemplate}">
+                    </StackLayout>
+                </ScrollView>
+                <!--
+                https://github.com/dotnet/maui/issues/2023
+                <FlexLayout 
+                        Direction="Row"
+                        Wrap="Wrap"
+                        AlignItems="Center"
+                        AlignContent="Center"
+                        BindableLayout.ItemsSource="{Binding Items}"
+                        BindableLayout.ItemTemplate="{StaticResource ColorItemTemplate}" />-->
+
+            </RefreshView>
+        </Grid>
+
+        <!--</VerticalStackLayout>-->
+    </views:BasePage.Content>
+</views:BasePage>

@@ -2,7 +2,7 @@
 {
 	public partial class PickerHandler
 	{
-		public static PropertyMapper<IPicker, PickerHandler> PickerMapper = new(ViewMapper)
+		public static IPropertyMapper<IPicker, PickerHandler> PickerMapper = new PropertyMapper<IPicker, PickerHandler>(ViewMapper)
 		{
 #if __ANDROID__
 			[nameof(IPicker.Background)] = MapBackground,
@@ -26,7 +26,7 @@
 
 		}
 
-		public PickerHandler(PropertyMapper mapper) : base(mapper)
+		public PickerHandler(IPropertyMapper mapper) : base(mapper)
 		{
 
 		}
