@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(ViewHandler handler, IView view)
 		{
-#if WINDOWS		
+#if WINDOWS
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			bool hasBorder = view.BorderBrush != null && view.BorderWidth > 0;
@@ -166,15 +166,16 @@ namespace Microsoft.Maui.Handlers
 #endif
 			((NativeView?)handler.NativeView)?.UpdateBackground(view);
 		}
-    
+
 		public static void MapBorderBrush(IViewHandler handler, IView view)
 		{
-#if WINDOWS		
+#if WINDOWS
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 			((WrapperView?)handler.ContainerView)?.UpdateBorderBrush(view);
 #else
 			((NativeView?)handler.NativeView)?.UpdateBorderBrush(view);
 #endif
+			handler.UpdateValue(nameof(view.Background));
 		}
 
 		public static void MapBorderWidth(IViewHandler handler, IView view)
@@ -185,6 +186,7 @@ namespace Microsoft.Maui.Handlers
 #else
 			((NativeView?)handler.NativeView)?.UpdateBorderWidth(view);
 #endif
+			handler.UpdateValue(nameof(view.Background));
 		}
 
 		public static void MapBorderDashArray(IViewHandler handler, IView view)
@@ -215,6 +217,7 @@ namespace Microsoft.Maui.Handlers
 #else
 			((NativeView?)handler.NativeView)?.UpdateBorderShape(view);
 #endif
+			handler.UpdateValue(nameof(view.Background));
 		}
 
 		public static void MapOpacity(ViewHandler handler, IView view)

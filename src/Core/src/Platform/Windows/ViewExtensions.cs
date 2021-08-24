@@ -75,22 +75,15 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
 		{
-			bool hasBorder = view.BorderBrush != null && view.BorderWidth > 0;
+			bool hasBorder = view.BorderShape != null && view.BorderBrush != null && view.BorderWidth > 0;
 
 			if (hasBorder)
-				(nativeView as WrapperView)?.UpdateBackground(view.Background);
+				nativeView?.UpdateBorderBackground(view);
 			else
-			{
-				if (nativeView is Control control)
-					control.UpdateBackground(view.Background);
-				else if (nativeView is Border border)
-					border.UpdateBackground(view.Background);
-				else if (nativeView is Panel panel)
-					panel.UpdateBackground(view.Background);
-			}
+				nativeView?.UpdateNativeViewBackground(view);
 		}
 
-		public static void UpdateBorderBrush(this WrapperView nativeView, IView view) 
+		public static void UpdateBorderBrush(this WrapperView nativeView, IView view)
 		{
 			var borderBrush = view.BorderBrush;
 
@@ -146,6 +139,7 @@ namespace Microsoft.Maui
 		public static void UpdateSemantics(this FrameworkElement nativeView, IView view)
 		{
 			var semantics = view.Semantics;
+
 			if (semantics == null)
 				return;
 
@@ -185,6 +179,30 @@ namespace Microsoft.Maui
 		{
 			// WinUI uses NaN for "unspecified"
 			nativeView.Height = view.Height >= 0 ? view.Height : double.NaN;
+		}
+
+		internal static void UpdateBorderBackground(this FrameworkElement nativeView, IView view)
+		{
+			(nativeView as WrapperView)?.UpdateBackground(view.Background);
+
+			if (nativeView is Control control)
+				control.UpdateBackground(null);
+			else if (nativeView is Border border)
+				border.UpdateBackground(null);
+			else if (nativeView is Panel panel)
+				panel.UpdateBackground(null);
+		}
+
+		internal static void UpdateNativeViewBackground(this FrameworkElement nativeView, IView view)
+		{
+			(nativeView as WrapperView)?.UpdateBackground(null);
+
+			if (nativeView is Control control)
+				control.UpdateBackground(view.Background);
+			else if (nativeView is Border border)
+				border.UpdateBackground(view.Background);
+			else if (nativeView is Panel panel)
+				panel.UpdateBackground(view.Background);
 		}
 	}
 }

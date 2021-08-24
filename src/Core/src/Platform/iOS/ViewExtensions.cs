@@ -334,7 +334,7 @@ namespace Microsoft.Maui
 
 		static void UpdateNativeBorder(this UIView nativeView, IView view)
 		{
-			bool hasBorder = view.BorderBrush != null && view.BorderWidth > 0;
+			bool hasBorder = view.BorderShape != null && view.BorderBrush != null && view.BorderWidth > 0;
 
 			// If we apply a custom border, remove the border from the NativeView
 			if(nativeView is UITextField textField)

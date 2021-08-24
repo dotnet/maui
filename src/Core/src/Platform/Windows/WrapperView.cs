@@ -55,6 +55,7 @@ namespace Microsoft.Maui
 				return;
 
 			_borderPath.Fill = background?.ToNative();
+			_borderPath.Visibility = background != null ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
 		}
 
 		public void UpdateBorderBrush(Paint borderBrush)
@@ -139,6 +140,7 @@ namespace Microsoft.Maui
 
 			bool hasBorder = _borderShape != null && _borderPath.Stroke != null && _borderPath.StrokeThickness > 0;
 
+			// If we apply a custom border, remove the border from the NativeView
 			if (Child is Control control)
 			{
 				control.BorderThickness =
