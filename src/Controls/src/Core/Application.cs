@@ -268,19 +268,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// Don't use this unless there really is no better option
-		internal void SavePropertiesAsFireAndForget()
-		{
-			if (Dispatcher.IsInvokeRequired)
-			{
-				Dispatcher.BeginInvokeOnMainThread(SaveProperties);
-			}
-			else
-			{
-				SaveProperties();
-			}
-		}
-
 		public IPlatformElementConfiguration<T, Application> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
@@ -350,7 +337,9 @@ namespace Microsoft.Maui.Controls
 		internal void SendSleep()
 		{
 			OnSleep();
-			SavePropertiesAsFireAndForget();
+#pragma warning disable CS0618 // Type or member is obsolete
+			SavePropertiesAsync().FireAndForget();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		internal Task SendSleepAsync()
