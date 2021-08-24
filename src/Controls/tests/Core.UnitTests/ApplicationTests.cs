@@ -66,6 +66,64 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
+		public void CreateWindowUsesMainPageWithCorrectVisualChildren()
+		{
+			var app = new Application();
+			var iapp = app as IApplication;
+			var page = new ContentPage();
+
+			app.MainPage = page;
+
+			var window = iapp.CreateWindow(null);
+
+			var vtapp = app as IVisualTreeElement;
+			Assert.AreEqual(1, vtapp.GetVisualChildren().Count);
+			Assert.AreEqual(window, vtapp.GetVisualChildren()[0]);
+			Assert.Null(vtapp.GetVisualParent());
+
+			var vtwindow = window as IVisualTreeElement;
+			Assert.AreEqual(1, vtwindow.GetVisualChildren().Count);
+			Assert.AreEqual(page, vtwindow.GetVisualChildren()[0]);
+			Assert.AreEqual(app, vtwindow.GetVisualParent());
+
+			var vtpage = page as IVisualTreeElement;
+			Assert.AreEqual(0, vtpage.GetVisualChildren().Count);
+			Assert.AreEqual(window, vtpage.GetVisualParent());
+		}
+
+		[Test]
+		public void SettingMainPageUpdatesWindowWithCorrectVisualChildren()
+		{
+			var app = new Application();
+			var iapp = app as IApplication;
+			var page = new ContentPage();
+
+			app.MainPage = page;
+			var window = iapp.CreateWindow(null);
+
+			var page2 = new ContentPage();
+			app.MainPage = page2;
+
+			var vtapp = app as IVisualTreeElement;
+			Assert.AreEqual(1, vtapp.GetVisualChildren().Count);
+			Assert.AreEqual(window, vtapp.GetVisualChildren()[0]);
+			Assert.Null(vtapp.GetVisualParent());
+
+			var vtwindow = window as IVisualTreeElement;
+			Assert.AreEqual(1, vtwindow.GetVisualChildren().Count);
+			Assert.AreEqual(page2, vtwindow.GetVisualChildren()[0]);
+			Assert.AreEqual(app, vtwindow.GetVisualParent());
+
+			var vtpage = page as IVisualTreeElement;
+			Assert.AreEqual(0, vtpage.GetVisualChildren().Count);
+			Assert.Null(vtpage.GetVisualParent());
+
+			var vtpage2 = page2 as IVisualTreeElement;
+			Assert.AreEqual(0, vtpage2.GetVisualChildren().Count);
+			Assert.AreEqual(window, vtpage2.GetVisualParent());
+		}
+
+		[Test]
 		public void NotSettingMainPageThrows()
 		{
 			var app = new Application();

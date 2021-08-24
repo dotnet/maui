@@ -314,6 +314,71 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		[Test]
+		public void CreateWindowUsesMainPage()
+		{
+			if (!DebuggerHelper.DebuggerIsAttached)
+				return;
+
+			var app = new Application();
+			var page = new ContentPage();
+
+			app.MainPage = page;
+
+			Assert.AreEqual(0, _treeEvents.Count);
+
+			var iapp = app as IApplication;
+			var window = iapp.CreateWindow(null!);
+
+			Assert.AreEqual(2, _treeEvents.Count);
+
+			var (parent, args) = _treeEvents[0];
+			Assert.AreEqual(window, parent);
+			Assert.AreEqual(window, args.Parent);
+			Assert.AreEqual(page, args.Child);
+			Assert.AreEqual(0, args.ChildIndex);
+			Assert.AreEqual(VisualTreeChangeType.Add, args.ChangeType);
+
+			(parent, args) = _treeEvents[1];
+			Assert.AreEqual(app, parent);
+			Assert.AreEqual(app, args.Parent);
+			Assert.AreEqual(window, args.Child);
+			Assert.AreEqual(0, args.ChildIndex);
+			Assert.AreEqual(VisualTreeChangeType.Add, args.ChangeType);
+		}
+
+		[Test]
+		public void SettingMainPageUpdatesWindow()
+		{
+			var app = new Application();
+			var page = new ContentPage();
+
+			app.MainPage = page;
+			var iapp = app as IApplication;
+			var window = iapp.CreateWindow(null!);
+
+			_treeEvents.Clear();
+
+			var page2 = new ContentPage();
+			app.MainPage = page2;
+
+			Assert.AreEqual(2, _treeEvents.Count);
+
+			var (parent, args) = _treeEvents[0];
+			Assert.AreEqual(window, parent);
+			Assert.AreEqual(window, args.Parent);
+			Assert.AreEqual(page, args.Child);
+			Assert.AreEqual(0, args.ChildIndex);
+			Assert.AreEqual(VisualTreeChangeType.Remove, args.ChangeType);
+
+			(parent, args) = _treeEvents[1];
+			Assert.AreEqual(window, parent);
+			Assert.AreEqual(window, args.Parent);
+			Assert.AreEqual(page2, args.Child);
+			Assert.AreEqual(0, args.ChildIndex);
+			Assert.AreEqual(VisualTreeChangeType.Add, args.ChangeType);
+		}
+
 		Layout CreateLayout(Type TLayout)
 		{
 			var layout = (Layout)Activator.CreateInstance(TLayout)!;
