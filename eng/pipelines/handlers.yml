@@ -128,9 +128,6 @@ stages:
                 displayName: 'Install .NET'
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
-                ${{ if and(eq(BuildPlatform.name, 'macOS'), ne(variables['System.TeamProject'], 'devdiv')) }}:
-                  timeoutInMinutes: 15
-                  continueOnError: true
               - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Run Unit Tests'
               - task: PublishTestResults@2
