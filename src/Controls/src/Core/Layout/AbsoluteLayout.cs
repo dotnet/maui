@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 			return new AbsoluteLayoutManager(this);
 		}
 
-		public static double AutoSize => -1;
+		const double AutoSize = -1;
 
 		#region Attached Properties
 

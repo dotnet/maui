@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Layouts
 	{
 		public IAbsoluteLayout AbsoluteLayout { get; }
 
-		static readonly double AutoSize = -1;
+		const double AutoSize = -1;
 
 		public AbsoluteLayoutManager(IAbsoluteLayout absoluteLayout) : base(absoluteLayout)
 		{
