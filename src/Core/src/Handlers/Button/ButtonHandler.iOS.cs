@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : ViewHandler<IButton, UIButton>
+	public sealed partial class ButtonHandler : ViewHandler<IButton, UIButton>
 	{
 		static readonly UIControlState[] ControlStates = { UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled };
 
@@ -40,7 +40,6 @@ namespace Microsoft.Maui.Handlers
 			nativeView.TouchUpInside -= OnButtonTouchUpInside;
 			nativeView.TouchUpOutside -= OnButtonTouchUpOutside;
 			nativeView.TouchDown -= OnButtonTouchDown;
-
 			base.DisconnectHandler(nativeView);
 		}
 
@@ -62,18 +61,7 @@ namespace Microsoft.Maui.Handlers
 				NativeView.SetImage(null, UIControlState.Normal);
 			}
 
-			NativeView.UpdateContentLayout(VirtualView);
-		}
-
-		public override void NativeArrange(Rectangle rect)
-		{
-			base.NativeArrange(rect);
-			NativeView.UpdateContentLayout(VirtualView);
-		}
-		
-		public static void MapContentLayout(ButtonHandler handler, IButton button)
-		{
-			handler.NativeView.UpdateContentLayout(button);
+			VirtualView.ImageSourceLoaded();
 		}
 
 		public static void MapText(ButtonHandler handler, IButton button)

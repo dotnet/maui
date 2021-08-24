@@ -14,7 +14,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : ViewHandler<IButton, MaterialButton>
+	public sealed partial class ButtonHandler : ViewHandler<IButton, MaterialButton>
 	{
 		static Thickness? DefaultPadding;
 		static Drawable? DefaultBackground;
@@ -113,9 +113,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapImageSource(ButtonHandler handler, IButton image) =>
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
-		public static void MapContentLayout(ButtonHandler handler, IButton image) =>
-			handler.NativeView.UpdateContentLayout(image);
-
 		public static Task MapImageSourceAsync(ButtonHandler handler, IButton image)
 		{
 			if (image.ImageSource == null)
@@ -183,7 +180,7 @@ namespace Microsoft.Maui.Handlers
 		void OnSetImageSourceDrawable(Drawable? obj)
 		{
 			NativeView.Icon = obj;
-			NativeView.UpdateContentLayout(VirtualView);
+			VirtualView?.ImageSourceLoaded();
 		}
 
 		bool OnTouch(IButton? button, AView? v, MotionEvent? e)

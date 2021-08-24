@@ -10,6 +10,9 @@ namespace Microsoft.Maui
 		/// </summary>
 		IImageSource? ImageSource { get; }
 
+
+		void ImageSourceLoaded();
+
 		/// <summary>
 		/// Occurs when the Button is pressed.
 		/// </summary>
