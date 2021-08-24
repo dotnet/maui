@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 		public static XamlSourceInfo GetXamlSourceInfo(object obj) =>
 			sourceInfos.TryGetValue(obj, out var sourceinfo) ? sourceinfo : null;
 
-		public static void OnChildAdded(Element parent, Element child)
+		public static void OnChildAdded(IVisualTreeElement parent, IVisualTreeElement child)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
 				return;
@@ -30,12 +30,12 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			if (child is null)
 				return;
 
-			var index = (parent as IVisualTreeElement)?.GetVisualChildren().IndexOf(child) ?? -1;
+			var index = parent?.GetVisualChildren().IndexOf(child) ?? -1;
 
 			OnChildAdded(parent, child, index);
 		}
 
-		public static void OnChildAdded(Element parent, Element child, int newLogicalIndex)
+		public static void OnChildAdded(IVisualTreeElement parent, IVisualTreeElement child, int newLogicalIndex)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
 				return;
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			OnVisualTreeChanged(new VisualTreeChangeEventArgs(parent, child, newLogicalIndex, VisualTreeChangeType.Add));
 		}
 
-		public static void OnChildRemoved(Element parent, Element child, int oldLogicalIndex)
+		public static void OnChildRemoved(IVisualTreeElement parent, IVisualTreeElement child, int oldLogicalIndex)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
 				return;
