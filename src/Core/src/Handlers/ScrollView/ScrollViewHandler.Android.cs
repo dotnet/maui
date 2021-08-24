@@ -2,13 +2,32 @@
 
 namespace Microsoft.Maui.Handlers
 {
+
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, MauiScrollView>
 	{
+		public new class Factory : ViewHandler.Factory
+		{
+			public virtual MauiScrollView CreateNativeView(ScrollViewHandler scrollViewHandler, IScrollView scrollView)
+			{
+				return new MauiScrollView(
+				   new Android.Views.ContextThemeWrapper(scrollViewHandler.MauiContext!.Context, Resource.Style.scrollViewTheme), null!,
+					   Resource.Attribute.scrollViewStyle);
+			}
+		}
+
+		public static Factory ScrollViewFactory { get; set; } = new Factory();
+
+		public static FactoryMapper<IScrollView, ScrollViewHandler> FactoryMapper = new()
+		{
+			[nameof(ScrollViewHandler.CreateNativeView)] = ScrollViewFactory.CreateNativeView
+		};
+
 		protected override MauiScrollView CreateNativeView()
 		{
-			return new MauiScrollView(
-				new Android.Views.ContextThemeWrapper(MauiContext!.Context, Resource.Style.scrollViewTheme), null!,
-					Resource.Attribute.scrollViewStyle);
+			if (FactoryMapper.Invoke(this, null, nameof(ScrollViewHandler.CreateNativeView)) is MauiScrollView msv)
+				return msv;
+
+			throw new System.Exception("NOOOOOOO");
 		}
 
 		protected override void ConnectHandler(MauiScrollView nativeView)

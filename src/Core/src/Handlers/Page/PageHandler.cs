@@ -16,6 +16,21 @@ namespace Microsoft.Maui.Handlers
 #endif
 		};
 
+		public static Factory PageViewFactory { get; set; } = new Factory();
+
+		public static FactoryMapper<IView, PageHandler> FactoryMapper = new()
+		{
+			[nameof(Factory.CreateNativeView)] = (v, h) => PageViewFactory.CreateNativeView(v, h),
+#if __IOS__
+			[nameof(Factory.CreateViewController)] = PageViewFactory.CreateViewController
+#endif
+		};
+
+		public new partial class Factory : ViewHandler.Factory
+		{
+		}
+
+
 		public PageHandler() : base(PageMapper, PageCommandMapper)
 		{
 

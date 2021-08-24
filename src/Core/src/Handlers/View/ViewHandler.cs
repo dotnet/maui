@@ -13,6 +13,11 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
+		public class Factory
+		{
+
+		}
+
 		public static IPropertyMapper<IView, ViewHandler> ViewMapper = new PropertyMapper<IView, ViewHandler>(ElementHandler.ElementMapper)
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,

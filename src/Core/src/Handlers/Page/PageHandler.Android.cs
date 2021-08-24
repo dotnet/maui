@@ -6,7 +6,17 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PageHandler : ViewHandler<IView, PageViewGroup>
 	{
-		//Graphics.Color? DefaultBackgroundColor;
+		public new partial class Factory : ViewHandler.Factory
+		{
+			public virtual PageViewGroup CreateNativeView(PageHandler scrollViewHandler, IView scrollView)
+			{
+				return new PageViewGroup(scrollViewHandler.Context)
+				{
+					CrossPlatformMeasure = scrollView.Measure,
+					CrossPlatformArrange = scrollView.Arrange
+				};
+			}
+		}
 
 		protected override PageViewGroup CreateNativeView()
 		{
@@ -15,11 +25,7 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a PageViewGroup");
 			}
 
-			var viewGroup = new PageViewGroup(Context)
-			{
-				CrossPlatformMeasure = VirtualView.Measure,
-				CrossPlatformArrange = VirtualView.Arrange
-			};
+			var viewGroup = (PageViewGroup)FactoryMapper[nameof(Factory.CreateNativeView)].Invoke(this, VirtualView)!;
 
 			return viewGroup;
 		}

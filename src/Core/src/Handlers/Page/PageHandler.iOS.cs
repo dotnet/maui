@@ -7,6 +7,24 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PageHandler : ViewHandler<IView, PageView>, INativeViewHandler
 	{
+
+		public new partial class Factory : ViewHandler.Factory
+		{
+			public virtual PageViewController CreateViewController(PageHandler pageHandler, IView scrollView)
+			{
+				return new PageViewController(scrollView, pageHandler);
+			}
+
+			public virtual PageView CreateNativeView(PageHandler pageHandler, IView scrollView)
+			{
+				return new PageView
+				{
+					CrossPlatformArrange = scrollView.Arrange,
+					CrossPlatformMeasure = scrollView.Measure
+				};
+			}
+		}
+
 		PageViewController? _pageViewController;
 		UIViewController? INativeViewHandler.ViewController => _pageViewController;
 
@@ -15,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a LayoutView");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 
-			_pageViewController = new PageViewController(VirtualView, this.MauiContext);
+			_pageViewController = (PageViewController)FactoryMapper[nameof(Factory.CreateViewController)].Invoke(this, VirtualView)!;
 
 			if (_pageViewController.CurrentNativeView is PageView pv)
 				return pv;

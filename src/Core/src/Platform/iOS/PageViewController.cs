@@ -5,21 +5,21 @@ namespace Microsoft.Maui
 {
 	public class PageViewController : ContainerViewController
 	{
-		public PageViewController(IView page, IMauiContext mauiContext)
+		readonly PageHandler _pageHandler;
+
+		public PageViewController(IView page, PageHandler pageHandler)
 		{
 			CurrentView = page;
-			Context = mauiContext;
+			Context = pageHandler.MauiContext!;
 
 			LoadFirstView(page);
+			_pageHandler = pageHandler;
 		}
 
 		protected override UIView CreateNativeView(IElement view)
 		{
-			return new PageView
-			{
-				CrossPlatformArrange = ((IView)view).Arrange,
-				CrossPlatformMeasure = ((IView)view).Measure
-			};
+			return (PageView)PageHandler.FactoryMapper[nameof(PageHandler.Factory.CreateNativeView)]
+				.Invoke(_pageHandler, (IView)view)!;
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
