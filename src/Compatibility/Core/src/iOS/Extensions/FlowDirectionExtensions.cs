@@ -4,6 +4,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	internal static class FlowDirectionExtensions
 	{
+		// this is needed for Compatibility Unit Tests
+		internal static FlowDirection ToFlowDirection(this UIUserInterfaceLayoutDirection direction)
+		{
+			return Microsoft.Maui.FlowDirectionExtensions.ToFlowDirection(direction);
+		}
+
 		internal static bool UpdateFlowDirection(this UIView view, IVisualElementController controller)
 		{
 			if (controller == null || view == null || !Forms.IsiOS9OrNewer)
