@@ -64,8 +64,9 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			var count = await InvokeOnMainThreadAsync(() =>
 			{
+				var nativeView = layout.Handler.NativeView;
 				layout.Handler.DisconnectHandler();
-				return GetNativeChildCount(handler);
+				return GetNativeChildCount(nativeView);
 			});
 
 			Assert.Equal(0, count);

@@ -328,7 +328,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (bindable.GetValue(property) is ImageSource image)
 				AutomationPropertiesProvider.SetContentDescription(result, image, null, null);
 
-			new ShellImagePart()
+			new ImageSourceLoader()
 			{
 				Source = (ImageSource)bindable.GetValue(property),
 				MauiContext = MauiContext
