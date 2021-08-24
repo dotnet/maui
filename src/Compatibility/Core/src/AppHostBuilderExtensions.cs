@@ -176,7 +176,8 @@ namespace Microsoft.Maui.Controls.Hosting
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
 
-					// Update the mappings for ILabel/Label to work specifically for Controls
+					// Update the mappings for IView/View to work specifically for Controls
+					VisualElement.RemapForControls();
 					Label.RemapForControls();
 
 				})

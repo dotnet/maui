@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using NUnit.Framework;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
