@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (controller is IView v)
 			{
-				view.UpdateFlowDirection(v);
+				control.UpdateFlowDirection(v);
 				return;
 			}
 
