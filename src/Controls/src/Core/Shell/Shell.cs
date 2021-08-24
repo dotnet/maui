@@ -613,6 +613,31 @@ namespace Microsoft.Maui.Controls
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
 			InternalChildren.CollectionChanged += OnInternalChildrenCollectionChanged;
+
+			if (Application.Current != null)
+			{
+				this.SetAppThemeColor(Shell.FlyoutBackgroundColorProperty, Colors.White, Colors.Black);
+				this.SetOnAppTheme<Brush>(Shell.FlyoutBackgroundProperty, Brush.White, Brush.Black);
+			}
+		}
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			if (Application.Current == null)
+				return;
+
+			if (args.NewHandler == null)
+				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+
+			if (args.NewHandler != null && args.OldHandler == null)
+				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+		}
+
+		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+		{
+			ShellController.AppearanceChanged(CurrentPage, false);
 		}
 
 		void Initialize()

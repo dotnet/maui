@@ -49,10 +49,4 @@
     </ItemGroup>
   </Target>
 
-  <!--
-    HACK: temporarily put runtime packs in 'library-packs', until they can be resolved from 'packs'
-    See: https://github.com/dotnet/sdk/issues/14044
-  -->
-  <Import Condition=" !$(MSBuildProjectName.Contains('.Ref')) " Project="LibraryPacks.targets" />
-
 </Project>

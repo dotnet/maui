@@ -1,5 +1,7 @@
 <Project>
   <PropertyGroup>
+    <_MauiRuntimePackVersion>$(MicrosoftMauiSdkVersion)</_MauiRuntimePackVersion>
+    <_MauiRuntimePackVersion Condition=" '$(_MauiRuntimePackVersion)' == '' ">**FromWorkload**</_MauiRuntimePackVersion>
     <MicrosoftMauiSdkVersion Condition=" '$(MicrosoftMauiSdkVersion)' == '' ">@VERSION@</MicrosoftMauiSdkVersion>
     <!-- $(_MauiPlatformName) is used as RIDs as well as a suffix to targeting pack names -->
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">win</_MauiPlatformName>
@@ -15,10 +17,10 @@
         Include="Microsoft.Maui.Extensions"
         TargetFramework="net6.0"
         RuntimeFrameworkName="Microsoft.Maui.Extensions"
-        DefaultRuntimeFrameworkVersion="$(MicrosoftMauiSdkVersion)"
-        LatestRuntimeFrameworkVersion="$(MicrosoftMauiSdkVersion)"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         TargetingPackName="Microsoft.Maui.Extensions"
-        TargetingPackVersion="$(MicrosoftMauiSdkVersion)"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
         RuntimePackNamePatterns="Microsoft.Maui.Extensions"
         RuntimePackRuntimeIdentifiers="any"
     />
@@ -27,10 +29,10 @@
         Include="Microsoft.Maui.Core"
         TargetFramework="net6.0"
         RuntimeFrameworkName="Microsoft.Maui.Core"
-        DefaultRuntimeFrameworkVersion="$(MicrosoftMauiSdkVersion)"
-        LatestRuntimeFrameworkVersion="$(MicrosoftMauiSdkVersion)"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         TargetingPackName="Microsoft.Maui.Core.Ref.$(_MauiPlatformName)"
-        TargetingPackVersion="$(MicrosoftMauiSdkVersion)"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
         RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
         RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
         Profile="$(TargetPlatformIdentifier)"
@@ -40,10 +42,10 @@
         Include="Microsoft.Maui.Controls"
         TargetFramework="net6.0"
         RuntimeFrameworkName="Microsoft.Maui.Controls"
-        DefaultRuntimeFrameworkVersion="$(MicrosoftMauiSdkVersion)"
-        LatestRuntimeFrameworkVersion="$(MicrosoftMauiSdkVersion)"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         TargetingPackName="Microsoft.Maui.Controls.Ref.$(_MauiPlatformName)"
-        TargetingPackVersion="$(MicrosoftMauiSdkVersion)"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
         RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
         RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
         Profile="$(TargetPlatformIdentifier)"
@@ -53,10 +55,10 @@
         Include="Microsoft.Maui.Essentials"
         TargetFramework="net6.0"
         RuntimeFrameworkName="Microsoft.Maui.Essentials"
-        DefaultRuntimeFrameworkVersion="$(MicrosoftMauiSdkVersion)"
-        LatestRuntimeFrameworkVersion="$(MicrosoftMauiSdkVersion)"
+        DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
+        LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         TargetingPackName="Microsoft.Maui.Essentials.Ref.$(_MauiPlatformName)"
-        TargetingPackVersion="$(MicrosoftMauiSdkVersion)"
+        TargetingPackVersion="$(_MauiRuntimePackVersion)"
         RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
         RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
         Profile="$(TargetPlatformIdentifier)"

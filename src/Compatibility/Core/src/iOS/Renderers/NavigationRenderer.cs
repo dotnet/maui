@@ -1485,10 +1485,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
-			return Platform.GetRenderer(Current).ViewController;
+			return Platform.GetRenderer(Current)?.ViewController ??
+				(Current.Handler as INativeViewHandler)?.ViewController;
 		}
 
-		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden => Platform.GetRenderer(Current).ViewController;
+		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>
+			ChildViewControllerForStatusBarHidden();
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
