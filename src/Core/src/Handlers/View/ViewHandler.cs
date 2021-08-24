@@ -154,6 +154,16 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(ViewHandler handler, IView view)
 		{
+#if WINDOWS		
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+
+			bool hasBorder = view.BorderBrush != null && view.BorderWidth > 0;
+
+			if(!hasBorder)
+				((NativeView?)handler.NativeView)?.UpdateBackground(view);
+			else
+				((WrapperView?)handler.ContainerView)?.UpdateBackground(view);
+#endif
 			((NativeView?)handler.NativeView)?.UpdateBackground(view);
 		}
     

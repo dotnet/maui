@@ -8,14 +8,15 @@ namespace Microsoft.Maui
 {
 	public partial class WrapperView : Grid
 	{
-		readonly Path? _borderShape;
+		readonly Path? _borderPath;
+		IShape? _borderShape;
 		FrameworkElement? _child;
 
 		public WrapperView()
 		{
-			_borderShape = new Path();
+			_borderPath = new Path();
 
-			Children.Add(_borderShape);
+			Children.Add(_borderPath);
 		}
 
 		public FrameworkElement? Child
@@ -24,73 +25,132 @@ namespace Microsoft.Maui
 			internal set
 			{
 				if (_child != null)
+				{
+					_child.SizeChanged -= OnChildSizeChanged;
 					Children.Remove(_child);
+				}
 
 				if (value == null)
 					return;
 
 				_child = value;
+				_child.SizeChanged += OnChildSizeChanged;
+
 				Children.Add(_child);
 			}
 		}
 
-		public void SetBorderShape(IShape borderShape)
+		public void UpdateBorderShape(IShape borderShape)
 		{
-			if (_borderShape == null)
-				return;
+			_borderShape = borderShape;
 
-			var pathSize = new Graphics.Rectangle(0, 0, Width, Height);
-			var shapePath = borderShape.PathForBounds(pathSize);
-			var geometry = shapePath.AsPathGeometry();
+			UpdatePath();
 
-			_borderShape.Data = geometry;
+			UpdateNativeBorder();
 		}
 
-		public void SetBorderBrush(Paint borderBrush)
+		public void UpdateBackground(Paint? background)
 		{
-			if (_borderShape == null)
+			if (_borderPath == null)
 				return;
 
-			_borderShape.Stroke = borderBrush.ToNative();
+			_borderPath.Fill = background?.ToNative();
 		}
 
-		public void SetBorderWidth(double borderWidth)
+		public void UpdateBorderBrush(Paint borderBrush)
 		{
-			if (_borderShape == null)
+			if (_borderPath == null)
 				return;
 
-			_borderShape.StrokeThickness = borderWidth;
+			_borderPath.Stroke = borderBrush.ToNative();
+
+			UpdateNativeBorder();
 		}
 
-		public void SetBorderDashArray(DoubleCollection borderDashArray)
+		public void UpdateBorderWidth(double borderWidth)
 		{
-			if (_borderShape == null)
+			if (_borderPath == null)
 				return;
 
-			if (_borderShape.StrokeDashArray != null)
-				_borderShape.StrokeDashArray.Clear();
+			_borderPath.StrokeThickness = borderWidth;
+
+			UpdateNativeBorder();
+		}
+
+		public void UpdateBorderDashArray(DoubleCollection borderDashArray)
+		{
+			if (_borderPath == null)
+				return;
+
+			if (_borderPath.StrokeDashArray != null)
+				_borderPath.StrokeDashArray.Clear();
 
 			if (borderDashArray != null && borderDashArray.Count > 0)
 			{
-				if (_borderShape.StrokeDashArray == null)
-					_borderShape.StrokeDashArray = new WDoubleCollection();
+				if (_borderPath.StrokeDashArray == null)
+					_borderPath.StrokeDashArray = new WDoubleCollection();
 
 				double[] array = new double[borderDashArray.Count];
 				borderDashArray.CopyTo(array, 0);
 
 				foreach (double value in array)
 				{
-					_borderShape.StrokeDashArray.Add(value);
+					_borderPath.StrokeDashArray.Add(value);
 				}
 			}
 		}
 
-		public void SetBorderDashOffset(double borderDashOffset)
+		public void UpdateBorderDashOffset(double borderDashOffset)
 		{
-			if (_borderShape == null)
+			if (_borderPath == null)
 				return;
 
-			_borderShape.StrokeDashOffset = borderDashOffset;
+			_borderPath.StrokeDashOffset = borderDashOffset;
+		}
+
+		void UpdatePath()
+		{
+			if (Child == null || _borderShape == null)
+				return;
+
+			var width = Child.ActualWidth;
+			var height = Child.ActualHeight;
+
+			if (width <= 0 || height <= 0)
+				return;
+
+			var pathSize = new Graphics.Rectangle(0, 0, width, height);
+			var shapePath = _borderShape.PathForBounds(pathSize);
+			var geometry = shapePath.AsPathGeometry();
+
+			if (_borderPath != null)
+				_borderPath.Data = geometry;
+		}
+
+		void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			UpdatePath();
+		}
+
+		void UpdateNativeBorder()
+		{
+			if (Child == null || _borderPath == null)
+				return;
+
+			if (Child is Control control)
+			{
+				control.BorderThickness =
+					new UI.Xaml.Thickness(_borderPath.StrokeThickness > 0 ? 0 : 1);
+			}
+
+			if (Child is MauiTextBox textBox)
+			{
+				bool hasBorder = _borderShape != null && _borderPath.Stroke != null && _borderPath.StrokeThickness > 0;
+
+				textBox.Style = hasBorder ?
+					Application.Current.Resources["MauiBorderlessTextBoxStyle"] as Style :
+					Application.Current.Resources["MauiTextBoxStyle"] as Style;
+			}
 		}
 	}
 }

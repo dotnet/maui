@@ -75,12 +75,19 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
 		{
-			if (nativeView is Control control)
-				control.UpdateBackground(view.Background);
-			else if (nativeView is Border border)
-				border.UpdateBackground(view.Background);
-			else if (nativeView is Panel panel)
-				panel.UpdateBackground(view.Background);
+			bool hasBorder = view.BorderBrush != null && view.BorderWidth > 0;
+
+			if (hasBorder)
+				(nativeView as WrapperView)?.UpdateBackground(view.Background);
+			else
+			{
+				if (nativeView is Control control)
+					control.UpdateBackground(view.Background);
+				else if (nativeView is Border border)
+					border.UpdateBackground(view.Background);
+				else if (nativeView is Panel panel)
+					panel.UpdateBackground(view.Background);
+			}
 		}
 
 		public static void UpdateBorderBrush(this WrapperView nativeView, IView view) 
@@ -90,7 +97,7 @@ namespace Microsoft.Maui
 			if (borderBrush == null)
 				return;
 
-			nativeView.SetBorderBrush(borderBrush);
+			nativeView.UpdateBorderBrush(borderBrush);
 		}
 
 		public static void UpdateBorderWidth(this WrapperView nativeView, IView view)
@@ -100,7 +107,7 @@ namespace Microsoft.Maui
 			if (borderWidth < 0)
 				return;
 
-			nativeView.SetBorderWidth(borderWidth);
+			nativeView.UpdateBorderWidth(borderWidth);
 		}
 
 		public static void UpdateBorderDashArray(this WrapperView nativeView, IView view)
@@ -110,7 +117,7 @@ namespace Microsoft.Maui
 			if (borderDashArray == null)
 				return;
 
-			nativeView.SetBorderDashArray(borderDashArray);
+			nativeView.UpdateBorderDashArray(borderDashArray);
 		}
 
 		public static void UpdateBorderDashOffset(this WrapperView nativeView, IView view)
@@ -120,7 +127,7 @@ namespace Microsoft.Maui
 			if (borderDashOffset < 0)
 				return;
 
-			nativeView.SetBorderDashOffset(borderDashOffset);
+			nativeView.UpdateBorderDashOffset(borderDashOffset);
 		}
 
 		public static void UpdateBorderShape(this WrapperView nativeView, IView view)
@@ -130,7 +137,7 @@ namespace Microsoft.Maui
 			if (borderShape == null)
 				return;
 
-			nativeView.SetBorderShape(borderShape);
+			nativeView.UpdateBorderShape(borderShape);
 		}
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
