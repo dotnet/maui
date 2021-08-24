@@ -32,14 +32,6 @@ namespace Microsoft.Maui
 		{
 			var mauiApp = CreateMauiApp();
 
-			//var startup = OnCreateStartup();
-
-			//var host = startup
-			//	.CreateAppHostBuilder()
-			//	.ConfigureServices(ConfigureNativeServices)
-			//	.ConfigureUsing(startup)
-			//	.Build();
-
 			Services = mauiApp.Services;
 
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
@@ -130,11 +122,6 @@ namespace Microsoft.Maui
 		public override void WillEnterForeground(UIApplication application)
 		{
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillEnterForeground>(del => del(application));
-		}
-
-		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
-		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
 		}
 
 		public static MauiUIApplicationDelegate Current { get; private set; } = null!;

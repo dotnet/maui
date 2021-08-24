@@ -16,15 +16,6 @@ namespace Microsoft.Maui
 
 			var mauiApp = CreateMauiApp();
 
-			//var startup = OnCreateStartup() ??
-			//	throw new InvalidOperationException($"A valid startup object must be provided by overriding {nameof(OnCreateStartup)}.");
-
-			//var host = startup
-			//	.CreateAppHostBuilder()
-			//	.ConfigureServices(ConfigureNativeServices)
-			//	.ConfigureUsing(startup)
-			//	.Build();
-
 			Services = mauiApp.Services;
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
@@ -55,10 +46,6 @@ namespace Microsoft.Maui
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnWindowCreated>(del => del(winuiWndow));
 
 			return winuiWndow;
-		}
-
-		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
 		}
 
 		public static new MauiWinUIApplication Current => (MauiWinUIApplication)UI.Xaml.Application.Current;

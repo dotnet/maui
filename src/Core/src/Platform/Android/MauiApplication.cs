@@ -26,14 +26,6 @@ namespace Microsoft.Maui
 
 			var mauiApp = CreateMauiApp();
 
-			//var startup = OnCreateStartup();
-
-			//var host = startup
-			//	.CreateAppHostBuilder()
-			//	.ConfigureServices(ConfigureNativeServices)
-			//	.ConfigureUsing(startup)
-			//	.Build();
-
 			Services = mauiApp.Services;
 
 			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
@@ -64,11 +56,6 @@ namespace Microsoft.Maui
 			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationConfigurationChanged>(del => del(this, newConfig));
 
 			base.OnConfigurationChanged(newConfig);
-		}
-
-		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
-		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
 		}
 
 		public static MauiApplication Current { get; private set; } = null!;
