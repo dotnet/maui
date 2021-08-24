@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 		string LoadSerialized()
 		{
-			using (var ud = new UIKit.NSUserDefaults(PropertyStoreFile, UIKit.NSUserDefaultsType.SuiteName))
+			using (var ud = new Foundation.NSUserDefaults(PropertyStoreFile, Foundation.NSUserDefaultsType.SuiteName))
 				return ud.StringForKey(PropertyStoreKey);
 		}
 
@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			if (string.IsNullOrEmpty(str))
 				return;
 
-			using (var ud = new UIKit.NSUserDefaults(PropertyStoreFile, UIKit.NSUserDefaultsType.SuiteName))
-				ud.SetString(stringWriter.ToString(), PropertyStoreKey);
+			using (var ud = new Foundation.NSUserDefaults(PropertyStoreFile, Foundation.NSUserDefaultsType.SuiteName))
+				ud.SetString(str, PropertyStoreKey);
 		}
 
 		public Task<IDictionary<string, object>> DeserializePropertiesAsync()
@@ -47,8 +47,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (string.IsNullOrEmpty(str))
 					return null;
 
-				using (var stringReader = new StringReader(str);
-				using (var reader = XmlReader.Create(stringReader);
+				using var stringReader = new StringReader(str);
+				using var reader = XmlReader.Create(stringReader);
 
 				try
 				{
