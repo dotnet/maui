@@ -26,17 +26,16 @@ namespace Microsoft.Maui.Handlers
 		{
 			var nativeView = WrappedNativeView;
 
-			if (nativeView == null)
+			if (nativeView == null || Context == null)
+			{
 				return;
+			}
 
 			if (frame.Width < 0 || frame.Height < 0)
 			{
 				// This is a legacy layout value from Controls, nothing is actually laying out yet so we just ignore it
 				return;
 			}
-
-			if (Context == null)
-				return;
 
 			var left = Context.ToPixels(frame.Left);
 			var top = Context.ToPixels(frame.Top);

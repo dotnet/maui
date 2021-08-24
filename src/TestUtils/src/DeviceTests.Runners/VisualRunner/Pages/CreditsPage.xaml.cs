@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Controls;
+﻿#nullable enable
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 {
@@ -7,11 +9,13 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 		public CreditsPage()
 		{
 			InitializeComponent();
+		}
 
-			// Load about text
-			var html = "<html><body><b>xUnit Device Runner</b><br>Copyright &copy; 2015<br>Outercurve Foundation<br>All rights reserved.<br><br>Author: Oren Novotny<hr /></body></html>";
+		void OnNavigating(object? sender, WebNavigatingEventArgs e)
+		{
+			Browser.OpenAsync(e.Url);
 
-			WebView.Source = new HtmlWebViewSource { Html = html };
+			e.Cancel = true;
 		}
 	}
 }

@@ -1,14 +1,23 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 {
 	public class AssemblyRunInfo
 	{
-		public string AssemblyFileName { get; set; }
+		public AssemblyRunInfo(string assemblyFileName, TestAssemblyConfiguration configuration, IList<TestCaseViewModel> testCases)
+		{
+			AssemblyFileName = assemblyFileName ?? throw new ArgumentNullException(nameof(assemblyFileName));
+			Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+			TestCases = testCases ?? throw new ArgumentNullException(nameof(testCases));
+		}
 
-		public TestAssemblyConfiguration Configuration { get; set; }
+		public string AssemblyFileName { get; }
 
-		public IList<TestCaseViewModel> TestCases { get; set; }
+		public TestAssemblyConfiguration Configuration { get; }
+
+		public IList<TestCaseViewModel> TestCases { get; }
 	}
 }

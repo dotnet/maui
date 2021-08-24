@@ -4,15 +4,15 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ElementHandler : IElementHandler
 	{
-		public static PropertyMapper<IElement, ElementHandler> ElementMapper = new()
+		public static IPropertyMapper<IElement, ElementHandler> ElementMapper = new PropertyMapper<IElement, ElementHandler>()
 		{
 		};
 
-		protected PropertyMapper _mapper;
+		protected IPropertyMapper _mapper;
 		protected CommandMapper? CommandMapper;
-		protected readonly PropertyMapper _defaultMapper;
+		protected readonly IPropertyMapper _defaultMapper;
 
-		protected ElementHandler(PropertyMapper mapper, CommandMapper? commandMapper = null)
+		protected ElementHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 		{
 			_ = mapper ?? throw new ArgumentNullException(nameof(mapper));
 			_defaultMapper = mapper;
@@ -38,10 +38,11 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == view)
 				return;
 
-			if (VirtualView?.Handler != null && VirtualView.Handler != this)
-				VirtualView.Handler = null;
+			var oldVirtualView = VirtualView;
+			if (oldVirtualView?.Handler != null)
+				oldVirtualView.Handler = null;
 
-			bool setupNativeView = VirtualView == null;
+			bool setupNativeView = oldVirtualView == null;
 
 			VirtualView = view;
 			NativeView ??= CreateNativeElement();
