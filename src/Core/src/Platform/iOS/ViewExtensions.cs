@@ -90,8 +90,11 @@ namespace Microsoft.Maui
 		{
 			UISemanticContentAttribute updateValue = nativeView.SemanticContentAttribute;
 
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection())
+			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
+				view.FlowDirection == FlowDirection.MatchParent)
+			{
 				updateValue = UISemanticContentAttribute.Unspecified;
+			}
 			else if (view.FlowDirection == FlowDirection.RightToLeft)
 				updateValue = UISemanticContentAttribute.ForceRightToLeft;
 			else if (view.FlowDirection == FlowDirection.LeftToRight)

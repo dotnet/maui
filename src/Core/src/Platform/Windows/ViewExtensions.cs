@@ -99,7 +99,8 @@ namespace Microsoft.Maui
 		{
 			var flowDirection = view.FlowDirection;
 
-			if (flowDirection == FlowDirection.MatchParent)
+			if (flowDirection == FlowDirection.MatchParent ||
+				view.FlowDirection == FlowDirection.MatchParent)
 			{
 				flowDirection = view?.Handler?.MauiContext?.GetFlowDirection()
 					?? FlowDirection.LeftToRight;

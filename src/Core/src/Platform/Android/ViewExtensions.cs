@@ -77,7 +77,8 @@ namespace Microsoft.Maui
 
 		public static void UpdateFlowDirection(this AView nativeView, IView view)
 		{
-			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection())
+			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
+				view.FlowDirection == FlowDirection.MatchParent)
 			{
 				nativeView.LayoutDirection = ALayoutDirection.Inherit;
 

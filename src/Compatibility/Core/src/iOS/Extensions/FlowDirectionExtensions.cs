@@ -9,6 +9,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (controller == null || view == null || !Forms.IsiOS9OrNewer)
 				return false;
 
+			if (controller is IView v)
+			{
+				var current = view.SemanticContentAttribute;
+				view.UpdateFlowDirection(v);
+				return current != view.SemanticContentAttribute;
+			}
+
 			UISemanticContentAttribute updateValue = view.SemanticContentAttribute;
 
 			if (controller.EffectiveFlowDirection.IsRightToLeft())

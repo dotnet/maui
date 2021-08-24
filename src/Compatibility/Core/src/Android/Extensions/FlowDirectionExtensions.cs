@@ -12,6 +12,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (view == null || controller == null || (int)Forms.SdkInt < 17)
 				return;
 
+			if (controller is IView v)
+			{
+				view.UpdateFlowDirection(v);
+				return;
+			}
+
 			// if android:targetSdkVersion < 17 setting these has no effect
 			if (controller.EffectiveFlowDirection.IsRightToLeft())
 			{
