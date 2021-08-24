@@ -627,11 +627,11 @@ namespace Microsoft.Maui.Controls
 
 			if (Application.Current == null)
 				return;
-				
+
 			if (args.NewHandler == null)
 				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
 
-			if(args.NewHandler != null && args.OldHandler == null)
+			if (args.NewHandler != null && args.OldHandler == null)
 				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
 		}
 

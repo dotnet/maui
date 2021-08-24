@@ -14,9 +14,9 @@ namespace Microsoft.Maui
 			textView.Text = label.Text;
 		}
 
-		public static void UpdateTextHtml(this TextView textView, ILabel label) 
+		public static void UpdateTextHtml(this TextView textView, ILabel label)
 		{
-			var newText = label.Text;
+			var newText = label.Text ?? string.Empty;
 
 			if (NativeVersion.IsAtLeast(24))
 				textView.SetText(Html.FromHtml(newText, FromHtmlOptions.ModeCompact), BufferType.Spannable);

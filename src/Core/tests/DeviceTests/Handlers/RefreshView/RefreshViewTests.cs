@@ -9,7 +9,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category("RefreshViewHandler")]
 	public partial class RefreshViewHandlerTests : HandlerTestBase<RefreshViewHandler, RefreshViewStub>
 	{
-#if __ANDROID__
 		[Theory(DisplayName = "Is Refreshing Initializes Correctly")]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -21,7 +20,5 @@ namespace Microsoft.Maui.DeviceTests
 			};
 			await ValidatePropertyInitValue(RefreshView, () => isRefreshing, GetNativeIsRefreshing, isRefreshing);
 		}
-#endif
-
 	}
 }

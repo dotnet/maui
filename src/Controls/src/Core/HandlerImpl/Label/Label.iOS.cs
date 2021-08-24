@@ -1,39 +1,17 @@
-﻿using Microsoft.Maui;
-using Controls.Core.Platform.iOS.Extensions;
-using Microsoft.Maui.Handlers;
+﻿using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Label 
+	public partial class Label
 	{
-		public static void RemapForControls()
-		{
-			// Adjust the mappings to preserve Controls.Label legacy behaviors
-			// ILabel does not include the TextType property, so we map it here to handle HTML text
-			// And we map some of the other property handlers to Controls-specific versions that avoid steppingon HTML text settings
-
-			IPropertyMapper<ILabel, LabelHandler> ControlsLabelMapper = new PropertyMapper<Label, LabelHandler>(LabelHandler.LabelMapper)
-			{
-				[nameof(TextType)] = MapTextType,
-				[nameof(Text)] = MapText,
-				[nameof(TextDecorations)] = MapTextDecorations,
-				[nameof(CharacterSpacing)] = MapCharacterSpacing,
-				[nameof(LineHeight)] = MapLineHeight,
-				[nameof(ILabel.Font)] = MapFont,
-				[nameof(TextColor)] = MapTextColor
-			};
-
-			LabelHandler.LabelMapper = ControlsLabelMapper;
-		}
-
 		public static void MapTextType(LabelHandler handler, Label label)
 		{
-			handler.NativeView?.UpdateText(label);
+			Platform.LabelExtensions.UpdateText(handler.NativeView, label);
 		}
 
 		public static void MapText(LabelHandler handler, Label label)
 		{
-			handler.NativeView?.UpdateText(label);
+			Platform.LabelExtensions.UpdateText(handler.NativeView, label);
 		}
 
 		public static void MapTextDecorations(LabelHandler handler, Label label)

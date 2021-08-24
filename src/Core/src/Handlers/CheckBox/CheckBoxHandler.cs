@@ -2,7 +2,7 @@
 {
 	public partial class CheckBoxHandler
 	{
-		public static PropertyMapper<ICheckBox, CheckBoxHandler> CheckBoxMapper = new PropertyMapper<ICheckBox, CheckBoxHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<ICheckBox, CheckBoxHandler> CheckBoxMapper = new PropertyMapper<ICheckBox, CheckBoxHandler>(ViewHandler.ViewMapper)
 		{
 #if MONOANDROID
 			[nameof(ICheckBox.Background)] = MapBackground,
@@ -16,7 +16,7 @@
 
 		}
 
-		public CheckBoxHandler(PropertyMapper mapper) : base(mapper ?? CheckBoxMapper)
+		public CheckBoxHandler(IPropertyMapper mapper) : base(mapper ?? CheckBoxMapper)
 		{
 
 		}

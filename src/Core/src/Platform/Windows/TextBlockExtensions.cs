@@ -1,7 +1,7 @@
 using System;
-using Microsoft.UI.Xaml;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 
@@ -25,7 +25,7 @@ namespace Microsoft.Maui
 		{
 			nativeControl.UpdateTextPlainText(label);
 		}
-		
+
 		public static void UpdateTextColor(this TextBlock nativeControl, IText text) =>
 			nativeControl.UpdateProperty(TextBlock.ForegroundProperty, text.TextColor);
 
@@ -66,10 +66,22 @@ namespace Microsoft.Maui
 			// TextDecorations are not updated in the UI until the text changes
 			if (nativeControl.Inlines != null && nativeControl.Inlines.Count > 0)
 			{
-				for (var i = 0; i < nativeControl.Inlines.Count; i++)
+				foreach (var inline in nativeControl.Inlines)
 				{
-					var run = (Run)nativeControl.Inlines[i];
-					run.Text = run.Text;
+					if (inline is Run run)
+					{
+						run.Text = run.Text;
+					}
+					else if (inline is Span span)
+					{
+						foreach (var inline2 in span.Inlines)
+						{
+							if (inline2 is Run run2)
+							{
+								run2.Text = run2.Text;
+							}
+						}
+					}
 				}
 			}
 			else
@@ -97,7 +109,7 @@ namespace Microsoft.Maui
 		{
 			nativeControl.VerticalAlignment = label.VerticalTextAlignment.ToNativeVerticalAlignment();
 		}
-		
+
 		internal static void UpdateTextHtml(this TextBlock nativeControl, ILabel label)
 		{
 			var text = label.Text ?? string.Empty;
@@ -158,9 +170,9 @@ namespace Microsoft.Maui
 			}
 		}
 
-		internal static void DetermineTruncatedTextWrapping(this TextBlock textBlock) =>	 
+		internal static void DetermineTruncatedTextWrapping(this TextBlock textBlock) =>
 			textBlock.TextWrapping = textBlock.MaxLines > 1 ? TextWrapping.Wrap : TextWrapping.NoWrap;
-			
+
 		internal static void UpdateTextPlainText(this TextBlock nativeControl, ILabel label)
 		{
 			nativeControl.Text = label.Text;

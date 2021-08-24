@@ -2,7 +2,7 @@
 {
 	public partial class ActivityIndicatorHandler
 	{
-		public static PropertyMapper<IActivityIndicator, ActivityIndicatorHandler> ActivityIndicatorMapper = new PropertyMapper<IActivityIndicator, ActivityIndicatorHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IActivityIndicator, ActivityIndicatorHandler> ActivityIndicatorMapper = new PropertyMapper<IActivityIndicator, ActivityIndicatorHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IActivityIndicator.Color)] = MapColor,
 			[nameof(IActivityIndicator.IsRunning)] = MapIsRunning,
@@ -17,7 +17,7 @@
 
 		}
 
-		public ActivityIndicatorHandler(PropertyMapper mapper) : base(mapper ?? ActivityIndicatorMapper)
+		public ActivityIndicatorHandler(IPropertyMapper mapper) : base(mapper ?? ActivityIndicatorMapper)
 		{
 
 		}

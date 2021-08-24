@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler
 	{
-		public static PropertyMapper<IEntry, EntryHandler> EntryMapper = new PropertyMapper<IEntry, EntryHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IEntry, EntryHandler> EntryMapper = new PropertyMapper<IEntry, EntryHandler>(ViewHandler.ViewMapper)
 		{
 #if __ANDROID__
 			[nameof(IEntry.Background)] = MapBackground,
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public EntryHandler(PropertyMapper? mapper = null) : base(mapper ?? EntryMapper)
+		public EntryHandler(IPropertyMapper? mapper = null) : base(mapper ?? EntryMapper)
 		{
 
 		}

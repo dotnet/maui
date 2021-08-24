@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls
 			base.OnPropertyChanged(propertyName);
 
 			if (IsEnabledProperty.PropertyName == propertyName &&
-				!IsEnabled && 
+				!IsEnabled &&
 				IsRefreshing)
 			{
 				IsRefreshing = false;
