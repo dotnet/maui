@@ -23,24 +23,24 @@ namespace Microsoft.Maui
 			Chained = chained;
 		}
 
-		public virtual void SetPropertyCore(string key, Action<IElementHandler, IElement> action)
+		protected virtual void SetPropertyCore(string key, Action<IElementHandler, IElement> action)
 		{
 			_mapper[key] = action;
 			ClearKeyCache();
 		}
 
-		public virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
+		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
 		{
-			var action = GetPropertyCore(key);
+			var action = GetProperty(key);
 			action?.Invoke(viewHandler, virtualView);
 		}
 
-		public virtual Action<IElementHandler, IElement>? GetPropertyCore(string key)
+		public virtual Action<IElementHandler, IElement>? GetProperty(string key)
 		{
 			if (_mapper.TryGetValue(key, out var action))
 				return action;
 			else if (Chained is not null)
-				return Chained.GetPropertyCore(key);
+				return Chained.GetProperty(key);
 			else
 				return null;
 		}
@@ -109,7 +109,7 @@ namespace Microsoft.Maui
 
 	public interface IPropertyMapper
 	{
-		Action<IElementHandler, IElement>? GetPropertyCore(string key);
+		Action<IElementHandler, IElement>? GetProperty(string key);
 
 		IEnumerable<string> GetKeys();
 
@@ -122,6 +122,7 @@ namespace Microsoft.Maui
 		where TVirtualView : IElement
 		where TViewHandler : IElementHandler
 	{
+		void Add(string key, Action<TViewHandler, TVirtualView> action);
 	}
 
 	public class PropertyMapper<TVirtualView, TViewHandler> : PropertyMapper, IPropertyMapper<TVirtualView, TViewHandler>
@@ -141,7 +142,7 @@ namespace Microsoft.Maui
 		{
 			get
 			{
-				var action = GetPropertyCore(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
+				var action = GetProperty(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
 				return new Action<TViewHandler, TVirtualView>((h, v) => action.Invoke(h, v));
 			}
 			set => Add(key, value);
