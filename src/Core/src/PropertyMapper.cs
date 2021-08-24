@@ -23,13 +23,13 @@ namespace Microsoft.Maui
 			Chained = chained;
 		}
 
-		public virtual void SetPropertyCore(string key, Action<IElementHandler, IElement> action)
+		protected virtual void SetPropertyCore(string key, Action<IElementHandler, IElement> action)
 		{
 			_mapper[key] = action;
 			ClearKeyCache();
 		}
 
-		public virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
+		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
 		{
 			var action = GetProperty(key);
 			action?.Invoke(viewHandler, virtualView);
