@@ -64,30 +64,15 @@
     />
     <RemoveDir Directories="$(_InstallTempDirectory)" />
 
-    <!-- Run 'dotnet workload install' -->
-    <PropertyGroup>
-      <_ThisDotNet>$(MSBuildExtensionsPath)../../dotnet</_ThisDotNet>
-      <_NuGetConfig>$(DotNetTempDirectory)NuGet.config</_NuGetConfig>
-      <_NuGetContent>
-<![CDATA[
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <clear />
-    <add key="local"   value="$(PackageOutputPath)" />
-    <add key="dotnet6" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json" />
-    <add key="xamarin" value="https://pkgs.dev.azure.com/azure-public/vside/_packaging/xamarin-impl/nuget/v3/index.json" />
-  </packageSources>
-</configuration>
-]]>
-      </_NuGetContent>
-    </PropertyGroup>
-    <WriteLinesToFile File="$(_NuGetConfig)" Lines="$(_NuGetContent)" Overwrite="true" />
+    <!-- Run 'dotnet workload install' for the current running 'dotnet' install -->
+    <ItemGroup>
+      <_WorkloadSource Include="$(PackageOutputPath)" />
+      <_WorkloadSource Include="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json" />
+    </ItemGroup>
     <Exec
-        Command="&quot;$(_ThisDotNet)&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir $(DotNetTempDirectory)"
-        WorkingDirectory="$(DotNetTempDirectory)"
+        Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; @(_WorkloadSource->'--source &quot;%(Identity)&quot;', ' ')"
+        WorkingDirectory="$(MauiRootDirectory)"
     />
-    <Delete Files="$(_NuGetConfig)" />
 
   </Target>
 
@@ -166,7 +151,7 @@
       Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir $(DotNetTempDirectory)"
+        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
     />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />
