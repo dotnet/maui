@@ -13,7 +13,7 @@
     "defaultName": "NewContent1",
     "symbols": {
       "namespace": {
-        "description": "namespace for the generated code",
+        "description": "Namespace for the generated code.",
         "replaces": "MauiApp1",
         "type": "parameter"
       }
