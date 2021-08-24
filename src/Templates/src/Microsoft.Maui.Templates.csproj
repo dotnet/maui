@@ -25,9 +25,6 @@
     <BeforePack>_UpdateTemplateVersions</BeforePack>
   </PropertyGroup>
 
-  <!-- Eventually replaced by eng/Version.targets -->
-  <Target Name="SetVersions" />
-
   <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions">
     <ItemGroup>
       <_TemplateJsonFile Include="templates\*\.template.config\template.json" />
