@@ -107,7 +107,7 @@ Task("dotnet-templates")
 
         CleanDirectories("./templatesTest/");
 
-        foreach (var template in new [] { "maui", "maui-blazor", "maui-lib" })
+        foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
         {
             var name = template.Replace("-", "");
             StartProcess(dn, $"new {template} -o ./templatesTest/{name}");
