@@ -22,5 +22,9 @@ namespace Microsoft.Maui.UnitTests
 		public Font Font { get; set; }
 
 		public IImageSource ImageSource { get; set; }
+
+		public void ImageSourceLoaded()
+		{
+		}
 	}
 }

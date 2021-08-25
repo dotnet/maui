@@ -24,5 +24,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		void IButton.Pressed() => Pressed?.Invoke(this, EventArgs.Empty);
 		void IButton.Released() => Released?.Invoke(this, EventArgs.Empty);
 		void IButton.Clicked() => Clicked?.Invoke(this, EventArgs.Empty);
+
+		public void ImageSourceLoaded()
+		{
+		}
 	}
 }
