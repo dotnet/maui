@@ -2,18 +2,18 @@
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
     "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI", "Xaml", "Code" ],
-    "identity": "Microsoft.Maui.ContentPage",
-    "name": ".NET MAUI ContentPage",
-    "shortName": "maui-page",
+    "identity": "Microsoft.Maui.CSharpContentView",
+    "name": ".NET MAUI ContentView (C#)",
+    "shortName": "maui-view-csharp",
     "tags": {
       "language": "C#",
       "type": "item"
     },
-    "sourceName": "NewPage1",
-    "defaultName": "NewPage1",
+    "sourceName": "NewContent1",
+    "defaultName": "NewContent1",
     "symbols": {
       "namespace": {
-        "description": "namespace for the generated code",
+        "description": "Namespace for the generated code.",
         "replaces": "MauiApp1",
         "type": "parameter"
       }
