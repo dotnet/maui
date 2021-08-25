@@ -44,12 +44,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 	{
 		public void ClearImageCache()
 		{
-			var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-			var cache = IOPath.Combine(documents, ".config", ".isolated-storage", "ImageLoaderCache");
-			foreach (var file in Directory.GetFiles(cache))
-			{
-				File.Delete(file);
-			}
+			throw new NotImplementedException("TODO: CACHING https://github.com/dotnet/runtime/issues/52332");
 		}
 	}
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
@@ -674,8 +673,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return AppDomain.CurrentDomain.GetAssemblies();
 			}
 
-			public string GetHash(string input) => Crc64.GetHash(input);
-
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 			{
 				if (_smallSize == 0)
@@ -826,24 +823,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return null;
 			}
 
-			public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-			{
-				using (var client = new HttpClient())
-				{
-					// Do not remove this await otherwise the client will dispose before
-					// the stream even starts
-					var result = await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
-
-					return result;
-				}
-			}
-
-			public IIsolatedStorageFile GetUserStoreForApplication()
-			{
-				throw new NotImplementedException("GetUserStoreForApplication currently not available https://github.com/dotnet/runtime/issues/52332");
-				//return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
-			}
-
 			public bool IsInvokeRequired
 			{
 				get
@@ -854,17 +833,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public string RuntimePlatform => Device.Android;
 
+			[Obsolete("Use Essentials.Launcher.OpenAsync(Uri) instead.")]
 			public void OpenUriAction(Uri uri)
 			{
-				global::Android.Net.Uri aUri = global::Android.Net.Uri.Parse(uri.ToString());
-				var intent = new Intent(Intent.ActionView, aUri);
-				intent.SetFlags(ActivityFlags.ClearTop);
-				intent.SetFlags(ActivityFlags.NewTask);
-
-				// This seems to work fine even if the context has been destroyed (while another activity is in the
-				// foreground). If we run into a situation where that's not the case, we'll have to do some work to
-				// make sure this uses the active activity when launching the Intent
-				_context.StartActivity(intent);
+				Essentials.Launcher.OpenAsync(uri).GetAwaiter().GetResult();
 			}
 
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
@@ -960,49 +932,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 						default:
 							return OSAppTheme.Unspecified;
 					};
-				}
-			}
-
-			public class _IsolatedStorageFile : IIsolatedStorageFile
-			{
-				readonly IsolatedStorageFile _isolatedStorageFile;
-
-				public _IsolatedStorageFile(IsolatedStorageFile isolatedStorageFile)
-				{
-					_isolatedStorageFile = isolatedStorageFile;
-				}
-
-				public Task CreateDirectoryAsync(string path)
-				{
-					_isolatedStorageFile.CreateDirectory(path);
-					return Task.FromResult(true);
-				}
-
-				public Task<bool> GetDirectoryExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.DirectoryExists(path));
-				}
-
-				public Task<bool> GetFileExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.FileExists(path));
-				}
-
-				public Task<DateTimeOffset> GetLastWriteTimeAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.GetLastWriteTime(path));
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access);
-					return Task.FromResult(stream);
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access, share);
-					return Task.FromResult(stream);
 				}
 			}
 		}

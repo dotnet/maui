@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
@@ -166,22 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 #endif
 
-		static IReadOnlyList<string> s_flags;
-		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new string[0]);
-
 		public static bool IsInitializedRenderers { get; private set; }
-
-		public static void SetFlags(params string[] flags)
-		{
-			if (IsInitialized)
-			{
-				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
-			}
-
-			s_flags = (string[])flags.Clone();
-			if (s_flags.Contains("Profile"))
-				Profile.Enable();
-		}
 
 		public static void Init() =>
 			SetupInit(new MauiContext());
@@ -235,7 +219,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				NSApplication.SharedApplication.Appearance = aquaAppearance;
 			}
 #endif
-			Device.SetFlags(s_flags);
 			var platformServices = new IOSPlatformServices();
 
 			Device.PlatformServices = platformServices;
@@ -336,8 +319,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				return AppDomain.CurrentDomain.GetAssemblies();
 			}
-
-			public string GetHash(string input) => Crc64.GetHash(input);
 
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 			{
@@ -658,23 +639,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 #endif
 			}
 
-			public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-			{
-				using (var client = GetHttpClient())
-				{
-					// Do not remove this await otherwise the client will dispose before
-					// the stream even starts
-					var result = await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
-
-					return result;
-				}
-			}
-
-			public IIsolatedStorageFile GetUserStoreForApplication()
-			{
-				return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
-			}
-
 			public bool IsInvokeRequired => !NSThread.IsMain;
 
 #if __MOBILE__
@@ -683,19 +647,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public string RuntimePlatform => Device.macOS;
 #endif
 
+			[Obsolete("Use Essentials.Launcher.OpenAsync(Uri) instead.")]
 			public void OpenUriAction(Uri uri)
 			{
-				NSUrl url;
-
-				if (uri.Scheme == "tel" || uri.Scheme == "mailto")
-					url = new NSUrl(uri.AbsoluteUri);
-				else
-					url = NSUrl.FromString(uri.OriginalString) ?? new NSUrl(uri.Scheme, uri.Host, uri.PathAndQuery);
-#if __MOBILE__
-				UIApplication.SharedApplication.OpenUrl(url);
-#else
-				NSWorkspace.SharedWorkspace.OpenUrl(url);
-#endif
+				Essentials.Launcher.OpenAsync(uri).GetAwaiter().GetResult();
 			}
 
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
@@ -725,49 +680,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				if (v < 10)
 					return '0' + v;
 				return 'a' + v - 10;
-			}
-
-			public class _IsolatedStorageFile : IIsolatedStorageFile
-			{
-				readonly IsolatedStorageFile _isolatedStorageFile;
-
-				public _IsolatedStorageFile(IsolatedStorageFile isolatedStorageFile)
-				{
-					_isolatedStorageFile = isolatedStorageFile;
-				}
-
-				public Task CreateDirectoryAsync(string path)
-				{
-					_isolatedStorageFile.CreateDirectory(path);
-					return Task.FromResult(true);
-				}
-
-				public Task<bool> GetDirectoryExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.DirectoryExists(path));
-				}
-
-				public Task<bool> GetFileExistsAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.FileExists(path));
-				}
-
-				public Task<DateTimeOffset> GetLastWriteTimeAsync(string path)
-				{
-					return Task.FromResult(_isolatedStorageFile.GetLastWriteTime(path));
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access);
-					return Task.FromResult(stream);
-				}
-
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
-				{
-					Stream stream = _isolatedStorageFile.OpenFile(path, mode, access, share);
-					return Task.FromResult(stream);
-				}
 			}
 
 			public void QuitApplication()

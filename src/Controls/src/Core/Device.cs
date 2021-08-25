@@ -76,15 +76,6 @@ namespace Microsoft.Maui.Controls
 
 		public static IPlatformInvalidate PlatformInvalidator { get; set; }
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IReadOnlyList<string> Flags { get; private set; }
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetFlags(IReadOnlyList<string> flags)
-		{
-			Flags = flags;
-		}
-
 		public static void BeginInvokeOnMainThread(Action action)
 		{
 			PlatformServices.BeginInvokeOnMainThread(action);
@@ -182,11 +173,6 @@ namespace Microsoft.Maui.Controls
 		public static Color GetNamedColor(string name)
 		{
 			return PlatformServices.GetNamedColor(name);
-		}
-
-		internal static Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-		{
-			return PlatformServices.GetStreamAsync(uri, cancellationToken);
 		}
 
 		public static class Styles

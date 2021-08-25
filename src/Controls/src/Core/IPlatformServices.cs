@@ -17,19 +17,11 @@ namespace Microsoft.Maui.Controls.Internals
 
 		void BeginInvokeOnMainThread(Action action);
 
-		string GetHash(string input);
-
 		double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes);
 
 		Color GetNamedColor(string name);
 
 		OSAppTheme RequestedTheme { get; }
-
-		Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken);
-
-		IIsolatedStorageFile GetUserStoreForApplication();
-
-		void OpenUriAction(Uri uri);
 
 		void StartTimer(TimeSpan interval, Func<bool> callback);
 

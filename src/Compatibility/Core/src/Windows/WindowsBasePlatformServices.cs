@@ -122,8 +122,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		public string GetHash(string input) => Crc64.GetHash(input);
-
 		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 		{
 			return size.GetFontSize();
@@ -137,30 +135,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return ((Windows.UI.Color)Microsoft.UI.Xaml.Application.Current?.Resources[name]).ToColor();
 		}
 
-		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-		{
-			using (var client = new HttpClient())
-			{
-				// Do not remove this await otherwise the client will dispose before
-				// the stream even starts
-				var result = await StreamWrapper.GetStreamAsync(uri, cancellationToken, client).ConfigureAwait(false);
-
-				return result;
-			}
-		}
-
-		public IIsolatedStorageFile GetUserStoreForApplication()
-		{
-			return new WindowsIsolatedStorage(ApplicationData.Current.LocalFolder);
-		}
-
 		public bool IsInvokeRequired => !_dispatcher?.HasThreadAccess ?? true;
 
 		public string RuntimePlatform => Device.UWP;
 
+		[Obsolete("Use Essentials.Launcher.OpenAsync(Uri) instead.")]
 		public void OpenUriAction(Uri uri)
 		{
-			Launcher.LaunchUriAsync(uri).WatchForError();
+			Essentials.Launcher.OpenAsync(uri).GetAwaiter().GetResult();
 		}
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)

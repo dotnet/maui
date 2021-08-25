@@ -300,37 +300,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				throw new NotImplementedException();
 			}
 
-			public Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
-			{
-				throw new NotImplementedException();
-			}
-
-			public IIsolatedStorageFile GetUserStoreForApplication()
-			{
-				throw new NotImplementedException();
-			}
-
-			public void OpenUriAction(Uri uri)
-			{
-				throw new NotImplementedException();
-			}
-
 			public void QuitApplication()
 			{
 				throw new NotImplementedException();
 			}
 
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
-			{
-				throw new NotImplementedException();
-			}
-
-			public string GetHash(string input)
-			{
-				throw new NotImplementedException();
-			}
-
-			public string GetMD5Hash(string input)
 			{
 				throw new NotImplementedException();
 			}
