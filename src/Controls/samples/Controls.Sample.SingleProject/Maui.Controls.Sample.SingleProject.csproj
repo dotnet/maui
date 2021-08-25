@@ -42,13 +42,13 @@
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
     <MauiAsset Include="Resources\Raw\*" Link="%(Filename)%(Extension)" />
     <MauiSplashScreen Include="Resources\AppIcons\appicon_foreground.svg" Color="#FF69B4" />
-    <Content Remove="Properties\launchSettings.json" />
   </ItemGroup>
 
   <PropertyGroup>
     <!-- Required - WinUI can't deploy in a multi-targeting environment -->
     <AppxPackageRecipe>bin\$(Configuration)\net6.0-windows10.0.19041\win-x64\Maui.Controls.Sample.SingleProject.build.appxrecipe</AppxPackageRecipe>
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-windows'))">win-x64</RuntimeIdentifier>
+    <Content Remove="Properties\launchSettings.json" />
   </PropertyGroup>
 
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
