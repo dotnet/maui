@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Platform
 		int _actionBarHeight;
 		int _flyoutHeight;
 		int _flyoutWidth;
-		ShellImagePart _shellFlyoutBackgroundImagePart;
+		ImageSourceLoader _shellFlyoutBackgroundImagePart;
 
 		protected IMauiContext MauiContext => _shellContext.Shell.Handler.MauiContext;
 
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public ShellFlyoutTemplatedContentView(IShellContext shellContext)
 		{
 			_shellContext = shellContext;
-			_shellFlyoutBackgroundImagePart = new ShellImagePart();
+			_shellFlyoutBackgroundImagePart = new ImageSourceLoader();
 			LoadView(shellContext);
 		}
 
