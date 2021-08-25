@@ -7,7 +7,6 @@ using System.Linq;
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.ListStringTypeConverter")]
-	[Xaml.TypeConversion(typeof(List<string>))]
 	public class ListStringTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
