@@ -268,5 +268,5 @@ stages:
         symbolArtifactName: nuget
         symbolArtifactPatterns: |
           **/signed/*.nupkg
-          **/.snupkg
+          **/*.snupkg
         createVSPR: false
