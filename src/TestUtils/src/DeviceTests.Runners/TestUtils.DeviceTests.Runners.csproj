@@ -13,9 +13,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Assets\credits.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.utility" Version="2.4.1" />
-    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21372.1" />
+    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21404.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +34,12 @@
   <ItemGroup>
     <Folder Include="HeadlessRunner\MacCatalyst\" />
     <Folder Include="HeadlessRunner\Windows\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="VisualRunner\Pages\TestAssemblyPage.xaml.cs">
+      <DependentUpon>TestAssemblyPage.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.targets" />

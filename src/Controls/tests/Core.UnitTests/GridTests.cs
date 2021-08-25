@@ -901,9 +901,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				var id = 0;
 				foreach (var view in _grid.Children.Cast<Label>().OrderBy(o => o.Text))
 				{
-					var expected = $"{id++}: " +
-						$"{Grid.GetColumn(view)}x{Grid.GetRow(view)} " +
-						$"{Grid.GetColumnSpan(view)}x{Grid.GetRowSpan(view)}";
+					var expected = $"{id++}: {Grid.GetColumn(view)}x{Grid.GetRow(view)} {Grid.GetColumnSpan(view)}x{Grid.GetRowSpan(view)}";
 
 					var actual = view.Text;
 

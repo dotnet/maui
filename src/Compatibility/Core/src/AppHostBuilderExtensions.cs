@@ -69,9 +69,23 @@ namespace Microsoft.Maui.Controls.Hosting
 		}
 
 
+		static IAppHostBuilder ConfigureImageSourceHandlers(this IAppHostBuilder builder)
+		{
+			builder.ConfigureImageSources(services =>
+			{
+				services.AddService<FileImageSource>(svcs => new FileImageSourceService(svcs.GetService<IImageSourceServiceConfiguration>(), svcs.CreateLogger<FileImageSourceService>()));
+				services.AddService<FontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
+				services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
+				services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
+			});
+
+			return builder;
+		}
+
 		static IAppHostBuilder SetupDefaults(this IAppHostBuilder builder)
 		{
 			builder.ConfigureCompatibilityLifecycleEvents();
+			builder.ConfigureImageSourceHandlers();
 			builder
 				.ConfigureMauiHandlers(handlers =>
 				{
@@ -161,6 +175,11 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
+
+					// Update the mappings for IView/View to work specifically for Controls
+					VisualElement.RemapForControls();
+					Label.RemapForControls();
+
 				})
 				.ConfigureServices<MauiCompatBuilder>();
 

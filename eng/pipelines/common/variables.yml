@@ -7,8 +7,6 @@ variables:
   value: true
 - name: DOTNET_VERSION
   value: 5.0.201
-- name: XHARNESS_VERSION
-  value: 1.0.0-prerelease.21404.1
 - name: LocBranchPrefix
   value: 'loc-hb'
 - name: LocBranch

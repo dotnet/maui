@@ -2,6 +2,7 @@
 <Project>
   <PropertyGroup>
     <TargetName>Microsoft.NET.Sdk.Maui.Workload</TargetName>
+    <ManifestBuildVersion>@VS_COMPONENT_VERSION@</ManifestBuildVersion>
   </PropertyGroup>
   <ItemGroup>
     <!-- Shorten package names to avoid long path caching issues in Visual Studio -->

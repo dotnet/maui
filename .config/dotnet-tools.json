@@ -13,6 +13,12 @@
       "commands": [
         "pwsh"
       ]
+    },
+    "microsoft.dotnet.xharness.cli": {
+      "version": "1.0.0-prerelease.21404.1",
+      "commands": [
+        "xharness"
+      ]
     }
   }
 }

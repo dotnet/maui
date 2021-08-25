@@ -34,7 +34,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestUtils", "TestUtils", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils", "src\TestUtils\src\TestUtils\TestUtils.csproj", "{CAD6061F-A1B1-41B3-B906-6C6C0BD850EE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.UnitTests", "src\Core\tests\UnitTests\Core.UnitTests-net6.csproj", "{CB3EEB1E-311B-4BF6-9E1A-9CEF74200448}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.UnitTests-net6", "src\Core\tests\UnitTests\Core.UnitTests-net6.csproj", "{CB3EEB1E-311B-4BF6-9E1A-9CEF74200448}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorWebView", "BlazorWebView", "{17CD1D1D-B4EA-4E7E-ABEF-945AC320936B}"
 EndProject
@@ -98,7 +98,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7C68E109-0D4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{CE647548-8401-475E-B819-7EBBCD689E7F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.UnitTests", "src\Essentials\test\UnitTests\Essentials.UnitTests-net6.csproj", "{D83EF2B4-AF82-415B-B676-460C5282BE21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.UnitTests-net6", "src\Essentials\test\UnitTests\Essentials.UnitTests-net6.csproj", "{D83EF2B4-AF82-415B-B676-460C5282BE21}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.DeviceTests", "src\Essentials\test\DeviceTests\Essentials.DeviceTests.csproj", "{6CBE5266-3047-496E-A079-BA6F5B88038F}"
 EndProject
@@ -116,7 +116,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7D96815E-D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resizetizer", "src\SingleProject\Resizetizer\src\Resizetizer.csproj", "{E0D575BC-45E8-4CA2-ADFA-6C3262B95D36}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resizetizer.UnitTests", "src\SingleProject\Resizetizer\test\UnitTests\Resizetizer.UnitTests-net6.csproj", "{0F88B718-7F93-43D8-A753-E498CB24E2A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resizetizer.UnitTests-net6", "src\SingleProject\Resizetizer\test\UnitTests\Resizetizer.UnitTests-net6.csproj", "{0F88B718-7F93-43D8-A753-E498CB24E2A8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Benchmarks", "src\Core\tests\Benchmarks\Core.Benchmarks.csproj", "{32DD24E0-0409-4C9E-8088-A96C8EBD99DF}"
 EndProject
@@ -130,15 +130,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.WinUI"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.WinUI", "src\Compatibility\ControlGallery\src\WinUI\Compatibility.ControlGallery.WinUI.csproj", "{5BA5283D-710E-49D1-8EB9-EB61385107C5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.UnitTests", "src\Controls\tests\Core.UnitTests\Controls.Core.UnitTests-net6.csproj", "{033FD150-887A-44DB-A0E7-7555B1BF8B07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Core.UnitTests-net6", "src\Controls\tests\Core.UnitTests\Controls.Core.UnitTests-net6.csproj", "{033FD150-887A-44DB-A0E7-7555B1BF8B07}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests", "src\Controls\tests\Xaml.UnitTests\Controls.Xaml.UnitTests-net6.csproj", "{454208AB-7A1A-4445-96C7-CFE410F0D5D6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests-net6", "src\Controls\tests\Xaml.UnitTests\Controls.Xaml.UnitTests-net6.csproj", "{454208AB-7A1A-4445-96C7-CFE410F0D5D6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A2379B6A-CF92-4C97-8F72-FE9EAC669949}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.Sample.Server.WebAuthenticator", "src\Essentials\samples\Sample.Server.WebAuthenticator\Essentials.Sample.Server.WebAuthenticator.csproj", "{32A4A924-C3CD-4FE3-A21E-DD018F0CC4BD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.Sample", "src\Essentials\samples\Samples\Essentials.Sample.csproj", "{B157321E-9FB6-430E-B36C-D389DDEC22DE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.SingleProject", "src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj", "{4A36C4F9-20BE-4BAC-9E6C-B030F2B65370}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -329,6 +331,12 @@ Global
 		{B157321E-9FB6-430E-B36C-D389DDEC22DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B157321E-9FB6-430E-B36C-D389DDEC22DE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B157321E-9FB6-430E-B36C-D389DDEC22DE}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{4A36C4F9-20BE-4BAC-9E6C-B030F2B65370}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A36C4F9-20BE-4BAC-9E6C-B030F2B65370}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A36C4F9-20BE-4BAC-9E6C-B030F2B65370}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{4A36C4F9-20BE-4BAC-9E6C-B030F2B65370}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A36C4F9-20BE-4BAC-9E6C-B030F2B65370}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A36C4F9-20BE-4BAC-9E6C-B030F2B65370}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -395,6 +403,7 @@ Global
 		{A2379B6A-CF92-4C97-8F72-FE9EAC669949} = {94F3C036-A5F4-4ACC-A028-8506802ADB88}
 		{32A4A924-C3CD-4FE3-A21E-DD018F0CC4BD} = {A2379B6A-CF92-4C97-8F72-FE9EAC669949}
 		{B157321E-9FB6-430E-B36C-D389DDEC22DE} = {A2379B6A-CF92-4C97-8F72-FE9EAC669949}
+		{4A36C4F9-20BE-4BAC-9E6C-B030F2B65370} = {E1082E26-D700-4127-9329-66D673FD2D55}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
