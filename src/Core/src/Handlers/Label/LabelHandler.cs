@@ -10,8 +10,8 @@ namespace Microsoft.Maui.Handlers
 #endif
 			[nameof(ILabel.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ILabel.Font)] = MapFont,
-			[nameof(ILabel.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
-			[nameof(ILabel.VerticalTextAlignment)] = MapVerticalTextAlignment,
+			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(ILabel.LineBreakMode)] = MapLineBreakMode,
 			[nameof(ILabel.LineHeight)] = MapLineHeight,
 			[nameof(ILabel.MaxLines)] = MapMaxLines,
@@ -20,6 +20,13 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILabel.TextColor)] = MapTextColor,
 			[nameof(ILabel.TextDecorations)] = MapTextDecorations,
 		};
+
+		static LabelHandler()
+		{
+#if __IOS__
+			LabelMapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
+#endif
+		}
 
 		public LabelHandler() : base(LabelMapper)
 		{

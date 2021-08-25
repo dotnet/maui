@@ -86,6 +86,24 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateFlowDirection(this UIView nativeView, IView view)
+		{
+			UISemanticContentAttribute updateValue = nativeView.SemanticContentAttribute;
+
+			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
+				view.FlowDirection == FlowDirection.MatchParent)
+			{
+				updateValue = UISemanticContentAttribute.Unspecified;
+			}
+			else if (view.FlowDirection == FlowDirection.RightToLeft)
+				updateValue = UISemanticContentAttribute.ForceRightToLeft;
+			else if (view.FlowDirection == FlowDirection.LeftToRight)
+				updateValue = UISemanticContentAttribute.ForceLeftToRight;
+
+			if (updateValue != nativeView.SemanticContentAttribute)
+				nativeView.SemanticContentAttribute = updateValue;
+		}
+		
 		public static void UpdateOpacity(this UIView nativeView, IView view)
 		{
 			nativeView.Alpha = (float)view.Opacity;

@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			});
 
 			Assert.Equal(1, children.Count);
-			Assert.Equal(slider.Handler.NativeView, children[0]);
+			Assert.Same(slider.Handler.NativeView, children[0]);
 
 			var count = await InvokeOnMainThreadAsync(() =>
 			{
@@ -90,8 +90,8 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			});
 
 			Assert.Equal(2, children.Count);
-			Assert.Equal(slider.Handler.NativeView, children[0]);
-			Assert.Equal(button.Handler.NativeView, children[1]);
+			Assert.Same(slider.Handler.NativeView, children[0]);
+			Assert.Same(button.Handler.NativeView, children[1]);
 
 			var count = await InvokeOnMainThreadAsync(() =>
 			{
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			});
 
 			Assert.Equal(1, children.Count);
-			Assert.Equal(slider.Handler.NativeView, children[0]);
+			Assert.Same(slider.Handler.NativeView, children[0]);
 
 			children = await InvokeOnMainThreadAsync(() =>
 			{
@@ -128,8 +128,8 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			});
 
 			Assert.Equal(2, children.Count);
-			Assert.Equal(button.Handler.NativeView, children[0]);
-			Assert.Equal(slider.Handler.NativeView, children[1]);
+			Assert.Same(button.Handler.NativeView, children[0]);
+			Assert.Same(slider.Handler.NativeView, children[1]);
 		}
 
 		[Fact]
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			});
 
 			Assert.Equal(1, children.Count);
-			Assert.Equal(slider.Handler.NativeView, children[0]);
+			Assert.Same(slider.Handler.NativeView, children[0]);
 
 			children = await InvokeOnMainThreadAsync(() =>
 			{
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			});
 
 			Assert.Equal(1, children.Count);
-			Assert.Equal(button.Handler.NativeView, children[0]);
+			Assert.Same(button.Handler.NativeView, children[0]);
 		}
 	}
 }
