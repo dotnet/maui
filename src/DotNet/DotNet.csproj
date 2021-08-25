@@ -91,9 +91,6 @@
 
   </Target>
 
-  <!-- Eventually replaced by eng/Version.targets -->
-  <Target Name="SetVersions" />
-
   <PropertyGroup>
     <!-- These files should invalidate ./bin/dotnet completely -->
     <_Inputs>
