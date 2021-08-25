@@ -49,6 +49,15 @@
                     </x:Array>
                 </Picker.ItemsSource>
             </Picker>
+            <Label
+                Text="Custom Border"
+                Style="{StaticResource Headline}" />
+            <Picker 
+                Title="Select an item"
+                SelectedIndex="1"
+                BorderBrush="Orange"
+                BorderWidth="4"
+                BorderShape="12, 0, 0, 24" />
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

@@ -48,6 +48,16 @@
                         </FontImageSource>
                     </Image.Source>
                 </Image>
+                <Label
+                    Text="Custom Border"
+                    Style="{StaticResource Headline}" />
+                <Image 
+                    Source="https://aka.ms/campus.jpg"
+                    HeightRequest="200" 
+                    WidthRequest="200"
+                    BorderBrush="Pink"
+                    BorderWidth="4"
+                    BorderShape="12, 0, 0, 24" />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
