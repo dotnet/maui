@@ -179,12 +179,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (disposing)
 				{
-					// Dispose managed state (managed objects)
-					if (WrappedNativeView is TNativeView wrapped)
-					{
-						DisconnectHandler(wrapped);
-						wrapped.Unrealize();
-					}
+					(this as IElementHandler)?.DisconnectHandler();
+					NativeView?.Unrealize();
+					ContainerView?.Unrealize();
 				}
 
 				// TODO: free unmanaged resources (unmanaged objects) and override finalizer
