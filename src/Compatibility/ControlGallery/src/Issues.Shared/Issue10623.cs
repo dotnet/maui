@@ -23,8 +23,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	{
 		public Issue10623()
 		{
-			Device.SetFlags(new List<string>(Device.Flags ?? new List<string>()) { "Shapes_Experimental" });
-
 			var layout = new StackLayout();
 
 			var instructions = new Label

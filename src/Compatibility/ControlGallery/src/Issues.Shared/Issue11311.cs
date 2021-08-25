@@ -16,8 +16,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		protected override void Init()
 		{
-			Device.SetFlags(new[] { "Markup_Experimental" });
-
 			Children.Add(FirstPage());
 			Children.Add(CollectionViewPage());
 		}

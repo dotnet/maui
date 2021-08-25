@@ -71,7 +71,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.SetIdiom(TargetIdiom.Tablet);
 			Device.SetFlowDirection(GetFlowDirection());
 
-			Device.SetFlags(s_flags);
 			Device.Info = new WindowsDeviceInfo();
 
 			//TODO WINUI3

@@ -16,7 +16,6 @@ using NUnit.Framework;
 //		[OneTimeSetUp]
 //		public void ShellTestSetup()
 //		{
-//			Device.SetFlags(new[] { "Shell_UWP_Experimental" });
 //		}
 
 //		[Test, Category("Shell")]

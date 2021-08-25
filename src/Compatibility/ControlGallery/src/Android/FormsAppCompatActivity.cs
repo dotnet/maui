@@ -43,10 +43,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 			base.OnCreate(bundle);
 
-#if !LEGACY_RENDERERS
-#else
-			Forms.SetFlags("UseLegacyRenderers");
-#endif
 			// null out the assembly on the Resource Manager
 			// so all of our tests run without using the reflection APIs
 			// At some point the Resources class types will go away so

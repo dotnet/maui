@@ -27,40 +27,38 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void Setup()
 			{
 				Device.PlatformServices = new MockPlatformServices();
-				_flags = Device.Flags;
-				if (Device.Flags == null)
-					Device.SetFlags(new List<string>().AsReadOnly());
+				StaticResourceExtension.XamlDoubleImplicitOpHack = false;
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
 				Device.PlatformServices = null;
-				Device.SetFlags(_flags);
+				StaticResourceExtension.XamlDoubleImplicitOpHack = false;
 			}
 
-			[TestCase(true, "xamlDoubleImplicitOpHack")]
-			[TestCase(false, "xamlDoubleImplicitOpHack")]
-			[TestCase(true, null)]
-			[TestCase(false, null)]
-			public void Bz59818(bool useCompiledXaml, string flag)
+			[TestCase(true, true)]
+			[TestCase(false, true)]
+			[TestCase(true, false)]
+			[TestCase(false, false)]
+			public void Bz59818(bool useCompiledXaml, bool xamlDoubleImplicitOpHack)
 			{
-				Device.SetFlags(new List<string>(Device.Flags) {
-					flag
-				}.AsReadOnly());
+				StaticResourceExtension.XamlDoubleImplicitOpHack = xamlDoubleImplicitOpHack;
 
 				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 
-				if (flag != "xamlDoubleImplicitOpHack")
+				if (!xamlDoubleImplicitOpHack)
 				{
 					if (useCompiledXaml)
 						Assert.Throws<InvalidCastException>(() => new Bz59818(useCompiledXaml));
 					else
 						Assert.Throws<XamlParseException>(() => new Bz59818(useCompiledXaml));
-					return;
 				}
-				var layout = new Bz59818(useCompiledXaml);
-				Assert.That(layout.grid.ColumnDefinitions[0].Width, Is.EqualTo(new GridLength(100)));
+				else
+				{
+					var layout = new Bz59818(useCompiledXaml);
+					Assert.That(layout.grid.ColumnDefinitions[0].Width, Is.EqualTo(new GridLength(100)));
+				}
 			}
 		}
 	}

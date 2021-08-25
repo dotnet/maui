@@ -366,7 +366,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59172.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)FlagTestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5886.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue6260.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue5766.cs" />

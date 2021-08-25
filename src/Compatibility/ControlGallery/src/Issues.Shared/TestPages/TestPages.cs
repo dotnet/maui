@@ -603,7 +603,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		protected TestShell() : base()
 		{
-			Device.SetFlags(new List<string> { ExperimentalFlags.ShellUWPExperimental });
 			Routing.Clear();
 #if APP
 			Init();

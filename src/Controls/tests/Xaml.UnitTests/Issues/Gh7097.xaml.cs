@@ -18,20 +18,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-			IReadOnlyList<string> _flags;
 			[SetUp]
 			public void Setup()
 			{
 				Device.PlatformServices = new MockPlatformServices();
-				_flags = Device.Flags;
-				Device.SetFlags(new List<string>(Device.Flags ?? new List<string>()) { "CollectionView_Experimental" }.AsReadOnly());
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
 				Device.PlatformServices = null;
-				Device.SetFlags(_flags);
 			}
 
 			[Test]
