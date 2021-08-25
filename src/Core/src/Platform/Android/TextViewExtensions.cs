@@ -5,6 +5,7 @@ using Android.Util;
 using Android.Widget;
 using static Android.Widget.TextView;
 using ATextDirection = Android.Views.TextDirection;
+using ALayoutDirection = Android.Views.LayoutDirection;
 
 namespace Microsoft.Maui
 {
@@ -124,14 +125,17 @@ namespace Microsoft.Maui
 			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
 				view.FlowDirection == FlowDirection.MatchParent)
 			{
+				nativeView.LayoutDirection = ALayoutDirection.Inherit;
 				nativeView.TextDirection = ATextDirection.Inherit;
 			}
 			else if (view.FlowDirection == FlowDirection.RightToLeft)
 			{
+				nativeView.LayoutDirection = ALayoutDirection.Rtl;
 				nativeView.TextDirection = ATextDirection.Rtl;
 			}
 			else if (view.FlowDirection == FlowDirection.LeftToRight)
 			{
+				nativeView.LayoutDirection = ALayoutDirection.Ltr;
 				nativeView.TextDirection = ATextDirection.Ltr;
 			}
 		}
