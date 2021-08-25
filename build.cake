@@ -357,10 +357,9 @@ Task("provision-androidsdk")
 
         if (!IsRunningOnWindows ()) 
         {
-            if(!DirectoryExists(android_jdk_11_folder))
-            {
-                await Boots(android_jdk_11_macos);
-            }
+          
+            await Boots(android_jdk_11_macos);
+        
             if(!String.IsNullOrWhiteSpace(androidSDK))
             {
                 await Boots (androidSDK);
@@ -372,7 +371,10 @@ Task("provision-androidsdk")
         }
         else
         {
-            await Boots(android_jdk_11_windows);
+            if(!DirectoryExists(android_jdk_11_folder))
+            {
+                await Boots(android_jdk_11_windows);
+            }
             if(!String.IsNullOrWhiteSpace(androidSDK))
             {
                 await Boots (androidSDK);
