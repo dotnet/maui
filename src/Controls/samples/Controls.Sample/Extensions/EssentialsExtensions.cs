@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Hosting;
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Essentials
 			{
 				builder.Services.AddSingleton<EssentialsRegistration>(new EssentialsRegistration(configureDelegate));
 			}
-			builder.Services.AddSingleton<IMauiInitializeService, EssentialsInitializer>();
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
 
 			builder.ConfigureLifecycleEvents(life =>
 			{

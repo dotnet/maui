@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Shapes;
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		public static MauiAppBuilder UseMauiApp<TApp>(this MauiAppBuilder builder)
 			where TApp : class, IApplication
 		{
-			builder.Services.AddSingleton<IApplication, TApp>();
+			builder.Services.TryAddSingleton<IApplication, TApp>();
 			builder.SetupDefaults();
 			return builder;
 		}
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		public static MauiAppBuilder UseMauiApp<TApp>(this MauiAppBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
 			where TApp : class, IApplication
 		{
-			builder.Services.AddSingleton<IApplication>(implementationFactory);
+			builder.Services.TryAddSingleton<IApplication>(implementationFactory);
 			builder.SetupDefaults();
 			return builder;
 		}
@@ -178,14 +179,14 @@ namespace Microsoft.Maui.Controls.Hosting
 		private static MauiAppBuilder AddMauiCompat(this MauiAppBuilder builder)
 		{
 #if __IOS__ || MACCATALYST
-			builder.Services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
+			builder.Services.TryAddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
 #elif __ANDROID__
-			builder.Services.AddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
+			builder.Services.TryAddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
 #elif WINDOWS
-			builder.Services.AddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
+			builder.Services.TryAddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
 #endif
 
-			builder.Services.AddSingleton<IMauiInitializeService, MauiCompatInitializer>();
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiCompatInitializer>());
 			return builder;
 		}
 

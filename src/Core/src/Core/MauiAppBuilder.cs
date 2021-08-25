@@ -141,7 +141,7 @@ namespace Microsoft.Maui
 			_services.IsReadOnly = true;
 
 
-			var initServices = _builtApplication.Services.GetService<IEnumerable<IMauiInitializeService>>();
+			var initServices = _builtApplication.Services.GetServices<IMauiInitializeService>();
 			if (initServices != null)
 			{
 				foreach (var instance in initServices)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 
@@ -10,8 +11,11 @@ namespace Microsoft.Maui.Controls.Hosting
 	{
 		public static MauiAppBuilder ConfigureEffects(this MauiAppBuilder builder, Action<IEffectsBuilder> configureDelegate)
 		{
-			builder.Services.AddSingleton<EffectsFactory>();
-			builder.Services.AddSingleton<EffectsRegistration>(new EffectsRegistration(configureDelegate));
+			builder.Services.TryAddSingleton<EffectsFactory>();
+			if (configureDelegate != null)
+			{
+				builder.Services.AddSingleton<EffectsRegistration>(new EffectsRegistration(configureDelegate));
+			}
 
 			return builder;
 		}

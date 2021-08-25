@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 			{
 				builder.Services.AddSingleton<FontsRegistration>(new FontsRegistration(configureDelegate));
 			}
-			builder.Services.AddSingleton<IMauiInitializeService, FontInitializer>();
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, FontInitializer>());
 			return builder;
 		}
 

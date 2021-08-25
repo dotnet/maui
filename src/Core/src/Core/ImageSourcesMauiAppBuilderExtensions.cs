@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Hosting.Internal;
 
@@ -27,9 +28,9 @@ namespace Microsoft.Maui
 				builder.Services.AddSingleton<ImageSourceRegistration>(new ImageSourceRegistration(configureDelegate));
 			}
 
-			builder.Services.AddSingleton<IImageSourceServiceConfiguration, ImageSourceServiceConfiguration>();
-			builder.Services.AddSingleton<IImageSourceServiceProvider>(svcs => new ImageSourceServiceProvider(svcs.GetRequiredService<IImageSourceServiceCollection>(), svcs));
-			builder.Services.AddSingleton<IImageSourceServiceCollection, ImageSourceServiceBuilder>();
+			builder.Services.TryAddSingleton<IImageSourceServiceConfiguration, ImageSourceServiceConfiguration>();
+			builder.Services.TryAddSingleton<IImageSourceServiceProvider>(svcs => new ImageSourceServiceProvider(svcs.GetRequiredService<IImageSourceServiceCollection>(), svcs));
+			builder.Services.TryAddSingleton<IImageSourceServiceCollection, ImageSourceServiceBuilder>();
 
 			return builder;
 		}

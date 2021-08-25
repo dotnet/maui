@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
-using static Microsoft.Maui.Essentials.EssentialsExtensions;
 
 namespace Maui.Controls.Sample.Controls
 {
@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Controls
 	{
 		public static MauiAppBuilder UseBordelessEntry(this MauiAppBuilder builder, Action<BordelessEntryServiceBuilder> configureDelegate = null)
 		{
-			builder.Services.AddSingleton<IMauiInitializeService, BorderlessEntryInitializer>();
+			builder.Services.TryAddSingleton<IMauiInitializeService, BorderlessEntryInitializer>();
 
 			if (configureDelegate != null)
 			{

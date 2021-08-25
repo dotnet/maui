@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Maui.LifecycleEvents
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.LifecycleEvents
 	{
 		public static MauiAppBuilder ConfigureLifecycleEvents(this MauiAppBuilder builder, Action<ILifecycleBuilder>? configureDelegate)
 		{
-			builder.Services.AddSingleton<ILifecycleEventService, LifecycleEventService>();
+			builder.Services.TryAddSingleton<ILifecycleEventService, LifecycleEventService>();
 			if (configureDelegate != null)
 			{
 				builder.Services.AddSingleton<LifecycleEventRegistration>(new LifecycleEventRegistration(configureDelegate));
