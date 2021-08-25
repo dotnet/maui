@@ -314,6 +314,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		[Test]
+		public void LayoutTableView()
+		{
+			var tableview = new TableView
+			{
+				Root = new TableRoot
+				{
+					new TableSection("Ring")
+					{
+						// TableSection constructor takes title as an optional parameter
+						new SwitchCell { Text = "New Voice Mail" },
+						new SwitchCell { Text = "New Mail", On = true }
+					}
+				},
+				Intent = TableIntent.Settings
+			};
+
+			var tableRootElement = (tableview as IVisualTreeElement).GetVisualChildren();
+			Assert.IsInstanceOf(typeof(TableRoot), tableRootElement[0]);
+			var tableRoot = (TableRoot)tableRootElement[0];
+			var tableSectionElement = (tableRoot[0] as IVisualTreeElement).GetVisualChildren();
+			Assert.AreEqual(tableSectionElement.Count, 2);
+		}
+
 		Layout CreateLayout(Type TLayout)
 		{
 			var layout = (Layout)Activator.CreateInstance(TLayout)!;
