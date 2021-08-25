@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
+  <Import Project="..\..\src\Wpf\build\Microsoft.AspNetCore.Components.WebView.Wpf.props" />
+
   <PropertyGroup>
     <TargetFrameworks>net6.0-windows</TargetFrameworks>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
@@ -18,5 +20,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <Import Project="..\..\src\Wpf\build\Microsoft.AspNetCore.Components.WebView.Wpf.targets" />
 
 </Project>

@@ -4,11 +4,10 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 {
-	public class VisualDiagnostics
+	public static class VisualDiagnostics
 	{
 		static ConditionalWeakTable<object, XamlSourceInfo> sourceInfos = new ConditionalWeakTable<object, XamlSourceInfo>();
 
@@ -19,7 +18,11 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 				sourceInfos.Add(target, new XamlSourceInfo(uri, lineNumber, linePosition));
 		}
 
-		internal static void OnChildAdded(Element parent, Element child)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static XamlSourceInfo GetXamlSourceInfo(object obj) =>
+			sourceInfos.TryGetValue(obj, out var sourceinfo) ? sourceinfo : null;
+
+		public static void OnChildAdded(IVisualTreeElement parent, IVisualTreeElement child)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
 				return;
@@ -27,20 +30,36 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			if (child is null)
 				return;
 
-			var index = (parent as IVisualTreeElement)?.GetVisualChildren().IndexOf(child) ?? -1;
-			VisualTreeChanged?.Invoke(parent, new VisualTreeChangeEventArgs(parent, child, index, VisualTreeChangeType.Add));
+			var index = parent?.GetVisualChildren().IndexOf(child) ?? -1;
+
+			OnChildAdded(parent, child, index);
 		}
 
-		internal static void OnChildRemoved(Element parent, Element child, int oldLogicalIndex)
+		public static void OnChildAdded(IVisualTreeElement parent, IVisualTreeElement child, int newLogicalIndex)
 		{
 			if (!DebuggerHelper.DebuggerIsAttached)
 				return;
 
-			VisualTreeChanged?.Invoke(parent, new VisualTreeChangeEventArgs(parent, child, oldLogicalIndex, VisualTreeChangeType.Remove));
+			if (child is null)
+				return;
+
+			OnVisualTreeChanged(new VisualTreeChangeEventArgs(parent, child, newLogicalIndex, VisualTreeChangeType.Add));
+		}
+
+		public static void OnChildRemoved(IVisualTreeElement parent, IVisualTreeElement child, int oldLogicalIndex)
+		{
+			if (!DebuggerHelper.DebuggerIsAttached)
+				return;
+
+			OnVisualTreeChanged(new VisualTreeChangeEventArgs(parent, child, oldLogicalIndex, VisualTreeChangeType.Remove));
 		}
 
 		public static event EventHandler<VisualTreeChangeEventArgs> VisualTreeChanged;
-		public static XamlSourceInfo GetXamlSourceInfo(object obj) => sourceInfos.TryGetValue(obj, out var sourceinfo) ? sourceinfo : null;
+
+		static void OnVisualTreeChanged(VisualTreeChangeEventArgs e)
+		{
+			VisualTreeChanged?.Invoke(e.Parent, e);
+		}
 	}
 
 	public enum VisualTreeChangeType

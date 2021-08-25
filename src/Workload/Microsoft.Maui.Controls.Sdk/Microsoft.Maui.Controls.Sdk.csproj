@@ -52,9 +52,6 @@
 
   <Import Project="$(MauiRootDirectory)eng/ReplaceText.targets" />
 
-  <!-- Eventually replaced by eng/Version.targets -->
-  <Target Name="SetVersions" />
-
   <Target Name="_GenerateBundledVersions"
       BeforeTargets="Build;AssignTargetPaths"
       DependsOnTargets="SetVersions"
