@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-	public abstract class TableSectionBase<T> : TableSectionBase, IList<T>, INotifyCollectionChanged where T : BindableObject
+	public abstract class TableSectionBase<T> : TableSectionBase, IList<T>, IVisualTreeElement, INotifyCollectionChanged where T : BindableObject
 	{
 		readonly ObservableCollection<T> _children = new ObservableCollection<T>();
 
@@ -29,10 +31,22 @@ namespace Microsoft.Maui.Controls
 		public void Add(T item)
 		{
 			_children.Add(item);
+			if (item is IVisualTreeElement element)
+			{
+				VisualDiagnostics.OnChildAdded(this, element);
+			}
 		}
 
 		public void Clear()
 		{
+			foreach (T item in _children)
+			{
+				if (item is IVisualTreeElement element)
+				{
+					VisualDiagnostics.OnChildRemoved(this, element, _children.IndexOf(item));
+				}
+			}
+
 			_children.Clear();
 		}
 
@@ -58,6 +72,11 @@ namespace Microsoft.Maui.Controls
 
 		public bool Remove(T item)
 		{
+			if (item is IVisualTreeElement element)
+			{
+				VisualDiagnostics.OnChildRemoved(this, element, _children.IndexOf(item));
+			}
+
 			return _children.Remove(item);
 		}
 
@@ -78,6 +97,11 @@ namespace Microsoft.Maui.Controls
 
 		public void Insert(int index, T item)
 		{
+			if (item is IVisualTreeElement element)
+			{
+				VisualDiagnostics.OnChildAdded(this, element, index);
+			}
+
 			_children.Insert(index, item);
 		}
 
@@ -89,6 +113,12 @@ namespace Microsoft.Maui.Controls
 
 		public void RemoveAt(int index)
 		{
+			T item = _children[index];
+			if (item is IVisualTreeElement element)
+			{
+				VisualDiagnostics.OnChildRemoved(this, element, index);
+			}
+
 			_children.RemoveAt(index);
 		}
 
@@ -123,6 +153,10 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(item, bc);
 			}
 		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => this._children.Cast<IVisualTreeElement>().ToList().AsReadOnly();
+
+		IVisualTreeElement IVisualTreeElement.GetVisualParent() => null;
 	}
 
 	public sealed class TableSection : TableSectionBase<Cell>

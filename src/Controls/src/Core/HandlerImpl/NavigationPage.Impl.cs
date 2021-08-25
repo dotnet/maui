@@ -50,6 +50,24 @@ namespace Microsoft.Maui.Controls
 			return Frame.Size;
 		}
 
+		IElementHandler _previousHandler;
+		protected override void OnHandlerChanged()
+		{
+			// Because the navigation handler is shimmed we disconnect from it so it disposes
+			if (_previousHandler?.VirtualView == this)
+				_previousHandler?.DisconnectHandler();
+
+			_previousHandler = null;
+			base.OnHandlerChanged();
+		}
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			_previousHandler = args.OldHandler;
+		}
+
 		void INavigationView.InsertPageBefore(IView page, IView before)
 		{
 			throw new NotImplementedException();
@@ -58,11 +76,8 @@ namespace Microsoft.Maui.Controls
 		Task<IView> INavigationView.PopAsync() =>
 			(this as INavigationView).PopAsync(true);
 
-		async Task<IView> INavigationView.PopAsync(bool animated)
-		{
-			var thing = await this.PopAsync(animated);
-			return thing;
-		}
+		async Task<IView> INavigationView.PopAsync(bool animated) =>
+			await this.PopAsync(animated);
 
 		Task<IView> INavigationView.PopModalAsync()
 		{
@@ -97,8 +112,7 @@ namespace Microsoft.Maui.Controls
 			throw new NotImplementedException();
 		}
 
-		IView Content =>
-			this.CurrentPage;
+		IView Content => this.CurrentPage;
 
 		IReadOnlyList<IView> INavigationView.ModalStack => throw new NotImplementedException();
 
