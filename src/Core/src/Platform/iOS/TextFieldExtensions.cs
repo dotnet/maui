@@ -33,10 +33,14 @@ namespace Microsoft.Maui
 
 		public static void UpdateHorizontalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
 		{
-			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
-			// TODO: Update this when FlowDirection is available 
-			// (or update the extension to take an ILabel instead of an alignment and work it out from there) 
-			textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToNative(true);
+			bool isLtr;
+
+			if (textAlignment is IView v && v.FlowDirection == FlowDirection.LeftToRight)
+				isLtr = true;
+			else
+				isLtr = false;
+
+			textField.TextAlignment = textAlignment.HorizontalTextAlignment.ToNative(isLtr);
 		}
 
 		public static void UpdateVerticalTextAlignment(this UITextField textField, ITextAlignment textAlignment)

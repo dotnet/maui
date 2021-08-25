@@ -411,9 +411,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			Device.SetIdiom(currentIdiom);
-
-			if (SdkInt >= BuildVersionCodes.JellyBeanMr1)
-				Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
+			Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
 
 			if (ExpressionSearch.Default == null)
 				ExpressionSearch.Default = new AndroidExpressionSearch();
