@@ -190,30 +190,32 @@ namespace Microsoft.Maui.Layouts
 			public Rectangle GetCellBoundsFor(IView view, double xOffset, double yOffset)
 			{
 				var firstColumn = _grid.GetColumn(view).Clamp(0, _columns.Length - 1);
-				var lastColumn = firstColumn + _grid.GetColumnSpan(view).Clamp(1, _columns.Length - firstColumn);
+				var columnSpan = _grid.GetColumnSpan(view).Clamp(1, _columns.Length - firstColumn);
+				var lastColumn = firstColumn + columnSpan;
 
 				var firstRow = _grid.GetRow(view).Clamp(0, _rows.Length - 1);
-				var lastRow = firstRow + _grid.GetRowSpan(view).Clamp(1, _rows.Length - firstRow);
+				var rowSpan = _grid.GetRowSpan(view).Clamp(1, _rows.Length - firstRow);
+				var lastRow = firstRow + rowSpan;
 
 				double top = TopEdgeOfRow(firstRow);
 				double left = LeftEdgeOfColumn(firstColumn);
 
 				double width = 0;
+				double height = 0;
 
 				for (int n = firstColumn; n < lastColumn; n++)
 				{
 					width += _columns[n].Size;
 				}
 
-				double height = 0;
-
 				for (int n = firstRow; n < lastRow; n++)
 				{
 					height += _rows[n].Size;
 				}
 
-				// TODO ezhart this isn't correctly accounting for row spacing when spanning multiple rows
-				// (and column spacing is probably wrong, too)
+				// Account for any space between spanned rows/columns
+				width += (columnSpan - 1) * _columnSpacing;
+				height += (rowSpan - 1) * _rowSpacing;
 
 				return new Rectangle(left + xOffset, top + yOffset, width, height);
 			}

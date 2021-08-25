@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 #endif
 	}
 
-	public interface IImageSourceService<T> : IImageSourceService
+	public interface IImageSourceService<in T> : IImageSourceService
 		where T : IImageSource
 	{
 	}

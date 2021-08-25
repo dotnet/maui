@@ -1,20 +1,9 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:utilities="clr-namespace:Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Utilities"
+             xmlns:local="using:Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner"
              x:Class="Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages.CreditsPage"
              Title="Credits">
-    <StackLayout>
-        <WebView HeightRequest="250" x:Name="WebView" />
-        <TableView>
-            <TableRoot>
-                <TableSection>
-                    <TextCell Text="About xUnit" Command="{x:Static utilities:Commands.LaunchUrl}" CommandParameter="http://xunit.github.io/" />
-                    <TextCell Text="About xUnit for Devices" Command="{x:Static utilities:Commands.LaunchUrl}" CommandParameter="https://github.com/xunit/devices.xunit" />
-                    <TextCell Text="About Xamarin" Command="{x:Static utilities:Commands.LaunchUrl}" CommandParameter="http://xamarin.com" />
-                    <TextCell Text="About Xamarin Forms" Command="{x:Static utilities:Commands.LaunchUrl}" CommandParameter="http://xamarin.com/forms" />
-                </TableSection>
-            </TableRoot>
-        </TableView>
-    </StackLayout>
+
+    <WebView Source="{local:EmbeddedHtml 'Assets/credits.html'}" Navigating="OnNavigating" />
 
 </ContentPage>

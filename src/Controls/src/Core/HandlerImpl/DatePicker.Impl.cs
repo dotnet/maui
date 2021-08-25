@@ -2,8 +2,6 @@
 {
 	public partial class DatePicker : IDatePicker
 	{
-		Font? _font;
-
-		Font ITextStyle.Font => _font ??= this.ToFont();
+		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
 	}
 }

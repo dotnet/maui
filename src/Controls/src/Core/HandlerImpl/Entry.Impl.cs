@@ -2,9 +2,7 @@
 {
 	public partial class Entry : IEntry
 	{
-		Font? _font;
-
-		Font ITextStyle.Font => _font ??= this.ToFont();
+		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
 
 		void IEntry.Completed()
 		{
