@@ -19,7 +19,7 @@ PowerShell:
 // ADDINS
 //////////////////////////////////////////////////////////////////////
 #addin "nuget:?package=Cake.Android.SdkManager&version=3.0.2"
-#addin "nuget:?package=Cake.Boots&version=1.0.4.600-preview1"
+#addin "nuget:?package=Cake.Boots&version=1.0.4.624"
 #addin "nuget:?package=Cake.AppleSimulator&version=0.2.0"
 #addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
 #load "eng/cake/dotnet.cake"
@@ -224,7 +224,8 @@ string androidSDK_windows = "";
 string iOSSDK_windows = "";
 string monoSDK_windows = "";
 string macSDK_windows = "";
-
+string android_jdk_11_windows = "https://aka.ms/download-jdk/microsoft-jdk-11.0.12.7.1-windows-x64.msi";
+string android_jdk_11_macos = "https://aka.ms/download-jdk/microsoft-jdk-11.0.12.7.1-macOS-x64.pkg";
 
 androidSDK_macos = EnvironmentVariable("ANDROID_SDK_MAC", androidSDK_macos);
 iOSSDK_macos = EnvironmentVariable("IOS_SDK_MAC", iOSSDK_macos);
@@ -353,6 +354,7 @@ Task("provision-androidsdk")
         }
 
         if (!IsRunningOnWindows ()) {
+            await Boots(android_jdk_11_macos);
             if(!String.IsNullOrWhiteSpace(androidSDK))
             {
                 await Boots (androidSDK);
@@ -360,9 +362,13 @@ Task("provision-androidsdk")
             else
                 await Boots (Product.XamarinAndroid, releaseChannel);
         }
-        else if(!String.IsNullOrWhiteSpace(androidSDK))
+        else
         {
-            await Boots (androidSDK);
+            await Boots(android_jdk_11_windows);
+            if(!String.IsNullOrWhiteSpace(androidSDK))
+            {
+                await Boots (androidSDK);
+            }
         }
     });
 
