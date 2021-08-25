@@ -203,5 +203,15 @@ namespace Microsoft.Maui.DeviceTests
 			else
 				return Visibility.Hidden;
 		}
+
+		protected FlowDirection GetFlowDirection(IViewHandler viewHandler)
+		{
+			var nativeView = (FrameworkElement)viewHandler.NativeView;
+
+			if (nativeView.FlowDirection == UI.Xaml.FlowDirection.LeftToRight)
+				return FlowDirection.LeftToRight;
+
+			return FlowDirection.RightToLeft;
+		}
 	}
 }

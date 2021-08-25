@@ -53,6 +53,10 @@ namespace Microsoft.Maui.Essentials
 					}));
 #elif WINDOWS
 				life.AddWindows(windows => windows
+					.OnActivated((window, args) =>
+					{
+						Platform.OnActivated(window, args);
+					})
 					.OnLaunched((application, args) =>
 					{
 						Platform.OnLaunched(args);
