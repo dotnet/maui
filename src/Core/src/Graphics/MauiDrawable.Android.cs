@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Graphics
 			throw new NotImplementedException();
 		}
 
-		public void SetBorderShape(IShape shape)
+		public void SetBorderShape(IShape? shape)
 		{
 			_invalidatePath = true;
 
@@ -268,7 +268,9 @@ namespace Microsoft.Maui.Graphics
 			if (_borderPaint != null && HasBorder())
 			{
 				_borderPaint.StrokeWidth = _borderWidth;
-				_borderPaint.SetPathEffect(_borderPathEffect);
+
+				if (_borderPathEffect != null)
+					_borderPaint.SetPathEffect(_borderPathEffect);
 
 				if (_borderColor != null)
 					_borderPaint.Color = _borderColor.Value;

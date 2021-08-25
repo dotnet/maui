@@ -39,27 +39,35 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackgroundDrawable = null)
 		{
-			var background = view.Background;
+			bool hasBorder = view.BorderShape != null && view.BorderBrush != null && view.BorderWidth > 0;
 
-			if (background.IsNullOrEmpty())
+			if (hasBorder)
+				nativeView.UpdateMauiDrawable(view);
+			else
 			{
-				nativeView.Background = defaultBackgroundDrawable;
-				return;
+				var background = view.Background;
+
+				if (background.IsNullOrEmpty())
+				{
+					nativeView.Background = defaultBackgroundDrawable;
+					return;
+				}
+
+				if (background is SolidPaint solidPaint)
+				{
+					Color backgroundColor = solidPaint.Color;
+
+					if (backgroundColor != null)
+						nativeView.SetBackgroundColor(backgroundColor.ToNative());
+				}
+				else
+				{
+					if (background!.ToDrawable(nativeView.Context) is Drawable drawable)
+						nativeView.Background = drawable;
+				}
 			}
-
-			if (background is SolidPaint solidPaint)
-			{
-				Color backgroundColor = solidPaint.Color;
-
-				if (backgroundColor != null)
-					nativeView.SetBackgroundColor(backgroundColor.ToNative());
-
-				return;
-			}
-
-			nativeView.UpdateMauiDrawable(view);
 		}
-
+		
 		public static void UpdateBorderBrush(this AView nativeView, IView view)
 		{
 			var borderBrush = view.BorderBrush;
@@ -176,6 +184,11 @@ namespace Microsoft.Maui
 
 		internal static void UpdateMauiDrawable(this AView nativeView, IView view)
 		{
+			bool hasBorder = view.BorderShape != null && view.BorderBrush != null && view.BorderWidth > 0;
+
+			if (!hasBorder)
+				return;
+
 			MauiDrawable? mauiDrawable = nativeView.Background as MauiDrawable;
 
 			if (mauiDrawable == null)
