@@ -32,6 +32,10 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 
 		public IShape BorderShape { get; set; }
 
+		public double[] BorderDashArray { get; set; }
+
+		public double BorderDashOffset { get; set; }
+
 		public Rectangle Frame { get; set; } = new Rectangle(0, 0, 20, 20);
 
 		public double TranslationX { get; set; }

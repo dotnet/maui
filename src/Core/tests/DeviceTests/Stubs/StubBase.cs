@@ -30,6 +30,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IShape BorderShape { get; set; }
 
+		public double[] BorderDashArray { get; set; }
+
+		public double BorderDashOffset { get; set; }
+
 		public Rectangle Frame { get; set; }
 
 		public IViewHandler Handler { get; set; }

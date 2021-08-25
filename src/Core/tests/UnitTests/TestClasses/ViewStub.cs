@@ -57,6 +57,10 @@ namespace Microsoft.Maui.UnitTests
 
 		public IShape BorderShape { get; set; }
 
+		public double[] BorderDashArray { get; set; }
+
+		public double BorderDashOffset { get; set; }
+
 		public double TranslationX { get; set; }
 
 		public double TranslationY { get; set; }
