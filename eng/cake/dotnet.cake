@@ -94,7 +94,26 @@ Task("dotnet-samples")
     {
         RunMSBuildWithDotNet("./Microsoft.Maui.Samples-net6.slnf", new Dictionary<string, string> {
             ["UseWorkload"] = bool.TrueString,
-        });;
+        });
+    });
+
+Task("dotnet-templates")
+    .Does(() =>
+    {
+        if (localDotnet)
+            SetDotNetEnvironmentVariables();
+
+        var dn = localDotnet ? dotnetPath : "dotnet";
+
+        CleanDirectories("./templatesTest/");
+
+        foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
+        {
+            var name = template.Replace("-", "");
+            StartProcess(dn, $"new {template} -o ./templatesTest/{name}");
+
+            RunMSBuildWithDotNet($"./templatesTest/{name}");
+        }
     });
 
 Task("dotnet-test")
