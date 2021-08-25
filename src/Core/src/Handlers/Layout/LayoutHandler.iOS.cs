@@ -102,7 +102,9 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Subviews[index] = child.ToNative(MauiContext);
+			var existing = NativeView.Subviews[index];
+			existing.RemoveFromSuperview();
+			NativeView.InsertSubview(child.ToNative(MauiContext), index);
 			NativeView.SetNeedsLayout();
 		}
 

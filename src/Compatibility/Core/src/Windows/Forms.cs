@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			Device.SetIdiom(TargetIdiom.Tablet);
-			Device.SetFlowDirection(GetFlowDirection());
+			Device.SetFlowDirection(mauiContext.GetFlowDirection());
 
 			Device.Info = new WindowsDeviceInfo();
 
@@ -126,17 +126,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			IsInitialized = true;
-		}
-
-		static FlowDirection GetFlowDirection()
-		{
-			string resourceFlowDirection = "LTR"; //TODO WINUI3 ResourceContext.GetForCurrentView().QualifierValues["LayoutDirection"];
-			if (resourceFlowDirection == "LTR")
-				return FlowDirection.LeftToRight;
-			else if (resourceFlowDirection == "RTL")
-				return FlowDirection.RightToLeft;
-
-			return FlowDirection.MatchParent;
 		}
 	}
 }
