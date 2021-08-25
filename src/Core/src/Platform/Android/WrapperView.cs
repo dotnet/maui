@@ -44,13 +44,13 @@ namespace Microsoft.Maui
 
 		protected override void DispatchDraw(Canvas? canvas)
 		{
-			if (canvas != null && ClipShape != null)
+			if (canvas != null && Clip != null)
 			{
 				var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
 
 				if (_lastPathSize != bounds.Size || _currentPath == null)
 				{
-					var path = ClipShape.PathForBounds(bounds);
+					var path = Clip.PathForBounds(bounds);
 					_currentPath = path?.AsAndroidPath();
 					_lastPathSize = bounds.Size;
 				}
