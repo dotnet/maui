@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -46,6 +47,16 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 		double GetNativeChildCount(LayoutHandler layoutHandler)
 		{
 			return layoutHandler.NativeView.Subviews.Length;
+		}
+
+		double GetNativeChildCount(object nativeView)
+		{
+			return (nativeView as UIView).Subviews.Length;
+		}
+
+		IReadOnlyList<UIView> GetNativeChildren(LayoutHandler layoutHandler)
+		{
+			return layoutHandler.NativeView.Subviews;
 		}
 
 		CGColor GetNativeShadowColor(LayoutHandler layoutHandler)

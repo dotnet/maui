@@ -2,9 +2,7 @@
 {
 	public partial class Editor : IEditor
 	{
-		Font? _font;
-
-		Font ITextStyle.Font => _font ??= this.ToFont();
+		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
 
 		void IEditor.Completed()
 		{

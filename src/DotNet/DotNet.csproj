@@ -89,16 +89,6 @@
     />
     <Delete Files="$(_NuGetConfig)" />
 
-    <!--
-      HACK: temporarily put runtime packs in 'library-packs', until they can be resolved from 'packs'
-      See: https://github.com/dotnet/sdk/issues/14044
-    -->
-    <ItemGroup>
-      <_RuntimePacks Include="$(PackageOutputPath)/*.Runtime.*.nupkg" />
-      <_RuntimePacks Include="$(PackageOutputPath)/Microsoft.Maui.Extensions.*.nupkg" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_RuntimePacks)" DestinationFolder="$(MSBuildExtensionsPath)../../library-packs" SkipUnchangedFiles="true" />
-
   </Target>
 
   <!-- Eventually replaced by eng/Version.targets -->
@@ -179,7 +169,7 @@
       Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; workload install @(_WorkloadIds, ' ') --skip-manifest-update --verbosity diag --temp-dir $(DotNetTempDirectory)"
+        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir $(DotNetTempDirectory)"
         WorkingDirectory="$(MauiRootDirectory)"
     />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />

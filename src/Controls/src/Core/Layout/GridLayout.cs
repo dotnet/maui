@@ -28,24 +28,28 @@ namespace Microsoft.Maui.Controls
 			});
 
 		public static readonly BindableProperty RowSpacingProperty = BindableProperty.Create("RowSpacing", typeof(double),
-			typeof(GridLayout), 0d, propertyChanged: (bindable, oldValue, newValue) => ((GridLayout)bindable).InvalidateMeasure());
+			typeof(GridLayout), 0d, propertyChanged: Invalidate);
 
 		public static readonly BindableProperty ColumnSpacingProperty = BindableProperty.Create("ColumnSpacing", typeof(double),
-			typeof(GridLayout), 0d, propertyChanged: (bindable, oldValue, newValue) => ((GridLayout)bindable).InvalidateMeasure());
+			typeof(GridLayout), 0d, propertyChanged: Invalidate);
 
 		#region Row/Column/Span Attached Properties
 
 		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row",
-			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0);
+			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0,
+			propertyChanged: Invalidate);
 
 		public static readonly BindableProperty RowSpanProperty = BindableProperty.CreateAttached("RowSpan",
-			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1);
+			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1,
+			propertyChanged: Invalidate);
 
 		public static readonly BindableProperty ColumnProperty = BindableProperty.CreateAttached("Column",
-			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0);
+			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0,
+			propertyChanged: Invalidate);
 
 		public static readonly BindableProperty ColumnSpanProperty = BindableProperty.CreateAttached("ColumnSpan",
-			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1);
+			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1,
+			propertyChanged: Invalidate);
 
 		public static int GetColumn(BindableObject bindable)
 		{
@@ -175,6 +179,7 @@ namespace Microsoft.Maui.Controls
 					break;
 				default:
 					_viewInfo[view].Row = row;
+					InvalidateMeasure();
 					break;
 			}
 		}
@@ -188,6 +193,7 @@ namespace Microsoft.Maui.Controls
 					break;
 				default:
 					_viewInfo[view].RowSpan = span;
+					InvalidateMeasure();
 					break;
 			}
 		}
@@ -201,6 +207,7 @@ namespace Microsoft.Maui.Controls
 					break;
 				default:
 					_viewInfo[view].Col = col;
+					InvalidateMeasure();
 					break;
 			}
 		}
@@ -214,6 +221,7 @@ namespace Microsoft.Maui.Controls
 					break;
 				default:
 					_viewInfo[view].ColSpan = span;
+					InvalidateMeasure();
 					break;
 			}
 		}
@@ -286,9 +294,23 @@ namespace Microsoft.Maui.Controls
 			gridLayout.DefinitionsChanged(bindable, EventArgs.Empty);
 		}
 
+		static void Invalidate(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is Element element && element.Parent is GridLayout gridLayout)
+			{
+				gridLayout.InvalidateMeasure();
+			}
+		}
+
 		void DefinitionsChanged(object sender, EventArgs args)
 		{
 			InvalidateMeasure();
+		}
+
+		protected override void InvalidateMeasure()
+		{
+			base.InvalidateMeasure();
+			(this as IView)?.InvalidateMeasure();
 		}
 
 		class GridInfo
