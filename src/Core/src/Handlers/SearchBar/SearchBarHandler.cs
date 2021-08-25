@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ISearchBar.Font)] = MapFont,
-			[nameof(ISearchBar.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(ISearchBar.IsReadOnly)] = MapIsReadOnly,
 			[nameof(ISearchBar.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(ISearchBar.MaxLength)] = MapMaxLength,
@@ -19,6 +19,13 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISearchBar.TextColor)] = MapTextColor,
 			[nameof(ISearchBar.CancelButtonColor)] = MapCancelButtonColor
 		};
+
+		static SearchBarHandler()
+		{
+#if __IOS__
+			SearchBarMapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
+#endif
+		}
 
 		public SearchBarHandler() : base(SearchBarMapper)
 		{

@@ -1,4 +1,6 @@
 using System;
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Layouts
 {
 	public abstract class StackLayoutManager : LayoutManager

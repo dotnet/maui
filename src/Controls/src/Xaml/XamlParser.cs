@@ -352,11 +352,22 @@ namespace Microsoft.Maui.Controls.Xaml
 			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 
 			foreach (var assembly in assemblies)
-				foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute)))
+			{
+				try
 				{
-					s_xmlnsDefinitions.Add(attribute);
-					attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
+					foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute)))
+					{
+						s_xmlnsDefinitions.Add(attribute);
+						attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
+					}
 				}
+				catch (Exception ex)
+				{
+					// If we can't load the custom attribute for whatever reason from the assembly,
+					// We can ignore it and keep going.
+					System.Diagnostics.Debug.WriteLine($"Failed to parse Assembly Attribute: {ex.ToString()}");
+				}
+			}
 		}
 
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,

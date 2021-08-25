@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Clip)] = MapClip,
 			[nameof(IView.Visibility)] = MapVisibility,
 			[nameof(IView.Background)] = MapBackground,
+			[nameof(IView.FlowDirection)] = MapFlowDirection,
 			[nameof(IView.BorderBrush)] = MapBorderBrush,
 			[nameof(IView.BorderWidth)] = MapBorderWidth,
 			[nameof(IView.BorderDashArray)] = MapBorderDashArray,
@@ -167,6 +168,11 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateBackground(view);
 		}
 
+		public static void MapFlowDirection(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateFlowDirection(view);
+		}
+		
 		public static void MapBorderBrush(IViewHandler handler, IView view)
 		{
 #if WINDOWS

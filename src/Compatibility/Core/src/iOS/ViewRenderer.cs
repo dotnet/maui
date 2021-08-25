@@ -295,6 +295,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			uiControl.Enabled = Element.IsEnabled;
 		}
 
+		[PortHandler]
 		void UpdateFlowDirection()
 		{
 			if (IsElementOrControlEmpty)
