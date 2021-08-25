@@ -77,27 +77,27 @@ namespace Microsoft.Maui
 
 		public static void UpdateFlowDirection(this AView nativeView, IView view)
 		{
+			// I realize I could call this method as an extension method
+			// But I'm being explicit so if the TextViewExtensions version gets deleted
+			// we'll get a compile time exception opposed to an infinite loop
+			if (nativeView is TextView textview)
+			{
+				TextViewExtensions.UpdateFlowDirection(textview, view);
+				return;
+			}
+
 			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
 				view.FlowDirection == FlowDirection.MatchParent)
 			{
 				nativeView.LayoutDirection = ALayoutDirection.Inherit;
-
-				if (nativeView is TextView textView)
-					textView.TextDirection = ATextDirection.Inherit;
 			}
 			else if (view.FlowDirection == FlowDirection.RightToLeft)
 			{
 				nativeView.LayoutDirection = ALayoutDirection.Rtl;
-
-				if (nativeView is TextView textView)
-					textView.TextDirection = ATextDirection.Rtl;
 			}
 			else if (view.FlowDirection == FlowDirection.LeftToRight)
 			{
 				nativeView.LayoutDirection = ALayoutDirection.Ltr;
-
-				if (nativeView is TextView textView)
-					textView.TextDirection = ATextDirection.Ltr;
 			}
 		}
 

@@ -4,6 +4,7 @@ using Android.Text;
 using Android.Util;
 using Android.Widget;
 using static Android.Widget.TextView;
+using ATextDirection = Android.Views.TextDirection;
 
 namespace Microsoft.Maui
 {
@@ -116,6 +117,23 @@ namespace Microsoft.Maui
 				textView.PaintFlags &= ~PaintFlags.UnderlineText;
 			else
 				textView.PaintFlags |= PaintFlags.UnderlineText;
+		}
+
+		public static void UpdateFlowDirection(this TextView nativeView, IView view)
+		{
+			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
+				view.FlowDirection == FlowDirection.MatchParent)
+			{
+				nativeView.TextDirection = ATextDirection.Inherit;
+			}
+			else if (view.FlowDirection == FlowDirection.RightToLeft)
+			{
+				nativeView.TextDirection = ATextDirection.Rtl;
+			}
+			else if (view.FlowDirection == FlowDirection.LeftToRight)
+			{
+				nativeView.TextDirection = ATextDirection.Ltr;
+			}
 		}
 
 		public static void UpdateLineHeight(this TextView textView, ILabel label)
