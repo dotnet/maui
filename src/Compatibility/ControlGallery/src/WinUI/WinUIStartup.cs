@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 	{
 		public static MauiApp CreateMauiApp()
 		{
-			var builder = MauiProgram.CreateAppBuilder();
+			var builder = MauiProgram.CreateMauiAppBuilder();
 
 			builder.ConfigureLifecycleEvents(lifecycle => lifecycle
 				.AddWindows(windows => windows

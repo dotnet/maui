@@ -11,9 +11,9 @@ namespace Maui.Controls.Sample.Profiling
 	{
 		public static MauiApp CreateMauiApp()
 		{
-			var appBuilder = MauiApp.CreateBuilder();
+			var builder = MauiApp.CreateBuilder();
 
-			appBuilder
+			builder
 				.UseMauiApp<App>()
 				.ConfigureFonts(fonts =>
 				{
