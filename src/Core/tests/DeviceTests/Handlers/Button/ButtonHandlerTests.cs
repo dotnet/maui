@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -59,6 +60,32 @@ namespace Microsoft.Maui.DeviceTests
 			await PerformClick(button);
 
 			Assert.True(clicked);
+		}
+
+		[Theory()]
+		[InlineData("red.png", "#FF0000")]
+		[InlineData("green.png", "#00FF00")]
+		[InlineData("black.png", "#000000")]
+		public async Task ImageSourceInitializesCorrectly(string filename, string colorHex)
+		{
+			var image = new ButtonStub
+			{
+				Background = new SolidPaintStub(Colors.Black),
+				ImageSource = new FileImageSourceStub(filename),
+			};
+
+			var order = new List<string>();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(image);
+
+				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
+
+				Assert.True(imageLoaded);
+				var expectedColor = Color.FromArgb(colorHex);
+				await handler.NativeView.AssertContainsColor(expectedColor);
+			});
 		}
 	}
 }
