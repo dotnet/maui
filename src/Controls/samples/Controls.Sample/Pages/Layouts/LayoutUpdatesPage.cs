@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample.Pages
 {
 	public class LayoutUpdatesPage : Base.BasePage
 	{
-		public LayoutUpdatesPage() 
+		public LayoutUpdatesPage()
 		{
 			var root = new GridLayout() { Margin = 40, BackgroundColor = Colors.Beige };
 
@@ -19,19 +19,19 @@ namespace Maui.Controls.Sample.Pages
 				new RowDefinition(){ Height = GridLength.Auto }
 			};
 
-			root.ColumnDefinitions = new ColumnDefinitionCollection() 
-			{ 
+			root.ColumnDefinitions = new ColumnDefinitionCollection()
+			{
 				new ColumnDefinition(){ Width = GridLength.Star },
 				new ColumnDefinition(){ Width = GridLength.Star },
 			};
 
 			var addButton = new Button { Text = "Add" };
 			root.Add(addButton);
-			
+
 			var removeButton = new Button { Text = "Remove" };
 			root.Add(removeButton);
 			root.SetColumn(removeButton, 1);
-			
+
 			var insertButton = new Button { Text = "Insert" };
 			root.Add(insertButton);
 			root.SetRow(insertButton, 1);
@@ -62,13 +62,15 @@ namespace Maui.Controls.Sample.Pages
 			root.SetRow(stack, 3);
 			root.SetColumnSpan(stack, 2);
 
-			addButton.Clicked += (sender, args) => {
+			addButton.Clicked += (sender, args) =>
+			{
 				var left = leftMarginIncrement * stack.Count;
 				var rect = new Shapes.Rectangle() { WidthRequest = shapeWidth, HeightRequest = shapeHeight, Fill = new SolidColorBrush(NextColor()), Margin = new Thickness(left, overlap, 0, 0) };
 				stack.Add(rect);
 			};
 
-			insertButton.Clicked += (sender, args) => {
+			insertButton.Clicked += (sender, args) =>
+			{
 
 				if (stack.Count < 2)
 				{
@@ -81,20 +83,23 @@ namespace Maui.Controls.Sample.Pages
 				stack.Insert(1, rect);
 			};
 
-			clearButton.Clicked += (sender, args) => {
+			clearButton.Clicked += (sender, args) =>
+			{
 				stack.Clear();
 			};
 
-			removeButton.Clicked += (sender, args) => {
+			removeButton.Clicked += (sender, args) =>
+			{
 				if (stack.Count > 0)
 				{
 					stack.RemoveAt(stack.Count - 1);
 				}
 			};
 
-			updateButton.Clicked += (sender, args) => {
-				if (stack.Count > 0) 
-				{ 
+			updateButton.Clicked += (sender, args) =>
+			{
+				if (stack.Count > 0)
+				{
 					var left = leftMarginIncrement * stack.Count;
 					var rect = new Shapes.Rectangle() { WidthRequest = shapeWidth, HeightRequest = shapeHeight, Fill = new SolidColorBrush(NextColor()), Margin = new Thickness(left, overlap, 0, 0) };
 					stack[0] = rect;
@@ -106,12 +111,12 @@ namespace Maui.Controls.Sample.Pages
 
 		int _colorIndex;
 
-		Color[] _colors = new Color[] 
-		{ 
+		Color[] _colors = new Color[]
+		{
 			Colors.Red, Colors.Blue, Colors.Green, Colors.Yellow, Colors.Orange, Colors.Purple
 		};
 
-		Color NextColor() 
+		Color NextColor()
 		{
 			var color = _colors[_colorIndex];
 

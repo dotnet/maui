@@ -6,9 +6,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Sinks;
-using Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Utilities;
 using Xunit;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -18,57 +17,55 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 	public class DeviceRunner : ITestListener, ITestRunner
 	{
 		readonly SynchronizationContext context = SynchronizationContext.Current;
-
-		readonly TextWriterResultChannel resultChannel = new TextWriterResultChannel();
 		readonly AsyncLock executionLock = new AsyncLock();
-		readonly INavigation navigation;
-
+		readonly ITestNavigation _navigation;
+		readonly TestRunLogger _logger;
 		volatile bool cancelled;
 
-		public DeviceRunner(IReadOnlyCollection<Assembly> testAssemblies, INavigation navigation)
+		public DeviceRunner(IReadOnlyCollection<Assembly> testAssemblies, ITestNavigation navigation, ILogger logger)
 		{
-			this.navigation = navigation;
-
 			TestAssemblies = testAssemblies;
+			_navigation = navigation;
+			_logger = new TestRunLogger(logger);
 		}
 
 		public IReadOnlyCollection<Assembly> TestAssemblies { get; }
 
 		public void RecordResult(TestResultViewModel result)
 		{
-			resultChannel.RecordResult(result);
+			_logger.LogTestResult(result);
 		}
 
-		public Task Run(TestCaseViewModel test)
+		public Task RunAsync(TestCaseViewModel test)
 		{
-			return Run(new[] { test });
+			return RunAsync(new[] { test });
 		}
 
-		public Task Run(IEnumerable<TestCaseViewModel> tests, string message = null)
+		public Task RunAsync(IEnumerable<TestCaseViewModel> tests, string message = null)
 		{
 			var groups = tests
 				.GroupBy(t => t.AssemblyFileName)
-				.Select(g => new AssemblyRunInfo
-				{
-					AssemblyFileName = g.Key,
-					Configuration = GetConfiguration(Path.GetFileNameWithoutExtension(g.Key)),
-					TestCases = g.ToList()
-				})
+				.Select(g => new AssemblyRunInfo(
+					g.Key,
+					GetConfiguration(Path.GetFileNameWithoutExtension(g.Key)),
+					g.ToList()))
 				.ToList();
 
-			return Run(groups, message);
+			return RunAsync(groups, message);
 		}
 
-		public async Task Run(IReadOnlyList<AssemblyRunInfo> runInfos, string message = null)
+		public async Task RunAsync(IReadOnlyList<AssemblyRunInfo> runInfos, string message = null)
 		{
 			using (await executionLock.LockAsync())
 			{
 				if (message == null)
+				{
 					message = runInfos.Count > 1 || runInfos.FirstOrDefault()?.TestCases.Count > 1
 						? "Run Multiple Tests"
 						: runInfos.FirstOrDefault()?.TestCases.FirstOrDefault()?.DisplayName;
+				}
 
-				resultChannel.OpenChannel(message);
+				_logger.LogTestStart(message);
 
 				try
 				{
@@ -76,23 +73,23 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				}
 				finally
 				{
-					resultChannel.CloseChannel();
+					_logger.LogTestComplete();
 				}
 			}
 		}
 
 		public event Action<string> OnDiagnosticMessage;
 
-		public Task<IReadOnlyList<TestAssemblyViewModel>> Discover()
+		public Task<IReadOnlyList<TestAssemblyViewModel>> DiscoverAsync()
 		{
 			var tcs = new TaskCompletionSource<IReadOnlyList<TestAssemblyViewModel>>();
 
-			ThreadPoolHelper.RunAsync(() =>
+			RunAsync(() =>
 			{
 				try
 				{
 					var runInfos = DiscoverTestsInAssemblies();
-					var list = runInfos.Select(ri => new TestAssemblyViewModel(ri, this)).ToList();
+					var list = runInfos.Select(ri => new TestAssemblyViewModel(ri, _navigation, this)).ToList();
 
 					tcs.SetResult(list);
 				}
@@ -141,13 +138,10 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 							framework.Find(false, sink, discoveryOptions);
 							sink.Finished.WaitOne();
 
-							result.Add(new AssemblyRunInfo
-							{
-								AssemblyFileName = assemblyFileName,
-								Configuration = configuration,
-								TestCases = sink.TestCases.Select(tc => new TestCaseViewModel(assemblyFileName, tc, navigation, this))
-												.ToList()
-							});
+							result.Add(new AssemblyRunInfo(
+								assemblyFileName,
+								configuration,
+								sink.TestCases.Select(tc => new TestCaseViewModel(assemblyFileName, tc)).ToList()));
 						}
 					}
 					catch (Exception e)
@@ -237,12 +231,19 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 					var parallelizeAssemblies = assemblies.All(runInfo => runInfo.Configuration.ParallelizeAssemblyOrDefault);
 
 					if (parallelizeAssemblies)
-						assemblies.Select(runInfo => RunTestsInAssemblyAsync(toDispose, runInfo))
-								  .ToList()
-								  .ForEach(@event => @event.WaitOne());
+					{
+						assemblies
+							.Select(runInfo => RunTestsInAssemblyAsync(toDispose, runInfo))
+							.ToList()
+							.ForEach(@event => @event.WaitOne());
+					}
 					else
-						assemblies.ForEach(runInfo => RunTestsInAssembly(toDispose, runInfo));
-
+					{
+						foreach (var runInfo in assemblies)
+						{
+							RunTestsInAssembly(toDispose, runInfo);
+						}
+					}
 				}
 				catch (Exception e)
 				{
@@ -255,7 +256,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				}
 			}
 
-			ThreadPoolHelper.RunAsync(Handler);
+			RunAsync(Handler);
 
 			return tcs.Task;
 		}
@@ -283,7 +284,6 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 
 			var diagSink = new DiagnosticMessageSink(d => context.Post(_ => OnDiagnosticMessage?.Invoke(d), null), runInfo.AssemblyFileName, executionOptions.GetDiagnosticMessagesOrDefault());
 
-
 			var deviceExecSink = new DeviceExecutionSink(xunitTestCases, this, context);
 
 			IExecutionSink resultsSink = new DelegatingExecutionSummarySink(deviceExecSink, () => cancelled);
@@ -295,7 +295,6 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 
 			controller.RunTests(xunitTestCases.Select(tc => tc.Value.TestCase).ToList(), resultsSink, executionOptions);
 			resultsSink.Finished.WaitOne();
-
 
 			deviceExecSink.OnMessage(new TestAssemblyExecutionFinished(assm, executionOptions, resultsSink.ExecutionSummary));
 		}
@@ -316,9 +315,27 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				}
 			}
 
-			ThreadPoolHelper.RunAsync(Handler);
+			RunAsync(Handler);
 
 			return @event;
+		}
+
+		static async void RunAsync(Action action)
+		{
+			var task = Task.Factory.StartNew(action, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
+			try
+			{
+				await task;
+			}
+			catch (Exception e)
+			{
+				if (Debugger.IsAttached)
+				{
+					Debugger.Break();
+					Debug.WriteLine(e);
+				}
+			}
 		}
 	}
 }

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
-		public static PropertyMapper<IView, ViewHandler> ViewMapper = new PropertyMapper<IView, ViewHandler>(ElementHandler.ElementMapper)
+		public static IPropertyMapper<IView, ViewHandler> ViewMapper = new PropertyMapper<IView, ViewHandler>(ElementHandler.ElementMapper)
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.Clip)] = MapClip,
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 
 		bool _hasContainer;
 
-		protected ViewHandler(PropertyMapper mapper, CommandMapper? commandMapper = null)
+		protected ViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 			: base(mapper, commandMapper ?? ViewCommandMapper)
 		{
 		}

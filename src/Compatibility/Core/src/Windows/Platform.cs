@@ -29,8 +29,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					if (view.Handler == null && newvalue is IVisualElementRenderer ver)
 						view.Handler = new RendererToHandlerShim(ver);
-					else if (newvalue == null && view.Handler != null)
-						view.Handler = null;
 				}
 			});
 
