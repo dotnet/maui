@@ -3,8 +3,8 @@ using Microsoft.Maui.Controls;
 namespace MauiApp1
 {
 	public class NewContent1 : ContentView
-    {
-        public NewContent1()
+	{
+		public NewContent1()
 		{
 			Content = new StackLayout
 			{
