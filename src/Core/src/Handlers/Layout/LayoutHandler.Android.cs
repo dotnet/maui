@@ -59,9 +59,15 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+
+		void Clear(LayoutViewGroup nativeView)
+		{
+			nativeView.RemoveAllViews();
+		}
+
 		public void Clear()
 		{
-			NativeView?.RemoveAllViews();
+			Clear(NativeView);
 		}
 
 		public void Insert(int index, IView child)
@@ -86,7 +92,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(LayoutViewGroup nativeView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
-			Clear();
+			Clear(nativeView);
 			base.DisconnectHandler(nativeView);
 		}
 	}
