@@ -366,7 +366,7 @@ namespace Microsoft.Maui.Controls
 			Handler?.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
 		}
 
-		ScrollToRequestedEventArgs ConvertRequestMode(ScrollToRequestedEventArgs args) 
+		ScrollToRequestedEventArgs ConvertRequestMode(ScrollToRequestedEventArgs args)
 		{
 			if (args.Mode == ScrollToMode.Element && args.Element is VisualElement visualElement)
 			{

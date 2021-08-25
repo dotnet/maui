@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 		Task<IView> INavigationView.PopAsync() =>
 			(this as INavigationView).PopAsync(true);
 
-		async Task<IView> INavigationView.PopAsync(bool animated) => 
+		async Task<IView> INavigationView.PopAsync(bool animated) =>
 			await this.PopAsync(animated);
 
 		Task<IView> INavigationView.PopModalAsync()
