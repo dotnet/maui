@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					&& double.TryParse(cornerRadius[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double bl)
 					&& double.TryParse(cornerRadius[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double br))
 					return new RoundRectangle { CornerRadius = new CornerRadius(tl, tr, bl, br) };
-				if (cornerRadius.Length >= 1
+				if (cornerRadius.Length > 1
 					&& cornerRadius.Length < 4
 					&& double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
 					return new RoundRectangle { CornerRadius = new CornerRadius(l) };

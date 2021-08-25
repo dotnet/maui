@@ -95,7 +95,7 @@ namespace Microsoft.Maui
 			var borderDashArray = view.BorderDashArray;
 			MauiDrawable? background = nativeView.Background as MauiDrawable;
 
-			if (background == null && (borderDashArray == null || borderDashArray.Count == 0))
+			if (background == null && (borderDashArray == null || borderDashArray.Length == 0))
 				return;
 
 			nativeView.UpdateMauiDrawable(view);

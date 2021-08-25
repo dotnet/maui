@@ -1,11 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using Microsoft.Maui.Converters;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Controls
 {
-	[TypeConverter(typeof(DoubleCollectionConverter))]
+	[System.ComponentModel.TypeConverter(typeof(DoubleCollectionConverter))]
 	public sealed class DoubleCollection : ObservableCollection<double>
 	{
 		public DoubleCollection()
@@ -21,5 +19,20 @@ namespace Microsoft.Maui
 
 		public static implicit operator DoubleCollection(float[] f)
 			=> f == null ? new() : new(Array.ConvertAll(f, x => (double)x));
+	}
+
+	public static class DoubleCollectionExtensions
+	{
+		public static double[] ToArray(this DoubleCollection doubleCollection)
+		{
+			double[] array = new double[doubleCollection.Count];
+
+			for (int i = 0; i < doubleCollection.Count; i++)
+			{
+				array[i] = doubleCollection[i];
+			}
+
+			return array;
+		}
 	}
 }

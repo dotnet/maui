@@ -78,7 +78,7 @@ namespace Microsoft.Maui
 			UpdateNativeBorder();
 		}
 
-		public void UpdateBorderDashArray(DoubleCollection borderDashArray)
+		public void UpdateBorderDashArray(double[] borderDashArray)
 		{
 			if (_borderPath == null)
 				return;
@@ -86,12 +86,12 @@ namespace Microsoft.Maui
 			if (_borderPath.StrokeDashArray != null)
 				_borderPath.StrokeDashArray.Clear();
 
-			if (borderDashArray != null && borderDashArray.Count > 0)
+			if (borderDashArray != null && borderDashArray.Length > 0)
 			{
 				if (_borderPath.StrokeDashArray == null)
 					_borderPath.StrokeDashArray = new WDoubleCollection();
 
-				double[] array = new double[borderDashArray.Count];
+				double[] array = new double[borderDashArray.Length];
 				borderDashArray.CopyTo(array, 0);
 
 				foreach (double value in array)

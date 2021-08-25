@@ -79,6 +79,17 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(BorderWidthProperty, value);
 		}
 
+		double[] IBorder.BorderDashArray
+		{
+			get
+			{
+				if (BorderDashArray != null)
+					return BorderDashArray.ToArray();
+
+				return null;
+			}
+		}
+
 		public static readonly BindableProperty BorderDashArrayProperty = BindableProperty.Create(
 			nameof(BorderDashArray), typeof(DoubleCollection), typeof(VisualElement), null,
 				defaultValueCreator: bindable => new DoubleCollection());

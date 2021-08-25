@@ -21,7 +21,7 @@ namespace Microsoft.Maui
 		/// Gets a collection of Double values that indicate the pattern of dashes and gaps 
 		/// that is used to outline shapes.
 		/// </summary>
-		DoubleCollection BorderDashArray { get; }
+		double[] BorderDashArray { get; }
 
 		/// <summary>
 		/// Gets a Double that specifies the distance within the dash pattern where a 

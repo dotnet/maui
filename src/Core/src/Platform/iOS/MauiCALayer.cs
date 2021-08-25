@@ -178,27 +178,27 @@ namespace Microsoft.Maui
 			SetNeedsDisplay();
 		}
 
-		public void SetBorderDash(DoubleCollection borderDashArray, double borderDashOffset)
+		public void SetBorderDash(double[] borderDashArray, double borderDashOffset)
 		{
 			_borderDashOffset = (float)borderDashOffset;
 
-			if (borderDashArray != null && borderDashArray.Count > 0)
+			if (borderDashArray != null && borderDashArray.Length > 0)
 			{
 				nfloat[] dashArray;
 				double[] array;
 
-				if (borderDashArray.Count % 2 == 0)
+				if (borderDashArray.Length % 2 == 0)
 				{
-					array = new double[borderDashArray.Count];
-					dashArray = new nfloat[borderDashArray.Count];
+					array = new double[borderDashArray.Length];
+					dashArray = new nfloat[borderDashArray.Length];
 					borderDashArray.CopyTo(array, 0);
 				}
 				else
 				{
-					array = new double[2 * borderDashArray.Count];
-					dashArray = new nfloat[2 * borderDashArray.Count];
+					array = new double[2 * borderDashArray.Length];
+					dashArray = new nfloat[2 * borderDashArray.Length];
 					borderDashArray.CopyTo(array, 0);
-					borderDashArray.CopyTo(array, borderDashArray.Count);
+					borderDashArray.CopyTo(array, borderDashArray.Length);
 				}
 
 				double thickness = _borderWidth;

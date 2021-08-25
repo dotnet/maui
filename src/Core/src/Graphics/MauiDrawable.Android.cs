@@ -213,18 +213,19 @@ namespace Microsoft.Maui.Graphics
 			InvalidateSelf();
 		}
 
-		public void SetBorderDash(DoubleCollection strokeDashArray,  double strokeDashOffset)
+		public void SetBorderDash(double[] strokeDashArray,  double strokeDashOffset)
 		{
-			if (strokeDashArray == null || strokeDashArray.Count == 0 || strokeDashOffset <= 0)
+			if (strokeDashArray == null || strokeDashArray.Length == 0 || strokeDashOffset <= 0)
 				_borderPathEffect = null;
 			else
 			{
-				float[] strokeDash = new float[strokeDashArray.Count];
+				float[] strokeDash = new float[strokeDashArray.Length];
 
-				for (int i = 0; i < strokeDashArray.Count; i++)
+				for (int i = 0; i < strokeDashArray.Length; i++)
 					strokeDash[i] = (float)strokeDashArray[i] * _borderWidth;
 
-				_borderPathEffect = new DashPathEffect(strokeDash, (float)strokeDashOffset * _borderWidth);
+				if (strokeDash.Length > 1)
+					_borderPathEffect = new DashPathEffect(strokeDash, (float)strokeDashOffset * _borderWidth);
 			}
 
 			InvalidateSelf();

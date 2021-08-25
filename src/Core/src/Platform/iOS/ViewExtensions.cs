@@ -99,7 +99,7 @@ namespace Microsoft.Maui
 			var borderDashArray = view.BorderDashArray;
 			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
 
-			if (backgroundLayer == null && (borderDashArray == null || borderDashArray.Count == 0))
+			if (backgroundLayer == null && (borderDashArray == null || borderDashArray.Length == 0))
 				return;
 
 			nativeView.UpdateMauiCALayer(view);
