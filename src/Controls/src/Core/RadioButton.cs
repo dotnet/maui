@@ -65,8 +65,6 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty CornerRadiusProperty = BorderElement.CornerRadiusProperty;
 
-		public static readonly new BindableProperty BorderWidthProperty = BorderElement.BorderWidthProperty;
-
 		// If Content is set to a string, the string will be displayed using the native Text property
 		// on platforms which support that; in a ControlTemplate it will be automatically converted
 		// to a Label. If Content is set to a View, the View will be displayed on platforms which 
@@ -139,12 +137,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
 			set => SetValue(FontAutoScalingEnabledProperty, value);
-		}
-
-		public new double BorderWidth
-		{
-			get { return (double)GetValue(BorderWidthProperty); }
-			set { SetValue(BorderWidthProperty, value); }
 		}
 
 		public Color BorderColor

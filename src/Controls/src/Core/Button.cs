@@ -38,8 +38,6 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
-		public static readonly new BindableProperty BorderWidthProperty = BindableProperty.Create("BorderWidth", typeof(double), typeof(Button), -1d);
-
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
 		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create("CornerRadius", typeof(int), typeof(Button), defaultValue: BorderElement.DefaultCornerRadius,
@@ -91,12 +89,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (int)GetValue(CornerRadiusProperty); }
 			set { SetValue(CornerRadiusProperty, value); }
-		}
-
-		public new double BorderWidth
-		{
-			get { return (double)GetValue(BorderWidthProperty); }
-			set { SetValue(BorderWidthProperty, value); }
 		}
 
 		public ButtonContentLayout ContentLayout

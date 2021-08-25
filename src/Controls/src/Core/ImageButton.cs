@@ -18,8 +18,6 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty CornerRadiusProperty = BorderElement.CornerRadiusProperty;
 
-		public static readonly new BindableProperty BorderWidthProperty = BorderElement.BorderWidthProperty;
-
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
 		public static readonly BindableProperty SourceProperty = ImageElement.SourceProperty;
@@ -60,12 +58,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (int)GetValue(CornerRadiusProperty); }
 			set { SetValue(CornerRadiusProperty, value); }
-		}
-
-		public new double BorderWidth
-		{
-			get { return (double)GetValue(BorderWidthProperty); }
-			set { SetValue(BorderWidthProperty, value); }
 		}
 
 		public Aspect Aspect

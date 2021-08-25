@@ -4,7 +4,7 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class VisualElement : IView
+	public partial class VisualElement : IView, IBorder
 	{
 		Semantics _semantics;
 
@@ -60,6 +60,17 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		double IBorder.BorderWidth
+		{
+			get
+			{
+				if (BorderWidth <= 0)
+					return 0;
+
+				return BorderWidth;
+			}
+		}
+
 		public static readonly BindableProperty BorderBrushProperty = BindableProperty.Create(
 			nameof(BorderBrush), typeof(Brush), typeof(VisualElement), null);
 
@@ -70,8 +81,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(BorderBrushProperty, value);
 		}
 
-		public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create(
-			nameof(BorderWidth), typeof(double), typeof(VisualElement), 0.0d);
+		public static readonly BindableProperty BorderWidthProperty = BorderElement.BorderWidthProperty;
 
 		public double BorderWidth
 		{
