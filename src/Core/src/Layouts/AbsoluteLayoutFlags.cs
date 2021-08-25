@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Layouts
 {
 	[Flags]
 	public enum AbsoluteLayoutFlags

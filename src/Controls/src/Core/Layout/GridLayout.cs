@@ -226,15 +226,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public override void Add(IView child)
-		{
-			base.Add(child);
-
-			if (!(child is BindableObject))
-			{
-				_viewInfo[child] = new GridInfo();
-			}
-		}
+		// These extra internal add methods are here to keep some other old stuff working until we re-add
+		// the Grid convenience methods
 
 		internal void Add(IView view, int left, int top)
 		{
@@ -269,10 +262,48 @@ namespace Microsoft.Maui.Controls
 			Add(view);
 		}
 
-		public override bool Remove(IView child)
+		protected override void OnAdd(int index, IView view)
 		{
-			_viewInfo.Remove(child);
-			return base.Remove(child);
+			if (view is not BindableObject)
+			{
+				_viewInfo[view] = new GridInfo();
+			}
+
+			base.OnAdd(index, view);
+		}
+
+		protected override void OnClear()
+		{
+			_viewInfo.Clear();
+			base.OnClear();
+		}
+		
+		protected override void OnRemove(int index, IView view)
+		{
+			_viewInfo.Remove(view);
+			base.OnRemove(index, view);
+		}
+
+		protected override void OnInsert(int index, IView view)
+		{
+			if (view is not BindableObject)
+			{
+				_viewInfo[view] = new GridInfo();
+			}
+
+			base.OnInsert(index, view);
+		}
+
+		protected override void OnUpdate(int index, IView view, IView oldView)
+		{
+			_viewInfo.Remove(oldView);
+			
+			if (view is not BindableObject)
+			{
+				_viewInfo[view] = new GridInfo();
+			}
+			
+			base.OnUpdate(index, view, oldView);
 		}
 
 		protected override ILayoutManager CreateLayoutManager() => new GridLayoutManager(this);

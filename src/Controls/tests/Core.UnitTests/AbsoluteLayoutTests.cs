@@ -2,6 +2,7 @@ using System;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
+using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void AbsolutePositionAndSizeUsingRectangle()
 		{
-			var abs = new AbsoluteLayout
+			var abs = new Compatibility.AbsoluteLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void AbsolutePositionRelativeSize()
 		{
-			var abs = new AbsoluteLayout
+			var abs = new Compatibility.AbsoluteLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -77,7 +78,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[TestCase(35, 45, 1, 1)]
 		public void RelativePositionAbsoluteSize(double width, double height, double relX, double relY)
 		{
-			var abs = new AbsoluteLayout
+			var abs = new Compatibility.AbsoluteLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -99,7 +100,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void RelativePositionRelativeSize([Values(0.0, 0.2, 0.5, 1.0)] double relX, [Values(0.0, 0.2, 0.5, 1.0)] double relY, [Values(0.0, 0.2, 0.5, 1.0)] double relHeight, [Values(0.0, 0.2, 0.5, 1.0)] double relWidth)
 		{
-			var abs = new AbsoluteLayout
+			var abs = new Compatibility.AbsoluteLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -124,7 +125,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void SizeRequestWithNormalChild()
 		{
-			var abs = new AbsoluteLayout
+			var abs = new Compatibility.AbsoluteLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -143,7 +144,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void SizeRequestWithRelativePositionChild()
 		{
-			var abs = new AbsoluteLayout
+			var abs = new Compatibility.AbsoluteLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -162,7 +163,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void SizeRequestWithRelativeChild()
 		{
-			var abs = new AbsoluteLayout
+			var abs = new Compatibility.AbsoluteLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -184,7 +185,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void SizeRequestWithRelativeSizeChild()
 		{
-			var abs = new AbsoluteLayout
+			var abs = new Compatibility.AbsoluteLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -206,7 +207,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void MeasureInvalidatedFiresWhenFlagsChanged()
 		{
-			var abs = new AbsoluteLayout
+			var abs = new Compatibility.AbsoluteLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -229,7 +230,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void MeasureInvalidatedFiresWhenBoundsChanged()
 		{
-			var abs = new AbsoluteLayout
+			var abs = new Compatibility.AbsoluteLayout
 			{
 				IsPlatformEnabled = true
 			};
