@@ -1,4 +1,5 @@
 using System;
+using UIKit;
 using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
@@ -66,19 +67,24 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public void Clear()
+		void Clear(UIView nativeView)
 		{
-			if (NativeView == null)
+			if (nativeView == null)
 			{
 				return;
 			}
 
-			var subViews = NativeView.Subviews;
+			var subViews = nativeView.Subviews;
 
 			foreach (var subView in subViews)
 			{
 				subView.RemoveFromSuperview();
 			}
+		}
+
+		public void Clear()
+		{
+			Clear(NativeView);
 		}
 
 		public void Insert(int index, IView child)
@@ -103,7 +109,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(LayoutView nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			Clear();
+			Clear(nativeView);
 		}
 	}
 }

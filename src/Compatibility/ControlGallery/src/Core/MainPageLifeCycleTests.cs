@@ -1,5 +1,6 @@
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class MainPageLifeCycleTests : ContentPage
 	{
 		readonly StackLayout _numTimesStartedLayout;
@@ -75,4 +76,5 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			((Label)_numTimesResumedLayout.Children[1]).Text = ((int)Application.Current.Properties["TimesResumed"]).ToString();
 		}
 	}
+#pragma warning restore CS0618 // Type or member is obsolete
 }

@@ -12,9 +12,9 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
-    <PackageReference Include="Microsoft.ProjectReunion" />
-    <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
-    <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />

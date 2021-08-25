@@ -29,10 +29,10 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
-    <PackageReference Include="Microsoft.ProjectReunion" />
-    <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
-    <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
-    <PackageReference Include="Microsoft.ProjectReunion.InteractiveExperiences" NoWarn="NU1701" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" NoWarn="NU1701" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
 

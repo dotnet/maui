@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			{
 				if (_visualElementRenderer != null)
 				{
-					if (_visualElementRenderer.View.Handle != IntPtr.Zero)
+					if (_visualElementRenderer.View.IsAlive())
 					{
 						_visualElementRenderer.View.RemoveFromParent();
 					}

@@ -10,9 +10,7 @@ namespace Microsoft.Maui
 	{
 		public static async void FireAndForget<TResult>(
 			   this Task<TResult> task,
-			   Action<Exception>? errorCallback = null,
-			   Action<TResult?>? finishedCallBack = null
-			   )
+			   Action<Exception>? errorCallback = null)
 		{
 			TResult? result = default;
 			try
@@ -22,21 +20,15 @@ namespace Microsoft.Maui
 			catch (Exception exc)
 			{
 				errorCallback?.Invoke(exc);
-			}
-			finally
-			{
-				try
-				{
-					finishedCallBack?.Invoke(result);
-				}
-				catch (Exception fe) { errorCallback?.Invoke(fe); }
+#if DEBUG
+				throw;
+#endif
 			}
 		}
 
 		public static async void FireAndForget(
 			this Task task,
-			Action<Exception>? errorCallback = null,
-			Action? finishedCallBack = null
+			Action<Exception>? errorCallback = null
 			)
 		{
 			try
@@ -46,14 +38,9 @@ namespace Microsoft.Maui
 			catch (Exception ex)
 			{
 				errorCallback?.Invoke(ex);
-			}
-			finally
-			{
-				try
-				{
-					finishedCallBack?.Invoke();
-				}
-				catch (Exception fe) { errorCallback?.Invoke(fe); }
+#if DEBUG
+				throw;
+#endif
 			}
 		}
 
