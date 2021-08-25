@@ -977,26 +977,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			Color tintColor = Element.BarBackgroundColor;
 
-			if (Forms.IsLollipopOrNewer)
-			{
-				if (tintColor == null)
-					bar.BackgroundTintMode = null;
-				else
-				{
-					bar.BackgroundTintMode = PorterDuff.Mode.Src;
-					bar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToAndroid());
-				}
-			}
+			if (tintColor == null)
+				bar.BackgroundTintMode = null;
 			else
 			{
-				if (tintColor == null && _backgroundDrawable != null)
-					bar.SetBackground(_backgroundDrawable);
-				else if (tintColor != null)
-				{
-					if (_backgroundDrawable == null)
-						_backgroundDrawable = bar.Background;
-					bar.SetBackgroundColor(tintColor.ToAndroid());
-				}
+				bar.BackgroundTintMode = PorterDuff.Mode.Src;
+				bar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToAndroid());
 			}
 
 			Brush barBackground = Element.BarBackground;
