@@ -1,6 +1,6 @@
 using System;
-using NativeView = UIKit.UIView;
 using UIKit;
+using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {

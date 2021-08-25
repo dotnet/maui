@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: Invalidate);
 
 		public static readonly BindableProperty RowSpanProperty = BindableProperty.CreateAttached("RowSpan",
-			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1, 
+			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1,
 			propertyChanged: Invalidate);
 
 		public static readonly BindableProperty ColumnProperty = BindableProperty.CreateAttached("Column",
