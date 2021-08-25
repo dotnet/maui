@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a PageViewGroup");
 			}
 
-			var viewGroup = new PageViewGroup(Context!)
+			var viewGroup = new PageViewGroup(Context)
 			{
 				CrossPlatformMeasure = VirtualView.Measure,
 				CrossPlatformArrange = VirtualView.Arrange
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(PageViewGroup nativeView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
-			NativeView?.RemoveAllViews();
+			nativeView.RemoveAllViews();
 			base.DisconnectHandler(nativeView);
 		}
 	}

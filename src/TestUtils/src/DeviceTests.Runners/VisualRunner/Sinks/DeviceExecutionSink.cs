@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -6,22 +7,22 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Sinks
+namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 {
 	class DeviceExecutionSink : TestMessageSink
 	{
-		readonly SynchronizationContext context;
-		readonly ITestListener listener;
-		readonly Dictionary<ITestCase, TestCaseViewModel> testCases;
+		readonly SynchronizationContext _context;
+		readonly ITestListener _listener;
+		readonly Dictionary<ITestCase, TestCaseViewModel> _testCases;
 
-		public DeviceExecutionSink(Dictionary<ITestCase, TestCaseViewModel> testCases,
-								   ITestListener listener,
-								   SynchronizationContext context
-		)
+		public DeviceExecutionSink(
+			Dictionary<ITestCase, TestCaseViewModel> testCases,
+			ITestListener listener,
+			SynchronizationContext context)
 		{
-			this.testCases = testCases ?? throw new ArgumentNullException(nameof(testCases));
-			this.listener = listener ?? throw new ArgumentNullException(nameof(listener));
-			this.context = context ?? throw new ArgumentNullException(nameof(context));
+			_testCases = testCases ?? throw new ArgumentNullException(nameof(testCases));
+			_listener = listener ?? throw new ArgumentNullException(nameof(listener));
+			_context = context ?? throw new ArgumentNullException(nameof(context));
 
 			Execution.TestFailedEvent += HandleTestFailed;
 			Execution.TestPassedEvent += HandleTestPassed;
@@ -47,39 +48,35 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Sinks
 		{
 			var tcs = new TaskCompletionSource<TestResultViewModel>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-			if (!testCases.TryGetValue(testResult.TestCase, out TestCaseViewModel testCase))
+			if (!_testCases.TryGetValue(testResult.TestCase, out TestCaseViewModel? testCase))
 			{
 				// no matching reference, search by Unique ID as a fallback
-				testCase = testCases.FirstOrDefault(kvp => kvp.Key.UniqueID?.Equals(testResult.TestCase.UniqueID) ?? false).Value;
+				testCase = _testCases.FirstOrDefault(kvp => kvp.Key.UniqueID?.Equals(testResult.TestCase.UniqueID) ?? false).Value;
+
 				if (testCase == null)
 					return;
 			}
 
 			// Create the result VM on the UI thread as it updates properties
-			context.Post(_ =>
-						 {
+			_context.Post(_ =>
+			{
+				var result = new TestResultViewModel(testCase, testResult)
+				{
+					Duration = TimeSpan.FromSeconds((double)testResult.ExecutionTime)
+				};
 
-							 var result = new TestResultViewModel(testCase, testResult)
-							 {
-								 Duration = TimeSpan.FromSeconds((double)testResult.ExecutionTime)
-							 };
+				if (outcome == TestState.Failed)
+				{
+					result.ErrorMessage = ExceptionUtility.CombineMessages((ITestFailed)testResult);
+					result.ErrorStackTrace = ExceptionUtility.CombineStackTraces((ITestFailed)testResult);
+				}
 
-
-							 if (outcome == TestState.Failed)
-							 {
-								 result.ErrorMessage = ExceptionUtility.CombineMessages((ITestFailed)testResult);
-								 result.ErrorStackTrace = ExceptionUtility.CombineStackTraces((ITestFailed)testResult);
-							 }
-
-
-							 tcs.TrySetResult(result);
-						 }, null);
-
+				tcs.TrySetResult(result);
+			}, null);
 
 			var r = await tcs.Task;
 
-			listener.RecordResult(r); // bring it back to the threadpool thread
+			_listener.RecordResult(r); // bring it back to the threadpool thread
 		}
-
 	}
 }

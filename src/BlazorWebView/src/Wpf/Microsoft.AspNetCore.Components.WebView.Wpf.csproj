@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <!-- Use TargetFrameworks (plural) instead of TargetFramework (singular) here even though there is only one target
@@ -18,6 +18,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WebView2\Microsoft.AspNetCore.Components.WebView.WebView2.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="build\**" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" Pack="true" PackagePath="build\" />
   </ItemGroup>
 
 </Project>

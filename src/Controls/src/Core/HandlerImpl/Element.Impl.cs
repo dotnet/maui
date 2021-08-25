@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls
 		{
 			EffectControlProvider = (Handler != null) ? this : null;
 			HandlerChanged?.Invoke(this, EventArgs.Empty);
+
 			OnHandlerChanged();
 		}
 
@@ -38,21 +39,34 @@ namespace Microsoft.Maui.Controls
 			OnHandlerChanging(args);
 		}
 
+		IElementHandler _previousHandler;
 		void SetHandler(IElementHandler newHandler)
 		{
 			if (newHandler == _handler)
 				return;
 
-			var previousHandler = _handler;
+			try
+			{
+				// If a handler is getting changed before the end of this method
+				// Something is wired up incorrectly
+				if (_previousHandler != null)
+					throw new InvalidOperationException("Handler is already being set elsewhere");
 
-			OnHandlerChangingCore(new HandlerChangingEventArgs(previousHandler, newHandler));
+				_previousHandler = _handler;
 
-			_handler = newHandler;
+				OnHandlerChangingCore(new HandlerChangingEventArgs(_previousHandler, newHandler));
 
-			if (_handler?.VirtualView != this)
-				_handler?.SetVirtualView(this);
+				_handler = newHandler;
 
-			OnHandlerChangedCore();
+				if (_handler?.VirtualView != this)
+					_handler?.SetVirtualView(this);
+
+				OnHandlerChangedCore();
+			}
+			finally
+			{
+				_previousHandler = null;
+			}
 		}
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)

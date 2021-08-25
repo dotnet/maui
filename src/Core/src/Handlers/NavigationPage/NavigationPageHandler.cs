@@ -8,21 +8,21 @@ namespace Microsoft.Maui.Handlers
 {
 	internal partial class NavigationPageHandler
 	{
-		public static PropertyMapper<INavigationView, NavigationPageHandler> NavigationPageMapper
-			   = new PropertyMapper<INavigationView, NavigationPageHandler>(ViewHandler.ViewMapper)
-			   {
-				   //[NavigationPage.BarTextColorProperty.PropertyName] = MapBarTextColor,
-				   //[NavigationPage.BarBackgroundColorProperty.PropertyName] = MapBarBackground,
-				   //[NavigationPage.BarBackgroundProperty.PropertyName] = MapBarBackground,
-				   //[nameof(IPadding.Padding)] = MapPadding,
-				   //[nameof(NavigationPage.TitleIconImageSourceProperty.PropertyName)] = MapTitleIcon,
-				   //[nameof(NavigationPage.TitleViewProperty.PropertyName)] = MapTitleView,
+		public static IPropertyMapper<INavigationView, NavigationPageHandler> NavigationPageMapper =
+			new PropertyMapper<INavigationView, NavigationPageHandler>(ViewHandler.ViewMapper)
+			{
+				//[NavigationPage.BarTextColorProperty.PropertyName] = MapBarTextColor,
+				//[NavigationPage.BarBackgroundColorProperty.PropertyName] = MapBarBackground,
+				//[NavigationPage.BarBackgroundProperty.PropertyName] = MapBarBackground,
+				//[nameof(IPadding.Padding)] = MapPadding,
+				//[nameof(NavigationPage.TitleIconImageSourceProperty.PropertyName)] = MapTitleIcon,
+				//[nameof(NavigationPage.TitleViewProperty.PropertyName)] = MapTitleView,
 
 #if WINDOWS
-					//[nameof(ToolbarPlacementProperty.PropertyName)] = MapToolbarPlacement,
-					//[nameof(ToolbarDynamicOverflowEnabledProperty.PropertyName)] = MapToolbarDynamicOverflowEnabled,
+				//[nameof(ToolbarPlacementProperty.PropertyName)] = MapToolbarPlacement,
+				//[nameof(ToolbarDynamicOverflowEnabledProperty.PropertyName)] = MapToolbarDynamicOverflowEnabled,
 #endif
-			   };
+			};
 
 		public static CommandMapper<INavigationView, NavigationPageHandler> NavigationViewCommandMapper = new(ViewCommandMapper)
 		{
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public NavigationPageHandler(PropertyMapper? mapper = null) : base(mapper ?? NavigationPageMapper, NavigationViewCommandMapper)
+		public NavigationPageHandler(IPropertyMapper? mapper = null) : base(mapper ?? NavigationPageMapper, NavigationViewCommandMapper)
 		{
 
 		}
