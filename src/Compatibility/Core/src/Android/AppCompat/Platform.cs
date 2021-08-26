@@ -40,9 +40,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (bindable is IView mauiView)
 				{
 					if (mauiView.Handler == null && newvalue is IVisualElementRenderer ver)
-						mauiView.Handler = new RendererToHandlerShim(ver);
+						throw new InvalidOperationException("Handler on shim needs to be set before the renderer is set");
 				}
-
 			});
 
 		internal Platform(Context context) : this(context, false)

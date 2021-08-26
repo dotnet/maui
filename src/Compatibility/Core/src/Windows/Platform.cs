@@ -27,8 +27,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (bindable is IView view)
 				{
-					if (view.Handler == null && newvalue is IVisualElementRenderer ver)
-						view.Handler = new RendererToHandlerShim(ver);
+					if (view.Handler == null && newvalue is IVisualElementRenderer ver) 
+						throw new InvalidOperationException("Handler on shim needs to be set before the renderer is set");
 				}
 			});
 
