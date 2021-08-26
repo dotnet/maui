@@ -157,7 +157,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// Default value from VisualElement is -1 (legacy); translating to Core we'll use a reasonable value of zero
 		double IView.MinimumWidth
 		{
 			get
@@ -190,7 +189,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// Default value from VisualElement is PositiveInfinity
 		double IView.MaximumWidth
 		{
 			get
