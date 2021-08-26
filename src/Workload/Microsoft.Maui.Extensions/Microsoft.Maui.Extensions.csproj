@@ -16,7 +16,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Extensions.Logging" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Extensions.Primitives" GeneratePathProperty="true" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Configuration)/lib/netstandard2.0/Microsoft.Extensions.Configuration.dll" />
@@ -33,8 +32,6 @@
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Hosting)/lib/net6.0/Microsoft.Extensions.Hosting.xml" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_FileProviders_Abstractions)/lib/net6.0/Microsoft.Extensions.FileProviders.Abstractions.dll" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_FileProviders_Abstractions)/lib/net6.0/Microsoft.Extensions.FileProviders.Abstractions.xml" />
-    <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Logging)/lib/net6.0/Microsoft.Extensions.Logging.dll" />
-    <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Logging)/lib/net6.0/Microsoft.Extensions.Logging.xml" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Logging_Abstractions)/lib/net6.0/Microsoft.Extensions.Logging.Abstractions.dll" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Logging_Abstractions)/lib/net6.0/Microsoft.Extensions.Logging.Abstractions.xml" />
     <_ExtensionsFiles Include="$(PkgMicrosoft_Extensions_Primitives)/lib/net6.0/Microsoft.Extensions.Primitives.dll" />
