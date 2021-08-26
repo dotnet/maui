@@ -192,6 +192,13 @@ namespace Microsoft.Maui.Essentials
 		internal static ConnectivityManager ConnectivityManager =>
 			AppContext.GetSystemService(Context.ConnectivityService) as ConnectivityManager;
 
+#if __ANDROID_31__
+		internal static VibratorManager? VibratorManager =>
+			HasApiLevelS
+				? VibratorManager.DefaultVibrator
+				: null;
+#endif
+
 		internal static Vibrator Vibrator =>
 #if __ANDROID_31__
 			HasApiLevelS
