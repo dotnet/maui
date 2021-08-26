@@ -36,7 +36,15 @@ namespace Microsoft.Maui.Essentials
 #endif
 				Course = location.HasBearing ? location.Bearing : default(double?),
 				Speed = location.HasSpeed ? location.Speed : default(double?),
-				IsFromMockProvider = Platform.HasApiLevel(global::Android.OS.BuildVersionCodes.JellyBeanMr2) ? location.IsFromMockProvider : false,
+				IsFromMockProvider = Platform.HasApiLevel(global::Android.OS.BuildVersionCodes.JellyBeanMr2)
+					? (
+#if __ANDROID_26__
+						Platform.HasApiLevelS
+							? location.IsMock :
+#endif
+							location.IsFromMockProvider
+						)
+					: false,
 				AltitudeReferenceSystem = AltitudeReferenceSystem.Ellipsoid
 			};
 
