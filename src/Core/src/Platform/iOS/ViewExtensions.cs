@@ -169,45 +169,21 @@ namespace Microsoft.Maui
 
 		public static void UpdateMinimumHeight(this UIView nativeView, IView view)
 		{
-			if (view.MinimumHeight == -1)
-			{
-				// Ignore the initial setting of the value; the initial layout will take care of it
-				return;
-			}
-
 			UpdateFrame(nativeView, view);
 		}
 
 		public static void UpdateMaximumHeight(this UIView nativeView, IView view)
 		{
-			if (view.MaximumHeight == -1)
-			{
-				// Ignore the initial setting of the value; the initial layout will take care of it
-				return;
-			}
-
 			UpdateFrame(nativeView, view);
 		}
 
 		public static void UpdateMinimumWidth(this UIView nativeView, IView view)
 		{
-			if (view.MaximumWidth == -1)
-			{
-				// Ignore the initial setting of the value; the initial layout will take care of it
-				return;
-			}
-
 			UpdateFrame(nativeView, view);
 		}
 
 		public static void UpdateMaximumWidth(this UIView nativeView, IView view)
 		{
-			if (view.MaximumWidth == -1)
-			{
-				// Ignore the initial setting of the value; the initial layout will take care of it
-				return;
-			}
-
 			UpdateFrame(nativeView, view);
 		}
 

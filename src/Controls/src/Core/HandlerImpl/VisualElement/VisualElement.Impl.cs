@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -116,12 +117,55 @@ namespace Microsoft.Maui.Controls
 		internal Semantics SetupSemantics() =>
 			_semantics ??= new Semantics();
 
-		double IView.Width => WidthRequest;
-		double IView.Height => HeightRequest;
-		double IView.MinimumWidth => MinimumWidthRequest == -1 ? 0 : MinimumWidthRequest;
-		double IView.MinimumHeight => MinimumHeightRequest == -1 ? 0 : MinimumHeightRequest;
-		double IView.MaximumWidth => MaximumWidthRequest;
-		double IView.MaximumHeight => MaximumHeightRequest;
+		double IView.Width
+		{
+			get
+			{
+				if (!IsSet(WidthProperty))
+				{
+					return Primitives.Dimension.Unset;
+				}
+
+				// Access once up front to avoid multiple GetValue calls
+				var widthRequest = WidthRequest;
+
+				if (widthRequest < 0)
+				{
+					throw new InvalidOperationException($"{nameof(IView.Width)} cannot be less than zero.");
+				}
+				
+				return widthRequest;
+			}
+		}
+
+		double IView.Height
+		{
+			get
+			{
+				if (!IsSet(HeightProperty))
+				{
+					return Primitives.Dimension.Unset;
+				}
+
+				// Access once up front to avoid multiple GetValue calls
+				var heightRequest = HeightRequest;
+
+				if (heightRequest < 0)
+				{
+					throw new InvalidOperationException($"{nameof(IView.Height)} cannot be less than zero.");
+				}
+
+				return heightRequest;
+			}
+		}
+
+		// Default value from VisualElement is -1 (legacy); translating to Core we'll use a reasonable value of zero
+		double IView.MinimumWidth => MinimumWidthRequest < 0 ? 0 : MinimumWidthRequest;
+		double IView.MinimumHeight => MinimumHeightRequest < 0 ? 0 : MinimumHeightRequest;
+
+		// Default value from VisualElement is PositiveInfinity
+		double IView.MaximumWidth => MaximumWidthRequest < 0 ? 0 : MaximumWidthRequest;
+		double IView.MaximumHeight => MaximumHeightRequest < 0 ? 0 : MaximumHeightRequest;
 
 		Thickness IView.Margin => Thickness.Zero;
 	}

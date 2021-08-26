@@ -70,12 +70,12 @@ namespace Microsoft.Maui
 		double Width { get; }
 
 		/// <summary>
-		/// Gets the specified minimum width constraint of the IView.
+		/// Gets the specified minimum width constraint of the IView, between zero and double.PositiveInfinity.
 		/// </summary>
 		double MinimumWidth { get; }
 
 		/// <summary>
-		/// Gets the specified maximum width constraint of the IView.
+		/// Gets the specified maximum width constraint of the IView, between zero and double.PositiveInfinity.
 		/// </summary>
 		double MaximumWidth { get; }
 
@@ -85,12 +85,12 @@ namespace Microsoft.Maui
 		double Height { get; }
 
 		/// <summary>
-		/// Gets the specified minimum height constraint of the IView.
+		/// Gets the specified minimum height constraint of the IView, between zero and double.PositiveInfinity.
 		/// </summary>
 		double MinimumHeight { get; }
 
 		/// <summary>
-		/// Gets the specified maximum height constraint of the IView.
+		/// Gets the specified maximum height constraint of the IView, between zero and double.PositiveInfinity.
 		/// </summary>
 		double MaximumHeight { get; }
 

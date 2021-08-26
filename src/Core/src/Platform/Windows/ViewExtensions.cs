@@ -131,22 +131,22 @@ namespace Microsoft.Maui
 
 		public static void UpdateMinimumHeight(this FrameworkElement nativeView, IView view)
 		{
-			nativeView.MinHeight = view.MinimumHeight >= 0 ? view.MinimumHeight : 0;
+			nativeView.MinHeight = view.MinimumHeight;
 		}
 
 		public static void UpdateMinimumWidth(this FrameworkElement nativeView, IView view)
 		{
-			nativeView.MinWidth = view.MinimumWidth >= 0 ? view.MinimumWidth : 0;
+			nativeView.MinWidth = view.MinimumWidth;
 		}
 
 		public static void UpdateMaximumHeight(this FrameworkElement nativeView, IView view)
 		{
-			nativeView.MaxHeight = view.MaximumHeight >= 0 ? view.MaximumHeight : double.PositiveInfinity;
+			nativeView.MaxHeight = view.MaximumHeight;
 		}
 
 		public static void UpdateMaximumWidth(this FrameworkElement nativeView, IView view)
 		{
-			nativeView.MaxWidth = view.MaximumWidth >= 0 ? view.MaximumWidth : double.PositiveInfinity;
+			nativeView.MaxWidth = view.MaximumWidth;
 		}
 	}
 }

@@ -38,13 +38,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public double Height { get; set; } = 50;
 
-		public double MaximumWidth { get; set; } = -1;
+		public double MaximumWidth { get; set; } = Primitives.Dimension.Maximum;
 
-		public double MaximumHeight { get; set; } = -1;
+		public double MaximumHeight { get; set; } = Primitives.Dimension.Maximum;
 
-		public double MinimumWidth { get; set; } = -1;
+		public double MinimumWidth { get; set; } = Primitives.Dimension.Minimum;
 
-		public double MinimumHeight { get; set; } = -1;
+		public double MinimumHeight { get; set; } = Primitives.Dimension.Minimum;
 
 		public double TranslationX { get; set; }
 

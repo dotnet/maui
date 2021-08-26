@@ -1,5 +1,6 @@
 using Microsoft.Maui.Graphics;
 using UIKit;
+using static Microsoft.Maui.Primitives.Measure;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -68,20 +69,20 @@ namespace Microsoft.Maui.Handlers
 		{
 			var resolved = measured;
 
-			if (exact >= 0)
+			if (IsExplicitSet(exact))
 			{
 				// If an exact value has been specified, try to use that
 				resolved = exact;
 			}
 
-			if (max >= 0 && resolved > max)
+			if (resolved > max)
 			{
 				// Apply the max value constraint (if any)
 				// If the exact value is in conflict with the max value, the max value should win
 				resolved = max;
 			}
 
-			if (min >= 0 && resolved < min)
+			if (resolved < min)
 			{
 				// Apply the min value constraint (if any)
 				// If the exact or max value is in conflict with the min value, the min value should win

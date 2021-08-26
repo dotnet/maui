@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using NSubstitute;
 using Xunit;
 using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
@@ -37,12 +38,13 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			}
 
 			var grid = Substitute.For<IGridLayout>();
-			grid.Width.Returns(-1);
-			grid.Height.Returns(-1);
-			grid.MaximumWidth.Returns(-1);
-			grid.MinimumHeight.Returns(-1);
-			grid.MinimumWidth.Returns(-1);
-			grid.MaximumHeight.Returns(-1);
+
+			grid.Height.Returns(Dimension.Unset);
+			grid.Width.Returns(Dimension.Unset);
+			grid.MinimumHeight.Returns(Dimension.Minimum);
+			grid.MinimumWidth.Returns(Dimension.Minimum);
+			grid.MaximumHeight.Returns(Dimension.Maximum);
+			grid.MaximumWidth.Returns(Dimension.Maximum);
 
 			grid.RowSpacing.Returns(rowSpacing);
 			grid.ColumnSpacing.Returns(colSpacing);

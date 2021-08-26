@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Graphics;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -15,16 +16,16 @@ namespace Microsoft.Maui.Layouts
 		public abstract Size Measure(double widthConstraint, double heightConstraint);
 		public abstract Size ArrangeChildren(Rectangle bounds);
 
-		public static double ResolveConstraints(double externalConstraint, double explicitLength, double measuredLength, double min = -1, double max = -1)
+		public static double ResolveConstraints(double externalConstraint, double explicitLength, double measuredLength, double min = Minimum, double max = Maximum)
 		{
-			var length = explicitLength >= 0 ? explicitLength : measuredLength;
+			var length = IsExplicitSet(explicitLength) ? explicitLength : measuredLength;
 
-			if (max >= 0 && max < length)
+			if (max < length)
 			{
 				length = max;
 			}
 
-			if (min >= 0 && min > length)
+			if (min > length)
 			{
 				length = min;
 			}

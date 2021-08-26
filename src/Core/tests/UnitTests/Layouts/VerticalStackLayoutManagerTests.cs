@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using NSubstitute;
 using Xunit;
 using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
@@ -63,7 +64,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Theory]
 		[InlineData(150, 100, 100)]
 		[InlineData(150, 200, 200)]
-		[InlineData(1250, -1, 1250)]
+		[InlineData(1250, Dimension.Unset, 1250)]
 		public void StackAppliesHeight(double viewHeight, double stackHeight, double expectedHeight)
 		{
 			var view = LayoutTestHelpers.CreateTestView(new Size(100, viewHeight));
@@ -192,7 +193,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(100, 100, 100)]
 		[InlineData(100, 50, 50)]
 		[InlineData(0, 50, 0)]
-		[InlineData(-1, 50, 50)]
 		public void MeasureRespectsMaxHeight(double maxHeight, double viewHeight, double expectedHeight)
 		{
 			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: viewHeight);
@@ -209,7 +209,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(100, 100, 100)]
 		[InlineData(100, 50, 50)]
 		[InlineData(0, 50, 0)]
-		[InlineData(-1, 50, 50)]
 		public void MeasureRespectsMaxWidth(double maxWidth, double viewWidth, double expectedWidth)
 		{
 			var stack = BuildStack(viewCount: 1, viewWidth: viewWidth, viewHeight: 100);
@@ -226,7 +225,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(50, 10, 50)]
 		[InlineData(100, 100, 100)]
 		[InlineData(10, 50, 50)]
-		[InlineData(-1, 50, 50)]
 		public void MeasureRespectsMinHeight(double minHeight, double viewHeight, double expectedHeight)
 		{
 			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: viewHeight);
@@ -243,7 +241,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(50, 10, 50)]
 		[InlineData(100, 100, 100)]
 		[InlineData(10, 50, 50)]
-		[InlineData(-1, 50, 50)]
 		public void MeasureRespectsMinWidth(double minWidth, double viewWidth, double expectedWidth)
 		{
 			var stack = BuildStack(viewCount: 1, viewWidth: viewWidth, viewHeight: 100);

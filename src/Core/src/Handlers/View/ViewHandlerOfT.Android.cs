@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Graphics;
+using static Microsoft.Maui.Primitives.Measure;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -68,13 +69,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			var mode = MeasureSpecMode.AtMost;
 
-			if (explicitSize >= 0)
+			if (IsExplicitSet(explicitSize))
 			{
 				// We have a set value (i.e., a Width or Height)
 				mode = MeasureSpecMode.Exactly;
 				constraint = explicitSize;
 			}
-			else if (maximumSize >= 0)
+			else if (IsMaximumSet(maximumSize))
 			{
 				mode = MeasureSpecMode.AtMost;
 				constraint = maximumSize;

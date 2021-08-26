@@ -4,6 +4,7 @@ using System.Xml.Xsl;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using NSubstitute;
 using Xunit;
 using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
@@ -16,8 +17,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		IAbsoluteLayout CreateTestLayout() 
 		{
 			var layout = Substitute.For<IAbsoluteLayout>();
-			layout.Height.Returns(-1);
-			layout.Width.Returns(-1);
+			layout.Height.Returns(Dimension.Unset);
+			layout.Width.Returns(Dimension.Unset);
+			layout.MinimumHeight.Returns(Dimension.Minimum);
+			layout.MinimumWidth.Returns(Dimension.Minimum);
+			layout.MaximumHeight.Returns(Dimension.Maximum);
+			layout.MaximumWidth.Returns(Dimension.Maximum);
 
 			return layout;
 		}
@@ -223,7 +228,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(100, 100, 100)]
 		[InlineData(100, 50, 50)]
 		[InlineData(0, 50, 0)]
-		[InlineData(-1, 50, 50)]
 		public void MeasureRespectsMaxHeight(double maxHeight, double viewHeight, double expectedHeight)
 		{
 			var abs = CreateTestLayout();
@@ -245,7 +249,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(100, 100, 100)]
 		[InlineData(100, 50, 50)]
 		[InlineData(0, 50, 0)]
-		[InlineData(-1, 50, 50)]
 		public void MeasureRespectsMaxWidth(double maxWidth, double viewWidth, double expectedWidth)
 		{
 			var abs = CreateTestLayout();
@@ -266,7 +269,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(50, 10, 50)]
 		[InlineData(100, 100, 100)]
 		[InlineData(10, 50, 50)]
-		[InlineData(-1, 50, 50)]
 		public void MeasureRespectsMinHeight(double minHeight, double viewHeight, double expectedHeight)
 		{
 			var abs = CreateTestLayout();
@@ -287,7 +289,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(50, 10, 50)]
 		[InlineData(100, 100, 100)]
 		[InlineData(10, 50, 50)]
-		[InlineData(-1, 50, 50)]
 		public void MeasureRespectsMinWidth(double minWidth, double viewWidth, double expectedWidth)
 		{
 			var abs = CreateTestLayout();
