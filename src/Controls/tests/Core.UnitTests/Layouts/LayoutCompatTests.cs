@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var stackLayout = new StackLayout() { IsPlatformEnabled = true };
 			var grid = new Grid() { IsPlatformEnabled = true, HeightRequest = 50 };
 			var label = new Label() { IsPlatformEnabled = true };
-			var expectedSize = new Size(50, 50);
+			var expectedSize = new Size(100, 50);
 
 			var view = Substitute.For<IViewHandler>();
 			view.GetDesiredSize(default, default).ReturnsForAnyArgs(expectedSize);
