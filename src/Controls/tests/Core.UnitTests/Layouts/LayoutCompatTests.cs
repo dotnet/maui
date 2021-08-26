@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			grid.Children.Add(label);
 			contentPage.Content = stackLayout;
 
-			var rect = new Rectangle(0, 0, 50, 100);
+			var rect = new Rectangle(Point.Zero, expectedSize);
 			(contentPage as IView).Measure(expectedSize.Width, expectedSize.Height);
 			(contentPage as IView).Arrange(rect);
 
