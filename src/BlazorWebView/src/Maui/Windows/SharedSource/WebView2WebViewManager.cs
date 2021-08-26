@@ -69,9 +69,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			ApplyDefaultWebViewSettings();
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContextWrapper.All);
-			var removeResourceCallback = _webview.CoreWebView2.AddWebResourceRequestedHandler((s, eventArgs) =>
+			var removeResourceCallback = _webview.CoreWebView2.AddWebResourceRequestedHandler(async (s, eventArgs) =>
 			{
-				HandleWebResourceRequest(eventArgs);
+				await HandleWebResourceRequest(eventArgs);
 			});
 
 			// The code inside blazor.webview.js is meant to be agnostic to specific webview technologies,
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				=> MessageReceived(new Uri(e.Source), e.WebMessageAsString));
 		}
 
-		protected virtual void HandleWebResourceRequest(ICoreWebView2WebResourceRequestedEventArgsWrapper eventArgs)
+		protected virtual async Task HandleWebResourceRequest(ICoreWebView2WebResourceRequestedEventArgsWrapper eventArgs)
 		{
 			// Unlike server-side code, we get told exactly why the browser is making the request,
 			// so we can be smarter about fallback. We can ensure that 'fetch' requests never result
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				var memStream = new MemoryStream();
 				content.CopyTo(memStream);
 				var ms = new InMemoryRandomAccessStream();
-				ms.WriteAsync(memStream.GetWindowsRuntimeBuffer()).AsTask().Wait();
+				await ms.WriteAsync(memStream.GetWindowsRuntimeBuffer());
 
 				var headerString = GetHeaderString(headers);
 				eventArgs.SetResponse(ms, statusCode, statusMessage, headerString);
