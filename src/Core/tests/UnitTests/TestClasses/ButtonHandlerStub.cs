@@ -1,5 +1,5 @@
-using Microsoft.Maui.Handlers;
 using System;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.UnitTests
 {

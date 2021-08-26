@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Platform
 						spacingVertical = button.ContentLayout.Spacing +
 							nativeButton.GetTitleBoundingRect().Height;
 					}
-					
+
 				}
 			}
 

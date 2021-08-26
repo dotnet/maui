@@ -4,8 +4,8 @@ using Android.Text;
 using Android.Util;
 using Android.Widget;
 using static Android.Widget.TextView;
-using ATextDirection = Android.Views.TextDirection;
 using ALayoutDirection = Android.Views.LayoutDirection;
+using ATextDirection = Android.Views.TextDirection;
 
 namespace Microsoft.Maui
 {

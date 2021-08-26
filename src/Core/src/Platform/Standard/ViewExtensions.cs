@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 		public static void UpdateSemantics(this object nativeView, IView view) { }
 
 		public static void UpdateFlowDirection(this object nativeView, IView view) { }
-		
+
 		public static void UpdateTranslationX(this object nativeView, IView view) { }
 
 		public static void UpdateTranslationY(this object nativeView, IView view) { }

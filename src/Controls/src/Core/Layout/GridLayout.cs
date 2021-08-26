@@ -277,7 +277,7 @@ namespace Microsoft.Maui.Controls
 			_viewInfo.Clear();
 			base.OnClear();
 		}
-		
+
 		protected override void OnRemove(int index, IView view)
 		{
 			_viewInfo.Remove(view);
@@ -297,12 +297,12 @@ namespace Microsoft.Maui.Controls
 		protected override void OnUpdate(int index, IView view, IView oldView)
 		{
 			_viewInfo.Remove(oldView);
-			
+
 			if (view is not BindableObject)
 			{
 				_viewInfo[view] = new GridInfo();
 			}
-			
+
 			base.OnUpdate(index, view, oldView);
 		}
 

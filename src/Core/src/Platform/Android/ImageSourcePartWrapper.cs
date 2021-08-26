@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Maui.Handlers;
 using System.Threading.Tasks;
-using Android.Views;
 using Android.Graphics.Drawables;
+using Android.Views;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui
 {
