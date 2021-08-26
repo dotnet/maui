@@ -162,6 +162,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
+				if (!IsSet(MinimumWidthRequestProperty))
+				{
+					return Primitives.Dimension.Minimum;
+				}
+
 				// Access once up front to avoid multiple GetValue calls
 				var value = MinimumWidthRequest;
 				ValidatePositive(value, nameof(IView.MinimumWidth));
@@ -173,6 +178,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
+				if (!IsSet(MinimumHeightRequestProperty))
+				{
+					return Primitives.Dimension.Minimum;
+				}
+
 				// Access once up front to avoid multiple GetValue calls
 				var value = MinimumHeightRequest;
 				ValidatePositive(value, nameof(IView.MinimumHeight));
