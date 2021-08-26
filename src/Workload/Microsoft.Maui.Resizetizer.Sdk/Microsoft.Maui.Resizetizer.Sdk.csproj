@@ -1,9 +1,11 @@
+<!-- NOTE: Resizetizer.csproj is temporarily replacing usage of this file -->
 <Project Sdk="Microsoft.Build.NoTargets">
 
   <Import Project="../Shared/Common.targets" />
   <Import Project="$(MauiRootDirectory)src/SingleProject/Resizetizer/src/ResizetizerPackages.projitems" />
 
   <PropertyGroup>
+    <IsPackable>false</IsPackable>
     <Description>.NET MAUI SDK support for images, fonts, etc. Enabled via &lt;UseMauiAssets&gt;true&lt;/UseMauiAssets&gt;.</Description>
     <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
   </PropertyGroup>
@@ -59,21 +61,6 @@
     <ProjectReference Include="$(MauiRootDirectory)src/SingleProject/Resizetizer/src/Resizetizer.csproj" />
   </ItemGroup>
 
-  <!-- A small task to make sure everything depends on the same version of SkiaSharp -->
-  <ItemGroup>
-    <_NeededForAjustments Include="$(PkgSvg_Skia)\lib\net461\Svg.Skia.dll" />
-    <_NeededForAjustments Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll" />
-  </ItemGroup>
-  <Target Name="_AdjustSkiaSharpVersion" BeforeTargets="Build;AssignTargetPaths" Inputs="$(MSBuildProjectFile);@(_NeededForAjustments)" Outputs="$(IntermediateOutputPath)adjustments\Svg.Skia.dll">
-    <PropertyGroup>
-      <_AdjustmentsPath>$(IntermediateOutputPath)adjustments\</_AdjustmentsPath>
-    </PropertyGroup>
-    <Copy SourceFiles="@(_NeededForAjustments)" DestinationFolder="$(_AdjustmentsPath)" SkipUnchangedFiles="true" />
-    <AdjustReferencedAssemblyVersion Assembly="$(_AdjustmentsPath)Svg.Skia.dll" ReferencedAssembly="$(_AdjustmentsPath)SkiaSharp.dll" />
-    <ItemGroup>
-      <None Include="$(_AdjustmentsPath)Svg.Skia.dll" Link="targets\Svg.Skia.dll" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="targets\" Visible="false" />
-      <FileWrites Include="$(_AdjustmentsPath)*" />
-    </ItemGroup>
-  </Target>
+  <Import Project="../Shared/Svg.Skia.targets" />
 
 </Project>

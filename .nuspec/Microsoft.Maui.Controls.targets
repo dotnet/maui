@@ -3,6 +3,7 @@
 	<UsingTask TaskName="Microsoft.Maui.Controls.Build.Tasks.XamlCTask" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Build.Tasks.dll" />
 
 	<PropertyGroup>
+		<_MinimumMauiWorkloadVersion>6.0.100-rc.2</_MinimumMauiWorkloadVersion>
 		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
 		<EnableDefaultCssItems Condition="'$(EnableDefaultCssItems)'==''">True</EnableDefaultCssItems>
@@ -17,6 +18,10 @@
 		<ProjectCapability Include="Maui" Condition="'$(_ExcludeMauiProjectCapability)' != 'true'" />
 		<AvailableItemName Include="MauiXaml" />
 		<AvailableItemName Include="MauiCss" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(DisableMauiAnalyzers)' != 'true' ">
+		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.SourceGen.dll" />
 	</ItemGroup>
 
 	<!-- Check Tasks ABI and other validations -->
@@ -37,6 +42,9 @@
 		<Error Code="XF003"
 			Text="Microsoft.Maui requires msbuild. xbuild is no longer supported."
 			Condition="'$(IsXBuild)' == 'true'" />
+		<Error Code="MAUI004"
+			Text="At least version '$(_MinimumMauiWorkloadVersion)' of the .NET MAUI workload is required to use &lt;MauiVersion&gt;$(MauiVersion)&lt;/MauiVersion&gt;."
+			Condition="'$(MauiWorkloadVersion)' != '' and '$(MauiVersion)' != '' and $([MSBuild]::VersionLessThan($(MauiWorkloadVersion), $(_MinimumMauiWorkloadVersion)))" />
 	</Target>
 
 	<Target Name="_ValidateNETFrameworkVersion"

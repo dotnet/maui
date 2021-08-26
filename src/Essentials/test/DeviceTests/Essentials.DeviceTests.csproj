@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Core.props" />
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.props" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.props" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" />
 
   <PropertyGroup>
     <TargetFrameworks>$(MauiPlatformsNoMacCat)</TargetFrameworks>
@@ -48,7 +49,6 @@
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials-net6.csproj" />
-    <ProjectReference Include="..\..\..\Controls\src\SourceGen\Controls.SourceGen-net6.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <PropertyGroup>
