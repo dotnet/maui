@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -104,12 +105,12 @@ namespace Microsoft.Maui
 			// This is the hosting environment based on configuration we've seen so far.
 			var hostingEnvironment = new HostingEnvironment()
 			{
-				ApplicationName = hostConfiguration[HostDefaults.ApplicationKey],
+				ApplicationName = hostConfiguration[HostDefaults.ApplicationKey] ?? GetDefaultApplicationName(),
 				EnvironmentName = hostConfiguration[HostDefaults.EnvironmentKey] ?? Environments.Production,
 				ContentRootPath = HostingEnvironment.ResolveContentRootPath(hostConfiguration[HostDefaults.ContentRootKey], AppContext.BaseDirectory),
 			};
 
-			hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
+			//hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
 
 			var hostContext = new HostBuilderContext(Properties)
 			{
@@ -146,6 +147,12 @@ namespace Microsoft.Maui
 			}
 
 			return hostContext;
+		}
+
+		internal static string GetDefaultApplicationName()
+		{
+			var startupAssemblyName = Assembly.GetEntryAssembly()?.GetName()?.Name;
+			return startupAssemblyName ?? "MauiApp";
 		}
 
 		private class HostingEnvironment : IHostEnvironment

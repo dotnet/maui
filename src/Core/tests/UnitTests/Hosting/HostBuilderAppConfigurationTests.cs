@@ -71,8 +71,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 					});
 				});
 
-			// TODO: CHECK THIS WORKS!
-
 			builder.Host
 				.ConfigureServices((context, services) =>
 				{
