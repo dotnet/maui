@@ -5,7 +5,6 @@ using System.Globalization;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.ConstraintTypeConverter")]
-	[Xaml.TypeConversion(typeof(Constraint))]
 	public class ConstraintTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

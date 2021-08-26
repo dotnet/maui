@@ -10,7 +10,6 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.BindablePropertyConverter")]
-	[Xaml.TypeConversion(typeof(BindableProperty))]
 	public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

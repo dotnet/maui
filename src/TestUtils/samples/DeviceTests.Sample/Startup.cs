@@ -1,18 +1,18 @@
-﻿using Microsoft.Maui.Hosting;
-using Microsoft.Maui.TestUtils.DeviceTests.Runners;
+﻿using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Sample
 {
-	public class Startup : IStartup
+	public static class MauiProgram
 	{
-		public void Configure(IAppHostBuilder appBuilder)
+		public static MauiApp CreateMauiApp()
 		{
+			var appBuilder = MauiApp.CreateBuilder();
 			appBuilder
 				.ConfigureTests(new TestOptions
 				{
 					Assemblies =
 					{
-						typeof(Startup).Assembly
+						typeof(MauiProgram).Assembly
 					},
 				})
 				.UseHeadlessRunner(new HeadlessRunnerOptions
@@ -20,6 +20,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Sample
 					RequiresUIContext = true,
 				})
 				.UseVisualRunner();
+
+			return appBuilder.Build();
 		}
 	}
 }

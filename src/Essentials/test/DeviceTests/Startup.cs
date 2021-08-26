@@ -5,10 +5,11 @@ using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
-	public class Startup : IStartup
+	public static class MauiProgram
 	{
-		public void Configure(IAppHostBuilder appBuilder)
+		public static MauiApp CreateMauiApp()
 		{
+			var appBuilder = MauiApp.CreateBuilder();
 			appBuilder
 				.ConfigureLifecycleEvents(life =>
 				{
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				{
 					Assemblies =
 					{
-						typeof(Startup).Assembly
+						typeof(MauiProgram).Assembly
 					},
 					SkipCategories = Traits
 						.GetSkipTraits()
@@ -40,6 +41,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					RequiresUIContext = true,
 				})
 				.UseVisualRunner();
+
+			return appBuilder.Build();
 		}
 	}
 }

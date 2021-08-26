@@ -13,7 +13,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 	[Category(TestCategory.Core, TestCategory.Layout)]
 	public class AbsoluteLayoutManagerTests
 	{
-		IAbsoluteLayout CreateTestLayout() 
+		IAbsoluteLayout CreateTestLayout()
 		{
 			var layout = Substitute.For<IAbsoluteLayout>();
 			layout.Height.Returns(-1);
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			return layout;
 		}
 
-		void SetLayoutBounds(IAbsoluteLayout layout, IView child, Rectangle bounds) 
+		void SetLayoutBounds(IAbsoluteLayout layout, IView child, Rectangle bounds)
 		{
 			layout.GetLayoutBounds(child).Returns(bounds);
 		}
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLayoutFlags(abs, child, AbsoluteLayoutFlags.PositionProportional);
 
 			var manager = new AbsoluteLayoutManager(abs);
-			
+
 			manager.Measure(100, 100);
 			manager.ArrangeChildren(new Rectangle(0, 0, 100, 100));
 
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(0, 0, 0, 0, 40, 40)]
 		[InlineData(5, 5, 5, 5, 40, 40)]
 		[InlineData(10, 10, 0, 0, 45, 45)]
-		public void RelativePositionRespectsPadding(double left, double top, 
+		public void RelativePositionRespectsPadding(double left, double top,
 			double right, double bottom, double expectedX, double expectedY)
 		{
 			double width = 20;

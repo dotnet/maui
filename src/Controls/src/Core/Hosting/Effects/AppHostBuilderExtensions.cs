@@ -1,74 +1,90 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{
-		public static IAppHostBuilder ConfigureEffects(this IAppHostBuilder builder, Action<IEffectsBuilder> configureDelegate)
+		public static MauiAppBuilder ConfigureEffects(this MauiAppBuilder builder, Action<IEffectsBuilder> configureDelegate)
 		{
-			builder.ConfigureServices<EffectCollectionBuilder>(b => configureDelegate(b));
+			builder.Services.TryAddSingleton<EffectsFactory>();
+			if (configureDelegate != null)
+			{
+				builder.Services.AddSingleton<EffectsRegistration>(new EffectsRegistration(configureDelegate));
+			}
+
 			return builder;
 		}
+	}
 
-		class EffectCollectionBuilder : IMauiServiceBuilder, IEffectsBuilder
+	internal class EffectsRegistration
+	{
+		private readonly Action<IEffectsBuilder> _registerEffects;
+
+		public EffectsRegistration(Action<IEffectsBuilder> registerEffects)
 		{
-			internal Dictionary<Type, Func<PlatformEffect>> RegisteredEffects { get; } = new Dictionary<Type, Func<PlatformEffect>>();
+			_registerEffects = registerEffects;
+		}
 
-			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
+		internal void AddEffects(IEffectsBuilder effects)
+		{
+			_registerEffects(effects);
+		}
+	}
+
+	internal class EffectCollectionBuilder : IEffectsBuilder
+	{
+		internal Dictionary<Type, Func<PlatformEffect>> RegisteredEffects { get; } = new Dictionary<Type, Func<PlatformEffect>>();
+
+		public IEffectsBuilder Add<TEffect, TPlatformEffect>()
+			where TEffect : RoutingEffect
+			where TPlatformEffect : PlatformEffect, new()
+		{
+			RegisteredEffects.Add(typeof(TEffect), () =>
 			{
-				services.AddSingleton<EffectsFactory>();
-			}
+				if (DependencyResolver.Resolve(typeof(TPlatformEffect)) is TPlatformEffect pe)
+					return pe;
 
-			public void Configure(HostBuilderContext context, IServiceProvider services)
+				return new TPlatformEffect();
+			});
+			return this;
+		}
+
+		public IEffectsBuilder Add(Type TEffect, Type TPlatformEffect)
+		{
+			RegisteredEffects.Add(TEffect, () =>
 			{
-				var effectsProvider = services.GetRequiredService<EffectsFactory>();
-				effectsProvider.SetRegisteredEffects(RegisteredEffects);
-			}
+				return (PlatformEffect)DependencyResolver.ResolveOrCreate(TPlatformEffect);
+			});
 
-			public IEffectsBuilder Add<TEffect, TPlatformEffect>()
-				where TEffect : RoutingEffect
-				where TPlatformEffect : PlatformEffect, new()
-			{
-				RegisteredEffects.Add(typeof(TEffect), () =>
-				{
-					if (DependencyResolver.Resolve(typeof(TPlatformEffect)) is TPlatformEffect pe)
-						return pe;
-
-					return new TPlatformEffect();
-				});
-				return this;
-			}
-
-			public IEffectsBuilder Add(Type TEffect, Type TPlatformEffect)
-			{
-				RegisteredEffects.Add(TEffect, () =>
-				{
-					return (PlatformEffect)DependencyResolver.ResolveOrCreate(TPlatformEffect);
-				});
-
-				return this;
-			}
+			return this;
 		}
 	}
 
 	internal class EffectsFactory
 	{
-		Dictionary<Type, Func<PlatformEffect>> _registeredEffects;
+		private readonly Dictionary<Type, Func<PlatformEffect>> _registeredEffects;
 
-		internal void SetRegisteredEffects(Dictionary<Type, Func<PlatformEffect>> registeredEffects)
+		public EffectsFactory(IEnumerable<EffectsRegistration> effectsRegistrations)
 		{
-			_registeredEffects = registeredEffects;
+			if (effectsRegistrations != null)
+			{
+				var effectsBuilder = new EffectCollectionBuilder();
+				foreach (var effectRegistration in effectsRegistrations)
+				{
+					effectRegistration.AddEffects(effectsBuilder);
+				}
+				_registeredEffects = effectsBuilder.RegisteredEffects;
+			}
 		}
 
 		internal PlatformEffect CreateEffect(Effect fromEffect)
 		{
-			if (_registeredEffects.TryGetValue(fromEffect.GetType(), out Func<PlatformEffect> effectType))
+			if (_registeredEffects != null && _registeredEffects.TryGetValue(fromEffect.GetType(), out Func<PlatformEffect> effectType))
 			{
 				return effectType();
 			}

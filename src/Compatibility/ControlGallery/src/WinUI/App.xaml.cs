@@ -16,6 +16,6 @@
 			InitializeComponent();
 		}
 
-		protected override IStartup OnCreateStartup() => new WinUIStartup();
+		protected override MauiApp CreateMauiApp() => WinUIMauiProgram.CreateMauiApp();
 	}
 }
