@@ -38,10 +38,10 @@ namespace Microsoft.Maui.Essentials
 				Speed = location.HasSpeed ? location.Speed : default(double?),
 				IsFromMockProvider = Platform.HasApiLevel(global::Android.OS.BuildVersionCodes.JellyBeanMr2)
 					? (
-// #if __ANDROID_31__
-// 						Platform.HasApiLevelS
-// 							? location.IsMock :
-// #endif
+#if __ANDROID_31__
+						Platform.HasApiLevelS
+							? location.Mock :
+#endif
 #pragma warning disable CS0618 // Type or member is obsolete
 							location.IsFromMockProvider
 #pragma warning restore CS0618 // Type or member is obsolete
