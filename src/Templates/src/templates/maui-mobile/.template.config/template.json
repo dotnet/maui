@@ -16,7 +16,15 @@
       {
         "source": "./",
         "target": "./",
-        "copyOnly": [ "**/*.svg", "**/*.ttf" ]
+        "copyOnly": [ "**/*.svg", "**/*.ttf" ],
+        "modifiers": [
+          {
+            "condition": "(HostIdentifier != \"dotnetcli\")",
+            "exclude": [
+              "*.sln"
+            ]
+          }
+        ]
       }
     ],
     "preferNameDirectory": true,
@@ -36,6 +44,10 @@
         "dataType": "string",
         "replaces": "WINDOWSAPPSDK_VERSION",
         "defaultValue": "WINDOWSAPPSDK_VERSION_VALUE"
+      },
+      "HostIdentifier": {
+        "type": "bind",
+        "binding": "HostIdentifier"
       }
     },
     "defaultName": "MauiApp1"
