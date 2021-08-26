@@ -302,3 +302,7 @@ stages:
       parameters:
         dependsOn: nuget_signing
         approvalTimeoutInMinutes: 30
+        symbolArtifactName: nuget
+        symbolArtifactPatterns: |
+          **/signed/*.nupkg
+          **/*.snupkg
