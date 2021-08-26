@@ -313,11 +313,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				renderer = new DefaultRenderer(context);
 			}
 
+			IViewHandler handler = null;
+
 			// This code is duplicated across all platforms currently
 			// So if any changes are made here please make sure to apply them to other platform.cs files
 			if (renderer == null)
 			{
-				IViewHandler handler = null;
 
 				//TODO: Handle this with AppBuilderHost
 				try
@@ -359,6 +360,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			renderer.SetElement(element);
+
+			if (handler != null)
+				element.Handler = handler;
+
 			return renderer;
 		}
 
