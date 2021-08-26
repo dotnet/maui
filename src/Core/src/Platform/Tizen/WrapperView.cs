@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using ElmSharp;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Skia;
 using Microsoft.Maui.Graphics.Skia.Views;
-using SkiaSharp;
 using SkiaSharp.Views.Tizen;
+using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui
@@ -36,8 +37,9 @@ namespace Microsoft.Maui
 			{
 				var clipper = new SKClipperView(parent);
 				clipper.PassEvents = true;
-				clipper.PaintSurface += OnClipPaint;
+				clipper.DrawClip += OnClipPaint;
 				clipper.Show();
+				clipper.DeviceScalingFactor = (float)DeviceInfo.ScalingFactor;
 				Children.Add(clipper);
 				clipper.Lower();
 				Content?.RaiseTop();
@@ -52,34 +54,29 @@ namespace Microsoft.Maui
 			_clipperView.Value.Invalidate();
 		}
 
-		void OnClipPaint(object? sender, SKPaintSurfaceEventArgs e)
+		void OnClipPaint(object? sender, DrawClipEventArgs e)
 		{
-			var canvas = e.Surface.Canvas;
-			canvas.Clear();
+			var canvas = e.Canvas;
+			var width = e.DirtyRect.Width;
+			var height = e.DirtyRect.Height;
 
-			var width = e.Info.Width;
-			var height = e.Info.Height;
+			canvas.FillColor = Colors.Transparent;
+			canvas.FillRectangle(e.DirtyRect);
+
+			canvas.FillColor = Colors.White;
 
 			var clipPath = Clip?.PathForBounds(new Graphics.Rectangle(0, 0, width, height)) ?? null;
 			if (clipPath == null)
 			{
-				canvas.Clear(SKColors.White);
+				canvas.FillRectangle(e.DirtyRect);
 				return;
 			}
 
-			using (var paint = new SKPaint
+			canvas.FillPath(clipPath);
+			Content?.SetClipperCanvas(_clipperView.Value);
+			if (_backgroundCanvas.IsValueCreated)
 			{
-				IsAntialias = true,
-				Style = SKPaintStyle.Fill,
-				Color = SKColors.White
-			})
-			{
-				canvas.DrawPath(clipPath.AsSkiaPath(), paint);
-				Content?.SetClipperCanvas(_clipperView.Value);
-				if (_backgroundCanvas.IsValueCreated)
-				{
-					BackgroundCanvas.SetClipperCanvas(_clipperView.Value);
-				}
+				BackgroundCanvas.SetClipperCanvas(_clipperView.Value);
 			}
 		}
 
@@ -128,19 +125,64 @@ namespace Microsoft.Maui
 		public SkiaGraphicsView BackgroundCanvas => _backgroundCanvas.Value;
 	}
 
-	public class SKClipperView : SKCanvasView
+	public class DrawClipEventArgs : EventArgs
 	{
-		public SKClipperView(EvasObject parent) : base(parent) {
-			IgnorePixelScaling = true;
+		public DrawClipEventArgs(ICanvas canvas, RectangleF dirtyRect)
+		{
+			Canvas = canvas;
+			DirtyRect = dirtyRect;
 		}
 
+		public ICanvas Canvas { get; set; }
+
+		public RectangleF DirtyRect { get; set; }
+	}
+
+	public class SKClipperView : SKCanvasView
+	{
+		private SkiaCanvas _canvas;
+		private ScalingCanvas _scalingCanvas;
+
+		public SKClipperView(EvasObject parent) : base(parent)
+		{
+			_canvas = new SkiaCanvas();
+			_scalingCanvas = new ScalingCanvas(_canvas);
+			PaintSurface += OnPaintSurface;
+		}
+
+		public float DeviceScalingFactor { get; set; }
 		public bool ClippingRequired { get; set; }
+		public event EventHandler<DrawClipEventArgs>? DrawClip;
 
 		public new void Invalidate()
 		{
 			ClippingRequired = true;
 			OnDrawFrame();
 			ClippingRequired = false;
+		}
+
+		protected virtual void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
+		{
+			var skiaCanvas = e.Surface.Canvas;
+			skiaCanvas.Clear();
+
+			_canvas.Canvas = skiaCanvas;
+			_scalingCanvas.ResetState();
+
+			float width = e.Info.Width;
+			float height = e.Info.Height;
+			if (DeviceScalingFactor > 0)
+			{
+				width = width / DeviceScalingFactor;
+				height = height / DeviceScalingFactor;
+			}
+
+			_scalingCanvas.SaveState();
+
+			if (DeviceScalingFactor > 0)
+				_scalingCanvas.Scale(DeviceScalingFactor, DeviceScalingFactor);
+			DrawClip?.Invoke(this, new DrawClipEventArgs(_scalingCanvas, new RectangleF(0, 0, width, height)));
+			_scalingCanvas.RestoreState();
 		}
 	}
 
