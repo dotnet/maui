@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 		internal IVisualElementRenderer? VisualElementRenderer { get; private set; }
 		new IView? VirtualView => (this as IViewHandler).VirtualView;
+		internal bool SetRendererWhenSettingVirtualView { get; set; } = true;
 
 		public static IViewHandler CreateShim(object renderer)
 		{
@@ -122,14 +123,17 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public override void SetVirtualView(IView view)
 		{
-			if (VisualElementRenderer == null)
+			if (SetRendererWhenSettingVirtualView)
 			{
-				SetupRenderer(CreateRenderer(view));
-			}
+				if (VisualElementRenderer == null)
+				{
+					SetupRenderer(CreateRenderer(view));
+				}
 
-			SetRenderer(
-				(VisualElement)view,
-				VisualElementRenderer);
+				SetRenderer(
+					(VisualElement)view,
+					VisualElementRenderer);
+			}
 
 			if (VisualElementRenderer != null && VisualElementRenderer.Element != view)
 			{

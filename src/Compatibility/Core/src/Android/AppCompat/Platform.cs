@@ -344,8 +344,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 					if (renderer == null)
 					{
+						shim.SetRendererWhenSettingVirtualView = false;
+						
 						renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element, context)
 										?? new DefaultRenderer(context);
+
+						shim.SetupRenderer(renderer);
 					}
 				}
 				else if (handler is IVisualElementRenderer ver)
@@ -360,7 +364,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			renderer.SetElement(element);
 
-			if (handler != null)
+			if (handler != null && element.Handler != handler)
 				element.Handler = handler;
 
 			return renderer;
