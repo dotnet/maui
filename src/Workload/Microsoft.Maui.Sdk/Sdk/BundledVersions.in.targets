@@ -14,7 +14,7 @@
 
   <!-- Framework references -->
   <ItemGroup>
-    <_MauiRuntimeIdentifiers Include="android;ios;maccatalyst;win" />
+    <_MauiRuntimeIdentifiers Include="android;ios;maccatalyst;win;tizen" />
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
         Include="Microsoft.Maui.Core"
