@@ -12,9 +12,6 @@ namespace Microsoft.Maui
 {
 	public class CoreUIAppContext
 	{
-		DisplayResolutionUnit _displayResolutionUnit = DisplayResolutionUnit.DP;
-		double _viewPortWidth = -1;
-
 		static CoreUIAppContext? _instance = null;
 
 		Func<bool>? _handleBackButtonPressed;
@@ -46,27 +43,6 @@ namespace Microsoft.Maui
 
 		public DeviceType DeviceType => DeviceInfo.GetDeviceType();
 
-		public DisplayResolutionUnit DisplayResolutionUnit
-		{
-			get => _displayResolutionUnit;
-			set
-			{
-				_displayResolutionUnit = value;
-				DeviceInfo.DisplayResolutionUnit = _displayResolutionUnit;
-			}
-		}
-
-		public double ViewportWidth
-		{
-			get => _viewPortWidth;
-			set
-			{
-				_viewPortWidth = value;
-				// TODO. DeviceInfo.ViewportWidth is readonly, fix it
-				//ViewportWidth = _viewPortWidth;
-			}
-		}
-
 		protected CoreUIAppContext(CoreApplication application) : this(application, CreateDefaultWindow())
 		{
 		}
@@ -75,9 +51,6 @@ namespace Microsoft.Maui
 		{
 			_ = application ?? throw new ArgumentNullException(nameof(application));
 			_ = window ?? throw new ArgumentNullException(nameof(window));
-
-			if (DisplayResolutionUnit == DisplayResolutionUnit.VP && ViewportWidth < 0)
-				throw new InvalidOperationException($"ViewportWidth should be set in case of DisplayResolutionUnit == VP");
 
 			Elementary.Initialize();
 			Elementary.ThemeOverlay();
