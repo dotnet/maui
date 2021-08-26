@@ -119,6 +119,21 @@
           "Microsoft.Maui.Essentials.Ref.tizen",
           "Microsoft.Maui.Essentials.Runtime.tizen"
       ]
+    },
+    "maui-tizen": {
+      "description": ".NET MAUI SDK for Tizen",
+      "extends": [
+        "maui-core",
+        "tizen"
+      ],
+      "packs": [
+          "Microsoft.Maui.Core.Ref.tizen",
+          "Microsoft.Maui.Core.Runtime.tizen",
+          "Microsoft.Maui.Controls.Ref.tizen",
+          "Microsoft.Maui.Controls.Runtime.tizen",
+          "Microsoft.Maui.Essentials.Ref.tizen",
+          "Microsoft.Maui.Essentials.Runtime.tizen"
+      ]
     }
   },
   "packs": {
