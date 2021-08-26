@@ -117,6 +117,14 @@ namespace Microsoft.Maui.Controls
 		internal Semantics SetupSemantics() =>
 			_semantics ??= new Semantics();
 
+		static void ValidatePositive(double value, string name) 
+		{
+			if (value < 0)
+			{
+				throw new InvalidOperationException($"{name} cannot be less than zero.");
+			}
+		}
+
 		double IView.Width
 		{
 			get
@@ -127,14 +135,9 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// Access once up front to avoid multiple GetValue calls
-				var widthRequest = WidthRequest;
-
-				if (widthRequest < 0)
-				{
-					throw new InvalidOperationException($"{nameof(IView.Width)} cannot be less than zero.");
-				}
-				
-				return widthRequest;
+				var value = WidthRequest;
+				ValidatePositive(value, nameof(IView.Width));
+				return value;
 			}
 		}
 
@@ -148,24 +151,57 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// Access once up front to avoid multiple GetValue calls
-				var heightRequest = HeightRequest;
-
-				if (heightRequest < 0)
-				{
-					throw new InvalidOperationException($"{nameof(IView.Height)} cannot be less than zero.");
-				}
-
-				return heightRequest;
+				var value = HeightRequest;
+				ValidatePositive(value, nameof(IView.Height));
+				return value;
 			}
 		}
 
 		// Default value from VisualElement is -1 (legacy); translating to Core we'll use a reasonable value of zero
-		double IView.MinimumWidth => MinimumWidthRequest < 0 ? 0 : MinimumWidthRequest;
-		double IView.MinimumHeight => MinimumHeightRequest < 0 ? 0 : MinimumHeightRequest;
+		double IView.MinimumWidth
+		{
+			get
+			{
+				// Access once up front to avoid multiple GetValue calls
+				var value = MinimumWidthRequest;
+				ValidatePositive(value, nameof(IView.MinimumWidth));
+				return value;
+			}
+		}
+
+		double IView.MinimumHeight
+		{
+			get
+			{
+				// Access once up front to avoid multiple GetValue calls
+				var value = MinimumHeightRequest;
+				ValidatePositive(value, nameof(IView.MinimumHeight));
+				return value;
+			}
+		}
 
 		// Default value from VisualElement is PositiveInfinity
-		double IView.MaximumWidth => MaximumWidthRequest < 0 ? 0 : MaximumWidthRequest;
-		double IView.MaximumHeight => MaximumHeightRequest < 0 ? 0 : MaximumHeightRequest;
+		double IView.MaximumWidth
+		{
+			get
+			{
+				// Access once up front to avoid multiple GetValue calls
+				var value = MaximumWidthRequest;
+				ValidatePositive(value, nameof(IView.MaximumWidth));
+				return value;
+			}
+		}
+
+		double IView.MaximumHeight
+		{
+			get
+			{
+				// Access once up front to avoid multiple GetValue calls
+				var value = MaximumHeightRequest;
+				ValidatePositive(value, nameof(IView.MaximumHeight));
+				return value;
+			}
+		}
 
 		Thickness IView.Margin => Thickness.Zero;
 	}
