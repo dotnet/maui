@@ -31,12 +31,6 @@
         "datatype": "string",
         "replaces": "com.companyname.MauiApp1"
       },
-      "microsoftExtensionsVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "MICROSOFT_EXTENSIONS_VERSION",
-        "defaultValue": "MICROSOFT_EXTENSIONS_VERSION_VALUE"
-      },
       "windowsAppSdkVersion": {
         "type": "parameter",
         "dataType": "string",
