@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Controls
 		Italic = 1 << 1
 	}
 
-	[Xaml.TypeConversion(typeof(FontAttributes))]
 	public sealed class FontAttributesConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

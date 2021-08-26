@@ -79,6 +79,9 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
+		bool ImageSourceLoaded(ButtonHandler buttonHandler) =>
+			buttonHandler.NativeView.ImageView.Image != null;
+
 		UIButton GetNativeButton(ButtonHandler buttonHandler) =>
 			(UIButton)buttonHandler.NativeView;
 

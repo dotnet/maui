@@ -1,18 +1,19 @@
 #nullable enable
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler
+	public sealed partial class ButtonHandler
 	{
+		readonly ImageSourceServiceResultManager _sourceManager = new ImageSourceServiceResultManager();
+
 		public static IPropertyMapper<IButton, ButtonHandler> ButtonMapper = new PropertyMapper<IButton, ButtonHandler>(ViewHandler.ViewMapper)
 		{
-#if WINDOWS || __ANDROID__
 			[nameof(IButton.Background)] = MapBackground,
-#endif
 			[nameof(IButton.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IButton.Font)] = MapFont,
 			[nameof(IButton.Padding)] = MapPadding,
 			[nameof(IButton.Text)] = MapText,
 			[nameof(IButton.TextColor)] = MapTextColor,
+			[nameof(IButton.ImageSource)] = MapImageSource
 		};
 
 		public ButtonHandler() : base(ButtonMapper)

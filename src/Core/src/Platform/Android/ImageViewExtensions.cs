@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using Android.Views;
 using Android.Widget;
 
 namespace Microsoft.Maui
@@ -24,9 +25,12 @@ namespace Microsoft.Maui
 			imageView.SetScaleType(image.Aspect.ToScaleType());
 		}
 
-		public static void UpdateIsAnimationPlaying(this ImageView imageView, IImageSourcePart image)
+		public static void UpdateIsAnimationPlaying(this ImageView imageView, IImageSourcePart image) =>
+			imageView.Drawable.UpdateIsAnimationPlaying(image);
+
+		public static void UpdateIsAnimationPlaying(this Drawable? drawable, IImageSourcePart image)
 		{
-			if (imageView.Drawable is IAnimatable animatable)
+			if (drawable is IAnimatable animatable)
 			{
 				if (image.IsAnimationPlaying)
 				{
@@ -41,13 +45,26 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static async Task<IImageSourceServiceResult<Drawable>?> UpdateSourceAsync(this ImageView imageView, IImageSourcePart image, IImageSourceServiceProvider services, CancellationToken cancellationToken = default)
+		public static Task<IImageSourceServiceResult<Drawable>?> UpdateSourceAsync(
+			this ImageView imageView,
+			IImageSourcePart image,
+			IImageSourceServiceProvider services,
+			CancellationToken cancellationToken = default)
 		{
 			imageView.Clear();
+			return image.UpdateSourceAsync(imageView, services, (d) => imageView.SetImageDrawable(d), cancellationToken);
+		}
 
+		internal static async Task<IImageSourceServiceResult<Drawable>?> UpdateSourceAsync(
+			this IImageSourcePart image,
+			View destinationContext,
+			IImageSourceServiceProvider services,
+			Action<Drawable?> setDrawable,
+			CancellationToken cancellationToken = default)
+		{
 			image.UpdateIsLoading(false);
 
-			var context = imageView.Context;
+			var context = destinationContext.Context;
 			if (context == null)
 				return null;
 
@@ -67,14 +84,13 @@ namespace Microsoft.Maui
 				var result = await service.GetDrawableAsync(imageSource, context, cancellationToken);
 				var drawable = result?.Value;
 
-				var applied = !cancellationToken.IsCancellationRequested && imageView.IsAlive() && imageSource == image.Source;
+				var applied = !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
 
 				// only set the image if we are still on the same one
 				if (applied)
 				{
-					imageView.SetImageDrawable(drawable);
-
-					imageView.UpdateIsAnimationPlaying(image);
+					setDrawable(drawable);
+					drawable.UpdateIsAnimationPlaying(image);
 				}
 
 				events?.LoadingCompleted(applied);

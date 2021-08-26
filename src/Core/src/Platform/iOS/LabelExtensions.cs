@@ -33,7 +33,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateHorizontalTextAlignment(this UILabel nativeLabel, ILabel label)
 		{
-			nativeLabel.TextAlignment = label.HorizontalTextAlignment.ToNative(label.FlowDirection == FlowDirection.LeftToRight);
+			nativeLabel.TextAlignment = label.HorizontalTextAlignment.ToNative(label);
 		}
 
 		public static void UpdateLineBreakMode(this UILabel nativeLabel, ILabel label)

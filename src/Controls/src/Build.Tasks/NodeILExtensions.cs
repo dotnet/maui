@@ -56,15 +56,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var str = (string)node.Value;
 			var module = context.Body.Method.Module;
 
-			//If there's a [TypeConverter], use it
+			//If there's a [TypeConverter], assume we can convert
 			if (typeConverter != null && str != null)
-			{
-				var typeConvAttribute = typeConverter.GetCustomAttribute(module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "TypeConversionAttribute"));
-				if (typeConvAttribute == null) //trust the unattributed TypeConverter
-					return true;
-				var toType = typeConvAttribute.ConstructorArguments.First().Value as TypeReference;
-				return toType.InheritsFromOrImplements(targetTypeRef);
-			}
+				return true;
 
 			//check if it's assignable from a string
 			if (targetTypeRef.ResolveCached().FullName == "System.Nullable`1")

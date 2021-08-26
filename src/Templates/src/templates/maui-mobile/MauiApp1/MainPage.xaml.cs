@@ -18,10 +18,7 @@ namespace MauiApp1
 			count++;
 			CounterLabel.Text = $"Current count: {count}";
 
-			if (DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.iOS)
-			{
-				SemanticScreenReader.Announce(CounterLabel.Text);
-			}
+			SemanticScreenReader.Announce(CounterLabel.Text);
 		}
 	}
 }

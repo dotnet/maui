@@ -7,7 +7,6 @@ using System.Text;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.TypeConversion(typeof(Font))]
 	public sealed class FontTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

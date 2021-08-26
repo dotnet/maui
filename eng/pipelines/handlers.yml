@@ -128,9 +128,6 @@ stages:
                 displayName: 'Install .NET'
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'
-                ${{ if and(eq(BuildPlatform.name, 'macOS'), ne(variables['System.TeamProject'], 'devdiv')) }}:
-                  timeoutInMinutes: 15
-                  continueOnError: true
               - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Run Unit Tests'
               - task: PublishTestResults@2
@@ -221,9 +218,46 @@ stages:
                 displayName: 'Install .NET (Local Workloads)'
               - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET 6 Samples'
-                ${{ if and(eq(BuildPlatform.name, 'macOS'), ne(variables['System.TeamProject'], 'devdiv')) }}:
-                  timeoutInMinutes: 15
-                  continueOnError: true
+              - task: PublishBuildArtifacts@1
+                condition: always()
+                displayName: publish artifacts
+                inputs:
+                  ArtifactName: ${{ BuildPlatform.artifact }}
+
+  - stage: templates_net6
+    displayName: Build .NET 6 Templates
+    dependsOn: pack_net6
+    jobs:
+      - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
+        - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+          - job: build_net6_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+            workspace:
+              clean: all
+            displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
+            timeoutInMinutes: 120
+            condition: or(
+              ${{ parameters.BuildEverything }},
+              ne(variables['Build.Reason'], 'PullRequest'),
+              eq('${{ BuildConfiguration }}', 'Release'))
+            pool:
+              name: ${{ BuildPlatform.poolName }}
+              vmImage: ${{ BuildPlatform.vmImage }}
+            steps:
+              - template: common/provision.yml
+                parameters:
+                  platform: ${{ BuildPlatform.name }}
+              - task: DownloadBuildArtifacts@0
+                displayName: 'Download Packages'
+                inputs:
+                  artifactName: nuget
+                  itemPattern: '**/*.nupkg'
+                  downloadPath: $(System.DefaultWorkingDirectory)/artifacts
+              - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
+                displayName: Move the downloaded artifacts
+              - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+                displayName: 'Install .NET (Local Workloads)'
+              - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+                displayName: 'Build .NET 6 Templates'
               - task: PublishBuildArtifacts@1
                 condition: always()
                 displayName: publish artifacts
@@ -231,9 +265,11 @@ stages:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
   - template: common/security_compliance.yml
-  - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
-  - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
-  - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
+
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
+    - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
+    - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:      # Sign only using the private server
     - stage: nuget_signing
@@ -266,3 +302,7 @@ stages:
       parameters:
         dependsOn: nuget_signing
         approvalTimeoutInMinutes: 30
+        symbolArtifactName: nuget
+        symbolArtifactPatterns: |
+          **/signed/*.nupkg
+          **/*.snupkg
