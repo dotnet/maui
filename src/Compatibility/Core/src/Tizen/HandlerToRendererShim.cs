@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	public class HandlerToRendererShim : IVisualElementRenderer
 	{
+		bool _disposed;
+
 		public HandlerToRendererShim(INativeViewHandler vh)
 		{
 			ViewHandler = vh;
@@ -22,13 +24,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public EvasObject NativeView => ViewHandler.ContainerView ?? ViewHandler.NativeView;
 
-
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
 		public void Dispose()
 		{
-			ViewHandler.Dispose();
+			if (!_disposed)
+			{
+				_disposed = true;
+				Platform.SetRenderer(Element, null);
+				ViewHandler.Dispose();
+			}
 		}
 
 		public void SetElement(VisualElement element)
@@ -63,8 +69,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				ViewHandler.SetParent(new MockParentHandler(element.RealParent as VisualElement));
 			}
 
+			NativeView.Deleted += OnNativeDeleted;
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
-
 		}
 
 		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
@@ -75,6 +81,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			ElementPropertyChanged?.Invoke(this, new PropertyChangedEventArgs(e.PropertyName));
+		}
+
+		void OnNativeDeleted(object sender, EventArgs e)
+		{
+			Dispose();
 		}
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
