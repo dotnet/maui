@@ -253,7 +253,7 @@ namespace Microsoft.Maui
 			if (IsBorderDashed())
 				ctx.SetLineDash(_borderDashOffset * _borderWidth, _borderDash);
 
-			ctx.SetLineWidth(2 * _borderWidth);
+			ctx.SetLineWidth(_borderWidth);
 			ctx.AddPath(GetClipPath());
 
 			if (_border != null)
