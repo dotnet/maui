@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Essentials
 #if __ANDROID_31__
 		internal static VibratorManager? VibratorManager =>
 			HasApiLevelS
-				? VibratorManager.DefaultVibrator
+				? AppContext.GetSystemService(Context.VibratorManagerService) as VibratorManager
 				: null;
 #endif
 
