@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (!IsSet(WidthProperty))
+				if (!IsSet(WidthRequestProperty))
 				{
 					return Primitives.Dimension.Unset;
 				}
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (!IsSet(HeightProperty))
+				if (!IsSet(HeightRequestProperty))
 				{
 					return Primitives.Dimension.Unset;
 				}
