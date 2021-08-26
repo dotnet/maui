@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(Element.Keyboard))
 			{
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		void OnSearchResultListChanged(object sender, ListProxyChangedEventArgs e)
+		void OnSearchResultListChanged(object? sender, ListProxyChangedEventArgs e)
 		{
 			UpdateSearchResult();
 		}
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_searchResultList.ItemSelected += OnResultItemSelected;
 		}
 
-		void OnResultItemSelected(object sender, GenListItemEventArgs e)
+		void OnResultItemSelected(object? sender, GenListItemEventArgs e)
 		{
 			var data = (e.Item.Data as View)?.BindingContext;
 
@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
 		}
 
-		void OnFocusChangedRequested(object sender, VisualElement.FocusRequestArgs e)
+		void OnFocusChangedRequested(object? sender, VisualElement.FocusRequestArgs e)
 		{
 			if (Control == null)
 				return;
@@ -322,7 +322,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Control.PlaceholderColor = Element.PlaceholderColor.ToNative();
 		}
 
-		void OnFocused(object sender, EventArgs e)
+		void OnFocused(object? sender, EventArgs e)
 		{
 			if (Control == null)
 				return;
@@ -349,7 +349,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		void OnActivated(object sender, EventArgs e)
+		void OnActivated(object? sender, EventArgs e)
 		{
 			if (Control == null)
 				return;
@@ -358,7 +358,7 @@ namespace Microsoft.Maui.Controls.Platform
 			(Element as ISearchHandlerController).QueryConfirmed();
 		}
 
-		void OnTextChanged(object sender, TTextChangedEventArgs e)
+		void OnTextChanged(object? sender, TTextChangedEventArgs e)
 		{
 			Element.SetValueCore(SearchHandler.QueryProperty, (sender as TSearchBar)?.Text);
 		}
