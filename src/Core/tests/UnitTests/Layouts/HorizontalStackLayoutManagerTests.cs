@@ -52,6 +52,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var stack = BuildStack(2, 100, 100);
 			stack.Spacing.Returns(spacing);
+			stack.FlowDirection.Returns(FlowDirection.LeftToRight);
 
 			var manager = new HorizontalStackLayoutManager(stack);
 

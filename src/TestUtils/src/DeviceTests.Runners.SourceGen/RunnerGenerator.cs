@@ -85,7 +85,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen
 
 		string GenerateAndroidSource()
 		{
-			var startupName = "Startup";
+			var mauiProgramName = "MauiProgram";
+			var mauiProgramFullName = @"global::" + RootNamespace + "." + mauiProgramName;
 			var splash = ContainsSplashScreen ? @"Theme = ""@style/Maui.SplashTheme""," : "";
 
 			var appName = "MainApplication";
@@ -99,12 +100,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen
 namespace " + RootNamespace + @"
 {
 	[global::Android.App.Application]
-	partial class " + appName + @" : global::Microsoft.Maui.MauiApplication<global::" + RootNamespace + @"." + startupName + @">
+	partial class " + appName + @" : global::Microsoft.Maui.MauiApplication
 	{
 		public " + appName + @"(global::System.IntPtr handle, global::Android.Runtime.JniHandleOwnership ownership)
 			: base(handle, ownership)
 		{
 		}
+
+		protected override global::Microsoft.Maui.MauiApp CreateMauiApp() => " + mauiProgramFullName + @".CreateMauiApp();
 	}
 }
 #endif
@@ -146,7 +149,7 @@ namespace " + RootNamespace + @"
 {
 	[global::Android.App.Activity(
 		Name = """ + ApplicationId + "." + headlessActivityName + @""",
-		Theme = ""@style/Theme.AppCompat"",
+		Theme = ""@style/Theme.MaterialComponents"",
 		ConfigurationChanges =
 			global::Android.Content.PM.ConfigChanges.ScreenSize |
 			global::Android.Content.PM.ConfigChanges.Orientation |
@@ -163,7 +166,8 @@ namespace " + RootNamespace + @"
 
 		string GenerateIosSource()
 		{
-			var startupName = "Startup";
+			var mauiProgramName = "MauiProgram";
+			var mauiProgramFullName = @"global::" + RootNamespace + "." + mauiProgramName;
 			var visualDelegateName = "VisualRunnerAppDelegate";
 			var headlessDelegateName = "HeadlessRunnerAppDelegate";
 
@@ -196,8 +200,9 @@ namespace " + RootNamespace + @"
 namespace " + RootNamespace + @"
 {
 	[global::Foundation.Register(""" + visualDelegateName + @""")]
-	partial class " + visualDelegateName + @" : global::Microsoft.Maui.MauiUIApplicationDelegate<global::" + RootNamespace + @"." + startupName + @">
+	partial class " + visualDelegateName + @" : global::Microsoft.Maui.MauiUIApplicationDelegate
 	{
+		protected override global::Microsoft.Maui.MauiApp CreateMauiApp() => " + mauiProgramFullName + @".CreateMauiApp();
 	}
 }
 #endif
@@ -206,8 +211,10 @@ namespace " + RootNamespace + @"
 namespace " + RootNamespace + @"
 {
 	[global::Foundation.Register(""" + headlessDelegateName + @""")]
-	partial class " + headlessDelegateName + @" : global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestApplicationDelegate<global::" + RootNamespace + @"." + startupName + @">
+	partial class " + headlessDelegateName + @" : global::Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner.MauiTestApplicationDelegate
 	{
+
+		protected override global::Microsoft.Maui.MauiApp CreateMauiApp() => " + mauiProgramFullName + @".CreateMauiApp();
 	}
 }
 #endif

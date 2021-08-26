@@ -32,12 +32,12 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var expectedColor = Color.FromArgb(colorHex);
 
-			var host = new AppHostBuilder()
+			var mauiApp = MauiApp.CreateBuilder()
 				.ConfigureFonts()
 				.ConfigureImageSources()
 				.Build();
 
-			var images = host.Services.GetRequiredService<IImageSourceServiceProvider>();
+			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
 			var service = images.GetRequiredImageSourceService<FontImageSourceStub>();
 
 			var imageSource = new FontImageSourceStub
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task GetDrawableAsyncWithCustomFont()
 		{
-			var host = new AppHostBuilder()
+			var mauiApp = MauiApp.CreateBuilder()
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.DeviceTests
 				.ConfigureImageSources()
 				.Build();
 
-			var images = host.Services.GetRequiredService<IImageSourceServiceProvider>();
+			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
 			var service = images.GetRequiredImageSourceService<FontImageSourceStub>();
 
 			var imageSource = new FontImageSourceStub

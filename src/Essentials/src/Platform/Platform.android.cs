@@ -167,6 +167,8 @@ namespace Microsoft.Maui.Essentials
 
 		internal static bool HasApiLevelN => HasApiLevel(24);
 
+		internal static bool HasApiLevelS => HasApiLevel(31);
+
 		internal static bool HasApiLevelNMr1 => HasApiLevel(25);
 
 		internal static bool HasApiLevelO => HasApiLevel(26);
@@ -190,8 +192,21 @@ namespace Microsoft.Maui.Essentials
 		internal static ConnectivityManager ConnectivityManager =>
 			AppContext.GetSystemService(Context.ConnectivityService) as ConnectivityManager;
 
+#if __ANDROID_31__
+		internal static VibratorManager VibratorManager =>
+			HasApiLevelS
+				? AppContext.GetSystemService(Context.VibratorManagerService) as VibratorManager
+				: null;
+#endif
+
 		internal static Vibrator Vibrator =>
-			AppContext.GetSystemService(Context.VibratorService) as Vibrator;
+#if __ANDROID_31__
+			HasApiLevelS
+				? VibratorManager.DefaultVibrator :
+#endif
+#pragma warning disable CS0618 // Type or member is obsolete
+				AppContext.GetSystemService(Context.VibratorService) as Vibrator;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		internal static WifiManager WifiManager =>
 			AppContext.GetSystemService(Context.WifiService) as WifiManager;

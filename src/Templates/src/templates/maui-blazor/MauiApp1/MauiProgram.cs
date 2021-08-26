@@ -11,23 +11,23 @@ using MauiApp1.Data;
 
 namespace MauiApp1
 {
-	public class Startup : IStartup
+	public static class MauiProgram
 	{
-		public void Configure(IAppHostBuilder appBuilder)
+		public static MauiApp CreateMauiApp()
 		{
-			appBuilder
+			var builder = MauiApp.CreateBuilder();
+			builder
 				.RegisterBlazorMauiWebView()
-				.UseMicrosoftExtensionsServiceProviderFactory()
 				.UseMauiApp<App>()
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-				})
-				.ConfigureServices(services =>
-				{
-					services.AddBlazorWebView();
-					services.AddSingleton<WeatherForecastService>();
 				});
+
+			builder.Services.AddBlazorWebView();
+			builder.Services.AddSingleton<WeatherForecastService>();
+
+			return builder.Build();
 		}
 	}
 }

@@ -294,6 +294,7 @@ namespace Microsoft.Maui.Controls
 
 		IFlowDirectionController FlowController => this;
 
+		[System.ComponentModel.TypeConverter(typeof(FlowDirectionConverter))]
 		public FlowDirection FlowDirection
 		{
 			get { return (FlowDirection)GetValue(FlowDirectionProperty); }

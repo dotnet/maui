@@ -13,13 +13,16 @@
     <None Update="@(None)" PackagePath="" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Resizetizer.targets" />
     <_Files Include="$(MauiRootDirectory)src\SingleProject\Resizetizer\src\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Resizetizer.dll" />
+    <_Files Include="$(MauiRootDirectory)src\SingleProject\Resizetizer\src\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Resizetizer.pdb" />
     <_Files Include="$(PkgSystem_Memory)\lib\netstandard2.0\System.Memory.dll" />
     <_Files Include="$(PkgSystem_Buffers)\lib\netstandard2.0\System.Buffers.dll" />
     <_Files Include="$(PkgSystem_Numerics_Vectors)\lib\netstandard2.0\System.Numerics.Vectors.dll" />
     <_Files Include="$(PkgSystem_Runtime_CompilerServices_Unsafe)\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" />
     <_Files Include="$(PkgSystem_ObjectModel)\lib\netstandard1.3\System.ObjectModel.dll" />
     <_Files Include="$(PkgSvg_Custom)\lib\net461\Svg.Custom.dll" />
+    <_Files Include="$(PkgSvg_Custom)\lib\net461\Svg.Custom.pdb" />
     <_Files Include="$(PkgSvg_Picture)\lib\net461\Svg.Picture.dll" />
+    <_Files Include="$(PkgSvg_Picture)\lib\net461\Svg.Picture.pdb" />
     <!-- <_Files Include="$(PkgSvg_Skia)\lib\net461\Svg.Skia.dll" /> -->
     <_Files Include="$(PkgFizzler)\lib\netstandard2.0\Fizzler.dll" />
     <_Files Include="$(PkgSystem_IO_UnmanagedMemoryStream)\lib\netstandard1.3\System.IO.UnmanagedMemoryStream.dll" />
@@ -46,6 +49,7 @@
     <_Files Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-musl-x64\native\libHarfBuzzSharp.so" Arch="musl-x64/" />
     <_Files Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-x64\native\libHarfBuzzSharp.so"      Arch="x64/" />
     <_Files Include="$(PkgSvg2VectorDrawable_Net)\lib\netstandard2.0\Svg2VectorDrawable.Net.dll" />
+    <_Files Include="$(PkgSvg2VectorDrawable_Net)\lib\netstandard2.0\Svg2VectorDrawable.Net.pdb" />
     <_Files Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" />
     <None Include="@(_Files)" PackagePath="targets/%(Arch)" Link="targets/%(Arch)%(FileName)%(Extension)" Visible="false" />
     <None Update="@(None)" CopyToOutputDirectory="PreserveNewest" Pack="true" />

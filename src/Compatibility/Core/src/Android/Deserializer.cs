@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				using var stream = File.Create(path);
 				using var xmlWriter = XmlWriter.Create(stream);
 				using var writer = XmlDictionaryWriter.CreateDictionaryWriter(xmlWriter);
-				
+
 				try
 				{
 					var dcs = new DataContractSerializer(typeof(Dictionary<string, object>));

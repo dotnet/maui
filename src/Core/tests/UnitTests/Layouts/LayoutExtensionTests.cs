@@ -130,6 +130,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.HorizontalLayoutAlignment.Returns(layoutAlignment);
 			element.Width.Returns(Dimension.Unset);
 			element.Height.Returns(Dimension.Unset);
+			element.FlowDirection.Returns(FlowDirection.LeftToRight);
 
 			var frame = element.ComputeFrame(new Rectangle(offset.X, offset.Y, widthConstraint, heightConstraint));
 
@@ -153,6 +154,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.VerticalLayoutAlignment.Returns(layoutAlignment);
 			element.Width.Returns(Dimension.Unset);
 			element.Height.Returns(Dimension.Unset);
+			element.FlowDirection.Returns(FlowDirection.LeftToRight);
 
 			var frame = element.ComputeFrame(new Rectangle(offset.X, offset.Y, widthConstraint, heightConstraint));
 
