@@ -2,7 +2,7 @@
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
-namespace Controls.Core.Platform.Android.Extensions
+namespace Microsoft.Maui.Controls.Platform
 {
 	public static class TextViewExtensions
 	{

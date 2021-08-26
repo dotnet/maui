@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					image.ImageTintList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.6f).ToNative());
 
-					ShellImagePart shellImagePart = new ShellImagePart()
+					ImageSourceLoader shellImagePart = new ImageSourceLoader()
 					{
 						Source = shellContent.icon
 					};
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					var services = mauiContext.Services;
 					var provider = services.GetRequiredService<IImageSourceServiceProvider>();
-					image.UpdateSourceAsync(new ShellImagePart() { Source = shellContent.icon }, provider)
+					image.UpdateSourceAsync(new ImageSourceLoader() { Source = shellContent.icon }, provider)
 						.FireAndForget(e => Internals.Log.Warning("MenuItem", $"{e}"));
 
 					innerLayout.AddView(image);

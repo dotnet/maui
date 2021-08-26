@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.Widget;
+using Google.Android.Material.Button;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -110,6 +112,14 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return -1;
+		}
+
+		bool ImageSourceLoaded(ButtonHandler buttonHandler)
+		{
+			var image = buttonHandler.NativeView.Icon ??
+						TextViewCompat.GetCompoundDrawablesRelative(buttonHandler.NativeView)[3];
+
+			return image != null;
 		}
 	}
 }

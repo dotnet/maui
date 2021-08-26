@@ -43,10 +43,10 @@
 
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
 		<!-- Required - WinUI does not yet have buildTransitive for everything -->
-		<PackageReference Include="Microsoft.ProjectReunion" Version="PROJECT_REUNION_VERSION" />
-		<PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="PROJECT_REUNION_VERSION" />
-		<PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="PROJECT_REUNION_VERSION" />
-		<PackageReference Include="Microsoft.ProjectReunion.InteractiveExperiences" Version="PROJECT_REUNION_VERSION" NoWarn="NU1701" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="WINDOWSAPPSDK_VERSION" />
+		<PackageReference Include="Microsoft.WindowsAppSDK.Foundation" Version="WINDOWSAPPSDK_VERSION" />
+		<PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="WINDOWSAPPSDK_VERSION" />
+		<PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="WINDOWSAPPSDK_VERSION" NoWarn="NU1701" />
 	</ItemGroup>
 
 	<PropertyGroup>

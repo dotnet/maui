@@ -4,10 +4,6 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Label
 	{
-		public static void RemapForControls()
-		{
-		}
-
 		public static void MapTextType(LabelHandler handler, Label label) { }
 		public static void MapText(LabelHandler handler, Label label) { }
 	}

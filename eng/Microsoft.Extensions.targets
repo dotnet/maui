@@ -3,29 +3,17 @@
     <_UseNet6Packages Condition=" '$(TargetFramework.Contains(net6.0))' == 'true' or '$(PackageType)' == 'DotnetPlatform' ">true</_UseNet6Packages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(_UseNet6Packages)' != 'true' ">
-    <_MicrosoftHostingVersion>5.0.0</_MicrosoftHostingVersion>
     <SystemCodeDomPackageVersion>4.7.0</SystemCodeDomPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>(_MicrosoftHostingVersion)</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftExtensionsHostingAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsHostingAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.1</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
   </PropertyGroup>
    <!-- Microsoft.Maui.Graphics related Packages -->
   <PropertyGroup>
     <_MicrosoftGraphicsWin2DVersion>0.8.0.21</_MicrosoftGraphicsWin2DVersion>
-    <_MicrosoftMauiGraphics>6.0.100-preview.7.358</_MicrosoftMauiGraphics>
-    <_MicrosoftMauiGraphicsWin2D>6.0.100-preview.7.358</_MicrosoftMauiGraphicsWin2D>
+    <_MicrosoftMauiGraphics>6.0.100-rc.1.382</_MicrosoftMauiGraphics>
+    <_MicrosoftMauiGraphicsWin2D>6.0.100-rc.1.382</_MicrosoftMauiGraphicsWin2D>
   </PropertyGroup>
    <!-- WINUI related Packages -->
   <PropertyGroup>
-    <_MicrosoftProjectReunionVersion>0.8.1</_MicrosoftProjectReunionVersion>
+    <_MicrosoftWindowsAppSdkVersion>1.0.0-experimental1</_MicrosoftWindowsAppSdkVersion>
     <_MicrosoftWebWebView2Version>1.0.705.50</_MicrosoftWebWebView2Version>
   </PropertyGroup>
   <!-- Android related Packages -->
@@ -39,7 +27,7 @@
   <ItemGroup>
     <PackageReference
         Update="Reloadify3000"
-        Version="1.0.6"
+        Version="1.0.7"
     />
     <PackageReference
         Update="Microsoft.Maui.Graphics"
@@ -70,6 +58,10 @@
         Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)"
     />
     <PackageReference
+        Update="Microsoft.Extensions.Hosting"
+        Version="$(MicrosoftExtensionsHostingPackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Extensions.Hosting.Abstractions"
         Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)"
     />
@@ -94,20 +86,20 @@
         Version="$(MicrosoftExtensionsPrimitivesPackageVersion)"
     />
     <PackageReference
-        Update="Microsoft.ProjectReunion"
-        Version="$(_MicrosoftProjectReunionVersion)"
+        Update="Microsoft.WindowsAppSDK"
+        Version="$(_MicrosoftWindowsAppSdkVersion)"
     />
     <PackageReference
-        Update="Microsoft.ProjectReunion.Foundation"
-        Version="$(_MicrosoftProjectReunionVersion)"
+        Update="Microsoft.WindowsAppSDK.Foundation"
+        Version="$(_MicrosoftWindowsAppSdkVersion)"
     />
     <PackageReference
-        Update="Microsoft.ProjectReunion.WinUI"
-        Version="$(_MicrosoftProjectReunionVersion)"
+        Update="Microsoft.WindowsAppSDK.WinUI"
+        Version="$(_MicrosoftWindowsAppSdkVersion)"
     />
     <PackageReference
-        Update="Microsoft.ProjectReunion.InteractiveExperiences"
-        Version="$(_MicrosoftProjectReunionVersion)"
+        Update="Microsoft.WindowsAppSDK.InteractiveExperiences"
+        Version="$(_MicrosoftWindowsAppSdkVersion)"
         NoWarn="NU1701"
     />
     <PackageReference

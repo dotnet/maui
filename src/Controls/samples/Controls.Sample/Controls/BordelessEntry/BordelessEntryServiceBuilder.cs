@@ -7,10 +7,25 @@ using Microsoft.Maui.Hosting;
 
 namespace Maui.Controls.Sample.Controls
 {
-	class BordelessEntryServiceBuilder : IMauiServiceBuilder
+	internal class BorderlessEntryRegistration
 	{
-		static IMauiHandlersCollection HandlersCollection;
-		static readonly Dictionary<Type, Type> PendingHandlers = new();
+		private readonly Action<BordelessEntryServiceBuilder> _builderAction;
+
+		public BorderlessEntryRegistration(Action<BordelessEntryServiceBuilder> builderAction)
+		{
+			_builderAction = builderAction;
+		}
+
+		internal void RunBuilderAction(BordelessEntryServiceBuilder builder)
+		{
+			_builderAction(builder);
+		}
+	}
+
+	class BordelessEntryServiceBuilder
+	{
+		internal static IMauiHandlersCollection HandlersCollection;
+		internal static readonly Dictionary<Type, Type> PendingHandlers = new();
 
 		public static void TryAddHandler<TType, TTypeRender>()
 			where TType : IView
@@ -21,20 +36,34 @@ namespace Maui.Controls.Sample.Controls
 			else
 				HandlersCollection.TryAddHandler<TType, TTypeRender>();
 		}
+	}
 
-		void IMauiServiceBuilder.ConfigureServices(HostBuilderContext context, IServiceCollection services)
+	class BorderlessEntryInitializer : IMauiInitializeService
+	{
+		private readonly IEnumerable<BorderlessEntryRegistration> _borderlessEntryRegistrations;
+
+		public BorderlessEntryInitializer(IEnumerable<BorderlessEntryRegistration> borderlessEntryRegistrations)
 		{
-			// No-op
+			_borderlessEntryRegistrations = borderlessEntryRegistrations;
 		}
 
-		void IMauiServiceBuilder.Configure(HostBuilderContext context, IServiceProvider services)
+		public void Initialize(IServiceProvider services)
 		{
-			HandlersCollection ??= services.GetRequiredService<IMauiHandlersServiceProvider>().GetCollection();
-
-			if (PendingHandlers.Count > 0)
+			var essentialsBuilder = new BordelessEntryServiceBuilder();
+			if (_borderlessEntryRegistrations != null)
 			{
-				HandlersCollection.TryAddHandlers(PendingHandlers);
-				PendingHandlers.Clear();
+				foreach (var essentialsRegistration in _borderlessEntryRegistrations)
+				{
+					essentialsRegistration.RunBuilderAction(essentialsBuilder);
+				}
+			}
+
+			BordelessEntryServiceBuilder.HandlersCollection ??= services.GetRequiredService<IMauiHandlersServiceProvider>().GetCollection();
+
+			if (BordelessEntryServiceBuilder.PendingHandlers.Count > 0)
+			{
+				BordelessEntryServiceBuilder.HandlersCollection.TryAddHandlers(BordelessEntryServiceBuilder.PendingHandlers);
+				BordelessEntryServiceBuilder.PendingHandlers.Clear();
 			}
 		}
 	}

@@ -24,14 +24,17 @@ namespace Maui.Controls.Sample
 {
 	public class CustomButton : Button { }
 
-	public class Startup : IStartup
+	public static class MauiProgram
 	{
 		enum PageType { Main, Blazor, Shell, Template }
-		readonly PageType _pageType = PageType.Main;
+		readonly static PageType _pageType = PageType.Main;
 
-		public void Configure(IAppHostBuilder appBuilder)
+		public static MauiApp CreateMauiApp()
 		{
+			var appBuilder = MauiApp.CreateBuilder();
+
 			appBuilder.UseMauiApp<XamlApp>();
+			var services = appBuilder.Services;
 
 			appBuilder
 				.ConfigureMauiHandlers(handlers =>
@@ -48,7 +51,6 @@ namespace Maui.Controls.Sample
 #endif
 				});
 
-
 			// Use a "third party" library that brings in a massive amount of controls
 			appBuilder.UseBordelessEntry();
 			appBuilder.ConfigureEffects(builder =>
@@ -60,41 +62,34 @@ namespace Maui.Controls.Sample
 			appBuilder.EnableHotReload();
 #endif
 
-			appBuilder
-				.ConfigureAppConfiguration(config =>
-				{
-					config.AddInMemoryCollection(new Dictionary<string, string>
+			appBuilder.Configuration.AddInMemoryCollection(
+				new Dictionary<string, string>
 					{
 						{"MyKey", "Dictionary MyKey Value"},
 						{":Title", "Dictionary_Title"},
 						{"Position:Name", "Dictionary_Name" },
 						{"Logging:LogLevel:Default", "Warning"}
 					});
-				});
 
 #if NET6_0_OR_GREATER
 			appBuilder
 				.RegisterBlazorMauiWebView();
+			services.AddBlazorWebView();
 #endif
 
-			appBuilder
-				.ConfigureServices(services =>
-				{
-					services.AddLogging(logging =>
-					{
+			services.AddLogging(logging =>
+			{
 #if WINDOWS
-						logging.AddDebug();
+				logging.AddDebug();
 #else
-						logging.AddConsole();
+				logging.AddConsole();
 #endif
-					});
+			});
 
-					services.AddSingleton<ITextService, TextService>();
-					services.AddTransient<MainViewModel>();
+			services.AddSingleton<ITextService, TextService>();
+			services.AddTransient<MainViewModel>();
 
-#if NET6_0_OR_GREATER
-					services.AddBlazorWebView();
-#endif
+			services.AddTransient<IWindow, Window>();
 
 					services.AddTransient(
 						serviceType: typeof(Page),
@@ -102,11 +97,7 @@ namespace Maui.Controls.Sample
 						{
 							PageType.Template => typeof(TemplatePage),
 							PageType.Shell => typeof(AppShell),
-#if WINDOWS
-							PageType.Main => typeof(TempPage),
-#else
 							PageType.Main => typeof(CustomNavigationPage),
-#endif
 							PageType.Blazor =>
 #if NET6_0_OR_GREATER
 								typeof(BlazorPage),
@@ -116,8 +107,7 @@ namespace Maui.Controls.Sample
 							_ => throw new Exception(),
 						});
 
-					services.AddTransient<IWindow, Window>();
-				})
+			appBuilder
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
@@ -222,6 +212,8 @@ namespace Maui.Controls.Sample
 						return true;
 					}
 				});
+
+			return appBuilder.Build();
 		}
 	}
 }

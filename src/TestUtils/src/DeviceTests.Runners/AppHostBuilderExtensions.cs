@@ -10,14 +10,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 {
 	public static class AppHostBuilderExtensions
 	{
-		public static IAppHostBuilder ConfigureTests(this IAppHostBuilder appHostBuilder, TestOptions options)
+		public static MauiAppBuilder ConfigureTests(this MauiAppBuilder appHostBuilder, TestOptions options)
 		{
-			appHostBuilder.ConfigureServices(services => services.AddSingleton(options));
+			appHostBuilder.Services.AddSingleton(options);
 
 			return appHostBuilder;
 		}
 
-		public static IAppHostBuilder UseVisualRunner(this IAppHostBuilder appHostBuilder)
+		public static MauiAppBuilder UseVisualRunner(this MauiAppBuilder appHostBuilder)
 		{
 			appHostBuilder.UseMauiApp(svc => new MauiVisualRunnerApp(
 				svc.GetRequiredService<TestOptions>(),
@@ -26,18 +26,15 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			return appHostBuilder;
 		}
 
-		public static IAppHostBuilder UseHeadlessRunner(this IAppHostBuilder appHostBuilder, HeadlessRunnerOptions options)
+		public static MauiAppBuilder UseHeadlessRunner(this MauiAppBuilder appHostBuilder, HeadlessRunnerOptions options)
 		{
-			appHostBuilder.ConfigureServices(services =>
-			{
-				services.AddSingleton(options);
+			appHostBuilder.Services.AddSingleton(options);
 
 #if __ANDROID__ || __IOS__ || MACCATALYST
-				services.AddTransient(svc => new HeadlessTestRunner(
+			appHostBuilder.Services.AddTransient(svc => new HeadlessTestRunner(
 					svc.GetRequiredService<HeadlessRunnerOptions>(),
 					svc.GetRequiredService<TestOptions>()));
 #endif
-			});
 
 			return appHostBuilder;
 		}

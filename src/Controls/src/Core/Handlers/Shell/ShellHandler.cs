@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 		}
 
-		public ShellHandler(PropertyMapper mapper) : base(mapper)
+		public ShellHandler(IPropertyMapper mapper) : base(mapper)
 		{
 		}
 	}

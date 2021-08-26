@@ -1,4 +1,5 @@
 using System;
+using UIKit;
 using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
@@ -66,19 +67,24 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public void Clear()
+		void Clear(UIView nativeView)
 		{
-			if (NativeView == null)
+			if (nativeView == null)
 			{
 				return;
 			}
 
-			var subViews = NativeView.Subviews;
+			var subViews = nativeView.Subviews;
 
 			foreach (var subView in subViews)
 			{
 				subView.RemoveFromSuperview();
 			}
+		}
+
+		public void Clear()
+		{
+			Clear(NativeView);
 		}
 
 		public void Insert(int index, IView child)
@@ -96,14 +102,16 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.Subviews[index] = child.ToNative(MauiContext);
+			var existing = NativeView.Subviews[index];
+			existing.RemoveFromSuperview();
+			NativeView.InsertSubview(child.ToNative(MauiContext), index);
 			NativeView.SetNeedsLayout();
 		}
 
 		protected override void DisconnectHandler(LayoutView nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			Clear();
+			Clear(nativeView);
 		}
 	}
 }
