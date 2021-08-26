@@ -2,6 +2,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Extensions.DependencyInjection;
+using TDeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 
 namespace Microsoft.Maui.Controls.Hosting
 {
@@ -27,12 +28,13 @@ namespace Microsoft.Maui.Controls.Hosting
 				{
 					options = new InitializationOptions(MauiApplication.Current)
 					{
-						DisplayResolutionUnit = DisplayResolutionUnit.DP()
+						DisplayResolutionUnit = TDeviceInfo.DisplayResolutionUnit.ToCompatibility(TDeviceInfo.ViewPortWidth)
 					};
 				}
 				else
 				{
 					options.Context = options.Context ?? MauiApplication.Current;
+					TDeviceInfo.DisplayResolutionUnit = options.DisplayResolutionUnit.ToDeviceInfo();
 				}
 				options.Flags |= InitializationFlags.SkipRenderers;
 				Forms.Init(state, options);
