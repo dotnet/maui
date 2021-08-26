@@ -121,7 +121,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory]
 		[InlineData(0)]
 		[InlineData(100)]
-		[InlineData(-1)]
 		public async Task MinimumHeightInitializes(double minHeight) 
 		{
 			var view = new TStub()
@@ -129,7 +128,7 @@ namespace Microsoft.Maui.DeviceTests
 				MinimumHeight = minHeight
 			};
 
-			var expected = view.MinimumHeight == -1 ? 0 : view.MinimumHeight;
+			var expected = view.MinimumHeight;
 			var result = await GetValueAsync(view, handler => GetMinHeight(handler));
 
 			Assert.Equal(expected, result, 0);
@@ -138,7 +137,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory]
 		[InlineData(0)]
 		[InlineData(100)]
-		[InlineData(-1)]
 		public async Task MinimumWidthInitializes(double minWidth)
 		{
 			var view = new TStub()
@@ -146,7 +144,7 @@ namespace Microsoft.Maui.DeviceTests
 				MinimumWidth = minWidth
 			};
 
-			var expected = view.MinimumWidth == -1 ? 0 : view.MinimumWidth;
+			var expected = view.MinimumWidth;
 			var result = await GetValueAsync(view, handler => GetMinWidth(handler));
 
 			Assert.Equal(expected, result, 0);
