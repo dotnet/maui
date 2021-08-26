@@ -132,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 			var expected = view.MinimumHeight == -1 ? 0 : view.MinimumHeight;
 			var result = await GetValueAsync(view, handler => GetMinHeight(handler));
 
-			Assert.Equal(expected, result, 4);
+			Assert.Equal(expected, result, 0);
 		}
 
 		[Theory]
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.DeviceTests
 			var expected = view.MinimumWidth == -1 ? 0 : view.MinimumWidth;
 			var result = await GetValueAsync(view, handler => GetMinWidth(handler));
 
-			Assert.Equal(expected, result, 4);
+			Assert.Equal(expected, result, 0);
 		}
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>

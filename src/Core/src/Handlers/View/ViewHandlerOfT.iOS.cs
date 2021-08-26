@@ -1,6 +1,6 @@
 using Microsoft.Maui.Graphics;
 using UIKit;
-using static Microsoft.Maui.Primitives.Measure;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Handlers
 {
