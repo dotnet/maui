@@ -75,7 +75,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			NativeView.Deleted += OnNativeDeleted;
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(oldElement, Element));
-
 		}
 
 		void OnBatchCommitted(object sender, EventArg<VisualElement> e)
