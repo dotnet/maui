@@ -20,7 +20,6 @@
     <MicrosoftExtensionsLoggingConsolePackageVersion>6.0.0-rc.1.21423.9</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingDebugPackageVersion>6.0.0-rc.1.21423.9</MicrosoftExtensionsLoggingDebugPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>6.0.0-rc.1.21423.9</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>6.0.0-rc.1.21403.6</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
     <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.0-rc.1.21423.14</MicrosoftAspNetCoreAuthorizationPackageVersion>
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.0-rc.1.21423.14</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.0-rc.1.21423.14</MicrosoftAspNetCoreComponentsWebPackageVersion>
