@@ -139,8 +139,6 @@ namespace Microsoft.Maui
 
 		public static void UpdateMaximumHeight(this AView nativeView, IView view)
 		{
-			var xplatHeight = view.MaximumHeight;
-
 			// GetDesiredSize will take the specified Height into account during the layout
 			if (!nativeView.IsInLayout)
 			{
