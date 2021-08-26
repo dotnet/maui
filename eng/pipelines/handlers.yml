@@ -98,7 +98,7 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/pjc/vs-symbol-archive # still defaults to master even though main is the main branch
+      ref: refs/heads/main # still defaults to master even though main is the main branch
 
 stages:
 
@@ -241,7 +241,7 @@ stages:
       jobs:
         - template: sign-artifacts/jobs/v2.yml@xamarin-templates
           parameters:
-            signType: Test
+            signType: Real
             teamName: $(TeamName)
             usePipelineArtifactTasks: false
             targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
@@ -259,7 +259,7 @@ stages:
               **/signed/*.nupkg
             artifactPath: signed
             propsArtifactName: nuget
-            signType: Test
+            signType: Real
 
     - template: vs-insertion/stage/v1.yml@xamarin-templates
       parameters:
@@ -269,4 +269,3 @@ stages:
         symbolArtifactPatterns: |
           **/signed/*.nupkg
           **/*.snupkg
-        createVSPR: false
