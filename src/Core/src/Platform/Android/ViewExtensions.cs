@@ -57,6 +57,13 @@ namespace Microsoft.Maui
 					return;
 				}
 
+				// Remove previous background gradient if any
+				if (nativeView.Background is MauiDrawable mauiDrawable)
+				{
+					nativeView.Background = null;
+					mauiDrawable.Dispose();
+				}
+
 				if (background is SolidPaint solidPaint)
 				{
 					Color backgroundColor = solidPaint.Color;

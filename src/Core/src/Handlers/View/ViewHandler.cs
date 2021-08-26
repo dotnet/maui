@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateFlowDirection(view);
 		}
 		
-		public static void MapBorderBrush(IViewHandler handler, IView view)
+		public static void MapBorderBrush(ViewHandler handler, IView view)
 		{
 #if WINDOWS
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
@@ -181,10 +181,10 @@ namespace Microsoft.Maui.Handlers
 #else
 			((NativeView?)handler.NativeView)?.UpdateBorderBrush(view);
 #endif
-			handler.UpdateValue(nameof(view.Background));
+			MapBackground(handler, view);
 		}
 
-		public static void MapBorderWidth(IViewHandler handler, IView view)
+		public static void MapBorderWidth(ViewHandler handler, IView view)
 		{
 #if WINDOWS
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
@@ -192,10 +192,10 @@ namespace Microsoft.Maui.Handlers
 #else
 			((NativeView?)handler.NativeView)?.UpdateBorderWidth(view);
 #endif
-			handler.UpdateValue(nameof(view.Background));
+			MapBackground(handler, view);
 		}
 
-		public static void MapBorderDashArray(IViewHandler handler, IView view)
+		public static void MapBorderDashArray(ViewHandler handler, IView view)
 		{
 #if WINDOWS
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
@@ -205,7 +205,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 		}
 
-		public static void MapBorderDashOffset(IViewHandler handler, IView view)
+		public static void MapBorderDashOffset(ViewHandler handler, IView view)
 		{
 #if WINDOWS
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Handlers
 #endif
 		}
 
-		public static void MapBorderShape(IViewHandler handler, IView view)
+		public static void MapBorderShape(ViewHandler handler, IView view)
 		{
 #if WINDOWS
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Handlers
 #else
 			((NativeView?)handler.NativeView)?.UpdateBorderShape(view);
 #endif
-			handler.UpdateValue(nameof(view.Background));
+			MapBackground(handler, view);
 		}
 
 		public static void MapOpacity(ViewHandler handler, IView view)

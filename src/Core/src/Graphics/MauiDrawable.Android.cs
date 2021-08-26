@@ -255,66 +255,59 @@ namespace Microsoft.Maui.Graphics
 			if (_disposed)
 				return;
 
-			if (Paint != null)
-			{
-				if (_backgroundColor != null)
-					Paint.Color = _backgroundColor.Value;
-				else
-				{
-					if (_background != null)
-						SetPaint(Paint, _background);
-				}
-			}
-
-			if (_borderPaint != null && HasBorder())
-			{
-				_borderPaint.StrokeWidth = _borderWidth;
-
-				if (_borderPathEffect != null)
-					_borderPaint.SetPathEffect(_borderPathEffect);
-
-				if (_borderColor != null)
-					_borderPaint.Color = _borderColor.Value;
-				else
-				{
-					if (_border != null)
-						SetPaint(_borderPaint, _border);
-				}
-			}
-
-			if (_invalidatePath)
-			{
-				_invalidatePath = false;
-
-				if (_shape != null)
-				{
-					var bounds = new Rectangle(0, 0, _width, _height);
-					var path = _shape.PathForBounds(bounds);
-					var clipPath = path?.AsAndroidPath();
-
-					if (clipPath == null)
-						return;
-
-					if (_clipPath != null)
-					{
-						_clipPath.Reset();
-						_clipPath.Set(clipPath);
-
-						if (_maskPath != null && HasBorder())
-						{
-							_maskPath.Reset();
-							_maskPath.AddRect(0, 0, _width, _height, Path.Direction.Cw!);
-							_maskPath.InvokeOp(_clipPath, Path.Op.Difference!);
-						}
-					}
-				}
-			}
-
-			if (canvas == null)
-				return;
 
 			if (HasBorder())
 			{
+				if (Paint != null)
+					SetBackground(Paint);
+
+				if (_borderPaint != null)
+				{
+					_borderPaint.StrokeWidth = _borderWidth;
+
+					if (_borderPathEffect != null)
+						_borderPaint.SetPathEffect(_borderPathEffect);
+
+					if (_borderColor != null)
+						_borderPaint.Color = _borderColor.Value;
+					else
+					{
+						if (_border != null)
+							SetPaint(_borderPaint, _border);
+					}
+				}
+
+				if (_invalidatePath)
+				{
+					_invalidatePath = false;
+
+					if (_shape != null)
+					{
+						var bounds = new Rectangle(0, 0, _width, _height);
+						var path = _shape.PathForBounds(bounds);
+						var clipPath = path?.AsAndroidPath();
+
+						if (clipPath == null)
+							return;
+
+						if (_clipPath != null)
+						{
+							_clipPath.Reset();
+							_clipPath.Set(clipPath);
+
+							if (_maskPath != null && HasBorder())
+							{
+								_maskPath.Reset();
+								_maskPath.AddRect(0, 0, _width, _height, Path.Direction.Cw!);
+								_maskPath.InvokeOp(_clipPath, Path.Op.Difference!);
+							}
+						}
+					}
+				}
+
+				if (canvas == null)
+					return;
+
 				var saveCount = canvas.SaveLayer(0, 0, _width, _height, null);
 
 				if (_clipPath != null && Paint != null)
@@ -330,8 +323,10 @@ namespace Microsoft.Maui.Graphics
 			}
 			else
 			{
-				if (_clipPath != null && Paint != null)
-					canvas.DrawPath(_clipPath, Paint);
+				if (paint != null)
+					SetBackground(paint);
+
+				base.OnDraw(shape, canvas, paint);
 			}
 		}
 
@@ -391,7 +386,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			InitializeBorderIfNeeded();
 
-			return _borderWidth > 0;
+			return _shape != null && _borderWidth > 0;
 		}
 
 		void InitializeBorderIfNeeded()
@@ -441,7 +436,21 @@ namespace Microsoft.Maui.Graphics
 				}
 			}
 		}
-
+		
+		void SetBackground(APaint nativePaint)
+		{
+			if (nativePaint != null)
+			{
+				if (_backgroundColor != null)
+					nativePaint.Color = _backgroundColor.Value;
+				else
+				{
+					if (_background != null)
+						SetPaint(nativePaint, _background);
+				}
+			}
+		}
+		
 		void SetPaint(APaint nativePaint, GPaint paint)
 		{
 			if (paint is LinearGradientPaint linearGradientPaint)
