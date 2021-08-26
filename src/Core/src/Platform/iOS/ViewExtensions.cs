@@ -52,24 +52,29 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this UIView nativeView, IView view)
 		{
-			var background = view.Background;
+			bool hasBorder = view.BorderShape != null && view.BorderBrush != null && view.BorderWidth > 0;
 
-			if (background.IsNullOrEmpty())
-				return;
-
-			if (background is SolidPaint solidPaint)
+			if (hasBorder)
+				nativeView.UpdateMauiCALayer(view);
+			else
 			{
-				Color backgroundColor = solidPaint.Color;
+				// Remove previous background gradient layer if any
+				nativeView.RemoveBackgroundLayer();
 
-				if (backgroundColor == null)
-					nativeView.BackgroundColor = ColorExtensions.BackgroundColor;
-				else
-					nativeView.BackgroundColor = backgroundColor.ToNative();
+				var paint = view.Background;
 
-				return;
+				if (paint.IsNullOrEmpty())
+					return;
+
+				var backgroundLayer = paint?.ToCALayer(nativeView.Bounds);
+
+				if (backgroundLayer != null)
+				{
+					backgroundLayer.Name = BackgroundLayerName;
+					nativeView.BackgroundColor = UIColor.Clear;
+					nativeView.InsertBackgroundLayer(backgroundLayer, 0);
+				}
 			}
-
-			nativeView.UpdateMauiCALayer(view);
 		}
 
 		public static void UpdateBorderBrush(this UIView nativeView, IView view)
@@ -121,7 +126,7 @@ namespace Microsoft.Maui
 			var borderShape = view.BorderShape;
 			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
 
-			if (backgroundLayer == null && borderShape != null)
+			if (backgroundLayer == null && borderShape == null)
 				return;
 
 			nativeView.UpdateMauiCALayer(view);

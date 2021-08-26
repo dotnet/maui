@@ -1,10 +1,8 @@
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
-using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
 using ALayoutDirection = Android.Views.LayoutDirection;
-using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
