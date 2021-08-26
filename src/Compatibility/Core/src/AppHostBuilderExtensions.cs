@@ -106,6 +106,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 
+#if TIZEN
+					handlers.TryAddCompatibilityRenderer(typeof(ContentView), typeof(LayoutRenderer));
+#endif
 					// Shimmed renderers go directly to the registrar to load Image Handlers
 					Internals.Registrar.Registered.Register(typeof(FileImageSource), typeof(FileImageSourceHandler));
 					Internals.Registrar.Registered.Register(typeof(StreamImageSource), typeof(StreamImagesourceHandler));

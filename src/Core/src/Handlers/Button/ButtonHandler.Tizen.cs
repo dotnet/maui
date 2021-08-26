@@ -40,6 +40,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateTextColor(button);
 		}
 
+		//TODO : Need to impl
+		[MissingMapper]
+		public static void MapImageSource(ButtonHandler handler, IButton image) { }
+
 		[MissingMapper]
 		public static void MapCharacterSpacing(ButtonHandler handler, IButton button) { }
 

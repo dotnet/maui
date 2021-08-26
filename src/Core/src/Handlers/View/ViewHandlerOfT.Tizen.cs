@@ -180,7 +180,7 @@ namespace Microsoft.Maui.Handlers
 				if (disposing)
 				{
 					(this as IElementHandler)?.DisconnectHandler();
-					NativeView?.Unrealize();
+					base.NativeView?.Unrealize();
 					ContainerView?.Unrealize();
 				}
 
