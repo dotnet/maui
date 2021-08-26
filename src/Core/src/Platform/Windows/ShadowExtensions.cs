@@ -1,4 +1,5 @@
 ﻿#nullable disable
+/*
 using System;
 using System.Diagnostics;
 using System.Numerics;
@@ -10,11 +11,13 @@ using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
+*/
 
 namespace Microsoft.Maui
 {
 	public static class ShadowExtensions
 	{
+		/*
 		public static async Task<CompositionBrush> GetAlphaMaskAsync(this UIElement element)
 		{
 			CompositionBrush mask = null;
@@ -70,5 +73,6 @@ namespace Microsoft.Maui
 
 			return mask;
 		}
+		*/
 	}
 }

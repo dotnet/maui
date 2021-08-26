@@ -1,32 +1,38 @@
 ﻿#nullable disable
 using System;
-using System.Numerics;
-using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics.Win2D;
-using Microsoft.UI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
+/*
+using System.Numerics;
+using System.Threading.Tasks;
+using Microsoft.UI;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
+*/
 
 namespace Microsoft.Maui
 {
 	partial class WrapperView : Grid, IDisposable
 	{
+		/*
 		readonly Canvas _shadowCanvas;
 		SpriteVisual _shadowVisual;
 		DropShadow _dropShadow;
+		*/
 
 		FrameworkElement _child;
 
 		public WrapperView()
 		{
+			/*
 			_shadowCanvas = new Canvas();
 
 			Children.Add(_shadowCanvas);
+			*/
 		}
 
 		public FrameworkElement Child
@@ -36,7 +42,7 @@ namespace Microsoft.Maui
 			{
 				if (_child != null)
 				{
-					_child.SizeChanged -= OnChildSizeChanged;
+					//_child.SizeChanged -= OnChildSizeChanged;
 					Children.Remove(_child);
 				}
 
@@ -44,39 +50,19 @@ namespace Microsoft.Maui
 					return;
 
 				_child = value;
-				_child.SizeChanged += OnChildSizeChanged;
+				//_child.SizeChanged += OnChildSizeChanged;
 				Children.Add(_child);
 			}
 		}
 
-		internal bool HasShadow => _dropShadow != null;
-
 		public void Dispose()
 		{
-			DisposeShadow();
+			//DisposeShadow();
 		}
 
 		partial void ClipChanged()
 		{
 			UpdateClip();
-		}
-
-		async partial void ShadowChanged()
-		{
-			if (HasShadow)
-				UpdateShadow();
-			else
-				await CreateShadowAsync();
-		}
-
-		async void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
-		{
-			UpdateClip();
-
-			if (HasShadow)
-				UpdateShadowSize();
-			else
-				await CreateShadowAsync();
 		}
 
 		void UpdateClip()
@@ -108,6 +94,27 @@ namespace Microsoft.Maui
 			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
 
 			visual.Clip = geometricClip;
+		}
+
+		/*	  
+		internal bool HasShadow => _dropShadow != null;
+		 
+		async partial void ShadowChanged()
+		{
+			if (HasShadow)
+				UpdateShadow();
+			else
+				await CreateShadowAsync();
+		}
+
+		async void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			UpdateClip();
+
+			if (HasShadow)
+				UpdateShadowSize();
+			else
+				await CreateShadowAsync();
 		}
 
 		void DisposeShadow()
@@ -204,5 +211,6 @@ namespace Microsoft.Maui
 				}
 			}
 		}
+		*/
 	}
 }

@@ -1,4 +1,5 @@
 ﻿#nullable disable
+/*
 using System;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.UI.Composition;
@@ -74,3 +75,4 @@ namespace Microsoft.Maui
 		}
 	}
 }
+*/
