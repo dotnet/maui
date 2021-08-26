@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a LayoutView");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 
-			_pageViewController = (PageViewController)FactoryMapper[nameof(Factory.CreateViewController)].Invoke(this, VirtualView)!;
+			_pageViewController = (PageViewController)FactoryMapper[nameof(Factory.CreateViewController)].Invoke(this, VirtualView, null)!;
 
 			if (_pageViewController.CurrentNativeView is PageView pv)
 				return pv;

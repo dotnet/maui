@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Factory = System.Func<Microsoft.Maui.IElementHandler, Microsoft.Maui.IElement, object?>;
+using Factory = System.Func<Microsoft.Maui.IElementHandler, Microsoft.Maui.IElement, object?, object?>;
 
 namespace Microsoft.Maui
 {
@@ -24,10 +24,10 @@ namespace Microsoft.Maui
 			_mapper[key] = action;
 		}
 
-		private protected virtual object? InvokeCore(string key, IElementHandler viewHandler, IElement virtualView)
+		private protected virtual object? InvokeCore(string key, IElementHandler viewHandler, IElement virtualView, object? args)
 		{
 			var action = GetFactoryCore(key);
-			return action?.Invoke(viewHandler, virtualView);
+			return action?.Invoke(viewHandler, virtualView, args);
 		}
 
 		private protected virtual Factory? GetFactoryCore(string key)
@@ -40,12 +40,12 @@ namespace Microsoft.Maui
 				return null;
 		}
 
-		internal object? Invoke(IElementHandler viewHandler, IElement? virtualView, string property)
+		internal object? Invoke(IElementHandler viewHandler, IElement? virtualView, string property, object? args)
 		{
 			if (virtualView == null)
 				return default;
 
-			return InvokeCore(property, viewHandler, virtualView);
+			return InvokeCore(property, viewHandler, virtualView, args);
 		}
 
 		public FactoryMapper? Chained
@@ -71,12 +71,12 @@ namespace Microsoft.Maui
 		{
 		}
 
-		public Func<TViewHandler, TVirtualView, object?> this[string key]
+		public Func<TViewHandler, TVirtualView, object?, object?> this[string key]
 		{
 			get
 			{
 				var action = GetFactoryCore(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
-				return new Func<TViewHandler, TVirtualView, object?>((h, v) => action.Invoke(h, v));
+				return new Func<TViewHandler, TVirtualView, object?, object?>((h, v, args) => action.Invoke(h, v, args));
 			}
 			set => Add(key, value);
 		}
@@ -85,8 +85,8 @@ namespace Microsoft.Maui
 		public void Add(string key, Func<TViewHandler, TVirtualView> action) =>
 			Add(key, action);
 
-		public void Add(string key, Func<TViewHandler, TVirtualView, object?> action) =>
-			SetPropertyCore(key, (h, v) => action?.Invoke((TViewHandler)h, (TVirtualView)v));
+		public void Add(string key, Func<TViewHandler, TVirtualView, object?, object?> action) =>
+			SetPropertyCore(key, (h, v, args) => action?.Invoke((TViewHandler)h, (TVirtualView)v, args));
 	}
 
 	public class FactoryMapper<TVirtualView> : FactoryMapper<TVirtualView, IElementHandler>

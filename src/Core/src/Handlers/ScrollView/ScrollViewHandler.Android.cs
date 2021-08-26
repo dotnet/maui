@@ -19,12 +19,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static FactoryMapper<IScrollView, ScrollViewHandler> FactoryMapper = new()
 		{
-			[nameof(ScrollViewHandler.CreateNativeView)] = ScrollViewFactory.CreateNativeView
+			[nameof(ScrollViewHandler.CreateNativeView)] = (h, v, _) => ScrollViewFactory.CreateNativeView(h, v)
 		};
 
 		protected override MauiScrollView CreateNativeView()
 		{
-			if (FactoryMapper.Invoke(this, null, nameof(ScrollViewHandler.CreateNativeView)) is MauiScrollView msv)
+			if (FactoryMapper.Invoke(this, null, nameof(ScrollViewHandler.CreateNativeView), null) is MauiScrollView msv)
 				return msv;
 
 			throw new System.Exception("NOOOOOOO");

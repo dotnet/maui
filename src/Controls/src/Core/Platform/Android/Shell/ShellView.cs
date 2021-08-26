@@ -7,6 +7,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -126,7 +127,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual IShellObservableFragment CreateFragmentForPage(Page page)
 		{
-			return new ShellContentFragment(this, page);
+			return (IShellObservableFragment)ShellHandler.FactoryMapper[nameof(ShellHandler.Factory.CreateFragmentForPage)].Invoke((ShellHandler)Element.Handler, Element, page);
 		}
 
 		protected virtual IShellFlyoutContentView CreateShellFlyoutContentView()

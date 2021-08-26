@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 		protected override UIView CreateNativeView(IElement view)
 		{
 			return (PageView)PageHandler.FactoryMapper[nameof(PageHandler.Factory.CreateNativeView)]
-				.Invoke(_pageHandler, (IView)view)!;
+				.Invoke(_pageHandler, (IView)view, null)!;
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)

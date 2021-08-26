@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a PageViewGroup");
 			}
 
-			var viewGroup = (PageViewGroup)FactoryMapper[nameof(Factory.CreateNativeView)].Invoke(this, VirtualView)!;
+			var viewGroup = (PageViewGroup)FactoryMapper[nameof(Factory.CreateNativeView)].Invoke(this, VirtualView, null)!;
 
 			return viewGroup;
 		}
