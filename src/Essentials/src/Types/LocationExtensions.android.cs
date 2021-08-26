@@ -42,7 +42,9 @@ namespace Microsoft.Maui.Essentials
 // 						Platform.HasApiLevelS
 // 							? location.IsMock :
 // #endif
+#pragma warning disable CS0618 // Type or member is obsolete
 							location.IsFromMockProvider
+#pragma warning restore CS0618 // Type or member is obsolete
 						)
 					: false,
 				AltitudeReferenceSystem = AltitudeReferenceSystem.Ellipsoid
