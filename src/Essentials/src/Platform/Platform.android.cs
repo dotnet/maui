@@ -193,10 +193,10 @@ namespace Microsoft.Maui.Essentials
 			AppContext.GetSystemService(Context.ConnectivityService) as ConnectivityManager;
 
 		internal static Vibrator Vibrator =>
-#if __ANDROID_31__
-			HasApiLevelS
-				? VibratorManager.GetDefaultVibrator() :
-#endif
+// #if __ANDROID_31__
+// 			HasApiLevelS
+// 				? VibratorManager.GetDefaultVibrator() :
+// #endif
 #pragma warning disable CS0618 // Type or member is obsolete
 				AppContext.GetSystemService(Context.VibratorService) as Vibrator;
 #pragma warning restore CS0618 // Type or member is obsolete

@@ -38,10 +38,10 @@ namespace Microsoft.Maui.Essentials
 				Speed = location.HasSpeed ? location.Speed : default(double?),
 				IsFromMockProvider = Platform.HasApiLevel(global::Android.OS.BuildVersionCodes.JellyBeanMr2)
 					? (
-#if __ANDROID_26__
-						Platform.HasApiLevelS
-							? location.IsMock :
-#endif
+// #if __ANDROID_31__
+// 						Platform.HasApiLevelS
+// 							? location.IsMock :
+// #endif
 							location.IsFromMockProvider
 						)
 					: false,
