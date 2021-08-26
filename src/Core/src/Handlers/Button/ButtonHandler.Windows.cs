@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : ViewHandler<IButton, MauiButton>
+	public sealed partial class ButtonHandler : ViewHandler<IButton, MauiButton>
 	{
 		static UI.Xaml.Thickness? DefaultPadding;
 		static UI.Xaml.Media.Brush? DefaultForeground;
@@ -73,6 +73,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdatePadding(button, DefaultPadding);
 		}
+
+		public static void MapImageSource(ButtonHandler handler, IButton image) { }
 
 		void OnClick(object sender, UI.Xaml.RoutedEventArgs e)
 		{

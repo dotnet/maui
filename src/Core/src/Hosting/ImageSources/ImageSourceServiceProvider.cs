@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Hosting
 		readonly ConcurrentDictionary<Type, Type> _imageSourceCache = new ConcurrentDictionary<Type, Type>();
 		readonly ConcurrentDictionary<Type, Type> _serviceCache = new ConcurrentDictionary<Type, Type>();
 
-		public ImageSourceServiceProvider(IMauiServiceCollection collection, IServiceProvider hostServiceProvider)
+		public ImageSourceServiceProvider(IImageSourceServiceCollection collection, IServiceProvider hostServiceProvider)
 			: base(collection, false)
 		{
 			HostServiceProvider = hostServiceProvider;

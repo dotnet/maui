@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			{
 				using var stringWriter = new StringWriter();
 				using var xmlWriter = XmlWriter.Create(stringWriter);
-				
+
 				try
 				{
 					var dcs = new DataContractSerializer(typeof(Dictionary<string, object>));

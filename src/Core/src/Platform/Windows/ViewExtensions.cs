@@ -1,9 +1,12 @@
 #nullable enable
+using System;
+using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 
 namespace Microsoft.Maui
 {
@@ -68,6 +71,35 @@ namespace Microsoft.Maui
 				border.UpdateBackground(view.Background);
 			else if (nativeView is Panel panel)
 				panel.UpdateBackground(view.Background);
+		}
+
+
+		public static WFlowDirection ToNative(this FlowDirection flowDirection)
+		{
+			if (flowDirection == FlowDirection.RightToLeft)
+				return WFlowDirection.RightToLeft;
+			else if (flowDirection == FlowDirection.LeftToRight)
+				return WFlowDirection.LeftToRight;
+
+			throw new InvalidOperationException($"Invalid FlowDirection: {flowDirection}");
+		}
+
+		public static void UpdateFlowDirection(this FrameworkElement nativeView, IView view)
+		{
+			var flowDirection = view.FlowDirection;
+
+			if (flowDirection == FlowDirection.MatchParent ||
+				view.FlowDirection == FlowDirection.MatchParent)
+			{
+				flowDirection = view?.Handler?.MauiContext?.GetFlowDirection()
+					?? FlowDirection.LeftToRight;
+			}
+			if (flowDirection == FlowDirection.MatchParent)
+			{
+				flowDirection = FlowDirection.LeftToRight;
+			}
+
+			nativeView.FlowDirection = flowDirection.ToNative();
 		}
 
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>

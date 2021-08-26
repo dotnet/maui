@@ -22,18 +22,18 @@ namespace Microsoft.Maui.Controls.Platform
 			TitleBlock.Text = _options.Title ?? string.Empty;
 			OptionsList.ItemsSource = _options.Buttons.ToList();
 
-			if (_options.FlowDirection == Controls.FlowDirection.RightToLeft)
+			if (_options.FlowDirection == Maui.FlowDirection.RightToLeft)
 			{
 				TitleBlock.FlowDirection = UI.Xaml.FlowDirection.RightToLeft;
 				OptionsList.FlowDirection = UI.Xaml.FlowDirection.RightToLeft;
 			}
-			else if (_options.FlowDirection == Controls.FlowDirection.LeftToRight)
+			else if (_options.FlowDirection == Maui.FlowDirection.LeftToRight)
 			{
 				TitleBlock.FlowDirection = UI.Xaml.FlowDirection.LeftToRight;
 				OptionsList.FlowDirection = UI.Xaml.FlowDirection.LeftToRight;
 			}
 
-			if (_options.FlowDirection == Controls.FlowDirection.RightToLeft)
+			if (_options.FlowDirection == Maui.FlowDirection.RightToLeft)
 			{
 				if (_options.Cancel != null)
 				{

@@ -5,7 +5,6 @@ using System.Globalization;
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.UriTypeConverter")]
-	[Xaml.TypeConversion(typeof(Uri))]
 	public class UriTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

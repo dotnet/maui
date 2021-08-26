@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.Shadow)] = MapShadow,
 			[nameof(IView.Visibility)] = MapVisibility,
 			[nameof(IView.Background)] = MapBackground,
+			[nameof(IView.FlowDirection)] = MapFlowDirection,
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
@@ -147,6 +148,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateBackground(view);
+		}
+
+		public static void MapFlowDirection(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateFlowDirection(view);
 		}
 
 		public static void MapOpacity(ViewHandler handler, IView view)

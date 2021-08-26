@@ -1,4 +1,10 @@
+using System;
+using Android.Content;
+using Android.Views;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.Widget;
+using Google.Android.Material.Button;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui
 {
