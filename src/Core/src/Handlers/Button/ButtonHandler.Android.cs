@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Handlers
 			var deviceSize = (int)Context!.ToPixels(size);
 			return MeasureSpecMode.Exactly.MakeMeasureSpec(deviceSize);
 		}
-		
+
 
 		void OnSetImageSourceDrawable(Drawable? obj)
 		{

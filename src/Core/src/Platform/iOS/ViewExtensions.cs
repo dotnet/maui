@@ -103,7 +103,7 @@ namespace Microsoft.Maui
 			if (updateValue != nativeView.SemanticContentAttribute)
 				nativeView.SemanticContentAttribute = updateValue;
 		}
-		
+
 		public static void UpdateOpacity(this UIView nativeView, IView view)
 		{
 			nativeView.Alpha = (float)view.Opacity;

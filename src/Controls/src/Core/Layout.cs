@@ -136,8 +136,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static void LayoutChildIntoBoundingRegion(VisualElement child, Rectangle region)
 		{
 			bool isRightToLeft = false;
-			if (child.Parent is IFlowDirectionController parent && 
-				(isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer && 
+			if (child.Parent is IFlowDirectionController parent &&
+				(isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer &&
 				parent.EffectiveFlowDirection.IsRightToLeft()) &&
 				(parent.Width - region.Right) != region.X)
 			{

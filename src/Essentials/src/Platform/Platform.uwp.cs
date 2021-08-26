@@ -8,10 +8,10 @@ namespace Microsoft.Maui.Essentials
 {
 	public static partial class Platform
 	{
-		internal static Window CurrentWindow 
-		{ 
-			get => _currentWindow ?? Window.Current; 
-			set => _currentWindow = value; 
+		internal static Window CurrentWindow
+		{
+			get => _currentWindow ?? Window.Current;
+			set => _currentWindow = value;
 		}
 
 		internal const string AppManifestFilename = "AppxManifest.xml";

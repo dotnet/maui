@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 				if (id > 0)
 				{
 					var drawable = context.GetDrawable(id);
-					if( drawable != null)
+					if (drawable != null)
 					{
 						result = new ImageSourceServiceResult(drawable);
 					}

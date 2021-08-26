@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample.Pages
 			if (newPosition >= 4)
 				newPosition = 0;
 
-			positionChange.ContentLayout = 
+			positionChange.ContentLayout =
 				new Button.ButtonContentLayout((Button.ButtonContentLayout.ImagePosition)newPosition,
 					positionChange.ContentLayout.Spacing);
 		}

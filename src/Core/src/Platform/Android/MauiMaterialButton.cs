@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 				var drawable = TextViewCompat.GetCompoundDrawablesRelative(this)[3];
 				drawable?.SetBounds(0, 0, drawable.IntrinsicWidth, drawable.IntrinsicHeight);
 			}
-			else if(IconGravity == MaterialButton.IconGravityTop)
+			else if (IconGravity == MaterialButton.IconGravityTop)
 			{
 				var drawable = TextViewCompat.GetCompoundDrawablesRelative(this)[1];
 				drawable?.SetBounds(0, 0, drawable.IntrinsicWidth, drawable.IntrinsicHeight);

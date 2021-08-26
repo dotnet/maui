@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			//If there's a [TypeConverter], assume we can convert
 			if (typeConverter != null && str != null)
-			    return true;
+				return true;
 
 			//check if it's assignable from a string
 			if (targetTypeRef.ResolveCached().FullName == "System.Nullable`1")
