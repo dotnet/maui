@@ -11,16 +11,6 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {
-	public class MauiApplication<TStartup> : MauiApplication
-		where TStartup : IStartup, new()
-	{
-		public MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
-		{
-		}
-
-		protected override IStartup OnCreateStartup() => new TStartup();
-	}
-
 	public abstract class MauiApplication : Application
 	{
 		protected MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
@@ -28,21 +18,15 @@ namespace Microsoft.Maui
 			Current = this;
 		}
 
-		protected abstract IStartup OnCreateStartup();
+		protected abstract MauiApp CreateMauiApp();
 
 		public override void OnCreate()
 		{
 			RegisterActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
 
-			var startup = OnCreateStartup();
+			var mauiApp = CreateMauiApp();
 
-			var host = startup
-				.CreateAppHostBuilder()
-				.ConfigureServices(ConfigureNativeServices)
-				.ConfigureUsing(startup)
-				.Build();
-
-			Services = host.Services;
+			Services = mauiApp.Services;
 
 			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
 
@@ -72,11 +56,6 @@ namespace Microsoft.Maui
 			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationConfigurationChanged>(del => del(this, newConfig));
 
 			base.OnConfigurationChanged(newConfig);
-		}
-
-		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
-		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
 		}
 
 		public static MauiApplication Current { get; private set; } = null!;

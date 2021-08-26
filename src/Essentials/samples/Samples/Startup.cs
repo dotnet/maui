@@ -1,14 +1,15 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Samples
 {
-	public class Startup : IStartup
+	public static class MauiProgram
 	{
-		public void Configure(IAppHostBuilder appBuilder)
+		public static MauiApp CreateMauiApp()
 		{
+			var appBuilder = MauiApp.CreateBuilder();
+
 #if WINDOWS
 			Microsoft.Maui.Essentials.Platform.MapServiceToken =
 				"RJHqIE53Onrqons5CNOx~FrDr3XhjDTyEXEjng-CRoA~Aj69MhNManYUKxo6QcwZ0wmXBtyva0zwuHB04rFYAPf7qqGJ5cHb03RCDw1jIW8l";
@@ -31,9 +32,11 @@ namespace Samples
 						.AddWindows(windows => windows
 							.OnLaunched((app, e) =>
 								Microsoft.Maui.Essentials.Platform.OnLaunched(e)));
-					#endif
+#endif
 				})
 				.UseMauiApp<App>();
+
+			return appBuilder.Build();
 		}
 	}
 }

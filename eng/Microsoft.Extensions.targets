@@ -3,19 +3,7 @@
     <_UseNet6Packages Condition=" '$(TargetFramework.Contains(net6.0))' == 'true' or '$(PackageType)' == 'DotnetPlatform' ">true</_UseNet6Packages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(_UseNet6Packages)' != 'true' ">
-    <_MicrosoftHostingVersion>5.0.0</_MicrosoftHostingVersion>
     <SystemCodeDomPackageVersion>4.7.0</SystemCodeDomPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>(_MicrosoftHostingVersion)</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftExtensionsHostingAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsHostingAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>5.0.1</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>$(_MicrosoftHostingVersion)</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
   </PropertyGroup>
    <!-- Microsoft.Maui.Graphics related Packages -->
   <PropertyGroup>
@@ -68,6 +56,10 @@
     <PackageReference
         Update="Microsoft.Extensions.FileProviders.Abstractions"
         Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Extensions.Hosting"
+        Version="$(MicrosoftExtensionsHostingPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Hosting.Abstractions"
