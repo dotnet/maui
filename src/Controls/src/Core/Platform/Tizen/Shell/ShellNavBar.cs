@@ -17,7 +17,10 @@ namespace Microsoft.Maui.Controls.Platform
 		TImage _menuIcon = null;
 		TButton _menuButton = null;
 		TLabel _title = null;
+		ShellSearchView _searchView = null;
 		EvasObject _nativeTitleView = null;
+
+		SearchHandler _searchHandler = null;
 		View _titleView = null;
 		Page _page = null;
 
@@ -102,6 +105,20 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
+		public SearchHandler SearchHandler
+		{
+			get
+			{
+				return _searchHandler;
+			}
+			set
+			{
+				_searchHandler = value;
+				UpdateSearchHandler(_searchHandler);
+				UpdateChildren();
+			}
+		}
+
 		public View TitleView
 		{
 			get
@@ -177,7 +194,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_page = page;
 			Title = page.Title;
-			//SearchHandler = Shell.GetSearchHandler(page);
+			SearchHandler = Shell.GetSearchHandler(page);
 			TitleView = Shell.GetTitleView(page);
 			UpdateMenuIcon();
 		}
@@ -284,17 +301,42 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
+		void UpdateSearchHandler(SearchHandler handler)
+		{
+			if (_searchView != null)
+			{
+				UnPack(_searchView.NativeView);
+				_searchView.Dispose();
+				_searchView = null;
+			}
+
+			if (handler != null)
+			{
+				_searchView = new ShellSearchView(handler, MauiContext);
+				_searchView.NativeView.Show();
+				PackEnd(_searchView.NativeView);
+			}
+		}
+
 		void UpdateChildren()
 		{
-			if (_titleView != null)
+			if (_searchHandler != null)
+			{
+				_searchView.NativeView.Show();
+				_title?.Hide();
+				_nativeTitleView?.Hide();
+			}
+			else if (_titleView != null)
 			{
 				_nativeTitleView.Show();
 				_title?.Hide();
+				_searchView?.NativeView?.Hide();
 			}
 			else
 			{
 				_title.Show();
 				_nativeTitleView?.Hide();
+				_searchView?.NativeView?.Hide();
 			}
 		}
 
@@ -324,7 +366,11 @@ namespace Microsoft.Maui.Controls.Platform
 			contentBound.Width -= (menuBound.Width + menuMargin + titleHMargin * 2);
 			contentBound.Height -= titleVMargin * 2;
 
-			if (_titleView != null)
+			if (_searchView != null)
+			{
+				_searchView.NativeView.Geometry = contentBound;
+			}
+			else if (_titleView != null)
 			{
 				_nativeTitleView.Geometry = contentBound;
 			}
