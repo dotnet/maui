@@ -48,8 +48,8 @@ namespace Microsoft.Maui.Layouts
 				measuredWidth = Math.Max(measuredWidth, bounds.Left + width);
 			}
 
-			var finalHeight = ResolveConstraints(heightConstraint, AbsoluteLayout.Height, measuredHeight);
-			var finalWidth = ResolveConstraints(widthConstraint, AbsoluteLayout.Width, measuredWidth);
+			var finalHeight = ResolveConstraints(heightConstraint, AbsoluteLayout.Height, measuredHeight, AbsoluteLayout.MinimumHeight, AbsoluteLayout.MaximumHeight);
+			var finalWidth = ResolveConstraints(widthConstraint, AbsoluteLayout.Width, measuredWidth, AbsoluteLayout.MinimumWidth, AbsoluteLayout.MaximumWidth);
 
 			return new Size(finalWidth, finalHeight);
 		}

@@ -47,6 +47,9 @@ namespace Microsoft.Maui.Layouts
 				height = heightConstraint;
 			}
 
+			height = LayoutManager.ResolveConstraints(height, FlexLayout.Height, height, FlexLayout.MinimumHeight, FlexLayout.MaximumHeight);
+			width = LayoutManager.ResolveConstraints(width, FlexLayout.Width, width, FlexLayout.MinimumWidth, FlexLayout.MaximumWidth);
+
 			return new Size(width, height);
 		}
 	}

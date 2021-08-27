@@ -34,8 +34,8 @@ namespace Microsoft.Maui.Layouts
 			measuredHeight += padding.VerticalThickness;
 			measuredWidth += padding.HorizontalThickness;
 
-			var finalHeight = ResolveConstraints(heightConstraint, Stack.Height, measuredHeight);
-			var finalWidth = ResolveConstraints(widthConstraint, Stack.Width, measuredWidth);
+			var finalHeight = ResolveConstraints(heightConstraint, Stack.Height, measuredHeight, Stack.MinimumHeight, Stack.MaximumHeight);
+			var finalWidth = ResolveConstraints(widthConstraint, Stack.Width, measuredWidth, Stack.MinimumWidth, Stack.MaximumWidth);
 
 			return new Size(finalWidth, finalHeight);
 		}
