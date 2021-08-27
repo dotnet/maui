@@ -59,7 +59,6 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' ">
     <PackageReference Include="Microsoft.Maui.Dependencies" Version="$(MicrosoftMauiSdkVersion)" IsImplicitlyDefined="true" />
-    <PackageReference Include="Microsoft.Maui.Extensions" Version="$(MicrosoftMauiSdkVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MicrosoftMauiSdkVersion)" IsImplicitlyDefined="true" />
