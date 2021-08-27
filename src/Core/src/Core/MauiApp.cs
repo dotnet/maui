@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 		internal MauiApp(IHost host)
 		{
 			_host = host;
-			Logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("TODO: Environment.ApplicationName");
+			Logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(Environment.ApplicationName);
 		}
 
 		/// <summary>
@@ -27,6 +27,11 @@ namespace Microsoft.Maui
 		/// The application's configured <see cref="IConfiguration"/>.
 		/// </summary>
 		public IConfiguration Configuration => _host.Services.GetRequiredService<IConfiguration>();
+
+		/// <summary>
+		/// The application's configured <see cref="IHostEnvironment"/>.
+		/// </summary>
+		public IHostEnvironment Environment => _host.Services.GetRequiredService<IHostEnvironment>();
 
 		/// <summary>
 		/// Allows consumers to be notified of application lifetime events.
