@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var nativeView = WrappedNativeView;
 
-			if (nativeView == null || Context == null)
+			if (nativeView == null || MauiContext == null || Context == null)
 			{
 				return;
 			}
