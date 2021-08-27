@@ -5,13 +5,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public class RootComponentsCollection : ObservableCollection<RootComponent>, IJSComponentConfiguration
 	{
-		private readonly BlazorWebView _blazorWebView;
+		private readonly JSComponentConfigurationStore _jSComponents;
 
-		public RootComponentsCollection(BlazorWebView blazorWebView)
+		public RootComponentsCollection(JSComponentConfigurationStore jSComponents)
 		{
-			_blazorWebView = blazorWebView;
+			_jSComponents = jSComponents;
 		}
 
-		public JSComponentConfigurationStore JSComponents => _blazorWebView.WebViewManager?.JSComponentConfiguration!;
+		public JSComponentConfigurationStore JSComponents => _jSComponents;
 	}
 }

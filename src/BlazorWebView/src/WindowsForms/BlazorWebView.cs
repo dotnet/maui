@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Extensions.FileProviders;
 using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
@@ -31,7 +30,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         {
             Dispatcher = new WindowsFormsDispatcher(this);
 
-			RootComponents = new RootComponentsCollection(this);
 			RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
 
             _webview = new WebView2Control()
@@ -98,13 +96,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		private void ResetHostPage() => HostPage = null;
         private bool ShouldSerializeHostPage() => !string.IsNullOrEmpty(HostPage);
 
-        /// <summary>
-        /// A collection of <see cref="RootComponent"/> instances that specify the Blazor <see cref="IComponent"/> types
-        /// to be used directly in the specified <see cref="HostPage"/>.
-        /// </summary>
-        [Browsable(false)]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public RootComponentsCollection RootComponents { get; }
+		/// <summary>
+		/// A collection of <see cref="RootComponent"/> instances that specify the Blazor <see cref="IComponent"/> types
+		/// to be used directly in the specified <see cref="HostPage"/>.
+		/// </summary>
+		[Browsable(false)]
+		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		public RootComponentsCollection RootComponents { get; } = new();
 
         /// <summary>
         /// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
@@ -157,8 +155,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
             var fileProvider = new PhysicalFileProvider(contentRootDir);
 
-			var jsComponents = new JSComponentConfigurationStore();
-			_webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, Dispatcher, fileProvider, jsComponents, hostPageRelativePath);
+			_webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, Dispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
 
             foreach (var rootComponent in RootComponents)
             {

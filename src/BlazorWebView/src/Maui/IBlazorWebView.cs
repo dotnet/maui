@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Maui;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -7,7 +7,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	{
 		string? HostPage { get; set; }
 		RootComponentsCollection RootComponents { get; }
-		event EventHandler<WebViewManagerCreatedEventArgs>? WebViewManagerCreated;
-		WebViewManager? WebViewManager { get; }
+		JSComponentConfigurationStore JSComponents { get; }
 	}
 }

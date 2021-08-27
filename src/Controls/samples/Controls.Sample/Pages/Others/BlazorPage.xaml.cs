@@ -34,12 +34,7 @@ namespace Maui.Controls.Sample.Pages
 			};
 			bwv.RootComponents.Add(new RootComponent { Selector = "#app", ComponentType = typeof(Main) });
 
-
-			bwv.WebViewManagerCreated += (_, e) =>
-			{
-				bwv.RootComponents.RegisterForJavaScript<MyDynamicComponent>("my-dynamic-root-component");
-			};
-
+			bwv.RootComponents.RegisterForJavaScript<MyDynamicComponent>("my-dynamic-root-component");
 
 			verticalStack.Add(bwv);
 

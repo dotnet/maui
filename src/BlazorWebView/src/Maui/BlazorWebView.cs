@@ -1,49 +1,20 @@
-﻿using System;
-using Microsoft.Maui.Controls;
+﻿using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	public class BlazorWebView : Microsoft.Maui.Controls.View, IBlazorWebView
 	{
+		private readonly JSComponentConfigurationStore _jSComponents = new();
+
 		public BlazorWebView()
 		{
-			RootComponents = new RootComponentsCollection(this);
+			RootComponents = new RootComponentsCollection(_jSComponents);
 		}
+
+		JSComponentConfigurationStore IBlazorWebView.JSComponents => _jSComponents;
 
 		public string? HostPage { get; set; }
 
 		public RootComponentsCollection RootComponents { get; }
-
-		new public BlazorWebViewHandler? Handler
-		{
-			get => base.Handler as BlazorWebViewHandler;
-			set => base.Handler = value;
-		}
-
-		public WebViewManager? WebViewManager { get; internal set; }
-
-		public event EventHandler<WebViewManagerCreatedEventArgs>? WebViewManagerCreated;
-
-		protected override void OnHandlerChanging(HandlerChangingEventArgs args)
-		{
-			base.OnHandlerChanging(args);
-
-			if (Handler != null)
-			{
-				Handler.WebViewManagerCreated -= OnHandlerWebViewManagerCreated;
-			}
-
-			WebViewManager = null;
-
-			var newBlazorWebViewHandler = (BlazorWebViewHandler)args.NewHandler;
-			newBlazorWebViewHandler.WebViewManagerCreated += OnHandlerWebViewManagerCreated;
-		}
-
-		private void OnHandlerWebViewManagerCreated(object? sender, WebViewManagerCreatedEventArgs e)
-		{
-			WebViewManager = e.WebViewManager;
-
-			WebViewManagerCreated?.Invoke(this, e);
-		}
 	}
 }
