@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	// TODO ezhart 2021-07-16 This interface is just here to give Layout and Compatibility.Layout common ground for BindableLayout
 	// once we have the IContainer changes in, we may be able to drop this in favor of simply Core.ILayout
 	// See also IndicatorView.cs 
-	public interface IBindableLayout
+	public interface IBindableLayout 
 	{
 		public IList Children { get; }
 	}
@@ -118,6 +118,66 @@ namespace Microsoft.Maui.Controls
 			newC.EmptyView = GetEmptyView(b);
 			newC.EmptyViewTemplate = GetEmptyViewTemplate(b);
 			newC.EndBatchUpdate();
+		}
+
+		internal static void Add(this IBindableLayout layout, object item)
+		{
+			if (layout is Maui.ILayout mauiLayout && item is IView view)
+			{
+				mauiLayout.Add(view);
+			}
+			else
+			{
+				_ = layout.Children.Add(item);
+			}
+		}
+
+		internal static void Insert(this IBindableLayout layout, object item, int index)
+		{
+			if (layout is Maui.ILayout mauiLayout && item is IView view)
+			{
+				mauiLayout.Insert(index, view);
+			}
+			else
+			{
+				layout.Children.Insert(index, item);
+			}
+		}
+
+		internal static void Remove(this IBindableLayout layout, object item)
+		{
+			if (layout is Maui.ILayout mauiLayout && item is IView view)
+			{
+				_ = mauiLayout.Remove(view);
+			}
+			else
+			{
+				layout.Children.Remove(item);
+			}
+		}
+
+		internal static void RemoveAt(this IBindableLayout layout, int index) 
+		{
+			if (layout is Maui.ILayout mauiLayout)
+			{
+				mauiLayout.RemoveAt(index);
+			}
+			else
+			{
+				layout.Children.RemoveAt(index);
+			}
+		}
+
+		internal static void Clear(this IBindableLayout layout) 
+		{
+			if (layout is Maui.ILayout mauiLayout)
+			{
+				mauiLayout.Clear();
+			}
+			else
+			{
+				layout.Children.Clear();
+			}
 		}
 	}
 
@@ -231,7 +291,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			layout.Children.Clear();
+			layout.Clear();
 
 			UpdateEmptyView(layout);
 
@@ -240,7 +300,7 @@ namespace Microsoft.Maui.Controls
 
 			foreach (object item in _itemsSource)
 			{
-				layout.Children.Add(CreateItemView(item, layout));
+				layout.Add(CreateItemView(item, layout));
 			}
 		}
 
@@ -251,11 +311,11 @@ namespace Microsoft.Maui.Controls
 
 			if (!_itemsSource?.GetEnumerator().MoveNext() ?? true)
 			{
-				layout.Children.Add(_currentEmptyView);
+				layout.Add(_currentEmptyView);
 				return;
 			}
 
-			layout.Children.Remove(_currentEmptyView);
+			layout.Remove(_currentEmptyView);
 		}
 
 		View CreateItemView(object item, IBindableLayout layout)
@@ -307,8 +367,8 @@ namespace Microsoft.Maui.Controls
 			}
 
 			e.Apply(
-				insert: (item, index, _) => layout.Children.Insert(index, CreateItemView(item, layout)),
-				removeAt: (item, index) => layout.Children.RemoveAt(index),
+				insert: (item, index, _) => layout.Insert(CreateItemView(item, layout), index),
+				removeAt: (item, index) => layout.RemoveAt(index),
 				reset: CreateChildren);
 
 			// UpdateEmptyView is called from within CreateChildren, therefor skip it for Reset
