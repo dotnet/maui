@@ -31,7 +31,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
-	static class XmlTypeExtensions
+	static class XmlTypeXamlExtensions
 	{
 		public static T? GetTypeReference<T>(
 			this XmlType xmlType,
