@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Handlers
 			return new Size(finalWidth, finalHeight);
 		}
 
-		double ResolveConstraints(double measured, double exact, double min, double max) 
+		double ResolveConstraints(double measured, double exact, double min, double max)
 		{
 			var resolved = measured;
 

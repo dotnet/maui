@@ -11,7 +11,7 @@
 			return !double.IsNaN(value);
 		}
 
-		public static bool IsMaximumSet(double value) 
+		public static bool IsMaximumSet(double value)
 		{
 			return !double.IsPositiveInfinity(value);
 		}
