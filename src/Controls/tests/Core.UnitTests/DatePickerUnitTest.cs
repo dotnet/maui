@@ -20,6 +20,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
+		public void TestNullableDate()
+		{
+			DatePicker picker = new DatePicker();
+			if(picker.SelectedDate ==null)
+			{
+				Assert.That(picker.SelectedDate, Is.Null);
+			}
+
+		}
+		[Test]
 		public void TestMaximumDateException()
 		{
 			DatePicker picker = new DatePicker();
