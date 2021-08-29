@@ -8,11 +8,8 @@ namespace Microsoft.Maui.Controls
 	{
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(DatePicker), "d");
 
-
 		public static readonly BindableProperty SelectedDateProperty = BindableProperty.Create(nameof(SelectedDate), typeof(DateTime?),typeof(DatePicker),default(DateTime?));
-
-		
-
+				
 		public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime), typeof(DatePicker), default(DateTime), BindingMode.TwoWay,
 			coerceValue: CoerceDate,
 			propertyChanged: DatePropertyChanged,
