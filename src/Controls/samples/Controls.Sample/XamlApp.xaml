@@ -7,6 +7,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <Color x:Key="DotNetPurple">#512BD4</Color>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

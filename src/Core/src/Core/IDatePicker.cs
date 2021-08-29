@@ -18,6 +18,11 @@ namespace Microsoft.Maui
 		DateTime Date { get; set; }
 
 		/// <summary>
+		/// Gets or Sets a nullable date for UI.
+		/// </summary>
+		public DateTime? SelectedDate { get; set; }
+
+		/// <summary>
 		/// Gets the minimum DateTime selectable.
 		/// </summary>
 		DateTime MinimumDate { get; }

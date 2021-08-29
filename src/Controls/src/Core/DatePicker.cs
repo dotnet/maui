@@ -8,6 +8,11 @@ namespace Microsoft.Maui.Controls
 	{
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(DatePicker), "d");
 
+
+		public static readonly BindableProperty SelectedDateProperty = BindableProperty.Create(nameof(SelectedDate), typeof(DateTime?),typeof(DatePicker),default(DateTime?));
+
+		
+
 		public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime), typeof(DatePicker), default(DateTime), BindingMode.TwoWay,
 			coerceValue: CoerceDate,
 			propertyChanged: DatePropertyChanged,
@@ -37,11 +42,18 @@ namespace Microsoft.Maui.Controls
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<DatePicker>>(() => new PlatformConfigurationRegistry<DatePicker>(this));
 		}
-
+		public DateTime? SelectedDate
+		{
+			get { return (DateTime)GetValue(SelectedDateProperty); }
+			set { SetValue(SelectedDateProperty, value); }
+		}
 		public DateTime Date
 		{
 			get { return (DateTime)GetValue(DateProperty); }
-			set { SetValue(DateProperty, value); }
+			set { 
+				SetValue(DateProperty, value);
+				SetValue(DateProperty, value);
+			}
 		}
 
 		public string Format
