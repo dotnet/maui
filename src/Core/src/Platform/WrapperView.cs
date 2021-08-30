@@ -6,7 +6,11 @@ namespace Microsoft.Maui
 	{
 		IShape? _clip;
 
+#if WINDOWS
+ 		public new IShape? Clip
+#else
 		public IShape? Clip
+#endif
 		{
 			get => _clip;
 			set

@@ -64,7 +64,7 @@ namespace Microsoft.Maui
 				}
 				else
 				{
-					if (paint!.ToDrawable() is Drawable drawable)
+					if (paint!.ToDrawable(nativeView.Context) is Drawable drawable)
 						nativeView.Background = drawable;
 				}
 			}

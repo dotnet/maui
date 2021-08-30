@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
 
 		ILayoutManager Maui.ILayout.LayoutManager => this;
+
 		IList IBindableLayout.Children => _children;
 
 		bool ISafeAreaView.IgnoreSafeArea => false;

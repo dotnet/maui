@@ -70,6 +70,8 @@ namespace Microsoft.Maui.Controls
 
 		public bool IgnoreSafeArea { get; set; }
 
+		public BorderStroke? BorderStroke => BorderStroke;
+
 		protected abstract ILayoutManager CreateLayoutManager();
 
 		public IEnumerator<IView> GetEnumerator() => _children.GetEnumerator();

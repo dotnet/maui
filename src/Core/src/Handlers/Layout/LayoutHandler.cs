@@ -1,8 +1,4 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -10,6 +6,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ILayout, ILayoutHandler> LayoutMapper = new PropertyMapper<ILayout, ILayoutHandler>(ViewMapper)
 		{
+			[nameof(ILayout.BorderStroke)] = MapBorderStroke,
 		};
 
 		public static CommandMapper<ILayout, ILayoutHandler> LayoutCommandMapper = new(ViewCommandMapper)
@@ -28,6 +25,10 @@ namespace Microsoft.Maui.Handlers
 
 		public LayoutHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null)
 			: base(mapper ?? LayoutMapper, commandMapper ?? LayoutCommandMapper)
+		{
+
+		}
+		public static void MapBorderStroke(ILayoutHandler handler, ILayout layout)
 		{
 
 		}
