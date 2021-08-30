@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using CoreAnimation;
 using Microsoft.Maui.Graphics;
 using UIKit;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui
 {
@@ -165,30 +166,44 @@ namespace Microsoft.Maui
 
 		public static void UpdateWidth(this UIView nativeView, IView view)
 		{
-			if (view.Width == -1)
-			{
-				// Ignore the initial set of the height; the initial layout will take care of it
-				return;
-			}
-
 			UpdateFrame(nativeView, view);
 		}
 
 		public static void UpdateHeight(this UIView nativeView, IView view)
 		{
-			if (view.Height == -1)
-			{
-				// Ignore the initial set of the height; the initial layout will take care of it
-				return;
-			}
+			UpdateFrame(nativeView, view);
+		}
 
+		public static void UpdateMinimumHeight(this UIView nativeView, IView view)
+		{
+			UpdateFrame(nativeView, view);
+		}
+
+		public static void UpdateMaximumHeight(this UIView nativeView, IView view)
+		{
+			UpdateFrame(nativeView, view);
+		}
+
+		public static void UpdateMinimumWidth(this UIView nativeView, IView view)
+		{
+			UpdateFrame(nativeView, view);
+		}
+
+		public static void UpdateMaximumWidth(this UIView nativeView, IView view)
+		{
 			UpdateFrame(nativeView, view);
 		}
 
 		public static void UpdateFrame(UIView nativeView, IView view)
 		{
+			if (!IsExplicitSet(view.Width) || !IsExplicitSet(view.Height))
+			{
+				// Ignore the initial setting of the value; the initial layout will take care of it
+				return;
+			}
+
 			// Updating the frame (assuming it's an actual change) will kick off a layout update
-			// Handling of the default (-1) width/height will be taken care of by GetDesiredSize
+			// Handling of the default width/height will be taken care of by GetDesiredSize
 			var currentFrame = nativeView.Frame;
 			nativeView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
 		}
