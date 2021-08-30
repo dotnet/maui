@@ -71,7 +71,7 @@ steps:
     - powershell: |
         if (-not $(where.exe pwsh)) {
           $url = "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.msi"
-          $output = "PowerShell.msi"
+          $output = "$env:TEMP\PowerShell.msi"
           Invoke-WebRequest -Uri $url -OutFile $output
           msiexec.exe /package $output /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1
           Remove-Item $output
