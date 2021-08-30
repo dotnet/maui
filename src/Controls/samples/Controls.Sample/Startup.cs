@@ -104,7 +104,7 @@ namespace Maui.Controls.Sample
 #else
 								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
 #endif
-							_ => throw new Exception(),
+					_ => throw new Exception(),
 				});
 
 			appBuilder
