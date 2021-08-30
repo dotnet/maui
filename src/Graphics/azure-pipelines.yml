@@ -40,6 +40,7 @@ pr:
   branches:
     include:
     - main
+    - release/*
   paths:
     include:
     - '*'
