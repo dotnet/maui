@@ -3,7 +3,6 @@ using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using NSubstitute;
-using Microsoft.Maui.Primitives;
 using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
 
 namespace Microsoft.Maui.UnitTests.Layouts
