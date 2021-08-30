@@ -8,8 +8,6 @@
   <Import Project="../targets/Microsoft.Maui.Controls.targets" />
   <Import Project="WinUI.targets" Condition=" '$(TargetPlatformIdentifier)' == 'windows' " />
   <ItemGroup Condition=" '$(DisableMauiAnalyzers)' != 'true' ">
-    <Analyzer Include="$(MSBuildThisFileDirectory)../targets/Microsoft.Maui.Controls.dll" />
-    <Analyzer Include="$(MSBuildThisFileDirectory)../targets/Microsoft.Maui.Controls.Xaml.dll" />
     <Analyzer Include="$(MSBuildThisFileDirectory)../targets/Microsoft.Maui.Controls.SourceGen.dll" />
   </ItemGroup>
   <!-- @(ProjectCapability) used to identify parts of Maui -->

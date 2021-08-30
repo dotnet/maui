@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="6.0.100-rc.1.21425.1" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="6.0.100-rc.1.21426.23" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>d6963d02446e8236b683b224c21f2fa2fa193069</Sha>
+      <Sha>91aa470f1e6c40e1de1050f5ea63480e14fdc592</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="6.0.0-rc.1.21426.8" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>476a03e554142c324f05045966d4b9fc28d70bd1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.100-rc.1.8">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.100-rc.1.12">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>a35737479e67496813aaf09a658142035fd249b7</Sha>
+      <Sha>eadb58fc2d6e32759c1e6a8e500b4cfec36a0a51</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.0.100-rc.1.1531">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
@@ -28,81 +28,81 @@
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>a0ad498842dc6288b14814a7ab9a6cac3763ea8c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="6.0.0-rc.1.21424.27" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+    <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="6.0.0-rc.1.21425.34" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>e2f39fd93be7f79269b30dce9dd57306f0f594db</Sha>
+      <Sha>6fe6de59abd1eedacd5fa50493b936e87e1f8132</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="6.0.0-rc.1.21426.8" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>476a03e554142c324f05045966d4b9fc28d70bd1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Extensions.Hosting" Version="6.0.0-rc.1.21425.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>4f0eb12200a7db5030a49f300e458216a88fbcdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0-rc.1.21425.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>4f0eb12200a7db5030a49f300e458216a88fbcdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0-rc.1.21425.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>4f0eb12200a7db5030a49f300e458216a88fbcdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="6.0.0-rc.1.21425.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>4f0eb12200a7db5030a49f300e458216a88fbcdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0-rc.1.21425.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>4f0eb12200a7db5030a49f300e458216a88fbcdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Extensions.Configuration" Version="6.0.0-rc.1.21425.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>4f0eb12200a7db5030a49f300e458216a88fbcdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0-rc.1.21425.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>4f0eb12200a7db5030a49f300e458216a88fbcdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="6.0.0-rc.1.21425.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>4f0eb12200a7db5030a49f300e458216a88fbcdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="6.0.0-rc.1.21425.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>4f0eb12200a7db5030a49f300e458216a88fbcdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="6.0.0-rc.1.21425.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>4f0eb12200a7db5030a49f300e458216a88fbcdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="6.0.0-rc.1.21425.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>4f0eb12200a7db5030a49f300e458216a88fbcdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="6.0.0-rc.1.21424.27" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="6.0.0-rc.1.21425.34" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>e2f39fd93be7f79269b30dce9dd57306f0f594db</Sha>
+      <Sha>6fe6de59abd1eedacd5fa50493b936e87e1f8132</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="6.0.0-rc.1.21424.27" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="6.0.0-rc.1.21425.34" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>e2f39fd93be7f79269b30dce9dd57306f0f594db</Sha>
+      <Sha>6fe6de59abd1eedacd5fa50493b936e87e1f8132</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="6.0.0-rc.1.21424.27" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="6.0.0-rc.1.21425.34" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>e2f39fd93be7f79269b30dce9dd57306f0f594db</Sha>
+      <Sha>6fe6de59abd1eedacd5fa50493b936e87e1f8132</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.JSInterop" Version="6.0.0-rc.1.21424.27" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+    <Dependency Name="Microsoft.JSInterop" Version="6.0.0-rc.1.21425.34" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>e2f39fd93be7f79269b30dce9dd57306f0f594db</Sha>
+      <Sha>6fe6de59abd1eedacd5fa50493b936e87e1f8132</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="6.0.0-rc.1.21424.7" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="6.0.0-rc.1.21426.11" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>6705367860f3fa19a3cc5d81e85b53cea48a8345</Sha>
+      <Sha>e2050f7eb3a26db403e39fed0da33aa098cc554c</Sha>
     </Dependency>
-    <Dependency Name="System.CodeDom" Version="6.0.0-rc.1.21424.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+    <Dependency Name="System.CodeDom" Version="6.0.0-rc.1.21425.15" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>faf0c8f53baf2ab131299563403dd36aaa4ef478</Sha>
+      <Sha>4f0eb12200a7db5030a49f300e458216a88fbcdb</Sha>
     </Dependency>
   </ProductDependencies>
 </Dependencies>
