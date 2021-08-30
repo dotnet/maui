@@ -110,9 +110,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		Paint IShapeView.Fill => Fill;
 
-		Paint IShapeView.Stroke => Stroke;
+		Paint IStroke.Stroke => Stroke;
 
-		LineCap IShapeView.StrokeLineCap =>
+		LineCap IStroke.StrokeLineCap =>
 			StrokeLineCap switch
 			{
 				PenLineCap.Flat => LineCap.Butt,
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls.Shapes
 				_ => LineCap.Butt
 			};
 
-		LineJoin IShapeView.StrokeLineJoin =>
+		LineJoin IStroke.StrokeLineJoin =>
 			StrokeLineJoin switch
 			{
 				PenLineJoin.Round => LineJoin.Round,
@@ -133,7 +133,9 @@ namespace Microsoft.Maui.Controls.Shapes
 		public float[] StrokeDashPattern
 			=> StrokeDashArray?.Select(a => (float)a)?.ToArray();
 
-		float IShapeView.StrokeMiterLimit => (float)StrokeMiterLimit;
+		float IStroke.StrokeDashOffset => (float)StrokeDashOffset;
+
+		float IStroke.StrokeMiterLimit => (float)StrokeMiterLimit;
 
 		static void OnBrushChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -148,10 +150,23 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IShape.PathForBounds(Graphics.Rectangle viewBounds)
 		{
+			if (HeightRequest < 0 && WidthRequest < 0)
+				Frame = viewBounds;
+
 			var path = GetPath();
 
 #if !NETSTANDARD
-			var pathBounds = path.GetBoundsByFlattening();
+
+			RectangleF pathBounds = viewBounds;
+
+			try
+			{
+				pathBounds = path.GetBoundsByFlattening();
+			}
+			catch (Exception exc)
+			{
+				Internals.Log.Warning(nameof(Shape), $"Exception while getting shape Bounds: {exc}");
+			}
 
 			AffineTransform transform = null;
 

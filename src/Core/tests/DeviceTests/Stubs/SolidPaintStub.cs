@@ -20,8 +20,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 #elif __ANDROID__
 		public Android.Graphics.Drawables.Drawable ToDrawable()
 		{
-			var drawable = new Microsoft.Maui.Graphics.MauiDrawable();
-			drawable.SetColor(Color.ToNative());
+			var drawable = new Microsoft.Maui.Graphics.MauiDrawable(Platform.DefaultContext);
+			drawable.SetBackgroundColor(Color.ToNative());
 			return drawable;
 		}
 #endif

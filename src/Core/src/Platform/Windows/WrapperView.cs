@@ -15,7 +15,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
-	partial class WrapperView : Grid, IDisposable
+	public partial class WrapperView : Grid, IDisposable
 	{
 
 		readonly Canvas _shadowCanvas;
@@ -37,7 +37,7 @@ namespace Microsoft.Maui
 		public FrameworkElement? Child
 		{
 			get { return _child; }
-			set
+			internal set
 			{
 				if (_child != null)
 				{

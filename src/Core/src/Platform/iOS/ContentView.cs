@@ -2,7 +2,7 @@
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Handlers
 {
 	public class ContentView : MauiView
 	{

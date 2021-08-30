@@ -4,10 +4,11 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.Platform;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class FrameRenderer : ViewRenderer<Frame, Border>
+	public class FrameRenderer : ViewRenderer<Frame, WBorder>
 	{
 		public FrameRenderer()
 		{
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (e.NewElement != null)
 			{
 				if (Control == null)
-					SetNativeControl(new Border());
+					SetNativeControl(new WBorder());
 
 				PackChild();
 				UpdateBorder();

@@ -101,5 +101,20 @@ namespace Microsoft.Maui
 		}
 
 		public static Thickness Zero = new Thickness(0);
+
+		public static Thickness operator +(Thickness left, double addend) 
+		{
+			if (addend == 0)
+			{
+				return left;
+			}
+
+			return new Thickness(left.Left + addend, left.Top + addend, left.Right + addend, left.Bottom + addend);
+		}
+
+		public static Thickness operator -(Thickness left, double addend)
+		{
+			return left + (-addend);
+		}
 	}
 }

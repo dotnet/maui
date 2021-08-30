@@ -2,6 +2,9 @@
 using System;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.Maui.Handlers;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -63,16 +66,24 @@ namespace Microsoft.Maui
 			nativeView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
 		}
 
-		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
+		public static void UpdateBackground(this ContentPanel nativeView, IBorder border) 
 		{
-			if (nativeView is Control control)
-				control.UpdateBackground(view.Background);
-			else if (nativeView is Border border)
-				border.UpdateBackground(view.Background);
-			else if (nativeView is Panel panel)
-				panel.UpdateBackground(view.Background);
+			var hasBorder = border.Shape != null && border.Stroke != null;
+
+			if (hasBorder)
+			{
+				nativeView?.UpdateBorderBackground(border);
+			}
+			else
+			{
+				nativeView?.UpdateNativeViewBackground(border);
+			}
 		}
 
+		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
+		{
+			nativeView?.UpdateNativeViewBackground(view);
+		}
 
 		public static WFlowDirection ToNative(this FlowDirection flowDirection)
 		{
@@ -170,6 +181,30 @@ namespace Microsoft.Maui
 		public static void UpdateMaximumWidth(this FrameworkElement nativeView, IView view)
 		{
 			nativeView.MaxWidth = view.MaximumWidth;
+		}
+
+		internal static void UpdateBorderBackground(this FrameworkElement nativeView, IView view)
+		{
+			(nativeView as ContentPanel)?.UpdateBackground(view.Background);
+
+			if (nativeView is Control control)
+				control.UpdateBackground(null);
+			else if (nativeView is Border border)
+				border.UpdateBackground(null);
+			else if (nativeView is Panel panel)
+				panel.UpdateBackground(null);
+		}
+
+		internal static void UpdateNativeViewBackground(this FrameworkElement nativeView, IView view)
+		{
+			(nativeView as ContentPanel)?.UpdateBackground(null);
+
+			if (nativeView is Control control)
+				control.UpdateBackground(view.Background);
+			else if (nativeView is Border border)
+				border.UpdateBackground(view.Background);
+			else if (nativeView is Panel panel)
+				panel.UpdateBackground(view.Background);
 		}
 	}
 }

@@ -2,25 +2,26 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal class ToolbarPlacementHelper
 	{
-		Border _bottomCommandBarArea;
+		WBorder _bottomCommandBarArea;
 		CommandBar _commandBar;
 		Func<ToolbarPlacement> _getToolbarPlacement;
-		Border _titleArea;
-		Border _topCommandBarArea;
+		WBorder _titleArea;
+		WBorder _topCommandBarArea;
 
 		public void Initialize(CommandBar commandBar, Func<ToolbarPlacement> getToolbarPlacement,
 			Func<string, DependencyObject> getTemplateChild)
 		{
 			_commandBar = commandBar;
 			_getToolbarPlacement = getToolbarPlacement;
-			_bottomCommandBarArea = getTemplateChild("BottomCommandBarArea") as Border;
-			_topCommandBarArea = getTemplateChild("TopCommandBarArea") as Border;
-			_titleArea = getTemplateChild("TitleArea") as Border;
+			_bottomCommandBarArea = getTemplateChild("BottomCommandBarArea") as WBorder;
+			_topCommandBarArea = getTemplateChild("TopCommandBarArea") as WBorder;
+			_titleArea = getTemplateChild("TitleArea") as WBorder;
 
 			if (_commandBar != null && _bottomCommandBarArea != null && _topCommandBarArea != null)
 			{
@@ -46,14 +47,14 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateToolbarPlacement(_commandBar, _getToolbarPlacement(), _bottomCommandBarArea, _topCommandBarArea, _titleArea);
 		}
 
-		static void UpdateToolbarPlacement(CommandBar toolbar, ToolbarPlacement toolbarPlacement, Border bottomCommandBarArea,
-			Border topCommandBarArea, Border titleArea)
+		static void UpdateToolbarPlacement(CommandBar toolbar, ToolbarPlacement toolbarPlacement, WBorder bottomCommandBarArea,
+			WBorder topCommandBarArea, WBorder titleArea)
 		{
 			// Figure out what's hosting the command bar right now
-			var current = toolbar.Parent as Border;
+			var current = toolbar.Parent as WBorder;
 
 			// And figure out where it should be
-			Border target;
+			WBorder target;
 
 			switch (toolbarPlacement)
 			{
