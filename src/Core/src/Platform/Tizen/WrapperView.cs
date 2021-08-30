@@ -161,7 +161,7 @@ namespace Microsoft.Maui
 			ClippingRequired = false;
 		}
 
-		protected virtual void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
+		protected virtual void OnPaintSurface(object? sender, SKPaintSurfaceEventArgs e)
 		{
 			var skiaCanvas = e.Surface.Canvas;
 			skiaCanvas.Clear();
