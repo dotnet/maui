@@ -21,7 +21,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateDate(this MauiDatePicker nativeDatePicker, IDatePicker datePicker, UIDatePicker? picker)
 		{
-			if (picker != null && picker.Date.ToDateTime().Date != datePicker.Date?.Date)
+			if (picker != null && picker.Date?.ToDateTime().Date != datePicker.Date?.Date)
 				picker.SetDate(datePicker.Date.ToNSDate(), false);
 			
 			nativeDatePicker.Text = datePicker.Date?.ToString(datePicker.Format);

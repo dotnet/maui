@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateDateFromModel(bool animate)
 		{
-			if (_picker.Date.ToDateTime().Date != Element.Date.Date)
+			if (_picker.Date.ToDateTime().Date != Element.Date?.Date)
 				_picker.SetDate(Element.Date.ToNSDate(), animate);
 
 			// Can't use Element.Format because it won't display the correct format if the region and language are set differently
@@ -192,11 +192,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else if (Element.Format.Contains("/"))
 			{
-				Control.Text = Element.Date.ToString(Element.Format, CultureInfo.InvariantCulture);
+				Control.Text = Element.Date?.ToString(Element.Format, CultureInfo.InvariantCulture);
 			}
 			else
 			{
-				Control.Text = Element.Date.ToString(Element.Format);
+				Control.Text = Element.Date?.ToString(Element.Format);
 			}
 		}
 

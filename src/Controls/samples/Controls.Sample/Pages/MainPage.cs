@@ -282,6 +282,11 @@ namespace Maui.Controls.Sample.Pages
 			verticalStack.Add(new Switch() { ThumbColor = Colors.Yellow });
 			verticalStack.Add(new Switch() { OnColor = Colors.Green, ThumbColor = Colors.Yellow });
 
+			DatePicker pick = new DatePicker();
+			pick.DateSelected += Pick_DateSelected;
+
+
+			verticalStack.Add(pick);
 			verticalStack.Add(new DatePicker());
 			verticalStack.Add(new DatePicker { CharacterSpacing = 6 });
 			verticalStack.Add(new DatePicker { FontSize = 24 });
@@ -296,6 +301,10 @@ namespace Maui.Controls.Sample.Pages
 			{
 				Content = verticalStack
 			};
+		}
+
+		private void Pick_DateSelected(object sender, DateChangedEventArgs e)
+		{ 
 		}
 
 		Button CreateResizingButton()

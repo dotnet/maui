@@ -17,7 +17,10 @@ namespace Maui.Controls.Sample
 
 			Debug.WriteLine($"The .NET Purple color is {Resources["DotNetPurple"]}");
 			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
+		if(dpName.Date ==null)
+			{
 		
+			}
 			
 		}
 
