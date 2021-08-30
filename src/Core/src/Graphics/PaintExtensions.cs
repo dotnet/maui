@@ -3,6 +3,23 @@ namespace Microsoft.Maui.Graphics
 {
 	public static partial class PaintExtensions
 	{
+		public static Color? ToColor(this Paint? paint)
+		{
+			if (paint is SolidPaint solidPaint)
+				return solidPaint.Color;
+
+			if (paint is GradientPaint gradientPaint)
+				return gradientPaint.GradientStops?[0]?.Color;
+
+			if (paint is ImagePaint)
+				return null;
+
+			if (paint is PatternPaint)
+				return null;
+
+			return null;
+		}
+
 		public static bool IsNullOrEmpty(this Paint? paint)
 		{
 			if (paint is SolidPaint solidPaint)

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Webkit;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Graphics;
 using AWebView = Android.Webkit.WebView;

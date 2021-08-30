@@ -59,6 +59,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
+		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
+
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
 		public static readonly BindableProperty CornerRadiusProperty = BorderElement.CornerRadiusProperty;
@@ -126,11 +128,17 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontFamilyProperty, value); }
 		}
 
-		[TypeConverter(typeof(FontSizeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
 			get { return (double)GetValue(FontSizeProperty); }
 			set { SetValue(FontSizeProperty, value); }
+		}
+
+		public bool FontAutoScalingEnabled
+		{
+			get => (bool)GetValue(FontAutoScalingEnabledProperty);
+			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
 		public double BorderWidth
@@ -186,16 +194,24 @@ namespace Microsoft.Maui.Controls
 			=> InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
+			HandleFontChanged();
+
+		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) =>
+			HandleFontChanged();
+
+		void HandleFontChanged()
+		{
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		}
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, this);
@@ -376,7 +392,7 @@ namespace Microsoft.Maui.Controls
 				{
 					MessagingCenter.Subscribe<RadioButton, RadioButtonGroupSelectionChanged>(this,
 						RadioButtonGroup.GroupSelectionChangedMessage, HandleRadioButtonGroupSelectionChanged);
-					MessagingCenter.Subscribe<Layout<View>, RadioButtonGroupValueChanged>(this,
+					MessagingCenter.Subscribe<Compatibility.Layout<View>, RadioButtonGroupValueChanged>(this,
 						RadioButtonGroup.GroupValueChangedMessage, HandleRadioButtonGroupValueChanged);
 				}
 
@@ -388,7 +404,7 @@ namespace Microsoft.Maui.Controls
 				if (!string.IsNullOrEmpty(oldGroupName))
 				{
 					MessagingCenter.Unsubscribe<RadioButton, RadioButtonGroupSelectionChanged>(this, RadioButtonGroup.GroupSelectionChangedMessage);
-					MessagingCenter.Unsubscribe<Layout<View>, RadioButtonGroupValueChanged>(this, RadioButtonGroup.GroupValueChangedMessage);
+					MessagingCenter.Unsubscribe<Compatibility.Layout<View>, RadioButtonGroupValueChanged>(this, RadioButtonGroup.GroupValueChangedMessage);
 				}
 			}
 		}
@@ -408,7 +424,7 @@ namespace Microsoft.Maui.Controls
 			IsChecked = false;
 		}
 
-		void HandleRadioButtonGroupValueChanged(Layout<View> layout, RadioButtonGroupValueChanged args)
+		void HandleRadioButtonGroupValueChanged(Compatibility.Layout<View> layout, RadioButtonGroupValueChanged args)
 		{
 			if (IsChecked || string.IsNullOrEmpty(GroupName) || GroupName != args.GroupName || Value != args.Value || !MatchesScope(args))
 			{
@@ -486,9 +502,9 @@ namespace Microsoft.Maui.Controls
 			contentPresenter.SetBinding(BackgroundColorProperty, new Binding(BackgroundColorProperty.PropertyName,
 				source: RelativeBindingSource.TemplatedParent));
 
-			grid.Children.Add(normalEllipse);
-			grid.Children.Add(checkMark);
-			grid.Children.Add(contentPresenter, 1, 0);
+			grid.Add(normalEllipse);
+			grid.Add(checkMark);
+			grid.Add(contentPresenter, 1, 0);
 
 			frame.Content = grid;
 

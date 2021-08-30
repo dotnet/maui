@@ -1,10 +1,12 @@
+#nullable enable
+
 using System;
+using Microsoft.Maui.Controls.Platform;
 #if __ANDROID__
-using static Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.Platform;
+using static Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform;
 using NativeView = Android.Views.View;
 using IVisualElementRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Android.IVisualElementRenderer;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Android.Views.View>;
-using VisualElementChangedEventArgs = Microsoft.Maui.Controls.Compatibility.Platform.Android.VisualElementChangedEventArgs;
 #elif __IOS__ || MACCATALYST
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform;
 using NativeView = UIKit.UIView;
@@ -17,7 +19,6 @@ using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Sy
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Microsoft.UI.Xaml.FrameworkElement>;
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
 using static Microsoft.Maui.Controls.Compatibility.Platform.UWP.Platform;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 #endif
 
@@ -25,12 +26,37 @@ namespace Microsoft.Maui.Controls.Compatibility
 {
 	public partial class RendererToHandlerShim : ViewHandler
 	{
-		public RendererToHandlerShim() : base(ViewHandler.ViewMapper)
+		public static PropertyMapper<IView, ViewHandler> ShimMapper = new PropertyMapper<IView, ViewHandler>(ViewHandler.ViewMapper)
+		{
+			// These properties are already being handled by the shimmed renderer
+			[nameof(IView.Background)] = MapIgnore,
+			[nameof(IView.IsEnabled)] = MapIgnore,
+			[nameof(IView.Opacity)] = MapIgnore,
+			[nameof(IView.TranslationX)] = MapIgnore,
+			[nameof(IView.TranslationY)] = MapIgnore,
+			[nameof(IView.Scale)] = MapIgnore,
+			[nameof(IView.ScaleX)] = MapIgnore,
+			[nameof(IView.ScaleY)] = MapIgnore,
+			[nameof(IView.Rotation)] = MapIgnore,
+			[nameof(IView.RotationX)] = MapIgnore,
+			[nameof(IView.RotationY)] = MapIgnore,
+			[nameof(IView.AnchorX)] = MapIgnore,
+			[nameof(IView.AnchorY)] = MapIgnore
+		};
+
+		static void MapIgnore(ViewHandler arg1, IView arg2)
+		{
+			// These are properties that are already being handled by the shimmed renderer
+			// So if we also process these properties on the ViewHandler then we might get competing results
+		}
+
+		public RendererToHandlerShim() : base(ShimMapper)
 		{
 		}
 
-#if __ANDROID__ || __IOS__ || WINDOWS
-		internal IVisualElementRenderer VisualElementRenderer { get; private set; }
+#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
+		internal IVisualElementRenderer? VisualElementRenderer { get; private set; }
+		new IView? VirtualView => (this as IViewHandler).VirtualView;
 
 		public static IViewHandler CreateShim(object renderer)
 		{
@@ -56,7 +82,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (VisualElementRenderer.Element is IView view)
 			{
 				view.Handler = this;
-				SetVirtualView(view);
+
+				if (VirtualView != view)
+					SetVirtualView(view);
 			}
 			else if (VisualElementRenderer.Element != null)
 				throw new Exception($"{VisualElementRenderer.Element} must implement: {nameof(Microsoft.Maui.IView)}");
@@ -64,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			VisualElementRenderer.ElementChanged += OnElementChanged;
 		}
 
-		void OnElementChanged(object sender, VisualElementChangedEventArgs e)
+		void OnElementChanged(object? sender, VisualElementChangedEventArgs e)
 		{
 			if (e.OldElement is IView view)
 				view.Handler = null;
@@ -72,7 +100,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (e.NewElement is IView newView)
 			{
 				newView.Handler = this;
-				this.SetVirtualView(newView);
+
+				if (VirtualView != newView)
+					this.SetVirtualView(newView);
 			}
 			else if (e.NewElement != null)
 				throw new Exception($"{e.NewElement} must implement: {nameof(Microsoft.Maui.IView)}");
@@ -81,19 +111,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 		protected override void ConnectHandler(NativeView nativeView)
 		{
 			base.ConnectHandler(nativeView);
-			VirtualView.Handler = this;
+			base.VirtualView.Handler = this;
 		}
 
 		protected override void DisconnectHandler(NativeView nativeView)
 		{
-			SetRenderer(
-				VisualElementRenderer.Element,
-				null);
-
-			VisualElementRenderer.SetElement(null);
-
+			VisualElementRenderer?.Dispose();
 			base.DisconnectHandler(nativeView);
-			VirtualView.Handler = null;
 		}
 
 		public override void SetVirtualView(IView view)
@@ -107,14 +131,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 				(VisualElement)view,
 				VisualElementRenderer);
 
-			if (VisualElementRenderer.Element != view)
+			if (VisualElementRenderer != null && VisualElementRenderer.Element != view)
 			{
 				VisualElementRenderer.SetElement((VisualElement)view);
 			}
-			else
-			{
+
+			if (view != VirtualView)
 				base.SetVirtualView(view);
-			}
 		}
 #else
 		protected override NativeView CreateNativeView()

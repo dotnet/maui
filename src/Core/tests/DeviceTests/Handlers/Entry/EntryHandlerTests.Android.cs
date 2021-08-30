@@ -15,33 +15,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
-		[Theory(DisplayName = "Font Family Initializes Correctly")]
-		[InlineData(null)]
-		[InlineData("monospace")]
-		[InlineData("Dokdo")]
-		public async Task FontFamilyInitializesCorrectly(string family)
-		{
-			var entry = new EntryStub
-			{
-				Text = "Test",
-				Font = Font.OfSize(family, 10)
-			};
-
-			var handler = await CreateHandlerAsync(entry);
-			var nativeEntry = GetNativeEntry(handler);
-
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
-
-			var nativeFont = fontManager.GetTypeface(Font.OfSize(family, 0.0));
-
-			Assert.Equal(nativeFont, nativeEntry.Typeface);
-
-			if (string.IsNullOrEmpty(family))
-				Assert.Equal(fontManager.DefaultTypeface, nativeEntry.Typeface);
-			else
-				Assert.NotEqual(fontManager.DefaultTypeface, nativeEntry.Typeface);
-		}
-
 		[Fact(DisplayName = "ReturnType Initializes Correctly")]
 		public async Task ReturnTypeInitializesCorrectly()
 		{
@@ -90,6 +63,32 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
+		[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
+		public async Task VerticalTextAlignmentInitializesCorrectily()
+		{
+			var xplatVerticalTextAlignment = TextAlignment.End;
+
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				VerticalTextAlignment = xplatVerticalTextAlignment
+			};
+
+			Android.Views.GravityFlags expectedValue = Android.Views.GravityFlags.Bottom;
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.VerticalTextAlignment,
+					NativeViewValue = GetNativeVerticalTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
@@ -177,20 +176,11 @@ namespace Microsoft.Maui.DeviceTests
 			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
 		}
 
-		double GetNativeUnscaledFontSize(EntryHandler entryHandler)
-		{
-			var textView = GetNativeEntry(entryHandler);
-			return textView.TextSize / textView.Resources.DisplayMetrics.Density;
-		}
-
-		bool GetNativeIsBold(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Typeface.GetFontWeight() == FontWeight.Bold;
-
-		bool GetNativeIsItalic(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Typeface.IsItalic;
-
 		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
+
+		Android.Views.GravityFlags GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).Gravity;
 
 		ImeAction GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ImeOptions;
@@ -247,6 +237,26 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				return editText.LetterSpacing;
 			}
+
+			return -1;
+		}
+
+		int GetNativeCursorPosition(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+
+			if (editText != null)
+				return editText.SelectionEnd;
+
+			return -1;
+		}
+
+		int GetNativeSelectionLength(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+
+			if (editText != null)
+				return editText.SelectionEnd - editText.SelectionStart;
 
 			return -1;
 		}

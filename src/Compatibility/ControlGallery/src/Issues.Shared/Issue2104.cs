@@ -9,6 +9,7 @@ using NUnit.Framework;
 using System.Linq;
 #endif
 
+#pragma warning disable CS0618 // Type or member is obsolete
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 #if UITEST
@@ -127,3 +128,4 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 	}
 }
+#pragma warning restore CS0618 // Type or member is obsolete

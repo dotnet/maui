@@ -15,6 +15,8 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Animations;
 
 #if __MOBILE__
 using UIKit;
@@ -109,6 +111,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		// Once we get essentials/cg converted to using startup.cs
+		// we will delete all the renderer code inside this file
+		internal static void RenderersRegistered()
+		{
+			IsInitializedRenderers = true;
+		}
 
 		internal static bool RespondsToSetNeedsUpdateOfHomeIndicatorAutoHidden
 		{
@@ -181,8 +189,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static void Init(InitializationOptions options) =>
 			SetupInit(new MauiContext(), options);
 
-		public static void Init(IActivationState activationState) =>
-			SetupInit(activationState.Context);
+		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
+			SetupInit(activationState.Context, options);
 
 		static void SetupInit(IMauiContext context, InitializationOptions? maybeOptions = null)
 		{
@@ -270,29 +278,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		internal static void RegisterCompatRenderers(
-			Assembly[] assemblies,
-			Assembly defaultRendererAssembly,
-			Action<Type> viewRegistered)
-		{
-			if (IsInitializedRenderers)
-				return;
-
-			IsInitializedRenderers = true;
-
-			// Only need to do this once
-			Controls.Internals.Registrar.RegisterAll(
-				assemblies,
-				defaultRendererAssembly,
-				new[] {
-						typeof(ExportRendererAttribute),
-						typeof(ExportCellAttribute),
-						typeof(ExportImageSourceHandlerAttribute),
-						typeof(ExportFontAttribute)
-					}, default(InitializationFlags),
-				viewRegistered);
-		}
-
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
 
 		internal static void SendViewInitialized(this VisualElement self, TNativeView nativeView)
@@ -347,11 +332,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				NSRunLoop.Main.BeginInvokeOnMainThread(action.Invoke);
 			}
 
-			public Ticker CreateTicker()
-			{
-				return new CADisplayLinkTicker();
-			}
-
 			public Assembly[] GetAssemblies()
 			{
 				return AppDomain.CurrentDomain.GetAssemblies();
@@ -359,15 +339,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public string GetHash(string input) => Crc64.GetHash(input);
 
-			string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
-
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 			{
 				// We make these up anyway, so new sizes didn't really change
 				// iOS docs say default button font size is 15, default label font size is 17 so we use those as the defaults.
 				var scalingFactor = _fontScalingFactor;
 
-				if (Application.Current?.On<iOS>().GetEnableAccessibilityScalingForNamedFontSizes() == false)
+				if (Application.Current?.On<PlatformConfiguration.iOS>().GetEnableAccessibilityScalingForNamedFontSizes() == false)
 				{
 					scalingFactor = 1;
 				}

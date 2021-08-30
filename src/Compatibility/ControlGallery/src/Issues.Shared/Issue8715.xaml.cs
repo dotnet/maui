@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 8715, "NullReferenceException Microsoft.Maui.Controls.Platform.iOS.StructuredItemsViewRenderer [Bug]",
 		PlatformAffected.iOS)]
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class Issue8715 : TestShell
 	{
 		public Issue8715()

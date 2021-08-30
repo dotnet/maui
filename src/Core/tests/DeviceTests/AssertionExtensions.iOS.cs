@@ -251,8 +251,8 @@ namespace Microsoft.Maui.DeviceTests
 			var kerning = Assert.IsType<UIColor>(value);
 
 			return kerning;
-    }
-    
+		}
+
 		public static void AssertEqual(this CATransform3D expected, CATransform3D actual, int precision = 4)
 		{
 			Assert.Equal((double)expected.m11, (double)actual.m11, precision);

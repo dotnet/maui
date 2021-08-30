@@ -96,7 +96,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestUtils", "TestUtils", "{0F9BA970-11B1-4ACA-AF41-1021AFC0F29C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils", "src\TestUtils\TestUtils\src\TestUtils.csproj", "{E4CB9988-7348-4D55-A08E-85907732F8DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils", "src\TestUtils\src\TestUtils\TestUtils.csproj", "{E4CB9988-7348-4D55-A08E-85907732F8DA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.DeviceTests", "src\TestUtils\TestUtils.DeviceTests\src\TestUtils.DeviceTests.csproj", "{551B2209-4298-4D60-B55C-79077B8BC244}"
 EndProject

@@ -44,11 +44,14 @@ namespace Microsoft.Maui.Resizetizer
 				foreach (var item in Input)
 				{
 					var link = item.GetMetadata("Link");
-					var path = string.IsNullOrEmpty(link) ? item.ItemSpec : link;
+					var path = string.IsNullOrEmpty(link)
+						? Normalize(item.ItemSpec)
+						: Normalize(link);
 					if (Path.IsPathRooted(path))
 					{
 						path = Path.GetFullPath(path);
-						if (!MakeRelative(item.GetMetadata("ProjectDirectory"), ref path) && !MakeRelative(ProjectDirectory, ref path))
+						var project = Normalize(item.GetMetadata("ProjectDirectory"));
+						if (!MakeRelative(project, ref path) && !MakeRelative(ProjectDirectory, ref path))
 						{
 							// If this is a random path, the best we can do is use the file name
 							path = Path.GetFileName(path);
@@ -66,6 +69,9 @@ namespace Microsoft.Maui.Resizetizer
 
 			return !Log.HasLoggedErrors;
 		}
+
+		static string Normalize(string path) =>
+			path?.Replace('\\', Path.DirectorySeparatorChar)?.Replace('/', Path.DirectorySeparatorChar);
 
 		static bool MakeRelative(string projectDirectory, ref string path)
 		{

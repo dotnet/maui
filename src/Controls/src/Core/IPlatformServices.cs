@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -16,14 +17,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		void BeginInvokeOnMainThread(Action action);
 
-		Ticker CreateTicker();
-
-		Assembly[] GetAssemblies();
-
 		string GetHash(string input);
-
-		[Obsolete("GetMD5Hash is obsolete as of version 4.7.0")]
-		string GetMD5Hash(string input);
 
 		double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes);
 

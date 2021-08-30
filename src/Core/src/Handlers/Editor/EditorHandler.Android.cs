@@ -44,9 +44,9 @@ namespace Microsoft.Maui.Handlers
 			FocusChangeListener.Handler = null;
 		}
 
-		protected override void SetupDefaults(AppCompatEditText nativeView)
+		void SetupDefaults(AppCompatEditText nativeView)
 		{
-			base.SetupDefaults(nativeView);
+
 
 			DefaultTextColors = nativeView.TextColors;
 			DefaultPlaceholderTextColors = nativeView.HintTextColors;
@@ -104,6 +104,11 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.NativeView?.UpdateFont(editor, fontManager);
+		}
+
+		public static void MapKeyboard(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateKeyboard(editor);
 		}
 
 		void OnFocusedChange(bool hasFocus)

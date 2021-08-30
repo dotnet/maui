@@ -4,6 +4,7 @@ using System.Threading;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
@@ -342,7 +343,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 #if __MOBILE__
 			if (thread)
-				CADisplayLinkTicker.Default.Invoke(update);
+				view.Dispatcher.Dispatch(update);
 			else
 				update();
 #else

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -10,6 +10,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
 {
 	[Preserve(AllMembers = true)]
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class DemoShellPage : ContentPage
 	{
 

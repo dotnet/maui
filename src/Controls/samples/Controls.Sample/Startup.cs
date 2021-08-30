@@ -1,49 +1,42 @@
-﻿#if NET6_0_OR_GREATER
-#define BLAZOR_ENABLED
-#endif
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
-using Maui.Controls.Sample.ViewModel;
-#if BLAZOR_ENABLED
-using Microsoft.AspNetCore.Components.WebView.Maui;
-#endif
+using Maui.Controls.Sample.ViewModels;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Controls;
-using Maui.Controls.Sample.Controls;
+
+#if NET6_0_OR_GREATER
+using Microsoft.AspNetCore.Components.WebView.Maui;
+#endif
 
 namespace Maui.Controls.Sample
 {
-
 	public class CustomButton : Button { }
 
-	public class Startup : IStartup
+	public static class MauiProgram
 	{
-		enum PageType { Xaml, Semantics, Main, Blazor, NavigationPage, Shell }
-		private PageType _pageType = PageType.NavigationPage;
+		enum PageType { Main, Blazor, Shell, Template }
+		readonly static PageType _pageType = PageType.Main;
 
-		public readonly static bool UseXamlApp = true;
-		public readonly static bool UseFullDI = false;
-
-		public void Configure(IAppHostBuilder appBuilder)
+		public static MauiApp CreateMauiApp()
 		{
-			bool useFullDIAndBlazor = UseFullDI || _pageType == PageType.Blazor;
+			var appBuilder = MauiApp.CreateBuilder();
+
+			appBuilder.UseMauiApp<XamlApp>();
+			var services = appBuilder.Services;
 
 			appBuilder
-				.UseFormsCompatibility()
-				.UseMauiControlsHandlers()
 				.ConfigureMauiHandlers(handlers =>
 				{
 #if __ANDROID__
@@ -58,86 +51,63 @@ namespace Maui.Controls.Sample
 #endif
 				});
 
-			if (UseXamlApp)
-				appBuilder.UseMauiApp<XamlApp>();
-			else
-				appBuilder.UseMauiApp<MyApp>();
-
 			// Use a "third party" library that brings in a massive amount of controls
-			appBuilder.UseRed();
+			appBuilder.UseBordelessEntry();
+			appBuilder.ConfigureEffects(builder =>
+			{
+				builder.Add<FocusRoutingEffect, FocusPlatformEffect>();
+			});
 
 #if DEBUG && !WINDOWS
 			appBuilder.EnableHotReload();
 #endif
-			appBuilder.UseMauiControlsHandlers();
 
-			appBuilder
-				.ConfigureAppConfiguration(config =>
-				{
-					config.AddInMemoryCollection(new Dictionary<string, string>
+			appBuilder.Configuration.AddInMemoryCollection(
+				new Dictionary<string, string>
 					{
 						{"MyKey", "Dictionary MyKey Value"},
 						{":Title", "Dictionary_Title"},
 						{"Position:Name", "Dictionary_Name" },
 						{"Logging:LogLevel:Default", "Warning"}
 					});
-				});
 
-			if (useFullDIAndBlazor)
-			{
-#if BLAZOR_ENABLED
-				appBuilder
-					.RegisterBlazorMauiWebView(typeof(Startup).Assembly);
-#endif
-				appBuilder.UseMicrosoftExtensionsServiceProviderFactory();
-			}
-			else
-			{
-				appBuilder.UseMauiServiceProviderFactory(constructorInjection: true);
-			}
-
+#if NET6_0_OR_GREATER
 			appBuilder
-				.ConfigureServices(services =>
-				{
-					// The MAUI DI does not support generic argument resolution
-					if (useFullDIAndBlazor)
-					{
-						services.AddLogging(logging =>
-						{
-#if WINDOWS
-							logging.AddDebug();
-#else
-							logging.AddConsole();
+				.RegisterBlazorMauiWebView();
+			services.AddBlazorWebView();
 #endif
-						});
-					}
 
-					services.AddSingleton<ITextService, TextService>();
-					services.AddTransient<MainPageViewModel>();
-#if BLAZOR_ENABLED
-					if (useFullDIAndBlazor)
-						services.AddBlazorWebView();
+			services.AddLogging(logging =>
+			{
+#if WINDOWS
+				logging.AddDebug();
+#else
+				logging.AddConsole();
 #endif
-					services.AddTransient(
-						serviceType: _pageType == PageType.Blazor ? typeof(Page) : typeof(IPage),
-						implementationType: _pageType switch
-						{
-							PageType.Shell => typeof(AppShell),
-							PageType.NavigationPage => typeof(NavPage),
-							PageType.Xaml => typeof(XamlPage),
-							PageType.Semantics => typeof(SemanticsPage),
-							PageType.Blazor =>
-#if BLAZOR_ENABLED
+			});
+
+			services.AddSingleton<ITextService, TextService>();
+			services.AddTransient<MainViewModel>();
+
+			services.AddTransient<IWindow, Window>();
+
+			services.AddTransient(
+				serviceType: typeof(Page),
+				implementationType: _pageType switch
+				{
+					PageType.Template => typeof(TemplatePage),
+					PageType.Shell => typeof(AppShell),
+					PageType.Main => typeof(CustomNavigationPage),
+					PageType.Blazor =>
+#if NET6_0_OR_GREATER
 								typeof(BlazorPage),
 #else
 								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
 #endif
-							PageType.Main => typeof(MainPage),
-							_ => throw new Exception(),
-						});
+					_ => throw new Exception(),
+				});
 
-					services.AddTransient<IWindow, Window>();
-				})
+			appBuilder
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
@@ -146,6 +116,10 @@ namespace Maui.Controls.Sample
 					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
 					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 					fonts.AddFont("ionicons.ttf", "Ionicons");
+					fonts.AddFont("SegoeUI.ttf", "Segoe UI");
+					fonts.AddFont("SegoeUI-Bold.ttf", "Segoe UI Bold");
+					fonts.AddFont("SegoeUI-Italic.ttf", "Segoe UI Italic");
+					fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
 				})
 				.ConfigureEssentials(essentials =>
 				{
@@ -226,6 +200,7 @@ namespace Maui.Controls.Sample
 #elif WINDOWS
 					// Log everything in this one
 					events.AddWindows(windows => windows
+						.OnNativeMessage((a, b) => LogEvent(nameof(WindowsLifecycle.OnNativeMessage)))
 						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
@@ -238,6 +213,8 @@ namespace Maui.Controls.Sample
 						return true;
 					}
 				});
+
+			return appBuilder.Build();
 		}
 	}
 }

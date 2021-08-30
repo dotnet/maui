@@ -1,4 +1,5 @@
 #nullable enable
+using System.Net;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var nativeView = WrappedNativeView;
 
-			if (nativeView == null || VirtualView == null)
+			if (nativeView == null)
 				return Size.Zero;
 
 			if (widthConstraint < 0 || heightConstraint < 0)

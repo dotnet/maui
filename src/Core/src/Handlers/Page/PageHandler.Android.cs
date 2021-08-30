@@ -1,10 +1,13 @@
 ﻿using System;
 using Android.Views;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, PageViewGroup>
+	public partial class PageHandler : ViewHandler<IView, PageViewGroup>
 	{
+		//Graphics.Color? DefaultBackgroundColor;
+
 		protected override PageViewGroup CreateNativeView()
 		{
 			if (VirtualView == null)
@@ -12,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a PageViewGroup");
 			}
 
-			var viewGroup = new PageViewGroup(Context!)
+			var viewGroup = new PageViewGroup(Context)
 			{
 				CrossPlatformMeasure = VirtualView.Measure,
 				CrossPlatformArrange = VirtualView.Arrange
@@ -39,17 +42,24 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.RemoveAllViews();
 
-			if (VirtualView.Content != null)
-				NativeView.AddView(VirtualView.Content.ToNative(MauiContext));
+			if (VirtualView is IContentView cv && cv.Content is IView view)
+				NativeView.AddView(view.ToNative(MauiContext));
 		}
 
-		public static void MapTitle(PageHandler handler, IPage page)
+		public static void MapTitle(PageHandler handler, IView page)
 		{
 		}
 
-		public static void MapContent(PageHandler handler, IPage page)
+		public static void MapContent(PageHandler handler, IView page)
 		{
 			handler.UpdateContent();
+		}
+
+		protected override void DisconnectHandler(PageViewGroup nativeView)
+		{
+			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
+			nativeView.RemoveAllViews();
+			base.DisconnectHandler(nativeView);
 		}
 	}
 }

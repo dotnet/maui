@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Microsoft",
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI", "Xaml", "Code" ],
+    "identity": "Microsoft.Maui.XamlContentPage",
+    "name": ".NET MAUI ContentPage",
+    "shortName": "maui-page-xaml",
+    "tags": {
+      "language": "C#",
+      "type": "item"
+    },
+    "sourceName": "NewPage1",
+    "defaultName": "NewPage1",
+    "symbols": {
+      "namespace": {
+        "description": "namespace for the generated code",
+        "replaces": "MauiApp1",
+        "type": "parameter"
+      }
+    }
+  }

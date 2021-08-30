@@ -1,9 +1,8 @@
-
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public sealed class Ellipse : Shape
+	public sealed partial class Ellipse : Shape
 	{
-		public Ellipse()
+		public Ellipse() : base()
 		{
 			Aspect = Stretch.Fill;
 		}

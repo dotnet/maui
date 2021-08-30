@@ -40,21 +40,36 @@ namespace Microsoft.Maui
 				textView.AttributedText = newText;
 		}
 
-		public static void UpdatePredictiveText(this UITextView textView, IEditor editor)
+		public static void UpdateIsTextPredictionEnabled(this UITextView textView, IEditor editor)
 		{
-			textView.AutocorrectionType = editor.IsTextPredictionEnabled
-				? UITextAutocorrectionType.Yes : UITextAutocorrectionType.No;
+			if (editor.IsTextPredictionEnabled)
+				textView.AutocorrectionType = UITextAutocorrectionType.Yes;
+			else
+				textView.AutocorrectionType = UITextAutocorrectionType.No;
 		}
 
 		public static void UpdateFont(this UITextView textView, ITextStyle textStyle, IFontManager fontManager)
 		{
-			var uiFont = fontManager.GetFont(textStyle.Font, UIFont.LabelFontSize);
+			var font = textStyle.Font;
+			var uiFont = fontManager.GetFont(font, UIFont.LabelFontSize);
 			textView.Font = uiFont;
 		}
 
 		public static void UpdateIsReadOnly(this UITextView textView, IEditor editor)
 		{
 			textView.UserInteractionEnabled = !editor.IsReadOnly;
+		}
+
+		public static void UpdateKeyboard(this UITextView textView, IEditor editor)
+		{
+			var keyboard = editor.Keyboard;
+
+			textView.ApplyKeyboard(keyboard);
+
+			if (keyboard is not CustomKeyboard)
+				textView.UpdateIsTextPredictionEnabled(editor);
+
+			textView.ReloadInputViews();
 		}
 	}
 }
