@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Graphics.Skia.Views;
+using SkiaGraphicsView = Microsoft.Maui.Platform.Tizen.SkiaGraphicsView;
 
 namespace Microsoft.Maui
 {

@@ -7,6 +7,7 @@ using Microsoft.Maui.Graphics.Skia.Views;
 using SkiaSharp.Views.Tizen;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
+using SkiaGraphicsView = Microsoft.Maui.Platform.Tizen.SkiaGraphicsView;
 
 namespace Microsoft.Maui
 {
