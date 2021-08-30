@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 using NSubstitute;
 using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
 
@@ -11,8 +12,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		protected IStackLayout CreateTestLayout()
 		{
 			var stack = Substitute.For<IStackLayout>();
-			stack.Height.Returns(-1);
-			stack.Width.Returns(-1);
+			stack.Height.Returns(Dimension.Unset);
+			stack.Width.Returns(Dimension.Unset);
+			stack.MinimumHeight.Returns(Dimension.Minimum);
+			stack.MinimumWidth.Returns(Dimension.Minimum);
+			stack.MaximumHeight.Returns(Dimension.Maximum);
+			stack.MaximumWidth.Returns(Dimension.Maximum);
 			stack.Spacing.Returns(0);
 
 			return stack;

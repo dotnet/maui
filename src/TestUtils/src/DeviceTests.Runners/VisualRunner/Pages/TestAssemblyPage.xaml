@@ -54,7 +54,7 @@
         </Grid>
 
         <!-- additional controls -->
-        <StackLayout Orientation="Horizontal" Grid.Row="3">
+        <StackLayout Orientation="Horizontal" Grid.Row="3" HorizontalOptions="Center" Spacing="5">
             <Button Text="Run Filtered" Command="{Binding RunFilteredTestsCommand}" />
             <Button Text="Run All" Command="{Binding RunAllTestsCommand}" />
         </StackLayout>

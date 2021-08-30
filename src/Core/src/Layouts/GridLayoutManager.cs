@@ -19,7 +19,13 @@ namespace Microsoft.Maui.Layouts
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
 			_gridStructure = new GridStructure(Grid, widthConstraint, heightConstraint);
-			return new Size(_gridStructure.MeasuredGridWidth(), _gridStructure.MeasuredGridHeight());
+
+			var measuredWidth = _gridStructure.MeasuredGridWidth();
+			var measuredHeight = _gridStructure.MeasuredGridHeight();
+
+			// TODO ezhart We need tests on all the layout managers to make sure they respect min/max height/width in measurement
+
+			return new Size(measuredWidth, measuredHeight);
 		}
 
 		public override Size ArrangeChildren(Rectangle bounds)
@@ -48,6 +54,10 @@ namespace Microsoft.Maui.Layouts
 			readonly double _gridHeightConstraint;
 			readonly double _explicitGridHeight;
 			readonly double _explicitGridWidth;
+			readonly double _gridMaxHeight;
+			readonly double _gridMinHeight;
+			readonly double _gridMaxWidth;
+			readonly double _gridMinWidth;
 
 			Row[] _rows { get; }
 			Column[] _columns { get; }
@@ -71,6 +81,10 @@ namespace Microsoft.Maui.Layouts
 
 				_explicitGridHeight = _grid.Height;
 				_explicitGridWidth = _grid.Width;
+				_gridMaxHeight = _grid.MaximumHeight;
+				_gridMinHeight = _grid.MinimumHeight;
+				_gridMaxWidth = _grid.MaximumWidth;
+				_gridMinWidth = _grid.MinimumWidth;
 
 				// Cache these GridLayout properties so we don't have to keep looking them up via _grid
 				// (Property access via _grid may have performance implications for some SDKs.)
@@ -232,12 +246,36 @@ namespace Microsoft.Maui.Layouts
 
 			public double MeasuredGridHeight()
 			{
-				return _explicitGridHeight > -1 ? _explicitGridHeight : GridHeight();
+				var height = _explicitGridHeight > -1 ? _explicitGridHeight : GridHeight();
+
+				if (_gridMaxHeight >= 0 && height > _gridMaxHeight)
+				{
+					height = _gridMaxHeight;
+				}
+
+				if (_gridMinHeight >= 0 && height < _gridMinHeight)
+				{
+					height = _gridMinHeight;
+				}
+
+				return height;
 			}
 
 			public double MeasuredGridWidth()
 			{
-				return _explicitGridWidth > -1 ? _explicitGridWidth : GridWidth();
+				var width = _explicitGridWidth > -1 ? _explicitGridWidth : GridWidth();
+
+				if (_gridMaxWidth >= 0 && width > _gridMaxWidth)
+				{
+					width = _gridMaxWidth;
+				}
+
+				if (_gridMinWidth >= 0 && width < _gridMinWidth)
+				{
+					width = _gridMinWidth;
+				}
+
+				return width;
 			}
 
 			double SumDefinitions(Definition[] definitions, double spacing)

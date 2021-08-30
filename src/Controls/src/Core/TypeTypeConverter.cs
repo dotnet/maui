@@ -6,7 +6,6 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls
 {
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.TypeTypeConverter")]
-	[TypeConversion(typeof(Type))]
 	public sealed class TypeTypeConverter : TypeConverter, IExtendedTypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

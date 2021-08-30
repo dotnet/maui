@@ -405,7 +405,7 @@ namespace Microsoft.Maui.Controls
 				if (Device.RuntimePlatform == Device.Android)
 				{
 					object textColor;
-					
+
 					if (Application.Current == null)
 					{
 						textColor = Colors.Black.MultiplyAlpha(0.87f);

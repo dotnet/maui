@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Layouts
 {
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Layouts
 			// We need to determine the width the element wants to consume; normally that's the element's DesiredSize.Width
 			var consumedWidth = view.DesiredSize.Width;
 
-			if (view.HorizontalLayoutAlignment == LayoutAlignment.Fill && view.Width == -1)
+			if (view.HorizontalLayoutAlignment == LayoutAlignment.Fill && !IsExplicitSet(view.Width))
 			{
 				// But if the element is set to fill horizontally and it doesn't have an explicitly set width,
 				// then we want the width of the entire bounds
@@ -51,7 +52,7 @@ namespace Microsoft.Maui.Layouts
 
 			// But, if the element is set to fill vertically and it doesn't have an explicitly set height,
 			// then we want the height of the entire bounds
-			if (view.VerticalLayoutAlignment == LayoutAlignment.Fill && view.Height == -1)
+			if (view.VerticalLayoutAlignment == LayoutAlignment.Fill && !IsExplicitSet(view.Height))
 			{
 				consumedHeight = bounds.Height;
 			}

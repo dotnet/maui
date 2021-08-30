@@ -14,11 +14,11 @@
     "sourceName": "MauiLib1",
     "preferNameDirectory": true,
     "symbols": {
-      "projectReunionVersion": {
+      "windowsAppSdkVersion": {
         "type": "parameter",
         "dataType": "string",
-        "replaces": "PROJECT_REUNION_VERSION",
-        "defaultValue": "PROJECT_REUNION_VERSION_VALUE"
+        "replaces": "WINDOWSAPPSDK_VERSION",
+        "defaultValue": "WINDOWSAPPSDK_VERSION_VALUE"
       }
     },
     "defaultName": "MauiLib1",

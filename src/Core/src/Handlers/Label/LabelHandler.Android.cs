@@ -1,6 +1,6 @@
 using Android.Views;
-using AndroidX.AppCompat.Widget;
 using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateTextPlainText(label);
 		}
 
- 		public static void MapTextColor(LabelHandler handler, ILabel label)
+		public static void MapTextColor(LabelHandler handler, ILabel label)
 		{
 			handler.NativeView?.UpdateTextColor(label, DefaultTextColor!);
 		}

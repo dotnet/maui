@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			RefreshView refreshView = new RefreshView();
 			Command command = null;
-			command =new Command(() => command.ChangeCanExecute(), () => !refreshView.IsRefreshing);
+			command = new Command(() => command.ChangeCanExecute(), () => !refreshView.IsRefreshing);
 			refreshView.Command = command;
 			refreshView.IsRefreshing = true;
 			Assert.IsTrue(refreshView.IsRefreshing);

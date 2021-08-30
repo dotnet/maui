@@ -4,7 +4,6 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.TypeConversion(typeof(TextAlignment))]
 	public class TextAlignmentConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
