@@ -3,7 +3,7 @@
   <PropertyGroup>
     <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-rc.1.21426.23</MicrosoftDotnetSdkInternalPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>6.0.0-rc.1.21426.8</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.100-rc.1.10</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.100-rc.1.12</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>15.0.100-rc.1.1528</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>15.0.100-rc.1.1528</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>15.0.100-rc.1.1528</MicrosofttvOSSdkPackageVersion>
