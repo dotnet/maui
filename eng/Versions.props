@@ -1,33 +1,32 @@
 <Project>
   <!--Package versions-->
   <PropertyGroup>
-    <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-rc.1.21418.8</MicrosoftDotnetSdkInternalPackageVersion>
-    <MicrosoftNETCoreAppRefPackageVersion>6.0.0-rc.1.21417.1</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftAndroidSdkWindowsPackageVersion>30.0.100-rc.1.140</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-rc.2.21423.2</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>6.0.0-rc.2.21420.29</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>31.0.100-rc.2.12</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>15.0.100-rc.1.521</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>15.0.100-rc.1.521</MicrosoftiOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>15.0.100-rc.1.521</MicrosofttvOSSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>12.0.100-rc.1.521</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftExtensionsPrimitivesPackageVersion>6.0.0-rc.1.21417.1</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftExtensionsHostingAbstractionsPackageVersion>6.0.0-rc.1.21417.1</MicrosoftExtensionsHostingAbstractionsPackageVersion>
-    <MicrosoftExtensionsHostingPackageVersion>6.0.0-rc.1.21417.1</MicrosoftExtensionsHostingPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>6.0.0-rc.1.21417.1</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>6.0.0-rc.1.21417.1</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>6.0.0-rc.1.21417.1</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>6.0.0-rc.1.21417.1</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>6.0.0-rc.1.21417.1</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>6.0.0-rc.1.21417.1</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>6.0.0-rc.1.21417.1</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingDebugPackageVersion>6.0.0-rc.1.21417.1</MicrosoftExtensionsLoggingDebugPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>6.0.0-rc.1.21417.1</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>6.0.0-rc.1.21403.6</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
-    <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.0-rc.1.21417.2</MicrosoftAspNetCoreAuthorizationPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.0-rc.1.21417.2</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.0-rc.1.21417.2</MicrosoftAspNetCoreComponentsWebPackageVersion>
-    <MicrosoftJSInteropPackageVersion>6.0.0-rc.1.21417.2</MicrosoftJSInteropPackageVersion>
-    <MicrosoftAspNetCoreAppRuntimewinx64Version>6.0.0-rc.1.21417.2</MicrosoftAspNetCoreAppRuntimewinx64Version>
-    <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.0-rc.1.21416.10</MicrosoftWindowsDesktopAppRuntimewinx64Version>
-    <SystemCodeDomPackageVersion>6.0.0-rc.1.21417.1</SystemCodeDomPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>6.0.0-rc.2.21420.29</MicrosoftExtensionsPrimitivesPackageVersion>
+    <MicrosoftExtensionsHostingAbstractionsPackageVersion>6.0.0-rc.2.21420.12</MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <MicrosoftExtensionsHostingPackageVersion>6.0.0-rc.2.21420.12</MicrosoftExtensionsHostingPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>6.0.0-rc.2.21420.12</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>6.0.0-rc.2.21420.12</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>6.0.0-rc.2.21420.12</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>6.0.0-rc.2.21420.12</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>6.0.0-rc.2.21420.12</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>6.0.0-rc.2.21420.12</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>6.0.0-rc.2.21420.12</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>6.0.0-rc.2.21420.12</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>6.0.0-rc.2.21420.12</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.0-rc.2.21420.26</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>6.0.0-rc.2.21420.26</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebPackageVersion>6.0.0-rc.2.21420.26</MicrosoftAspNetCoreComponentsWebPackageVersion>
+    <MicrosoftJSInteropPackageVersion>6.0.0-rc.2.21420.26</MicrosoftJSInteropPackageVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64Version>6.0.0-rc.2.21420.26</MicrosoftAspNetCoreAppRuntimewinx64Version>
+    <MicrosoftWindowsDesktopAppRuntimewinx64Version>6.0.0-rc.2.21419.14</MicrosoftWindowsDesktopAppRuntimewinx64Version>
+    <SystemCodeDomPackageVersion>6.0.0-rc.2.21420.12</SystemCodeDomPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Trim all characters after first `-` or `+` is encountered. -->

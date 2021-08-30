@@ -31,7 +31,6 @@
       <_TemplateJsonFileWithContent
           Include="@(_TemplateJsonFile)"
           Contents="$([System.IO.File]::ReadAllText('%(FullPath)')
-              .Replace('MICROSOFT_EXTENSIONS_VERSION_VALUE', '$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)')
               .Replace('WINDOWSAPPSDK_VERSION_VALUE', '$(_MicrosoftWindowsAppSdkVersion)'))" />
     </ItemGroup>
     <WriteLinesToFile

@@ -1,5 +1,8 @@
 #if WINDOWS_UWP
 using Windows.ApplicationModel.Activation;
+using Windows.UI.Core;
+using Windows.UI.Xaml;
+using WindowActivationState = Windows.UI.Core.CoreWindowActivationState;
 #elif WINDOWS
 using Microsoft.UI.Xaml;
 #endif

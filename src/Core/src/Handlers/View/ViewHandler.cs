@@ -23,6 +23,10 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.FlowDirection)] = MapFlowDirection,
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
+			[nameof(IView.MinimumHeight)] = MapMinimumHeight,
+			[nameof(IView.MaximumHeight)] = MapMaximumHeight,
+			[nameof(IView.MinimumWidth)] = MapMinimumWidth,
+			[nameof(IView.MaximumWidth)] = MapMaximumWidth,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
 			[nameof(IView.Opacity)] = MapOpacity,
 			[nameof(IView.Semantics)] = MapSemantics,
@@ -133,6 +137,26 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHeight(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateHeight(view);
+		}
+
+		public static void MapMinimumHeight(ViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateMinimumHeight(view);
+		}
+
+		public static void MapMaximumHeight(ViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateMaximumHeight(view);
+		}
+
+		public static void MapMinimumWidth(ViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateMinimumWidth(view);
+		}
+
+		public static void MapMaximumWidth(ViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateMaximumWidth(view);
 		}
 
 		public static void MapIsEnabled(ViewHandler handler, IView view)

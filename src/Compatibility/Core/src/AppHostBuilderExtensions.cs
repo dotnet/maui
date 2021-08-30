@@ -139,10 +139,6 @@ namespace Microsoft.Maui.Controls.Hosting
 
 					// This is for Layouts that currently don't work when assigned to LayoutHandler
 					handlers.TryAddCompatibilityRenderer(typeof(ContentView), typeof(DefaultRenderer));
-#if __IOS__
-					handlers.TryAddCompatibilityRenderer(typeof(AbsoluteLayout), typeof(DefaultRenderer));
-#endif
-
 
 					DependencyService.Register<Xaml.ResourcesLoader>();
 					DependencyService.Register<NativeBindingService>();

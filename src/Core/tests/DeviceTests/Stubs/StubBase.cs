@@ -40,6 +40,14 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public double Height { get; set; } = 50;
 
+		public double MaximumWidth { get; set; } = Primitives.Dimension.Maximum;
+
+		public double MaximumHeight { get; set; } = Primitives.Dimension.Maximum;
+
+		public double MinimumWidth { get; set; } = Primitives.Dimension.Minimum;
+
+		public double MinimumHeight { get; set; } = Primitives.Dimension.Minimum;
+
 		public double TranslationX { get; set; }
 
 		public double TranslationY { get; set; }

@@ -56,8 +56,11 @@ namespace Microsoft.Maui.Controls
 			// The value from ComputeDesiredSize won't account for any margins on the Content; we'll need to do that manually
 			// And we'll use ResolveConstraints to make sure we're sticking within and explicit Height/Width values or externally
 			// imposed constraints
-			var desiredWidth = ResolveConstraints(widthConstraint, Width, defaultSize.Width + contentMargin.HorizontalThickness);
-			var desiredHeight = ResolveConstraints(heightConstraint, Height, defaultSize.Height + contentMargin.VerticalThickness);
+			var width = (this as IView).Width;
+			var height = (this as IView).Height;
+
+			var desiredWidth = ResolveConstraints(widthConstraint, width, defaultSize.Width + contentMargin.HorizontalThickness);
+			var desiredHeight = ResolveConstraints(heightConstraint, height, defaultSize.Height + contentMargin.VerticalThickness);
 
 			DesiredSize = new Size(desiredWidth, desiredHeight);
 			return DesiredSize;

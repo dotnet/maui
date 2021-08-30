@@ -1,10 +1,16 @@
-﻿
-
+﻿#if WINDOWS_UWP
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
+using Windows.UI.Xaml.Media;
+#elif WINDOWS
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+#endif
+
+
 
 namespace Microsoft.Maui.Essentials
 {

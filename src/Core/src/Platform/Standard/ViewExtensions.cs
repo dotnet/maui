@@ -41,5 +41,13 @@ namespace Microsoft.Maui
 		public static void UpdateWidth(this object nativeView, IView view) { }
 
 		public static void UpdateHeight(this object nativeView, IView view) { }
+
+		public static void UpdateMinimumHeight(this object nativeView, IView view) { }
+
+		public static void UpdateMaximumHeight(this object nativeView, IView view) { }
+
+		public static void UpdateMinimumWidth(this object nativeView, IView view) { }
+
+		public static void UpdateMaximumWidth(this object nativeView, IView view) { }
 	}
 }

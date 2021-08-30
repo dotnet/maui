@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -127,8 +128,99 @@ namespace Microsoft.Maui.Controls
 		internal Semantics SetupSemantics() =>
 			_semantics ??= new Semantics();
 
-		double IView.Width => WidthRequest;
-		double IView.Height => HeightRequest;
+		static void ValidatePositive(double value, string name)
+		{
+			if (value < 0)
+			{
+				throw new InvalidOperationException($"{name} cannot be less than zero.");
+			}
+		}
+
+		double IView.Width
+		{
+			get
+			{
+				if (!IsSet(WidthRequestProperty))
+				{
+					return Primitives.Dimension.Unset;
+				}
+
+				// Access once up front to avoid multiple GetValue calls
+				var value = WidthRequest;
+				ValidatePositive(value, nameof(IView.Width));
+				return value;
+			}
+		}
+
+		double IView.Height
+		{
+			get
+			{
+				if (!IsSet(HeightRequestProperty))
+				{
+					return Primitives.Dimension.Unset;
+				}
+
+				// Access once up front to avoid multiple GetValue calls
+				var value = HeightRequest;
+				ValidatePositive(value, nameof(IView.Height));
+				return value;
+			}
+		}
+
+		double IView.MinimumWidth
+		{
+			get
+			{
+				if (!IsSet(MinimumWidthRequestProperty))
+				{
+					return Primitives.Dimension.Minimum;
+				}
+
+				// Access once up front to avoid multiple GetValue calls
+				var value = MinimumWidthRequest;
+				ValidatePositive(value, nameof(IView.MinimumWidth));
+				return value;
+			}
+		}
+
+		double IView.MinimumHeight
+		{
+			get
+			{
+				if (!IsSet(MinimumHeightRequestProperty))
+				{
+					return Primitives.Dimension.Minimum;
+				}
+
+				// Access once up front to avoid multiple GetValue calls
+				var value = MinimumHeightRequest;
+				ValidatePositive(value, nameof(IView.MinimumHeight));
+				return value;
+			}
+		}
+
+		double IView.MaximumWidth
+		{
+			get
+			{
+				// Access once up front to avoid multiple GetValue calls
+				var value = MaximumWidthRequest;
+				ValidatePositive(value, nameof(IView.MaximumWidth));
+				return value;
+			}
+		}
+
+		double IView.MaximumHeight
+		{
+			get
+			{
+				// Access once up front to avoid multiple GetValue calls
+				var value = MaximumHeightRequest;
+				ValidatePositive(value, nameof(IView.MaximumHeight));
+				return value;
+			}
+		}
 
 		Thickness IView.Margin => Thickness.Zero;
 	}

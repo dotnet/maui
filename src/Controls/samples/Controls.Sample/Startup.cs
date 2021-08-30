@@ -91,21 +91,21 @@ namespace Maui.Controls.Sample
 
 			services.AddTransient<IWindow, Window>();
 
-					services.AddTransient(
-						serviceType: typeof(Page),
-						implementationType: _pageType switch
-						{
-							PageType.Template => typeof(TemplatePage),
-							PageType.Shell => typeof(AppShell),
-							PageType.Main => typeof(CustomNavigationPage),
-							PageType.Blazor =>
+			services.AddTransient(
+				serviceType: typeof(Page),
+				implementationType: _pageType switch
+				{
+					PageType.Template => typeof(TemplatePage),
+					PageType.Shell => typeof(AppShell),
+					PageType.Main => typeof(CustomNavigationPage),
+					PageType.Blazor =>
 #if NET6_0_OR_GREATER
 								typeof(BlazorPage),
 #else
 								throw new NotSupportedException("Blazor requires .NET 6 or higher."),
 #endif
-							_ => throw new Exception(),
-						});
+					_ => throw new Exception(),
+				});
 
 			appBuilder
 				.ConfigureFonts(fonts =>
@@ -200,6 +200,7 @@ namespace Maui.Controls.Sample
 #elif WINDOWS
 					// Log everything in this one
 					events.AddWindows(windows => windows
+						.OnNativeMessage((a, b) => LogEvent(nameof(WindowsLifecycle.OnNativeMessage)))
 						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
