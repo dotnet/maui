@@ -64,11 +64,12 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
+	 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.NativeView?.UpdateFormat(datePicker);
 		}
-
+		 
 		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.NativeView?.UpdateDate(datePicker);
@@ -108,7 +109,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (VirtualView == null || _picker == null)
 				return;
-
 			VirtualView.Date = _picker.Date.ToDateTime().Date;
 		}
 	}

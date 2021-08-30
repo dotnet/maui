@@ -11,10 +11,12 @@ namespace Microsoft.Maui
 		{
 			return ReferenceDate.AddSeconds(date.SecondsSinceReferenceDate);
 		}
-
-		public static NSDate ToNSDate(this DateTime date)
+		public static NSDate? ToNSDate(this DateTime? date)
 		{
-			return NSDate.FromTimeIntervalSinceReferenceDate((date - ReferenceDate).TotalSeconds);
+			if (date == null)
+				return null;
+
+			return NSDate.FromTimeIntervalSinceReferenceDate((date.Value - ReferenceDate).TotalSeconds);
 		}
 	}
 }

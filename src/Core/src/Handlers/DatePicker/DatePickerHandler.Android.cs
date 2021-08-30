@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdateFormat(datePicker);
 		}
-
+	 
 		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.NativeView?.UpdateDate(datePicker);
@@ -106,7 +106,11 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var date = VirtualView.Date;
-			ShowPickerDialog(date.Year, date.Month, date.Day);
+
+			if(date != null)
+ 			   ShowPickerDialog(date.Value.Year, date.Value.Month, date.Value.Day);
+			else
+				ShowPickerDialog(0,0, 0);
 		}
 
 		void ShowPickerDialog(int year, int month, int day)

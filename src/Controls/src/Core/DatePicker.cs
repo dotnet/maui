@@ -7,10 +7,8 @@ namespace Microsoft.Maui.Controls
 	public partial class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>
 	{
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(DatePicker), "d");
-
-		public static readonly BindableProperty SelectedDateProperty = BindableProperty.Create(nameof(SelectedDate), typeof(DateTime?),typeof(DatePicker),default(DateTime?));
-				
-		public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime), typeof(DatePicker), default(DateTime), BindingMode.TwoWay,
+						
+		public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime?), typeof(DatePicker), default(DateTime), BindingMode.TwoWay,
 			coerceValue: CoerceDate,
 			propertyChanged: DatePropertyChanged,
 			defaultValueCreator: (bindable) => DateTime.Today);
@@ -39,12 +37,8 @@ namespace Microsoft.Maui.Controls
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<DatePicker>>(() => new PlatformConfigurationRegistry<DatePicker>(this));
 		}
-		public DateTime? SelectedDate
-		{
-			get { return (DateTime)GetValue(SelectedDateProperty); }
-			set { SetValue(SelectedDateProperty, value); }
-		}
-		public DateTime Date
+	
+		public DateTime? Date
 		{
 			get { return (DateTime)GetValue(DateProperty); }
 			set { 
@@ -178,9 +172,8 @@ namespace Microsoft.Maui.Controls
 			var datePicker = (DatePicker)bindable;
 			EventHandler<DateChangedEventArgs> selected = datePicker.DateSelected;
 
-			if (selected != null)
-				selected(datePicker, new DateChangedEventArgs((DateTime)oldValue, (DateTime)newValue));
-		}
+			selected(datePicker, new DateChangedEventArgs((DateTime)oldValue, (DateTime)newValue));
+ 		}
 
 		static bool ValidateMaximumDate(BindableObject bindable, object value)
 		{

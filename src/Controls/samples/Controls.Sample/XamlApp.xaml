@@ -8,6 +8,7 @@
         <ResourceDictionary>
             <Color x:Key="DotNetPurple">#512BD4</Color>
 
+            <DatePicker x:Name="dpName"></DatePicker>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

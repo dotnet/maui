@@ -7,11 +7,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		public string Format { get; set; }
 
-		public DateTime Date { get; set; }
+		public DateTime? Date { get; set; }
 
-		public DateTime? SelectedDate { get; set; }
-
-		public DateTime MinimumDate { get; set; }
+        public DateTime MinimumDate { get; set; }
 
 		public DateTime MaximumDate { get; set; }
 

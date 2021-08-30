@@ -13,14 +13,9 @@ namespace Microsoft.Maui
 		string Format { get; set; }
 
 		/// <summary>
-		/// Gets the displayed date.
+		/// Gets the displayed date this can also be a nullable value.
 		/// </summary>
-		DateTime Date { get; set; }
-
-		/// <summary>
-		/// Gets or Sets a nullable date for UI.
-		/// </summary>
-		public DateTime? SelectedDate { get; set; }
+		DateTime? Date { get; set; }
 
 		/// <summary>
 		/// Gets the minimum DateTime selectable.

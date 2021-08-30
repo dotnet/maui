@@ -23,9 +23,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestNullableDate()
 		{
 			DatePicker picker = new DatePicker();
-			if(picker.SelectedDate ==null)
+			if(picker.Date ==null)
 			{
-				Assert.That(picker.SelectedDate, Is.Null);
+				Assert.That(picker.Date, Is.Null);
 			}
 
 		}

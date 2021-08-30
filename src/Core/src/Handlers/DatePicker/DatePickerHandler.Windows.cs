@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdateDate(datePicker);
 		}
-
+		
 		public static void MapDate(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.NativeView?.UpdateDate(datePicker);
