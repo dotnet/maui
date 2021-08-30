@@ -64,10 +64,10 @@ steps:
 
   # Prepare Windows
   - ${{ if eq(parameters.platform, 'windows') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@1
-      displayName: 'Provision Visual Studio'
-      inputs:
-        provisioning_script: $(provisionator.vs)
+    # - task: xamops.azdevex.provisionator-task.provisionator@1
+    #   displayName: 'Provision Visual Studio'
+    #   inputs:
+    #     provisioning_script: $(provisionator.vs)
     - powershell: |
         if (-not $(where.exe pwsh)) {
           $url = "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.msi"
