@@ -68,19 +68,19 @@ steps:
     #   displayName: 'Provision Visual Studio'
     #   inputs:
     #     provisioning_script: $(provisionator.vs)
-    - powershell: |
-        if (-not $(where.exe pwsh)) {
-          $url = "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.msi"
-          $output = "PowerShell.msi"
-          Invoke-WebRequest -Uri $url -OutFile $output
-          msiexec.exe /package $output /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1
-          Remove-Item $output
-        }
-      displayName: 'Install PowerShell Core'
-    - pwsh: |
-        $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
-        echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
-      displayName: 'Setup MSBuild Paths'
+    # - powershell: |
+    #     if (-not $(where.exe pwsh)) {
+    #       $url = "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.msi"
+    #       $output = "PowerShell.msi"
+    #       Invoke-WebRequest -Uri $url -OutFile $output
+    #       msiexec.exe /package $output /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1
+    #       Remove-Item $output
+    #     }
+    #   displayName: 'Install PowerShell Core'
+    # - pwsh: |
+    #     $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+    #     echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
+    #   displayName: 'Setup MSBuild Paths'
 
 
   # Prepare Both
