@@ -63,7 +63,7 @@ steps:
 
 
   # Prepare Windows
-  - ${{ if eq(parameters.platform, 'windows') }}:
+  #- ${{ if eq(parameters.platform, 'windows') }}:
     # - task: xamops.azdevex.provisionator-task.provisionator@1
     #   displayName: 'Provision Visual Studio'
     #   inputs:
