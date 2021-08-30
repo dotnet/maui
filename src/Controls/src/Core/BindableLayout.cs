@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	// TODO ezhart 2021-07-16 This interface is just here to give Layout and Compatibility.Layout common ground for BindableLayout
 	// once we have the IContainer changes in, we may be able to drop this in favor of simply Core.ILayout
 	// See also IndicatorView.cs 
-	public interface IBindableLayout
+	public interface IBindableLayout 
 	{
 		public IList Children { get; }
 	}
