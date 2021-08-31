@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 using Android.Animation;
-using Android.App;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -16,10 +13,8 @@ using Android.Views;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.DrawerLayout.Widget;
-using AndroidX.Fragment.App;
 using AndroidX.Navigation;
 using Google.Android.Material.AppBar;
-using Microsoft.Maui.Controls.Internals;
 using static Android.Views.View;
 using static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
 using ActionBarDrawerToggle = AndroidX.AppCompat.App.ActionBarDrawerToggle;
@@ -27,7 +22,6 @@ using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
-using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 using Object = Java.Lang.Object;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -36,7 +30,6 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		ActionBarDrawerToggle _drawerToggle;
 		FragmentManager _fragmentManager;
-		//int _statusbarHeight;
 		MaterialToolbar _toolbar;
 		AppBarLayout _appBar;
 		ToolbarTracker _toolbarTracker;
@@ -131,12 +124,14 @@ namespace Microsoft.Maui.Controls.Platform
 			NavAnimationInProgress = false;
 
 			var currentStack = NavGraphDestination.NavigationStack;
+			var newStackSize = e.NavigationStack.Count;
+
 			bool animated = e.Animated;
-			bool removed = NavGraphDestination.NavigationStack.Count > e.NavigationStack.Count;
+			bool removed = currentStack.Count > newStackSize;
 
 			if (animated)
 			{
-				var page = (Page)e.NavigationStack.Last();
+				var page = (Page)e.NavigationStack[newStackSize -1];
 				if (!removed)
 				{
 					UpdateToolbar();
@@ -146,8 +141,18 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else if (_drawerToggle != null && NavigationPageController.StackDepth == 2 &&
 					NavigationPage.GetHasBackButton(page))
+				{
 					AnimateArrowOut();
+				}
 			}
+		}
+
+		protected override void OnFragmentResumed(FragmentManager fm, NavHostPageFragment navHostPageFragment)
+		{
+			base.OnFragmentResumed(fm, navHostPageFragment);
+			// This appears to be the best place to update the toolbar so that the tinting works
+			// Any early and the tinting will be replaced by the native tinting
+			UpdateToolbar();
 		}
 
 		protected override void OnDestinationChanged(NavController navController, NavDestination navDestination, Bundle bundle)
@@ -156,7 +161,11 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_toolbarTracker != null)
 			{
 				_toolbarTracker.Target = CurrentPage;
-				//UpdateToolbar();
+			}
+
+			if (NavGraphDestination.CurrentPage is ITitledElement titledElement)
+			{
+				Toolbar.Title = titledElement.Title;
 			}
 		}
 
@@ -252,8 +261,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			var items = _toolbarTracker?.ToolbarItems?.ToList();
-			_toolbar.OnToolbarItemPropertyChanged(e, (ToolbarItem)sender, items, Element.FindMauiContext(), null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+			var toolbarItems = _toolbarTracker?.ToolbarItems;
+			List<ToolbarItem> newToolBarItems = new List<ToolbarItem>();
+			if (toolbarItems != null)
+				newToolBarItems.AddRange(toolbarItems);
+
+			_toolbar.OnToolbarItemPropertyChanged(e, (ToolbarItem)sender, newToolBarItems, Element.FindMauiContext(), null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 
 		protected virtual void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)

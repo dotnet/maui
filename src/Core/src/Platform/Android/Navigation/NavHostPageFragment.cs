@@ -10,12 +10,19 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
-	internal class NavHostPageFragment : Fragment
+	public class NavHostPageFragment : Fragment
 	{
+		AView? _currentView;
 		NavigationLayout? _navigationLayout;
+		FragmentContainerView? _fragmentContainerView;
+
 		NavigationLayout NavigationLayout => _navigationLayout ??= NavDestination.NavigationLayout;
 
-		FragmentNavDestination? _navDestination;
+		FragmentContainerView FragmentContainerView =>
+			_fragmentContainerView ??= NavigationLayout.FindViewById<FragmentContainerView>(Resource.Id.nav_host)
+			?? throw new InvalidOperationException($"FragmentContainerView cannot be null here");
+
+		FragmentDestination? _navDestination;
 
 		ProcessBackClick BackClick { get; }
 
@@ -23,11 +30,11 @@ namespace Microsoft.Maui
 				   (Context?.GetFragmentManager()?.FindFragmentById(Resource.Id.nav_host)
 			  as NavHostFragment) ?? throw new InvalidOperationException($"NavHost cannot be null here");
 
-		NavGraphDestination Graph =>
-				   (NavHost.NavController.Graph as NavGraphDestination) 
+		MauiNavGraph Graph =>
+				   (NavHost.NavController.Graph as MauiNavGraph)
 			?? throw new InvalidOperationException($"Graph cannot be null here");
 
-		public FragmentNavDestination NavDestination
+		public FragmentDestination NavDestination
 		{
 			get => _navDestination ?? throw new InvalidOperationException($"NavDestination cannot be null here");
 			private set => _navDestination = value;
@@ -49,13 +56,16 @@ namespace Microsoft.Maui
 
 			Animation? returnValue;
 
-			// This means th operation currently being processed shouldn't be animated
+			// This means the operation currently being processed shouldn't be animated
+			// This will happen if a user inserts or removes a root page
 			if (Graph.IsPopping == null || !Graph.IsAnimated)
 			{
 				returnValue = null;
 			}
 			else
 			{
+				// Once we have Function Mappers figured out all of this code can
+				// move to a function mapper as a way to customize animations from code
 				if (Graph.IsPopping.Value)
 				{
 					if (!enter)
@@ -97,20 +107,47 @@ namespace Microsoft.Maui
 			if (_navDestination == null)
 			{
 				NavDestination =
-					(FragmentNavDestination)
+					(FragmentDestination)
 						NavHost.NavController.CurrentDestination;
 			}
 
 			_ = NavDestination ?? throw new ArgumentNullException(nameof(NavDestination));
 
-			// TODO Maui can we tranplant the page better?
-			// do we care?
-			//NavDestination.Page.Handler?.DisconnectHandler();
-			//NavDestination.Page.Handler = null;
-			var view = NavDestination.Page.ToNative(NavDestination.MauiContext);
-			
+			// When shuffling around the back stack sometimes we'll need a page to detach and then reattach.
+			// This mainly happens when users are removing or inserting pages. If we only have one page
+			// and the user inserts a page at index zero we push a page onto the native backstack so
+			// that we can get a toolbar with a back button. 
 
-			return view;
+			// Internally Android destroys the first fragment and then creates a second fragment. 
+			// Android removes the view associated with the first fragment and then adds the view 
+			// now associated with the second fragment. In our case this is the same view.
+
+			// This is all a bit silly because the page is just getting added and removed to the same
+			// view. Unfortunately FragmentContainerView is sealed so we can't inherit from it and influence
+			// when the views are being added and removed. If this ends up causing too much shake up
+			// Then we can try some other approachs like just modifying the navbar ourselves to include a back button
+			// Even if there's only one page on the stack
+
+			_currentView = NavDestination.Page.ToNative(NavDestination.MauiContext);
+			_currentView.RemoveFromParent();
+
+			return _currentView;
+		}
+
+		public override void OnResume()
+		{
+			if (_currentView == null || NavigationLayout.NavHost == null)
+				return;
+
+			if (_currentView.Parent == null)
+			{
+				// Re-add the view to the container if Android removed it
+				// see comment inside OnCreateView for more information
+				FragmentContainerView.AddView(_currentView);
+			}
+
+			base.OnResume();
+
 		}
 
 		public override void OnViewCreated(AView view, Bundle savedInstanceState)

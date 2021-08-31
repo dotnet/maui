@@ -19,8 +19,8 @@ namespace Microsoft.Maui
 		Toolbar? _toolbar;
 		AppBarLayout? _appBar;
 
-		internal NavGraphDestination NavGraphDestination =>
-			(NavGraphDestination)NavHost.NavController.Graph;
+		internal MauiNavGraph NavGraphDestination =>
+			(MauiNavGraph)NavHost.NavController.Graph;
 
 		internal IView? VirtualView { get; private set; }
 		internal INavigationView? NavigationView { get; private set; }
@@ -104,8 +104,8 @@ namespace Microsoft.Maui
 					.NavigatorProvider
 					.GetNavigator(Java.Lang.Class.FromType(typeof(NavGraphNavigator)));
 
-			var navGraphSwap = new NavGraphDestination(navGraphNavigator);
-			navGraphSwap.ApplyPagesToGraph(
+			var navGraphSwap = new MauiNavGraph(navGraphNavigator);
+			navGraphSwap.Initialize(
 				NavigationView.NavigationStack,
 				this);
 
@@ -140,16 +140,13 @@ namespace Microsoft.Maui
 
 		}
 
-		private void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, NavHostPageFragment navHostPageFragment)
+		protected virtual void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, NavHostPageFragment navHostPageFragment)
 		{
-			// This appears to be the best place to update the toolbar so that the tinting works
-			// Any early and the tinting will be replaced by the native tinting
-			UpdateToolbar();
 		}
 
 		public virtual void RequestNavigation(MauiNavigationRequestedEventArgs e)
 		{
-			var graph = (NavGraphDestination)NavHost.NavController.Graph;
+			var graph = (MauiNavGraph)NavHost.NavController.Graph;
 			graph.ApplyNavigationRequest(e, this);
 		}
 
@@ -157,7 +154,7 @@ namespace Microsoft.Maui
 		{
 			_ = NavigationView ?? throw new InvalidOperationException($"NavigationView cannot be null");
 
-			var graph = (NavGraphDestination)NavHost.NavController.Graph;
+			var graph = (MauiNavGraph)NavHost.NavController.Graph;
 			var stack = new List<IView>(graph.NavigationStack);
 			stack.RemoveAt(stack.Count - 1);
 			graph.ApplyNavigationRequest(new MauiNavigationRequestedEventArgs(stack, true) , this);
@@ -167,10 +164,6 @@ namespace Microsoft.Maui
 
 		protected virtual void OnDestinationChanged(NavController navController, NavDestination navDestination, Bundle bundle)
 		{
-			if (NavGraphDestination.CurrentPage is ITitledElement titledElement)
-			{
-				Toolbar.Title = titledElement.Title;
-			}
 		}
 
 		void NavController.IOnDestinationChangedListener.OnDestinationChanged(

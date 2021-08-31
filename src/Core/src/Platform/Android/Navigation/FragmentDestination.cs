@@ -1,22 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui
 {
-	internal class FragmentNavDestination : FragmentNavigator.Destination
+	public class FragmentDestination : FragmentNavigator.Destination
 	{
 		public IView Page { get; internal set; }
-		public IMauiContext MauiContext => NavigationLayout.MauiContext ?? throw new InvalidOperationException($"MauiContext cannot be null here");
-		public NavigationLayout NavigationLayout { get; }
+		internal IMauiContext MauiContext => NavigationLayout.MauiContext ?? throw new InvalidOperationException($"MauiContext cannot be null here");
+		internal NavigationLayout NavigationLayout { get; }
 
-		NavGraphDestination _navGraph { get; }
+		MauiNavGraph _navGraph { get; }
 		Dictionary<IView, int> Pages => _navGraph.Pages;
 
-		public FragmentNavDestination(IView page, NavigationLayout navigationLayout, NavGraphDestination navGraphDestination) : base(navigationLayout.FragmentNavigator)
+		public FragmentDestination(IView page, NavigationLayout navigationLayout, MauiNavGraph navGraphDestination) : base(navigationLayout.FragmentNavigator)
 		{
 			_ = page ?? throw new ArgumentNullException(nameof(page));
 			_ = navigationLayout ?? throw new ArgumentNullException(nameof(navigationLayout));

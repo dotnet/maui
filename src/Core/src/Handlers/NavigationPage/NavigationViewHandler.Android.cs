@@ -1,14 +1,8 @@
 ﻿#nullable enable
 
 using System;
-using System.Collections.Generic;
 using Android.Runtime;
 using Android.Views;
-using AndroidX.AppCompat.Widget;
-using AndroidX.Navigation;
-using AndroidX.Navigation.Fragment;
-using Google.Android.Material.AppBar;
-using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -37,17 +31,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (arg3 is MauiNavigationRequestedEventArgs ea)
 				arg1.NativeView.RequestNavigation(ea);
-		}
-
-		internal void OnPop()
-		{
-			//NativeView
-			//	.NavigationView?
-			//	.PopAsync()
-			//	.FireAndForget((e) =>
-			//	{
-			//		//Log.Warning(nameof(NavigationViewHandler), $"{e}");
-			//	});
 		}
 	}
 }

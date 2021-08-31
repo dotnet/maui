@@ -1,27 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using AndroidX.Navigation;
 using AView = Android.Views.View;
+
 namespace Microsoft.Maui
 {
-	internal class NavGraphDestination : NavGraph
+	public class MauiNavGraph : NavGraph
 	{
 		IView? _currentPage;
-		internal IView CurrentPage 
+		public IView CurrentPage
 		{
 			get => _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
 			private set => _currentPage = value;
 		}
 
-		internal IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
+		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
 		internal Dictionary<IView, int> Pages = new Dictionary<IView, int>();
 
-		public NavGraphDestination(Navigator navGraphNavigator) : base(navGraphNavigator)
+		public MauiNavGraph(Navigator navGraphNavigator) : base(navGraphNavigator)
 		{
 			Id = AView.GenerateViewId();
 		}
-
 
 		internal void NavigationFinished(INavigationView? navigationView)
 		{
@@ -99,12 +98,12 @@ namespace Microsoft.Maui
 			IsAnimated = animated;
 
 			var iterator = navigationLayout.NavHost.NavController.BackStack.Iterator();
-			var fragmentNavDestinations = new List<FragmentNavDestination>();
+			var fragmentNavDestinations = new List<FragmentDestination>();
 
 			while (iterator.HasNext)
 			{
 				if (iterator.Next() is NavBackStackEntry nbse &&
-					nbse.Destination is FragmentNavDestination nvd)
+					nbse.Destination is FragmentDestination nvd)
 				{
 					fragmentNavDestinations.Add(nvd);
 				}
@@ -163,29 +162,41 @@ namespace Microsoft.Maui
 			}
 
 			// Remove all Navigation Destinations that no longer apply to our current navigation stack
-			foreach (var thing in fragmentNavDestinations)
+			// This happens whenever a page is popped
+			foreach (var activeDestinations in fragmentNavDestinations)
 			{
-				if (!Pages.Values.ToList().Contains(thing.Id))
+				bool found = false;
+
+				foreach(var destinationIds in Pages.Values)
 				{
-					this.Remove(thing);
+					if (destinationIds == activeDestinations.Id)
+					{
+						found = true;
+						break;
+					}
+				}
+
+				if (!found)
+				{
+					this.Remove(activeDestinations);
 				}
 			}
 
 			UpdateNavigationStack(newPageStack);
 		}
 
-		public FragmentNavDestination AddDestination(
+		public FragmentDestination AddDestination(
 			IView page,
 			NavigationLayout navigationLayout)
 		{
-			var destination = new FragmentNavDestination(page, navigationLayout, this);
+			var destination = new FragmentDestination(page, navigationLayout, this);
 			AddDestination(destination);
 			return destination;
 		}
 
 		// This occurs when the navigation page is first being renderer so we sync up the
 		// Navigation Stack on the INavigationView to our native stack
-		internal List<int> ApplyPagesToGraph(
+		internal List<int> Initialize(
 			IReadOnlyList<IView> pages,
 			NavigationLayout navigationLayout)
 		{
