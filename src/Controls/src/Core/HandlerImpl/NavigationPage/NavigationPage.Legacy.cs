@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	// This contains the messaging required to communicate with legacy renderers
 	public partial class NavigationPage : INavigationPageController
 	{
 		internal async Task<Page> PopAsyncInner(

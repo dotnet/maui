@@ -22,9 +22,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(NavigationLayout nativeView)
 		{
-			NativeView.SetVirtualView(VirtualView);
 			base.ConnectHandler(nativeView);
-			nativeView.Connect();
+			NativeView.SetVirtualView(VirtualView);
 		}
 
 		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)

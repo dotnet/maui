@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Handlers
 		UIViewController? INativeViewHandler.ViewController => _controlsNavigationController;
 
 		public INavigationView NavigationView => ((INavigationView)VirtualView);
+
+		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
+
 		protected override UIView CreateNativeView()
 		{
 			_controlsNavigationController = new ControlsNavigationController(this);
@@ -29,6 +32,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
 		{
+			arg1.NavigationStack = (arg3 as MauiNavigationRequestedEventArgs)!.NavigationStack;
 			//if (arg3 is MauiNavigationRequestedEventArgs args)
 			//	arg1.OnPushRequested(args);
 		}

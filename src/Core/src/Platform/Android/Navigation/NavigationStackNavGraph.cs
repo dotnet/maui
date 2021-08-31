@@ -19,10 +19,11 @@ namespace Microsoft.Maui
 
 		public NavigationStackNavGraph(Navigator navGraphNavigator) : base(navGraphNavigator)
 		{
-			Id = AView.GenerateViewId();
+			Id = AView.GenerateViewId();			
 		}
 
 		internal bool IsNavigating => ActiveRequestedArgs != null;
+		internal bool IsInitialNavigation { get; private set; }
 		internal bool? IsPopping { get; private set; }
 		internal bool IsAnimated { get; set; } = true;
 		internal MauiNavigationRequestedEventArgs? ActiveRequestedArgs { get; private set; }
@@ -58,16 +59,30 @@ namespace Microsoft.Maui
 				throw new InvalidOperationException("Previous Navigation Request is still Processing");
 			}
 
+			if (args.NavigationStack.Count == 0)
+			{
+				throw new InvalidOperationException("NavigationStack cannot be empty");
+			}
+
 			ActiveRequestedArgs = args;
 			IReadOnlyList<IView> newPageStack = args.NavigationStack;
 			bool animated = args.Animated;
 			var navController = navigationLayout.NavHost.NavController;
 			var previousNavigationStack = NavigationStack;
 			var previousNavigationStackCount = previousNavigationStack.Count;
+			bool initialNavigation = NavigationStack.Count == 0;
 
 			// This updates the graphs public navigation stack property so it's outwardly correct
 			// But we've saved off the previous stack so we can correctly interpret navigation
 			UpdateNavigationStack(newPageStack);
+
+			// This indicates that this is the first navigation request so we need to initialize the graph
+			if (initialNavigation)
+			{
+				IsInitialNavigation = true;
+				Initialize(args.NavigationStack, navigationLayout);
+				return;
+			}
 
 			// If the new stack isn't changing the visible page or the app bar then we just ignore
 			// the changes because there's no point to applying these to the native back stack
@@ -140,13 +155,16 @@ namespace Microsoft.Maui
 			// This iterates over the new backstack and removes any destinations
 			// that are no longer apart of the back stack
 			var iterateNewStack = navigationLayout.NavHost.NavController.BackStack.Iterator();
-
+			int startId = -1;
 			while (iterateNewStack.HasNext)
 			{
 				if (iterateNewStack.Next() is NavBackStackEntry nbse &&
 					nbse.Destination is FragmentNavigator.Destination nvd)
 				{
 					fragmentNavDestinations.Remove(nvd);
+
+					if (startId == -1)
+						startId = nvd.Id;
 				}
 			}
 
@@ -154,6 +172,11 @@ namespace Microsoft.Maui
 			{
 				this.Remove(activeDestinations);
 			}
+
+			// If we end up removing the destination that was initially the StartDestination
+			// The Navigation Graph can get really confused
+			if (StartDestination != startId)
+				StartDestination = startId;
 		}
 
 		public FragmentNavigator.Destination AddDestination(Navigator fragmentNavigator)
@@ -167,6 +190,7 @@ namespace Microsoft.Maui
 
 		internal void NavigationFinished(INavigationView? navigationView)
 		{
+			IsInitialNavigation = false;
 			IsPopping = null;
 			ActiveRequestedArgs = null;
 			navigationView?.NavigationFinished(NavigationStack);
@@ -174,9 +198,7 @@ namespace Microsoft.Maui
 
 		// This occurs when the navigation page is first being renderer so we sync up the
 		// Navigation Stack on the INavigationView to our native stack
-		internal List<int> Initialize(
-			IReadOnlyList<IView> pages,
-			NavigationLayout navigationLayout)
+		List<int> Initialize(IReadOnlyList<IView> pages, NavigationLayout navigationLayout)
 		{
 			var navController = navigationLayout.NavHost.NavController;
 

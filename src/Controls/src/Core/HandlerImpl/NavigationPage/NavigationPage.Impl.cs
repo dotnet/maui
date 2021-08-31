@@ -84,8 +84,7 @@ namespace Microsoft.Maui.Controls
 
 		IView Content => this.CurrentPage;
 
-		IReadOnlyList<IView> INavigationView.NavigationStack =>
-			this.Navigation.NavigationStack;
+		IReadOnlyList<IView> NavigationStack => this.Navigation.NavigationStack;
 
 		static void CurrentPagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -124,7 +123,7 @@ namespace Microsoft.Maui.Controls
 		async void SendHandlerUpdate(bool animated)
 		{
 			await WaitForCurrentNavigationTask();
-			var trulyReadOnlyNavigationStack = new List<IView>((this as INavigationView).NavigationStack);
+			var trulyReadOnlyNavigationStack = new List<IView>(NavigationStack);
 			var request = new MauiNavigationRequestedEventArgs(trulyReadOnlyNavigationStack, animated);
 			((INavigationView)this).RequestNavigation(request);
 		}
@@ -143,7 +142,7 @@ namespace Microsoft.Maui.Controls
 			// We create a new list to send to the handler because the structure backing 
 			// The Navigation stack isn't immutable
 			var previousPage = CurrentPage;
-			var immutableNavigationStack = new List<IView>((this as INavigationView).NavigationStack);
+			var immutableNavigationStack = new List<IView>(NavigationStack);
 
 			// Alert currently visible pages that navigation is happening
 			SendNavigating();
@@ -163,6 +162,15 @@ namespace Microsoft.Maui.Controls
 				Popped?.Invoke(this, new NavigationEventArgs(previousPage));
 			else
 				PoppedToRoot?.Invoke(this, new NavigationEventArgs(previousPage));
+		}
+
+		private protected override void OnHandlerChangedCore()
+		{
+			base.OnHandlerChangedCore();
+			var immutableNavigationStack = new List<IView>(NavigationStack);
+			SendNavigating();
+			var request = new MauiNavigationRequestedEventArgs(immutableNavigationStack, false);
+			((INavigationView)this).RequestNavigation(request);
 		}
 
 		// Once we get all platforms over to the new APIs
@@ -274,5 +282,4 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 	}
-
 }

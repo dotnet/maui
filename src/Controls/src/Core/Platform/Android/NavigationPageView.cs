@@ -83,11 +83,11 @@ namespace Microsoft.Maui.Controls.Platform
 				_appBar = FindViewById<AppBarLayout>(Resource.Id.appbar);
 				_toolbarTracker = new ToolbarTracker();
 				_toolbarTracker.CollectionChanged += ToolbarTrackerOnCollectionChanged;
-				_toolbarTracker.Target = (Page)NavGraphDestination.CurrentPage;
 			}
 			_toolbarTracker.AdditionalTargets = Element.GetParentPages();
 		}
 
+		// These are only relevant when nested inside a drawer layout
 		void AnimateArrowIn()
 		{
 			var icon = _toolbar.NavigationIcon as DrawerArrowDrawable;
@@ -147,9 +147,9 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		protected override void OnFragmentResumed(FragmentManager fm, NavigationViewFragment navHostPageFragment)
+		protected override void OnNavigationViewFragmentResumed(FragmentManager fm, NavigationViewFragment navHostPageFragment)
 		{
-			base.OnFragmentResumed(fm, navHostPageFragment);
+			base.OnNavigationViewFragmentResumed(fm, navHostPageFragment);
 			// This appears to be the best place to update the toolbar so that the tinting works
 			// Any early and the tinting will be replaced by the native tinting
 			UpdateToolbar();
