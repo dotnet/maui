@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Platform
 			NavigationView?.PopAsync();
 		}
 
-		public override void RequestNavigation(MauiNavigationRequestedEventArgs e)
+		public override void RequestNavigation(NavigationRequest e)
 		{
 			NavAnimationInProgress = true;
 			base.RequestNavigation(e);

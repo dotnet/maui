@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 			return Frame.Size;
 		}
 
-		void INavigationView.RequestNavigation(MauiNavigationRequestedEventArgs eventArgs)
+		void INavigationView.RequestNavigation(NavigationRequest eventArgs)
 		{
 			Handler?.Invoke(nameof(INavigationView.RequestNavigation), eventArgs);
 		}
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls
 		{
 			await WaitForCurrentNavigationTask();
 			var trulyReadOnlyNavigationStack = new List<IView>(NavigationStack);
-			var request = new MauiNavigationRequestedEventArgs(trulyReadOnlyNavigationStack, animated);
+			var request = new NavigationRequest(trulyReadOnlyNavigationStack, animated);
 			((INavigationView)this).RequestNavigation(request);
 		}
 
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls
 			SendNavigating();
 
 			// Create the request for the handler
-			var request = new MauiNavigationRequestedEventArgs(immutableNavigationStack, animated);
+			var request = new NavigationRequest(immutableNavigationStack, animated);
 			((INavigationView)this).RequestNavigation(request);
 
 			// Wait for the handler to finish processing the navigation
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls
 			base.OnHandlerChangedCore();
 			var immutableNavigationStack = new List<IView>(NavigationStack);
 			SendNavigating();
-			var request = new MauiNavigationRequestedEventArgs(immutableNavigationStack, false);
+			var request = new NavigationRequest(immutableNavigationStack, false);
 			((INavigationView)this).RequestNavigation(request);
 		}
 
@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Controls
 
 			void SendHandlerUpdate(bool animated)
 			{
-				var request = new MauiNavigationRequestedEventArgs(GetNavigationStack(), false);
+				var request = new NavigationRequest(GetNavigationStack(), false);
 				Owner.Handler?.Invoke(nameof(INavigationView.RequestNavigation), request);
 			}
 

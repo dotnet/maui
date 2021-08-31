@@ -4,7 +4,7 @@ namespace Microsoft.Maui
 {
 	public interface INavigationView : IView
 	{
-		void RequestNavigation(MauiNavigationRequestedEventArgs eventArgs);
+		void RequestNavigation(NavigationRequest eventArgs);
 		void NavigationFinished(IReadOnlyList<IView> newStack);
 	}
 }

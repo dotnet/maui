@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 		internal bool IsInitialNavigation { get; private set; }
 		internal bool? IsPopping { get; private set; }
 		internal bool IsAnimated { get; set; } = true;
-		internal MauiNavigationRequestedEventArgs? ActiveRequestedArgs { get; private set; }
+		internal NavigationRequest? ActiveRequestedArgs { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
 
 		internal NavHostFragment NavHost =>
@@ -75,7 +75,7 @@ namespace Microsoft.Maui
 		 * Fragments are recreated everytime they are pushed on the stack but the handler renderer is not.
 		 * It's just attached to a new fragment
 		 * */
-		void ApplyNavigationRequest(MauiNavigationRequestedEventArgs args)
+		void ApplyNavigationRequest(NavigationRequest args)
 		{
 			if (IsNavigating)
 			{
@@ -285,7 +285,7 @@ namespace Microsoft.Maui
 					.GetNavigator(Java.Lang.Class.FromType(typeof(FragmentNavigator)));
 		}
 
-		public virtual void RequestNavigation(MauiNavigationRequestedEventArgs e)
+		public virtual void RequestNavigation(NavigationRequest e)
 		{
 			if (_navGraph == null)
 			{

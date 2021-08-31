@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
 		{
-			if (arg3 is MauiNavigationRequestedEventArgs ea)
+			if (arg3 is NavigationRequest ea)
 				arg1._navigationManager?.RequestNavigation(ea);
 		}
 	}

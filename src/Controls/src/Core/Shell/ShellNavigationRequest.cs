@@ -3,7 +3,7 @@ using System.Diagnostics;
 namespace Microsoft.Maui.Controls
 {
 	[DebuggerDisplay("RequestDefinition = {Request}, StackRequest = {StackRequest}")]
-	internal class NavigationRequest
+	internal class ShellNavigationRequest
 	{
 		public enum WhatToDoWithTheStack
 		{
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 			PushToIt
 		}
 
-		public NavigationRequest(RequestDefinition definition, WhatToDoWithTheStack stackRequest, string query, string fragment)
+		public ShellNavigationRequest(RequestDefinition definition, WhatToDoWithTheStack stackRequest, string query, string fragment)
 		{
 			StackRequest = stackRequest;
 			Query = query;
