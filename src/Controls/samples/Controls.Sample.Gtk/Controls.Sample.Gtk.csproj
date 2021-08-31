@@ -14,7 +14,7 @@
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
-    <ProjectReference Include="..\Controls.Sample\Controls.Sample.csproj" />
+<!--    <ProjectReference Include="..\Controls.Sample\Controls.Sample.csproj" />-->
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Controls.Sample\Resources\Embedded\dotnet_bot.png">
