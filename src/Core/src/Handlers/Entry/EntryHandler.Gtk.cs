@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.NativeView is not { } nativeView)
 				return;
 
-			// https://developer.gnome.org/gtk3/stable/GtkEntry.html#gtk-entry-set-input-purpose
+			// https://docs.gtk.org/gtk3/method.Entry.set_input_purpose.html
 			// seems not to work
 			switch (entry.Keyboard)
 			{
