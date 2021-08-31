@@ -111,28 +111,6 @@ namespace Microsoft.Maui.DeviceTests
 			return textField.Font.PointSize;
 		}
 
-		bool GetNativeIsBold(SearchBarHandler searchBarHandler)
-		{
-			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
-			var textField = uiSearchBar.FindDescendantView<UITextField>();
-
-			if (textField == null)
-				return false;
-
-			return textField.Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Bold);
-		}
-
-		bool GetNativeIsItalic(SearchBarHandler searchBarHandler)
-		{
-			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
-			var textField = uiSearchBar.FindDescendantView<UITextField>();
-
-			if (textField == null)
-				return false;
-
-			return textField.Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
-		}
-
 		Task ValidateHasColor(ISearchBar searchBar, Color color, Action action = null)
 		{
 			return InvokeOnMainThreadAsync(() =>

@@ -35,8 +35,8 @@
                     Text="{Binding FilterValue, Mode=OneWayToSource}"
                     ReturnCommand="{Binding FilterCommand}"
                     ReturnType="Search"
-                    PlaceholderColor="{DynamicResource TextSecondaryColor}"
-                    TextColor="{DynamicResource TextPrimaryColor}"
+                    PlaceholderColor="{AppThemeBinding Light={StaticResource LightTextSecondaryColor}, Dark={StaticResource DarkTextSecondaryColor}}"
+                    TextColor="{AppThemeBinding Light={StaticResource LightTextPrimaryColor}, Dark={StaticResource DarkTextPrimaryColor}}"
                     FontSize="Medium"
                     HorizontalOptions="FillAndExpand"
                     VerticalOptions="Center"/>

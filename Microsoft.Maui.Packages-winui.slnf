@@ -1,0 +1,23 @@
+{
+  "solution": {
+    "path": "Microsoft.Maui-winui.sln",
+    "projects": [
+      "src\\BlazorWebView\\src\\Maui\\Microsoft.AspNetCore.Components.WebView.Maui.csproj",
+      "src\\BlazorWebView\\src\\WebView2\\Microsoft.AspNetCore.Components.WebView.WebView2.csproj",
+      "src\\BlazorWebView\\src\\WindowsForms\\Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj",
+      "src\\BlazorWebView\\src\\Wpf\\Microsoft.AspNetCore.Components.WebView.Wpf.csproj",
+      "src\\Compatibility\\Core\\src\\Compatibility-net6.csproj",
+      "src\\Controls\\Maps\\src\\Controls.Maps-net6.csproj",
+      "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks-net6.csproj",
+      "src\\Controls\\src\\Core.Design\\Controls.Core.Design-net6.csproj",
+      "src\\Controls\\src\\Core\\Controls.Core-net6.csproj",
+      "src\\Controls\\src\\SourceGen\\Controls.SourceGen-net6.csproj",
+      "src\\Controls\\src\\Xaml.Design\\Controls.Xaml.Design-net6.csproj",
+      "src\\Controls\\src\\Xaml\\Controls.Xaml-net6.csproj",
+      "src\\Core\\src\\Core-net6.csproj",
+      "src\\Essentials\\src\\Essentials-net6.csproj",
+      "src\\SingleProject\\Resizetizer\\src\\Resizetizer.csproj",
+      "src\\Templates\\src\\Microsoft.Maui.Templates.csproj"
+    ]
+  }
+}

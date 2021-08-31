@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Views;
 using Microsoft.Maui.Graphics;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -26,17 +27,16 @@ namespace Microsoft.Maui.Handlers
 		{
 			var nativeView = WrappedNativeView;
 
-			if (nativeView == null)
+			if (nativeView == null || MauiContext == null || Context == null)
+			{
 				return;
+			}
 
 			if (frame.Width < 0 || frame.Height < 0)
 			{
 				// This is a legacy layout value from Controls, nothing is actually laying out yet so we just ignore it
 				return;
 			}
-
-			if (Context == null)
-				return;
 
 			var left = Context.ToPixels(frame.Left);
 			var top = Context.ToPixels(frame.Top);
@@ -56,8 +56,8 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// Create a spec to handle the native measure
-			var widthSpec = CreateMeasureSpec(widthConstraint, VirtualView.Width);
-			var heightSpec = CreateMeasureSpec(heightConstraint, VirtualView.Height);
+			var widthSpec = CreateMeasureSpec(widthConstraint, VirtualView.Width, VirtualView.MaximumWidth);
+			var heightSpec = CreateMeasureSpec(heightConstraint, VirtualView.Height, VirtualView.MaximumHeight);
 
 			nativeView.Measure(widthSpec, heightSpec);
 
@@ -65,15 +65,20 @@ namespace Microsoft.Maui.Handlers
 			return Context.FromPixels(nativeView.MeasuredWidth, nativeView.MeasuredHeight);
 		}
 
-		int CreateMeasureSpec(double constraint, double explicitSize)
+		int CreateMeasureSpec(double constraint, double explicitSize, double maximumSize)
 		{
 			var mode = MeasureSpecMode.AtMost;
 
-			if (explicitSize >= 0)
+			if (IsExplicitSet(explicitSize))
 			{
 				// We have a set value (i.e., a Width or Height)
 				mode = MeasureSpecMode.Exactly;
 				constraint = explicitSize;
+			}
+			else if (IsMaximumSet(maximumSize))
+			{
+				mode = MeasureSpecMode.AtMost;
+				constraint = maximumSize;
 			}
 			else if (double.IsInfinity(constraint))
 			{

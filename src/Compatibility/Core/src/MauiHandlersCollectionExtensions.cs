@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		public static IMauiHandlersCollection AddCompatibilityRenderer<TControlType, TMauiType, TRenderer>(this IMauiHandlersCollection handlersCollection)
-			where TMauiType : IFrameworkElement
+			where TMauiType : IView
 		{
 			Internals.Registrar.Registered.Register(typeof(TControlType), typeof(TRenderer));
 
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		public static IMauiHandlersCollection AddCompatibilityRenderer<TControlType, TRenderer>(this IMauiHandlersCollection handlersCollection)
-			where TControlType : IFrameworkElement
+			where TControlType : IView
 		{
 			handlersCollection.AddCompatibilityRenderer<TControlType, TControlType, TRenderer>();
 

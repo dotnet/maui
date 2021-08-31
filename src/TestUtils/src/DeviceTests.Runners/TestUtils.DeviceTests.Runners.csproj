@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Core.props" />
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;$(MauiPlatformsNoMacCat)</TargetFrameworks>
+    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+    <SingleProject>true</SingleProject>
+    <RootNamespace>Microsoft.Maui.TestUtils.DeviceTests.Runners</RootNamespace>
+    <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests.Runners</AssemblyName>
+    <!--<Nullable>enable</Nullable>-->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\credits.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.utility" Version="2.4.1" />
+    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="1.0.0-prerelease.21425.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\SourceGen\Controls.SourceGen-net6.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="HeadlessRunner\MacCatalyst\" />
+    <Folder Include="HeadlessRunner\Windows\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="VisualRunner\Pages\TestAssemblyPage.xaml.cs">
+      <DependentUpon>TestAssemblyPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.targets" />
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Core.targets" />
+
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+
+</Project>

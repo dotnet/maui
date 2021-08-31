@@ -47,16 +47,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					break;
 			}
 
-			var font = Font.OfSize(fontName, Device.GetNamedSize(NamedSize.Medium, typeof(Button), false));
-
 			var themedButton = new Button
 			{
 				Text = "Accent Button",
 				//BackgroundColor = Colors.Accent,
 				TextColor = Colors.White,
 				ClassId = "AccentButton",
-				Font = font
+				FontFamily = fontName,
+				FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Button), false)
 			};
+
 			var borderButton = new Button
 			{
 				Text = "Border Button",
@@ -78,7 +78,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var autoLabel = new Label { Text = "Label Text" };
 			AutomationProperties.SetLabeledBy(labeledBy, autoLabel);
 
-			themedButton.Clicked += (sender, args) => themedButton.Font = Font.Default;
+			themedButton.Clicked += (sender, args) =>
+			{
+				themedButton.FontFamily = Font.Default.Family;
+				themedButton.FontSize = Font.Default.Size;
+			};
 
 			alertSingle.Clicked += (sender, args) => DisplayAlert("Foo", "Bar", "Cancel");
 

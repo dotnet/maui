@@ -34,8 +34,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 						<View 
 							xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-							RelativeLayout.HeightConstraint=""{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.25}""
-							RelativeLayout.WidthConstraint=""{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.6}""/>";
+							xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
+							cmp:RelativeLayout.HeightConstraint=""{cmp:ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.25}""
+							cmp:RelativeLayout.WidthConstraint=""{cmp:ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.6}""/>";
 			View view = new View();
 			view.LoadFromXaml(xaml);
 			Assert.DoesNotThrow(() => view.LoadFromXaml(xaml));

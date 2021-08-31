@@ -4,18 +4,20 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ElementHandler : IElementHandler
 	{
-		public static PropertyMapper<IElement, ElementHandler> ElementMapper = new()
+		public static IPropertyMapper<IElement, ElementHandler> ElementMapper = new PropertyMapper<IElement, ElementHandler>()
 		{
 		};
 
-		protected PropertyMapper _mapper;
-		protected readonly PropertyMapper _defaultMapper;
+		protected IPropertyMapper _mapper;
+		protected CommandMapper? CommandMapper;
+		protected readonly IPropertyMapper _defaultMapper;
 
-		protected ElementHandler(PropertyMapper mapper)
+		protected ElementHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 		{
 			_ = mapper ?? throw new ArgumentNullException(nameof(mapper));
 			_defaultMapper = mapper;
 			_mapper = _defaultMapper;
+			CommandMapper = commandMapper;
 		}
 
 		public IMauiContext? MauiContext { get; private set; }
@@ -36,10 +38,11 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == view)
 				return;
 
-			if (VirtualView?.Handler != null && VirtualView.Handler != this)
-				VirtualView.Handler = null;
+			var oldVirtualView = VirtualView;
+			if (oldVirtualView?.Handler != null)
+				oldVirtualView.Handler = null;
 
-			bool setupNativeView = VirtualView == null;
+			bool setupNativeView = oldVirtualView == null;
 
 			VirtualView = view;
 			NativeView ??= CreateNativeElement();
@@ -75,6 +78,14 @@ namespace Microsoft.Maui.Handlers
 			_mapper?.UpdateProperty(this, VirtualView, property);
 		}
 
+		public virtual void Invoke(string command, object? args)
+		{
+			if (VirtualView == null)
+				return;
+
+			CommandMapper?.Invoke(this, VirtualView, command, args);
+		}
+
 		private protected abstract object OnCreateNativeElement();
 
 		object CreateNativeElement() =>
@@ -87,11 +98,12 @@ namespace Microsoft.Maui.Handlers
 
 		private protected abstract void OnDisconnectHandler(object nativeView);
 
-		void DisconnectHandle(object nativeView)
+		void DisconnectHandler(object nativeView)
 		{
 			OnDisconnectHandler(nativeView);
 
-			if (VirtualView != null)
+			// VirtualView has already been changed over to a new handler
+			if (VirtualView != null && VirtualView.Handler == this)
 				VirtualView.Handler = null;
 
 			VirtualView = null;
@@ -100,7 +112,14 @@ namespace Microsoft.Maui.Handlers
 		void IElementHandler.DisconnectHandler()
 		{
 			if (NativeView != null && VirtualView != null)
-				DisconnectHandle(NativeView);
+			{
+				// We set the NativeView to null so no one outside of this handler tries to access
+				// NativeView. NativeView access should be isolated to the instance passed into
+				// DisconnectHandler
+				var oldNativeView = NativeView;
+				NativeView = null;
+				DisconnectHandler(oldNativeView);
+			}
 		}
 	}
 }

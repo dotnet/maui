@@ -4,9 +4,8 @@ using System.Text;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, PagePanel>
+	public partial class PageHandler : ViewHandler<IView, PagePanel>
 	{
-
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
@@ -26,8 +25,8 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.Children.Clear();
 
-			if (VirtualView.Content != null)
-				NativeView.Children.Add(VirtualView.Content.ToNative(MauiContext));
+			if (VirtualView is IContentView cv && cv.Content is IView view)
+				NativeView.Children.Add(view.ToNative(MauiContext));
 		}
 
 		protected override PagePanel CreateNativeView()
@@ -46,11 +45,11 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
-		public static void MapTitle(PageHandler handler, IPage page)
+		public static void MapTitle(PageHandler handler, IView page)
 		{
 		}
 
-		public static void MapContent(PageHandler handler, IPage page)
+		public static void MapContent(PageHandler handler, IView page)
 		{
 			handler.UpdateContent();
 		}

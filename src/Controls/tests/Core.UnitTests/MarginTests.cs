@@ -4,6 +4,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	public class MarginTests : BaseTestFixture
 	{
 		[SetUp]

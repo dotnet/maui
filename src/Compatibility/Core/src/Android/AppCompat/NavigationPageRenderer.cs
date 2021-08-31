@@ -655,7 +655,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			_drawerLayout = renderer;
 
-			FastRenderers.AutomationPropertiesProvider.GetDrawerAccessibilityResources(context, _flyoutPage, out int resourceIdOpen, out int resourceIdClose);
+			Controls.Platform.AutomationPropertiesProvider.GetDrawerAccessibilityResources(context, _flyoutPage, out int resourceIdOpen, out int resourceIdClose);
 
 			if (_drawerToggle != null)
 			{
@@ -910,18 +910,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			_currentMenuItems.Clear();
 			_currentMenuItems = new List<IMenuItem>();
-			_toolbar.UpdateMenuItems(_toolbarTracker?.ToolbarItems, Context, null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+			_toolbar.UpdateMenuItems(_toolbarTracker?.ToolbarItems, Element.FindMauiContext(), null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 
 		protected virtual void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var items = _toolbarTracker?.ToolbarItems?.ToList();
-			_toolbar.OnToolbarItemPropertyChanged(e, (ToolbarItem)sender, items, Context, null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+			_toolbar.OnToolbarItemPropertyChanged(e, (ToolbarItem)sender, items, Element.FindMauiContext(), null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 
 		protected virtual void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
 		{
-			ToolbarExtensions.UpdateMenuItemIcon(context, menuItem, toolBarItem, null);
+			ToolbarExtensions.UpdateMenuItemIcon(Element.FindMauiContext(), menuItem, toolBarItem, null);
 		}
 
 		void UpdateToolbar()
@@ -977,26 +977,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 			Color tintColor = Element.BarBackgroundColor;
 
-			if (Forms.IsLollipopOrNewer)
-			{
-				if (tintColor == null)
-					bar.BackgroundTintMode = null;
-				else
-				{
-					bar.BackgroundTintMode = PorterDuff.Mode.Src;
-					bar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToAndroid());
-				}
-			}
+			if (tintColor == null)
+				bar.BackgroundTintMode = null;
 			else
 			{
-				if (tintColor == null && _backgroundDrawable != null)
-					bar.SetBackground(_backgroundDrawable);
-				else if (tintColor != null)
-				{
-					if (_backgroundDrawable == null)
-						_backgroundDrawable = bar.Background;
-					bar.SetBackgroundColor(tintColor.ToAndroid());
-				}
+				bar.BackgroundTintMode = PorterDuff.Mode.Src;
+				bar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToAndroid());
 			}
 
 			Brush barBackground = Element.BarBackground;
@@ -1055,7 +1041,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				_ = this.ApplyDrawableAsync(currentPage, NavigationPage.TitleIconImageSourceProperty, Context, drawable =>
 				{
 					_titleIconView.SetImageDrawable(drawable);
-					FastRenderers.AutomationPropertiesProvider.AccessibilitySettingsChanged(_titleIconView, source);
+					AutomationPropertiesProvider.AccessibilitySettingsChanged(_titleIconView, source);
 				});
 			}
 		}
@@ -1207,7 +1193,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				var width = (int)ctx.FromPixels(MeasureSpecFactory.GetSize(widthMeasureSpec));
 
 				SizeRequest request = _child.Element.Measure(width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Microsoft.Maui.Controls.Layout.LayoutChildIntoBoundingRegion(_child.Element, new Rectangle(0, 0, width, request.Request.Height));
+				Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(_child.Element, new Rectangle(0, 0, width, request.Request.Height));
 
 				int widthSpec = MeasureSpecFactory.MakeMeasureSpec((int)ctx.ToPixels(width), MeasureSpecMode.Exactly);
 				int heightSpec = MeasureSpecFactory.MakeMeasureSpec((int)ctx.ToPixels(request.Request.Height), MeasureSpecMode.Exactly);

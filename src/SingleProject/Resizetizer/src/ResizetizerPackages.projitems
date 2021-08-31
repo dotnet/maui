@@ -1,13 +1,15 @@
 <Project>
   <ItemGroup>
     <PackageReference Include="Fizzler" Version="1.2.0" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="HarfBuzzSharp" Version="2.6.1.7" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.6.1.7" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="HarfBuzzSharp" Version="2.8.2-preview.127" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2-preview.127" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Framework" Version="16.7.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.7.0" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp" Version="2.80.2" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.80.2" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.80.2" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.127" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="2.88.0-preview.127" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="2.88.0-preview.127" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.0-preview.127" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.88.0-preview.127" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Skia" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Custom" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Picture" Version="0.4.1" GeneratePathProperty="true" PrivateAssets="all" />
@@ -19,5 +21,6 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.ObjectModel" Version="4.3.0" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg2VectorDrawable.Net" Version="0.3.0" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Mono.ApiTools.MSBuildTasks" Version="0.1.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>

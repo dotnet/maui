@@ -3,16 +3,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Hosting;
-using Microsoft.Maui.HotReload;
-using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class View : VisualElement, IView, IViewController, IGestureController, IGestureRecognizers, IPropertyMapperView, IHotReloadableView
+	public partial class View : VisualElement, IViewController, IGestureController, IGestureRecognizers
 	{
 		protected internal IGestureController GestureController => this;
 
@@ -193,43 +189,5 @@ namespace Microsoft.Maui.Controls
 			if (gesture is PinchGestureRecognizer && _gestureRecognizers.GetGesturesFor<PinchGestureRecognizer>().Count() > 1)
 				throw new InvalidOperationException($"Only one {nameof(PinchGestureRecognizer)} per view is allowed");
 		}
-
-		#region IView
-
-		protected PropertyMapper propertyMapper;
-
-		protected PropertyMapper<T> GetRendererOverrides<T>() where T : IView => (PropertyMapper<T>)(propertyMapper as PropertyMapper<T> ?? (propertyMapper = new PropertyMapper<T>()));
-		PropertyMapper IPropertyMapperView.GetPropertyMapperOverrides() => propertyMapper;
-
-		Primitives.LayoutAlignment IFrameworkElement.HorizontalLayoutAlignment => HorizontalOptions.ToCore();
-		Primitives.LayoutAlignment IFrameworkElement.VerticalLayoutAlignment => VerticalOptions.ToCore();
-
-		#endregion
-
-		#region HotReload
-
-		IView IReplaceableView.ReplacedView => MauiHotReloadHelper.GetReplacedView(this) ?? this;
-
-		IReloadHandler IHotReloadableView.ReloadHandler { get; set; }
-
-		void IHotReloadableView.TransferState(IView newView)
-		{
-			//TODO: LEt you hot reload the the ViewModel
-			if (newView is View v)
-				v.BindingContext = BindingContext;
-		}
-
-		void IHotReloadableView.Reload()
-		{
-			Device.BeginInvokeOnMainThread(() =>
-			{
-				this.CheckHandlers();
-				//Handler = null;
-				var reloadHandler = ((IHotReloadableView)this).ReloadHandler;
-				reloadHandler?.Reload();
-				//TODO: if reload handler is null, Do a manual reload?
-			});
-		}
-		#endregion
 	}
 }

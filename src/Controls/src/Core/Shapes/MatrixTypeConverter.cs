@@ -1,14 +1,19 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
 	public class MatrixTypeConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
-		{
-			return CreateMatrix(value);
-		}
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+			=> CreateMatrix(value?.ToString());
 
 		internal static Matrix CreateMatrix(string value)
 		{
@@ -29,9 +34,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			return new Matrix(values[0], values[1], values[2], values[3], values[4], values[5]);
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is Matrix matrix))
+			if (value is not Matrix matrix)
 				throw new NotSupportedException();
 			return $"{matrix.M11.ToString(CultureInfo.InvariantCulture)}, {matrix.M12.ToString(CultureInfo.InvariantCulture)}, {matrix.M21.ToString(CultureInfo.InvariantCulture)}, {matrix.M22.ToString(CultureInfo.InvariantCulture)}, {matrix.OffsetX.ToString(CultureInfo.InvariantCulture)}, {matrix.OffsetY.ToString(CultureInfo.InvariantCulture)}";
 		}

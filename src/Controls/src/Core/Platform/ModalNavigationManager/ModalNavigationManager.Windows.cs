@@ -66,8 +66,8 @@ namespace Microsoft.Maui.Controls.Platform
 			else if (!Container.Children.Contains(pageHandler.NativeView))
 				Container.Children.Add(pageHandler.NativeView);
 
-			(page as IFrameworkElement).Measure(Container.ActualWidth, Container.ActualHeight);
-			(page as IFrameworkElement).Arrange(ContainerBounds);
+			(page as IView).Measure(Container.ActualWidth, Container.ActualHeight);
+			(page as IView).Arrange(ContainerBounds);
 
 			page.Layout(ContainerBounds);
 		}
