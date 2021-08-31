@@ -120,16 +120,10 @@ namespace Microsoft.Maui
 			// match up
 			if (fragmentNavDestinations.Count < newPageStack.Count)
 			{
-				for (int i = 0; i < newPageStack.Count; i++)
+				for (int i = fragmentNavDestinations.Count; i < newPageStack.Count; i++)
 				{
-					if (fragmentNavDestinations.Count > i)
-					{
-					}
-					else
-					{
-						var dest = AddDestination(navigationLayout.FragmentNavigator);
-						navController.Navigate(dest.Id);
-					}
+					var dest = AddDestination(navigationLayout.FragmentNavigator);
+					navController.Navigate(dest.Id);
 				}
 			}
 			// User just wants to replace the currently visible page but the number
