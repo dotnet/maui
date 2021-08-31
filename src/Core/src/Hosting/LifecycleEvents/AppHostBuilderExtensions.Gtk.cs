@@ -7,7 +7,7 @@ namespace Microsoft.Maui.LifecycleEvents
 	public static partial class AppHostBuilderExtensions
 	{
 
-		internal static IAppHostBuilder ConfigureCrossPlatformLifecycleEvents(this IAppHostBuilder builder) =>
+		internal static MauiAppBuilder ConfigureCrossPlatformLifecycleEvents(this MauiAppBuilder builder) =>
 			builder.ConfigureLifecycleEvents(events => events.AddGtk(OnConfigureLifeCycle));
 
 		[MissingMapper("Stopped(), Resumed()")]
