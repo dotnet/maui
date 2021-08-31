@@ -77,11 +77,12 @@ namespace Microsoft.Maui.Handlers
 
 		static partial void MappingSemantics(IViewHandler handler, IView view)
 		{
-			var accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(handler.NativeView as View)
-				as MauiAccessibilityDelegateCompat;
+			if (handler.NativeView == null)
+				return;
 
-			if (view.Semantics != null &&
-				accessibilityDelegate == null)
+			var accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(handler.NativeView as View) as MauiAccessibilityDelegateCompat;
+
+			if (view.Semantics != null && accessibilityDelegate == null)
 			{
 				if (handler.NativeView is not NativeView nativeView)
 					return;
