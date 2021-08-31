@@ -47,6 +47,9 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		[MissingMapper]
+		public static void MapImageSource(ButtonHandler handler, IButton image) { }
+
 		public static void MapFont(ButtonHandler handler, IButton button)
 		{
 			handler.MapFont(button);
