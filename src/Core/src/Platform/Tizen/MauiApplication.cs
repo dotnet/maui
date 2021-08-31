@@ -21,7 +21,13 @@ namespace Microsoft.Maui
 
 		protected override void OnPreCreate()
 		{
-			base.OnPreCreate();
+			get
+			{
+				IWindow? window = null;
+				_virtualWindow?.TryGetTarget(out window);
+				return window;
+			}
+		}
 
 			Elementary.Initialize();
 			Elementary.ThemeOverlay();
@@ -38,10 +44,11 @@ namespace Microsoft.Maui
 
 			Services = _applicationContext.Services;
 
-			if (Services == null)
-				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
+			var mauiApp = CreateMauiApp();
 
-			Current.Services.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
+			Services = mauiApp.Services;
+
+			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
 		}
 
 		protected override void OnCreate()
