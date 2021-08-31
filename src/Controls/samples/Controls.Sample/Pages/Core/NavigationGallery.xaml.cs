@@ -12,6 +12,8 @@ namespace Maui.Controls.Sample.Pages
 	public partial class NavigationGallery
 	{
 		static int pageCount = 0;
+
+		static List<Page> _currentNavStack;
 		public NavigationGallery()
 		{
 			InitializeComponent();
@@ -59,12 +61,23 @@ namespace Maui.Controls.Sample.Pages
 
 		void SwapRoot(object sender, EventArgs e)
 		{
-			(Parent as INavigationView).RequestNavigation(
+			if (_currentNavStack == null)
+			{
+				_currentNavStack = Navigation.NavigationStack.ToList();
+				(Parent as INavigationView).RequestNavigation(
 				new MauiNavigationRequestedEventArgs(
 					new List<NavigationGallery>
 					{
 						new NavigationGallery()
 					}, false));
+			}
+			else
+			{
+				(Parent as INavigationView).RequestNavigation(
+				   new MauiNavigationRequestedEventArgs(_currentNavStack, true));
+
+				_currentNavStack = null;
+			}
 		}
 	}
 }
