@@ -25,29 +25,37 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Buffer.Changed -= OnNativeTextChanged;
 		}
 
-
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var res =  base.GetDesiredSize(widthConstraint, heightConstraint);
+			if (NativeView is not { } nativeView)
+				return Size.Zero;
 
-			if (res.Height == 0 && 	NativeView is { } nativeView)
-			{
-				res.Height = (int)Math.Round(nativeView.GetFontHeigth());
-			}
+			var res = base.GetDesiredSize(widthConstraint, heightConstraint);
+
+			if (res.Height != 0 && res.Width != 0)
+				return res;
+
+			var minSize = (int)Math.Round(nativeView.GetFontHeigth());
+
+			if (res.Height == 0)
+				res.Height = minSize;
+
+			if (res.Width == 0)
+				res.Width = minSize;
 
 			return res;
 		}
 
 		protected void OnNativeTextChanged(object? sender, EventArgs e)
 		{
-			if (NativeView is not { } nativeView || VirtualView is not { } virtualView) 
+			if (NativeView is not { } nativeView || VirtualView is not { } virtualView)
 				return;
-			
+
 			if (sender != nativeView.Buffer) return;
 
 			var text = nativeView.Buffer.Text;
 
-			if (virtualView.Text != text) 
+			if (virtualView.Text != text)
 				virtualView.Text = text;
 		}
 
@@ -81,7 +89,7 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapCharacterSpacing(EditorHandler handler, IEditor editor)
 		{
-			// see: https://developer.gnome.org/gtk3/stable/GtkTextTag.html#GtkTextTag--letter-spacing
+			// see: https://docs.gtk.org/gtk3/property.TextTag.letter-spacing.html
 		}
 
 		[MissingMapper]
@@ -92,6 +100,7 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapKeyboard(EditorHandler handler, IEditor editor) { }
+
 	}
 
 }
