@@ -88,18 +88,6 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
-		double GetNativeUnscaledFontSize(PickerHandler pickerHandler)
-		{
-			var mauiPicker = GetNativePicker(pickerHandler);
-			return mauiPicker.TextSize / mauiPicker.Resources.DisplayMetrics.Density;
-		}
-
-		bool GetNativeIsBold(PickerHandler pickerHandler) =>
-			GetNativePicker(pickerHandler).Typeface.GetFontWeight() == FontWeight.Bold;
-
-		bool GetNativeIsItalic(PickerHandler pickerHandler) =>
-			GetNativePicker(pickerHandler).Typeface.IsItalic;
-
 		ATextAlignment GetNativeHorizontalTextAlignment(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).TextAlignment;
 

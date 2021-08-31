@@ -249,6 +249,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Control.SetQueryHint(Element.Placeholder);
 		}
 
+		[PortHandler]
 		void UpdatePlaceholderColor()
 		{
 			_hintColorSwitcher?.UpdateTextColor(_editText, Element.PlaceholderColor, _editText.SetHintTextColor);

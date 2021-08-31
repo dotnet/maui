@@ -32,8 +32,8 @@
                     Grid.Column="1"
                     Placeholder="Filter"
                     Text="{Binding FilterValue, Mode=TwoWay}"
-                    PlaceholderColor="{DynamicResource TextSecondaryColor}"
-                    TextColor="{DynamicResource TextPrimaryColor}"
+                    PlaceholderColor="{AppThemeBinding Light={StaticResource LightTextSecondaryColor}, Dark={StaticResource DarkTextSecondaryColor}}"
+                    TextColor="{AppThemeBinding Light={StaticResource LightTextPrimaryColor}, Dark={StaticResource DarkTextPrimaryColor}}"
                     FontSize="Medium"
                     HorizontalOptions="FillAndExpand"
                     VerticalOptions="Center"/>

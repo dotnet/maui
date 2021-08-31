@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.UpdatePicker(VirtualView);
 		}
-		public static void MapReload(PickerHandler handler, IPicker picker) => handler.Reload();
+		public static void MapReload(PickerHandler handler, IPicker picker, object? args) => handler.Reload();
 
 		public static void MapTitle(PickerHandler handler, IPicker picker)
 		{

@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportEffect(typeof(ContentDescriptionEffectRenderer), ContentDescriptionEffect.EffectName)]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android

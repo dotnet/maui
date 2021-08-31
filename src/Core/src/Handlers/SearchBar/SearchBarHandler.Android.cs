@@ -1,6 +1,6 @@
-﻿using Android.Graphics.Drawables;
+using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Android.Widget;
-using static AndroidX.AppCompat.Widget.SearchView;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Handlers
@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Handlers
 		QueryTextListener QueryListener { get; } = new QueryTextListener();
 
 		static Drawable? DefaultBackground;
+		static ColorStateList? DefaultPlaceholderTextColors { get; set; }
 
 		EditText? _editText;
 		public EditText? QueryEditor => _editText;
@@ -56,6 +57,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.NativeView?.UpdatePlaceholder(searchBar);
+		}
+
+		public static void MapPlaceholderColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdatePlaceholderColor(searchBar, DefaultPlaceholderTextColors, handler._editText);
 		}
 
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)

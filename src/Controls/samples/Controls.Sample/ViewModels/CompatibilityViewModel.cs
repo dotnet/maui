@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ListViewPage), "ListView",
 				"ListView derives from ItemsView and displays a scrollable list of selectable data items."),
 
-			new SectionModel(typeof(RefreshViewPage), "RefreshView",
+			new SectionModel(typeof(SwipeViewPage), "SwipeView",
 				"RefreshView is a container control that provides pull-to-refresh functionality for scrollable content."),
 
 			new SectionModel(typeof(TableViewPage), "TableView",

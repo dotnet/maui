@@ -30,27 +30,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void SetMainPage()
 		{
-			var app = new TestApp();
-			app.MainPage = new ContentPage();
+			var app = new Application();
+			app.LoadPage(new ContentPage());
 			ValidateSetup(app);
 		}
 
 		[Test]
 		public void SetMainPageTwice()
 		{
-			var app = new TestApp();
+			var app = new Application();
 			var firstPage = new ContentPage();
 			var secondPage = new ContentPage();
 
-			app.MainPage = firstPage;
-			app.MainPage = secondPage;
+			var wind1 = app.LoadPage(firstPage);
+			var wind2 = app.LoadPage(secondPage);
 
 			ValidateSetup(app, secondPage);
 			Assert.IsNull(firstPage.Parent);
+			Assert.AreEqual(wind1, wind2);
 		}
 
 
-		void ValidateSetup(TestApp app, Page page = null)
+		void ValidateSetup(Application app, Page page = null)
 		{
 			var window = (Window)app.Windows[0];
 			page ??= window.Page;

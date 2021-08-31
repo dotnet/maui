@@ -25,7 +25,7 @@ namespace Microsoft.Maui.UnitTests
 
 		public IViewHandler Handler { get; set; }
 
-		public IFrameworkElement Parent { get; set; }
+		public IView Parent { get; set; }
 
 		public Size DesiredSize { get; set; }
 
@@ -36,6 +36,14 @@ namespace Microsoft.Maui.UnitTests
 		public double Width { get; set; }
 
 		public double Height { get; set; }
+
+		public double MinimumHeight { get; set; }
+
+		public double MinimumWidth { get; set; }
+
+		public double MaximumHeight { get; set; }
+
+		public double MaximumWidth { get; set; }
 
 		public Thickness Margin { get; set; }
 

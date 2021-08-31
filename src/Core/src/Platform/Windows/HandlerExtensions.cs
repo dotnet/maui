@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
-		public static FrameworkElement ToNative(this IView view, IMauiContext context)
+		public static FrameworkElement ToNative(this IElement view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
@@ -17,10 +17,10 @@ namespace Microsoft.Maui
 			var handler = view.Handler;
 
 			if (handler == null)
-				handler = context.Handlers.GetHandler(view.GetType()) as IViewHandler;
+				handler = context.Handlers.GetHandler(view.GetType());
 
 			if (handler == null)
-				throw new Exception($"Handler not found for view {view}");
+				throw new Exception($"Handler not found for view {view}.");
 
 			handler.SetMauiContext(context);
 
@@ -48,7 +48,7 @@ namespace Microsoft.Maui
 				handler = context.Handlers.GetHandler(window.GetType());
 
 			if (handler == null)
-				throw new Exception($"Handler not found for view {window}.");
+				throw new Exception($"Handler not found for window {window}.");
 
 			handler.SetMauiContext(context);
 

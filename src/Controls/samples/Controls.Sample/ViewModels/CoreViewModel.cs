@@ -12,14 +12,23 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(AlertsPage), "Alerts",
 				"Displaying an alert, asking a user to make a choice, or displaying a prompt."),
 
+			new SectionModel(typeof(AppThemeBindingPage), "AppThemeBindings",
+				"Devices typically include light and dark themes, which each refer to a broad set of appearance preferences that can be set at the operating system level. Applications should respect these system themes, and respond immediately when the system theme changes."),
+
 			new SectionModel(typeof(BrushesPage), "Brushes",
 				"A brush enables you to paint an area, such as the background of a control, using different approaches."),
 
 			new SectionModel(typeof(ClipPage), "Clip",
 				"Defines the outline of the contents of an element."),
 
+			new SectionModel(typeof(EffectsPage), "Effects",
+				"Apply Effects to a View."),
+
 			new SectionModel(typeof(GesturesPage), "Gestures",
 				"Use tap, pinch, pan, swipe, and drag and drop gestures on View instances."),
+
+			new SectionModel(typeof(ModalPage), "Modal",
+				"Allows you to push and pop Modal Pages."),
 
 			new SectionModel(typeof(SemanticsPage), "Semantics",
 				".NET MAUI allows accessibility values to be set on user interface elements by using Semantics values."),

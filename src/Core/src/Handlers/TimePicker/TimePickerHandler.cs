@@ -2,7 +2,7 @@
 {
 	public partial class TimePickerHandler
 	{
-		public static PropertyMapper<ITimePicker, TimePickerHandler> TimePickerMapper = new PropertyMapper<ITimePicker, TimePickerHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<ITimePicker, TimePickerHandler> TimePickerMapper = new PropertyMapper<ITimePicker, TimePickerHandler>(ViewHandler.ViewMapper)
 		{
 #if __ANDROID__
 			[nameof(ITimePicker.Background)] = MapBackground,
@@ -19,7 +19,7 @@
 
 		}
 
-		public TimePickerHandler(PropertyMapper mapper) : base(mapper ?? TimePickerMapper)
+		public TimePickerHandler(IPropertyMapper mapper) : base(mapper ?? TimePickerMapper)
 		{
 
 		}

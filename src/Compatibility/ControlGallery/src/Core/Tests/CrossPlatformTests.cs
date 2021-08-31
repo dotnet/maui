@@ -69,7 +69,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests
 		{
 			await Task.Run(async () =>
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				await Application.Current.SavePropertiesAsync();
+#pragma warning restore CS0618 // Type or member is obsolete
 			});
 		}
 	}

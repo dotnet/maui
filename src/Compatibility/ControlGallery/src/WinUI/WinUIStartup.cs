@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Reflection.PortableExecutable;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -15,13 +16,13 @@ using Windows.UI.ViewManagement;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
-	public class WinUIStartup : Startup
+	public class WinUIMauiProgram
 	{
-		public override void Configure(IAppHostBuilder appBuilder)
+		public static MauiApp CreateMauiApp()
 		{
-			base.Configure(appBuilder);
+			var builder = MauiProgram.CreateMauiAppBuilder();
 
-			appBuilder.ConfigureLifecycleEvents(lifecycle => lifecycle
+			builder.ConfigureLifecycleEvents(lifecycle => lifecycle
 				.AddWindows(windows => windows
 					.OnLaunching((_, e) =>
 					{
@@ -32,6 +33,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 						}
 					})
 					.OnActivated(WinUIPageStartup.OnActivated)));
+
+			return builder.Build();
 		}
 	}
 

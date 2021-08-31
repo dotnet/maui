@@ -3,13 +3,6 @@
   <ItemGroup Condition=" '$(DisableImplicitFrameworkReferences)' != 'true' ">
     <FrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
-        Include="Microsoft.Maui.Extensions"
-        IsImplicitlyDefined="true"
-        Pack="false"
-        PrivateAssets="All"
-    />
-    <FrameworkReference
-        Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
         Include="Microsoft.Maui.Core"
         IsImplicitlyDefined="true"
         Pack="false"

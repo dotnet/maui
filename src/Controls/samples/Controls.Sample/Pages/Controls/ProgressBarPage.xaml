@@ -12,6 +12,21 @@
                 Style="{StaticResource Headline}"/>
             <ProgressBar
                 Progress="0.5"/>
+            <Label
+                Text="Disabled"
+                Style="{StaticResource Headline}"/>
+            <ProgressBar
+                IsEnabled="False"
+                Progress="0.5"/>
+            <Label
+                Text="ProgressTo"
+                Style="{StaticResource Headline}"/>
+            <ProgressBar
+                x:Name="ProgressToBar"/>
+            <Button
+                x:Name="ProgressToBtn"
+                Text="ProgressTo"
+                Clicked="OnProgressToClicked"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
