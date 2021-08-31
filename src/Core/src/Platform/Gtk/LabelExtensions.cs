@@ -9,9 +9,27 @@ namespace Microsoft.Maui
 	public static class LabelExtensions
 	{
 
-		public static void UpdateText(this Label nativeLabel, ILabel label)
+		public static void UpdateText(this Label nativeLabel, ILabel label, TextType type = TextType.Text)
 		{
-			nativeLabel.Text = label.Text;
+			// https://docs.gtk.org/gtk3/method.Label.set_use_markup.html
+
+			if (type == TextType.Html)
+			{
+				nativeLabel.Markup = HtmlToPangoMarkup(label.Text);
+			}
+			else
+			{
+				nativeLabel.UseMarkup = false;
+				nativeLabel.Text = label.Text;
+			}
+
+		}
+
+		// https://docs.gtk.org/Pango/pango_markup.html
+		[MissingMapper]
+		public static string HtmlToPangoMarkup(string text)
+		{
+			return text;
 		}
 
 		public static void UpdateMaxLines(this Label nativeLabel, ILabel label)
