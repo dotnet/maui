@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 	{
 		public MauiShapeView(EvasObject parent) : base(parent)
 		{
-
+			DeviceScalingFactor = (float)Tizen.UIExtensions.Common.DeviceInfo.ScalingFactor;
 		}
 	}
 }

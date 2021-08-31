@@ -7,7 +7,10 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override SkiaGraphicsView CreateNativeView()
 		{
-			return new SkiaGraphicsView(NativeParent);
+			return new SkiaGraphicsView(NativeParent)
+			{
+				DeviceScalingFactor = (float)Tizen.UIExtensions.Common.DeviceInfo.ScalingFactor
+			};
 		}
 
 		public static void MapDrawable(GraphicsViewHandler handler, IGraphicsView graphicsView)

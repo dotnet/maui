@@ -26,7 +26,10 @@ namespace Microsoft.Maui
 		{
 			_backgroundCanvas = new Lazy<SkiaGraphicsView>(() =>
 			{
-				var view = new SkiaGraphicsView(parent);
+				var view = new SkiaGraphicsView(parent)
+				{
+					DeviceScalingFactor = (float)DeviceInfo.ScalingFactor
+				};
 				view.Show();
 				Children.Add(view);
 				view.Lower();
