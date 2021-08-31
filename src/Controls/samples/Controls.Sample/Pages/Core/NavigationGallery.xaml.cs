@@ -65,7 +65,7 @@ namespace Maui.Controls.Sample.Pages
 			{
 				_currentNavStack = Navigation.NavigationStack.ToList();
 				(Parent as INavigationView).RequestNavigation(
-				new MauiNavigationRequestedEventArgs(
+				new NavigationRequest(
 					new List<NavigationGallery>
 					{
 						new NavigationGallery()
@@ -74,7 +74,7 @@ namespace Maui.Controls.Sample.Pages
 			else
 			{
 				(Parent as INavigationView).RequestNavigation(
-				   new MauiNavigationRequestedEventArgs(_currentNavStack, true));
+				   new NavigationRequest(_currentNavStack, true));
 
 				_currentNavStack = null;
 			}

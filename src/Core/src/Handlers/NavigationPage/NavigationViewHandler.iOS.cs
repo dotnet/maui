@@ -33,17 +33,17 @@ namespace Microsoft.Maui.Handlers
 		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
 		{
 			arg1.NavigationStack = (arg3 as NavigationRequest)!.NavigationStack;
-			//if (arg3 is MauiNavigationRequestedEventArgs args)
+			//if (arg3 is NavigationRequest args)
 			//	arg1.OnPushRequested(args);
 		}
 
-		//void OnPushRequested(MauiNavigationRequestedEventArgs e)
+		//void OnPushRequested(NavigationRequest e)
 		//{
 		//	_controlsNavigationController?
 		//		.OnPushRequested(e, this.MauiContext!);
 		//}
 
-		//void OnPopRequested(MauiNavigationRequestedEventArgs e)
+		//void OnPopRequested(NavigationRequest e)
 		//{
 		//	_controlsNavigationController?
 		//		.OnPopRequestedAsync(e)

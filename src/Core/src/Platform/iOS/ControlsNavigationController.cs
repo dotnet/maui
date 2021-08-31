@@ -131,7 +131,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		//internal async Task OnPopRequestedAsync(MauiNavigationRequestedEventArgs e)
+		//internal async Task OnPopRequestedAsync(NavigationRequest e)
 		//{
 		//	var page = e.Page;
 		//	var animated = e.Animated;
@@ -152,7 +152,7 @@ namespace Microsoft.Maui
 		//		PushPage(page, false, mauiContext);
 		//}
 
-		//internal void OnPushRequested(MauiNavigationRequestedEventArgs e, IMauiContext mauiContext)
+		//internal void OnPushRequested(NavigationRequest e, IMauiContext mauiContext)
 		//{
 		//	var page = e.Page;
 		//	var animated = e.Animated;

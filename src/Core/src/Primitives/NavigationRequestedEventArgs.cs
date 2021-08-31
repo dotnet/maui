@@ -12,6 +12,6 @@ namespace Microsoft.Maui
 			Animated = animated;
 		}
 
-		public bool Animated { get; set; }
+		public bool Animated { get; }
 	}
 }

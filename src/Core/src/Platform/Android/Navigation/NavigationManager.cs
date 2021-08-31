@@ -311,7 +311,7 @@ namespace Microsoft.Maui
 			_ = NavigationView ?? throw new InvalidOperationException($"NavigationView cannot be null");
 			var stack = new List<IView>(NavigationStack);
 			stack.RemoveAt(stack.Count - 1);
-			ApplyNavigationRequest(new MauiNavigationRequestedEventArgs(stack, true));
+			ApplyNavigationRequest(new NavigationRequest(stack, true));
 		}
 
 		internal void BackButtonPressed() => OnBackButtonPressed();
