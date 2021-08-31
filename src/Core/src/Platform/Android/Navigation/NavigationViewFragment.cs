@@ -4,8 +4,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Fragment.App;
-using AndroidX.Navigation.Fragment;
-using AndroidX.Navigation.UI;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -25,24 +23,16 @@ namespace Microsoft.Maui
 			_fragmentContainerView ??= NavigationLayout.FindViewById<FragmentContainerView>(Resource.Id.nav_host)
 			?? throw new InvalidOperationException($"FragmentContainerView cannot be null here");
 
-		ProcessBackClick BackClick { get; }
-
-		NavHostFragment NavHost =>
-				   (Context?.GetFragmentManager()?.FindFragmentById(Resource.Id.nav_host)
-			  as NavHostFragment) ?? throw new InvalidOperationException($"NavHost cannot be null here");
-
-		NavigationStackNavGraph Graph =>
-				   (NavHost.NavController.Graph as NavigationStackNavGraph)
+		// TODO Research ViewModels
+		NavigationManager NavigationManager => NavigationLayout.NavigationManager
 			?? throw new InvalidOperationException($"Graph cannot be null here");
 
 		protected NavigationViewFragment(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
-			BackClick = new ProcessBackClick(this);
 		}
 
 		public NavigationViewFragment()
 		{
-			BackClick = new ProcessBackClick(this);
 		}
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -64,7 +54,7 @@ namespace Microsoft.Maui
 			// Then we can try some other approachs like just modifying the navbar ourselves to include a back button
 			// Even if there's only one page on the stack
 
-			_currentView = Graph.CurrentPage.ToNative(NavigationLayout.MauiContext);
+			_currentView = NavigationManager.CurrentPage.ToNative(NavigationManager.MauiContext);
 			_currentView.RemoveFromParent();
 
 			return _currentView;
@@ -72,7 +62,7 @@ namespace Microsoft.Maui
 
 		public override void OnResume()
 		{
-			if (_currentView == null || NavigationLayout.NavHost == null)
+			if (_currentView == null || NavigationManager.NavHost == null)
 				return;
 
 			if (_currentView.Parent == null)
@@ -86,21 +76,21 @@ namespace Microsoft.Maui
 
 		}
 
-		public override void OnViewCreated(AView view, Bundle savedInstanceState)
-		{
-			base.OnViewCreated(view, savedInstanceState);
+		//public override void OnViewCreated(AView view, Bundle savedInstanceState)
+		//{
+		//	base.OnViewCreated(view, savedInstanceState);
 
-			var controller = NavHostFragment.FindNavController(this);
-			var appbarConfig =
-				new AppBarConfiguration
-					.Builder(controller.Graph)
-					.Build();
+		//	var controller = NavHostFragment.FindNavController(this);
+		//	var appbarConfig =
+		//		new AppBarConfiguration
+		//			.Builder(controller.Graph)
+		//			.Build();
 
-			NavigationUI
-				.SetupWithNavController(NavigationLayout.Toolbar, controller, appbarConfig);
+		//	NavigationUI
+		//		.SetupWithNavController(NavigationLayout.Toolbar, controller, appbarConfig);
 
-			NavigationLayout.Toolbar.SetNavigationOnClickListener(BackClick);
-		}
+		//	NavigationLayout.Toolbar.SetNavigationOnClickListener(BackClick);
+		//}
 
 		public override void OnDestroyView()
 		{
@@ -108,18 +98,18 @@ namespace Microsoft.Maui
 			base.OnDestroyView();
 		}
 
-		public override void OnCreate(Bundle savedInstanceState)
-		{
-			base.OnCreate(savedInstanceState);
-			RequireActivity()
-				.OnBackPressedDispatcher
-				.AddCallback(this, BackClick);
-		}
+		//public override void OnCreate(Bundle savedInstanceState)
+		//{
+		//	base.OnCreate(savedInstanceState);
+		//	RequireActivity()
+		//		.OnBackPressedDispatcher
+		//		.AddCallback(this, BackClick);
+		//}
 
-		public void HandleOnBackPressed()
-		{
-			NavigationLayout.BackButtonPressed();
-		}
+		//public void HandleOnBackPressed()
+		//{
+		//	NavigationManager.BackButtonPressed();
+		//}
 
 		public override Animation OnCreateAnimation(int transit, bool enter, int nextAnim)
 		{
@@ -129,7 +119,7 @@ namespace Microsoft.Maui
 
 			// This means the operation currently being processed shouldn't be animated
 			// This will happen if a user inserts or removes a root page
-			if (Graph.IsPopping == null || !Graph.IsAnimated)
+			if (NavigationManager.IsPopping == null || !NavigationManager.IsAnimated)
 			{
 				returnValue = null;
 			}
@@ -137,7 +127,7 @@ namespace Microsoft.Maui
 			{
 				// Once we have Function Mappers figured out all of this code can
 				// move to a function mapper as a way to customize animations from code
-				if (Graph.IsPopping.Value)
+				if (NavigationManager.IsPopping.Value)
 				{
 					if (!enter)
 					{
@@ -171,27 +161,6 @@ namespace Microsoft.Maui
 			}
 
 			return returnValue!;
-		}
-
-		class ProcessBackClick : AndroidX.Activity.OnBackPressedCallback, AView.IOnClickListener
-		{
-			NavigationViewFragment _navHostPageFragment;
-
-			public ProcessBackClick(NavigationViewFragment navHostPageFragment)
-				: base(true)
-			{
-				_navHostPageFragment = navHostPageFragment;
-			}
-
-			public override void HandleOnBackPressed()
-			{
-				_navHostPageFragment.HandleOnBackPressed();
-			}
-
-			public void OnClick(AView? v)
-			{
-				HandleOnBackPressed();
-			}
 		}
 	}
 }

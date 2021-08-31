@@ -11,9 +11,6 @@ namespace Microsoft.Maui.Controls.Handlers
 	// Remap structures
 	internal partial class NavigationPageHandler : Microsoft.Maui.Handlers.NavigationViewHandler
 	{
-		public new NavigationPageView NativeView =>
-			(NavigationPageView)base.NativeView;
-
 		public static PropertyMapper<NavigationPage, NavigationPageHandler> NavigationPageMapper =
 			new PropertyMapper<NavigationPage, NavigationPageHandler>(NavigationViewHandler.NavigationViewMapper)
 			{
@@ -29,26 +26,30 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		private static void UpdateToolBar(NavigationPageHandler arg1, NavigationPage arg2)
 		{
-			arg1.NativeView.ToolbarPropertyChanged();
+			arg1._controlsNavigationManager.ToolbarPropertyChanged();
 		}
 
+		ControlsNavigationManager _controlsNavigationManager;
 		public NavigationPageHandler() : base(NavigationPageMapper)
 		{
 
 		}
 
-		protected override NavigationLayout CreateNativeView()
-		{
-			LayoutInflater li = LayoutInflater.From(Context);
-			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
-			var view = li.Inflate(Resource.Layout.navigationlayoutcontrols, null).JavaCast<NavigationPageView>();
-			return view;
-		}
+		protected override NavigationManager CreateNavigationManager()
+			=> _controlsNavigationManager ??= new ControlsNavigationManager();
 
-		public override void SetVirtualView(IView view)
-		{
-			base.SetVirtualView(view);
-			NativeView.SetVirtualView((NavigationPage)view);
-		}
+		//protected override NavigationLayout CreateNativeView()
+		//{
+		//	LayoutInflater li = LayoutInflater.From(Context);
+		//	_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
+		//	var view = li.Inflate(Resource.Layout.navigationlayoutcontrols, null).JavaCast<NavigationPageView>();
+		//	return view;
+		//}
+
+		//public override void SetVirtualView(IView view)
+		//{
+		//	base.SetVirtualView(view);
+		//	NativeView.SetVirtualView((NavigationPage)view);
+		//}
 	}
 }

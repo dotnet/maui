@@ -13,10 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static CommandMapper<INavigationView, NavigationViewHandler> NavigationViewCommandMapper = new(ViewCommandMapper)
 		{
-			[nameof(INavigationView.RequestNavigation)] = RequestNavigation,
-			//[nameof(INavigationView.PopAsync)] = PopAsyncTo,
-			//[nameof(INavigationView.InsertPageBefore)] = PopAsyncTo,
-			//[nameof(INavigationView.RemovePage)] = PopAsyncTo
+			[nameof(INavigationView.RequestNavigation)] = RequestNavigation
 		};
 
 		public NavigationViewHandler() : base(NavigationViewMapper, NavigationViewCommandMapper)
