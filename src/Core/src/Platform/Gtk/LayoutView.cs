@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Gtk;
@@ -37,17 +38,7 @@ namespace Microsoft.Maui.Native
 
 		public ILayout? VirtualView => CrossPlatformVirtualView?.Invoke();
 
-		protected bool IsReallocating;
-
-		protected Size? MeasuredArrange { get; set; }
-
-		protected Size? MesuredAllocation { get; set; }
-
-		public bool RestrictToMesuredAllocation { get; set; }
-
-		public bool RestrictToMeasuredArrange { get; set; }
-
-		Dictionary<IView, Widget> _children = new();
+		List<(IView view, Widget widget)> _children = new();
 
 		public LayoutView()
 		{
@@ -56,14 +47,19 @@ namespace Microsoft.Maui.Native
 
 		public void ReplaceChild(Widget oldWidget, Widget newWidget)
 		{
-			var view = _children.FirstOrDefault(kvp => kvp.Value == oldWidget).Key;
+			var index = _children.FindIndex(c => c.widget == oldWidget);
+
+			if (index == -1)
+				return;
+
+			var view = _children[index].view;
 
 			Remove(oldWidget);
 			Add(newWidget);
 
 			if (view != null)
 			{
-				_children[view] = newWidget;
+				_children[index] = (view, newWidget);
 			}
 		}
 
@@ -77,8 +73,8 @@ namespace Microsoft.Maui.Native
 			var orientation = GetOrientation();
 
 			var focusChain = _children
+			   .Select(c => c.widget)
 				// .OrderBy(kvp => orientation == Orientation.Horizontal ? kvp.Value.Rect.X : kvp.Value.Rect.Y)
-			   .Values
 			   .ToArray();
 
 			FocusChain = focusChain;
@@ -88,8 +84,8 @@ namespace Microsoft.Maui.Native
 		{
 			base.ForAll(includeInternals, callback);
 
-			foreach (var c in _children.Values.ToArray())
-				callback(c);
+			foreach (var c in _children.ToArray())
+				callback(c.widget);
 		}
 
 		public void ClearChildren()
@@ -102,14 +98,31 @@ namespace Microsoft.Maui.Native
 			_children.Clear();
 		}
 
-		public void Add(IView view, Widget gw)
+		public void Add(IView view, Widget widget)
 		{
-			if (_children.ContainsKey(view))
+			var index = _children.FindIndex(c => c.widget == widget);
+
+			if (index != -1)
 				return;
 
-			_children[view] = gw;
+			_children.Add((view, widget));
 
-			Add(gw);
+			Add(widget);
+		}
+
+		public void Insert(IView view, Widget widget, int index)
+		{
+			_children.Insert(index, (view, widget));
+			Add(widget);
+		}
+
+		public void Update(IView view, Widget widget, int index)
+		{
+			var replace = _children[index];
+			_children[index] = (view, widget);
+			Remove(replace.widget);
+			Add(widget);
+
 		}
 
 		protected override void OnAdded(Widget widget)
@@ -134,8 +147,8 @@ namespace Microsoft.Maui.Native
 
 			foreach (var cr in _children.ToArray())
 			{
-				var w = cr.Value;
-				var v = cr.Key;
+				var w = cr.widget;
+				var v = cr.view;
 				var r = v.Frame;
 
 				if (r.IsEmpty)
