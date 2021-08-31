@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
@@ -15,15 +16,17 @@ using Window = Microsoft.Maui.Controls.Window;
 namespace Maui.SimpleSampleApp
 {
 
-	public class Startup : IStartup
+	public class Startup
 	{
 
 		public readonly static bool UseSemanticsPage = false;
 		public readonly static bool UseXamlPage = false;
 		public readonly static bool UseXamlApp = true;
 
-		public void Configure(IAppHostBuilder appBuilder)
+		public static MauiApp CreateMauiApp()
 		{
+			var appBuilder = MauiApp.CreateBuilder();
+
 			// if (UseXamlApp)
 			// {
 			// 	// Use all the Forms features
@@ -38,33 +41,30 @@ namespace Maui.SimpleSampleApp
 				   .UseMauiApp<SimpleSampleMauiApp>();
 			}
 
+			var services = appBuilder.Services;
+
+			appBuilder.Configuration.AddInMemoryCollection(new Dictionary<string, string>
+			{
+				{ "MyKey", "Dictionary MyKey Value" },
+				{ ":Title", "Dictionary_Title" },
+				{ "Position:Name", "Dictionary_Name" },
+				{ "Logging:LogLevel:Default", "Warning" }
+			});
+
+			services.AddSingleton<ITextService, TextService>();
+			services.AddTransient<MainPageViewModel>();
+
+			// if (UseXamlPage)
+			// 	services.AddTransient<IPage, XamlPage>();
+			// else if (UseSemanticsPage)
+			// 	services.AddTransient<IPage, SemanticsPage>();
+			// else
+			services.AddTransient<Page, ExamplePage>();
+
+			services.AddTransient<IWindow, Window>();
+
 			appBuilder
-			   .ConfigureAppConfiguration(config =>
-				{
-					config.AddInMemoryCollection(new Dictionary<string, string>
-					{
-						{ "MyKey", "Dictionary MyKey Value" },
-						{ ":Title", "Dictionary_Title" },
-						{ "Position:Name", "Dictionary_Name" },
-						{ "Logging:LogLevel:Default", "Warning" }
-					});
-				})
-			   .UseMauiServiceProviderFactory(true)
 				//.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
-			   .ConfigureServices(services =>
-				{
-					services.AddSingleton<ITextService, TextService>();
-					services.AddTransient<MainPageViewModel>();
-
-					// if (UseXamlPage)
-					// 	services.AddTransient<IPage, XamlPage>();
-					// else if (UseSemanticsPage)
-					// 	services.AddTransient<IPage, SemanticsPage>();
-					// else
-					services.AddTransient<IPage, ExamplePage>();
-
-					services.AddTransient<IWindow, Window>();
-				})
 			   .ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
@@ -104,17 +104,8 @@ namespace Maui.SimpleSampleApp
 						return true;
 					}
 				});
-		}
 
-		// To use the Microsoft.Extensions.DependencyInjection ServiceCollection and not the MAUI one
-		class DIExtensionsServiceProviderFactory : IServiceProviderFactory<ServiceCollection>
-		{
-
-			public ServiceCollection CreateBuilder(IServiceCollection services)
-				=> new ServiceCollection { services };
-
-			public IServiceProvider CreateServiceProvider(ServiceCollection containerBuilder)
-				=> containerBuilder.BuildServiceProvider();
+			return appBuilder.Build();
 
 		}
 

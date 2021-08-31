@@ -6,8 +6,13 @@ using Microsoft.Maui.Graphics;
 namespace Maui.SimpleSampleApp
 {
 
-	public class SimpleSampleGtkApplication : MauiGtkApplication<Startup>
+	public class SimpleSampleGtkApplication : MauiGtkApplication
 	{
+
+		protected override MauiApp CreateMauiApp()
+		{
+			return Startup.CreateMauiApp();
+		}
 
 		public SimpleSampleGtkApplication() : base()
 		{

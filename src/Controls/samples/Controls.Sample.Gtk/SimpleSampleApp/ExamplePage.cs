@@ -36,6 +36,7 @@ namespace Maui.SimpleSampleApp
 
 			// SetupMauiLayoutSimple();
 			SetupMauiLayout();
+			// SetupMauiLayoutDrawables();
 		}
 
 		void SetupMauiLayoutLayouts()
@@ -104,6 +105,11 @@ namespace Maui.SimpleSampleApp
 			verticalStack1.Add(verticalStack3);
 			Content = verticalStack1;
 
+		}
+
+		void SetupMauiLayoutDrawables()
+		{
+			Content = CreateShapes();
 		}
 
 		void SetupMauiLayoutButtonSpacing()
@@ -180,6 +186,7 @@ namespace Maui.SimpleSampleApp
 			{
 				button.CharacterSpacing = button.CharacterSpacing > 1 ? 1 : 2;
 			};
+
 			verticalStack.Add(button2);
 
 			var activityIndicator = new ActivityIndicator { Color = Colors.Chartreuse };
@@ -233,7 +240,6 @@ namespace Maui.SimpleSampleApp
 				HorizontalTextAlignment = TextAlignment.End,
 				Margin = new Thickness(15, 10, 20, 15)
 			};
-
 
 			SemanticProperties.SetHint(label, "Hint Text");
 			SemanticProperties.SetDescription(label, "Description Text");
@@ -314,8 +320,6 @@ namespace Maui.SimpleSampleApp
 
 			verticalStack.Add(visibleClearButtonEntry);
 			verticalStack.Add(hiddenClearButtonEntry);
-
-			verticalStack.Add(new Editor { Placeholder = "This is an editor placeholder." });
 
 			var paddingButton = new Button
 			{
@@ -431,33 +435,39 @@ namespace Maui.SimpleSampleApp
 				Color = Colors.Aquamarine
 			});
 
-			verticalStack.Add(new Editor());
-			verticalStack.Add(new Editor { Text = "Editor" });
-
-			verticalStack.Add(new Editor
+			if (true)
+#pragma warning disable 162
 			{
-				Text = "Lorem ipsum dolor sit amet",
-				MaxLength = 10
-			});
+				verticalStack.Add(new Editor());
+				verticalStack.Add(new Editor { Placeholder = "This is an editor placeholder." });
+				verticalStack.Add(new Editor { Text = "Editor" });
 
-			verticalStack.Add(new Editor
-			{
-				Text = "Predictive Text Off",
-				IsTextPredictionEnabled = false
-			});
+				verticalStack.Add(new Editor
+				{
+					Text = "Lorem ipsum dolor sit amet",
+					MaxLength = 10
+				});
 
-			verticalStack.Add(new Editor
-			{
-				Text = "Lorem ipsum dolor sit amet",
-				FontSize = 10,
-				FontFamily = "dokdo_regular"
-			});
+				verticalStack.Add(new Editor
+				{
+					Text = "Predictive Text Off",
+					IsTextPredictionEnabled = false
+				});
 
-			verticalStack.Add(new Editor
-			{
-				Text = "ReadOnly Editor",
-				IsReadOnly = true
-			});
+				verticalStack.Add(new Editor
+				{
+					Text = "Lorem ipsum dolor sit amet",
+					FontSize = 10,
+					FontFamily = "dokdo_regular"
+				});
+
+				verticalStack.Add(new Editor
+				{
+					Text = "ReadOnly Editor",
+					IsReadOnly = true
+				});
+			}
+#pragma warning restore 162
 
 			var entry = new Entry();
 
@@ -639,12 +649,16 @@ namespace Maui.SimpleSampleApp
 
 			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
 
-			Content = new ScrollView { Content = verticalStack };
+			Content = new ScrollView
+			{
+				Content = verticalStack,
+				Orientation = ScrollOrientation.Both
+			};
 		}
 
 		public IView View { get => (IView)Content; set => Content = (View)value; }
 
-		IView CreateSampleGrid()
+		View CreateSampleGrid()
 		{
 			var layout = new GridLayout()
 			{
@@ -670,6 +684,7 @@ namespace Maui.SimpleSampleApp
 			{
 				Text = "Bottom Left",
 				BackgroundColor = Colors.Lavender,
+				VerticalTextAlignment = TextAlignment.End
 			};
 
 			layout.Add(bottomLeft);
@@ -704,7 +719,7 @@ namespace Maui.SimpleSampleApp
 			return layout;
 		}
 
-		IView CreateShapes()
+		View CreateShapes()
 		{
 			var ellipse = new Ellipse
 			{
