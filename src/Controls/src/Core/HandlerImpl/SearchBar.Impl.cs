@@ -2,9 +2,7 @@
 {
 	public partial class SearchBar : ISearchBar
 	{
-		Font? _font;
-
-		Font ITextStyle.Font => _font ??= Font.OfSize(FontFamily, FontSize).WithAttributes(FontAttributes);
+		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
 
 		bool ITextInput.IsTextPredictionEnabled => true;
 

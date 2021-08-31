@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapText(LabelHandler handler, ILabel label)
 		{
-			handler.NativeView?.UpdateText(label);
+			handler.NativeView?.UpdateTextPlainText(label);
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, label);

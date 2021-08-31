@@ -67,5 +67,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		public ScrollToRequest ToRequest()
+		{
+			return new ScrollToRequest(ScrollX, ScrollY, !ShouldAnimate);
+		}
 	}
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Microsoft.AspNetCore.Components.WebView.WebView2;
+﻿using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.Web.WebView2.Core;
 using Windows.Storage.Streams;
 
@@ -25,15 +22,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		public CoreWebView2WebResourceContextWrapper ResourceContext { get; }
 
-		public void SetResponse(Stream content, int statusCode, string statusMessage, string headerString)
+		public IDeferralWrapper GetDeferral()
 		{
-			// NOTE: This is stream copying is to work around a hanging bug in WinRT with managed streams
-			var memStream = new MemoryStream();
-			content.CopyTo(memStream);
-			var ms = new InMemoryRandomAccessStream();
-			ms.WriteAsync(memStream.GetWindowsRuntimeBuffer()).AsTask().Wait();
+			return new DeferralWrapper(_webResourceRequestedEventArgs.GetDeferral());
+		}
 
-			_webResourceRequestedEventArgs.Response = _environment.CreateWebResourceResponse(ms, statusCode, statusMessage, headerString);
+		public void SetResponse(IRandomAccessStream content, int statusCode, string statusMessage, string headerString)
+		{
+			_webResourceRequestedEventArgs.Response = _environment.CreateWebResourceResponse(content, statusCode, statusMessage, headerString);
 		}
 	}
 }

@@ -26,8 +26,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		View? View => Element as View;
 
-		protected virtual AView? Control => (_handler?.ContainerView ?? _handler?.NativeView) as AView;
-
 		public GestureManager(IViewHandler handler)
 		{
 			_handler = handler;
@@ -35,6 +33,18 @@ namespace Microsoft.Maui.Controls.Platform
 			_scaleDetector = new Lazy<ScaleGestureDetector>(InitializeScaleDetector);
 			_dragAndDropGestureHandler = new Lazy<DragAndDropGestureHandler>(InitializeDragAndDropHandler);
 			SetupElement(null, Element);
+		}
+
+		protected virtual AView? Control
+		{
+			get
+			{
+				var view = (_handler?.ContainerView ?? _handler?.NativeView) as AView;
+				if (view.IsAlive())
+					return view;
+
+				return null;
+			}
 		}
 
 		public bool OnTouchEvent(MotionEvent e)
@@ -150,15 +160,13 @@ namespace Microsoft.Maui.Controls.Platform
 			if (View == null)
 				return;
 
-			AView? nativeView = (_handler?.NativeView as AView);
-
+			var nativeView = Control;
 			if (nativeView == null)
 				return;
 
 			if (View.GestureRecognizers.Count == 0)
 			{
 				nativeView.Touch -= OnNativeViewTouched;
-
 			}
 			else
 			{
@@ -168,12 +176,25 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnNativeViewTouched(object? sender, Android.Views.View.TouchEventArgs e)
 		{
+			if (_disposed)
+			{
+				var nativeView = Control;
+				if (nativeView != null)
+					nativeView.Touch -= OnNativeViewTouched;
+
+				return;
+			}
+
 			if (e.Event != null)
 				OnTouchEvent(e.Event);
 		}
 
 		void SetupElement(VisualElement? oldElement, VisualElement? newElement)
 		{
+			var nativeView = Control;
+			if (nativeView != null)
+				nativeView.Touch -= OnNativeViewTouched;
+
 			_handler = null;
 			if (oldElement != null)
 			{
@@ -211,6 +232,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_tapAndPanAndSwipeDetector.IsValueCreated)
 				_tapAndPanAndSwipeDetector.Value.UpdateLongPressSettings();
+
+			View?.AddOrRemoveControlsAccessibilityDelegate();
 		}
 
 		void UpdateDragAndDrop()

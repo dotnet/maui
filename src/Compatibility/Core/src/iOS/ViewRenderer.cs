@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		string _defaultAccessibilityLabel;
 		string _defaultAccessibilityHint;
 		bool? _defaultIsAccessibilityElement;
+		bool? _defaultAccessibilityElementsHidden;
 
 		NativeColor _defaultColor;
 
@@ -186,6 +187,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		{
 			_defaultIsAccessibilityElement = Control.SetIsAccessibilityElement(Element, _defaultIsAccessibilityElement);
 		}
+		protected override void SetAccessibilityElementsHidden()
+		{
+			_defaultAccessibilityElementsHidden = Control.SetAccessibilityElementsHidden(Element, _defaultAccessibilityElementsHidden);
+		}
 
 		protected override void SetAutomationId(string id)
 		{
@@ -290,6 +295,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			uiControl.Enabled = Element.IsEnabled;
 		}
 
+		[PortHandler]
 		void UpdateFlowDirection()
 		{
 			if (IsElementOrControlEmpty)

@@ -24,8 +24,8 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		protected ViewHandler(PropertyMapper mapper)
-			: base(mapper)
+		protected ViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
+			: base(mapper, commandMapper)
 		{
 		}
 

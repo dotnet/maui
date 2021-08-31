@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Drag
 		{
 			// e.Cancel = true;
 			var boxView = (sender as Element).Parent as BoxView;
-			var sl = boxView.Parent as StackLayout;
+			var sl = boxView.Parent as Controls.StackLayout;
 			e.Data.Properties.Add("Color", boxView.Background);
 			e.Data.Properties.Add("Source", sl);
 
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Drag
 
 		private void OnDropCompleted(object sender, DropCompletedEventArgs e)
 		{
-			var sl = (sender as Element).Parent.Parent as StackLayout;
+			var sl = (sender as Element).Parent.Parent as Controls.StackLayout;
 
 			if (sl == SLAllColors)
 				SLRainbow.Background = SolidColorBrush.White;

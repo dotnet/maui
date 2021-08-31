@@ -59,20 +59,20 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
-	public class ShellWithCustomRendererDisabledAnimationsRenderer : ShellRenderer
+	public class ShellWithCustomRendererDisabledAnimationsRenderer : ShellView
 	{
 		public ShellWithCustomRendererDisabledAnimationsRenderer(Context context) : base(context)
 		{
 		}
 
-		protected override IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
+		protected override IShellItemView CreateShellItemView(ShellItem shellItem)
 		{
 			return new ShellWithCustomRendererDisabledAnimationsShellItemRenderer(this);
 		}
 
-		public class ShellWithCustomRendererDisabledAnimationsShellItemRenderer : ShellItemRenderer
+		public class ShellWithCustomRendererDisabledAnimationsShellItemRenderer : ShellItemView
 		{
-			public ShellWithCustomRendererDisabledAnimationsShellItemRenderer(IShellContext shellContext) : base(shellContext)
+			public ShellWithCustomRendererDisabledAnimationsShellItemRenderer(Controls.Platform.IShellContext shellContext) : base(shellContext)
 			{
 			}
 
@@ -183,14 +183,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		}
 	}
 
-	public class NativeDroidFlyoutPage : Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.MasterDetailPageRenderer
+	public class NativeDroidFlyoutPage : FlyoutPageRenderer
 	{
 		FlyoutPage _page;
 		bool _disposed;
 
 		public NativeDroidFlyoutPage(Context context) : base(context)
 		{
-			System.Diagnostics.Debug.WriteLine($">>>>> NativeDroidMasterDetail NativeDroidMasterDetail 53: This is the obsolete constructor being selected");
 		}
 
 		protected override void OnElementChanged(VisualElement oldElement, VisualElement newElement)

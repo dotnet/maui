@@ -452,6 +452,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateTextPlainText()
 		{
 			_formatted = Element.FormattedText;
@@ -474,6 +475,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			UpdateLayout();
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateFormattedText()
 		{
 #if __MOBILE__

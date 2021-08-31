@@ -1,24 +1,33 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.TypeConversion(typeof(LinearItemsLayout))]
 	public class CarouselLayoutTypeConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value == "HorizontalList")
+			var strValue = value?.ToString();
+
+			if (strValue == "HorizontalList")
 				return LinearItemsLayout.CarouselDefault;
 
-			if (value == "VerticalList")
+			if (strValue == "VerticalList")
 				return LinearItemsLayout.CarouselVertical;
 
-			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(LinearItemsLayout)}");
+			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(LinearItemsLayout)}");
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is LinearItemsLayout lil))
+			if (value is not LinearItemsLayout lil)
 				throw new NotSupportedException();
 
 			if (lil == LinearItemsLayout.CarouselDefault)
