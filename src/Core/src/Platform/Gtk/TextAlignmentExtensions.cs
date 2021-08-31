@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 	public static class TextAlignmentExtensions
 	{
 		
-		// https://developer.gnome.org/gtk3/stable/GtkWidget.html#GtkWidget--halign
+		// https://docs.gtk.org/gtk3/property.Widget.halign
 		// How to distribute horizontal space if widget gets extra space, see GtkAlign
 		
 		internal static Align ToGtkAlign(this TextAlignment alignment)
@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 		}
 		
 		/// <summary>
-		/// https://developer.gnome.org/gtk3/stable/GtkLabel.html#gtk-label-set-xalign
+		/// https://docs.gtk.org/gtk3/method.Label.set_xalign.html
 		/// The xalign property determines the horizontal aligment of the label text inside the labels size allocation.
 		/// Compare this to “halign”, which determines how the labels size allocation is positioned in the space available for the label.
 		/// </summary>

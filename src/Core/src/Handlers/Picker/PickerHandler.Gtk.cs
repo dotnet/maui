@@ -4,7 +4,7 @@ using Gtk;
 namespace Microsoft.Maui.Handlers
 {
 
-	// https://developer.gnome.org/gtk3/stable/GtkComboBox.html
+	// https://docs.gtk.org/gtk3/class.ComboBox.html
 
 	public partial class PickerHandler : ViewHandler<IPicker, ComboBox>
 	{

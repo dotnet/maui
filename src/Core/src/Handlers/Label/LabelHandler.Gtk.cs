@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 		public Microsoft.Maui.Graphics.Native.Gtk.TextLayout SharedTextLayout => _textLayout ??= new Microsoft.Maui.Graphics.Native.Gtk.TextLayout(
 			Microsoft.Maui.Graphics.Native.Gtk.NativeGraphicsService.Instance.SharedContext) { HeightForWidth = true };
 
-		// https://developer.gnome.org/gtk3/stable/GtkLabel.html
+		// https://docs.gtk.org/gtk3/class.Label.html
 		protected override LabelView CreateNativeView()
 		{
 			return new()
@@ -183,9 +183,9 @@ namespace Microsoft.Maui.Handlers
 				// try to set it over css: not working: exception thrown: 'line-height' is not a valid property name
 				// nativeView.SetStyleValue($"{(int)label.LineHeight}","line-height");
 
-				// try to set it over https://developer.gnome.org/pango/1.46/pango-Layout-Objects.html#pango-layout-set-line-spacing
+				// try to set it over https://docs.gtk.org/Pango/method.Layout.set_line_spacing.html
 
-				// no effect: https://developer.gnome.org/gtk3/stable/GtkLabel.html#gtk-label-get-layout
+				// no effect: https://docs.gtk.org/gtk3/method.Label.get_layout.html
 				// The label is free to recreate its layout at any time, so it should be considered read-only
 				// nativeView.Layout.LineSpacing = (float)label.LineHeight;
 

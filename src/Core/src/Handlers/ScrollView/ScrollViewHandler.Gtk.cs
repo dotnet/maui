@@ -7,7 +7,7 @@ using Point = Microsoft.Maui.Graphics.Point;
 namespace Microsoft.Maui.Handlers
 {
 
-	// https://developer.gnome.org/gtk3/stable/GtkScrolledWindow.html
+	// https://docs.gtk.org/gtk3/class.ScrolledWindow.html
 
 	public partial class ScrollViewHandler : ViewHandler<IScrollView, ScrollView>
 	{

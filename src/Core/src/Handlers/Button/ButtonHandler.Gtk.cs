@@ -5,7 +5,7 @@ using Microsoft.Maui.Graphics.Native.Gtk;
 namespace Microsoft.Maui.Handlers
 {
 
-	// https://developer.gnome.org/gtk3/stable/GtkButton.html
+	// https://docs.gtk.org/gtk3/class.Button.html
 
 	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{

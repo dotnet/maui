@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 
 		protected override IStartup OnCreateStartup() => new TStartup();
 
-		// https://developer.gnome.org/gio/stable/GApplication.html#g-application-id-is-valid
+		// https://docs.gtk.org/gio/type_func.Application.id_is_valid.html
 		// TODO: find a better algo for id
 		public override string ApplicationId => $"{typeof(TStartup).Namespace}.{typeof(TStartup).Name}.{Name}".PadRight(255, ' ').Substring(0, 255).Trim();
 
@@ -37,7 +37,7 @@ namespace Microsoft.Maui
 			set { _name = value; }
 		}
 
-		// https://developer.gnome.org/gtk3/stable/GtkApplication.html
+		// https://docs.gtk.org/gtk3/class.Application.html
 		public static Gtk.Application CurrentGtkApplication { get; internal set; } = null!;
 
 		public static MauiGtkApplication Current { get; internal set; } = null!;

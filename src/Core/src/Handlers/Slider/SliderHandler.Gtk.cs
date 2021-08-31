@@ -5,7 +5,7 @@ using Gtk;
 namespace Microsoft.Maui.Handlers
 {
 
-	// https://developer.gnome.org/gtk3/stable/GtkScale.html
+	// https://docs.gtk.org/gtk3/class.Scale.html
 
 	public partial class SliderHandler : ViewHandler<ISlider, Scale>
 	{

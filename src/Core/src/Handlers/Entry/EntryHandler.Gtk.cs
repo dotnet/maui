@@ -5,7 +5,7 @@ using Microsoft.Maui.Graphics.Native.Gtk;
 namespace Microsoft.Maui.Handlers
 {
 
-	// https://developer.gnome.org/gtk3/stable/GtkEntry.html
+	//https://docs.gtk.org/gtk3/class.Entry.html
 
 	public partial class EntryHandler : ViewHandler<IEntry, Entry>
 	{

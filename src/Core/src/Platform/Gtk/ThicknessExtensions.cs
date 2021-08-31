@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 			if (it == default)
 				return it;
 
-			// https://developer.gnome.org/gtk3/stable/GtkWidget.html#GtkWidget--margin-start			
+			// https://docs.gtk.org/gtk3/property.Widget.margin-start.html			
 			it.MarginStart = (int)padding.Left;
 			it.MarginTop = (int)padding.Top;
 			it.MarginEnd = (int)padding.Right;

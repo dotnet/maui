@@ -4,7 +4,7 @@ using Gtk;
 namespace Microsoft.Maui.Handlers
 {
 
-	// https://developer.gnome.org/gtk3/stable/GtkCheckButton.html
+	// https://docs.gtk.org/gtk3/class.CheckButton.html
 	
 	public partial class CheckBoxHandler : ViewHandler<ICheckBox, CheckButton>
 	{

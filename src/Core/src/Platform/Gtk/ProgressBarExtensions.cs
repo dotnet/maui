@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 	{
 		public static void UpdateProgress(this ProgressBar nativeProgressBar, IProgress progress)
 		{
-			// https://developer.gnome.org/gtk3/stable/GtkProgressBar.html#gtk-progress-bar-set-fraction
+			// https://docs.gtk.org/gtk3/method.ProgressBar.set_fraction.html
 			nativeProgressBar.Fraction = progress.Progress;
 			nativeProgressBar.TooltipText = $"{progress.Progress * 100}%";
 		}

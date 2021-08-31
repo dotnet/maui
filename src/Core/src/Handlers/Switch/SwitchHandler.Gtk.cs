@@ -3,7 +3,7 @@
 namespace Microsoft.Maui.Handlers
 {
 	
-	// https://developer.gnome.org/gtk3/stable/GtkSwitch.html
+	// https://docs.gtk.org/gtk3/class.Switch.html
 	
 	public partial class SwitchHandler : ViewHandler<ISwitch, Switch>
 	{

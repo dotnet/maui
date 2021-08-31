@@ -4,7 +4,7 @@ using Gtk;
 namespace Microsoft.Maui.Handlers
 {
 	
-	// https://developer.gnome.org/gtk3/stable/GtkSpinButton.html
+	// https://docs.gtk.org/gtk3/class.SpinButton.html
 	public partial class StepperHandler : ViewHandler<IStepper, SpinButton>
 	{
 		protected override SpinButton CreateNativeView()
