@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		protected override void OnFragmentResumed(FragmentManager fm, NavHostPageFragment navHostPageFragment)
+		protected override void OnFragmentResumed(FragmentManager fm, NavigationViewFragment navHostPageFragment)
 		{
 			base.OnFragmentResumed(fm, navHostPageFragment);
 			// This appears to be the best place to update the toolbar so that the tinting works

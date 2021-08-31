@@ -10,7 +10,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
-	public class NavHostPageFragment : Fragment
+	public class NavigationViewFragment : Fragment
 	{
 		AView? _currentView;
 		NavigationLayout? _navigationLayout;
@@ -31,16 +31,16 @@ namespace Microsoft.Maui
 				   (Context?.GetFragmentManager()?.FindFragmentById(Resource.Id.nav_host)
 			  as NavHostFragment) ?? throw new InvalidOperationException($"NavHost cannot be null here");
 
-		MauiNavGraph Graph =>
-				   (NavHost.NavController.Graph as MauiNavGraph)
+		NavigationStackNavGraph Graph =>
+				   (NavHost.NavController.Graph as NavigationStackNavGraph)
 			?? throw new InvalidOperationException($"Graph cannot be null here");
 
-		protected NavHostPageFragment(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+		protected NavigationViewFragment(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
 			BackClick = new ProcessBackClick(this);
 		}
 
-		public NavHostPageFragment()
+		public NavigationViewFragment()
 		{
 			BackClick = new ProcessBackClick(this);
 		}
@@ -175,9 +175,9 @@ namespace Microsoft.Maui
 
 		class ProcessBackClick : AndroidX.Activity.OnBackPressedCallback, AView.IOnClickListener
 		{
-			NavHostPageFragment _navHostPageFragment;
+			NavigationViewFragment _navHostPageFragment;
 
-			public ProcessBackClick(NavHostPageFragment navHostPageFragment)
+			public ProcessBackClick(NavigationViewFragment navHostPageFragment)
 				: base(true)
 			{
 				_navHostPageFragment = navHostPageFragment;

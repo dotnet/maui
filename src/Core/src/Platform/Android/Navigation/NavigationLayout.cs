@@ -19,8 +19,8 @@ namespace Microsoft.Maui
 		Toolbar? _toolbar;
 		AppBarLayout? _appBar;
 
-		internal MauiNavGraph NavGraphDestination =>
-			(MauiNavGraph)NavHost.NavController.Graph;
+		internal NavigationStackNavGraph NavGraphDestination =>
+			(NavigationStackNavGraph)NavHost.NavController.Graph;
 
 		internal IView? VirtualView { get; private set; }
 		internal INavigationView? NavigationView { get; private set; }
@@ -104,7 +104,7 @@ namespace Microsoft.Maui
 					.NavigatorProvider
 					.GetNavigator(Java.Lang.Class.FromType(typeof(NavGraphNavigator)));
 
-			var navGraphSwap = new MauiNavGraph(navGraphNavigator);
+			var navGraphSwap = new NavigationStackNavGraph(navGraphNavigator);
 			navGraphSwap.Initialize(
 				NavigationView.NavigationStack,
 				this);
@@ -123,7 +123,7 @@ namespace Microsoft.Maui
 		// I'm firing NavigationFinished from here instead of FragmentAnimationFinished because
 		// this event appears to fire slightly after `FragmentAnimationFinished` and it also fires
 		// if we aren't using animations
-		private void OnPageFragmentDestroyed(AndroidX.Fragment.App.FragmentManager fm, NavHostPageFragment navHostPageFragment)
+		private void OnPageFragmentDestroyed(AndroidX.Fragment.App.FragmentManager fm, NavigationViewFragment navHostPageFragment)
 		{
 			_ = NavigationView ?? throw new InvalidOperationException($"NavigationView cannot be null");
 
@@ -140,13 +140,13 @@ namespace Microsoft.Maui
 
 		}
 
-		protected virtual void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, NavHostPageFragment navHostPageFragment)
+		protected virtual void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, NavigationViewFragment navHostPageFragment)
 		{
 		}
 
 		public virtual void RequestNavigation(MauiNavigationRequestedEventArgs e)
 		{
-			var graph = (MauiNavGraph)NavHost.NavController.Graph;
+			var graph = (NavigationStackNavGraph)NavHost.NavController.Graph;
 			graph.ApplyNavigationRequest(e, this);
 		}
 
@@ -154,7 +154,7 @@ namespace Microsoft.Maui
 		{
 			_ = NavigationView ?? throw new InvalidOperationException($"NavigationView cannot be null");
 
-			var graph = (MauiNavGraph)NavHost.NavController.Graph;
+			var graph = (NavigationStackNavGraph)NavHost.NavController.Graph;
 			var stack = new List<IView>(graph.NavigationStack);
 			stack.RemoveAt(stack.Count - 1);
 			graph.ApplyNavigationRequest(new MauiNavigationRequestedEventArgs(stack, true) , this);
@@ -184,7 +184,7 @@ namespace Microsoft.Maui
 
 			public override void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f)
 			{
-				if (f is NavHostPageFragment pf)
+				if (f is NavigationViewFragment pf)
 					_navigationLayout.OnFragmentResumed(fm, pf);
 			}
 
@@ -197,7 +197,7 @@ namespace Microsoft.Maui
 				AndroidX.Fragment.App.FragmentManager fm,
 				AndroidX.Fragment.App.Fragment f)
 			{
-				if (f is NavHostPageFragment pf)
+				if (f is NavigationViewFragment pf)
 					_navigationLayout.OnPageFragmentDestroyed(fm, pf);
 
 				base.OnFragmentViewDestroyed(fm, f);
