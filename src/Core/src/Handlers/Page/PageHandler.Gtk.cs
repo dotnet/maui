@@ -5,7 +5,7 @@ using Microsoft.Maui.Native;
 namespace Microsoft.Maui.Handlers
 {
 
-	public partial class PageHandler : ViewHandler<IPage, PageView>
+	public partial class PageHandler : ViewHandler<IView, PageView>
 	{
 
 		public override void SetVirtualView(IView view)
@@ -27,10 +27,10 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (VirtualView.Content != null)
-				NativeView.Content = VirtualView.Content.ToNative(MauiContext);
+			if (VirtualView is IContentView { Content: { } view })
+				NativeView.Content = view.ToNative(MauiContext);
 		}
-		
+
 		protected override PageView CreateNativeView()
 		{
 			if (VirtualView == null)
@@ -47,16 +47,14 @@ namespace Microsoft.Maui.Handlers
 			return pw;
 		}
 
-		public static void MapContent(PageHandler handler, IPage page)
+		public static void MapContent(PageHandler handler, IView page)
 		{
 			handler.UpdateContent();
 		}
-		
+
 		[MissingMapper]
-		public static void MapTitle(PageHandler handler, IPage page)
+		public static void MapTitle(PageHandler handler, IView page)
 		{ }
-		
-		
 
 	}
 
