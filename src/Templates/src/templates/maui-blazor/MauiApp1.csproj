@@ -20,7 +20,7 @@
 		<AndroidVersionCode>1</AndroidVersionCode>
 
 		<!-- Required for C# Hot Reload -->
-		<UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
+		<UseInterpreter Condition="'$(Configuration)' == 'Debug'">False</UseInterpreter>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -50,8 +50,6 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<!-- Required - WinUI can't deploy in a multi-targeting environment -->
-		<AppxPackageRecipe>bin\$(Configuration)\net6.0-windows10.0.19041\win-x64\MauiApp1.build.appxrecipe</AppxPackageRecipe>
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-windows'))">win-x64</RuntimeIdentifier>
 	</PropertyGroup>
 	<ItemGroup>
