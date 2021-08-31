@@ -6,9 +6,6 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
-	// This implementation of AndroidX.Navigation.NavGraph is used to
-	// dynamically add Navigation Destinations and then modify the current back stack to match 
-	// The users current Navigation Stack
 	public class NavigationStackNavGraph : NavGraph
 	{
 		IView? _currentPage;
@@ -23,13 +20,6 @@ namespace Microsoft.Maui
 		public NavigationStackNavGraph(Navigator navGraphNavigator) : base(navGraphNavigator)
 		{
 			Id = AView.GenerateViewId();
-		}
-
-		internal void NavigationFinished(INavigationView? navigationView)
-		{
-			IsPopping = null;
-			ActiveRequestedArgs = null;
-			navigationView?.NavigationFinished(NavigationStack);
 		}
 
 		internal bool IsNavigating => ActiveRequestedArgs != null;
@@ -173,6 +163,13 @@ namespace Microsoft.Maui
 			destination.Id = AView.GenerateViewId();
 			AddDestination(destination);
 			return destination;
+		}
+
+		internal void NavigationFinished(INavigationView? navigationView)
+		{
+			IsPopping = null;
+			ActiveRequestedArgs = null;
+			navigationView?.NavigationFinished(NavigationStack);
 		}
 
 		// This occurs when the navigation page is first being renderer so we sync up the
