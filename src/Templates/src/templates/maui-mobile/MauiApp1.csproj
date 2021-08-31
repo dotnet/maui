@@ -50,7 +50,6 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<!-- Required - WinUI can't deploy in a multi-targeting environment -->
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-windows'))">win-x64</RuntimeIdentifier>
 	</PropertyGroup>
 
