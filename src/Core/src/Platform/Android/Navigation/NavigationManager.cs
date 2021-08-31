@@ -75,7 +75,7 @@ namespace Microsoft.Maui
 		 * Fragments are recreated everytime they are pushed on the stack but the handler renderer is not.
 		 * It's just attached to a new fragment
 		 * */
-		public virtual void ApplyNavigationRequest(MauiNavigationRequestedEventArgs args)
+		void ApplyNavigationRequest(MauiNavigationRequestedEventArgs args)
 		{
 			if (IsNavigating)
 			{
