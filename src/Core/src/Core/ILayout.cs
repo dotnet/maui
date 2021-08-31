@@ -1,4 +1,5 @@
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
@@ -13,9 +14,8 @@ namespace Microsoft.Maui
 		/// </summary>
 		Thickness Padding { get; }
 
-		/// <summary>
-		/// The LayoutManager responsible for laying out the children of this ILayout
-		/// </summary>
-		ILayoutManager LayoutManager { get; }
+		// TODO ezhart Document this
+		Size CrossPlatformMeasure(double widthConstraint, double heightConstraint);
+		Size CrossPlatformArrange(Rectangle bounds);
 	}
 }

@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Switch), typeof(SwitchHandler) },
 			{ typeof(TimePicker), typeof(TimePickerHandler) },
 			{ typeof(Page), typeof(PageHandler) },
+			{ typeof(IContentView), typeof(ContentViewHandler) },
 			{ typeof(Shapes.Ellipse), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Line), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Path), typeof(ShapeViewHandler) },
