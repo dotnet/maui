@@ -10,12 +10,13 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	internal partial class NavigationPageHandler :
+	internal partial class NavigationViewHandler :
 		ViewHandler<INavigationView, UIView>, INativeViewHandler
 	{
 		ControlsNavigationController? _controlsNavigationController;
 		UIViewController? INativeViewHandler.ViewController => _controlsNavigationController;
 
+		public INavigationView NavigationView => ((INavigationView)VirtualView);
 		protected override UIView CreateNativeView()
 		{
 			_controlsNavigationController = new ControlsNavigationController(this);
@@ -25,62 +26,57 @@ namespace Microsoft.Maui.Handlers
 
 			return _controlsNavigationController.View;
 		}
-		private static void PushAsyncTo(NavigationPageHandler arg1, INavigationView arg2, object? arg3)
+
+		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
 		{
-			if (arg3 is MauiNavigationRequestedEventArgs args)
-				arg1.OnPushRequested(args);
+			//if (arg3 is MauiNavigationRequestedEventArgs args)
+			//	arg1.OnPushRequested(args);
 		}
 
-		private static void PopAsyncTo(NavigationPageHandler arg1, INavigationView arg2, object? arg3)
-		{
-			if (arg3 is MauiNavigationRequestedEventArgs args)
-				arg1.OnPopRequested(args);
-		}
+		//void OnPushRequested(MauiNavigationRequestedEventArgs e)
+		//{
+		//	_controlsNavigationController?
+		//		.OnPushRequested(e, this.MauiContext!);
+		//}
 
-		void OnPushRequested(MauiNavigationRequestedEventArgs e)
-		{
-			_controlsNavigationController?
-				.OnPushRequested(e, this.MauiContext!);
-		}
-
-		void OnPopRequested(MauiNavigationRequestedEventArgs e)
-		{
-			_controlsNavigationController?
-				.OnPopRequestedAsync(e)
-				.FireAndForget((exc) => { });
-		}
+		//void OnPopRequested(MauiNavigationRequestedEventArgs e)
+		//{
+		//	_controlsNavigationController?
+		//		.OnPopRequestedAsync(e)
+		//		.FireAndForget((exc) => { });
+		//}
 
 		internal void SendPopping(Task popTask)
 		{
-			if (VirtualView == null)
-				return;
+			//if (VirtualView is not INavigationView nvi)
+			//	return;
 
-			// TODO MAUI
-			VirtualView
-				.PopAsync()
-				.FireAndForget((e) =>
-				{
-					//Log.Warning(nameof(NavigationPageHandler), $"{e}");
-				});
+			//// TODO MAUI
+			//nvi
+			//	.PopAsync()
+			//	.FireAndForget((e) =>
+			//	{
+			//		//Log.Warning(nameof(NavigationViewHandler), $"{e}");
+			//	});
 		}
 
-		protected override void ConnectHandler(UIView nativeView)
-		{
-			base.ConnectHandler(nativeView);
+		//protected override void ConnectHandler(UIView nativeView)
+		//{
+		//	base.ConnectHandler(nativeView);
 
-			if (VirtualView == null || MauiContext == null || _controlsNavigationController == null)
-				return;
+		//	if (VirtualView == null || MauiContext == null || _controlsNavigationController == null)
+		//		return;
 
-			_controlsNavigationController.LoadPages(this.MauiContext);
-		}
+		//	_controlsNavigationController.LoadPages(this.MauiContext);
+		//}
 
-		//public static void MapPadding(NavigationPageHandler handler, INavigationView view) { }
+		//public static void MapPadding(NavigationViewHandler handler, INavigationView view) { }
 
-		//public static void MapTitleIcon(NavigationPageHandler handler, INavigationView view) { }
+		//public static void MapTitleIcon(NavigationViewHandler handler, INavigationView view) { }
 
-		//public static void MapTitleView(NavigationPageHandler handler, INavigationView view) { }
+		//public static void MapTitleView(NavigationViewHandler handler, INavigationView view) { }
 
-		////public static void MapBarBackground(NavigationPageHandler handler, INavigationView view)
+		////public static void MapBarBackground(NavigationViewHandler handler, INavigationView view)
 		////{
 		////	var NavPage = handler.VirtualView;
 		////	var barBackgroundBrush = NavPage.BarBackground;
@@ -125,7 +121,7 @@ namespace Microsoft.Maui.Handlers
 		////	}
 		////}
 
-		////public static void MapBarTextColor(NavigationPageHandler handler, NavigationPage view)
+		////public static void MapBarTextColor(NavigationViewHandler handler, NavigationView view)
 		////{
 		////	var NavPage = handler.VirtualView;
 
@@ -183,7 +179,7 @@ namespace Microsoft.Maui.Handlers
 		////	}
 
 		////	//// set Tint color (i. e. Back Button arrow and Text)
-		////	//var iconColor = Current != null ? NavigationPage.GetIconColor(Current) : null;
+		////	//var iconColor = Current != null ? NavigationView.GetIconColor(Current) : null;
 		////	//if (iconColor == null)
 		////	//	iconColor = barTextColor;
 
@@ -233,7 +229,7 @@ namespace Microsoft.Maui.Handlers
 		//{
 		//	_controlsNavigationController?
 		//		.OnPopRequestedAsync(e)
-		//		.FireAndForget((exc) => Log.Warning(nameof(NavigationPage), $"{exc}"));
+		//		.FireAndForget((exc) => Log.Warning(nameof(NavigationView), $"{exc}"));
 		//}
 
 		//internal void SendPopping(Task popTask)
@@ -242,7 +238,7 @@ namespace Microsoft.Maui.Handlers
 		//		return;
 
 		//	VirtualView.PopAsyncInner(false, true, true)
-		//		.FireAndForget((exc) => Log.Warning(nameof(NavigationPage), $"{exc}"));
+		//		.FireAndForget((exc) => Log.Warning(nameof(NavigationView), $"{exc}"));
 		//}
 	}
 }

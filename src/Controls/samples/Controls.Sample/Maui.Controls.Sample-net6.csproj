@@ -57,6 +57,18 @@
     <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
     <AndroidResource Remove="Resources\**" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Pages\Core\NavigationGallery.xaml.cs">
+      <DependentUpon>NavigationGallery.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Update="Pages\Core\NavigationGallery.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
 </Project>

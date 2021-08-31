@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Id = AView.GenerateViewId();
 			Child = child;
 			IsInFragment = inFragment;
-			AddView((AView)child.NativeView);
+			AddView((AView)child.NativeView,				
+				new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent));
 		}
 
 		public IViewHandler Child { get; set; }

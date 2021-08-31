@@ -44,7 +44,9 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __ANDROID__ || __IOS__
 			{ typeof(RefreshView), typeof(RefreshViewHandler) },
 #endif
-			//{ typeof(NavigationPage), typeof(NavigationPageHandler) },
+#if __ANDROID__ 
+			{ typeof(NavigationPage), typeof(Controls.Handlers.NavigationPageHandler) },
+#endif
 		};
 
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)

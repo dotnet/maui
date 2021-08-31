@@ -1,38 +1,20 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui
 {
-	internal class MauiNavigationEventArgs : EventArgs
+	public class MauiNavigationRequestedEventArgs : EventArgs
 	{
-		public MauiNavigationEventArgs(IView page)
+		public IReadOnlyList<IView> NavigationStack { get; }
+
+		public MauiNavigationRequestedEventArgs(IReadOnlyList<IView> newNavigationStack, bool animated)
 		{
-			if (page == null)
-				throw new ArgumentNullException("page");
-
-			Page = page;
-		}
-
-		public IView Page { get; }
-	}
-
-	internal class MauiNavigationRequestedEventArgs : MauiNavigationEventArgs
-	{
-		public MauiNavigationRequestedEventArgs(IView page, bool animated) : base(page)
-		{
+			NavigationStack = newNavigationStack;
 			Animated = animated;
 		}
 
-		public MauiNavigationRequestedEventArgs(IView page, IView before, bool animated) : this(page, animated)
-		{
-			BeforePage = before;
-		}
-
 		public bool Animated { get; set; }
-
-		public IView? BeforePage { get; set; }
-
-		public Task<bool>? Task { get; set; }
 	}
 }

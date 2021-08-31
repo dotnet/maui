@@ -381,6 +381,42 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 				UpdateToolbar();
 		}
 
+		public override void AddView(AView child)
+		{
+			base.AddView(child);
+		}
+
+		public override void AddView(AView child, int index)
+		{
+			base.AddView(child, index);
+		}
+
+		public override void AddView(AView child, int index, LayoutParams @params)
+		{
+			base.AddView(child, index, @params);
+		}
+
+		public override void AddView(AView child, int width, int height)
+		{
+			base.AddView(child, width, height);
+		}
+
+		public override void AddView(AView child, LayoutParams @params)
+		{
+			base.AddView(child, @params);
+		}
+
+		protected override bool AddViewInLayout(AView child, int index, LayoutParams @params)
+		{
+			return base.AddViewInLayout(child, index, @params);
+		}
+
+		protected override bool AddViewInLayout(AView child, int index, LayoutParams @params, bool preventRequestLayout)
+		{
+			return base.AddViewInLayout(child, index, @params, preventRequestLayout);
+		}
+
+
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			AToolbar bar = _toolbar;

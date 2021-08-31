@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 {
 	internal class ControlsNavigationController : UINavigationController
 	{
-		readonly NavigationPageHandler _handler;
+		readonly NavigationViewHandler _handler;
 		Dictionary<UIViewController, TaskCompletionSource<bool>> _completionTasks =
 							new Dictionary<UIViewController, TaskCompletionSource<bool>>();
 		TaskCompletionSource<bool>? _popCompletionTask;
@@ -21,15 +21,15 @@ namespace Microsoft.Maui
 		readonly Dictionary<IView, INativeViewHandler> _trackers =
 			new Dictionary<IView, INativeViewHandler>();
 
-		IReadOnlyList<IView> NavigationStack => _handler.VirtualView.NavigationStack;
+		IReadOnlyList<IView> NavigationStack => _handler.NavigationView.NavigationStack;
 
-		public ControlsNavigationController(NavigationPageHandler handler) : base()
+		public ControlsNavigationController(NavigationViewHandler handler) : base()
 		{
 			Delegate = new NavDelegate(this);
 			_handler = handler;
 		}
 
-		public ControlsNavigationController(NavigationPageHandler handler, Type navigationBarType, Type toolbarType)
+		public ControlsNavigationController(NavigationViewHandler handler, Type navigationBarType, Type toolbarType)
 			: base(navigationBarType, toolbarType)
 		{
 			Delegate = new NavDelegate(this);
@@ -131,37 +131,37 @@ namespace Microsoft.Maui
 			}
 		}
 
-		internal async Task OnPopRequestedAsync(MauiNavigationRequestedEventArgs e)
-		{
-			var page = e.Page;
-			var animated = e.Animated;
+		//internal async Task OnPopRequestedAsync(MauiNavigationRequestedEventArgs e)
+		//{
+		//	var page = e.Page;
+		//	var animated = e.Animated;
 
-			_popCompletionTask = new TaskCompletionSource<bool>();
-			e.Task = _popCompletionTask.Task;
+		//	_popCompletionTask = new TaskCompletionSource<bool>();
+		//	e.Task = _popCompletionTask.Task;
 
-			PopViewController(animated);
+		//	PopViewController(animated);
 
-			await _popCompletionTask.Task;
+		//	await _popCompletionTask.Task;
 
-			DisposePage(page);
-		}
+		//	DisposePage(page);
+		//}
 
-		internal void LoadPages(IMauiContext mauiContext)
-		{
-			foreach (var page in NavigationStack)
-				PushPage(page, false, mauiContext);
-		}
+		//internal void LoadPages(IMauiContext mauiContext)
+		//{
+		//	foreach (var page in NavigationStack)
+		//		PushPage(page, false, mauiContext);
+		//}
 
-		internal void OnPushRequested(MauiNavigationRequestedEventArgs e, IMauiContext mauiContext)
-		{
-			var page = e.Page;
-			var animated = e.Animated;
+		//internal void OnPushRequested(MauiNavigationRequestedEventArgs e, IMauiContext mauiContext)
+		//{
+		//	var page = e.Page;
+		//	var animated = e.Animated;
 
-			var taskSource = new TaskCompletionSource<bool>();
-			PushPage(page, animated, mauiContext, taskSource);
+		//	var taskSource = new TaskCompletionSource<bool>();
+		//	PushPage(page, animated, mauiContext, taskSource);
 
-			e.Task = taskSource.Task;
-		}
+		//	e.Task = taskSource.Task;
+		//}
 
 
 		void PushPage(IView page, bool animated, IMauiContext mauiContext, TaskCompletionSource<bool>? completionSource = null)
@@ -231,7 +231,7 @@ namespace Microsoft.Maui
 				bool navBarVisible = true;
 
 				//if (element is BindableObject bo)
-				//	navBarVisible = NavigationPage.GetHasNavigationBar(bo);
+				//	navBarVisible = NavigationView.GetHasNavigationBar(bo);
 
 				navigationController.SetNavigationBarHidden(!navBarVisible, true);
 

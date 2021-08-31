@@ -26,6 +26,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 		}
 
+
+		protected override void OnAttachedToWindow()
+		{
+			base.OnAttachedToWindow();
+		}
+
+
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			Child.UpdateLayout();
