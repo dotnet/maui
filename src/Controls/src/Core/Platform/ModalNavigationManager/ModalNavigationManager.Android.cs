@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get { return _navAnimationInProgress; }
 			set
-			{				
+			{
 				if (_navAnimationInProgress == value)
 					return;
 				_navAnimationInProgress = value;
