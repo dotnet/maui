@@ -133,13 +133,6 @@ namespace Microsoft.Maui
 			}
 		}
 
-		internal void ToolbarPropertyChanged() => UpdateToolbar();
-
-		protected virtual void UpdateToolbar()
-		{
-
-		}
-
 		protected virtual void OnFragmentResumed(AndroidX.Fragment.App.FragmentManager fm, NavigationViewFragment navHostPageFragment)
 		{
 		}

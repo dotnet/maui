@@ -308,7 +308,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 
 		Drawable _defaultNavigationIcon;
-		protected override void UpdateToolbar()
+
+		internal void ToolbarPropertyChanged() => UpdateToolbar();
+
+		protected virtual void UpdateToolbar()
 		{
 			ActionBarDrawerToggle toggle = _drawerToggle;
 
