@@ -4,11 +4,12 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
 using Pango;
+using static Microsoft.Maui.GtkInterop.DllImportFontConfig;
 
 namespace Microsoft.Maui
 {
 
-	// see: https://developer.gnome.org/pygtk/stable/class-pangofontdescription.html
+	// see: https://docs.gtk.org/Pango/struct.FontDescription.html
 	/*
 	  public enum Pango.Weight
 	  {
@@ -117,6 +118,19 @@ namespace Microsoft.Maui
 			}
 
 			return styles.ToArray();
+		}
+		
+		internal static bool AddFontFile (string fontPath)
+		{
+			// Try to add font file to the current fontconfig configuration
+			var result = FcConfigAppFontAddFile (System.IntPtr.Zero, fontPath);
+
+			if (result)
+			{
+				_systemContext = null;
+			}
+
+			return result;
 		}
 
 	}
