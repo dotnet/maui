@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using AndroidX.Navigation;
+using AndroidX.Navigation.Fragment;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -15,7 +16,6 @@ namespace Microsoft.Maui
 		}
 
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
-		internal Dictionary<IView, int> Pages = new Dictionary<IView, int>();
 
 		public MauiNavGraph(Navigator navGraphNavigator) : base(navGraphNavigator)
 		{
@@ -69,47 +69,51 @@ namespace Microsoft.Maui
 			IReadOnlyList<IView> newPageStack = args.NavigationStack;
 			bool animated = args.Animated;
 			var navController = navigationLayout.NavHost.NavController;
+			var previousNavigationStack = NavigationStack;
+			var previousNavigationStackCount = previousNavigationStack.Count;
+
+			// This updates the graphs public navigation stack property so it's outwardly correct
+			// But we've saved off the previous stack so we can correctly interpret navigation
+			UpdateNavigationStack(newPageStack);
 
 			// If the new stack isn't changing the visible page or the app bar then we just ignore
 			// the changes because there's no point to applying these to the native back stack
 			// We only apply changes when the currently visible page changes and/or the appbar
 			// will change (gain a back button)
-			if (newPageStack[newPageStack.Count - 1] == NavigationStack[NavigationStack.Count - 1] &&
+			if (newPageStack[newPageStack.Count - 1] == previousNavigationStack[previousNavigationStackCount - 1] &&
 				newPageStack.Count > 1 &&
-				NavigationStack.Count > 1)
+				previousNavigationStackCount > 1)
 			{
-				UpdateNavigationStack(newPageStack);
+
 				NavigationFinished(navigationLayout.NavigationView);
 				return;
 			}
 
 			// The incoming fragment uses these variables to pick the correct animation for the current
 			// incoming navigation request
-			if (newPageStack[newPageStack.Count - 1] == NavigationStack[NavigationStack.Count - 1])
+			if (newPageStack[newPageStack.Count - 1] == previousNavigationStack[previousNavigationStackCount - 1])
 			{
 				IsPopping = null;
 			}
 			else
 			{
 
-				IsPopping = newPageStack.Count < NavigationStack.Count;
+				IsPopping = newPageStack.Count < previousNavigationStackCount;
 			}
 
 			IsAnimated = animated;
 
 			var iterator = navigationLayout.NavHost.NavController.BackStack.Iterator();
-			var fragmentNavDestinations = new List<FragmentDestination>();
+			var fragmentNavDestinations = new List<FragmentNavigator.Destination>();
 
 			while (iterator.HasNext)
 			{
 				if (iterator.Next() is NavBackStackEntry nbse &&
-					nbse.Destination is FragmentDestination nvd)
+					nbse.Destination is FragmentNavigator.Destination nvd)
 				{
 					fragmentNavDestinations.Add(nvd);
 				}
 			}
-
-			Pages.Clear();
 
 			// Current BackStack has less entries then incoming new page stack
 			// This will add Back Stack Entries until the back stack and the new stack 
@@ -120,13 +124,10 @@ namespace Microsoft.Maui
 				{
 					if (fragmentNavDestinations.Count > i)
 					{
-						Pages.Add(newPageStack[i], fragmentNavDestinations[i].Id);
-						fragmentNavDestinations[i].Page = newPageStack[i];
 					}
 					else
 					{
-						var dest = AddDestination(newPageStack[i], navigationLayout);
-						Pages[newPageStack[i]] = dest.Id;
+						var dest = AddDestination(navigationLayout.FragmentNavigator);
 						navController.Navigate(dest.Id);
 					}
 				}
@@ -138,13 +139,6 @@ namespace Microsoft.Maui
 			else if (newPageStack.Count == fragmentNavDestinations.Count)
 			{
 				int lastFragId = fragmentNavDestinations[newPageStack.Count - 1].Id;
-
-				for (int i = 0; i < newPageStack.Count; i++)
-				{
-					Pages.Add(newPageStack[i], fragmentNavDestinations[i].Id);
-					fragmentNavDestinations[i].Page = newPageStack[i];
-				}
-
 				navController.PopBackStack();
 				navController.Navigate(lastFragId);
 			}
@@ -152,44 +146,34 @@ namespace Microsoft.Maui
 			else
 			{
 				int popToId = fragmentNavDestinations[newPageStack.Count - 1].Id;
-				for (int i = 0; i < newPageStack.Count; i++)
-				{
-					Pages.Add(newPageStack[i], fragmentNavDestinations[i].Id);
-					fragmentNavDestinations[i].Page = newPageStack[i];
-				}
-
 				navController.PopBackStack(popToId, false);
 			}
 
-			// Remove all Navigation Destinations that no longer apply to our current navigation stack
-			// This happens whenever a page is popped
-			foreach (var activeDestinations in fragmentNavDestinations)
+			// We only keep destinations around that are on the backstack
+			// This iterates over the new backstack and removes any destinations
+			// that are no longer apart of the back stack
+			var iterateNewStack = navigationLayout.NavHost.NavController.BackStack.Iterator();
+
+			while (iterateNewStack.HasNext)
 			{
-				bool found = false;
-
-				foreach(var destinationIds in Pages.Values)
+				if (iterateNewStack.Next() is NavBackStackEntry nbse &&
+					nbse.Destination is FragmentNavigator.Destination nvd)
 				{
-					if (destinationIds == activeDestinations.Id)
-					{
-						found = true;
-						break;
-					}
-				}
-
-				if (!found)
-				{
-					this.Remove(activeDestinations);
+					fragmentNavDestinations.Remove(nvd);
 				}
 			}
 
-			UpdateNavigationStack(newPageStack);
+			foreach (var activeDestinations in fragmentNavDestinations)
+			{
+				this.Remove(activeDestinations);
+			}
 		}
 
-		public FragmentDestination AddDestination(
-			IView page,
-			NavigationLayout navigationLayout)
+		public FragmentNavigator.Destination AddDestination(Navigator fragmentNavigator)
 		{
-			var destination = new FragmentDestination(page, navigationLayout, this);
+			var destination = new FragmentNavigator.Destination(fragmentNavigator);
+			destination.SetClassName(Java.Lang.Class.FromType(typeof(NavHostPageFragment)).CanonicalName);
+			destination.Id = AView.GenerateViewId();
 			AddDestination(destination);
 			return destination;
 		}
@@ -217,9 +201,7 @@ namespace Microsoft.Maui
 			foreach (var page in pages)
 			{
 				navDestination =
-						AddDestination(
-							page,
-							navigationLayout);
+						AddDestination(navigationLayout.FragmentNavigator);
 
 				destinations.Add(navDestination.Id);
 			}
