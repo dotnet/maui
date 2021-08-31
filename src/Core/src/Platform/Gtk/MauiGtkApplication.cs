@@ -11,26 +11,18 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui
 {
 
-	public class MauiGtkApplication<TStartup> : MauiGtkApplication
-		where TStartup : IStartup, new()
-	{
-
-		protected override IStartup OnCreateStartup() => new TStartup();
-
-		// https://docs.gtk.org/gio/type_func.Application.id_is_valid.html
-		// TODO: find a better algo for id
-		public override string ApplicationId => $"{typeof(TStartup).Namespace}.{typeof(TStartup).Name}.{Name}".PadRight(255, ' ').Substring(0, 255).Trim();
-
-	}
-
 	public abstract class MauiGtkApplication
 	{
 
-		public abstract string ApplicationId { get; }
+		protected abstract MauiApp CreateMauiApp();
+
+		// https://docs.gtk.org/gio/type_func.Application.id_is_valid.html
+		// TODO: find a better algo for id
+		public virtual string ApplicationId => $"{typeof(MauiGtkApplication).Namespace}.{typeof(MauiGtkApplication).Name}.{Name}".PadRight(255, ' ').Substring(0, 255).Trim();
 
 		string? _name;
 
-		// https://developer.gnome.org/gio/stable/GApplication.html#g-application-id-is-valid
+		// https://docs.gtk.org/gio/type_func.Application.id_is_valid.html
 		public string? Name
 		{
 			get => _name ??= $"A{Guid.NewGuid()}";
@@ -50,7 +42,7 @@ namespace Microsoft.Maui
 
 		public void Run()
 		{
-			Launch(new EventArgs());
+			Launch(EventArgs.Empty);
 		}
 
 		protected void RegisterLifecycleEvents(Gtk.Application app)
@@ -106,19 +98,11 @@ namespace Microsoft.Maui
 			// future use: to have notifications at cross platform Window level
 		}
 
-		protected abstract IStartup OnCreateStartup();
-
 		protected void StartupLauch(object sender, EventArgs args)
 		{
-			var startup = OnCreateStartup();
+			var startup = CreateMauiApp();
 
-			var host = startup
-			   .CreateAppHostBuilder()
-			   .ConfigureServices(ConfigureNativeServices)
-			   .ConfigureUsing(startup)
-			   .Build();
-
-			Services = host.Services;
+			Services = startup.Services;
 			Services.InvokeLifecycleEvents<GtkLifecycle.OnLaunching>(del => del(this, args));
 
 			var mauiContext = new MauiContext(Services);
@@ -148,7 +132,7 @@ namespace Microsoft.Maui
 			context.Window = MainWindow;
 
 			MainWindow.SetWindow(window, context);
-			Services.InvokeLifecycleEvents<GtkLifecycle.OnCreated>(del => del(MainWindow, new EventArgs()));
+			Services.InvokeLifecycleEvents<GtkLifecycle.OnCreated>(del => del(MainWindow, EventArgs.Empty));
 
 		}
 
