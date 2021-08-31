@@ -20,7 +20,7 @@
 		<AndroidVersionCode>1</AndroidVersionCode>
 
 		<!-- Required for C# Hot Reload -->
-		<UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
+		<UseInterpreter Condition="'$(Configuration)' == 'Debug'">False</UseInterpreter>
 	</PropertyGroup>
 
 	<ItemGroup>
