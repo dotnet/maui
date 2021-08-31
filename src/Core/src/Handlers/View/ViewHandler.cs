@@ -3,6 +3,8 @@ using Microsoft.Maui.Graphics;
 using NativeView = UIKit.UIView;
 #elif __ANDROID__
 using NativeView = Android.Views.View;
+#elif GTK
+using NativeView = Gtk.Widget;
 #elif WINDOWS
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD

@@ -37,6 +37,11 @@ using TabbedPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Ta
 using FlyoutPageRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.PhoneFlyoutPageRenderer;
 using RadioButtonRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
 using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platform.DefaultRenderer;
+#elif GTK
+using Microsoft.Maui.Graphics.Native.Gtk;
+using Microsoft.Maui.Controls.Compatibility.Platform.Gtk;
+using Microsoft.Maui.Controls.Handlers;
+
 #endif
 
 namespace Microsoft.Maui.Controls.Hosting
@@ -161,6 +166,18 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
+#if GTK
+					DependencyService.Register<Xaml.ResourcesLoader>();
+					DependencyService.Register<NativeBindingService>();
+					DependencyService.Register<NativeValueConverterService>();
+					DependencyService.Register<Deserializer>();
+					DependencyService.Register<ResourcesProvider>();
+					DependencyService.Register<Xaml.ValueConverterProvider>();
+					
+					DependencyService.Register<NativeBindingService>();
+					DependencyService.Register<NativeValueConverterService>();
+
+#endif
 
 					// Update the mappings for IView/View to work specifically for Controls
 					VisualElement.RemapForControls();
@@ -181,6 +198,8 @@ namespace Microsoft.Maui.Controls.Hosting
 			builder.Services.TryAddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
 #elif WINDOWS
 			builder.Services.TryAddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
+#elif GTK
+			builder.Services.TryAddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
 #endif
 
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiCompatInitializer>());
@@ -191,7 +210,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			public void Initialize(IServiceProvider services)
 			{
-#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
+#if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST || GTK
 				CompatServiceProvider.SetServiceProvider(services);
 #endif
 

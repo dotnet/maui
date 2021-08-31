@@ -121,6 +121,7 @@ namespace Maui.Controls.Sample
 					fonts.AddFont("SegoeUI-Italic.ttf", "Segoe UI Italic");
 					fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
 				})
+#if ! GTK
 				.ConfigureEssentials(essentials =>
 				{
 					essentials
@@ -133,6 +134,7 @@ namespace Maui.Controls.Sample
 							Debug.WriteLine($"You seem to have arrived from a special place: {appAction.Title} ({appAction.Id})");
 						});
 				})
+#endif
 				.ConfigureLifecycleEvents(events =>
 				{
 					events.AddEvent<Action<string>>("CustomEventName", value => LogEvent("CustomEventName"));
