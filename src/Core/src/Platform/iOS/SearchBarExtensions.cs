@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using Foundation;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -9,9 +10,22 @@ namespace Microsoft.Maui
 			uiSearchBar.Text = searchBar.Text;
 		}
 
-		public static void UpdatePlaceholder(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		public static void UpdatePlaceholder(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField)
 		{
-			uiSearchBar.Placeholder = searchBar.Placeholder;
+			textField ??= uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return;
+
+			var placeholder = searchBar.Placeholder ?? string.Empty;
+			var placeholderColor = searchBar.PlaceholderColor;
+			var foregroundColor = placeholderColor ?? ColorExtensions.PlaceholderColor.ToColor();
+
+			textField.AttributedPlaceholder = foregroundColor == null
+				? new NSAttributedString(placeholder)
+				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToNative());
+
+			textField.AttributedPlaceholder.WithCharacterSpacing(searchBar.CharacterSpacing);
 		}
 
 		public static void UpdateFont(this UISearchBar uiSearchBar, ITextStyle textStyle, IFontManager fontManager)

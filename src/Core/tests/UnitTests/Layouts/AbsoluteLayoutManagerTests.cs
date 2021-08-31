@@ -4,6 +4,7 @@ using System.Xml.Xsl;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using NSubstitute;
 using Xunit;
 using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
@@ -16,8 +17,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		IAbsoluteLayout CreateTestLayout()
 		{
 			var layout = Substitute.For<IAbsoluteLayout>();
-			layout.Height.Returns(-1);
-			layout.Width.Returns(-1);
+			layout.Height.Returns(Dimension.Unset);
+			layout.Width.Returns(Dimension.Unset);
+			layout.MinimumHeight.Returns(Dimension.Minimum);
+			layout.MinimumWidth.Returns(Dimension.Minimum);
+			layout.MaximumHeight.Returns(Dimension.Maximum);
+			layout.MaximumWidth.Returns(Dimension.Maximum);
 
 			return layout;
 		}
@@ -216,6 +221,164 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var expectedRectangle = new Rectangle(expectedX, expectedY, width, height);
 			child.Received().Arrange(Arg.Is(expectedRectangle));
+		}
+
+		[Theory]
+		[InlineData(50, 100, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(100, 50, 50)]
+		[InlineData(0, 50, 0)]
+		public void MeasureRespectsMaxHeight(double maxHeight, double viewHeight, double expectedHeight)
+		{
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rectangle(0, 0, 100, viewHeight);
+			SetLayoutBounds(abs, child, childBounds);
+
+			abs.MaximumHeight.Returns(maxHeight);
+
+			var layoutManager = new AbsoluteLayoutManager(abs);
+			var measure = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedHeight, measure.Height);
+		}
+
+		[Theory]
+		[InlineData(50, 100, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(100, 50, 50)]
+		[InlineData(0, 50, 0)]
+		public void MeasureRespectsMaxWidth(double maxWidth, double viewWidth, double expectedWidth)
+		{
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rectangle(0, 0, viewWidth, 100);
+			SetLayoutBounds(abs, child, childBounds);
+
+			abs.MaximumWidth.Returns(maxWidth);
+
+			var gridLayoutManager = new AbsoluteLayoutManager(abs);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedWidth, measure.Width);
+		}
+
+		[Theory]
+		[InlineData(50, 10, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(10, 50, 50)]
+		public void MeasureRespectsMinHeight(double minHeight, double viewHeight, double expectedHeight)
+		{
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rectangle(0, 0, 100, viewHeight);
+			SetLayoutBounds(abs, child, childBounds);
+
+			abs.MinimumHeight.Returns(minHeight);
+
+			var gridLayoutManager = new AbsoluteLayoutManager(abs);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedHeight, measure.Height);
+		}
+
+		[Theory]
+		[InlineData(50, 10, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(10, 50, 50)]
+		public void MeasureRespectsMinWidth(double minWidth, double viewWidth, double expectedWidth)
+		{
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rectangle(0, 0, viewWidth, 100);
+			SetLayoutBounds(abs, child, childBounds);
+
+			abs.MinimumWidth.Returns(minWidth);
+
+			var gridLayoutManager = new AbsoluteLayoutManager(abs);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedWidth, measure.Width);
+		}
+
+		[Fact]
+		public void MaxWidthDominatesWidth()
+		{
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rectangle(0, 0, 100, 100);
+			SetLayoutBounds(abs, child, childBounds);
+
+			abs.Width.Returns(75);
+			abs.MaximumWidth.Returns(50);
+
+			var gridLayoutManager = new AbsoluteLayoutManager(abs);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// The maximum value beats out the explicit value
+			Assert.Equal(50, measure.Width);
+		}
+
+		[Fact]
+		public void MinWidthDominatesMaxWidth()
+		{
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rectangle(0, 0, 100, 100);
+			SetLayoutBounds(abs, child, childBounds);
+
+			abs.MinimumWidth.Returns(75);
+			abs.MaximumWidth.Returns(50);
+
+			var gridLayoutManager = new AbsoluteLayoutManager(abs);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// The minimum value should beat out the maximum value
+			Assert.Equal(75, measure.Width);
+		}
+
+		[Fact]
+		public void MaxHeightDominatesHeight()
+		{
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rectangle(0, 0, 100, 100);
+			SetLayoutBounds(abs, child, childBounds);
+
+			abs.Height.Returns(75);
+			abs.MaximumHeight.Returns(50);
+
+			var gridLayoutManager = new AbsoluteLayoutManager(abs);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// The maximum value beats out the explicit value
+			Assert.Equal(50, measure.Height);
+		}
+
+		[Fact]
+		public void MinHeightDominatesMaxHeight()
+		{
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rectangle(0, 0, 100, 100);
+			SetLayoutBounds(abs, child, childBounds);
+
+			abs.MinimumHeight.Returns(75);
+			abs.MaximumHeight.Returns(50);
+
+			var gridLayoutManager = new AbsoluteLayoutManager(abs);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// The minimum value should beat out the maximum value
+			Assert.Equal(75, measure.Height);
 		}
 	}
 }

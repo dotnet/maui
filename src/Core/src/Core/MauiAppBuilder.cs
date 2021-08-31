@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.EventLog;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -28,21 +32,7 @@ namespace Microsoft.Maui
 			// the correct defaults.
 			_bootstrapHostBuilder = new BootstrapHostBuilder(Services, _hostBuilder.Properties);
 
-			_bootstrapHostBuilder.ConfigureHostConfiguration(config =>
-			{
-				// Disable reloading config on change so we don't use up system file watchers, which are a limited resource
-				// https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0#disable-app-configuration-reload-on-change
-				config.AddInMemoryCollection(new Dictionary<string, string> { { "hostBuilder:reloadConfigOnChange", "false" } });
-			});
-
-			// Don't specify the args here since we want to apply them later so that args
-			// can override the defaults specified by ConfigureWebHostDefaults
-			_bootstrapHostBuilder.ConfigureDefaults(args: null);
-
-			_bootstrapHostBuilder.ConfigureHostConfiguration(config =>
-			{
-				// TODO: This has no more code left. Delete?
-			});
+			MauiHostingDefaults.ConfigureDefaults(_bootstrapHostBuilder);
 
 			Configuration = new();
 
@@ -103,6 +93,8 @@ namespace Microsoft.Maui
 				{
 					builder.Properties[kvp.Key] = kvp.Value;
 				}
+
+				builder.AddInMemoryCollection(new Dictionary<string, string> { { HostDefaults.ApplicationKey, BootstrapHostBuilder.GetDefaultApplicationName() } });
 			});
 
 			// This needs to go here to avoid adding the IHostedService that boots the server twice (the GenericWebHostService).
@@ -117,10 +109,6 @@ namespace Microsoft.Maui
 				{
 					services.Add(s);
 				}
-
-				// Add any services to the user visible service collection so that they are observable
-				// just in case users capture the Services property. Orchard does this to get a "blueprint"
-				// of the service collection
 
 				// Drop the reference to the existing collection and set the inner collection
 				// to the new one. This allows code that has references to the service collection to still function.
@@ -162,6 +150,100 @@ namespace Microsoft.Maui
 			}
 
 			public IServiceCollection Services { get; }
+		}
+
+		internal static class MauiHostingDefaults
+		{
+			// NOTE: This is a modified copy of Microsoft.Extensions.Hosting.HostingHostBuilderExtensions.ConfigureDefaults() from
+			// https://github.com/dotnet/runtime/blob/8bfb45a83f55e21f48e593c853d48f398379ba04/src/libraries/Microsoft.Extensions.Hosting/src/HostingHostBuilderExtensions.cs#L188
+			// The modifications are to remove things related to:
+			// - Command line arguments (not relevant in .NET MAUI)
+			// - PhysicalFileProvider (brings in references to file system watchers, which are not relevant in .NET MAUI, and disallowed in some app stores)
+			// - Browser restrictions for WebAssembly (not relevant in .NET MAUI)
+			// - Reading from disk (need to decide best way to do this in .NET MAUI)
+			// - Reading env vars (not sure if relevant in .NET MAUI)
+			public static IHostBuilder ConfigureDefaults(IHostBuilder builder)
+			{
+				builder.UseContentRoot(Directory.GetCurrentDirectory());
+
+				// TODO: Consider whether we want env vars usage here
+				// See https://github.com/dotnet/maui/issues/2270 for discussion on suitable default configuration
+				// Also see https://github.com/dotnet/runtime/issues/58156 for a bug in .NET on iOS
+
+				//builder.ConfigureHostConfiguration(config =>
+				//{
+				//	config.AddEnvironmentVariables(prefix: "DOTNET_");
+				//});
+
+
+				// TODO: Consider whether we want to read files from "disk" and the best way to do that on each platform
+				// See https://github.com/dotnet/maui/issues/2270 for discussion on suitable default configuration
+
+				//builder.ConfigureAppConfiguration((hostingContext, config) =>
+				//{
+				//	IHostEnvironment env = hostingContext.HostingEnvironment;
+
+				//	config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+				//			.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+
+				//	if (env.IsDevelopment() && env.ApplicationName is { Length: > 0 })
+				//	{
+				//		var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
+				//		if (appAssembly is not null)
+				//		{
+				//			config.AddUserSecrets(appAssembly, optional: true, reloadOnChange: false);
+				//		}
+				//	}
+
+				//	config.AddEnvironmentVariables();
+				//});
+
+				builder
+					.ConfigureLogging((hostingContext, logging) =>
+					{
+						bool isWindows =
+#if NET6_0_OR_GREATER
+						OperatingSystem.IsWindows();
+#else
+						RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+#endif
+
+						// IMPORTANT: This needs to be added *before* configuration is loaded, this lets
+						// the defaults be overridden by the configuration.
+						if (isWindows)
+						{
+							// Default the EventLogLoggerProvider to warning or above
+							logging.AddFilter<EventLogLoggerProvider>(level => level >= LogLevel.Warning);
+						}
+
+						logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+						logging.AddConsole();
+						logging.AddDebug();
+						logging.AddEventSourceLogger();
+
+						if (isWindows)
+						{
+							// Add the EventLogLoggerProvider on windows machines
+							logging.AddEventLog();
+						}
+
+						logging.Configure(options =>
+						{
+							options.ActivityTrackingOptions =
+								ActivityTrackingOptions.SpanId |
+								ActivityTrackingOptions.TraceId |
+								ActivityTrackingOptions.ParentId;
+						});
+					})
+					.UseDefaultServiceProvider((context, options) =>
+					{
+						bool isDevelopment = context.HostingEnvironment.IsDevelopment();
+						options.ValidateScopes = isDevelopment;
+						options.ValidateOnBuild = isDevelopment;
+					});
+
+				return builder;
+			}
 		}
 	}
 }

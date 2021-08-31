@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISearchBar.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(ISearchBar.MaxLength)] = MapMaxLength,
 			[nameof(ISearchBar.Placeholder)] = MapPlaceholder,
+			[nameof(ISearchBar.PlaceholderColor)] = MapPlaceholderColor,
 			[nameof(ISearchBar.Text)] = MapText,
 			[nameof(ISearchBar.TextColor)] = MapTextColor,
 			[nameof(ISearchBar.CancelButtonColor)] = MapCancelButtonColor

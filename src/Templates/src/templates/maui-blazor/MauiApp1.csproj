@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
 	<PropertyGroup>
 		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
-		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks>
+		<!-- <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks> -->
 		<OutputType>Exe</OutputType>
 		<RootNamespace>MauiApp1</RootNamespace>
 		<UseMaui>true</UseMaui>
@@ -54,5 +54,8 @@
 		<AppxPackageRecipe>bin\$(Configuration)\net6.0-windows10.0.19041\win-x64\MauiApp1.build.appxrecipe</AppxPackageRecipe>
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-windows'))">win-x64</RuntimeIdentifier>
 	</PropertyGroup>
+	<ItemGroup>
+		<Content Remove="Properties\launchSettings.json" />
+	</ItemGroup>
 
 </Project>

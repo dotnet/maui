@@ -8,31 +8,29 @@
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU5128;</NoWarn>
   </PropertyGroup>
-  
+
+  <ItemGroup>
+    <Compile Include="..\Core\Internals\INameScope.cs" Link="INameScope.cs" />
+    <Compile Include="..\Core\IXmlLineInfoProvider.cs" Link="IXmlLineInfoProvider.cs" />
+    <Compile Include="..\Core\XamlParseException.cs" Link="XamlParseException.cs" />
+    <Compile Include="..\Core\XmlLineInfo.cs" Link="XmlLineInfo.cs" />
+    <Compile Include="..\Core\XmlnsDefinitionAttribute.cs" Link="XmlnsDefinitionAttribute.cs" />
+    <Compile Include="..\Xaml\TypeArgumentsParser.cs" Link="TypeArgumentsParser.cs" />
+    <Compile Include="..\Xaml\XamlLoader.Types.cs" Link="XamlLoader.Types.cs" />
+    <Compile Include="..\Xaml\XamlParser.Namespaces.cs" Link="XamlParser.Namespaces.cs" />
+    <Compile Include="..\Xaml\XamlNode.cs" Link="XamlNode.cs" />
+    <Compile Include="..\Xaml\XamlNodeVisitor.cs" Link="XamlNodeVisitor.cs" />
+    <Compile Include="..\Xaml\XmlName.cs" Link="XmlName.cs" />
+    <Compile Include="..\Xaml\XmlnsHelper.cs" Link="XmlnsHelper.cs" />
+    <Compile Include="..\Xaml\XmlTypeXamlExtensions.cs" Link="XmlTypeXamlExtensions.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(OutputPath)\Microsoft.Maui.Controls.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Include="$(OutputPath)\Microsoft.Maui.Controls.Xaml.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" PrivateAssets="All" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Core\Controls.Core-net6.csproj" GeneratePathProperty="true" PrivateAssets="all" />
-    <ProjectReference Include="..\Xaml\Controls.Xaml-net6.csproj" GeneratePathProperty="true" PrivateAssets="all" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
-  </PropertyGroup>
-
-  <Target Name="GetDependencyTargetPaths">
-    <ItemGroup>
-      <TargetPathWithTargetPlatformMoniker Include="$(MSBuildThisFileDirectory)..\Xaml\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Xaml.dll" IncludeRuntimeDependency="false" />
-      <TargetPathWithTargetPlatformMoniker Include="$(MSBuildThisFileDirectory)..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.dll" IncludeRuntimeDependency="false" />
-    </ItemGroup>
-  </Target>
 
 </Project>

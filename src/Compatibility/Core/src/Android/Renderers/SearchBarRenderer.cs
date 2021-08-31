@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return true;
 		}
 
+		[PortHandler("Partially ported")]
 		bool SearchView.IOnQueryTextListener.OnQueryTextSubmit(string query)
 		{
 			((ISearchBarController)Element).OnSearchButtonPressed();
@@ -248,6 +249,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Control.SetQueryHint(Element.Placeholder);
 		}
 
+		[PortHandler]
 		void UpdatePlaceholderColor()
 		{
 			_hintColorSwitcher?.UpdateTextColor(_editText, Element.PlaceholderColor, _editText.SetHintTextColor);

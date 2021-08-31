@@ -46,7 +46,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					(l, t, r, b) = Context.ToPixels(ipc.ContainerArea);
 				}
 
-				pageViewGroup.Measure(r - l, b - t);
+				var mode = MeasureSpecMode.Exactly;
+				var widthSpec = mode.MakeMeasureSpec(r - l);
+				var heightSpec = mode.MakeMeasureSpec(b - t);
+
+				pageViewGroup.Measure(widthSpec, heightSpec);
 				pageViewGroup.Layout(l, t, r, b);
 			}
 		}
