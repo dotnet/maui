@@ -9,15 +9,13 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
-		MauiAccessibilityDelegateCompat? AccessibilityDelegate { get; set; }
-
 		partial void DisconnectingHandler(NativeView nativeView)
 		{
-			if (nativeView.IsAlive() && AccessibilityDelegate != null)
+			if (nativeView.IsAlive() 
+				&& ViewCompat.GetAccessibilityDelegate(nativeView) is MauiAccessibilityDelegateCompat ad)
 			{
-				AccessibilityDelegate.Handler = null;
+				ad.Handler = null;
 				ViewCompat.SetAccessibilityDelegate(nativeView, null);
-				AccessibilityDelegate = null;
 			}
 		}
 
@@ -79,9 +77,11 @@ namespace Microsoft.Maui.Handlers
 
 		static partial void MappingSemantics(IViewHandler handler, IView view)
 		{
+			var accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(handler.NativeView as View)
+				as MauiAccessibilityDelegateCompat;
+
 			if (view.Semantics != null &&
-				handler is ViewHandler viewHandler &&
-				viewHandler.AccessibilityDelegate == null)
+				accessibilityDelegate == null)
 			{
 				if (handler.NativeView is not NativeView nativeView)
 					return;
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Handlers
 
 				if (!string.IsNullOrWhiteSpace(view.Semantics.Hint) || !string.IsNullOrWhiteSpace(view.Semantics.Description))
 				{
-					if (viewHandler.AccessibilityDelegate == null)
+					if (accessibilityDelegate == null)
 					{
 						var currentDelegate = ViewCompat.GetAccessibilityDelegate(nativeView);
 						if (currentDelegate is MauiAccessibilityDelegateCompat)
@@ -99,20 +99,18 @@ namespace Microsoft.Maui.Handlers
 
 						var mauiDelegate = new MauiAccessibilityDelegateCompat(currentDelegate)
 						{
-							Handler = viewHandler
+							Handler = handler
 						};
 
-						viewHandler.AccessibilityDelegate = mauiDelegate;
-						ViewCompat.SetAccessibilityDelegate(nativeView, viewHandler.AccessibilityDelegate);
+						ViewCompat.SetAccessibilityDelegate(nativeView, mauiDelegate);
 					}
 				}
-				else if (viewHandler.AccessibilityDelegate != null)
+				else if (accessibilityDelegate != null)
 				{
-					viewHandler.AccessibilityDelegate = null;
 					ViewCompat.SetAccessibilityDelegate(nativeView, null);
 				}
 
-				if (viewHandler.AccessibilityDelegate != null)
+				if (accessibilityDelegate != null)
 					nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
 			}
 		}
