@@ -8,27 +8,35 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {
-
-	public class MauiApplication<TStartup> : MauiApplication where TStartup : IStartup, new()
+	public abstract class MauiApplication : CoreUIApplication
 	{
+		internal WeakReference<IWindow>? _virtualWindow;
+		internal IWindow? VirtualWindow
+		{
+			get
+			{
+				IWindow? window = null;
+				_virtualWindow?.TryGetTarget(out window);
+				return window;
+			}
+		}
+
+		protected MauiApplication()
+		{
+			Current = this;
+		}
+
+		protected abstract MauiApp CreateMauiApp();
+
 		protected override void OnPreCreate()
 		{
 			base.OnPreCreate();
 
-			var startup = new TStartup();
+			var mauiApp = CreateMauiApp();
 
-			var host = startup
-				.CreateAppHostBuilder()
-				.ConfigureServices(ConfigureNativeServices)
-				.ConfigureUsing(startup)
-				.Build();
+			Services = mauiApp.Services;
 
-			Services = host.Services;
-
-			if (Services == null)
-				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
-
-			Current.Services.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
+			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
 		}
 
 		protected override void OnCreate()
@@ -119,31 +127,6 @@ namespace Microsoft.Maui
 		{
 			base.OnTerminate();
 			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnTerminate>(del => del(this));
-		}
-
-
-		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
-		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
-		}
-	}
-
-	public abstract class MauiApplication : CoreUIApplication
-	{
-		internal WeakReference<IWindow>? _virtualWindow;
-		internal IWindow? VirtualWindow
-		{
-			get
-			{
-				IWindow? window = null;
-				_virtualWindow?.TryGetTarget(out window);
-				return window;
-			}
-		}
-
-		protected MauiApplication()
-		{
-			Current = this;
 		}
 
 		public static new MauiApplication Current { get; private set; } = null!;

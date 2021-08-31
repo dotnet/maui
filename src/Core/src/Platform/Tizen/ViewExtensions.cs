@@ -2,6 +2,7 @@
 using ElmSharp.Accessible;
 using Microsoft.Maui.Graphics;
 using Tizen.UIExtensions.ElmSharp;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui
 {
@@ -93,28 +94,42 @@ namespace Microsoft.Maui
 
 		public static void UpdateWidth(this EvasObject nativeView, IView view)
 		{
-			if (view.Width == -1)
-			{
-				// Ignore the initial set of the height; the initial layout will take care of it
-				return;
-			}
-
 			UpdateSize(nativeView, view);
 		}
 
 		public static void UpdateHeight(this EvasObject nativeView, IView view)
 		{
-			if (view.Height == -1)
-			{
-				// Ignore the initial set of the height; the initial layout will take care of it
-				return;
-			}
+			UpdateSize(nativeView, view);
+		}
 
+		public static void UpdateMinimumWidth(this EvasObject nativeView, IView view)
+		{
+			UpdateSize(nativeView, view);
+		}
+
+		public static void UpdateMinimumHeight(this EvasObject nativeView, IView view)
+		{
+			UpdateSize(nativeView, view);
+		}
+
+		public static void UpdateMaximumWidth(this EvasObject nativeView, IView view)
+		{
+			UpdateSize(nativeView, view);
+		}
+
+		public static void UpdateMaximumHeight(this EvasObject nativeView, IView view)
+		{
 			UpdateSize(nativeView, view);
 		}
 
 		public static void UpdateSize(EvasObject nativeView, IView view)
 		{
+			if (!IsExplicitSet(view.Width) || !IsExplicitSet(view.Height))
+			{
+				// Ignore the initial setting of the value; the initial layout will take care of it
+				return;
+			}
+
 			// Updating the frame (assuming it's an actual change) will kick off a layout update
 			// Handling of the default (-1) width/height will be taken care of by GetDesiredSize
 			nativeView.Resize(view.Width.ToScaledPixel(), view.Height.ToScaledPixel());

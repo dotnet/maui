@@ -1,12 +1,12 @@
+using System;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using System;
 
 namespace Microsoft.Maui.LifecycleEvents
 { 
 	public static partial class AppHostBuilderExtensions
 	{
-		internal static IAppHostBuilder ConfigureCrossPlatformLifecycleEvents(this IAppHostBuilder builder) =>
+		internal static MauiAppBuilder ConfigureCrossPlatformLifecycleEvents(this MauiAppBuilder builder) =>
 			builder.ConfigureLifecycleEvents(events => events.AddTizen(OnConfigureLifeCycle));
 
 		static void OnConfigureLifeCycle(ITizenLifecycleBuilder tizen)
