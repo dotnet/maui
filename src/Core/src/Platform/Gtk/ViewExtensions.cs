@@ -135,7 +135,12 @@ namespace Microsoft.Maui
 			nativeView.Clip = view.Clip;
 		}
 
+		[MissingMapper]
 		public static void UpdateClip(this Widget nativeView, IView view)
+		{ }
+
+		[MissingMapper]
+		public static void UpdateFlowDirection(this Widget nativeView, IView view)
 		{ }
 
 	}

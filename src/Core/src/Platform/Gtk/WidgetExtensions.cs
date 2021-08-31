@@ -218,6 +218,22 @@ namespace Microsoft.Maui
 			}
 		}
 
+		[MissingMapper]
+		public static void UpdateMinimumHeight(this Widget nativeView, IView view)
+		{ }
+
+		[MissingMapper]
+		public static void UpdateMinimumWidth(this Widget nativeView, IView view)
+		{ }
+
+		[MissingMapper]
+		public static void UpdateMaximumHeight(this Widget nativeView, IView view)
+		{ }
+
+		[MissingMapper]
+		public static void UpdateMaximumWidth(this Widget nativeView, IView view)
+		{ }
+
 	}
 
 }
