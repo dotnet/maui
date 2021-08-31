@@ -9,7 +9,7 @@
        as RazorComponent instead of Content. -->
   <ItemGroup Condition="'$(DesignTimeBuild)' != 'true'">
     <Content Remove="**\*.razor" />
-    <RazorComponent Include="**\*.razor" />
+    <RazorComponent Include="**\*.razor" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -48,21 +48,4 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="EnsureBundles" BeforeTargets="CoreCompile" DependsOnTargets="_ResolveBundlingConfiguration;BundleScopedCssFiles" />
-
-  <Target Name="_FixUpMauiReference"
-    BeforeTargets="ComputeReferencedProjectsPublishAssets"
-    AfterTargets="LoadStaticWebAssetsBuildManifest">
-
-    <ItemGroup>
-      <_MauiManifestsToUpdate Include="@(StaticWebAssetManifest)" Condition="'%(ManifestType)' == 'Publish'" />
-      <_MauiManifestsToUpdate>
-       <AdditionalPublishPropertiesToRemove Condition="$([System.String]::Copy('%(_MauiManifestsToUpdate.AdditionalPublishProperties)').Contains('TargetFramework')) == 'false'">@(_MauiManifestsToUpdate->'%(AdditionalPublishPropertiesToRemove)');TargetFramework</AdditionalPublishPropertiesToRemove>      
-      </_MauiManifestsToUpdate>
-
-      <StaticWebAssetManifest Remove="@(_MauiManifestsToUpdate)" />
-      <StaticWebAssetManifest Include="@(_MauiManifestsToUpdate)" />
-    </ItemGroup>
-
-  </Target>
 </Project>

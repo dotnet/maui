@@ -45,5 +45,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var expected = new Rectangle(x, y, width, height);
 			view.Received().Arrange(Arg.Is(expected));
 		}
+
+		public static void AssertArranged(IView view, Rectangle expected)
+		{
+			view.Received().Arrange(Arg.Is(expected));
+		}
 	}
 }

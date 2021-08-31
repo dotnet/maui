@@ -1,9 +1,11 @@
 ﻿#nullable enable
+using System;
+
 namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler
 	{
-		public static PropertyMapper<IEntry, EntryHandler> EntryMapper = new PropertyMapper<IEntry, EntryHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IEntry, EntryHandler> EntryMapper = new PropertyMapper<IEntry, EntryHandler>(ViewHandler.ViewMapper)
 		{
 #if __ANDROID__
 			[nameof(IEntry.Background)] = MapBackground,
@@ -11,8 +13,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
 			[nameof(IEntry.Font)] = MapFont,
-			[nameof(IEntry.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
-			[nameof(IEntry.VerticalTextAlignment)] = MapVerticalTextAlignment,
+			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IEntry.IsPassword)] = MapIsPassword,
 			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
@@ -26,12 +28,20 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.SelectionLength)] = MapSelectionLength
 		};
 
+
+		static EntryHandler()
+		{
+#if __IOS__
+			EntryMapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
+#endif
+		}
+
 		public EntryHandler() : base(EntryMapper)
 		{
 
 		}
 
-		public EntryHandler(PropertyMapper? mapper = null) : base(mapper ?? EntryMapper)
+		public EntryHandler(IPropertyMapper? mapper = null) : base(mapper ?? EntryMapper)
 		{
 
 		}

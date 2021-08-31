@@ -363,7 +363,19 @@ namespace Microsoft.Maui.Controls
 			CheckTaskCompletionSource();
 			ScrollToRequested?.Invoke(this, e);
 
-			Handler?.Invoke(nameof(IScrollView.RequestScrollTo), e.ToRequest());
+			Handler?.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
+		}
+
+		ScrollToRequestedEventArgs ConvertRequestMode(ScrollToRequestedEventArgs args)
+		{
+			if (args.Mode == ScrollToMode.Element && args.Element is VisualElement visualElement)
+			{
+				var point = GetScrollPositionForElement(visualElement, args.Position);
+				var result = new ScrollToRequestedEventArgs(point.X, point.Y, args.ShouldAnimate);
+				return result;
+			}
+
+			return args;
 		}
 	}
 }

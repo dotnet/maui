@@ -16,13 +16,20 @@
       {
         "source": "./",
         "target": "./",
-        "copyOnly": [ "**/*.svg", "**/*.ttf" ]
+        "copyOnly": [ "**/*.svg", "**/*.ttf" ],
+        "modifiers": [
+          {
+            "condition": "(HostIdentifier != \"dotnetcli\")",
+            "exclude": [
+              "*.sln"
+            ]
+          }
+        ]
       }
     ],
     "preferNameDirectory": true,
     "guids": [
       "07CD65EF-6238-4365-AF5D-F6D433967F48",
-      "202C61B5-A2D9-4817-8020-731D9F855561",
       "919dc1f9-17a9-48b3-81f8-0b8016bdfbf7"
     ],
     "symbols": {
@@ -32,11 +39,15 @@
         "datatype": "string",
         "replaces": "com.companyname.MauiApp1"
       },
-      "projectReunionVersion": {
+      "windowsAppSdkVersion": {
         "type": "parameter",
         "dataType": "string",
-        "replaces": "PROJECT_REUNION_VERSION",
-        "defaultValue": "PROJECT_REUNION_VERSION_VALUE"
+        "replaces": "WINDOWSAPPSDK_VERSION",
+        "defaultValue": "WINDOWSAPPSDK_VERSION_VALUE"
+      },
+      "HostIdentifier": {
+        "type": "bind",
+        "binding": "HostIdentifier"
       }
     },
     "defaultName": "MauiApp1"

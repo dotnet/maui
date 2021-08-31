@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WebView2;
 using Microsoft.AspNetCore.Components.WebView.WebView2.Internal;
 using Microsoft.Extensions.FileProviders;
@@ -20,14 +22,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly string _hostPageRelativePath;
 		private readonly string _contentRootDir;
 
-		public WinUIWebViewManager(WebView2Control nativeWebView2, IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, string hostPageRelativePath, string contentRootDir) : base(webview, services, dispatcher, fileProvider, hostPageRelativePath)
+		public WinUIWebViewManager(WebView2Control nativeWebView2, IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath, string contentRootDir)
+			: base(webview, services, dispatcher, fileProvider, jsComponents, hostPageRelativePath)
 		{
 			_nativeWebView2 = nativeWebView2;
 			_hostPageRelativePath = hostPageRelativePath;
 			_contentRootDir = contentRootDir;
 		}
 
-		protected override void HandleWebResourceRequest(ICoreWebView2WebResourceRequestedEventArgsWrapper eventArgs)
+		protected override async Task HandleWebResourceRequest(ICoreWebView2WebResourceRequestedEventArgsWrapper eventArgs)
 		{
 			// Unlike server-side code, we get told exactly why the browser is making the request,
 			// so we can be smarter about fallback. We can ensure that 'fetch' requests never result
@@ -35,6 +38,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var allowFallbackOnHostPage =
 				eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Document ||
 				eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Other; // e.g., dev tools requesting page source
+
+			// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
+			using var deferral = eventArgs.GetDeferral();
 
 			// First, call into WebViewManager to see if it has a framework file for this request. It will
 			// fall back to an IFileProvider, but on WinUI it's always a NullFileProvider, so that will never
@@ -47,7 +53,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				var memStream = new MemoryStream();
 				content.CopyTo(memStream);
 				var ms = new InMemoryRandomAccessStream();
-				ms.WriteAsync(memStream.GetWindowsRuntimeBuffer()).AsTask().Wait();
+				await ms.WriteAsync(memStream.GetWindowsRuntimeBuffer());
 
 				var headerString = GetHeaderString(headers);
 				eventArgs.SetResponse(ms, statusCode, statusMessage, headerString);
@@ -65,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					}
 					relativePath = Path.Combine("Assets", _contentRootDir, relativePath.Replace("/", "\\"));
 
-					var winUIItem = Package.Current.InstalledLocation.TryGetItemAsync(relativePath).AsTask().GetAwaiter().GetResult();
+					var winUIItem = await Package.Current.InstalledLocation.TryGetItemAsync(relativePath);
 					if (winUIItem != null)
 					{
 						statusCode = 200;
@@ -73,12 +79,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						var contentType = StaticContentProvider.GetResponseContentTypeOrDefault(relativePath);
 						headers = StaticContentProvider.GetResponseHeaders(contentType);
 						var headerString = GetHeaderString(headers);
-						var winUIFile = Package.Current.InstalledLocation.GetFileAsync(relativePath).AsTask().GetAwaiter().GetResult();
+						var winUIFile = await Package.Current.InstalledLocation.GetFileAsync(relativePath);
 
-						eventArgs.SetResponse(winUIFile.OpenReadAsync().AsTask().GetAwaiter().GetResult(), statusCode, statusMessage, headerString);
+						eventArgs.SetResponse(await winUIFile.OpenReadAsync(), statusCode, statusMessage, headerString);
 					}
 				}
 			}
+
+			// Notify WebView2 that the deferred (async) operation is complete and we set a response.
+			deferral.Complete();
 		}
 
 		protected override void QueueBlazorStart()

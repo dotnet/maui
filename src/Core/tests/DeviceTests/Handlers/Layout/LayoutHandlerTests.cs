@@ -36,6 +36,14 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			var handler = await CreateHandlerAsync(layout);
 
+			var children = await InvokeOnMainThreadAsync(() =>
+			{
+				return GetNativeChildren(handler);
+			});
+
+			Assert.Equal(1, children.Count);
+			Assert.Same(slider.Handler.NativeView, children[0]);
+
 			var count = await InvokeOnMainThreadAsync(() =>
 			{
 				handler.Remove(slider);
@@ -56,8 +64,9 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			var count = await InvokeOnMainThreadAsync(() =>
 			{
+				var nativeView = layout.Handler.NativeView;
 				layout.Handler.DisconnectHandler();
-				return GetNativeChildCount(handler);
+				return GetNativeChildCount(nativeView);
 			});
 
 			Assert.Equal(0, count);
@@ -69,20 +78,22 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			var layout = new LayoutStub();
 			var slider = new SliderStub();
 			var button = new ButtonStub();
-			
+
 			layout.Add(slider);
 			layout.Add(button);
 
 			var handler = await CreateHandlerAsync(layout);
 
-			var count = await InvokeOnMainThreadAsync(() =>
+			var children = await InvokeOnMainThreadAsync(() =>
 			{
-				return GetNativeChildCount(handler);
+				return GetNativeChildren(handler);
 			});
 
-			Assert.Equal(2, count);
+			Assert.Equal(2, children.Count);
+			Assert.Same(slider.Handler.NativeView, children[0]);
+			Assert.Same(button.Handler.NativeView, children[1]);
 
-			count = await InvokeOnMainThreadAsync(() =>
+			var count = await InvokeOnMainThreadAsync(() =>
 			{
 				handler.Clear();
 				return GetNativeChildCount(handler);
@@ -99,23 +110,26 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			var button = new ButtonStub();
 
 			layout.Add(slider);
-			
+
 			var handler = await CreateHandlerAsync(layout);
 
-			var count = await InvokeOnMainThreadAsync(() =>
+			var children = await InvokeOnMainThreadAsync(() =>
 			{
-				return GetNativeChildCount(handler);
+				return GetNativeChildren(handler);
 			});
 
-			Assert.Equal(1, count);
+			Assert.Equal(1, children.Count);
+			Assert.Same(slider.Handler.NativeView, children[0]);
 
-			count = await InvokeOnMainThreadAsync(() =>
+			children = await InvokeOnMainThreadAsync(() =>
 			{
 				handler.Insert(0, button);
-				return GetNativeChildCount(handler);
+				return GetNativeChildren(handler);
 			});
 
-			Assert.Equal(2, count);
+			Assert.Equal(2, children.Count);
+			Assert.Same(button.Handler.NativeView, children[0]);
+			Assert.Same(slider.Handler.NativeView, children[1]);
 		}
 
 		[Fact]
@@ -129,20 +143,22 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			var handler = await CreateHandlerAsync(layout);
 
-			var count = await InvokeOnMainThreadAsync(() =>
+			var children = await InvokeOnMainThreadAsync(() =>
 			{
-				return GetNativeChildCount(handler);
+				return GetNativeChildren(handler);
 			});
 
-			Assert.Equal(1, count);
+			Assert.Equal(1, children.Count);
+			Assert.Same(slider.Handler.NativeView, children[0]);
 
-			count = await InvokeOnMainThreadAsync(() =>
+			children = await InvokeOnMainThreadAsync(() =>
 			{
 				handler.Update(0, button);
-				return GetNativeChildCount(handler);
+				return GetNativeChildren(handler);
 			});
 
-			Assert.Equal(1, count);
+			Assert.Equal(1, children.Count);
+			Assert.Same(button.Handler.NativeView, children[0]);
 		}
 	}
 }

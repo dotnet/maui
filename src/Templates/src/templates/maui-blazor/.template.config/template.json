@@ -16,17 +16,20 @@
       {
         "source": "./",
         "target": "./",
-        "copyOnly": [ "**/wwwroot/css/**", "**/*.svg", "**/*.ttf" ]
+        "copyOnly": [ "**/wwwroot/css/**", "**/*.svg", "**/*.ttf" ],
+        "modifiers": [
+          {
+            "condition": "(HostIdentifier != \"dotnetcli\")",
+            "exclude": [
+              "*.sln"
+            ]
+          }
+        ]
       }
     ],
     "preferNameDirectory": true,
-    "primaryOutputs": [
-      { "path": "MauiApp1/MauiApp1.csproj" },
-      { "path": "MauiApp1.WinUI/MauiApp1.WinUI.csproj" }
-    ],
     "guids": [
       "07CD65EF-6238-4365-AF5D-F6D433967F48",
-      "202C61B5-A2D9-4817-8020-731D9F855561",
       "8B51DC95-6D07-4C39-BC6C-3BFE96E8A7EA"
     ],
     "symbols": {
@@ -36,17 +39,15 @@
         "datatype": "string",
         "replaces": "com.companyname.MauiApp1"
       },
-      "microsoftExtensionsVersion": {
+      "windowsAppSdkVersion": {
         "type": "parameter",
         "dataType": "string",
-        "replaces": "MICROSOFT_EXTENSIONS_VERSION",
-        "defaultValue": "MICROSOFT_EXTENSIONS_VERSION_VALUE"
+        "replaces": "WINDOWSAPPSDK_VERSION",
+        "defaultValue": "WINDOWSAPPSDK_VERSION_VALUE"
       },
-      "projectReunionVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "PROJECT_REUNION_VERSION",
-        "defaultValue": "PROJECT_REUNION_VERSION_VALUE"
+      "HostIdentifier": {
+        "type": "bind",
+        "binding": "HostIdentifier"
       }
     },
     "defaultName": "MauiApp1"

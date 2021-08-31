@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{
-		internal static IAppHostBuilder ConfigureCompatibilityLifecycleEvents(this IAppHostBuilder builder) =>
+		internal static MauiAppBuilder ConfigureCompatibilityLifecycleEvents(this MauiAppBuilder builder) =>
 			   builder.ConfigureLifecycleEvents(events => events.AddWindows(OnConfigureLifeCycle));
 
 		static void OnConfigureLifeCycle(IWindowsLifecycleBuilder windows)

@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
@@ -8,6 +9,7 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
+using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 
 namespace Microsoft.Maui
 {
@@ -82,6 +84,35 @@ namespace Microsoft.Maui
 				panel.UpdateBackground(view.Background);
 		}
 
+
+		public static WFlowDirection ToNative(this FlowDirection flowDirection)
+		{
+			if (flowDirection == FlowDirection.RightToLeft)
+				return WFlowDirection.RightToLeft;
+			else if (flowDirection == FlowDirection.LeftToRight)
+				return WFlowDirection.LeftToRight;
+
+			throw new InvalidOperationException($"Invalid FlowDirection: {flowDirection}");
+		}
+
+		public static void UpdateFlowDirection(this FrameworkElement nativeView, IView view)
+		{
+			var flowDirection = view.FlowDirection;
+
+			if (flowDirection == FlowDirection.MatchParent ||
+				view.FlowDirection == FlowDirection.MatchParent)
+			{
+				flowDirection = view?.Handler?.MauiContext?.GetFlowDirection()
+					?? FlowDirection.LeftToRight;
+			}
+			if (flowDirection == FlowDirection.MatchParent)
+			{
+				flowDirection = FlowDirection.LeftToRight;
+			}
+
+			nativeView.FlowDirection = flowDirection.ToNative();
+		}
+
 		public static void UpdateAutomationId(this FrameworkElement nativeView, IView view) =>
 			AutomationProperties.SetAutomationId(nativeView, view.AutomationId);
 
@@ -119,14 +150,36 @@ namespace Microsoft.Maui
 
 		public static void UpdateWidth(this FrameworkElement nativeView, IView view)
 		{
-			// WinUI uses NaN for "unspecified"
-			nativeView.Width = view.Width >= 0 ? view.Width : double.NaN;
+			// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
+			// we can just propagate the value straight through
+			nativeView.Width = view.Width;
 		}
 
 		public static void UpdateHeight(this FrameworkElement nativeView, IView view)
 		{
-			// WinUI uses NaN for "unspecified"
-			nativeView.Height = view.Height >= 0 ? view.Height : double.NaN;
+			// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
+			// we can just propagate the value straight through
+			nativeView.Height = view.Height;
+		}
+
+		public static void UpdateMinimumHeight(this FrameworkElement nativeView, IView view)
+		{
+			nativeView.MinHeight = view.MinimumHeight;
+		}
+
+		public static void UpdateMinimumWidth(this FrameworkElement nativeView, IView view)
+		{
+			nativeView.MinWidth = view.MinimumWidth;
+		}
+
+		public static void UpdateMaximumHeight(this FrameworkElement nativeView, IView view)
+		{
+			nativeView.MaxHeight = view.MaximumHeight;
+		}
+
+		public static void UpdateMaximumWidth(this FrameworkElement nativeView, IView view)
+		{
+			nativeView.MaxWidth = view.MaximumWidth;
 		}
 	}
 }

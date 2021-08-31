@@ -16,8 +16,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var element = Substitute.For<IView>();
 			var margin = new Thickness(20);
 			element.Margin.Returns(margin);
-			element.Width.Returns(-1);
-			element.Height.Returns(-1);
+			element.Width.Returns(Dimension.Unset);
+			element.Height.Returns(Dimension.Unset);
 
 			var bounds = new Rectangle(0, 0, 100, 100);
 			var frame = element.ComputeFrame(bounds);
@@ -128,8 +128,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.Margin.Returns(margin);
 			element.DesiredSize.Returns(viewSizeIncludingMargins);
 			element.HorizontalLayoutAlignment.Returns(layoutAlignment);
-			element.Width.Returns(-1);
-			element.Height.Returns(-1);
+			element.Width.Returns(Dimension.Unset);
+			element.Height.Returns(Dimension.Unset);
+			element.FlowDirection.Returns(FlowDirection.LeftToRight);
 
 			var frame = element.ComputeFrame(new Rectangle(offset.X, offset.Y, widthConstraint, heightConstraint));
 
@@ -151,8 +152,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.Margin.Returns(margin);
 			element.DesiredSize.Returns(viewSizeIncludingMargins);
 			element.VerticalLayoutAlignment.Returns(layoutAlignment);
-			element.Width.Returns(-1);
-			element.Height.Returns(-1);
+			element.Width.Returns(Dimension.Unset);
+			element.Height.Returns(Dimension.Unset);
+			element.FlowDirection.Returns(FlowDirection.LeftToRight);
 
 			var frame = element.ComputeFrame(new Rectangle(offset.X, offset.Y, widthConstraint, heightConstraint));
 
@@ -209,8 +211,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			element.DesiredSize.Returns(viewSizeIncludingMargins);
 			element.FlowDirection.Returns(FlowDirection.RightToLeft);
 			element.HorizontalLayoutAlignment.Returns(layoutAlignment);
-			element.Width.Returns(-1);
-			element.Height.Returns(-1);
+			element.Width.Returns(Dimension.Unset);
+			element.Height.Returns(Dimension.Unset);
 
 			var frame = element.ComputeFrame(new Rectangle(offset.X, offset.Y, widthConstraint, heightConstraint));
 

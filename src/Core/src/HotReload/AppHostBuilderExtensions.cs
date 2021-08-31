@@ -2,6 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.HotReload;
 
@@ -9,27 +10,23 @@ namespace Microsoft.Maui.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{
-		public static IAppHostBuilder EnableHotReload(this IAppHostBuilder builder, string? ideIp = null, int idePort = 9988)
+		public static MauiAppBuilder EnableHotReload(this MauiAppBuilder builder, string? ideIp = null, int idePort = 9988)
 		{
-			builder.ConfigureServices<HotReloadBuilder>(hotReload =>
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, HotReloadBuilder>(_ => new HotReloadBuilder
 			{
-				hotReload.IdeIp = ideIp;
-				hotReload.IdePort = idePort;
-			});
+				IdeIp = ideIp,
+				IdePort = idePort,
+			}));
 			return builder;
 		}
 
-		class HotReloadBuilder : IMauiServiceBuilder
+		class HotReloadBuilder : IMauiInitializeService
 		{
 			public string? IdeIp { get; set; }
 
 			public int IdePort { get; set; } = 9988;
 
-			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
-			{
-			}
-
-			public async void Configure(HostBuilderContext context, IServiceProvider services)
+			public async void Initialize(IServiceProvider services)
 			{
 				var handlers = services.GetRequiredService<IMauiHandlersServiceProvider>();
 

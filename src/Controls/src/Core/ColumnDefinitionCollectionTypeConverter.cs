@@ -5,7 +5,6 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.TypeConversion(typeof(ColumnDefinitionCollection))]
 	public class ColumnDefinitionCollectionTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

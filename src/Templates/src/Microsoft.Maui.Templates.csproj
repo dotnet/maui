@@ -25,17 +25,13 @@
     <BeforePack>_UpdateTemplateVersions</BeforePack>
   </PropertyGroup>
 
-  <!-- Eventually replaced by eng/Version.targets -->
-  <Target Name="SetVersions" />
-
   <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions">
     <ItemGroup>
       <_TemplateJsonFile Include="templates\*\.template.config\template.json" />
       <_TemplateJsonFileWithContent
           Include="@(_TemplateJsonFile)"
           Contents="$([System.IO.File]::ReadAllText('%(FullPath)')
-              .Replace('MICROSOFT_EXTENSIONS_VERSION_VALUE', '$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)')
-              .Replace('PROJECT_REUNION_VERSION_VALUE', '$(_MicrosoftProjectReunionVersion)'))" />
+              .Replace('WINDOWSAPPSDK_VERSION_VALUE', '$(_MicrosoftWindowsAppSdkVersion)'))" />
     </ItemGroup>
     <WriteLinesToFile
         File="@(_TemplateJsonFileWithContent -> '$(IntermediateOutputPath)%(Identity)')"

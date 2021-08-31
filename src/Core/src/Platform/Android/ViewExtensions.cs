@@ -1,7 +1,10 @@
 using Android.Graphics.Drawables;
 using Android.Views;
+using Android.Widget;
 using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
+using ALayoutDirection = Android.Views.LayoutDirection;
+using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -72,6 +75,32 @@ namespace Microsoft.Maui
 			nativeView.Alpha = (float)view.Opacity;
 		}
 
+		public static void UpdateFlowDirection(this AView nativeView, IView view)
+		{
+			// I realize I could call this method as an extension method
+			// But I'm being explicit so if the TextViewExtensions version gets deleted
+			// we'll get a compile time exception opposed to an infinite loop
+			if (nativeView is TextView textview)
+			{
+				TextViewExtensions.UpdateFlowDirection(textview, view);
+				return;
+			}
+
+			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
+				view.FlowDirection == FlowDirection.MatchParent)
+			{
+				nativeView.LayoutDirection = ALayoutDirection.Inherit;
+			}
+			else if (view.FlowDirection == FlowDirection.RightToLeft)
+			{
+				nativeView.LayoutDirection = ALayoutDirection.Rtl;
+			}
+			else if (view.FlowDirection == FlowDirection.LeftToRight)
+			{
+				nativeView.LayoutDirection = ALayoutDirection.Ltr;
+			}
+		}
+
 		public static bool GetClipToOutline(this AView view)
 		{
 			return view.ClipToOutline;
@@ -115,6 +144,46 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateMinimumHeight(this AView nativeView, IView view)
+		{
+			var value = (int)nativeView.Context!.ToPixels(view.MinimumHeight);
+			nativeView.SetMinimumHeight(value);
+
+			if (!nativeView.IsInLayout)
+			{
+				nativeView.RequestLayout();
+			}
+		}
+
+		public static void UpdateMinimumWidth(this AView nativeView, IView view)
+		{
+			var value = (int)nativeView.Context!.ToPixels(view.MinimumWidth);
+			nativeView.SetMinimumWidth(value);
+
+			if (!nativeView.IsInLayout)
+			{
+				nativeView.RequestLayout();
+			}
+		}
+
+		public static void UpdateMaximumHeight(this AView nativeView, IView view)
+		{
+			// GetDesiredSize will take the specified Height into account during the layout
+			if (!nativeView.IsInLayout)
+			{
+				nativeView.RequestLayout();
+			}
+		}
+
+		public static void UpdateMaximumWidth(this AView nativeView, IView view)
+		{
+			// GetDesiredSize will take the specified Height into account during the layout
+			if (!nativeView.IsInLayout)
+			{
+				nativeView.RequestLayout();
+			}
+		}
+
 		public static void RemoveFromParent(this AView view)
 		{
 			if (view == null)
@@ -123,6 +192,5 @@ namespace Microsoft.Maui
 				return;
 			((ViewGroup)view.Parent).RemoveView(view);
 		}
-
 	}
 }

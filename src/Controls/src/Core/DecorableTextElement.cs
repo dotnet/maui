@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TextDecorationsProperty = BindableProperty.Create(nameof(IDecorableTextElement.TextDecorations), typeof(TextDecorations), typeof(IDecorableTextElement), TextDecorations.None);
 	}
 
-	[Xaml.TypeConversion(typeof(TextDecorations))]
 	public class TextDecorationConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

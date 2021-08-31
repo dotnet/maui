@@ -381,6 +381,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			_lastSizeRequest = null;
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateText()
 		{
 			if (Element.FormattedText != null)

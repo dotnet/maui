@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using NSubstitute;
 using Xunit;
 using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
@@ -63,7 +64,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Theory]
 		[InlineData(150, 100, 100)]
 		[InlineData(150, 200, 200)]
-		[InlineData(1250, -1, 1250)]
+		[InlineData(1250, Dimension.Unset, 1250)]
 		public void StackAppliesHeight(double viewHeight, double stackHeight, double expectedHeight)
 		{
 			var view = LayoutTestHelpers.CreateTestView(new Size(100, viewHeight));
@@ -185,6 +186,131 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var expectedRectangle0 = new Rectangle(10, 15, 100, 100);
 
 			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
+		}
+
+		[Theory]
+		[InlineData(50, 100, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(100, 50, 50)]
+		[InlineData(0, 50, 0)]
+		public void MeasureRespectsMaxHeight(double maxHeight, double viewHeight, double expectedHeight)
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: viewHeight);
+			stack.MaximumHeight.Returns(maxHeight);
+
+			var layoutManager = new VerticalStackLayoutManager(stack);
+			var measure = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedHeight, measure.Height);
+		}
+
+		[Theory]
+		[InlineData(50, 100, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(100, 50, 50)]
+		[InlineData(0, 50, 0)]
+		public void MeasureRespectsMaxWidth(double maxWidth, double viewWidth, double expectedWidth)
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: viewWidth, viewHeight: 100);
+
+			stack.MaximumWidth.Returns(maxWidth);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedWidth, measure.Width);
+		}
+
+		[Theory]
+		[InlineData(50, 10, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(10, 50, 50)]
+		public void MeasureRespectsMinHeight(double minHeight, double viewHeight, double expectedHeight)
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: viewHeight);
+
+			stack.MinimumHeight.Returns(minHeight);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedHeight, measure.Height);
+		}
+
+		[Theory]
+		[InlineData(50, 10, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(10, 50, 50)]
+		public void MeasureRespectsMinWidth(double minWidth, double viewWidth, double expectedWidth)
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: viewWidth, viewHeight: 100);
+
+			stack.MinimumWidth.Returns(minWidth);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedWidth, measure.Width);
+		}
+
+		[Fact]
+		public void MaxWidthDominatesWidth()
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+
+			stack.Width.Returns(75);
+			stack.MaximumWidth.Returns(50);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// The maximum value beats out the explicit value
+			Assert.Equal(50, measure.Width);
+		}
+
+		[Fact]
+		public void MinWidthDominatesMaxWidth()
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+
+			stack.MinimumWidth.Returns(75);
+			stack.MaximumWidth.Returns(50);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// The minimum value should beat out the maximum value
+			Assert.Equal(75, measure.Width);
+		}
+
+		[Fact]
+		public void MaxHeightDominatesHeight()
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+
+			stack.Height.Returns(75);
+			stack.MaximumHeight.Returns(50);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// The maximum value beats out the explicit value
+			Assert.Equal(50, measure.Height);
+		}
+
+		[Fact]
+		public void MinHeightDominatesMaxHeight()
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+
+			stack.MinimumHeight.Returns(75);
+			stack.MaximumHeight.Returns(50);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// The minimum value should beat out the maximum value
+			Assert.Equal(75, measure.Height);
 		}
 	}
 }

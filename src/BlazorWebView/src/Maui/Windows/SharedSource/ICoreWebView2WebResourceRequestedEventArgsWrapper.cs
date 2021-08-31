@@ -34,5 +34,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         /// <param name="statusMessage"></param>
         /// <param name="headerString"></param>
         void SetResponse(IRandomAccessStream content, int statusCode, string statusMessage, string headerString);
-    }
+
+		IDeferralWrapper GetDeferral();
+	}
 }
