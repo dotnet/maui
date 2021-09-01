@@ -13,7 +13,7 @@
       <PackageReference Include="Microsoft.WindowsAppSdk.WinUI" Version="1.0.0-experimental1" />
       <PackageReference Include="Microsoft.WindowsAppSdk.Foundation" Version="1.0.0-experimental1" />
       <PackageReference Include="Microsoft.WindowsAppSdk.InteractiveExperiences" Version="1.0.0-experimental1" />
-      <PackageReference Include="Microsoft.Graphics.Win2D" Version="0.8.0.21" />
+      <PackageReference Include="Microsoft.Graphics.Win2D" Version="0.8.2.23" />
   </ItemGroup>
 
   <ItemGroup>
