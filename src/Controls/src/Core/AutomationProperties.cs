@@ -6,6 +6,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty IsInAccessibleTreeProperty = BindableProperty.Create("IsInAccessibleTree", typeof(bool?), typeof(AutomationProperties), null);
 
+		public static readonly BindableProperty ExcludedWithChildrenProperty = BindableProperty.Create("ExcludedWithChildren", typeof(bool?), typeof(AutomationProperties), null);
+
 		public static readonly BindableProperty LabeledByProperty = BindableProperty.Create("LabeledBy", typeof(VisualElement), typeof(AutomationProperties), default(VisualElement));
 
 		public static readonly BindableProperty NameProperty = BindableProperty.Create("Name", typeof(string), typeof(AutomationProperties), default(string));
@@ -20,7 +22,12 @@ namespace Microsoft.Maui.Controls
 			return (bool?)bindable.GetValue(IsInAccessibleTreeProperty);
 		}
 
-		[TypeConverter(typeof(ReferenceTypeConverter))]
+		public static bool? GetExcludedWithChildren(BindableObject bindable)
+		{
+			return (bool?)bindable.GetValue(ExcludedWithChildrenProperty);
+		}
+
+		[System.ComponentModel.TypeConverter(typeof(ReferenceTypeConverter))]
 		public static VisualElement GetLabeledBy(BindableObject bindable)
 		{
 			return (VisualElement)bindable.GetValue(LabeledByProperty);
@@ -39,6 +46,11 @@ namespace Microsoft.Maui.Controls
 		public static void SetIsInAccessibleTree(BindableObject bindable, bool? value)
 		{
 			bindable.SetValue(IsInAccessibleTreeProperty, value);
+		}
+
+		public static void SetExcludedWithChildren(BindableObject bindable, bool? value)
+		{
+			bindable.SetValue(ExcludedWithChildrenProperty, value);
 		}
 
 		public static void SetLabeledBy(BindableObject bindable, VisualElement value)

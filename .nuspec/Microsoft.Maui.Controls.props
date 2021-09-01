@@ -16,11 +16,11 @@
 		<DefineConstants Condition="!$(_IsHotRestartDefined) And '$(IsHotRestartBuild)' == 'true'">HOTRESTART;$(DefineConstants)</DefineConstants>
 	</PropertyGroup>
 
-  <ItemGroup>
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenKind" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ManifestResourceName" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="TargetPath" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ItemSpec" />
-  </ItemGroup>
-  
+	<ItemGroup>
+		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenKind" />
+		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ManifestResourceName" />
+		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="TargetPath" />
+		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ItemSpec" />
+	</ItemGroup>
+
 </Project>

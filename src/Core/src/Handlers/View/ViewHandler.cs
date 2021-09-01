@@ -1,7 +1,7 @@
 using Microsoft.Maui.Graphics;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
-#elif MONOANDROID
+#elif __ANDROID__
 using NativeView = Android.Views.View;
 #elif WINDOWS
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
@@ -13,14 +13,19 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
-		public static PropertyMapper<IView, ViewHandler> ViewMapper = new PropertyMapper<IView, ViewHandler>(ElementHandler.ElementMapper)
+		public static IPropertyMapper<IView, ViewHandler> ViewMapper = new PropertyMapper<IView, ViewHandler>(ElementHandler.ElementMapper)
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.Clip)] = MapClip,
 			[nameof(IView.Visibility)] = MapVisibility,
 			[nameof(IView.Background)] = MapBackground,
+			[nameof(IView.FlowDirection)] = MapFlowDirection,
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
+			[nameof(IView.MinimumHeight)] = MapMinimumHeight,
+			[nameof(IView.MaximumHeight)] = MapMaximumHeight,
+			[nameof(IView.MinimumWidth)] = MapMinimumWidth,
+			[nameof(IView.MaximumWidth)] = MapMaximumWidth,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
 			[nameof(IView.Opacity)] = MapOpacity,
 			[nameof(IView.Semantics)] = MapSemantics,
@@ -35,17 +40,18 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.AnchorX)] = MapAnchorX,
 			[nameof(IView.AnchorY)] = MapAnchorY,
 			[nameof(IViewHandler.ContainerView)] = MapContainerView,
-			Actions =
-			{
-				[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
-				[nameof(IView.Frame)] = MapFrame,
-			}
+		};
+
+		public static CommandMapper<IView, ViewHandler> ViewCommandMapper = new()
+		{
+			[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
+			[nameof(IView.Frame)] = MapFrame,
 		};
 
 		bool _hasContainer;
 
-		protected ViewHandler(PropertyMapper mapper)
-			: base(mapper)
+		protected ViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
+			: base(mapper, commandMapper ?? ViewCommandMapper)
 		{
 		}
 
@@ -136,6 +142,26 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateHeight(view);
 		}
 
+		public static void MapMinimumHeight(ViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateMinimumHeight(view);
+		}
+
+		public static void MapMaximumHeight(ViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateMaximumHeight(view);
+		}
+
+		public static void MapMinimumWidth(ViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateMinimumWidth(view);
+		}
+
+		public static void MapMaximumWidth(ViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateMaximumWidth(view);
+		}
+
 		public static void MapIsEnabled(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateIsEnabled(view);
@@ -149,6 +175,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(ViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateBackground(view);
+		}
+
+		public static void MapFlowDirection(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateFlowDirection(view);
 		}
 
 		public static void MapOpacity(ViewHandler handler, IView view)
@@ -178,9 +209,9 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateSemantics(view);
 		}
 
-		public static void MapInvalidateMeasure(ViewHandler handler, IView view)
+		public static void MapInvalidateMeasure(ViewHandler handler, IView view, object? args)
 		{
-			((NativeView?)handler.NativeView)?.InvalidateMeasure(view);
+			handler.NativeView?.InvalidateMeasure(view);
 		}
 
 		public static void MapContainerView(ViewHandler handler, IView view)
@@ -191,7 +222,7 @@ namespace Microsoft.Maui.Handlers
 
 		static partial void MappingFrame(ViewHandler handler, IView view);
 
-		public static void MapFrame(ViewHandler handler, IView view)
+		public static void MapFrame(ViewHandler handler, IView view, object? args)
 		{
 			MappingFrame(handler, view);
 #if WINDOWS

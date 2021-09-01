@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 			});
 
-			//MASTERDETAIL PAGE
+			//FLYOUTPAGE PAGE
 			HomePage = new FlyoutPage()
 			{
 				Flyout = MasterPage,
