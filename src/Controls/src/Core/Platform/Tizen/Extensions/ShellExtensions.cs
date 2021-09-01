@@ -1,5 +1,5 @@
 ﻿using Tizen.UIExtensions.Common;
-using TINavigtaionView = Tizen.UIExtensions.Shell.INavigationView;
+using TINavigtaionView = Tizen.UIExtensions.ElmSharp.INavigationView;
 
 namespace Microsoft.Maui.Controls.Platform
 {

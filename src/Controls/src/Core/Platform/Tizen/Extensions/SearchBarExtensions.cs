@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui.Controls;
 using TFontAttributes = Tizen.UIExtensions.Common.FontAttributes;
 
-namespace Tizen.UIExtensions.Shell
+namespace Microsoft.Maui.Controls.Platform
 {
 	public static class SearchBarExtensions
 	{

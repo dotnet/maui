@@ -8,7 +8,7 @@ using EColor = ElmSharp.Color;
 using TButton = Tizen.UIExtensions.ElmSharp.Button;
 using TImage = Tizen.UIExtensions.ElmSharp.Image;
 using TLabel = Tizen.UIExtensions.ElmSharp.Label;
-using TThemeConstants = Tizen.UIExtensions.Shell.ThemeConstants;
+using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
 
 namespace Microsoft.Maui.Controls.Platform
 {

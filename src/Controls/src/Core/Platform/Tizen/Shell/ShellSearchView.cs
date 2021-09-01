@@ -3,7 +3,6 @@
 using System;
 using System.ComponentModel;
 using ElmSharp;
-using Tizen.UIExtensions.Shell;
 using EColor = ElmSharp.Color;
 using TSearchBar = Tizen.UIExtensions.ElmSharp.SearchBar;
 using TTextChangedEventArgs = Tizen.UIExtensions.Common.TextChangedEventArgs;

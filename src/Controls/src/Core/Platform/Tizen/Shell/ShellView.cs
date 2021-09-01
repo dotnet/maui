@@ -5,9 +5,9 @@ using ElmSharp;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
 using EColor = ElmSharp.Color;
-using TINavigationView = Tizen.UIExtensions.Shell.INavigationView;
-using TNavigationView = Tizen.UIExtensions.Shell.NavigationView;
-using TThemeConstants = Tizen.UIExtensions.Shell.ThemeConstants;
+using TINavigationView = Tizen.UIExtensions.ElmSharp.INavigationView;
+using TNavigationView = Tizen.UIExtensions.ElmSharp.NavigationView;
+using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
 using TCollectionView = Tizen.UIExtensions.ElmSharp.CollectionView;
 using TSelectedItemChangedEventArgs = Tizen.UIExtensions.ElmSharp.SelectedItemChangedEventArgs;
 

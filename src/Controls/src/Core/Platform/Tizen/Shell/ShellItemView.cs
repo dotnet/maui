@@ -6,13 +6,12 @@ using System.Reflection;
 using ElmSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Tizen.UIExtensions.ElmSharp;
-using Tizen.UIExtensions.Shell;
 using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
 using EToolbarItem = ElmSharp.ToolbarItem;
 using EToolbarItemEventArgs = ElmSharp.ToolbarItemEventArgs;
 using TImage = Tizen.UIExtensions.ElmSharp.Image;
-using TThemeConstants = Tizen.UIExtensions.Shell.ThemeConstants;
+using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
 
 namespace Microsoft.Maui.Controls.Platform
 {
