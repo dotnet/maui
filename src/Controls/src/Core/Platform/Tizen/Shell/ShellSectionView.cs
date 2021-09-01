@@ -4,7 +4,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using ElmSharp;
 using Tizen.UIExtensions.ElmSharp;
-using Tizen.UIExtensions.Shell;
 using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
 using EToolbarItem = ElmSharp.ToolbarItem;
