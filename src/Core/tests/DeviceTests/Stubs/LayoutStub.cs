@@ -8,6 +8,22 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class LayoutStub : StubBase, ILayout
 	{
+		public IShape? Shape { get; set; }
+
+		public Paint? Stroke { get; set; }
+
+		public double StrokeThickness { get; set; } = 1.0d;
+
+		public LineCap StrokeLineCap { get; set; } = PenLineCap.Flat;
+
+		public LineJoin StrokeLineJoin { get; set; } = PenLineJoin.Miter;
+
+		public float[]? StrokeDashPattern { get; set; }
+
+		public float StrokeDashOffset { get; set; }
+
+		public float StrokeMiterLimit { get; set; } = 10.0f;
+
 		ILayoutManager _layoutManager;
 		IList<IView> _children = new List<IView>();
 
