@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.RemoveTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
 		}
 
-		protected override void SetupDefaults(UISlider nativeView)
+		void SetupDefaults(UISlider nativeView)
 		{
 			DefaultMinTrackColor = nativeView.MinimumTrackTintColor;
 			DefaultMaxTrackColor = nativeView.MaximumTrackTintColor;
@@ -64,6 +64,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapThumbColor(SliderHandler handler, ISlider slider)
 		{
 			handler.NativeView?.UpdateThumbColor(slider, DefaultThumbColor);
+		}
+
+		public static void MapThumbImageSource(SliderHandler handler, ISlider slider)
+		{
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			handler.NativeView?.UpdateThumbImageSourceAsync(slider, provider)
+				.FireAndForget(handler);
 		}
 
 		void OnControlValueChanged(object? sender, EventArgs eventArgs)

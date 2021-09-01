@@ -46,37 +46,16 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(label, () => label.TextColor, GetNativeTextColor, label.TextColor);
 		}
 
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
-		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
 		{
 			var label = new LabelStub()
 			{
 				Text = "Test",
-				Font = Font.OfSize("Arial", fontSize)
+				TextColor = null
 			};
 
-			await ValidatePropertyInitValue(label, () => label.Font.FontSize, GetNativeUnscaledFontSize, label.Font.FontSize);
-		}
-
-		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontWeight.Regular, false, false)]
-		[InlineData(FontWeight.Bold, true, false)]
-		[InlineData(FontWeight.Regular, false, true)]
-		[InlineData(FontWeight.Bold, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontWeight weight, bool isBold, bool isItalic)
-		{
-			var label = new LabelStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
-			};
-
-			await ValidatePropertyInitValue(label, () => label.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(label, () => label.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
+			await CreateHandlerAsync(label);
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]

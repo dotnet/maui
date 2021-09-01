@@ -36,34 +36,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
 		}
 
-		[Theory(DisplayName = "Font Family Initializes Correctly")]
-		[InlineData(null)]
-		[InlineData("Times New Roman")]
-		[InlineData("Dokdo")]
-		public async Task FontFamilyInitializesCorrectly(string family)
-		{
-			var editor = new EditorStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize(family, 10)
-			};
-
-			var handler = await CreateHandlerAsync(editor);
-			var nativeFont = await GetValueAsync(editor, handler => GetNativeEditor(handler).Font);
-
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
-
-			var expectedNativeFont = fontManager.GetFont(Font.OfSize(family, 0.0));
-
-			Assert.Equal(expectedNativeFont.FamilyName, nativeFont.FamilyName);
-			if (string.IsNullOrEmpty(family))
-				Assert.Equal(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
-			else
-				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
-		}
-
 		MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
-			(MauiTextView)editorHandler.NativeView;
+			editorHandler.NativeView;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
@@ -91,5 +65,35 @@ namespace Microsoft.Maui.DeviceTests
 
 		Color GetNativeTextColor(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).TextColor.ToColor();
+
+		bool GetNativeIsNumericKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.DecimalPad;
+
+		bool GetNativeIsEmailKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.EmailAddress;
+
+		bool GetNativeIsTelephoneKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.PhonePad;
+
+		bool GetNativeIsUrlKeyboard(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.Url;
+
+		bool GetNativeIsTextKeyboard(EditorHandler editorHandler)
+		{
+			var nativeEditor = GetNativeEditor(editorHandler);
+
+			return nativeEditor.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				nativeEditor.SpellCheckingType == UITextSpellCheckingType.Yes;
+		}
+
+		bool GetNativeIsChatKeyboard(EditorHandler editorHandler)
+		{
+			var nativeEditor = GetNativeEditor(editorHandler);
+
+			return nativeEditor.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				nativeEditor.SpellCheckingType == UITextSpellCheckingType.No;
+		}
 	}
 }

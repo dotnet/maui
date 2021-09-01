@@ -3,11 +3,11 @@ using System.Collections.Specialized;
 using System.Linq;
 using Android.App;
 using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
-using Android.Graphics.Drawables;
-using AResource = Android.Resource;
 using Microsoft.Maui.Graphics;
+using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -38,9 +38,9 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(nativeView);
 		}
 
-		protected override void SetupDefaults(MauiPicker nativeView)
+		void SetupDefaults(MauiPicker nativeView)
 		{
-			base.SetupDefaults(nativeView);
+
 
 			DefaultBackground = nativeView.Background;
 			DefaultTitleColors = nativeView.HintTextColors;
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 			NativeView.UpdatePicker(VirtualView);
 		}
-		public static void MapReload(PickerHandler handler, IPicker picker) => handler.Reload();
+		public static void MapReload(PickerHandler handler, IPicker picker, object? args) => handler.Reload();
 
 		public static void MapTitle(PickerHandler handler, IPicker picker)
 		{

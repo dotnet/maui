@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 
@@ -15,17 +14,12 @@ namespace Microsoft.Maui
 		readonly Dictionary<string, string?> _fontLookupCache = new();
 		readonly ILogger<FontRegistrar>? _logger;
 
-		IEmbeddedFontLoader? _fontLoader;
+		IEmbeddedFontLoader _fontLoader;
 
-		public FontRegistrar(IEmbeddedFontLoader? fontLoader = null, ILogger<FontRegistrar>? logger = null)
+		public FontRegistrar(IEmbeddedFontLoader fontLoader, ILogger<FontRegistrar>? logger = null)
 		{
 			_fontLoader = fontLoader;
 			_logger = logger;
-		}
-
-		public void SetFontLoader(IEmbeddedFontLoader? fontLoader)
-		{
-			_fontLoader = fontLoader;
 		}
 
 		public void Register(string filename, string? alias, Assembly assembly)
@@ -82,29 +76,18 @@ namespace Microsoft.Maui
 			return _fontLookupCache[cacheKey] = result;
 		}
 
-		Stream GetEmbeddedResourceStream((string Filename, string? Alias, Assembly Assembly) embeddedFont)
+		static Stream GetEmbeddedResourceStream((string Filename, string? Alias, Assembly Assembly) embeddedFont)
 		{
 			var resourceNames = embeddedFont.Assembly.GetManifestResourceNames();
+			var searchName = "." + embeddedFont.Filename;
 
-			var resourcePaths = resourceNames
-				.Where(x => x.EndsWith(embeddedFont.Filename, StringComparison.CurrentCultureIgnoreCase))
-				.ToArray();
+			foreach (var name in resourceNames)
+			{
+				if (name.EndsWith(searchName, StringComparison.CurrentCultureIgnoreCase))
+					return embeddedFont.Assembly.GetManifestResourceStream(name)!;
+			}
 
-			if (resourcePaths.Length == 0)
-				throw new FileNotFoundException($"Resource ending with {embeddedFont.Filename} not found.");
-
-			if (resourcePaths.Length > 1)
-				resourcePaths = resourcePaths.Where(x => IsFile(x, embeddedFont.Filename)).ToArray();
-
-			return embeddedFont.Assembly.GetManifestResourceStream(resourcePaths[0])!;
-		}
-
-		bool IsFile(string path, string file)
-		{
-			if (!path.EndsWith(file, StringComparison.Ordinal))
-				return false;
-
-			return path.Replace(file, "").EndsWith(".", StringComparison.Ordinal);
+			throw new FileNotFoundException($"Resource ending with {embeddedFont.Filename} not found.");
 		}
 	}
 }

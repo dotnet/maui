@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls
 {
@@ -17,40 +19,50 @@ namespace Microsoft.Maui.Controls
 
 		readonly ColorTypeConverter _colorTypeConverter = new ColorTypeConverter();
 
-		public override object ConvertFromInvariantString(string value)
-		{
-			if (value != null)
-			{
-				value = value.Trim();
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
 
-				if (value.StartsWith(LinearGradient) || value.StartsWith(RadialGradient))
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> false;
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		{
+			var strValue = value?.ToString();
+
+			if (strValue != null)
+			{
+				strValue = strValue.Trim();
+
+				if (strValue.StartsWith(LinearGradient) || strValue.StartsWith(RadialGradient))
 				{
 					var gradientBrushParser = new GradientBrushParser(_colorTypeConverter);
-					var brush = gradientBrushParser.Parse(value);
+					var brush = gradientBrushParser.Parse(strValue);
 
 					if (brush != null)
 						return brush;
 				}
 
-				if (value.StartsWith(Rgb) || value.StartsWith(Rgba) || value.StartsWith(Hsl) || value.StartsWith(Hsla))
+				if (strValue.StartsWith(Rgb, StringComparison.InvariantCulture) || strValue.StartsWith(Rgba, StringComparison.InvariantCulture) || strValue.StartsWith(Hsl, StringComparison.InvariantCulture) || strValue.StartsWith(Hsla))
 				{
-					var color = (Color)_colorTypeConverter.ConvertFromInvariantString(value);
+					var color = (Color)_colorTypeConverter.ConvertFromInvariantString(strValue);
 					return new SolidColorBrush(color);
 				}
 			}
 
-			string[] parts = value.Split('.');
+			string[] parts = strValue.Split('.');
 
 			if (parts.Length == 1 || (parts.Length == 2 && parts[0] == "Color"))
 			{
-				var color = (Color)_colorTypeConverter.ConvertFromInvariantString(value);
+				var color = (Color)_colorTypeConverter.ConvertFromInvariantString(strValue);
 				return new SolidColorBrush(color);
 			}
 
 			return new SolidColorBrush(null);
 		}
 
-		public override string ConvertToInvariantString(object value) => throw new NotSupportedException();
+
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+			=> throw new NotSupportedException();
 
 		public class GradientBrushParser
 		{

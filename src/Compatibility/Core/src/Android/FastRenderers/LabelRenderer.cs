@@ -54,8 +54,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 		AView ITabStop.TabStop => this;
 
-		ViewGroup IVisualElementRenderer.ViewGroup => null;
-
 		protected Label Element
 		{
 			get { return _element; }
@@ -208,8 +206,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 				if (Element != null)
 				{
-					if (AppCompat.Platform.GetRenderer(Element) == this)
-						Element.ClearValue(AppCompat.Platform.RendererProperty);
+					if (Platform.GetRenderer(Element) == this)
+						Element.ClearValue(Platform.RendererProperty);
 				}
 			}
 
@@ -218,7 +216,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
-			if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
+			if (base.OnTouchEvent(e))
 			{
 				return true;
 			}
@@ -324,7 +322,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				_lastTypeface = newTypeface;
 			}
 
-			float newTextSize = (float)f.FontSize;
+			float newTextSize = (float)f.Size;
 			if (newTextSize != _lastTextSize)
 			{
 				SetTextSize(ComplexUnitType.Sp, newTextSize);
@@ -383,6 +381,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			_lastSizeRequest = null;
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateText()
 		{
 			if (Element.FormattedText != null)

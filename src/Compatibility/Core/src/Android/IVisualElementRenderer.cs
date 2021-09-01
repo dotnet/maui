@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Android.Views;
+using Microsoft.Maui.Controls.Platform;
 using ALayoutChangeEventArgs = Android.Views.View.LayoutChangeEventArgs;
 using AView = Android.Views.View;
 
@@ -11,10 +12,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		VisualElement Element { get; }
 
 		VisualElementTracker Tracker { get; }
-
-		[Obsolete("ViewGroup is obsolete as of version 2.3.5. Please use View instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		ViewGroup ViewGroup { get; }
 
 		AView View { get; }
 

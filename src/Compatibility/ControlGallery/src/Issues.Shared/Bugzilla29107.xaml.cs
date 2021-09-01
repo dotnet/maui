@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -8,6 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 29107, "Xamarin.Android ScrollView text overlaps", PlatformAffected.Android)]
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class Bugzilla29107 : TestContentPage
 	{
 		public Bugzilla29107()

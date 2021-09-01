@@ -3,7 +3,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.UI.Xaml.Media;
@@ -40,16 +39,16 @@ namespace Microsoft.Maui
 
 		public FontFamily GetFontFamily(Font font)
 		{
-			if (font.IsDefault || string.IsNullOrWhiteSpace(font.FontFamily))
+			if (font.IsDefault || string.IsNullOrWhiteSpace(font.Family))
 				return DefaultFontFamily;
 
-			return _fonts.GetOrAdd(font.FontFamily, CreateFontFamily);
+			return _fonts.GetOrAdd(font.Family, CreateFontFamily);
 		}
 
 		public double GetFontSize(Font font, double defaultFontSize = 0) =>
-			font.FontSize <= 0
+			font.Size <= 0
 				? (defaultFontSize > 0 ? defaultFontSize : DefaultFontSize)
-				: font.FontSize;
+				: font.Size;
 
 		FontFamily CreateFontFamily(string fontFamily)
 		{
@@ -143,7 +142,10 @@ namespace Microsoft.Maui
 					using (var fontSet = new CanvasFontSet(fontUri))
 					{
 						if (fontSet.Fonts.Count != 0)
-							return fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName).FirstOrDefault().Value;
+						{
+							var props = fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName);
+							return props.Length == 0 ? null : props[0].Value;
+						}
 					}
 				}
 

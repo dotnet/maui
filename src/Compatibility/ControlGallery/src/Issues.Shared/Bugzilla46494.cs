@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 46494, "Hardware/Software back button from MainPage of type MasterDetail causes crash 'java.lang.IllegalStateException: Activity has been destroyed'", PlatformAffected.Android)]
+	[Issue(IssueTracker.Bugzilla, 46494, "Hardware/Software back button from MainPage of type FlyoutPage causes crash 'java.lang.IllegalStateException: Activity has been destroyed'", PlatformAffected.Android)]
 	public class Bugzilla46494 : TestFlyoutPage
 	{
 		protected override void Init()

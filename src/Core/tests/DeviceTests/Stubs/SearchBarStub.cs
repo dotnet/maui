@@ -12,17 +12,21 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Color TextColor { get; set; }
 
+		public Color CancelButtonColor { get; set; }
+
 		public double CharacterSpacing { get; set; }
 
 		public Font Font { get; set; }
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
 
+		public TextAlignment VerticalTextAlignment { get; set; }
+
 		public bool IsTextPredictionEnabled { get; set; } = true;
 
 		public bool IsReadOnly { get; set; }
 
-		public int MaxLength { get; set; }
+		public int MaxLength { get; set; } = int.MaxValue;
 
 		public Keyboard Keyboard { get; set; }
 

@@ -8,39 +8,66 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class MauiUIApplicationDelegate<TStartup> : MauiUIApplicationDelegate
-		where TStartup : IStartup, new()
+	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
+		WeakReference<IWindow>? _virtualWindow;
+		internal IWindow? VirtualWindow
+		{
+			get
+			{
+				IWindow? window = null;
+				_virtualWindow?.TryGetTarget(out window);
+				return window;
+			}
+		}
+
+		protected MauiUIApplicationDelegate()
+		{
+			Current = this;
+		}
+
+		protected abstract MauiApp CreateMauiApp();
+
+		public override bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
+		{
+			var mauiApp = CreateMauiApp();
+
+			Services = mauiApp.Services;
+
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
+
+			return true;
+		}
+
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			var startup = new TStartup();
-
-			var host = startup
-				.CreateAppHostBuilder()
-				.ConfigureServices(ConfigureNativeServices)
-				.ConfigureUsing(startup)
-				.Build();
-
-			Services = host.Services;
 			Application = Services.GetRequiredService<IApplication>();
 
-			var mauiContext = new MauiContext(Services);
+			var uiWindow = CreateNativeWindow();
 
-			var activationState = new ActivationState(mauiContext);
-			var window = Application.CreateWindow(activationState);
-
-			var page = window.View;
-
-			Window = new UIWindow
-			{
-				RootViewController = window.View.ToUIViewController(mauiContext)
-			};
+			Window = uiWindow;
 
 			Window.MakeKeyAndVisible();
 
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application, launchOptions));
 
 			return true;
+		}
+
+		UIWindow CreateNativeWindow()
+		{
+			var uiWindow = new UIWindow();
+
+			var mauiContext = new MauiContext(Services, uiWindow);
+
+			Services.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
+
+			var activationState = new ActivationState(mauiContext);
+			var window = Application.CreateWindow(activationState);
+			_virtualWindow = new WeakReference<IWindow>(window);
+			uiWindow.SetWindow(window, mauiContext);
+
+			return uiWindow;
 		}
 
 		public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
@@ -95,19 +122,6 @@ namespace Microsoft.Maui
 		public override void WillEnterForeground(UIApplication application)
 		{
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillEnterForeground>(del => del(application));
-		}
-
-		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
-		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
-		}
-	}
-
-	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
-	{
-		protected MauiUIApplicationDelegate()
-		{
-			Current = this;
 		}
 
 		public static MauiUIApplicationDelegate Current { get; private set; } = null!;

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using UIKit;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility;
@@ -14,6 +15,7 @@ using IOPath = System.IO.Path;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Size = Microsoft.Maui.Graphics.Size;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: Dependency(typeof(TestCloudService))]
 [assembly: Dependency(typeof(CacheService))]
@@ -99,9 +101,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 	}
 
 	[Register("AppDelegate")]
-	public partial class AppDelegate : FormsApplicationDelegate
+	public partial class AppDelegate : MauiUIApplicationDelegate
 	{
-		App _app;
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 
 		public override bool FinishedLaunching(UIApplication uiApplication, NSDictionary launchOptions)
 		{
@@ -113,8 +115,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			Xamarin.Calabash.Start();
 #endif
 
-			Forms.Init();
-			FormsMaps.Init();
+			//Forms.Init();
+			//FormsMaps.Init();
 			//FormsMaterial.Init();
 
 			Forms.ViewInitialized += (object sender, ViewInitializedEventArgs e) =>
@@ -136,9 +138,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				};
 			}
 
-			var app = new App();
-			_app = app;
-
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
 			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
 			MessagingCenter.Subscribe<Bugzilla40911>(this, Bugzilla40911.ReadyToSetUp40911Test, SetUp40911Test);
@@ -149,8 +148,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
 			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
-
-			LoadApplication(app);
 
 			return base.FinishedLaunching(uiApplication, launchOptions);
 		}
@@ -351,13 +348,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		{
 			// According to https://developer.xamarin.com/guides/testcloud/uitest/working-with/backdoors/
 			// this method has to return a string
-			return _app.NavigateToTestPage(test).ToString();
+			return (Microsoft.Maui.Controls.Application.Current as App).NavigateToTestPage(test).ToString();
 		}
 
 		[Export("reset:")]
 		public string Reset(string str)
 		{
-			_app.Reset();
+			(Microsoft.Maui.Controls.Application.Current as App).Reset();
 			return String.Empty;
 		}
 

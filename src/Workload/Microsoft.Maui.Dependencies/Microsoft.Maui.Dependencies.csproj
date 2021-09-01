@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <Description>.NET MAUI NuGet dependencies pack</Description>
+    <TargetFrameworks>net6.0;$(MauiPlatforms)</TargetFrameworks>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <IncludeSymbols>false</IncludeSymbols>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <Import Project="../Shared/LibraryPacks.targets" />
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Graphics" />
+    <PackageReference Include="Reloadify3000" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+    <PackageReference Include="Xamarin.Android.Glide" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
+    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
+    <PackageReference Include="Xamarin.AndroidX.Browser" />
+    <PackageReference Include="Xamarin.Google.Android.Material" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">
+    <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" NoWarn="NU1701" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" />
+  </ItemGroup>
+
+</Project>

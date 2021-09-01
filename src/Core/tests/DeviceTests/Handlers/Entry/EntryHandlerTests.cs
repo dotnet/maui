@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -32,6 +33,18 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.TextColor, GetNativeTextColor, entry.TextColor);
 		}
 
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				TextColor = null
+			};
+
+			await CreateHandlerAsync(entry);
+		}
+
 		[Theory(DisplayName = "IsPassword Initializes Correctly")]
 		[InlineData(true)]
 		[InlineData(false)]
@@ -50,10 +63,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var entry = new EntryStub()
 			{
-				Text = "Placeholder"
+				Placeholder = "Placeholder"
 			};
 
-			await ValidatePropertyInitValue(entry, () => entry.Placeholder, GetNativePlaceholder, entry.Placeholder);
+			await ValidatePropertyInitValue(entry, () => entry.Placeholder, GetNativePlaceholder, "Placeholder");
 		}
 
 		[Theory(DisplayName = "Is Text Prediction Enabled")]
@@ -159,39 +172,6 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeIsReadOnly,
 				setValue,
 				unsetValue);
-		}
-
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
-		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
-		{
-			var entry = new EntryStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", fontSize)
-			};
-
-			await ValidatePropertyInitValue(entry, () => entry.Font.FontSize, GetNativeUnscaledFontSize, entry.Font.FontSize);
-		}
-
-		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontWeight.Regular, false, false)]
-		[InlineData(FontWeight.Bold, true, false)]
-		[InlineData(FontWeight.Regular, false, true)]
-		[InlineData(FontWeight.Bold, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontWeight weight, bool isBold, bool isItalic)
-		{
-			var entry = new EntryStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
-			};
-
-			await ValidatePropertyInitValue(entry, () => entry.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(entry, () => entry.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
 		}
 
 		[Theory(DisplayName = "Validates clear button visibility.")]
@@ -540,6 +520,106 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeHorizontalTextAlignment,
 				nameof(IEntry.CharacterSpacing),
 				() => entry.CharacterSpacing = newSize);
+		}
+
+		[Theory(DisplayName = "CursorPosition Initializes Correctly")]
+		[InlineData(0)]
+		public async Task CursorPositionInitializesCorrectly(int initialPosition)
+		{
+			var entry = new EntryStub
+			{
+				Text = "This is TEXT!",
+				CursorPosition = initialPosition
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.CursorPosition, GetNativeCursorPosition, initialPosition);
+		}
+
+		[Theory(DisplayName = "CursorPosition Updates Correctly")]
+		[InlineData(2, 5)]
+		public async Task CursorPositionUpdatesCorrectly(int setValue, int unsetValue)
+		{
+			string text = "This is TEXT!";
+
+			var entry = new EntryStub
+			{
+				Text = text,
+			};
+
+			await ValidatePropertyUpdatesValue(
+				entry,
+				nameof(IEntry.CursorPosition),
+				GetNativeCursorPosition,
+				setValue,
+				unsetValue
+			);
+		}
+
+		[Theory(DisplayName = "CursorPosition is Capped to Text's Length")]
+		[InlineData(30)]
+		public async Task CursorPositionIsCapped(int initialPosition)
+		{
+			string text = "This is TEXT!";
+
+			var entry = new EntryStub
+			{
+				Text = text,
+				CursorPosition = initialPosition
+			};
+
+			int actualPosition = await GetValueAsync(entry, GetNativeCursorPosition);
+
+			Assert.Equal(text.Length, actualPosition);
+		}
+
+		[Theory(DisplayName = "SelectionLength Initializes Correctly")]
+		[InlineData(0)]
+		public async Task SelectionLengthInitializesCorrectly(int initialLength)
+		{
+			var entry = new EntryStub
+			{
+				Text = "This is TEXT!",
+				SelectionLength = initialLength
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.SelectionLength, GetNativeSelectionLength, initialLength);
+		}
+
+		[Theory(DisplayName = "SelectionLength Updates Correctly")]
+		[InlineData(2, 5)]
+		public async Task SelectionLengthUpdatesCorrectly(int setValue, int unsetValue)
+		{
+			string text = "This is TEXT!";
+
+			var entry = new EntryStub
+			{
+				Text = text,
+			};
+
+			await ValidatePropertyUpdatesValue(
+				entry,
+				nameof(IEntry.SelectionLength),
+				GetNativeSelectionLength,
+				setValue,
+				unsetValue
+			);
+		}
+
+		[Theory(DisplayName = "SelectionLength is Capped to Text Length")]
+		[InlineData(30)]
+		public async Task SelectionLengthIsCapped(int selectionLength)
+		{
+			string text = "This is TEXT!";
+
+			var entry = new EntryStub
+			{
+				Text = text,
+				SelectionLength = selectionLength
+			};
+
+			var actualLength = await GetValueAsync(entry, GetNativeSelectionLength);
+
+			Assert.Equal(text.Length, actualLength);
 		}
 	}
 }

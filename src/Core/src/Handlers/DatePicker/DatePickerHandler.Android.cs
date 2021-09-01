@@ -1,13 +1,13 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
-		static Drawable? DefaultBackground;
+		Drawable? _defaultBackground;
+		ColorStateList? _defaultTextColors;
 
 		DatePickerDialog? _dialog;
 
@@ -27,11 +27,12 @@ namespace Microsoft.Maui.Handlers
 			return mauiDatePicker;
 		}
 
-		protected override void SetupDefaults(MauiDatePicker nativeView)
+		void SetupDefaults(MauiDatePicker nativeView)
 		{
-			DefaultBackground = nativeView.Background;
+			_defaultBackground = nativeView.Background;
+			_defaultTextColors = nativeView.TextColors;
 
-			base.SetupDefaults(nativeView);
+
 		}
 
 		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.Handlers
 		// This is a Android-specific mapping
 		public static void MapBackground(DatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.NativeView?.UpdateBackground(datePicker, DefaultBackground);
+			handler.NativeView?.UpdateBackground(datePicker, handler._defaultBackground);
 		}
 
 		public static void MapFormat(DatePickerHandler handler, IDatePicker datePicker)
@@ -97,8 +98,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(datePicker, fontManager);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker) { }
+		public static void MapTextColor(DatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.NativeView?.UpdateTextColor(datePicker, handler._defaultTextColors);
+		}
 
 		void ShowPickerDialog()
 		{

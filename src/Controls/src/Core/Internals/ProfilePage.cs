@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 			var controls = new Grid();
 			var buttonA = new Button() { Text = "0s", HeightRequest = 62 };
-			controls.Children.AddHorizontal(new[] { buttonA });
+			controls.Add(buttonA);
 
 			var grid = new Grid
 			{
@@ -115,8 +115,8 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 			};
 			page.Content = grid;
-			grid.Children.Add(scrollView, 0, 0);
-			grid.Children.Add(controls, 0, 1);
+			grid.Add(scrollView, 0, 0);
+			grid.Add(controls, 0, 1);
 
 			scrollView.Content = label;
 

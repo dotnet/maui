@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using Microsoft.Maui.Layouts;
 
-// This is a temporary namespace until we rename everything and move the legacy layouts
-namespace Microsoft.Maui.Controls.Layout2
+namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Children))]
 	public class GridLayout : Layout, IGridLayout
@@ -13,7 +10,7 @@ namespace Microsoft.Maui.Controls.Layout2
 		readonly Dictionary<IView, GridInfo> _viewInfo = new();
 
 		public static readonly BindableProperty ColumnDefinitionsProperty = BindableProperty.Create("ColumnDefinitions",
-			typeof(ColumnDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
+			typeof(ColumnDefinitionCollection), typeof(GridLayout), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
 			{
 				var colDef = new ColumnDefinitionCollection();
@@ -22,7 +19,7 @@ namespace Microsoft.Maui.Controls.Layout2
 			});
 
 		public static readonly BindableProperty RowDefinitionsProperty = BindableProperty.Create("RowDefinitions",
-			typeof(RowDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
+			typeof(RowDefinitionCollection), typeof(GridLayout), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
 			{
 				var rowDef = new RowDefinitionCollection();
@@ -31,24 +28,28 @@ namespace Microsoft.Maui.Controls.Layout2
 			});
 
 		public static readonly BindableProperty RowSpacingProperty = BindableProperty.Create("RowSpacing", typeof(double),
-			typeof(GridLayout), 0d, propertyChanged: (bindable, oldValue, newValue) => ((GridLayout)bindable).InvalidateMeasure());
+			typeof(GridLayout), 0d, propertyChanged: Invalidate);
 
 		public static readonly BindableProperty ColumnSpacingProperty = BindableProperty.Create("ColumnSpacing", typeof(double),
-			typeof(GridLayout), 0d, propertyChanged: (bindable, oldValue, newValue) => ((GridLayout)bindable).InvalidateMeasure());
+			typeof(GridLayout), 0d, propertyChanged: Invalidate);
 
 		#region Row/Column/Span Attached Properties
 
 		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row",
-			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0);
+			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0,
+			propertyChanged: Invalidate);
 
 		public static readonly BindableProperty RowSpanProperty = BindableProperty.CreateAttached("RowSpan",
-			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1);
+			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1,
+			propertyChanged: Invalidate);
 
 		public static readonly BindableProperty ColumnProperty = BindableProperty.CreateAttached("Column",
-			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0);
+			typeof(int), typeof(GridLayout), default(int), validateValue: (bindable, value) => (int)value >= 0,
+			propertyChanged: Invalidate);
 
 		public static readonly BindableProperty ColumnSpanProperty = BindableProperty.CreateAttached("ColumnSpan",
-			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1);
+			typeof(int), typeof(GridLayout), 1, validateValue: (bindable, value) => (int)value >= 1,
+			propertyChanged: Invalidate);
 
 		public static int GetColumn(BindableObject bindable)
 		{
@@ -97,14 +98,14 @@ namespace Microsoft.Maui.Controls.Layout2
 		IReadOnlyList<IGridRowDefinition> IGridLayout.RowDefinitions => _rowDefs ??= new(RowDefinitions);
 		IReadOnlyList<IGridColumnDefinition> IGridLayout.ColumnDefinitions => _colDefs ??= new(ColumnDefinitions);
 
-		[TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ColumnDefinitionCollectionTypeConverter))]
 		public ColumnDefinitionCollection ColumnDefinitions
 		{
 			get { return (ColumnDefinitionCollection)GetValue(ColumnDefinitionsProperty); }
 			set { SetValue(ColumnDefinitionsProperty, value); }
 		}
 
-		[TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(RowDefinitionCollectionTypeConverter))]
 		public RowDefinitionCollection RowDefinitions
 		{
 			get { return (RowDefinitionCollection)GetValue(RowDefinitionsProperty); }
@@ -178,6 +179,7 @@ namespace Microsoft.Maui.Controls.Layout2
 					break;
 				default:
 					_viewInfo[view].Row = row;
+					InvalidateMeasure();
 					break;
 			}
 		}
@@ -191,6 +193,7 @@ namespace Microsoft.Maui.Controls.Layout2
 					break;
 				default:
 					_viewInfo[view].RowSpan = span;
+					InvalidateMeasure();
 					break;
 			}
 		}
@@ -204,6 +207,7 @@ namespace Microsoft.Maui.Controls.Layout2
 					break;
 				default:
 					_viewInfo[view].Col = col;
+					InvalidateMeasure();
 					break;
 			}
 		}
@@ -217,24 +221,89 @@ namespace Microsoft.Maui.Controls.Layout2
 					break;
 				default:
 					_viewInfo[view].ColSpan = span;
+					InvalidateMeasure();
 					break;
 			}
 		}
 
-		public override void Add(IView child)
-		{
-			base.Add(child);
+		// These extra internal add methods are here to keep some other old stuff working until we re-add
+		// the Grid convenience methods
 
-			if (!(child is BindableObject))
-			{
-				_viewInfo[child] = new GridInfo();
-			}
+		internal void Add(IView view, int left, int top)
+		{
+			if (view == null)
+				throw new ArgumentNullException(nameof(view));
+			if (left < 0)
+				throw new ArgumentOutOfRangeException(nameof(left));
+			if (top < 0)
+				throw new ArgumentOutOfRangeException(nameof(top));
+
+			Add(view, left, left + 1, top, top + 1);
 		}
 
-		public override void Remove(IView child)
+		internal void Add(IView view, int left, int right, int top, int bottom)
 		{
-			_viewInfo.Remove(child);
-			base.Remove(child);
+			if (view == null)
+				throw new ArgumentNullException(nameof(view));
+			if (left < 0)
+				throw new ArgumentOutOfRangeException(nameof(left));
+			if (top < 0)
+				throw new ArgumentOutOfRangeException(nameof(top));
+			if (left >= right)
+				throw new ArgumentOutOfRangeException(nameof(right));
+			if (top >= bottom)
+				throw new ArgumentOutOfRangeException(nameof(bottom));
+
+			SetRow(view, top);
+			SetRowSpan(view, bottom - top);
+			SetColumn(view, left);
+			SetColumnSpan(view, right - left);
+
+			Add(view);
+		}
+
+		protected override void OnAdd(int index, IView view)
+		{
+			if (view is not BindableObject)
+			{
+				_viewInfo[view] = new GridInfo();
+			}
+
+			base.OnAdd(index, view);
+		}
+
+		protected override void OnClear()
+		{
+			_viewInfo.Clear();
+			base.OnClear();
+		}
+
+		protected override void OnRemove(int index, IView view)
+		{
+			_viewInfo.Remove(view);
+			base.OnRemove(index, view);
+		}
+
+		protected override void OnInsert(int index, IView view)
+		{
+			if (view is not BindableObject)
+			{
+				_viewInfo[view] = new GridInfo();
+			}
+
+			base.OnInsert(index, view);
+		}
+
+		protected override void OnUpdate(int index, IView view, IView oldView)
+		{
+			_viewInfo.Remove(oldView);
+
+			if (view is not BindableObject)
+			{
+				_viewInfo[view] = new GridInfo();
+			}
+
+			base.OnUpdate(index, view, oldView);
 		}
 
 		protected override ILayoutManager CreateLayoutManager() => new GridLayoutManager(this);
@@ -256,9 +325,23 @@ namespace Microsoft.Maui.Controls.Layout2
 			gridLayout.DefinitionsChanged(bindable, EventArgs.Empty);
 		}
 
+		static void Invalidate(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is Element element && element.Parent is GridLayout gridLayout)
+			{
+				gridLayout.InvalidateMeasure();
+			}
+		}
+
 		void DefinitionsChanged(object sender, EventArgs args)
 		{
 			InvalidateMeasure();
+		}
+
+		protected override void InvalidateMeasure()
+		{
+			base.InvalidateMeasure();
+			(this as IView)?.InvalidateMeasure();
 		}
 
 		class GridInfo

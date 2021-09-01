@@ -26,6 +26,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
 
+		public TextAlignment VerticalTextAlignment { get; set; }
+
 		int IItemDelegate<string>.GetCount() => Items?.Count ?? ItemsSource?.Count ?? 0;
 
 		string IItemDelegate<string>.GetItem(int index)

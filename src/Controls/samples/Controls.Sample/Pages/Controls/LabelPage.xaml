@@ -1,0 +1,35 @@
+﻿<views:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.LabelPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="Label">
+    <views:BasePage.Content>
+        <VerticalStackLayout
+            Margin="12">
+            <Label
+                Text="Default"
+                Style="{StaticResource Headline}"/>
+            <Label
+                Text="Label"/>
+            <Label
+                Text="TextColor"
+                Style="{StaticResource Headline}"/>
+            <Label
+                TextColor="Red"
+                Text="TextColor"/>
+
+            <Label
+                Text="Html text"
+                Style="{StaticResource Headline}"/>
+            <Label
+                TextType="Html">
+                <x:String>
+                <![CDATA[
+                    <h1>Hello World!</h1><br/>Second Line<br/><b>Bold Line</b>
+                ]]>
+                </x:String>
+            </Label>
+        </VerticalStackLayout>
+    </views:BasePage.Content>
+</views:BasePage>

@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <PackageType>Template</PackageType>
     <PackageId>Microsoft.Maui.Templates</PackageId>
-    <PackageVersion>6.0.100-preview.4.9991</PackageVersion>
     <Title>.NET MAUI Templates</Title>
     <Authors>Microsoft</Authors>
     <Description>Templates for .NET MAUI.</Description>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
@@ -16,10 +16,43 @@
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
-
   <ItemGroup>
     <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**" />
     <Compile Remove="**\*" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <BeforePack>_UpdateTemplateVersions</BeforePack>
+  </PropertyGroup>
+
+  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions">
+    <ItemGroup>
+      <_TemplateJsonFile Include="templates\*\.template.config\template.json" />
+      <_TemplateJsonFileWithContent
+          Include="@(_TemplateJsonFile)"
+          Contents="$([System.IO.File]::ReadAllText('%(FullPath)')
+              .Replace('WINDOWSAPPSDK_VERSION_VALUE', '$(_MicrosoftWindowsAppSdkVersion)'))" />
+    </ItemGroup>
+    <WriteLinesToFile
+        File="@(_TemplateJsonFileWithContent -> '$(IntermediateOutputPath)%(Identity)')"
+        Lines="%(Contents)"
+        Overwrite="true" />
+    <ItemGroup>
+      <FileWrites Include="@(_TemplateJsonFile -> '$(IntermediateOutputPath)%(Identity)')" />
+      <Content Remove="@(_TemplateJsonFile)" />
+      <Content Include="@(_TemplateJsonFile -> '$(IntermediateOutputPath)%(Identity)')" PackagePath="$(ContentTargetFolders)\%(Identity)" Pack="true" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CopyToTemplatePacks" AfterTargets="Pack">
+    <ItemGroup>
+      <_PackagesToCopy Include="$(PackageOutputPath)/$(PackageId).*.nupkg" />
+    </ItemGroup>
+    <Copy
+        SourceFiles="@(_PackagesToCopy)"
+        DestinationFolder="$(DotNetTemplatePacksDirectory)"
+        SkipUnchangedFiles="true"
+    />
+  </Target>
 
 </Project>

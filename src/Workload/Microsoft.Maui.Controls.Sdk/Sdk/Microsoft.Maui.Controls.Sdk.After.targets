@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <EnableDefaultMauiItems Condition=" '$(EnableDefaultMauiItems)' == '' ">$(EnableDefaultItems)</EnableDefaultMauiItems>
+    <EnableDefaultXamlItems Condition=" '$(EnableDefaultXamlItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultXamlItems>
+    <EnableDefaultCssItems  Condition=" '$(EnableDefaultCssItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultCssItems>
+    <EnableDefaultEmbeddedResourceItems Condition=" '$(EnableDefaultEmbeddedResourceItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultEmbeddedResourceItems>
+  </PropertyGroup>
+  <Import Project="../targets/Microsoft.Maui.Controls.targets" />
+  <Import Project="WinUI.targets" Condition=" '$(TargetPlatformIdentifier)' == 'windows' " />
+  <ItemGroup Condition=" '$(DisableMauiAnalyzers)' != 'true' ">
+    <Analyzer Include="$(MSBuildThisFileDirectory)../targets/Microsoft.Maui.Controls.SourceGen.dll" />
+  </ItemGroup>
+  <!-- @(ProjectCapability) used to identify parts of Maui -->
+  <ItemGroup>
+    <ProjectCapability Include="Maui"           Condition=" '$(UseMaui)' == 'true' " />
+    <ProjectCapability Include="MauiAssets"     Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' " />
+    <ProjectCapability Include="MauiBlazor"     Condition=" '$(UsingMicrosoftNETSdkRazor)' == 'true' " />
+    <ProjectCapability Include="MauiCore"       Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' " />
+    <ProjectCapability Include="MauiEssentials" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' " />
+  </ItemGroup>
+</Project>
