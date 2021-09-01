@@ -37,15 +37,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			this XmlType xmlType,
 			IEnumerable<XmlnsDefinitionAttribute> xmlnsDefinitions,
 			string defaultAssemblyName,
-			Func<XamlLoader.FallbackTypeInfo, T> refFromTypeInfo,
-			out IList<XamlLoader.FallbackTypeInfo>? potentialTypes)
+			Func<(string typeName, string clrNamespace, string assemblyName), T> refFromTypeInfo)
 			where T : class
 		{
 			var lookupAssemblies = new List<XmlnsDefinitionAttribute>();
 			var namespaceURI = xmlType.NamespaceUri;
 			var elementName = xmlType.Name;
 			var typeArguments = xmlType.TypeArguments;
-			potentialTypes = null;
 
 			foreach (var xmlnsDef in xmlnsDefinitions)
 			{
@@ -57,7 +55,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (lookupAssemblies.Count == 0)
 			{
 				XmlnsHelper.ParseXmlns(namespaceURI, out _, out var ns, out var asmstring, out _);
-				asmstring = asmstring ?? defaultAssemblyName;
+				asmstring ??= defaultAssemblyName;
 				if (namespaceURI != null && ns != null)
 					lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) { AssemblyName = asmstring });
 			}
@@ -77,19 +75,13 @@ namespace Microsoft.Maui.Controls.Xaml
 				lookupNames[i] = name;
 			}
 
-			potentialTypes = new List<XamlLoader.FallbackTypeInfo>();
+			var potentialTypes = new List<(string typeName, string clrNamespace, string assemblyName)>();
 			foreach (string typeName in lookupNames)
 				foreach (XmlnsDefinitionAttribute xmlnsDefinitionAttribute in lookupAssemblies)
-					potentialTypes.Add(new XamlLoader.FallbackTypeInfo
-					{
-						ClrNamespace = xmlnsDefinitionAttribute.ClrNamespace,
-						TypeName = typeName,
-						AssemblyName = xmlnsDefinitionAttribute.AssemblyName,
-						XmlNamespace = xmlnsDefinitionAttribute.XmlNamespace
-					});
+					potentialTypes.Add(new (typeName, xmlnsDefinitionAttribute.ClrNamespace, xmlnsDefinitionAttribute.AssemblyName));
 
 			T? type = null;
-			foreach (XamlLoader.FallbackTypeInfo typeInfo in potentialTypes)
+			foreach (var typeInfo in potentialTypes)
 				if ((type = refFromTypeInfo(typeInfo)) != null)
 					break;
 
