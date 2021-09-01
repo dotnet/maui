@@ -44,10 +44,10 @@
     <MauiSplashScreen Include="Resources\AppIcons\appicon_foreground.svg" Color="#FF69B4" />
   </ItemGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
     <!-- Required - WinUI can't deploy in a multi-targeting environment -->
     <OutputType>WinExe</OutputType>
-    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-windows'))">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Properties\launchSettings.json" />
