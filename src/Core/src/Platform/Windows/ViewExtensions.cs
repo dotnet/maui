@@ -79,7 +79,7 @@ namespace Microsoft.Maui
 			bool hasBorder = false;
 
 			if (view is ILayout layout)
-				hasBorder = layout.Shape != null && view.Stroke != null;
+				hasBorder = layout.Shape != null && layout.Stroke != null;
 
 			if (hasBorder)
 				nativeView?.UpdateBorderBackground(view);
