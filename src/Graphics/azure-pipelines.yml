@@ -1,10 +1,10 @@
 variables:
   BuildVersion: $[counter('release-counter', 1)]
   IsRunningOnCI: true
-  DotNet.Version: 6.0.100-preview.7.21379.14
+  DotNet.Version: 6.0.100-rc.1.21426.23
   DotNet.Cli.Telemetry.OptOut: true
-  MauiCheck.Version: 0.7.3
-  Maui.Version: ''
+  MauiCheck.Version: 0.8.4
+  Maui.Version: '--preview'
   Tizen.Version: 6.5.100-preview.7.84
 
 parameters:
@@ -95,6 +95,9 @@ stages:
                 dotnet vs install preview Enterprise +core +mobile +desktop +uwp --quiet
                 dotnet vs where
               displayName: update vs
+
+            - pwsh: echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_11_X64)"
+              displayName: Select JDK 11
 
             - pwsh: |
                 & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
