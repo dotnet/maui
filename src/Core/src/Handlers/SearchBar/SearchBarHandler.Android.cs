@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Handlers
 		protected override SearchView CreateNativeView()
 		{
 			var searchView = new SearchView(Context);
+			searchView.SetIconifiedByDefault(false);
 
 			_editText = searchView.GetFirstChildOfType<EditText>();
 
