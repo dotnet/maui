@@ -5,6 +5,7 @@ using Android.Graphics.Drawables.Shapes;
 using Android.Util;
 using AndroidX.Core.Content;
 using Microsoft.Maui.Graphics.Native;
+using static Android.Graphics.Paint;
 using AColor = Android.Graphics.Color;
 using AContext = Android.Content.Context;
 using ARect = Android.Graphics.Rect;
@@ -35,11 +36,15 @@ namespace Microsoft.Maui.Graphics
 		GPaint? _background;
 		AColor? _backgroundColor;
 
-		GPaint? _border;
+		GPaint? _stroke;
 		AColor? _borderColor;
 		PathEffect? _borderPathEffect;
 
-		float _borderWidth;
+		Join? _strokeLineJoin;
+		Cap? _strokeLineCap;
+
+		float _strokeThickness;
+		float _strokeMiterLimit;
 
 		public MauiDrawable(AContext? context)
 		{
@@ -167,7 +172,7 @@ namespace Microsoft.Maui.Graphics
 				? (AColor?)null
 				: solidPaint.Color.ToNative();
 
-			_border = null;
+			_stroke = null;
 			SetBorderColor(borderColor);
 		}
 
@@ -176,7 +181,7 @@ namespace Microsoft.Maui.Graphics
 			_invalidatePath = true;
 
 			_borderColor = null;
-			_border = linearGradientPaint;
+			_stroke = linearGradientPaint;
 
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
@@ -187,7 +192,7 @@ namespace Microsoft.Maui.Graphics
 			_invalidatePath = true;
 
 			_borderColor = null;
-			_border = radialGradientPaint;
+			_stroke = radialGradientPaint;
 
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
@@ -207,13 +212,13 @@ namespace Microsoft.Maui.Graphics
 		{
 			_invalidatePath = true;
 
-			_borderWidth = (float)(strokeWidth * _density);
+			_strokeThickness = (float)(strokeWidth * _density);
 
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
 		}
 
-		public void SetBorderDash(double[] strokeDashArray, double strokeDashOffset)
+		public void SetBorderDash(float[]? strokeDashArray, double strokeDashOffset)
 		{
 			if (strokeDashArray == null || strokeDashArray.Length == 0 || strokeDashOffset <= 0)
 				_borderPathEffect = null;
@@ -222,11 +227,62 @@ namespace Microsoft.Maui.Graphics
 				float[] strokeDash = new float[strokeDashArray.Length];
 
 				for (int i = 0; i < strokeDashArray.Length; i++)
-					strokeDash[i] = (float)strokeDashArray[i] * _borderWidth;
+					strokeDash[i] = strokeDashArray[i] * _strokeThickness;
 
 				if (strokeDash.Length > 1)
-					_borderPathEffect = new DashPathEffect(strokeDash, (float)strokeDashOffset * _borderWidth);
+					_borderPathEffect = new DashPathEffect(strokeDash, (float)strokeDashOffset * _strokeThickness);
 			}
+
+			InvalidateSelf();
+		}
+
+		public void SetBorderMiterLimit(float strokeMiterLimit)
+		{
+			_strokeMiterLimit = strokeMiterLimit;
+
+			InvalidateSelf();
+		}
+
+		public void SetBorderLineJoin(LineJoin lineJoin)
+		{
+			Join? aLineJoin = Join.Miter;
+
+			switch (lineJoin)
+			{
+				case LineJoin.Miter:
+					aLineJoin = Join.Miter;
+					break;
+				case LineJoin.Bevel:
+					aLineJoin = Join.Bevel;
+					break;
+				case LineJoin.Round:
+					aLineJoin = Join.Round;
+					break;
+			}
+
+			_strokeLineJoin = aLineJoin;
+
+			InvalidateSelf();
+		}
+
+		public void SetBorderLineCap(LineCap lineCap)
+		{
+			Cap? aLineCap = Cap.Butt;
+
+			switch (lineCap)
+			{
+				case LineCap.Butt:
+					aLineCap = Cap.Butt;
+					break;
+				case LineCap.Square:
+					aLineCap = Cap.Square;
+					break;
+				case LineCap.Round:
+					aLineCap = Cap.Round;
+					break;
+			}
+
+			_strokeLineCap = aLineCap;
 
 			InvalidateSelf();
 		}
@@ -255,7 +311,6 @@ namespace Microsoft.Maui.Graphics
 			if (_disposed)
 				return;
 
-
 			if (HasBorder())
 			{
 				if (Paint != null)
@@ -263,7 +318,10 @@ namespace Microsoft.Maui.Graphics
 
 				if (_borderPaint != null)
 				{
-					_borderPaint.StrokeWidth = _borderWidth;
+					_borderPaint.StrokeWidth = _strokeThickness;
+					_borderPaint.StrokeJoin = _strokeLineJoin;
+					_borderPaint.StrokeCap = _strokeLineCap;
+					_borderPaint.StrokeMiter = _strokeMiterLimit * 2;
 
 					if (_borderPathEffect != null)
 						_borderPaint.SetPathEffect(_borderPathEffect);
@@ -272,8 +330,8 @@ namespace Microsoft.Maui.Graphics
 						_borderPaint.Color = _borderColor.Value;
 					else
 					{
-						if (_border != null)
-							SetPaint(_borderPaint, _border);
+						if (_stroke != null)
+							SetPaint(_borderPaint, _stroke);
 					}
 				}
 
@@ -386,12 +444,12 @@ namespace Microsoft.Maui.Graphics
 		{
 			InitializeBorderIfNeeded();
 
-			return _shape != null && _borderWidth > 0;
+			return _shape != null && _strokeThickness > 0;
 		}
 
 		void InitializeBorderIfNeeded()
 		{
-			if (_borderWidth == 0)
+			if (_strokeThickness == 0)
 			{
 				DisposeBorder(true);
 				return;

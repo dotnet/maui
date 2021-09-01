@@ -42,30 +42,41 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackground = null)
 		{
-			// Remove previous background gradient if any
-			if (nativeView.Background is MauiDrawable mauiDrawable)
+			if (view is ILayout layout)
 			{
-				nativeView.Background = null;
-				mauiDrawable.Dispose();
-			}
+				bool hasBorder = layout.Shape != null && layout.Stroke != null;
 
-			var paint = view.Background;
-			if (paint.IsNullOrEmpty())
-			{
-				if (defaultBackground != null)
-					nativeView.Background = defaultBackground;
+				if (hasBorder)
+					nativeView.UpdateMauiDrawable(layout);
 			}
 			else
 			{
-				if (paint is SolidPaint solidPaint)
+				// Remove previous background gradient if any
+				if (nativeView.Background is MauiDrawable mauiDrawable)
 				{
-					if (solidPaint.Color is Color backgroundColor)
-						nativeView.SetBackgroundColor(backgroundColor.ToNative());
+					nativeView.Background = null;
+					mauiDrawable.Dispose();
+				}
+
+				var paint = view.Background;
+
+				if (paint.IsNullOrEmpty())
+				{
+					if (defaultBackground != null)
+						nativeView.Background = defaultBackground;
 				}
 				else
 				{
-					if (paint!.ToDrawable(nativeView.Context) is Drawable drawable)
-						nativeView.Background = drawable;
+					if (paint is SolidPaint solidPaint)
+					{
+						if (solidPaint.Color is Color backgroundColor)
+							nativeView.SetBackgroundColor(backgroundColor.ToNative());
+					}
+					else
+					{
+						if (paint!.ToDrawable(nativeView.Context) is Drawable drawable)
+							nativeView.Background = drawable;
+					}
 				}
 			}
 		}

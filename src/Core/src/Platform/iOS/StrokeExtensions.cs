@@ -88,7 +88,7 @@ namespace Microsoft.Maui
 			nativeView.UpdateMauiCALayer(layout);
 		}
 
-		internal static void UpdateMauiCALayer(this UIView nativeView, ILayout view)
+		internal static void UpdateMauiCALayer(this UIView nativeView, ILayout layout)
 		{
 			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
 
@@ -111,14 +111,14 @@ namespace Microsoft.Maui
 
 			if (backgroundLayer is MauiCALayer mauiCALayer)
 			{
-				mauiCALayer.SetBackground(view.Background);
-				mauiCALayer.SetBorderBrush(view.Stroke);
-				mauiCALayer.SetBorderWidth(view.StrokeThickness);
-				mauiCALayer.SetBorderDash(view.StrokeDashPattern, view.StrokeDashOffset);
-				mauiCALayer.SetBorderMiterLimit(view.StrokeMiterLimit);
-				mauiCALayer.SetBorderLineJoin(view.StrokeLineJoin);
-				mauiCALayer.SetBorderLineCap(view.StrokeLineCap);
-				mauiCALayer.SetBorderShape(view.Shape);
+				mauiCALayer.SetBackground(layout.Background);
+				mauiCALayer.SetBorderBrush(layout.Stroke);
+				mauiCALayer.SetBorderWidth(layout.StrokeThickness);
+				mauiCALayer.SetBorderDash(layout.StrokeDashPattern, layout.StrokeDashOffset);
+				mauiCALayer.SetBorderMiterLimit(layout.StrokeMiterLimit);
+				mauiCALayer.SetBorderLineJoin(layout.StrokeLineJoin);
+				mauiCALayer.SetBorderLineCap(layout.StrokeLineCap);
+				mauiCALayer.SetBorderShape(layout.Shape);
 			}
 		}
 	}
