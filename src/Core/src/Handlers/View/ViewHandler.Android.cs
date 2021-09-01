@@ -9,82 +9,80 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
-		MauiAccessibilityDelegateCompat? AccessibilityDelegate { get; set; }
-
 		partial void DisconnectingHandler(NativeView nativeView)
 		{
-			if (nativeView.IsAlive() && AccessibilityDelegate != null)
+			if (nativeView.IsAlive() 
+				&& ViewCompat.GetAccessibilityDelegate(nativeView) is MauiAccessibilityDelegateCompat ad)
 			{
-				AccessibilityDelegate.Handler = null;
+				ad.Handler = null;
 				ViewCompat.SetAccessibilityDelegate(nativeView, null);
-				AccessibilityDelegate = null;
 			}
 		}
 
-		static partial void MappingFrame(ViewHandler handler, IView view)
+		static partial void MappingFrame(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateAnchorX(view);
-			((NativeView?)handler.WrappedNativeView)?.UpdateAnchorY(view);
+			handler.GetWrappedNativeView()?.UpdateAnchorX(view);
+			handler.GetWrappedNativeView()?.UpdateAnchorY(view);
 		}
 
-		public static void MapTranslationX(ViewHandler handler, IView view)
+		public static void MapTranslationX(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateTranslationX(view);
+			handler.GetWrappedNativeView()?.UpdateTranslationX(view);
 		}
 
-		public static void MapTranslationY(ViewHandler handler, IView view)
+		public static void MapTranslationY(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateTranslationY(view);
+			handler.GetWrappedNativeView()?.UpdateTranslationY(view);
 		}
 
-		public static void MapScale(ViewHandler handler, IView view)
+		public static void MapScale(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateScale(view);
+			handler.GetWrappedNativeView()?.UpdateScale(view);
 		}
 
-		public static void MapScaleX(ViewHandler handler, IView view)
+		public static void MapScaleX(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateScaleX(view);
+			handler.GetWrappedNativeView()?.UpdateScaleX(view);
 		}
 
-		public static void MapScaleY(ViewHandler handler, IView view)
+		public static void MapScaleY(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateScaleY(view);
+			handler.GetWrappedNativeView()?.UpdateScaleY(view);
 		}
 
-		public static void MapRotation(ViewHandler handler, IView view)
+		public static void MapRotation(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateRotation(view);
+			handler.GetWrappedNativeView()?.UpdateRotation(view);
 		}
 
-		public static void MapRotationX(ViewHandler handler, IView view)
+		public static void MapRotationX(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateRotationX(view);
+			handler.GetWrappedNativeView()?.UpdateRotationX(view);
 		}
 
-		public static void MapRotationY(ViewHandler handler, IView view)
+		public static void MapRotationY(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateRotationY(view);
+			handler.GetWrappedNativeView()?.UpdateRotationY(view);
 		}
 
-		public static void MapAnchorX(ViewHandler handler, IView view)
+		public static void MapAnchorX(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateAnchorX(view);
+			handler.GetWrappedNativeView()?.UpdateAnchorX(view);
 		}
 
-		public static void MapAnchorY(ViewHandler handler, IView view)
+		public static void MapAnchorY(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateAnchorY(view);
+			handler.GetWrappedNativeView()?.UpdateAnchorY(view);
 		}
 
-		static partial void MappingSemantics(ViewHandler handler, IView view)
+		static partial void MappingSemantics(IViewHandler handler, IView view)
 		{
 			if (handler.NativeView == null)
 				return;
 
-			if (view.Semantics != null &&
-				handler is ViewHandler viewHandler &&
-				viewHandler.AccessibilityDelegate == null)
+			var accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(handler.NativeView as View) as MauiAccessibilityDelegateCompat;
+
+			if (view.Semantics != null && accessibilityDelegate == null)
 			{
 				if (handler.NativeView is not NativeView nativeView)
 					return;
@@ -94,7 +92,7 @@ namespace Microsoft.Maui.Handlers
 
 				if (!string.IsNullOrWhiteSpace(view.Semantics.Hint) || !string.IsNullOrWhiteSpace(view.Semantics.Description))
 				{
-					if (viewHandler.AccessibilityDelegate == null)
+					if (accessibilityDelegate == null)
 					{
 						var currentDelegate = ViewCompat.GetAccessibilityDelegate(nativeView);
 						if (currentDelegate is MauiAccessibilityDelegateCompat)
@@ -102,20 +100,18 @@ namespace Microsoft.Maui.Handlers
 
 						var mauiDelegate = new MauiAccessibilityDelegateCompat(currentDelegate)
 						{
-							Handler = viewHandler
+							Handler = handler
 						};
 
-						viewHandler.AccessibilityDelegate = mauiDelegate;
-						ViewCompat.SetAccessibilityDelegate(nativeView, viewHandler.AccessibilityDelegate);
+						ViewCompat.SetAccessibilityDelegate(nativeView, mauiDelegate);
 					}
 				}
-				else if (viewHandler.AccessibilityDelegate != null)
+				else if (accessibilityDelegate != null)
 				{
-					viewHandler.AccessibilityDelegate = null;
 					ViewCompat.SetAccessibilityDelegate(nativeView, null);
 				}
 
-				if (viewHandler.AccessibilityDelegate != null)
+				if (accessibilityDelegate != null)
 					nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
 			}
 		}
