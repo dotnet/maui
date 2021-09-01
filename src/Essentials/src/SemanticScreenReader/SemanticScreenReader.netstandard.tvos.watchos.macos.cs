@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Accessibility
 {
 	partial class SemanticScreenReaderImplementation : ISemanticScreenReader
 	{
-		public void Announce(string text) =>
+		static void PlatformAnnounce(string text) =>
 			throw ExceptionUtils.NotSupportedOrImplementedException;
 	}
 }
