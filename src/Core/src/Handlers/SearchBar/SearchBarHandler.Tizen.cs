@@ -49,6 +49,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdatePlaceholder(searchBar);
 		}
 
+		public static void MapPlaceholderColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdatePlaceholderColor(searchBar);
+		}
+
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();

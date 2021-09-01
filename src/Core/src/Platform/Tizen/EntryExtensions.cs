@@ -72,6 +72,11 @@ namespace Microsoft.Maui
 			nativeEntry.Placeholder = entry.Placeholder ?? string.Empty;
 		}
 
+		public static void UpdatePlaceholderColor(this Entry nativeEntry, ITextInput entry)
+		{
+			nativeEntry.PlaceholderColor = entry.PlaceholderColor.ToNative();
+		}
+
 		public static void UpdateIsReadOnly(this Entry nativeEntry, ITextInput entry)
 		{
 			nativeEntry.IsEditable = !entry.IsReadOnly;
