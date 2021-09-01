@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		where TAdapter : ItemsViewAdapter<TItemsView, TItemsViewSource>
 		where TItemsViewSource : IItemsViewSource
 	{
-		readonly AutomationPropertiesProvider _automationPropertiesProvider;
+		readonly FastRenderers.AutomationPropertiesProvider _automationPropertiesProvider;
 		readonly EffectControlProvider _effectControlProvider;
 
 		protected TAdapter ItemsViewAdapter;
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			new ContextThemeWrapper(context, Microsoft.Maui.Controls.Compatibility.Resource.Style.collectionViewTheme), null,
 			Microsoft.Maui.Controls.Compatibility.Resource.Attribute.collectionViewStyle)
 		{
-			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
+			_automationPropertiesProvider = new FastRenderers.AutomationPropertiesProvider(this);
 			_effectControlProvider = new EffectControlProvider(this);
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);

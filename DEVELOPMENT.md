@@ -4,11 +4,22 @@ This page contains steps to build and run the .NET MAUI repository from source.
 
 ## Requirements
 
-- Install the SDKs listed in the [maui-samples](https://github.com/dotnet/maui-samples) repository.
+- [Install .NET6](https://github.com/dotnet/maui/wiki/Installing-.NET-6)
 
 ## Running
 
 ### .NET 6
+
+#### Compile with globally installed `dotnet`
+
+This will build and launch Visual Studio using global workloads
+
+```dotnetcli
+dotnet tool restore
+dotnet cake --target=VS-NET6 --workloads=global
+```
+
+#### Compile using a local `bin\dotnet`
 
 You can run a `Cake` target to bootstrap .NET 6 in `bin\dotnet` and launch Visual Studio:
 
@@ -16,6 +27,7 @@ You can run a `Cake` target to bootstrap .NET 6 in `bin\dotnet` and launch Visua
 dotnet tool restore
 dotnet cake --target=VS-NET6
 ```
+
 _NOTES:_
 - _VS Mac is not yet supported._
 - _If the IDE doesn't show any Android devices try unloading and reloading the `Sample.Droid-net6` project._
@@ -34,7 +46,7 @@ dotnet build src\DotNet\DotNet.csproj
 dotnet cake --target=VS-DOGFOOD
 ```
 
-To build & run .NET 6 sample apps, you will also need to use `.\bin\dotnet\dotnet`:
+To build & run .NET 6 sample apps, you will also need to use `.\bin\dotnet\dotnet` or just `dotnet` if you've installed the workloads globally:
 ```dotnetcli
 .\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.Droid\Maui.Controls.Sample.Droid-net6.csproj -t:Run
 .\bin\dotnet\dotnet build src\Controls\samples\Controls.Sample.iOS\Maui.Controls.Sample.iOS-net6.csproj -t:Run
@@ -53,7 +65,7 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 
 ### Win UI 3
 
-To build and run WinUI 3 support, please install the additional components mentioned on the [Getting Started](https://github.com/dotnet/maui/wiki/Getting-Started) page and run:
+To build and run WinUI 3 support, please install the additional components mentioned on the [Getting Started](https://docs.microsoft.com/en-us/dotnet/maui/get-started/installation) page and run:
 
 ```dotnetcli
 dotnet tool restore

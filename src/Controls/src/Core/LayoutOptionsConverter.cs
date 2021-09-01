@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
@@ -6,18 +8,25 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.LayoutOptionsConverter")]
-	[Xaml.TypeConversion(typeof(LayoutOptions))]
 	public sealed class LayoutOptionsConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+
+			if (strValue != null)
 			{
-				var parts = value.Split('.');
+				var parts = strValue.Split('.');
 				if (parts.Length > 2 || (parts.Length == 2 && parts[0] != "LayoutOptions"))
-					throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(LayoutOptions)}");
-				value = parts[parts.Length - 1];
-				switch (value)
+					throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(LayoutOptions)}");
+				strValue = parts[parts.Length - 1];
+				switch (strValue)
 				{
 					case "Start":
 						return LayoutOptions.Start;
@@ -36,17 +45,17 @@ namespace Microsoft.Maui.Controls
 					case "FillAndExpand":
 						return LayoutOptions.FillAndExpand;
 				}
-				FieldInfo field = typeof(LayoutOptions).GetFields().FirstOrDefault(fi => fi.IsStatic && fi.Name == value);
+				FieldInfo field = typeof(LayoutOptions).GetFields().FirstOrDefault(fi => fi.IsStatic && fi.Name == strValue);
 				if (field != null)
 					return (LayoutOptions)field.GetValue(null);
 			}
 
-			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(LayoutOptions)}");
+			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(LayoutOptions)}");
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is LayoutOptions options))
+			if (value is not LayoutOptions options)
 				throw new NotSupportedException();
 			if (options.Alignment == LayoutAlignment.Start)
 				return $"{nameof(LayoutAlignment.Start)}{(options.Expands ? "AndExpand" : "")}";
@@ -58,5 +67,23 @@ namespace Microsoft.Maui.Controls
 				return $"{nameof(LayoutAlignment.Fill)}{(options.Expands ? "AndExpand" : "")}";
 			throw new NotSupportedException();
 		}
+
+		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
+			=> true;
+
+		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
+			=> false;
+
+		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+			=> new(new[] {
+				"Start",
+				"Center",
+				"End",
+				"Fill",
+				"StartAndExpand",
+				"CenterAndExpand",
+				"EndAndExpand",
+				"FillAndExpand"
+			});
 	}
 }

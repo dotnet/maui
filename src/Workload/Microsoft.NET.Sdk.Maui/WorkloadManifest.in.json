@@ -31,14 +31,20 @@
           "Microsoft.Maui.Controls.Sdk",
           "Microsoft.Maui.Extensions",
           "Microsoft.Maui.Resizetizer.Sdk",
-          "Microsoft.Maui.Templates"
+          "Microsoft.Maui.Templates",
+          "Microsoft.Maui.Core.Ref.any",
+          "Microsoft.Maui.Core.Runtime.any",
+          "Microsoft.Maui.Controls.Ref.any",
+          "Microsoft.Maui.Controls.Runtime.any",
+          "Microsoft.Maui.Essentials.Ref.any",
+          "Microsoft.Maui.Essentials.Runtime.any"
       ]
     },
     "maui-android": {
       "description": ".NET MAUI SDK for Android",
       "extends": [ 
         "maui-core",
-        "microsoft-android-sdk-full"
+        "android"
       ],
       "packs": [
           "Microsoft.Maui.Core.Ref.android",
@@ -53,7 +59,7 @@
       "description": ".NET MAUI SDK for Mac Catalyst",
       "extends": [ 
         "maui-core",
-        "microsoft-maccatalyst-sdk-full"
+        "maccatalyst"
       ],
       "packs": [
           "Microsoft.Maui.Core.Ref.maccatalyst",
@@ -68,7 +74,7 @@
       "description": ".NET MAUI SDK for iOS",
       "extends": [ 
         "maui-core",
-        "microsoft-ios-sdk-full"
+        "ios"
       ],
       "packs": [
           "Microsoft.Maui.Core.Ref.ios",
@@ -97,6 +103,10 @@
       "kind": "library",
       "version": "@VERSION@"
     },
+    "Microsoft.Maui.Core.Ref.any": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
     "Microsoft.Maui.Core.Ref.android": {
       "kind": "framework",
       "version": "@VERSION@"
@@ -110,6 +120,10 @@
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Core.Ref.win": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Runtime.any": {
       "kind": "framework",
       "version": "@VERSION@"
     },
@@ -129,6 +143,10 @@
       "kind": "framework",
       "version": "@VERSION@"
     },
+    "Microsoft.Maui.Controls.Ref.any": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
     "Microsoft.Maui.Controls.Ref.android": {
       "kind": "framework",
       "version": "@VERSION@"
@@ -142,6 +160,10 @@
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Controls.Ref.win": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Runtime.any": {
       "kind": "framework",
       "version": "@VERSION@"
     },
@@ -165,6 +187,10 @@
       "kind": "library",
       "version": "@VERSION@"
     },
+    "Microsoft.Maui.Essentials.Ref.any": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
     "Microsoft.Maui.Essentials.Ref.android": {
       "kind": "framework",
       "version": "@VERSION@"
@@ -178,6 +204,10 @@
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Essentials.Ref.win": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Essentials.Runtime.any": {
       "kind": "framework",
       "version": "@VERSION@"
     },
@@ -198,7 +228,7 @@
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Extensions": {
-      "kind": "framework",
+      "kind": "library",
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Controls.Sdk": {

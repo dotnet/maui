@@ -6,9 +6,9 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	[MemoryDiagnoser]
 	public class RegisterHandlersBenchmarker
 	{
-		IAppHostBuilder _builder;
+		MauiAppBuilder _builder;
 
-		Registrar<IFrameworkElement, IViewHandler> _registrar;
+		Registrar<IView, IViewHandler> _registrar;
 
 		[Params(100_000)]
 		public int N { get; set; }
@@ -16,13 +16,13 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[IterationSetup(Target = nameof(RegisterHandlerUsingDI))]
 		public void SetupForDI()
 		{
-			_builder = new AppHostBuilder();
+			_builder = MauiApp.CreateBuilder();
 		}
 
 		[IterationSetup(Target = nameof(RegisterHandlerUsingRegistrar))]
 		public void SetupForRegistrar()
 		{
-			_registrar = new Registrar<IFrameworkElement, IViewHandler>();
+			_registrar = new Registrar<IView, IViewHandler>();
 		}
 
 		[Benchmark]
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			for (int i = 0; i < N; i++)
 			{
-				_builder.ConfigureMauiHandlers((_, handlers) => handlers.AddHandler<IButton, ButtonHandler>());
+				_builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<IButton, ButtonHandler>());
 			}
 		}
 

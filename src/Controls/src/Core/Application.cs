@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>
+	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeElement
 	{
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		Task<IDictionary<string, object>> _propertiesTask;
@@ -63,60 +63,38 @@ namespace Microsoft.Maui.Controls
 
 		public static Application Current { get; set; }
 
+		Page _pendingMainPage;
+
 		public Page MainPage
 		{
 			get
 			{
 				if (Windows.Count == 0)
-					return null;
+					return _pendingMainPage;
 
 				return Windows[0].Page;
 			}
 			set
 			{
-				if (value == null)
-					throw new ArgumentNullException(nameof(value));
-
 				if (MainPage == value)
 					return;
 
 				OnPropertyChanging();
 
-				var previousPage = MainPage;
-
-				if (previousPage != null)
-					previousPage.Parent = null;
-
 				if (Windows.Count == 0)
 				{
-					// there are no windows, so add a new window
-
-					AddWindow(new Window(value));
+					_pendingMainPage = value;
 				}
 				else
 				{
-					// find the best window and replace the page
-
-					var theWindow = Windows[0];
-					foreach (var window in Windows)
-					{
-						if (window.Page == previousPage)
-						{
-							theWindow = window;
-							break;
-						}
-					}
-
-					theWindow.Page = value;
+					Windows[0].Page = value;
 				}
-
-				if (previousPage != null)
-					previousPage.NavigationProxy.Inner = NavigationProxy;
 
 				OnPropertyChanged();
 			}
 		}
 
+		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.")]
 		public IDictionary<string, object> Properties
 		{
 			get
@@ -130,7 +108,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal
+		internal override IReadOnlyList<Element> LogicalChildrenInternal
 		{
 			get { return _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren)); }
 		}
@@ -277,6 +255,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		[Obsolete("Properties API is obsolete, use Essentials.Preferences instead.")]
 		public async Task SavePropertiesAsync()
 		{
 			if (Dispatcher.IsInvokeRequired)
@@ -286,19 +265,6 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				await SetPropertiesAsync();
-			}
-		}
-
-		// Don't use this unless there really is no better option
-		internal void SavePropertiesAsFireAndForget()
-		{
-			if (Dispatcher.IsInvokeRequired)
-			{
-				Dispatcher.BeginInvokeOnMainThread(SaveProperties);
-			}
-			else
-			{
-				SaveProperties();
 			}
 		}
 
@@ -331,6 +297,9 @@ namespace Microsoft.Maui.Controls
 		internal static void ClearCurrent() => Current = null;
 
 		internal static bool IsApplicationOrNull(object element) =>
+			element == null || element is IApplication;
+
+		internal static bool IsApplicationOrWindowOrNull(object element) =>
 			element == null || element is IApplication || element is IWindow;
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
@@ -359,29 +328,29 @@ namespace Microsoft.Maui.Controls
 			OnAppLinkRequestReceived(uri);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendResume()
+		internal void SendResume()
 		{
 			Current = this;
 			OnResume();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendSleep()
+		internal void SendSleep()
 		{
 			OnSleep();
-			SavePropertiesAsFireAndForget();
+#pragma warning disable CS0618 // Type or member is obsolete
+			SavePropertiesAsync().FireAndForget();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Task SendSleepAsync()
+		internal Task SendSleepAsync()
 		{
 			OnSleep();
+#pragma warning disable CS0618 // Type or member is obsolete
 			return SavePropertiesAsync();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendStart()
+		internal void SendStart()
 		{
 			OnStart();
 		}
@@ -414,7 +383,9 @@ namespace Microsoft.Maui.Controls
 			await SaveSemaphore.WaitAsync();
 			try
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				await DependencyService.Get<IDeserializer>().SerializePropertiesAsync(Properties);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 			finally
 			{
@@ -438,5 +409,7 @@ namespace Microsoft.Maui.Controls
 
 			NavigationProxy = null;
 		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => this.Windows;
 	}
 }

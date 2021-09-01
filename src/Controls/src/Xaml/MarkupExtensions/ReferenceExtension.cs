@@ -19,14 +19,6 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (value != null)
 				return value;
 
-			//legacy path. could be hit by code processed by previous versions of XamlC
-#pragma warning disable CS0612 // Type or member is obsolete
-			value = serviceProvider.GetService<INameScopeProvider>()?.NameScope?.FindByName(Name);
-			if (value != null)
-				return value;
-
-#pragma warning restore CS0612 // Type or member is obsolete
-
 			//fallback
 			var valueProvider = serviceProvider.GetService<IProvideValueTarget>() as IProvideParentValues
 								   ?? throw new ArgumentException("serviceProvider does not provide an IProvideValueTarget");

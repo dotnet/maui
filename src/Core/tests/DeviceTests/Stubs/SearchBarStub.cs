@@ -9,6 +9,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public string Text { get => _text; set => SetProperty(ref _text, value); }
 
 		public string Placeholder { get; set; }
+		
+		public Color PlaceholderColor { get; set; }
 
 		public Color PlaceholderColor { get; set; }
 

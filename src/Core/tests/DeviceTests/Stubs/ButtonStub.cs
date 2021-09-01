@@ -15,6 +15,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Thickness Padding { get; set; }
 
+		public IImageSource ImageSource { get; set; }
+
 		public event EventHandler Pressed;
 		public event EventHandler Released;
 		public event EventHandler Clicked;
@@ -22,5 +24,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		void IButton.Pressed() => Pressed?.Invoke(this, EventArgs.Empty);
 		void IButton.Released() => Released?.Invoke(this, EventArgs.Empty);
 		void IButton.Clicked() => Clicked?.Invoke(this, EventArgs.Empty);
+
+		public void ImageSourceLoaded()
+		{
+		}
 	}
 }

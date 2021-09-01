@@ -13,8 +13,8 @@ namespace Microsoft.Maui
 		string Placeholder { get; }
 
 		/// <summary>
-		/// Gets the color of the placeholder text.
+		/// Gets or sets the placeholder text color.
 		/// </summary>
-		Color PlaceholderColor { get; }
+		Color PlaceholderColor { get; set; }
 	}
 }

@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
+    <RootNamespace>Maui.Essentials.Sample</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Essentials.Sample</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <SingleProject>true</SingleProject>
+    <IsPackable>false</IsPackable>
+
+    <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
+    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>MSIX</WindowsPackageType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ApplicationTitle>Essentials</ApplicationTitle>
+    <ApplicationId>com.microsoft.maui.essentials</ApplicationId>
+    <ApplicationVersion>1.0</ApplicationVersion>
+    <AndroidVersionCode>1</AndroidVersionCode>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(UseMaui)' != 'true' and $(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials-net6.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiImage Include="Resources\Images\*" />
+    <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appiconfg.svg" IsAppIcon="true" Color="#512BD4" />
+    <MauiSplashScreen Include="Resources\AppIcons\appiconfg.svg" Color="#512BD4" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <InvariantGlobalization Condition="$(TargetFramework.Contains('-maccatalyst'))">true</InvariantGlobalization>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+</Project>

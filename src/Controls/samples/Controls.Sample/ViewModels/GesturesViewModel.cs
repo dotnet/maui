@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Pages;
-using Maui.Controls.Sample.Pages.Gestures;
 using Maui.Controls.Sample.ViewModels.Base;
 
 namespace Maui.Controls.Sample.ViewModels
@@ -18,12 +17,8 @@ namespace Maui.Controls.Sample.ViewModels
 				"Pan Gesture."),
 			new SectionModel(typeof(SwipeGestureGalleryPage), "Swipe Gesture",
 				"Swipe Gesture."),
-
-#if WINDOWS || MACCATALYST
-			new SectionModel(typeof(ClickGestureGalleryPage), "Click Gesture",
+			new SectionModel(typeof(TapGestureGalleryPage), "Click Gesture",
 				"Click Gesture."),
-#endif
-
 		};
 	}
 }

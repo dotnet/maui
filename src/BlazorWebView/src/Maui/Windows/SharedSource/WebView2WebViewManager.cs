@@ -3,9 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebView.WebView2.Internal;
 using Microsoft.Extensions.FileProviders;
+using Windows.ApplicationModel;
+using Windows.Storage.Streams;
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
 {
@@ -18,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		// Using an IP address means that WebView2 doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
-		private const string AppOrigin = "https://0.0.0.0/";
+		protected private const string AppOrigin = "https://0.0.0.0/";
 
 		private readonly IWebView2Wrapper _webview;
 		private readonly Task _webviewReadyTask;
@@ -31,8 +37,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-		public WebView2WebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, string hostPageRelativePath)
-			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, hostPageRelativePath)
+		public WebView2WebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
 			_webview = webview ?? throw new ArgumentNullException(nameof(webview));
 
@@ -63,20 +69,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			ApplyDefaultWebViewSettings();
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContextWrapper.All);
-			var removeResourceCallback = _webview.CoreWebView2.AddWebResourceRequestedHandler((s, eventArgs) =>
+			var removeResourceCallback = _webview.CoreWebView2.AddWebResourceRequestedHandler(async (s, eventArgs) =>
 			{
-				// Unlike server-side code, we get told exactly why the browser is making the request,
-				// so we can be smarter about fallback. We can ensure that 'fetch' requests never result
-				// in fallback, for example.
-				var allowFallbackOnHostPage =
-					eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Document ||
-					eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Other; // e.g., dev tools requesting page source
-
-				if (TryGetResponseContent(eventArgs.Request.Uri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
-				{
-					var headerString = GetHeaderString(headers);
-					eventArgs.SetResponse(content, statusCode, statusMessage, headerString);
-				}
+				await HandleWebResourceRequest(eventArgs);
 			});
 
 			// The code inside blazor.webview.js is meant to be agnostic to specific webview technologies,
@@ -98,6 +93,31 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 				=> MessageReceived(new Uri(e.Source), e.WebMessageAsString));
 		}
 
+		protected virtual async Task HandleWebResourceRequest(ICoreWebView2WebResourceRequestedEventArgsWrapper eventArgs)
+		{
+			// Unlike server-side code, we get told exactly why the browser is making the request,
+			// so we can be smarter about fallback. We can ensure that 'fetch' requests never result
+			// in fallback, for example.
+			var allowFallbackOnHostPage =
+				eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Document ||
+				eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Other; // e.g., dev tools requesting page source
+
+			// First, call into WebViewManager to see if it has a framework file for this request. It will
+			// fall back to an IFileProvider, but on WinUI it's always a NullFileProvider, so that will never
+			// return a file.
+			if (TryGetResponseContent(eventArgs.Request.Uri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
+			{
+				// NOTE: This is stream copying is to work around a hanging bug in WinRT with managed streams
+				var memStream = new MemoryStream();
+				content.CopyTo(memStream);
+				var ms = new InMemoryRandomAccessStream();
+				await ms.WriteAsync(memStream.GetWindowsRuntimeBuffer());
+
+				var headerString = GetHeaderString(headers);
+				eventArgs.SetResponse(ms, statusCode, statusMessage, headerString);
+			}
+		}
+
 		/// <summary>
 		/// Override this method to queue a call to Blazor.start(). Not all platforms require this.
 		/// </summary>
@@ -105,7 +125,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		{
 		}
 
-		private static string GetHeaderString(IDictionary<string, string> headers) =>
+		protected private static string GetHeaderString(IDictionary<string, string> headers) =>
 			string.Join(Environment.NewLine, headers.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
 
 		private void ApplyDefaultWebViewSettings()

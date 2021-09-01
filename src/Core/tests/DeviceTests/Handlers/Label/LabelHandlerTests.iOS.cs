@@ -13,31 +13,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class LabelHandlerTests
 	{
-		[Theory(DisplayName = "Font Family Initializes Correctly")]
-		[InlineData(null)]
-		[InlineData("Times New Roman")]
-		[InlineData("Dokdo")]
-		public async Task FontFamilyInitializesCorrectly(string family)
-		{
-			var label = new LabelStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize(family, 10)
-			};
-
-			var (services, nativeFont) = await GetValueAsync(label, handler => (handler.Services, GetNativeLabel(handler).Font));
-
-			var fontManager = services.GetRequiredService<IFontManager>();
-
-			var expectedNativeFont = fontManager.GetFont(Font.OfSize(family, 0.0));
-
-			Assert.Equal(expectedNativeFont.FamilyName, nativeFont.FamilyName);
-			if (string.IsNullOrEmpty(family))
-				Assert.Equal(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
-			else
-				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
-		}
-
 		[Fact(DisplayName = "Horizontal TextAlignment Updates Correctly")]
 		public async Task HorizontalTextAlignmentInitializesCorrectly()
 		{
@@ -209,15 +184,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		Color GetNativeTextColor(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).TextColor.ToColor();
-
-		double GetNativeUnscaledFontSize(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Font.PointSize;
-
-		bool GetNativeIsBold(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Bold);
-
-		bool GetNativeIsItalic(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
 
 		int GetNativeMaxLines(LabelHandler labelHandler) =>
  			(int)GetNativeLabel(labelHandler).Lines;

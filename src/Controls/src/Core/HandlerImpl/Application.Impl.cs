@@ -15,10 +15,32 @@ namespace Microsoft.Maui.Controls
 		{
 			var window = CreateWindow(activationState);
 
+			if (_pendingMainPage != null && window.Page != null && window.Page != _pendingMainPage)
+				throw new InvalidOperationException($"Both {nameof(MainPage)} was set and {nameof(Application.CreateWindow)} was overridden to provide a page.");
+
 			if (!_windows.Contains(window))
 				AddWindow(window);
 
+			// clear out the pending main page as this will never be used again
+			_pendingMainPage = null;
+
 			return window;
+		}
+
+		public void ThemeChanged()
+		{
+			Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Current.RequestedTheme));
+		}
+
+		protected virtual Window CreateWindow(IActivationState activationState)
+		{
+			if (Windows.Count > 0)
+				return Windows[0];
+
+			if (_pendingMainPage != null)
+				return new Window(_pendingMainPage);
+
+			throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
 		}
 
 		void AddWindow(Window window)
@@ -34,14 +56,6 @@ namespace Microsoft.Maui.Controls
 
 			if (window is NavigableElement ne)
 				ne.NavigationProxy.Inner = NavigationProxy;
-		}
-
-		protected virtual Window CreateWindow(IActivationState activationState)
-		{
-			if (Windows.Count > 0)
-				return Windows[0];
-
-			throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
 		}
 	}
 }

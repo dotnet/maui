@@ -11,6 +11,7 @@ using Android.Views;
 using AndroidX.AppCompat.App;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat;
 using AColor = Android.Graphics.Color;
@@ -527,7 +528,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				return _toolbarResource;
 			}
-			set => _toolbarResource = value; 
+			set => _toolbarResource = value;
 		}
 
 		#endregion

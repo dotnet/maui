@@ -18,8 +18,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		public PlatformRenderer(Context context, IPlatformLayout canvas) : base(context)
 		{
 			_canvas = canvas;
-			Focusable = true;
-			FocusableInTouchMode = true;
 		}
 
 		public override bool DispatchTouchEvent(MotionEvent e)

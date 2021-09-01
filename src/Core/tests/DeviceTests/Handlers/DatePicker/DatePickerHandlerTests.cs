@@ -32,20 +32,16 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(datePicker, () => datePicker.TextColor, GetNativeTextColor, datePicker.TextColor);
 		}
 
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
-		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
 		{
 			var datePicker = new DatePickerStub()
 			{
 				Date = DateTime.Today,
-				Font = Font.OfSize("Arial", fontSize)
+				TextColor = null
 			};
 
-			await ValidatePropertyInitValue(datePicker, () => datePicker.Font.FontSize, GetNativeUnscaledFontSize, datePicker.Font.FontSize);
+			await CreateHandlerAsync(datePicker);
 		}
 	}
 }

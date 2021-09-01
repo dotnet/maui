@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(TestShell), typeof(TestShellRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests

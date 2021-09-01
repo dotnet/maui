@@ -222,18 +222,6 @@ namespace Microsoft.Maui.DeviceTests
 			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
 		}
 
-		double GetNativeUnscaledFontSize(EntryHandler entryHandler)
-		{
-			var textView = GetNativeEntry(entryHandler);
-			return textView.TextSize / textView.Resources.DisplayMetrics.Density;
-		}
-
-		bool GetNativeIsBold(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Typeface.GetFontWeight() == FontWeight.Bold;
-
-		bool GetNativeIsItalic(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Typeface.IsItalic;
-
 		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 

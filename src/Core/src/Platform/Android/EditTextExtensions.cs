@@ -18,25 +18,30 @@ namespace Microsoft.Maui
 
 		public static void UpdateText(this AppCompatEditText editText, IEntry entry)
 		{
-			editText.UpdateText(entry.Text);
+			editText.Text = entry.Text;
 
 			// TODO ezhart The renderer sets the text to selected and shows the keyboard if the EditText is focused
 		}
 
 		public static void UpdateText(this AppCompatEditText editText, IEditor editor)
 		{
-			editText.UpdateText(editor.Text);
+			editText.Text = editor.Text;
 
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
+
 		public static void UpdateTextColor(this AppCompatEditText editText, ITextStyle entry, ColorStateList? defaultColor)
 		{
-			var textColor = entry.TextColor;
+			editText.UpdateTextColor(entry.TextColor, defaultColor);
+		}
 
+		public static void UpdateTextColor(this AppCompatEditText editText, Graphics.Color textColor, ColorStateList? defaultColor)
+		{
 			if (textColor == null)
 			{
-				editText.SetTextColor(defaultColor);
+				if (defaultColor != null)
+					editText.SetTextColor(defaultColor);
 			}
 			else
 			{
@@ -128,8 +133,11 @@ namespace Microsoft.Maui
 
 		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IPlaceholder placeholder, ColorStateList? defaultColor)
 		{
-			var placeholderTextColor = placeholder.PlaceholderColor;
+			editText.UpdatePlaceholderColor(editor.PlaceholderColor, defaultColor);
+		}
 
+		public static void UpdatePlaceholderColor(this AppCompatEditText editText, Graphics.Color placeholderTextColor, ColorStateList? defaultColor)
+		{
 			if (placeholderTextColor == null)
 			{
 				editText.SetHintTextColor(defaultColor);
@@ -175,18 +183,23 @@ namespace Microsoft.Maui
 			editText.SetCursorVisible(isReadOnly);
 		}
 
-		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry, Drawable? ClearButtonDrawable)
+		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry, Drawable? clearButtonDrawable) =>
+			UpdateClearButtonVisibility(editText, entry, () => clearButtonDrawable);
+
+		public static void UpdateClearButtonVisibility(this AppCompatEditText editText, IEntry entry, Func<Drawable?>? getClearButtonDrawable)
 		{
 			// Places clear button drawable at the end or start of the EditText based on FlowDirection.
 			void ShowClearButton()
 			{
+				var drawable = getClearButtonDrawable?.Invoke();
+
 				if (entry.FlowDirection == FlowDirection.RightToLeft)
 				{
-					editText.SetCompoundDrawablesWithIntrinsicBounds(ClearButtonDrawable, null, null, null);
+					editText.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
 				}
 				else
 				{
-					editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, ClearButtonDrawable, null);
+					editText.SetCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
 				}
 			}
 

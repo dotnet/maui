@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Internals
 		public static Page AncestorToRoot(this Page page)
 		{
 			Element parent = page;
-			while (!Application.IsApplicationOrNull(parent.RealParent))
+			while (!Application.IsApplicationOrWindowOrNull(parent.RealParent))
 				parent = parent.RealParent;
 
 			return parent as Page;
