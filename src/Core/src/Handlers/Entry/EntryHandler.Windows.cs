@@ -10,8 +10,15 @@ using Windows.System;
 		Brush? _defaultPplaceholderBrush;
 		Brush? _defaultPlaceholderColorFocusBrush;
 
-		protected override MauiTextBox CreateNativeView() =>
-			new MauiTextBox { Style = UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as UI.Xaml.Style };
+		protected override MauiTextBox CreateNativeView()
+		{
+			var nativeEntry = new MauiTextBox { Style = UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as UI.Xaml.Style };
+			
+			_defaultPplaceholderBrush = nativeEntry.PlaceholderForeground;
+			_defaultPlaceholderColorFocusBrush = nativeEntry.PlaceholderForegroundFocusBrush;
+
+			return nativeEntry;
+		}
 
 		protected override void ConnectHandler(MauiTextBox nativeView)
 		{
@@ -21,14 +28,6 @@ using Windows.System;
 		protected override void DisconnectHandler(MauiTextBox nativeView)
 		{
 			nativeView.KeyUp -= OnNativeKeyUp;
-		}
-
-		protected override void SetupDefaults(MauiTextBox nativeView)
-		{
-			_defaultPplaceholderBrush = nativeView.PlaceholderForeground;
-			_defaultPlaceholderColorFocusBrush = nativeView.PlaceholderForegroundFocusBrush;
-
-			base.SetupDefaults(nativeView);
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry) 
