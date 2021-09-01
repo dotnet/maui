@@ -43,6 +43,18 @@ namespace Microsoft.Maui
 
 		public static void UpdateStrokeDashPattern(this UIView nativeView, ILayout layout)
 		{
+			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
+
+			bool hasBorder = layout.Shape != null && layout.Stroke != null;
+
+			if (backgroundLayer == null && !hasBorder)
+				return;
+
+			nativeView.UpdateMauiCALayer(layout);
+		}
+
+		public static void UpdateStrokeDashOffset(this UIView nativeView, ILayout layout)
+		{
 			var strokeDashPattern = layout.StrokeDashPattern;
 			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;
 
@@ -53,7 +65,7 @@ namespace Microsoft.Maui
 
 			nativeView.UpdateMauiCALayer(layout);
 		}
-
+		
 		public static void UpdateStrokeMiterLimit(this UIView nativeView, ILayout layout)
 		{
 			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;

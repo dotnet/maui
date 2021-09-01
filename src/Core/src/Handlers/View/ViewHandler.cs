@@ -76,12 +76,20 @@ namespace Microsoft.Maui.Handlers
 
 		protected abstract void RemoveContainer();
 
-		public virtual bool NeedsContainer =>
+		public virtual bool NeedsContainer
+		{
+			get
+			{
 #if WINDOWS
-			false;
+				if(VirtualView is ILayout layout)
+					return layout?.Shape != null || layout?.Stroke != null;
+				
+				return false;
 #else
-			VirtualView?.Clip != null;
+				return VirtualView?.Clip != null;
 #endif
+			}
+		}
 
 		public NativeView? ContainerView { get; private protected set; }
 

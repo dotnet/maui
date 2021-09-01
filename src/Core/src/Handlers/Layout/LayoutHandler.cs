@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ILayout.StrokeLineCap)] = MapStrokeLineCap,
 			[nameof(ILayout.StrokeLineJoin)] = MapStrokeLineJoin,
 			[nameof(ILayout.StrokeDashPattern)] = MapStrokeDashPattern,
+			[nameof(ILayout.StrokeDashOffset)] = MapStrokeDashOffset,
 			[nameof(ILayout.StrokeMiterLimit)] = MapStrokeMiterLimit
 		};
 
@@ -48,6 +49,14 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(ILayoutHandler handler, ILayout layout)
 		{
 #if WINDOWS
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+
+			bool hasBorder = layout.Shape != null && layout.Stroke != null;
+
+ 			if(!hasBorder)
+ 				((NativeView?)handler.NativeView)?.UpdateBackground(layout);
+ 			else
+ 				((WrapperView?)handler.ContainerView)?.UpdateBackground(layout);
 #endif
 			((NativeView?)handler.NativeView)?.UpdateBackground(layout);
 		}
@@ -65,6 +74,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapStroke(ILayoutHandler handler, ILayout layout)
 		{
 #if WINDOWS
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			((WrapperView?)handler.ContainerView)?.UpdateStroke(layout);
 #else
 			((NativeView?)handler.NativeView)?.UpdateStroke(layout);
 #endif
@@ -74,6 +85,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapStrokeThickness(ILayoutHandler handler, ILayout layout)
 		{
 #if WINDOWS
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			((WrapperView?)handler.ContainerView)?.UpdateStrokeThickness(layout);
 #else
 			((NativeView?)handler.NativeView)?.UpdateStrokeThickness(layout);
 #endif
@@ -83,6 +96,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapStrokeLineCap(ILayoutHandler handler, ILayout layout)
 		{
 #if WINDOWS
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			((WrapperView?)handler.ContainerView)?.UpdateStrokeLineCap(layout);
 #else
 			((NativeView?)handler.NativeView)?.UpdateStrokeLineCap(layout);
 #endif
@@ -91,6 +106,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapStrokeLineJoin(ILayoutHandler handler, ILayout layout)
 		{
 #if WINDOWS
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			((WrapperView?)handler.ContainerView)?.UpdateStrokeLineJoin(layout);
 #else
 			((NativeView?)handler.NativeView)?.UpdateStrokeLineJoin(layout);
 #endif
@@ -99,14 +116,28 @@ namespace Microsoft.Maui.Handlers
 		public static void MapStrokeDashPattern(ILayoutHandler handler, ILayout layout)
 		{
 #if WINDOWS
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			((WrapperView?)handler.ContainerView)?.UpdateStrokeDashPattern(layout);
 #else
 			((NativeView?)handler.NativeView)?.UpdateStrokeDashPattern(layout);
+#endif
+		}
+
+		public static void MapStrokeDashOffset(ILayoutHandler handler, ILayout layout)
+		{
+#if WINDOWS
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			((WrapperView?)handler.ContainerView)?.UpdateStrokeDashOffset(layout);
+#else
+			((NativeView?)handler.NativeView)?.UpdateStrokeDashOffset(layout);
 #endif
 		}
 
 		public static void MapStrokeMiterLimit(ILayoutHandler handler, ILayout layout)
 		{
 #if WINDOWS
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			((WrapperView?)handler.ContainerView)?.UpdateStrokeMiterLimit(layout);
 #else
 			((NativeView?)handler.NativeView)?.UpdateStrokeMiterLimit(layout);
 #endif

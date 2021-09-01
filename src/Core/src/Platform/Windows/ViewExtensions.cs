@@ -76,14 +76,16 @@ namespace Microsoft.Maui
 
 		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
 		{
-			if (nativeView is Control control)
-				control.UpdateBackground(view.Background);
-			else if (nativeView is Border border)
-				border.UpdateBackground(view.Background);
-			else if (nativeView is Panel panel)
-				panel.UpdateBackground(view.Background);
-		}
+			bool hasBorder = false;
 
+			if (view is ILayout layout)
+				hasBorder = layout.Shape != null && view.Stroke != null;
+
+			if (hasBorder)
+				nativeView?.UpdateBorderBackground(view);
+			else
+				nativeView?.UpdateNativeViewBackground(view);
+		}
 
 		public static WFlowDirection ToNative(this FlowDirection flowDirection)
 		{
@@ -180,6 +182,30 @@ namespace Microsoft.Maui
 		public static void UpdateMaximumWidth(this FrameworkElement nativeView, IView view)
 		{
 			nativeView.MaxWidth = view.MaximumWidth;
+		}
+
+		internal static void UpdateBorderBackground(this FrameworkElement nativeView, IView view)
+		{
+			(nativeView as WrapperView)?.UpdateBackground(view.Background);
+
+			if (nativeView is Control control)
+				control.UpdateBackground(null);
+			else if (nativeView is Border border)
+				border.UpdateBackground(null);
+			else if (nativeView is Panel panel)
+				panel.UpdateBackground(null);
+		}
+
+		internal static void UpdateNativeViewBackground(this FrameworkElement nativeView, IView view)
+		{
+			(nativeView as WrapperView)?.UpdateBackground(null);
+
+			if (nativeView is Control control)
+				control.UpdateBackground(view.Background);
+			else if (nativeView is Border border)
+				border.UpdateBackground(view.Background);
+			else if (nativeView is Panel panel)
+				panel.UpdateBackground(view.Background);
 		}
 	}
 }

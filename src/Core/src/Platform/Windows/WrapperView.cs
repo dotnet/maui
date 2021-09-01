@@ -3,6 +3,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Shapes;
 using WDoubleCollection = Microsoft.UI.Xaml.Media.DoubleCollection;
+using WPenLineCap = Microsoft.UI.Xaml.Media.PenLineCap;
+using WPenLineJoin = Microsoft.UI.Xaml.Media.PenLineJoin;
 
 namespace Microsoft.Maui
 {
@@ -58,7 +60,7 @@ namespace Microsoft.Maui
 			_borderPath.Visibility = background != null ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
 		}
 
-		public void UpdateBorderBrush(Paint borderBrush)
+		public void UpdateStroke(Paint borderBrush)
 		{
 			if (_borderPath == null)
 				return;
@@ -68,7 +70,7 @@ namespace Microsoft.Maui
 			UpdateNativeBorder();
 		}
 
-		public void UpdateBorderWidth(double borderWidth)
+		public void UpdateStrokeThickness(double borderWidth)
 		{
 			if (_borderPath == null)
 				return;
@@ -78,7 +80,7 @@ namespace Microsoft.Maui
 			UpdateNativeBorder();
 		}
 
-		public void UpdateBorderDashArray(double[] borderDashArray)
+		public void UpdateStrokeDashPattern(float[]? borderDashArray)
 		{
 			if (_borderPath == null)
 				return;
@@ -107,6 +109,60 @@ namespace Microsoft.Maui
 				return;
 
 			_borderPath.StrokeDashOffset = borderDashOffset;
+		}
+
+		public void UpdateStrokeMiterLimit(double strokeMiterLimit)
+		{
+			if (_borderPath == null)
+				return;
+
+			_borderPath.StrokeMiterLimit = strokeMiterLimit;
+		}
+	
+		public void UpdateStrokeLineCap(LineCap strokeLineCap)
+		{
+			if (_borderPath == null)
+				return;
+
+			WPenLineCap wLineCap = WPenLineCap.Flat;
+
+			switch (strokeLineCap)
+			{
+				case LineCap.Butt:
+					wLineCap = WPenLineCap.Flat;
+					break;
+				case LineCap.Square:
+					wLineCap = WPenLineCap.Square;
+					break;
+				case LineCap.Round:
+					wLineCap = WPenLineCap.Round;
+					break;
+			}
+
+			_borderPath.StrokeStartLineCap = _borderPath.StrokeEndLineCap = wLineCap;
+		}
+
+		public void UpdateStrokeLineJoin(LineJoin strokeLineJoin)
+		{
+			if (_borderPath == null)
+				return;
+
+			WPenLineJoin wLineJoin = WPenLineJoin.Miter;
+
+			switch (strokeLineJoin)
+			{
+				case LineJoin.Miter:
+					wLineJoin = WPenLineJoin.Miter;
+					break;
+				case LineJoin.Bevel:
+					wLineJoin = WPenLineJoin.Bevel;
+					break;
+				case LineJoin.Round:
+					wLineJoin = WPenLineJoin.Round;
+					break;
+			}
+
+			_borderPath.StrokeLineJoin = wLineJoin;
 		}
 
 		void UpdatePath()

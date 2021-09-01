@@ -51,6 +51,18 @@ namespace Microsoft.Maui
 			nativeView.UpdateMauiDrawable(layout);
 		}
 
+		public static void UpdateStrokeDashOffset(this AView nativeView, ILayout layout)
+		{
+			MauiDrawable? background = nativeView.Background as MauiDrawable;
+
+			bool hasBorder = layout.Shape != null && layout.Stroke != null;
+
+			if (background == null && !hasBorder)
+				return;
+
+			nativeView.UpdateMauiDrawable(layout);
+		}
+
 		public static void UpdateStrokeMiterLimit(this AView nativeView, ILayout layout)
 		{
 			MauiDrawable? background = nativeView.Background as MauiDrawable;

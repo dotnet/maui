@@ -9,6 +9,8 @@
 		public static void UpdateStrokeThickness(this object nativeView, ILayout layout) { }
 
 		public static void UpdateStrokeDashPattern(this object nativeView, ILayout layout) { }
+		
+		public static void UpdateStrokeDashOffset(this object nativeView, ILayout layout) { }
 
 		public static void UpdateStrokeMiterLimit(this object nativeView, ILayout layout) { }
 
