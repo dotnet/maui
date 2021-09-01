@@ -43,17 +43,6 @@ namespace Microsoft.Maui
 			base.OnCreate(savedInstanceState);
 
 			CreateNativeWindow(savedInstanceState);
-
-			//TODO MAUI
-			// Allow users to customize the toolbarid?
-			bool? windowActionBar;
-			if (Theme.TryResolveAttribute(Resource.Attribute.windowActionBar, out windowActionBar) &&
-				windowActionBar == false)
-			{
-				var toolbar = FindViewById<Toolbar>(Resource.Id.maui_toolbar);
-				if (toolbar != null)
-					SetSupportActionBar(toolbar);
-			}
 		}
 
 		void CreateNativeWindow(Bundle? savedInstanceState = null)

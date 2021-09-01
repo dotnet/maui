@@ -171,11 +171,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				throw new InvalidOperationException(
 					"NavigationPage must have a root Page before being used. Either call PushAsync with a valid Page, or pass a Page to the constructor before usage.");
 
-			if (oldElement != null)
+			if (oldElement is INavigationPageController navigationPageController)
 			{
-				oldElement.PushRequested -= OnPushRequested;
-				oldElement.PopRequested -= OnPopRequested;
-				oldElement.PopToRootRequested -= OnPopToRootRequested;
+				navigationPageController.PushRequested -= OnPushRequested;
+				navigationPageController.PopRequested -= OnPopRequested;
+				navigationPageController.PopToRootRequested -= OnPopToRootRequested;
 				oldElement.InternalChildren.CollectionChanged -= OnChildrenChanged;
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
 			}
@@ -218,9 +218,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					Element.Appearing += OnElementAppearing;
 
 				Element.PropertyChanged += OnElementPropertyChanged;
-				Element.PushRequested += OnPushRequested;
-				Element.PopRequested += OnPopRequested;
-				Element.PopToRootRequested += OnPopToRootRequested;
+
+				if (Element is INavigationPageController newPageController)
+				{
+					newPageController.PushRequested += OnPushRequested;
+					newPageController.PopRequested += OnPopRequested;
+					newPageController.PopToRootRequested += OnPopToRootRequested;
+				}
+
 				Element.InternalChildren.CollectionChanged += OnChildrenChanged;
 
 				if (!string.IsNullOrEmpty(Element.AutomationId))

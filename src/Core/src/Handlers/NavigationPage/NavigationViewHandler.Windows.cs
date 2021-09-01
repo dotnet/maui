@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
-	internal partial class NavigationPageHandler :
+	internal partial class NavigationViewHandler :
 		ViewHandler<INavigationView, FrameworkElement>
 	{
 		protected override FrameworkElement CreateNativeView()
@@ -14,25 +14,20 @@ namespace Microsoft.Maui.Handlers
 			throw new NotImplementedException();
 		}
 
-		private static void PushAsyncTo(NavigationPageHandler arg1, INavigationView arg2, object? arg3)
+		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
 		{
 			throw new NotImplementedException();
 		}
 
-		private static void PopAsyncTo(NavigationPageHandler arg1, INavigationView arg2, object? arg3)
-		{
-			throw new NotImplementedException();
-		}
+		//public static void MapPadding(NavigationViewHandler handler, INavigationView view) { }
 
-		//public static void MapPadding(NavigationPageHandler handler, INavigationView view) { }
+		//public static void MapBarTextColor(NavigationViewHandler handler, INavigationView view) { }
 
-		//public static void MapBarTextColor(NavigationPageHandler handler, INavigationView view) { }
+		//public static void MapBarBackground(NavigationViewHandler handler, INavigationView view) { }
 
-		//public static void MapBarBackground(NavigationPageHandler handler, INavigationView view) { }
+		//public static void MapTitleIcon(NavigationViewHandler handler, INavigationView view) { }
 
-		//public static void MapTitleIcon(NavigationPageHandler handler, INavigationView view) { }
-
-		//public static void MapTitleView(NavigationPageHandler handler, INavigationView view) { }
+		//public static void MapTitleView(NavigationViewHandler handler, INavigationView view) { }
 	}
 }
 
@@ -63,8 +58,8 @@ namespace Microsoft.Maui.Handlers
 
 //namespace Microsoft.Maui.Controls.Handlers
 //{
-//	public partial class NavigationPageHandler : 
-//		ViewHandler<NavigationPage, PageControl>, ITitleProvider, ITitleIconProvider, 
+//	public partial class NavigationViewHandler : 
+//		ViewHandler<NavigationView, PageControl>, ITitleProvider, ITitleIconProvider, 
 //		ITitleViewProvider, IToolbarProvider, IToolBarForegroundBinder, IViewHandler
 //	{
 //		Page? _currentPage;
@@ -161,7 +156,7 @@ namespace Microsoft.Maui.Handlers
 //				if (_currentPage == null)
 //					return null;
 
-//				return NavigationPage.GetTitleView(_currentPage) as View;
+//				return NavigationView.GetTitleView(_currentPage) as View;
 //			}
 //			set { /*Not implemented but required by interface*/ }
 //		}
@@ -209,12 +204,12 @@ namespace Microsoft.Maui.Handlers
 //		{
 //			base.SetVirtualView(view);
 
-//			if (view != null && !(view is NavigationPage))
+//			if (view != null && !(view is NavigationView))
 //				throw new ArgumentException("VirtualView must be a Page", nameof(view));
 
-//			if (view is NavigationPage np && np != null && np.CurrentPage is null)
+//			if (view is NavigationView np && np != null && np.CurrentPage is null)
 //				throw new InvalidOperationException(
-//					"NavigationPage must have a root Page before being used. Either call PushAsync with a valid Page, or pass a Page to the constructor before usage.");
+//					"NavigationView must have a root Page before being used. Either call PushAsync with a valid Page, or pass a Page to the constructor before usage.");
 
 //		}
 
@@ -311,16 +306,16 @@ namespace Microsoft.Maui.Handlers
 //			return Maui.ColorExtensions.ToNative(VirtualView.BarBackgroundColor);
 //		}
 
-//		static WBrush? GetBarBackgroundBrush(NavigationPage navigationPage)
+//		static WBrush? GetBarBackgroundBrush(NavigationView NavigationView)
 //		{
-//			var barBackground = navigationPage.BarBackground;
+//			var barBackground = NavigationView.BarBackground;
 //			object defaultColor = GetDefaultColor();
 
 //			if (!Brush.IsNullOrEmpty(barBackground))
 //				return barBackground.ToBrush();
 
-//			if (navigationPage.BarBackgroundColor != null)
-//				return navigationPage.BarBackgroundColor.ToNative();
+//			if (NavigationView.BarBackgroundColor != null)
+//				return NavigationView.BarBackgroundColor.ToNative();
 
 //			if (defaultColor != null)
 //				return (WBrush)defaultColor;
@@ -328,12 +323,12 @@ namespace Microsoft.Maui.Handlers
 //			return null;
 //		}
 
-//		static WBrush GetBarForegroundBrush(NavigationPage navigationPage)
+//		static WBrush GetBarForegroundBrush(NavigationView NavigationView)
 //		{
 //			object defaultColor = Microsoft.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
-//			if (navigationPage.BarTextColor.IsDefault())
+//			if (NavigationView.BarTextColor.IsDefault())
 //				return (WBrush)defaultColor;
-//			return Maui.ColorExtensions.ToNative(navigationPage.BarTextColor);
+//			return Maui.ColorExtensions.ToNative(NavigationView.BarTextColor);
 //		}
 
 //		bool GetIsNavBarPossible()
@@ -390,17 +385,17 @@ namespace Microsoft.Maui.Handlers
 //		// TODO MAUI: hmmmmmm can we make this not be property changed based?
 //		void OnCurrentPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
 //		{
-//			if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
+//			if (e.PropertyName == NavigationView.HasBackButtonProperty.PropertyName)
 //				UpdateBackButton();
-//			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName)
+//			else if (e.PropertyName == NavigationView.BackButtonTitleProperty.PropertyName)
 //				UpdateBackButtonTitle();
-//			else if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
+//			else if (e.PropertyName == NavigationView.HasNavigationBarProperty.PropertyName)
 //				UpdateTitleVisible();
 //			else if (e.PropertyName == Page.TitleProperty.PropertyName)
 //				UpdateTitleOnParents();
-//			else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName)
+//			else if (e.PropertyName == NavigationView.TitleIconImageSourceProperty.PropertyName)
 //				UpdateTitleIcon();
-//			else if (e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
+//			else if (e.PropertyName == NavigationView.TitleViewProperty.PropertyName)
 //				UpdateTitleView();
 //		}
 
@@ -545,7 +540,7 @@ namespace Microsoft.Maui.Handlers
 //		{
 //			string title;
 //			if (_previousPage != null)
-//				title = NavigationPage.GetBackButtonTitle(_previousPage);
+//				title = NavigationView.GetBackButtonTitle(_previousPage);
 //			else
 //				title = String.Empty;
 
@@ -562,7 +557,7 @@ namespace Microsoft.Maui.Handlers
 //			UpdateTitleOnParents();
 
 //			bool showing = NativeView.TitleVisibility == Visibility.Visible;
-//			bool newValue = GetIsNavBarPossible() && NavigationPage.GetHasNavigationBar(_currentPage);
+//			bool newValue = GetIsNavBarPossible() && NavigationView.GetHasNavigationBar(_currentPage);
 //			if (showing == newValue)
 //				return;
 
@@ -590,7 +585,7 @@ namespace Microsoft.Maui.Handlers
 //				return;
 //			}
 
-//			bool showBackButton = VirtualView.InternalChildren.Count > 1 && NavigationPage.GetHasBackButton(_currentPage);
+//			bool showBackButton = VirtualView.InternalChildren.Count > 1 && NavigationView.GetHasBackButton(_currentPage);
 //			if (NativeVersion.IsDesktop)
 //			{
 //				//TODO MAUI: this means it's running as a desktop app
@@ -615,14 +610,14 @@ namespace Microsoft.Maui.Handlers
 //			{
 //				render = _parentTabbedPage.Handler as ITitleProvider;
 //				if (render != null)
-//					render.ShowTitle = (_parentTabbedPage.CurrentPage == VirtualView) && NavigationPage.GetHasNavigationBar(_currentPage);
+//					render.ShowTitle = (_parentTabbedPage.CurrentPage == VirtualView) && NavigationView.GetHasNavigationBar(_currentPage);
 //			}
 
 //			if (_parentFlyoutPage != null)
 //			{
 //				render = _parentFlyoutPage.Handler as ITitleProvider;
 //				if (render != null)
-//					render.ShowTitle = (_parentFlyoutPage.Detail == VirtualView) && NavigationPage.GetHasNavigationBar(_currentPage);
+//					render.ShowTitle = (_parentFlyoutPage.Detail == VirtualView) && NavigationView.GetHasNavigationBar(_currentPage);
 //			}
 
 //			if (render != null && render.ShowTitle)
@@ -640,7 +635,7 @@ namespace Microsoft.Maui.Handlers
 //			if (_showTitle || (render != null && render.ShowTitle))
 //			{
 //				ToolbarManager.UpdateToolbarItems(VirtualView)
-//					.FireAndForget((e)=> Log.Warning(nameof(NavigationPage), $"{e}"));
+//					.FireAndForget((e)=> Log.Warning(nameof(NavigationView), $"{e}"));
 //			}
 //		}
 
@@ -669,7 +664,7 @@ namespace Microsoft.Maui.Handlers
 //			if (page == null)
 //				return;
 
-//			ImageSource source = NavigationPage.GetTitleIconImageSource(page);
+//			ImageSource source = NavigationView.GetTitleIconImageSource(page);
 
 //			TitleIcon = await source.ToWindowsImageSourceAsync();
 
@@ -724,20 +719,20 @@ namespace Microsoft.Maui.Handlers
 //			NativeView.ToolbarDynamicOverflowEnabled = VirtualView.OnThisPlatform().GetToolbarDynamicOverflowEnabled();
 //		}
 
-//		public static void MapPadding(NavigationPageHandler handler, NavigationPage view) =>
+//		public static void MapPadding(NavigationViewHandler handler, NavigationView view) =>
 //			handler.UpdatePadding();
 
-//		public static void MapBarTextColor(NavigationPageHandler handler, NavigationPage view) => handler.UpdateTitleColor();
+//		public static void MapBarTextColor(NavigationViewHandler handler, NavigationView view) => handler.UpdateTitleColor();
 
-//		public static void MapBarBackground(NavigationPageHandler handler, NavigationPage view) => handler.UpdateNavigationBarBackground();
+//		public static void MapBarBackground(NavigationViewHandler handler, NavigationView view) => handler.UpdateNavigationBarBackground();
 
 //		// TODO MAUI: Task Based Mappers?
-//		public static void MapTitleIcon(NavigationPageHandler handler, NavigationPage view) => handler.UpdateTitleIcon();
+//		public static void MapTitleIcon(NavigationViewHandler handler, NavigationView view) => handler.UpdateTitleIcon();
 
-//		public static void MapTitleView(NavigationPageHandler handler, NavigationPage view) => handler.UpdateTitleView();
+//		public static void MapTitleView(NavigationViewHandler handler, NavigationView view) => handler.UpdateTitleView();
 
-//		public static void MapToolbarPlacement(NavigationPageHandler handler, NavigationPage view) => handler.UpdateToolbarPlacement();
+//		public static void MapToolbarPlacement(NavigationViewHandler handler, NavigationView view) => handler.UpdateToolbarPlacement();
 
-//		public static void MapToolbarDynamicOverflowEnabled(NavigationPageHandler handler, NavigationPage view) => handler.UpdateToolbarDynamicOverflowEnabled();
+//		public static void MapToolbarDynamicOverflowEnabled(NavigationViewHandler handler, NavigationView view) => handler.UpdateToolbarDynamicOverflowEnabled();
 //	}
 //}

@@ -1,12 +1,16 @@
-#if __MOBILE__
+#if __IOS__ || MACCATALYST
 using CurrentPlatform = Microsoft.Maui.Controls.PlatformConfiguration.iOS;
-
-namespace Microsoft.Maui.Controls.Platform
-#else
-using CurrentPlatform = Microsoft.Maui.Controls.Compatibility.PlatformConfiguration.macOS;
-
-namespace Microsoft.Maui.Controls.Platform
+#elif __ANDROID__
+using CurrentPlatform = Microsoft.Maui.Controls.PlatformConfiguration.Android;
+#elif WINDOWS
+using CurrentPlatform = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
+#elif NETSTANDARD
+using NativeView = System.Object;
 #endif
+
+
+#if !NETSTANDARD
+namespace Microsoft.Maui.Controls.Platform
 {
 	public static class PlatformConfigurationExtensions
 	{
@@ -17,3 +21,4 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 	}
 }
+#endif
