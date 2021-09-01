@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static readonly BindableProperty StrokeMiterLimitProperty =
 			BindableProperty.Create(nameof(StrokeMiterLimit), typeof(double), typeof(Layout), 10.0);
 
+		[System.ComponentModel.TypeConverter(typeof(StrokeShapeTypeConverter))]
 		public IShape StrokeShape
 		{
 			set { SetValue(StrokeShapeProperty, value); }
