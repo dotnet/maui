@@ -133,7 +133,7 @@ namespace Microsoft.Maui
 
 		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IPlaceholder placeholder, ColorStateList? defaultColor)
 		{
-			editText.UpdatePlaceholderColor(editor.PlaceholderColor, defaultColor);
+			editText.UpdatePlaceholderColor(placeholder.PlaceholderColor, defaultColor);
 		}
 
 		public static void UpdatePlaceholderColor(this AppCompatEditText editText, Graphics.Color placeholderTextColor, ColorStateList? defaultColor)
