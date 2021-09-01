@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 	public abstract partial class Layout<T>
 	{
 		public static readonly BindableProperty StrokeShapeProperty =
-			BindableProperty.Create(nameof(StrokeShape), typeof(Brush), typeof(Layout), null);
+			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Layout), null);
 
 		public static readonly BindableProperty StrokeProperty =
 			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Layout), null);
@@ -79,9 +79,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			set { SetValue(StrokeMiterLimitProperty, value); }
 			get { return (double)GetValue(StrokeMiterLimitProperty); }
 		}
-
-		BorderStroke? IBorderStroke.BorderStroke =>
-			new BorderStroke(StrokeShape, Stroke, StrokeThickness);
 
 		int ICollection<IView>.Count => _children.Count;
 		bool ICollection<IView>.IsReadOnly => ((ICollection<IView>)_children).IsReadOnly;

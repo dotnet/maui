@@ -1,13 +1,15 @@
-﻿namespace Microsoft.Maui
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Define how the Shape outline is painted on Layouts.
 	/// </summary>
-	public interface IBorderStroke
+	public interface IBorderStroke : IStroke
 	{
 		/// <summary>
-		/// Gets the data that specifies how the Shape outline is painted.
+		/// Defines the shape of the border.
 		/// </summary>
-		BorderStroke? BorderStroke { get; }
+		IShape? Shape { get; }
 	}
 }

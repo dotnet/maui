@@ -28,6 +28,35 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		bool ISafeAreaView.IgnoreSafeArea => false;
 
+		IShape IBorderStroke.Shape => StrokeShape;
+
+		Paint IStroke.Stroke => Stroke;
+
+		LineCap IStroke.StrokeLineCap =>
+			StrokeLineCap switch
+			{
+				Shapes.PenLineCap.Flat => LineCap.Butt,
+				Shapes.PenLineCap.Round => LineCap.Round,
+				Shapes.PenLineCap.Square => LineCap.Square,
+				_ => LineCap.Butt
+			};
+
+		LineJoin IStroke.StrokeLineJoin =>
+			StrokeLineJoin switch
+			{
+				Shapes.PenLineJoin.Round => LineJoin.Round,
+				Shapes.PenLineJoin.Bevel => LineJoin.Bevel,
+				Shapes.PenLineJoin.Miter => LineJoin.Miter,
+				_ => LineJoin.Round
+			};
+
+		public float[] StrokeDashPattern
+			=> StrokeDashArray?.Select(a => (float)a)?.ToArray();
+
+		float IStroke.StrokeDashOffset => (float)StrokeDashOffset;
+
+		float IStroke.StrokeMiterLimit => (float)StrokeMiterLimit;
+
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);

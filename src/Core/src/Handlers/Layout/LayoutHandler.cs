@@ -1,4 +1,13 @@
 #nullable enable
+#if __IOS__ || MACCATALYST
+using NativeView = UIKit.UIView;
+#elif __ANDROID__
+using NativeView = Android.Views.View;
+#elif WINDOWS
+using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+#elif NETSTANDARD
+using NativeView = System.Object;
+#endif
 
 namespace Microsoft.Maui.Handlers
 {
@@ -6,7 +15,14 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ILayout, ILayoutHandler> LayoutMapper = new PropertyMapper<ILayout, ILayoutHandler>(ViewMapper)
 		{
-			[nameof(ILayout.BorderStroke)] = MapBorderStroke,
+			[nameof(ILayout.Background)] = MapBackground,
+			[nameof(ILayout.Shape)] = MapStrokeShape,
+			[nameof(ILayout.Stroke)] = MapStroke,
+			[nameof(ILayout.StrokeThickness)] = MapStrokeThickness,
+			[nameof(ILayout.StrokeLineCap)] = MapStrokeLineCap,
+			[nameof(ILayout.StrokeLineJoin)] = MapStrokeLineJoin,
+			[nameof(ILayout.StrokeDashPattern)] = MapStrokeDashPattern,
+			[nameof(ILayout.StrokeMiterLimit)] = MapStrokeMiterLimit
 		};
 
 		public static CommandMapper<ILayout, ILayoutHandler> LayoutCommandMapper = new(ViewCommandMapper)
@@ -28,9 +44,72 @@ namespace Microsoft.Maui.Handlers
 		{
 
 		}
-		public static void MapBorderStroke(ILayoutHandler handler, ILayout layout)
-		{
 
+		public static void MapBackground(ILayoutHandler handler, ILayout layout)
+		{
+#if WINDOWS
+#endif
+			((NativeView?)handler.NativeView)?.UpdateBackground(layout);
+		}
+	
+		public static void MapStrokeShape(ILayoutHandler handler, ILayout layout)
+		{
+#if WINDOWS
+#else
+			((NativeView?)handler.NativeView)?.UpdateStrokeShape(layout);
+#endif
+
+			MapBackground(handler, layout);
+		}
+
+		public static void MapStroke(ILayoutHandler handler, ILayout layout)
+		{
+#if WINDOWS
+#else
+			((NativeView?)handler.NativeView)?.UpdateStroke(layout);
+#endif
+			MapBackground(handler, layout);
+		}
+
+		public static void MapStrokeThickness(ILayoutHandler handler, ILayout layout)
+		{
+#if WINDOWS
+#else
+			((NativeView?)handler.NativeView)?.UpdateStrokeThickness(layout);
+#endif
+			MapBackground(handler, layout);
+		}
+
+		public static void MapStrokeLineCap(ILayoutHandler handler, ILayout layout)
+		{
+#if WINDOWS
+#else
+			((NativeView?)handler.NativeView)?.UpdateStrokeLineCap(layout);
+#endif
+		}
+
+		public static void MapStrokeLineJoin(ILayoutHandler handler, ILayout layout)
+		{
+#if WINDOWS
+#else
+			((NativeView?)handler.NativeView)?.UpdateStrokeLineJoin(layout);
+#endif
+		}
+
+		public static void MapStrokeDashPattern(ILayoutHandler handler, ILayout layout)
+		{
+#if WINDOWS
+#else
+			((NativeView?)handler.NativeView)?.UpdateStrokeDashPattern(layout);
+#endif
+		}
+
+		public static void MapStrokeMiterLimit(ILayoutHandler handler, ILayout layout)
+		{
+#if WINDOWS
+#else
+			((NativeView?)handler.NativeView)?.UpdateStrokeMiterLimit(layout);
+#endif
 		}
 
 		public static void MapAdd(ILayoutHandler handler, ILayout layout, object? arg)

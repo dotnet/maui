@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using CoreAnimation;
 using CoreGraphics;
 using UIKit;
@@ -16,12 +17,17 @@ namespace Microsoft.Maui
 		UIColor? _backgroundColor;
 		Paint? _background;
 
-		float _borderWidth;
-		UIColor? _borderColor;
-		Paint? _border;
+		float _strokeThickness;
+		UIColor? _strokeColor;
+		Paint? _stroke;
 
-		nfloat[]? _borderDash;
-		nfloat _borderDashOffset;
+		CGLineCap _strokeLineCap;
+		CGLineJoin _strokeLineJoin;
+
+		nfloat[]? _strokeDash;
+		nfloat _strokeDashOffset;
+
+		nfloat _strokeMiterLimit;
 
 		public MauiCALayer()
 		{
@@ -55,7 +61,7 @@ namespace Microsoft.Maui
 			DrawBorder(ctx);
 		}
 
-		public void SetBorderShape(IShape shape)
+		public void SetBorderShape(IShape? shape)
 		{
 			_shape = shape;
 
@@ -136,27 +142,27 @@ namespace Microsoft.Maui
 
 		public void SetBorderBrush(SolidPaint solidPaint)
 		{
-			_borderColor = solidPaint.Color == null
-				? (UIColor?)null
+			_strokeColor = solidPaint.Color == null
+				? UIColor.Clear
 				: solidPaint.Color.ToNative();
 
-			_border = null;
+			_stroke = null;
 
 			SetNeedsDisplay();
 		}
 
 		public void SetBorderBrush(LinearGradientPaint linearGradientPaint)
 		{
-			_borderColor = null;
-			_border = linearGradientPaint;
+			_strokeColor = null;
+			_stroke = linearGradientPaint;
 
 			SetNeedsDisplay();
 		}
 
 		public void SetBorderBrush(RadialGradientPaint radialGradientPaint)
 		{
-			_borderColor = null;
-			_border = radialGradientPaint;
+			_strokeColor = null;
+			_stroke = radialGradientPaint;
 
 			SetNeedsDisplay();
 		}
@@ -173,14 +179,14 @@ namespace Microsoft.Maui
 
 		public void SetBorderWidth(double borderWidth)
 		{
-			_borderWidth = (float)borderWidth;
+			_strokeThickness = (float)borderWidth;
 
 			SetNeedsDisplay();
 		}
 
-		public void SetBorderDash(double[] borderDashArray, double borderDashOffset)
+		public void SetBorderDash(float[]? borderDashArray, double borderDashOffset)
 		{
-			_borderDashOffset = (float)borderDashOffset;
+			_strokeDashOffset = (float)borderDashOffset;
 
 			if (borderDashArray != null && borderDashArray.Length > 0)
 			{
@@ -201,13 +207,64 @@ namespace Microsoft.Maui
 					borderDashArray.CopyTo(array, borderDashArray.Length);
 				}
 
-				double thickness = _borderWidth;
+				double thickness = _strokeThickness;
 
 				for (int i = 0; i < array.Length; i++)
 					dashArray[i] = new nfloat(thickness * array[i]);
 
-				_borderDash = dashArray;
+				_strokeDash = dashArray;
 			}
+
+			SetNeedsDisplay();
+		}
+
+		public void SetBorderMiterLimit(float strokeMiterLimit)
+		{
+			_strokeMiterLimit = strokeMiterLimit;
+
+			SetNeedsDisplay();
+		}
+
+		public void SetBorderLineJoin(LineJoin lineJoin)
+		{
+			CGLineJoin iLineJoin = CGLineJoin.Miter;
+
+			switch (lineJoin)
+			{
+				case LineJoin.Miter:
+					iLineJoin = CGLineJoin.Miter;
+					break;
+				case LineJoin.Bevel:
+					iLineJoin = CGLineJoin.Bevel;
+					break;
+				case LineJoin.Round:
+					iLineJoin = CGLineJoin.Round;
+					break;
+			}
+
+			_strokeLineJoin = iLineJoin;
+
+			SetNeedsDisplay();
+		}
+
+		public void SetBorderLineCap(LineCap lineCap)
+		{
+			CGLineCap iLineCap = CGLineCap.Butt;
+
+			switch (lineCap)
+			{
+				case LineCap.Butt:
+					iLineCap = CGLineCap.Butt;
+					break;
+				case LineCap.Square:
+					iLineCap = CGLineCap.Square;
+					break;
+				case LineCap.Round:
+					iLineCap = CGLineCap.Round;
+					break;
+			}
+
+			_strokeLineCap = iLineCap;
 
 			SetNeedsDisplay();
 		}
@@ -216,7 +273,7 @@ namespace Microsoft.Maui
 		{
 			if (_shape != null)
 			{
-				var bounds = Bounds.ToRectangle();
+				var bounds = _bounds.ToRectangle();
 				var path = _shape.PathForBounds(bounds);
 				return path?.AsCGPath();
 			}
@@ -247,25 +304,33 @@ namespace Microsoft.Maui
 
 		void DrawBorder(CGContext ctx)
 		{
-			if (_borderWidth == 0)
+			if (_strokeThickness == 0)
 				return;
 
 			if (IsBorderDashed())
-				ctx.SetLineDash(_borderDashOffset * _borderWidth, _borderDash);
+				ctx.SetLineDash(_strokeDashOffset * _strokeThickness, _strokeDash);
 
-			ctx.SetLineWidth(_borderWidth);
-			ctx.AddPath(GetClipPath());
+			ctx.SetLineWidth(_strokeThickness);
 
-			if (_border != null)
+			ctx.SetLineCap(_strokeLineCap);
+			ctx.SetLineJoin(_strokeLineJoin);
+			ctx.SetMiterLimit(_strokeMiterLimit * _strokeThickness / 4);
+
+			var clipPath = GetClipPath();
+
+			if (clipPath != null)
+				ctx.AddPath(clipPath);
+
+			if (_stroke != null)
 			{
 				ctx.ReplacePathWithStrokedPath();
 				ctx.Clip();
 
-				DrawGradientPaint(ctx, _border);
+				DrawGradientPaint(ctx, _stroke);
 			}
-			else if (_borderColor != null)
+			else if (_strokeColor != null)
 			{
-				ctx.SetStrokeColor(_borderColor.CGColor);
+				ctx.SetStrokeColor(_strokeColor.CGColor);
 				ctx.DrawPath(CGPathDrawingMode.Stroke);
 			}
 		}
@@ -316,7 +381,7 @@ namespace Microsoft.Maui
 
 		bool IsBorderDashed()
 		{
-			return _borderDash != null && _borderDashOffset > 0;
+			return _strokeDash != null && _strokeDashOffset > 0;
 		}
 	}
 }
