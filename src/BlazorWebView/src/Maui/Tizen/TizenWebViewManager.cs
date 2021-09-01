@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using TWebView = Tizen.WebView.WebView;
 
@@ -14,8 +15,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
 		private readonly TWebView _webview;
 
-		public TizenWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, TWebView webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, string hostPageRelativePath)
-			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, hostPageRelativePath)
+		public TizenWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, TWebView webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
 			_blazorMauiWebViewHandler = blazorMauiWebViewHandler ?? throw new ArgumentNullException(nameof(blazorMauiWebViewHandler));
 			_webview = webview ?? throw new ArgumentNullException(nameof(webview));

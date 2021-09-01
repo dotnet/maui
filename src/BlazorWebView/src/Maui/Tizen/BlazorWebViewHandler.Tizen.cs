@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Handlers;
 using Tizen.WebView;
@@ -101,7 +102,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var resContentRootDir = Path.Combine(TApplication.Current.DirectoryInfo.Resource, contentRootDir);
 			var mauiAssetFileProvider = new PhysicalFileProvider(resContentRootDir);
 
-			_webviewManager = new TizenWebViewManager(this, NativeWebView, Services!, MauiDispatcher.Instance, mauiAssetFileProvider, hostPageRelativePath);
+			var jsComponents = new JSComponentConfigurationStore();
+			_webviewManager = new TizenWebViewManager(this, NativeWebView, Services!, MauiDispatcher.Instance, mauiAssetFileProvider, jsComponents, hostPageRelativePath);
 			if (RootComponents != null)
 			{
 				foreach (var rootComponent in RootComponents)
