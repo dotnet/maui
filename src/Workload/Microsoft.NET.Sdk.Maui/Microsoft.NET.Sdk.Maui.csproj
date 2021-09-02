@@ -63,7 +63,7 @@
       <_VersionsToReplace Update="@(_VersionsToReplace)" PropertyName="%(Identity)" />
       <!-- Microsoft.Maui.Graphics.* have custom property names -->
       <_VersionsToReplace Include="MicrosoftMauiGraphicsVersion" PropertyName="_MicrosoftMauiGraphics" />
-      <_VersionsToReplace Include="MicrosoftMauiGraphicsWin2DVersion" PropertyName="_MicrosoftMauiGraphicsWin2D" />
+      <_VersionsToReplace Include="MicrosoftMauiGraphicsWin2DWinUIDesktopPackageVersion" PropertyName="_MicrosoftMauiGraphicsWin2D" />
     </ItemGroup>
     <ReplaceText
         Input="WorkloadManifest.in.json"

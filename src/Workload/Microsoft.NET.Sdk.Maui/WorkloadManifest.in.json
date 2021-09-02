@@ -427,7 +427,7 @@
     },
     "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop": {
       "kind": "library",
-      "version": "@MicrosoftMauiGraphicsWin2DVersion@"
+      "version": "@MicrosoftMauiGraphicsWin2DWinUIDesktopPackageVersion@"
     },
     "System.Diagnostics.EventLog": {
       "kind": "library",
