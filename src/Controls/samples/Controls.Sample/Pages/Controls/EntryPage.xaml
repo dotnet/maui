@@ -27,6 +27,12 @@
                 <Entry 
                     Placeholder="Placeholder"/>
                 <Label
+                    Text="Using PlaceholderColor"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    PlaceholderColor="Purple"
+                    Placeholder="Placeholder"/>
+                <Label
                     Text="Password"
                     Style="{StaticResource Headline}" />
                 <Entry
