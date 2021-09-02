@@ -319,7 +319,7 @@
     },
     "Microsoft.Extensions.Configuration.Binder": {
       "kind": "library",
-      "version": "@MicrosoftExtensionsConfigurationAbstractionsPackageVersion@"
+      "version": "@MicrosoftExtensionsConfigurationBinderPackageVersion@"
     },
     "Microsoft.Extensions.Configuration.CommandLine": {
       "kind": "library",
