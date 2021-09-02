@@ -1,11 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using CoreGraphics;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using UIKit;
-using Xunit;
 
 namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 {
@@ -16,7 +15,6 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 		{
 			var xPlatShadow = new Shadow
 			{
-				Color = Colors.Red,
 				Offset = new Size(10, 10),
 				Opacity = 1.0f,
 				Radius = 2.0f
@@ -30,19 +28,12 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			layout.Shadow = xPlatShadow;
 
-			var expectedNativeShadowColor = xPlatShadow.Color.ToNative().CGColor;
+			await ValidateHasColor(layout, Colors.Red, () => xPlatShadow.Color = Colors.Red);
+		}
 
-			var values = await GetValueAsync(layout, (handler) =>
-			{
-				return new
-				{
-					ViewValue = layout.Shadow,
-					NativeViewValue = GetNativeShadowColor(handler)
-				};
-			});
-
-			Assert.Equal(xPlatShadow, values.ViewValue);
-			Assert.Equal(expectedNativeShadowColor, values.NativeViewValue);
+		LayoutView GetNativeLayout(LayoutHandler layoutHandler)
+		{
+			return layoutHandler.NativeView;
 		}
 
 		double GetNativeChildCount(LayoutHandler layoutHandler)
@@ -60,9 +51,14 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			return layoutHandler.NativeView.Subviews;
 		}
 
-		CGColor GetNativeShadowColor(LayoutHandler layoutHandler)
+		Task ValidateHasColor(ILayout layout, Color color, Action action = null)
 		{
-			return layoutHandler.NativeView.Layer.ShadowColor;
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeLayout = GetNativeLayout(CreateHandler(layout));
+				action?.Invoke();
+				nativeLayout.AssertContainsColor(color);
+			});
 		}
 	}
 }
