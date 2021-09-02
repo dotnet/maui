@@ -27,33 +27,6 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.PlaceholderColor, GetNativePlaceholderColor, entry.PlaceholderColor);
 		}
 
-		//[Theory(DisplayName = "Font Family Initializes Correctly")]
-		//[InlineData(null)]
-		//[InlineData("monospace")]
-		//[InlineData("Dokdo")]
-		//public async Task FontFamilyInitializesCorrectly(string family)
-		//{
-		//	var entry = new EntryStub
-		//	{
-		//		Text = "Test",
-		//		Font = Font.OfSize(family, 10)
-		//	};
-
-		//	var handler = await CreateHandlerAsync(entry);
-		//	var nativeEntry = GetNativeEntry(handler);
-
-		//	var fontManager = handler.Services.GetRequiredService<IFontManager>();
-
-		//	var nativeFont = fontManager.GetTypeface(Font.OfSize(family, 0.0));
-
-		//	Assert.Equal(nativeFont, nativeEntry.Typeface);
-
-		//	if (string.IsNullOrEmpty(family))
-		//		Assert.Equal(fontManager.DefaultTypeface, nativeEntry.Typeface);
-		//	else
-		//		Assert.NotEqual(fontManager.DefaultTypeface, nativeEntry.Typeface);
-		//}
-
 		[Fact(DisplayName = "ReturnType Initializes Correctly")]
 		public async Task ReturnTypeInitializesCorrectly()
 		{
