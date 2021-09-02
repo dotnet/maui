@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Handlers
 		{
 #if TIZEN
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			handler.WrappedNativeView?.UpdateBackground(view);
+			handler.GetWrappedNativeView()?.UpdateBackground(view);
 #else
 			((PlatformView?)handler.PlatformView)?.UpdateBackground(view);
 #endif

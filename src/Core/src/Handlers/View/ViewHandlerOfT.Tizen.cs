@@ -14,10 +14,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		bool _disposedValue;
 
-		EvasObject? INativeViewHandler.NativeView => WrappedNativeView;
+		EvasObject? INativeViewHandler.NativeView => this.GetWrappedNativeView();
 		EvasObject? INativeViewHandler.ContainerView => ContainerView;
-
-		protected new EvasObject? WrappedNativeView => (EvasObject?)base.WrappedNativeView;
 
 		public new WrapperView? ContainerView
 		{
@@ -43,7 +41,7 @@ namespace Microsoft.Maui.Handlers
 			if (NativeParent == null)
 				return;
 
-			var nativeView = WrappedNativeView;
+			var nativeView = this.GetWrappedNativeView();
 
 			if (nativeView == null)
 				return;
@@ -95,7 +93,7 @@ namespace Microsoft.Maui.Handlers
 
 		public virtual ERect GetNativeContentGeometry()
 		{
-			var nativeView = WrappedNativeView;
+			var nativeView = this.GetWrappedNativeView();
 
 			if (nativeView == null)
 			{
@@ -106,7 +104,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual Size Measure(double availableWidth, double availableHeight)
 		{
-			var nativeView = WrappedNativeView;
+			var nativeView = this.GetWrappedNativeView();
 
 			if (nativeView == null)
 			{
