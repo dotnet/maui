@@ -110,7 +110,7 @@ Task("dotnet-templates")
         foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
         {
             var name = template.Replace("-", "") + " Space-Dash";
-            StartProcess(dn, $"new {template} -o ./templatesTest/{name}");
+            StartProcess(dn, $"new {template} -o \"./templatesTest/{name}\"");
 
             RunMSBuildWithDotNet($"./templatesTest/{name}");
         }
