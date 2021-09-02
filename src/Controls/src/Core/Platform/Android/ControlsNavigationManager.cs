@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Platform
 		new NavigationPage NavigationView => (NavigationPage)base.VirtualView;
 
 		new Page CurrentPage => (Page)base.CurrentPage;
-		public ControlsNavigationManager() 
+		public ControlsNavigationManager()
 		{
 		}
 
