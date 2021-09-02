@@ -3,6 +3,7 @@
 	public static class TestCategory
 	{
 		public const string ActivityIndicator = "ActivityIndicator";
+		public const string BoxView = "BoxView";
 		public const string Button = "Button";
 		public const string CheckBox = "CheckBox";
 		public const string DatePicker = "DatePicker";

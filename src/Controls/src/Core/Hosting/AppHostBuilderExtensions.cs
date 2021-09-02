@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -16,6 +14,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif
 			{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
+			{ typeof(BoxView), typeof(BoxViewHandler) },
 			{ typeof(Button), typeof(ButtonHandler) },
 			{ typeof(CheckBox), typeof(CheckBoxHandler) },
 			{ typeof(DatePicker), typeof(DatePickerHandler) },
