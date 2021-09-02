@@ -35,10 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		WImageSource _titleIcon;
 		VisualElementTracker<Page, PageControl> _tracker;
 		EntranceThemeTransition _transition;
-		Platform _platform;
 		bool _parentsLookedUp = false;
-
-		Platform Platform => _platform ?? (_platform = Platform.Current);
 
 		public NavigationPage Element { get; private set; }
 
@@ -174,11 +171,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				throw new InvalidOperationException(
 					"NavigationPage must have a root Page before being used. Either call PushAsync with a valid Page, or pass a Page to the constructor before usage.");
 
-			if (oldElement != null)
+			if (oldElement is INavigationPageController navigationPageController)
 			{
-				oldElement.PushRequested -= OnPushRequested;
-				oldElement.PopRequested -= OnPopRequested;
-				oldElement.PopToRootRequested -= OnPopToRootRequested;
+				navigationPageController.PushRequested -= OnPushRequested;
+				navigationPageController.PopRequested -= OnPopRequested;
+				navigationPageController.PopToRootRequested -= OnPopToRootRequested;
 				oldElement.InternalChildren.CollectionChanged -= OnChildrenChanged;
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
 			}
@@ -221,9 +218,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					Element.Appearing += OnElementAppearing;
 
 				Element.PropertyChanged += OnElementPropertyChanged;
-				Element.PushRequested += OnPushRequested;
-				Element.PopRequested += OnPopRequested;
-				Element.PopToRootRequested += OnPopToRootRequested;
+
+				if (Element is INavigationPageController newPageController)
+				{
+					newPageController.PushRequested += OnPushRequested;
+					newPageController.PopRequested += OnPopRequested;
+					newPageController.PopToRootRequested += OnPopToRootRequested;
+				}
+
 				Element.InternalChildren.CollectionChanged += OnChildrenChanged;
 
 				if (!string.IsNullOrEmpty(Element.AutomationId))
@@ -463,7 +465,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void PushExistingNavigationStack()
 		{
-			foreach (var page in Element.Pages)
+			INavigationPageController navigationPageController = Element;
+			foreach (var page in navigationPageController.Pages)
 			{
 				SetPage(page, false, false);
 			}
@@ -676,7 +679,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			_container.SetBackButtonTitle(Element);
 		}
 
-		async void UpdateTitleOnParents()
+		void UpdateTitleOnParents()
 		{
 			if (Element == null || _currentPage == null)
 				return;
@@ -710,10 +713,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (_showTitle || (render != null && render.ShowTitle))
 			{
-				if (Platform != null)
-				{
-					await Platform.UpdateToolbarItems();
-				}
+				//if (Platform != null)
+				//{
+				//	await Platform.UpdateToolbarItems();
+				//}
 			}
 		}
 	}

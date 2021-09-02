@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Components.WebView.WebView2
@@ -21,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         private const string AppOrigin = "https://0.0.0.0/";
 
         private readonly IWebView2Wrapper _webview;
-        private readonly Task _webviewReadyTask;
+		private readonly Task _webviewReadyTask;
 
         /// <summary>
         /// Constructs an instance of <see cref="WebView2WebViewManager"/>.
@@ -31,15 +33,15 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         /// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
         /// <param name="fileProvider">Provides static content to the webview.</param>
         /// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-        public WebView2WebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, string hostPageRelativePath)
-            : base(services, dispatcher, new Uri(AppOrigin), fileProvider, hostPageRelativePath)
+        public WebView2WebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+            : base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
         {
             _webview = webview ?? throw new ArgumentNullException(nameof(webview));
 
-            // Unfortunately the CoreWebView2 can only be instantiated asynchronously.
-            // We want the external API to behave as if initalization is synchronous,
-            // so keep track of a task we can await during LoadUri.
-            _webviewReadyTask = InitializeWebView2();
+			// Unfortunately the CoreWebView2 can only be instantiated asynchronously.
+			// We want the external API to behave as if initalization is synchronous,
+			// so keep track of a task we can await during LoadUri.
+			_webviewReadyTask = InitializeWebView2();
         }
 
         /// <inheritdoc />
@@ -72,12 +74,12 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
                     eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Document ||
                     eventArgs.ResourceContext == CoreWebView2WebResourceContextWrapper.Other; // e.g., dev tools requesting page source
 
-                if (TryGetResponseContent(eventArgs.Request.Uri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
-                {
-                    var headerString = GetHeaderString(headers);
-                    eventArgs.SetResponse(content, statusCode, statusMessage, headerString);
-                }
-            });
+				if (TryGetResponseContent(eventArgs.Request.Uri, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
+				{
+					var headerString = GetHeaderString(headers);
+					eventArgs.SetResponse(content, statusCode, statusMessage, headerString);
+				}
+			});
 
             // The code inside blazor.webview.js is meant to be agnostic to specific webview technologies,
             // so the following is an adaptor from blazor.webview.js conventions to WebView2 APIs
@@ -98,10 +100,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
                 => MessageReceived(new Uri(e.Source), e.WebMessageAsString));
         }
 
-        /// <summary>
-        /// Override this method to queue a call to Blazor.start(). Not all platforms require this.
-        /// </summary>
-        protected virtual void QueueBlazorStart()
+		/// <summary>
+		/// Override this method to queue a call to Blazor.start(). Not all platforms require this.
+		/// </summary>
+		protected virtual void QueueBlazorStart()
         {
         }
 
@@ -130,5 +132,5 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
                 }
             });
         }
-    }
+	}
 }

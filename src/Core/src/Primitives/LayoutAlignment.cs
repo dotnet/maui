@@ -3,7 +3,7 @@
 	// We don't use Microsoft.Maui.Controls.LayoutAlignment directly because it has a Flags attribute, which we do not want
 
 	/// <summary>
-	/// Determines the position and size of an IFrameworkElement when arranged in a parent element
+	/// Determines the position and size of an IView when arranged in a parent element
 	/// </summary>
 	public enum LayoutAlignment
 	{

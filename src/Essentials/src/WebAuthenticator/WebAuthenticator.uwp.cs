@@ -14,8 +14,11 @@ namespace Microsoft.Maui.Essentials
 {
 	public static partial class WebAuthenticator
 	{
-		static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
+		static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
+			var url = webAuthenticatorOptions?.Url;
+			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
+
 			if (!IsUriProtocolDeclared(callbackUrl.Scheme))
 				throw new InvalidOperationException($"You need to declare the windows.protocol usage of the protocol/scheme `{callbackUrl.Scheme}` in your AppxManifest.xml file");
 

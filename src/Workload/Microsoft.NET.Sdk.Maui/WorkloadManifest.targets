@@ -1,4 +1,8 @@
 <Project>
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' ">
+    <ProjectCapability Include="UseMauiCore" />
+    <ProjectCapability Condition=" '$(UseMaui)' == 'true' " Include="UseMaui" />
+  </ItemGroup>
   <Import
       Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' "
       Project="Sdk.targets" Sdk="Microsoft.Maui.Controls.Sdk"

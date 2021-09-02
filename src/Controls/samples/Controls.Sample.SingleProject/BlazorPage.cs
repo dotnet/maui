@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Maui.Controls.Sample.SingleProject
 {
-	public class BlazorPage : ContentPage, IPage
+	public class BlazorPage : ContentPage
 	{
 		public BlazorPage()
 		{
@@ -27,7 +27,5 @@ namespace Maui.Controls.Sample.SingleProject
 			bwv.RootComponents.Add(new RootComponent { Selector = "#app", ComponentType = typeof(Main) });
 			Content = bwv;
 		}
-
-		public IView View { get => (IView)Content; set => Content = (View)value; }
 	}
 }

@@ -18,22 +18,26 @@ namespace Microsoft.Maui
 
 		public static void UpdateText(this AppCompatEditText editText, IEntry entry)
 		{
-			editText.UpdateText(entry.Text);
+			editText.Text = entry.Text;
 
 			// TODO ezhart The renderer sets the text to selected and shows the keyboard if the EditText is focused
 		}
 
 		public static void UpdateText(this AppCompatEditText editText, IEditor editor)
 		{
-			editText.UpdateText(editor.Text);
+			editText.Text = editor.Text;
 
 			editText.SetSelection(editText.Text?.Length ?? 0);
 		}
 
+
 		public static void UpdateTextColor(this AppCompatEditText editText, ITextStyle entry, ColorStateList? defaultColor)
 		{
-			var textColor = entry.TextColor;
+			editText.UpdateTextColor(entry.TextColor, defaultColor);
+		}
 
+		public static void UpdateTextColor(this AppCompatEditText editText, Graphics.Color textColor, ColorStateList? defaultColor)
+		{
 			if (textColor == null)
 			{
 				if (defaultColor != null)
@@ -127,9 +131,13 @@ namespace Microsoft.Maui
 			editText.Hint = textInput.Placeholder;
 		}
 
-		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IEditor editor, ColorStateList? defaultColor)
+		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IPlaceholder placeholder, ColorStateList? defaultColor)
 		{
-			var placeholderTextColor = editor.PlaceholderColor;
+			editText.UpdatePlaceholderColor(placeholder.PlaceholderColor, defaultColor);
+		}
+
+		public static void UpdatePlaceholderColor(this AppCompatEditText editText, Graphics.Color placeholderTextColor, ColorStateList? defaultColor)
+		{
 			if (placeholderTextColor == null)
 			{
 				editText.SetHintTextColor(defaultColor);

@@ -57,7 +57,7 @@
       <_WorkloadFiles Include="$(_InstallTempDirectory)data/WorkloadManifest.*" />
     </ItemGroup>
     <CopyWorkloadFiles
-        Name="Microsoft.NET.Sdk.Maui"
+        Name="microsoft.net.sdk.maui"
         Files="@(_WorkloadFiles)"
         WorkloadDirectory="$(MSBuildExtensionsPath)../../sdk-manifests/$(DotNetPreviewVersionBand)"
         VersionBand="$(DotNetPreviewVersionBand)"
@@ -89,20 +89,7 @@
     />
     <Delete Files="$(_NuGetConfig)" />
 
-    <!--
-      HACK: temporarily put runtime packs in 'library-packs', until they can be resolved from 'packs'
-      See: https://github.com/dotnet/sdk/issues/14044
-    -->
-    <ItemGroup>
-      <_RuntimePacks Include="$(PackageOutputPath)/*.Runtime.*.nupkg" />
-      <_RuntimePacks Include="$(PackageOutputPath)/Microsoft.Maui.Extensions.*.nupkg" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_RuntimePacks)" DestinationFolder="$(MSBuildExtensionsPath)../../library-packs" SkipUnchangedFiles="true" />
-
   </Target>
-
-  <!-- Eventually replaced by eng/Version.targets -->
-  <Target Name="SetVersions" />
 
   <PropertyGroup>
     <!-- These files should invalidate ./bin/dotnet completely -->
@@ -138,7 +125,7 @@
     <_PacksToRemove Include="Microsoft.NET.Workload.tvOS" />
     <_PacksToRemove Include="Microsoft.NET.Workload.macOS" />
     <!-- Ids for 'dotnet workload install' -->
-    <_WorkloadIds Include="microsoft-android-sdk-full" />
+    <_WorkloadIds Include="android-aot" />
     <_WorkloadIds Include="maccatalyst" />
     <_WorkloadIds Include="macos" />
     <_WorkloadIds Include="ios" />
@@ -179,7 +166,7 @@
       Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; workload install @(_WorkloadIds, ' ') --skip-manifest-update --verbosity diag --temp-dir $(DotNetTempDirectory)"
+        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir $(DotNetTempDirectory)"
         WorkingDirectory="$(MauiRootDirectory)"
     />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />

@@ -1,0 +1,88 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Core.props" />
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>$(MauiPlatformsNoMacCat)</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <SingleProject>true</SingleProject>
+    <RootNamespace>Microsoft.Maui.Essentials.DeviceTests</RootNamespace>
+    <AssemblyName>Microsoft.Maui.Essentials.DeviceTests</AssemblyName>
+
+    <OutputType Condition="$(TargetFramework.Contains('-windows'))">WinExe</OutputType>
+    <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>MSIX</WindowsPackageType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ApplicationTitle>Essentials Tests</ApplicationTitle>
+    <ApplicationId>com.microsoft.maui.essentials.devicetests</ApplicationId>
+    <ApplicationVersion>1.0.1.0</ApplicationVersion>
+    <AndroidVersionCode>1</AndroidVersionCode>
+
+    <!-- HACK for now until inconsistency is fixed -->
+    <AppleShortVersion>1.0.1.0</AppleShortVersion>
+    <ApplicationVersion Condition="$(TargetFramework.Contains('-ios'))">1</ApplicationVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiImage Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" IsAppIcon="true" Color="#512BD4" />
+    <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" />
+    <MauiImage Include="Resources\Images\*" />
+    <MauiFont Include="Resources\Fonts\*" />
+    <MauiImage Update="Resources\Images\*.gif" Resize="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners.SourceGen\TestUtils.DeviceTests.Runners.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\SourceGen\Controls.SourceGen-net6.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <InvariantGlobalization Condition="$(TargetFramework.Contains('-maccatalyst'))">true</InvariantGlobalization>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-ios'))">iossimulator-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AndroidEnvironment Include="Platforms\Android\environment.txt" />
+  </ItemGroup>
+
+  <!-- include/exclude the <platform> files -->
+  <ItemGroup>
+    <None Include="@(Compile)" />
+    <None Include="Traits.cs" />
+    <None Include="Utils.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
+    <Compile Remove="**\*.Android.cs" />
+    <Compile Remove="**\Android\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.Contains('-ios')) and !$(TargetFramework.Contains('-maccatalyst'))">
+    <Compile Remove="**\*.iOS.cs" />
+    <Compile Remove="**\iOS\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="!$(TargetFramework.Contains('-windows'))">
+    <Compile Remove="**\*.Windows.cs" />
+    <Compile Remove="**\Windows\**\*.cs" />
+  </ItemGroup>
+
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.targets" />
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Core.targets" />
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.TestUtils.DeviceTests.Runners.targets" />
+
+</Project>

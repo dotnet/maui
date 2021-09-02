@@ -23,7 +23,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		string _defaultAutomationPropertiesHelpText;
 		UIElement _defaultAutomationPropertiesLabeledBy;
 		bool _disposed;
-		FocusNavigationDirection focusDirection;
 		EventHandler<VisualElementChangedEventArgs> _elementChangedHandlers;
 		event EventHandler<PropertyChangedEventArgs> _elementPropertyChanged;
 		event EventHandler _controlChanging;
@@ -161,12 +160,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			OnElementChanged(new ElementChangedEventArgs<TElement>(oldElement, Element));
 
-			if (_control != null && this is IDontGetFocus)
-			{
-				_control.GotFocus += OnGotFocus;
-				_control.GettingFocus += OnGettingFocus;
-			}
-
 			var controller = (IElementController)oldElement;
 			if (controller != null && (Panel)controller.EffectControlProvider == this)
 			{
@@ -176,14 +169,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			controller = element;
 			if (controller != null)
 				controller.EffectControlProvider = this;
-		}
-
-		void OnGettingFocus(UIElement sender, GettingFocusEventArgs args) => focusDirection = args.Direction;
-
-		void OnGotFocus(object sender, RoutedEventArgs e)
-		{
-			if (e.OriginalSource == Control)
-				Control.TryMoveFocus(focusDirection != FocusNavigationDirection.None ? focusDirection : FocusNavigationDirection.Next);
 		}
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
@@ -282,11 +267,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Packager?.Dispose();
 			Packager = null;
 
-			if (_control != null)
-			{
-				_control.GotFocus -= OnGotFocus;
-				_control.GettingFocus -= OnGettingFocus;
-			}
 			SetNativeControl(null);
 			SetElement(null);
 		}
@@ -347,22 +327,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				changed(this, e);
 		}
 
-		protected void UpdateTabStop()
-		{
-			if (_control == null)
-				return;
-			_control.IsTabStop = Element.IsTabStop;
-
-			if (this is ITabStopOnDescendants)
-				_control?.GetChildren<Control>().ForEach(c => c.IsTabStop = Element.IsTabStop);
-		}
-
-		protected void UpdateTabIndex()
-		{
-			if (_control != null)
-				_control.TabIndex = Element.TabIndex;
-		}
-
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
@@ -387,10 +351,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					e.PropertyName == Specifics.AccessKeyHorizontalOffsetProperty.PropertyName ||
 					e.PropertyName == Specifics.AccessKeyVerticalOffsetProperty.PropertyName)
 				UpdateAccessKey();
-			else if (e.PropertyName == VisualElement.IsTabStopProperty.PropertyName)
-				UpdateTabStop();
-			else if (e.PropertyName == VisualElement.TabIndexProperty.PropertyName)
-				UpdateTabIndex();
 
 			_elementPropertyChanged?.Invoke(this, e);
 		}
@@ -577,8 +537,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			UpdateEnabled();
 			UpdateInputTransparent();
 			UpdateAccessKey();
-			UpdateTabStop();
-			UpdateTabIndex();
 			SetAutomationPropertiesHelpText();
 			SetAutomationPropertiesName();
 			SetAutomationPropertiesAccessibilityView();
@@ -601,7 +559,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		internal void UnfocusControl(Control control)
 		{
-			if (control == null || !control.IsEnabled || !control.IsTabStop)
+			if (control == null || !control.IsEnabled)
 				return;
 
 			// "Unfocusing" doesn't really make sense on Windows; for accessibility reasons,

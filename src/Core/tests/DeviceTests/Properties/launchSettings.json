@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "Microsoft.Maui.Core.DeviceTests": {
+      "commandName": "MsixPackage"
+    }
+  }
+}

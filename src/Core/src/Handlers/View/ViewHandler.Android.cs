@@ -9,83 +9,80 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
-		MauiAccessibilityDelegate? AccessibilityDelegate { get; set; }
-
-		partial void DisconnectingHandler(NativeView? nativeView)
+		partial void DisconnectingHandler(NativeView nativeView)
 		{
-			if (nativeView.IsAlive() && AccessibilityDelegate != null)
+			if (nativeView.IsAlive()
+				&& ViewCompat.GetAccessibilityDelegate(nativeView) is MauiAccessibilityDelegateCompat ad)
 			{
-				AccessibilityDelegate.Handler = null;
+				ad.Handler = null;
 				ViewCompat.SetAccessibilityDelegate(nativeView, null);
-				AccessibilityDelegate = null;
 			}
 		}
 
-		static partial void MappingFrame(ViewHandler handler, IView view)
+		static partial void MappingFrame(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateAnchorX(view);
-			((NativeView?)handler.WrappedNativeView)?.UpdateAnchorY(view);
+			handler.GetWrappedNativeView()?.UpdateAnchorX(view);
+			handler.GetWrappedNativeView()?.UpdateAnchorY(view);
 		}
 
-		public static void MapTranslationX(ViewHandler handler, IView view)
+		public static void MapTranslationX(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateTranslationX(view);
+			handler.GetWrappedNativeView()?.UpdateTranslationX(view);
 		}
 
-		public static void MapTranslationY(ViewHandler handler, IView view)
+		public static void MapTranslationY(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateTranslationY(view);
+			handler.GetWrappedNativeView()?.UpdateTranslationY(view);
 		}
 
-		public static void MapScale(ViewHandler handler, IView view)
+		public static void MapScale(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateScale(view);
+			handler.GetWrappedNativeView()?.UpdateScale(view);
 		}
 
-		public static void MapScaleX(ViewHandler handler, IView view)
+		public static void MapScaleX(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateScaleX(view);
+			handler.GetWrappedNativeView()?.UpdateScaleX(view);
 		}
 
-		public static void MapScaleY(ViewHandler handler, IView view)
+		public static void MapScaleY(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateScaleY(view);
+			handler.GetWrappedNativeView()?.UpdateScaleY(view);
 		}
 
-		public static void MapRotation(ViewHandler handler, IView view)
+		public static void MapRotation(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateRotation(view);
+			handler.GetWrappedNativeView()?.UpdateRotation(view);
 		}
 
-		public static void MapRotationX(ViewHandler handler, IView view)
+		public static void MapRotationX(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateRotationX(view);
+			handler.GetWrappedNativeView()?.UpdateRotationX(view);
 		}
 
-		public static void MapRotationY(ViewHandler handler, IView view)
+		public static void MapRotationY(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateRotationY(view);
+			handler.GetWrappedNativeView()?.UpdateRotationY(view);
 		}
 
-		public static void MapAnchorX(ViewHandler handler, IView view)
+		public static void MapAnchorX(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateAnchorX(view);
+			handler.GetWrappedNativeView()?.UpdateAnchorX(view);
 		}
 
-		public static void MapAnchorY(ViewHandler handler, IView view)
+		public static void MapAnchorY(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.WrappedNativeView)?.UpdateAnchorY(view);
+			handler.GetWrappedNativeView()?.UpdateAnchorY(view);
 		}
 
-		static partial void MappingSemantics(ViewHandler handler, IView view)
+		static partial void MappingSemantics(IViewHandler handler, IView view)
 		{
 			if (handler.NativeView == null)
 				return;
 
-			if (view.Semantics != null &&
-				handler is ViewHandler viewHandler &&
-				viewHandler.AccessibilityDelegate == null &&
-				ViewCompat.GetAccessibilityDelegate(handler.NativeView as NativeView) == null)
+			var accessibilityDelegate = ViewCompat.GetAccessibilityDelegate(handler.NativeView as View) as MauiAccessibilityDelegateCompat;
+
+			if (view.Semantics != null && accessibilityDelegate == null)
 			{
 				if (handler.NativeView is not NativeView nativeView)
 					return;
@@ -95,101 +92,27 @@ namespace Microsoft.Maui.Handlers
 
 				if (!string.IsNullOrWhiteSpace(view.Semantics.Hint) || !string.IsNullOrWhiteSpace(view.Semantics.Description))
 				{
-					if (viewHandler.AccessibilityDelegate == null)
+					if (accessibilityDelegate == null)
 					{
-						viewHandler.AccessibilityDelegate = new MauiAccessibilityDelegate() { Handler = viewHandler };
-						ViewCompat.SetAccessibilityDelegate(nativeView, viewHandler.AccessibilityDelegate);
+						var currentDelegate = ViewCompat.GetAccessibilityDelegate(nativeView);
+						if (currentDelegate is MauiAccessibilityDelegateCompat)
+							currentDelegate = null;
+
+						var mauiDelegate = new MauiAccessibilityDelegateCompat(currentDelegate)
+						{
+							Handler = handler
+						};
+
+						ViewCompat.SetAccessibilityDelegate(nativeView, mauiDelegate);
 					}
 				}
-				else if (viewHandler.AccessibilityDelegate != null)
+				else if (accessibilityDelegate != null)
 				{
-					viewHandler.AccessibilityDelegate = null;
 					ViewCompat.SetAccessibilityDelegate(nativeView, null);
 				}
 
-				if (viewHandler.AccessibilityDelegate != null)
-				{
+				if (accessibilityDelegate != null)
 					nativeView.ImportantForAccessibility = ImportantForAccessibility.Yes;
-				}
-			}
-		}
-
-		public void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)
-		{
-			var semantics = VirtualView?.Semantics;
-
-			if (semantics == null)
-				return;
-
-			if (info == null)
-				return;
-
-			string? newText = null;
-			string? newContentDescription = null;
-
-			var desc = semantics.Description;
-			if (!string.IsNullOrEmpty(desc))
-			{
-				// Edit Text fields won't read anything for the content description
-				if (host is EditText)
-					newText = $"{desc}, {((EditText)host).Text}";
-				else
-					newContentDescription = desc;
-			}
-
-			var hint = semantics.Hint;
-			if (!string.IsNullOrEmpty(hint))
-			{
-				// info HintText won't read anything back when using TalkBack pre API 26
-				if (NativeVersion.IsAtLeast(26))
-				{
-					info.HintText = hint;
-
-					if (host is EditText)
-						info.ShowingHintText = false;
-				}
-				else
-				{
-					if (host is TextView tv)
-					{
-						newText = newText ?? tv.Text;
-						newText = $"{newText}, {hint}";
-					}
-					else
-					{
-						if (newContentDescription != null)
-						{
-							newText = $"{newContentDescription}, {hint}";
-						}
-						else
-						{
-							newText = $"{hint}";
-						}
-					}
-
-					newContentDescription = null;
-				}
-			}
-
-			if (!String.IsNullOrWhiteSpace(newContentDescription))
-				info.ContentDescription = newContentDescription;
-
-			if (!String.IsNullOrWhiteSpace(newText))
-				info.Text = newText;
-		}
-
-		class MauiAccessibilityDelegate : AccessibilityDelegateCompat
-		{
-			public ViewHandler? Handler { get; set; }
-
-			public MauiAccessibilityDelegate()
-			{
-			}
-
-			public override void OnInitializeAccessibilityNodeInfo(NativeView? host, AccessibilityNodeInfoCompat? info)
-			{
-				base.OnInitializeAccessibilityNodeInfo(host, info);
-				Handler?.OnInitializeAccessibilityNodeInfo(host, info);
 			}
 		}
 	}

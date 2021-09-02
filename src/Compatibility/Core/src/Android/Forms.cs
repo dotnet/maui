@@ -411,9 +411,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			Device.SetIdiom(currentIdiom);
-
-			if (SdkInt >= BuildVersionCodes.JellyBeanMr1)
-				Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
+			Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
 
 			if (ExpressionSearch.Default == null)
 				ExpressionSearch.Default = new AndroidExpressionSearch();
@@ -675,8 +673,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			public string GetHash(string input) => Crc64.GetHash(input);
-
-			string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
 
 			public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 			{

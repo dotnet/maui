@@ -136,5 +136,30 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			SetNeedsDisplay();
 		}
+
+		static float DefaultWidth = 40;
+		static float DefaultHeight = 40;
+		static SizeF DefaultSize = new SizeF(DefaultWidth, DefaultHeight);
+
+		public override SizeF SizeThatFits(SizeF size)
+		{
+			// Creating a custom override for measuring the BoxView on iOS; this reports the same default size that's 
+			// specified in the old OnMeasure method. Normally we'd just do this centrally in the xplat code or override
+			// GetDesiredSize in a BoxViewHandler. But BoxView is a legacy control (replaced by Shapes), so we don't want
+			// to bring that into the new stuff. 
+
+			if (Element != null)
+			{
+				var heightRequest = Element.HeightRequest;
+				var widthRequest = Element.WidthRequest;
+
+				var height = heightRequest >= 0 ? heightRequest : DefaultHeight;
+				var width = widthRequest >= 0 ? widthRequest : DefaultWidth;
+
+				return new SizeF(width, height);
+			}
+
+			return DefaultSize;
+		}
 	}
 }
