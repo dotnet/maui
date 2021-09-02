@@ -12,8 +12,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		
 		public Color PlaceholderColor { get; set; }
 
-		public Color PlaceholderColor { get; set; }
-
 		public Color TextColor { get; set; }
 
 		public Color CancelButtonColor { get; set; }
