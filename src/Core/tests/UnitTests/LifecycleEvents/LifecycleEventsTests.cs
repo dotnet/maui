@@ -64,8 +64,9 @@ namespace Microsoft.Maui.UnitTests.LifecycleEvents
 		{
 			var eventFired = 0;
 
+			// NOTE: <SimpleDelegate> added in dotnet/roslyn bump
 			var mauiApp = MauiApp.CreateBuilder()
-				.ConfigureLifecycleEvents(builder => builder.AddEvent("TestEvent", () => eventFired++))
+				.ConfigureLifecycleEvents(builder => builder.AddEvent<SimpleDelegate>("TestEvent", () => eventFired++))
 				.Build();
 
 			var service = mauiApp.Services.GetRequiredService<ILifecycleEventService>();
@@ -122,9 +123,10 @@ namespace Microsoft.Maui.UnitTests.LifecycleEvents
 			var event1Fired = 0;
 			var event2Fired = 0;
 
+			// NOTE: <SimpleDelegate> added in dotnet/roslyn bump
 			var mauiApp = MauiApp.CreateBuilder()
-				.ConfigureLifecycleEvents(builder => builder.AddEvent("TestEvent", () => event1Fired++))
-				.ConfigureLifecycleEvents(builder => builder.AddEvent("TestEvent", () => event2Fired++))
+				.ConfigureLifecycleEvents(builder => builder.AddEvent<SimpleDelegate>("TestEvent", () => event1Fired++))
+				.ConfigureLifecycleEvents(builder => builder.AddEvent<SimpleDelegate>("TestEvent", () => event2Fired++))
 				.Build();
 
 			var service = mauiApp.Services.GetRequiredService<ILifecycleEventService>();
@@ -141,11 +143,12 @@ namespace Microsoft.Maui.UnitTests.LifecycleEvents
 			var event1Fired = 0;
 			var event2Fired = 0;
 
+			// NOTE: <SimpleDelegate> added in dotnet/roslyn bump
 			var mauiApp = MauiApp.CreateBuilder()
 				.ConfigureLifecycleEvents(builder =>
 				{
-					builder.AddEvent("TestEvent", () => event1Fired++);
-					builder.AddEvent("TestEvent", () => event2Fired++);
+					builder.AddEvent<SimpleDelegate>("TestEvent", () => event1Fired++);
+					builder.AddEvent<SimpleDelegate>("TestEvent", () => event2Fired++);
 				})
 				.Build();
 
