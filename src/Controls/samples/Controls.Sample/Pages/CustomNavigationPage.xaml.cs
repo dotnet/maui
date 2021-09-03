@@ -18,15 +18,17 @@ namespace Maui.Controls.Sample.Pages
 
 #if __ANDROID__
 
-			var view = (Handler.NativeView as Android.Views.View)
-				.FindViewById<Android.Views.View>(Resource.Id.maui_toolbar);
-
-			if (view.LayoutParameters is Google.Android.Material.AppBar.AppBarLayout.LayoutParams  layoutParams)
+			if (Handler?.NativeView is Android.Views.View layout)
 			{
-				layoutParams.ScrollFlags =
-					Google.Android.Material.AppBar.AppBarLayout.LayoutParams.ScrollFlagScroll 
-					| Google.Android.Material.AppBar.AppBarLayout.LayoutParams.ScrollFlagEnterAlways;
-			}	
+				var view = layout.FindViewById<Android.Views.View>(Resource.Id.maui_toolbar);
+
+				if (view.LayoutParameters is Google.Android.Material.AppBar.AppBarLayout.LayoutParams layoutParams)
+				{
+					layoutParams.ScrollFlags =
+						Google.Android.Material.AppBar.AppBarLayout.LayoutParams.ScrollFlagScroll
+						| Google.Android.Material.AppBar.AppBarLayout.LayoutParams.ScrollFlagEnterAlways;
+				}
+			}
 #endif
 		}
 	}
