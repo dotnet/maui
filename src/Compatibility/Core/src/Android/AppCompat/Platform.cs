@@ -301,7 +301,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			layout = null;
 		}
 
-		internal static IVisualElementRenderer CreateRenderer(VisualElement element, Context context)
+		internal static IVisualElementRenderer CreateRenderer(
+			VisualElement element, 
+			Context context,
+			AndroidX.Fragment.App.FragmentManager fragmentManager = null,
+			global::Android.Views.LayoutInflater layoutInflater = null)
 		{
 			IVisualElementRenderer renderer = null;
 
@@ -322,8 +326,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				//TODO: Handle this with AppBuilderHost
 				try
 				{
-					handler = Forms.MauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
-					handler.SetMauiContext(Forms.MauiContext);
+					var mauiContext = Forms.MauiContext;
+
+					if (fragmentManager != null || layoutInflater != null)
+						mauiContext = new ScopedMauiContext(mauiContext, null, null, layoutInflater, fragmentManager);
+
+					handler = mauiContext.Handlers.GetHandler(element.GetType()) as IViewHandler;
+					handler.SetMauiContext(mauiContext);
 				}
 				catch
 				{
@@ -359,17 +368,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 
 			renderer.SetElement(element);
-			return renderer;
-		}
 
-		internal static IVisualElementRenderer CreateRenderer(VisualElement element, AndroidX.Fragment.App.FragmentManager fragmentManager, Context context)
-		{
-			IVisualElementRenderer renderer = CreateRenderer(element, context);
-
-			var managesFragments = renderer as IManageFragments;
-			managesFragments?.SetFragmentManager(fragmentManager);
-
-			renderer.SetElement(element);
+			if (fragmentManager != null)
+			{
+				var managesFragments = renderer as IManageFragments;
+				managesFragments?.SetFragmentManager(fragmentManager);
+			}
 
 			return renderer;
 		}

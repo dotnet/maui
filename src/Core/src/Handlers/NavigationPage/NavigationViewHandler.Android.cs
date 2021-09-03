@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override NavigationLayout CreateNativeView()
 		{
-			LayoutInflater? li = LayoutInflater.From(Context);
+			LayoutInflater? li = MauiContext?.GetLayoutInflater();
 			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
 
 			var view = li.Inflate(Resource.Layout.navigationlayout, null).JavaCast<NavigationLayout>();
