@@ -20,7 +20,7 @@
 		<AndroidVersionCode>1</AndroidVersionCode>
 
 		<!-- Required for C# Hot Reload -->
-		<UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
+		<UseInterpreter Condition="'$(Configuration)' == 'Debug'">False</UseInterpreter>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -49,10 +49,16 @@
 		<PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="WINDOWSAPPSDK_VERSION" NoWarn="NU1701" />
 	</ItemGroup>
 
+	<PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+		<OutputType>WinExe</OutputType>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	</PropertyGroup>
+	
 	<PropertyGroup>
 		<!-- Required - WinUI can't deploy in a multi-targeting environment -->
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-windows'))">win-x64</RuntimeIdentifier>
 	</PropertyGroup>
+
 	<ItemGroup>
 		<Content Remove="Properties\launchSettings.json" />
 	</ItemGroup>
