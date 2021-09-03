@@ -142,6 +142,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.Sample", "src\Es
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.SingleProject", "src\Controls\samples\Controls.Sample.SingleProject\Maui.Controls.Sample.SingleProject.csproj", "{4A36C4F9-20BE-4BAC-9E6C-B030F2B65370}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen.UnitTests-net6", "src\Controls\tests\SourceGen.Tests\Controls.SourceGen.UnitTests-net6.csproj", "{DDDFB849-80F7-4B36-98EA-7245A456DE60}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 4
@@ -337,6 +339,10 @@ Global
 		{4A36C4F9-20BE-4BAC-9E6C-B030F2B65370}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A36C4F9-20BE-4BAC-9E6C-B030F2B65370}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4A36C4F9-20BE-4BAC-9E6C-B030F2B65370}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{DDDFB849-80F7-4B36-98EA-7245A456DE60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDDFB849-80F7-4B36-98EA-7245A456DE60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDDFB849-80F7-4B36-98EA-7245A456DE60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDDFB849-80F7-4B36-98EA-7245A456DE60}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -404,6 +410,7 @@ Global
 		{32A4A924-C3CD-4FE3-A21E-DD018F0CC4BD} = {A2379B6A-CF92-4C97-8F72-FE9EAC669949}
 		{B157321E-9FB6-430E-B36C-D389DDEC22DE} = {A2379B6A-CF92-4C97-8F72-FE9EAC669949}
 		{4A36C4F9-20BE-4BAC-9E6C-B030F2B65370} = {E1082E26-D700-4127-9329-66D673FD2D55}
+		{DDDFB849-80F7-4B36-98EA-7245A456DE60} = {E26E6C2A-F5A2-4FEF-BFDA-57ABA0F77D08}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

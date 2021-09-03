@@ -180,6 +180,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.Sample", "src\Es
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.Sample.Server.WebAuthenticator", "src\Essentials\samples\Sample.Server.WebAuthenticator\Essentials.Sample.Server.WebAuthenticator.csproj", "{F7DB0CB3-D244-403A-8C3B-B1ED5E5838EC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen.UnitTests-net6", "src\Controls\tests\SourceGen.Tests\Controls.SourceGen.UnitTests-net6.csproj", "{FF27E825-EB8D-43BF-8920-9F7B21207A45}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{772e2531-2270-429a-9afb-4aa0104aef27}*SharedItemsImports = 5
@@ -451,6 +453,10 @@ Global
 		{F7DB0CB3-D244-403A-8C3B-B1ED5E5838EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7DB0CB3-D244-403A-8C3B-B1ED5E5838EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7DB0CB3-D244-403A-8C3B-B1ED5E5838EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF27E825-EB8D-43BF-8920-9F7B21207A45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF27E825-EB8D-43BF-8920-9F7B21207A45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF27E825-EB8D-43BF-8920-9F7B21207A45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF27E825-EB8D-43BF-8920-9F7B21207A45}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -536,6 +542,7 @@ Global
 		{95BF8553-3D9D-4831-ACDD-A3E697BC08A6} = {94F3C036-A5F4-4ACC-A028-8506802ADB88}
 		{C677BF3D-B234-491D-BA48-D9742DB564F8} = {95BF8553-3D9D-4831-ACDD-A3E697BC08A6}
 		{F7DB0CB3-D244-403A-8C3B-B1ED5E5838EC} = {95BF8553-3D9D-4831-ACDD-A3E697BC08A6}
+		{FF27E825-EB8D-43BF-8920-9F7B21207A45} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
