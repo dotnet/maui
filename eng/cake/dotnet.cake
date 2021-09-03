@@ -107,12 +107,26 @@ Task("dotnet-templates")
 
         CleanDirectories("./templatesTest/");
 
+        // Create empty Directory.Build.props/targets
+        EnsureDirectoryExists(Directory("./templatesTest/"));
+        FileWriteText(File("./templatesTest/Directory.Build.props"), "<Project/>");
+        FileWriteText(File("./templatesTest/Directory.Build.targets"), "<Project/>");
+
+        // Create an empty NuGet.config
+        StartProcess(dn, "new nugetconfig -o ./templatesTest/");
+        var properties = new Dictionary<string, string> {
+            // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
+            { "RestoreNoCache", "true" },
+            { "RestorePackagesPath", MakeAbsolute(File("./templatesTest/packages")).FullPath },
+            { "RestoreConfigFile", MakeAbsolute(File("./templatesTest/nuget.config")).FullPath },
+        };
+
         foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
         {
-            var name = template.Replace("-", "");
-            StartProcess(dn, $"new {template} -o ./templatesTest/{name}");
+            var name = template.Replace("-", "") + " Space-Dash";
+            StartProcess(dn, $"new {template} -o \"./templatesTest/{name}\"");
 
-            RunMSBuildWithDotNet($"./templatesTest/{name}");
+            RunMSBuildWithDotNet($"./templatesTest/{name}", properties);
         }
     });
 
@@ -351,7 +365,7 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
 void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
-    var binlog = $"{logDirectory}/{name}-{configuration}.binlog";
+    var binlog = $"\"{logDirectory}/{name}-{configuration}.binlog\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();

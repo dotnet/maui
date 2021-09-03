@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MauiApp1.Data
+namespace MauiApp._1.Data
 {
 	public class WeatherForecastService
 	{
