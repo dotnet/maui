@@ -1,7 +1,6 @@
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages.Base;
 using Maui.Controls.Sample.Pages.Others;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
