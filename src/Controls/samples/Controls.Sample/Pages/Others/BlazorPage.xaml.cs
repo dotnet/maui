@@ -1,6 +1,5 @@
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages.Base;
-using Maui.Controls.Sample.Pages.Others;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
