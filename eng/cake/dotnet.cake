@@ -107,12 +107,26 @@ Task("dotnet-templates")
 
         CleanDirectories("./templatesTest/");
 
+        // Create empty Directory.Build.props/targets
+        EnsureDirectoryExists(Directory("./templatesTest/"));
+        FileWriteText(File("./templatesTest/Directory.Build.props"), "<Project/>");
+        FileWriteText(File("./templatesTest/Directory.Build.targets"), "<Project/>");
+
+        // Create an empty NuGet.config
+        StartProcess(dn, "new nugetconfig -o ./templatesTest/");
+        var properties = new Dictionary<string, string> {
+            // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
+            { "RestoreNoCache", "true" },
+            { "RestorePackagesPath", MakeAbsolute(File("./templatesTest/packages")).FullPath },
+            { "RestoreConfigFile", MakeAbsolute(File("./templatesTest/nuget.config")).FullPath },
+        };
+
         foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
         {
             var name = template.Replace("-", "") + " Space-Dash";
             StartProcess(dn, $"new {template} -o \"./templatesTest/{name}\"");
 
-            RunMSBuildWithDotNet($"./templatesTest/{name}");
+            RunMSBuildWithDotNet($"./templatesTest/{name}", properties);
         }
     });
 
