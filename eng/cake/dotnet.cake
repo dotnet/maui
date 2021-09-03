@@ -322,27 +322,28 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
         Information("This target should not run on CI.");
         return;
     }
-    if (!IsRunningOnWindows())
-    {
-        Information("This target is only supported on Windows.");
-        return;
-    }
-
-    bool includePrerelease = true;
-
-    if (!String.IsNullOrEmpty(vsVersion))
-        includePrerelease = (vsVersion == "preview");
-
-    var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, });
-    if (vsLatest == null)
-        throw new Exception("Unable to find Visual Studio!");
     if(localDotnet)
     {
         SetDotNetEnvironmentVariables();
         SetEnvironmentVariable("_ExcludeMauiProjectCapability", "true");
     }
+    if (IsRunningOnWindows())
+    {
+        bool includePrerelease = true;
 
-    StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
+        if (!String.IsNullOrEmpty(vsVersion))
+            includePrerelease = (vsVersion == "preview");
+
+        var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, });
+        if (vsLatest == null)
+            throw new Exception("Unable to find Visual Studio!");
+       
+        StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
+    }
+    else
+    {
+        StartProcess("open", new ProcessSettings{ Arguments = sln });
+    }
 }
 
 // NOTE: These methods work as long as the "dotnet" target has already run
