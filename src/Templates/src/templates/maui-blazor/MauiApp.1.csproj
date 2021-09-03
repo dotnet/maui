@@ -4,7 +4,7 @@
 		<TargetFrameworks>net6.0-ios;net6.0-android;net6.0-maccatalyst</TargetFrameworks>
 		<!-- <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">$(TargetFrameworks);net6.0-windows10.0.19041</TargetFrameworks> -->
 		<OutputType>Exe</OutputType>
-		<RootNamespace>MauiApp1</RootNamespace>
+		<RootNamespace>MauiApp._1</RootNamespace>
 		<UseMaui>true</UseMaui>
 		<SingleProject>true</SingleProject>
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
@@ -13,7 +13,7 @@
 		<ApplicationTitle>MauiApp1</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.MauiApp1</ApplicationId>
+		<ApplicationId>com.companyname.MauiApp._1</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationVersion>1.0</ApplicationVersion>
@@ -51,7 +51,6 @@
 
 	<PropertyGroup>
 		<!-- Required - WinUI can't deploy in a multi-targeting environment -->
-		<AppxPackageRecipe>bin\$(Configuration)\net6.0-windows10.0.19041\win-x64\MauiApp1.build.appxrecipe</AppxPackageRecipe>
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-windows'))">win-x64</RuntimeIdentifier>
 	</PropertyGroup>
 	<ItemGroup>

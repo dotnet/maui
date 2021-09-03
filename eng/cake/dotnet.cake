@@ -109,8 +109,8 @@ Task("dotnet-templates")
 
         foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
         {
-            var name = template.Replace("-", "");
-            StartProcess(dn, $"new {template} -o ./templatesTest/{name}");
+            var name = template.Replace("-", "") + " Space-Dash";
+            StartProcess(dn, $"new {template} -o \"./templatesTest/{name}\"");
 
             RunMSBuildWithDotNet($"./templatesTest/{name}");
         }
@@ -350,7 +350,7 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
 void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
-    var binlog = $"{logDirectory}/{name}-{configuration}.binlog";
+    var binlog = $"\"{logDirectory}/{name}-{configuration}.binlog\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();
