@@ -4,8 +4,11 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>Microsoft.Maui.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
-    <!-- Solves: LifecycleEventsTests.cs(26,77): error CS8652: The feature 'inferred delegate type' is currently in Preview and *unsupported*. To use Preview features, use the 'preview' language version. -->
-    <LangVersion>preview</LangVersion>
+    <!--
+      NOTE: Keep this project on C# 9 to avoid changes in overload resolution, test failures:
+      CanAddMultipleEventsViaMultipleConfigureLifecycleEvents, CanAddMultipleEventsViaBuilder, EventsFireExactlyOnce
+    -->
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

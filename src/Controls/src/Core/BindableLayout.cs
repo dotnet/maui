@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	// TODO ezhart 2021-07-16 This interface is just here to give Layout and Compatibility.Layout common ground for BindableLayout
 	// once we have the IContainer changes in, we may be able to drop this in favor of simply Core.ILayout
 	// See also IndicatorView.cs 
-	public interface IBindableLayout 
+	public interface IBindableLayout
 	{
 		public IList Children { get; }
 	}
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal static void RemoveAt(this IBindableLayout layout, int index) 
+		internal static void RemoveAt(this IBindableLayout layout, int index)
 		{
 			if (layout is Maui.ILayout mauiLayout)
 			{
@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal static void Clear(this IBindableLayout layout) 
+		internal static void Clear(this IBindableLayout layout)
 		{
 			if (layout is Maui.ILayout mauiLayout)
 			{

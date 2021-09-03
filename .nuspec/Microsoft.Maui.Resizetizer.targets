@@ -119,6 +119,7 @@
         <ProcessMauiFontsBeforeTargets>
             $(ProcessMauiFontsBeforeTargets);
             _BeforeCoreCompileImageAssets;
+            _CompileAppManifest;
         </ProcessMauiFontsBeforeTargets>
     </PropertyGroup>
 
