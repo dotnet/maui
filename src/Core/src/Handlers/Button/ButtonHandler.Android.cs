@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override void NativeArrange(Rectangle frame)
 		{
-			var nativeView = WrappedNativeView;
+			var nativeView = this.GetWrappedNativeView();
 
 			if (nativeView == null || Context == null)
 			{

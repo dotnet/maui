@@ -195,7 +195,7 @@ namespace Microsoft.Maui
 				return null;
 
 			if (context is AppCompatActivity activity)
-				return activity.SupportActionBar.ThemedContext;
+				return activity.SupportActionBar?.ThemedContext ?? context;
 
 			if (context is ContextWrapper contextWrapper)
 				return contextWrapper.BaseContext?.GetThemedContext();

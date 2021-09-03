@@ -63,12 +63,12 @@ namespace Microsoft.Maui
 		{
 			textBox.PlaceholderText = entry.Placeholder ?? string.Empty;
 		}
-
-		public static void UpdatePlaceholderColor(this MauiTextBox textBox, IEditor editor, Brush? placeholderDefaultBrush, Brush? defaultPlaceholderColorFocusBrush)
+	
+		public static void UpdatePlaceholderColor(this MauiTextBox textBox, IPlaceholder placeholder, Brush? defaultPlaceholderColorBrush, Brush? defaultPlaceholderColorFocusBrush)
 		{
-			Color placeholderColor = editor.PlaceholderColor;
+			Color placeholderColor = placeholder.PlaceholderColor;
 
-			BrushHelpers.UpdateColor(placeholderColor, ref placeholderDefaultBrush,
+			BrushHelpers.UpdateColor(placeholderColor, ref defaultPlaceholderColorBrush,
 				() => textBox.PlaceholderForegroundBrush, brush => textBox.PlaceholderForegroundBrush = brush);
 
 			BrushHelpers.UpdateColor(placeholderColor, ref defaultPlaceholderColorFocusBrush,
@@ -118,6 +118,11 @@ namespace Microsoft.Maui
 			textBox.IsPassword = entry.IsPassword;
 		}
 
+		public static void UpdateIsTextPredictionEnabled(this MauiTextBox textBox, IEditor editor)
+		{
+			textBox.UpdateInputScope(editor);
+		}
+
 		public static void UpdateKeyboard(this MauiTextBox textBox, IEditor editor)
 		{
 			textBox.UpdateInputScope(editor);
@@ -139,7 +144,7 @@ namespace Microsoft.Maui
 
 			textBox.InputScope = textInput.Keyboard.ToInputScope();
 		}
-    
+
 		public static void UpdateHorizontalTextAlignment(this MauiTextBox textBox, IEntry entry)
 		{
 			// We don't have a FlowDirection yet, so there's nothing to pass in here. 

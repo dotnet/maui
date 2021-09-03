@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls
 		internal Semantics SetupSemantics() =>
 			_semantics ??= new Semantics();
 
-		static void ValidatePositive(double value, string name) 
+		static void ValidatePositive(double value, string name)
 		{
 			if (value < 0)
 			{

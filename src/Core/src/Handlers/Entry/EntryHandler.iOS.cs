@@ -8,15 +8,24 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextField>
 	{
-		static UIColor? DefaultTextColor;
+		UIColor? _defaultTextColor;
+		Color? _defaultPlaceholderColor;
 
 		protected override MauiTextField CreateNativeView()
 		{
-			return new MauiTextField
+			var nativeEntry = new MauiTextField
 			{
 				BorderStyle = UITextBorderStyle.RoundedRect,
 				ClipsToBounds = true
 			};
+
+			_defaultTextColor = nativeEntry.TextColor;
+
+			// Placeholder default color is 70% gray					
+			// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
+			_defaultPlaceholderColor = ColorExtensions.SeventyPercentGrey.ToColor();
+
+			return nativeEntry;
 		}
 
 		protected override void ConnectHandler(MauiTextField nativeView)
@@ -40,11 +49,6 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ShouldChangeCharacters -= OnShouldChangeCharacters;
 		}
 
-		void SetupDefaults(MauiTextField nativeView)
-		{
-			DefaultTextColor = nativeView.TextColor;
-		}
-
 		public static void MapText(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateText(entry);
@@ -55,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateTextColor(entry, DefaultTextColor);
+			handler.NativeView?.UpdateTextColor(entry, handler._defaultTextColor);
 		}
 
 		public static void MapIsPassword(EntryHandler handler, IEntry entry)
@@ -86,6 +90,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdatePlaceholder(entry);
+		}
+
+		public static void MapPlaceholderColor(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdatePlaceholder(entry, handler._defaultPlaceholderColor);
 		}
 
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)

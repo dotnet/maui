@@ -31,40 +31,46 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext mauiContext,
 			Color tintColor,
 			PropertyChangedEventHandler toolbarItemChanged,
-			List<IMenuItem> menuItemsCreated,
-			List<ToolbarItem> toolbarItemsCreated,
+			List<IMenuItem> previousMenuItems,
+			List<ToolbarItem> previousToolBarItems,
 			Action<Context, IMenuItem, ToolbarItem> updateMenuItemIcon = null)
 		{
-			if (sortedToolbarItems == null || menuItemsCreated == null)
+			if (sortedToolbarItems == null || previousMenuItems == null)
 				return;
 
 			var context = mauiContext.Context;
 			var menu = toolbar.Menu;
-			menu.Clear();
 
-			foreach (var menuItem in menuItemsCreated)
-				menuItem.Dispose();
-
-			foreach (var toolbarItem in toolbarItemsCreated)
+			foreach (var toolbarItem in previousToolBarItems)
 				toolbarItem.PropertyChanged -= toolbarItemChanged;
 
-			menuItemsCreated.Clear();
-			toolbarItemsCreated.Clear();
-
+			int i = 0;
 			foreach (var item in sortedToolbarItems)
 			{
-				UpdateMenuItem(toolbar, item, null, mauiContext, tintColor, toolbarItemChanged, menuItemsCreated, toolbarItemsCreated, updateMenuItemIcon);
+				UpdateMenuItem(toolbar, item, i, mauiContext, tintColor, toolbarItemChanged, previousMenuItems, previousToolBarItems, updateMenuItemIcon);
+				i++;
 			}
+
+			int toolBarItemCount = i;
+			while (toolBarItemCount < previousMenuItems.Count)
+			{
+				menu.RemoveItem(previousMenuItems[toolBarItemCount].ItemId);
+				previousMenuItems[toolBarItemCount].Dispose();
+				previousMenuItems.RemoveAt(toolBarItemCount);
+			}
+
+			previousToolBarItems.Clear();
+			previousToolBarItems.AddRange(sortedToolbarItems);
 		}
 
-		internal static void UpdateMenuItem(AToolbar toolbar,
+		static void UpdateMenuItem(AToolbar toolbar,
 			ToolbarItem item,
 			int? menuItemIndex,
 			IMauiContext mauiContext,
 			Color tintColor,
 			PropertyChangedEventHandler toolbarItemChanged,
-			List<IMenuItem> menuItemsCreated,
-			List<ToolbarItem> toolbarItemsCreated,
+			List<IMenuItem> previousMenuItems,
+			List<ToolbarItem> previousToolBarItems,
 			Action<Context, IMenuItem, ToolbarItem> updateMenuItemIcon = null)
 		{
 			var context = mauiContext.Context;
@@ -95,18 +101,17 @@ namespace Microsoft.Maui.Controls.Platform
 				newTitle = new Java.Lang.String();
 			}
 
-			if (menuItemIndex == null)
+			if (menuItemIndex == null || menuItemIndex >= previousMenuItems?.Count)
 			{
 				menuitem = menu.Add(0, AView.GenerateViewId(), 0, newTitle);
-				menuItemsCreated?.Add(menuitem);
-				toolbarItemsCreated?.Add(item);
+				previousMenuItems?.Add(menuitem);
 			}
 			else
 			{
-				if (menuItemsCreated == null || menuItemsCreated.Count < menuItemIndex.Value)
+				if (previousMenuItems == null || previousMenuItems.Count < menuItemIndex.Value)
 					return;
 
-				menuitem = menuItemsCreated[menuItemIndex.Value];
+				menuitem = previousMenuItems[menuItemIndex.Value];
 
 				if (!menuitem.IsAlive())
 					return;

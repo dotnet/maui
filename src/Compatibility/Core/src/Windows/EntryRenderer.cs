@@ -289,6 +289,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.PlaceholderText = Element.Placeholder ?? "";
 		}
 
+		[PortHandler]
 		void UpdatePlaceholderColor()
 		{
 			Color placeholderColor = Element.PlaceholderColor;

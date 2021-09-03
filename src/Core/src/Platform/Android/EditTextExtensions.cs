@@ -131,9 +131,9 @@ namespace Microsoft.Maui
 			editText.Hint = textInput.Placeholder;
 		}
 
-		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IEditor editor, ColorStateList? defaultColor)
+		public static void UpdatePlaceholderColor(this AppCompatEditText editText, IPlaceholder placeholder, ColorStateList? defaultColor)
 		{
-			editText.UpdatePlaceholderColor(editor.PlaceholderColor, defaultColor);
+			editText.UpdatePlaceholderColor(placeholder.PlaceholderColor, defaultColor);
 		}
 
 		public static void UpdatePlaceholderColor(this AppCompatEditText editText, Graphics.Color placeholderTextColor, ColorStateList? defaultColor)

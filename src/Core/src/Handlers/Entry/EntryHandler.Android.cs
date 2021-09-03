@@ -1,4 +1,5 @@
-﻿using Android.Graphics.Drawables;
+﻿using Android.Content.Res;
+using Android.Graphics.Drawables;
 using Android.Runtime;
 using Android.Text;
 using Android.Views;
@@ -19,10 +20,15 @@ namespace Microsoft.Maui.Handlers
 		readonly EditorActionListener _actionListener = new();
 
 		Drawable? _clearButtonDrawable;
+		ColorStateList? _defaultPlaceholderColors;
 
 		protected override AppCompatEditText CreateNativeView()
 		{
-			return new AppCompatEditText(Context);
+			var nativeEntry = new AppCompatEditText(Context);
+
+			_defaultPlaceholderColors = nativeEntry.HintTextColors;
+
+			return nativeEntry;
 		}
 
 		// Returns the default 'X' char drawable in the AppCompatEditText.
@@ -101,6 +107,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdatePlaceholder(entry);
+		}
+
+		public static void MapPlaceholderColor(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdatePlaceholderColor(entry, handler._defaultPlaceholderColors);
 		}
 
 		public static void MapFont(EntryHandler handler, IEntry entry)
