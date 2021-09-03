@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls
 			// If we're replacing the whole stack and there are global routes then build the navigation stack before setting the shell section visible
 			if (navigationRequest.Request.GlobalRoutes.Count > 0 &&
 				nextActiveSection != null &&
-				navigationRequest.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
+				navigationRequest.StackRequest == ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 			{
 				modalStackPreBuilt = true;
 
@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 
-				if (navigationRequest.Request.GlobalRoutes.Count > 0 && navigationRequest.StackRequest != NavigationRequest.WhatToDoWithTheStack.ReplaceIt)
+				if (navigationRequest.Request.GlobalRoutes.Count > 0 && navigationRequest.StackRequest != ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt)
 				{
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
 					await Device.InvokeOnMainThreadAsync(() =>
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls
 					});
 				}
 				else if (navigationRequest.Request.GlobalRoutes.Count == 0 &&
-					navigationRequest.StackRequest == NavigationRequest.WhatToDoWithTheStack.ReplaceIt &&
+					navigationRequest.StackRequest == ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt &&
 					currentShellSection?.Navigation?.NavigationStack?.Count > 1)
 				{
 					// TODO get rid of this hack and fix so if there's a stack the current page doesn't display
@@ -346,9 +346,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public static ShellNavigationSource CalculateNavigationSource(Shell shell, ShellNavigationState current, NavigationRequest request)
+		public static ShellNavigationSource CalculateNavigationSource(Shell shell, ShellNavigationState current, ShellNavigationRequest request)
 		{
-			if (request.StackRequest == NavigationRequest.WhatToDoWithTheStack.PushToIt)
+			if (request.StackRequest == ShellNavigationRequest.WhatToDoWithTheStack.PushToIt)
 				return ShellNavigationSource.Push;
 
 			if (current == null)
