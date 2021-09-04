@@ -4,16 +4,17 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-Write-Host $msbuild
+Write-Host "-msbuild: $msbuild"
+Write-Host "MSBUILD_EXE: $env:MSBUILD_EXE"
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
-$sln = Join-Path $PSScriptRoot ../Microsoft.Maui-net6.sln
-$blazorWebViewSln = Join-Path $PSScriptRoot ../BlazorWindowsDesktop-net6.sln
-$slnTasks = Join-Path $PSScriptRoot ../Microsoft.Maui.BuildTasks-net6.sln
+$logsDirectory = Join-Path $artifacts logs
+$sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-net6.slnf
+$blazorWebViewSln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages.Desktop-winui.slnf
 
 # Bootstrap ./bin/dotnet/
 $csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
-& dotnet build $csproj -bl:$artifacts/dotnet-$configuration.binlog
+& dotnet build $csproj -bl:$logsDirectory/dotnet-$configuration.binlog
 
 # Full path to dotnet folder
 $dotnet = Join-Path $PSScriptRoot ../bin/dotnet/
@@ -21,6 +22,11 @@ $dotnet = (Get-Item $dotnet).FullName
 
 if ($IsWindows)
 {
+    if (-not $msbuild)
+    {
+        $msbuild = $env:MSBUILD_EXE
+    }
+
     if (-not $msbuild)
     {
         # If MSBuild path isn't specified, use the standard location of 'vswhere' to determine an appropriate MSBuild to use.
@@ -69,30 +75,22 @@ if ($IsWindows)
         # Put our local dotnet.exe on PATH first so Visual Studio knows which one to use
         $env:PATH=($dotnet + [IO.Path]::PathSeparator + $env:PATH)
 
-        # Have to build the solution tasks
-        & $msbuild $slnTasks `
-            /p:configuration=$configuration `
-            /p:SymbolPackageFormat=snupkg `
-            /restore `
-            /t:build `
-            /bl:"$artifacts/maui-build-tasks-$configuration.binlog"
-
         # Have to build the solution first so the xbf files are there for pack
         & $msbuild $sln `
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
             /restore `
-            /t:build `
+            /t:Build `
             /p:Packing=true `
-            /bl:"$artifacts/maui-build-$configuration.binlog"
+            /bl:"$logsDirectory/maui-build-$configuration.binlog"
         if (!$?) { throw "Build .NET MAUI failed." }
 
         & $msbuild $sln `
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
-            /t:pack `
+            /t:Pack `
             /p:Packing=true `
-            /bl:"$artifacts/maui-pack-$configuration.binlog"
+            /bl:"$logsDirectory/maui-pack-$configuration.binlog"
         if (!$?) { throw "Pack .NET MAUI failed." }
 
         # Then build and pack the BlazorWebView projects for WPF/WinForms
@@ -100,17 +98,17 @@ if ($IsWindows)
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
             /restore `
-            /t:build `
+            /t:Build `
             /p:Packing=true `
-            /bl:"$artifacts/blazorwebview-build-$configuration.binlog"
+            /bl:"$logsDirectory/blazorwebview-build-$configuration.binlog"
         if (!$?) { throw "Build BlazorWebView failed." }
 
         & $msbuild $blazorWebViewSln `
             /p:configuration=$configuration `
             /p:SymbolPackageFormat=snupkg `
-            /t:pack `
+            /t:Pack `
             /p:Packing=true `
-            /bl:"$artifacts/blazorwebview-pack-$configuration.binlog"
+            /bl:"$logsDirectory/blazorwebview-pack-$configuration.binlog"
         if (!$?) { throw "Pack BlazorWebView failed." }
     }
     finally
@@ -136,7 +134,7 @@ else
         & $dotnet_tool pack $sln `
             -c:$configuration `
             -p:SymbolPackageFormat=snupkg `
-            -bl:$artifacts/maui-pack-$configuration.binlog
+            -bl:$logsDirectory/maui-pack-$configuration.binlog
         if (!$?) { throw "Pack failed." }
     }
     finally

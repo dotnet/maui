@@ -130,12 +130,6 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
-		double GetNativeUnscaledFontSize(EditorHandler editorHandler)
-		{
-			var textView = GetNativeEditor(editorHandler);
-			return textView.TextSize / textView.Resources.DisplayMetrics.Density;
-		}
-
 		Color GetNativeTextColor(EditorHandler editorHandler)
 		{
 			int currentTextColorInt = GetNativeEditor(editorHandler).CurrentTextColor;

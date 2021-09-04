@@ -6,22 +6,17 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {
-	public class MauiWinUIApplication<TStartup> : MauiWinUIApplication
-		where TStartup : IStartup, new()
+	public abstract class MauiWinUIApplication : UI.Xaml.Application
 	{
+		protected abstract MauiApp CreateMauiApp();
+
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
 			LaunchActivatedEventArgs = args;
 
-			var startup = new TStartup();
+			var mauiApp = CreateMauiApp();
 
-			var host = startup
-				.CreateAppHostBuilder()
-				.ConfigureServices(ConfigureNativeServices)
-				.ConfigureUsing(startup)
-				.Build();
-
-			Services = host.Services;
+			Services = mauiApp.Services;
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
@@ -48,19 +43,9 @@ namespace Microsoft.Maui
 			var window = Application.CreateWindow(activationState);
 
 			winuiWndow.SetWindow(window, mauiContext);
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnWindowCreated>(del => del(winuiWndow));
 
 			return winuiWndow;
-		}
-
-		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
-		}
-	}
-
-	public abstract class MauiWinUIApplication : UI.Xaml.Application
-	{
-		protected MauiWinUIApplication()
-		{
 		}
 
 		public static new MauiWinUIApplication Current => (MauiWinUIApplication)UI.Xaml.Application.Current;

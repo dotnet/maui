@@ -1,12 +1,11 @@
 using System;
-using Microsoft.Maui.Hosting;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public static class HandlerExtensions
 	{
-		public static UIViewController ToUIViewController(this IView view, IMauiContext context)
+		public static UIViewController ToUIViewController(this IElement view, IMauiContext context)
 		{
 			var nativeView = view.ToNative(context);
 			if (view?.Handler is INativeViewHandler nvh && nvh.ViewController != null)
@@ -15,7 +14,7 @@ namespace Microsoft.Maui
 			return new ContainerViewController { CurrentView = view, Context = context };
 		}
 
-		public static UIView ToNative(this IView view, IMauiContext context)
+		public static UIView ToNative(this IElement view, IMauiContext context)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
@@ -26,10 +25,10 @@ namespace Microsoft.Maui
 
 			var handler = view.Handler;
 			if (handler == null)
-				handler = context.Handlers.GetHandler(view.GetType()) as IViewHandler;
+				handler = context.Handlers.GetHandler(view.GetType());
 
 			if (handler == null)
-				throw new Exception($"Handler not found for view {view}");
+				throw new Exception($"Handler not found for view {view}.");
 
 			handler.SetMauiContext(context);
 
@@ -52,12 +51,12 @@ namespace Microsoft.Maui
 			_ = window ?? throw new ArgumentNullException(nameof(window));
 			_ = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
 
-			var handler = window.Handler as IWindowHandler;
+			var handler = window.Handler;
 			if (handler == null)
-				handler = mauiContext.Handlers.GetHandler(window.GetType()) as IWindowHandler;
+				handler = mauiContext.Handlers.GetHandler(window.GetType());
 
 			if (handler == null)
-				throw new Exception($"Handler not found for view {window} or was not {nameof(IWindowHandler)}'");
+				throw new Exception($"Handler not found for window {window}.");
 
 			handler.SetMauiContext(mauiContext);
 

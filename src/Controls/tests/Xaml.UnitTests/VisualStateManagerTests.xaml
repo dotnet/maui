@@ -39,8 +39,8 @@
 							<VisualState Name="Normal" />
 							<VisualState Name="Disabled">
 								<VisualState.Setters>
-									<Setter Property="TextColor" Value="Default" />
-									<Setter Property="PlaceholderColor" Value="Default" />
+									<Setter Property="TextColor" Value="Blue" />
+									<Setter Property="PlaceholderColor" Value="LightBlue" />
 								</VisualState.Setters>
 							</VisualState>
 						</VisualStateGroup>

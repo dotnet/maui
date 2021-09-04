@@ -7,6 +7,7 @@ using System.Text;
 
 using Foundation;
 using UIKit;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {

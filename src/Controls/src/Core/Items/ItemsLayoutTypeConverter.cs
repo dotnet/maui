@@ -1,29 +1,36 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.TypeConversion(typeof(IItemsLayout))]
 	public class ItemsLayoutTypeConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value == null)
-				throw new ArgumentNullException(nameof(value));
+			var strValue = value?.ToString();
+			if (strValue == null)
+				throw new ArgumentNullException(nameof(strValue));
 
 			ItemsLayoutOrientation? orientation = default(ItemsLayoutOrientation?);
 			int identifierLength = 0;
 
-			if (value == "VerticalList")
+			if (strValue == "VerticalList")
 				return LinearItemsLayout.Vertical;
-			else if (value == "HorizontalList")
+			else if (strValue == "HorizontalList")
 				return LinearItemsLayout.Horizontal;
-			else if (value.StartsWith("VerticalGrid", StringComparison.Ordinal))
+			else if (strValue.StartsWith("VerticalGrid", StringComparison.Ordinal))
 			{
 				orientation = ItemsLayoutOrientation.Vertical;
 				identifierLength = "VerticalGrid".Length;
 			}
-			else if (value.StartsWith("HorizontalGrid", StringComparison.Ordinal))
+			else if (strValue.StartsWith("HorizontalGrid", StringComparison.Ordinal))
 			{
 				orientation = ItemsLayoutOrientation.Horizontal;
 				identifierLength = "HorizontalGrid".Length;
@@ -31,20 +38,20 @@ namespace Microsoft.Maui.Controls
 
 			if (orientation.HasValue)
 			{
-				if (value.Length == identifierLength)
+				if (strValue.Length == identifierLength)
 					return new GridItemsLayout(orientation.Value);
-				else if (value.Length > identifierLength + 1 && value[identifierLength] == ',')
+				else if (strValue.Length > identifierLength + 1 && strValue[identifierLength] == ',')
 				{
-					var argument = value.Substring(identifierLength + 1);
+					var argument = strValue.Substring(identifierLength + 1);
 					var span = int.Parse(argument, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
 					return new GridItemsLayout(span, orientation.Value);
 				}
 			}
 
-			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(IItemsLayout)}");
+			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(IItemsLayout)}");
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is LinearItemsLayout && value == LinearItemsLayout.Vertical)
 				return "VerticalList";

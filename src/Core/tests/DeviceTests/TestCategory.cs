@@ -3,6 +3,7 @@
 	public static class TestCategory
 	{
 		public const string ActivityIndicator = "ActivityIndicator";
+		public const string BoxView = "BoxView";
 		public const string Button = "Button";
 		public const string CheckBox = "CheckBox";
 		public const string DatePicker = "DatePicker";
@@ -15,6 +16,7 @@
 		public const string Layout = "Layout";
 		public const string Page = "Page";
 		public const string Picker = "Picker";
+		public const string ScrollView = "ScrollView";
 		public const string SearchBar = "SearchBar";
 		public const string ShapeView = "ShapeView";
 		public const string Slider = "Slider";

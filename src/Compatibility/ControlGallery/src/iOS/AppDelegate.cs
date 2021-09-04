@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using UIKit;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility;
@@ -14,6 +15,7 @@ using IOPath = System.IO.Path;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Size = Microsoft.Maui.Graphics.Size;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: Dependency(typeof(TestCloudService))]
 [assembly: Dependency(typeof(CacheService))]
@@ -99,8 +101,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 	}
 
 	[Register("AppDelegate")]
-	public partial class AppDelegate : MauiUIApplicationDelegate<Startup>
+	public partial class AppDelegate : MauiUIApplicationDelegate
 	{
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+
 		public override bool FinishedLaunching(UIApplication uiApplication, NSDictionary launchOptions)
 		{
 			UISwitch.Appearance.OnTintColor = UIColor.Red;

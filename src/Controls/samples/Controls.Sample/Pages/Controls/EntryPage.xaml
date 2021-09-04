@@ -3,7 +3,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.EntryPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels"
     Title="Entry">
+    <views:BasePage.BindingContext>
+        <viewmodels:EntryViewModel />
+    </views:BasePage.BindingContext>
     <views:BasePage.Content>
         <ScrollView>
             <VerticalStackLayout
@@ -23,6 +27,12 @@
                 <Entry 
                     Placeholder="Placeholder"/>
                 <Label
+                    Text="Using PlaceholderColor"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    PlaceholderColor="Purple"
+                    Placeholder="Placeholder"/>
+                <Label
                     Text="Password"
                     Style="{StaticResource Headline}" />
                 <Entry
@@ -33,11 +43,40 @@
                 <Entry 
                     Text="Text"/>
                 <Label
+                    Text="ClearButtonVisibility = Never"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Text"
+                    ClearButtonVisibility="Never"/>
+                <Label
+                    Text="ClearButtonVisibility = WhileEditing"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Text"
+                    ClearButtonVisibility="WhileEditing"/>
+                <Label
                     Text="Read-only"
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="I am read only" 
                     IsReadOnly="True"/>
+                <Label
+                    Text="Return Command"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    ReturnCommand="{Binding ReturnCommand}"
+                    ReturnCommandParameter="ReturnCommandParameter"/>
+                <Label
+                    Text="Completed"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Completed="OnEntryCompleted"/>
+                <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Text"
+                    Background="Orange"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

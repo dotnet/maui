@@ -84,7 +84,8 @@ namespace Microsoft.Maui
 				var result = await service.GetDrawableAsync(thumbImageSource, context);
 				Drawable? thumbDrawable = result?.Value;
 
-				seekBar.SetThumb(thumbDrawable ?? defaultThumb);
+				if (seekBar.IsAlive())
+					seekBar.SetThumb(thumbDrawable ?? defaultThumb);
 			}
 		}
 	}

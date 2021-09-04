@@ -1,5 +1,7 @@
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages.Base;
+using Maui.Controls.Sample.Pages.Others;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -31,6 +33,9 @@ namespace Maui.Controls.Sample.Pages
 				HostPage = @"wwwroot/index.html",
 			};
 			bwv.RootComponents.Add(new RootComponent { Selector = "#app", ComponentType = typeof(Main) });
+
+			bwv.RootComponents.RegisterForJavaScript<MyDynamicComponent>("my-dynamic-root-component");
+
 			verticalStack.Add(bwv);
 
 			verticalStack.Add(new Label { Text = "Thank you for using Blazor and .NET MAUI!", FontSize = 24, TextColor = Colors.BlanchedAlmond, HorizontalOptions = LayoutOptions.Center });

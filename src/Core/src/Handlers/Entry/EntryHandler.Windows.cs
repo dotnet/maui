@@ -1,13 +1,24 @@
 ﻿#nullable enable
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Windows.System;
 
 ﻿namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextBox>
 	{
-		protected override MauiTextBox CreateNativeView() =>
-			new MauiTextBox { Style = UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as UI.Xaml.Style };
+		Brush? _defaultPplaceholderBrush;
+		Brush? _defaultPlaceholderColorFocusBrush;
+
+		protected override MauiTextBox CreateNativeView()
+		{
+			var nativeEntry = new MauiTextBox { Style = UI.Xaml.Application.Current.Resources["MauiTextBoxStyle"] as UI.Xaml.Style };
+			
+			_defaultPplaceholderBrush = nativeEntry.PlaceholderForeground;
+			_defaultPlaceholderColorFocusBrush = nativeEntry.PlaceholderForegroundFocusBrush;
+
+			return nativeEntry;
+		}
 
 		protected override void ConnectHandler(MauiTextBox nativeView)
 		{
@@ -34,11 +45,15 @@ using Windows.System;
 			handler.NativeView?.UpdateIsPassword(entry);
 		}
 
-		[MissingMapper]
-		public static void MapHorizontalTextAlignment(IViewHandler handler, IEntry entry) { }
-		
-		[MissingMapper]
-		public static void MapVerticalTextAlignment(IViewHandler handler, IEntry entry) { }
+		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateHorizontalTextAlignment(entry);
+		}
+
+		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(entry);
+		}
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, IEntry entry) { }
@@ -51,6 +66,11 @@ using Windows.System;
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdatePlaceholder(entry);
+		}
+
+		public static void MapPlaceholderColor(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdatePlaceholderColor(entry, handler._defaultPplaceholderBrush, handler._defaultPlaceholderColorFocusBrush);
 		}
 
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)

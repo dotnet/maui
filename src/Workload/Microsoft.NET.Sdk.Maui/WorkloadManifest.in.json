@@ -26,19 +26,74 @@
       "abstract": true,
       "description": ".NET MAUI SDK Core Packages",
       "packs": [
-          "Microsoft.AspNetCore.Components.WebView.Maui",
           "Microsoft.Maui.Dependencies",
           "Microsoft.Maui.Controls.Sdk",
           "Microsoft.Maui.Extensions",
           "Microsoft.Maui.Resizetizer.Sdk",
-          "Microsoft.Maui.Templates"
+          "Microsoft.Maui.Templates",
+          "Microsoft.Maui.Core.Ref.any",
+          "Microsoft.Maui.Core.Runtime.any",
+          "Microsoft.Maui.Controls.Ref.any",
+          "Microsoft.Maui.Controls.Runtime.any",
+          "Microsoft.Maui.Essentials.Ref.any",
+          "Microsoft.Maui.Essentials.Runtime.any",
+          "Microsoft.Extensions.Configuration",
+          "Microsoft.Extensions.Configuration.Abstractions",
+          "Microsoft.Extensions.Configuration.Binder",
+          "Microsoft.Extensions.Configuration.CommandLine",
+          "Microsoft.Extensions.Configuration.EnvironmentVariables",
+          "Microsoft.Extensions.Configuration.FileExtensions",
+          "Microsoft.Extensions.Configuration.Json",
+          "Microsoft.Extensions.Configuration.UserSecrets",
+          "Microsoft.Extensions.DependencyInjection",
+          "Microsoft.Extensions.DependencyInjection.Abstractions",
+          "Microsoft.Extensions.FileProviders.Abstractions",
+          "Microsoft.Extensions.FileProviders.Physical",
+          "Microsoft.Extensions.FileSystemGlobbing",
+          "Microsoft.Extensions.Hosting",
+          "Microsoft.Extensions.Hosting.Abstractions",
+          "Microsoft.Extensions.Logging",
+          "Microsoft.Extensions.Logging.Abstractions",
+          "Microsoft.Extensions.Logging.Console",
+          "Microsoft.Extensions.Logging.Configuration",
+          "Microsoft.Extensions.Logging.Debug",
+          "Microsoft.Extensions.Logging.EventLog",
+          "Microsoft.Extensions.Logging.EventSource",
+          "Microsoft.Extensions.Primitives",
+          "Microsoft.Extensions.Options",
+          "Microsoft.Extensions.Options.ConfigurationExtensions",
+          "Microsoft.Maui.Graphics",
+          "System.Diagnostics.DiagnosticSource",
+          "System.Diagnostics.EventLog",
+          "System.Runtime.CompilerServices.Unsafe",
+          "System.Text.Encodings.Web",
+          "System.Text.Json"
+      ]
+    },
+    "maui-blazor": {
+      "abstract": true,
+      "description": ".NET MAUI SDK Blazor Packages",
+      "extends": [ "maui-core" ],
+      "packs": [
+          "Microsoft.AspNetCore.Components.WebView.Maui",
+          "Microsoft.AspNetCore.Authorization",
+          "Microsoft.AspNetCore.Components",
+          "Microsoft.AspNetCore.Components.Analyzers",
+          "Microsoft.AspNetCore.Components.Forms",
+          "Microsoft.AspNetCore.Components.Web",
+          "Microsoft.AspNetCore.Components.WebView",
+          "Microsoft.AspNetCore.Metadata",
+          "Microsoft.Extensions.FileProviders.Composite",
+          "Microsoft.Extensions.FileProviders.Embedded",
+          "Microsoft.JSInterop",
+          "System.IO.Pipelines"
       ]
     },
     "maui-android": {
       "description": ".NET MAUI SDK for Android",
       "extends": [ 
-        "maui-core",
-        "microsoft-android-sdk-full"
+        "maui-blazor",
+        "android"
       ],
       "packs": [
           "Microsoft.Maui.Core.Ref.android",
@@ -52,8 +107,8 @@
     "maui-maccatalyst": {
       "description": ".NET MAUI SDK for Mac Catalyst",
       "extends": [ 
-        "maui-core",
-        "microsoft-maccatalyst-sdk-full"
+        "maui-blazor",
+        "maccatalyst"
       ],
       "packs": [
           "Microsoft.Maui.Core.Ref.maccatalyst",
@@ -67,8 +122,8 @@
     "maui-ios": {
       "description": ".NET MAUI SDK for iOS",
       "extends": [ 
-        "maui-core",
-        "microsoft-ios-sdk-full"
+        "maui-blazor",
+        "ios"
       ],
       "packs": [
           "Microsoft.Maui.Core.Ref.ios",
@@ -81,20 +136,25 @@
     },
     "maui-windows": {
       "description": ".NET MAUI SDK for Windows",
-      "extends": [ "maui-core" ],
+      "extends": [ "maui-blazor" ],
       "packs": [
           "Microsoft.Maui.Core.Ref.win",
           "Microsoft.Maui.Core.Runtime.win",
           "Microsoft.Maui.Controls.Ref.win",
           "Microsoft.Maui.Controls.Runtime.win",
           "Microsoft.Maui.Essentials.Ref.win",
-          "Microsoft.Maui.Essentials.Runtime.win"
+          "Microsoft.Maui.Essentials.Runtime.win",
+          "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
       ]
     }
   },
   "packs": {
     "Microsoft.AspNetCore.Components.WebView.Maui": {
       "kind": "library",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Ref.any": {
+      "kind": "framework",
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Core.Ref.android": {
@@ -110,6 +170,10 @@
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Core.Ref.win": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Runtime.any": {
       "kind": "framework",
       "version": "@VERSION@"
     },
@@ -129,6 +193,10 @@
       "kind": "framework",
       "version": "@VERSION@"
     },
+    "Microsoft.Maui.Controls.Ref.any": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
     "Microsoft.Maui.Controls.Ref.android": {
       "kind": "framework",
       "version": "@VERSION@"
@@ -142,6 +210,10 @@
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Controls.Ref.win": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Runtime.any": {
       "kind": "framework",
       "version": "@VERSION@"
     },
@@ -165,6 +237,10 @@
       "kind": "library",
       "version": "@VERSION@"
     },
+    "Microsoft.Maui.Essentials.Ref.any": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
     "Microsoft.Maui.Essentials.Ref.android": {
       "kind": "framework",
       "version": "@VERSION@"
@@ -178,6 +254,10 @@
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Essentials.Ref.win": {
+      "kind": "framework",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Essentials.Runtime.any": {
       "kind": "framework",
       "version": "@VERSION@"
     },
@@ -198,8 +278,180 @@
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Extensions": {
-      "kind": "framework",
+      "kind": "library",
       "version": "@VERSION@"
+    },
+    "Microsoft.AspNetCore.Authorization": {
+      "kind": "library",
+      "version": "@MicrosoftAspNetCoreAuthorizationPackageVersion@"
+    },
+    "Microsoft.AspNetCore.Components": {
+      "kind": "library",
+      "version": "@MicrosoftAspNetCoreComponentsPackageVersion@"
+    },
+    "Microsoft.AspNetCore.Components.Analyzers": {
+      "kind": "library",
+      "version": "@MicrosoftAspNetCoreComponentsAnalyzersPackageVersion@"
+    },
+    "Microsoft.AspNetCore.Components.Forms": {
+      "kind": "library",
+      "version": "@MicrosoftAspNetCoreComponentsFormsPackageVersion@"
+    },
+    "Microsoft.AspNetCore.Components.Web": {
+      "kind": "library",
+      "version": "@MicrosoftAspNetCoreComponentsWebPackageVersion@"
+    },
+    "Microsoft.AspNetCore.Components.WebView": {
+      "kind": "library",
+      "version": "@MicrosoftAspNetCoreComponentsWebViewPackageVersion@"
+    },
+    "Microsoft.AspNetCore.Metadata": {
+      "kind": "library",
+      "version": "@MicrosoftAspNetCoreMetadataPackageVersion@"
+    },
+    "Microsoft.Extensions.Configuration": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsConfigurationPackageVersion@"
+    },
+    "Microsoft.Extensions.Configuration.Abstractions": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsConfigurationAbstractionsPackageVersion@"
+    },
+    "Microsoft.Extensions.Configuration.Binder": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsConfigurationBinderPackageVersion@"
+    },
+    "Microsoft.Extensions.Configuration.CommandLine": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsConfigurationCommandLinePackageVersion@"
+    },
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion@"
+    },
+    "Microsoft.Extensions.Configuration.FileExtensions": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsConfigurationFileExtensionsPackageVersion@"
+    },
+    "Microsoft.Extensions.Configuration.Json": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsConfigurationJsonPackageVersion@"
+    },
+    "Microsoft.Extensions.Configuration.UserSecrets": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsConfigurationUserSecretsPackageVersion@"
+    },
+    "Microsoft.Extensions.DependencyInjection": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsDependencyInjectionPackageVersion@"
+    },
+    "Microsoft.Extensions.DependencyInjection.Abstractions": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion@"
+    },
+    "Microsoft.Extensions.FileProviders.Abstractions": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsFileProvidersAbstractionsPackageVersion@"
+    },
+    "Microsoft.Extensions.FileProviders.Composite": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsFileProvidersCompositePackageVersion@"
+    },
+    "Microsoft.Extensions.FileProviders.Embedded": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsFileProvidersEmbeddedPackageVersion@"
+    },
+    "Microsoft.Extensions.FileProviders.Physical": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsFileProvidersPhysicalPackageVersion@"
+    },
+    "Microsoft.Extensions.FileSystemGlobbing": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsFileSystemGlobbingPackageVersion@"
+    },
+    "Microsoft.Extensions.Hosting": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsHostingPackageVersion@"
+    },
+    "Microsoft.Extensions.Hosting.Abstractions": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsHostingAbstractionsPackageVersion@"
+    },
+    "Microsoft.Extensions.Logging": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsLoggingPackageVersion@"
+    },
+    "Microsoft.Extensions.Logging.Abstractions": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsLoggingAbstractionsPackageVersion@"
+    },
+    "Microsoft.Extensions.Logging.Configuration": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsLoggingConfigurationPackageVersion@"
+    },
+    "Microsoft.Extensions.Logging.Console": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsLoggingConsolePackageVersion@"
+    },
+    "Microsoft.Extensions.Logging.Debug": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsLoggingDebugPackageVersion@"
+    },
+    "Microsoft.Extensions.Logging.EventLog": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsLoggingEventLogPackageVersion@"
+    },
+    "Microsoft.Extensions.Logging.EventSource": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsLoggingEventSourcePackageVersion@"
+    },
+    "Microsoft.Extensions.Options": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsOptionsPackageVersion@"
+    },
+    "Microsoft.Extensions.Options.ConfigurationExtensions": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion@"
+    },
+    "Microsoft.Extensions.Primitives": {
+      "kind": "library",
+      "version": "@MicrosoftExtensionsPrimitivesPackageVersion@"
+    },
+    "Microsoft.JSInterop": {
+      "kind": "library",
+      "version": "@MicrosoftJSInteropPackageVersion@"
+    },
+    "Microsoft.Maui.Graphics": {
+      "kind": "library",
+      "version": "@MicrosoftMauiGraphicsVersion@"
+    },
+    "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop": {
+      "kind": "library",
+      "version": "@MicrosoftMauiGraphicsWin2DWinUIDesktopPackageVersion@"
+    },
+    "System.Diagnostics.EventLog": {
+      "kind": "library",
+      "version": "@SystemDiagnosticsEventLogPackageVersion@"
+    },
+    "System.Diagnostics.DiagnosticSource": {
+      "kind": "library",
+      "version": "@SystemDiagnosticsDiagnosticSourcePackageVersion@"
+    },
+    "System.IO.Pipelines": {
+      "kind": "library",
+      "version": "@SystemIOPipelinesPackageVersion@"
+    },
+    "System.Runtime.CompilerServices.Unsafe": {
+      "kind": "library",
+      "version": "@SystemRuntimeCompilerServicesUnsafePackageVersion@"
+    },
+    "System.Text.Encodings.Web": {
+      "kind": "library",
+      "version": "@SystemTextEncodingsWebPackageVersion@"
+    },
+    "System.Text.Json": {
+      "kind": "library",
+      "version": "@SystemTextJsonPackageVersion@"
     },
     "Microsoft.Maui.Controls.Sdk": {
       "kind": "sdk",

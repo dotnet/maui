@@ -37,10 +37,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 
 			string[] listItems = {
-				"MasterDetail Navigation",
-				"MasterDetail Navigation ->> Page 1",
-				"MasterDetail Navigation ->> Page 2",
-				"MasterDetail Navigation ->> Page 3"
+				"FlyoutPage Navigation",
+				"FlyoutPage Navigation ->> Page 1",
+				"FlyoutPage Navigation ->> Page 2",
+				"FlyoutPage Navigation ->> Page 3"
 			};
 
 			var listView = new ListView
@@ -63,30 +63,30 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					return;
 				if (e.SelectedItem.Equals(listItems[0]))
 				{
-					Application.Current.MainPage = MasterDetailHost;
+					Application.Current.MainPage = FlyoutPageHost;
 				}
 				else if (e.SelectedItem.Equals(listItems[1]) || e.SelectedItem.Equals(listItems[2]) || e.SelectedItem.Equals(listItems[3]))
 				{
-					// MasterDetail Navigation - direct page open
+					// FlyoutPage Navigation - direct page open
 					var item = e.SelectedItem.ToString();
 					var index = int.Parse(item.Substring(item.Length - 1)) - 1;
-					Application.Current.MainPage = MasterDetailHost;
-					MasterDetailHost.OpenPage(index);
+					Application.Current.MainPage = FlyoutPageHost;
+					FlyoutPageHost.OpenPage(index);
 				}
 
 				listView.SelectedItem = null;
 			};
 		}
 
-		static MasterDetailNavigation s_masterDetailHost;
+		static FlyoutPageNavigation s_FlyoutPageHost;
 
-		static MasterDetailNavigation MasterDetailHost
+		static FlyoutPageNavigation FlyoutPageHost
 		{
 			get
 			{
-				if (s_masterDetailHost == null)
-					s_masterDetailHost = new MasterDetailNavigation();
-				return s_masterDetailHost;
+				if (s_FlyoutPageHost == null)
+					s_FlyoutPageHost = new FlyoutPageNavigation();
+				return s_FlyoutPageHost;
 			}
 		}
 
@@ -94,20 +94,20 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		public void SwapMainPageWithMasterDetails()
+		public void SwapMainPageWithFlyoutPages()
 		{
-			RunningApp.WaitForElement(q => q.Text("MasterDetail Navigation"));
-			RunningApp.Tap(q => q.Text("MasterDetail Navigation"));
+			RunningApp.WaitForElement(q => q.Text("FlyoutPage Navigation"));
+			RunningApp.Tap(q => q.Text("FlyoutPage Navigation"));
 			RunningApp.Tap(q => q.Marked("OpenMaster"));
 			RunningApp.Tap(q => q.Text("Page 1"));
 			RunningApp.Tap(q => q.Text("START"));
-			RunningApp.Tap(q => q.Text("MasterDetail Navigation ->> Page 1"));
+			RunningApp.Tap(q => q.Text("FlyoutPage Navigation ->> Page 1"));
 			RunningApp.WaitForElement(q => q.Text("Page 1"));
 			RunningApp.Tap(q => q.Text("START"));
-			RunningApp.Tap(q => q.Text("MasterDetail Navigation ->> Page 2"));
+			RunningApp.Tap(q => q.Text("FlyoutPage Navigation ->> Page 2"));
 			RunningApp.WaitForElement(q => q.Text("Page 2"));
 			RunningApp.Tap(q => q.Text("START"));
-			RunningApp.Tap(q => q.Text("MasterDetail Navigation ->> Page 3"));
+			RunningApp.Tap(q => q.Text("FlyoutPage Navigation ->> Page 3"));
 			RunningApp.WaitForElement(q => q.Text("Page 3"));
 		}
 #endif
@@ -115,11 +115,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	}
 
 	[Preserve(AllMembers = true)]
-	public class MasterDetailNavigation : FlyoutPage
+	public class FlyoutPageNavigation : FlyoutPage
 	{
 		List<NavigationPage> _pages;
 
-		public MasterDetailNavigation()
+		public FlyoutPageNavigation()
 		{
 			InitPages();
 
