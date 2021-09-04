@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Xml;
 using Microsoft.Maui.Controls.Core.UnitTests;
@@ -8,15 +9,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public class FooConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) => true;
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			return new Foo { Value = value };
+			return new Foo { Value = (string)value };
 		}
 	}
 
 	public class BarConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) => true;
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			return new Bar { Value = (string)value };
 		}
@@ -24,7 +28,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 	public class QuxConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) => true;
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			return new Qux { Value = (string)value };
 		}
@@ -32,7 +38,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 	public class FooBarConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) => true;
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			return new FooBar { Value = (string)value };
 		}
@@ -42,20 +50,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	{
 		public string Value { get; set; }
 	}
+
 	public class Bar
 	{
 		public string Value { get; set; }
 	}
+
 	public class Baz
 	{
 		public string Value { get; set; }
 	}
+
 	public class Qux
 	{
 		public string Value { get; set; }
 	}
 
-	[TypeConverter(typeof(FooBarConverter))]
+	[System.ComponentModel.TypeConverter(typeof(FooBarConverter))]
 	public class FooBar
 	{
 		public string Value { get; set; }
@@ -63,12 +74,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 	public class Bindable : BindableObject
 	{
-		[TypeConverter(typeof(FooConverter))]
+		[System.ComponentModel.TypeConverter(typeof(FooConverter))]
 		public Foo Foo { get; set; }
 
 		public static readonly BindableProperty BarProperty = BindableProperty.Create(nameof(Bar), typeof(Bar), typeof(Bindable), default(Bar));
 
-		[TypeConverter(typeof(BarConverter))]
+		[System.ComponentModel.TypeConverter(typeof(BarConverter))]
 		public Bar Bar
 		{
 			get { return (Bar)GetValue(BarProperty); }
@@ -79,7 +90,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		public static readonly BindableProperty QuxProperty = BindableProperty.CreateAttached(nameof(Qux), typeof(Qux), typeof(Bindable), default(Qux));
 
-		[TypeConverter(typeof(QuxConverter))]
+		[System.ComponentModel.TypeConverter(typeof(QuxConverter))]
 		public static Qux GetQux(BindableObject bindable)
 		{
 			return (Qux)bindable.GetValue(QuxProperty);

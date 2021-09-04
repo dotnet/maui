@@ -9,9 +9,6 @@ namespace Maui.Controls.Sample.ViewModels
 	{
 		protected override IEnumerable<SectionModel> CreateItems() => new[]
 		{
-			new SectionModel(typeof(BoxViewPage), "BoxView",
-				"BoxView renders a simple rectangle of a specified width, height, and color. You can use BoxView for decoration, rudimentary graphics, and for interaction with the user through touch."),
-
 			new SectionModel(typeof(ImageButtonPage), "ImageButton",
 				"ImageButton is a rectangular object that displays an image, and which fires a Clicked event when it's been pressed."),
 
@@ -30,9 +27,6 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ListViewPage), "ListView",
 				"ListView derives from ItemsView and displays a scrollable list of selectable data items."),
 
-			new SectionModel(typeof(RefreshViewPage), "RefreshView",
-				"RefreshView is a container control that provides pull-to-refresh functionality for scrollable content."),
-			
 			new SectionModel(typeof(SwipeViewPage), "SwipeView",
 				"RefreshView is a container control that provides pull-to-refresh functionality for scrollable content."),
 

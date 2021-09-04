@@ -8,32 +8,31 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public class MauiUIApplicationDelegate<TStartup> : MauiUIApplicationDelegate
-		where TStartup : IStartup, new()
-	{
-		protected override IStartup OnCreateStartup() => new TStartup();
-	}
-
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
+		WeakReference<IWindow>? _virtualWindow;
+		internal IWindow? VirtualWindow
+		{
+			get
+			{
+				IWindow? window = null;
+				_virtualWindow?.TryGetTarget(out window);
+				return window;
+			}
+		}
+
 		protected MauiUIApplicationDelegate()
 		{
 			Current = this;
 		}
 
-		protected abstract IStartup OnCreateStartup();
+		protected abstract MauiApp CreateMauiApp();
 
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			var startup = OnCreateStartup();
+			var mauiApp = CreateMauiApp();
 
-			var host = startup
-				.CreateAppHostBuilder()
-				.ConfigureServices(ConfigureNativeServices)
-				.ConfigureUsing(startup)
-				.Build();
-
-			Services = host.Services;
+			Services = mauiApp.Services;
 
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
 
@@ -65,7 +64,7 @@ namespace Microsoft.Maui
 
 			var activationState = new ActivationState(mauiContext);
 			var window = Application.CreateWindow(activationState);
-
+			_virtualWindow = new WeakReference<IWindow>(window);
 			uiWindow.SetWindow(window, mauiContext);
 
 			return uiWindow;
@@ -123,11 +122,6 @@ namespace Microsoft.Maui
 		public override void WillEnterForeground(UIApplication application)
 		{
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillEnterForeground>(del => del(application));
-		}
-
-		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
-		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
 		}
 
 		public static MauiUIApplicationDelegate Current { get; private set; } = null!;

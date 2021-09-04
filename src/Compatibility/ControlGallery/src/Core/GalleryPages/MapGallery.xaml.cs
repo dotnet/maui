@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			InitializeComponent();
 
 			Map = MakeMap();
-			Map.Pins.ForEach(pin =>
+			Map.Pins.ToList().ForEach(pin =>
 			{
 				pin.MarkerClicked += MarkerClicked;
 				pin.InfoWindowClicked += InfoWindowClicked;

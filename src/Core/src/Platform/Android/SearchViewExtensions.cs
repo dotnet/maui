@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Android.Text;
+﻿using Android.Content.Res;
 using Android.Widget;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -15,6 +14,31 @@ namespace Microsoft.Maui
 		public static void UpdatePlaceholder(this SearchView searchView, ISearchBar searchBar)
 		{
 			searchView.QueryHint = searchBar.Placeholder;
+		}
+
+		public static void UpdatePlaceholderColor(this SearchView searchView, ISearchBar searchBar, ColorStateList? defaultPlaceholderColor, EditText? editText = null)
+		{
+			editText ??= searchView.GetFirstChildOfType<EditText>();
+
+			if (editText == null)
+				return;
+
+			var placeholderTextColor = searchBar.PlaceholderColor;
+
+			if (placeholderTextColor == null)
+			{
+				editText.SetHintTextColor(defaultPlaceholderColor);
+			}
+			else
+			{
+				var androidColor = placeholderTextColor.ToNative();
+
+				if (!editText.HintTextColors.IsOneColor(ColorExtensions.States, androidColor))
+				{
+					var acolor = androidColor.ToArgb();
+					editText.SetHintTextColor(new ColorStateList(ColorExtensions.States, new[] { acolor, acolor }));
+				}
+			}
 		}
 
 		public static void UpdateFont(this SearchView searchView, ISearchBar searchBar, IFontManager fontManager, EditText? editText = null)

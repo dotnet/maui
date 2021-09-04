@@ -2,7 +2,7 @@
 {
 	public partial class StepperHandler
 	{
-		public static PropertyMapper<IStepper, StepperHandler> StepperMapper = new PropertyMapper<IStepper, StepperHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IStepper, StepperHandler> StepperMapper = new PropertyMapper<IStepper, StepperHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IStepper.Interval)] = MapIncrement,
 			[nameof(IStepper.Maximum)] = MapMaximum,
@@ -18,7 +18,7 @@
 
 		}
 
-		public StepperHandler(PropertyMapper mapper) : base(mapper ?? StepperMapper)
+		public StepperHandler(IPropertyMapper mapper) : base(mapper ?? StepperMapper)
 		{
 
 		}

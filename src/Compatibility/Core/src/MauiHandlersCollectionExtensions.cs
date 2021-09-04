@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Compatibility
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		public static IMauiHandlersCollection AddCompatibilityRenderer<TControlType, TMauiType, TRenderer>(this IMauiHandlersCollection handlersCollection)
-			where TMauiType : IFrameworkElement
+			where TMauiType : IView
 		{
 			Internals.Registrar.Registered.Register(typeof(TControlType), typeof(TRenderer));
 
@@ -39,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		public static IMauiHandlersCollection AddCompatibilityRenderer<TControlType, TRenderer>(this IMauiHandlersCollection handlersCollection)
-			where TControlType : IFrameworkElement
+			where TControlType : IView
 		{
 			handlersCollection.AddCompatibilityRenderer<TControlType, TControlType, TRenderer>();
 
@@ -100,6 +101,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 				});
 #endif
 			return services;
+		}
+
+
+
+		public static IEffectsBuilder AddCompatibilityEffects(this IEffectsBuilder effectsBuilder, params global::System.Reflection.Assembly[] assemblies)
+		{
+			Internals.Registrar.RegisterEffects(assemblies);
+			return effectsBuilder;
 		}
 	}
 }

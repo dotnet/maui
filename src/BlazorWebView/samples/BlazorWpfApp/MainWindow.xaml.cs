@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Windows;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WebViewAppShared;
 
 namespace BlazorWpfApp
 {
@@ -21,9 +23,11 @@ namespace BlazorWpfApp
             Resources.Add("services", serviceCollection.BuildServiceProvider());
 
             InitializeComponent();
-        }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+			blazorWebView1.RootComponents.RegisterForJavaScript<MyDynamicComponent>("my-dynamic-root-component");
+		}
+
+		private void Button_Click(object sender, RoutedEventArgs e)
         {
 			MessageBox.Show(
                 owner: this,
