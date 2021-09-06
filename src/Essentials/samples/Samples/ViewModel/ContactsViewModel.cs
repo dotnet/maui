@@ -6,6 +6,8 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Essentials;
 
+using ContactsManager = Microsoft.Maui.Essentials.Contacts;
+
 namespace Samples.ViewModel
 {
 	class ContactsViewModel : BaseViewModel
@@ -42,7 +44,7 @@ namespace Samples.ViewModel
 			IsBusy = true;
 			try
 			{
-				var contact = await Contacts.PickContactAsync();
+				var contact = await ContactsManager.PickContactAsync();
 				if (contact == null)
 					return;
 
@@ -70,7 +72,7 @@ namespace Samples.ViewModel
 			ContactsList?.Clear();
 			try
 			{
-				var contacts = await Contacts.GetAllAsync();
+				var contacts = await ContactsManager.GetAllAsync();
 
 				await Task.Run(() =>
 				{

@@ -1,0 +1,67 @@
+trigger:
+  branches:
+    include:
+    - main
+    - release/*
+    - loc
+  tags:
+    include:
+    - '*'
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - SECURITY.md
+    - THIRD-PARTY-NOTICES.TXT
+
+pr:
+  branches:
+    include:
+    - main
+    - release/*
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - SECURITY.md
+    - THIRD-PARTY-NOTICES.TXT
+
+variables:
+  - template: /eng/pipelines/common/variables.yml
+
+parameters:
+  - name: BuildEverything
+    type: boolean
+    default: false
+
+stages:
+
+  - template: common/device-tests.yml
+    parameters:
+      ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+        androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]
+        # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
+        iosVersions: [ 'latest', '14.5', '13.7', '12.4', '11.4' ]
+      projects:
+        - name: essentials
+          desc: Essentials
+          android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+        - name: core
+          desc: Core
+          android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj

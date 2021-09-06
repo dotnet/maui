@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				parent = parent?.RealParent;
 			}
 
-			while (!Application.IsApplicationOrNull(root.RealParent))
+			while (!Application.IsApplicationOrWindowOrNull(root.RealParent))
 			{
 				root = (Page)root.RealParent;
 				if (root.GetRenderer() is ILifeCycleState lcs)

@@ -56,13 +56,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			Microsoft.Maui.Controls.Compatibility.Forms.Init(this, bundle);
 			FormsMaps.Init(this, bundle);
 
-#if ENABLE_TEST_CLOUD
-			ViewHandler
-				.ViewMapper[nameof(IView.AutomationId)] = (h, v) =>
+			ViewHandler.ViewMapper
+				.Add(nameof(IView.AutomationId), (h, v) =>
 				{
-					((global::Android.Views.View)h.NativeView).ContentDescription = v.AutomationId;
-				};
-#endif
+					if (h.NativeView is global::Android.Views.View nativeView)
+						nativeView.ContentDescription = v.AutomationId;
+				});
 
 			//FormsMaterial.Init(this, bundle);
 			AndroidAppLinks.Init(this);

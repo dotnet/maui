@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : ViewHandler<IButton, MauiButton>
+	public sealed partial class ButtonHandler : ViewHandler<IButton, MauiButton>
 	{
 		static UI.Xaml.Thickness? DefaultPadding;
 		static UI.Xaml.Media.Brush? DefaultForeground;
@@ -14,13 +14,11 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiButton CreateNativeView() 
 			=> new MauiButton();
 
-		protected override void SetupDefaults(MauiButton nativeView)
+		void SetupDefaults(MauiButton nativeView)
 		{
 			DefaultPadding = (UI.Xaml.Thickness)MauiWinUIApplication.Current.Resources["ButtonPadding"];
 			DefaultForeground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonForegroundThemeBrush"];
 			DefaultBackground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonBackgroundThemeBrush"];
-
-			base.SetupDefaults(nativeView);
 		}
 
 		protected override void ConnectHandler(MauiButton nativeView)

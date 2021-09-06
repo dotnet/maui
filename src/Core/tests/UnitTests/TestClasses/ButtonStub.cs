@@ -22,5 +22,7 @@ namespace Microsoft.Maui.UnitTests
 		public void Pressed() { }
 
 		public void Released() { }
+
+		public void ImageSourceLoaded() { }
 	}
 }

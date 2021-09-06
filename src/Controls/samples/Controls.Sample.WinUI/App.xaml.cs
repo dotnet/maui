@@ -2,16 +2,13 @@
 
 namespace Maui.Controls.Sample.WinUI
 {
-	// TODO: this is not nice.
-	public class MiddleApp : MauiWinUIApplication<Startup>
-	{
-	}
-
-	public partial class App : MiddleApp
+	public partial class App : MauiWinUIApplication
 	{
 		public App()
 		{
 			InitializeComponent();
 		}
+
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }

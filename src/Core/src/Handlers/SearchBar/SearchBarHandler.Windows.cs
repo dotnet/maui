@@ -6,6 +6,12 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, AutoSuggestBox>
 	{
+		Brush? _defaultPlaceholderColorBrush;
+		Brush? _defaultPlaceholderColorFocusBrush;
+		
+    Brush? _defaultTextColorBrush;
+		Brush? _defaultTextColorFocusBrush;
+    
 		Brush? _defaultDeleteButtonForegroundColorBrush;
 		Brush? _defaultDeleteButtonBackgroundColorBrush;
 
@@ -43,21 +49,32 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdatePlaceholder(searchBar);
 		}
 
+		public static void MapPlaceholderColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdatePlaceholderColor(searchBar, handler._defaultPlaceholderColorBrush, handler._defaultPlaceholderColorFocusBrush, handler._queryTextBox);
+		}
+
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.NativeView?.UpdateHorizontalTextAlignment(searchBar, handler._queryTextBox);
 		}
 
-		[MissingMapper]
-		public static void MapFont(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.NativeView?.UpdateFont(searchBar, fontManager);
+		}
 
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.NativeView?.UpdateCharacterSpacing(searchBar);
 		}
 
-		[MissingMapper]
-		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateTextColor(searchBar, handler._defaultTextColorBrush, handler._defaultTextColorFocusBrush, handler._queryTextBox);
+		}
 
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
@@ -78,6 +95,16 @@ namespace Microsoft.Maui.Handlers
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
 		{
 			_queryTextBox = NativeView?.GetFirstDescendant<MauiTextBox>();
+
+			if(_queryTextBox != null)
+			{
+				_defaultPlaceholderColorBrush = _queryTextBox.PlaceholderForegroundBrush;
+				_defaultPlaceholderColorFocusBrush = _queryTextBox.PlaceholderForegroundFocusBrush;
+
+				_defaultTextColorBrush = _queryTextBox.Foreground;
+				_defaultTextColorFocusBrush = _queryTextBox.ForegroundFocusBrush;
+			}
+
 			_cancelButton = _queryTextBox?.GetFirstDescendant<MauiCancelButton>();
 
 			if (_cancelButton != null)
@@ -99,6 +126,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView != null)
 			{
+				NativeView?.UpdateTextColor(VirtualView, _defaultTextColorBrush, _defaultTextColorFocusBrush, _queryTextBox);
 				NativeView?.UpdateHorizontalTextAlignment(VirtualView, _queryTextBox);
 				NativeView?.UpdateMaxLength(VirtualView, _queryTextBox);
 			}

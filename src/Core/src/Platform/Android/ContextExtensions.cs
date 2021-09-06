@@ -121,6 +121,9 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static bool TryResolveAttribute(this Context context, int id, out float? value) =>
+			context.Theme.TryResolveAttribute(id, out value);
+
 		public static bool TryResolveAttribute(this Context context, int id)
 		{
 			return context.Theme.TryResolveAttribute(id);
@@ -192,7 +195,7 @@ namespace Microsoft.Maui
 				return null;
 
 			if (context is AppCompatActivity activity)
-				return activity.SupportActionBar.ThemedContext;
+				return activity.SupportActionBar?.ThemedContext ?? context;
 
 			if (context is ContextWrapper contextWrapper)
 				return contextWrapper.BaseContext?.GetThemedContext();
@@ -231,6 +234,22 @@ namespace Microsoft.Maui
 			title = title.ToLowerInvariant();
 
 			return resources.GetIdentifier(title, "drawable", packageName);
+		}
+
+		public static IWindow? GetWindow(this Context context)
+		{
+			var nativeWindow = context.GetActivity();
+
+			if (nativeWindow is MauiAppCompatActivity mac && mac.VirtualWindow != null)
+				return mac.VirtualWindow;
+
+			foreach (var window in MauiApplication.Current.Application.Windows)
+			{
+				if (window?.Handler?.NativeView is AActivity win && win == nativeWindow)
+					return window;
+			}
+
+			return null;
 		}
 	}
 }

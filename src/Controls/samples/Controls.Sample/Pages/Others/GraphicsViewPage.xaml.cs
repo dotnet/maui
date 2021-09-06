@@ -151,7 +151,7 @@ namespace Maui.Controls.Sample.Pages
 			canvas.StrokeDashPattern = new float[] { 2, 2 };
 			canvas.DrawLine(650, 140, 800, 140);
 
-			canvas.StrokeDashPattern = new float[] { 4, 4, 1, 4};
+			canvas.StrokeDashPattern = new float[] { 4, 4, 1, 4 };
 			canvas.DrawLine(650, 160, 800, 160);
 
 			canvas.StrokeDashPattern = null;

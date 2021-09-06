@@ -18,12 +18,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		bool hasCompiledXamlResources;
 		public bool KeepXamlResources { get; set; }
 		public bool OptimizeIL { get; set; }
-
-		[Obsolete("OutputGeneratedILAsCode is obsolete as of version 2.3.4. This option is no longer available.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool OutputGeneratedILAsCode { get; set; }
-
-		public bool CompileByDefault { get; set; }
+		public bool DefaultCompile { get; set; }
 		public bool ForceCompile { get; set; }
 
 		public IAssemblyResolver DefaultAssemblyResolver { get; set; }
@@ -41,7 +36,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			thrownExceptions = null;
 			LoggingHelper.LogMessage(Normal, $"{new string(' ', 0)}Compiling Xaml, assembly: {Assembly}");
-			var skipassembly = !CompileByDefault;
+			var skipassembly = !DefaultCompile;
 			bool success = true;
 
 			if (!File.Exists(Assembly))
@@ -226,11 +221,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								initComp.Body.Optimize();
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
 							}
-
-#pragma warning disable 0618
-							if (OutputGeneratedILAsCode)
-								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Decompiling option has been removed. Use a 3rd party decompiler to admire the beauty of the IL generated");
-#pragma warning restore 0618
 							resourcesToPrune.Add(resource);
 						}
 						if (hasCompiledXamlResources)
@@ -295,65 +285,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var resourcePath = GetPathForType(module, initComp.DeclaringType);
 
 				il.Emit(Nop);
-
-				if (initCompRuntime != null)
-				{
-					// Generating branching code for the Previewer
-
-					//First using the ResourceLoader
-					var nop = Instruction.Create(Nop);
-
-					// if (ResourceLoader.IsEnabled && ...
-					il.Emit(Call, module.ImportPropertyGetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "ResourceLoader"), "IsEnabled", isStatic: true));
-					il.Emit(Brfalse, nop);
-
-					il.Emit(Newobj, module.ImportCtorReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "ResourceLoader/ResourceLoadingQuery"), 0));
-
-					//AssemblyName
-					il.Emit(Dup); //dup the RLQ
-					il.Emit(Ldtoken, module.ImportReference(initComp.DeclaringType));
-					il.Emit(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
-					il.Emit(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", parameterTypes: new[] { ("mscorlib", "System", "Type") }, isStatic: true));
-					il.Emit(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true));
-					il.Emit(Callvirt, module.ImportMethodReference(("mscorlib", "System.Reflection", "Assembly"), methodName: "GetName", parameterTypes: null));
-					il.Emit(Callvirt, module.ImportPropertySetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "ResourceLoader/ResourceLoadingQuery"), "AssemblyName"));
-
-					//ResourcePath
-					il.Emit(Dup); //dup the RLQ
-					il.Emit(Ldstr, resourcePath);
-					il.Emit(Callvirt, module.ImportPropertySetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "ResourceLoader/ResourceLoadingQuery"), "ResourcePath"));
-
-					//Instance
-					il.Emit(Dup); //dup the RLQ
-					il.Emit(Ldarg_0); //Instance = this
-					il.Emit(Callvirt, module.ImportPropertySetterReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "ResourceLoader/ResourceLoadingQuery"), "Instance"));
-
-					il.Emit(Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "ResourceLoader"), "CanProvideContentFor", 1, isStatic: true));
-					il.Emit(Brfalse, nop);
-					il.Emit(Ldarg_0);
-					il.Emit(Call, initCompRuntime);
-					il.Emit(Ret);
-					il.Append(nop);
-
-					//Or using the deprecated XamlLoader
-					nop = Instruction.Create(Nop);
-
-					var getXamlFileProvider = module.ImportPropertyGetterReference(("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "XamlLoader"), propertyName: "XamlFileProvider", isStatic: true);
-					il.Emit(Call, getXamlFileProvider);
-					il.Emit(Brfalse, nop);
-					il.Emit(Call, getXamlFileProvider);
-					il.Emit(Ldarg_0);
-					il.Emit(Call, module.ImportMethodReference(("mscorlib", "System", "Object"), methodName: "GetType", parameterTypes: null));
-					il.Emit(Callvirt, module.ImportMethodReference(("mscorlib", "System", "Func`2"),
-																   methodName: "Invoke",
-																   paramCount: 1,
-																   classArguments: new[] { ("mscorlib", "System", "Type"), ("mscorlib", "System", "String") }));
-					il.Emit(Brfalse, nop);
-					il.Emit(Ldarg_0);
-					il.Emit(Call, initCompRuntime);
-					il.Emit(Ret);
-					il.Append(nop);
-				}
 
 				var visitorContext = new ILContext(il, body, module)
 				{

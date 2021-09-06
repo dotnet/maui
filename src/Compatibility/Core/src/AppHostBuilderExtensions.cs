@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Shapes;
@@ -40,165 +41,41 @@ using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platf
 
 namespace Microsoft.Maui.Controls.Hosting
 {
-	public static class AppHostBuilderExtensions
+	public static class MauiAppBuilderExtensions
 	{
-		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder)
+		public static MauiAppBuilder UseMauiApp<TApp>(this MauiAppBuilder builder)
 			where TApp : class, IApplication
 		{
-			builder.ConfigureServices((context, collection) =>
-			{
-				collection.AddSingleton<IApplication, TApp>();
-			});
-
+			builder.Services.TryAddSingleton<IApplication, TApp>();
 			builder.SetupDefaults();
+			return builder;
+		}
+
+		public static MauiAppBuilder UseMauiApp<TApp>(this MauiAppBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
+			where TApp : class, IApplication
+		{
+			builder.Services.TryAddSingleton<IApplication>(implementationFactory);
+			builder.SetupDefaults();
+			return builder;
+		}
+
+		static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
+		{
+			builder.ConfigureImageSources(services =>
+			{
+				services.AddService<FileImageSource>(svcs => new FileImageSourceService(svcs.GetService<IImageSourceServiceConfiguration>(), svcs.CreateLogger<FileImageSourceService>()));
+				services.AddService<FontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
+				services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
+				services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
+			});
 
 			return builder;
 		}
 
-		public static IAppHostBuilder UseMauiApp<TApp>(this IAppHostBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
-			where TApp : class, IApplication
+		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 		{
-			builder.ConfigureServices((context, collection) =>
-			{
-				collection.AddSingleton<IApplication>(implementationFactory);
-			});
-
-			builder.SetupDefaults();
-
-			return builder;
-		}
-
-		static IAppHostBuilder SetupDefaults(this IAppHostBuilder builder)
-		{
-			builder.ConfigureLifecycleEvents(events =>
-			{
-#if __ANDROID__
-				events.AddAndroid(android => android
-					.OnApplicationCreating((app) =>
-					{
-						// This is the initial Init to set up any system services registered by
-						// Forms.Init(). This happens in the Application's OnCreate - before
-						// any UI has appeared.
-						// This creates a dummy MauiContext that wraps the Application.
-
-						var services = MauiApplication.Current.Services;
-						var mauiContext = new MauiContext(services, app);
-						var state = new ActivationState(mauiContext);
-						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
-
-						GraphicsPlatform.RegisterGlobalService(NativeGraphicsService.Instance);
-					})
-					.OnCreate((activity, bundle) =>
-					{
-						// This is the Init that sets up the first context from the activity.
-						// There is still no official MauiContext since that happens just after this.
-
-						var services = MauiApplication.Current.Services;
-						var mauiContext = new MauiContext(services, activity);
-						var state = new ActivationState(mauiContext, bundle);
-						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
-					})
-					.OnPostCreate((activity, bundle) =>
-					{
-						// This is the final Init that ensures the Forms type is using the same
-						// MauiContext that is part of the rest of the maui application.
-
-						var windows = Application.Current?.Windows;
-						if (windows?.Count > 0)
-						{
-							var window = windows[0];
-							var mauiContext =
-								window.Handler?.MauiContext ??
-								window.Page?.Handler?.MauiContext;
-
-							if (mauiContext != null)
-							{
-								var state = new ActivationState(mauiContext, bundle);
-								Forms.Init(state);
-							}
-						}
-					}));
-#elif __IOS__
-				events.AddiOS(iOS => iOS
-					.WillFinishLaunching((app, options) =>
-					{
-						// This is the initial Init to set up any system services registered by
-						// Forms.Init(). This happens before any UI has appeared.
-						// This creates a dummy MauiContext.
-
-						var services = MauiUIApplicationDelegate.Current.Services;
-						var mauiContext = new MauiContext(services);
-						var state = new ActivationState(mauiContext);
-						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
-						return true;
-					})
-					.FinishedLaunching((app, options) =>
-					{
-						// This is the final Init that ensures the Forms type is using the same
-						// MauiContext that is part of the rest of the maui application.
-
-						var windows = Application.Current?.Windows;
-						if (windows?.Count > 0)
-						{
-							var window = windows[0];
-							var mauiContext =
-								window.Handler?.MauiContext ??
-								window.Page?.Handler?.MauiContext;
-
-							if (mauiContext != null)
-							{
-								var state = new ActivationState(mauiContext);
-								Forms.Init(state);
-							}
-						}
-
-						GraphicsPlatform.RegisterGlobalService(NativeGraphicsService.Instance);
-
-						return true;
-					}));
-#elif WINDOWS
-				events.AddWindows(windows => windows
-					.OnLaunching((app, args) =>
-					{
-						// This is the initial Init to set up any system services registered by
-						// Forms.Init(). This happens before any UI has appeared.
-						// This creates a dummy MauiContext.
-						// We need to call this so the Window and Root Page can new up successfully
-						// The dispatcher that's inside of Forms.Init needs to be setup before the initial
-						// window and root page start creating.
-						// Inside OnLaunched we grab the MauiContext that's on the window so we can have the correct
-						// MauiContext inside Forms
-
-						var services = MauiWinUIApplication.Current.Services;
-						var mauiContext = new MauiContext(services);
-						var state = new ActivationState(mauiContext, args);
-						Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
-						// TODO: Implement GetPathBounds in Microsoft.Maui.Graphics
-						// GraphicsPlatform.RegisterGlobalService(W2DGraphicsService.Instance);
-					})
-					.OnLaunched((app, args) =>
-					{
-						// This is the final Init that ensures the Forms type is using the same
-						// MauiContext that is part of the rest of the maui application.
-
-						var windows = Application.Current?.Windows;
-						if (windows?.Count > 0)
-						{
-							var window = windows[0];
-							var mauiContext =
-								window.Handler?.MauiContext ??
-								window.Page?.Handler?.MauiContext;
-
-							if (mauiContext != null)
-							{
-								var state = new ActivationState(mauiContext, args);
-								Forms.Init(state);
-							}
-						}
-					}));
-#endif
-			});
-
+			builder.ConfigureCompatibilityLifecycleEvents();
+			builder.ConfigureImageSourceHandlers();
 			builder
 				.ConfigureMauiHandlers(handlers =>
 				{
@@ -240,8 +117,8 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.TryAddCompatibilityRenderer(typeof(ActivityIndicator), typeof(ActivityIndicatorRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(CheckBox), typeof(CheckBoxRenderer));
-#if !WINDOWS
 					handlers.TryAddCompatibilityRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer));
+#if !WINDOWS
 					handlers.TryAddCompatibilityRenderer(typeof(Shell), typeof(ShellRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer));
 #else
@@ -262,10 +139,6 @@ namespace Microsoft.Maui.Controls.Hosting
 
 					// This is for Layouts that currently don't work when assigned to LayoutHandler
 					handlers.TryAddCompatibilityRenderer(typeof(ContentView), typeof(DefaultRenderer));
-#if __IOS__
-					handlers.TryAddCompatibilityRenderer(typeof(AbsoluteLayout), typeof(DefaultRenderer));
-#endif
-
 
 					DependencyService.Register<Xaml.ResourcesLoader>();
 					DependencyService.Register<NativeBindingService>();
@@ -288,32 +161,106 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __IOS__ || MACCATALYST
 					Internals.Registrar.RegisterEffect("Xamarin", "ShadowEffect", typeof(ShadowEffect));
 #endif
-				})
-				.ConfigureServices<MauiCompatBuilder>();
+
+					// Update the mappings for IView/View to work specifically for Controls
+					VisualElement.RemapForControls();
+					Label.RemapForControls();
+					Button.RemapForControls();
+				});
+
+			builder.AddMauiCompat();
 
 			return builder;
 		}
 
-		class MauiCompatBuilder : IMauiServiceBuilder
+		private static MauiAppBuilder AddMauiCompat(this MauiAppBuilder builder)
 		{
-			public void Configure(HostBuilderContext context, IServiceProvider services)
+#if __IOS__ || MACCATALYST
+			builder.Services.TryAddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
+#elif __ANDROID__
+			builder.Services.TryAddSingleton<IGraphicsService>(NativeGraphicsService.Instance);
+#elif WINDOWS
+			builder.Services.TryAddSingleton<IGraphicsService>(W2DGraphicsService.Instance);
+#endif
+
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiCompatInitializer>());
+			return builder;
+		}
+
+		class MauiCompatInitializer : IMauiInitializeService
+		{
+			public void Initialize(IServiceProvider services)
 			{
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 				CompatServiceProvider.SetServiceProvider(services);
 #endif
-			}
 
-			public void ConfigureServices(HostBuilderContext context, IServiceCollection services)
-			{
+				if (services.GetService<IGraphicsService>() is IGraphicsService graphicsService)
+					GraphicsPlatform.RegisterGlobalService(graphicsService);
+
 #if WINDOWS
-				if (!UI.Xaml.Application.Current.Resources.ContainsKey("MauiControlsPageControlStyle"))
+				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
+				if (dictionaries != null)
 				{
-					var myResourceDictionary = new Microsoft.UI.Xaml.ResourceDictionary();
-					myResourceDictionary.Source = new Uri("ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
-					Microsoft.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(myResourceDictionary);
+					// WinUI
+					AddLibraryResources<UI.Xaml.Controls.XamlControlsResources>();
+
+					// Microsoft.Maui
+					AddLibraryResources("MicrosoftMauiCoreIncluded", "ms-appx:///Microsoft.Maui/Platform/Windows/Styles/Resources.xbf");
+
+					// Microsoft.Maui.Controls
+					AddLibraryResources("MicrosoftMauiControlsIncluded", "ms-appx:///Microsoft.Maui.Controls/Platform/Windows/Styles/Resources.xbf");
+
+					// Microsoft.Maui.Controls.Compatibility
+					AddLibraryResources("MicrosoftMauiControlsCompatibilityIncluded", "ms-appx:///Microsoft.Maui.Controls.Compatibility/Windows/Resources.xbf");
 				}
 #endif
 			}
+
+#if WINDOWS
+			static void AddLibraryResources(string key, string uri)
+			{
+				var resources = UI.Xaml.Application.Current?.Resources;
+				if (resources == null)
+					return;
+
+				var dictionaries = resources.MergedDictionaries;
+				if (dictionaries == null)
+					return;
+
+				if (!resources.ContainsKey(key))
+				{
+					dictionaries.Add(new UI.Xaml.ResourceDictionary
+					{
+						Source = new Uri(uri)
+					});
+				}
+			}
+
+			static void AddLibraryResources<T>()
+				where T : UI.Xaml.ResourceDictionary, new()
+			{
+				var dictionaries = UI.Xaml.Application.Current?.Resources?.MergedDictionaries;
+				if (dictionaries == null)
+					return;
+
+				var found = false;
+				foreach (var dic in dictionaries)
+				{
+					if (dic is T)
+					{
+						found = true;
+						break;
+					}
+				}
+
+				if (!found)
+				{
+					var dic = new T();
+					dictionaries.Add(dic);
+				}
+			}
+#endif
 		}
 	}
 }

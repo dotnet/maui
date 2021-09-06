@@ -11,6 +11,7 @@ using Android.Views;
 using AndroidX.AppCompat.App;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat;
 using AColor = Android.Graphics.Color;
@@ -203,14 +204,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Profile.FramePartition("SetSupportActionBar");
 			AToolbar bar = null;
 
-			if (ToolbarResource == 0)
+			if (_toolbarResource == 0)
 			{
 				ToolbarResource = Resource.Layout.toolbar;
 			}
 
-			if (TabLayoutResource == 0)
+			if (_tabLayoutResource == 0)
 			{
-				TabLayoutResource = Resource.Layout.tabbar;
+				_tabLayoutResource = Resource.Layout.tabbar;
 			}
 
 			if (ToolbarResource != 0)
@@ -504,9 +505,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public static event BackButtonPressedEventHandler BackPressed;
 
-		public static int TabLayoutResource { get; set; }
+		static int _tabLayoutResource;
+		public static int TabLayoutResource
+		{
+			get
+			{
+				if (_tabLayoutResource == 0)
+					return Resource.Layout.tabbar;
 
-		public static int ToolbarResource { get; set; }
+				return _tabLayoutResource;
+			}
+			set => _tabLayoutResource = value;
+		}
+
+		static int _toolbarResource;
+		public static int ToolbarResource
+		{
+			get
+			{
+				if (_toolbarResource == 0)
+					return Resource.Layout.toolbar;
+
+				return _toolbarResource;
+			}
+			set => _toolbarResource = value;
+		}
 
 		#endregion
 	}

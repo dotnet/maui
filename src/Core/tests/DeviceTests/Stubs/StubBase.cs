@@ -6,8 +6,16 @@ using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class StubBase : IFrameworkElement
+	public class StubBase : IView
 	{
+		IElementHandler IElement.Handler
+		{
+			get => Handler;
+			set => Handler = (IViewHandler)value;
+		}
+
+		IElement IElement.Parent => Parent;
+
 		public bool IsEnabled { get; set; } = true;
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;
@@ -22,13 +30,21 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IShape Clip { get; set; }
 
-		public IFrameworkElement Parent { get; set; }
+		public IView Parent { get; set; }
 
 		public Size DesiredSize { get; set; } = new Size(50, 50);
 
 		public double Width { get; set; } = 50;
 
 		public double Height { get; set; } = 50;
+
+		public double MaximumWidth { get; set; } = Primitives.Dimension.Maximum;
+
+		public double MaximumHeight { get; set; } = Primitives.Dimension.Maximum;
+
+		public double MinimumWidth { get; set; } = Primitives.Dimension.Minimum;
+
+		public double MinimumHeight { get; set; } = Primitives.Dimension.Minimum;
 
 		public double TranslationX { get; set; }
 
@@ -54,7 +70,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public string AutomationId { get; set; }
 
-		public FlowDirection FlowDirection { get; set; }
+		public FlowDirection FlowDirection { get; set; } = FlowDirection.LeftToRight;
 
 		public LayoutAlignment HorizontalLayoutAlignment { get; set; }
 

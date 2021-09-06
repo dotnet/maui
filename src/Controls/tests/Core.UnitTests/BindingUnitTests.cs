@@ -12,6 +12,8 @@ using DescriptionAttribute = NUnit.Framework.DescriptionAttribute;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[TestFixture]
 	public class BindingUnitTests
 		: BindingBaseUnitTests

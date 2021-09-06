@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EditorHandler
 	{
-		public static PropertyMapper<IEditor, EditorHandler> EditorMapper = new PropertyMapper<IEditor, EditorHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IEditor, EditorHandler> EditorMapper = new PropertyMapper<IEditor, EditorHandler>(ViewHandler.ViewMapper)
 		{
 #if __ANDROID__
 			[nameof(IEditor.Background)] = MapBackground,
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public EditorHandler(PropertyMapper? mapper = null) : base(mapper ?? EditorMapper)
+		public EditorHandler(IPropertyMapper? mapper = null) : base(mapper ?? EditorMapper)
 		{
 
 		}

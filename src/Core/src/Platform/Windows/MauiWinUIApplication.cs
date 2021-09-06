@@ -3,84 +3,56 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.UI;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui
 {
-	public class MauiWinUIApplication<TStartup> : MauiWinUIApplication
-		where TStartup : IStartup, new()
+	public abstract class MauiWinUIApplication : UI.Xaml.Application
 	{
+		protected abstract MauiApp CreateMauiApp();
+
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
 			LaunchActivatedEventArgs = args;
 
-			// TODO: This should not be here. CreateWindow should do it.
-			MainWindow = new MauiWinUIWindow();
+			var mauiApp = CreateMauiApp();
 
-			var startup = new TStartup();
-
-			var host = startup
-				.CreateAppHostBuilder()
-				.ConfigureServices(ConfigureNativeServices)
-				.ConfigureUsing(startup)
-				.Build();
-
-			Services = host.Services;
+			Services = mauiApp.Services;
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
 			Application = Services.GetRequiredService<IApplication>();
 
-			var mauiContext = new MauiContext(Services, MainWindow);
+			var winuiWndow = CreateNativeWindow(args);
+
+			MainWindow = winuiWndow;
+
+			MainWindow.Activate();
+
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
+		}
+
+		UI.Xaml.Window CreateNativeWindow(UI.Xaml.LaunchActivatedEventArgs? args = null)
+		{
+			var winuiWndow = new MauiWinUIWindow();
+
+			var mauiContext = new MauiContext(Services, winuiWndow);
+
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
 			var activationState = new ActivationState(mauiContext, args);
 			var window = Application.CreateWindow(activationState);
 
-			var content = window.View;
+			winuiWndow.SetWindow(window, mauiContext);
+			Services.InvokeLifecycleEvents<WindowsLifecycle.OnWindowCreated>(del => del(winuiWndow));
 
-			var root = CreateRootContainer();
-
-			var nativeContent = content.ToNative(mauiContext);
-
-			root.Children.Add(nativeContent);
-
-			MainWindow.Content = root;
-
-			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
-
-			MainWindow.Activate();
-		}
-
-		RootPanel CreateRootContainer()
-		{
-			// TODO WINUI should this be some other known constant or via some mechanism? Or done differently?
-			return Resources.TryGetValue("MauiRootContainerStyle", out object style)
-				? new RootPanel
-				{
-					Style = style as UI.Xaml.Style
-				}
-				: new RootPanel();
-		}
-
-		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
-		}
-	}
-
-	public abstract class MauiWinUIApplication : UI.Xaml.Application
-	{
-		protected MauiWinUIApplication()
-		{
+			return winuiWndow;
 		}
 
 		public static new MauiWinUIApplication Current => (MauiWinUIApplication)UI.Xaml.Application.Current;
 
 		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
 
-		public MauiWinUIWindow MainWindow { get; protected set; } = null!;
+		public UI.Xaml.Window MainWindow { get; protected set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

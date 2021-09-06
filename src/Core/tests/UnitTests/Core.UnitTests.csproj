@@ -37,12 +37,12 @@
 
   <ItemGroup Condition="'$(BuildForNet6)' != 'true'">
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
-    <ProjectReference Include="..\..\..\TestUtils\TestUtils\src\TestUtils.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
     <ProjectReference Include="..\..\src\Core.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(BuildForNet6)' == 'true'">
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
-    <ProjectReference Include="..\..\..\TestUtils\TestUtils\src\TestUtils.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
     <ProjectReference Include="..\..\src\Core-net6.csproj" />
   </ItemGroup>
 
