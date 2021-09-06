@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Controls
 	public partial class Element : Maui.IElement, IEffectControlProvider
 	{
 		IElementHandler _handler;
-		EventHandler _attachedHandler;
 		EffectsFactory _effectsFactory;
 
 		Maui.IElement Maui.IElement.Parent => Parent;
@@ -19,86 +18,54 @@ namespace Microsoft.Maui.Controls
 			set => SetHandler(value);
 		}
 
-		public event EventHandler AttachingHandler;
+		public event EventHandler<HandlerChangingEventArgs> HandlerChanging;
+		public event EventHandler HandlerChanged;
 
-		public event EventHandler AttachedHandler
+		protected virtual void OnHandlerChanging(HandlerChangingEventArgs args) { }
+
+		protected virtual void OnHandlerChanged() { }
+
+		private protected virtual void OnHandlerChangedCore()
 		{
-			add
-			{
-				_attachedHandler += value;
-				if (Handler != null)
-					value?.Invoke(this, EventArgs.Empty);
-			}
-			remove
-			{
-				_attachedHandler -= value;
-			}
+			EffectControlProvider = (Handler != null) ? this : null;
+			HandlerChanged?.Invoke(this, EventArgs.Empty);
+
+			OnHandlerChanged();
 		}
 
-		public event EventHandler DetachingHandler;
-
-		public event EventHandler DetachedHandler;
-
-		protected virtual void OnAttachingHandler() { }
-
-		protected virtual void OnAttachedHandler() { }
-
-		protected virtual void OnDetachingHandler() { }
-
-		protected virtual void OnDetachedHandler() { }
-
-		private protected virtual void OnAttachedHandlerCore()
+		private protected virtual void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
-			OnAttachedHandler();
-			AttachNativeEffects();
+			HandlerChanging?.Invoke(this, args);
+			OnHandlerChanging(args);
 		}
 
-		private protected virtual void OnDetachingHandlerCore() => OnDetachingHandler();
-
-		private protected virtual void OnDetachedHandlerCore()
-		{
-			OnDetachedHandler();
-			DetachNativeEffects();
-		}
-
-		private protected virtual void OnHandlerSet() { }
-
+		IElementHandler _previousHandler;
 		void SetHandler(IElementHandler newHandler)
 		{
 			if (newHandler == _handler)
 				return;
 
-			var previousHandler = _handler;
-
-			if (_handler != null)
+			try
 			{
-				DetachingHandler?.Invoke(this, EventArgs.Empty);
-				OnDetachingHandlerCore();
+				// If a handler is getting changed before the end of this method
+				// Something is wired up incorrectly
+				if (_previousHandler != null)
+					throw new InvalidOperationException("Handler is already being set elsewhere");
+
+				_previousHandler = _handler;
+
+				OnHandlerChangingCore(new HandlerChangingEventArgs(_previousHandler, newHandler));
+
+				_handler = newHandler;
+
+				if (_handler?.VirtualView != this)
+					_handler?.SetVirtualView(this);
+
+				OnHandlerChangedCore();
 			}
-
-			if (newHandler != null)
+			finally
 			{
-				AttachingHandler?.Invoke(this, EventArgs.Empty);
-				OnAttachingHandler();
-			}
-
-			_handler = newHandler;
-
-			if (_handler?.VirtualView != this)
-				_handler?.SetVirtualView(this);
-
-			OnHandlerSet();
-
-			if (_handler != null)
-			{
-				_attachedHandler?.Invoke(this, EventArgs.Empty);
-				OnAttachedHandlerCore();
-			}
-
-			if (previousHandler != null)
-			{
-				DetachedHandler?.Invoke(this, EventArgs.Empty);
-				OnDetachedHandlerCore();
+				_previousHandler = null;
 			}
 		}
 
@@ -109,7 +76,7 @@ namespace Microsoft.Maui.Controls
 				re.Element = this;
 				re.Inner.Element = this;
 				return;
-			}	
+			}
 
 			var platformEffect = EffectsFactory.CreateEffect(effect);
 
@@ -122,16 +89,6 @@ namespace Microsoft.Maui.Controls
 			{
 				effect.Element = this;
 			}
-		}
-
-		void AttachNativeEffects()
-		{
-			EffectControlProvider = this;
-		}
-
-		void DetachNativeEffects()
-		{
-			EffectControlProvider = null;
 		}
 	}
 }

@@ -46,6 +46,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else
 				tableViewCell.IsAccessibilityElement = false;
 
+			if (cell.IsSet(AutomationProperties.ExcludedWithChildrenProperty))
+				tableViewCell.AccessibilityElementsHidden = cell.GetValue(AutomationProperties.ExcludedWithChildrenProperty).Equals(true);
+			else
+				tableViewCell.AccessibilityElementsHidden = false;
+
 			if (cell.IsSet(AutomationProperties.NameProperty))
 				tableViewCell.AccessibilityLabel = cell.GetValue(AutomationProperties.NameProperty).ToString();
 			else

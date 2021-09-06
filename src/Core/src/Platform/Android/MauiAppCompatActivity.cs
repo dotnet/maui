@@ -8,6 +8,18 @@ namespace Microsoft.Maui
 {
 	public partial class MauiAppCompatActivity : AppCompatActivity
 	{
+		WeakReference<IWindow>? _virtualWindow;
+		internal IWindow? VirtualWindow
+		{
+			get
+			{
+				IWindow? window = null;
+				_virtualWindow?.TryGetTarget(out window);
+				return window;
+			}
+		}
+
+
 		// Override this if you want to handle the default Android behavior of restoring fragments on an application restart
 		protected virtual bool AllowFragmentRestore => false;
 
@@ -31,17 +43,6 @@ namespace Microsoft.Maui
 			base.OnCreate(savedInstanceState);
 
 			CreateNativeWindow(savedInstanceState);
-
-			//TODO MAUI
-			// Allow users to customize the toolbarid?
-			bool? windowActionBar;
-			if (Theme.TryResolveAttribute(Resource.Attribute.windowActionBar, out windowActionBar) &&
-				windowActionBar == false)
-			{
-				var toolbar = FindViewById<Toolbar>(Resource.Id.maui_toolbar);
-				if (toolbar != null)
-					SetSupportActionBar(toolbar);
-			}
 		}
 
 		void CreateNativeWindow(Bundle? savedInstanceState = null)
@@ -51,7 +52,7 @@ namespace Microsoft.Maui
 				throw new InvalidOperationException($"The {nameof(IApplication)} instance was not found.");
 
 			var services = MauiApplication.Current.Services;
-			if (mauiApp == null)
+			if (services == null)
 				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
 
 			var mauiContext = new MauiContext(services, this);
@@ -72,6 +73,7 @@ namespace Microsoft.Maui
 				window = mauiApp.CreateWindow(state);
 			}
 
+			_virtualWindow = new WeakReference<IWindow>(window);
 			this.SetWindow(window, mauiContext);
 		}
 	}

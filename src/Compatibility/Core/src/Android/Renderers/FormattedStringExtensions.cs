@@ -102,8 +102,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			void Apply(Paint paint)
 			{
 				paint.SetTypeface(Font.ToTypeface());
-				float value = (float)Font.FontSize;
-				paint.TextSize = TypedValue.ApplyDimension(ComplexUnitType.Sp, value, TextView.Resources.DisplayMetrics);
+				float value = (float)Font.Size;
+
+				paint.TextSize = TypedValue.ApplyDimension(
+					Font.AutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip,
+					value, TextView.Resources.DisplayMetrics);
+
 				if (Forms.IsLollipopOrNewer)
 				{
 					paint.LetterSpacing = CharacterSpacing;

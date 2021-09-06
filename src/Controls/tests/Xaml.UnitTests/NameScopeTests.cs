@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					<Label />
 				</StackLayout>";
 
-			var layout = new StackLayout().LoadFromXaml(xaml);
+			var layout = new Controls.Compatibility.StackLayout().LoadFromXaml(xaml);
 
 			Assert.IsNotNull(Maui.Controls.Internals.NameScope.GetNameScope(layout));
 			Assert.That(Maui.Controls.Internals.NameScope.GetNameScope(layout), Is.TypeOf<Maui.Controls.Internals.NameScope>());

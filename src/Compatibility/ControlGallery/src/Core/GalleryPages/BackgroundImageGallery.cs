@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				});
 			};
 
-			var master = new Button { Text = "MasterDetail" };
+			var master = new Button { Text = "FlyoutPage" };
 			master.Clicked += async (sender, args) =>
 			{
 				await Navigation.PushModalAsync(new FlyoutPage

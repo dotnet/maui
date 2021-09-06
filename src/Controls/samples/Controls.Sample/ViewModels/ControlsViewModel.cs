@@ -12,6 +12,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ActivityIndicatorPage), "ActivityIndicator",
 				"Displays an animation to show that the application is engaged in a lengthy activity."),
 
+			new SectionModel(typeof(BoxViewPage), "BoxView",
+				"BoxView renders a simple rectangle of a specified width, height, and color. You can use BoxView for decoration, rudimentary graphics, and for interaction with the user through touch."),
+
 			new SectionModel(typeof(ButtonPage), "Button",
 				"The Button responds to a tap or click that directs an application to carry out a particular task."),
 
@@ -38,6 +41,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(ProgressBarPage), "ProgressBar",
 				"The ProgressBar control visually represents progress as a horizontal bar that is filled to a percentage represented by a float value."),
+
+			new SectionModel(typeof(RefreshViewPage), "RefreshView",
+				"RefreshView is a container control that provides pull-to-refresh functionality for scrollable content."),
 
 			new SectionModel(typeof(SearchBarPage), "SearchBar",
 				"The SearchBar is a user input control used to initiating a search."),

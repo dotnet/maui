@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					if (renderer == null)
 						continue;
 
-					if (renderer.View.IsDisposed())
+					if (!renderer.View.IsAlive())
 						continue;
 
 					if (renderer.View.Parent != _parent.View)

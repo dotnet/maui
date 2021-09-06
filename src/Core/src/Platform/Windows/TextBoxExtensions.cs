@@ -63,12 +63,12 @@ namespace Microsoft.Maui
 		{
 			textBox.PlaceholderText = entry.Placeholder ?? string.Empty;
 		}
-
-		public static void UpdatePlaceholderColor(this MauiTextBox textBox, IEditor editor, Brush? placeholderDefaultBrush, Brush? defaultPlaceholderColorFocusBrush)
+	
+		public static void UpdatePlaceholderColor(this MauiTextBox textBox, IPlaceholder placeholder, Brush? defaultPlaceholderColorBrush, Brush? defaultPlaceholderColorFocusBrush)
 		{
-			Color placeholderColor = editor.PlaceholderColor;
+			Color placeholderColor = placeholder.PlaceholderColor;
 
-			BrushHelpers.UpdateColor(placeholderColor, ref placeholderDefaultBrush,
+			BrushHelpers.UpdateColor(placeholderColor, ref defaultPlaceholderColorBrush,
 				() => textBox.PlaceholderForegroundBrush, brush => textBox.PlaceholderForegroundBrush = brush);
 
 			BrushHelpers.UpdateColor(placeholderColor, ref defaultPlaceholderColorFocusBrush,
@@ -77,14 +77,6 @@ namespace Microsoft.Maui
 
 		public static void UpdateFont(this MauiTextBox nativeControl, IText text, IFontManager fontManager) =>
 			nativeControl.UpdateFont(text.Font, fontManager);
-
-		public static void UpdateFont(this MauiTextBox nativeControl, Font font, IFontManager fontManager)
-		{
-			nativeControl.FontSize = fontManager.GetFontSize(font);
-			nativeControl.FontFamily = fontManager.GetFontFamily(font);
-			nativeControl.FontStyle = font.ToFontStyle();
-			nativeControl.FontWeight = font.ToFontWeight();
-		}
 
 		public static void UpdateIsReadOnly(this MauiTextBox textBox, IEditor editor)
 		{
@@ -126,9 +118,14 @@ namespace Microsoft.Maui
 			textBox.IsPassword = entry.IsPassword;
 		}
 
-		internal static void UpdateIsTextPredictionEnabled(this MauiTextBox textBox, IEntry entry)
+		public static void UpdateIsTextPredictionEnabled(this MauiTextBox textBox, IEditor editor)
 		{
-			textBox.UpdateInputScope(entry);
+			textBox.UpdateInputScope(editor);
+		}
+
+		public static void UpdateKeyboard(this MauiTextBox textBox, IEditor editor)
+		{
+			textBox.UpdateInputScope(editor);
 		}
 
 		internal static void UpdateInputScope(this MauiTextBox textBox, ITextInput textInput)
@@ -146,7 +143,7 @@ namespace Microsoft.Maui
 			}
 
 			textBox.InputScope = textInput.Keyboard.ToInputScope();
-    }
+		}
 
 		public static void UpdateHorizontalTextAlignment(this MauiTextBox textBox, IEntry entry)
 		{

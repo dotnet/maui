@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ShapeViewHandler
 	{
-		public static PropertyMapper<IShapeView, ShapeViewHandler> ShapeViewMapper = new PropertyMapper<IShapeView, ShapeViewHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IShapeView, ShapeViewHandler> ShapeViewMapper = new PropertyMapper<IShapeView, ShapeViewHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IShapeView.Shape)] = MapShape,
 			[nameof(IShapeView.Aspect)] = MapAspect,
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public ShapeViewHandler(PropertyMapper mapper) : base(mapper ?? ShapeViewMapper)
+		public ShapeViewHandler(IPropertyMapper mapper) : base(mapper ?? ShapeViewMapper)
 		{
 
 		}

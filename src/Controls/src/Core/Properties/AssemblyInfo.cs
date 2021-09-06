@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
+using Compatibility = Microsoft.Maui.Controls.Compatibility;
 
 [assembly: InternalsVisibleTo("iOSUnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery")]
@@ -12,6 +13,7 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.Design")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Android.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.iOS")]
@@ -39,6 +41,7 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DualScreen.UnitTests")]
 [assembly: InternalsVisibleTo("WinUI.UITests")]
+
 
 [assembly: Preserve]
 
@@ -76,7 +79,8 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: StyleProperty("text-transform", typeof(ITextElement), nameof(TextElement.TextTransformProperty), Inherited = true)]
 [assembly: StyleProperty("color", typeof(ProgressBar), nameof(ProgressBar.ProgressColorProperty))]
 [assembly: StyleProperty("color", typeof(Switch), nameof(Switch.OnColorProperty))]
-[assembly: StyleProperty("column-gap", typeof(Grid), nameof(Grid.ColumnSpacingProperty))]
+[assembly: StyleProperty("column-gap", typeof(Compatibility.Grid), nameof(Compatibility.Grid.ColumnSpacingProperty))]
+[assembly: StyleProperty("column-gap", typeof(GridLayout), nameof(GridLayout.ColumnSpacingProperty))]
 [assembly: StyleProperty("direction", typeof(VisualElement), nameof(VisualElement.FlowDirectionProperty), Inherited = true)]
 [assembly: StyleProperty("font-family", typeof(IFontElement), nameof(FontElement.FontFamilyProperty), Inherited = true)]
 [assembly: StyleProperty("font-size", typeof(IFontElement), nameof(FontElement.FontSizeProperty), Inherited = true)]
@@ -96,7 +100,8 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: StyleProperty("padding-top", typeof(IPaddingElement), nameof(PaddingElement.PaddingTopProperty), PropertyOwnerType = typeof(PaddingElement))]
 [assembly: StyleProperty("padding-right", typeof(IPaddingElement), nameof(PaddingElement.PaddingRightProperty), PropertyOwnerType = typeof(PaddingElement))]
 [assembly: StyleProperty("padding-bottom", typeof(IPaddingElement), nameof(PaddingElement.PaddingBottomProperty), PropertyOwnerType = typeof(PaddingElement))]
-[assembly: StyleProperty("row-gap", typeof(Grid), nameof(Grid.RowSpacingProperty))]
+[assembly: StyleProperty("row-gap", typeof(Compatibility.Grid), nameof(Compatibility.Grid.RowSpacingProperty))]
+[assembly: StyleProperty("row-gap", typeof(GridLayout), nameof(GridLayout.RowSpacingProperty))]
 [assembly: StyleProperty("text-align", typeof(ITextAlignmentElement), nameof(TextAlignmentElement.HorizontalTextAlignmentProperty), Inherited = true)]
 [assembly: StyleProperty("text-decoration", typeof(IDecorableTextElement), nameof(DecorableTextElement.TextDecorationsProperty))]
 [assembly: StyleProperty("transform", typeof(VisualElement), nameof(VisualElement.TransformProperty))]
@@ -120,33 +125,55 @@ using Microsoft.Maui.Controls.StyleSheets;
 [assembly: StyleProperty("order", typeof(VisualElement), nameof(FlexLayout.OrderProperty), PropertyOwnerType = typeof(FlexLayout))]
 [assembly: StyleProperty("position", typeof(FlexLayout), nameof(FlexLayout.PositionProperty))]
 
+// compatibility flex
+[assembly: StyleProperty("align-content", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.AlignContentProperty))]
+[assembly: StyleProperty("align-items", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.AlignItemsProperty))]
+[assembly: StyleProperty("align-self", typeof(VisualElement), nameof(Compatibility.FlexLayout.AlignSelfProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
+[assembly: StyleProperty("flex-direction", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.DirectionProperty))]
+[assembly: StyleProperty("flex-basis", typeof(VisualElement), nameof(Compatibility.FlexLayout.BasisProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
+[assembly: StyleProperty("flex-grow", typeof(VisualElement), nameof(Compatibility.FlexLayout.GrowProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
+[assembly: StyleProperty("flex-shrink", typeof(VisualElement), nameof(Compatibility.FlexLayout.ShrinkProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
+[assembly: StyleProperty("flex-wrap", typeof(VisualElement), nameof(Compatibility.FlexLayout.WrapProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
+[assembly: StyleProperty("justify-content", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.JustifyContentProperty))]
+[assembly: StyleProperty("order", typeof(VisualElement), nameof(Compatibility.FlexLayout.OrderProperty), PropertyOwnerType = typeof(Compatibility.FlexLayout))]
+[assembly: StyleProperty("position", typeof(Compatibility.FlexLayout), nameof(Compatibility.FlexLayout.PositionProperty))]
+
 //xf specific
-[assembly: StyleProperty("-xf-placeholder", typeof(IPlaceholderElement), nameof(PlaceholderElement.PlaceholderProperty))]
-[assembly: StyleProperty("-xf-placeholder-color", typeof(IPlaceholderElement), nameof(PlaceholderElement.PlaceholderColorProperty))]
-[assembly: StyleProperty("-xf-max-length", typeof(InputView), nameof(InputView.MaxLengthProperty))]
-[assembly: StyleProperty("-xf-bar-background-color", typeof(IBarElement), nameof(BarElement.BarBackgroundColorProperty))]
-[assembly: StyleProperty("-xf-bar-text-color", typeof(IBarElement), nameof(BarElement.BarTextColorProperty))]
-[assembly: StyleProperty("-xf-orientation", typeof(ScrollView), nameof(ScrollView.OrientationProperty))]
-[assembly: StyleProperty("-xf-horizontal-scroll-bar-visibility", typeof(ScrollView), nameof(ScrollView.HorizontalScrollBarVisibilityProperty))]
-[assembly: StyleProperty("-xf-vertical-scroll-bar-visibility", typeof(ScrollView), nameof(ScrollView.VerticalScrollBarVisibilityProperty))]
-[assembly: StyleProperty("-xf-min-track-color", typeof(Slider), nameof(Slider.MinimumTrackColorProperty))]
-[assembly: StyleProperty("-xf-max-track-color", typeof(Slider), nameof(Slider.MaximumTrackColorProperty))]
-[assembly: StyleProperty("-xf-thumb-color", typeof(Slider), nameof(Slider.ThumbColorProperty))]
-[assembly: StyleProperty("-xf-spacing", typeof(StackLayout), nameof(StackLayout.SpacingProperty))]
-[assembly: StyleProperty("-xf-orientation", typeof(StackLayout), nameof(StackLayout.OrientationProperty))]
-[assembly: StyleProperty("-xf-visual", typeof(VisualElement), nameof(VisualElement.VisualProperty))]
-[assembly: StyleProperty("-xf-vertical-text-alignment", typeof(Label), nameof(TextAlignmentElement.VerticalTextAlignmentProperty))]
-[assembly: StyleProperty("-xf-thumb-color", typeof(Switch), nameof(Switch.ThumbColorProperty))]
+[assembly: StyleProperty("-maui-placeholder", typeof(IPlaceholderElement), nameof(PlaceholderElement.PlaceholderProperty))]
+[assembly: StyleProperty("-maui-placeholder-color", typeof(IPlaceholderElement), nameof(PlaceholderElement.PlaceholderColorProperty))]
+[assembly: StyleProperty("-maui-max-length", typeof(InputView), nameof(InputView.MaxLengthProperty))]
+[assembly: StyleProperty("-maui-bar-background-color", typeof(IBarElement), nameof(BarElement.BarBackgroundColorProperty))]
+[assembly: StyleProperty("-maui-bar-text-color", typeof(IBarElement), nameof(BarElement.BarTextColorProperty))]
+[assembly: StyleProperty("-maui-orientation", typeof(ScrollView), nameof(ScrollView.OrientationProperty))]
+[assembly: StyleProperty("-maui-horizontal-scroll-bar-visibility", typeof(ScrollView), nameof(ScrollView.HorizontalScrollBarVisibilityProperty))]
+[assembly: StyleProperty("-maui-vertical-scroll-bar-visibility", typeof(ScrollView), nameof(ScrollView.VerticalScrollBarVisibilityProperty))]
+[assembly: StyleProperty("-maui-min-track-color", typeof(Slider), nameof(Slider.MinimumTrackColorProperty))]
+[assembly: StyleProperty("-maui-max-track-color", typeof(Slider), nameof(Slider.MaximumTrackColorProperty))]
+[assembly: StyleProperty("-maui-thumb-color", typeof(Slider), nameof(Slider.ThumbColorProperty))]
+[assembly: StyleProperty("-maui-spacing", typeof(Compatibility.StackLayout), nameof(Compatibility.StackLayout.SpacingProperty))]
+[assembly: StyleProperty("-maui-spacing", typeof(StackLayout), nameof(StackLayout.SpacingProperty))]
+[assembly: StyleProperty("-maui-orientation", typeof(Compatibility.StackLayout), nameof(Compatibility.StackLayout.OrientationProperty))]
+[assembly: StyleProperty("-maui-orientation", typeof(StackLayout), nameof(StackLayout.OrientationProperty))]
+
+// TODO ezhart 2021-07-16 When we fix #1634, we'll need to enable this so the CSS applies 
+//[assembly: StyleProperty("-maui-spacing", typeof(StackLayout), nameof(StackLayout.SpacingProperty))]
+
+// TODO ezhart 2021-07-16 When we create the new composed StackLayout, we'll need to ensure we have this enabled 
+//[assembly: StyleProperty("-maui-orientation", typeof(StackLayout), nameof(StackLayout.OrientationProperty))]
+
+[assembly: StyleProperty("-maui-visual", typeof(VisualElement), nameof(VisualElement.VisualProperty))]
+[assembly: StyleProperty("-maui-vertical-text-alignment", typeof(Label), nameof(TextAlignmentElement.VerticalTextAlignmentProperty))]
+[assembly: StyleProperty("-maui-thumb-color", typeof(Switch), nameof(Switch.ThumbColorProperty))]
 
 //shell
-[assembly: StyleProperty("-xf-flyout-background", typeof(Shell), nameof(Shell.FlyoutBackgroundColorProperty))]
-[assembly: StyleProperty("-xf-shell-background", typeof(Element), nameof(Shell.BackgroundColorProperty), PropertyOwnerType = typeof(Shell))]
-[assembly: StyleProperty("-xf-shell-disabled", typeof(Element), nameof(Shell.DisabledColorProperty), PropertyOwnerType = typeof(Shell))]
-[assembly: StyleProperty("-xf-shell-foreground", typeof(Element), nameof(Shell.ForegroundColorProperty), PropertyOwnerType = typeof(Shell))]
-[assembly: StyleProperty("-xf-shell-tabbar-background", typeof(Element), nameof(Shell.TabBarBackgroundColorProperty), PropertyOwnerType = typeof(Shell))]
-[assembly: StyleProperty("-xf-shell-tabbar-disabled", typeof(Element), nameof(Shell.TabBarDisabledColorProperty), PropertyOwnerType = typeof(Shell))]
-[assembly: StyleProperty("-xf-shell-tabbar-foreground", typeof(Element), nameof(Shell.TabBarForegroundColorProperty), PropertyOwnerType = typeof(Shell))]
-[assembly: StyleProperty("-xf-shell-tabbar-title", typeof(Element), nameof(Shell.TabBarTitleColorProperty), PropertyOwnerType = typeof(Shell))]
-[assembly: StyleProperty("-xf-shell-tabbar-unselected", typeof(Element), nameof(Shell.TabBarUnselectedColorProperty), PropertyOwnerType = typeof(Shell))]
-[assembly: StyleProperty("-xf-shell-title", typeof(Element), nameof(Shell.TitleColorProperty), PropertyOwnerType = typeof(Shell))]
-[assembly: StyleProperty("-xf-shell-unselected", typeof(Element), nameof(Shell.UnselectedColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-maui-flyout-background", typeof(Shell), nameof(Shell.FlyoutBackgroundColorProperty))]
+[assembly: StyleProperty("-maui-shell-background", typeof(Element), nameof(Shell.BackgroundColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-maui-shell-disabled", typeof(Element), nameof(Shell.DisabledColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-maui-shell-foreground", typeof(Element), nameof(Shell.ForegroundColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-maui-shell-tabbar-background", typeof(Element), nameof(Shell.TabBarBackgroundColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-maui-shell-tabbar-disabled", typeof(Element), nameof(Shell.TabBarDisabledColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-maui-shell-tabbar-foreground", typeof(Element), nameof(Shell.TabBarForegroundColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-maui-shell-tabbar-title", typeof(Element), nameof(Shell.TabBarTitleColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-maui-shell-tabbar-unselected", typeof(Element), nameof(Shell.TabBarUnselectedColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-maui-shell-title", typeof(Element), nameof(Shell.TitleColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-maui-shell-unselected", typeof(Element), nameof(Shell.UnselectedColorProperty), PropertyOwnerType = typeof(Shell))]
