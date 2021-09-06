@@ -20,6 +20,7 @@ namespace Microsoft.Maui
 		ScrollOrientation _scrollOrientation = ScrollOrientation.Vertical;
 		ScrollBarVisibility _defaultHorizontalScrollVisibility = 0;
 		ScrollBarVisibility _defaultVerticalScrollVisibility = 0;
+		ScrollBarVisibility _horizontalScrollVisibility = 0;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -44,6 +45,7 @@ namespace Microsoft.Maui
 
 		public void SetHorizontalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)
 		{
+			_horizontalScrollVisibility = scrollBarVisibility;
 			if (_hScrollView == null)
 			{
 				return;
@@ -75,13 +77,13 @@ namespace Microsoft.Maui
 			this.HandleScrollBarVisibilityChange();
 		}
 
-		public void SetContent(View content) 
+		public void SetContent(View content)
 		{
 			_content = content;
 			SetOrientation(_scrollOrientation);
 		}
 
-		public void SetOrientation(ScrollOrientation orientation) 
+		public void SetOrientation(ScrollOrientation orientation)
 		{
 			_scrollOrientation = orientation;
 
@@ -92,6 +94,7 @@ namespace Microsoft.Maui
 					_hScrollView = new MauiHorizontalScrollView(Context, this);
 					_hScrollView.HorizontalFadingEdgeEnabled = HorizontalFadingEdgeEnabled;
 					_hScrollView.SetFadingEdgeLength(HorizontalFadingEdgeLength);
+					SetHorizontalScrollBarVisibility(_horizontalScrollVisibility);
 				}
 
 				_hScrollView.IsBidirectional = _isBidirectional = orientation == ScrollOrientation.Both;
@@ -187,11 +190,11 @@ namespace Microsoft.Maui
 
 			if (_hScrollView != null && _hScrollView.Parent == this)
 			{
-				_hScrollView.Layout(left, top, right, bottom);
+				_hScrollView.Layout(0, 0, right - left, bottom - top);
 			}
 		}
 
-		public void ScrollTo(int x, int y, bool instant, Action finished) 
+		public void ScrollTo(int x, int y, bool instant, Action finished)
 		{
 			if (instant)
 			{
@@ -203,7 +206,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		void JumpTo(int x, int y, Action finished) 
+		void JumpTo(int x, int y, Action finished)
 		{
 			switch (_scrollOrientation)
 			{
@@ -229,7 +232,7 @@ namespace Microsoft.Maui
 			return (int)(start + (position - start) * v);
 		}
 
-		void SmoothScrollTo(int x, int y, Action finished) 
+		void SmoothScrollTo(int x, int y, Action finished)
 		{
 			int currentX = _scrollOrientation == ScrollOrientation.Horizontal || _scrollOrientation == ScrollOrientation.Both ? _hScrollView!.ScrollX : ScrollX;
 			int currentY = _scrollOrientation == ScrollOrientation.Vertical || _scrollOrientation == ScrollOrientation.Both ? ScrollY : _hScrollView!.ScrollY;
@@ -327,7 +330,7 @@ namespace Microsoft.Maui
 			// If the touch is caught by the horizontal scrollview, forward it to the parent 
 			_parentScrollView.ShouldSkipOnTouch = true;
 			_parentScrollView.OnTouchEvent(ev);
-			
+
 			// The nested ScrollViews will allow us to scroll EITHER vertically OR horizontally in a single gesture.
 			// This will allow us to also scroll diagonally.
 			// We'll fall through to the base event so we still get the fling from the ScrollViews.

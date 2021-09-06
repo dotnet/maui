@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Layouts
@@ -12,54 +11,58 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
-			var measure = Measure(widthConstraint, Stack.Spacing, Stack.Children);
+			var padding = Stack.Padding;
 
-			var finalHeight = ResolveConstraints(heightConstraint, Stack.Height, measure.Height);
+			double measuredHeight = 0;
+			double measuredWidth = 0;
 
-			return new Size(measure.Width, finalHeight);
-		}
-
-		public override void ArrangeChildren(Rectangle bounds) => Arrange(bounds.Width, Stack.Spacing, Stack.Children);
-
-		static Size Measure(double widthConstraint, double spacing, IReadOnlyList<IView> views)
-		{
-			double totalRequestedHeight = 0;
-			double requestedWidth = 0;
-
-			foreach (var child in views)
+			for (int n = 0; n < Stack.Count; n++)
 			{
+				var child = Stack[n];
+
 				if (child.Visibility == Visibility.Collapsed)
 				{
 					continue;
 				}
 
 				var measure = child.Measure(widthConstraint, double.PositiveInfinity);
-				totalRequestedHeight += measure.Height;
-				requestedWidth = Math.Max(requestedWidth, measure.Width);
+				measuredHeight += measure.Height;
+				measuredWidth = Math.Max(measuredWidth, measure.Width);
 			}
 
-			var accountForSpacing = MeasureSpacing(spacing, views.Count);
-			totalRequestedHeight += accountForSpacing;
+			measuredHeight += MeasureSpacing(Stack.Spacing, Stack.Count);
+			measuredHeight += padding.VerticalThickness;
+			measuredWidth += padding.HorizontalThickness;
 
-			return new Size(requestedWidth, totalRequestedHeight);
+			var finalHeight = ResolveConstraints(heightConstraint, Stack.Height, measuredHeight, Stack.MinimumHeight, Stack.MaximumHeight);
+			var finalWidth = ResolveConstraints(widthConstraint, Stack.Width, measuredWidth, Stack.MinimumWidth, Stack.MaximumWidth);
+
+			return new Size(finalWidth, finalHeight);
 		}
 
-		static void Arrange(double width, double spacing, IEnumerable<IView> views)
+		public override Size ArrangeChildren(Rectangle bounds)
 		{
-			double stackHeight = 0;
+			var padding = Stack.Padding;
 
-			foreach (var child in views)
+			double stackHeight = padding.Top + bounds.Y;
+			double left = padding.Left + bounds.X;
+			double width = bounds.Width - padding.HorizontalThickness;
+
+			for (int n = 0; n < Stack.Count; n++)
 			{
+				var child = Stack[n];
+
 				if (child.Visibility == Visibility.Collapsed)
 				{
 					continue;
 				}
 
-				var destination = new Rectangle(0, stackHeight, width, child.DesiredSize.Height);
-				child.Frame = child.ComputeFrame(destination);
-				child.Arrange(child.Frame);
-				stackHeight += destination.Height + spacing;
+				var destination = new Rectangle(left, stackHeight, width, child.DesiredSize.Height);
+				child.Arrange(destination);
+				stackHeight += destination.Height + Stack.Spacing;
 			}
+
+			return new Size(width, stackHeight);
 		}
 	}
 }

@@ -56,10 +56,10 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		}
 
 		[Test]
-		public void AppearingMasterDetailPage()
+		public void AppearingFlyoutPage()
 		{
-			App.Tap(t => t.Marked("MasterAppearingPage"));
-			App.WaitForElement("Appearing MasterAppearingPage");
+			App.Tap(t => t.Marked("FlyoutPageAppearingPage"));
+			App.WaitForElement("Appearing FlyoutPageAppearingPage");
 			App.WaitForElement("Appearing Page 1");
 		}
 	}

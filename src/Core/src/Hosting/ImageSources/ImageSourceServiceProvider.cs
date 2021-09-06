@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Hosting
 		readonly ConcurrentDictionary<Type, Type> _imageSourceCache = new ConcurrentDictionary<Type, Type>();
 		readonly ConcurrentDictionary<Type, Type> _serviceCache = new ConcurrentDictionary<Type, Type>();
 
-		public ImageSourceServiceProvider(IMauiServiceCollection collection, IServiceProvider hostServiceProvider)
+		public ImageSourceServiceProvider(IImageSourceServiceCollection collection, IServiceProvider hostServiceProvider)
 			: base(collection, false)
 		{
 			HostServiceProvider = hostServiceProvider;
@@ -26,7 +26,15 @@ namespace Microsoft.Maui.Hosting
 			(IImageSourceService?)GetService(GetImageSourceServiceType(imageSource));
 
 		public Type GetImageSourceServiceType(Type imageSource) =>
-			_serviceCache.GetOrAdd(imageSource, type => ImageSourceServiceType.MakeGenericType(GetImageSourceType(type)));
+			_serviceCache.GetOrAdd(imageSource, type =>
+			{
+				var genericConcreteType = ImageSourceServiceType.MakeGenericType(type);
+
+				if (genericConcreteType != null && GetServiceDescriptor(genericConcreteType) != null)
+					return genericConcreteType;
+
+				return ImageSourceServiceType.MakeGenericType(GetImageSourceType(type));
+			});
 
 		public Type GetImageSourceType(Type imageSource) =>
 			_imageSourceCache.GetOrAdd(imageSource, CreateImageSourceTypeCacheEntry);

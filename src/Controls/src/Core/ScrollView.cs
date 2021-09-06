@@ -3,11 +3,12 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public partial class ScrollView : Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
+	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
 	{
 		#region IScrollViewController
 
@@ -251,9 +252,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (Content == null)
 				return new SizeRequest();
@@ -278,9 +277,9 @@ namespace Microsoft.Maui.Controls
 
 			SizeRequest contentRequest;
 
-			if (Content is IFrameworkElement fe && fe.Handler != null)
+			if (Content is IView fe && fe.Handler != null)
 			{
-				contentRequest = fe.Handler.GetDesiredSize(widthConstraint, heightConstraint);
+				contentRequest = fe.Measure(widthConstraint, heightConstraint);
 			}
 			else
 			{
@@ -364,21 +363,19 @@ namespace Microsoft.Maui.Controls
 			CheckTaskCompletionSource();
 			ScrollToRequested?.Invoke(this, e);
 
-			Handler?.Invoke(nameof(IScrollView.RequestScrollTo), e.ToRequest());
+			Handler?.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
 		}
 
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		ScrollToRequestedEventArgs ConvertRequestMode(ScrollToRequestedEventArgs args)
 		{
-			// We call OnSizeRequest so that the content gets measured appropriately
-			// and then use the standard GetDesiredSize from the handler so the ScrollView's
-			// backing control gets measured. 
+			if (args.Mode == ScrollToMode.Element && args.Element is VisualElement visualElement)
+			{
+				var point = GetScrollPositionForElement(visualElement, args.Position);
+				var result = new ScrollToRequestedEventArgs(point.X, point.Y, args.ShouldAnimate);
+				return result;
+			}
 
-			// TODO ezhart 2021-07-14 Verify that we've got the naming correct on this after we resolve the OnSizeRequest obsolete stuff
-#pragma warning disable CS0618 // Type or member is obsolete
-			_ = OnSizeRequest(widthConstraint, heightConstraint);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-			return Handler.GetDesiredSize(widthConstraint, heightConstraint);
+			return args;
 		}
 	}
 }

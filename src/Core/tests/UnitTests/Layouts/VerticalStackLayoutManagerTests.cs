@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using NSubstitute;
 using Xunit;
+using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
 
 namespace Microsoft.Maui.UnitTests.Layouts
 {
@@ -40,7 +42,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
 			var expectedRectangle = new Rectangle(0, 0, 100, 100);
-			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle));
+			stack[0].Received().Arrange(Arg.Is(expectedRectangle));
 		}
 
 		[Theory("Spacing has an effect when there's more than one item")]
@@ -55,26 +57,20 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
 			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
 
-			var expectedRectangle0 = new Rectangle(0, 0, 100, 100);
-			stack.Children[0].Received().Arrange(Arg.Is(expectedRectangle0));
-
-			var expectedRectangle1 = new Rectangle(0, 100 + spacing, 100, 100);
-			stack.Children[1].Received().Arrange(Arg.Is(expectedRectangle1));
+			AssertArranged(stack[0], 0, 0, 100, 100);
+			AssertArranged(stack[1], 0, 100 + spacing, 100, 100);
 		}
 
 		[Theory]
 		[InlineData(150, 100, 100)]
 		[InlineData(150, 200, 200)]
-		[InlineData(1250, -1, 1250)]
+		[InlineData(1250, Dimension.Unset, 1250)]
 		public void StackAppliesHeight(double viewHeight, double stackHeight, double expectedHeight)
 		{
-			var stack = CreateTestLayout();
-
 			var view = LayoutTestHelpers.CreateTestView(new Size(100, viewHeight));
 
-			var children = new List<IView>() { view }.AsReadOnly();
+			var stack = CreateTestLayout(new List<IView>() { view });
 
-			stack.Children.Returns(children);
 			stack.Height.Returns(stackHeight);
 
 			var manager = new VerticalStackLayoutManager(stack);
@@ -83,16 +79,13 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void IgnoresCollapsedViews() 
+		public void IgnoresCollapsedViews()
 		{
-			var stack = CreateTestLayout();
-
 			var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
 			var collapsedView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
 			collapsedView.Visibility.Returns(Visibility.Collapsed);
 
-			var children = new List<IView>() { view, collapsedView }.AsReadOnly();
-			stack.Children.Returns(children);
+			var stack = CreateTestLayout(new List<IView>() { view, collapsedView });
 
 			var manager = new VerticalStackLayoutManager(stack);
 			var measure = manager.Measure(100, double.PositiveInfinity);
@@ -110,14 +103,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Fact]
 		public void DoesNotIgnoreHiddenViews()
 		{
-			var stack = CreateTestLayout();
-
 			var view = LayoutTestHelpers.CreateTestView(new Size(100, 100));
 			var hiddenView = LayoutTestHelpers.CreateTestView(new Size(100, 100));
 			hiddenView.Visibility.Returns(Visibility.Hidden);
 
-			var children = new List<IView>() { view, hiddenView }.AsReadOnly();
-			stack.Children.Returns(children);
+			var stack = CreateTestLayout(new List<IView>() { view, hiddenView });
 
 			var manager = new VerticalStackLayoutManager(stack);
 			var measure = manager.Measure(100, double.PositiveInfinity);
@@ -130,6 +120,197 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// View is hidden, so we expect it to be measured and arranged (since it'll need to take up space)
 			hiddenView.Received().Measure(Arg.Any<double>(), Arg.Any<double>());
 			hiddenView.Received().Arrange(Arg.Any<Rectangle>());
+		}
+
+		IStackLayout BuildPaddedStack(Thickness padding, double viewWidth, double viewHeight)
+		{
+			var stack = BuildStack(1, viewWidth, viewHeight);
+			stack.Padding.Returns(padding);
+			return stack;
+		}
+
+		[Theory]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(10, 0, 10, 0)]
+		[InlineData(0, 10, 0, 10)]
+		[InlineData(23, 5, 3, 15)]
+		public void MeasureAccountsForPadding(double left, double top, double right, double bottom)
+		{
+			var viewWidth = 100d;
+			var viewHeight = 100d;
+			var padding = new Thickness(left, top, right, bottom);
+
+			var expectedHeight = padding.VerticalThickness + viewHeight;
+			var expectedWidth = padding.HorizontalThickness + viewWidth;
+
+			var stack = BuildPaddedStack(padding, viewWidth, viewHeight);
+
+			var manager = new VerticalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedHeight, measuredSize.Height);
+			Assert.Equal(expectedWidth, measuredSize.Width);
+		}
+
+		[Theory]
+		[InlineData(0, 0, 0, 0)]
+		[InlineData(10, 10, 10, 10)]
+		[InlineData(10, 0, 10, 0)]
+		[InlineData(0, 10, 0, 10)]
+		[InlineData(23, 5, 3, 15)]
+		public void ArrangeAccountsForPadding(double left, double top, double right, double bottom)
+		{
+			var viewWidth = 100d;
+			var viewHeight = 100d;
+			var padding = new Thickness(left, top, right, bottom);
+
+			var stack = BuildPaddedStack(padding, viewWidth, viewHeight);
+
+			var manager = new VerticalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			manager.ArrangeChildren(new Rectangle(Point.Zero, measuredSize));
+
+			AssertArranged(stack[0], padding.Left, padding.Top, viewWidth, viewHeight);
+		}
+
+		[Fact]
+		public void ArrangeRespectsBounds()
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+
+			var manager = new VerticalStackLayoutManager(stack);
+			var measuredSize = manager.Measure(double.PositiveInfinity, 100);
+			manager.ArrangeChildren(new Rectangle(new Point(10, 15), measuredSize));
+
+			var expectedRectangle0 = new Rectangle(10, 15, 100, 100);
+
+			stack[0].Received().Arrange(Arg.Is(expectedRectangle0));
+		}
+
+		[Theory]
+		[InlineData(50, 100, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(100, 50, 50)]
+		[InlineData(0, 50, 0)]
+		public void MeasureRespectsMaxHeight(double maxHeight, double viewHeight, double expectedHeight)
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: viewHeight);
+			stack.MaximumHeight.Returns(maxHeight);
+
+			var layoutManager = new VerticalStackLayoutManager(stack);
+			var measure = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedHeight, measure.Height);
+		}
+
+		[Theory]
+		[InlineData(50, 100, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(100, 50, 50)]
+		[InlineData(0, 50, 0)]
+		public void MeasureRespectsMaxWidth(double maxWidth, double viewWidth, double expectedWidth)
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: viewWidth, viewHeight: 100);
+
+			stack.MaximumWidth.Returns(maxWidth);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedWidth, measure.Width);
+		}
+
+		[Theory]
+		[InlineData(50, 10, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(10, 50, 50)]
+		public void MeasureRespectsMinHeight(double minHeight, double viewHeight, double expectedHeight)
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: viewHeight);
+
+			stack.MinimumHeight.Returns(minHeight);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedHeight, measure.Height);
+		}
+
+		[Theory]
+		[InlineData(50, 10, 50)]
+		[InlineData(100, 100, 100)]
+		[InlineData(10, 50, 50)]
+		public void MeasureRespectsMinWidth(double minWidth, double viewWidth, double expectedWidth)
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: viewWidth, viewHeight: 100);
+
+			stack.MinimumWidth.Returns(minWidth);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			Assert.Equal(expectedWidth, measure.Width);
+		}
+
+		[Fact]
+		public void MaxWidthDominatesWidth()
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+
+			stack.Width.Returns(75);
+			stack.MaximumWidth.Returns(50);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// The maximum value beats out the explicit value
+			Assert.Equal(50, measure.Width);
+		}
+
+		[Fact]
+		public void MinWidthDominatesMaxWidth()
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+
+			stack.MinimumWidth.Returns(75);
+			stack.MaximumWidth.Returns(50);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// The minimum value should beat out the maximum value
+			Assert.Equal(75, measure.Width);
+		}
+
+		[Fact]
+		public void MaxHeightDominatesHeight()
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+
+			stack.Height.Returns(75);
+			stack.MaximumHeight.Returns(50);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// The maximum value beats out the explicit value
+			Assert.Equal(50, measure.Height);
+		}
+
+		[Fact]
+		public void MinHeightDominatesMaxHeight()
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+
+			stack.MinimumHeight.Returns(75);
+			stack.MaximumHeight.Returns(50);
+
+			var gridLayoutManager = new VerticalStackLayoutManager(stack);
+			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// The minimum value should beat out the maximum value
+			Assert.Equal(75, measure.Height);
 		}
 	}
 }

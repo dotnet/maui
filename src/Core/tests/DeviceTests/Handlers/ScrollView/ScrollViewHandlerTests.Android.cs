@@ -15,7 +15,8 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ContentInitializesCorrectly()
 		{
-			bool result = await InvokeOnMainThreadAsync(() => {
+			bool result = await InvokeOnMainThreadAsync(() =>
+			{
 
 				var entry = new EntryStub() { Text = "In a ScrollView" };
 				var entryHandler = Activator.CreateInstance<EntryHandler>();
@@ -43,6 +44,26 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.True(result, $"Expected (but did not find) a {nameof(AppCompatEditText)} child of the {nameof(NestedScrollView)}.");
+		}
+
+		[Fact]
+		public async Task HorizontalVisibilityInitializesCorrectly()
+		{
+			bool result = await InvokeOnMainThreadAsync(() =>
+			{
+				var scrollView = new ScrollViewStub()
+				{
+					Orientation = ScrollOrientation.Horizontal,
+					HorizontalScrollBarVisibility = ScrollBarVisibility.Never
+				};
+
+				var scrollViewHandler = CreateHandler(scrollView);
+
+
+				return ((MauiHorizontalScrollView)scrollViewHandler.NativeView.GetChildAt(0)).HorizontalScrollBarEnabled;
+			});
+
+			Assert.False(result, $"Expected HorizontalScrollBarEnabled to be false.");
 		}
 	}
 }

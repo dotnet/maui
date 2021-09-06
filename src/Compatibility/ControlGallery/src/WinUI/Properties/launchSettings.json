@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "Compatibility.ControlGallery.WinUI": {
+      "commandName": "MsixPackage"
+    }
+  }
+}

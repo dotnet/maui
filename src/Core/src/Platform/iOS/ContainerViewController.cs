@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 
 			_view = view;
 
-			if (view is IPage page)
+			if (view is ITitledElement page)
 				Title = page.Title;
 
 			if (_view is IHotReloadableView ihr)

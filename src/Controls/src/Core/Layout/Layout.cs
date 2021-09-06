@@ -1,17 +1,19 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Maui.Graphics;
+using System.Linq;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Layouts;
 
-// This is a temporary namespace until we rename everything and move the legacy layouts
-namespace Microsoft.Maui.Controls.Layout2
+namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout : View, Maui.ILayout, IList<IView>
+	public abstract class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView
 	{
-		ILayoutManager _layoutManager;
-		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
+		ReadOnlyCastingList<Element, IView> _logicalChildren;
+
+		protected ILayoutManager _layoutManager;
+
+		public ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
 
 		// The actual backing store for the IViews in the ILayout
 		readonly List<IView> _children = new();
@@ -19,15 +21,54 @@ namespace Microsoft.Maui.Controls.Layout2
 		// This provides a Children property for XAML 
 		public IList<IView> Children => this;
 
-		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
+		IList IBindableLayout.Children => _children;
+
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
+			_logicalChildren ??= new ReadOnlyCastingList<Element, IView>(_children);
 
 		public int Count => _children.Count;
 
 		public bool IsReadOnly => ((ICollection<IView>)_children).IsReadOnly;
 
-		IReadOnlyList<IView> IContainer.Children => _children.AsReadOnly();
+		public IView this[int index]
+		{
+			get => _children[index];
+			set
+			{
+				var old = _children[index];
 
-		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
+				if (old == value)
+				{
+					return;
+				}
+
+				if (old is Element oldElement)
+				{
+					oldElement.Parent = null;
+					VisualDiagnostics.OnChildRemoved(this, oldElement, index);
+				}
+
+				_children[index] = value;
+
+				if (value is Element newElement)
+				{
+					newElement.Parent = this;
+					VisualDiagnostics.OnChildAdded(this, newElement);
+				}
+
+				OnUpdate(index, value, old);
+			}
+		}
+
+		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
+
+		public Thickness Padding
+		{
+			get => (Thickness)GetValue(PaddingElement.PaddingProperty);
+			set => SetValue(PaddingElement.PaddingProperty, value);
+		}
+
+		public bool IgnoreSafeArea { get; set; }
 
 		protected abstract ILayoutManager CreateLayoutManager();
 
@@ -35,76 +76,51 @@ namespace Microsoft.Maui.Controls.Layout2
 
 		IEnumerator IEnumerable.GetEnumerator() => _children.GetEnumerator();
 
-#pragma warning disable CS0672 // Member overrides obsolete member
-		public override SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
-#pragma warning restore CS0672 // Member overrides obsolete member
+		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
-			var size = (this as IFrameworkElement).Measure(widthConstraint, heightConstraint);
+			var size = (this as IView).Measure(widthConstraint, heightConstraint);
 			return new SizeRequest(size);
-		}
-
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-		{
-			var margin = (this as IView)?.Margin ?? Thickness.Zero;
-
-			// Adjust the constraints to account for the margins
-			widthConstraint -= margin.HorizontalThickness;
-			heightConstraint -= margin.VerticalThickness;
-
-			var sizeWithoutMargins = LayoutManager.Measure(widthConstraint, heightConstraint);
-			DesiredSize = new Size(sizeWithoutMargins.Width + Margin.HorizontalThickness,
-				sizeWithoutMargins.Height + Margin.VerticalThickness);
-
-			return DesiredSize;
-		}
-
-		protected override Size ArrangeOverride(Rectangle bounds)
-		{
-			base.ArrangeOverride(bounds);
-
-			Frame = bounds;
-
-			LayoutManager.ArrangeChildren(Frame);
-
-			foreach (var child in Children)
-			{
-				child.Handler?.NativeArrange(child.Frame);
-			}
-
-			return Frame.Size;
 		}
 
 		protected override void InvalidateMeasureOverride()
 		{
 			base.InvalidateMeasureOverride();
-
 			foreach (var child in Children)
 			{
 				child.InvalidateMeasure();
 			}
 		}
 
-		public virtual void Add(IView child)
+		public void Add(IView child)
 		{
 			if (child == null)
 				return;
 
+			var index = _children.Count;
 			_children.Add(child);
 
 			if (child is Element element)
+			{
 				element.Parent = this;
+				VisualDiagnostics.OnChildAdded(this, element, index);
+			}
 
-			InvalidateMeasure();
-
-			LayoutHandler?.Add(child);
+			OnAdd(index, child);
 		}
 
 		public void Clear()
 		{
-			for (int n = _children.Count - 1; n >= 0; n--)
+			for (var index = Count - 1; index >= 0; index--)
 			{
-				Remove(this[n]);
+				if (this[index] is Element element)
+				{
+					element.Parent = null;
+					VisualDiagnostics.OnChildRemoved(this, element, index);
+				}
 			}
+
+			_children.Clear();
+			OnClear();
 		}
 
 		public bool Contains(IView item)
@@ -130,26 +146,29 @@ namespace Microsoft.Maui.Controls.Layout2
 			_children.Insert(index, child);
 
 			if (child is Element element)
+			{
 				element.Parent = this;
+				VisualDiagnostics.OnChildAdded(this, element);
+			}
 
-			InvalidateMeasure();
-
-			LayoutHandler?.Add(child);
+			OnInsert(index, child);
 		}
 
-		public virtual void Remove(IView child)
+		public bool Remove(IView child)
 		{
 			if (child == null)
-				return;
+				return false;
 
-			_children.Remove(child);
+			var index = _children.IndexOf(child);
 
-			if (child is Element element)
-				element.Parent = null;
+			if (index == -1)
+			{
+				return false;
+			}
 
-			InvalidateMeasure();
+			RemoveAt(index);
 
-			LayoutHandler?.Remove(child);
+			return true;
 		}
 
 		public void RemoveAt(int index)
@@ -164,28 +183,53 @@ namespace Microsoft.Maui.Controls.Layout2
 			_children.RemoveAt(index);
 
 			if (child is Element element)
+			{
 				element.Parent = null;
+				VisualDiagnostics.OnChildRemoved(this, element, index);
+			}
 
-			InvalidateMeasure();
-
-			LayoutHandler?.Remove(child);
+			OnRemove(index, child);
 		}
 
-		bool ICollection<IView>.Remove(IView child)
+		protected virtual void OnAdd(int index, IView view)
 		{
-			if (child == null)
-				return false;
-
-			var result = _children.Remove(child);
-
-			if (child is Element element)
-				element.Parent = null;
-
-			InvalidateMeasure();
-
-			LayoutHandler?.Remove(child);
-
-			return result;
+			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
+			Handler?.Invoke(nameof(ILayoutHandler.Add), args);
 		}
+
+		protected virtual void OnClear()
+		{
+			Handler?.Invoke(nameof(ILayoutHandler.Clear));
+		}
+
+		protected virtual void OnRemove(int index, IView view)
+		{
+			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
+			Handler?.Invoke(nameof(ILayoutHandler.Remove), args);
+		}
+
+		protected virtual void OnInsert(int index, IView view)
+		{
+			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
+			Handler?.Invoke(nameof(ILayoutHandler.Insert), args);
+		}
+
+		protected virtual void OnUpdate(int index, IView view, IView oldView)
+		{
+			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
+			Handler?.Invoke(nameof(ILayoutHandler.Update), args);
+		}
+
+		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
+		{
+			(this as IView).InvalidateMeasure();
+		}
+
+		Thickness IPaddingElement.PaddingDefaultValueCreator()
+		{
+			return new Thickness(0);
+		}
+
+		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.Cast<IVisualTreeElement>().ToList().AsReadOnly();
 	}
 }

@@ -29,8 +29,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				{
 					if (view.Handler == null && newvalue is IVisualElementRenderer ver)
 						view.Handler = new RendererToHandlerShim(ver);
-					else if (newvalue == null && view.Handler != null)
-						view.Handler = null;
 				}
 			});
 
@@ -109,15 +107,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return renderer;
 		}
 
-		internal static Platform Current
-		{
-			get
-			{
-				var frame = UI.Xaml.Window.Current?.Content as Microsoft.UI.Xaml.Controls.Frame;
-				var wbp = frame?.Content as WindowsBasePage;
-				return wbp?.Platform;
-			}
-		}
+		//internal static Platform Current
+		//{
+		//	get
+		//	{
+		//		var frame = UI.Xaml.Window.Current?.Content as Microsoft.UI.Xaml.Controls.Frame;
+		//		var wbp = frame?.Content as WindowsBasePage;
+		//		return wbp?.Platform;
+		//	}
+		//}
 
 		internal Platform(Microsoft.UI.Xaml.Window page)
 		{

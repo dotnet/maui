@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;net6.0;$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility</AssemblyName>
     <Nullable>disable</Nullable>
@@ -17,9 +17,9 @@
   </PropertyGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PackageReference Include="Microsoft.ProjectReunion" />
-    <PackageReference Include="Microsoft.ProjectReunion.Foundation" />
-    <PackageReference Include="Microsoft.ProjectReunion.WinUI" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
 
@@ -45,22 +45,11 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\bottomtablayout.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\flyoutcontent.axml" />
     <AndroidResource Include="$(AndroidRoot)Resources\Layout\rootlayout.axml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\Layout\shellcontent.axml" />
     <AndroidResource Include="$(AndroidRoot)Resources\Layout\tabbar.axml" />
     <AndroidResource Include="$(AndroidRoot)Resources\Layout\toolbar.axml" />
 
-
-    <AndroidResource Include="$(AndroidRoot)Resources\anim\enterfromleft.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\anim\enterfromright.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoleft.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\anim\exittoright.xml" />
-
-
     <AndroidResource Include="$(AndroidRoot)Resources\values\styles.xml" />
-    <AndroidResource Include="$(AndroidRoot)Resources\values\strings.xml" />
     <AndroidResource Include="$(AndroidRoot)Resources\values\attrs.xml" />
     <ProjectReference Include="..\..\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup-net6.csproj" />
   </ItemGroup>

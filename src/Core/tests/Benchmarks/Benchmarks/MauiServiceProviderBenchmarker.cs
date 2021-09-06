@@ -2,14 +2,13 @@ using System;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Handlers.Benchmarks
 {
 	[MemoryDiagnoser]
 	public class MauiServiceProviderBenchmarker
 	{
-		IAppHost _host;
+		IServiceProvider _serviceProvider;
 
 		[Params(100_000)]
 		public int N { get; set; }
@@ -17,88 +16,84 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		[IterationSetup(Target = nameof(DefaultBuilder))]
 		public void SetupForDefaultBuilder()
 		{
-			_host = AppHost
-				.CreateDefaultBuilder()
-				.ConfigureServices((ctx, svc) => svc.AddTransient<IFooService, FooService>())
-				.Build();
+			var builder = MauiApp.CreateBuilder();
+
+			builder.Services.AddTransient<IFooService, FooService>();
+
+			var mauiApp = builder.Build();
+			_serviceProvider = mauiApp.Services;
 		}
 
 		[IterationSetup(Target = nameof(DefaultBuilderWithConstructorInjection))]
 		public void SetupForDefaultBuilderWithConstructorInjection()
 		{
-			_host = AppHost
-				.CreateDefaultBuilder()
-				.UseMauiServiceProviderFactory(true)
-				.ConfigureServices((ctx, svc) => svc.AddTransient<IFooService, FooService>())
-				.Build();
+			var builder = MauiApp.CreateBuilder();
+
+			builder.Services.AddTransient<IFooService, FooService>();
+
+			var mauiApp = builder.Build();
+			_serviceProvider = mauiApp.Services;
 		}
 
 		[IterationSetup(Target = nameof(OneConstructorParameter))]
 		public void SetupForOneConstructorParameter()
 		{
-			_host = AppHost
-				.CreateDefaultBuilder()
-				.UseMauiServiceProviderFactory(true)
-				.ConfigureServices((ctx, svc) =>
-				{
-					svc.AddTransient<IFooService, FooService>();
-					svc.AddTransient<IFooBarService, FooBarWithFooService>();
-				})
-				.Build();
+			var builder = MauiApp.CreateBuilder();
+
+			builder.Services.AddTransient<IFooService, FooService>();
+			builder.Services.AddTransient<IFooBarService, FooBarWithFooService>();
+
+			var mauiApp = builder.Build();
+			_serviceProvider = mauiApp.Services;
 		}
 
 		[IterationSetup(Target = nameof(TwoConstructorParameters))]
 		public void SetupForTwoConstructorParameters()
 		{
-			_host = AppHost
-				.CreateDefaultBuilder()
-				.UseMauiServiceProviderFactory(true)
-				.ConfigureServices((ctx, svc) =>
-				{
-					svc.AddTransient<IFooService, FooService>();
-					svc.AddTransient<IBarService, BarService>();
-					svc.AddTransient<IFooBarService, FooBarWithFooAndBarService>();
-				})
-				.Build();
+			var builder = MauiApp.CreateBuilder();
+
+			builder.Services.AddTransient<IFooService, FooService>();
+			builder.Services.AddTransient<IBarService, BarService>();
+			builder.Services.AddTransient<IFooBarService, FooBarWithFooAndBarService>();
+
+			var mauiApp = builder.Build();
+			_serviceProvider = mauiApp.Services;
 		}
 
 		[IterationSetup(Target = nameof(ExtensionsWithConstructorInjection))]
 		public void SetupForExtensionsWithConstructorInjection()
 		{
-			_host = AppHost
-				.CreateDefaultBuilder()
-				.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
-				.ConfigureServices((ctx, svc) => svc.AddTransient<IFooService, FooService>())
-				.Build();
+			var builder = MauiApp.CreateBuilder();
+
+			builder.Services.AddTransient<IFooService, FooService>();
+
+			var mauiApp = builder.Build();
+			_serviceProvider = mauiApp.Services;
 		}
 
 		[IterationSetup(Target = nameof(ExtensionsWithOneConstructorParameter))]
 		public void SetupForExtensionsWithOneConstructorParameter()
 		{
-			_host = AppHost
-				.CreateDefaultBuilder()
-				.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
-				.ConfigureServices((ctx, svc) =>
-				{
-					svc.AddTransient<IFooService, FooService>();
-					svc.AddTransient<IFooBarService, FooBarWithFooService>();
-				})
-				.Build();
+			var builder = MauiApp.CreateBuilder();
+
+			builder.Services.AddTransient<IFooService, FooService>();
+			builder.Services.AddTransient<IFooBarService, FooBarWithFooService>();
+
+			var mauiApp = builder.Build();
+			_serviceProvider = mauiApp.Services;
 		}
 
 		[IterationSetup(Target = nameof(ExtensionsWithTwoConstructorParameters))]
 		public void SetupForExtensionsWithTwoConstructorParameters()
 		{
-			_host = AppHost
-				.CreateDefaultBuilder()
-				.UseServiceProviderFactory(new DIExtensionsServiceProviderFactory())
-				.ConfigureServices((ctx, svc) =>
-				{
-					svc.AddTransient<IFooService, FooService>();
-					svc.AddTransient<IBarService, BarService>();
-					svc.AddTransient<IFooBarService, FooBarWithFooAndBarService>();
-				})
-				.Build();
+			var builder = MauiApp.CreateBuilder();
+
+			builder.Services.AddTransient<IFooService, FooService>();
+			builder.Services.AddTransient<IBarService, BarService>();
+			builder.Services.AddTransient<IFooBarService, FooBarWithFooAndBarService>();
+
+			var mauiApp = builder.Build();
+			_serviceProvider = mauiApp.Services;
 		}
 
 		[Benchmark(Baseline = true)]
@@ -106,7 +101,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			for (int i = 0; i < N; i++)
 			{
-				_host.Services.GetService<IFooService>();
+				_serviceProvider.GetService<IFooService>();
 			}
 		}
 
@@ -115,7 +110,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			for (int i = 0; i < N; i++)
 			{
-				_host.Services.GetService<IFooService>();
+				_serviceProvider.GetService<IFooService>();
 			}
 		}
 
@@ -124,7 +119,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			for (int i = 0; i < N; i++)
 			{
-				_host.Services.GetService<IFooBarService>();
+				_serviceProvider.GetService<IFooBarService>();
 			}
 		}
 
@@ -133,7 +128,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			for (int i = 0; i < N; i++)
 			{
-				_host.Services.GetService<IFooBarService>();
+				_serviceProvider.GetService<IFooBarService>();
 			}
 		}
 
@@ -142,7 +137,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			for (int i = 0; i < N; i++)
 			{
-				_host.Services.GetService<IFooService>();
+				_serviceProvider.GetService<IFooService>();
 			}
 		}
 
@@ -151,7 +146,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			for (int i = 0; i < N; i++)
 			{
-				_host.Services.GetService<IFooBarService>();
+				_serviceProvider.GetService<IFooBarService>();
 			}
 		}
 
@@ -160,7 +155,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		{
 			for (int i = 0; i < N; i++)
 			{
-				_host.Services.GetService<IFooBarService>();
+				_serviceProvider.GetService<IFooBarService>();
 			}
 		}
 

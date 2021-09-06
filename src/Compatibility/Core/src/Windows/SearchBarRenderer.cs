@@ -11,7 +11,7 @@ using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class SearchBarRenderer : ViewRenderer<SearchBar, AutoSuggestBox>, ITabStopOnDescendants
+	public class SearchBarRenderer : ViewRenderer<SearchBar, AutoSuggestBox>
 	{
 		WBrush _defaultPlaceholderColorBrush;
 		WBrush _defaultPlaceholderColorFocusBrush;
@@ -238,6 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.PlaceholderText = Element.Placeholder ?? string.Empty;
 		}
 
+		[PortHandler]
 		void UpdatePlaceholderColor()
 		{
 			if (_queryTextBox == null)

@@ -39,9 +39,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapContent(ScrollViewHandler handler, IScrollView scrollView)
 		{
 			if (handler.NativeView == null || handler.MauiContext == null || scrollView.Content == null)
-			{
 				return;
-			}
 
 			handler.NativeView.SetContent(scrollView.Content.ToNative(handler.MauiContext));
 		}
@@ -78,7 +76,7 @@ namespace Microsoft.Maui.Handlers
 			var horizontalOffsetDevice = (int)context.ToPixels(request.HoriztonalOffset);
 			var verticalOffsetDevice = (int)context.ToPixels(request.VerticalOffset);
 
-			handler.NativeView.ScrollTo(horizontalOffsetDevice, verticalOffsetDevice, 
+			handler.NativeView.ScrollTo(horizontalOffsetDevice, verticalOffsetDevice,
 				request.Instant, () => handler.VirtualView.ScrollFinished());
 		}
 	}

@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public partial class PageStub : StubBase, IPage
+	public partial class PageStub : StubBase, ITitledElement, IContentView
 	{
 		private IView _content;
 		private string _title;

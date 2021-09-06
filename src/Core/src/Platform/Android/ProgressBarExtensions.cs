@@ -1,5 +1,5 @@
 ﻿using Android.Content.Res;
-using Android.OS;
+using Microsoft.Maui.Graphics;
 using AProgressBar = Android.Widget.ProgressBar;
 
 namespace Microsoft.Maui
@@ -12,5 +12,25 @@ namespace Microsoft.Maui
 		{
 			nativeProgressBar.Progress = (int)(progress.Progress * Maximum);
 		}
-	}
+
+        public static void UpdateProgressColor(this AProgressBar nativeProgressBar, IProgress progress)
+        {
+            Color color = progress.ProgressColor;
+
+            if (color == null)
+            {
+                (nativeProgressBar.Indeterminate ? nativeProgressBar.IndeterminateDrawable :
+                    nativeProgressBar.ProgressDrawable)?.ClearColorFilter();
+            }
+            else
+            {
+                var tintList = ColorStateList.ValueOf(color.ToNative());
+
+                if (nativeProgressBar.Indeterminate)
+                    nativeProgressBar.IndeterminateTintList = tintList;
+                else
+                    nativeProgressBar.ProgressTintList = tintList;
+            }
+        }
+    }
 }

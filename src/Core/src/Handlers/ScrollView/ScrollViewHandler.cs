@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ScrollViewHandler
 	{
-		public static PropertyMapper<IScrollView, ScrollViewHandler> ScrollViewMapper = new(ViewMapper)
+		public static IPropertyMapper<IScrollView, ScrollViewHandler> ScrollViewMapper = new PropertyMapper<IScrollView, ScrollViewHandler>(ViewMapper)
 		{
 			[nameof(IScrollView.Content)] = MapContent,
 			[nameof(IScrollView.HorizontalScrollBarVisibility)] = MapHorizontalScrollBarVisibility,
@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Handlers
 #endif
 		};
 
-		public static CommandMapper<IScrollView, ScrollViewHandler> ScrollViewCommandMapper = new(ViewCommandMapper) {
+		public static CommandMapper<IScrollView, ScrollViewHandler> ScrollViewCommandMapper = new(ViewCommandMapper)
+		{
 			[nameof(IScrollView.RequestScrollTo)] = MapRequestScrollTo
 		};
 
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public ScrollViewHandler(PropertyMapper? mapper = null) : base(mapper ?? ScrollViewMapper)
+		public ScrollViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? ScrollViewMapper)
 		{
 
 		}

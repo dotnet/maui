@@ -13,6 +13,7 @@
     <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/net6.0-android/ref/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.dll" />
     <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Android.FormsViewGroup/src/bin/$(Configuration)/net6.0-android/Microsoft.Maui.Controls.Compatibility.Android.FormsViewGroup.aar" />
     <_AndroidFiles Include="$(MauiRootDirectory)src/Compatibility/Core/src/bin/$(Configuration)/net6.0-android/Microsoft.Maui.Controls.Compatibility.aar" />
+    <_AndroidFiles Include="$(MauiRootDirectory)src/Controls/src/Core/bin/$(Configuration)/net6.0-android/Microsoft.Maui.Controls.aar" />
     <None Include="@(_AndroidFiles)" FullTfm="net6.0-android30.0" Tfm="net6.0-android" Profile="Android" />
   </ItemGroup>
 

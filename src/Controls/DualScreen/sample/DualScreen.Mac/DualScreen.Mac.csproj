@@ -54,7 +54,6 @@
     <IncludeMonoRuntime>true</IncludeMonoRuntime>
     <UseSGen>true</UseSGen>
     <UseRefCounting>true</UseRefCounting>
-    <CodeSignEntitlements>Entitlements.plist</CodeSignEntitlements>
     <LinkMode>SdkOnly</LinkMode>
     <HttpClientHandler>
     </HttpClientHandler>
@@ -88,7 +87,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
-    <None Include="Entitlements.plist" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />

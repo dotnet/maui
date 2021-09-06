@@ -13,27 +13,33 @@
     <None Update="@(None)" PackagePath="" />
     <_Files Include="$(MauiNuSpecDirectory)Microsoft.Maui.Resizetizer.targets" />
     <_Files Include="$(MauiRootDirectory)src\SingleProject\Resizetizer\src\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Resizetizer.dll" />
+    <_Files Include="$(MauiRootDirectory)src\SingleProject\Resizetizer\src\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Resizetizer.pdb" />
     <_Files Include="$(PkgSystem_Memory)\lib\netstandard2.0\System.Memory.dll" />
     <_Files Include="$(PkgSystem_Buffers)\lib\netstandard2.0\System.Buffers.dll" />
     <_Files Include="$(PkgSystem_Numerics_Vectors)\lib\netstandard2.0\System.Numerics.Vectors.dll" />
     <_Files Include="$(PkgSystem_Runtime_CompilerServices_Unsafe)\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" />
     <_Files Include="$(PkgSystem_ObjectModel)\lib\netstandard1.3\System.ObjectModel.dll" />
     <_Files Include="$(PkgSvg_Custom)\lib\net461\Svg.Custom.dll" />
+    <_Files Include="$(PkgSvg_Custom)\lib\net461\Svg.Custom.pdb" />
     <_Files Include="$(PkgSvg_Picture)\lib\net461\Svg.Picture.dll" />
-    <_Files Include="$(PkgSvg_Skia)\lib\net461\Svg.Skia.dll" />
+    <_Files Include="$(PkgSvg_Picture)\lib\net461\Svg.Picture.pdb" />
+    <!-- <_Files Include="$(PkgSvg_Skia)\lib\net461\Svg.Skia.dll" /> -->
     <_Files Include="$(PkgFizzler)\lib\netstandard2.0\Fizzler.dll" />
     <_Files Include="$(PkgSystem_IO_UnmanagedMemoryStream)\lib\netstandard1.3\System.IO.UnmanagedMemoryStream.dll" />
     <_Files Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll" />
-    <_Files Include="$(PkgSkiaSharp)\runtimes\osx\native\libSkiaSharp.dylib" />
-    <_Files Include="$(PkgSkiaSharp)\runtimes\win-x86\native\libSkiaSharp.dll"   Arch="x86/" />
-    <_Files Include="$(PkgSkiaSharp)\runtimes\win-x64\native\libSkiaSharp.dll"   Arch="x64/" />
-    <_Files Include="$(PkgSkiaSharp)\runtimes\win-arm64\native\libSkiaSharp.dll" Arch="arm64/" />
+    <_Files Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.pdb" />
+    <_Files Include="$(PkgSkiaSharp_NativeAssets_macOS)\runtimes\osx\native\libSkiaSharp.dylib" />
+    <_Files Include="$(PkgSkiaSharp_NativeAssets_Win32)\runtimes\win-x86\native\libSkiaSharp.dll"   Arch="x86/" />
+    <_Files Include="$(PkgSkiaSharp_NativeAssets_Win32)\runtimes\win-x64\native\libSkiaSharp.dll"   Arch="x64/" />
+    <_Files Include="$(PkgSkiaSharp_NativeAssets_Win32)\runtimes\win-arm64\native\libSkiaSharp.dll" Arch="arm64/" />
     <_Files Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-arm\native\libSkiaSharp.so"      Arch="arm/" />
     <_Files Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-arm64\native\libSkiaSharp.so"    Arch="arm64/" />
     <_Files Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-musl-x64\native\libSkiaSharp.so" Arch="musl-x64/" />
     <_Files Include="$(PkgSkiaSharp_NativeAssets_Linux_NoDependencies)\runtimes\linux-x64\native\libSkiaSharp.so"      Arch="x64/" />
     <_Files Include="$(PkgSkiaSharp_HarfBuzz)\lib\net462\SkiaSharp.HarfBuzz.dll" />
+    <_Files Include="$(PkgSkiaSharp_HarfBuzz)\lib\net462\SkiaSharp.HarfBuzz.pdb" />
     <_Files Include="$(PkgHarfBuzzSharp)\lib\net462\HarfBuzzSharp.dll" />
+    <_Files Include="$(PkgHarfBuzzSharp)\lib\net462\HarfBuzzSharp.pdb" />
     <_Files Include="$(PkgHarfBuzzSharp)\runtimes\osx\native\libHarfBuzzSharp.dylib" />
     <_Files Include="$(PkgHarfBuzzSharp)\runtimes\win-x86\native\libHarfBuzzSharp.dll"   Arch="x86/" />
     <_Files Include="$(PkgHarfBuzzSharp)\runtimes\win-x64\native\libHarfBuzzSharp.dll"   Arch="x64/" />
@@ -43,6 +49,7 @@
     <_Files Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-musl-x64\native\libHarfBuzzSharp.so" Arch="musl-x64/" />
     <_Files Include="$(PkgHarfBuzzSharp_NativeAssets_Linux)\runtimes\linux-x64\native\libHarfBuzzSharp.so"      Arch="x64/" />
     <_Files Include="$(PkgSvg2VectorDrawable_Net)\lib\netstandard2.0\Svg2VectorDrawable.Net.dll" />
+    <_Files Include="$(PkgSvg2VectorDrawable_Net)\lib\netstandard2.0\Svg2VectorDrawable.Net.pdb" />
     <_Files Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" />
     <None Include="@(_Files)" PackagePath="targets/%(Arch)" Link="targets/%(Arch)%(FileName)%(Extension)" Visible="false" />
     <None Update="@(None)" CopyToOutputDirectory="PreserveNewest" Pack="true" />
@@ -51,5 +58,22 @@
   <ItemGroup>
     <ProjectReference Include="$(MauiRootDirectory)src/SingleProject/Resizetizer/src/Resizetizer.csproj" />
   </ItemGroup>
+
+  <!-- A small task to make sure everything depends on the same version of SkiaSharp -->
+  <ItemGroup>
+    <_NeededForAjustments Include="$(PkgSvg_Skia)\lib\net461\Svg.Skia.dll" />
+    <_NeededForAjustments Include="$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll" />
+  </ItemGroup>
+  <Target Name="_AdjustSkiaSharpVersion" BeforeTargets="Build;AssignTargetPaths" Inputs="$(MSBuildProjectFile);@(_NeededForAjustments)" Outputs="$(IntermediateOutputPath)adjustments\Svg.Skia.dll">
+    <PropertyGroup>
+      <_AdjustmentsPath>$(IntermediateOutputPath)adjustments\</_AdjustmentsPath>
+    </PropertyGroup>
+    <Copy SourceFiles="@(_NeededForAjustments)" DestinationFolder="$(_AdjustmentsPath)" SkipUnchangedFiles="true" />
+    <AdjustReferencedAssemblyVersion Assembly="$(_AdjustmentsPath)Svg.Skia.dll" ReferencedAssembly="$(_AdjustmentsPath)SkiaSharp.dll" />
+    <ItemGroup>
+      <None Include="$(_AdjustmentsPath)Svg.Skia.dll" Link="targets\Svg.Skia.dll" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="targets\" Visible="false" />
+      <FileWrites Include="$(_AdjustmentsPath)*" />
+    </ItemGroup>
+  </Target>
 
 </Project>
