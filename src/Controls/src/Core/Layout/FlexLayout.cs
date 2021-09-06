@@ -528,5 +528,37 @@ namespace Microsoft.Maui.Controls
 			item.JustifyContent = (Flex.Justify)(FlexJustify)GetValue(JustifyContentProperty);
 			item.Wrap = (Flex.Wrap)(FlexWrap)GetValue(WrapProperty);
 		}
+
+		protected override void OnAdd(int index, IView view)
+		{
+			base.OnAdd(index, view);
+			AddFlexItem(view);
+		}
+
+		protected override void OnInsert(int index, IView view)
+		{
+			base.OnInsert(index, view);
+			AddFlexItem(view);
+		}
+
+		protected override void OnUpdate(int index, IView view, IView oldView)
+		{
+			base.OnUpdate(index, view, oldView);
+			RemoveFlexItem(oldView);
+			AddFlexItem(view);
+		}
+
+		protected override void OnRemove(int index, IView view)
+		{
+			base.OnRemove(index, view);
+			RemoveFlexItem(view);
+		}
+
+		protected override void OnClear()
+		{
+			base.OnClear();
+			ClearLayout();
+			PopulateLayout();
+		}
 	}
 }

@@ -2,7 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Essentials;
 
-namespace MauiApp1
+namespace MauiApp._1
 {
 	public partial class MainPage : ContentPage
 	{
@@ -18,10 +18,7 @@ namespace MauiApp1
 			count++;
 			CounterLabel.Text = $"Current count: {count}";
 
-			if (DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.iOS)
-			{
-				SemanticScreenReader.Announce(CounterLabel.Text);
-			}
+			SemanticScreenReader.Announce(CounterLabel.Text);
 		}
 	}
 }

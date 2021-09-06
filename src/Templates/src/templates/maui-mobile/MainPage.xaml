@@ -1,6 +1,6 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="MauiApp1.MainPage"
+             x:Class="MauiApp._1.MainPage"
              BackgroundColor="{DynamicResource SecondaryColor}">
 
     <ScrollView Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">

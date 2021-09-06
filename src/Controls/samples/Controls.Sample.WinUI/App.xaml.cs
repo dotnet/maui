@@ -9,6 +9,6 @@ namespace Maui.Controls.Sample.WinUI
 			InitializeComponent();
 		}
 
-		protected override IStartup OnCreateStartup() => new Startup();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }

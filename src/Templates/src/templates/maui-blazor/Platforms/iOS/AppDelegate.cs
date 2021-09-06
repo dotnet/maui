@@ -1,10 +1,11 @@
 ﻿using Foundation;
 using Microsoft.Maui;
 
-namespace MauiApp1
+namespace MauiApp._1
 {
 	[Register("AppDelegate")]
-	public class AppDelegate : MauiUIApplicationDelegate<Startup>
+	public class AppDelegate : MauiUIApplicationDelegate
 	{
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }

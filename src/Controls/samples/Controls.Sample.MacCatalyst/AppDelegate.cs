@@ -11,7 +11,8 @@ using Maui.Controls.Sample;
 namespace Sample.MacCatalyst
 {
 	[Register("AppDelegate")]
-	public class AppDelegate : MauiUIApplicationDelegate<Startup>
+	public class AppDelegate : MauiUIApplicationDelegate
 	{
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }

@@ -45,16 +45,16 @@
             </Grid.RowDefinitions>
             <VerticalStackLayout Grid.Row="0">
                 <HorizontalStackLayout>
-                    <Button Text="Toggle Refresh Color" Clicked="OnToggleRefreshColorClicked"></Button>
-                    <Button Text="Toggle Background Color" Clicked="OnToggleRefreshBackgroundColorClicked"></Button>
+                    <Button FontSize="10" Text="Toggle Refresh Color" Clicked="OnToggleRefreshColorClicked"></Button>
+                    <Button FontSize="10" Text="Toggle Background Color" Clicked="OnToggleRefreshBackgroundColorClicked"></Button>
                 </HorizontalStackLayout>
                 <HorizontalStackLayout>
-                    <Button Text="Toggle Refresh" Clicked="OnTriggerRefreshClicked"></Button>
-                    <Button Text="Toggle Is Enabled" Clicked="OnToggleEnabledClicked"></Button>
+                    <Button FontSize="10" Text="Toggle Refresh" Clicked="OnTriggerRefreshClicked"></Button>
+                    <Button FontSize="10" Text="Toggle Is Enabled" Clicked="OnToggleEnabledClicked"></Button>
                 </HorizontalStackLayout>
                 <HorizontalStackLayout>
-                    <Label Text="{Binding RefreshText}"></Label>
-                    <Label  Text="{Binding EnabledText}"></Label>
+                    <Label FontSize="10" Text="{Binding RefreshText}"></Label>
+                    <Label FontSize="10" Text="{Binding EnabledText}"></Label>
                 </HorizontalStackLayout>
             </VerticalStackLayout>
             <RefreshView  Grid.Row="1"

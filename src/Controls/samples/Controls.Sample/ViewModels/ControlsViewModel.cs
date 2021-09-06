@@ -12,6 +12,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ActivityIndicatorPage), "ActivityIndicator",
 				"Displays an animation to show that the application is engaged in a lengthy activity."),
 
+			new SectionModel(typeof(BoxViewPage), "BoxView",
+				"BoxView renders a simple rectangle of a specified width, height, and color. You can use BoxView for decoration, rudimentary graphics, and for interaction with the user through touch."),
+
 			new SectionModel(typeof(ButtonPage), "Button",
 				"The Button responds to a tap or click that directs an application to carry out a particular task."),
 

@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SliderHandler
 	{
-		public static PropertyMapper<ISlider, SliderHandler> SliderMapper = new PropertyMapper<ISlider, SliderHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<ISlider, SliderHandler> SliderMapper = new PropertyMapper<ISlider, SliderHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(ISlider.Maximum)] = MapMaximum,
 			[nameof(ISlider.MaximumTrackColor)] = MapMaximumTrackColor,
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public SliderHandler(PropertyMapper? mapper = null) : base(mapper ?? SliderMapper)
+		public SliderHandler(IPropertyMapper? mapper = null) : base(mapper ?? SliderMapper)
 		{
 
 		}

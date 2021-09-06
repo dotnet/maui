@@ -4,6 +4,8 @@ using Android.Text;
 using Android.Util;
 using Android.Widget;
 using static Android.Widget.TextView;
+using ALayoutDirection = Android.Views.LayoutDirection;
+using ATextDirection = Android.Views.TextDirection;
 
 namespace Microsoft.Maui
 {
@@ -16,7 +18,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateTextHtml(this TextView textView, ILabel label)
 		{
-			var newText = label.Text;
+			var newText = label.Text ?? string.Empty;
 
 			if (NativeVersion.IsAtLeast(24))
 				textView.SetText(Html.FromHtml(newText, FromHtmlOptions.ModeCompact), BufferType.Spannable);
@@ -41,10 +43,14 @@ namespace Microsoft.Maui
 		{
 			var textColor = textStyle.TextColor;
 
-			if (textColor == null)
-				textView.SetTextColor(defaultColor);
-			else
+			if (textColor != null)
+			{
 				textView.SetTextColor(textColor.ToNative());
+				return;
+			}
+
+			if (defaultColor != null)
+				textView.SetTextColor(defaultColor);
 		}
 
 		public static void UpdateFont(this TextView textView, ITextStyle textStyle, IFontManager fontManager)
@@ -116,6 +122,26 @@ namespace Microsoft.Maui
 				textView.PaintFlags &= ~PaintFlags.UnderlineText;
 			else
 				textView.PaintFlags |= PaintFlags.UnderlineText;
+		}
+
+		public static void UpdateFlowDirection(this TextView nativeView, IView view)
+		{
+			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
+				view.FlowDirection == FlowDirection.MatchParent)
+			{
+				nativeView.LayoutDirection = ALayoutDirection.Inherit;
+				nativeView.TextDirection = ATextDirection.Inherit;
+			}
+			else if (view.FlowDirection == FlowDirection.RightToLeft)
+			{
+				nativeView.LayoutDirection = ALayoutDirection.Rtl;
+				nativeView.TextDirection = ATextDirection.Rtl;
+			}
+			else if (view.FlowDirection == FlowDirection.LeftToRight)
+			{
+				nativeView.LayoutDirection = ALayoutDirection.Ltr;
+				nativeView.TextDirection = ATextDirection.Ltr;
+			}
 		}
 
 		public static void UpdateLineHeight(this TextView textView, ILabel label)

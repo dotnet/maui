@@ -7,7 +7,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Children))]
-	public abstract class Layout : View, Microsoft.Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView
+	public abstract class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView
 	{
 		ReadOnlyCastingList<Element, IView> _logicalChildren;
 
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 					VisualDiagnostics.OnChildAdded(this, newElement);
 				}
 
-				UpdateInHandler(index, value);
+				OnUpdate(index, value, old);
 			}
 		}
 
@@ -91,32 +91,36 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public virtual void Add(IView child)
+		public void Add(IView child)
 		{
 			if (child == null)
 				return;
 
+			var index = _children.Count;
 			_children.Add(child);
 
 			if (child is Element element)
 			{
 				element.Parent = this;
-				VisualDiagnostics.OnChildAdded(this, element);
+				VisualDiagnostics.OnChildAdded(this, element, index);
 			}
 
-			AddToHandler(_children.Count, child);
+			OnAdd(index, child);
 		}
 
 		public void Clear()
 		{
-			foreach (var child in this)
+			for (var index = Count - 1; index >= 0; index--)
 			{
-				if (child is Element element)
+				if (this[index] is Element element)
+				{
 					element.Parent = null;
+					VisualDiagnostics.OnChildRemoved(this, element, index);
+				}
 			}
 
 			_children.Clear();
-			ClearHandler();
+			OnClear();
 		}
 
 		public bool Contains(IView item)
@@ -147,10 +151,10 @@ namespace Microsoft.Maui.Controls
 				VisualDiagnostics.OnChildAdded(this, element);
 			}
 
-			AddToHandler(index, child);
+			OnInsert(index, child);
 		}
 
-		public virtual bool Remove(IView child)
+		public bool Remove(IView child)
 		{
 			if (child == null)
 				return false;
@@ -184,38 +188,33 @@ namespace Microsoft.Maui.Controls
 				VisualDiagnostics.OnChildRemoved(this, element, index);
 			}
 
-			RemoveFromHandler(index, child);
+			OnRemove(index, child);
 		}
 
-		void RemoveFromHandler(IView view)
-		{
-			Handler?.Invoke(nameof(ILayoutHandler.Remove), view);
-		}
-
-		void AddToHandler(int index, IView view)
+		protected virtual void OnAdd(int index, IView view)
 		{
 			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
 			Handler?.Invoke(nameof(ILayoutHandler.Add), args);
 		}
 
-		void ClearHandler()
+		protected virtual void OnClear()
 		{
 			Handler?.Invoke(nameof(ILayoutHandler.Clear));
 		}
 
-		void RemoveFromHandler(int index, IView view)
+		protected virtual void OnRemove(int index, IView view)
 		{
 			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
 			Handler?.Invoke(nameof(ILayoutHandler.Remove), args);
 		}
 
-		void InsertIntoHandler(int index, IView view)
+		protected virtual void OnInsert(int index, IView view)
 		{
 			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
 			Handler?.Invoke(nameof(ILayoutHandler.Insert), args);
 		}
 
-		void UpdateInHandler(int index, IView view)
+		protected virtual void OnUpdate(int index, IView view, IView oldView)
 		{
 			var args = new Maui.Handlers.LayoutHandlerUpdate(index, view);
 			Handler?.Invoke(nameof(ILayoutHandler.Update), args);

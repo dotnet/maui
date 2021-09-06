@@ -35,15 +35,8 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
-	static class XamlParser
+	static partial class XamlParser
 	{
-		public const string MauiUri = "http://schemas.microsoft.com/dotnet/2021/maui";
-		public const string MauiDesignUri = "http://schemas.microsoft.com/dotnet/2021/maui/design";
-		public const string X2006Uri = "http://schemas.microsoft.com/winfx/2006/xaml";
-		public const string X2009Uri = "http://schemas.microsoft.com/winfx/2009/xaml";
-		public const string McUri = "http://schemas.openxmlformats.org/markup-compatibility/2006";
-
-
 		public static void ParseXaml(RootNode rootNode, XmlReader reader)
 		{
 			var attributes = ParseXamlAttributes(reader, out IList<KeyValuePair<string, string>> xmlns);
@@ -352,11 +345,22 @@ namespace Microsoft.Maui.Controls.Xaml
 			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 
 			foreach (var assembly in assemblies)
-				foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute)))
+			{
+				try
 				{
-					s_xmlnsDefinitions.Add(attribute);
-					attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
+					foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute)))
+					{
+						s_xmlnsDefinitions.Add(attribute);
+						attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
+					}
 				}
+				catch (Exception ex)
+				{
+					// If we can't load the custom attribute for whatever reason from the assembly,
+					// We can ignore it and keep going.
+					System.Diagnostics.Debug.WriteLine($"Failed to parse Assembly Attribute: {ex.ToString()}");
+				}
+			}
 		}
 
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,
@@ -433,69 +437,6 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			if (type == null)
 				exception = new XamlParseException($"Type {xmlType.Name} not found in xmlns {xmlType.NamespaceUri}", xmlInfo);
-
-			return type;
-		}
-
-		public static T GetTypeReference<T>(
-			this XmlType xmlType,
-			IEnumerable<XmlnsDefinitionAttribute> xmlnsDefinitions,
-			string defaultAssemblyName,
-			Func<XamlLoader.FallbackTypeInfo, T> refFromTypeInfo,
-			out IList<XamlLoader.FallbackTypeInfo> potentialTypes)
-			where T : class
-		{
-			var lookupAssemblies = new List<XmlnsDefinitionAttribute>();
-			var namespaceURI = xmlType.NamespaceUri;
-			var elementName = xmlType.Name;
-			var typeArguments = xmlType.TypeArguments;
-			potentialTypes = null;
-
-			foreach (var xmlnsDef in xmlnsDefinitions)
-			{
-				if (xmlnsDef.XmlNamespace != namespaceURI)
-					continue;
-				lookupAssemblies.Add(xmlnsDef);
-			}
-
-			if (lookupAssemblies.Count == 0)
-			{
-				XmlnsHelper.ParseXmlns(namespaceURI, out _, out var ns, out var asmstring, out _);
-				asmstring = asmstring ?? defaultAssemblyName;
-				if (namespaceURI != null && ns != null)
-					lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) { AssemblyName = asmstring });
-			}
-
-			var lookupNames = new List<string>();
-			if (elementName != "DataTemplate" && !elementName.EndsWith("Extension", StringComparison.Ordinal))
-				lookupNames.Add(elementName + "Extension");
-			lookupNames.Add(elementName);
-
-			for (var i = 0; i < lookupNames.Count; i++)
-			{
-				var name = lookupNames[i];
-				if (name.Contains(":"))
-					name = name.Substring(name.LastIndexOf(':') + 1);
-				if (typeArguments != null)
-					name += "`" + typeArguments.Count; //this will return an open generic Type
-				lookupNames[i] = name;
-			}
-
-			potentialTypes = new List<XamlLoader.FallbackTypeInfo>();
-			foreach (string typeName in lookupNames)
-				foreach (XmlnsDefinitionAttribute xmlnsDefinitionAttribute in lookupAssemblies)
-					potentialTypes.Add(new XamlLoader.FallbackTypeInfo
-					{
-						ClrNamespace = xmlnsDefinitionAttribute.ClrNamespace,
-						TypeName = typeName,
-						AssemblyName = xmlnsDefinitionAttribute.AssemblyName,
-						XmlNamespace = xmlnsDefinitionAttribute.XmlNamespace
-					});
-
-			T type = null;
-			foreach (XamlLoader.FallbackTypeInfo typeInfo in potentialTypes)
-				if ((type = refFromTypeInfo(typeInfo)) != null)
-					break;
 
 			return type;
 		}

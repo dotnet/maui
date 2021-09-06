@@ -19,7 +19,11 @@ namespace Microsoft.Maui.Layouts
 		public override Size Measure(double widthConstraint, double heightConstraint)
 		{
 			_gridStructure = new GridStructure(Grid, widthConstraint, heightConstraint);
-			return new Size(_gridStructure.MeasuredGridWidth(), _gridStructure.MeasuredGridHeight());
+
+			var measuredWidth = _gridStructure.MeasuredGridWidth();
+			var measuredHeight = _gridStructure.MeasuredGridHeight();
+
+			return new Size(measuredWidth, measuredHeight);
 		}
 
 		public override Size ArrangeChildren(Rectangle bounds)
@@ -48,6 +52,10 @@ namespace Microsoft.Maui.Layouts
 			readonly double _gridHeightConstraint;
 			readonly double _explicitGridHeight;
 			readonly double _explicitGridWidth;
+			readonly double _gridMaxHeight;
+			readonly double _gridMinHeight;
+			readonly double _gridMaxWidth;
+			readonly double _gridMinWidth;
 
 			Row[] _rows { get; }
 			Column[] _columns { get; }
@@ -71,6 +79,10 @@ namespace Microsoft.Maui.Layouts
 
 				_explicitGridHeight = _grid.Height;
 				_explicitGridWidth = _grid.Width;
+				_gridMaxHeight = _grid.MaximumHeight;
+				_gridMinHeight = _grid.MinimumHeight;
+				_gridMaxWidth = _grid.MaximumWidth;
+				_gridMinWidth = _grid.MinimumWidth;
 
 				// Cache these GridLayout properties so we don't have to keep looking them up via _grid
 				// (Property access via _grid may have performance implications for some SDKs.)
@@ -152,8 +164,6 @@ namespace Microsoft.Maui.Layouts
 				{
 					var view = _childrenToLayOut[n];
 
-					bool measureStarAsAuto = false;
-
 					if (view.Visibility == Visibility.Collapsed)
 					{
 						continue;
@@ -180,7 +190,7 @@ namespace Microsoft.Maui.Layouts
 					}
 
 					// Check for infinite constraints and Stars, so we can mark them for measurement as if they were Auto
-					measureStarAsAuto = (isGridHeightConstraintInfinite && IsStar(rowGridLengthType))
+					var measureStarAsAuto = (isGridHeightConstraintInfinite && IsStar(rowGridLengthType))
 						|| (isGridWidthConstraintInfinite && IsStar(columnGridLengthType));
 
 					_cells[n] = new Cell(n, row, column, rowSpan, columnSpan, columnGridLengthType, rowGridLengthType, measureStarAsAuto);
@@ -232,12 +242,36 @@ namespace Microsoft.Maui.Layouts
 
 			public double MeasuredGridHeight()
 			{
-				return _explicitGridHeight > -1 ? _explicitGridHeight : GridHeight();
+				var height = _explicitGridHeight > -1 ? _explicitGridHeight : GridHeight();
+
+				if (_gridMaxHeight >= 0 && height > _gridMaxHeight)
+				{
+					height = _gridMaxHeight;
+				}
+
+				if (_gridMinHeight >= 0 && height < _gridMinHeight)
+				{
+					height = _gridMinHeight;
+				}
+
+				return height;
 			}
 
 			public double MeasuredGridWidth()
 			{
-				return _explicitGridWidth > -1 ? _explicitGridWidth : GridWidth();
+				var width = _explicitGridWidth > -1 ? _explicitGridWidth : GridWidth();
+
+				if (_gridMaxWidth >= 0 && width > _gridMaxWidth)
+				{
+					width = _gridMaxWidth;
+				}
+
+				if (_gridMinWidth >= 0 && width < _gridMinWidth)
+				{
+					width = _gridMinWidth;
+				}
+
+				return width;
 			}
 
 			double SumDefinitions(Definition[] definitions, double spacing)
@@ -276,8 +310,8 @@ namespace Microsoft.Maui.Layouts
 						continue;
 					}
 
-					var availableWidth = _gridWidthConstraint - GridWidth();
-					var availableHeight = _gridHeightConstraint - GridHeight();
+					var availableWidth = AvailableWidth(cell);
+					var availableHeight = AvailableHeight(cell);
 
 					if (cell.IsColumnSpanAuto || cell.IsRowSpanAuto || cell.MeasureStarAsAuto)
 					{
@@ -512,6 +546,44 @@ namespace Microsoft.Maui.Layouts
 
 					_childrenToLayOut[cell.ViewIndex].Measure(width, height);
 				}
+			}
+
+			double AvailableWidth(Cell cell)
+			{
+				var alreadyUsed = GridWidth();
+				var available = _gridWidthConstraint - alreadyUsed;
+
+				// Because our cell may overlap columns that are already measured (and counted in GridWidth()),
+				// we'll need to add the size of those columns back into our available space
+				double cellColumnsWidth = 0;
+
+				for (int c = cell.Column; c < cell.Column + cell.ColumnSpan; c++)
+				{
+					cellColumnsWidth += _columns[c].Size;
+				}
+
+				cellColumnsWidth += (cell.ColumnSpan - 1) * _columnSpacing;
+
+				return available + cellColumnsWidth;
+			}
+
+			double AvailableHeight(Cell cell)
+			{
+				var alreadyUsed = GridHeight();
+				var available = _gridHeightConstraint - alreadyUsed;
+
+				// Because our cell may overlap rows that are already measured (and counted in GridHeight()),
+				// we'll need to add the size of those rows back into our available space
+				double cellRowsHeight = 0;
+
+				for (int c = cell.Row; c < cell.Row + cell.RowSpan; c++)
+				{
+					cellRowsHeight += _rows[c].Size;
+				}
+
+				cellRowsHeight += (cell.RowSpan - 1) * _rowSpacing;
+
+				return available + cellRowsHeight;
 			}
 		}
 

@@ -323,7 +323,6 @@ namespace Microsoft.Maui.Controls
 		internal static void ClearCache() => s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 
 		[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.RDSourceTypeConverter")]
-		[TypeConversion(typeof(Uri))]
 		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
 		{
 			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

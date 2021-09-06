@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create("Opacity", typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
 
-		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create("BackgroundColor", typeof(Color), typeof(VisualElement), null);
+		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), null);
 
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
 			propertyChanging: (bindable, oldvalue, newvalue) =>
@@ -272,13 +272,17 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TriggersProperty = TriggersPropertyKey.BindableProperty;
 
 
-		public static readonly BindableProperty WidthRequestProperty = BindableProperty.Create("WidthRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
+		public static readonly BindableProperty WidthRequestProperty = BindableProperty.Create(nameof(WidthRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
-		public static readonly BindableProperty HeightRequestProperty = BindableProperty.Create("HeightRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
+		public static readonly BindableProperty HeightRequestProperty = BindableProperty.Create(nameof(HeightRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
-		public static readonly BindableProperty MinimumWidthRequestProperty = BindableProperty.Create("MinimumWidthRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
+		public static readonly BindableProperty MinimumWidthRequestProperty = BindableProperty.Create(nameof(MinimumWidthRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
-		public static readonly BindableProperty MinimumHeightRequestProperty = BindableProperty.Create("MinimumHeightRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
+		public static readonly BindableProperty MinimumHeightRequestProperty = BindableProperty.Create(nameof(MinimumHeightRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
+
+		public static readonly BindableProperty MaximumWidthRequestProperty = BindableProperty.Create(nameof(MaximumWidthRequest), typeof(double), typeof(VisualElement), double.PositiveInfinity, propertyChanged: OnRequestChanged);
+
+		public static readonly BindableProperty MaximumHeightRequestProperty = BindableProperty.Create(nameof(MaximumHeightRequest), typeof(double), typeof(VisualElement), double.PositiveInfinity, propertyChanged: OnRequestChanged);
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly("IsFocused",
@@ -290,6 +294,7 @@ namespace Microsoft.Maui.Controls
 
 		IFlowDirectionController FlowController => this;
 
+		[System.ComponentModel.TypeConverter(typeof(FlowDirectionConverter))]
 		public FlowDirection FlowDirection
 		{
 			get { return (FlowDirection)GetValue(FlowDirectionProperty); }
@@ -433,6 +438,18 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (double)GetValue(MinimumWidthRequestProperty); }
 			set { SetValue(MinimumWidthRequestProperty, value); }
+		}
+
+		public double MaximumHeightRequest
+		{
+			get { return (double)GetValue(MaximumHeightRequestProperty); }
+			set { SetValue(MaximumHeightRequestProperty, value); }
+		}
+
+		public double MaximumWidthRequest
+		{
+			get { return (double)GetValue(MaximumWidthRequestProperty); }
+			set { SetValue(MaximumWidthRequestProperty, value); }
 		}
 
 		public double Opacity
@@ -1037,6 +1054,10 @@ namespace Microsoft.Maui.Controls
 			{
 				fe.Handler?.UpdateValue(nameof(IView.Width));
 				fe.Handler?.UpdateValue(nameof(IView.Height));
+				fe.Handler?.UpdateValue(nameof(IView.MinimumHeight));
+				fe.Handler?.UpdateValue(nameof(IView.MinimumWidth));
+				fe.Handler?.UpdateValue(nameof(IView.MaximumHeight));
+				fe.Handler?.UpdateValue(nameof(IView.MaximumWidth));
 			}
 
 			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.SizeRequestChanged);

@@ -4,15 +4,6 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	[System.ComponentModel.TypeConverter(typeof(FlowDirectionConverter))]
-	public enum FlowDirection
-	{
-		MatchParent = 0,
-		LeftToRight = 1,
-		RightToLeft = 2,
-	}
-
-	[Xaml.TypeConversion(typeof(FlowDirection))]
 	public class FlowDirectionConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
