@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui;
 
-namespace MauiApp1
+namespace MauiApp._1
 {
 	class Program : MauiApplication
 	{
