@@ -190,6 +190,7 @@ Task("dotnet-pack")
         });
         foreach (var nupkg in GetFiles($"{assetsDir}/**/*.nupkg"))
             DeleteFile(nupkg);
+        Zip(assetsDir, $"{assetsDir}.zip");
     });
 
 Task("dotnet-build-test")
