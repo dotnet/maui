@@ -5,7 +5,6 @@
     <RootNamespace>Microsoft.Maui.Resizetizer</RootNamespace>
     <AssemblyName>Microsoft.Maui.Resizetizer</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
-    <LangVersion>10.0</LangVersion>
     <IsPackable>false</IsPackable>
     <IsTrimmable>false</IsTrimmable>
   </PropertyGroup>
