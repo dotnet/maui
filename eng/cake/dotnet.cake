@@ -174,6 +174,22 @@ Task("dotnet-pack")
             DiagnosticOutput = true,
             ArgumentCustomization = args => args.Append($"./eng/package.ps1 -configuration \"{configuration}\"")
         });
+
+        // Download some additional symbols that need to be archived along with the maui symbols:
+        //  - _NativeAssets.windows
+        //     - libSkiaSharp.pdb
+        //     - libHarfBuzzSharp.pdb
+        var assetsDir = "./artifacts/additional-assets";
+        var nativeAssetsVersion = XmlPeek("./eng/Microsoft.Extensions.targets", "/Project/PropertyGroup/_SkiaSharpNativeAssetsVersion");
+        NuGetInstall("_NativeAssets.windows", new NuGetInstallSettings
+        {
+            Version = nativeAssetsVersion,
+            ExcludeVersion  = true,
+            OutputDirectory = assetsDir,
+            Source = new[] { "https://aka.ms/skiasharp-eap/index.json" },
+        });
+        foreach (var nupkg in GetFiles($"{assetsDir}/**/*.nupkg"))
+            DeleteFile(nupkg);
     });
 
 Task("dotnet-build-test")
