@@ -8,7 +8,7 @@
    <!-- Microsoft.Maui.Graphics related Packages -->
   <PropertyGroup>
     <_MicrosoftGraphicsWin2DVersion>0.8.2.23</_MicrosoftGraphicsWin2DVersion>
-    <_MicrosoftMauiGraphics>6.0.100-rc.1.413</_MicrosoftMauiGraphics>
+    <_MicrosoftMauiGraphics>6.0.100-rc.1.414</_MicrosoftMauiGraphics>
   </PropertyGroup>
    <!-- WINUI related Packages -->
   <PropertyGroup>
