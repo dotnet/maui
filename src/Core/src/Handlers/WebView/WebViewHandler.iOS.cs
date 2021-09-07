@@ -1,62 +1,53 @@
-﻿using System;
-using Foundation;
-using UIKit;
-using WebKit;
+﻿using WebKit;
 using RectangleF = CoreGraphics.CGRect;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class WebViewHandler : ViewHandler<IWebView, WKWebView>, IWebViewDelegate
+	public partial class WebViewHandler : ViewHandler<IWebView, WKWebView>
 	{
-		static WKProcessPool? SharedPool;
+		protected virtual float MinimumSize => 44f;
 
-		protected override WKWebView CreateNativeView()
-		{
-			return new WKWebView(RectangleF.Empty, CreateConfiguration())
-			{
-				BackgroundColor = UIColor.Clear,
-				AutosizesSubviews = true
-			};
-		}
-
-		// https://developer.apple.com/forums/thread/99674
-		// WKWebView and making sure cookies synchronize is really quirky
-		// The main workaround I've found for ensuring that cookies synchronize 
-		// is to share the Process Pool between all WkWebView instances.
-		// It also has to be shared at the point you call init
-		static WKWebViewConfiguration CreateConfiguration()
-		{
-			var config = new WKWebViewConfiguration();
-
-			if (SharedPool == null)
-				SharedPool = config.ProcessPool;
-			else
-				config.ProcessPool = SharedPool;
-			
-			return config;
-		}
+		protected override WKWebView CreateNativeView() => new MauiWKWebView(RectangleF.Empty);
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)
 		{
-			IWebViewDelegate webViewDelegate = handler;
+			IWebViewDelegate? webViewDelegate = handler.NativeView as IWebViewDelegate;
 
 			handler.NativeView?.UpdateSource(webView, webViewDelegate);
 		}
-				
-		public void LoadHtml(string? html, string? baseUrl)
-		{
-			if (html != null)
-				NativeView?.LoadHtmlString(html, baseUrl == null ? new NSUrl(NSBundle.MainBundle.BundlePath, true) : new NSUrl(baseUrl, true));
-		}
 
-		public void LoadUrl(string? url)
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var uri = new Uri(url ?? string.Empty);
-			var safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);
-			var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
-			NSUrlRequest request = new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri));
+			var size = base.GetDesiredSize(widthConstraint, heightConstraint);
 
-			NativeView?.LoadRequest(request);
+			var set = false;
+
+			var width = widthConstraint;
+			var height = heightConstraint;
+
+			if (size.Width == 0)
+			{
+				if (widthConstraint <= 0 || double.IsInfinity(widthConstraint))
+				{
+					width = MinimumSize;
+					set = true;
+				}
+			}
+
+			if (size.Height == 0)
+			{
+				if (heightConstraint <= 0 || double.IsInfinity(heightConstraint))
+				{
+					height = MinimumSize;
+					set = true;
+				}
+			}
+
+			if (set)
+				size = new Size(width, height);
+
+			return size;
 		}
 	}
 }
