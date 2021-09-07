@@ -8,12 +8,12 @@ namespace Microsoft.Maui
 	public interface IContentView : IView
 	{
 		/// <summary>
-		/// Gets the content of this view.
+		/// Gets the raw content of this view.
 		/// </summary>
 		object? Content { get; }
 
 		/// <summary>
-		/// Gets the content of this view it will be rendered in the user interface.
+		/// Gets the content of this view as it will be rendered in the user interface, including any transformations or applied templates.
 		/// </summary>
 		IView? PresentedContent { get; }
 
