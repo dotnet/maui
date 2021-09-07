@@ -13,5 +13,10 @@ namespace Microsoft.Maui.Platform
 		{
 			platformProgressBar.Color = progress.ProgressColor.ToPlatformEFL();
 		}
+
+		public static void UpdateProgressColor(this ProgressBar nativeProgressBar, IProgress progress)
+		{
+			nativeProgressBar.Color = progress.ProgressColor.ToNativeEFL();
+		}
 	}
 }
