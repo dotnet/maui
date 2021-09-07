@@ -22,8 +22,19 @@ namespace Microsoft.Maui
 		/// </summary>
 		Thickness Padding { get; }
 
-		// TODO ezhart Document this
+		/// <summary>
+		/// Measures the desired size of the IContentView within the given constraints.
+		/// </summary>
+		/// <param name="widthConstraint">The width limit for measuring the IContentView.</param>
+		/// <param name="heightConstraint">The height limit for measuring the IContentView.</param>
+		/// <returns>The desired size of the IContentView.</returns>
 		Size CrossPlatformMeasure(double widthConstraint, double heightConstraint);
+
+		/// <summary>
+		/// Arranges the content of the IContentView within the given bounds.
+		/// </summary>
+		/// <param name="bounds">The bounds in which the IContentView's content should be arranged.</param>
+		/// <returns>The actual size of the arranged IContentView.</returns>
 		Size CrossPlatformArrange(Rectangle bounds);
 	}
 }
