@@ -166,7 +166,6 @@ stages:
               inputs:
                 Contents: |
                   artifacts/**/*.*nupkg
-                  artifacts/**/*.zip
                   artifacts/vs-workload.props
                   eng/automation/SignList.xml
                 TargetFolder: $(build.artifactstagingdirectory)
