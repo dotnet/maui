@@ -22,7 +22,7 @@ namespace Maui.Controls.Sample.Pages
 			{
 				var view = layout.FindViewById<Android.Views.View>(Resource.Id.maui_toolbar);
 
-				if (view.LayoutParameters is Google.Android.Material.AppBar.AppBarLayout.LayoutParams layoutParams)
+				if (view?.LayoutParameters is Google.Android.Material.AppBar.AppBarLayout.LayoutParams layoutParams)
 				{
 					layoutParams.ScrollFlags =
 						Google.Android.Material.AppBar.AppBarLayout.LayoutParams.ScrollFlagScroll
