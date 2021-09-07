@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			Child.UpdateLayout();
 
-			if (Child.View is PageViewGroup pageViewGroup)
+			if (Child.View is ContentViewGroup pageViewGroup)
 			{
 				// This is a way to handle situations where the root page is shimmed and uses fragments to host other pages (e.g., NavigationPageRenderer)
 				// The old layout system would have set the width/height of the contained Page by now; the xplat layout call would have come
