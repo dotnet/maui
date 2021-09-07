@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
 
-		ILayoutManager Maui.ILayout.LayoutManager => this;
 		IList IBindableLayout.Children => _children;
 
 		bool ISafeAreaView.IgnoreSafeArea => false;
@@ -547,6 +546,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (!ShouldLayoutChildren())
 				return bounds.Size;
 
+			UpdateChildrenLayout();
+
+			return Frame.Size;
+		}
+
+		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint) 
+		{
+			return OnMeasure(widthConstraint, heightConstraint).Request;
+		}
+
+		public Size CrossPlatformArrange(Rectangle bounds)
+		{
 			UpdateChildrenLayout();
 
 			return Frame.Size;
