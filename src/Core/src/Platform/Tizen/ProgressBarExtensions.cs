@@ -8,5 +8,10 @@ namespace Microsoft.Maui
 		{
 			nativeProgressBar.Value = progress.Progress;
 		}
+
+		public static void UpdateProgressColor(this ProgressBar nativeProgressBar, IProgress progress)
+		{
+			nativeProgressBar.Color = progress.ProgressColor.ToNativeEFL();
+		}
 	}
 }
