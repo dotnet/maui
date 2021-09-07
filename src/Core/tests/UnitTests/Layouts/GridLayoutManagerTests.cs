@@ -1525,5 +1525,42 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// The minimum value should beat out the maximum value
 			Assert.Equal(75, measure.Height);
 		}
+
+		[Theory]
+		[InlineData(100, 200, 210, 200)]
+		[InlineData(200, 100, 210, 200)]
+		[InlineData(100, 100, 210, 100)]
+		[InlineData(100, 100, 50, 50)]
+		public void AutoCellsSizeToLargestView(double view0Size, double view1Size, double constraintSize, double expectedSize)
+		{
+			var grid = CreateGridLayout(rows: "Auto", columns: "Auto");
+
+			// Simulate views which size to their constraints but max out at a certain size
+
+			var view0 = CreateTestView();
+			view0.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(
+				(args) => new Size((double)args[0] >= view0Size ? view0Size : (double)args[0],
+									(double)args[1] >= view0Size ? view0Size : (double)args[1]));
+
+			var view1 = CreateTestView();
+			view1.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(
+				(args) => new Size((double)args[0] >= view1Size ? view1Size : (double)args[0],
+									(double)args[1] >= view1Size ? view1Size : (double)args[1]));
+
+			SubstituteChildren(grid, view0, view1);
+
+			// Put both views in row/column 0/0
+			SetLocation(grid, view0);
+			SetLocation(grid, view1);
+
+			MeasureAndArrange(grid, constraintSize, constraintSize);
+
+			var expectedRectangle = new Rectangle(0, 0, expectedSize, expectedSize);
+
+			// When the constraint is bigger than both views, we expect the Auto row/col to take on the size
+			// of the largest of the two views; otherwise, the constraint should determine the size
+			AssertArranged(view0, expectedRectangle);
+			AssertArranged(view1, expectedRectangle);
+		}
 	}
 }
