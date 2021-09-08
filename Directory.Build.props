@@ -42,7 +42,7 @@
     <!-- Workaround: https://github.com/dotnet/sdk/issues/19050 -->
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
 
-    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.UnitTests')) or $(MSBuildProjectName.EndsWith('.Tests'))">true</IsTestProject>
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('.UnitTests')) or $(MSBuildProjectName.EndsWith('.Tests')) or $(MSBuildProjectName.EndsWith('.UnitTests-net6'))">true</IsTestProject>
     <EnableSingleFileAnalyzer Condition="'$(IsTestProject)' != 'true'">true</EnableSingleFileAnalyzer>
   </PropertyGroup>
 
