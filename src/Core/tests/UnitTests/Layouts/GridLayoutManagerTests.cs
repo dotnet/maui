@@ -1531,7 +1531,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[InlineData(200, 100, 210, 200)]
 		[InlineData(100, 100, 210, 100)]
 		[InlineData(100, 100, 50, 50)]
-		public void AutoCellsSizeToLargestView(double view0Size, double view1Size, double constraintSize, double expectedSize) 
+		public void AutoCellsSizeToLargestView(double view0Size, double view1Size, double constraintSize, double expectedSize)
 		{
 			var grid = CreateGridLayout(rows: "Auto", columns: "Auto");
 
@@ -1539,7 +1539,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			var view0 = CreateTestView();
 			view0.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(
-				(args) => new Size((double)args[0] >= view0Size ? view0Size : (double)args[0], 
+				(args) => new Size((double)args[0] >= view0Size ? view0Size : (double)args[0],
 									(double)args[1] >= view0Size ? view0Size : (double)args[1]));
 
 			var view1 = CreateTestView();

@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Handlers
 
 			var viewGroup = new LayoutViewGroup(Context!)
 			{
-				CrossPlatformMeasure = VirtualView.LayoutManager.Measure,
-				CrossPlatformArrange = VirtualView.LayoutManager.ArrangeChildren
+				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
+				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
 
 			// .NET MAUI layouts should not impose clipping on their children	
@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.CrossPlatformMeasure = VirtualView.LayoutManager.Measure;
-			NativeView.CrossPlatformArrange = VirtualView.LayoutManager.ArrangeChildren;
+			NativeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 
 			NativeView.RemoveAllViews();
 			foreach (var child in VirtualView)
