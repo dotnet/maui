@@ -20,6 +20,11 @@
   <PropertyGroup>
     <_XamarinAndroidGlideVersion>4.11.0.1</_XamarinAndroidGlideVersion>
   </PropertyGroup>
+  <!-- SkiaSharp related Packages -->
+  <PropertyGroup>
+    <_SkiaSharpVersion>2.88.0-preview.127</_SkiaSharpVersion>
+    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.d5187387149d680645e1dbefbb726c50bfab46e9.127</_SkiaSharpNativeAssetsVersion>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
     <!-- Debugger workaround -->
     <MtouchExtraArgs>$(MtouchExtraArgs) --setenv:MONO_THREADS_SUSPEND=preemptive</MtouchExtraArgs>
