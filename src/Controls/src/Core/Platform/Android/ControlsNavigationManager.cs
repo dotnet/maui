@@ -156,11 +156,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				ToolbarTracker.Target = CurrentPage;
 			}
-
-			if (CurrentPage is ITitledElement titledElement)
-			{
-				Toolbar.Title = titledElement.Title;
-			}
 		}
 
 		void RegisterToolbar()

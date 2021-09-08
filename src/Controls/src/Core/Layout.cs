@@ -551,7 +551,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return Frame.Size;
 		}
 
-		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint) 
+		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			return OnMeasure(widthConstraint, heightConstraint).Request;
 		}
