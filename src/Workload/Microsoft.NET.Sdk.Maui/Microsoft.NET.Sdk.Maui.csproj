@@ -54,6 +54,7 @@
       <_VersionsToReplace Include="MicrosoftExtensionsOptionsPackageVersion" />
       <_VersionsToReplace Include="MicrosoftExtensionsPrimitivesPackageVersion" />
       <_VersionsToReplace Include="MicrosoftJSInteropPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftMauiGraphicsVersion" />
       <_VersionsToReplace Include="SystemDiagnosticsDiagnosticSourcePackageVersion" />
       <_VersionsToReplace Include="SystemDiagnosticsEventLogPackageVersion" />
       <_VersionsToReplace Include="SystemIOPipelinesPackageVersion" />
