@@ -35,9 +35,6 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(TabbedPageGallery), "TabbedPage",
 				"Display pages as a set of Tabs."),
-
-			new SectionModel(typeof(WebViewPage), "WebView",
-				"WebView displays Web pages or HTML content."),
 		};
 	}
 }
