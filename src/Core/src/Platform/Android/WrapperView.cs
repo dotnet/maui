@@ -82,10 +82,12 @@ namespace Microsoft.Maui
 		{
 			// If is not shadowed, skip
 			if (Shadow != null && !Shadow.Value.IsEmpty)
+			{
 				DrawShadow(canvas);
+			}
 			else
 			{
-				if(_shadowBitmap != null)
+				if (_shadowBitmap != null)
 				{
 					ClearShadowResources();
 				}
