@@ -82,14 +82,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapContent(ScrollViewHandler handler, IScrollView scrollView)
 		{
-			if (handler.MauiContext == null || scrollView.Content == null || handler.Canvas == null)
+			if (handler.MauiContext == null || scrollView.PresentedContent == null || handler.Canvas == null)
 			{
 				return;
 			}
 
 			handler.Canvas.UnPackAll();
-			handler.Canvas.PackEnd(scrollView.Content.ToNative(handler.MauiContext));
-			if (scrollView.Content.Handler is INativeViewHandler thandler)
+			handler.Canvas.PackEnd(scrollView.PresentedContent.ToNative(handler.MauiContext));
+			if (scrollView.PresentedContent.Handler is INativeViewHandler thandler)
 			{
 				thandler?.SetParent(handler);
 			}

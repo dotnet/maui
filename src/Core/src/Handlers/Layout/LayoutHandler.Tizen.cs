@@ -24,8 +24,8 @@ namespace Microsoft.Maui.Handlers
 
 			var view = new LayoutCanvas(NativeParent, VirtualView)
 			{
-				CrossPlatformMeasure = VirtualView.LayoutManager.Measure,
-				CrossPlatformArrange = VirtualView.LayoutManager.ArrangeChildren
+				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
+				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
 
 			view.Show();
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return VirtualView.LayoutManager.Measure(widthConstraint, heightConstraint);
+			return VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
 		}
 
 		public override void SetVirtualView(IView view)
@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.CrossPlatformMeasure = VirtualView.LayoutManager.Measure;
-			NativeView.CrossPlatformArrange = VirtualView.LayoutManager.ArrangeChildren;
+			NativeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 
 			NativeView.Children.Clear();
 
