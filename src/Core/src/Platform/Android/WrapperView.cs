@@ -164,7 +164,8 @@ namespace Microsoft.Maui
 					var shadowOpacity = Shadow.Value.Opacity;
 
 					// Draw extracted alpha bounds of our local canvas
-					_shadowPaint.Color = Shadow.Value.Color.WithAlpha(shadowOpacity).ToNative();
+					if (Shadow.Value.Color != null)
+						_shadowPaint.Color = Shadow.Value.Color.WithAlpha(shadowOpacity).ToNative();
 
 					// Apply the shadow radius 
 					float radius = Shadow.Value.Radius;
@@ -203,7 +204,8 @@ namespace Microsoft.Maui
 			}
 
 			// Reset alpha to draw child with full alpha
-			_shadowPaint.Color = Shadow.Value.Color.ToNative();
+			if (Shadow.Value.Color != null)
+				_shadowPaint.Color = Shadow.Value.Color.ToNative();
 
 			// Draw shadow bitmap
 			if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)
