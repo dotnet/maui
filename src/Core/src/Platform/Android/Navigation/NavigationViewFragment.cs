@@ -76,40 +76,11 @@ namespace Microsoft.Maui
 
 		}
 
-		//public override void OnViewCreated(AView view, Bundle savedInstanceState)
-		//{
-		//	base.OnViewCreated(view, savedInstanceState);
-
-		//	var controller = NavHostFragment.FindNavController(this);
-		//	var appbarConfig =
-		//		new AppBarConfiguration
-		//			.Builder(controller.Graph)
-		//			.Build();
-
-		//	NavigationUI
-		//		.SetupWithNavController(NavigationLayout.Toolbar, controller, appbarConfig);
-
-		//	NavigationLayout.Toolbar.SetNavigationOnClickListener(BackClick);
-		//}
-
 		public override void OnDestroyView()
 		{
 			_navigationLayout = null;
 			base.OnDestroyView();
 		}
-
-		//public override void OnCreate(Bundle savedInstanceState)
-		//{
-		//	base.OnCreate(savedInstanceState);
-		//	RequireActivity()
-		//		.OnBackPressedDispatcher
-		//		.AddCallback(this, BackClick);
-		//}
-
-		//public void HandleOnBackPressed()
-		//{
-		//	NavigationManager.BackButtonPressed();
-		//}
 
 		public override Animation OnCreateAnimation(int transit, bool enter, int nextAnim)
 		{
