@@ -1,4 +1,4 @@
-﻿using Tizen.UIExtensions.Common;
+﻿﻿using Tizen.UIExtensions.Common;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Handlers
@@ -28,29 +28,6 @@ namespace Microsoft.Maui.Handlers
 
 		public override void NativeArrange(Graphics.Rectangle frame)
 		{
-			// empty on purpose
-		}
-
-		void UpdateContent()
-		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-
-			NativeView.Children.Clear();
-			_contentHandler?.Dispose();
-			_contentHandler = null;
-
-			if (VirtualView is IContentView cv && cv.Content is IView view)
-			{
-				NativeView.Children.Add(view.ToNative(MauiContext));
-
-				if (view.Handler is INativeViewHandler thandler)
-				{
-					thandler?.SetParent(this);
-					_contentHandler = thandler;
-				}
-			}
 		}
 	}
 }
