@@ -82,112 +82,12 @@ namespace Microsoft.Maui
 		{
 			// If is not shadowed, skip
 			if (Shadow != null)
-			{
-				if (_shadowCanvas == null)
-					_shadowCanvas = new Canvas();
-
-				if (_shadowPaint == null)
-					_shadowPaint = new Android.Graphics.Paint
-					{
-						AntiAlias = true,
-						Dither = true,
-						FilterBitmap = true
-					};
-
-				// If need to redraw shadow
-				if (_invalidateShadow)
-				{
-					// If bounds is zero
-					if (_viewBounds.Width() != 0 && _viewBounds.Height() != 0)
-					{
-						var bitmapHeight = _viewBounds.Height() + MaximumRadius;
-						var bitmapWidth = _viewBounds.Width() + MaximumRadius;
-
-						// Reset bitmap to bounds
-						_shadowBitmap = Bitmap.CreateBitmap(
-							bitmapWidth, bitmapHeight, Bitmap.Config.Argb8888
-						);
-
-						// Reset Canvas
-						_shadowCanvas.SetBitmap(_shadowBitmap);
-
-						_invalidateShadow = false;
-
-						// Create the local copy of all content to draw bitmap as a
-						// bottom layer of natural canvas.
-						base.DispatchDraw(_shadowCanvas);
-
-						// Get the alpha bounds of bitmap
-						Bitmap extractAlpha = _shadowBitmap.ExtractAlpha();
-
-						// Clear past content content to draw shadow
-						_shadowCanvas.DrawColor(Android.Graphics.Color.Black, PorterDuff.Mode.Clear);
-
-						var shadowOpacity = Shadow.Value.Opacity;
-
-						// Draw extracted alpha bounds of our local canvas
-						_shadowPaint.Color = Shadow.Value.Color.WithAlpha(shadowOpacity).ToNative();
-
-						// Apply the shadow radius 
-						float radius = Shadow.Value.Radius;
-
-						if (radius <= 0)
-							radius = 0.01f;
-
-						if (radius > 100)
-							radius = MaximumRadius;
-
-						_shadowPaint.SetMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.Normal));
-
-						float shadowOffsetX = (float)Shadow.Value.Offset.Width;
-						float shadowOffsetY = (float)Shadow.Value.Offset.Height;
-
-						if (Clip == null)
-							_shadowCanvas.DrawBitmap(extractAlpha, shadowOffsetX, shadowOffsetY, _shadowPaint);
-						else
-						{
-							var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
-							var path = Clip.PathForBounds(bounds)?.AsAndroidPath();
-
-							path.Offset(shadowOffsetX, shadowOffsetY);
-
-							_shadowCanvas.DrawPath(path, _shadowPaint);
-						}
-
-						// Recycle and clear extracted alpha
-						extractAlpha.Recycle();
-					}
-					else
-					{
-						// Create placeholder bitmap when size is zero and wait until new size coming up
-						_shadowBitmap = Bitmap.CreateBitmap(1, 1, Bitmap.Config.Rgb565!);
-					}
-				}
-
-				// Reset alpha to draw child with full alpha
-				_shadowPaint.Color = Shadow.Value.Color.ToNative();
-
-				// Draw shadow bitmap
-				if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)
-					canvas.DrawBitmap(_shadowBitmap, 0.0F, 0.0F, _shadowPaint);
-			}
-
+				DrawShadow(canvas);
+		
 			// Clip the child view
 			if (Clip != null)
-			{
-				var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
-
-				if (_lastPathSize != bounds.Size || _currentPath == null)
-				{
-					var path = Clip.PathForBounds(bounds);
-					_currentPath = path?.AsAndroidPath();
-					_lastPathSize = bounds.Size;
-				}
-
-				if (_currentPath != null)
-					canvas.ClipPath(_currentPath);
-			}
-
+				ClipChild(canvas);
+			
 			// Draw child`s
 			base.DispatchDraw(canvas);
 		}
@@ -202,6 +102,112 @@ namespace Microsoft.Maui
 		{
 			_invalidateShadow = true;
 			PostInvalidate();
+		}
+
+		void ClipChild(Canvas canvas)
+		{
+			var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
+
+			if (_lastPathSize != bounds.Size || _currentPath == null)
+			{
+				var path = Clip.PathForBounds(bounds);
+				_currentPath = path?.AsAndroidPath();
+				_lastPathSize = bounds.Size;
+			}
+
+			if (_currentPath != null)
+				canvas.ClipPath(_currentPath);
+		}
+
+		void DrawShadow(Canvas canvas)
+		{
+			if (_shadowCanvas == null)
+				_shadowCanvas = new Canvas();
+
+			if (_shadowPaint == null)
+				_shadowPaint = new Android.Graphics.Paint
+				{
+					AntiAlias = true,
+					Dither = true,
+					FilterBitmap = true
+				};
+
+			// If need to redraw shadow
+			if (_invalidateShadow)
+			{
+				// If bounds is zero
+				if (_viewBounds.Width() != 0 && _viewBounds.Height() != 0)
+				{
+					var bitmapHeight = _viewBounds.Height() + MaximumRadius;
+					var bitmapWidth = _viewBounds.Width() + MaximumRadius;
+
+					// Reset bitmap to bounds
+					_shadowBitmap = Bitmap.CreateBitmap(
+						bitmapWidth, bitmapHeight, Bitmap.Config.Argb8888
+					);
+
+					// Reset Canvas
+					_shadowCanvas.SetBitmap(_shadowBitmap);
+
+					_invalidateShadow = false;
+
+					// Create the local copy of all content to draw bitmap as a
+					// bottom layer of natural canvas.
+					base.DispatchDraw(_shadowCanvas);
+
+					// Get the alpha bounds of bitmap
+					Bitmap extractAlpha = _shadowBitmap.ExtractAlpha();
+
+					// Clear past content content to draw shadow
+					_shadowCanvas.DrawColor(Android.Graphics.Color.Black, PorterDuff.Mode.Clear);
+
+					var shadowOpacity = Shadow.Value.Opacity;
+
+					// Draw extracted alpha bounds of our local canvas
+					_shadowPaint.Color = Shadow.Value.Color.WithAlpha(shadowOpacity).ToNative();
+
+					// Apply the shadow radius 
+					float radius = Shadow.Value.Radius;
+
+					if (radius <= 0)
+						radius = 0.01f;
+
+					if (radius > 100)
+						radius = MaximumRadius;
+
+					_shadowPaint.SetMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.Normal));
+
+					float shadowOffsetX = (float)Shadow.Value.Offset.Width;
+					float shadowOffsetY = (float)Shadow.Value.Offset.Height;
+
+					if (Clip == null)
+						_shadowCanvas.DrawBitmap(extractAlpha, shadowOffsetX, shadowOffsetY, _shadowPaint);
+					else
+					{
+						var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
+						var path = Clip.PathForBounds(bounds)?.AsAndroidPath();
+
+						path.Offset(shadowOffsetX, shadowOffsetY);
+
+						_shadowCanvas.DrawPath(path, _shadowPaint);
+					}
+
+					// Recycle and clear extracted alpha
+					extractAlpha.Recycle();
+				}
+				else
+				{
+					// Create placeholder bitmap when size is zero and wait until new size coming up
+					_shadowBitmap = Bitmap.CreateBitmap(1, 1, Bitmap.Config.Rgb565!);
+				}
+			}
+
+			// Reset alpha to draw child with full alpha
+			_shadowPaint.Color = Shadow.Value.Color.ToNative();
+
+			// Draw shadow bitmap
+			if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)
+				canvas.DrawBitmap(_shadowBitmap, 0.0F, 0.0F, _shadowPaint);
 		}
 	}
 }
