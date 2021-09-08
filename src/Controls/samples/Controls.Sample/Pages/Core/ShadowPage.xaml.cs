@@ -15,6 +15,11 @@ namespace Maui.Controls.Sample.Pages
 			UpdateShadow();
 		}
 
+		void RemoveShadowClicked(object sender, EventArgs e)
+		{
+			ClippedShadowView.Shadow = ShadowView.Shadow = Shadow.Zero;
+		}	
+
 		void OnBackgroundChanged(object sender, TextChangedEventArgs e)
 		{
 			UpdateBackground();

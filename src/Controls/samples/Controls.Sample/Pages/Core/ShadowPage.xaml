@@ -129,6 +129,8 @@
                     Maximum="1"
                     Value="1"
                     ValueChanged="OnShadowOpacityChanged"/>
+
+                <Button Text="Remove Shadow" Clicked="RemoveShadowClicked"  HorizontalOptions="Center" Padding="5"></Button>
             </StackLayout>
         </ScrollView>
     </Grid>

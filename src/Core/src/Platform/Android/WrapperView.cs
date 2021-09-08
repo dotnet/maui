@@ -81,8 +81,15 @@ namespace Microsoft.Maui
 		protected override void DispatchDraw(Canvas canvas)
 		{
 			// If is not shadowed, skip
-			if (Shadow != null)
+			if (Shadow != null && !Shadow.Value.IsEmpty)
 				DrawShadow(canvas);
+			else
+			{
+				if(_shadowBitmap != null)
+				{
+					ClearShadowResources();
+				}
+			}
 		
 			// Clip the child view
 			if (Clip != null)
@@ -132,6 +139,8 @@ namespace Microsoft.Maui
 					FilterBitmap = true
 				};
 
+			Graphics.Color shadowColor = Shadow.Value.Color;
+			
 			// If need to redraw shadow
 			if (_invalidateShadow)
 			{
@@ -164,8 +173,7 @@ namespace Microsoft.Maui
 					var shadowOpacity = Shadow.Value.Opacity;
 
 					// Draw extracted alpha bounds of our local canvas
-					if (Shadow.Value.Color != null)
-						_shadowPaint.Color = Shadow.Value.Color.WithAlpha(shadowOpacity).ToNative();
+					_shadowPaint.Color = shadowColor.WithAlpha(shadowOpacity).ToNative();
 
 					// Apply the shadow radius 
 					float radius = Shadow.Value.Radius;
@@ -204,12 +212,21 @@ namespace Microsoft.Maui
 			}
 
 			// Reset alpha to draw child with full alpha
-			if (Shadow.Value.Color != null)
-				_shadowPaint.Color = Shadow.Value.Color.ToNative();
+			_shadowPaint.Color = shadowColor.ToNative();
 
 			// Draw shadow bitmap
 			if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)
 				canvas.DrawBitmap(_shadowBitmap, 0.0F, 0.0F, _shadowPaint);
+		}
+
+		void ClearShadowResources()
+		{
+			_shadowCanvas?.Dispose();
+			_shadowPaint?.Dispose();
+			_shadowBitmap?.Dispose();
+			_shadowCanvas = null;
+			_shadowPaint = null;
+			_shadowBitmap = null;
 		}
 	}
 }
