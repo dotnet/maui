@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Layouts
 			return frameY;
 		}
 
-		public static Size MeasureContent(this IContentView contentView, double widthConstraint, double heightConstraint) 
+		public static Size MeasureContent(this IContentView contentView, double widthConstraint, double heightConstraint)
 		{
 			var content = contentView.PresentedContent;
 			var padding = contentView.Padding;
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Layouts
 			return new Size(contentSize.Width + padding.HorizontalThickness, contentSize.Height + padding.VerticalThickness);
 		}
 
-		public static void ArrangeContent(this IContentView contentView, Rectangle bounds) 
+		public static void ArrangeContent(this IContentView contentView, Rectangle bounds)
 		{
 			if (contentView.PresentedContent == null)
 			{
