@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.ContainerView)?.UpdateClip(view);
 		}
 
-		public static void MapShadow(ViewHandler handler, IView view)
+		public static void MapShadow(IViewHandler handler, IView view)
 		{
 			var shadow = view.Shadow;
 
