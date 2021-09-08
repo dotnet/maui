@@ -391,36 +391,36 @@ namespace Microsoft.Maui.Controls.Platform
 								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 									return;
 #endif
-								panGestureRecognizer.SendPanStarted(view, Application.Current.PanGestureId);
+								panGestureRecognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 								break;
 							case NativeGestureRecognizerState.Changed:
 #if __MOBILE__
 								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 								{
 									r.State = NativeGestureRecognizerState.Ended;
-									panGestureRecognizer.SendPanCompleted(view, Application.Current.PanGestureId);
-									Application.Current.PanGestureId++;
+									panGestureRecognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
+									PanGestureRecognizer.CurrentId.Increment();
 									return;
 								}
 #endif
 								var translationInView = r.TranslationInView(_nativeView);
-								panGestureRecognizer.SendPan(view, translationInView.X, translationInView.Y, Application.Current.PanGestureId);
+								panGestureRecognizer.SendPan(view, translationInView.X, translationInView.Y, PanGestureRecognizer.CurrentId.Value);
 								break;
 							case NativeGestureRecognizerState.Cancelled:
 							case NativeGestureRecognizerState.Failed:
-								panGestureRecognizer.SendPanCanceled(view, Application.Current.PanGestureId);
-								Application.Current.PanGestureId++;
+								panGestureRecognizer.SendPanCanceled(view, PanGestureRecognizer.CurrentId.Value);
+								PanGestureRecognizer.CurrentId.Increment();
 								break;
 							case NativeGestureRecognizerState.Ended:
 #if __MOBILE__
 								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 								{
-									panGestureRecognizer.SendPanCompleted(view, Application.Current.PanGestureId);
-									Application.Current.PanGestureId++;
+									panGestureRecognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
+									PanGestureRecognizer.CurrentId.Increment();
 								}
 #else
-								panGestureRecognizer.SendPanCompleted(view, Application.Current.PanGestureId);
-								Application.Current.PanGestureId++;
+								panGestureRecognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
+								PanGestureRecognizer.CurrentId.Increment();
 #endif
 								break;
 						}

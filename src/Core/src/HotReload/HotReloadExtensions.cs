@@ -24,7 +24,7 @@ namespace Microsoft.Maui.HotReload
 
 			if (view is IContentView p)
 			{
-				CheckHandlers(p.Content);
+				CheckHandlers(p.PresentedContent);
 			}
 
 			if (view is IContainer layout)
