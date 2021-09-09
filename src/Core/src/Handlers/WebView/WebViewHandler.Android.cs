@@ -1,13 +1,11 @@
 ﻿using Android.Webkit;
-using Android.Widget;
 using static Android.Views.ViewGroup;
-using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class WebViewHandler : ViewHandler<IWebView, AWebView>
+	public partial class WebViewHandler : ViewHandler<IWebView, WebView>
 	{
-		protected override AWebView CreateNativeView()
+		protected override WebView CreateNativeView()
 		{
 			var aWebView = new MauiWebView(Context!)
 			{
@@ -16,7 +14,7 @@ namespace Microsoft.Maui.Handlers
 
 			return aWebView;
 		}
-		protected override void ConnectHandler(AWebView nativeView)
+		protected override void ConnectHandler(WebView nativeView)
 		{
 			MapWebChromeClient(this, VirtualView);
 			MapWebViewClient(this, VirtualView);
@@ -24,9 +22,10 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(nativeView);
 		}
 
-		protected override void DisconnectHandler(AWebView nativeView)
+		protected override void DisconnectHandler(WebView nativeView)
 		{
 			nativeView.StopLoading();
+			NativeView.WebChromeClient?.Dispose();
 		}
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)
@@ -43,7 +42,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapWebChromeClient(WebViewHandler handler, IWebView webView)
 		{
-			handler.NativeView.SetWebChromeClient(new WebChromeClient());
+			var mauiWebChromeClient = new MauiWebChromeClient();
+			mauiWebChromeClient.SetContext(handler.Context);
+			handler.NativeView.SetWebChromeClient(mauiWebChromeClient);
 		}
 		public static void MapWebViewSettings(WebViewHandler handler, IWebView webView)
 		{
