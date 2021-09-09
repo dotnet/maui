@@ -1,6 +1,6 @@
-﻿using WebKit;
+﻿using Microsoft.Maui.Graphics;
+using WebKit;
 using RectangleF = CoreGraphics.CGRect;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {

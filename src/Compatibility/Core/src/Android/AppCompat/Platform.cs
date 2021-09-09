@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		internal static IVisualElementRenderer CreateRenderer(
-			VisualElement element, 
+			VisualElement element,
 			Context context,
 			AndroidX.Fragment.App.FragmentManager fragmentManager = null,
 			global::Android.Views.LayoutInflater layoutInflater = null)

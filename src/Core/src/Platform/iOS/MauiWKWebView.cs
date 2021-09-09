@@ -1,8 +1,8 @@
 ﻿using System;
+using CoreGraphics;
 using Foundation;
 using UIKit;
 using WebKit;
-using CoreGraphics;
 
 namespace Microsoft.Maui
 {
