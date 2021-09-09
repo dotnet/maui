@@ -51,7 +51,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		IAnimationManager IScopedMauiContext.AnimationManager => _animationManager ??= 
+		IAnimationManager IScopedMauiContext.AnimationManager => _animationManager ??=
 			(_scopedMauiContext?.AnimationManager ?? Services.GetRequiredService<IAnimationManager>());
 	}
 }
