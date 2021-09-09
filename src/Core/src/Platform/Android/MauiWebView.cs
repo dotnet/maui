@@ -12,10 +12,10 @@ namespace Microsoft.Maui
 
 		WebViewClient? _webViewClient;
 		WebChromeClient? _webChromeClient;
-		
+
 		public MauiWebView(Context context) : base(context)
 		{
-		
+
 			_webViewClient = GetWebViewClient();
 			SetWebViewClient(_webViewClient);
 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 
 		protected override void Dispose(bool disposing)
 		{
-			if(disposing)
+			if (disposing)
 			{
 				_webViewClient?.Dispose();
 				_webChromeClient?.Dispose();

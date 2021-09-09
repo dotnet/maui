@@ -1,8 +1,8 @@
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages.Base;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui;
 
 #if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Components.Web;

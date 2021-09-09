@@ -39,7 +39,7 @@ namespace Microsoft.Maui
 			if (mauiContext is IScopedMauiContext smc)
 				fragmentManager = smc.FragmentManager;
 
-			return fragmentManager 
+			return fragmentManager
 				?? mauiContext.Context?.GetFragmentManager()
 				?? throw new InvalidOperationException("LayoutInflater Not Found");
 		}
