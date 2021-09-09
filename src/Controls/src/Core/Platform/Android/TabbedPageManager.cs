@@ -27,7 +27,7 @@ using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	internal class TabbedPageManager
+	public sealed class TabbedPageManager
 	{
 		ColorStateList _originalTabTextColors;
 		ColorStateList _orignalTabIconColors;

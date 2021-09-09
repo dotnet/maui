@@ -200,6 +200,7 @@ namespace Microsoft.Maui.Controls.Platform
 				ToolbarTracker.Target = CurrentPage;
 			}
 
+			// Check if the current Visible View has a Set of Tabs it would like to display
 			if (CurrentPage.Handler == null)
 			{
 				CurrentPage.HandlerChanged += OnHandlerChanged;
