@@ -36,7 +36,6 @@ namespace Microsoft.Maui
 
 		FragmentManager? IScopedMauiContext.FragmentManager => null;
 
-		NavigationManager? IScopedMauiContext.NavigationManager
-			=> throw new NotImplementedException();
+		NavigationManager? IScopedMauiContext.NavigationManager => null;
 	}
 }

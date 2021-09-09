@@ -48,7 +48,7 @@ namespace Microsoft.Maui
 
 		public NavigationManager(IMauiContext mauiContext)
 		{
-			MauiContext = new ScopedMauiContext(mauiContext, NavigationManager: this);
+			MauiContext = new ScopedMauiContext(mauiContext, navigationManager: this);
 			BackClick = new ProcessBackClick(this);
 		}
 
