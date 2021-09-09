@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -16,6 +14,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif
 			{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
+			{ typeof(BoxView), typeof(BoxViewHandler) },
 			{ typeof(Button), typeof(ButtonHandler) },
 			{ typeof(CheckBox), typeof(CheckBoxHandler) },
 			{ typeof(DatePicker), typeof(DatePickerHandler) },
@@ -34,6 +33,8 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Switch), typeof(SwitchHandler) },
 			{ typeof(TimePicker), typeof(TimePickerHandler) },
 			{ typeof(Page), typeof(PageHandler) },
+			{ typeof(WebView), typeof(WebViewHandler) },
+			{ typeof(IContentView), typeof(ContentViewHandler) },
 			{ typeof(Shapes.Ellipse), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Line), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Path), typeof(ShapeViewHandler) },
@@ -44,7 +45,9 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __ANDROID__ || __IOS__
 			{ typeof(RefreshView), typeof(RefreshViewHandler) },
 #endif
-			//{ typeof(NavigationPage), typeof(NavigationPageHandler) },
+#if __ANDROID__ 
+			{ typeof(NavigationPage), typeof(Controls.Handlers.NavigationPageHandler) },
+#endif
 		};
 
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)

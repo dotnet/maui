@@ -6,9 +6,12 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, AutoSuggestBox>
 	{
-		Brush? _defaultTextColorBrush;
+		Brush? _defaultPlaceholderColorBrush;
+		Brush? _defaultPlaceholderColorFocusBrush;
+		
+    Brush? _defaultTextColorBrush;
 		Brush? _defaultTextColorFocusBrush;
-
+    
 		Brush? _defaultDeleteButtonForegroundColorBrush;
 		Brush? _defaultDeleteButtonBackgroundColorBrush;
 
@@ -44,6 +47,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.NativeView?.UpdatePlaceholder(searchBar);
+		}
+
+		public static void MapPlaceholderColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdatePlaceholderColor(searchBar, handler._defaultPlaceholderColorBrush, handler._defaultPlaceholderColorFocusBrush, handler._queryTextBox);
 		}
 
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
@@ -90,6 +98,9 @@ namespace Microsoft.Maui.Handlers
 
 			if(_queryTextBox != null)
 			{
+				_defaultPlaceholderColorBrush = _queryTextBox.PlaceholderForegroundBrush;
+				_defaultPlaceholderColorFocusBrush = _queryTextBox.PlaceholderForegroundFocusBrush;
+
 				_defaultTextColorBrush = _queryTextBox.Foreground;
 				_defaultTextColorFocusBrush = _queryTextBox.ForegroundFocusBrush;
 			}

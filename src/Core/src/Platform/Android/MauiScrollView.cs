@@ -20,6 +20,7 @@ namespace Microsoft.Maui
 		ScrollOrientation _scrollOrientation = ScrollOrientation.Vertical;
 		ScrollBarVisibility _defaultHorizontalScrollVisibility = 0;
 		ScrollBarVisibility _defaultVerticalScrollVisibility = 0;
+		ScrollBarVisibility _horizontalScrollVisibility = 0;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -44,6 +45,7 @@ namespace Microsoft.Maui
 
 		public void SetHorizontalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)
 		{
+			_horizontalScrollVisibility = scrollBarVisibility;
 			if (_hScrollView == null)
 			{
 				return;
@@ -92,6 +94,7 @@ namespace Microsoft.Maui
 					_hScrollView = new MauiHorizontalScrollView(Context, this);
 					_hScrollView.HorizontalFadingEdgeEnabled = HorizontalFadingEdgeEnabled;
 					_hScrollView.SetFadingEdgeLength(HorizontalFadingEdgeLength);
+					SetHorizontalScrollBarVisibility(_horizontalScrollVisibility);
 				}
 
 				_hScrollView.IsBidirectional = _isBidirectional = orientation == ScrollOrientation.Both;

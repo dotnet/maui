@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	public class WebView : View, IWebViewController, IElementConfiguration<WebView>
+	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>
 	{
 		public static readonly BindableProperty SourceProperty = BindableProperty.Create("Source", typeof(WebViewSource), typeof(WebView), default(WebViewSource),
 			propertyChanging: (bindable, oldvalue, newvalue) =>

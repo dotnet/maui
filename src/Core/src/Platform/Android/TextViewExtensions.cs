@@ -43,10 +43,14 @@ namespace Microsoft.Maui
 		{
 			var textColor = textStyle.TextColor;
 
-			if (textColor == null)
-				textView.SetTextColor(defaultColor);
-			else
+			if (textColor != null)
+			{
 				textView.SetTextColor(textColor.ToNative());
+				return;
+			}
+
+			if (defaultColor != null)
+				textView.SetTextColor(defaultColor);
 		}
 
 		public static void UpdateFont(this TextView textView, ITextStyle textStyle, IFontManager fontManager)

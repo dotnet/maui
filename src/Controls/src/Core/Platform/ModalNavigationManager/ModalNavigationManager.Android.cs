@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Controls.Platform
 		Page CurrentPage => _navModel.CurrentPage;
 		BackButtonCallBack? _BackButtonCallBack;
 
+		// AFAICT this is specific to ListView and Context Items
 		internal bool NavAnimationInProgress
 		{
 			get { return _navAnimationInProgress; }
