@@ -11,23 +11,22 @@ namespace Microsoft.Maui.Handlers
 		{
 			var aWebView = new MauiWebView(Context!)
 			{
-#pragma warning disable 618 // This can probably be replaced with LinearLayout(LayoutParams.MatchParent, LayoutParams.MatchParent); just need to test that theory
-				LayoutParameters = new AbsoluteLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent, 0, 0)
-#pragma warning restore 618
+				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent)
 			};
 
-			if (aWebView.Settings != null)
-			{
-				aWebView.Settings.JavaScriptEnabled = true;
-				aWebView.Settings.DomStorageEnabled = true;
-			}
 			return aWebView;
+		}
+		protected override void ConnectHandler(AWebView nativeView)
+		{
+			MapWebChromeClient(this, VirtualView);
+			MapWebViewClient(this, VirtualView);
+			MapWebViewSettings(this, VirtualView);
+			base.ConnectHandler(nativeView);
 		}
 
 		protected override void DisconnectHandler(AWebView nativeView)
 		{
 			nativeView.StopLoading();
-			nativeView?.Dispose();
 		}
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)
@@ -35,6 +34,20 @@ namespace Microsoft.Maui.Handlers
 			IWebViewDelegate? webViewDelegate = handler.NativeView as IWebViewDelegate;
 
 			handler.NativeView?.UpdateSource(webView, webViewDelegate);
+		}
+
+		public static void MapWebViewClient(WebViewHandler handler, IWebView webView)
+		{
+			handler.NativeView.SetWebViewClient(new WebViewClient());
+		}
+
+		public static void MapWebChromeClient(WebViewHandler handler, IWebView webView)
+		{
+			handler.NativeView.SetWebChromeClient(new WebChromeClient());
+		}
+		public static void MapWebViewSettings(WebViewHandler handler, IWebView webView)
+		{
+			handler.NativeView.UpdateSettings(webView, true, true);
 		}
 	}
 }
