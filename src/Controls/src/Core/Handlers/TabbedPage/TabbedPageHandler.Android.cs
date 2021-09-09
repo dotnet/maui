@@ -9,7 +9,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public sealed class TabbedPageHandler : ViewHandler<TabbedPage, ViewPager2>
+	public class TabbedPageHandler : ViewHandler<TabbedPage, ViewPager2>
 	{
 		public TabLayout TabLayout =>
 			_tabbedPageManager.IsBottomTabPlacement ? null :
