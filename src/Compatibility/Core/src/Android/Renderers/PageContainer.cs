@@ -58,16 +58,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
-		protected override void OnAttachedToWindow()
-		{
-			base.OnAttachedToWindow();
-		}
-
-		protected override void AttachViewToParent(global::Android.Views.View child, int index, LayoutParams @params)
-		{
-			base.AttachViewToParent(child, index, @params);
-		}
-
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			Child.View.Measure(widthMeasureSpec, heightMeasureSpec);

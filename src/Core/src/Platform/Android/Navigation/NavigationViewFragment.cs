@@ -52,9 +52,6 @@ namespace Microsoft.Maui
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
-			//var navhost = Navigation.FindNavController(container);
-			//var result = navhost.CurrentBackStackEntry.Arguments.GetInt("NavigationManager");
-			//_navigationLayout = NavigationManager.FindNavigationManager(result).NavigationLayout;
 			_fragmentContainerView ??= (FragmentContainerView)container;
 
 			// When shuffling around the back stack sometimes we'll need a page to detach and then reattach.
