@@ -307,3 +307,10 @@ stages:
         symbolArtifactPatterns: |
           **/signed/*.nupkg
           **/*.snupkg
+        pushToShippingFeed: true
+        nupkgArtifactName: nuget-signed
+        nupkgArtifactPatterns: |
+          **/signed/*.nupkg
+        msiNupkgArtifactName: vs-msi-nugets
+        archiveSymbols: false
+        createVSPR: false
