@@ -13,8 +13,11 @@ using Android.Views;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.DrawerLayout.Widget;
+using AndroidX.Fragment.App;
 using AndroidX.Navigation;
 using Google.Android.Material.AppBar;
+using Google.Android.Material.Tabs;
+using Microsoft.Maui.Controls.Handlers;
 using static Android.Views.View;
 using static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
 using ActionBarDrawerToggle = AndroidX.AppCompat.App.ActionBarDrawerToggle;
@@ -32,6 +35,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 
 		AppBarLayout _appBar;
+		Fragment _tabLayoutFragment;
 		internal AppBarLayout AppBar =>
 			_appBar ??= NavigationLayout.FindViewById<AppBarLayout>(Resource.Id.appbar)
 			?? throw new InvalidOperationException($"AppBar cannot be null");
@@ -52,7 +56,7 @@ namespace Microsoft.Maui.Controls.Platform
 		new NavigationPage NavigationView => (NavigationPage)base.VirtualView;
 
 		new Page CurrentPage => (Page)base.CurrentPage;
-		public ControlsNavigationManager()
+		public ControlsNavigationManager(IMauiContext mauiContext) : base(mauiContext)
 		{
 		}
 
@@ -66,7 +70,6 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_fragmentManager == null)
 				_fragmentManager = childFragmentManager;
 		}
-
 
 		public override void Connect(IView navigationView, NavigationLayout nativeView)
 		{
@@ -141,6 +144,45 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
+		internal void SetTabLayout(TabbedPageHandler tabbedPageHandler)
+		{
+			if (tabbedPageHandler == null)
+			{
+				if (_tabLayoutFragment != null)
+				{
+					MauiContext
+						.GetFragmentManager()
+						.BeginTransaction()
+						.Remove(_tabLayoutFragment)
+						.SetReorderingAllowed(true)
+						.Commit();
+
+					_tabLayoutFragment = null;
+				}
+
+				return;
+			}
+
+			int id;
+			if(tabbedPageHandler.BottomNavigationView != null)
+			{
+				id = Resource.Id.bottom_tab_container_view;
+				_tabLayoutFragment = new ViewFragment(tabbedPageHandler.BottomNavigationView);
+			}
+			else
+			{
+				_tabLayoutFragment = new ViewFragment(tabbedPageHandler.TabLayout);
+				id = Resource.Id.tab_container_view;
+			}
+
+			MauiContext
+					.GetFragmentManager()
+					.BeginTransaction()
+					.Replace(id, _tabLayoutFragment)
+					.SetReorderingAllowed(true)
+					.Commit();
+		}
+
 		protected override void OnNavigationViewFragmentResumed(FragmentManager fm, NavigationViewFragment navHostPageFragment)
 		{
 			base.OnNavigationViewFragmentResumed(fm, navHostPageFragment);
@@ -152,9 +194,37 @@ namespace Microsoft.Maui.Controls.Platform
 		protected override void OnDestinationChanged(NavController navController, NavDestination navDestination, Bundle bundle)
 		{
 			base.OnDestinationChanged(navController, navDestination, bundle);
+
 			if (ToolbarTracker != null)
 			{
 				ToolbarTracker.Target = CurrentPage;
+			}
+
+			if (CurrentPage.Handler == null)
+			{
+				CurrentPage.HandlerChanged += OnHandlerChanged;
+			}
+			else
+			{
+				UpdateTablayout();
+			}
+
+			void OnHandlerChanged(object sender, EventArgs __)
+			{
+				UpdateTablayout();
+				((Element)sender).HandlerChanged -= OnHandlerChanged;
+			}
+
+			void UpdateTablayout()
+			{
+				if (CurrentPage.Handler is TabbedPageHandler tph)
+				{
+					SetTabLayout(tph);
+				}
+				else
+				{
+					SetTabLayout(null);
+				}
 			}
 		}
 
@@ -267,26 +337,23 @@ namespace Microsoft.Maui.Controls.Platform
 		void UpdateToolbarVisibility()
 		{
 			bool showNavBar = NavigationPage.GetHasNavigationBar(CurrentPage);
+			var lp = Toolbar.LayoutParameters;
+			if (lp == null)
+				return;
+
 			if (!showNavBar)
 			{
-				if (AppBar.LayoutParameters is CoordinatorLayout.LayoutParams cl)
-				{
-					cl.Height = 0;
-					AppBar.LayoutParameters = cl;
-				}
+				lp.Height = 0;
 			}
 			else
 			{
-				if (AppBar.LayoutParameters is CoordinatorLayout.LayoutParams cl)
-				{
-					if (NavigationView.IsSet(BarHeightProperty))
-						cl.Height = NavigationView.OnThisPlatform().GetBarHeight();
-					else
-						cl.Height = ActionBarHeight();
-
-					AppBar.LayoutParameters = cl;
-				}
+				if (NavigationView.IsSet(BarHeightProperty))
+					lp.Height = NavigationView.OnThisPlatform().GetBarHeight();
+				else
+					lp.Height = ActionBarHeight();
 			}
+
+			Toolbar.LayoutParameters = lp;
 
 			int ActionBarHeight()
 			{

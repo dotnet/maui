@@ -10,17 +10,29 @@ namespace Microsoft.Maui
 	internal partial class ScopedMauiContext : MauiContext, IScopedMauiContext
 	{
 		IAnimationManager? _animationManager;
+		NavigationManager _NavigationManager;
 		readonly IMauiContext _mauiContext;
 		readonly IScopedMauiContext? _scopedMauiContext;
 		readonly WeakReference<LayoutInflater>? _layoutInflater;
 		readonly WeakReference<FragmentManager>? _fragmentManager;
 
-		public ScopedMauiContext(IMauiContext mauiContext, IServiceProvider? services = null, Context? context = null, LayoutInflater? layoutInflater = null, FragmentManager? fragmentManager = null) :
+		public ScopedMauiContext(
+			IMauiContext mauiContext,
+			IServiceProvider? services = null,
+			Context? context = null,
+			LayoutInflater? layoutInflater = null,
+			FragmentManager? fragmentManager = null,
+			NavigationManager? NavigationManager = null) :
+
+
 			base(services ?? mauiContext.Services,
 				context ?? mauiContext.Context!)
 		{
 			_mauiContext = mauiContext;
 			_scopedMauiContext = _mauiContext as IScopedMauiContext;
+			_NavigationManager = NavigationManager ?? 
+				_scopedMauiContext?.NavigationManager ??
+				throw new InvalidOperationException("NavigationManager cannot be null on ScopedMauiContext");
 
 			if (layoutInflater != null)
 				_layoutInflater = new WeakReference<LayoutInflater>(layoutInflater);
@@ -53,5 +65,8 @@ namespace Microsoft.Maui
 
 		IAnimationManager IScopedMauiContext.AnimationManager => _animationManager ??=
 			(_scopedMauiContext?.AnimationManager ?? Services.GetRequiredService<IAnimationManager>());
+
+		NavigationManager? IScopedMauiContext.NavigationManager
+			=> _NavigationManager;
 	}
 }

@@ -5,7 +5,6 @@ using AndroidX.Fragment.App;
 
 namespace Microsoft.Maui
 {
-
 	public partial class MauiContext : IScopedMauiContext
 	{
 		readonly WeakReference<Context>? _context;
@@ -36,5 +35,8 @@ namespace Microsoft.Maui
 		LayoutInflater? IScopedMauiContext.LayoutInflater => null;
 
 		FragmentManager? IScopedMauiContext.FragmentManager => null;
+
+		NavigationManager? IScopedMauiContext.NavigationManager
+			=> throw new NotImplementedException();
 	}
 }

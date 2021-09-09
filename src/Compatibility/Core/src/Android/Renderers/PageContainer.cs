@@ -2,6 +2,7 @@ using System;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
+using AndroidX.Fragment.App;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -30,7 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			Child.UpdateLayout();
 
-			if (Child.View is ContentViewGroup pageViewGroup)
+			if (Child.View is ContentViewGroup ||
+				Child.View is NavigationLayout ||
+				Child.View is FragmentContainerView)
 			{
 				// This is a way to handle situations where the root page is shimmed and uses fragments to host other pages (e.g., NavigationPageRenderer)
 				// The old layout system would have set the width/height of the contained Page by now; the xplat layout call would have come
@@ -50,32 +53,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var widthSpec = mode.MakeMeasureSpec(r - l);
 				var heightSpec = mode.MakeMeasureSpec(b - t);
 
-				pageViewGroup.Measure(widthSpec, heightSpec);
-				pageViewGroup.Layout(l, t, r, b);
+				Child.View.Measure(widthSpec, heightSpec);
+				Child.View.Layout(l, t, r, b);
 			}
-			else if (Child.View is NavigationLayout nl)
-			{
-				// This is a way to handle situations where the root page is shimmed and uses fragments to host other pages (e.g., NavigationPageRenderer)
-				// The old layout system would have set the width/height of the contained Page by now; the xplat layout call would have come
-				// down the tree from PlatformRenderer and Platform's OnLayout. 
+		}
 
-				// But if we're not using PlatformRenderer at the root, then this never happens. We're relying on native OnLayout calls, which 
-				// PageContainer (in its override of ViewGroup's OnLayout) _should_ be doing, under normal circumstances. So we're special-casing
-				// things here for PageViewGroup (the backing View for MAUI pages) and calling Layout. We'll skip calling it for any other types,
-				// because we don't want to interfere with un-shimmed legacy renderers.
+		protected override void OnAttachedToWindow()
+		{
+			base.OnAttachedToWindow();
+		}
 
-				if (Child.Element.Parent is IPageController ipc && !ipc.ContainerArea.IsEmpty)
-				{
-					(l, t, r, b) = Context.ToPixels(ipc.ContainerArea);
-				}
-
-				var mode = MeasureSpecMode.Exactly;
-				var widthSpec = mode.MakeMeasureSpec(r - l);
-				var heightSpec = mode.MakeMeasureSpec(b - t);
-
-				nl.Measure(widthSpec, heightSpec);
-				nl.Layout(l, t, r, b);
-			}
+		protected override void AttachViewToParent(global::Android.Views.View child, int index, LayoutParams @params)
+		{
+			base.AttachViewToParent(child, index, @params);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)

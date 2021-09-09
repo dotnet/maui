@@ -4,6 +4,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Fragment.App;
+using AndroidX.Navigation;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -14,10 +15,24 @@ namespace Microsoft.Maui
 		NavigationLayout? _navigationLayout;
 		FragmentContainerView? _fragmentContainerView;
 
-		NavigationLayout NavigationLayout =>
-			_navigationLayout ??= (FragmentContainerView.Parent as NavigationLayout)
-			?? (FragmentContainerView.Parent?.Parent as NavigationLayout)
-			?? throw new InvalidOperationException($"NavigationLayout cannot be null here");
+		// TODO FIX ME
+		NavigationLayout NavigationLayout
+		{
+			get
+			{
+				if (_navigationLayout != null)
+					return _navigationLayout;
+
+				var view = FragmentContainerView.Parent;
+
+				while (view is not Maui.NavigationLayout && view != null)
+					view = view?.Parent;
+
+				_navigationLayout = view as NavigationLayout;
+
+				return _navigationLayout ?? throw new InvalidOperationException($"NavigationLayout cannot be null here");
+			}
+		}
 
 		FragmentContainerView FragmentContainerView =>
 			_fragmentContainerView ??= NavigationLayout.FindViewById<FragmentContainerView>(Resource.Id.nav_host)
@@ -37,6 +52,9 @@ namespace Microsoft.Maui
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
+			//var navhost = Navigation.FindNavController(container);
+			//var result = navhost.CurrentBackStackEntry.Arguments.GetInt("NavigationManager");
+			//_navigationLayout = NavigationManager.FindNavigationManager(result).NavigationLayout;
 			_fragmentContainerView ??= (FragmentContainerView)container;
 
 			// When shuffling around the back stack sometimes we'll need a page to detach and then reattach.
@@ -54,7 +72,12 @@ namespace Microsoft.Maui
 			// Then we can try some other approachs like just modifying the navbar ourselves to include a back button
 			// Even if there's only one page on the stack
 
-			_currentView = NavigationManager.CurrentPage.ToNative(NavigationManager.MauiContext);
+			var scopedContext = new ScopedMauiContext(
+				NavigationManager.MauiContext,
+				layoutInflater: inflater,
+				fragmentManager: ChildFragmentManager);
+
+			_currentView = NavigationManager.CurrentPage.ToNative(scopedContext);
 			_currentView.RemoveFromParent();
 
 			return _currentView;

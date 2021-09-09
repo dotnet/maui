@@ -44,11 +44,11 @@ namespace Microsoft.Maui
 		public IView CurrentPage
 			=> _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
 
-		public IMauiContext MauiContext => VirtualView?.Handler?.MauiContext ??
-			throw new InvalidOperationException($"MauiContext cannot be null");
+		public IMauiContext MauiContext { get; }
 
-		public NavigationManager()
+		public NavigationManager(IMauiContext mauiContext)
 		{
+			MauiContext = new ScopedMauiContext(mauiContext, NavigationManager: this);
 			BackClick = new ProcessBackClick(this);
 		}
 
@@ -429,6 +429,5 @@ namespace Microsoft.Maui
 			#endregion
 
 		}
-
 	}
 }

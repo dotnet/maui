@@ -27,6 +27,7 @@ namespace Microsoft.Maui
 #if __ANDROID__
 		Android.Views.LayoutInflater? LayoutInflater { get; }
 		AndroidX.Fragment.App.FragmentManager? FragmentManager { get; }
+		NavigationManager? NavigationManager { get; }
 #elif WINDOWS
 		WindowManager WindowManager { get; }
 #endif
