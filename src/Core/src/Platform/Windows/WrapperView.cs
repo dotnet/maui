@@ -6,33 +6,33 @@ using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
-/*
+
 using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
-*/
+
 
 namespace Microsoft.Maui
 {
 	partial class WrapperView : Grid, IDisposable
 	{
-		/*
+
 		readonly Canvas _shadowCanvas;
 		SpriteVisual _shadowVisual;
 		DropShadow _dropShadow;
-		*/
+
 
 		FrameworkElement _child;
 
 		public WrapperView()
 		{
-			/*
+
 			_shadowCanvas = new Canvas();
 
 			Children.Add(_shadowCanvas);
-			*/
+
 		}
 
 		public FrameworkElement Child
@@ -42,7 +42,7 @@ namespace Microsoft.Maui
 			{
 				if (_child != null)
 				{
-					//_child.SizeChanged -= OnChildSizeChanged;
+					_child.SizeChanged -= OnChildSizeChanged;
 					Children.Remove(_child);
 				}
 
@@ -50,14 +50,14 @@ namespace Microsoft.Maui
 					return;
 
 				_child = value;
-				//_child.SizeChanged += OnChildSizeChanged;
+				_child.SizeChanged += OnChildSizeChanged;
 				Children.Add(_child);
 			}
 		}
 
 		public void Dispose()
 		{
-			//DisposeShadow();
+			DisposeShadow();
 		}
 
 		partial void ClipChanged()
@@ -96,9 +96,9 @@ namespace Microsoft.Maui
 			visual.Clip = geometricClip;
 		}
 
-		/*	  
+
 		internal bool HasShadow => _dropShadow != null;
-		 
+
 		async partial void ShadowChanged()
 		{
 			if (HasShadow)
@@ -171,10 +171,7 @@ namespace Microsoft.Maui
 			var compositor = hostVisual.Compositor;
 
 			_dropShadow = compositor.CreateDropShadow();
-			_dropShadow.BlurRadius = (float)Shadow.Value.Radius * 2;
-			_dropShadow.Opacity = (float)Shadow.Value.Opacity;
-			_dropShadow.Color = Shadow.Value.Color.ToWindowsColor();
-			_dropShadow.Offset = new Vector3((float)Shadow.Value.Offset.Width, (float)Shadow.Value.Offset.Height, 0);
+			SetShadowProperties(_dropShadow, Shadow);
 
 			_dropShadow.Mask = await Child.GetAlphaMaskAsync();
 
@@ -188,12 +185,7 @@ namespace Microsoft.Maui
 		void UpdateShadow()
 		{
 			if (_dropShadow != null)
-			{
-				_dropShadow.BlurRadius = (float)Shadow.Value.Radius * 2;
-				_dropShadow.Opacity = (float)Shadow.Value.Opacity;
-				_dropShadow.Color = Shadow.Value.Color.ToWindowsColor();
-				_dropShadow.Offset = new Vector3((float)Shadow.Value.Offset.Width, (float)Shadow.Value.Offset.Height, 0);
-			}
+				SetShadowProperties(_dropShadow, Shadow);
 
 			UpdateShadowSize();
 		}
@@ -211,6 +203,27 @@ namespace Microsoft.Maui
 				}
 			}
 		}
-		*/
+
+		static void SetShadowProperties(DropShadow dropShadow, Shadow? mauiShadow)
+		{
+			float blurRadius = 1;
+			float opacity = 0;
+			var shadowColor = Graphics.Colors.Transparent;
+			var offset = new Graphics.Size(1, 1);
+
+			if (mauiShadow != null && !mauiShadow.Value.IsEmpty)
+			{
+				blurRadius = (float)mauiShadow.Value.Radius * 2;
+				opacity = (float)mauiShadow.Value.Opacity;
+				shadowColor = mauiShadow.Value.Color;
+				offset = mauiShadow.Value.Offset;
+			}
+
+			dropShadow.BlurRadius = blurRadius;
+			dropShadow.Opacity = opacity;
+			dropShadow.Color = shadowColor.ToWindowsColor();
+			dropShadow.Offset = new Vector3((float)offset.Width, (float)offset.Height, 0);
+		}
+
 	}
 }

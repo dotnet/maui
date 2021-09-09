@@ -1,5 +1,5 @@
 ﻿#nullable disable
-/*
+
 using System;
 using System.Diagnostics;
 using System.Numerics;
@@ -11,13 +11,13 @@ using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
-*/
+
 
 namespace Microsoft.Maui
 {
 	public static class ShadowExtensions
 	{
-		/*
+
 		public static async Task<CompositionBrush> GetAlphaMaskAsync(this UIElement element)
 		{
 			CompositionBrush mask = null;
@@ -56,16 +56,16 @@ namespace Microsoft.Maui
 							bitmap.PixelHeight,
 							BitmapAlphaMode.Premultiplied))
 						{
-							var brush = CompositionImageBrush.FromBGRASoftwareBitmap(
-								visual.Compositor,
-								softwareBitmap,
-								new Size(bitmap.PixelWidth, bitmap.PixelHeight));
-							mask = brush.Brush;
-						}
+                            var brush = CompositionImageBrush.FromBGRASoftwareBitmap(
+                                visual.Compositor,
+                                softwareBitmap,
+                                new Size(bitmap.PixelWidth, bitmap.PixelHeight));
+                            mask = brush.Brush;
+                        }
 					}
 				}
 			}
-			catch(Exception exc)
+			catch (Exception exc)
 			{
 				Debug.WriteLine($"Failed to get AlphaMask {exc}");
 				mask = null;
@@ -73,6 +73,6 @@ namespace Microsoft.Maui
 
 			return mask;
 		}
-		*/
+
 	}
 }
