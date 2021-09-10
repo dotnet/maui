@@ -325,12 +325,9 @@ namespace Microsoft.Maui
 
 		public static void ClearSubviews(this UIView view)
 		{
-			var toRemove = new UIView[view.Subviews.Length];
-			view.Subviews.CopyTo(toRemove, 0);
-
-			for (int n = 0; n < toRemove.Length; n++)
+			for (int n = view.Subviews.Length - 1; n >= 0; n--)
 			{
-				toRemove[n].RemoveFromSuperview();
+				view.Subviews[n].RemoveFromSuperview();
 			}
 		}
 	}
