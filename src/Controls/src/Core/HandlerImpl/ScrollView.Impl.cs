@@ -7,7 +7,8 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class ScrollView : IScrollView, IContentView
 	{
-		IView IContentView.Content => Content;
+		object IContentView.Content => Content;
+		IView IContentView.PresentedContent => Content;
 
 		double IScrollView.HorizontalOffset
 		{
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Controls
 			// Account for the ScrollView's margins and use the rest of the available space to measure the actual Content
 			var contentWidthConstraint = widthConstraint - Margin.HorizontalThickness;
 			var contentHeightConstraint = heightConstraint - Margin.VerticalThickness;
-			MeasureContent(contentWidthConstraint, contentHeightConstraint);
+			(this as IContentView).CrossPlatformMeasure(contentWidthConstraint, contentHeightConstraint);
 
 			// Now measure the ScrollView itself (ComputeDesiredSize will account for the ScrollView margins)
 			var defaultSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
@@ -66,11 +67,11 @@ namespace Microsoft.Maui.Controls
 			return DesiredSize;
 		}
 
-		void MeasureContent(double contentWidthConstraint, double contentHeightConstraint)
+		Size IContentView.CrossPlatformMeasure(double contentWidthConstraint, double contentHeightConstraint)
 		{
 			if (Content is not IView content)
 			{
-				return;
+				return Content.DesiredSize;
 			}
 
 			switch (Orientation)
@@ -91,29 +92,34 @@ namespace Microsoft.Maui.Controls
 
 			content.Measure(contentWidthConstraint, contentHeightConstraint);
 			ContentSize = content.DesiredSize;
+
+			return ContentSize;
 		}
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
-			// We can't call base.ArrangeOverride here because ScrollView is based on Layout<T>, and that will call UpdateChildrenLayout.
-			// Which we don't want; that's only for legacy layouts and causes all kinds of trouble if we have any padding defined.
-
 			Frame = this.ComputeFrame(bounds);
 			Handler?.NativeArrange(Frame);
 
+			(this as IContentView).CrossPlatformArrange(Frame);
+
+			return Frame.Size;
+		}
+
+		Size IContentView.CrossPlatformArrange(Rectangle bounds)
+		{
 			if (Content is IView content)
 			{
 				// Normally we'd just want the content to be arranged within the ContentView's Frame,
 				// but ScrollView content might be larger than the ScrollView itself (for obvious reasons)
 				// So in each dimension, we assume the larger of the two values.
+				var width = Math.Max(Frame.Width, content.DesiredSize.Width);
+				var height = Math.Max(Frame.Height, content.DesiredSize.Height);
 
-				content.Arrange(
-					new Rectangle(0, 0,
-					Math.Max(Frame.Width, content.DesiredSize.Width),
-					Math.Max(Frame.Height, content.DesiredSize.Height)));
+				content.Arrange(new Rectangle(0, 0, width, height));
 			}
 
-			return Frame.Size;
+			return bounds.Size;
 		}
 	}
 }

@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = WrappedNativeView;
+			var nativeView = this.GetWrappedNativeView();
 
 			if (nativeView == null)
 			{
@@ -67,10 +67,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapContent(ScrollViewHandler handler, IScrollView scrollView)
 		{
-			if (handler.NativeView == null || handler.MauiContext == null || scrollView.Content == null)
+			if (handler.NativeView == null || handler.MauiContext == null || scrollView.PresentedContent == null)
 				return;
 
-			handler.NativeView.UpdateContent(scrollView.Content.ToNative(handler.MauiContext));
+			handler.NativeView.UpdateContent(scrollView.PresentedContent.ToNative(handler.MauiContext));
 		}
 
 		public static void MapContentSize(ScrollViewHandler handler, IScrollView scrollView)

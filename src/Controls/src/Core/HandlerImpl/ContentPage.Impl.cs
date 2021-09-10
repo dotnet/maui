@@ -6,29 +6,39 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class ContentPage : IContentView, HotReload.IHotReloadableView
 	{
-		IView IContentView.Content => Content;
+		object IContentView.Content => Content;
+		IView IContentView.PresentedContent => Content;
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (Content is IView view)
-			{
-				_ = view.Measure(widthConstraint, heightConstraint);
-			}
-
-			return new Size(widthConstraint, heightConstraint);
+			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
+			return DesiredSize;
 		}
 
 		protected override Size ArrangeOverride(Rectangle bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
+			Handler?.NativeArrange(Frame);
+			return Frame.Size;
+		}
 
-			if (Content is IView view)
+		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			var content = (this as IContentView).PresentedContent;
+			var padding = Padding;
+
+			if (content != null)
 			{
-				// TODO ezhart 2021-08-07 When we implement Padding for the ContentPage new layout stuff, the padding will adjust this rectangle
-				_ = view.Arrange(new Rectangle(0, 0, Frame.Width, Frame.Height));
+				_ = content.Measure(widthConstraint - padding.HorizontalThickness, heightConstraint - padding.VerticalThickness);
 			}
 
-			return Frame.Size;
+			return new Size(widthConstraint, heightConstraint);
+		}
+
+		Size IContentView.CrossPlatformArrange(Rectangle bounds)
+		{
+			this.ArrangeContent(bounds);
+			return bounds.Size;
 		}
 
 		protected override void InvalidateMeasureOverride()

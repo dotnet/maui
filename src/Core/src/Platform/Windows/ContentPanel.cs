@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui
 {
-	public class PagePanel : Panel
+	public class ContentPanel : Panel
 	{
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
@@ -17,9 +17,9 @@ namespace Microsoft.Maui
 				return base.MeasureOverride(availableSize);
 			}
 
-			CrossPlatformMeasure(availableSize.Width, availableSize.Height);
+			var measure = CrossPlatformMeasure(availableSize.Width, availableSize.Height);
 
-			return availableSize;
+			return measure.ToNative();
 		}
 
 		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)

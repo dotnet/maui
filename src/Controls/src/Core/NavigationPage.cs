@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls
 			SendNavigated(null);
 		}
 
-		
+
 
 		void SendNavigated(Page previousPage)
 		{
@@ -328,7 +328,7 @@ namespace Microsoft.Maui.Controls
 				page?.SendAppearing();
 		}
 
-		
+
 		void RemoveFromInnerChildren(Element page)
 		{
 			InternalChildren.Remove(page);

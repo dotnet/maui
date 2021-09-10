@@ -149,5 +149,36 @@ namespace Microsoft.Maui.Layouts
 
 			return frameY;
 		}
+
+		public static Size MeasureContent(this IContentView contentView, double widthConstraint, double heightConstraint)
+		{
+			var content = contentView.PresentedContent;
+			var padding = contentView.Padding;
+
+			var contentSize = Size.Zero;
+
+			if (content != null)
+			{
+				contentSize = content.Measure(widthConstraint - padding.HorizontalThickness,
+					heightConstraint - padding.VerticalThickness);
+			}
+
+			return new Size(contentSize.Width + padding.HorizontalThickness, contentSize.Height + padding.VerticalThickness);
+		}
+
+		public static void ArrangeContent(this IContentView contentView, Rectangle bounds)
+		{
+			if (contentView.PresentedContent == null)
+			{
+				return;
+			}
+
+			var padding = contentView.Padding;
+
+			var targetBounds = new Rectangle(bounds.Left + padding.Left, bounds.Top + padding.Top,
+				bounds.Width - padding.HorizontalThickness, bounds.Height - padding.VerticalThickness);
+
+			_ = contentView.PresentedContent.Arrange(targetBounds);
+		}
 	}
 }

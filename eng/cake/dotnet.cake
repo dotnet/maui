@@ -107,12 +107,26 @@ Task("dotnet-templates")
 
         CleanDirectories("./templatesTest/");
 
+        // Create empty Directory.Build.props/targets
+        EnsureDirectoryExists(Directory("./templatesTest/"));
+        FileWriteText(File("./templatesTest/Directory.Build.props"), "<Project/>");
+        FileWriteText(File("./templatesTest/Directory.Build.targets"), "<Project/>");
+
+        // Create an empty NuGet.config
+        StartProcess(dn, "new nugetconfig -o ./templatesTest/");
+        var properties = new Dictionary<string, string> {
+            // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
+            { "RestoreNoCache", "true" },
+            { "RestorePackagesPath", MakeAbsolute(File("./templatesTest/packages")).FullPath },
+            { "RestoreConfigFile", MakeAbsolute(File("./templatesTest/nuget.config")).FullPath },
+        };
+
         foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
         {
-            var name = template.Replace("-", "");
-            StartProcess(dn, $"new {template} -o ./templatesTest/{name}");
+            var name = template.Replace("-", "") + " Space-Dash";
+            StartProcess(dn, $"new {template} -o \"./templatesTest/{name}\"");
 
-            RunMSBuildWithDotNet($"./templatesTest/{name}");
+            RunMSBuildWithDotNet($"./templatesTest/{name}", properties);
         }
     });
 
@@ -160,6 +174,23 @@ Task("dotnet-pack")
             DiagnosticOutput = true,
             ArgumentCustomization = args => args.Append($"./eng/package.ps1 -configuration \"{configuration}\"")
         });
+
+        // Download some additional symbols that need to be archived along with the maui symbols:
+        //  - _NativeAssets.windows
+        //     - libSkiaSharp.pdb
+        //     - libHarfBuzzSharp.pdb
+        var assetsDir = "./artifacts/additional-assets";
+        var nativeAssetsVersion = XmlPeek("./eng/Microsoft.Extensions.targets", "/Project/PropertyGroup/_SkiaSharpNativeAssetsVersion");
+        NuGetInstall("_NativeAssets.windows", new NuGetInstallSettings
+        {
+            Version = nativeAssetsVersion,
+            ExcludeVersion  = true,
+            OutputDirectory = assetsDir,
+            Source = new[] { "https://aka.ms/skiasharp-eap/index.json" },
+        });
+        foreach (var nupkg in GetFiles($"{assetsDir}/**/*.nupkg"))
+            DeleteFile(nupkg);
+        Zip(assetsDir, $"{assetsDir}.zip");
     });
 
 Task("dotnet-build-test")
@@ -322,27 +353,28 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
         Information("This target should not run on CI.");
         return;
     }
-    if (!IsRunningOnWindows())
-    {
-        Information("This target is only supported on Windows.");
-        return;
-    }
-
-    bool includePrerelease = true;
-
-    if (!String.IsNullOrEmpty(vsVersion))
-        includePrerelease = (vsVersion == "preview");
-
-    var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, });
-    if (vsLatest == null)
-        throw new Exception("Unable to find Visual Studio!");
     if(localDotnet)
     {
         SetDotNetEnvironmentVariables();
         SetEnvironmentVariable("_ExcludeMauiProjectCapability", "true");
     }
+    if (IsRunningOnWindows())
+    {
+        bool includePrerelease = true;
 
-    StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
+        if (!String.IsNullOrEmpty(vsVersion))
+            includePrerelease = (vsVersion == "preview");
+
+        var vsLatest = VSWhereLatest(new VSWhereLatestSettings { IncludePrerelease = includePrerelease, });
+        if (vsLatest == null)
+            throw new Exception("Unable to find Visual Studio!");
+       
+        StartProcess(vsLatest.CombineWithFilePath("./Common7/IDE/devenv.exe"), sln);
+    }
+    else
+    {
+        StartProcess("open", new ProcessSettings{ Arguments = sln });
+    }
 }
 
 // NOTE: These methods work as long as the "dotnet" target has already run
@@ -350,7 +382,7 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
 void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
-    var binlog = $"{logDirectory}/{name}-{configuration}.binlog";
+    var binlog = $"\"{logDirectory}/{name}-{configuration}.binlog\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();
