@@ -214,9 +214,9 @@ namespace Maui.Controls.Sample
 					}
 
 #if __ANDROID__
-					Microsoft.Maui.Handlers.ButtonHandler.NativeViewFactory = (context) => 
+					Microsoft.Maui.Handlers.ButtonHandler.NativeViewFactory = (handler) => 
 					{
-						return new Google.Android.Material.Button.MaterialButton(context) 
+						return new Google.Android.Material.Button.MaterialButton(handler.Context) 
 						{ 
 							CornerRadius = 50, SoundEffectsEnabled = true 
 						};

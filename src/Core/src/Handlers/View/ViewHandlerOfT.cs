@@ -53,21 +53,7 @@ namespace Microsoft.Maui.Handlers
 		public sealed override void SetVirtualView(IElement view) =>
 			SetVirtualView((IView)view);
 
-#if MONOANDROID
-		public static Func<Android.Content.Context, TNativeView>? NativeViewFactory { get; set; } 
-
-		TNativeView InvokeFactory()
-		{
-			return NativeViewFactory!.Invoke(Context);
-		}
-#else
-		public static Func<TNativeView>? NativeViewFactory { get; set; }
-
-		TNativeView InvokeFactory()
-		{
-			return NativeViewFactory!.Invoke();
-		}
-#endif
+		public static Func<ViewHandler<TVirtualView, TNativeView>, TNativeView>? NativeViewFactory { get; set; }
 
 		protected abstract TNativeView CreateNativeView();
 
@@ -83,7 +69,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (NativeViewFactory != null)
 			{
-				return InvokeFactory();
+				return NativeViewFactory.Invoke(this);
 			}
 
 			return CreateNativeView();
