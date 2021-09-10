@@ -131,8 +131,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || NativeView == null)
 				return;
 
-			if (NativeView.Text != VirtualView.Text)
-				VirtualView.Text = NativeView.Text ?? string.Empty;
+			VirtualView.UpdateText(NativeView.Text);
 
 			// TODO: Update IsFocused property
 			VirtualView.Completed();

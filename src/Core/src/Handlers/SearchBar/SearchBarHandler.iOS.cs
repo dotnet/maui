@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Handlers
 		void OnTextChanged(object? sender, UISearchBarTextChangedEventArgs a)
 		{
 			if (VirtualView != null)
-				VirtualView.Text = a.SearchText;
+				VirtualView.UpdateText(a.SearchText);
 		}
 
 		bool ShouldChangeText(UISearchBar searchBar, NSRange range, string text)
