@@ -120,5 +120,14 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAsync(searchBar);
 		}
+
+		[Category(TestCategory.SearchBar)]
+		public class TextInputTests : TextInputHandlerTests<SearchBarHandler, SearchBarStub>
+		{
+			protected override void SetNativeText(SearchBarHandler entryHandler, string text)
+			{
+				SearchBarHandlerTests.SetNativeText(entryHandler, text);
+			}
+		}
 	}
 }

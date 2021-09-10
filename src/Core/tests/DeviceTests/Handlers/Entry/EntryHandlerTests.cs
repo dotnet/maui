@@ -189,50 +189,6 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeClearButtonVisibility, expected);
 		}
 
-		[Theory(DisplayName = "TextChanged Events Fire Correctly")]
-		// null/empty
-		[InlineData(null, null, false)]
-		[InlineData(null, "", false)]
-		[InlineData("", null, false)]
-		[InlineData("", "", false)]
-		// whitespace
-		[InlineData(null, " ", true)]
-		[InlineData("", " ", true)]
-		[InlineData(" ", null, true)]
-		[InlineData(" ", "", true)]
-		[InlineData(" ", " ", false)]
-		// text
-		[InlineData(null, "Hello", true)]
-		[InlineData("", "Hello", true)]
-		[InlineData(" ", "Hello", true)]
-		[InlineData("Hello", null, true)]
-		[InlineData("Hello", "", true)]
-		[InlineData("Hello", " ", true)]
-		[InlineData("Hello", "Goodbye", true)]
-		public async Task TextChangedEventsFireCorrectly(string initialText, string newText, bool eventExpected)
-		{
-			var entry = new EntryStub
-			{
-				Text = initialText,
-			};
-
-			var eventFiredCount = 0;
-			entry.TextChanged += (sender, e) =>
-			{
-				eventFiredCount++;
-
-				Assert.Equal(initialText, e.OldValue);
-				Assert.Equal(newText ?? string.Empty, e.NewValue);
-			};
-
-			await SetValueAsync(entry, newText, SetNativeText);
-
-			if (eventExpected)
-				Assert.Equal(1, eventFiredCount);
-			else
-				Assert.Equal(0, eventFiredCount);
-		}
-
 		[Theory(DisplayName = "Validates Numeric Keyboard")]
 		[InlineData(nameof(Keyboard.Chat), false)]
 		[InlineData(nameof(Keyboard.Default), false)]
@@ -621,5 +577,16 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(text.Length, actualLength);
 		}
+
+
+		[Category(TestCategory.Entry)]
+		public class TextInputTests : TextInputHandlerTests<EntryHandler, EntryStub>
+		{
+			protected override void SetNativeText(EntryHandler entryHandler, string text)
+			{
+				EntryHandlerTests.SetNativeText(entryHandler, text);
+			}
+		}
+
 	}
 }
