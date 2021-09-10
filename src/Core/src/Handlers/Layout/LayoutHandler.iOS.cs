@@ -35,11 +35,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 
 			// Remove any previous children 
-			var oldChildren = NativeView.Subviews;
-			foreach (var child in oldChildren)
-			{
-				child.RemoveFromSuperview();
-			}
+			NativeView.ClearSubviews();
 
 			foreach (var child in VirtualView)
 			{
@@ -67,24 +63,9 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void Clear(UIView nativeView)
-		{
-			if (nativeView == null)
-			{
-				return;
-			}
-
-			var subViews = nativeView.Subviews;
-
-			foreach (var subView in subViews)
-			{
-				subView.RemoveFromSuperview();
-			}
-		}
-
 		public void Clear()
 		{
-			Clear(NativeView);
+			NativeView.ClearSubviews();
 		}
 
 		public void Insert(int index, IView child)
@@ -111,7 +92,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(LayoutView nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			Clear(nativeView);
+			NativeView.ClearSubviews();
 		}
 	}
 }
