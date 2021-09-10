@@ -143,8 +143,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			DatePicker view = Element;
 			((IElementController)view).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
-
-			ShowPickerDialog(view.Date.Year, view.Date.Month - 1, view.Date.Day);
+			
+			
+			ShowPickerDialog(view.Date.Value.Year, view.Date.Value.Month - 1, view.Date.Value.Day);
 		}
 
 		void ShowPickerDialog(int year, int month, int day)
@@ -164,19 +165,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Element.Unfocus();
 		}
 
-		void SetDate(DateTime date)
+		void SetDate(DateTime? date)
 		{
 			if (String.IsNullOrWhiteSpace(Element.Format))
 			{
-				EditText.Text = date.ToShortDateString();
+				EditText.Text = date.Value.ToShortDateString();
 			}
 			else if (Element.Format.Contains('/'))
 			{
-				EditText.Text = date.ToString(Element.Format, CultureInfo.InvariantCulture);
+				EditText.Text = date.Value.ToString(Element.Format, CultureInfo.InvariantCulture);
 			}
 			else
 			{
-				EditText.Text = date.ToString(Element.Format);
+				EditText.Text = date.Value.ToString(Element.Format);
 			}
 		}
 
