@@ -212,6 +212,16 @@ namespace Maui.Controls.Sample
 						Debug.WriteLine($"Lifecycle event: {eventName}{(type == null ? "" : $" ({type})")}");
 						return true;
 					}
+
+#if __ANDROID__
+					Microsoft.Maui.Handlers.ButtonHandler.NativeViewFactory = (context) => 
+					{
+						return new Google.Android.Material.Button.MaterialButton(context) 
+						{ 
+							CornerRadius = 50, SoundEffectsEnabled = true 
+						};
+					};
+#endif
 				});
 
 			return appBuilder.Build();
