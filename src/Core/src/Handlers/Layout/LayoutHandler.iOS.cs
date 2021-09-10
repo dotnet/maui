@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Handlers
 
 		public void Clear()
 		{
-			NativeView?.ClearSubviews();
+			NativeView.ClearSubviews();
 		}
 
 		public void Insert(int index, IView child)
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(LayoutView nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			NativeView?.ClearSubviews();
+			nativeView.ClearSubviews();
 		}
 	}
 }
