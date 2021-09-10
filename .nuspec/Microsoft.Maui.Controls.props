@@ -20,7 +20,7 @@
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenKind" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ManifestResourceName" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="TargetPath" />
-		<compilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RelativePath" />
+		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RelativePath" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ItemSpec" />
 	</ItemGroup>
 
