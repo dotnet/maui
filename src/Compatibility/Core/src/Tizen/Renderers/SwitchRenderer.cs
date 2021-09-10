@@ -79,10 +79,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected void UpdateOnColor(bool initialize)
 		{
-			if (initialize && Element.OnColor == null)
+			if (initialize && Element.OnColor.IsDefault())
 				return;
 
-			if (Element.OnColor == null)
+			if (Element.OnColor.IsDefault())
 			{
 				Control.DeleteOnColors();
 			}

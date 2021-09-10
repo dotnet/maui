@@ -211,7 +211,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateBarBackgroundColor(bool initialize)
 		{
-			if (initialize && Element.BarBackgroundColor == null)
+			if (initialize && Element.BarBackgroundColor.IsDefault())
 				return;
 
 			EColor bgColor = Element.BarBackgroundColor.ToPlatformEFL();
@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateBarTextColor(bool initialize)
 		{
-			if (initialize && Element.BarTextColor == null)
+			if (initialize && Element.BarTextColor.IsDefault())
 				return;
 
 			foreach (EToolbarItem item in _itemToItemPage.Keys)
@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateSelectedTabColor(bool initialize)
 		{
-			if (initialize && Element.SelectedTabColor == null)
+			if (initialize && Element.SelectedTabColor.IsDefault())
 				return;
 
 			foreach (EToolbarItem item in _itemToItemPage.Keys)
@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateUnselectedTabColor(bool initialize)
 		{
-			if (initialize && Element.UnselectedTabColor == null)
+			if (initialize && Element.UnselectedTabColor.IsDefault())
 				return;
 
 			foreach (EToolbarItem item in _itemToItemPage.Keys)

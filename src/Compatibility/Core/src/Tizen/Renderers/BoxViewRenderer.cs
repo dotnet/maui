@@ -34,10 +34,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected override void UpdateBackgroundColor(bool initialize)
 		{
-			if (initialize && Element.BackgroundColor == null)
+			if (initialize && Element.BackgroundColor.IsDefault())
 				return;
 
-			if (Element.Color == null)
+			if (Element.Color.IsDefault())
 			{
 				UpdateColor();
 			}
@@ -72,9 +72,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateColor()
 		{
-			if (Element.Color == null)
+			if (Element.Color.IsDefault())
 			{
-				if (Element.BackgroundColor == null)
+				if (Element.BackgroundColor.IsDefault())
 				{
 					// Set to default color. (Transparent)
 					Control.Color = EColor.Transparent;

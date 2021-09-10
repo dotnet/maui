@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateColor()
 		{
-			if ((Element as Frame).BorderColor == null)
+			if ((Element as Frame).BorderColor.IsDefault())
 				_frame.Color = s_DefaultColor;
 			else
 				_frame.Color = (Element as Frame).BorderColor.ToPlatform();

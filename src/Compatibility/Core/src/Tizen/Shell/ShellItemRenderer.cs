@@ -285,8 +285,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			var tabBarBackgroudColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
 			var tabBarTitleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor;
-			TabBarBackgroundColor = tabBarBackgroudColor == null ? ShellRenderer.DefaultBackgroundColor.ToPlatform() : tabBarBackgroudColor.ToPlatform();
-			TabBarTitleColor = tabBarTitleColor == null ? ShellRenderer.DefaultTitleColor.ToPlatform() : tabBarTitleColor.ToPlatform();
+			TabBarBackgroundColor = tabBarBackgroudColor.IsDefault() ? ShellRenderer.DefaultBackgroundColor.ToPlatform() : tabBarBackgroudColor.ToPlatform();
+			TabBarTitleColor = tabBarTitleColor.IsDefault() ? ShellRenderer.DefaultTitleColor.ToPlatform() : tabBarTitleColor.ToPlatform();
 		}
 
 		void UpdateTabsBackgroudColor(EColor color)

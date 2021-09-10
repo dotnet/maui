@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		public static SKColor ToSolidColor(this SolidColorBrush solidColorBrush)
 		{
-			return solidColorBrush.Color.IsDefault() ? solidColorBrush.Color.ToPlatform().ToSKColor() : SKColor.Empty;
+			return solidColorBrush.Color.IsDefault() ? SKColor.Empty : solidColorBrush.Color.ToPlatform().ToSKColor();
 		}
 
 		static SKShader CreateLinearGradient(LinearGradientBrush linearGradientBrush, SKRect pathBounds)

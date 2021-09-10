@@ -631,7 +631,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void UpdateBackgroundColor(bool initialize)
 		{
-			if (initialize && Element.BackgroundColor == null)
+			if (initialize && Element.BackgroundColor.IsDefault())
 				return;
 
 			if (NativeView is Widget)

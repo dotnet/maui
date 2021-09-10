@@ -71,10 +71,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void UpdateProgressColor(bool initialize)
 		{
-			if (initialize && Element.ProgressColor == null)
+			if (initialize && Element.ProgressColor.IsDefault())
 				return;
 
-			Control.Color = Element.ProgressColor == null ? s_defaultColor : Element.ProgressColor.ToPlatformEFL();
+			Control.Color = Element.ProgressColor.IsDefault() ? s_defaultColor : Element.ProgressColor.ToPlatformEFL();
 		}
 
 		void UpdateProgress()

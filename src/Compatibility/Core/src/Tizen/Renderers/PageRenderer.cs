@@ -103,11 +103,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected override void UpdateBackgroundColor(bool initialize)
 		{
-			if (initialize && Element.BackgroundColor == null)
+			if (initialize && Element.BackgroundColor.IsDefault())
 				return;
 
 			// base.UpdateBackgroundColor() is not called on purpose, we don't want the regular background setting
-			if (Element.BackgroundColor == null || Element.BackgroundColor.Alpha == 0)
+			if (Element.BackgroundColor.IsDefault() || Element.BackgroundColor.Alpha == 0)
 				_page.Color = EColor.Transparent;
 			else
 				_page.Color = Element.BackgroundColor.ToPlatform();

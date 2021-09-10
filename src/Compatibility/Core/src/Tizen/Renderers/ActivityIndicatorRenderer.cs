@@ -29,10 +29,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		void UpdateColor(bool initialize)
 		{
-			if (initialize && Element.Color == null)
+			if (initialize && Element.Color.IsDefault())
 				return;
 
-			Control.Color = (Element.Color == null) ? s_defaultColor : Element.Color.ToPlatform();
+			Control.Color = (Element.Color.IsDefault()) ? s_defaultColor : Element.Color.ToPlatform();
 		}
 
 		void UpdateIsRunning()
