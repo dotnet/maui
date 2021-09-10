@@ -307,3 +307,4 @@ stages:
         symbolArtifactPatterns: |
           **/signed/*.nupkg
           **/*.snupkg
+          **/additional-assets.zip
