@@ -313,5 +313,3 @@ stages:
         nupkgArtifactPatterns: |
           **/signed/*.nupkg
         msiNupkgArtifactName: vs-msi-nugets
-        archiveSymbols: false
-        createVSPR: false
