@@ -308,7 +308,7 @@ stages:
           **/signed/*.nupkg
           **/*.snupkg
         pushToShippingFeed: true
-        nupkgArtifactName: nuget-signed
+        nupkgArtifactName: nuget
         nupkgArtifactPatterns: |
           **/signed/*.nupkg
         msiNupkgArtifactName: vs-msi-nugets
