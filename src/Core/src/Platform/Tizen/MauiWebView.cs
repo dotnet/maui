@@ -18,12 +18,12 @@ namespace Microsoft.Maui
 			Unfocused += OnUnfocused;
 		}
 
-		void OnFocused(object sender, EventArgs e)
+		void OnFocused(object? sender, EventArgs e)
 		{
 			WebView.SetFocus(true);
 		}
 
-		void OnUnfocused(object sender, EventArgs e)
+		void OnUnfocused(object? sender, EventArgs e)
 		{
 			WebView.SetFocus(false);
 		}
