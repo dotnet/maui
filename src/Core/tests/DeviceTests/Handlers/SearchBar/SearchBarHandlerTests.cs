@@ -122,7 +122,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Category(TestCategory.SearchBar)]
-		public class TextInputTests : TextInputHandlerTests<SearchBarHandler, SearchBarStub>
+		public class SearchBarTextInputTests : TextInputHandlerTests<SearchBarHandler, SearchBarStub>
 		{
 			protected override void SetNativeText(SearchBarHandler entryHandler, string text)
 			{
