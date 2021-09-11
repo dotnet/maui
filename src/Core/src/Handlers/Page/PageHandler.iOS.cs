@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using UIKit;
-using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -9,15 +7,20 @@ namespace Microsoft.Maui.Handlers
 	{
 		PageViewController? _pageViewController;
 		UIViewController? INativeViewHandler.ViewController => _pageViewController;
+		public PageViewController? ViewController 
+		{
+			get => _pageViewController;
+			set => _pageViewController = value;
+		}
 
 		protected override ContentView CreateNativeView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a LayoutView");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 
-			_pageViewController = new PageViewController(VirtualView, this.MauiContext);
+			ViewController = new PageViewController(VirtualView, this.MauiContext);
 
-			if (_pageViewController.CurrentNativeView is ContentView pv)
+			if (_pageViewController?.CurrentNativeView is ContentView pv)
 				return pv;
 
 			throw new InvalidOperationException($"PageViewController.View must be a {nameof(ContentView)}");
