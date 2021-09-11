@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView?.ResignFirstResponder();
 		}
 
-		void OnTextPropertySet(object sender, EventArgs e)
+		void OnTextPropertySet(object? sender, EventArgs e)
 		{
 			if (VirtualView != null)
 				VirtualView.UpdateText(NativeView?.Text);
