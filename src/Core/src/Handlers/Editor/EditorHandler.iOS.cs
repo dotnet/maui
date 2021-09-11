@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Completed();
 		}
 
-		private void OnTextPropertySet(object sender, EventArgs e)
+		private void OnTextPropertySet(object? sender, EventArgs e)
 		{
 			VirtualView.UpdateText(NativeView.Text);
 		}
