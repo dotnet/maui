@@ -580,7 +580,7 @@ namespace Microsoft.Maui.DeviceTests
 
 
 		[Category(TestCategory.Entry)]
-		public class TextInputTests : TextInputHandlerTests<EntryHandler, EntryStub>
+		public class EntryTextInputTests : TextInputHandlerTests<EntryHandler, EntryStub>
 		{
 			protected override void SetNativeText(EntryHandler entryHandler, string text)
 			{
