@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Changed += OnChanged;
 			nativeView.ShouldChangeText += OnShouldChangeText;
 			nativeView.Ended += OnEnded;
+			nativeView.TextPropertySet += OnTextPropertySet;
 		}
 
 		protected override void DisconnectHandler(MauiTextView nativeView)
@@ -34,6 +35,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Changed -= OnChanged;
 			nativeView.ShouldChangeText -= OnShouldChangeText;
 			nativeView.Ended -= OnEnded;
+			nativeView.TextPropertySet -= OnTextPropertySet;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
@@ -128,14 +130,15 @@ namespace Microsoft.Maui.Handlers
 
 		void OnEnded(object? sender, EventArgs eventArgs)
 		{
-			if (VirtualView == null || NativeView == null)
-				return;
-
-			VirtualView.UpdateText(NativeView.Text);
-
 			// TODO: Update IsFocused property
 			VirtualView.Completed();
 		}
+
+		private void OnTextPropertySet(object sender, EventArgs e)
+		{
+			VirtualView.UpdateText(NativeView.Text);
+		}
+
 
 		public static void MapKeyboard(EditorHandler handler, IEditor editor)
 		{
