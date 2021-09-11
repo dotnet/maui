@@ -354,7 +354,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Category(TestCategory.Editor)]
-		public class TextInputTests : EditorTextInputHandlerTests<EditorHandler, EditorStub>
+		public class EditorTextInputTests : TextInputHandlerTests<EditorHandler, EditorStub>
 		{
 			protected override void SetNativeText(EditorHandler entryHandler, string text)
 			{
