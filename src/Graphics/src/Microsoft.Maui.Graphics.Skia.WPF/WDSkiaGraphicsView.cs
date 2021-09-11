@@ -65,6 +65,7 @@ namespace Microsoft.Maui.Graphics.Skia
 		protected override void OnRenderSizeChanged(
 			SizeChangedInfo sizeInfo)
 		{
+			base.OnRenderSizeChanged(sizeInfo);
 			_dirtyRect.Width = (float) sizeInfo.NewSize.Width;
 			_dirtyRect.Height = (float) sizeInfo.NewSize.Height;
 			_renderer?.SizeChanged((int) sizeInfo.NewSize.Width, (int) sizeInfo.NewSize.Height);
