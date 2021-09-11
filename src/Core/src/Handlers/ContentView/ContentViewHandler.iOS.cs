@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
@@ -35,9 +34,8 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			//Cleanup the old view when reused
-			var oldChildren = NativeView.Subviews.ToList();
-			oldChildren.ForEach(x => x.RemoveFromSuperview());
+			// Cleanup the old view when reused
+			NativeView.ClearSubviews();
 
 			if (VirtualView.PresentedContent is IView view)
 				NativeView.AddSubview(view.ToNative(MauiContext));
