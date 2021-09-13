@@ -16,10 +16,10 @@ using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
 {
-	/// <summary>
-	/// A Windows Presentation Foundation (WPF) control for hosting Blazor web components locally in Windows desktop applications.
-	/// </summary>
-	public class BlazorWebView : Control, IAsyncDisposable
+    /// <summary>
+    /// A Windows Presentation Foundation (WPF) control for hosting Blazor web components locally in Windows desktop applications.
+    /// </summary>
+    public class BlazorWebView : Control, IAsyncDisposable
     {
         #region Dependency property definitions
         /// <summary>
@@ -68,15 +68,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             };
         }
 
-		/// <summary>
-		/// Returns the inner <see cref="WebView2Control"/> used by this control.
-		/// </summary>
-		/// <remarks>
-		/// Directly using some functionality of the inner web view can cause unexpected results because its behavior
-		/// is controlled by the <see cref="BlazorWebView"/> that is hosting it.
-		/// </remarks>
-		[Browsable(false)]
-		public WebView2Control WebView => _webview;
+        /// <summary>
+        /// Returns the inner <see cref="WebView2Control"/> used by this control.
+        /// </summary>
+        /// <remarks>
+        /// Directly using some functionality of the inner web view can cause unexpected results because its behavior
+        /// is controlled by the <see cref="BlazorWebView"/> that is hosting it.
+        /// </remarks>
+        [Browsable(false)]
+        public WebView2Control WebView => _webview;
 
         /// <summary>
         /// Path to the host page within the application's static files. For example, <code>wwwroot\index.html</code>.
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
         /// to be used directly in the specified <see cref="HostPage"/>.
         /// </summary>
         public RootComponentsCollection RootComponents =>
-            (RootComponentsCollection)GetValue(RootComponentsProperty);
+                   (RootComponentsCollection)GetValue(RootComponentsProperty);
 
         /// <summary>
         /// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
         private void OnHostPagePropertyChanged(DependencyPropertyChangedEventArgs e) => StartWebViewCoreIfPossible();
 
-        private bool RequiredStartupPropertiesSet =>
+        protected virtual bool RequiredStartupPropertiesSet =>
             _webview != null &&
             HostPage != null &&
             Services != null;
@@ -141,7 +141,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             StartWebViewCoreIfPossible();
         }
 
-        private void StartWebViewCoreIfPossible()
+        public virtual WebView2WebViewManager CreateWebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, Web.JSComponentConfigurationStore store)
+        {
+            // We assume the host page is always in the root of the content directory, because it's
+            // unclear there's any other use case. We can add more options later if so.
+            var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(HostPage));
+            var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
+            var fileProvider = new PhysicalFileProvider(contentRootDir);
+            return new WebView2WebViewManager(webview, services, dispatcher, fileProvider, store, hostPageRelativePath);
+        }
+
+        protected void StartWebViewCoreIfPossible()
         {
             CheckDisposed();
 
@@ -149,14 +159,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
             {
                 return;
             }
-
-            // We assume the host page is always in the root of the content directory, because it's
-            // unclear there's any other use case. We can add more options later if so.
-            var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(HostPage));
-            var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
-            var fileProvider = new PhysicalFileProvider(contentRootDir);
-
-			_webviewManager = new WebView2WebViewManager(new WpfWebView2Wrapper(_webview), Services, WpfDispatcher.Instance, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+            
+            _webviewManager = this.CreateWebViewManager(new WpfWebView2Wrapper(_webview), Services, WpfDispatcher.Instance, RootComponents.JSComponents);
             foreach (var rootComponent in RootComponents)
             {
                 // Since the page isn't loaded yet, this will always complete synchronously
@@ -201,10 +205,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
         protected virtual async ValueTask DisposeAsyncCore()
         {
-			// Dispose this component's contents that user-written disposal logic and Blazor disposal logic will complete
-			// first. Then dispose the WebView2 control. This order is critical because once the WebView2 is disposed it
-			// will prevent and Blazor code from working because it requires the WebView to exist.
-			if (_webviewManager != null)
+            // Dispose this component's contents that user-written disposal logic and Blazor disposal logic will complete
+            // first. Then dispose the WebView2 control. This order is critical because once the WebView2 is disposed it
+            // will prevent and Blazor code from working because it requires the WebView to exist.
+            if (_webviewManager != null)
             {
                 await _webviewManager.DisposeAsync()
                     .ConfigureAwait(false);
@@ -217,14 +221,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
         public async ValueTask DisposeAsync()
         {
-			if (_isDisposed)
-			{
-				return;
-			}
-			_isDisposed = true;
+            if (_isDisposed)
+            {
+                return;
+            }
+            _isDisposed = true;
 
-			// Perform async cleanup.
-			await DisposeAsyncCore();
+            // Perform async cleanup.
+            await DisposeAsyncCore();
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
             // Suppress finalization.

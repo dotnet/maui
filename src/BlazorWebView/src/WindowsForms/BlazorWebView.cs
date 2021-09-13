@@ -13,10 +13,10 @@ using WebView2Control = Microsoft.Web.WebView2.WinForms.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 {
-	/// <summary>
-	/// A Windows Forms control for hosting Blazor web components locally in Windows desktop applications.
-	/// </summary>
-	public class BlazorWebView : ContainerControl
+    /// <summary>
+    /// A Windows Forms control for hosting Blazor web components locally in Windows desktop applications.
+    /// </summary>
+    public class BlazorWebView : ContainerControl
     {
         private readonly WebView2Control _webview;
         private WebView2WebViewManager _webviewManager;
@@ -30,33 +30,33 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         {
             Dispatcher = new WindowsFormsDispatcher(this);
 
-			RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
+            RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
 
             _webview = new WebView2Control()
             {
                 Dock = DockStyle.Fill,
             };
             ((BlazorWebViewControlCollection)Controls).AddInternal(_webview);
-		}
+        }
 
-		/// <summary>
-		/// Returns the inner <see cref="WebView2Control"/> used by this control.
-		/// </summary>
-		/// <remarks>
-		/// Directly using some functionality of the inner web view can cause unexpected results because its behavior
-		/// is controlled by the <see cref="BlazorWebView"/> that is hosting it.
-		/// </remarks>
-		[Browsable(false)]
+        /// <summary>
+        /// Returns the inner <see cref="WebView2Control"/> used by this control.
+        /// </summary>
+        /// <remarks>
+        /// Directly using some functionality of the inner web view can cause unexpected results because its behavior
+        /// is controlled by the <see cref="BlazorWebView"/> that is hosting it.
+        /// </remarks>
+        [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public WebView2Control WebView => _webview;
 
-		/// <summary>
-		/// Returns the current <see cref="WebView2WebViewManager"/> used by this control. This property is <c>null</c>
-		/// until after the XYZ event is raised.
-		/// </summary>
-		public WebView2WebViewManager WebViewManager => _webviewManager;
+        /// <summary>
+        /// Returns the current <see cref="WebView2WebViewManager"/> used by this control. This property is <c>null</c>
+        /// until after the XYZ event is raised.
+        /// </summary>
+        public WebView2WebViewManager WebViewManager => _webviewManager;
 
-		private WindowsFormsDispatcher Dispatcher { get; }
+        private WindowsFormsDispatcher Dispatcher { get; }
 
         /// <inheritdoc />
         protected override void OnCreateControl()
@@ -82,27 +82,27 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
             }
         }
 
-		/// <summary>
-		/// Occurs when the <see cref="WebView2WebViewManager"/> is created.
-		/// </summary>
-		public event EventHandler<WebViewManagerCreatedEventArgs> WebViewManagerCreated;
+        /// <summary>
+        /// Occurs when the <see cref="WebView2WebViewManager"/> is created.
+        /// </summary>
+        public event EventHandler<WebViewManagerCreatedEventArgs> WebViewManagerCreated;
 
-		protected virtual void OnWebViewManagerCreated(WebViewManagerCreatedEventArgs webViewManagerCreatedEventArgs)
-		{
-			WebViewManagerCreated?.Invoke(this, webViewManagerCreatedEventArgs);
-		}
+        protected virtual void OnWebViewManagerCreated(WebViewManagerCreatedEventArgs webViewManagerCreatedEventArgs)
+        {
+            WebViewManagerCreated?.Invoke(this, webViewManagerCreatedEventArgs);
+        }
 
-		// Learn more about these methods here: https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/defining-default-values-with-the-shouldserialize-and-reset-methods?view=netframeworkdesktop-4.8
-		private void ResetHostPage() => HostPage = null;
+        // Learn more about these methods here: https://docs.microsoft.com/en-us/dotnet/desktop/winforms/controls/defining-default-values-with-the-shouldserialize-and-reset-methods?view=netframeworkdesktop-4.8
+        private void ResetHostPage() => HostPage = null;
         private bool ShouldSerializeHostPage() => !string.IsNullOrEmpty(HostPage);
 
-		/// <summary>
-		/// A collection of <see cref="RootComponent"/> instances that specify the Blazor <see cref="IComponent"/> types
-		/// to be used directly in the specified <see cref="HostPage"/>.
-		/// </summary>
-		[Browsable(false)]
-		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public RootComponentsCollection RootComponents { get; } = new();
+        /// <summary>
+        /// A collection of <see cref="RootComponent"/> instances that specify the Blazor <see cref="IComponent"/> types
+        /// to be used directly in the specified <see cref="HostPage"/>.
+        /// </summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public RootComponentsCollection RootComponents { get; } = new();
 
         /// <summary>
         /// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
@@ -134,13 +134,23 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
                     ? control.Site
                     : GetSitedParentSite(control.Parent);
 
-        private bool RequiredStartupPropertiesSet =>
+        protected virtual bool RequiredStartupPropertiesSet =>
             Created &&
             _webview != null &&
             HostPage != null &&
             Services != null;
 
-        private void StartWebViewCoreIfPossible()
+        protected virtual WebView2WebViewManager CreateWebViewManager(IWebView2Wrapper webview, IServiceProvider services, Dispatcher dispatcher, Web.JSComponentConfigurationStore store)
+        {
+            // We assume the host page is always in the root of the content directory, because it's
+            // unclear there's any other use case. We can add more options later if so.
+            var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(HostPage));
+            var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
+            var fileProvider = new PhysicalFileProvider(contentRootDir);
+            return new WebView2WebViewManager(webview, services, dispatcher, fileProvider, store, hostPageRelativePath);
+        }
+
+        protected void StartWebViewCoreIfPossible()
         {
             // We never start the Blazor code in design time because it doesn't make sense to run
             // a Blazor component in the designer.
@@ -149,14 +159,8 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
                 return;
             }
 
-            // We assume the host page is always in the root of the content directory, because it's
-            // unclear there's any other use case. We can add more options later if so.
-            var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(HostPage));
-            var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
-            var fileProvider = new PhysicalFileProvider(contentRootDir);
-
-			_webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, Dispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
-
+            _webviewManager = CreateWebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, Dispatcher, RootComponents.JSComponents);
+          
             foreach (var rootComponent in RootComponents)
             {
                 // Since the page isn't loaded yet, this will always complete synchronously
@@ -194,22 +198,22 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
         {
             if (disposing)
             {
-				// Dispose this component's contents and block on completion so that user-written disposal logic and
-				// Blazor disposal logic will complete first. Then call base.Dispose(), which will dispose the WebView2
-				// control. This order is critical because once the WebView2 is disposed it will prevent and Blazor
-				// code from working because it requires the WebView to exist.
-				_webviewManager?
+                // Dispose this component's contents and block on completion so that user-written disposal logic and
+                // Blazor disposal logic will complete first. Then call base.Dispose(), which will dispose the WebView2
+                // control. This order is critical because once the WebView2 is disposed it will prevent and Blazor
+                // code from working because it requires the WebView to exist.
+                _webviewManager?
                     .DisposeAsync()
                     .AsTask()
                     .ConfigureAwait(false)
                     .GetAwaiter()
                     .GetResult();
             }
-			base.Dispose(disposing);
-		}
+            base.Dispose(disposing);
+        }
 
-		/// <inheritdoc />
-		protected override ControlCollection CreateControlsInstance()
+        /// <inheritdoc />
+        protected override ControlCollection CreateControlsInstance()
         {
             return new BlazorWebViewControlCollection(this);
         }
