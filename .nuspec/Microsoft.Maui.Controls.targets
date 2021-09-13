@@ -79,10 +79,21 @@
               UseDependentUponConvention="$(EmbeddedResourceUseDependentUponConvention)">
       <Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="_MauiCssWithResourceNames" />
     </CreateCSharpManifestResourceName>
-
     <ItemGroup>
-      <AdditionalFiles Include="@(_MauiXamlWithResourceNames)" ManifestResourceName="%(_MauiXamlWithResourceNames.ManifestResourceName)" TargetPath="%(_MauiXamlWithResourceNames.TargetPath)" ItemSpec="%(_MauiXamlWithResourceNames.OriginalItemSpec)" GenKind="Xaml"/>
-      <AdditionalFiles Include="@(_MauiCssWithResourceNames)" ManifestResourceName="%(_MauiCssWithResourceNames.ManifestResourceName)" TargetPath="%(_MauiCssWithResourceNames.TargetPath)" ItemSpec="%(_MauiCssWithResourceNames.OriginalItemSpec)" GenKind="Css"/>
+      <AdditionalFiles Condition="%(_MauiXamlWithResourceNames.TargetPath) != ''"
+            Include="@(_MauiXamlWithResourceNames)"
+            ManifestResourceName="%(_MauiXamlWithResourceNames.ManifestResourceName)"
+            TargetPath="%(_MauiXamlWithResourceNames.TargetPath)"
+            RelativePath="$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(_MauiXamlWithResourceNames.TargetPath)))"
+            ItemSpec="%(_MauiXamlWithResourceNames.OriginalItemSpec)"
+            GenKind="Xaml"/>
+      <AdditionalFiles Condition="%(_MauiCssWithResourceNames.TargetPath) != ''"
+            Include="@(_MauiCssWithResourceNames)"
+            ManifestResourceName="%(_MauiCssWithResourceNames.ManifestResourceName)"
+            TargetPath="%(_MauiCssWithResourceNames.TargetPath)"
+            RelativePath="$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(_MauiCssWithResourceNames.TargetPath)))"
+            ItemSpec="%(_MauiCssWithResourceNames.OriginalItemSpec)"
+            GenKind="Css"/>
       <_MauiXamlWithResourceNames Remove="@(_MauiXamlWithResourceNames)" />
       <_MauiXamlWithTargetPath Remove="@(_MauiXamlWithTargetPath)" />
       <_MauiCssWithResourceNames Remove="@(_MauiCssWithResourceNames)" />
