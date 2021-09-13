@@ -1,5 +1,4 @@
-﻿#nullable disable
-using System;
+﻿using System;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.UI.Composition;
@@ -12,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
-
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
@@ -20,11 +19,11 @@ namespace Microsoft.Maui
 	{
 
 		readonly Canvas _shadowCanvas;
-		SpriteVisual _shadowVisual;
-		DropShadow _dropShadow;
+		SpriteVisual? _shadowVisual;
+		DropShadow? _dropShadow;
 
 
-		FrameworkElement _child;
+		FrameworkElement? _child;
 
 		public WrapperView()
 		{
@@ -35,7 +34,7 @@ namespace Microsoft.Maui
 
 		}
 
-		public FrameworkElement Child
+		public FrameworkElement? Child
 		{
 			get { return _child; }
 			set
@@ -155,9 +154,9 @@ namespace Microsoft.Maui
 			var ttv = Child.TransformToVisual(_shadowCanvas);
 			Windows.Foundation.Point offset = ttv.TransformPoint(new Windows.Foundation.Point(0, 0));
 
-			var shadowHost = new Rectangle()
+			var shadowHost = new UI.Xaml.Shapes.Rectangle()
 			{
-				Fill = new SolidColorBrush(Colors.Transparent),
+				Fill = new SolidColorBrush(UI.Colors.Transparent),
 				Width = width,
 				Height = height
 			};
@@ -204,24 +203,25 @@ namespace Microsoft.Maui
 			}
 		}
 
-		static void SetShadowProperties(DropShadow dropShadow, Shadow? mauiShadow)
+		static void SetShadowProperties(DropShadow dropShadow, IShadow? mauiShadow)
 		{
 			float blurRadius = 1;
 			float opacity = 0;
 			var shadowColor = Graphics.Colors.Transparent;
 			var offset = new Graphics.Size(1, 1);
 
-			if (mauiShadow != null && !mauiShadow.Value.IsEmpty)
+			if (mauiShadow != null)
 			{
-				blurRadius = (float)mauiShadow.Value.Radius * 2;
-				opacity = (float)mauiShadow.Value.Opacity;
-				shadowColor = mauiShadow.Value.Color;
-				offset = mauiShadow.Value.Offset;
+				blurRadius = (float)mauiShadow.Radius * 2;
+				opacity = (float)mauiShadow.Opacity;
+				shadowColor = mauiShadow.Paint.ToColor();
+				offset = mauiShadow.Offset;
 			}
 
 			dropShadow.BlurRadius = blurRadius;
 			dropShadow.Opacity = opacity;
-			dropShadow.Color = shadowColor.ToWindowsColor();
+			if (shadowColor != null)
+				dropShadow.Color = shadowColor.ToWindowsColor();
 			dropShadow.Offset = new Vector3((float)offset.Width, (float)offset.Height, 0);
 		}
 
