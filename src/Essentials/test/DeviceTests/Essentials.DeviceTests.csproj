@@ -22,8 +22,7 @@
     <ApplicationVersion>1.0.1.0</ApplicationVersion>
     <AndroidVersionCode>1</AndroidVersionCode>
 
-    <!-- HACK for now until inconsistency is fixed -->
-    <AppleShortVersion>1.0.1.0</AppleShortVersion>
+    <ApplicationDisplayVersion>1.0.1.0</ApplicationDisplayVersion>
     <ApplicationVersion Condition="$(TargetFramework.Contains('-ios'))">1</ApplicationVersion>
   </PropertyGroup>
 
