@@ -80,14 +80,14 @@
       <Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="_MauiCssWithResourceNames" />
     </CreateCSharpManifestResourceName>
     <ItemGroup>
-      <AdditionalFiles
+      <AdditionalFiles Condition="%(_MauiXamlWithResourceNames.TargetPath) != ''"
             Include="@(_MauiXamlWithResourceNames)"
             ManifestResourceName="%(_MauiXamlWithResourceNames.ManifestResourceName)"
             TargetPath="%(_MauiXamlWithResourceNames.TargetPath)"
             RelativePath="$([MSBuild]::MakeRelative($(MSBuildProjectDirectory), %(_MauiXamlWithResourceNames.TargetPath)))"
             ItemSpec="%(_MauiXamlWithResourceNames.OriginalItemSpec)"
             GenKind="Xaml"/>
-      <AdditionalFiles
+      <AdditionalFiles Condition="%(_MauiCssWithResourceNames.TargetPath) != ''"
             Include="@(_MauiCssWithResourceNames)"
             ManifestResourceName="%(_MauiCssWithResourceNames.ManifestResourceName)"
             TargetPath="%(_MauiCssWithResourceNames.TargetPath)"
