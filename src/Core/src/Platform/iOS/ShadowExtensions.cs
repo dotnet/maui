@@ -1,28 +1,33 @@
 ﻿using CoreAnimation;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	public static class ShadowExtensions
 	{
-		public static void SetShadow(this UIView nativeView, Shadow shadow)
+		public static void SetShadow(this UIView nativeView, IShadow? shadow)
 		{
+			if (shadow == null || shadow.Paint == null)
+				return;
+
 			var layer = nativeView.Layer;
 			layer?.SetShadow(shadow);
 		}
 
-		public static void SetShadow(this CALayer layer, Shadow shadow)
+		public static void SetShadow(this CALayer layer, IShadow? shadow)
 		{
-			if (shadow.IsEmpty)
+			if (shadow == null || shadow.Paint?.ToColor() == null)
 				return;
 
-			var radius = shadow.Radius;
+			var radius = (float)shadow.Radius;
 			var opacity = shadow.Opacity;
-			var color = shadow.Color.ToNative();
+			var color = shadow.Paint.ToColor()?.ToNative();
+
 			var offset = new CGSize((double)shadow.Offset.Width, (double)shadow.Offset.Height);
 
-			layer.ShadowColor = color.CGColor;
+			layer.ShadowColor = color?.CGColor;
 			layer.ShadowOpacity = opacity;
 			layer.ShadowRadius = radius;
 			layer.ShadowOffset = offset;

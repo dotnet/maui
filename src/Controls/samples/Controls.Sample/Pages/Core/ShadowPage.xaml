@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.ShadowPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+     xmlns:sample="clr-namespace:Maui.Controls.Sample"
     Title="Shadows">
     <views:BasePage.Resources>
         <ResourceDictionary>
@@ -12,6 +13,8 @@
                 <Setter Property="FontSize" Value="8" />
             </Style>
 
+            <sample:StringToBrushConverter x:Key="cnvStringToBrush"/>
+            
         </ResourceDictionary>
     </views:BasePage.Resources>
     <Grid
@@ -42,7 +45,14 @@
                 WidthRequest="150"
                 RadiusX="12"
                 RadiusY="12"
-                Margin="0"/>
+                Margin="0">
+                <Rectangle.Shadow>
+                    <Shadow Color="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                            Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
+                            Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"
+                            />
+                </Rectangle.Shadow>
+            </Rectangle>
             <Label
                 Grid.Row="4"
                 Text="Clipped View"
@@ -60,6 +70,12 @@
                         RadiusX="50"
                         RadiusY="50"/>
                 </Image.Clip>
+                <Image.Shadow>
+                    <Shadow Color="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                            Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
+                            Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"
+                            />
+                </Image.Shadow>
             </Image>
         </Grid>
         <ScrollView
@@ -116,7 +132,7 @@
                     Minimum="0"
                     Maximum="20"
                     Value="10"
-                    ValueChanged="OnShadowRadiusChanged"/>
+                    />
                 <Label
                      Text="Shadow Opacity"
                      Style="{StaticResource InfoStyle}"/>

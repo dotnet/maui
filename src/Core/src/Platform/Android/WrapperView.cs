@@ -81,7 +81,7 @@ namespace Microsoft.Maui
 		protected override void DispatchDraw(Canvas canvas)
 		{
 			// If is not shadowed, skip
-			if (Shadow != null && !Shadow.Value.IsEmpty)
+			if (Shadow?.Paint != null)
 			{
 				DrawShadow(canvas);
 			}
@@ -141,7 +141,7 @@ namespace Microsoft.Maui
 					FilterBitmap = true
 				};
 
-			Graphics.Color shadowColor = Shadow.Value.Color;
+			Graphics.Color shadowColor = Shadow.Paint.ToColor();
 			
 			// If need to redraw shadow
 			if (_invalidateShadow)
@@ -172,13 +172,13 @@ namespace Microsoft.Maui
 					// Clear past content content to draw shadow
 					_shadowCanvas.DrawColor(Android.Graphics.Color.Black, PorterDuff.Mode.Clear);
 
-					var shadowOpacity = Shadow.Value.Opacity;
+					var shadowOpacity = Shadow.Opacity;
 
 					// Draw extracted alpha bounds of our local canvas
 					_shadowPaint.Color = shadowColor.WithAlpha(shadowOpacity).ToNative();
 
 					// Apply the shadow radius 
-					float radius = Shadow.Value.Radius;
+					var radius = (float)Shadow.Radius;
 
 					if (radius <= 0)
 						radius = 0.01f;
@@ -188,8 +188,8 @@ namespace Microsoft.Maui
 
 					_shadowPaint.SetMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.Normal));
 
-					float shadowOffsetX = (float)Shadow.Value.Offset.Width;
-					float shadowOffsetY = (float)Shadow.Value.Offset.Height;
+					float shadowOffsetX = (float)Shadow.Offset.Width;
+					float shadowOffsetY = (float)Shadow.Offset.Height;
 
 					if (Clip == null)
 						_shadowCanvas.DrawBitmap(extractAlpha, shadowOffsetX, shadowOffsetY, _shadowPaint);

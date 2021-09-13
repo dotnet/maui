@@ -118,7 +118,7 @@ namespace Microsoft.Maui
 		{
 			var shadowLayer = ShadowLayer;
 
-			if (shadowLayer == null && (Shadow == null || Shadow.Value.IsEmpty))
+			if (shadowLayer == null && Shadow == null)
 				return;
 
 			shadowLayer ??= ShadowLayer = new CAShapeLayer();
@@ -132,10 +132,10 @@ namespace Microsoft.Maui
 			var nativePath = path?.AsCGPath();
 			shadowLayer.Path = nativePath;
 
-			if (Shadow!.Value.IsEmpty)
+			if (Shadow == null)
 				shadowLayer.ClearShadow();
 			else
-				shadowLayer.SetShadow(Shadow!.Value);
+				shadowLayer.SetShadow(Shadow);
 		}
 
 		CALayer? GetLayer()

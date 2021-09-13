@@ -127,7 +127,7 @@ namespace Microsoft.Maui
 			// If there is a clip shape, then the shadow should be applied to the clip layer, not the view layer
 			if (clip == null)
 			{
-				if (shadow.IsEmpty)
+				if (shadow == null)
 					nativeView.ClearShadow();
 				else
 					nativeView.SetShadow(shadow);

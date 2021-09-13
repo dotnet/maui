@@ -42,7 +42,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Paints a shadow around the target View.
 		/// </summary>
-		Shadow Shadow { get; set; }
+		IShadow? Shadow { get; }
 
 		/// <summary>
 		/// Gets a value indicating whether this View is enabled in the user interface. 

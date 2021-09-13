@@ -47,6 +47,8 @@ namespace Microsoft.Maui.Controls
 
 		IShape IView.Clip => Clip;
 
+		IShadow IView.Shadow => Shadow;
+
 		public static readonly BindableProperty ShadowProperty =
  			BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(VisualElement), defaultValue: null);
 

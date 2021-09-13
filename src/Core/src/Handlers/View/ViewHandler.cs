@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Handlers
 		protected abstract void RemoveContainer();
 
 		public virtual bool NeedsContainer =>
-			VirtualView?.Clip != null || (VirtualView?.Shadow != null && !VirtualView.Shadow.IsEmpty);
+			VirtualView?.Clip != null || VirtualView?.Shadow != null;
 
 		public NativeView? ContainerView { get; private protected set; }
 
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var shadow = view.Shadow;
 
-			if (!shadow.IsEmpty)
+			if (shadow != null)
 			{
 				handler.HasContainer = true;
 			}

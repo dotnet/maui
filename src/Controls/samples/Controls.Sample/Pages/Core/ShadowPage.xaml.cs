@@ -12,13 +12,13 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 
 			UpdateBackground();
-			UpdateShadow();
+			//UpdateShadow();
 		}
 
 		void RemoveShadowClicked(object sender, EventArgs e)
 		{
-			ClippedShadowView.Shadow = ShadowView.Shadow = Shadow.Zero;
-		}	
+			ClippedShadowView.Shadow = ShadowView.Shadow =  null;
+		}
 
 		void OnBackgroundChanged(object sender, TextChangedEventArgs e)
 		{
@@ -60,17 +60,17 @@ namespace Maui.Controls.Sample.Pages
 
 		void UpdateShadow()
 		{
-			var shadow = new Shadow();
+			//var shadow = new Shadow();
 
-			var shadowColor = GetColorFromString(ShadowColor.Text);
-			ShadowColor.Background = new SolidColorBrush(shadowColor);
+			//var shadowColor = GetColorFromString(ShadowColor.Text);
+			//ShadowColor.Background = new SolidColorBrush(shadowColor);
 
-			shadow.Color = shadowColor;
-			shadow.Offset = new Size((float)ShadowOffsetXSlider.Value, (float)ShadowOffsetYSlider.Value);
-			shadow.Radius = (float)ShadowRadiusSlider.Value;
-			shadow.Opacity = (float)ShadowOpacitySlider.Value;
+			//shadow.Color = shadowColor;
+			//shadow.Offset = new Size((float)ShadowOffsetXSlider.Value, (float)ShadowOffsetYSlider.Value);
+			//shadow.Radius = (float)ShadowRadiusSlider.Value;
+			//shadow.Opacity = (float)ShadowOpacitySlider.Value;
 
-			LabelShadowView.Shadow = ShadowView.Shadow = ClippedShadowView.Shadow = shadow;
+			//LabelShadowView.Shadow = ShadowView.Shadow = ClippedShadowView.Shadow = shadow;
 		}
 
 		Color GetColorFromString(string value)

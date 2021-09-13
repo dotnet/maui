@@ -4,6 +4,7 @@ using System.Linq;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
+using UIKit;
 
 namespace Microsoft.Maui.Graphics
 {

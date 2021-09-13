@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 	public partial class WrapperView
 	{
 		IShape? _clip;
-		Shadow? _shadow;
+		IShadow? _shadow;
 
 #if WINDOWS
 		public new IShape? Clip
@@ -27,7 +27,7 @@ namespace Microsoft.Maui
 #if WINDOWS
 		public new Shadow? Shadow
 #else
-		public Shadow? Shadow
+		public IShadow? Shadow
 #endif
 
 		{
