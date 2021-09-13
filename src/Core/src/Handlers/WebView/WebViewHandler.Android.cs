@@ -18,8 +18,8 @@ namespace Microsoft.Maui.Handlers
 		}
 		protected override void ConnectHandler(AWebView nativeView)
 		{
+			WebViewMapper.UpdateProperty(this, VirtualView, nameof(AWebView.Settings));
 			WebViewMapper.UpdateProperty(this, VirtualView, nameof(WebViewClient));
-			WebViewMapper.UpdateProperty(this, VirtualView, nameof(WebView.Settings));
 			WebViewMapper.UpdateProperty(this, VirtualView, nameof(WebChromeClient));
 			base.ConnectHandler(nativeView);
 		}
