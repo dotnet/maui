@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public abstract partial class ElementHandler : IElementHandler
 	{
-		public static IPropertyMapper<IElement, ElementHandler> ElementMapper = new PropertyMapper<IElement, ElementHandler>()
+		public static IPropertyMapper<IElement, IElementHandler> ElementMapper = new PropertyMapper<IElement, IElementHandler>()
 		{
 		};
 
