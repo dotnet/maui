@@ -1,5 +1,4 @@
 ﻿using Android.Webkit;
-using Android.Widget;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
 
@@ -7,21 +6,16 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : ViewHandler<IWebView, AWebView>
 	{
+		WebViewClient? _webViewClient;
+		WebChromeClient? _webChromeClient;
+		bool _settingsSet;
+
 		protected override AWebView CreateNativeView()
 		{
-			var aWebView = new MauiWebView(Context!)
+			return new MauiWebView(Context!)
 			{
 				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.WrapContent)
 			};
-
-			return aWebView;
-		}
-		protected override void ConnectHandler(AWebView nativeView)
-		{
-			WebViewMapper.UpdateProperty(this, VirtualView, nameof(AWebView.Settings));
-			WebViewMapper.UpdateProperty(this, VirtualView, nameof(WebViewClient));
-			WebViewMapper.UpdateProperty(this, VirtualView, nameof(WebChromeClient));
-			base.ConnectHandler(nativeView);
 		}
 
 		protected override void DisconnectHandler(AWebView nativeView)
@@ -33,22 +27,53 @@ namespace Microsoft.Maui.Handlers
 		{
 			IWebViewDelegate? webViewDelegate = handler.NativeView as IWebViewDelegate;
 
+			SetSettingsAndClient(handler);
+
 			handler.NativeView?.UpdateSource(webView, webViewDelegate);
 		}
 
 		public static void MapWebViewClient(WebViewHandler handler, IWebView webView)
 		{
-			handler.NativeView.SetWebViewClient(new WebViewClient());
+			if (handler._webViewClient == null)
+			{
+				handler._webViewClient = new WebViewClient();
+				handler.NativeView.SetWebViewClient(handler._webViewClient);
+			}
 		}
 
 		public static void MapWebChromeClient(WebViewHandler handler, IWebView webView)
 		{
-			handler.NativeView.SetWebChromeClient(new WebChromeClient());
+			if (handler._webChromeClient == null)
+			{
+				handler._webChromeClient = new WebChromeClient();
+				handler.NativeView.SetWebChromeClient(handler._webChromeClient);
+			}
 		}
 
 		public static void MapWebViewSettings(WebViewHandler handler, IWebView webView)
 		{
-			handler.NativeView.UpdateSettings(webView, true, true);
+			if (!handler._settingsSet)
+			{
+				handler.NativeView.UpdateSettings(webView, true, true);
+				handler._settingsSet = true;
+			}
+		}
+
+		static void SetSettingsAndClient(WebViewHandler handler)
+		{
+			if (handler._webViewClient == null)
+			{
+				WebViewMapper.UpdateProperty(handler, handler.VirtualView, nameof(WebViewClient));
+			}
+			if (handler._webChromeClient == null)
+			{
+				WebViewMapper.UpdateProperty(handler, handler.VirtualView, nameof(WebChromeClient));
+			}
+			if (!handler._settingsSet)
+			{
+				WebViewMapper.UpdateProperty(handler, handler.VirtualView, nameof(AWebView.Settings));
+				handler._settingsSet = true;
+			}
 		}
 	}
 }
