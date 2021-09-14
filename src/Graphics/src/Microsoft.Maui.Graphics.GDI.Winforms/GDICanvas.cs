@@ -515,10 +515,10 @@ namespace Microsoft.Maui.Graphics.GDI
 
 			if (paint is RadialGradientPaint radialGradientPaint)
 			{
-				float x1 = (float)(radialGradientPaint.Center.X * rectangle.Width) + rectangle.X;
-				float y1 = (float)(radialGradientPaint.Center.Y * rectangle.Height) + rectangle.Y;
-				float w = rectangle.Width;
-				float h = rectangle.Height;
+				float x1 = (float)((radialGradientPaint.Center.X - radialGradientPaint.Radius) * rectangle.Width) + rectangle.X;
+				float y1 = (float)((radialGradientPaint.Center.Y - radialGradientPaint.Radius) * rectangle.Height) + rectangle.Y;
+				float w = rectangle.Width * (float)radialGradientPaint.Radius * 2;
+				float h = rectangle.Height * (float)radialGradientPaint.Radius * 2;
 
 				GraphicsPath path = new GraphicsPath();
 				path.AddEllipse(x1, y1, w, h);
