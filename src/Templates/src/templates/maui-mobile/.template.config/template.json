@@ -1,7 +1,7 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI" ],
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows" ],
     "identity": "Microsoft.Maui.MauiApp",
     "groupIdentity": "Microsoft.Maui.App",
     "name": ".NET MAUI App",
