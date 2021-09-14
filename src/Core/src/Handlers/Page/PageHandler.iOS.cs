@@ -13,10 +13,10 @@ namespace Microsoft.Maui.Handlers
 			if (ViewController == null)
 				ViewController = new PageViewController(VirtualView, this.MauiContext);
 
-			if (ViewController is PageViewController pc && pc.CurrentNativeView is ContentView pv)
-				return pv;
+			if (ViewController is not PageViewController pc)
+				throw new InvalidOperationException($"ViewController must be a {nameof(PageViewController)}");
 
-			if (ViewController.View is ContentView cv)
+			if (pc.CurrentNativeView is ContentView cv)
 				return cv;
 
 			throw new InvalidOperationException($"PageViewController.View must be a {nameof(ContentView)}");
