@@ -66,7 +66,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.Design-net6",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiRazorClassLibrarySample", "src\BlazorWebView\samples\MauiRazorClassLibrarySample\MauiRazorClassLibrarySample.csproj", "{4515DAA4-9801-401D-A7A0-38D019B3B19F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen-net6", "src\Controls\src\SourceGen\Controls.SourceGen-net6.csproj", "{22C17254-2CB4-4AE7-A558-E3208E1D19D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen", "src\Controls\src\SourceGen\Controls.SourceGen.csproj", "{22C17254-2CB4-4AE7-A558-E3208E1D19D3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F3FFE2E4-E89E-46A9-A180-FDA8908BA21D}"
 EndProject
@@ -180,7 +180,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.Sample", "src\Es
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials.Sample.Server.WebAuthenticator", "src\Essentials\samples\Sample.Server.WebAuthenticator\Essentials.Sample.Server.WebAuthenticator.csproj", "{F7DB0CB3-D244-403A-8C3B-B1ED5E5838EC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen.UnitTests-net6", "src\Controls\tests\SourceGen.Tests\Controls.SourceGen.UnitTests-net6.csproj", "{FF27E825-EB8D-43BF-8920-9F7B21207A45}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen.UnitTests", "src\Controls\tests\SourceGen.Tests\Controls.SourceGen.UnitTests.csproj", "{FF27E825-EB8D-43BF-8920-9F7B21207A45}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SourceGen", "SourceGen", "{47F57F10-40B9-44C5-9287-1489A382F339}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8955ABCA-12CC-4969-8CB2-1E2B636B64D3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B9BD5366-F3A1-4855-9FC1-83BB3A1C286F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGen.UnitTests", "src\SourceGen\tests\SourceGen.UnitTests.csproj", "{1A4CFECD-89EF-49D9-9E80-37C11497A599}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.SourceGen", "src\TestUtils\src\TestUtils.SourceGen\TestUtils.SourceGen.csproj", "{44D40C8A-4DEA-4E8B-B87A-7CA34E070647}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGen.Util", "src\SourceGen\src\Util\SourceGen.Util.csproj", "{8E40E195-8F37-49FC-8221-2A274BA8F746}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGen.Core", "src\SourceGen\src\Core\SourceGen.Core.csproj", "{AF2E5662-DBC2-47D2-BE4A-88B5FEB4510D}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -457,6 +471,22 @@ Global
 		{FF27E825-EB8D-43BF-8920-9F7B21207A45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF27E825-EB8D-43BF-8920-9F7B21207A45}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF27E825-EB8D-43BF-8920-9F7B21207A45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A4CFECD-89EF-49D9-9E80-37C11497A599}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A4CFECD-89EF-49D9-9E80-37C11497A599}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A4CFECD-89EF-49D9-9E80-37C11497A599}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A4CFECD-89EF-49D9-9E80-37C11497A599}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44D40C8A-4DEA-4E8B-B87A-7CA34E070647}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44D40C8A-4DEA-4E8B-B87A-7CA34E070647}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44D40C8A-4DEA-4E8B-B87A-7CA34E070647}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44D40C8A-4DEA-4E8B-B87A-7CA34E070647}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E40E195-8F37-49FC-8221-2A274BA8F746}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E40E195-8F37-49FC-8221-2A274BA8F746}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E40E195-8F37-49FC-8221-2A274BA8F746}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E40E195-8F37-49FC-8221-2A274BA8F746}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF2E5662-DBC2-47D2-BE4A-88B5FEB4510D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF2E5662-DBC2-47D2-BE4A-88B5FEB4510D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF2E5662-DBC2-47D2-BE4A-88B5FEB4510D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF2E5662-DBC2-47D2-BE4A-88B5FEB4510D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -543,6 +573,12 @@ Global
 		{C677BF3D-B234-491D-BA48-D9742DB564F8} = {95BF8553-3D9D-4831-ACDD-A3E697BC08A6}
 		{F7DB0CB3-D244-403A-8C3B-B1ED5E5838EC} = {95BF8553-3D9D-4831-ACDD-A3E697BC08A6}
 		{FF27E825-EB8D-43BF-8920-9F7B21207A45} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
+		{8955ABCA-12CC-4969-8CB2-1E2B636B64D3} = {47F57F10-40B9-44C5-9287-1489A382F339}
+		{B9BD5366-F3A1-4855-9FC1-83BB3A1C286F} = {47F57F10-40B9-44C5-9287-1489A382F339}
+		{1A4CFECD-89EF-49D9-9E80-37C11497A599} = {B9BD5366-F3A1-4855-9FC1-83BB3A1C286F}
+		{44D40C8A-4DEA-4E8B-B87A-7CA34E070647} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
+		{8E40E195-8F37-49FC-8221-2A274BA8F746} = {8955ABCA-12CC-4969-8CB2-1E2B636B64D3}
+		{AF2E5662-DBC2-47D2-BE4A-88B5FEB4510D} = {8955ABCA-12CC-4969-8CB2-1E2B636B64D3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
