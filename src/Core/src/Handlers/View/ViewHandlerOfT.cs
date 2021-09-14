@@ -67,12 +67,7 @@ namespace Microsoft.Maui.Handlers
 
 		private protected override NativeView OnCreateNativeView()
 		{
-			if (NativeViewFactory != null)
-			{
-				return NativeViewFactory.Invoke(this);
-			}
-
-			return CreateNativeView();
+			return NativeViewFactory?.Invoke(this) ?? CreateNativeView();
 		}
 
 		private protected override void OnConnectHandler(NativeView nativeView) =>
