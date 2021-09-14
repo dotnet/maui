@@ -6,19 +6,13 @@ namespace Microsoft.Maui.Handlers
 	public partial class PageHandler : ContentViewHandler, INativeViewHandler
 	{
 		PageViewController? _pageViewController;
-		UIViewController? INativeViewHandler.ViewController => _pageViewController;
-		public PageViewController? ViewController 
-		{
-			get => _pageViewController;
-			set => _pageViewController = value;
-		}
-
 		protected override ContentView CreateNativeView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a LayoutView");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 
-			ViewController ??= new PageViewController(VirtualView, this.MauiContext);
+			_pageViewController ??= new PageViewController(VirtualView, this.MauiContext);
+			ViewController = _pageViewController;
 
 			if (_pageViewController?.CurrentNativeView is ContentView pv)
 				return pv;
