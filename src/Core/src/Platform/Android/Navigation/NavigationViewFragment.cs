@@ -15,7 +15,9 @@ namespace Microsoft.Maui
 		NavigationLayout? _navigationLayout;
 		FragmentContainerView? _fragmentContainerView;
 
-		// TODO FIX ME
+		// TODO MAUI: This currently feels like a very unreliable way to retrieve the NavigationLayout
+		// If this is called before the Fragment View is parented then this call fails.
+		// This should be converted to use Android ViewModels instead of just walking up the visual tree
 		NavigationLayout NavigationLayout
 		{
 			get
