@@ -6,26 +6,59 @@
     <AssemblyName>Microsoft.Maui.Controls.SourceGen</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.SourceGen</RootNamespace>
     <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);NU5128;</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SourceGen\src\Util\SourceGen.Util.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <EnableMauiFontRegistrationGenerator Condition="'$(EnableMauiFontRegistrationGenerator)' == ''">True</EnableMauiFontRegistrationGenerator>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Compile Include="..\Core\Internals\INameScope.cs" Link="Core\INameScope.cs" />
+    <Compile Include="..\Core\IXmlLineInfoProvider.cs" Link="Core\IXmlLineInfoProvider.cs" />
+    <Compile Include="..\Core\XamlParseException.cs" Link="Core\XamlParseException.cs" />
+    <Compile Include="..\Core\XmlLineInfo.cs" Link="Core\XmlLineInfo.cs" />
+    <Compile Include="..\Core\XmlnsDefinitionAttribute.cs" Link="Core\XmlnsDefinitionAttribute.cs" />
+    <Compile Include="..\Xaml\TypeArgumentsParser.cs" Link="Xaml\TypeArgumentsParser.cs" />
+    <Compile Include="..\Xaml\XamlLoader.Types.cs" Link="Xaml\XamlLoader.Types.cs" />
+    <Compile Include="..\Xaml\XamlParser.Namespaces.cs" Link="Xaml\XamlParser.Namespaces.cs" />
+    <Compile Include="..\Xaml\XamlNode.cs" Link="Xaml\XamlNode.cs" />
+    <Compile Include="..\Xaml\XamlNodeVisitor.cs" Link="Xaml\XamlNodeVisitor.cs" />
+    <Compile Include="..\Xaml\XmlName.cs" Link="Xaml\XmlName.cs" />
+    <Compile Include="..\Xaml\XmlnsHelper.cs" Link="Xaml\XmlnsHelper.cs" />
+    <Compile Include="..\Xaml\XmlTypeXamlExtensions.cs" Link="Xaml\XmlTypeXamlExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Core\Controls.Core.csproj" GeneratePathProperty="true" PrivateAssets="all" />
-    <ProjectReference Include="..\Xaml\Controls.Xaml.csproj" GeneratePathProperty="true" PrivateAssets="all" />
-  </ItemGroup>
-
-
   <PropertyGroup>
     <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- MauiFont items -->
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false" />
+
+    <!-- Properties for emitting default entry boilerplate -->
+    <CompilerVisibleProperty Include="OutputType" />
+    <CompilerVisibleProperty Include="TargetPlatformIdentifier" />
+    <CompilerVisibleProperty Include="ApplicationTitle" />
+  </ItemGroup>
+
   <Target Name="GetDependencyTargetPaths">
     <ItemGroup>
-      <TargetPathWithTargetPlatformMoniker Include="$(MSBuildThisFileDirectory)\..\Xaml\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Xaml.dll" IncludeRuntimeDependency="false" />
-      <TargetPathWithTargetPlatformMoniker Include="$(MSBuildThisFileDirectory)\..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(MSBuildThisFileDirectory)..\Xaml\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.Xaml.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(MSBuildThisFileDirectory)..\Core\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.dll" IncludeRuntimeDependency="false" />
     </ItemGroup>
   </Target>
 

@@ -1,9 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>Microsoft.Maui.Controls.SourceGen.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
+    <EnableDefaultXamlItems>False</EnableDefaultXamlItems>
+    <EnableDefaultCssItems>False</EnableDefaultCssItems>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,12 +18,21 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Framework" Version="16.11.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.11.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" GeneratePathProperty="true" PrivateAssets="all" />
     <ProjectReference Include="..\..\src\Xaml\Controls.Xaml-net6.csproj" GeneratePathProperty="true" PrivateAssets="all" />
-    <ProjectReference Include="..\..\..\Controls\src\SourceGen\Controls.SourceGen-net6.csproj" />
+    <ProjectReference Include="..\..\src\SourceGen\Controls.SourceGen.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\TestUtils.SourceGen\TestUtils.SourceGen.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestData\SimpleTest.xaml">
+      <Generator></Generator>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
