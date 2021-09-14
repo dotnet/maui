@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<AssemblyName>Microsoft.Maui.TestUtils.SourceGen</AssemblyName>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="xunit.abstractions" Version="2.0.3" PrivateAssets="all" />
+		<PackageReference Include="xunit" Version="2.4.1" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.11.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Build.Framework" Version="16.11.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.11.0" PrivateAssets="all" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" PrivateAssets="all" />
+	</ItemGroup>
+
+</Project>
