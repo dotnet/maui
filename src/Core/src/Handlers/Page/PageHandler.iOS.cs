@@ -11,10 +11,13 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 
 			if (ViewController == null)
-				ViewController =  new PageViewController(VirtualView, this.MauiContext);
+				ViewController = new PageViewController(VirtualView, this.MauiContext);
 
 			if (ViewController is PageViewController pc && pc.CurrentNativeView is ContentView pv)
 				return pv;
+
+			if (ViewController.View is ContentView cv)
+				return cv;
 
 			throw new InvalidOperationException($"PageViewController.View must be a {nameof(ContentView)}");
 		}
