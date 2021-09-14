@@ -131,22 +131,44 @@ namespace Microsoft.Maui.Graphics.GDI
 
 		public Drawing.Color StrokeColor { get; set; }
 
-		public Drawing.Color FillColor { get; set; }
+		private Drawing.Color _fillColor;
+		public Drawing.Color FillColor
+		{
+			get => _fillColor;
+			set
+			{
+				_fillColor = value;
+				FillBrushLinear = null;
+				FillBrushPath = null;
+			}
+		}
+
+		public SolidBrush FillBrushSolid { get; set; }
+		public LinearGradientBrush FillBrushLinear { get; set; }
+		public PathGradientBrush FillBrushPath { get; set; }
 
 		public Brush FillBrush
 		{
 			get
 			{
-				if (_fillBrush == null)
+				if (FillBrushPath != null)
 				{
-					_fillBrush = new SolidBrush(FillColor);
-				}
-				else
-				{
-					_fillBrush.Color = FillColor;
+					return FillBrushPath;
 				}
 
-				return _fillBrush;
+				if (FillBrushLinear != null)
+				{
+					return FillBrushLinear;
+				}
+
+				if (FillBrushSolid != null)
+				{
+					FillBrushSolid.Color = FillColor;
+					return FillBrushSolid;
+				}
+
+				FillBrushSolid = new SolidBrush(Drawing.Color.White);
+				return FillBrushSolid;
 			}
 		}
 

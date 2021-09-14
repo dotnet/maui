@@ -497,24 +497,38 @@ namespace Microsoft.Maui.Graphics.GDI
 				return;
 			}
 
-			/*
 			if (paint is LinearGradientPaint linearGradientPaint)
 			{
-				point1.X = x1;
-				point1.Y = y1;
-				point2.X = x2;
-				point2.Y = y2;
-				currentState.SetLinearGradient(paint, point1, point2);
+				float x1 = (float)(linearGradientPaint.StartPoint.X * rectangle.Width) + rectangle.X;
+				float y1 = (float)(linearGradientPaint.StartPoint.Y * rectangle.Height) + rectangle.Y;
+
+				float x2 = (float)(linearGradientPaint.EndPoint.X * rectangle.Width) + rectangle.X;
+				float y2 = (float)(linearGradientPaint.EndPoint.Y * rectangle.Height) + rectangle.Y;
+
+				CurrentState.FillBrushLinear = new LinearGradientBrush(
+				   new Drawing.PointF(x1, y1),
+				   new Drawing.PointF(x2, y2),
+				   linearGradientPaint.StartColor.AsColor(),
+				   linearGradientPaint.EndColor.AsColor());
+				return;
 			}
-			else if(paint is RadialGradientPaint radialGradientPaint)
+
+			if (paint is RadialGradientPaint radialGradientPaint)
 			{
-				point1.X = x1;
-				point1.Y = y1;
-				point2.X = x2;
-				point2.Y = y2;
-				currentState.SetRadialGradient(paint, point1, point2);
+				float x1 = (float)(radialGradientPaint.Center.X * rectangle.Width) + rectangle.X;
+				float y1 = (float)(radialGradientPaint.Center.Y * rectangle.Height) + rectangle.Y;
+				float w = rectangle.Width;
+				float h = rectangle.Height;
+
+				GraphicsPath path = new GraphicsPath();
+				path.AddEllipse(x1, y1, w, h);
+
+				CurrentState.FillBrushPath = new PathGradientBrush(path)
+				{
+					CenterColor = radialGradientPaint.StartColor.AsColor(),
+					SurroundColors = new Drawing.Color[] { radialGradientPaint.EndColor.AsColor() },
+				};
 			}
-			*/
 		}
 
 		public override void SetToSystemFont()
