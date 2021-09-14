@@ -260,5 +260,11 @@ namespace Microsoft.Maui.Controls
 		{
 			OnPropertyChanged(nameof(Shadow));
 		}
+
+		void PropagateBindingContextToShadow()
+		{
+			if (Shadow != null)
+				SetInheritedBindingContext(Shadow, BindingContext);
+		}
 	}
 }
