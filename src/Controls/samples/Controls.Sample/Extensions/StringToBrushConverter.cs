@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample
 {
-	class StringToBrushConverter : IValueConverter
+	public class StringToBrushConverter : IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{

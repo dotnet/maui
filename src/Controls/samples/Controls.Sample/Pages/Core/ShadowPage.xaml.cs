@@ -10,82 +10,29 @@ namespace Maui.Controls.Sample.Pages
 		public ShadowPage()
 		{
 			InitializeComponent();
-
-			UpdateBackground();
-			//UpdateShadow();
+			UpdateShadowOffset();
 		}
 
 		void RemoveShadowClicked(object sender, EventArgs e)
 		{
-			ClippedShadowView.Shadow = ShadowView.Shadow =  null;
-		}
-
-		void OnBackgroundChanged(object sender, TextChangedEventArgs e)
-		{
-			UpdateBackground();
-		}
-
-		void OnShadowColorChanged(object sender, TextChangedEventArgs e)
-		{
-			UpdateShadow();
+			ClippedShadowView.Shadow = ShadowView.Shadow = LabelShadowView.Shadow = null;
 		}
 
 		void OnShadowOffsetXChanged(object sender, ValueChangedEventArgs e)
 		{
-			UpdateShadow();
+			UpdateShadowOffset();
 		}
 
 		void OnShadowOffsetYChanged(object sender, ValueChangedEventArgs e)
 		{
-			UpdateShadow();
+			UpdateShadowOffset();
 		}
 
-		void OnShadowRadiusChanged(object sender, ValueChangedEventArgs e)
+		void UpdateShadowOffset()
 		{
-			UpdateShadow();
-		}
-
-		void OnShadowOpacityChanged(object sender, ValueChangedEventArgs e)
-		{
-			UpdateShadow();
-		}
-
-		void UpdateBackground()
-		{
-			var backgroundColor = GetColorFromString(FillColor.Text);
-
-			FillColor.Background = new SolidColorBrush(backgroundColor);
-			ShadowView.Fill = ShadowView.Stroke = new SolidColorBrush(backgroundColor);
-		}
-
-		void UpdateShadow()
-		{
-			//var shadow = new Shadow();
-
-			//var shadowColor = GetColorFromString(ShadowColor.Text);
-			//ShadowColor.Background = new SolidColorBrush(shadowColor);
-
-			//shadow.Color = shadowColor;
-			//shadow.Offset = new Size((float)ShadowOffsetXSlider.Value, (float)ShadowOffsetYSlider.Value);
-			//shadow.Radius = (float)ShadowRadiusSlider.Value;
-			//shadow.Opacity = (float)ShadowOpacitySlider.Value;
-
-			//LabelShadowView.Shadow = ShadowView.Shadow = ClippedShadowView.Shadow = shadow;
-		}
-
-		Color GetColorFromString(string value)
-		{
-			if (string.IsNullOrEmpty(value))
-				return Colors.Transparent;
-
-			try
-			{
-				return Color.FromArgb(value);
-			}
-			catch (Exception)
-			{
-				return Colors.Transparent;
-			}
+			ShadowView.Shadow.Offset = new Size((float)ShadowOffsetXSlider.Value, (float)ShadowOffsetYSlider.Value);
+			ClippedShadowView.Shadow.Offset = new Size((float)ShadowOffsetXSlider.Value, (float)ShadowOffsetYSlider.Value);
+			LabelShadowView.Shadow.Offset = new Size((float)ShadowOffsetXSlider.Value, (float)ShadowOffsetYSlider.Value);
 		}
 	}
 }

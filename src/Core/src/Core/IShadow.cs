@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 	{
 		double Radius { get; }
 
-		float Opacity { get; }
+		double Opacity { get; }
 
 		Paint Paint { get; }
 

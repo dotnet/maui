@@ -172,7 +172,7 @@ namespace Microsoft.Maui
 					// Clear past content content to draw shadow
 					_shadowCanvas.DrawColor(Android.Graphics.Color.Black, PorterDuff.Mode.Clear);
 
-					var shadowOpacity = Shadow.Opacity;
+					var shadowOpacity = (float)Shadow.Opacity;
 
 					// Draw extracted alpha bounds of our local canvas
 					_shadowPaint.Color = shadowColor.WithAlpha(shadowOpacity).ToNative();

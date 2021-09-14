@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	public class Shadow : Element, IShadow
 	{
-		public static readonly BindableProperty RadiusProperty = BindableProperty.Create(nameof(Radius), typeof(double), typeof(Shadow));
+		public static readonly BindableProperty RadiusProperty = BindableProperty.Create(nameof(Radius), typeof(double), typeof(Shadow), 10d);
 
-		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(float), typeof(Shadow), 1f);
+		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(Shadow), 1d);
 
 		public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Brush), typeof(Shadow), null);
 
@@ -26,9 +23,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public float Opacity
+		public double Opacity
 		{
-			get { return (float)GetValue(OpacityProperty); }
+			get { return (double)GetValue(OpacityProperty); }
 			set
 			{
 				SetValue(OpacityProperty, value);

@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.ShadowPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
-     xmlns:sample="clr-namespace:Maui.Controls.Sample"
+    xmlns:sample="clr-namespace:Maui.Controls.Sample"
+    x:Name="shadowPage"
     Title="Shadows">
     <views:BasePage.Resources>
         <ResourceDictionary>
@@ -14,7 +15,6 @@
             </Style>
 
             <sample:StringToBrushConverter x:Key="cnvStringToBrush"/>
-            
         </ResourceDictionary>
     </views:BasePage.Resources>
     <Grid
@@ -33,7 +33,14 @@
                 x:Name="LabelShadowView"  
                 Grid.Row="1"
                 FontSize="Large"
-                Text="Label with a Shadow"/>
+                Text="Label with a Shadow">
+                <Label.Shadow>
+                    <Shadow Color="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                            Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
+                            Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"
+                            />
+                </Label.Shadow>
+            </Label>
             <Label
                 Grid.Row="2"
                 Text="View"
@@ -45,7 +52,10 @@
                 WidthRequest="150"
                 RadiusX="12"
                 RadiusY="12"
-                Margin="0">
+                Margin="0"
+                Fill="{Binding Source={x:Reference FillColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                Stroke="{Binding Source={x:Reference FillColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                >
                 <Rectangle.Shadow>
                     <Shadow Color="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
                             Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
@@ -80,15 +90,15 @@
         </Grid>
         <ScrollView
              Grid.Row="1">
-            <StackLayout>
+            <StackLayout x:Name="stkSliders">
                 <Label
                      Text="Background"
                      Style="{StaticResource Headline}"/>
                 <Entry 
                     x:Name="FillColor" 
+                    Background="{Binding Source={x:Reference FillColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
                     Text="#00B4DB"
-                    Placeholder="Background Color Hex"
-                    TextChanged="OnBackgroundChanged" />
+                    Placeholder="Background Color Hex" />
                 <Label
                      Text="Shadow"
                      Style="{StaticResource Headline}"/>
@@ -97,9 +107,9 @@
                      Style="{StaticResource InfoStyle}"/>
                 <Entry     
                     x:Name="ShadowColor" 
+                     Background="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
                      Text="#FF0000"
-                     Placeholder="Shadow Color Hex"
-                     TextChanged="OnShadowColorChanged" />
+                     Placeholder="Shadow Color Hex"/>
                 <Label
                      Text="Shadow Offset"
                      Style="{StaticResource InfoStyle}"/>
@@ -111,6 +121,7 @@
                     Minimum="-20"
                     Maximum="20"
                     Value="10"
+                    AutomationId="stkWidth"
                     ValueChanged="OnShadowOffsetXChanged"/>
                 <Label 
                      Text="{Binding Source={x:Reference ShadowOffsetYSlider}, Path=Value, StringFormat='{}Offset Y: {0}'}"
@@ -120,6 +131,7 @@
                     Minimum="-20"
                     Maximum="20"
                     Value="10"
+                    AutomationId="stkHeight"
                     ValueChanged="OnShadowOffsetYChanged"/>
                 <Label
                      Text="Shadow Radius"
@@ -144,7 +156,7 @@
                     Minimum="0"
                     Maximum="1"
                     Value="1"
-                    ValueChanged="OnShadowOpacityChanged"/>
+                    />
 
                 <Button Text="Remove Shadow" Clicked="RemoveShadowClicked"  HorizontalOptions="Center" Padding="5"></Button>
             </StackLayout>

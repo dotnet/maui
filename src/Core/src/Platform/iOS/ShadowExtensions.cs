@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 			var offset = new CGSize((double)shadow.Offset.Width, (double)shadow.Offset.Height);
 
 			layer.ShadowColor = color?.CGColor;
-			layer.ShadowOpacity = opacity;
+			layer.ShadowOpacity = (float)opacity;
 			layer.ShadowRadius = radius;
 			layer.ShadowOffset = offset;
 

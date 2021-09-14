@@ -50,7 +50,13 @@ namespace Microsoft.Maui.Controls
 		IShadow IView.Shadow => Shadow;
 
 		public static readonly BindableProperty ShadowProperty =
- 			BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(VisualElement), defaultValue: null);
+ 			BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(VisualElement), defaultValue: null, propertyChanged: (b, o, n) =>
+			 {
+				 if (n is Shadow shadow)
+				 {
+					 shadow.PropertyChanged += (s, e) => (b as VisualElement).Handler?.UpdateValue(nameof(Shadow));
+				 }
+			 });
 
 		public Shadow Shadow
 		{
