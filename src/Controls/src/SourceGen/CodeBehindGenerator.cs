@@ -10,9 +10,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.SourceGen;
 
 namespace Microsoft.Maui.Controls.SourceGen
-{
+{	
 	[Generator]
 	public class CodeBehindGenerator : ISourceGenerator
 	{
@@ -42,7 +43,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 			foreach (var file in context.AdditionalFiles)
 			{
 				string? code;
-				if (!context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind == null)
+				var kind = context.GetMSBuildItemMetadata(file, "GenKind", string.Empty);
+
+				if (string.IsNullOrWhiteSpace(kind))
 					continue;
 
 				switch (kind)
@@ -60,9 +63,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 				}
 				if (code == null)
 					continue;
-				if (!context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.TargetPath", out string? name))
-					name = file.Path;
-				name = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(name)) ? "" : Path.GetDirectoryName(name) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(name)}.{kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
+
+				var name = context.GetMSBuildItemMetadata(file, "TargetPath", file.Path);
+				name = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(name)) ? string.Empty : Path.GetDirectoryName(name) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(name)}.{kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
 				context.AddSource(name, SourceText.From(code, Encoding.UTF8));
 			}
 		}
@@ -78,10 +81,12 @@ namespace Microsoft.Maui.Controls.SourceGen
 				var symbol = context.Compilation.GetAssemblyOrModuleSymbol(reference) as IAssemblySymbol;
 				if (symbol == null)
 					continue;
-				foreach (var attr in symbol.GetAttributes())
+				var symbolAttrs = symbol.GetAttributes();
+				foreach (var attr in symbolAttrs)
 				{
 					if (!SymbolEqualityComparer.Default.Equals(attr.AttributeClass, xmlnsDefinitonAttribute))
 						continue;
+
 					var xmlnsDef = new XmlnsDefinitionAttribute(attr.ConstructorArguments[0].Value as string, attr.ConstructorArguments[1].Value as string);
 					if (attr.NamedArguments.Length == 1 && attr.NamedArguments[0].Key == nameof(XmlnsDefinitionAttribute.AssemblyName))
 						xmlnsDef.AssemblyName = attr.NamedArguments[0].Value.Value as string;
@@ -104,21 +109,23 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 				var sb = new StringBuilder();
 				var opt = context.AnalyzerConfigOptions.GetOptions(file);
-				if (context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out string? manifestResourceName)
-					&& context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.TargetPath", out string? targetPath))
+				if (context.TryGetMSBuildItemMetadata(file, "ManifestResourceName", out var manifestResourceName)
+					&& context.TryGetMSBuildItemMetadata(file, "TargetPath", out var targetPath) && targetPath is not null)
 					sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{manifestResourceName}\", \"{targetPath.Replace('\\', '/')}\", {(rootType == null ? "null" : "typeof(global::" + rootClrNamespace + "." + rootType + ")")})]");
+				
 				if (XamlResourceIdOnly)
 				{
 					code = sb.ToString();
 					return true;
 				}
+
 				if (rootType == null)
 					throw new Exception("Something went wrong");
 
 				sb.AppendLine($"namespace {rootClrNamespace}");
 				sb.AppendLine("{");
 
-				if (context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.ItemSpec", out string? itemSpec))
+				if (context.TryGetMSBuildItemMetadata(file, "ItemSpec", out var itemSpec) && itemSpec is not null)
 					sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{itemSpec.Replace("\\", "\\\\")}\")]");
 				if (addXamlCompilationAttribute)
 					sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]");
@@ -340,9 +347,8 @@ namespace Microsoft.Maui.Controls.SourceGen
 		bool TryGenerateCssCodeBehind(AdditionalText file, GeneratorExecutionContext context, out string? code)
 		{
 			var sb = new StringBuilder();
-			var opt = context.AnalyzerConfigOptions.GetOptions(file);
-			if (context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out string? manifestResourceName)
-				&& context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.TargetPath", out string? targetPath))
+			if (context.TryGetMSBuildItemMetadata(file, "ManifestResourceName", out var manifestResourceName)
+				&& context.TryGetMSBuildItemMetadata(file, "TargetPath", out var targetPath) && targetPath is not null)
 				sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{manifestResourceName}\", \"{targetPath.Replace('\\', '/')}\", null)]");
 
 			code = sb.ToString();
