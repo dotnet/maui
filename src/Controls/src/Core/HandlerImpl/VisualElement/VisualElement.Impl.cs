@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -50,13 +51,17 @@ namespace Microsoft.Maui.Controls
 		IShadow IView.Shadow => Shadow;
 
 		public static readonly BindableProperty ShadowProperty =
- 			BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(VisualElement), defaultValue: null, propertyChanged: (b, o, n) =>
-			 {
-				 if (n is Shadow shadow)
-				 {
-					 shadow.PropertyChanged += (s, e) => (b as VisualElement).Handler?.UpdateValue(nameof(Shadow));
-				 }
-			 });
+ 			BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(VisualElement), defaultValue: null,
+				propertyChanging: (bindable, oldvalue, newvalue) =>
+				{
+					if (oldvalue != null)
+						(bindable as VisualElement)?.StopNotifyingShadowChanges();
+				},
+				propertyChanged: (bindable, oldvalue, newvalue) =>
+				{
+					if (newvalue != null)
+						(bindable as VisualElement)?.NotifyShadowChanges();
+				});
 
 		public Shadow Shadow
 		{
@@ -231,5 +236,29 @@ namespace Microsoft.Maui.Controls
 		}
 
 		Thickness IView.Margin => Thickness.Zero;
+
+		void NotifyShadowChanges()
+		{
+			if (Shadow != null)
+			{
+				Shadow.Parent = this;
+				Shadow.PropertyChanged += OnShadowChanged;
+			}
+		}
+
+		void StopNotifyingShadowChanges()
+		{
+			if (Shadow != null)
+			{
+				Shadow.Parent = null;
+				Shadow.PropertyChanged -= OnShadowChanged;
+
+			}
+		}
+
+		void OnShadowChanged(object sender, PropertyChangedEventArgs e)
+		{
+			OnPropertyChanged(nameof(Shadow));
+		}
 	}
 }
