@@ -19,7 +19,7 @@ namespace Microsoft.Maui.UnitTests
 
 		public IShape Clip { get; set; }
 
-		public Shadow Shadow { get; set; }
+		public IShadow Shadow { get; set; }
 
 		public double Opacity { get; set; }
 

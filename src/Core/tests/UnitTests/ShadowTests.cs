@@ -9,20 +9,20 @@ namespace Microsoft.Maui.UnitTests
 		[Fact]
 		public void ShadowInitializesCorrectly()
 		{
-			var expectedColor = Colors.Red;
+			var expectedColor = new SolidPaint(Colors.Red);
 			var expectedOffset = new Size(10, 10);
 			var expectedOpacity = 1.0f;
 			var expectedRadius = 10.0f;
 
-			var shadow = new Shadow
+			var shadow = new ShadowStub
 			{
-				Color = expectedColor,
+				Paint = expectedColor,
 				Offset = expectedOffset,
 				Opacity = expectedOpacity,
 				Radius = expectedRadius
 			};
 
-			Assert.Equal(expectedColor, shadow.Color);
+			Assert.Equal(expectedColor.Color, shadow.Paint.ToColor());
 			Assert.Equal(expectedOffset, shadow.Offset);
 			Assert.Equal(expectedOpacity, shadow.Opacity);
 			Assert.Equal(expectedRadius, shadow.Radius);
