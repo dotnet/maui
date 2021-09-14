@@ -126,7 +126,7 @@ Task("dotnet-templates")
             var name = template.Replace("-", "") + " Space-Dash";
             StartProcess(dn, $"new {template} -o \"./templatesTest/{name}\"");
 
-            RunMSBuildWithDotNet($"./templatesTest/{name}", properties, forceDotNetCore: true);
+            RunMSBuildWithDotNet($"./templatesTest/{name}", properties);
         }
     });
 
@@ -312,25 +312,42 @@ Task("SAMPLE-MAC")
     });
 
 
+void DoLog(string message)
+{
+    Console.WriteLine("EILONEILON LOG: " + message);
+}
+
 string FindMSBuild()
 {
+    DoLog("Running FindMSBuild");
     if (!string.IsNullOrWhiteSpace(MSBuildExe))
+    {
+        DoLog("\tFound it in MSBuildExe: " + MSBuildExe);
         return MSBuildExe;
+    }
 
     if (IsRunningOnWindows())
     {
+        DoLog("\tTrying VSWhere...");
         var vsInstallation = VSWhereLatest(new VSWhereLatestSettings { Requires = "Microsoft.Component.MSBuild", IncludePrerelease = true });
         if (vsInstallation != null)
         {
             var path = vsInstallation.CombineWithFilePath(@"MSBuild\Current\Bin\MSBuild.exe");
             if (FileExists(path))
+            {
+                DoLog("\tVSWhere found Current: " + path.FullPath);
                 return path.FullPath;
+            }
 
             path = vsInstallation.CombineWithFilePath(@"MSBuild\15.0\Bin\MSBuild.exe");
             if (FileExists(path))
+            {
+                DoLog("\tVSWhere found 15.0: " + path.FullPath);
                 return path.FullPath;
+            }
         }
     }
+    DoLog("\tFallback to 'msbuild'");
     return "msbuild";
 }
 
@@ -379,7 +396,7 @@ void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
 
 // NOTE: These methods work as long as the "dotnet" target has already run
 
-void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false, bool forceDotNetCore = false)
+void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = null, bool deployAndRun = false)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var binlog = $"\"{logDirectory}/{name}-{configuration}.binlog\"";
@@ -388,7 +405,7 @@ void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = nu
         SetDotNetEnvironmentVariables();
 
     // If we're not on Windows, use ./bin/dotnet/dotnet
-    if (!IsRunningOnWindows() || deployAndRun || forceDotNetCore)
+    if (!IsRunningOnWindows() || deployAndRun)
     {
         var msbuildSettings = new DotNetCoreMSBuildSettings()
             .SetConfiguration(configuration)
