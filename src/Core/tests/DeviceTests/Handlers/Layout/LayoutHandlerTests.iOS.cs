@@ -13,7 +13,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 		[Fact(DisplayName = "Shadow Initializes Correctly")]
 		public async Task ShadowInitializesCorrectly()
 		{
-			var xPlatShadow = new Shadow
+			var xPlatShadow = new ShadowStub
 			{
 				Offset = new Size(10, 10),
 				Opacity = 1.0f,
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 			layout.Shadow = xPlatShadow;
 
-			await ValidateHasColor(layout, Colors.Red, () => xPlatShadow.Color = Colors.Red);
+			await ValidateHasColor(layout, Colors.Red, () => xPlatShadow.Paint = new SolidPaint(Colors.Red));
 		}
 
 		LayoutView GetNativeLayout(LayoutHandler layoutHandler)
