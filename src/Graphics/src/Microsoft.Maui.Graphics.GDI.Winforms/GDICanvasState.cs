@@ -138,7 +138,11 @@ namespace Microsoft.Maui.Graphics.GDI
 			set
 			{
 				_fillColor = value;
+
+				FillBrushLinear?.Dispose();
 				FillBrushLinear = null;
+
+				FillBrushPath?.Dispose();
 				FillBrushPath = null;
 			}
 		}
@@ -269,6 +273,10 @@ namespace Microsoft.Maui.Graphics.GDI
 				_font.Dispose();
 				_font = null;
 			}
+
+			FillBrushSolid?.Dispose();
+			FillBrushLinear?.Dispose();
+			FillBrushPath?.Dispose();
 
 			base.Dispose();
 		}
