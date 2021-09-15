@@ -505,11 +505,13 @@ namespace Microsoft.Maui.Graphics.GDI
 				float x2 = (float)(linearGradientPaint.EndPoint.X * rectangle.Width) + rectangle.X;
 				float y2 = (float)(linearGradientPaint.EndPoint.Y * rectangle.Height) + rectangle.Y;
 
-				CurrentState.FillBrushLinear = new LinearGradientBrush(
-				   new Drawing.PointF(x1, y1),
-				   new Drawing.PointF(x2, y2),
-				   linearGradientPaint.StartColor.AsColor(),
-				   linearGradientPaint.EndColor.AsColor());
+				Drawing.PointF point1 = new Drawing.PointF(x1, y1);
+				Drawing.PointF point2 = new Drawing.PointF(x2, y2);
+				Drawing.Color color1 = linearGradientPaint.StartColor.AsColor();
+				Drawing.Color color2 = linearGradientPaint.EndColor.AsColor();
+
+				CurrentState.SetFillLinear(point1, point2, color1, color2);
+
 				return;
 			}
 
@@ -522,12 +524,10 @@ namespace Microsoft.Maui.Graphics.GDI
 
 				GraphicsPath path = new GraphicsPath();
 				path.AddEllipse(x1, y1, w, h);
+				Drawing.Color color1 = radialGradientPaint.StartColor.AsColor();
+				Drawing.Color color2 = radialGradientPaint.EndColor.AsColor();
 
-				CurrentState.FillBrushPath = new PathGradientBrush(path)
-				{
-					CenterColor = radialGradientPaint.StartColor.AsColor(),
-					SurroundColors = new Drawing.Color[] { radialGradientPaint.EndColor.AsColor() },
-				};
+				CurrentState.SetFillRadial(path, color1, color2);
 			}
 		}
 
