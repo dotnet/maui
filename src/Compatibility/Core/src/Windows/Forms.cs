@@ -81,27 +81,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			//}
 			//Device.Info = new WindowsDeviceInfo();
 
-			//TODO WINUI3
-			//switch (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily)
-			//{
-			//	case "Windows.Desktop":
-			//		if (Windows.UI.ViewManagement.UIViewSettings.GetForCurrentView().UserInteractionMode ==
-			//			Windows.UI.ViewManagement.UserInteractionMode.Touch)
-			//			Device.SetIdiom(DeviceIdiom.Tablet);
-			//		else
-			//			Device.SetIdiom(DeviceIdiom.Desktop);
-			//		break;
-			//	case "Windows.Mobile":
-			//		Device.SetIdiom(DeviceIdiom.Phone);
-			//		break;
-			//	case "Windows.Xbox":
-			//		Device.SetIdiom(TargetIdiom.TV);
-			//		break;
-			//	default:
-			//		Device.SetIdiom(TargetIdiom.Unsupported);
-			//		break;
-			//}
-
 			ExpressionSearch.Default = new WindowsExpressionSearch();
 
 			Registrar.ExtraAssemblies = rendererAssemblies?.ToArray();
