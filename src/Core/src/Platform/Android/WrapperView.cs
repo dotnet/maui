@@ -92,11 +92,11 @@ namespace Microsoft.Maui
 					ClearShadowResources();
 				}
 			}
-		
+
 			// Clip the child view
 			if (Clip != null)
 				ClipChild(canvas);
-			
+
 			// Draw child`s
 			base.DispatchDraw(canvas);
 		}
@@ -141,8 +141,8 @@ namespace Microsoft.Maui
 					FilterBitmap = true
 				};
 
-			Graphics.Color shadowColor = Shadow.Paint.ToColor();
-			
+			Graphics.Color solidColor = null;
+
 			// If need to redraw shadow
 			if (_invalidateShadow)
 			{
@@ -174,8 +174,21 @@ namespace Microsoft.Maui
 
 					var shadowOpacity = (float)Shadow.Opacity;
 
-					// Draw extracted alpha bounds of our local canvas
-					_shadowPaint.Color = shadowColor.WithAlpha(shadowOpacity).ToNative();
+					if (Shadow.Paint is LinearGradientPaint linearGradientPaint)
+					{
+						var linearGradientShaderFactory = PaintExtensions.GetLinearGradientShaderFactory(linearGradientPaint);
+						_shadowPaint.SetShader(linearGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
+					}
+					if (Shadow.Paint is RadialGradientPaint radialGradientPaint)
+					{
+						var radialGradientShaderFactory = PaintExtensions.GetRadialGradientShaderFactory(radialGradientPaint);
+						_shadowPaint.SetShader(radialGradientShaderFactory.Resize(bitmapWidth, bitmapHeight));
+					}
+					if (Shadow.Paint is SolidPaint solidPaint)
+					{
+						solidColor = solidPaint.ToColor();
+						_shadowPaint.Color = solidColor.WithAlpha(shadowOpacity).ToNative();
+					}
 
 					// Apply the shadow radius 
 					var radius = (float)Shadow.Radius;
@@ -192,7 +205,9 @@ namespace Microsoft.Maui
 					float shadowOffsetY = (float)Shadow.Offset.Height;
 
 					if (Clip == null)
+					{
 						_shadowCanvas.DrawBitmap(extractAlpha, shadowOffsetX, shadowOffsetY, _shadowPaint);
+					}
 					else
 					{
 						var bounds = new RectangleF(0, 0, canvas.Width, canvas.Height);
@@ -214,7 +229,8 @@ namespace Microsoft.Maui
 			}
 
 			// Reset alpha to draw child with full alpha
-			_shadowPaint.Color = shadowColor.ToNative();
+			if (solidColor != null)
+				_shadowPaint.Color = solidColor.ToNative();
 
 			// Draw shadow bitmap
 			if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)

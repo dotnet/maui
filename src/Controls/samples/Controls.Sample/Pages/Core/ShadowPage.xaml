@@ -24,7 +24,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid
-            RowDefinitions="Auto, Auto, Auto, Auto, Auto, *">
+            RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, *">
             <Label
                 Grid.Row="0"
                 Text="Label"
@@ -46,10 +46,10 @@
                 Text="View"
                 Style="{StaticResource Headline}"/>
             <Rectangle 
-                x:Name="ShadowView"
+                x:Name="ShadowViewGradient"
                 Grid.Row="3"
-                HeightRequest="100"
-                WidthRequest="150"
+                HeightRequest="50"
+                WidthRequest="75"
                 RadiusX="12"
                 RadiusY="12"
                 Margin="0"
@@ -57,7 +57,8 @@
                 Stroke="{Binding Source={x:Reference FillColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
                 >
                 <Rectangle.Shadow>
-                    <Shadow Color="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                    <Shadow 
+                            Color="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
                             Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
                             Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"
                             />
@@ -72,8 +73,8 @@
                 Grid.Row="5"
                 Aspect="AspectFill"
                 Source="header_background.png" 
-                HeightRequest="100"
-                WidthRequest="100">
+                HeightRequest="55"
+                WidthRequest="55">
                 <Image.Clip>
                     <EllipseGeometry            
                         Center="50, 50"
@@ -87,6 +88,35 @@
                             />
                 </Image.Shadow>
             </Image>
+            <Label
+                Grid.Row="6"
+                Text="Gradient"
+                Style="{StaticResource Headline}"/>
+            <Rectangle 
+                x:Name="ShadowView"
+                Grid.Row="7"
+                HeightRequest="50"
+                WidthRequest="75"
+                RadiusX="12"
+                RadiusY="12"
+                Margin="0"
+                Fill="{Binding Source={x:Reference FillColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                Stroke="{Binding Source={x:Reference FillColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                >
+                <Rectangle.Shadow>
+                    <Shadow 
+                            Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
+                            Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"
+                            >
+                        <Shadow.Color>
+                            <LinearGradientBrush EndPoint="1,0">
+                                <GradientStop Color="Yellow" Offset="0.1" />
+                                <GradientStop Color="Green" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Shadow.Color>
+                    </Shadow>
+                </Rectangle.Shadow>
+            </Rectangle>
         </Grid>
         <ScrollView
              Grid.Row="1">

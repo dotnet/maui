@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void RemoveShadowClicked(object sender, EventArgs e)
 		{
-			ClippedShadowView.Shadow = ShadowView.Shadow = LabelShadowView.Shadow = null;
+			ClippedShadowView.Shadow = ShadowView.Shadow = ShadowViewGradient.Shadow = LabelShadowView.Shadow = null;
 		}
 
 		void OnShadowOffsetXChanged(object sender, ValueChangedEventArgs e)
@@ -30,9 +30,14 @@ namespace Maui.Controls.Sample.Pages
 
 		void UpdateShadowOffset()
 		{
-			ShadowView.Shadow.Offset = new Size((float)ShadowOffsetXSlider.Value, (float)ShadowOffsetYSlider.Value);
-			ClippedShadowView.Shadow.Offset = new Size((float)ShadowOffsetXSlider.Value, (float)ShadowOffsetYSlider.Value);
-			LabelShadowView.Shadow.Offset = new Size((float)ShadowOffsetXSlider.Value, (float)ShadowOffsetYSlider.Value);
+			if (ShadowViewGradient.Shadow == null)
+				return;
+
+            var offset = new Size((float)ShadowOffsetXSlider.Value, (float)ShadowOffsetYSlider.Value);
+			ShadowViewGradient.Shadow.Offset = offset;
+			ShadowView.Shadow.Offset = offset;
+			ClippedShadowView.Shadow.Offset = offset;
+			LabelShadowView.Shadow.Offset = offset;
 		}
 	}
 }
