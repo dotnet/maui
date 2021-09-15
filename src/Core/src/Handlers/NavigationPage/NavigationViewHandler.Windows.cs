@@ -30,7 +30,6 @@ namespace Microsoft.Maui.Handlers
 			if (arg3 is NavigationRequest nr)
 			{
 				arg1._navigationManager?.NavigateTo(nr);
-				arg2.NavigationFinished(nr.NavigationStack);
 			}
 			else
 			{

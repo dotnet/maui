@@ -18,7 +18,7 @@
 
             <TextBlock x:Name="title" Grid.Column="1" TextWrapping="NoWrap" VerticalAlignment="Center" Margin="10,0,0,0"/>
 
-            <ContentControl x:Name="TitleView" Grid.Column="2" HorizontalAlignment="Stretch" />
+            <ContentControl x:Name="titleView" Grid.Column="2" HorizontalAlignment="Stretch" />
 
         </Grid>
     </CommandBar.Content>

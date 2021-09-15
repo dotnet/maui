@@ -46,6 +46,7 @@ namespace Microsoft.Maui
 			_currentPage = NavigationStack[NavigationStack.Count - 1];
 			NavigationFrame.Navigate(typeof(NavigationFramePage), null, transition);
 			WindowManager.SetVisibleContent(NavigationStack.Last());
+			NavigationView?.NavigationFinished(NavigationStack);
 		}
 	}
 }

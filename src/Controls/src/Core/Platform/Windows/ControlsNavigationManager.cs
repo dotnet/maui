@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.UI.Xaml.Controls;
@@ -9,7 +10,7 @@ namespace Microsoft.Maui.Controls.Platform
 	public class ControlsNavigationManager : NavigationManager
 	{
 		public new Page CurrentPage => (Page)base.CurrentPage;
-		public new NavigationPage NavigationView => (NavigationPage)base.CurrentPage;
+		public new NavigationPage NavigationView => (NavigationPage)base.NavigationView;
 
 		public ControlsNavigationManager(IMauiContext mauiContext) : base(mauiContext)
 		{
@@ -17,9 +18,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void ToolbarPropertyChanged() => UpdateToolbar();
 
+		public override void NavigateTo(NavigationRequest arg3)
+		{
+			base.NavigateTo(arg3);
+			UpdateToolbar();
+		}
+
 		protected virtual void UpdateToolbar()
 		{
-			if (WindowManager.RootView is not NavigationView navigationView || NavigationStack.Count == 0)
+			if (WindowManager.RootView is not MauiNavigationView navigationView || NavigationStack.Count == 0)
 				return;
 
 			var commandBar = WindowManager.GetCommandBar();
@@ -33,7 +40,16 @@ namespace Microsoft.Maui.Controls.Platform
 			var title = CurrentPage.Title;
 			var titleIcon = NavigationPage.GetTitleIconImageSource(CurrentPage);
 			var titleView = NavigationPage.GetTitleView(CurrentPage);
-			var iconColor = NavigationPage.GetIconColor(CurrentPage);
+
+			var barBackground = NavigationView.BarBackground;
+			var barBackgroundColor = NavigationView.BarBackgroundColor;
+			var barTextColor = NavigationView.BarTextColor;
+			
+			// TODO MAUI: it seems like this isn't wired up on WinUI
+			//var iconColor = NavigationPage.GetIconColor(CurrentPage);
+
+			// TODO MAUI: Should be able to just modify the GRID inside NavigationLayout to move header to footer
+			// Or we add a control in the footer
 			var toolbarPlacement = NavigationView.OnThisPlatform().GetToolbarPlacement();
 
 			header.Visibility = (hasNavigationBar) ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
@@ -42,9 +58,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 			ImageSourceLoader.LoadImage(titleIcon, MauiContext, (result) =>
 			{
-				_titleIconView.SetImageDrawable(result.Value);
-				AutomationPropertiesProvider.AccessibilitySettingsChanged(_titleIconView, source);
+				header.TitleIcon = result.Value;
 			});
+
+			header.TitleView = titleView?.ToNative(MauiContext);
+
+			navigationView.UpdateBarBackgroundBrush(
+				barBackground?.ToBrush() ?? barBackgroundColor?.ToNative());
+
+			if (barTextColor != null)
+				header.TitleColor = barTextColor.ToNative();
 		}
 	}
 }

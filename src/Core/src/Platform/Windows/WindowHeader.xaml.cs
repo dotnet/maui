@@ -36,5 +36,17 @@ namespace Microsoft.Maui
 			get => titleIcon.Source;
 			set => titleIcon.Source = value;
 		}
+
+		public object TitleView
+		{
+			get => titleView.Content;
+			set => titleView.Content = value;
+		}
+
+		public WBrush TitleColor
+		{
+			get => title.Foreground;
+			set => title.Foreground = value;
+		}
 	}
 }

@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 	public class WindowManager
 	{
 		MauiContext _mauiContext;
-		NavigationView _navigationView;
+		MauiNavigationView _navigationView;
 		WindowHeader _windowHeader;
 		IView? _content;
 		IWindow? _window;
@@ -18,7 +18,7 @@ namespace Microsoft.Maui
 		public WindowManager(MauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
-			_navigationView = new NavigationView();
+			_navigationView = new MauiNavigationView();
 			_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 			//_navigationView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
 			_navigationView.IsPaneToggleButtonVisible = false;
