@@ -182,6 +182,10 @@ namespace Microsoft.Maui.SourceGen
 			if (!context.IsAppHead() || !context.IsMaui())
 				return;
 
+			// Allow opting out
+			if (!context.GetMSBuildProperty("EnableMauiAppBuilderSourceGen", "true").Equals("true", StringComparison.OrdinalIgnoreCase))
+				return;
+
 			var isIos = context.IsiOS();
 			var isAndroid = context.IsAndroid();
 			var isMacCatalyst = context.IsMacCatalyst();

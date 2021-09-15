@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 namespace Microsoft.Maui.SourceGen
 {
 	[Generator]
-	public class MauiAutoConfigureFontsGenerator : ISourceGenerator
+	public class FontConfigurationGenerator : ISourceGenerator
 	{
 		public void Initialize(GeneratorInitializationContext context)
 		{
@@ -15,6 +15,21 @@ namespace Microsoft.Maui.SourceGen
 
 		public void Execute(GeneratorExecutionContext context)
 		{
+			if (!context.IsAppHead() || !context.IsMaui())
+				return;
+
+			// Allow opting out
+			if (!context.GetMSBuildProperty("EnableMauiFontConfigurationSourceGen", "true").Equals("true", StringComparison.OrdinalIgnoreCase))
+				return;
+
+			var isIos = context.IsiOS();
+			var isAndroid = context.IsAndroid();
+			var isMacCatalyst = context.IsMacCatalyst();
+			var isWindows = context.IsWindows();
+
+			if (!isIos && !isAndroid && !isMacCatalyst && !isWindows)
+				return;
+
 			var src = new StringBuilder();
 
 			src.Append(@"
