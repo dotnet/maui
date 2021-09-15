@@ -73,8 +73,8 @@
                 Grid.Row="5"
                 Aspect="AspectFill"
                 Source="header_background.png" 
-                HeightRequest="55"
-                WidthRequest="55">
+                HeightRequest="100"
+                WidthRequest="100">
                 <Image.Clip>
                     <EllipseGeometry            
                         Center="50, 50"
