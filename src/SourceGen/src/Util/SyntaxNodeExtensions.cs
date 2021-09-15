@@ -63,7 +63,8 @@ namespace Microsoft.Maui.SourceGen
 
 			var info = new TypeInfoParts();
 			info.NamespaceParts = namespaces.Select(n => n.Name.ToString()).ToArray();
-			info.TypeNameParts = types.Select(n => n.Identifier.Text).ToArray();
+			info.TypeNameParts = types.Select(n => n.Identifier.Text)
+				.Concat(new[] { source.Identifier.Text }).ToArray();
 
 			var typeArguments = source.TypeParameterList?.ChildNodes()
 				.Count(node => node is TypeParameterSyntax) ?? 0;
