@@ -17,56 +17,56 @@
     <dependencies>
       <group targetFramework="net6.0-android30.0">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
-        <dependency id="SkiaSharp" version="2.88.0-preview.120"/>
-        <dependency id="SkiaSharp.Views" version="2.88.0-preview.120"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.140"/>
+        <dependency id="SkiaSharp.Views" version="2.88.0-preview.140"/>
       </group>
       <group targetFramework="net6.0-ios13.6">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
-        <dependency id="SkiaSharp" version="2.88.0-preview.120"/>
-        <dependency id="SkiaSharp.Views" version="2.88.0-preview.120"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.140"/>
+        <dependency id="SkiaSharp.Views" version="2.88.0-preview.140"/>
       </group>
       <group targetFramework="net6.0-maccatalyst13.5">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
-        <dependency id="SkiaSharp" version="2.88.0-preview.120"/>
-        <dependency id="SkiaSharp.Views" version="2.88.0-preview.120"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.140"/>
+        <dependency id="SkiaSharp.Views" version="2.88.0-preview.140"/>
       </group>
       <group targetFramework="net6.0-windows10.0.18362">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
-        <dependency id="SkiaSharp" version="2.88.0-preview.120"/>
-        <dependency id="SkiaSharp.Views.WinUI" version="2.88.0-preview.120"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.140"/>
+        <dependency id="SkiaSharp.Views.WinUI" version="2.88.0-preview.140"/>
       </group>
       <group targetFramework="net6.0-tizen6.5">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
-        <dependency id="SkiaSharp" version="2.88.0-preview.120"/>
-        <dependency id="SkiaSharp.Views" version="2.88.0-preview.120"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.140"/>
+        <dependency id="SkiaSharp.Views" version="2.88.0-preview.140"/>
       </group>
       <group targetFramework="tizen40">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
-        <dependency id="SkiaSharp" version="2.88.0-preview.120"/>
-        <dependency id="SkiaSharp.Views" version="2.88.0-preview.120"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.140"/>
+        <dependency id="SkiaSharp.Views" version="2.88.0-preview.140"/>
       </group>
       <group targetFramework="xamarin.ios10">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
-        <dependency id="SkiaSharp" version="2.88.0-preview.120"/>
-        <dependency id="SkiaSharp.Views" version="2.88.0-preview.120"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.140"/>
+        <dependency id="SkiaSharp.Views" version="2.88.0-preview.140"/>
       </group>
       <group targetFramework="monoandroid10.0">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
-        <dependency id="SkiaSharp" version="2.88.0-preview.120"/>
-        <dependency id="SkiaSharp.Views" version="2.88.0-preview.120"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.140"/>
+        <dependency id="SkiaSharp.Views" version="2.88.0-preview.140"/>
       </group>
       <group targetFramework="xamarin.mac20">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
-        <dependency id="SkiaSharp" version="2.88.0-preview.120"/>
-        <dependency id="SkiaSharp.Views" version="2.88.0-preview.120"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.140"/>
+        <dependency id="SkiaSharp.Views" version="2.88.0-preview.140"/>
       </group>
       <group targetFramework=".NETStandard2.0">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
-        <dependency id="SkiaSharp" version="2.88.0-preview.120"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.140"/>
       </group>
       <group targetFramework=".NETStandard2.1">
         <dependency id="Microsoft.Maui.Graphics" version="$version$"/>
-        <dependency id="SkiaSharp" version="2.88.0-preview.120"/>
+        <dependency id="SkiaSharp" version="2.88.0-preview.140"/>
       </group>
     </dependencies>
   </metadata>
