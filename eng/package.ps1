@@ -10,7 +10,6 @@ Write-Host "MSBUILD_EXE: $env:MSBUILD_EXE"
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $logsDirectory = Join-Path $artifacts logs
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-net6.slnf
-$blazorWebViewSln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages.Desktop-winui.slnf
 
 # Bootstrap ./bin/dotnet/
 $csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
@@ -92,24 +91,6 @@ if ($IsWindows)
             /p:Packing=true `
             /bl:"$logsDirectory/maui-pack-$configuration.binlog"
         if (!$?) { throw "Pack .NET MAUI failed." }
-
-        # Then build and pack the BlazorWebView projects for WPF/WinForms
-        & $msbuild $blazorWebViewSln `
-            /p:configuration=$configuration `
-            /p:SymbolPackageFormat=snupkg `
-            /restore `
-            /t:Build `
-            /p:Packing=true `
-            /bl:"$logsDirectory/blazorwebview-build-$configuration.binlog"
-        if (!$?) { throw "Build BlazorWebView failed." }
-
-        & $msbuild $blazorWebViewSln `
-            /p:configuration=$configuration `
-            /p:SymbolPackageFormat=snupkg `
-            /t:Pack `
-            /p:Packing=true `
-            /bl:"$logsDirectory/blazorwebview-pack-$configuration.binlog"
-        if (!$?) { throw "Pack BlazorWebView failed." }
     }
     finally
     {

@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ApplicationTitle>Single Project</ApplicationTitle>
-    <ApplicationId>com.microsoft.maui.singleproject</ApplicationId>
+    <ApplicationTitle>.NET MAUI Controls</ApplicationTitle>
+    <ApplicationId>com.microsoft.maui.sample</ApplicationId>
     <ApplicationVersion>1.0</ApplicationVersion>
     <AndroidVersionCode>1</AndroidVersionCode>
   </PropertyGroup>
@@ -31,11 +31,15 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
-    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml-net6.csproj" />
-    <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml-net6.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Controls.Sample\Maui.Controls.Sample-net6.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,10 +49,10 @@
   </ItemGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <!-- Required - WinUI can't deploy in a multi-targeting environment -->
     <OutputType>WinExe</OutputType>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
+
   <ItemGroup>
     <Content Remove="Properties\launchSettings.json" />
   </ItemGroup>

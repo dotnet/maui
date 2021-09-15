@@ -56,35 +56,6 @@ Task("dotnet-build")
     .Description("Build the solutions")
     .Does(() =>
     {
-        if (IsRunningOnWindows())
-        {
-            RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf", new Dictionary<string, string> {
-                ["BuildForWinUI"] = bool.TrueString,
-            });
-            RunMSBuildWithDotNet("./Microsoft.Maui-winui.sln");
-        }
-        else
-        {
-            RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
-            RunMSBuildWithDotNet("./Microsoft.Maui-net6.sln");
-        }
-    });
-
-Task("dotnet-build-winui")
-    .IsDependentOn("dotnet")
-    .Description("Build the solutions")
-    .Does(() =>
-    {
-        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf", new Dictionary<string, string> {
-            ["BuildForWinUI"] = bool.TrueString,
-        });
-        RunMSBuildWithDotNet("./Microsoft.Maui-winui.sln");
-    });
-
-Task("dotnet-build-net6")
-    .IsDependentOn("dotnet")
-    .Does(() =>
-    {
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
         RunMSBuildWithDotNet("./Microsoft.Maui-net6.sln");
     });
@@ -231,7 +202,7 @@ Task("VS-WINUI")
     //  .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
-        string sln = "./Microsoft.Maui-winui.sln";
+        string sln = "./Microsoft.Maui-net6.sln";
         var msbuildSettings = new MSBuildSettings
         {
             Configuration = configuration,
@@ -241,7 +212,7 @@ Task("VS-WINUI")
                 Enabled  = true,
                 FileName = $"{logDirectory}/winui-buildtasks.binlog",
             }
-        }.WithRestore().WithProperty("BuildForWinUI", "true");
+        }.WithRestore();
 
         MSBuild("./Microsoft.Maui.BuildTasks-net6.slnf", msbuildSettings);
 
