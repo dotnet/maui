@@ -66,7 +66,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinUI.UITests", "src\Compat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiRazorClassLibrarySample", "src\BlazorWebView\samples\MauiRazorClassLibrarySample\MauiRazorClassLibrarySample.csproj", "{1373F90D-D4BA-4A76-BDB8-FAD569BD682B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen-net6", "src\Controls\src\SourceGen\Controls.SourceGen-net6.csproj", "{8E6FFD4B-1D9E-4CAF-A798-33D81F22EA8E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen", "src\Controls\src\SourceGen\Controls.SourceGen.csproj", "{8E6FFD4B-1D9E-4CAF-A798-33D81F22EA8E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebView.WindowsForms", "src\BlazorWebView\src\WindowsForms\Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj", "{43F6074F-F96B-4B3D-868D-536C5212489C}"
 EndProject

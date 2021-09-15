@@ -70,7 +70,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Controls.Core-net6.csproj" PrivateAssets="all" />
 		<ProjectReference Include="..\Xaml\Controls.Xaml-net6.csproj" PrivateAssets="all" />
-		<ProjectReference Include="..\SourceGen\Controls.SourceGen-net6.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\SourceGen\Controls.SourceGen.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 	
 	<ItemGroup>

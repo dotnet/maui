@@ -27,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials-net6", "src\Esse
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Android.FormsViewGroup-net6", "src\Compatibility\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup-net6.csproj", "{33EAB4A6-32A9-49DD-8240-5D297C157BCF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen-net6", "src\Controls\src\SourceGen\Controls.SourceGen-net6.csproj", "{FA5292A0-CB7E-42C1-89DF-59E630C9F829}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen", "src\Controls\src\SourceGen\Controls.SourceGen.csproj", "{FA5292A0-CB7E-42C1-89DF-59E630C9F829}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Resizetizer", "src\SingleProject\Resizetizer\src\Resizetizer.csproj", "{0FAE438A-9565-468C-AF35-61344D5880F0}"
 EndProject

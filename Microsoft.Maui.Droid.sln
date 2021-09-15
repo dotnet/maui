@@ -62,7 +62,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Compon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiRazorClassLibrarySample", "src\BlazorWebView\samples\MauiRazorClassLibrarySample\MauiRazorClassLibrarySample.csproj", "{A33803A8-D398-49F3-B5E8-8C812237829A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen-net6", "src\Controls\src\SourceGen\Controls.SourceGen-net6.csproj", "{FE48D482-1E5A-4CD6-A3D8-C3FBC0AE1DA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen", "src\Controls\src\SourceGen\Controls.SourceGen.csproj", "{FE48D482-1E5A-4CD6-A3D8-C3FBC0AE1DA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
