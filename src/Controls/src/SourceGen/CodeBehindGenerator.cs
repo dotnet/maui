@@ -125,8 +125,8 @@ namespace Microsoft.Maui.Controls.SourceGen
 				sb.AppendLine($"namespace {rootClrNamespace}");
 				sb.AppendLine("{");
 
-				if (context.TryGetMSBuildItemMetadata(file, "ItemSpec", out var itemSpec) && itemSpec is not null)
-					sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{itemSpec.Replace("\\", "\\\\")}\")]");
+				if (context.TryGetMSBuildItemMetadata(file, "RelativePath", out var relativePath) && relativePath is not null)
+					sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{relativePath.Replace("\\", "\\\\")}\")]");
 				if (addXamlCompilationAttribute)
 					sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]");
 				if (hideFromIntellisense)

@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Core.props" />
-  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.props" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Core.props" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.DefaultItems.props" />
+  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" />
 
   <PropertyGroup>
     <TargetFrameworks>$(MauiPlatformsNoMacCat)</TargetFrameworks>

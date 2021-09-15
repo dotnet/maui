@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Handlers
 {
-	public sealed partial class ButtonHandler : ViewHandler<IButton, MauiButton>
+	public partial class ButtonHandler : ViewHandler<IButton, MauiButton>
 	{
 		static UI.Xaml.Thickness? DefaultPadding;
 		static UI.Xaml.Media.Brush? DefaultForeground;
