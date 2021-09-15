@@ -1,7 +1,9 @@
 using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
+using DeviceInfo = Microsoft.Maui.Essentials.DeviceInfo;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -265,7 +267,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void ThrowsInSetIsPresentOnSplitModeOnTablet()
 		{
-			Device.Idiom = TargetIdiom.Tablet;
+			((MockDeviceInfo)DeviceInfo.Current).Idiom = DeviceIdiom.Tablet;
+
 			var page = new FlyoutPage
 			{
 				Flyout = new ContentPage { Content = new View(), IsPlatformEnabled = true, Title = "Foo" },
@@ -280,7 +283,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void ThorwsInSetIsPresentOnSplitPortraitModeOnTablet()
 		{
-			Device.Idiom = TargetIdiom.Tablet;
+			((MockDeviceInfo)DeviceInfo.Current).Idiom = DeviceIdiom.Tablet;
 			Device.Info.CurrentOrientation = DeviceOrientation.Portrait;
 
 			var page = new FlyoutPage

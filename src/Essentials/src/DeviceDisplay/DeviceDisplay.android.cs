@@ -9,11 +9,11 @@ using Android.Views;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class DeviceDisplay
+	partial class PlatformDeviceDisplay
 	{
-		static OrientationEventListener orientationListener;
+		OrientationEventListener orientationListener;
 
-		static bool PlatformKeepScreenOn
+		bool PlatformKeepScreenOn
 		{
 			get
 			{
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static DisplayInfo GetMainDisplayInfo()
+		DisplayInfo GetMainDisplayInfo()
 		{
 			using var displayMetrics = new DisplayMetrics();
 			var display = GetDefaultDisplay();
@@ -49,26 +49,26 @@ namespace Microsoft.Maui.Essentials
 				rate: display?.RefreshRate ?? 0);
 		}
 
-		static void StartScreenMetricsListeners()
+		void StartScreenMetricsListeners()
 		{
 			orientationListener = new Listener(Platform.AppContext, OnScreenMetricsChanged);
 			orientationListener.Enable();
 		}
 
-		static void StopScreenMetricsListeners()
+		void StopScreenMetricsListeners()
 		{
 			orientationListener?.Disable();
 			orientationListener?.Dispose();
 			orientationListener = null;
 		}
 
-		static void OnScreenMetricsChanged()
+		void OnScreenMetricsChanged()
 		{
 			var metrics = GetMainDisplayInfo();
 			OnMainDisplayInfoChanged(metrics);
 		}
 
-		static DisplayRotation CalculateRotation()
+		DisplayRotation CalculateRotation()
 		{
 			var display = GetDefaultDisplay();
 
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Essentials
 			};
 		}
 
-		static DisplayOrientation CalculateOrientation()
+		DisplayOrientation CalculateOrientation()
 		{
 			return Platform.AppContext.Resources?.Configuration?.Orientation switch
 			{
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Essentials
 			};
 		}
 
-		static Display GetDefaultDisplay()
+		Display GetDefaultDisplay()
 		{
 			try
 			{

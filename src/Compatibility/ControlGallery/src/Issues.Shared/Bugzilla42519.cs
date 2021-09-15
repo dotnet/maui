@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var heading = new Label { Text = "Select an option below to see text tail truncation in various contexts." };
 
-			if (Device.Idiom == TargetIdiom.Phone)
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 			{
 				heading.Text += " Rotating the phone between portrait and landscape mode should not cause the ellipsis to disappear from truncated text.";
 			}

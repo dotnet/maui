@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Essentials;
+using DeviceInfo = Microsoft.Maui.Essentials.DeviceInfo;
 
 namespace Microsoft.Maui.Controls
 {
@@ -142,7 +144,7 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (Device.Idiom == TargetIdiom.Phone)
+				if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 					return false;
 
 				FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
@@ -158,7 +160,7 @@ namespace Microsoft.Maui.Controls
 
 		public virtual bool ShouldShowToolbarButton()
 		{
-			if (Device.Idiom == TargetIdiom.Phone)
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				return true;
 
 			FlyoutLayoutBehavior behavior = FlyoutLayoutBehavior;
@@ -253,7 +255,7 @@ namespace Microsoft.Maui.Controls
 
 		static object GetDefaultValue(BindableObject bindable)
 		{
-			return Device.RuntimePlatform == Device.macOS;
+			return DeviceInfo.Platform == DevicePlatform.macOS;
 		}
 
 		public FlyoutPage()

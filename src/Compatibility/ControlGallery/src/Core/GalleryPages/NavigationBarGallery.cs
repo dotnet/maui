@@ -235,9 +235,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				parent.BarTextColor = Colors.Orange;
 				NavigationPage.SetBackButtonTitle(parent, "");
 
-				switch (Device.RuntimePlatform)
+				switch (DeviceInfo.Platform)
 				{
-					case Device.iOS:
+					case DevicePlatform.iOS:
 
 						button = new Button();
 

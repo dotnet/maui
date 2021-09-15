@@ -356,14 +356,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			searchBar.TextChanged += (sender, args) => SearchBarOnTextChanged(sender, args, testCaseScreen);
 
 			var page = new NavigationPage(testCasesRoot);
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
-				case Device.iOS:
-				case Device.Android:
+				case DevicePlatform.iOS:
+				case DevicePlatform.Android:
 				default:
 					page.Title = "Test Cases";
 					break;
-				case Device.UWP:
+				case DevicePlatform.Windows:
 					page.Title = "Tests";
 					break;
 			}

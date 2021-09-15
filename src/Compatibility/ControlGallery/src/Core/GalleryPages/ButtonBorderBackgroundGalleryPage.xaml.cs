@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			Visual = visual;
 
 			// buttons are transparent on default iOS, so we have to give them something
-			if (Device.RuntimePlatform == Device.iOS)
+			if (DeviceInfo.Platform == DevicePlatform.iOS)
 			{
 				if (Visual != VisualMarker.Material)
 				{

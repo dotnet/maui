@@ -2,24 +2,24 @@ using Plat = Microsoft.Maui.Essentials.Platform;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class DeviceInfo
+	partial class PlatformDeviceInfo
 	{
-		static string GetModel()
-		   => Plat.GetSystemInfo("model_name");
+		string GetModel()
+			=> Plat.GetSystemInfo("model_name");
 
-		static string GetManufacturer()
+		string GetManufacturer()
 			=> Plat.GetSystemInfo("manufacturer");
 
-		static string GetDeviceName()
+		string GetDeviceName()
 			=> Plat.GetSystemInfo("device_name");
 
-		static string GetVersionString()
+		string GetVersionString()
 			=> Plat.GetFeatureInfo("platform.version");
 
-		static DevicePlatform GetPlatform()
+		DevicePlatform GetPlatform()
 			=> DevicePlatform.Tizen;
 
-		static DeviceIdiom GetIdiom()
+		DeviceIdiom GetIdiom()
 		{
 			var profile = Plat.GetFeatureInfo("profile")?.ToUpperInvariant();
 
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Essentials
 				return DeviceIdiom.Unknown;
 		}
 
-		static DeviceType GetDeviceType()
+		DeviceType GetDeviceType()
 		{
 			var arch = Plat.GetFeatureInfo("platform.core.cpu.arch");
 			var armv7 = Plat.GetFeatureInfo<bool>("platform.core.cpu.arch.armv7");

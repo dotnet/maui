@@ -16,7 +16,10 @@ namespace Microsoft.Maui.Essentials
 
 		public static DevicePlatform Tizen { get; } = new DevicePlatform(nameof(Tizen));
 
-		public static DevicePlatform UWP { get; } = new DevicePlatform(nameof(UWP));
+		[Obsolete("Use Windows instead.")]
+		public static DevicePlatform UWP { get; } = Windows;
+
+		public static DevicePlatform Windows { get; } = new DevicePlatform(nameof(Windows));
 
 		public static DevicePlatform watchOS { get; } = new DevicePlatform(nameof(watchOS));
 

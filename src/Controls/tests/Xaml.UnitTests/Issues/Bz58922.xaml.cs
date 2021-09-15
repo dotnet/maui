@@ -22,13 +22,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp]
 			public void SetUp()
 			{
-				defaultIdiom = Device.Idiom;
+				defaultIdiom = DeviceInfo.Idiom;
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
-				Device.Idiom = defaultIdiom;
+				DeviceInfo.Idiom = defaultIdiom;
 				Device.PlatformServices = null;
 			}
 
@@ -36,10 +36,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(false)]
 			public void OnIdiomXDouble(bool useCompiledXaml)
 			{
-				Device.Idiom = TargetIdiom.Phone;
+				DeviceInfo.Idiom = DeviceIdiom.Phone;
 				var layout = new Bz58922(useCompiledXaml);
 				Assert.That(layout.grid.HeightRequest, Is.EqualTo(320));
-				Device.Idiom = TargetIdiom.Tablet;
+				DeviceInfo.Idiom = DeviceIdiom.Tablet;
 				layout = new Bz58922(useCompiledXaml);
 				Assert.That(layout.grid.HeightRequest, Is.EqualTo(480));
 			}

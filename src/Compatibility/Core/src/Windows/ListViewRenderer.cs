@@ -545,7 +545,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return; // FIXME
 
 			// Delay until after the SemanticZoom change _actually_ finishes, fixes tons of odd issues on Phone w/ virtualization.
-			if (Device.Idiom == TargetIdiom.Phone)
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				await Task.Delay(1);
 
 			IListProxy listProxy = til.ListProxy;

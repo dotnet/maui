@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Essentials\src\Essentials-net6.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -89,11 +89,11 @@ namespace Samples.ViewModel
 				new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 				{
 					{ DevicePlatform.iOS, new[] { "public.my.comic.extension" } }, // or general UTType values
-                    { DevicePlatform.Android, new[] { "application/comics" } },
-					{ DevicePlatform.UWP, new[] { ".cbr", ".cbz" } },
+					{ DevicePlatform.Android, new[] { "application/comics" } },
+					{ DevicePlatform.Windows, new[] { ".cbr", ".cbz" } },
 					{ DevicePlatform.Tizen, new[] { "*/*" } },
 					{ DevicePlatform.macOS, new[] { "cbr", "cbz" } }, // or general UTType values
-                });
+				});
 
 			var options = new PickOptions
 			{

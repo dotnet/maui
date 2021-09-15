@@ -8,6 +8,8 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Essentials;
+using DeviceInfo = Microsoft.Maui.Essentials.DeviceInfo;
 
 namespace Microsoft.Maui.Controls
 {
@@ -88,11 +90,9 @@ namespace Microsoft.Maui.Controls
 
 		public ListView([Parameter("CachingStrategy")] ListViewCachingStrategy cachingStrategy) : this()
 		{
-			// null => UnitTest "platform"
-			if (Device.RuntimePlatform == null ||
-				Device.RuntimePlatform == Device.Android ||
-				Device.RuntimePlatform == Device.iOS ||
-				Device.RuntimePlatform == Device.macOS)
+			if (DeviceInfo.Platform == DevicePlatform.Android ||
+				DeviceInfo.Platform == DevicePlatform.iOS ||
+				DeviceInfo.Platform == DevicePlatform.macOS)
 				CachingStrategy = cachingStrategy;
 		}
 

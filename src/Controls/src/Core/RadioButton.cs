@@ -2,6 +2,8 @@ using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Essentials;
+using DeviceInfo = Microsoft.Maui.Essentials.DeviceInfo;
 
 namespace Microsoft.Maui.Controls
 {
@@ -547,7 +549,7 @@ namespace Microsoft.Maui.Controls
 			var content = Content;
 			if (content is View)
 			{
-				Log.Warning("RadioButton", $"Warning - {Device.RuntimePlatform} does not support {nameof(View)} as the {ContentProperty.PropertyName} property of {nameof(RadioButton)}; the return value of the ToString() method will be displayed instead.");
+				Log.Warning("RadioButton", $"Warning - {DeviceInfo.Platform} does not support {nameof(View)} as the {ContentProperty.PropertyName} property of {nameof(RadioButton)}; the return value of the ToString() method will be displayed instead.");
 			}
 
 			return content?.ToString();

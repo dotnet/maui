@@ -22,12 +22,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			if (!Application.Current.Resources.ContainsKey("SomeSmallImage"))
 			{
 				ImageSource smallImage;
-				switch (Device.RuntimePlatform)
+				switch (DeviceInfo.Platform)
 				{
 					default:
 						smallImage = "coffee.png";
 						break;
-					case Device.UWP:
+					case DevicePlatform.Windows:
 						smallImage = "bank.png";
 						break;
 				}

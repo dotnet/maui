@@ -7,6 +7,7 @@ using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using UIKit;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage;
@@ -15,6 +16,7 @@ using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.i
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
+using DeviceInfo = Microsoft.Maui.Essentials.DeviceInfo;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -1605,7 +1607,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					if (Superview?.Bounds.Height > 0)
 						return Superview.Bounds.Height;
 
-					return (Device.Idiom == TargetIdiom.Phone && Device.Info.CurrentOrientation.IsLandscape()) ? 32 : 44;
+					return (DeviceInfo.Idiom == DeviceIdiom.Phone && Device.Info.CurrentOrientation.IsLandscape()) ? 32 : 44;
 				}
 			}
 

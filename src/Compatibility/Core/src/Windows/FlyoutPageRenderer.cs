@@ -365,7 +365,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			// Ignore the IsPresented value being set to false for Split mode on desktop and allow the master
 			// view to be made initially visible
-			if (Device.Idiom == TargetIdiom.Desktop && Control.IsPaneOpen && Element.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Popover)
+			if (DeviceInfo.Idiom == DeviceIdiom.Desktop && Control.IsPaneOpen && Element.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Popover)
 				return;
 
 			Control.IsPaneOpen = Element.IsPresented;

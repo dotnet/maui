@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp]
 			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices { RuntimePlatform = Device.iOS };
+				Device.PlatformServices = new MockPlatformServices { RuntimePlatform = DevicePlatform.iOS };
 			}
 
 			[TearDown]

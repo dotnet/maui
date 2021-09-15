@@ -5,7 +5,7 @@ using ObjCRuntime;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class DeviceInfo
+	partial class PlatformDeviceInfo
 	{
 		[DllImport(Constants.SystemConfigurationLibrary)]
 		static extern IntPtr SCDynamicStoreCopyComputerName(IntPtr store, IntPtr encoding);
@@ -13,12 +13,12 @@ namespace Microsoft.Maui.Essentials
 		[DllImport(Constants.CoreFoundationLibrary)]
 		static extern void CFRelease(IntPtr cf);
 
-		static string GetModel() =>
+		string GetModel() =>
 			IOKit.GetPlatformExpertPropertyValue<NSData>("model")?.ToString() ?? string.Empty;
 
-		static string GetManufacturer() => "Apple";
+		string GetManufacturer() => "Apple";
 
-		static string GetDeviceName()
+		string GetDeviceName()
 		{
 			var computerNameHandle = SCDynamicStoreCopyComputerName(IntPtr.Zero, IntPtr.Zero);
 
@@ -37,16 +37,16 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static string GetVersionString()
+		string GetVersionString()
 		{
 			using var info = new NSProcessInfo();
 			return info.OperatingSystemVersion.ToString();
 		}
 
-		static DevicePlatform GetPlatform() => DevicePlatform.macOS;
+		DevicePlatform GetPlatform() => DevicePlatform.macOS;
 
-		static DeviceIdiom GetIdiom() => DeviceIdiom.Desktop;
+		DeviceIdiom GetIdiom() => DeviceIdiom.Desktop;
 
-		static DeviceType GetDeviceType() => DeviceType.Physical;
+		DeviceType GetDeviceType() => DeviceType.Physical;
 	}
 }

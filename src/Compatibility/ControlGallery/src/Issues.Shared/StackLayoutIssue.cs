@@ -31,9 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				VerticalOptions = LayoutOptions.FillAndExpand
 			};
 
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
-				case Device.iOS:
+				case DevicePlatform.iOS:
 					winPrizeLabel.FontFamily = "HelveticaNeue-UltraLight";
 					winPrizeLabel.FontSize = Device.GetNamedSize(NamedSize.Large, winPrizeLabel);
 					break;

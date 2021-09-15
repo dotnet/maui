@@ -22,15 +22,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		public Bugzilla22229()
 		{
 			InitializeComponent();
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
-				case Device.iOS:
+				case DevicePlatform.iOS:
 					_prefix = "Images/";
 					break;
-				case Device.Android:
+				case DevicePlatform.Android:
 					_prefix = "";
 					break;
-				case Device.UWP:
+				case DevicePlatform.Windows:
 					_prefix = "Assets/";
 					break;
 			}

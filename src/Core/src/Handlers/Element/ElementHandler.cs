@@ -8,6 +8,10 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
+		public static CommandMapper<IElement, ElementHandler> ElementCommandMapper = new CommandMapper<IElement, ElementHandler>()
+		{
+		};
+
 		protected IPropertyMapper _mapper;
 		protected CommandMapper? CommandMapper;
 		protected readonly IPropertyMapper _defaultMapper;

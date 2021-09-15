@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[Test]
 			public void OnPlatformDefaultToBPDefaultValue([Values(true, false)] bool useCompiledXaml)
 			{
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.Android;
 				var layout = new Gh7156(useCompiledXaml);
 				Assert.That(layout.l0.Text, Is.EqualTo(Label.TextProperty.DefaultValue));
 				Assert.That(layout.l0.WidthRequest, Is.EqualTo(VisualElement.WidthRequestProperty.DefaultValue));

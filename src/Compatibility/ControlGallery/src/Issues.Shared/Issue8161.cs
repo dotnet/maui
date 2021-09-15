@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			base.OnAppearing();
 			// WPF doesn't show ToolbarItems for pages in modal stack 
 			// so we use NavigationBehavior.SetApplicationRoot and pop TestCases page from modal stack to make this test case visible with toolbar items
-			if (Device.RuntimePlatform == Device.WPF)
+			if (DeviceInfo.Platform == Device.WPF)
 				Navigation.PopModalAsync();
 		}
 	}

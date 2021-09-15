@@ -7,7 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using NUnit.Framework;
+using DeviceInfo = Microsoft.Maui.Essentials.DeviceInfo;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -1603,19 +1605,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.That(cell.Parent, Is.Null);
 		}
 
-		[TestCase(Device.Android, ListViewCachingStrategy.RecycleElement)]
-		[TestCase(Device.iOS, ListViewCachingStrategy.RecycleElement)]
-		[TestCase(Device.UWP, ListViewCachingStrategy.RetainElement)]
+		[TestCase(nameof(DevicePlatform.Android), ListViewCachingStrategy.RecycleElement)]
+		[TestCase(nameof(DevicePlatform.iOS), ListViewCachingStrategy.RecycleElement)]
+		[TestCase(nameof(DevicePlatform.Windows), ListViewCachingStrategy.RetainElement)]
 		[TestCase("Other", ListViewCachingStrategy.RetainElement)]
 		public void EnforcesCachingStrategy(string platform, ListViewCachingStrategy expected)
 		{
-			var oldOS = Device.RuntimePlatform;
 			// we need to do this because otherwise we cant set the caching strategy
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = platform;
+			((MockDeviceInfo)DeviceInfo.Current).Platform = DevicePlatform.Create(platform);
+
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement);
 
 			Assert.AreEqual(expected, listView.CachingStrategy);
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = oldOS;
 		}
 
 		[Test]
@@ -1634,10 +1635,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				"Bar"
 			};
 
-			var oldOS = Device.RuntimePlatform;
-			// we need to do this because otherwise we cant set the caching strategy
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
-
 			var bindable = new ListView(ListViewCachingStrategy.RecycleElement);
 			bindable.ItemTemplate = new DataTemplate(typeof(TextCell))
 			{
@@ -1651,8 +1648,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var item2 = bindable.TemplatedItems[0];
 
 			Assert.False(ReferenceEquals(item1, item2));
-
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = oldOS;
 		}
 	}
 }

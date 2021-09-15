@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					Children = { logoImg }
 				};
 
-				var paddingTop = Device.RuntimePlatform == Device.iOS ? 40 : 2;
+				var paddingTop = DeviceInfo.Platform == DevicePlatform.iOS ? 40 : 2;
 				Content = new StackLayout
 				{
 					Spacing = 0,

@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				{
 					Text = "Framous!"
 				},
-				BackgroundColor = new[] { Device.Android, Device.UWP }.Contains(Device.RuntimePlatform) ? new Color(0) : new Color(1),
+				BackgroundColor = new[] { DevicePlatform.Android, DevicePlatform.Windows }.Contains(DeviceInfo.Platform) ? new Color(0) : new Color(1),
 				VerticalOptions = LayoutOptions.FillAndExpand
 			};
 

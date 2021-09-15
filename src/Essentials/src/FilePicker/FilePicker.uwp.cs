@@ -68,31 +68,31 @@ namespace Microsoft.Maui.Essentials
 		static FilePickerFileType PlatformImageFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.UWP, FileSystem.Extensions.AllImage }
+				{ DevicePlatform.Windows, FileSystem.Extensions.AllImage }
 			});
 
 		static FilePickerFileType PlatformPngFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.UWP, new[] { FileSystem.Extensions.Png } }
+				{ DevicePlatform.Windows, new[] { FileSystem.Extensions.Png } }
 			});
 
 		static FilePickerFileType PlatformJpegFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.UWP, FileSystem.Extensions.AllJpeg }
+				{ DevicePlatform.Windows, FileSystem.Extensions.AllJpeg }
 			});
 
 		static FilePickerFileType PlatformVideoFileType() =>
 		   new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 		   {
-				{ DevicePlatform.UWP, FileSystem.Extensions.AllVideo }
+				{ DevicePlatform.Windows, FileSystem.Extensions.AllVideo }
 		   });
 
 		static FilePickerFileType PlatformPdfFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.UWP, new[] { FileSystem.Extensions.Pdf } }
+				{ DevicePlatform.Windows, new[] { FileSystem.Extensions.Pdf } }
 			});
 	}
 }

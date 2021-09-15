@@ -17,6 +17,10 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IWindow.Content)] = MapContent,
 		};
 
+		public static CommandMapper<IWindow, WindowHandler> WindowCommandMapper = new CommandMapper<IWindow, WindowHandler>(ElementHandler.ElementCommandMapper)
+		{
+		};
+
 		public WindowHandler()
 			: base(WindowMapper)
 		{

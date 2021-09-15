@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						},
 						new Label()
 						{
-							Text = Device.Idiom.ToString(),
+							Text = DeviceInfo.Idiom.ToString(),
 							AutomationId = "Idiom"
 						}
 					}

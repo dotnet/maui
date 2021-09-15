@@ -68,7 +68,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		internal static IMauiContext MauiContext { get; private set; }
 
 		public static bool IsInitialized { get; private set; }
-		static bool FlagsSet { get; set; }
 
 		static bool _ColorButtonNormalSet;
 		static Color _ColorButtonNormal = null;
@@ -357,9 +356,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FramePartition("create AndroidDeviceInfo");
 			Device.Info = new AndroidDeviceInfo(activity);
 
-			Profile.FramePartition("setFlags");
-			Device.SetFlags(s_flags);
-
 			Profile.FramePartition("AndroidTicker");
 
 			Profile.FramePartition("RegisterAll");
@@ -369,48 +365,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Profile.FramePartition("Epilog");
 
-			var currentIdiom = TargetIdiom.Unsupported;
-
-			// First try UIModeManager
-			using (var uiModeManager = UiModeManager.FromContext(ApplicationContext))
-			{
-				try
-				{
-					var uiMode = uiModeManager?.CurrentModeType ?? UiMode.TypeUndefined;
-					currentIdiom = DetectIdiom(uiMode);
-				}
-				catch (Exception ex)
-				{
-					System.Diagnostics.Debug.WriteLine($"Unable to detect using UiModeManager: {ex.Message}");
-				}
-			}
-
-			// Then try Configuration
-			if (TargetIdiom.Unsupported == currentIdiom)
-			{
-				var configuration = activity.Resources.Configuration;
-
-				if (configuration != null)
-				{
-					var minWidth = configuration.SmallestScreenWidthDp;
-					var isWide = minWidth >= TabletCrossover;
-					currentIdiom = isWide ? TargetIdiom.Tablet : TargetIdiom.Phone;
-				}
-				else
-				{
-					// Start clutching at straws
-					var metrics = activity.Resources?.DisplayMetrics;
-
-					if (metrics != null)
-					{
-						var minSize = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
-						var isWide = minSize * metrics.Density >= TabletCrossover;
-						currentIdiom = isWide ? TargetIdiom.Tablet : TargetIdiom.Phone;
-					}
-				}
-			}
-
-			Device.SetIdiom(currentIdiom);
 			Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
 
 			if (ExpressionSearch.Default == null)
@@ -418,45 +372,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			IsInitialized = true;
 			Profile.FrameEnd();
-		}
-
-		static TargetIdiom DetectIdiom(UiMode uiMode)
-		{
-			var returnValue = TargetIdiom.Unsupported;
-			if (uiMode == UiMode.TypeNormal)
-				returnValue = TargetIdiom.Unsupported;
-			else if (uiMode == UiMode.TypeTelevision)
-				returnValue = TargetIdiom.TV;
-			else if (uiMode == UiMode.TypeDesk)
-				returnValue = TargetIdiom.Desktop;
-			else if (SdkInt >= BuildVersionCodes.KitkatWatch && uiMode == UiMode.TypeWatch)
-				returnValue = TargetIdiom.Watch;
-
-			Device.SetIdiom(returnValue);
-			return returnValue;
-		}
-
-		static IReadOnlyList<string> s_flags;
-		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new string[0]);
-
-		public static void SetFlags(params string[] flags)
-		{
-			if (FlagsSet)
-			{
-				// Don't try to set the flags again if they've already been set
-				// (e.g., during a configuration change where OnCreate runs again)
-				return;
-			}
-
-			if (IsInitialized)
-			{
-				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
-			}
-
-			s_flags = (string[])flags.Clone();
-			if (s_flags.Contains("Profile"))
-				Profile.Enable();
-			FlagsSet = true;
 		}
 
 		static Color GetAccentColor(Context context)
@@ -849,8 +764,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					return Looper.MainLooper != Looper.MyLooper();
 				}
 			}
-
-			public string RuntimePlatform => Device.Android;
 
 			public void OpenUriAction(Uri uri)
 			{

@@ -346,18 +346,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		public int FontSize { get; set; }
 
-		[TestCase("{OnPlatform 20, Android=23}", Device.Android, 23)]
-		[TestCase("{OnPlatform Android=20, iOS=25}", Device.iOS, 25)]
+		[TestCase("{OnPlatform 20, Android=23}", DevicePlatform.Android, 23)]
+		[TestCase("{OnPlatform Android=20, iOS=25}", DevicePlatform.iOS, 25)]
 		[TestCase("{OnPlatform Android=20, GTK=25}", Device.GTK, 25)]
-		[TestCase("{OnPlatform Android=20, macOS=25}", Device.macOS, 25)]
-		[TestCase("{OnPlatform Android=20, Tizen=25}", Device.Tizen, 25)]
-		[TestCase("{OnPlatform Android=20, UWP=25}", Device.UWP, 25)]
+		[TestCase("{OnPlatform Android=20, macOS=25}", DevicePlatform.macOS, 25)]
+		[TestCase("{OnPlatform Android=20, Tizen=25}", DevicePlatform.Tizen, 25)]
+		[TestCase("{OnPlatform Android=20, UWP=25}", DevicePlatform.Windows, 25)]
 		[TestCase("{OnPlatform Android=20, WPF=25}", Device.WPF, 25)]
-		[TestCase("{OnPlatform 20}", Device.iOS, 20)]
+		[TestCase("{OnPlatform 20}", DevicePlatform.iOS, 20)]
 		[TestCase("{OnPlatform 20}", Device.GTK, 20)]
-		[TestCase("{OnPlatform 20}", Device.macOS, 20)]
-		[TestCase("{OnPlatform 20}", Device.Tizen, 20)]
-		[TestCase("{OnPlatform 20}", Device.UWP, 20)]
+		[TestCase("{OnPlatform 20}", DevicePlatform.macOS, 20)]
+		[TestCase("{OnPlatform 20}", DevicePlatform.Tizen, 20)]
+		[TestCase("{OnPlatform 20}", DevicePlatform.Windows, 20)]
 		[TestCase("{OnPlatform 20}", Device.WPF, 20)]
 		[TestCase("{OnPlatform 20}", "Foo", 20)]
 		[TestCase("{OnPlatform Android=23, Default=20}", "Foo", 20)]
@@ -381,13 +381,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.AreEqual(expected, actual);
 		}
 
-		[TestCase("{OnIdiom Phone=23, Tablet=25, Default=20}", TargetIdiom.Phone, 23)]
-		[TestCase("{OnIdiom Phone=23, Tablet=25, Default=20}", TargetIdiom.Tablet, 25)]
-		[TestCase("{OnIdiom 20, Phone=23, Tablet=25}", TargetIdiom.Desktop, 20)]
-		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", TargetIdiom.Desktop, 26)]
+		[TestCase("{OnIdiom Phone=23, Tablet=25, Default=20}", DeviceIdiom.Phone, 23)]
+		[TestCase("{OnIdiom Phone=23, Tablet=25, Default=20}", DeviceIdiom.Tablet, 25)]
+		[TestCase("{OnIdiom 20, Phone=23, Tablet=25}", DeviceIdiom.Desktop, 20)]
+		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", DeviceIdiom.Desktop, 26)]
 		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", TargetIdiom.TV, 30)]
 		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", TargetIdiom.Watch, 10)]
-		[TestCase("{OnIdiom Phone=23}", TargetIdiom.Desktop, default(int))]
+		[TestCase("{OnIdiom Phone=23}", DeviceIdiom.Desktop, default(int))]
 		public void OnIdiomExtension(string markup, TargetIdiom idiom, int expected)
 		{
 			Device.SetIdiom(idiom);

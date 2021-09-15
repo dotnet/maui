@@ -32,6 +32,8 @@ using System.Linq;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
+using DeviceInfo = Microsoft.Maui.Essentials.DeviceInfo;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -294,14 +296,8 @@ namespace Microsoft.Maui.Controls.Xaml
 					continue;
 				try
 				{
-					if (targetPlatform != Device.RuntimePlatform)
-					{
-						// Special case for Windows backward compatibility
-						if (targetPlatform == "Windows" && Device.RuntimePlatform == Device.UWP)
-							continue;
-
+					if (DevicePlatform.Create(targetPlatform) != DeviceInfo.Platform)
 						prefixes.Add(prefix);
-					}
 				}
 				catch (InvalidOperationException)
 				{

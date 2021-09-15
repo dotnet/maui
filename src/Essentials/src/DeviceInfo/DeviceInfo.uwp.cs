@@ -6,14 +6,14 @@ using Windows.UI.ViewManagement;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class DeviceInfo
+	partial class PlatformDeviceInfo
 	{
-		static readonly EasClientDeviceInformation deviceInfo;
-		static DeviceIdiom currentIdiom;
-		static DeviceType currentType = DeviceType.Unknown;
-		static string systemProductName;
+		readonly EasClientDeviceInformation deviceInfo;
+		DeviceIdiom currentIdiom;
+		DeviceType currentType = DeviceType.Unknown;
+		string systemProductName;
 
-		static DeviceInfo()
+		DeviceInfo()
 		{
 			deviceInfo = new EasClientDeviceInformation();
 			currentIdiom = DeviceIdiom.Unknown;
@@ -27,13 +27,13 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static string GetModel() => deviceInfo.SystemProductName;
+		string GetModel() => deviceInfo.SystemProductName;
 
-		static string GetManufacturer() => deviceInfo.SystemManufacturer;
+		string GetManufacturer() => deviceInfo.SystemManufacturer;
 
-		static string GetDeviceName() => deviceInfo.FriendlyName;
+		string GetDeviceName() => deviceInfo.FriendlyName;
 
-		static string GetVersionString()
+		string GetVersionString()
 		{
 			var version = AnalyticsInfo.VersionInfo.DeviceFamilyVersion;
 
@@ -49,9 +49,9 @@ namespace Microsoft.Maui.Essentials
 			return version;
 		}
 
-		static DevicePlatform GetPlatform() => DevicePlatform.UWP;
+		DevicePlatform GetPlatform() => DevicePlatform.Windows;
 
-		static DeviceIdiom GetIdiom()
+		DeviceIdiom GetIdiom()
 		{
 			switch (AnalyticsInfo.VersionInfo.DeviceFamily)
 			{
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Essentials
 			return currentIdiom;
 		}
 
-		static DeviceType GetDeviceType()
+		DeviceType GetDeviceType()
 		{
 			if (currentType != DeviceType.Unknown)
 				return currentType;

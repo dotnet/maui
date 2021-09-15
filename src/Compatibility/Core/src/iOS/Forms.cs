@@ -166,22 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 #endif
 
-		static IReadOnlyList<string> s_flags;
-		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new string[0]);
-
 		public static bool IsInitializedRenderers { get; private set; }
-
-		public static void SetFlags(params string[] flags)
-		{
-			if (IsInitialized)
-			{
-				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
-			}
-
-			s_flags = (string[])flags.Clone();
-			if (s_flags.Contains("Profile"))
-				Profile.Enable();
-		}
 
 		public static void Init() =>
 			SetupInit(new MauiContext());
@@ -207,7 +192,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 #if __MOBILE__
-			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
 			Device.SetFlowDirection(UIApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 #else
 			if (!IsInitialized)
@@ -225,7 +209,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				});
 			}
 
-			Device.SetIdiom(TargetIdiom.Desktop);
 			Device.SetFlowDirection(NSApplication.SharedApplication.UserInterfaceLayoutDirection.ToFlowDirection());
 
 			if (IsMojaveOrNewer)
@@ -235,7 +218,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				NSApplication.SharedApplication.Appearance = aquaAppearance;
 			}
 #endif
-			Device.SetFlags(s_flags);
 			var platformServices = new IOSPlatformServices();
 
 			Device.PlatformServices = platformServices;
@@ -676,12 +658,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			public bool IsInvokeRequired => !NSThread.IsMain;
-
-#if __MOBILE__
-			public string RuntimePlatform => Device.iOS;
-#else
-			public string RuntimePlatform => Device.macOS;
-#endif
 
 			public void OpenUriAction(Uri uri)
 			{

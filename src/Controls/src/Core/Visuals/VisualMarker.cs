@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls
 {
@@ -19,10 +20,10 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			_warnedAboutMaterial = true;
-			if (Device.RuntimePlatform == Device.iOS || Device.RuntimePlatform == Device.Android || Device.RuntimePlatform == Device.Tizen)
-				Internals.Log.Warning("Visual", $"Material needs to be registered on {Device.RuntimePlatform} by calling FormsMaterial.Init() after the Microsoft.Maui.Controls.Forms.Init method call.");
+			if (DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.Tizen)
+				Internals.Log.Warning("Visual", $"Material needs to be registered on {DeviceInfo.Platform} by calling FormsMaterial.Init() after the Microsoft.Maui.Controls.Forms.Init method call.");
 			else
-				Internals.Log.Warning("Visual", $"Material is currently not support on {Device.RuntimePlatform}.");
+				Internals.Log.Warning("Visual", $"Material is currently not support on {DeviceInfo.Platform}.");
 		}
 
 		public sealed class MaterialVisual : IVisual { public MaterialVisual() { } }

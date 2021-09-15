@@ -1,24 +1,70 @@
+#nullable enable
 using System;
 
 namespace Microsoft.Maui.Essentials
 {
 	public static partial class DeviceInfo
 	{
-		public static string Model => GetModel();
+		static readonly Lazy<IDeviceInfo> PlatformDeviceInfo = new(() => new PlatformDeviceInfo());
+		static IDeviceInfo? CurrentDeviceInfo;
 
-		public static string Manufacturer => GetManufacturer();
+		public static void SetCurrent(IDeviceInfo? current) => CurrentDeviceInfo = current;
 
-		public static string Name => GetDeviceName();
+		public static IDeviceInfo Current => CurrentDeviceInfo ?? PlatformDeviceInfo.Value;
 
-		public static string VersionString => GetVersionString();
+		public static string Model => Current.Model;
 
-		public static Version Version => Utils.ParseVersion(VersionString);
+		public static string Manufacturer => Current.Manufacturer;
 
-		public static DevicePlatform Platform => GetPlatform();
+		public static string Name => Current.Name;
 
-		public static DeviceIdiom Idiom => GetIdiom();
+		public static string VersionString => Current.VersionString;
 
-		public static DeviceType DeviceType => GetDeviceType();
+		public static Version Version => Current.Version;
+
+		public static DevicePlatform Platform => Current.Platform;
+
+		public static DeviceIdiom Idiom => Current.Idiom;
+
+		public static DeviceType DeviceType => Current.DeviceType;
+	}
+
+	partial class PlatformDeviceInfo : IDeviceInfo
+	{
+		public string Model => GetModel();
+
+		public string Manufacturer => GetManufacturer();
+
+		public string Name => GetDeviceName();
+
+		public string VersionString => GetVersionString();
+
+		public Version Version => Utils.ParseVersion(VersionString);
+
+		public DevicePlatform Platform => GetPlatform();
+
+		public DeviceIdiom Idiom => GetIdiom();
+
+		public DeviceType DeviceType => GetDeviceType();
+	}
+
+	public interface IDeviceInfo
+	{
+		string Model { get; }
+
+		string Manufacturer { get; }
+
+		string Name { get; }
+
+		string VersionString { get; }
+
+		Version Version { get; }
+
+		DevicePlatform Platform { get; }
+
+		DeviceIdiom Idiom { get; }
+
+		DeviceType DeviceType { get; }
 	}
 
 	public enum DeviceType

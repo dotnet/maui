@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void ApplyToProperty()
 		{
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.iOS;
 			var xaml = @"
 			<ContentPage 
 			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
@@ -64,15 +64,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			ContentPage layout;
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.iOS;
 			layout = new ContentPage().LoadFromXaml(xaml);
 			Assert.AreEqual(new Thickness(0, 20, 0, 0), layout.Padding);
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.Android;
 			layout = new ContentPage().LoadFromXaml(xaml);
 			Assert.AreEqual(new Thickness(0, 0, 10, 0), layout.Padding);
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.UWP;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.Windows;
 			layout = new ContentPage().LoadFromXaml(xaml);
 			Assert.AreEqual(new Thickness(0, 20, 0, 20), layout.Padding);
 		}
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			Image image;
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.iOS;
 			image = new Image().LoadFromXaml(xaml);
 			Assert.AreEqual("icon_twitter.png", (image.Source as FileImageSource).File);
 		}
@@ -120,11 +120,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				<Label Text=""child0""/>
 				<Label Text=""child1""/>			
 			</StackLayout>";
-			Device.Idiom = TargetIdiom.Phone;
+			DeviceInfo.Idiom = DeviceIdiom.Phone;
 			var layout = new StackLayout().LoadFromXaml(xaml);
 			Assert.AreEqual(StackOrientation.Vertical, layout.Orientation);
 
-			Device.Idiom = TargetIdiom.Tablet;
+			DeviceInfo.Idiom = DeviceIdiom.Tablet;
 			layout = new StackLayout().LoadFromXaml(xaml);
 			Assert.AreEqual(StackOrientation.Horizontal, layout.Orientation);
 		}

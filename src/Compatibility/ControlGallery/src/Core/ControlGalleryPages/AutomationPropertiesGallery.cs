@@ -29,9 +29,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			string toolbarItem2Text = "Go";
 			string toolbarItemHint2 = "Somewhere else";
 
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
-				case Device.iOS:
+				case DevicePlatform.iOS:
 					screenReader = "VoiceOver";
 					scrollFingers = "three fingers";
 					explore = "Use two fingers to swipe up or down the screen to read all of the elements on this page.";
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					boxInstructions = $"The following Box should read aloud \"{BoxName}. {BoxHelpText}\". You should be able to tap the box and hear an alert box.";
 					toolbarInstructions = $"The Toolbar should have a coffee cup icon. Activating the coffee cup should read aloud \"{toolbarItemName}\". The Toolbar should also show the text \"{toolbarItem2Text}\". Activating this item should read aloud \"{toolbarItem2Text}. {toolbarItemHint2}\".";
 					break;
-				case Device.Android:
+				case DevicePlatform.Android:
 					screenReader = "TalkBack";
 					scrollFingers = "two fingers";
 					explore = "Drag one finger across the screen to read each element on the page.";
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					boxInstructions = $"The following Box should read aloud \"{BoxName}. {BoxHelpText}\". You should be able to tap the box and hear an alert box.";
 					toolbarInstructions = $"The Toolbar should have a coffee cup icon. Activating the coffee cup should read aloud \"{toolbarItemName}\". The Toolbar should also show the text \"{toolbarItem2Text}\". Activating this item should read aloud \"{toolbarItem2Text}. {toolbarItemHint2}\".";
 					break;
-				case Device.UWP:
+				case DevicePlatform.Windows:
 				case Device.WPF:
 					screenReader = "Narrator";
 					scrollFingers = "two fingers";
@@ -59,14 +59,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					boxInstructions = $"The following Box should read aloud \"{BoxName}. {BoxHelpText}\". Windows does not currently support TapGestures while the Narrator is active.";
 					toolbarInstructions = $"The Toolbar should have a coffee cup icon. Activating the coffee cup should read aloud \"{toolbarItemName}\". The Toolbar should also show the text \"{toolbarItem2Text}\". Activating this item should read aloud \"{toolbarItem2Text}. {toolbarItemHint2}\".";
 					break;
-				case Device.macOS:
+				case DevicePlatform.macOS:
 					screenReader = "VoiceOver (CMD + F5) or Accesibility Inspector";
 					labeledByInstructions = $"The following Entry should read aloud \"{EntryPlaceholder}.\", plus native instructions on how to use an Entry element. This text comes from the placeholder.";
 					imageInstructions = $"The following Image should read aloud \"{ImageName}. {ImageHelpText}\". You should be able to tap the image and hear an alert box.";
 					boxInstructions = $"The following Box should read aloud \"{BoxName}. {BoxHelpText}\". You should be able to tap the box and hear an alert box.";
 					toolbarInstructions = $"The Toolbar should have a coffee cup icon. Activating the coffee cup should read aloud \"{toolbarItemName}\". The Toolbar should also show the text \"{toolbarItem2Text}\". Activating this item should read aloud \"{toolbarItem2Text}. {toolbarItemHint2}\".";
 					break;
-				case Device.Tizen:
+				case DevicePlatform.Tizen:
 					screenReader = "Screen reader(TTS)";
 					scrollFingers = "two fingers";
 					explore = "Use two fingers to swipe up the screen to read all of the elements on this page.";

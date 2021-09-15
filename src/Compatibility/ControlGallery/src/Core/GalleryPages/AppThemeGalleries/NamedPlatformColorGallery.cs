@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppT
 		{
 			List<string> resultColors = new List<string>();
 
-			if (Device.RuntimePlatform == Device.macOS || Device.RuntimePlatform == Device.iOS)
+			if (DeviceInfo.Platform == DevicePlatform.macOS || DeviceInfo.Platform == DevicePlatform.iOS)
 			{
 				resultColors.AddRange(new[] {
 					NamedPlatformColor.SystemBlue,
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppT
 				});
 			}
 
-			if (Device.RuntimePlatform == Device.iOS)
+			if (DeviceInfo.Platform == DevicePlatform.iOS)
 			{
 				resultColors.AddRange(new[] {
 					NamedPlatformColor.SystemGray2,
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppT
 				});
 			}
 
-			if (Device.RuntimePlatform == Device.macOS)
+			if (DeviceInfo.Platform == DevicePlatform.macOS)
 			{
 				resultColors.AddRange(new[] {
 					NamedPlatformColor.AlternateSelectedControlTextColor,
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppT
 				});
 			}
 
-			if (Device.RuntimePlatform == Device.Android)
+			if (DeviceInfo.Platform == DevicePlatform.Android)
 			{
 				resultColors.AddRange(new[] {
 					NamedPlatformColor.BackgroundDark,
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppT
 				});
 			}
 
-			if (Device.RuntimePlatform == Device.UWP)
+			if (DeviceInfo.Platform == DevicePlatform.Windows)
 			{
 				resultColors.AddRange(new[] {
 					NamedPlatformColor.SystemAltLowColor,

@@ -86,20 +86,20 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		static string GetFontFamily()
 		{
 			var fontFamily = "";
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
-				case Device.macOS:
-				case Device.iOS:
+				case DevicePlatform.macOS:
+				case DevicePlatform.iOS:
 					fontFamily = "Ionicons";
 					break;
-				case Device.UWP:
+				case DevicePlatform.Windows:
 					fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
 					break;
 				case Device.WPF:
 				case Device.GTK:
 					fontFamily = "Assets/ionicons.ttf#ionicons";
 					break;
-				case Device.Android:
+				case DevicePlatform.Android:
 				default:
 					fontFamily = "fonts/ionicons.ttf#";
 					break;

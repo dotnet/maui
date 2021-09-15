@@ -37,15 +37,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				         </Button.HeightRequest>
 				 </Button>";
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.iOS;
 			var button = new Button().LoadFromXaml(xaml);
 			Assert.AreEqual(33, button.HeightRequest);
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.Android;
 			button = new Button().LoadFromXaml(xaml);
 			Assert.AreEqual(44, button.HeightRequest);
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.UWP;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.Windows;
 			button = new Button().LoadFromXaml(xaml);
 			Assert.AreEqual(44, button.HeightRequest);
 		}

@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 
 			// Accomodate iPhone status bar.
-			Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(10, 20, 10, 0) : new Thickness(10, 0);
+			Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(10, 20, 10, 0) : new Thickness(10, 0);
 
 			// Build the page.
 			Content = new StackLayout

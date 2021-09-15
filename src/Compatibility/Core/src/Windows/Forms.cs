@@ -68,10 +68,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			}
 
-			Device.SetIdiom(TargetIdiom.Tablet);
 			Device.SetFlowDirection(mauiContext.GetFlowDirection());
 
-			Device.SetFlags(s_flags);
 			Device.Info = new WindowsDeviceInfo();
 
 			//TODO WINUI3
@@ -89,12 +87,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			//	case "Windows.Desktop":
 			//		if (Windows.UI.ViewManagement.UIViewSettings.GetForCurrentView().UserInteractionMode ==
 			//			Windows.UI.ViewManagement.UserInteractionMode.Touch)
-			//			Device.SetIdiom(TargetIdiom.Tablet);
+			//			Device.SetIdiom(DeviceIdiom.Tablet);
 			//		else
-			//			Device.SetIdiom(TargetIdiom.Desktop);
+			//			Device.SetIdiom(DeviceIdiom.Desktop);
 			//		break;
 			//	case "Windows.Mobile":
-			//		Device.SetIdiom(TargetIdiom.Phone);
+			//		Device.SetIdiom(DeviceIdiom.Phone);
 			//		break;
 			//	case "Windows.Xbox":
 			//		Device.SetIdiom(TargetIdiom.TV);

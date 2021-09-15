@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var scale = 10d;
 
-			if (Device.RuntimePlatform == Device.Android)
+			if (DeviceInfo.Platform == DevicePlatform.Android)
 				scale = scale / Device.info.ScalingFactor;
 
 			var increaseMenuItem = new MenuItem()

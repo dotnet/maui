@@ -3,17 +3,17 @@ using UIKit;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class DeviceDisplay
+	partial class PlatformDeviceDisplay
 	{
-		static NSObject observer;
+		NSObject observer;
 
-		static bool PlatformKeepScreenOn
+		bool PlatformKeepScreenOn
 		{
 			get => UIApplication.SharedApplication.IdleTimerDisabled;
 			set => UIApplication.SharedApplication.IdleTimerDisabled = value;
 		}
 
-		static DisplayInfo GetMainDisplayInfo()
+		DisplayInfo GetMainDisplayInfo()
 		{
 			var bounds = UIScreen.MainScreen.Bounds;
 			var scale = UIScreen.MainScreen.Scale;
@@ -27,26 +27,26 @@ namespace Microsoft.Maui.Essentials
 				rate: Platform.HasOSVersion(10, 3) ? UIScreen.MainScreen.MaximumFramesPerSecond : 0);
 		}
 
-		static void StartScreenMetricsListeners()
+		void StartScreenMetricsListeners()
 		{
 			var notificationCenter = NSNotificationCenter.DefaultCenter;
 			var notification = UIApplication.DidChangeStatusBarOrientationNotification;
 			observer = notificationCenter.AddObserver(notification, OnScreenMetricsChanged);
 		}
 
-		static void StopScreenMetricsListeners()
+		void StopScreenMetricsListeners()
 		{
 			observer?.Dispose();
 			observer = null;
 		}
 
-		static void OnScreenMetricsChanged(NSNotification obj)
+		void OnScreenMetricsChanged(NSNotification obj)
 		{
 			var metrics = GetMainDisplayInfo();
 			OnMainDisplayInfoChanged(metrics);
 		}
 
-		static DisplayOrientation CalculateOrientation()
+		DisplayOrientation CalculateOrientation()
 		{
 			var orientation = UIApplication.SharedApplication.StatusBarOrientation;
 
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Essentials
 			return DisplayOrientation.Portrait;
 		}
 
-		static DisplayRotation CalculateRotation()
+		DisplayRotation CalculateRotation()
 		{
 			var orientation = UIApplication.SharedApplication.StatusBarOrientation;
 

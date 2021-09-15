@@ -33,16 +33,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var rotate = new Button { Text = "Rotate Button" };
 			var transparent = new Button { Text = "Transparent Button" };
 			string fontName;
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
 				default:
-				case Device.iOS:
+				case DevicePlatform.iOS:
 					fontName = "Georgia";
 					break;
-				case Device.Android:
+				case DevicePlatform.Android:
 					fontName = "sans-serif-light";
 					break;
-				case Device.UWP:
+				case DevicePlatform.Windows:
 					fontName = "Comic Sans MS";
 					break;
 			}

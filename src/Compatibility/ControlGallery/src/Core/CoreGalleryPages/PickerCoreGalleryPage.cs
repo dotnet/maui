@@ -50,12 +50,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var fontFamilyContainer = new ViewContainer<Picker>(Test.Picker.FontFamily,
 				new Picker());
 			// Set font family based on available fonts per platform
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
-				case Device.Android:
+				case DevicePlatform.Android:
 					fontFamilyContainer.View.FontFamily = "sans-serif-thin";
 					break;
-				case Device.iOS:
+				case DevicePlatform.iOS:
 					fontFamilyContainer.View.FontFamily = "Courier";
 					break;
 				default:

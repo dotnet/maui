@@ -11,9 +11,9 @@ using ObjCRuntime;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class DeviceInfo
+	partial class PlatformDeviceInfo
 	{
-		static string GetModel()
+		string GetModel()
 		{
 			try
 			{
@@ -26,25 +26,25 @@ namespace Microsoft.Maui.Essentials
 			return UIDevice.CurrentDevice.Model;
 		}
 
-		static string GetManufacturer() => "Apple";
+		string GetManufacturer() => "Apple";
 
-		static string GetDeviceName() => UIDevice.CurrentDevice.Name;
+		string GetDeviceName() => UIDevice.CurrentDevice.Name;
 
-		static string GetVersionString() => UIDevice.CurrentDevice.SystemVersion;
+		string GetVersionString() => UIDevice.CurrentDevice.SystemVersion;
 
-		static DevicePlatform GetPlatform() =>
+		DevicePlatform GetPlatform() =>
 #if __IOS__
 			DevicePlatform.iOS;
 #elif __TVOS__
-            DevicePlatform.tvOS;
+			DevicePlatform.tvOS;
 #elif __WATCHOS__
-            DevicePlatform.watchOS;
+			DevicePlatform.watchOS;
 #endif
 
-		static DeviceIdiom GetIdiom()
+		DeviceIdiom GetIdiom()
 		{
 #if __WATCHOS__
-            return DeviceIdiom.Watch;
+			return DeviceIdiom.Watch;
 #else
 			switch (UIDevice.CurrentDevice.UserInterfaceIdiom)
 			{
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Essentials
 #endif
 		}
 
-		static DeviceType GetDeviceType()
+		DeviceType GetDeviceType()
 			=> Runtime.Arch == Arch.DEVICE ? DeviceType.Physical : DeviceType.Virtual;
 	}
 }

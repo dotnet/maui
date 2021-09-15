@@ -156,8 +156,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public bool IsInvokeRequired => !_dispatcher?.HasThreadAccess ?? true;
 
-		public string RuntimePlatform => Device.UWP;
-
 		public void OpenUriAction(Uri uri)
 		{
 			Launcher.LaunchUriAsync(uri).WatchForError();

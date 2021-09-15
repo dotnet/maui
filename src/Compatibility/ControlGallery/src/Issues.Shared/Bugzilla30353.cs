@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 
 #if !UITEST
-			if (App.IOSVersion == 7 || Device.RuntimePlatform == Device.macOS)
+			if (App.IOSVersion == 7 || DeviceInfo.Platform == DevicePlatform.macOS)
 			{
 				lbl.Text = "Don't run";
 			}

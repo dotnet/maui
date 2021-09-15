@@ -144,9 +144,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			listView.ItemSelected += OnItemSelected;
 
 			Thickness padding;
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
-				case Device.iOS:
+				case DevicePlatform.iOS:
 					padding = new Thickness(0, 40, 0, 0);
 					break;
 				default:

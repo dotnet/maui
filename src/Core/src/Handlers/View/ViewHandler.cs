@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IViewHandler.ContainerView)] = MapContainerView,
 		};
 
-		public static CommandMapper<IView, ViewHandler> ViewCommandMapper = new()
+		public static CommandMapper<IView, ViewHandler> ViewCommandMapper = new(ElementHandler.ElementCommandMapper)
 		{
 			[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
 			[nameof(IView.Frame)] = MapFrame,

@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					HorizontalOptions = LayoutOptions.Start,
 					VerticalOptions = LayoutOptions.Start,
 					Orientation = this.Orientation,
-					WidthRequest = Device.RuntimePlatform == Device.UWP ? 20 : 50,
+					WidthRequest = DeviceInfo.Platform == DevicePlatform.Windows ? 20 : 50,
 				};
 
 				this.SetBinding(HeightRequestProperty, new Binding(nameof(Height), BindingMode.OneWay, source: showButton));
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				if (child != showButton && child is Button button)
 				{
-					if (Device.RuntimePlatform == Device.Android)
+					if (DeviceInfo.Platform == DevicePlatform.Android)
 					{
 						button.Clicked -= PopupStackLayout_Clicked;
 						button.Clicked += PopupStackLayout_Clicked;

@@ -39,19 +39,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Device.SetFlags(_flags);
 			}
 
-			[TestCase(true, "xamlDoubleImplicitOpHack")]
-			[TestCase(false, "xamlDoubleImplicitOpHack")]
-			[TestCase(true, null)]
-			[TestCase(false, null)]
-			public void Bz59818(bool useCompiledXaml, string flag)
+			[TestCase(true, true)]
+			[TestCase(false, true)]
+			[TestCase(true, false)]
+			[TestCase(false, false)]
+			public void Bz59818(bool useCompiledXaml, bool doubleImplicitOp)
 			{
-				Device.SetFlags(new List<string>(Device.Flags) {
-					flag
-				}.AsReadOnly());
+				XamlDoubleImplicitOperation.StaticResourceExtension = doubleImplicitOp;
 
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.iOS;
 
-				if (flag != "xamlDoubleImplicitOpHack")
+				if (!doubleImplicitOp)
 				{
 					if (useCompiledXaml)
 						Assert.Throws<InvalidCastException>(() => new Bz59818(useCompiledXaml));

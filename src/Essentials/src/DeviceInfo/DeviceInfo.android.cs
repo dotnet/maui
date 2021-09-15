@@ -6,15 +6,15 @@ using Android.Provider;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class DeviceInfo
+	partial class PlatformDeviceInfo
 	{
 		const int tabletCrossover = 600;
 
-		static string GetModel() => Build.Model;
+		string GetModel() => Build.Model;
 
-		static string GetManufacturer() => Build.Manufacturer;
+		string GetManufacturer() => Build.Manufacturer;
 
-		static string GetDeviceName()
+		string GetDeviceName()
 		{
 			// DEVICE_NAME added in System.Global in API level 25
 			// https://developer.android.com/reference/android/provider/Settings.Global#DEVICE_NAME
@@ -24,11 +24,11 @@ namespace Microsoft.Maui.Essentials
 			return name;
 		}
 
-		static string GetVersionString() => Build.VERSION.Release;
+		string GetVersionString() => Build.VERSION.Release;
 
-		static DevicePlatform GetPlatform() => DevicePlatform.Android;
+		DevicePlatform GetPlatform() => DevicePlatform.Android;
 
-		static DeviceIdiom GetIdiom()
+		DeviceIdiom GetIdiom()
 		{
 			var currentIdiom = DeviceIdiom.Unknown;
 
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Essentials
 			return currentIdiom;
 		}
 
-		static DeviceIdiom DetectIdiom(UiMode uiMode)
+		DeviceIdiom DetectIdiom(UiMode uiMode)
 		{
 			if (uiMode == UiMode.TypeNormal)
 				return DeviceIdiom.Unknown;
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Essentials
 			return DeviceIdiom.Unknown;
 		}
 
-		static DeviceType GetDeviceType()
+		DeviceType GetDeviceType()
 		{
 			var isEmulator =
 				(Build.Brand.StartsWith("generic", StringComparison.InvariantCulture) && Build.Device.StartsWith("generic", StringComparison.InvariantCulture)) ||
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Essentials
 			return DeviceType.Physical;
 		}
 
-		static string GetSystemSetting(string name, bool isGlobal = false)
+		string GetSystemSetting(string name, bool isGlobal = false)
 		{
 			if (isGlobal && Essentials.Platform.HasApiLevelNMr1)
 				return Settings.Global.GetString(Essentials.Platform.AppContext.ContentResolver, name);

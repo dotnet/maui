@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Essentials;
+using DeviceInfo = Microsoft.Maui.Essentials.DeviceInfo;
 
 namespace Microsoft.Maui.Controls
 {
@@ -35,7 +37,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (onPlat.Platform == null)
 					continue;
-				if (!onPlat.Platform.Contains(Device.RuntimePlatform))
+				if (!onPlat.Platform.Contains(DeviceInfo.Platform.ToString()))
 					continue;
 				if (s_valueConverter == null)
 					continue;

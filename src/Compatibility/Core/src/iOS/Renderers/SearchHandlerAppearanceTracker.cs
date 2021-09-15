@@ -1,6 +1,7 @@
 using System;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
@@ -290,7 +291,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			_uiSearchBar.ApplyKeyboard(keyboard);
 
 			// iPhone does not have an enter key on numeric keyboards
-			if (Device.Idiom == TargetIdiom.Phone && (keyboard == Keyboard.Numeric || keyboard == Keyboard.Telephone))
+			if (DeviceInfo.Idiom == DeviceIdiom.Phone && (keyboard == Keyboard.Numeric || keyboard == Keyboard.Telephone))
 			{
 				_numericAccessoryView = _numericAccessoryView ?? CreateNumericKeyboardAccessoryView();
 				_uiSearchBar.InputAccessoryView = _numericAccessoryView;

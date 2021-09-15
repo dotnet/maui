@@ -2,9 +2,11 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
 using NUnit.Framework;
+using DeviceInfo = Microsoft.Maui.Essentials.DeviceInfo;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -276,10 +278,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void TestOnIdiomDefault()
 		{
-			Device.Idiom = TargetIdiom.Tablet;
-			Assert.That((int)(new OnIdiom<int> { Tablet = 12, Default = 42 }), Is.EqualTo(12));
-			Device.Idiom = TargetIdiom.Watch;
-			Assert.That((int)(new OnIdiom<int> { Tablet = 12, Default = 42 }), Is.EqualTo(42));
+			var onIdiom = new OnIdiom<int> { Tablet = 12, Default = 42 };
+
+			((MockDeviceInfo)DeviceInfo.Current).Idiom = DeviceIdiom.Tablet;
+			Assert.That((int)onIdiom, Is.EqualTo(12));
+
+			((MockDeviceInfo)DeviceInfo.Current).Idiom = DeviceIdiom.Phone;
+			Assert.That((int)onIdiom, Is.EqualTo(42));
+
+			((MockDeviceInfo)DeviceInfo.Current).Idiom = DeviceIdiom.Watch;
+			Assert.That((int)onIdiom, Is.EqualTo(42));
 		}
 
 		[Test]

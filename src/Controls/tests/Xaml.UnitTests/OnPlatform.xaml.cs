@@ -38,11 +38,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true)]
 			public void BoolToVisibility(bool useCompiledXaml)
 			{
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.iOS;
 				var layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(true, layout.label0.IsVisible);
 
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.Android;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(false, layout.label0.IsVisible);
 			}
@@ -51,11 +51,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true)]
 			public void DoubleToWidth(bool useCompiledXaml)
 			{
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.iOS;
 				var layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(20, layout.label0.WidthRequest);
 
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.Android;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(30, layout.label0.WidthRequest);
 			}
@@ -64,11 +64,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true)]
 			public void StringToText(bool useCompiledXaml)
 			{
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.iOS;
 				var layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual("Foo", layout.label0.Text);
 
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.Android;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual("Bar", layout.label0.Text);
 			}
@@ -80,9 +80,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var layout = new OnPlatform(useCompiledXaml);
 				var onplat = layout.Resources["fontAttributes"] as OnPlatform<FontAttributes>;
 				Assert.NotNull(onplat);
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.iOS;
 				Assert.AreEqual(FontAttributes.Bold, (FontAttributes)onplat);
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.Android;
 				Assert.AreEqual(FontAttributes.Italic, (FontAttributes)onplat);
 
 			}
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true)]
 			public void OnPlatformAsResourceAreApplied(bool useCompiledXaml)
 			{
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.iOS;
 				var layout = new OnPlatform(useCompiledXaml);
 				var onidiom = layout.Resources["fontSize"] as OnIdiom<double>;
 				Assert.NotNull(onidiom);
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual(20, onidiom.Phone);
 				Assert.AreEqual(FontAttributes.Bold, layout.label0.FontAttributes);
 
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.Android;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(FontAttributes.Italic, layout.label0.FontAttributes);
 			}
@@ -108,11 +108,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true)]
 			public void OnPlatform2Syntax(bool useCompiledXaml)
 			{
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.Android;
 				var layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(42, layout.label0.HeightRequest);
 
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.iOS;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(21, layout.label0.HeightRequest);
 

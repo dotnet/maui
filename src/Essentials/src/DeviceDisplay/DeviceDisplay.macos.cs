@@ -4,12 +4,12 @@ using Foundation;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class DeviceDisplay
+	partial class PlatformDeviceDisplay
 	{
-		static uint keepScreenOnId = 0;
-		static NSObject screenMetricsObserver;
+		uint keepScreenOnId = 0;
+		NSObject screenMetricsObserver;
 
-		static bool PlatformKeepScreenOn
+		bool PlatformKeepScreenOn
 		{
 			get
 			{
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static DisplayInfo GetMainDisplayInfo()
+		DisplayInfo GetMainDisplayInfo()
 		{
 			var mainScreen = NSScreen.MainScreen;
 			var frame = mainScreen.Frame;
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Essentials
 				rate: (float)refreshRate);
 		}
 
-		static void StartScreenMetricsListeners()
+		void StartScreenMetricsListeners()
 		{
 			if (screenMetricsObserver == null)
 			{
@@ -65,12 +65,12 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static void StopScreenMetricsListeners()
+		void StopScreenMetricsListeners()
 		{
 			screenMetricsObserver?.Dispose();
 		}
 
-		static void OnDidChangeScreenParameters(NSNotification notification)
+		void OnDidChangeScreenParameters(NSNotification notification)
 		{
 			var metrics = GetMainDisplayInfo();
 			OnMainDisplayInfoChanged(metrics);

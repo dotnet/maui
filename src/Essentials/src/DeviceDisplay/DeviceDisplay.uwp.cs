@@ -4,12 +4,12 @@ using Windows.System.Display;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class DeviceDisplay
+	partial class PlatformDeviceDisplay
 	{
-		static readonly object locker = new object();
-		static DisplayRequest displayRequest;
+		readonly object locker = new object();
+		DisplayRequest displayRequest;
 
-		static bool PlatformKeepScreenOn
+		bool PlatformKeepScreenOn
 		{
 			get
 			{
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static DisplayInfo GetMainDisplayInfo(DisplayInformation di = null)
+		DisplayInfo GetMainDisplayInfo(DisplayInformation di = null)
 		{
 			di = di ?? DisplayInformation.GetForCurrentView();
 
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Essentials
 				rate: (float)(hdm?.RefreshRate ?? 0));
 		}
 
-		static void StartScreenMetricsListeners()
+		void StartScreenMetricsListeners()
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
 			{
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Essentials
 			});
 		}
 
-		static void StopScreenMetricsListeners()
+		void StopScreenMetricsListeners()
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
 			{
@@ -89,13 +89,13 @@ namespace Microsoft.Maui.Essentials
 			});
 		}
 
-		static void OnDisplayInformationChanged(DisplayInformation di, object args)
+		void OnDisplayInformationChanged(DisplayInformation di, object args)
 		{
 			var metrics = GetMainDisplayInfo(di);
 			OnMainDisplayInfoChanged(metrics);
 		}
 
-		static DisplayOrientation CalculateOrientation(DisplayInformation di)
+		DisplayOrientation CalculateOrientation(DisplayInformation di)
 		{
 			switch (di.CurrentOrientation)
 			{
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Essentials
 			return DisplayOrientation.Unknown;
 		}
 
-		static DisplayRotation CalculateRotation(DisplayInformation di)
+		DisplayRotation CalculateRotation(DisplayInformation di)
 		{
 			var native = di.NativeOrientation;
 			var current = di.CurrentOrientation;

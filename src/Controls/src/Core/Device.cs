@@ -6,37 +6,41 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	public static class Device
 	{
+		[Obsolete("Use Essentials.DevicePlatform.iOS instead.")]
 		public const string iOS = "iOS";
+		[Obsolete("Use Essentials.DevicePlatform.Android instead.")]
 		public const string Android = "Android";
+		[Obsolete("Use Essentials.DevicePlatform.Windows instead.")]
 		public const string UWP = "UWP";
+		[Obsolete("Use Essentials.DevicePlatform.macOS instead.")]
 		public const string macOS = "macOS";
+		[Obsolete("Use Essentials.DevicePlatform instead.")]
 		public const string GTK = "GTK";
+		[Obsolete("Use Essentials.DevicePlatform.Tizen instead.")]
 		public const string Tizen = "Tizen";
+		[Obsolete("Use Essentials.DevicePlatform.Windows instead.")]
 		public const string WPF = "WPF";
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static DeviceInfo info;
+		public static Internals.DeviceInfo info;
 
 		static IPlatformServices s_platformServices;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetIdiom(TargetIdiom value) => Idiom = value;
-		public static TargetIdiom Idiom { get; internal set; }
+		[Obsolete("Use Essentials.DeviceInfo.Idiom instead.")]
+		public static DeviceIdiom Idiom => Essentials.DeviceInfo.Idiom;
 
-		//TODO: Why are there two of these? This is never used...?
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
-
-		public static string RuntimePlatform => PlatformServices.RuntimePlatform;
+		[Obsolete("Use Essentials.DeviceInfo.Platform instead.")]
+		public static DevicePlatform RuntimePlatform => Essentials.DeviceInfo.Platform;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static DeviceInfo Info
+		public static Internals.DeviceInfo Info
 		{
 			get
 			{
@@ -75,15 +79,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public static IPlatformInvalidate PlatformInvalidator { get; set; }
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IReadOnlyList<string> Flags { get; private set; }
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetFlags(IReadOnlyList<string> flags)
-		{
-			Flags = flags;
-		}
 
 		public static void BeginInvokeOnMainThread(Action action)
 		{

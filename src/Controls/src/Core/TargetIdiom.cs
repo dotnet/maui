@@ -1,5 +1,8 @@
+using System;
+
 namespace Microsoft.Maui.Controls
 {
+	[Obsolete("Use Essentials.DeviceIdiom instead.")]
 	public enum TargetIdiom
 	{
 		Unsupported,

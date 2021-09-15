@@ -34,11 +34,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(false)]
 			public void BindingInOnPlatform(bool useCompiledXaml)
 			{
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.iOS;
 				var p = new Bz44213(useCompiledXaml);
 				p.BindingContext = new { Foo = "Foo", Bar = "Bar" };
 				Assert.AreEqual("Foo", p.label.Text);
-				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = DevicePlatform.Android;
 				p = new Bz44213(useCompiledXaml);
 				p.BindingContext = new { Foo = "Foo", Bar = "Bar" };
 				Assert.AreEqual("Bar", p.label.Text);

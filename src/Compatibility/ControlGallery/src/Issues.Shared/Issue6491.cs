@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				FontFamily = "FontAwesome5Free-Solid"
 			};
 
-			if (Device.RuntimePlatform == Device.UWP)
+			if (DeviceInfo.Platform == DevicePlatform.Windows)
 				((FontImageSource)button.ImageSource).FontFamily = "Assets/Fonts/fa-solid-900.ttf#Font Awesome 5 Free";
 
 			stack.Children.Add(label);

@@ -21,8 +21,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 
 			if (renderer == null
 				|| renderer.GetType().Name == "DefaultRenderer"
-				|| (element is FlyoutPage && Device.Idiom == TargetIdiom.Tablet && !(renderer is TabletFlyoutPageRenderer))
-				|| (element is FlyoutPage && Device.Idiom == TargetIdiom.Phone && !(renderer is PhoneFlyoutPageRenderer))
+				|| (element is FlyoutPage && DeviceInfo.Idiom == DeviceIdiom.Tablet && !(renderer is TabletFlyoutPageRenderer))
+				|| (element is FlyoutPage && DeviceInfo.Idiom == DeviceIdiom.Phone && !(renderer is PhoneFlyoutPageRenderer))
 				)
 			{
 				message = $"Failed to load proper iOS renderer for {element.GetType().Name}";

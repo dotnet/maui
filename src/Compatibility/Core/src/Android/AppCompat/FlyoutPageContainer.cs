@@ -5,8 +5,10 @@ using Android.Views;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Graphics;
 using APlatform = Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform;
+using DeviceInfo = Microsoft.Maui.Essentials.DeviceInfo;
 using Fragment = AndroidX.Fragment.App.Fragment;
 using FragmentContainer = Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat.FragmentContainer;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
@@ -285,7 +287,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				//if we are showing the normal popover master doesn't have padding
 				supressPadding = isFlyoutPage;
 				//popover make the master smaller
-				width = isFlyoutPage && (Device.Info.CurrentOrientation.IsLandscape() || Device.Idiom == TargetIdiom.Tablet) ? DefaultWidthFlyout : width;
+				width = isFlyoutPage && (Device.Info.CurrentOrientation.IsLandscape() || DeviceInfo.Idiom == DeviceIdiom.Tablet) ? DefaultWidthFlyout : width;
 			}
 
 			double padding = supressPadding ? 0 : Context.FromPixels(TopPadding);

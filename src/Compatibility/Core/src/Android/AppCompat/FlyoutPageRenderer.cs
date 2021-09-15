@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 	using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 	using Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers;
 	using Microsoft.Maui.Controls.Platform;
+	using Microsoft.Maui.Essentials;
 	using Microsoft.Maui.Graphics;
 
 	public class FlyoutPageRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener, IManageFragments, ILifeCycleState
@@ -486,7 +487,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void UpdateSplitViewLayout()
 		{
-			if (Device.Idiom == TargetIdiom.Tablet)
+			if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
 			{
 				bool isShowingSplit = FlyoutPageController.ShouldShowSplitMode || (FlyoutPageController.ShouldShowSplitMode && Element.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Default && Element.IsPresented);
 				SetLockMode(isShowingSplit ? LockModeLockedOpen : LockModeUnlocked);

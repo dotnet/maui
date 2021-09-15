@@ -3,13 +3,14 @@ using System.Globalization;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Default))]
 	public class OnIdiomExtension : IMarkupExtension
 	{
-		// See Device.Idiom
+		// See DeviceInfo.Idiom
 
 		public object Default { get; set; }
 		public object Phone { get; set; }
@@ -101,21 +102,18 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		object GetValue()
 		{
-			switch (Device.Idiom)
-			{
-				case TargetIdiom.Phone:
-					return Phone ?? Default;
-				case TargetIdiom.Tablet:
-					return Tablet ?? Default;
-				case TargetIdiom.Desktop:
-					return Desktop ?? Default;
-				case TargetIdiom.TV:
-					return TV ?? Default;
-				case TargetIdiom.Watch:
-					return Watch ?? Default;
-				default:
-					return Default;
-			}
+			var idiom = DeviceInfo.Idiom;
+			if (idiom == DeviceIdiom.Phone)
+				return Phone ?? Default;
+			if (idiom == DeviceIdiom.Tablet)
+				return Tablet ?? Default;
+			if (idiom == DeviceIdiom.Desktop)
+				return Desktop ?? Default;
+			if (idiom == DeviceIdiom.TV)
+				return TV ?? Default;
+			if (idiom == DeviceIdiom.Watch)
+				return Watch ?? Default;
+			return Default;
 		}
 	}
 }

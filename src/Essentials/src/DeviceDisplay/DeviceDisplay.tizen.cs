@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Maui.Essentials
 {
-	public static partial class DeviceDisplay
+	partial class PlatformDeviceDisplay
 	{
 		[DllImport("libcapi-system-device.so.0", EntryPoint = "device_power_request_lock")]
 		static extern void RequestKeepScreenOn(int type = 1, int timeout = 0);
@@ -11,9 +11,9 @@ namespace Microsoft.Maui.Essentials
 		[DllImport("libcapi-system-device.so.0", EntryPoint = "device_power_release_lock")]
 		static extern void ReleaseKeepScreenOn(int type = 1);
 
-		static bool keepScreenOn = false;
+		bool keepScreenOn = false;
 
-		static bool PlatformKeepScreenOn
+		bool PlatformKeepScreenOn
 		{
 			get => keepScreenOn;
 			set
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Essentials
 			}
 		}
 
-		static DisplayInfo GetMainDisplayInfo()
+		DisplayInfo GetMainDisplayInfo()
 		{
 			var display = Platform.MainWindow;
 			return new DisplayInfo(
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Essentials
 				rotation: GetRotation());
 		}
 
-		static DisplayOrientation GetOrientation()
+		DisplayOrientation GetOrientation()
 		{
 			return Platform.MainWindow.Rotation switch
 			{
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Essentials
 			};
 		}
 
-		static DisplayRotation GetRotation()
+		DisplayRotation GetRotation()
 		{
 			return Platform.MainWindow.Rotation switch
 			{
@@ -61,17 +61,17 @@ namespace Microsoft.Maui.Essentials
 			};
 		}
 
-		static void StartScreenMetricsListeners()
+		void StartScreenMetricsListeners()
 		{
 			Platform.MainWindow.RotationChanged += OnRotationChanged;
 		}
 
-		static void StopScreenMetricsListeners()
+		void StopScreenMetricsListeners()
 		{
 			Platform.MainWindow.RotationChanged -= OnRotationChanged;
 		}
 
-		static void OnRotationChanged(object s, EventArgs e)
+		void OnRotationChanged(object s, EventArgs e)
 		{
 			OnMainDisplayInfoChanged(GetMainDisplayInfo());
 		}

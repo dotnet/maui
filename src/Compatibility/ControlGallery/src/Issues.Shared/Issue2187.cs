@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "\uf0c9"
 			};
 
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
 				case Device.WPF:
 					issueTestLabel1.FontFamily = "/Microsoft.Maui.Controls.ControlGallery.WPF;component/Assets/#FontAwesome";
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "\uf0e9"
 			};
 
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
 				case Device.WPF:
 					issueTestLabel2.FontFamily = "/Meziantou.WpfFontAwesome;component/Resources/#FontAwesome";
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "Hello, I'm in Pick Ax font"
 			};
 
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
 				case Device.WPF:
 					issueTestLabel3.FontFamily = "/Assets/#Pick Ax";
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "Hello, I'm in Pick Ax font"
 			};
 
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
 				case Device.WPF:
 					span.FontFamily = "/Assets/#Pick Ax";
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "Hello, I'm in Button - Pick Ax font"
 			};
 
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
 				case Device.WPF:
 					issueTestButton1.FontFamily = "/Assets/#Pick Ax";

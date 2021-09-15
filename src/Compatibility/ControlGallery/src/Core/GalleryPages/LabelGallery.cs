@@ -78,16 +78,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			bolditalic.FontAttributes = FontAttributes.Bold | FontAttributes.Italic;
 
 			string fontName;
-			switch (Device.RuntimePlatform)
+			switch (DeviceInfo.Platform)
 			{
 				default:
-				case Device.iOS:
+				case DevicePlatform.iOS:
 					fontName = "Georgia";
 					break;
-				case Device.Android:
+				case DevicePlatform.Android:
 					fontName = "sans-serif-light";
 					break;
-				case Device.UWP:
+				case DevicePlatform.Windows:
 					fontName = "Comic Sans MS";
 					break;
 			}
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			Thickness padding = new Thickness(20);
 			// Padding Adjust for iPad
-			if (Device.RuntimePlatform == Device.iOS && Device.Idiom == TargetIdiom.Tablet)
+			if (DeviceInfo.Platform == DevicePlatform.iOS && DeviceInfo.Idiom == DeviceIdiom.Tablet)
 				Padding = new Thickness(20, 20, 20, 60);
 
 			Content = new ScrollView
