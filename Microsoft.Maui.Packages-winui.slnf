@@ -17,6 +17,8 @@
       "src\\Core\\src\\Core-net6.csproj",
       "src\\Essentials\\src\\Essentials-net6.csproj",
       "src\\SingleProject\\Resizetizer\\src\\Resizetizer.csproj",
+      "src\\SourceGen\\src\\Core\\SourceGen.Core.csproj",
+      "src\\SourceGen\\src\\Util\\SourceGen.Util.csproj",
       "src\\Templates\\src\\Microsoft.Maui.Templates.csproj"
     ]
   }

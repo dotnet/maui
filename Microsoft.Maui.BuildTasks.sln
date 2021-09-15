@@ -30,6 +30,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.SourceGen", "src\C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Essentials", "src\Essentials\src\Essentials.csproj", "{9810F7C0-827B-48A4-8634-0B71A18B563F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGen.Util", "src\SourceGen\src\Util\SourceGen.Util.csproj", "{7BC4A2FD-1CA5-4418-852C-CA318996009B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGen.Core", "src\SourceGen\src\Core\SourceGen.Core.csproj", "{FF01E88E-C8FE-4D36-AFE4-87694E1528DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +68,14 @@ Global
 		{9810F7C0-827B-48A4-8634-0B71A18B563F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9810F7C0-827B-48A4-8634-0B71A18B563F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9810F7C0-827B-48A4-8634-0B71A18B563F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BC4A2FD-1CA5-4418-852C-CA318996009B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BC4A2FD-1CA5-4418-852C-CA318996009B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BC4A2FD-1CA5-4418-852C-CA318996009B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BC4A2FD-1CA5-4418-852C-CA318996009B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF01E88E-C8FE-4D36-AFE4-87694E1528DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF01E88E-C8FE-4D36-AFE4-87694E1528DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF01E88E-C8FE-4D36-AFE4-87694E1528DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF01E88E-C8FE-4D36-AFE4-87694E1528DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

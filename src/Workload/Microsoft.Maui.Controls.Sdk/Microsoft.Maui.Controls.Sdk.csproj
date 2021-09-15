@@ -18,6 +18,8 @@
   <ItemGroup>
     <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/Build.Tasks/Controls.Build.Tasks-net6.csproj" />
     <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/SourceGen/Controls.SourceGen.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)src/SourceGen/src/Util/SourceGen.Util.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)src/SourceGen/src/Core/SourceGen.Core.csproj" />
   </ItemGroup>
 
   <Import Project="$(MauiRootDirectory)eng/ReplaceText.targets" />
