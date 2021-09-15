@@ -97,7 +97,7 @@ namespace Maui.Controls.Sample
 				{
 					PageType.Template => typeof(TemplatePage),
 					PageType.Shell => typeof(AppShell),
-					PageType.Main => typeof(ShadowPage),
+					PageType.Main => typeof(CustomNavigationPage),
 					PageType.Blazor =>
 #if NET6_0_OR_GREATER
 								typeof(BlazorPage),
