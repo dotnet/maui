@@ -15,9 +15,8 @@ using Windows.Graphics.Imaging;
 
 namespace Microsoft.Maui
 {
-	public static class ShadowExtensions
+	internal static class ShadowExtensions
 	{
-
 		public static async Task<CompositionBrush> GetAlphaMaskAsync(this UIElement element)
 		{
 			CompositionBrush mask = null;
@@ -75,6 +74,5 @@ namespace Microsoft.Maui
 
 			return mask;
 		}
-
 	}
 }

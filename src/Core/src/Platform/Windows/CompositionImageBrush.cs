@@ -10,7 +10,7 @@ using Windows.Graphics.Imaging;
 
 namespace Microsoft.Maui
 {
-    public class CompositionImageBrush : IDisposable
+    class CompositionImageBrush : IDisposable
     {
         CompositionGraphicsDevice _graphicsDevice;
         CompositionDrawingSurface _drawingSurface;

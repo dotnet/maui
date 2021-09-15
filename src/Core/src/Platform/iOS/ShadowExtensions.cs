@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	public static class ShadowExtensions
+	internal static class ShadowExtensions
 	{
 		public static void SetShadow(this UIView nativeView, IShadow? shadow)
 		{
