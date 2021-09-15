@@ -30,7 +30,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(IncludeWindowsTargetFrameworks)' != 'true'">
     <PackageReference Remove="@(PackageReference)" />
-    <Manifest Remove="@(Content)" />
+    <Manifest Remove="@(Manifest)" />
     <AppxManifest Remove="@(AppxManifest)" />
   </ItemGroup>
 

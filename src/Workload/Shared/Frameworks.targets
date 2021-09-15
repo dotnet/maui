@@ -49,7 +49,7 @@
 
   <ItemGroup>
     <_Platforms Include="any;android;maccatalyst;ios" />
-    <_Platforms Include="win" />
+    <_Platforms Include="win" Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'" />
   </ItemGroup>
 
   <Target Name="_PackPerPlatform" Condition=" '$(MauiPlatformName)' == '' " AfterTargets="Build">
