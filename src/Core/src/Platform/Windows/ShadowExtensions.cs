@@ -24,6 +24,8 @@ namespace Microsoft.Maui
 
 			try
 			{
+				//For some reason, using  TextBlock and getting the AlphaMask
+                //generates a shadow with a size more smaller than the control size. 
 				if (element is TextBlock textElement)
 				{
 					mask = textElement.GetAlphaMask();
