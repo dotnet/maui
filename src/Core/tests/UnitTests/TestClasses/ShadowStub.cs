@@ -4,12 +4,12 @@ namespace Microsoft.Maui.UnitTests
 {
 	class ShadowStub : IShadow
 	{
-		public double Radius { get; set; }
+		public float Radius { get; set; }
 
-		public double Opacity { get; set; }
+		public float Opacity { get; set; }
 
 		public Paint Paint { get; set; }
 
-		public Size Offset { get; set; }
+		public Point Offset { get; set; }
 	}
 }

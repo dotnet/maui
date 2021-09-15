@@ -15,7 +15,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 		{
 			var xPlatShadow = new ShadowStub
 			{
-				Offset = new Size(10, 10),
+				Offset = new Point(10, 10),
 				Opacity = 1.0f,
 				Radius = 2.0f
 			};

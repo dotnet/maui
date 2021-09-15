@@ -10,7 +10,7 @@ namespace Microsoft.Maui.UnitTests
 		public void ShadowInitializesCorrectly()
 		{
 			var expectedColor = new SolidPaint(Colors.Red);
-			var expectedOffset = new Size(10, 10);
+			var expectedOffset = new Point(10, 10);
 			var expectedOpacity = 1.0f;
 			var expectedRadius = 10.0f;
 
