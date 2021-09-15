@@ -106,4 +106,16 @@
     <Content Include="xamarinstore.jpg" />
   </ItemGroup>
 
+  <!-- When not building for Windows, make sure to remove all things. -->
+  <PropertyGroup Condition="'$(IncludeWindowsTargetFrameworks)' != 'true'">
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <EnableDefaultItems>false</EnableDefaultItems>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(IncludeWindowsTargetFrameworks)' != 'true'">
+    <PackageReference Remove="@(PackageReference)" />
+    <Manifest Remove="@(Content)" />
+    <AppxManifest Remove="@(AppxManifest)" />
+  </ItemGroup>
+
 </Project>

@@ -2,11 +2,10 @@
   <Import Project="eng\Versions.props" />
 
   <PropertyGroup>
-    <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full'">True</IncludeWindowsTargetFrameworks>
-    <BuildForAndroidOnly Condition="$(SolutionFileName.StartsWith('._Microsoft.Maui.Droid'))">true</BuildForAndroidOnly>
-    <BuildForiOSOnly Condition="$(SolutionFileName.StartsWith('._Microsoft.Maui.iOS'))">true</BuildForiOSOnly>
-    <BuildForNet6>true</BuildForNet6>
-    <BuildForLegacy Condition="$(SolutionFileName.StartsWith('._')) and !$(SolutionFileName.Contains('-net6'))">true</BuildForLegacy>
+    <IncludeWindowsTargetFrameworks Condition="($([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full') or ('$(Packing)' == 'true')">true</IncludeWindowsTargetFrameworks>
+    <BuildForAndroidOnly Condition="$(SolutionFileName.StartsWith('._Microsoft.Maui.Droid')) and '$(Packing)' == ''">true</BuildForAndroidOnly>
+    <BuildForiOSOnly Condition="$(SolutionFileName.StartsWith('._Microsoft.Maui.iOS')) and '$(Packing)' == ''">true</BuildForiOSOnly>
+    <BuildForLegacy Condition="$(SolutionFileName.StartsWith('._')) and !$(SolutionFileName.Contains('-net6')) and '$(Packing)' == ''">true</BuildForLegacy>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,18 +23,18 @@
     <!-- the real TFMs -->
     <MauiPlatforms>net6.0-ios;net6.0-maccatalyst;net6.0-android</MauiPlatforms>
     <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">net6.0-windows10.0.19041;net6.0-windows10.0.18362</WindowsMauiPlatforms>
-    <MauiPlatforms Condition="'$(Packing)' == 'true' or '$(IncludeWindowsTargetFrameworks)' == 'True'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(Packing)' == 'true' or '$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
 
     <!-- Work around the IDE not properly handling the NU1703 warning -->
     <MauiPlatformsNoMacCat>net6.0-ios;net6.0-android</MauiPlatformsNoMacCat>
-    <MauiPlatformsNoMacCat Condition="'$(Packing)' == 'true' or '$(IncludeWindowsTargetFrameworks)' == 'True'">$(MauiPlatformsNoMacCat);$(WindowsMauiPlatforms)</MauiPlatformsNoMacCat>
+    <MauiPlatformsNoMacCat Condition="'$(Packing)' == 'true' or '$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatformsNoMacCat);$(WindowsMauiPlatforms)</MauiPlatformsNoMacCat>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BuildForLegacy)' == 'True'">
+  <PropertyGroup Condition="'$(BuildForLegacy)' == 'true'">
     <!-- the legacy TFMs -->
     <MauiPlatforms>Xamarin.iOS10;MonoAndroid10.0</MauiPlatforms>
     <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">uap10.0.16299</WindowsMauiPlatforms>
-    <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'True'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
     <MauiAdditionalPlatforms>MonoAndroid90;tizen40;Xamarin.Mac20</MauiAdditionalPlatforms>
 
     <!-- This is used to easily build for a specific target to make the IDE work a bit better -->
