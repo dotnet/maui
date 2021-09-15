@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<NavigationPage>>(() => new PlatformConfigurationRegistry<NavigationPage>(this));
 
-#if __ANDROID__
+#if __ANDROID__ || WINDOWS
 			Navigation = new MauiNavigationImpl(this);
 #else
 			Navigation = new NavigationImpl(this);
@@ -172,6 +172,14 @@ namespace Microsoft.Maui.Controls
 
 		public async Task<Page> PopAsync(bool animated)
 		{
+			if (Navigation is MauiNavigationImpl && this is INavigationView nv)
+			{
+				var poppedPage = (Page)InternalChildren[InternalChildren.Count - 1];
+				RemoveFromInnerChildren(poppedPage);
+				await this.SendHandlerUpdateAsync(true, pop: true);
+				return poppedPage;
+			}
+
 			var tcs = new TaskCompletionSource<bool>();
 			try
 			{

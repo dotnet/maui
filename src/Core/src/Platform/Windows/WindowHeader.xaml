@@ -1,0 +1,25 @@
+<CommandBar
+    x:Class="Microsoft.Maui.WindowHeader"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" Background="Transparent">
+    <CommandBar.Content>
+        <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Image x:Name="titleIcon" Grid.Column="0" />
+
+            <TextBlock x:Name="title" Grid.Column="1" TextWrapping="NoWrap" VerticalAlignment="Center" Margin="10,0,0,0"/>
+
+            <ContentControl x:Name="TitleView" Grid.Column="2" HorizontalAlignment="Stretch" />
+
+        </Grid>
+    </CommandBar.Content>
+</CommandBar>

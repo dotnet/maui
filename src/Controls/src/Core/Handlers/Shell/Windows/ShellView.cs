@@ -490,7 +490,7 @@ namespace Microsoft.Maui.Controls.Platform
 		void IFlyoutBehaviorObserver.OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
 		{
 			_flyoutBehavior = behavior;
-			UpdateToolBar();
+			UpdateToolBar();			
 		}
 
 		public virtual ShellFlyoutTemplateSelector CreateShellFlyoutTemplateSelector() => new ShellFlyoutTemplateSelector();
