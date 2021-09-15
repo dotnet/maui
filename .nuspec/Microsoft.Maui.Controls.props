@@ -10,6 +10,19 @@
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ManifestResourceName" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="TargetPath" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RelativePath" />
+
+    <!-- MauiFont items -->
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="FontAlias" Visible="false" />
+
+    <!-- Properties for App Host Generator -->
+    <CompilerVisibleProperty Include="UseMaui" />
+    <CompilerVisibleProperty Include="SingleProject" />
+    <CompilerVisibleProperty Include="OutputType" />
+    <CompilerVisibleProperty Include="TargetPlatformIdentifier" />
+    <CompilerVisibleProperty Include="ApplicationTitle" />
+    <CompilerVisibleProperty Include="EnableMauiFontConfigurationSourceGen" />
+    <CompilerVisibleProperty Include="EnableMauiAppBuilderSourceGen" />
 	</ItemGroup>
 
 </Project>
