@@ -14,7 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Microsoft.Maui.*/*.csproj" />
+    <!-- NOTE: Microsoft.Maui.Resizetizer.Sdk.csproj temporarily replaced by Resizetizer.csproj -->
+    <ProjectReference Include="../Microsoft.Maui.*/*.csproj" Exclude="../Microsoft.Maui.Resizetizer.Sdk/*" />
+    <ProjectReference Include="$(MauiRootDirectory)src/SingleProject/Resizetizer/src/Resizetizer.csproj" />
   </ItemGroup>
 
   <Target Name="_GenerateWorkloadManifest" BeforeTargets="Build;AssignTargetPaths" DependsOnTargets="SetVersions" Inputs="$(MSBuildProjectFile);WorkloadManifest.in.json" Outputs="$(IntermediateOutputPath)WorkloadManifest.json">
