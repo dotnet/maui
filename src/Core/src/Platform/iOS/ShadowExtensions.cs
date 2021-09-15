@@ -21,14 +21,14 @@ namespace Microsoft.Maui
 			if (shadow == null || shadow.Paint?.ToColor() == null)
 				return;
 
-			var radius = (float)shadow.Radius;
+			var radius = shadow.Radius;
 			var opacity = shadow.Opacity;
 			var color = shadow.Paint.ToColor()?.ToNative();
 
-			var offset = new CGSize((double)shadow.Offset.Width, (double)shadow.Offset.Height);
+			var offset = new CGSize((double)shadow.Offset.X, (double)shadow.Offset.Y);
 
 			layer.ShadowColor = color?.CGColor;
-			layer.ShadowOpacity = (float)opacity;
+			layer.ShadowOpacity = opacity;
 			layer.ShadowRadius = radius;
 			layer.ShadowOffset = offset;
 

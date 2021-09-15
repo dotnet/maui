@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.UI.Xaml.Media;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WGradientStop = Microsoft.UI.Xaml.Media.GradientStop;
 using WLinearGradientBrush = Microsoft.UI.Xaml.Media.LinearGradientBrush;

@@ -4,12 +4,12 @@ namespace Microsoft.Maui
 {
 	public interface IShadow
 	{
-		double Radius { get; }
+		float Radius { get; }
 
-		double Opacity { get; }
+		float Opacity { get; }
 
 		Paint Paint { get; }
 
-		Size Offset { get; }
+		Point Offset { get; }
 	}
 }

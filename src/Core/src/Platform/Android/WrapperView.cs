@@ -191,7 +191,7 @@ namespace Microsoft.Maui
 					}
 
 					// Apply the shadow radius 
-					var radius = (float)Shadow.Radius;
+					var radius = Shadow.Radius;
 
 					if (radius <= 0)
 						radius = 0.01f;
@@ -201,8 +201,8 @@ namespace Microsoft.Maui
 
 					_shadowPaint.SetMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.Normal));
 
-					float shadowOffsetX = (float)Shadow.Offset.Width;
-					float shadowOffsetY = (float)Shadow.Offset.Height;
+					float shadowOffsetX = (float)Shadow.Offset.X;
+					float shadowOffsetY = (float)Shadow.Offset.Y;
 
 					if (Clip == null)
 					{

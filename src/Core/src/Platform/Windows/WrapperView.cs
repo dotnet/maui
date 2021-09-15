@@ -208,12 +208,12 @@ namespace Microsoft.Maui
 			float blurRadius = 1;
 			float opacity = 0;
 			var shadowColor = Graphics.Colors.Transparent;
-			var offset = new Graphics.Size(1, 1);
+			var offset = new Graphics.Point(1, 1);
 
 			if (mauiShadow != null)
 			{
-				blurRadius = (float)mauiShadow.Radius * 2;
-				opacity = (float)mauiShadow.Opacity;
+				blurRadius = mauiShadow.Radius * 2;
+				opacity = mauiShadow.Opacity;
 				shadowColor = mauiShadow.Paint.ToColor();
 				offset = mauiShadow.Offset;
 			}
@@ -222,7 +222,7 @@ namespace Microsoft.Maui
 			dropShadow.Opacity = opacity;
 			if (shadowColor != null)
 				dropShadow.Color = shadowColor.ToWindowsColor();
-			dropShadow.Offset = new Vector3((float)offset.Width, (float)offset.Height, 0);
+			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
 		}
 
 	}

@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.Pages
 			if (ShadowViewGradient.Shadow == null)
 				return;
 
-            var offset = new Size((float)ShadowOffsetXSlider.Value, (float)ShadowOffsetYSlider.Value);
+            var offset = new Point(ShadowOffsetXSlider.Value, ShadowOffsetYSlider.Value);
 			ShadowViewGradient.Shadow.Offset = offset;
 			ShadowView.Shadow.Offset = offset;
 			ClippedShadowView.Shadow.Offset = offset;

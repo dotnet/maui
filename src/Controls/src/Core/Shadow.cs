@@ -4,46 +4,37 @@ namespace Microsoft.Maui.Controls
 {
 	public class Shadow : Element, IShadow
 	{
-		public static readonly BindableProperty RadiusProperty = BindableProperty.Create(nameof(Radius), typeof(double), typeof(Shadow), 10d);
+		public static readonly BindableProperty RadiusProperty = BindableProperty.Create(nameof(Radius), typeof(float), typeof(Shadow), 10f);
 
-		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(Shadow), 1d);
+		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(float), typeof(Shadow), 1f);
 
 		public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Brush), typeof(Shadow), null);
 
-		public static readonly BindableProperty OffsetProperty = BindableProperty.Create(nameof(Offset), typeof(Size), typeof(Shadow), null);
+		public static readonly BindableProperty OffsetProperty = BindableProperty.Create(nameof(Offset), typeof(Point), typeof(Shadow), null);
 
 		Paint IShadow.Paint => Color;
 
-		public double Radius
+		public float Radius
 		{
-			get { return (double)GetValue(RadiusProperty); }
-			set
-			{
-				SetValue(RadiusProperty, value);
-			}
+			get { return (float)GetValue(RadiusProperty); }
+			set { SetValue(RadiusProperty, value); }
 		}
 
-		public double Opacity
+		public float Opacity
 		{
-			get { return (double)GetValue(OpacityProperty); }
-			set
-			{
-				SetValue(OpacityProperty, value);
-			}
+			get { return (float)GetValue(OpacityProperty); }
+			set { SetValue(OpacityProperty, value); }
 		}
 
 		public Brush Color
 		{
 			get { return (Brush)GetValue(ColorProperty); }
-			set 
-			{ 
-				SetValue(ColorProperty, value); 
-			}
+			set { SetValue(ColorProperty, value); }
 		}
 
-		public Size Offset
+		public Point Offset
 		{
-			get { return (Size)GetValue(OffsetProperty); }
+			get { return (Point)GetValue(OffsetProperty); }
 			set { SetValue(OffsetProperty, value); }
 		}
 	}
