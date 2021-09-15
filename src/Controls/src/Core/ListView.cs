@@ -92,7 +92,8 @@ namespace Microsoft.Maui.Controls
 		{
 			if (DeviceInfo.Platform == DevicePlatform.Android ||
 				DeviceInfo.Platform == DevicePlatform.iOS ||
-				DeviceInfo.Platform == DevicePlatform.macOS)
+				DeviceInfo.Platform == DevicePlatform.macOS ||
+				DeviceInfo.Platform == DevicePlatform.Create("UnitTest"))
 				CachingStrategy = cachingStrategy;
 		}
 

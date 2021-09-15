@@ -1607,6 +1607,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		[TestCase(nameof(DevicePlatform.Android), ListViewCachingStrategy.RecycleElement)]
 		[TestCase(nameof(DevicePlatform.iOS), ListViewCachingStrategy.RecycleElement)]
+		[TestCase("UnitTest", ListViewCachingStrategy.RecycleElement)]
 		[TestCase(nameof(DevicePlatform.Windows), ListViewCachingStrategy.RetainElement)]
 		[TestCase("Other", ListViewCachingStrategy.RetainElement)]
 		public void EnforcesCachingStrategy(string platform, ListViewCachingStrategy expected)
