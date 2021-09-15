@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Essentials
 		DeviceType currentType = DeviceType.Unknown;
 		string systemProductName;
 
-		DeviceInfo()
+		PlatformDeviceInfo()
 		{
 			deviceInfo = new EasClientDeviceInformation();
 			currentIdiom = DeviceIdiom.Unknown;
