@@ -69,6 +69,11 @@ namespace Microsoft.Maui.Controls
 
 		Size IContentView.CrossPlatformMeasure(double contentWidthConstraint, double contentHeightConstraint)
 		{
+			if (Content == null)
+			{
+				return Size.Zero;
+			}
+
 			if (Content is not IView content)
 			{
 				return Content.DesiredSize;
