@@ -17,19 +17,134 @@ namespace Microsoft.Maui.SourceGen
 			context.RegisterForSyntaxNotifications(() => new AppStartupSyntaxReceiver());
 		}
 
+		static bool HasCreateMauiAppOverride(GeneratorSyntaxContext context, ClassDeclarationSyntax classDeclarationSyntax)
+		{
+			foreach (var m in classDeclarationSyntax.Members)
+			{
+				if (m is MethodDeclarationSyntax omds)
+				{
+					if (omds.Modifiers.Any(m => m.IsKind(SyntaxKind.OverrideKeyword)))
+					{
+						var retType = context.GetReturnType(omds);
+						if (retType?.Equals("Microsoft.Maui.MauiApp") ?? false)
+							if (omds.Identifier.Text == "CreateMauiApp")
+								return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		class MaciOSMauiAppBuilderReceiver
+		{
+			public bool HasMainMethod { get; set; } = false;
+			public bool HasAppDelegateSubclass { get; set; } = false;
+
+			public TypeInfoParts? PartialAppDelegateSubclass { get; set; } = null;
+
+			public bool PartialAppDelegateOverridesCreate { get; set; } = false;
+
+			public void OnVisitSyntaxNode(GeneratorSyntaxContext context, SyntaxNode syntaxNode)
+			{
+				// Look for a Main method
+				if (!HasMainMethod
+					&& syntaxNode is MethodDeclarationSyntax method
+					&& method.Modifiers.Any(m => m.IsKind(SyntaxKind.StaticKeyword))
+					&& method.Identifier.Text.Equals("Main", StringComparison.OrdinalIgnoreCase))
+				{
+					HasMainMethod = true;
+				}
+
+				// Look for an AppDelegate implementation of some sort
+				if (syntaxNode is SimpleBaseTypeSyntax baseTypeSyntax)
+				{
+					var baseId = GlobalizeNs(baseTypeSyntax.ToFullString().Trim());
+
+					if (baseId.Equals(GlobalizeNs("Microsoft.Maui.MauiUIApplicationDelegate")))
+					{
+						HasAppDelegateSubclass = true;
+
+						// Check if it's a partial declaration, if so, get the type name back and see if it's partial to us
+						// or if it's something else
+						var partialClassSyntax = baseTypeSyntax.Ancestors().FirstOrDefault(n =>
+							n is ClassDeclarationSyntax cp
+							&& cp.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)));
+
+						if (partialClassSyntax is ClassDeclarationSyntax classDeclParent)
+						{
+							PartialAppDelegateSubclass = classDeclParent.GetTypeInfoParts();
+							
+							// Check if the partial class overrides the CreateApp or not to decide if we emit it
+							PartialAppDelegateOverridesCreate = HasCreateMauiAppOverride(context, classDeclParent);
+						}
+					}
+					else if (baseId.Equals(GlobalizeNs("UIKit.UIApplicationDelegate")))
+					{
+						HasAppDelegateSubclass = true;
+					}
+				}
+			}
+		}
+
+		class AndroidMauiBuilderReceiver
+		{
+			public bool HasApplicationSubclass { get; set; } = false;
+			public TypeInfoParts? PartialApplicationSubclass { get; set; } = null;
+			public bool HasPartialApplicationCreateOverride { get; set; } = false;
+
+			public bool HasMainLauncher { get; set; } = false;
+
+			public void OnVisitSyntaxNode(GeneratorSyntaxContext context, SyntaxNode syntaxNode)
+			{
+				if (!HasMainLauncher && syntaxNode is AttributeSyntax attrSyntax)
+				{
+					var attrFullName = attrSyntax.Name.ToFullString();
+					if (attrSyntax.Name.ToFullString() == "global::Android.App.Activity")
+					{
+						HasMainLauncher = attrSyntax.ArgumentList != null
+								&& attrSyntax.ArgumentList.ChildNodes().Any(cn => cn is AttributeArgumentSyntax aas
+									&& aas.NameEquals?.Name?.Identifier.ValueText == "MainLauncher"
+									&& aas.Expression is ExpressionSyntax exs
+									&& exs.Kind() == SyntaxKind.TrueLiteralExpression);
+					}
+				}
+
+				// Look for an AppDelegate implementation of some sort
+				if (syntaxNode is SimpleBaseTypeSyntax baseTypeSyntax)
+				{
+					var baseId = GlobalizeNs(baseTypeSyntax.ToFullString().Trim());
+
+					if (baseId.Equals("global::Microsoft.Maui.MauiApplication") 
+						|| baseId.Equals("global::Android.App.Application"))
+					{
+						HasApplicationSubclass = true;
+
+						if (baseId.Equals("global::Microsoft.Maui.MauiApplication"))
+						{
+							// Check if it's a partial declaration, if so, get the type name back and see if it's partial to us
+							// or if it's something else
+							var partialClassSyntax = baseTypeSyntax.Ancestors().FirstOrDefault(n =>
+								n is ClassDeclarationSyntax cp
+								&& cp.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)));
+
+							if (partialClassSyntax is ClassDeclarationSyntax classDeclParent)
+							{
+								PartialApplicationSubclass = classDeclParent.GetTypeInfoParts();
+
+								// Now check if they override CreateMauiApp() to see if we need to emit it or not
+								HasPartialApplicationCreateOverride = HasCreateMauiAppOverride(context, classDeclParent);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		class AppStartupSyntaxReceiver : ISyntaxContextReceiver
 		{
-			public bool HasiOSMainMethod { get; set; } = false;
-			public bool HasiOSAppDelegateSubclass { get; set; } = false;
-			public string? iOSPartialAppDelegateSubclassType { get; set; } = null;
-			public string? iOSPartialAppDelegateSubclassNs { get; set; } = null;
-			public bool HasiOSPartialAppDelegateCreateOverride { get; set; } = false;
-
-			public bool HasAndroidApplicationSubclass { get; set; } = false;
-			public string? AndroidPartialApplicationSubclassType { get; set; } = null;
-			public bool HasAndroidPartialApplicationCreateOverride { get; set; } = false;
-
-			public bool HasAndroidMainLauncher { get; set; } = false;
+			public readonly MaciOSMauiAppBuilderReceiver MaciOS = new ();
+			public readonly AndroidMauiBuilderReceiver Android = new ();
 
 			public string? MauiAppBuilderMethod { get; set; } = null;
 
@@ -57,87 +172,8 @@ namespace Microsoft.Maui.SourceGen
 					}
 				}
 
-				// Look for a Main method
-				if (!HasiOSMainMethod
-					&& syntaxNode is MethodDeclarationSyntax method
-					&& method.Modifiers.Any(m => m.IsKind(SyntaxKind.StaticKeyword))
-					&& method.Identifier.Text.Equals("Main", StringComparison.OrdinalIgnoreCase))
-				{
-					HasiOSMainMethod = true;
-				}
-
-				if (!HasAndroidMainLauncher && syntaxNode is AttributeSyntax attrSyntax && attrSyntax.Name.ToFullString() == "Activity")
-				{
-					HasAndroidMainLauncher = attrSyntax.ArgumentList != null
-							&& attrSyntax.ArgumentList.ChildNodes().Any(cn => cn is AttributeArgumentSyntax aas
-								&& aas.NameEquals?.Name?.Identifier.ValueText == "MainLauncher"
-								&& aas.Expression is ExpressionSyntax exs
-								&& exs.Kind() == SyntaxKind.TrueLiteralExpression);
-				}
-
-				// Look for an AppDelegate implementation of some sort
-				if (syntaxNode is SimpleBaseTypeSyntax baseTypeSyntax)
-				{
-					var baseId = GlobalizeNs(baseTypeSyntax.ToFullString().Trim());
-
-					if (baseId.Equals(GlobalizeNs("Microsoft.Maui.MauiUIApplicationDelegate")))
-					{
-						HasiOSAppDelegateSubclass = true;
-
-						// Check if it's a partial declaration, if so, get the type name back and see if it's partial to us
-						// or if it's something else
-						var partialClassSyntax = baseTypeSyntax.Ancestors().FirstOrDefault(n =>
-							n is ClassDeclarationSyntax cp
-							&& cp.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)));
-
-						if (partialClassSyntax is ClassDeclarationSyntax classDeclParent)
-						{
-							iOSPartialAppDelegateSubclassType = GlobalizeNs(classDeclParent.GetFullName());
-							iOSPartialAppDelegateSubclassNs = classDeclParent.GetNamespace();
-							
-							// Now check if they override CreateMauiApp() to see if we need to emit it or not
-							HasiOSPartialAppDelegateCreateOverride = HasCreateMauiAppOverride(context, classDeclParent);
-						}
-					}
-					else if (baseId.Equals(GlobalizeNs("UIKit.UIApplicationDelegate")))
-					{
-						HasiOSAppDelegateSubclass = true;
-					}
-
-					if (baseId.Equals(GlobalizeNs("Microsoft.Maui.MauiApplication")) || baseId.Equals(GlobalizeNs("Android.App.Application")))
-					{
-						HasAndroidApplicationSubclass = true;
-
-						if (baseId.Equals(GlobalizeNs("Microsoft.Maui.MauiApplication")))
-						{
-							// Check if it's a partial declaration, if so, get the type name back and see if it's partial to us
-							// or if it's something else
-							var partialClassSyntax = baseTypeSyntax.Ancestors().FirstOrDefault(n =>
-								n is ClassDeclarationSyntax cp
-								&& cp.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)));
-
-							if (partialClassSyntax is ClassDeclarationSyntax classDeclParent)
-							{
-								AndroidPartialApplicationSubclassType = GlobalizeNs(classDeclParent.GetFullName());
-
-								// Now check if they override CreateMauiApp() to see if we need to emit it or not
-								HasAndroidPartialApplicationCreateOverride = HasCreateMauiAppOverride(context, classDeclParent);
-							}
-						}
-					}
-				}
-
-				
-			}
-
-			static bool HasCreateMauiAppOverride(GeneratorSyntaxContext context, ClassDeclarationSyntax classDeclarationSyntax)
-			{
-				// Now check if they override CreateMauiApp() to see if we need to emit it or not
-				return classDeclarationSyntax.Members.Any(m =>
-					m is MethodDeclarationSyntax omds
-					&& omds.IsKind(CodeAnalysis.CSharp.SyntaxKind.OverrideKeyword)
-					&& (context.GetReturnType(omds)?.Equals("Microsoft.Maui.MauiApp") ?? false)
-					&& omds.Identifier.Text == "CreateMauiApp");
+				Android.OnVisitSyntaxNode(context, syntaxNode);
+				MaciOS.OnVisitSyntaxNode(context, syntaxNode);
 			}
 		}
 
@@ -155,7 +191,7 @@ namespace Microsoft.Maui.SourceGen
 				return;
 
 			// TODO: Maybe this should result in an error?
-			if (context.SyntaxContextReceiver is AppStartupSyntaxReceiver syntaxReceiver && syntaxReceiver is not null)
+			if (context.SyntaxContextReceiver is AppStartupSyntaxReceiver syntaxReceiver && syntaxReceiver != null)
 			{
 				var namespaceName = context.Compilation.GlobalNamespace.Name;
 
@@ -170,29 +206,37 @@ namespace Microsoft.Maui.SourceGen
 					var wrapDefine = isIos ? "IOS" : "MACCATALYST";
 
 					// Prefix with global:: when we generate code to be safe
-					var appDelegateClassName = GlobalizeNs(syntaxReceiver.iOSPartialAppDelegateSubclassType
-						?? $"{namespaceName}.AppDelegate");
+					var appDelegateClassName = syntaxReceiver.MaciOS?.PartialAppDelegateSubclass?.GetTypeName()
+						?? "AppDelegate";
+
+
+					if (appDelegateClassName.Contains("."))
+					{
+						context.ReportDiagnostic(Diagnostic.Create("MAUI1050", "Compiler", "AppDelegate cannot be a nested type.", DiagnosticSeverity.Error, DiagnosticSeverity.Error, true, 0));
+						return;
+					}
 
 					// Create an app delegate
-					// We check to see if there's already an app delegate
-					// If there is, if it's partial and the same name as the one we generate, that's fine too
-					if (!syntaxReceiver.HasiOSAppDelegateSubclass ||
-						(syntaxReceiver.iOSPartialAppDelegateSubclassType != null && !syntaxReceiver.HasiOSPartialAppDelegateCreateOverride))
+					// Only if there's either no delegate class at all already
+					// Or if there is one, but it doesn't have the CreateApp override method in it
+					// In either case we'd need to generate the partial subclass and the CreateApp override
+					if (!syntaxReceiver.MaciOS!.HasAppDelegateSubclass ||
+						(syntaxReceiver.MaciOS!.PartialAppDelegateSubclass != null && !syntaxReceiver.MaciOS!.PartialAppDelegateOverridesCreate))
 					{
-						if (!string.IsNullOrEmpty(syntaxReceiver.iOSPartialAppDelegateSubclassNs))
-							namespaceName = syntaxReceiver.iOSPartialAppDelegateSubclassNs!;
+						if (syntaxReceiver.MaciOS.PartialAppDelegateSubclass != null)
+							namespaceName = syntaxReceiver.MaciOS.PartialAppDelegateSubclass.GetNamespace();
 
 						context.AddSource("Maui_Generated_MauiGeneratedAppDelegate.cs",
-							GenerateiOSAppDelegate(wrapDefine, namespaceName, appDelegateClassName, syntaxReceiver.MauiAppBuilderMethod));
+							GenerateMaciOSAppDelegate(wrapDefine, namespaceName, appDelegateClassName, syntaxReceiver.MauiAppBuilderMethod));
 					}
 					else
 						context.ReportDiagnostic(Diagnostic.Create("MAUI1020", "Compiler", "UIApplicationDelegate implementation already exists, not generating one.", DiagnosticSeverity.Warning, DiagnosticSeverity.Warning, true, 3));
 
 					// Create a main method
-					if (!(syntaxReceiver?.HasiOSMainMethod ?? false))
+					if (!syntaxReceiver.MaciOS.HasMainMethod)
 					{
 						context.AddSource("Maui_Generated_MauiGeneratedMain.cs",
-							GenerateiOSMain(wrapDefine, namespaceName, appDelegateClassName));
+							GenerateMaciOSMain(wrapDefine, namespaceName, "GeneratedProgramWithMain", appDelegateClassName));
 					}
 					else
 						context.ReportDiagnostic(Diagnostic.Create("MAUI1021", "Compiler", "Main method implementation already exists, not generating one.", DiagnosticSeverity.Warning, DiagnosticSeverity.Warning, true, 3));
@@ -201,11 +245,10 @@ namespace Microsoft.Maui.SourceGen
 				{
 					var appName = context.GetMSBuildProperty("ApplicationTitle") ?? "App1";
 
-
-					if (!(syntaxReceiver?.HasAndroidMainLauncher ?? false))
+					if (!syntaxReceiver.Android.HasMainLauncher)
 					{
 						context.AddSource("Maui_Generated_MauiGeneratedAndroidActivity.cs",
-						GenerateAndroidMainActivity(appName, namespaceName));
+						GenerateAndroidMainActivity(appName, "MainActivity", namespaceName));
 					}
 					else
 					{
@@ -213,16 +256,27 @@ namespace Microsoft.Maui.SourceGen
 					}
 
 					// Prefix with global:: when we generate code to be safe
-					var applicationClassName = GlobalizeNs(syntaxReceiver?.AndroidPartialApplicationSubclassType
-						?? $"{namespaceName}.MainApplication");
+					var applicationClassName = syntaxReceiver.Android.PartialApplicationSubclass?.GetTypeName()
+						?? $"GeneratedMainApplication";
+
+					if (applicationClassName.Contains("."))
+					{
+						context.ReportDiagnostic(Diagnostic.Create("MAUI1050", "Compiler", "Application cannot be a nested type.", DiagnosticSeverity.Error, DiagnosticSeverity.Error, true, 0));
+						return;
+					}
 
 					if (syntaxReceiver is not null)
 					{
-						// If there's no existing application subclass
-						// or if there is a subclass but it's partial, and it doesn't have the create maui app override yet
-						if (!syntaxReceiver.HasAndroidApplicationSubclass ||
-							(syntaxReceiver.AndroidPartialApplicationSubclassType != null && !syntaxReceiver.HasAndroidPartialApplicationCreateOverride))
+						// Create an application class
+						// Only if there's either no application subclass at all already
+						// Or if there is one, but it doesn't have the CreateApp override method in it
+						// In either case we'd need to generate the partial subclass and the CreateApp override
+						if (!syntaxReceiver.Android.HasApplicationSubclass ||
+							(syntaxReceiver.Android.PartialApplicationSubclass != null && !syntaxReceiver.Android.HasPartialApplicationCreateOverride))
 						{
+							if (syntaxReceiver.Android.PartialApplicationSubclass != null)
+								namespaceName = syntaxReceiver.Android.PartialApplicationSubclass.GetNamespace();
+
 							context.AddSource("Maui_Generated_MauiGeneratedAndroidApplication.cs",
 								GenerateAndroidApplication(namespaceName, applicationClassName, syntaxReceiver.MauiAppBuilderMethod));
 						}
@@ -241,28 +295,28 @@ namespace Microsoft.Maui.SourceGen
 			return fullyQualifiedType;
 		}
 
-		string GenerateAndroidMainActivity(string appName, string namespaceName)
+		string GenerateAndroidMainActivity(string appName, string mainActivityClassName, string namespaceName)
 			=> @"
 #if ANDROID
 namespace " + namespaceName + @"
 {
-	[global::System.CodeDom.Compiler.GeneratedCode(""Microsoft.Maui.Controls.SourceGen"", ""1.0.0.0"")]
+	[global::System.CodeDom.Compiler.GeneratedCode(""Microsoft.Maui.SourceGen.Core"", ""1.0.0.0"")]
 	[global::Android.App.Activity(Label = """ + appName + @""", MainLauncher = true)]
-	public partial class MainActivity : global::Microsoft.Maui.MauiAppCompatActivity
+	public partial class " + mainActivityClassName + @" : global::Microsoft.Maui.MauiAppCompatActivity
 	{
 	}
 }
 #endif
 ";
 
-		string GenerateAndroidApplication(string namespaceName, string applicationName, string createAppMethod)
+		string GenerateAndroidApplication(string namespaceName, string applicationClassName, string createAppMethod)
 			=> @"
 #if ANDROID
 namespace " + namespaceName + @"
 {
-	[global::System.CodeDom.Compiler.GeneratedCode(""Microsoft.Maui.Controls.SourceGen"", ""1.0.0.0"")]
+	[global::System.CodeDom.Compiler.GeneratedCode(""Microsoft.Maui.SourceGen.Core"", ""1.0.0.0"")]
 	[global::Android.App.Application]
-	public partial class " + applicationName + @" : global::Microsoft.Maui.MauiApplication
+	public partial class " + applicationClassName + @" : global::Microsoft.Maui.MauiApplication
 	{
 		protected override global::Microsoft.Maui.MauiApp CreateMauiApp()
 			=> " + createAppMethod + @"();
@@ -270,39 +324,31 @@ namespace " + namespaceName + @"
 }
 #endif
 ";
-		string GenerateiOSMain(string wrapDefine, string namespaceName, string appDelegateClassName)
+		string GenerateMaciOSMain(string wrapDefine, string namespaceName, string applicationClassName, string appDelegateClassName)
 			=> @"
 #if " + wrapDefine + @"
-using Foundation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UIKit;
 namespace " + namespaceName + @"
 {
-	[global::System.CodeDom.Compiler.GeneratedCode(""Microsoft.Maui.Controls.SourceGen"", ""1.0.0.0"")]
-    public partial class Application
+	[global::System.CodeDom.Compiler.GeneratedCode(""Microsoft.Maui.SourceGen.Core"", ""1.0.0.0"")]
+    public partial class " + applicationClassName + @"
     {
         // This is the main entry point of the application.
         static void Main(string[] args)
         {
-            UIApplication.Main(args, null, typeof(" + appDelegateClassName + @"));
+            global::UIKit.UIApplication.Main(args, null, typeof(" + appDelegateClassName + @"));
         }
     }
 }
 #endif
 ";
 
-		string GenerateiOSAppDelegate(string wrapDefine, string namespaceName, string appDelegateClassName, string createAppMethod)
+		string GenerateMaciOSAppDelegate(string wrapDefine, string namespaceName, string appDelegateClassName, string createAppMethod)
 			=> @"
 #if " + wrapDefine + @"
-using UIKit;
-using Foundation;
 namespace " + namespaceName + @"
 {
-	[global::System.CodeDom.Compiler.GeneratedCode(""Microsoft.Maui.Controls.SourceGen"", ""1.0.0.0"")]
-	[Register(nameof(AppDelegate))]
+	[global::System.CodeDom.Compiler.GeneratedCode(""Microsoft.Maui.SourceGen.Core"", ""1.0.0.0"")]
+	[global::Foundation.Register(nameof(" + appDelegateClassName + @"))]
 	public partial class " + appDelegateClassName + @" : global::Microsoft.Maui.MauiUIApplicationDelegate
 	{
 		protected override global::Microsoft.Maui.MauiApp CreateMauiApp()
