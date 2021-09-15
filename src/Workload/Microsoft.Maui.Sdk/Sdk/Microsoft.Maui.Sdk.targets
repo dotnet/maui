@@ -6,7 +6,7 @@
 
   <!-- Imported last -->
   <PropertyGroup>
-    <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.Sdk.After.targets</AfterMicrosoftNETSdkTargets>
+    <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)Microsoft.Maui.Sdk.After.targets</AfterMicrosoftNETSdkTargets>
   </PropertyGroup>
 
 </Project>

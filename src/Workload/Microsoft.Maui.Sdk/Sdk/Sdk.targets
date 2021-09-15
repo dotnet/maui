@@ -25,6 +25,6 @@
   </ItemGroup>
 
   <Import Project="../targets/BundledVersions.targets" />
-  <Import Project="Microsoft.Maui.Controls.Sdk.targets" Condition=" '$(UseMaui)' == 'true' " />
+  <Import Project="Microsoft.Maui.Sdk.targets" Condition=" '$(UseMaui)' == 'true' " />
 
 </Project>
