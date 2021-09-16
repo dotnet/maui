@@ -118,13 +118,13 @@ namespace Microsoft.Maui.DeviceTests
 			return entry.AttributedText.GetCharacterSpacing();
 		}
 
-		UITextField GetNativeEntry(EntryHandler entryHandler) =>
+		static UITextField GetNativeEntry(EntryHandler entryHandler) =>
 			(UITextField)entryHandler.NativeView;
 
-		string GetNativeText(EntryHandler entryHandler) =>
+		static string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
 
-		void SetNativeText(EntryHandler entryHandler, string text) =>
+		static void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
 
 		Color GetNativeTextColor(EntryHandler entryHandler) =>

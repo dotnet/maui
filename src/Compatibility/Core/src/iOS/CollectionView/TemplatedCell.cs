@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					oldElement.MeasureInvalidated -= MeasureInvalidated;
 					oldElement.BindingContext = null;
 					itemsView.RemoveLogicalChild(oldElement);
-					ClearSubviews();
+					ContentView.ClearSubviews();
 					_size = Size.Zero;
 				}
 
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var nativeView = VisualElementRenderer.NativeView;
 
 			// Clear out any old views if this cell is being reused
-			ClearSubviews();
+			ContentView.ClearSubviews();
 
 			InitializeContentConstraints(nativeView);
 
@@ -187,14 +187,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var rectangle = nativeView.Frame.ToRectangle();
 			VisualElementRenderer.Element.Layout(rectangle);
 			_size = rectangle.Size;
-		}
-
-		void ClearSubviews()
-		{
-			for (int n = ContentView.Subviews.Length - 1; n >= 0; n--)
-			{
-				ContentView.Subviews[n].RemoveFromSuperview();
-			}
 		}
 
 		internal void UseContent(TemplatedCell measurementCell)
