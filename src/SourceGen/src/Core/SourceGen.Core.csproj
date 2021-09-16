@@ -25,23 +25,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- MauiFont items -->
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" Visible="false" />
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="FontAlias" Visible="false" />
-
-    <!-- Properties for emitting default entry boilerplate -->
-    <CompilerVisibleProperty Include="OutputType" />
-    <CompilerVisibleProperty Include="TargetPlatformIdentifier" />
-    <CompilerVisibleProperty Include="ApplicationTitle" />
-  </ItemGroup>
-
-  <Target Name="_MauiFontRegistrationSourceGenerator" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
-    <ItemGroup>
-      <AdditionalFiles Include="@(MauiFont)" FontAlias="%(MauiFont.Alias)" SourceItemGroup="MauiFont" />
-    </ItemGroup>
-  </Target>
-
   <PropertyGroup>
     <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
   </PropertyGroup>

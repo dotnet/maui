@@ -88,4 +88,11 @@
     <ProjectCapability Include="LaunchProfilesGroupByPlatformFilters" Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &gt;= '17.0' " />
   </ItemGroup>
 
+  <!-- Inject MauiFont as AdditionalFiles for source generator -->
+  <Target Name="_MauiInjectFontAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
+    <ItemGroup>
+      <AdditionalFiles Include="@(MauiFont)" FontAlias="%(MauiFont.Alias)" SourceItemGroup="MauiFont" />
+    </ItemGroup>
+  </Target>
+
 </Project>

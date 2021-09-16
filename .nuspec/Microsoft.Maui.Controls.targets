@@ -54,7 +54,6 @@
 			Text="Microsoft.Maui requires .NETFramework >= v4.6.1. You have '$(TargetFrameworkVersion)'" />
 	</Target>
 
-
   <!-- Inject MauiXaml and MauiCss as AdditionalFiles for partial type generation-->
   <Target Name="_MauiInjectXamlCssAdditionalFiles"
           BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun"
