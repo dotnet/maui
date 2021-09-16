@@ -17,7 +17,7 @@ The idea, is a project to be able to set `$(UseMaui)`:
 `$(UseMaui)` automatically brings in the following workload packs:
 
 * `Microsoft.NET.Sdk.Maui`
-* `Microsoft.Maui.Controls.Sdk`
+* `Microsoft.Maui.Sdk`
 * `Microsoft.Maui.Resizetizer.Sdk`
 * `Microsoft.Maui.Core.Ref.[platform]`
 * `Microsoft.Maui.Core.Runtime.[platform]`
@@ -68,7 +68,7 @@ Special files:
   Maui projects will go. Note that this is imported by *all* .NET 6
   project types -- *even non-mobile ones*.
 * `WorkloadManifest.json` - general .NET workload configuration
-* `WorkloadManifest.targets` - imports `Microsoft.Maui.Controls.Sdk` when
+* `WorkloadManifest.targets` - imports `Microsoft.Maui.Sdk` when
   `$(UseMaui)` is `true`. Note that this is imported by *all* .NET 6
   project types -- *even non-mobile ones*.
 
@@ -120,7 +120,7 @@ To give greater flexibility, you can specify in your `.csproj`:
 Even if you have `6.0.100-rc.2.1000` installed system-wide, placing
 this in your `.csproj` enables it to build with a newer version of
 .NET MAUI. This will mostly continue working until there is a major
-change in `Microsoft.Maui.Controls.Sdk`. We have a new
+change in `Microsoft.Maui.Sdk`. We have a new
 `$(_MinimumMauiWorkloadVersion)` property to fall back on if there is
 a breaking change that requires a newer .NET MAUI system-wide install.
 

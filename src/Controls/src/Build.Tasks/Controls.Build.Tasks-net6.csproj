@@ -1,4 +1,4 @@
-﻿<!-- NOTE: This project is temporarily replacing part of Microsoft.Maui.Controls.Sdk -->
+﻿<!-- NOTE: This project is temporarily replacing part of Microsoft.Maui.Sdk -->
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
