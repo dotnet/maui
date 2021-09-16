@@ -8,11 +8,11 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(float), typeof(Shadow), 1f);
 
-		public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Brush), typeof(Shadow), null);
+		public static readonly BindableProperty BrushProperty = BindableProperty.Create(nameof(Brush), typeof(Brush), typeof(Shadow), null);
 
 		public static readonly BindableProperty OffsetProperty = BindableProperty.Create(nameof(Offset), typeof(Point), typeof(Shadow), null);
 
-		Paint IShadow.Paint => Color;
+		Paint IShadow.Paint => Brush;
 
 		public float Radius
 		{
@@ -26,10 +26,10 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(OpacityProperty, value); }
 		}
 
-		public Brush Color
+		public Brush Brush
 		{
-			get { return (Brush)GetValue(ColorProperty); }
-			set { SetValue(ColorProperty, value); }
+			get { return (Brush)GetValue(BrushProperty); }
+			set { SetValue(BrushProperty, value); }
 		}
 
 		public Point Offset

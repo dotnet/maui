@@ -35,7 +35,7 @@
                 FontSize="Large"
                 Text="Label with a Shadow">
                 <Label.Shadow>
-                    <Shadow Color="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                    <Shadow Brush="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
                             Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
                             Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"
                             />
@@ -58,7 +58,7 @@
                 >
                 <Rectangle.Shadow>
                     <Shadow 
-                            Color="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                            Brush="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
                             Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
                             Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"
                             />
@@ -82,7 +82,7 @@
                         RadiusY="50"/>
                 </Image.Clip>
                 <Image.Shadow>
-                    <Shadow Color="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
+                    <Shadow Brush="{Binding Source={x:Reference ShadowColor}, Path=Text, Converter={StaticResource cnvStringToBrush} }"
                             Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
                             Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"
                             />
@@ -108,12 +108,12 @@
                             Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
                             Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"
                             >
-                        <Shadow.Color>
+                        <Shadow.Brush>
                             <LinearGradientBrush EndPoint="1,0">
                                 <GradientStop Color="Yellow" Offset="0.1" />
                                 <GradientStop Color="Green" Offset="1.0" />
                             </LinearGradientBrush>
-                        </Shadow.Color>
+                        </Shadow.Brush>
                     </Shadow>
                 </Rectangle.Shadow>
             </Rectangle>
