@@ -127,5 +127,63 @@ namespace Microsoft.Maui.UnitTests
 			Assert.True(wasMapper1Called);
 			Assert.False(wasMapper2Called);
 		}
+
+		class CustomNativeButton : object
+		{
+
+		}
+
+		class CustomButton : Maui.Controls.Button
+		{
+
+		}
+
+		[Fact]
+		public void CanUseFactoryForAlternateType()
+		{
+			HandlerStub.NativeViewFactory = (h) => { return new CustomNativeButton(); };
+
+			HandlerStub handlerStub = new HandlerStub();
+			handlerStub.SetVirtualView(new Maui.Controls.Button());
+
+			Assert.True(handlerStub.NativeView is CustomNativeButton);
+		}
+
+		[Fact]
+		public void FactoryCanPuntAndUseOriginalType()
+		{
+			HandlerStub.NativeViewFactory = (h) => { return null; };
+
+			HandlerStub handlerStub = new HandlerStub();
+			handlerStub.SetVirtualView(new Maui.Controls.Button());
+
+			Assert.NotNull(handlerStub.NativeView);
+			Assert.False(handlerStub.NativeView is CustomNativeButton);
+			Assert.True(handlerStub.NativeView is object);
+		}
+
+		[Fact]
+		public void FactoryCanCustomizeBasedOnVirtualView()
+		{
+			HandlerStub.NativeViewFactory = (h) =>
+			{
+				if (h.VirtualView is CustomButton)
+				{
+					return new CustomNativeButton();
+				}
+
+				return null;
+			};
+
+			HandlerStub handlerStub = new HandlerStub();
+			handlerStub.SetVirtualView(new CustomButton());
+
+			Assert.True(handlerStub.NativeView is CustomNativeButton);
+
+			HandlerStub handlerStub2 = new HandlerStub();
+			handlerStub2.SetVirtualView(new Maui.Controls.Button());
+
+			Assert.True(handlerStub2.NativeView is object);
+		}
 	}
 }

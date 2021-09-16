@@ -39,10 +39,5 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
         /// created in <see cref="CreateEnvironmentAsync"/>.
         /// </summary>
         Task EnsureCoreWebView2Async();
-
-        /// <summary>
-        /// Event that occurs when an accelerator key is pressed.
-        /// </summary>
-        Action AddAcceleratorKeyPressedHandler(EventHandler<ICoreWebView2AcceleratorKeyPressedEventArgsWrapper> eventHandler);
     }
 }
