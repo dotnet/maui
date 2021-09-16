@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
@@ -43,7 +43,5 @@
   <ItemGroup>
     <Content Remove="Properties\launchSettings.json" />
   </ItemGroup>
-
-  <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
 </Project>
