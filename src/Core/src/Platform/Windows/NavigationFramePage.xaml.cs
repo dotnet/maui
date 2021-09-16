@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
@@ -11,7 +10,7 @@ namespace Microsoft.Maui
 {
 	partial class NavigationFramePage
 	{
-		Microsoft.UI.Xaml.Controls.ContentPresenter Root { get; }
+		//ContentPresenter Root { get; }
 		public IView? View { get; set; }
 		public IMauiContext? MauiContext { get; internal set; }
 		public new NavigationFrame Frame => (NavigationFrame)base.Frame;
@@ -19,29 +18,25 @@ namespace Microsoft.Maui
 		public NavigationFramePage()
 		{
 			InitializeComponent();
-			Root = new Microsoft.UI.Xaml.Controls.ContentPresenter()
-			{
-				HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch,
-				VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch
-			};
+			//Root = new ContentPresenter()
+			//{
+			//	HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch,
+			//	VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch
+			//};
 
-			this.Content = Root;
+			//this.Content = Root;
 		}
 
 		protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
 		{
 			base.OnNavigatedTo(e);
-			Load(Frame.NavigationManager.NavigationStack.Last(), Frame.NavigationManager.MauiContext);
-		}
+			var stack = Frame.NavigationManager.NavigationStack;
 
-		protected override void OnNavigatedFrom(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
-		{
-			base.OnNavigatedFrom(e);
+			Load(stack[stack.Count - 1], Frame.NavigationManager.MauiContext);
 		}
 
 		public void Load()
 		{
-			var parent = this.Parent;
 			if (View != null && MauiContext != null)
 			{
 				Load(View, MauiContext);
@@ -52,7 +47,7 @@ namespace Microsoft.Maui
 		{
 			View = view;
 			MauiContext = mauiContext;
-			Root.Content = View.ToNative(mauiContext);
+			Content = View.ToNative(mauiContext);
 		}
 	}
 }

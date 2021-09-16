@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.UI.Xaml.Controls;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
@@ -119,7 +116,7 @@ namespace Microsoft.Maui.Controls.Platform
 					button.Content = img;
 				}
 
-				// TODO WINUI FIX
+				// TODO MAUI: MenuItemCommand is no longer available in WinUI
 				//button.Command = new MenuItemCommand(item);
 				button.DataContext = item;
 				button.SetValue(NativeAutomationProperties.AutomationIdProperty, item.AutomationId);
@@ -127,7 +124,6 @@ namespace Microsoft.Maui.Controls.Platform
 				button.SetAutomationPropertiesAccessibilityView(item);
 				button.SetAutomationPropertiesHelpText(item);
 
-				// TODO MAUI
 				button.SetAutomationPropertiesLabeledBy(item, null);
 
 				ToolbarItemOrder order = item.Order == ToolbarItemOrder.Default ? ToolbarItemOrder.Primary : item.Order;

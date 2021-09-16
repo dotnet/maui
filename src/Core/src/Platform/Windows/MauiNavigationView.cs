@@ -44,6 +44,7 @@ namespace Microsoft.Maui
 			HeaderContent = (ContentControl)GetTemplateChild("HeaderContent");
 			NavigationViewBackButton = (Button)GetTemplateChild("NavigationViewBackButton");
 
+			// Read comment on MarginPropertyChanged
 			var currentMargin = HeaderContent.Margin;
 			HeaderContentMargin = new WThickness(
 				0,

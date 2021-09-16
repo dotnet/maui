@@ -172,6 +172,8 @@ namespace Microsoft.Maui.Controls
 
 		public async Task<Page> PopAsync(bool animated)
 		{
+			// If Navigation interactions are being handled by the MAUI APIs
+			// this routes the pop call there instead of through old behavior
 			if (Navigation is MauiNavigationImpl && this is INavigationView nv)
 			{
 				var poppedPage = (Page)InternalChildren[InternalChildren.Count - 1];
