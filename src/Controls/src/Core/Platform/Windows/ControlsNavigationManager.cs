@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			navigationView.IsBackButtonVisible = (hasBackButton) ? NavigationViewBackButtonVisible.Visible : NavigationViewBackButtonVisible.Collapsed;
-
+			navigationView.IsBackEnabled = true;
 			navigationView.UpdateBarBackgroundBrush(
 				barBackground?.ToBrush() ?? barBackgroundColor?.ToNative());
 

@@ -33,7 +33,9 @@ namespace Microsoft.Maui
 			IsPaneToggleButtonVisible = false;
 			PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
 			Header = (_windowHeader = new WindowHeader());
-			IsBackEnabled = true;
+			IsBackEnabled = false;
+			_windowHeader.Visibility = UI.Xaml.Visibility.Collapsed;
+			IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
 		}
 
 		protected override void OnApplyTemplate()

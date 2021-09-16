@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 {
 	partial class NavigationFramePage
 	{
-		//ContentPresenter Root { get; }
+		ContentPresenter Root { get; }
 		public IView? View { get; set; }
 		public IMauiContext? MauiContext { get; internal set; }
 		public new NavigationFrame Frame => (NavigationFrame)base.Frame;
@@ -18,13 +18,13 @@ namespace Microsoft.Maui
 		public NavigationFramePage()
 		{
 			InitializeComponent();
-			//Root = new ContentPresenter()
-			//{
-			//	HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch,
-			//	VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch
-			//};
+			Root = new ContentPresenter()
+			{
+				HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch,
+				VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch
+			};
 
-			//this.Content = Root;
+			this.Content = Root;
 		}
 
 		protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -47,7 +47,7 @@ namespace Microsoft.Maui
 		{
 			View = view;
 			MauiContext = mauiContext;
-			Content = View.ToNative(mauiContext);
+			Root.Content = View.ToNative(mauiContext);
 		}
 	}
 }
