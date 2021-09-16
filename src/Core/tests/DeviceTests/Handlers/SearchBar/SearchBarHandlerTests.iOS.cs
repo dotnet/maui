@@ -61,11 +61,14 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
 		}
 
-		UISearchBar GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
+		static UISearchBar GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
 			(UISearchBar)searchBarHandler.NativeView;
 
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Text;
+
+		static void SetNativeText(SearchBarHandler searchBarHandler, string text) =>
+			GetNativeSearchBar(searchBarHandler).Text = text;
 
 		Color GetNativeTextColor(SearchBarHandler searchBarHandler)
 		{

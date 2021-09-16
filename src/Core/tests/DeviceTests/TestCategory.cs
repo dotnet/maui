@@ -26,5 +26,6 @@
 		public const string TextFormatting = "Formatting";
 		public const string TimePicker = "TimePicker";
 		public const string View = "View";
+		public const string WebView = "WebView";
 	}
 }

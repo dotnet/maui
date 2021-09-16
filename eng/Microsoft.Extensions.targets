@@ -7,9 +7,8 @@
   </PropertyGroup>
    <!-- Microsoft.Maui.Graphics related Packages -->
   <PropertyGroup>
-    <_MicrosoftGraphicsWin2DVersion>0.8.0.21</_MicrosoftGraphicsWin2DVersion>
-    <_MicrosoftMauiGraphics>6.0.100-rc.1.382</_MicrosoftMauiGraphics>
-    <_MicrosoftMauiGraphicsWin2D>6.0.100-rc.1.382</_MicrosoftMauiGraphicsWin2D>
+    <MicrosoftGraphicsWin2DVersion>0.8.2.23</MicrosoftGraphicsWin2DVersion>
+    <MicrosoftMauiGraphicsVersion>6.0.100-rc.1.414</MicrosoftMauiGraphicsVersion>
   </PropertyGroup>
    <!-- WINUI related Packages -->
   <PropertyGroup>
@@ -19,6 +18,11 @@
   <!-- Android related Packages -->
   <PropertyGroup>
     <_XamarinAndroidGlideVersion>4.11.0.1</_XamarinAndroidGlideVersion>
+  </PropertyGroup>
+  <!-- SkiaSharp related Packages -->
+  <PropertyGroup>
+    <_SkiaSharpVersion>2.88.0-preview.127</_SkiaSharpVersion>
+    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.d5187387149d680645e1dbefbb726c50bfab46e9.127</_SkiaSharpNativeAssetsVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
     <!-- Debugger workaround -->
@@ -31,11 +35,11 @@
     />
     <PackageReference
         Update="Microsoft.Maui.Graphics"
-        Version="$(_MicrosoftMauiGraphics)" 
+        Version="$(MicrosoftMauiGraphicsVersion)"
     />
     <PackageReference
          Update="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
-         Version="$(_MicrosoftMauiGraphicsWin2D)"
+         Version="$(MicrosoftMauiGraphicsVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
@@ -104,7 +108,7 @@
     />
     <PackageReference
         Update="Microsoft.Graphics.Win2D"
-        Version="$(_MicrosoftGraphicsWin2DVersion)"
+        Version="$(MicrosoftGraphicsWin2DVersion)"
     />
     <PackageReference
         Update="Xamarin.Android.Glide"

@@ -10,7 +10,7 @@
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 
 		<!-- Display name -->
-		<ApplicationTitle>MauiApp1</ApplicationTitle>
+		<ApplicationTitle>MauiApp.1</ApplicationTitle>
 
 		<!-- App Identifier -->
 		<ApplicationId>com.companyname.MauiApp._1</ApplicationId>

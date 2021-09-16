@@ -33,8 +33,8 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(TableViewPage), "TableView",
 				"TableView displays a list of rows of type Cell with optional headers and subheaders. Set the Root property to an object of type TableRoot, and add TableSection objects to that TableRoot. Each TableSection is a collection of Cell objects."),
 
-			new SectionModel(typeof(WebViewPage), "WebView",
-				"WebView displays Web pages or HTML content."),
+			new SectionModel(typeof(TabbedPageGallery), "TabbedPage",
+				"Display pages as a set of Tabs."),
 		};
 	}
 }
