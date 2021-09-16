@@ -30,7 +30,6 @@
 
   <ItemGroup>
     <None Update="TestData\SimpleTest.xaml">
-      <Generator></Generator>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

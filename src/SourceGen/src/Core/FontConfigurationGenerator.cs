@@ -9,6 +9,8 @@ namespace Microsoft.Maui.SourceGen
 	[Generator]
 	public class FontConfigurationGenerator : ISourceGenerator
 	{
+		const string MsBuildSourceGenFlagPropertyName = "EnableMauiFontConfigurationSourceGen";
+
 		public void Initialize(GeneratorInitializationContext context)
 		{
 		}
@@ -19,7 +21,7 @@ namespace Microsoft.Maui.SourceGen
 				return;
 
 			// Allow opting out
-			if (!context.GetMSBuildProperty("EnableMauiFontConfigurationSourceGen", "true").Equals("true", StringComparison.OrdinalIgnoreCase))
+			if (!context.GetMSBuildProperty(MsBuildSourceGenFlagPropertyName, "true").Equals("true", StringComparison.OrdinalIgnoreCase))
 				return;
 
 			var isIos = context.IsiOS();
