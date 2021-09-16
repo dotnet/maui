@@ -10,7 +10,7 @@ Write-Host "MSBUILD_EXE: $env:MSBUILD_EXE"
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $logsDirectory = Join-Path $artifacts logs
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-net6.slnf
-$sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-mac.slnf
+$slnMac = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-mac.slnf
 
 # Bootstrap ./bin/dotnet/
 $csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
