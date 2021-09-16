@@ -64,7 +64,7 @@ namespace Microsoft.Maui.SourceGen
 		{
 			var attr = context.Compilation.Assembly.GetAttributes();
 
-			foreach (var a in context.Compilation.Assembly.GetAttributes())
+			foreach (var a in attr)
 			{
 				if (a.AttributeClass?.Name == attributeTypeName)
 					yield return a;
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.SourceGen
 
 		public static string? GetAssemblyMetadata(this GeneratorExecutionContext context, string key)
 		{
-			foreach (var a in context.FindAttributes("AssemblyMetadataAttribute"))
+			foreach (var a in context.FindAttributes(nameof(System.Reflection.AssemblyMetadataAttribute)))
 			{
 				if (a.ConstructorArguments.Length == 2 && a.ConstructorArguments[0].Value?.ToString() == key)
 					return a.ConstructorArguments[1].Value?.ToString();
