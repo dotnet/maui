@@ -71,7 +71,7 @@ var ANDROID_CONTROLGALLERY_PROJ = $"{ANDROID_CONTROLGALLERY}Compatibility.Contro
 var ANDROID_RENDERERS = Argument("ANDROID_RENDERERS", "FAST");
 var ANDROID_TEST_PROJ = "./src/Compatibility/ControlGallery/test/Android.UITests/Compatibility.ControlGallery.Android.UITests.csproj";
 
-var BUILD_TASKS_PROJ ="Microsoft.Maui.BuildTasks.sln";
+var BUILD_TASKS_PROJ ="._Microsoft.Maui.BuildTasks.sln";
 
 var XamarinFormsVersion = Argument("XamarinFormsVersion", "");
 var packageVersion = GetBuildVariable("packageVersion", "0.1.0-p2");
@@ -82,9 +82,9 @@ var localDotnet = GetBuildVariable("workloads", "local") == "local";
 
 var vsVersion = GetBuildVariable("VS", "");
 
-var MAUI_SLN = "./Microsoft.Maui.sln";
+var MAUI_SLN = "./._Microsoft.Maui.sln";
 
-var CONTROLGALLERY_SLN = "./ControlGallery.sln";
+var CONTROLGALLERY_SLN = "./._ControlGallery.sln";
 
 string defaultUnitTestWhere = "";
 
@@ -268,7 +268,7 @@ Task("BuildUnitTests")
 
         msbuildSettings.BinaryLogger = binaryLogger;
         binaryLogger.FileName = $"{artifactStagingDirectory}/Maui.Controls-{configuration}.binlog";
-        MSBuild("./Microsoft.Maui.sln", msbuildSettings.WithRestore());
+        MSBuild("./._Microsoft.Maui.sln", msbuildSettings.WithRestore());
     }
     catch(Exception)
     {
@@ -812,17 +812,17 @@ Task("VSWINDOWS")
 
         if (target.ToLower().StartsWith("vs-cg"))
         {
-            MSBuild("Compatibility.ControlGallery.sln",
+            MSBuild("._Compatibility.ControlGallery.sln",
                 GetMSBuildSettings()
                     .WithRestore());
-            StartVisualStudio("Compatibility.ControlGallery.sln", includePrerelease: includePrerelease);
+            StartVisualStudio("._Compatibility.ControlGallery.sln", includePrerelease: includePrerelease);
         }
         else
         {
             MSBuild(@"src\Compatibility\Core\src\Compatibility.csproj",
                 GetMSBuildSettings()
                     .WithRestore());
-            StartVisualStudio("Microsoft.Maui.sln", includePrerelease: includePrerelease);
+            StartVisualStudio("._Microsoft.Maui.sln", includePrerelease: includePrerelease);
         }
     });
 
@@ -833,9 +833,9 @@ Task("VSMAC")
     .Does(() =>
     {
         
-        string sln = "Microsoft.Maui.sln";
+        string sln = "._Microsoft.Maui.sln";
         if (target == "VS-CG")
-            sln = "Compatibility.ControlGallery.sln";
+            sln = "._Compatibility.ControlGallery.sln";
 
         MSBuild("src/Core/src/Core.csproj",
                 GetMSBuildSettings()
@@ -1095,7 +1095,7 @@ void RunTests(string unitTestLibrary, NUnit3Settings settings, ICakeContext ctx)
     }
 }
 
-void StartVisualStudio(string sln = "./Microsoft.Maui.sln", bool includePrerelease = true)
+void StartVisualStudio(string sln = "./._Microsoft.Maui.sln", bool includePrerelease = true)
 {
     if(isCIBuild)
         return;

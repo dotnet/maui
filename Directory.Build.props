@@ -33,7 +33,8 @@
   <PropertyGroup Condition="'$(BuildForLegacy)' == 'true'">
     <!-- the legacy TFMs -->
     <MauiPlatforms>Xamarin.iOS10;MonoAndroid10.0</MauiPlatforms>
-    <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">uap10.0.16299</WindowsMauiPlatforms>
+    <!-- UWP is no longer supported -->
+    <WindowsMauiPlatforms></WindowsMauiPlatforms>
     <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
     <MauiAdditionalPlatforms>MonoAndroid90;tizen40;Xamarin.Mac20</MauiAdditionalPlatforms>
 

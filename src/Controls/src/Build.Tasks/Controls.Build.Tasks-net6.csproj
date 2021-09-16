@@ -1,25 +1,13 @@
 ﻿<!-- NOTE: This project is temporarily replacing part of Microsoft.Maui.Controls.Sdk -->
 <Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-		<SignAssembly>false</SignAssembly>
-		<_DisableStrongNamer>True</_DisableStrongNamer>
-		<DelaySign>false</DelaySign>
-	</PropertyGroup>
 
 	<PropertyGroup>
-		<!-- <_DisableStrongNamer Condition=" '$(_DisableStrongNamer)' != 'True' ">False</_DisableStrongNamer> -->
 		<PackageId>Microsoft.Maui.Controls.Build.Tasks</PackageId>
 		<AssemblyName>Microsoft.Maui.Controls.Build.Tasks</AssemblyName>
 		<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
 		<Description>.NET MAUI MSBuild tasks. Enabled via &lt;UseMaui&gt;true&lt;/UseMaui&gt;.</Description>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-		<!-- <SignAssembly Condition=" '$(_DisableStrongNamer)' != 'True' ">True</SignAssembly>
-		<DisableStrongNamer Condition=" '$(_DisableStrongNamer)' == 'True' ">True</DisableStrongNamer>
-		<DelaySign>true</DelaySign>
-		<AssemblyOriginatorKeyFile>..\..\..\..\eng\microsoft.maui.controls.snk</AssemblyOriginatorKeyFile>
-		<StrongNamerKeyFile>..\..\..\..\eng\microsoft.maui.controls.snk</StrongNamerKeyFile>
-		<DefineConstants Condition=" '$(_DisableStrongNamer)' != 'True' ">$(DefineConstants);STRONG_NAME</DefineConstants> -->
 		<IsTrimmable>false</IsTrimmable>
 		<IncludeSymbols>false</IncludeSymbols>
 		<IncludeBuildOutput>false</IncludeBuildOutput>
@@ -35,7 +23,6 @@
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Maui.Graphics" GeneratePathProperty="true" />
-		<!-- <PackageReference Include="StrongNamer" Version="0.2.5" PrivateAssets="all" GeneratePathProperty="true" /> -->
 	</ItemGroup>
 
 	<ItemGroup>

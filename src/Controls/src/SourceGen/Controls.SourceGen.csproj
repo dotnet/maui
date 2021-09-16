@@ -13,10 +13,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Controls.Core.csproj" GeneratePathProperty="true" PrivateAssets="all" />
-    <ProjectReference Include="..\Xaml\Controls.Xaml.csproj" GeneratePathProperty="true" PrivateAssets="all" />
+    <Compile Include="..\Core\Internals\INameScope.cs" Link="INameScope.cs" />
+    <Compile Include="..\Core\IXmlLineInfoProvider.cs" Link="IXmlLineInfoProvider.cs" />
+    <Compile Include="..\Core\XamlParseException.cs" Link="XamlParseException.cs" />
+    <Compile Include="..\Core\XmlLineInfo.cs" Link="XmlLineInfo.cs" />
+    <Compile Include="..\Core\XmlnsDefinitionAttribute.cs" Link="XmlnsDefinitionAttribute.cs" />
+    <Compile Include="..\Xaml\TypeArgumentsParser.cs" Link="TypeArgumentsParser.cs" />
+    <Compile Include="..\Xaml\XamlLoader.Types.cs" Link="XamlLoader.Types.cs" />
+    <Compile Include="..\Xaml\XamlParser.Namespaces.cs" Link="XamlParser.Namespaces.cs" />
+    <Compile Include="..\Xaml\XamlNode.cs" Link="XamlNode.cs" />
+    <Compile Include="..\Xaml\XamlNodeVisitor.cs" Link="XamlNodeVisitor.cs" />
+    <Compile Include="..\Xaml\XmlName.cs" Link="XmlName.cs" />
+    <Compile Include="..\Xaml\XmlnsHelper.cs" Link="XmlnsHelper.cs" />
+    <Compile Include="..\Xaml\XmlTypeXamlExtensions.cs" Link="XmlTypeXamlExtensions.cs" />
   </ItemGroup>
-
 
   <PropertyGroup>
     <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
