@@ -39,11 +39,14 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
 		}
 
-		AppCompatEditText GetNativeEditor(EditorHandler editorHandler) =>
+		static AppCompatEditText GetNativeEditor(EditorHandler editorHandler) =>
 			(AppCompatEditText)editorHandler.NativeView;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
+
+		static void SetNativeText(EditorHandler editorHandler, string text) =>
+			GetNativeEditor(editorHandler).Text = text;
 
 		string GetNativePlaceholderText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Hint;

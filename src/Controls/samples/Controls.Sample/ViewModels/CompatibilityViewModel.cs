@@ -9,9 +9,6 @@ namespace Maui.Controls.Sample.ViewModels
 	{
 		protected override IEnumerable<SectionModel> CreateItems() => new[]
 		{
-			new SectionModel(typeof(BoxViewPage), "BoxView",
-				"BoxView renders a simple rectangle of a specified width, height, and color. You can use BoxView for decoration, rudimentary graphics, and for interaction with the user through touch."),
-
 			new SectionModel(typeof(ImageButtonPage), "ImageButton",
 				"ImageButton is a rectangular object that displays an image, and which fires a Clicked event when it's been pressed."),
 
@@ -36,8 +33,8 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(TableViewPage), "TableView",
 				"TableView displays a list of rows of type Cell with optional headers and subheaders. Set the Root property to an object of type TableRoot, and add TableSection objects to that TableRoot. Each TableSection is a collection of Cell objects."),
 
-			new SectionModel(typeof(WebViewPage), "WebView",
-				"WebView displays Web pages or HTML content."),
+			new SectionModel(typeof(TabbedPageGallery), "TabbedPage",
+				"Display pages as a set of Tabs."),
 		};
 	}
 }

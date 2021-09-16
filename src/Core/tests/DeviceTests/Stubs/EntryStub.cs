@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public partial class EntryStub : StubBase, IEntry
+	public partial class EntryStub : StubBase, IEntry, ITextInputStub
 	{
 		private string _text;
 
@@ -22,6 +22,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public bool IsTextPredictionEnabled { get; set; } = true;
 
 		public string Placeholder { get; set; }
+
+		public Color PlaceholderColor { get; set; }
 
 		public bool IsReadOnly { get; set; }
 

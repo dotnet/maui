@@ -14,7 +14,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public sealed partial class ButtonHandler : ViewHandler<IButton, MaterialButton>
+	public partial class ButtonHandler : ViewHandler<IButton, MaterialButton>
 	{
 		static Thickness? DefaultPadding;
 		static Drawable? DefaultBackground;
@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Handlers
 
 		public override void NativeArrange(Rectangle frame)
 		{
-			var nativeView = WrappedNativeView;
+			var nativeView = this.GetWrappedNativeView();
 
 			if (nativeView == null || Context == null)
 			{
