@@ -146,6 +146,7 @@
   <Target Name="RemoveLoggingAnalyzer" BeforeTargets="CoreCompile">
     <ItemGroup>
       <Analyzer Remove="@(Analyzer)" Condition="%(FileName) == 'Microsoft.Extensions.Logging.Generators'" />
+      <Analyzer Remove="@(Analyzer)" Condition="%(FileName) == 'System.Text.Json.SourceGeneration' and '$(BuildForLegacy)' == 'true'" />
     </ItemGroup>
   </Target>
 </Project>

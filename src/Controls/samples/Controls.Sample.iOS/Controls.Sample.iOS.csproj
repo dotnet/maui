@@ -66,12 +66,12 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Info.plist" />
+    <None Include="..\Controls.Sample.SingleProject\Platforms\iOS\Info.plist" LogicalName="Info.plist" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Main.cs" />
-    <Compile Include="AppDelegate.cs" />
-    <Compile Include="SceneDelegate.cs" />
+    <Compile Include="..\Controls.Sample.SingleProject\Platforms\iOS\Main.cs" />
+    <Compile Include="..\Controls.Sample.SingleProject\Platforms\iOS\AppDelegate.cs" />
+    <Compile Include="..\Controls.Sample.SingleProject\Platforms\iOS\SceneDelegate.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj">
