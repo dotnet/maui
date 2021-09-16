@@ -46,7 +46,7 @@
             <uap:ShowOn Tile="wide310x150Logo"/>
           </uap:ShowNameOnTiles>
         </uap:DefaultTile >
-        <uap:SplashScreen Image="Assets\appiconfgSplashScreen.png" />
+        <uap:SplashScreen Image="Assets\dotnet_botSplashScreen.png" />
       </uap:VisualElements>
     </Application>
   </Applications>
