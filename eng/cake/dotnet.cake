@@ -57,7 +57,10 @@ Task("dotnet-build")
     .Does(() =>
     {
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks-net6.slnf");
-        RunMSBuildWithDotNet("./Microsoft.Maui-net6.sln");
+        if (IsRunningOnWindows())
+            RunMSBuildWithDotNet("./Microsoft.Maui-net6.sln");
+        else
+            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
     });
 
 Task("dotnet-samples")

@@ -10,6 +10,7 @@ Write-Host "MSBUILD_EXE: $env:MSBUILD_EXE"
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $logsDirectory = Join-Path $artifacts logs
 $sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-net6.slnf
+$sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-mac.slnf
 
 # Bootstrap ./bin/dotnet/
 $csproj = Join-Path $PSScriptRoot ../src/DotNet/DotNet.csproj
@@ -112,7 +113,7 @@ else
         $dotnet_tool = Join-Path $dotnet dotnet
 
         # Build with ./bin/dotnet/dotnet
-        & $dotnet_tool pack $sln `
+        & $dotnet_tool pack $slnMac `
             -c:$configuration `
             -p:SymbolPackageFormat=snupkg `
             -bl:$logsDirectory/maui-pack-$configuration.binlog
