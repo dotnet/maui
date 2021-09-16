@@ -184,14 +184,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Compon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.WinUI", "src\Compatibility\ControlGallery\src\WinUI\Compatibility.ControlGallery.WinUI.csproj", "{7F8688A8-748E-4A04-826D-24F4535BF839}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinUI.UITests", "src\Compatibility\ControlGallery\test\WinUI.UITests\WinUI.UITests.csproj", "{0A39A74B-6F7A-4D41-84F2-B0CCDCE899DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinUI.UITests", "src\Compatibility\ControlGallery\test\WinUI.UITests\WinUI.UITests.csproj", "{0A39A74B-6F7A-4D41-84F2-B0CCDCE899DF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Windows.UnitTests", "src\Compatibility\Core\tests\WinUI\Compatibility.Windows.UnitTests.csproj", "{4EE81415-7985-49EC-A9A5-2CD485C2C7E7}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 4
-		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 4
+		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 5
+		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{0a39a74b-6f7a-4d41-84f2-b0ccdce899df}*SharedItemsImports = 5
 		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{772e2531-2270-429a-9afb-4aa0104aef27}*SharedItemsImports = 5
 		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{a34ebe01-25bf-4e69-a2dc-2288dc625541}*SharedItemsImports = 5
 		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{a34ebe01-25bf-4e69-a2dc-2288dc625541}*SharedItemsImports = 5
