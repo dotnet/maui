@@ -10,24 +10,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class ImageSourceLoader : IImageSourcePart
+	partial class ImageSourceLoader : IImageSourcePart
 	{
-
-		static Task<IImageSourceServiceResult<global::Microsoft.UI.Xaml.Media.ImageSource>> GetNativeImage(IImageSource imageSource, IImageSourceService imageSourceService, IMauiContext mauiContext)
+		static Task<IImageSourceServiceResult<Drawable>> GetNativeImage(IImageSource imageSource, IImageSourceService imageSourceService, IMauiContext mauiContext)
 		{
-			return imageSourceService.GetImageSourceAsync(imageSource);
+			return imageSourceService.GetDrawableAsync(imageSource, mauiContext.Context);
 		}
 
 		public void LoadImage(ImageView view, Action<IImageSourceServiceResult<Drawable>> finished = null)
 		{
 			LoadImageResult(LoadImageAsync(view), finished)
 						.FireAndForget(e => Internals.Log.Warning(nameof(ImageSourceLoader), $"{e}"));
-		}
-
-		static async Task LoadImageResult(Task<IImageSourceServiceResult<Drawable>> task, Action<IImageSourceServiceResult<Drawable>> finished = null)
-		{
-			var result = await task;
-			finished?.Invoke(result);
 		}
 
 		public Task<IImageSourceServiceResult<Drawable>> LoadImageAsync(ImageView view)

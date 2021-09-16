@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIImage;
 #elif MONOANDROID
-using NativeView = Android.Graphics.Drawable.Drawable;
+using NativeView = Android.Graphics.Drawables.Drawable;
 #elif WINDOWS
 using NativeView = Microsoft.UI.Xaml.Media.ImageSource;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
