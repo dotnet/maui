@@ -12,16 +12,69 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static PropertyMapper<NavigationPage, NavigationPageHandler> NavigationPageMapper =
 			new PropertyMapper<NavigationPage, NavigationPageHandler>(NavigationViewHandler.NavigationViewMapper)
 			{
-				[NavigationPage.HasNavigationBarProperty.PropertyName] = UpdateToolBar,
-				[NavigationPage.HasBackButtonProperty.PropertyName] = UpdateToolBar,
-				[NavigationPage.TitleIconImageSourceProperty.PropertyName] = UpdateToolBar,
-				[NavigationPage.TitleViewProperty.PropertyName] = UpdateToolBar,
-				[NavigationPage.IconColorProperty.PropertyName] = UpdateToolBar,
-				[Page.TitleProperty.PropertyName] = UpdateToolBar,
-				[NavigationPage.CurrentPageProperty.PropertyName] = UpdateToolBar,
-				[PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName] = UpdateToolBar,
-				[PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty.PropertyName] = UpdateToolBar,
+				[NavigationPage.HasNavigationBarProperty.PropertyName] = MapHasNavigationBar,
+				[NavigationPage.HasBackButtonProperty.PropertyName] = MapHasBackButton,
+				[NavigationPage.TitleIconImageSourceProperty.PropertyName] = MapTitleIconImageSource,
+				[NavigationPage.TitleViewProperty.PropertyName] = MapTitleView,
+				[NavigationPage.IconColorProperty.PropertyName] = MapIconColor,
+				[Page.TitleProperty.PropertyName] = MapTitle,
+				[NavigationPage.CurrentPageProperty.PropertyName] = MapCurrentPage,
+				[NavigationPage.BarBackgroundColorProperty.PropertyName] = MapBarBackground,
+				[NavigationPage.BarBackgroundProperty.PropertyName] = MapBarBackground,
+				[PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName] = MapToolbarPlacement,
+				[PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty.PropertyName] = MapToolbarDynamicOverflowEnabled,
 			};
+
+		// TODO MAUI: break these out into extension methods
+		public static void MapBarBackground(NavigationPageHandler arg1, NavigationPage arg2)
+		{
+			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+		}
+
+		public static void MapToolbarDynamicOverflowEnabled(NavigationPageHandler arg1, NavigationPage arg2)
+		{
+			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+		}
+
+		public static void MapToolbarPlacement(NavigationPageHandler arg1, NavigationPage arg2)
+		{
+			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+		}
+
+		public static void MapCurrentPage(NavigationPageHandler arg1, NavigationPage arg2)
+		{
+			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+		}
+
+		public static void MapTitle(NavigationPageHandler arg1, NavigationPage arg2)
+		{
+			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+		}
+
+		public static void MapIconColor(NavigationPageHandler arg1, NavigationPage arg2)
+		{
+			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+		}
+
+		public static void MapTitleView(NavigationPageHandler arg1, NavigationPage arg2)
+		{
+			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+		}
+
+		public static void MapTitleIconImageSource(NavigationPageHandler arg1, NavigationPage arg2)
+		{
+			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+		}
+
+		public static void MapHasBackButton(NavigationPageHandler arg1, NavigationPage arg2)
+		{
+			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+		}
+
+		public static void MapHasNavigationBar(NavigationPageHandler arg1, NavigationPage arg2)
+		{
+			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+		}
 
 		ControlsNavigationManager _controlsNavigationManager;
 		public NavigationPageHandler() : base(NavigationPageMapper)
@@ -32,7 +85,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected override NavigationManager CreateNavigationManager()
 			=> _controlsNavigationManager ??= new ControlsNavigationManager(MauiContext!);
 
-		private static void UpdateToolBar(NavigationPageHandler arg1, NavigationPage arg2)
+		public static void UpdateToolBar(NavigationPageHandler arg1, NavigationPage arg2)
 		{
 			arg1._controlsNavigationManager.ToolbarPropertyChanged();
 		}

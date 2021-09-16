@@ -11,7 +11,6 @@ namespace Microsoft.Maui
 	{
 		MauiContext _mauiContext;
 		MauiNavigationView _navigationView;
-		WindowHeader _windowHeader;
 		IView? _content;
 		IWindow? _window;
 
@@ -19,16 +18,9 @@ namespace Microsoft.Maui
 		{
 			_mauiContext = mauiContext;
 			_navigationView = new MauiNavigationView();
-			_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
-			//_navigationView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
-			_navigationView.IsPaneToggleButtonVisible = false;
-			_navigationView.Header = (_windowHeader = new WindowHeader());
 			_navigationView.BackRequested += OnBackRequested;
-
-			_navigationView.IsBackEnabled = true;
 		}
 
-		
 		void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
 		{
 			_window?.BackButtonPressed();
@@ -43,12 +35,7 @@ namespace Microsoft.Maui
 			_navigationView.Content = _content?.ToNative(_mauiContext);
 		}
 
-		// TODO MAUI: This will need to change once we start having nested NavigationViews
-		internal void SetVisibleContent(IView view)
-		{
-			_windowHeader.Title = (view as ITitledElement)?.Title ?? String.Empty;
-		}
-
-		internal CommandBar GetCommandBar() => (CommandBar)_navigationView.Header;
+		internal CommandBar? GetCommandBar() =>
+			(_navigationView.Header as WindowHeader)?.CommandBar;
 	}
 }
