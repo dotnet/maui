@@ -42,12 +42,11 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 			foreach (var file in context.AdditionalFiles)
 			{
-				string? code;
-				var kind = context.GetMSBuildItemMetadata(file, "GenKind", string.Empty);
-
-				if (string.IsNullOrWhiteSpace(kind))
+				if (!context.TryGetMSBuildItemMetadata(file, "GenKind", out var kind))
 					continue;
 
+				string? code;
+				
 				switch (kind)
 				{
 					case "Xaml":
