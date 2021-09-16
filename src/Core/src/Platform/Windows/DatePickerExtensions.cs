@@ -14,7 +14,7 @@ namespace Microsoft.Maui
 			nativeDatePicker.UpdateDate(date);
 		}
 
-		public static void UpdateDate(this CalendarDatePicker nativeDatePicker, DateTime dateTime)
+		public static void UpdateDate(this CalendarDatePicker nativeDatePicker, DateTime? dateTime)
 		{
 			nativeDatePicker.Date = dateTime;
 		}
