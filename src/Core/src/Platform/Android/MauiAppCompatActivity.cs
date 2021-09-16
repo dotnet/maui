@@ -43,6 +43,14 @@ namespace Microsoft.Maui
 			base.OnCreate(savedInstanceState);
 
 			CreateNativeWindow(savedInstanceState);
+
+			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnCreate>(del => del(savedInstanceState));
+
+			// Call here instead of OnRestoreInstanceState
+			// Both places get the same bundle, but this one happens earlier and may be more useful
+			// than waiting until OnRestoreInstanceState which happens after OnCreate and OnStart
+			if (VirtualWindow?.Handler?.MauiContext != null)
+				VirtualWindow?.RestoredState(new RestoredState(VirtualWindow.Handler.MauiContext, savedInstanceState));
 		}
 
 		void CreateNativeWindow(Bundle? savedInstanceState = null)
@@ -75,6 +83,29 @@ namespace Microsoft.Maui
 
 			_virtualWindow = new WeakReference<IWindow>(window);
 			this.SetWindow(window, mauiContext);
+		}
+
+		public override void OnSaveInstanceState(Bundle outState, PersistableBundle outPersistentState)
+		{
+			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnSaveInstanceState2>(del => del(this, outState, outPersistentState));
+
+			// Call the SavingState since the activity is going to be destroyed
+			if (VirtualWindow?.Handler?.MauiContext != null)
+				VirtualWindow?.SavingState(new SaveableState(VirtualWindow.Handler.MauiContext, outState, outPersistentState));
+
+			base.OnSaveInstanceState(outState, outPersistentState);
+		}
+
+		protected override void OnDestroy()
+		{
+			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnDestroy>(del => del(this));
+
+			var mauiApp = MauiApplication.Current?.Application;
+
+			if (mauiApp != null && VirtualWindow != null)
+				mauiApp.CloseWindow(VirtualWindow);
+
+			base.OnDestroy();
 		}
 	}
 }

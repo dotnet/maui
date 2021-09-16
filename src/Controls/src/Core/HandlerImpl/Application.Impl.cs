@@ -27,6 +27,12 @@ namespace Microsoft.Maui.Controls
 			return window;
 		}
 
+		void IApplication.CloseWindow(IWindow window)
+		{
+			if (window is Window controlsWindow)
+				RemoveWindow(controlsWindow);
+		}
+
 		public void ThemeChanged()
 		{
 			Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Current.RequestedTheme));
@@ -56,6 +62,23 @@ namespace Microsoft.Maui.Controls
 
 			if (window is NavigableElement ne)
 				ne.NavigationProxy.Inner = NavigationProxy;
+		}
+
+		void RemoveWindow(Window window)
+		{
+			if (window is NavigableElement ne)
+				ne.NavigationProxy.Inner = null;
+
+			if (window is Element windowElement)
+			{
+				windowElement.Parent = null;
+				var oldIndex = InternalChildren.IndexOf(windowElement);
+				InternalChildren.Remove(windowElement);
+				OnChildRemoved(windowElement, oldIndex);
+			}
+
+			if (window is Window cwind)
+				_windows.Remove(cwind);
 		}
 	}
 }

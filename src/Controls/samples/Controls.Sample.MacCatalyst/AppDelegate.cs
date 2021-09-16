@@ -15,4 +15,10 @@ namespace Sample.MacCatalyst
 	{
 		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
+
+
+	[Register("SceneDelegate")]
+	public class SceneDelegate : MauiUIWindowSceneDelegate
+	{
+	}
 }

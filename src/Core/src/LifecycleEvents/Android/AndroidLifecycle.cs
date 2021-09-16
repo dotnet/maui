@@ -22,6 +22,7 @@ namespace Microsoft.Maui.LifecycleEvents
 		public delegate void OnPause(Activity activity);
 		public delegate void OnStop(Activity activity);
 		public delegate void OnSaveInstanceState(Activity activity, Bundle outState);
+		public delegate void OnSaveInstanceState2(Activity activity, Bundle outState, PersistableBundle outPersistentState);
 		public delegate void OnDestroy(Activity activity);
 
 		// Events called by Activity overrides (always call base)

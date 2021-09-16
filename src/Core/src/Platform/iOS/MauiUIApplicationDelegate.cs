@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,18 +10,63 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
+	public abstract class MauiUIWindowSceneDelegate : UIWindowSceneDelegate
+	{
+		WeakReference<IWindow>? _virtualWindow;
+
+		internal IWindow? VirtualWindow
+			=> (_virtualWindow?.TryGetTarget(out var w) ?? false) ? w : null;
+
+		public override UIWindow? Window { get; set; }
+
+		public override void WillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
+		{
+			if (scene is UIWindowScene windowScene)
+			{
+				var restoreUserActivity = session?.StateRestorationActivity;
+
+				var uiWindow = new UIWindow();
+				var mauiContext = new MauiContext(MauiUIApplicationDelegate.Current.Services, uiWindow);
+
+				MauiUIApplicationDelegate.Current.Services.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
+
+				var activationState = new ActivationState(mauiContext, restoreUserActivity);
+				var window = MauiUIApplicationDelegate.Current.Application.CreateWindow(activationState);
+
+				_virtualWindow = new WeakReference<IWindow>(window);
+				uiWindow.SetWindow(window, mauiContext);
+
+				Window = uiWindow;
+
+				// Set the WindowScene
+				Window.WindowScene = windowScene;
+				Window.MakeKeyAndVisible();
+
+				window.RestoredState(new RestoredState(mauiContext, restoreUserActivity));
+
+				MauiUIApplicationDelegate.Current.Services.InvokeLifecycleEvents<iOSLifecycle.WillConnect>(del => del(scene, session, connectionOptions));
+			}
+		}
+
+		public override NSUserActivity? GetStateRestorationActivity(UIScene scene)
+		{
+			var userActivity = new NSUserActivity(VirtualWindow?.GetType()?.FullName ?? "DEFAULT");
+			MauiUIApplicationDelegate.Current.Services.InvokeLifecycleEvents<iOSLifecycle.GetStateRestorationActivity>(del => del(scene, userActivity));
+
+			// Call the SavingState since the activity is going to be destroyed
+			if (VirtualWindow?.Handler?.MauiContext != null)
+				VirtualWindow?.SavingState(new SaveableState(VirtualWindow.Handler.MauiContext, userActivity));
+
+			return userActivity;
+		}
+	}
+
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
 		WeakReference<IWindow>? _virtualWindow;
+
 		internal IWindow? VirtualWindow
-		{
-			get
-			{
-				IWindow? window = null;
-				_virtualWindow?.TryGetTarget(out window);
-				return window;
-			}
-		}
+			=> (_virtualWindow?.TryGetTarget(out var w) ?? false) ? w : null;
 
 		protected MauiUIApplicationDelegate()
 		{
@@ -27,6 +74,9 @@ namespace Microsoft.Maui
 		}
 
 		protected abstract MauiApp CreateMauiApp();
+
+		public override UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
+			=> new UISceneConfiguration("Default Configuration", connectingSceneSession.Role);
 
 		public override bool WillFinishLaunching(UIApplication application, NSDictionary launchOptions)
 		{
@@ -41,33 +91,33 @@ namespace Microsoft.Maui
 
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
+			var result = true;
+
 			Application = Services.GetRequiredService<IApplication>();
 
-			var uiWindow = CreateNativeWindow();
+			// On older than iOS13 we need to make the window here still
+			if (!UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+			{
+				var uiWindow = new UIWindow();
+				var mauiContext = new MauiContext(Services, uiWindow);
 
-			Window = uiWindow;
+				Services.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
-			Window.MakeKeyAndVisible();
+				var activationState = new ActivationState(mauiContext, application.UserActivity);
+				var window = Application.CreateWindow(activationState);
+
+				_virtualWindow = new WeakReference<IWindow>(window);
+				uiWindow.SetWindow(window, mauiContext);
+
+				Window = uiWindow;
+				Window.MakeKeyAndVisible();
+
+				result = base.FinishedLaunching(application, launchOptions);
+			}
 
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application, launchOptions));
 
-			return true;
-		}
-
-		UIWindow CreateNativeWindow()
-		{
-			var uiWindow = new UIWindow();
-
-			var mauiContext = new MauiContext(Services, uiWindow);
-
-			Services.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
-
-			var activationState = new ActivationState(mauiContext);
-			var window = Application.CreateWindow(activationState);
-			_virtualWindow = new WeakReference<IWindow>(window);
-			uiWindow.SetWindow(window, mauiContext);
-
-			return uiWindow;
+			return result;
 		}
 
 		public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)

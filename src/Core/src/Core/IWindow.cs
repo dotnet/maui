@@ -10,6 +10,9 @@ namespace Microsoft.Maui
 		/// </summary>
 		IView Content { get; }
 
+		void RestoredState(IRestoredState state);
+		void SavingState(ISaveableState state);
+
 		void Created();
 
 		void Resumed();

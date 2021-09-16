@@ -71,6 +71,11 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnStopped() { }
 		protected virtual void OnDestroying() { }
 
+		public void RestoredState(IRestoredState state)
+		{ }
+		public void SavingState(ISaveableState state)
+		{ }
+
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);

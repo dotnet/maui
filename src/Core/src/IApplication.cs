@@ -23,5 +23,7 @@ namespace Microsoft.Maui
 		/// Notify a theme change.
 		/// </summary>
 		void ThemeChanged();
+
+		void CloseWindow(IWindow window);
 	}
 }

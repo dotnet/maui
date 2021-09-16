@@ -18,5 +18,9 @@ namespace Microsoft.Maui.LifecycleEvents
 
 		// Internal events
 		internal delegate void OnMauiContextCreated(IMauiContext mauiContext);
+
+		public delegate void GetStateRestorationActivity(UIScene scene, NSUserActivity);
+
+		public delegate void WillConnect(UIScene scene, UISceneSession? session, UISceneConnectionOptions connectionOptions);
 	}
 }
