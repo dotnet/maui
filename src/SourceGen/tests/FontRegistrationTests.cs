@@ -6,7 +6,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Maui.SourceGen.Tests
 {
-	public class FontGenerationTests : BaseSourceGeneratorTests<MauiAutoConfigureFontsGenerator>
+	public class FontGenerationTests : BaseSourceGeneratorTests<FontConfigurationGenerator>
 	{
 		public FontGenerationTests(ITestOutputHelper output) : base(output)
 		{
