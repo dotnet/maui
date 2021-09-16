@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		WebViewClient? _webViewClient;
 		WebChromeClient? _webChromeClient;
-		bool _settingsSet;
+		bool _firstRun = true;
 
 		protected override AWebView CreateNativeView()
 		{
@@ -18,6 +18,16 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+			// At this time all the mappers were already called
+			if (!_firstRun)
+				return;
+			_firstRun = false;
+			ProcessSourceWhenReady(this, VirtualView);
+		}
+
 		protected override void DisconnectHandler(AWebView nativeView)
 		{
 			nativeView.StopLoading();
@@ -25,55 +35,34 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapSource(WebViewHandler handler, IWebView webView)
 		{
-			IWebViewDelegate? webViewDelegate = handler.NativeView as IWebViewDelegate;
-
-			SetSettingsAndClient(handler);
-
-			handler.NativeView?.UpdateSource(webView, webViewDelegate);
+			ProcessSourceWhenReady(handler, webView);
 		}
 
 		public static void MapWebViewClient(WebViewHandler handler, IWebView webView)
 		{
-			if (handler._webViewClient == null)
-			{
-				handler._webViewClient = new WebViewClient();
-				handler.NativeView.SetWebViewClient(handler._webViewClient);
-			}
+			handler.NativeView.SetWebViewClient(handler._webViewClient ??= new WebViewClient());
 		}
 
 		public static void MapWebChromeClient(WebViewHandler handler, IWebView webView)
 		{
-			if (handler._webChromeClient == null)
-			{
-				handler._webChromeClient = new WebChromeClient();
-				handler.NativeView.SetWebChromeClient(handler._webChromeClient);
-			}
+			handler.NativeView.SetWebChromeClient(handler._webChromeClient ??= new WebChromeClient());
+
 		}
 
 		public static void MapWebViewSettings(WebViewHandler handler, IWebView webView)
 		{
-			if (!handler._settingsSet)
-			{
-				handler.NativeView.UpdateSettings(webView, true, true);
-				handler._settingsSet = true;
-			}
+			handler.NativeView.UpdateSettings(webView, true, true);
 		}
 
-		static void SetSettingsAndClient(WebViewHandler handler)
+		static void ProcessSourceWhenReady(WebViewHandler handler, IWebView webView)
 		{
-			if (handler._webViewClient == null)
-			{
-				WebViewMapper.UpdateProperty(handler, handler.VirtualView, nameof(WebViewClient));
-			}
-			if (handler._webChromeClient == null)
-			{
-				WebViewMapper.UpdateProperty(handler, handler.VirtualView, nameof(WebChromeClient));
-			}
-			if (!handler._settingsSet)
-			{
-				WebViewMapper.UpdateProperty(handler, handler.VirtualView, nameof(AWebView.Settings));
-				handler._settingsSet = true;
-			}
+			//We want to load the source after making sure the mapper for webclients
+			//and settings were called already
+			if (handler._firstRun)
+				return;
+
+			IWebViewDelegate? webViewDelegate = handler.NativeView as IWebViewDelegate;
+			handler.NativeView?.UpdateSource(webView, webViewDelegate);
 		}
 	}
 }
