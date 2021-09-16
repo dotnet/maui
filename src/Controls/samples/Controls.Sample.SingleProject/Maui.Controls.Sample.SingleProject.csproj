@@ -9,6 +9,7 @@
     <WindowsPackageType>MSIX</WindowsPackageType>
     <ApplicationTitle>.NET MAUI Controls</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sample</ApplicationId>
+    <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' and $(TargetFramework.Contains('-windows')) ">
