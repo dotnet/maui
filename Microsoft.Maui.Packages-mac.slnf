@@ -4,8 +4,6 @@
     "projects": [
       "src\\BlazorWebView\\src\\Maui\\Microsoft.AspNetCore.Components.WebView.Maui.csproj",
       "src\\BlazorWebView\\src\\WebView2\\Microsoft.AspNetCore.Components.WebView.WebView2.csproj",
-      "src\\BlazorWebView\\src\\WindowsForms\\Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj",
-      "src\\BlazorWebView\\src\\Wpf\\Microsoft.AspNetCore.Components.WebView.Wpf.csproj",
       "src\\Compatibility\\Android.FormsViewGroup\\src\\Compatibility.Android.FormsViewGroup-net6.csproj",
       "src\\Compatibility\\Core\\src\\Compatibility-net6.csproj",
       "src\\Controls\\Maps\\src\\Controls.Maps-net6.csproj",
