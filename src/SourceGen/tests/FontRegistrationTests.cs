@@ -14,6 +14,7 @@ namespace Microsoft.Maui.SourceGen.Tests
 
 			Generator.AddMSBuildProperty("UseMaui", "true");
 			Generator.AddMSBuildProperty("OutputType", "Exe");
+			Generator.AddMSBuildProperty("EnableMauiFontConfigurationSourceGen", "true");
 		}
 
 		[Theory]

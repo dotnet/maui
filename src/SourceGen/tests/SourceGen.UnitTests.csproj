@@ -21,6 +21,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\src\Core\SourceGen.Core.csproj" GeneratePathProperty="true" PrivateAssets="all" />
+		<ProjectReference Include="..\src\Util\SourceGen.Util.csproj" GeneratePathProperty="true" PrivateAssets="all" />
 		<ProjectReference Include="..\..\TestUtils\src\TestUtils.SourceGen\TestUtils.SourceGen.csproj" />
 		<ProjectReference Include="..\..\Core\src\Core-net6.csproj" GeneratePathProperty="true" PrivateAssets="all" />
 	</ItemGroup>

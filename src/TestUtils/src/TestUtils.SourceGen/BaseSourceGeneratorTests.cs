@@ -10,6 +10,12 @@ namespace Microsoft.Maui.TestUtils.SourceGen
 {
 	public abstract class BaseSourceGeneratorTests<T> : IDisposable where T : class, ISourceGenerator, new()
 	{
+#if DEBUG
+		public const string Configuration = "Debug";
+#else
+		public const string Configuration = "Release";
+#endif
+
 		protected ITestOutputHelper Output { get; }
 		protected AssemblyGenerator Generator { get; }
 		protected Compilation? Compilation { get; set; }

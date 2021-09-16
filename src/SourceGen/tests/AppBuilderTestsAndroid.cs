@@ -10,10 +10,16 @@ namespace Microsoft.Maui.SourceGen.Tests
 {
 	public class AppBuilderTestsAndroid : BaseSourceGeneratorTests<AppBuilderGenerator>
 	{
+		const string platformIdentifier = "android";
+
+		void AddPlatformReference(string assembly)
+			=> Generator.AddReference(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "Core", "src", "bin", Configuration, $"net6.0-{platformIdentifier}", assembly + ".dll"));
+
 		public AppBuilderTestsAndroid(ITestOutputHelper output) : base(output)
 		{
-			Generator.AddReferences("Microsoft.Maui");
+			AddPlatformReference("Microsoft.Maui");
 
+			Generator.AddMSBuildProperty("EnableMauiAppBuilderSourceGen", "true");
 			Generator.AddMSBuildProperty("TargetPlatformIdentifier", "android");
 			Generator.AddMSBuildProperty("OutputType", "Exe");
 			Generator.AddMSBuildProperty("UseMaui", "true");
@@ -31,7 +37,6 @@ using Microsoft.Maui.Controls.Hosting;
 using System;
 using Android.App;
 using Android.Runtime;
-using Microsoft.Maui;
 
 namespace MyApp
 {

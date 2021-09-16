@@ -43,6 +43,12 @@ namespace Microsoft.Maui.TestUtils.SourceGen
 
 		public void AddReference(string assemblyName)
 		{
+			if (File.Exists(assemblyName))
+			{
+				references.Add(MetadataReference.CreateFromFile(assemblyName));
+				return;
+			}
+
 			var assemblyNameWithoutDllExt = Path.GetFileNameWithoutExtension(assemblyName);
 
 			if (assemblyNameWithoutDllExt != null)

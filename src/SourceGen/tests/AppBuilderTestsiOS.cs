@@ -10,13 +10,19 @@ namespace Microsoft.Maui.SourceGen.Tests
 {
 	public class AppBuilderTestsiOS : BaseSourceGeneratorTests<AppBuilderGenerator>
 	{
+		const string platformIdentifier = "ios";
+
+		void AddPlatformReference(string assembly)
+			=> Generator.AddReference(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "Core", "src", "bin", Configuration, $"net6.0-{platformIdentifier}", assembly + ".dll"));
+		
 		public AppBuilderTestsiOS(ITestOutputHelper output) : base(output)
 		{
-			Generator.AddReferences("Microsoft.Maui");
+			AddPlatformReference("Microsoft.Maui");
 
 			Generator.AddMSBuildProperty("TargetPlatformIdentifier", "ios");
 			Generator.AddMSBuildProperty("OutputType", "Exe");
 			Generator.AddMSBuildProperty("UseMaui", "true");
+			Generator.AddMSBuildProperty("EnableMauiAppBuilderSourceGen", "true");
 		}
 
 		[Fact]
@@ -44,7 +50,7 @@ namespace MyApp
 
 			RunGenerator();
 
-			Compilation.AssertGeneratedContent("Register(nameof(AppDelegate))]");
+			Compilation.AssertGeneratedContent("Register(nameof(MauiAppDelegate))]");
 			Compilation.AssertGeneratedContent("static void Main");
 			Compilation.AssertGeneratedContent("protected override global::Microsoft.Maui.MauiApp CreateMauiApp()");
 		}
@@ -81,7 +87,7 @@ namespace MyApp
 
 			RunGenerator();
 
-			Compilation.AssertGeneratedContent("Register(nameof(AppDelegate))]");
+			Compilation.AssertGeneratedContent("Register(nameof(MauiAppDelegate))]");
 			Compilation.AssertNotGeneratedContent("static void Main");
 			Compilation.AssertGeneratedContent("protected override global::Microsoft.Maui.MauiApp CreateMauiApp()");
 		}
@@ -190,7 +196,7 @@ namespace MyApp
 
 	public class Program
 	{
-		static void Main(string[] args)
+		public static void Main(string[] args)
 		{
 		}
 	}
