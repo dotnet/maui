@@ -66,9 +66,6 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Controls.Sample.SingleProject\Platforms\iOS\Info.plist" LogicalName="Info.plist" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="..\Controls.Sample.SingleProject\Platforms\iOS\Main.cs" />
     <Compile Include="..\Controls.Sample.SingleProject\Platforms\iOS\AppDelegate.cs" />
     <Compile Include="..\Controls.Sample.SingleProject\Platforms\iOS\SceneDelegate.cs" />
@@ -94,6 +91,9 @@
       <Project>{90b727dd-4c7b-4462-950f-61842a87de8a}</Project>
       <Name>Controls.Sample</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Info.plist" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
