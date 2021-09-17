@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <Import Project="../Shared/Common.targets" />
+
+  <PropertyGroup>
+    <Description>.NET MAUI SDK. Enabled via &lt;UseMaui&gt;true&lt;/UseMaui&gt;.</Description>
+    <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
+  </PropertyGroup>
+
+  <!-- NOTE: many files temporarily moved to Controls.Build.Tasks-net6.csproj -->
+  <ItemGroup>
+    <None Remove="**/*.in.*" />
+    <None Update="@(None)" PackagePath="" />
+    <None Include="@(_Files)" PackagePath="targets" Link="targets/%(FileName)%(Extension)" Visible="false" />
+    <None Update="@(None)" CopyToOutputDirectory="PreserveNewest" Pack="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/Build.Tasks/Controls.Build.Tasks-net6.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)src/Controls/src/SourceGen/Controls.SourceGen-net6.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(MauiRootDirectory)eng/ReplaceText.targets" />
+
+  <Target Name="_GenerateBundledVersions"
+      BeforeTargets="Build;AssignTargetPaths"
+      DependsOnTargets="SetVersions"
+      Inputs="$(MSBuildProjectFile);Sdk/BundledVersions.in.targets"
+      Outputs="$(IntermediateOutputPath)BundledVersions.targets">
+    <ReplaceText
+        Input="Sdk/BundledVersions.in.targets"
+        Output="$(IntermediateOutputPath)BundledVersions.targets"
+        OldValue="@VERSION@"
+        NewValue="$(PackageReferenceVersion)"
+    />
+    <ItemGroup>
+      <None
+          Include="$(IntermediateOutputPath)BundledVersions.targets"
+          Link="targets/BundledVersions.targets"
+          CopyToOutputDirectory="PreserveNewest"
+          Pack="true"
+          PackagePath="targets"
+          Visible="false"
+      />
+      <FileWrites Include="$(IntermediateOutputPath)BundledVersions.targets" />
+    </ItemGroup>
+  </Target>
+
+</Project>

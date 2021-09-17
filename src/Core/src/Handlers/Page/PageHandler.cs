@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ITitledElement.Title)] = MapTitle
 		};
 
-		public static CommandMapper<IPicker, PickerHandler> PageCommandMapper = new(ContentViewCommandMapper)
+		public static CommandMapper<IContentView, PageHandler> PageCommandMapper = new(ContentViewCommandMapper)
 		{
 
 		};

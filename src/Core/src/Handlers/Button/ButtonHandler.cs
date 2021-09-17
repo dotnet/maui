@@ -1,7 +1,7 @@
 #nullable enable
 namespace Microsoft.Maui.Handlers
 {
-	public sealed partial class ButtonHandler
+	public partial class ButtonHandler
 	{
 		readonly ImageSourceServiceResultManager _sourceManager = new ImageSourceServiceResultManager();
 

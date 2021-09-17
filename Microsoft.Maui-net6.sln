@@ -86,7 +86,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Controls.Ref
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Controls.Runtime", "src\Workload\Microsoft.Maui.Controls.Runtime\Microsoft.Maui.Controls.Runtime.csproj", "{9D8171BD-0F66-4D97-9A38-46800FC6B710}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Controls.Sdk", "src\Workload\Microsoft.Maui.Controls.Sdk\Microsoft.Maui.Controls.Sdk.csproj", "{C5C434A7-4E1F-456F-A23A-F2566C98301A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Sdk", "src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj", "{C5C434A7-4E1F-456F-A23A-F2566C98301A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Core.Ref", "src\Workload\Microsoft.Maui.Core.Ref\Microsoft.Maui.Core.Ref.csproj", "{359FFDAC-3E3C-4A78-98EE-9070841E5792}"
 EndProject
@@ -97,8 +97,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Essentials.Ref", "src\Workload\Microsoft.Maui.Essentials.Ref\Microsoft.Maui.Essentials.Ref.csproj", "{28B1E6A8-4EB7-4B82-9552-10C418692496}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Essentials.Runtime", "src\Workload\Microsoft.Maui.Essentials.Runtime\Microsoft.Maui.Essentials.Runtime.csproj", "{C69336DF-EE56-4236-8188-06B2A8AD8A36}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Resizetizer.Sdk", "src\Workload\Microsoft.Maui.Resizetizer.Sdk\Microsoft.Maui.Resizetizer.Sdk.csproj", "{02414DF4-FBE9-400B-8F3F-40DDC7F8FEFC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Maui", "src\Workload\Microsoft.NET.Sdk.Maui\Microsoft.NET.Sdk.Maui.csproj", "{081EE5E5-69D4-493C-9EB4-47423C4728AB}"
 EndProject
@@ -331,10 +329,6 @@ Global
 		{C69336DF-EE56-4236-8188-06B2A8AD8A36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C69336DF-EE56-4236-8188-06B2A8AD8A36}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C69336DF-EE56-4236-8188-06B2A8AD8A36}.Release|Any CPU.Build.0 = Release|Any CPU
-		{02414DF4-FBE9-400B-8F3F-40DDC7F8FEFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{02414DF4-FBE9-400B-8F3F-40DDC7F8FEFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{02414DF4-FBE9-400B-8F3F-40DDC7F8FEFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{02414DF4-FBE9-400B-8F3F-40DDC7F8FEFC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{081EE5E5-69D4-493C-9EB4-47423C4728AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{081EE5E5-69D4-493C-9EB4-47423C4728AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{081EE5E5-69D4-493C-9EB4-47423C4728AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -495,7 +489,6 @@ Global
 		{582BA9EC-420C-4512-8892-37E8F6D1E70F} = {EC63FD88-5E12-46D7-B440-68F70241D987}
 		{28B1E6A8-4EB7-4B82-9552-10C418692496} = {EC63FD88-5E12-46D7-B440-68F70241D987}
 		{C69336DF-EE56-4236-8188-06B2A8AD8A36} = {EC63FD88-5E12-46D7-B440-68F70241D987}
-		{02414DF4-FBE9-400B-8F3F-40DDC7F8FEFC} = {EC63FD88-5E12-46D7-B440-68F70241D987}
 		{081EE5E5-69D4-493C-9EB4-47423C4728AB} = {EC63FD88-5E12-46D7-B440-68F70241D987}
 		{6EDE0C1B-B718-4331-99BA-423042CDBE24} = {EC63FD88-5E12-46D7-B440-68F70241D987}
 		{316C0861-069B-4572-879F-F01E568F33A2} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
