@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateText(this MauiTextBox textBox, IEntry entry)
 		{
-			textBox.Text = entry.Text;
+			textBox.Text = entry.Text ?? string.Empty;
 		}
 
 		public static void UpdateTextColor(this MauiTextBox textBox, ITextStyle textStyle)
