@@ -821,6 +821,7 @@ Task("VSWINDOWS")
         {
             MSBuild(@"src\Compatibility\Core\src\Compatibility.csproj",
                 GetMSBuildSettings()
+                    .WithProperty("BuildForLegacy", "true")
                     .WithRestore());
             StartVisualStudio("._Microsoft.Maui.sln", includePrerelease: includePrerelease);
         }
