@@ -5,9 +5,6 @@
   <PropertyGroup Condition=" '$(_UseNet6Packages)' != 'true' ">
     <SystemCodeDomPackageVersion>4.7.0</SystemCodeDomPackageVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
-    <SupportedOSPlatformVersion>14.2</SupportedOSPlatformVersion>
-  </PropertyGroup>
    <!-- Microsoft.Maui.Graphics related Packages -->
   <PropertyGroup>
     <MicrosoftGraphicsWin2DVersion>1.0.0.26-experimental1</MicrosoftGraphicsWin2DVersion>
