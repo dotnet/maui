@@ -76,7 +76,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Conveninence attribute for setting a Category trait on a test or test class
 	/// </summary>
-	[TraitDiscoverer("Microsoft.Maui.CategoryDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests.Runners")]
+	[TraitDiscoverer("Microsoft.Maui.CategoryDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests")]
 	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
 	public class CategoryAttribute : Attribute, ITraitAttribute
 	{
@@ -88,7 +88,7 @@ namespace Microsoft.Maui
 	/// Custom Fact attribute which defaults to using the test method name for the DisplayName property
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-	[XunitTestCaseDiscoverer("Microsoft.Maui.FactDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests.Runners")]
+	[XunitTestCaseDiscoverer("Microsoft.Maui.FactDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests")]
 	public class FactAttribute : Xunit.FactAttribute
 	{
 		public FactAttribute([CallerMemberName] string displayName = "")
@@ -101,7 +101,7 @@ namespace Microsoft.Maui
 	/// Custom Theory attribute which defaults to using the test method name for the DisplayName property
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-	[XunitTestCaseDiscoverer("Microsoft.Maui.TheoryDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests.Runners")]
+	[XunitTestCaseDiscoverer("Microsoft.Maui.TheoryDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests")]
 	public class TheoryAttribute : Xunit.TheoryAttribute
 	{
 		public TheoryAttribute([CallerMemberName] string displayName = "")

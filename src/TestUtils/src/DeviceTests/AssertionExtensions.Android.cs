@@ -59,7 +59,8 @@ namespace Microsoft.Maui.DeviceTests
 			if (view.Parent is WrapperView wrapper)
 				view = wrapper;
 
-			var layout = new FrameLayout(view.Context)
+			var context = view.Context!;
+			var layout = new FrameLayout(context)
 			{
 				LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 			};
@@ -68,8 +69,8 @@ namespace Microsoft.Maui.DeviceTests
 				Gravity = GravityFlags.Center
 			};
 
-			var act = view.Context.GetActivity();
-			var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content);
+			var act = context.GetActivity()!;
+			var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content)!;
 
 			layout.AddView(view);
 			rootView.AddView(layout);
@@ -94,7 +95,7 @@ namespace Microsoft.Maui.DeviceTests
 				if (view.Parent is WrapperView wrapper)
 					view = wrapper;
 
-				var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888);
+				var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888!)!;
 				using (var canvas = new Canvas(bitmap))
 				{
 					view.Draw(canvas);
@@ -154,7 +155,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Task<Bitmap> AssertContainsColor(this AView view, Maui.Graphics.Color expectedColor) =>
+		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor) =>
 			AssertContainsColor(view, expectedColor.ToNative());
 
 		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor)
@@ -199,7 +200,7 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		public static TextUtils.TruncateAt ToNative(this LineBreakMode mode) =>
+		public static TextUtils.TruncateAt? ToNative(this LineBreakMode mode) =>
 			mode switch
 			{
 				LineBreakMode.NoWrap => null,

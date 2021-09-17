@@ -66,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static byte[] GetPixel(this UIImage bitmap, int x, int y)
 		{
-			var cgImage = bitmap.CGImage;
+			var cgImage = bitmap.CGImage!;
 			var width = cgImage.Width;
 			var height = cgImage.Height;
 			var colorSpace = CGColorSpace.CreateDeviceRGB();
