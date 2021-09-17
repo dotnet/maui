@@ -320,8 +320,19 @@ void SetDotNetEnvironmentVariables()
     SetEnvironmentVariable("PATH", dotnet, prepend: true);
 }
 
-void StartVisualStudioForDotNet6(string sln = "./Microsoft.Maui-net6.sln")
+void StartVisualStudioForDotNet6(string sln = null)
 {
+    if (sln == null)
+    {
+        if (IsRunningOnWindows())
+        {
+            sln = "./Microsoft.Maui-net6.sln";
+        }
+        else
+        {
+            sln = "./Microsoft.Maui-mac.slnf";
+        }
+    }
     if (isCIBuild)
     {
         Information("This target should not run on CI.");
