@@ -161,7 +161,7 @@ namespace Microsoft.Maui
 		public static void InvalidateMeasure(this UIView nativeView, IView view)
 		{
 			nativeView.SetNeedsLayout();
-			nativeView.Superview.SetNeedsLayout();
+			nativeView.Superview?.SetNeedsLayout();
 		}
 
 		public static void UpdateWidth(this UIView nativeView, IView view)
