@@ -78,7 +78,7 @@ var packageVersion = GetBuildVariable("packageVersion", "0.1.0-p2");
 var releaseChannelArg = GetBuildVariable("CHANNEL", "Stable");
 var teamProject = GetBuildVariable("TeamProject", GetBuildVariable("SYSTEM_TEAMPROJECT", ""));
 bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.StartsWith("Hosted Agent");
-var localDotnet = GetBuildVariable("workloads", "local") == "local";
+var localDotnet = GetBuildVariable("workloads",  (target == "VS-WINUI") ? "global" : "local") == "local";
 
 var vsVersion = GetBuildVariable("VS", "");
 
