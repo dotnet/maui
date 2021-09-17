@@ -27,6 +27,11 @@ namespace Microsoft.Maui.Handlers
 			if (rect.Width < 0 || rect.Height < 0)
 				return;
 
+			if (nativeView.Parent is ScrollViewer)
+			{
+				rect = AdjustForScrollViewer(nativeView, VirtualView, rect);
+			}
+
 			nativeView.Arrange(new Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
 		}
 
@@ -83,6 +88,26 @@ namespace Microsoft.Maui.Handlers
 				oldParent?.Children.Insert(idx, NativeView);
 			else
 				oldParent?.Children.Add(NativeView);
+		}
+
+		static Rectangle AdjustForScrollViewer(FrameworkElement nativeView, TVirtualView virtualView, Rectangle rect)
+		{
+			// The Windows ScrollViewer doesn't allow us to arrange content at an offset; it forces the content to 0,0
+			// So if we want to account for ScrollView.Padding and any margins on the ScrollView's Content, we need 
+			// do do that by setting the Content's native Margin, and then update the bounds for Arrange to start
+			// at 0,0 and be large enough to account for the updated margin.
+
+			var margin = virtualView.Margin;
+			var padding = (virtualView.Parent as IPadding)?.Padding ?? Thickness.Zero;
+
+			var marginAndPadding = new Thickness(margin.Left + padding.Left, margin.Top + padding.Top,
+				margin.Right + padding.Right, margin.Bottom + padding.Bottom);
+
+			nativeView.Margin = marginAndPadding.ToNative();
+
+			rect = new Rectangle(0, 0, rect.Width + marginAndPadding.HorizontalThickness, rect.Height + marginAndPadding.VerticalThickness);
+
+			return rect;
 		}
 	}
 }
