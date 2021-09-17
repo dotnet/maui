@@ -24,6 +24,7 @@
     <ItemGroup>
       <MauiAsset Include="%(_MauiStaticWebAssetWithTargetPath.Identity)">
         <Link>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</Link>
+        <LogicalName>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</LogicalName>
         <TargetPath>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</TargetPath>
       </MauiAsset>
     </ItemGroup>
