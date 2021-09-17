@@ -65,6 +65,7 @@
 		<None Include="$(OutputPath)$(AssemblyName).pdb" Visible="false" Pack="true" PackagePath="build" />
 		<None Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.props" Visible="false" Pack="true" PackagePath="build\$(PackageId).props" CopyToOutputDirectory="PreserveNewest" />
 		<None Include="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.targets" Visible="false" Pack="true" PackagePath="build\$(PackageId).targets" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="maui.aotprofile" Pack="true" PackagePath="build" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 	<ItemGroup>
