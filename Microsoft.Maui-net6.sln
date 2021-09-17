@@ -86,7 +86,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Controls.Ref
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Controls.Runtime", "src\Workload\Microsoft.Maui.Controls.Runtime\Microsoft.Maui.Controls.Runtime.csproj", "{9D8171BD-0F66-4D97-9A38-46800FC6B710}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Controls.Sdk", "src\Workload\Microsoft.Maui.Controls.Sdk\Microsoft.Maui.Controls.Sdk.csproj", "{C5C434A7-4E1F-456F-A23A-F2566C98301A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Sdk", "src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj", "{C5C434A7-4E1F-456F-A23A-F2566C98301A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.Core.Ref", "src\Workload\Microsoft.Maui.Core.Ref\Microsoft.Maui.Core.Ref.csproj", "{359FFDAC-3E3C-4A78-98EE-9070841E5792}"
 EndProject

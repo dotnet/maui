@@ -856,6 +856,7 @@ namespace Microsoft.Maui.Controls
 		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_measureCache.Clear();
+			(this as IView)?.InvalidateMeasure();
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
 		}
 

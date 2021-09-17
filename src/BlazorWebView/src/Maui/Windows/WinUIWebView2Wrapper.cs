@@ -33,12 +33,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		public CoreWebView2Environment? Environment { get; set; }
 
-		public Action AddAcceleratorKeyPressedHandler(EventHandler<ICoreWebView2AcceleratorKeyPressedEventArgsWrapper> eventHandler)
-		{
-			// This event is not supported in WinUI, so we ignore it
-			return () => { };
-		}
-
 		public async Task CreateEnvironmentAsync()
 		{
 			Environment = await CoreWebView2Environment.CreateAsync();
