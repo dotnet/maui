@@ -111,11 +111,13 @@ namespace Microsoft.Maui.Controls.Xaml
 				value = Android;
 				return true;
 			}
-			//if (DeviceInfo.Platform == Device.GTK && GTK != s_notset)
-			//{
-			//	value = GTK;
-			//	return true;
-			//}
+#pragma warning disable CS0618 // Type or member is obsolete
+			if (DeviceInfo.Platform == Device.GTK && GTK != s_notset)
+			{
+				value = GTK;
+				return true;
+			}
+#pragma warning restore CS0618 // Type or member is obsolete
 			if (DeviceInfo.Platform == DevicePlatform.iOS && iOS != s_notset)
 			{
 				value = iOS;
@@ -136,11 +138,12 @@ namespace Microsoft.Maui.Controls.Xaml
 				value = UWP;
 				return true;
 			}
-			//if (DeviceInfo.Platform == Device.WPF && WPF != s_notset)
-			//{
-			//	value = WPF;
-			//	return true;
-			//}
+#pragma warning disable CS0618 // Type or member is obsolete
+			if (DeviceInfo.Platform == Device.WPF && WPF != s_notset)
+			{
+				value = WPF;
+				return true;
+			}
 			value = Default;
 			return value != s_notset;
 		}

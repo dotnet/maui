@@ -14,19 +14,19 @@ namespace Microsoft.Maui.Controls
 	public static class Device
 	{
 		[Obsolete("Use Essentials.DevicePlatform.iOS instead.")]
-		public const string iOS = "iOS";
+		public static readonly DevicePlatform iOS = DevicePlatform.iOS;
 		[Obsolete("Use Essentials.DevicePlatform.Android instead.")]
-		public const string Android = "Android";
+		public static readonly DevicePlatform Android = DevicePlatform.Android;
 		[Obsolete("Use Essentials.DevicePlatform.Windows instead.")]
-		public const string UWP = "UWP";
+		public static readonly DevicePlatform UWP = DevicePlatform.UWP;
 		[Obsolete("Use Essentials.DevicePlatform.macOS instead.")]
-		public const string macOS = "macOS";
+		public static readonly DevicePlatform macOS = DevicePlatform.macOS;
 		[Obsolete("Use Essentials.DevicePlatform instead.")]
-		public const string GTK = "GTK";
+		public static readonly DevicePlatform GTK = DevicePlatform.Create("GTK");
 		[Obsolete("Use Essentials.DevicePlatform.Tizen instead.")]
-		public const string Tizen = "Tizen";
+		public static readonly DevicePlatform Tizen = DevicePlatform.Tizen;
 		[Obsolete("Use Essentials.DevicePlatform.Windows instead.")]
-		public const string WPF = "WPF";
+		public static readonly DevicePlatform WPF = DevicePlatform.Create("WPF");
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static Internals.DeviceInfo info;
