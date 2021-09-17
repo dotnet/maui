@@ -9,12 +9,12 @@ namespace Microsoft.Maui
 {
 	public class WindowManager
 	{
-		MauiContext _mauiContext;
+		IMauiContext _mauiContext;
 		MauiNavigationView _navigationView;
 		IView? _content;
 		IWindow? _window;
 
-		public WindowManager(MauiContext mauiContext)
+		public WindowManager(IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
 			_navigationView = new MauiNavigationView();
