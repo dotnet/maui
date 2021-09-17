@@ -10,7 +10,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	internal static partial class AssertionExtensions
+	public static partial class AssertionExtensions
 	{
 		public static string CreateColorAtPointError(this UIImage bitmap, UIColor expectedColor, int x, int y)
 		{

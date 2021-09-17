@@ -2,7 +2,7 @@ using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	static class ColorComparison
+	public static class ColorComparison
 	{
 		public const int ColorPrecision = 1;
 

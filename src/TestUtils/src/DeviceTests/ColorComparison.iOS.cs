@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	internal class ColorComparison : IEqualityComparer<UIColor>
+	public class ColorComparison : IEqualityComparer<UIColor>
 	{
 		public const double Tolerance = 0.000001;
 

@@ -4,7 +4,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	internal static partial class AssertionExtensions
+	public static partial class AssertionExtensions
 	{
 		public static void AssertHasFlag(this Enum self, Enum flag)
 		{

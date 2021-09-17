@@ -13,7 +13,7 @@ using WColor = Windows.UI.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	internal static partial class AssertionExtensions
+	public static partial class AssertionExtensions
 	{
 		public static Task<string> CreateColorAtPointError(this CanvasBitmap bitmap, WColor expectedColor, int x, int y) =>
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
