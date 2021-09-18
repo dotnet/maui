@@ -93,35 +93,25 @@ namespace Microsoft.Maui.Essentials
 
 			internal static PermissionStatus GetAddressBookPermissionStatus()
 			{
-				var status = ABAddressBook.GetAuthorizationStatus();
+				var status = Contacts.CNContactStore.GetAuthorizationStatus(Contacts.CNEntityType.Contacts);
 				return status switch
 				{
-					ABAuthorizationStatus.Authorized => PermissionStatus.Granted,
-					ABAuthorizationStatus.Denied => PermissionStatus.Denied,
-					ABAuthorizationStatus.Restricted => PermissionStatus.Restricted,
+					Contacts.CNAuthorizationStatus.Authorized => PermissionStatus.Granted,
+					Contacts.CNAuthorizationStatus.Denied => PermissionStatus.Denied,
+					Contacts.CNAuthorizationStatus.Restricted => PermissionStatus.Restricted,
 					_ => PermissionStatus.Unknown,
 				};
 			}
 
-			internal static Task<PermissionStatus> RequestAddressBookPermission()
+			internal static async Task<PermissionStatus> RequestAddressBookPermission()
 			{
-				var addressBook = ABAddressBook.Create(out var createError);
+				var contactStore = new Contacts.CNContactStore();
+				var result = await contactStore.RequestAccessAsync(Contacts.CNEntityType.Contacts);
 
-				// if the permission was denied, then we can't create the object
-				if (createError?.Code == (int)ABAddressBookError.OperationNotPermittedByUserError)
-					return Task.FromResult(PermissionStatus.Denied);
+				if (result.Item2 != null)
+					return PermissionStatus.Denied;
 
-				var tcs = new TaskCompletionSource<PermissionStatus>();
-
-				addressBook.RequestAccess((success, error) =>
-				{
-					tcs.TrySetResult(success ? PermissionStatus.Granted : PermissionStatus.Denied);
-
-					addressBook?.Dispose();
-					addressBook = null;
-				});
-
-				return tcs.Task;
+				return result.Item1 ? PermissionStatus.Granted : PermissionStatus.Denied;
 			}
 		}
 
