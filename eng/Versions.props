@@ -7,10 +7,10 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>31.0.100-rc.2.31</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftiOSSdkPackageVersion>15.0.101-preview.9.6</MicrosoftiOSSdkPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.9.6</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>12.0.101-preview.9.6</MicrosoftmacOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>15.0.101-preview.9.6</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>15.0.101-preview.9.10</MicrosoftiOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.9.10</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>12.0.101-preview.9.10</MicrosoftmacOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>15.0.101-preview.9.10</MicrosofttvOSSdkPackageVersion>
     <!-- Everything else -->
     <MicrosoftAspNetCoreAppRuntimewinx64Version>6.0.0-rc.2.21455.6</MicrosoftAspNetCoreAppRuntimewinx64Version>
     <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.0-rc.2.21455.6</MicrosoftAspNetCoreAuthorizationPackageVersion>
