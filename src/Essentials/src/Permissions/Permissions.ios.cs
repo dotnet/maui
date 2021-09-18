@@ -93,20 +93,20 @@ namespace Microsoft.Maui.Essentials
 
 			internal static PermissionStatus GetAddressBookPermissionStatus()
 			{
-				var status = Contacts.CNContactStore.GetAuthorizationStatus(Contacts.CNEntityType.Contacts);
+				var status = global::Contacts.CNContactStore.GetAuthorizationStatus(global::Contacts.CNEntityType.Contacts);
 				return status switch
 				{
-					Contacts.CNAuthorizationStatus.Authorized => PermissionStatus.Granted,
-					Contacts.CNAuthorizationStatus.Denied => PermissionStatus.Denied,
-					Contacts.CNAuthorizationStatus.Restricted => PermissionStatus.Restricted,
+					global::Contacts.CNAuthorizationStatus.Authorized => PermissionStatus.Granted,
+					global::Contacts.CNAuthorizationStatus.Denied => PermissionStatus.Denied,
+					global::Contacts.CNAuthorizationStatus.Restricted => PermissionStatus.Restricted,
 					_ => PermissionStatus.Unknown,
 				};
 			}
 
 			internal static async Task<PermissionStatus> RequestAddressBookPermission()
 			{
-				var contactStore = new Contacts.CNContactStore();
-				var result = await contactStore.RequestAccessAsync(Contacts.CNEntityType.Contacts);
+				var contactStore = new global::Contacts.CNContactStore();
+				var result = await contactStore.RequestAccessAsync(global::Contacts.CNEntityType.Contacts);
 
 				if (result.Item2 != null)
 					return PermissionStatus.Denied;
