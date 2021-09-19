@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using NUnit.Framework;
 using Microsoft.Maui.Graphics;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			var resultTopColor = screenshot.ColorAtPoint(screenshotWidth / 2, 1);
 
 			Assert.IsTrue(AreColorsSimilar(expectedTopColor, resultTopColor, Tolerance));
-			
+
 			var expectedBottomColor = Colors.Green.ToAndroid();
 			var resultBottomColor = screenshot.ColorAtPoint(screenshotWidth / 2, screenshotHeight - 1);
 

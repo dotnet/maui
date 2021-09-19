@@ -2,9 +2,9 @@
 using Android.Content;
 using Android.OS;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Platform;
 
