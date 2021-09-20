@@ -26,54 +26,54 @@ namespace Microsoft.Maui.Controls.Handlers
 			};
 
 		// TODO MAUI: break these out into extension methods
-		public static void MapBarBackground(NavigationPageHandler arg1, NavigationPage arg2)
+		public static void MapBarBackground(NavigationPageHandler handler, NavigationPage view)
 		{
-			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+			handler._controlsNavigationManager.ToolbarPropertyChanged();
 		}
 
-		public static void MapToolbarDynamicOverflowEnabled(NavigationPageHandler arg1, NavigationPage arg2)
+		public static void MapToolbarDynamicOverflowEnabled(NavigationPageHandler handler, NavigationPage view)
 		{
-			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+			handler._controlsNavigationManager.ToolbarPropertyChanged();
 		}
 
-		public static void MapToolbarPlacement(NavigationPageHandler arg1, NavigationPage arg2)
+		public static void MapToolbarPlacement(NavigationPageHandler handler, NavigationPage view)
 		{
-			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+			handler._controlsNavigationManager.ToolbarPropertyChanged();
 		}
 
-		public static void MapCurrentPage(NavigationPageHandler arg1, NavigationPage arg2)
+		public static void MapCurrentPage(NavigationPageHandler handler, NavigationPage view)
 		{
-			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+			handler._controlsNavigationManager.ToolbarPropertyChanged();
 		}
 
-		public static void MapTitle(NavigationPageHandler arg1, NavigationPage arg2)
+		public static void MapTitle(NavigationPageHandler handler, NavigationPage view)
 		{
-			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+			handler._controlsNavigationManager.ToolbarPropertyChanged();
 		}
 
-		public static void MapIconColor(NavigationPageHandler arg1, NavigationPage arg2)
+		public static void MapIconColor(NavigationPageHandler handler, NavigationPage view)
 		{
-			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+			handler._controlsNavigationManager.ToolbarPropertyChanged();
 		}
 
-		public static void MapTitleView(NavigationPageHandler arg1, NavigationPage arg2)
+		public static void MapTitleView(NavigationPageHandler handler, NavigationPage view)
 		{
-			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+			handler._controlsNavigationManager.ToolbarPropertyChanged();
 		}
 
-		public static void MapTitleIconImageSource(NavigationPageHandler arg1, NavigationPage arg2)
+		public static void MapTitleIconImageSource(NavigationPageHandler handler, NavigationPage view)
 		{
-			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+			handler._controlsNavigationManager.ToolbarPropertyChanged();
 		}
 
-		public static void MapHasBackButton(NavigationPageHandler arg1, NavigationPage arg2)
+		public static void MapHasBackButton(NavigationPageHandler handler, NavigationPage view)
 		{
-			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+			handler._controlsNavigationManager.ToolbarPropertyChanged();
 		}
 
-		public static void MapHasNavigationBar(NavigationPageHandler arg1, NavigationPage arg2)
+		public static void MapHasNavigationBar(NavigationPageHandler handler, NavigationPage view)
 		{
-			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+			handler._controlsNavigationManager.ToolbarPropertyChanged();
 		}
 
 		ControlsNavigationManager _controlsNavigationManager;
@@ -85,9 +85,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected override NavigationManager CreateNavigationManager()
 			=> _controlsNavigationManager ??= new ControlsNavigationManager(MauiContext!);
 
-		public static void UpdateToolBar(NavigationPageHandler arg1, NavigationPage arg2)
+		public static void UpdateToolBar(NavigationPageHandler handler, NavigationPage view)
 		{
-			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+			handler._controlsNavigationManager.ToolbarPropertyChanged();
 		}
 	}
 }
