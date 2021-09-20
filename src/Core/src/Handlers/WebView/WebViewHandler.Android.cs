@@ -20,10 +20,9 @@ namespace Microsoft.Maui.Handlers
 
 		public override void SetVirtualView(IView view)
 		{
+			_firstRun = true;
 			base.SetVirtualView(view);
 			// At this time all the mappers were already called
-			if (!_firstRun)
-				return;
 			_firstRun = false;
 			ProcessSourceWhenReady(this, VirtualView);
 		}
