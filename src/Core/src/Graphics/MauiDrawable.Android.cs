@@ -520,24 +520,31 @@ namespace Microsoft.Maui.Graphics
 
 		void SetLinearGradientPaint(APaint nativePaint, LinearGradientPaint linearGradientPaint)
 		{
+			var p1 = linearGradientPaint.StartPoint;
+			var x1 = (float)p1.X;
+			var y1 = (float)p1.Y;
+			var p2 = linearGradientPaint.EndPoint;
+			var x2 = (float)p2.X;
+			var y2 = (float)p2.Y;
+			
 			var data = GetGradientPaintData(linearGradientPaint);
 			var shader = new LinearGradientData(data.Colors, data.Offsets, x1, y1, x2, y2);
 			if (_width == 0 && _height == 0)
 				return;
 
-			if (linearGradientData.Colors == null || linearGradientData.Colors.Length < 2)
+			if (shader.Colors == null || shader.Colors.Length < 2)
 				return;
 
 			var linearGradientShader = new LinearGradient(
-				_width * linearGradientData.X1,
-				_height * linearGradientData.Y1,
-				_width * linearGradientData.X2,
-				_height * linearGradientData.Y2,
-				linearGradientData.Colors,
-				linearGradientData.Offsets,
+				_width * shader.X1,
+				_height * shader.Y1,
+				_width * shader.X2,
+				_height * shader.Y2,
+				shader.Colors,
+				shader.Offsets,
 				Shader.TileMode.Clamp!);
 
-			SetShaderFactory(new LinearGradientShaderFactory(shader));
+			nativePaint.SetShader(linearGradientShader);
 		}
 
 		public void SetRadialGradientPaint(APaint nativePaint, RadialGradientPaint radialGradientPaint)
