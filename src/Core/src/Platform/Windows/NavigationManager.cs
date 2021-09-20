@@ -71,18 +71,7 @@ namespace Microsoft.Maui
 				return;
 			}
 
-
-			NavigationTransitionInfo? transition = null;
-
-			if (animated)
-			{
-				transition = new SlideNavigationTransitionInfo()
-				{
-					Effect = (!push) ? SlideNavigationTransitionEffect.FromLeft : SlideNavigationTransitionEffect.FromRight
-				};
-			}
-
-
+			NavigationTransitionInfo? transition = GetNavigationTransition(previousNavigationStack, args);
 			NavigationStack = new List<IView>(newPageStack);
 			_currentPage = NavigationStack[NavigationStack.Count - 1];
 
@@ -90,6 +79,17 @@ namespace Microsoft.Maui
 				NavigationFrame.Navigate(typeof(NavigationFramePage), null, transition);
 			else
 				NavigationFrame.GoBack(transition);
+		}
+
+		protected virtual NavigationTransitionInfo? GetNavigationTransition(IReadOnlyList<IView> previousStack, NavigationRequest args)
+		{
+			if (!args.Animated)
+				return null;
+
+			if (previousStack.Count > args.NavigationStack.Count)
+				return new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromLeft };
+
+			return new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight };
 		}
 
 		void SyncBackStackToNavigationStack(IReadOnlyList<IView> pageStack)

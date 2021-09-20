@@ -35,6 +35,13 @@ namespace Microsoft.Maui
 			_navigationView.Content = _content?.ToNative(_mauiContext);
 		}
 
+		public virtual void Disconnect(IWindow window)
+		{
+			_window = null;
+			_content = null;
+			_navigationView.Content = null;
+		}
+
 		internal CommandBar? GetCommandBar() =>
 			(_navigationView.Header as WindowHeader)?.CommandBar;
 	}

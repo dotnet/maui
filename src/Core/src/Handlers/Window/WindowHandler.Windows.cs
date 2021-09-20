@@ -26,6 +26,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(UI.Xaml.Window nativeView)
 		{
+			var windowManager = MauiContext?.GetWindowManager();
+			windowManager?.Connect(VirtualView);
+
 			_rootPanel?.Children?.Clear();
 			nativeView.Content = null;
 
