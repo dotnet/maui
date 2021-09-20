@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls
 	{
 		Paint IIndicatorView.IndicatorColor => IndicatorColor?.AsPaint();
 		Paint IIndicatorView.SelectedIndicatorColor => SelectedIndicatorColor?.AsPaint();
-		IShapeView IIndicatorView.IndicatorsShape => IndicatorsShape == Controls.IndicatorShape.Square ? new Shapes.Rectangle() : new Shapes.Ellipse();
+		IShape IIndicatorView.IndicatorsShape => IndicatorsShape == IndicatorShape.Square ? new Shapes.Rectangle() : new Shapes.Ellipse();
 		Maui.ILayout ITemplatedIndicatorView.IndicatorsLayoutOverride => (IndicatorTemplate != null) ? IndicatorLayout as Maui.ILayout : null;
 	}
 }

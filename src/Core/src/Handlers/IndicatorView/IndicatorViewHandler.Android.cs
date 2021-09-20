@@ -1,15 +1,5 @@
-﻿using System;
-using Android.Content;
-using Android.Graphics.Drawables;
-using Android.Widget;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform.Android;
-using static Android.Views.View;
-using AColor = Android.Graphics.Color;
-using AShapeDrawable = Android.Graphics.Drawables.ShapeDrawable;
-using AShapes = Android.Graphics.Drawables.Shapes;
+﻿using Microsoft.Maui.Platform.Android;
 using AView = Android.Views.View;
-using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Handlers
 {

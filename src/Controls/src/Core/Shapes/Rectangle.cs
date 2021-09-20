@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public sealed partial class Rectangle : Shape
+	public sealed partial class Rectangle : Shape, IRectangle
 	{
 		public Rectangle() : base()
 		{

@@ -18,7 +18,7 @@ namespace Microsoft.Maui
 
 		Paint? SelectedIndicatorColor { get; }
 
-		IShapeView IndicatorsShape { get; }
+		IShape IndicatorsShape { get; }
 	}
 
 	public interface ITemplatedIndicatorView : IIndicatorView

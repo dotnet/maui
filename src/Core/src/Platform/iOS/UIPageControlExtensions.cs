@@ -10,19 +10,7 @@ namespace Microsoft.Maui.Platform.iOS
 	{
 		public static void UpdateIndicatorShape(this MauiPageControl pageControl, IIndicatorView indicatorView)
 		{
-			bool IsCircleShape()
-			{
-				var sH = indicatorView.IndicatorsShape.Shape;
-				var pointsCount = 13;
-				if (sH != null)
-				{
-					var path = sH.PathForBounds(new Rectangle(0, 0, 6, 6));
-					pointsCount = path.Count;
-				}
-
-				return pointsCount == 13;
-			}
-			pageControl.IsSquare = !IsCircleShape();
+			pageControl.IsSquare = indicatorView.IndicatorsShape is IRectangle;
 			pageControl.LayoutSubviews();
 		}
 

@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Platform.Android
 
 			AShapeDrawable shape;
 			
-			if (IsCircleShape())
+			if (_indicatorView.IndicatorsShape is IEllipse)
 				shape = new AShapeDrawable(new AShapes.OvalShape());
 			else
 				shape = new AShapeDrawable(new AShapes.RectShape());
@@ -152,22 +152,6 @@ namespace Microsoft.Maui.Platform.Android
 
 			if (shape.Paint != null)
 				shape.Paint.Color = color;
-
-			bool IsCircleShape()
-			{
-				if (_indicatorView == null)
-					return false;
-
-				var sH = _indicatorView.IndicatorsShape.Shape;
-				var pointsCount = 13;
-				if (sH != null)
-				{
-					var path = sH.PathForBounds(new Rectangle(0, 0, 6, 6));
-					pointsCount = path.Count;
-				}
-
-				return pointsCount == 13;
-			}
 
 			return shape;
 		}
