@@ -39,6 +39,12 @@ namespace Microsoft.Maui.Essentials
 				})
 			};
 
+			if (picker.PresentationController != null)
+			{
+				picker.PresentationController.Delegate =
+					new Platform.UIPresentationControllerDelegate(() => source?.TrySetResult(null));
+			}
+
 			uiView.PresentViewController(picker, true, null);
 
 			return source.Task;
