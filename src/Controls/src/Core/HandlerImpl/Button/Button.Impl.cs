@@ -4,13 +4,13 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Button : IButton
+	public partial class Button : IButton, IText, IImageSourcePart
 	{
 		public new static void RemapForControls()
 		{
 			// IButton does not include the ContentType property, so we map it here to handle Image Positioning
 
-			IPropertyMapper<IButton, ButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, ButtonHandler>(ButtonHandler.ButtonMapper)
+			IPropertyMapper<IButton, IButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, IButtonHandler>(ButtonMapper.Mapper)
 			{
 				[nameof(ContentLayout)] = MapContentLayout,
 #if __IOS__
@@ -18,12 +18,16 @@ namespace Microsoft.Maui.Controls
 #endif
 			};
 
-			ButtonHandler.ButtonMapper = ControlsButtonMapper;
+			ButtonMapper.Mapper = ControlsButtonMapper;
 		}
 
-		public static void MapContentLayout(ButtonHandler handler, Button button)
+		public static void MapContentLayout(IButtonHandler handler, Button button)
 		{
-			handler.NativeView.UpdateContentLayout(button);
+#if __IOS__
+			(handler.NativeView as UIKit.UIButton)?.UpdateContentLayout(button);
+#elif  __ANDROID__
+			(handler.NativeView as Google.Android.Material.Button.MaterialButton)?.UpdateContentLayout(button);
+#endif
 		}
 
 		void IButton.Clicked()
@@ -41,12 +45,15 @@ namespace Microsoft.Maui.Controls
 			(this as IButtonController).SendReleased();
 		}
 
-		void IButton.ImageSourceLoaded()
+		IImageSource IImageSourcePart.Source => ImageSource;
+
+		void IImageSourcePart.UpdateIsLoading(bool isLoading) 
 		{
-			Handler?.UpdateValue(nameof(ContentLayout));
+			if (!isLoading)
+				Handler?.UpdateValue(nameof(ContentLayout));
 		}
 
-		IImageSource IButton.ImageSource => ImageSource;
+		bool IImageSourcePart.IsAnimationPlaying => false;
 
 		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
 	}

@@ -6,40 +6,41 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui
 {
-	internal partial class ImageSourcePartWrapper<T> : IImageSourcePart
-			where T : ElementHandler
+	public partial class ImageSourcePartLoader : IImageSourcePart
 	{
 		public ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
 
-		Func<T, IImageSource?>? GetSource { get; }
+		Func<IImageSource?>? GetSource { get; }
 
-		Func<T, bool>? GetIsAnimationPlaying { get; }
+		Func<bool>? GetIsAnimationPlaying { get; }
 
 		Action<bool>? SetIsLoading { get; }
 
-		T Handler { get; }
+		IElementHandler Handler { get; }
 
-		private ImageSourcePartWrapper(
-			T handler,
-			Func<T, IImageSource?> getSource,
-			Func<T, bool>? getIsAnimationPlaying,
+		internal ImageSourcePartLoader(
+			IElementHandler handler,
+			Func<IImageSource?> getSource,
+			Func<bool>? getIsAnimationPlaying,
 			Action<bool>? setIsLoading)
 		{
-			GetSource = getSource;
-			GetIsAnimationPlaying = getIsAnimationPlaying;
-			SetIsLoading = setIsLoading;
 			Handler = handler;
 		}
 
-		public IImageSource? Source => GetSource?.Invoke(Handler);
-
-		public bool IsAnimationPlaying => GetIsAnimationPlaying?.Invoke(Handler) ?? false;
-
-		public void UpdateIsLoading(bool isLoading) => SetIsLoading?.Invoke(isLoading);
-
-		public async Task UpdateImageSource()
+		public void Reset()
 		{
-#if __IOS__ || __ANDROID__
+			SourceManager.Reset();
+		}
+
+		IImageSource? IImageSourcePart.Source => GetSource?.Invoke();
+
+		bool IImageSourcePart.IsAnimationPlaying => GetIsAnimationPlaying?.Invoke() ?? false;
+
+		void IImageSourcePart.UpdateIsLoading(bool isLoading) => SetIsLoading?.Invoke(isLoading);
+
+		public async Task UpdateImageSourceAsync()
+		{
+#if __IOS__ || __ANDROID__ || WINDOWS
 			if (NativeView != null)
 			{
 				var token = this.SourceManager.BeginLoad();

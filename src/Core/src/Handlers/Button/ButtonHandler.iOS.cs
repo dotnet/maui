@@ -14,10 +14,10 @@ namespace Microsoft.Maui.Handlers
 		static UIColor? ButtonTextColorDefaultDisabled;
 		static UIColor? ButtonTextColorDefaultHighlighted;
 		static UIColor? ButtonTextColorDefaultNormal;
-		ImageSourcePartWrapper<ButtonHandler>? _imageSourcePartWrapper;
-		ImageSourcePartWrapper<ButtonHandler> ImageSourcePartWrapper =>
-			_imageSourcePartWrapper ??= new ImageSourcePartWrapper<ButtonHandler>(
-				this, (h) => h.VirtualView.ImageSource, null, null, OnSetImageSourceDrawable);
+		//ImageSourcePartWrapper<ButtonHandler>? _imageSourcePartWrapper;
+		//ImageSourcePartWrapper<ButtonHandler> ImageSourcePartWrapper =>
+		//	_imageSourcePartWrapper ??= new ImageSourcePartWrapper<ButtonHandler>(
+		//		this, (h) => h.VirtualView.ImageSource, null, null, OnSetImageSourceDrawable);
 
 		protected override UIButton CreateNativeView()
 		{
@@ -50,7 +50,43 @@ namespace Microsoft.Maui.Handlers
 			ButtonTextColorDefaultDisabled = nativeView.TitleColor(UIControlState.Disabled);
 		}
 
-		private void OnSetImageSourceDrawable(UIImage? image)
+		public static void MapText(IButtonHandler handler, IText button)
+		{
+			handler.TypedNativeView?.UpdateText(button);
+
+			// Any text update requires that we update any attributed string formatting
+			MapFormatting(handler, button);
+		}
+
+		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
+		{
+			handler.TypedNativeView?.UpdateTextColor(button, ButtonTextColorDefaultNormal, ButtonTextColorDefaultHighlighted, ButtonTextColorDefaultDisabled);
+		}
+
+		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
+		{
+			handler.TypedNativeView?.UpdateCharacterSpacing(button);
+		}
+
+		public static void MapPadding(IButtonHandler handler, IButton button)
+		{
+			handler.TypedNativeView?.UpdatePadding(button);
+		}
+
+		public static void MapFont(IButtonHandler handler, ITextStyle button)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.TypedNativeView?.UpdateFont(button, fontManager);
+		}
+
+		public static void MapFormatting(IButtonHandler handler, IText button)
+		{
+			// Update all of the attributed text formatting properties
+			handler.TypedNativeView?.UpdateCharacterSpacing(button);
+		}
+
+		void OnSetImageSource(UIImage? image)
 		{
 			if (image != null)
 			{
@@ -64,54 +100,17 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.ImageSourceLoaded();
 		}
 
-		public static void MapText(ButtonHandler handler, IButton button)
-		{
-			handler.NativeView?.UpdateText(button);
-
-			// Any text update requires that we update any attributed string formatting
-			MapFormatting(handler, button);
-		}
-
-		public static void MapTextColor(ButtonHandler handler, IButton button)
-		{
-			handler.NativeView?.UpdateTextColor(button, ButtonTextColorDefaultNormal, ButtonTextColorDefaultHighlighted, ButtonTextColorDefaultDisabled);
-		}
-
-		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)
-		{
-			handler.NativeView?.UpdateCharacterSpacing(button);
-		}
-
-		public static void MapPadding(ButtonHandler handler, IButton button)
-		{
-			handler.NativeView?.UpdatePadding(button);
-		}
-
-		public static void MapFont(ButtonHandler handler, IButton button)
-		{
-			var fontManager = handler.GetRequiredService<IFontManager>();
-
-			handler.NativeView?.UpdateFont(button, fontManager);
-		}
-
-		public static void MapFormatting(ButtonHandler handler, IButton button)
-		{
-			// Update all of the attributed text formatting properties
-			handler.NativeView?.UpdateCharacterSpacing(button);
-		}
-
-		public static void MapImageSource(ButtonHandler handler, IButton image) =>
+		public static void MapImageSource(IButtonHandler handler, IButton image) =>
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapImageSourceAsync(ButtonHandler handler, IButton image)
+		public static Task MapImageSourceAsync(IButtonHandler handler, IButton image)
 		{
 			if (image.ImageSource == null)
 			{
-				handler.OnSetImageSourceDrawable(null);
 				return Task.CompletedTask;
 			}
 
-			return handler.ImageSourcePartWrapper.UpdateImageSource();
+			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}
 
 		static void SetControlPropertiesFromProxy(UIButton nativeView)

@@ -45,16 +45,6 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static Task<IImageSourceServiceResult<Drawable>?> UpdateSourceAsync(
-			this ImageView imageView,
-			IImageSourcePart image,
-			IImageSourceServiceProvider services,
-			CancellationToken cancellationToken = default)
-		{
-			imageView.Clear();
-			return image.UpdateSourceAsync(imageView, services, (d) => imageView.SetImageDrawable(d), cancellationToken);
-		}
-
 		internal static async Task<IImageSourceServiceResult<Drawable>?> UpdateSourceAsync(
 			this IImageSourcePart image,
 			View destinationContext,

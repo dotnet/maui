@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Command = System.Action<Microsoft.Maui.IElementHandler, Microsoft.Maui.IElement, object?>;
+using Command = System.Action<object, Microsoft.Maui.IElement, object?>;
 
 namespace Microsoft.Maui
 {
@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 			_mapper[key] = action;
 		}
 
-		private protected virtual void InvokeCore(string key, IElementHandler viewHandler, IElement virtualView, object? args)
+		private protected virtual void InvokeCore(string key, object viewHandler, IElement virtualView, object? args)
 		{
 			var action = GetCommandCore(key);
 			action?.Invoke(viewHandler, virtualView, args);
@@ -60,7 +60,6 @@ namespace Microsoft.Maui
 
 	public class CommandMapper<TVirtualView, TViewHandler> : CommandMapper
 		where TVirtualView : IElement
-		where TViewHandler : IElementHandler
 	{
 		public CommandMapper()
 		{
@@ -76,7 +75,11 @@ namespace Microsoft.Maui
 			get
 			{
 				var action = GetCommandCore(key) ?? throw new IndexOutOfRangeException($"Unable to find mapping for '{nameof(key)}'.");
-				return new Action<TViewHandler, TVirtualView, object?>((h, v, o) => action.Invoke(h, v, o));
+				return new Action<TViewHandler, TVirtualView, object?>((h, v, o) =>
+				{
+					if (h is TViewHandler viewHandler)
+						action.Invoke(viewHandler, v, o);
+				});
 			}
 			set => Add(key, value);
 		}

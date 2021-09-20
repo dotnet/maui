@@ -8,25 +8,20 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui
 {
-	internal partial class ImageSourcePartWrapper<T> : IImageSourcePart
-			where T : ElementHandler
+	public partial class ImageSourcePartLoader : IImageSourcePart
 	{
 		Action<Drawable?>? SetImage { get; }
 
 		View? NativeView => Handler.NativeView as View;
 
-		public ImageSourcePartWrapper(
-			T handler,
-			Func<T, IImageSource?> getSource,
-			Func<T, bool>? getIsAnimationPlaying,
+		public ImageSourcePartLoader(
+			IElementHandler handler,
+			Func<IImageSource?> getSource,
+			Func<bool>? getIsAnimationPlaying,
 			Action<bool>? setIsLoading,
-			Action<Drawable?> setDrawable)
+			Action<Drawable?> setDrawable) : this(handler, getSource, getIsAnimationPlaying, setIsLoading)
 		{
-			GetSource = getSource;
-			GetIsAnimationPlaying = getIsAnimationPlaying;
-			SetIsLoading = setIsLoading;
 			SetImage = setDrawable;
-			Handler = handler;
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation.Metadata;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
@@ -54,10 +55,19 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static async Task<IImageSourceServiceResult<WImageSource>?> UpdateSourceAsync(this WImage imageView, IImageSourcePart image, IImageSourceServiceProvider services, CancellationToken cancellationToken = default)
+		public static void UpdateSource(this WImage imageView, WImageSource? uIImage, IImageSourcePart image)
 		{
-			imageView.Clear();
+			imageView.Source = uIImage;
+			imageView.UpdateIsAnimationPlaying(image);
+		}
 
+		public static async Task<IImageSourceServiceResult<WImageSource>?> UpdateSourceAsync(
+			this IImageSourcePart image,
+			FrameworkElement destinationContext,
+			IImageSourceServiceProvider services,
+			Action<WImageSource?> setImage,
+			CancellationToken cancellationToken = default)
+		{
 			image.UpdateIsLoading(false);
 
 			var imageSource = image.Source;
@@ -73,7 +83,7 @@ namespace Microsoft.Maui
 			{
 				var service = services.GetRequiredImageSourceService(imageSource);
 
-				var scale = imageView.XamlRoot?.RasterizationScale ?? 1;
+				var scale = destinationContext.XamlRoot?.RasterizationScale ?? 1;
 				var result = await service.GetImageSourceAsync(imageSource, (float)scale, cancellationToken);
 				var uiImage = result?.Value;
 
@@ -82,9 +92,7 @@ namespace Microsoft.Maui
 				// only set the image if we are still on the same one
 				if (applied)
 				{
-					imageView.Source = uiImage;
-
-					imageView.UpdateIsAnimationPlaying(image);
+					setImage(uiImage);
 				}
 
 				events?.LoadingCompleted(applied);
