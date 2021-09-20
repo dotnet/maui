@@ -12,6 +12,8 @@ namespace Microsoft.Maui
 
 		public static void UpdateClip(this object nativeView, IView view) { }
 
+		public static void UpdateShadow(this object nativeView, IView view) { }
+
 		public static void UpdateOpacity(this object nativeView, IView view) { }
 
 		public static void UpdateSemantics(this object nativeView, IView view) { }

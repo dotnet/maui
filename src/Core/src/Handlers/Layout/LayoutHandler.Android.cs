@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Handlers
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
 
+			// .NET MAUI layouts should not impose clipping on their children	
+			viewGroup.SetClipChildren(false);
+
 			return viewGroup;
 		}
 
