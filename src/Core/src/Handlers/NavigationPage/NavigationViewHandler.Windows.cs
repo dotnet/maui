@@ -10,22 +10,22 @@ using Microsoft.UI.Xaml.Media.Animation;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler :
-		ViewHandler<INavigationView, NavigationFrame>
+		ViewHandler<INavigationView, Frame>
 	{
 		NavigationManager? _navigationManager;
-		protected override NavigationFrame CreateNativeView()
+		protected override Frame CreateNativeView()
 		{
 			_navigationManager = CreateNavigationManager();
-			return new NavigationFrame(_navigationManager);
+			return new Frame();
 		}
 
-		protected override void ConnectHandler(NavigationFrame nativeView)
+		protected override void ConnectHandler(Frame nativeView)
 		{
 			_navigationManager?.Connect(VirtualView, nativeView);
 			base.ConnectHandler(nativeView);
 		}
 
-		protected override void DisconnectHandler(NavigationFrame nativeView)
+		protected override void DisconnectHandler(Frame nativeView)
 		{
 			_navigationManager?.Disconnect(VirtualView, nativeView);
 			base.DisconnectHandler(nativeView);
