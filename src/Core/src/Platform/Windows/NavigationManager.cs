@@ -38,6 +38,15 @@ namespace Microsoft.Maui
 			NavigationView = (INavigationView)navigationView;
 		}
 
+		public virtual void Disconnect(IView navigationView, NavigationFrame navigationFrame)
+		{
+			if (_navigationFrame != null)
+				_navigationFrame.Navigated -= OnNavigated;
+
+			_navigationFrame = null;
+			NavigationView = null;
+		}
+
 		public virtual void NavigateTo(NavigationRequest args)
 		{
 			bool push = true;
