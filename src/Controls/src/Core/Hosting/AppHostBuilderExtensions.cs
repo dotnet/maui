@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif
 			{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
-			{ typeof(BoxView), typeof(BoxViewHandler) },
+			{ typeof(BoxView), typeof(ShapeViewHandler) },
 			{ typeof(Button), typeof(ButtonHandler) },
 			{ typeof(CheckBox), typeof(CheckBoxHandler) },
 			{ typeof(DatePicker), typeof(DatePickerHandler) },
