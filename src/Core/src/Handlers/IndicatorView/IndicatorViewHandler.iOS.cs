@@ -10,36 +10,35 @@ namespace Microsoft.Maui.Handlers
 	{
 		MauiPageControl? UIPager => NativeView as MauiPageControl;
 
-		bool _updatingPosition;
 		protected override UIPageControl CreateNativeView() => new MauiPageControl();
 
 		public override void NativeArrange(Rectangle rect)
 		{
 			base.NativeArrange(rect);
-			if (UIPager != null)
-				UIPager.Frame = new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
+			if (NativeView != null)
+				NativeView.Frame = new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
 		}
 
 		protected override void ConnectHandler(UIPageControl nativeView)
 		{
 			base.ConnectHandler(nativeView);
-			nativeView.ValueChanged += UIPagerValueChanged;
+			UIPager?.SetIndicatorView(VirtualView);
 			UpdateIndicator();
 		}
 
 		protected override void DisconnectHandler(UIPageControl nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			nativeView.ValueChanged -= UIPagerValueChanged;
+			UIPager?.SetIndicatorView(null);
 		}
 
 		public static void MapCount(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.UpdateIndicatorCount();
+			handler.UIPager?.UpdateIndicatorCount();
 		}
 		public static void MapPosition(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.UpdatePosition();
+			handler.UIPager?.UpdatePosition();
 		}
 		public static void MapHideSingle(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
@@ -47,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 		}
 		public static void MapMaximumVisible(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.UpdateIndicatorCount();
+			handler.UIPager?.UpdateIndicatorCount();
 		}
 		public static void MapIndicatorSize(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
@@ -84,47 +83,6 @@ namespace Microsoft.Maui.Handlers
 				foreach (var child in NativeView.Subviews)
 					child.RemoveFromSuperview();
 			}
-		}
-
-		void UIPagerValueChanged(object? sender, EventArgs e)
-		{
-			if (_updatingPosition || UIPager == null)
-				return;
-
-			VirtualView.Position = (int)UIPager.CurrentPage;
-		}
-
-		void UpdatePosition()
-		{
-			_updatingPosition = true;
-			UIPager?.UpdateCurrentPage(GetCurrentPage());
-			_updatingPosition = false;
-
-			int GetCurrentPage()
-			{
-				var maxVisible = GetMaximumVisible();
-				var position = VirtualView.Position;
-				var index = position >= maxVisible ? maxVisible - 1 : position;
-				return index;
-			}
-		}
-
-		void UpdateIndicatorCount()
-		{
-			NativeView?.UpdatePages(GetMaximumVisible());
-			UpdatePosition();
-		}
-
-		int GetMaximumVisible()
-		{
-			var minValue = Math.Min(VirtualView.MaximumVisible, VirtualView.Count);
-			var maximumVisible = minValue <= 0 ? 0 : minValue;
-			bool hideSingle = VirtualView.HideSingle;
-
-			if (maximumVisible == 1 && hideSingle)
-				maximumVisible = 0;
-
-			return maximumVisible;
 		}
 	}
 }

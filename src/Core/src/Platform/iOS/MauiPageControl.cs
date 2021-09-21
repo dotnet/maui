@@ -1,4 +1,5 @@
-﻿using CoreGraphics;
+﻿using System;
+using CoreGraphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform.iOS
@@ -6,6 +7,9 @@ namespace Microsoft.Maui.Platform.iOS
 	public class MauiPageControl : UIPageControl
 	{
 		const int DefaultIndicatorSize = 6;
+
+		IIndicatorView? _indicatorView;
+		bool _updatingPosition;
 
 		public MauiPageControl()
 		{
@@ -16,10 +20,29 @@ namespace Microsoft.Maui.Platform.iOS
 				BackgroundStyle = UIPageControlBackgroundStyle.Minimal;
 			}
 		}
+		
+		public void SetIndicatorView(IIndicatorView? indicatorView)
+		{
+			if (indicatorView == null)
+			{
+				ValueChanged -= MauiPageControlValueChanged;
+			}
+			_indicatorView = indicatorView;
+
+		}
 
 		public bool IsSquare { get; set; }
 
 		public double IndicatorSize { get; set; }
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+				ValueChanged -= MauiPageControlValueChanged;
+			
+			base.Dispose(disposing);
+		}
+
 
 		public override void LayoutSubviews()
 		{
@@ -34,6 +57,41 @@ namespace Microsoft.Maui.Platform.iOS
 				return;
 
 			UpdateSquareShape();
+		}
+
+		public void UpdateIndicatorSize()
+		{
+			if (IndicatorSize == 0 || IndicatorSize == DefaultIndicatorSize)
+				return;
+
+			float scale = (float)IndicatorSize / DefaultIndicatorSize;
+			var newTransform = CGAffineTransform.MakeScale(scale, scale);
+
+			Transform = newTransform;
+		}
+
+		public void UpdatePosition()
+		{
+			_updatingPosition = true;
+			this.UpdateCurrentPage(GetCurrentPage());
+			_updatingPosition = false;
+
+			int GetCurrentPage()
+			{
+				if (_indicatorView == null)
+					return -1;
+
+				var maxVisible = GetMaximumVisible();
+				var position = _indicatorView.Position;
+				var index = position >= maxVisible ? maxVisible - 1 : position;
+				return index;
+			}
+		}
+
+		public void UpdateIndicatorCount()
+		{
+			this.UpdatePages(GetMaximumVisible());
+			UpdatePosition();
 		}
 
 		void UpdateSquareShape()
@@ -62,17 +120,6 @@ namespace Microsoft.Maui.Platform.iOS
 			}
 		}
 
-		void UpdateIndicatorSize()
-		{
-			if (IndicatorSize == 0 || IndicatorSize == DefaultIndicatorSize)
-				return;
-
-			float scale = (float)IndicatorSize / DefaultIndicatorSize;
-			var newTransform = CGAffineTransform.MakeScale(scale, scale);
-
-			Transform = newTransform;
-		}
-
 		void UpdateCornerRadius()
 		{
 			foreach (var view in Subviews)
@@ -83,12 +130,29 @@ namespace Microsoft.Maui.Platform.iOS
 
 		void MauiPageControlValueChanged(object? sender, System.EventArgs e)
 		{
+			if (_updatingPosition || _indicatorView == null)
+				return;
+
+			_indicatorView.Position = (int)CurrentPage;
 			//if we are iOS13 or lower and we are using a Square shape
 			//we need to update the CornerRadius of the new shape.
 			if (IsSquare && !NativeVersion.IsAtLeast(14))
-			{
 				LayoutSubviews();
-			}
+
+		}
+
+		int GetMaximumVisible()
+		{
+			if (_indicatorView == null)
+				return 1;
+			var minValue = Math.Min(_indicatorView.MaximumVisible, _indicatorView.Count);
+			var maximumVisible = minValue <= 0 ? 0 : minValue;
+			bool hideSingle = _indicatorView.HideSingle;
+
+			if (maximumVisible == 1 && hideSingle)
+				maximumVisible = 0;
+
+			return maximumVisible;
 		}
 	}
 }
