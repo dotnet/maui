@@ -13,11 +13,23 @@
             <ProgressBar
                 Progress="0.5"/>
             <Label
+                Text="ProgressColor"
+                Style="{StaticResource Headline}"/>
+            <ProgressBar
+                Progress="0.5"
+                ProgressColor="Orange"/>
+            <Label
                 Text="Disabled"
                 Style="{StaticResource Headline}"/>
             <ProgressBar
                 IsEnabled="False"
                 Progress="0.5"/>
+            <Label
+                Text="ProgressColor"
+                Style="{StaticResource Headline}"/>
+            <ProgressBar
+                Progress="0.5"
+                ProgressColor="Orange"/>
             <Label
                 Text="ProgressTo"
                 Style="{StaticResource Headline}"/>

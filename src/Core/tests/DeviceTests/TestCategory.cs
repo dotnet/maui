@@ -16,6 +16,7 @@
 		public const string Layout = "Layout";
 		public const string Page = "Page";
 		public const string Picker = "Picker";
+		public const string ProgressBar = "ProgressBar";
 		public const string ScrollView = "ScrollView";
 		public const string SearchBar = "SearchBar";
 		public const string ShapeView = "ShapeView";
@@ -25,5 +26,6 @@
 		public const string TextFormatting = "Formatting";
 		public const string TimePicker = "TimePicker";
 		public const string View = "View";
+		public const string WebView = "WebView";
 	}
 }

@@ -21,6 +21,8 @@ Follow the [.NET MAUI Blog](https://devblogs.microsoft.com/dotnet/category/net-m
 
 ## Current News
 
+[September 14, 2021 - Update on .NET Multi-platform App UI (.NET MAUI)](https://aka.ms/maui-update/)
+
 [August 10, 2021 - Announcing .NET MAUI Preview 7](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-7/)
 
 [July 14, 2021 - Announcing .NET MAUI Preview 6](https://devblogs.microsoft.com/dotnet/announcing-net-maui-preview-6/)

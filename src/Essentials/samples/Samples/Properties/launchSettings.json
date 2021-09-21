@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Microsoft.Maui.Essentials.Sample": {
+    "Windows Machine": {
       "commandName": "MsixPackage"
     }
   }

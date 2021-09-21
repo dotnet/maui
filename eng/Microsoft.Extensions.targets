@@ -7,18 +7,23 @@
   </PropertyGroup>
    <!-- Microsoft.Maui.Graphics related Packages -->
   <PropertyGroup>
-    <_MicrosoftGraphicsWin2DVersion>0.8.0.21</_MicrosoftGraphicsWin2DVersion>
-    <_MicrosoftMauiGraphics>6.0.100-rc.1.382</_MicrosoftMauiGraphics>
-    <_MicrosoftMauiGraphicsWin2D>6.0.100-rc.1.382</_MicrosoftMauiGraphicsWin2D>
+    <MicrosoftGraphicsWin2DVersion>1.0.0.26-experimental1</MicrosoftGraphicsWin2DVersion>
+    <MicrosoftMauiGraphicsVersion>6.0.100-rc.2.470</MicrosoftMauiGraphicsVersion>
   </PropertyGroup>
    <!-- WINUI related Packages -->
   <PropertyGroup>
     <_MicrosoftWindowsAppSdkVersion>1.0.0-experimental1</_MicrosoftWindowsAppSdkVersion>
-    <_MicrosoftWebWebView2Version>1.0.705.50</_MicrosoftWebWebView2Version>
+    <_MicrosoftWebWebView2Version>1.0.961.33</_MicrosoftWebWebView2Version>
   </PropertyGroup>
   <!-- Android related Packages -->
   <PropertyGroup>
-    <_XamarinAndroidGlideVersion>4.11.0.1</_XamarinAndroidGlideVersion>
+    <_XamarinAndroidGlideVersion>4.12.0.2</_XamarinAndroidGlideVersion>
+  </PropertyGroup>
+  <!-- SkiaSharp related Packages -->
+  <PropertyGroup>
+    <_SkiaSharpVersion>2.88.0-preview.140</_SkiaSharpVersion>
+    <_HarfBuzzSharpVersion>2.8.2-preview.140</_HarfBuzzSharpVersion>
+    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.789cb44726218e9b183942be8ce9ce32f39a883a.140</_SkiaSharpNativeAssetsVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios' Or '$(TargetFramework)' == 'net6.0-maccatalyst'">
     <!-- Debugger workaround -->
@@ -26,16 +31,12 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference
-        Update="Reloadify3000"
-        Version="1.0.7"
-    />
-    <PackageReference
         Update="Microsoft.Maui.Graphics"
-        Version="$(_MicrosoftMauiGraphics)" 
+        Version="$(MicrosoftMauiGraphicsVersion)"
     />
     <PackageReference
          Update="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
-         Version="$(_MicrosoftMauiGraphicsWin2D)"
+         Version="$(MicrosoftMauiGraphicsVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
@@ -104,7 +105,7 @@
     />
     <PackageReference
         Update="Microsoft.Graphics.Win2D"
-        Version="$(_MicrosoftGraphicsWin2DVersion)"
+        Version="$(MicrosoftGraphicsWin2DVersion)"
     />
     <PackageReference
         Update="Xamarin.Android.Glide"
@@ -142,6 +143,7 @@
   <Target Name="RemoveLoggingAnalyzer" BeforeTargets="CoreCompile">
     <ItemGroup>
       <Analyzer Remove="@(Analyzer)" Condition="%(FileName) == 'Microsoft.Extensions.Logging.Generators'" />
+      <Analyzer Remove="@(Analyzer)" Condition="%(FileName) == 'System.Text.Json.SourceGeneration' and '$(BuildForLegacy)' == 'true'" />
     </ItemGroup>
   </Target>
 </Project>

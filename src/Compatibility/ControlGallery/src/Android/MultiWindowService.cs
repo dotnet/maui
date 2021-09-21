@@ -1,6 +1,6 @@
-﻿using Android.Content;
+﻿using System;
+using Android.Content;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
-using System;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {

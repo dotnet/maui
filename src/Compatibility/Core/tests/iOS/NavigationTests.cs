@@ -15,7 +15,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				Content = new Label { Text = "Hello" }
 			};
 
-			Device.InvokeOnMainThreadAsync(() => { 
+			Device.InvokeOnMainThreadAsync(() =>
+			{
 				var navPage = new NavigationPage(root);
 				var renderer = GetRenderer(navPage);
 
