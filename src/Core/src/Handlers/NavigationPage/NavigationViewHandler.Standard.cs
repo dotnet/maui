@@ -5,7 +5,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Handlers
 {
-	internal partial class NavigationViewHandler :
+	public partial class NavigationViewHandler :
 		ViewHandler<INavigationView, object>
 	{
 		protected override object CreateNativeView()

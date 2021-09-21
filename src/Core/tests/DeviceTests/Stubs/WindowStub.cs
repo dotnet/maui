@@ -46,5 +46,7 @@
 			IsStopped = true;
 			IsResumed = false;
 		}
+
+		public bool BackButtonPressed() => true;
 	}
 }

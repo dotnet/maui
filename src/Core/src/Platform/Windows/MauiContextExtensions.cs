@@ -17,5 +17,14 @@ namespace Microsoft.Maui
 
 			return FlowDirection.MatchParent;
 		}
+
+		public static WindowManager GetWindowManager(this IMauiContext mauiContext)
+		{
+			WindowManager? windowManager = null;
+			if (mauiContext is IScopedMauiContext smc)
+				windowManager = smc.WindowManager;
+
+			return windowManager ?? throw new InvalidOperationException("WindowManager Not Found");
+		}
 	}
 }

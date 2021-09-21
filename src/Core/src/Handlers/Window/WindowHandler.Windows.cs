@@ -20,12 +20,15 @@ namespace Microsoft.Maui.Handlers
 					Style = style as UI.Xaml.Style
 				};
 			}
-
+						
 			nativeView.Content = _rootPanel;
 		}
 
 		protected override void DisconnectHandler(UI.Xaml.Window nativeView)
 		{
+			var windowManager = MauiContext?.GetWindowManager();
+			windowManager?.Connect(VirtualView);
+
 			_rootPanel?.Children?.Clear();
 			nativeView.Content = null;
 
@@ -39,10 +42,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var nativeContent = window.Content.ToNative(handler.MauiContext);
-
+			var windowManager = handler.MauiContext.GetWindowManager();
+			windowManager.Connect(handler.VirtualView);
 			handler?._rootPanel?.Children?.Clear();
-			handler?._rootPanel?.Children?.Add(nativeContent);
+			handler?._rootPanel?.Children?.Add(windowManager.RootView);
 		}
 	}
 }

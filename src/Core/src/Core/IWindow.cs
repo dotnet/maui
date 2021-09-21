@@ -21,5 +21,7 @@ namespace Microsoft.Maui
 		void Stopped();
 
 		void Destroying();
+
+		bool BackButtonPressed();
 	}
 }
