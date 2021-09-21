@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using NUnit;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.Tests;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests;
 using Microsoft.Maui.Controls.Internals;
+using NUnit;
 
 [assembly: Dependency(typeof(PlatformTestSettings))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.Tests

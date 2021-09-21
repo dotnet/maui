@@ -33,6 +33,8 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Switch), typeof(SwitchHandler) },
 			{ typeof(TimePicker), typeof(TimePickerHandler) },
 			{ typeof(Page), typeof(PageHandler) },
+			{ typeof(WebView), typeof(WebViewHandler) },
+			{ typeof(IContentView), typeof(ContentViewHandler) },
 			{ typeof(Shapes.Ellipse), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Line), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Path), typeof(ShapeViewHandler) },
@@ -43,8 +45,8 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __ANDROID__ || __IOS__
 			{ typeof(RefreshView), typeof(RefreshViewHandler) },
 #endif
-#if __ANDROID__ 
-			{ typeof(NavigationPage), typeof(Controls.Handlers.NavigationPageHandler) },
+#if __ANDROID__  || WINDOWS
+			{ typeof(NavigationPage), typeof(NavigationPageHandler) },
 #endif
 		};
 

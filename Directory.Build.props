@@ -2,45 +2,52 @@
   <Import Project="eng\Versions.props" />
 
   <PropertyGroup>
-    <BuildForWinUI Condition=" ($(SolutionFileName.Contains('winui')) OR '$(SolutionFileName)' == 'BlazorWindows-net6.sln') AND '$(Packing)' == ''">true</BuildForWinUI>
-    <BuildForAndroid Condition="'$(SolutionFileName)' == 'Microsoft.Maui.Droid.sln' AND '$(Packing)' == ''">true</BuildForAndroid>
-    <BuildForNet6 Condition="'$(Packing)' == 'true' OR $(MSBuildProjectFile.Contains('SingleProject')) OR $(MSBuildProjectFile.Contains('Profiling')) OR $(MSBuildProjectFile.Contains('net6')) OR $(SolutionFileName.Contains('net6')) OR '$(BuildForWinUI)' == 'true' OR '$(BuildForAndroid)' == 'true'">true</BuildForNet6>
-    <MauiPlatforms>net6.0-ios;net6.0-maccatalyst;net6.0-android</MauiPlatforms>
-    <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">net6.0-windows10.0.19041;net6.0-windows10.0.18362</WindowsMauiPlatforms>
-    <MauiPlatforms Condition="'$(Packing)' == 'true'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
-    <MauiPlatforms Condition="'$(BuildForWinUI)' == 'true'">$(WindowsMauiPlatforms)</MauiPlatforms>
-    <MauiPlatforms Condition="'$(BuildForAndroid)' == 'true'">net6.0-android</MauiPlatforms>
+    <IncludeWindowsTargetFrameworks Condition="($([MSBuild]::IsOSPlatform('windows')) and '$(MSBuildRuntimeType)' == 'Full') or ('$(Packing)' == 'true')">true</IncludeWindowsTargetFrameworks>
+    <BuildForAndroidOnly Condition="$(SolutionFileName.StartsWith('._Microsoft.Maui.Droid')) and '$(Packing)' == ''">true</BuildForAndroidOnly>
+    <BuildForiOSOnly Condition="$(SolutionFileName.StartsWith('._Microsoft.Maui.iOS')) and '$(Packing)' == ''">true</BuildForiOSOnly>
+    <BuildForLegacy Condition="($(SolutionFileName.StartsWith('._')) or $(SolutionFileName.StartsWith('Comet'))) and !$(SolutionFileName.Contains('-net6')) and '$(Packing)' == ''">true</BuildForLegacy>
+  </PropertyGroup>
 
-    <!-- Work around the IDE not properly handling the NU1703 warning -->
-    <MauiPlatformsNoMacCat>net6.0-ios;net6.0-android</MauiPlatformsNoMacCat>
-    <MauiPlatformsNoMacCat Condition="'$(BuildForWinUI)' == 'true'">$(MauiPlatforms)</MauiPlatformsNoMacCat>
-    <MauiPlatformsNoMacCat Condition="'$(BuildForAndroid)' == 'true'">$(MauiPlatforms)</MauiPlatformsNoMacCat>
-
-    <!-- This is used to easily build for a specific target to make the IDE work a bit better  -->   
-    <NonNet6Platforms>Xamarin.iOS10;MonoAndroid10.0</NonNet6Platforms>
-    <NonNet6EssentialsPlatforms>netstandard2.0;netstandard2.1;Xamarin.iOS10;MonoAndroid90;MonoAndroid10.0;tizen40;Xamarin.Mac20;</NonNet6EssentialsPlatforms>
-    <NonNet6EssentialsPlatforms Condition=" '$(OS)' == 'Windows_NT'">$(NonNet6EssentialsPlatforms);uap10.0.16299;</NonNet6EssentialsPlatforms>
-
-    <BuildNonNet6ForiOS>false</BuildNonNet6ForiOS>
-    <BuildNonNet6ForiOS Condition="'$(SolutionFileName)' == 'Microsoft.Maui.iOS.sln'">true</BuildNonNet6ForiOS>
-    <NonNet6Platforms Condition="'$(BuildNonNet6ForiOS)' == 'true'">Xamarin.iOS10</NonNet6Platforms>
-    <NonNet6EssentialsPlatforms Condition="'$(BuildNonNet6ForiOS)' == 'true'">netstandard2.0;netstandard2.1;Xamarin.iOS10</NonNet6EssentialsPlatforms>
-
-    <BuildNonNet6ForAndroid>false</BuildNonNet6ForAndroid>
-    <NonNet6Platforms Condition="'$(BuildNonNet6ForAndroid)' == 'true'">MonoAndroid10.0</NonNet6Platforms>
-    <NonNet6EssentialsPlatforms Condition="'$(BuildNonNet6ForAndroid)' == 'true'">netstandard2.0;netstandard2.1;MonoAndroid10.0</NonNet6EssentialsPlatforms>
+  <PropertyGroup>
+    <DefineConstants Condition="$(TargetFramework.Contains('-windows'))">$(DefineConstants);WINDOWS</DefineConstants>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-
     <!-- <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles> -->
-
     <!-- HACK: WinUI seems to have issues without this -->
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
-
-    <DefineConstants Condition="$(TargetFramework.Contains('-windows'))">$(DefineConstants);WINDOWS</DefineConstants>
-
     <!-- Workaround: https://github.com/dotnet/sdk/issues/19050 -->
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+
+    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">14.2</SupportedOSPlatformVersion>
+   	<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.18362.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BuildForLegacy)' != 'True'">
+    <!-- the real TFMs -->
+    <MauiPlatforms>net6.0-ios;net6.0-maccatalyst;net6.0-android</MauiPlatforms>
+    <WindowsMauiPlatforms Condition="'$(WindowsMauiPlatforms)' == ''">net6.0-windows10.0.19041;net6.0-windows10.0.18362</WindowsMauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
+
+    <!-- Work around the IDE not properly handling the NU1703 warning -->
+    <MauiPlatformsNoMacCat>net6.0-ios;net6.0-android</MauiPlatformsNoMacCat>
+    <MauiPlatformsNoMacCat Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatformsNoMacCat);$(WindowsMauiPlatforms)</MauiPlatformsNoMacCat>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BuildForLegacy)' == 'true'">
+    <!-- the legacy TFMs -->
+    <MauiPlatforms>Xamarin.iOS10;MonoAndroid10.0</MauiPlatforms>
+    <!-- UWP is no longer supported -->
+    <WindowsMauiPlatforms></WindowsMauiPlatforms>
+    <MauiPlatforms Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'">$(MauiPlatforms);$(WindowsMauiPlatforms)</MauiPlatforms>
+    <MauiAdditionalPlatforms>MonoAndroid90;tizen40;Xamarin.Mac20</MauiAdditionalPlatforms>
+
+    <!-- This is used to easily build for a specific target to make the IDE work a bit better -->
+    <MauiPlatforms Condition="'$(BuildForiOSOnly)' == 'true'">Xamarin.iOS10</MauiPlatforms>
+    <MauiAdditionalPlatforms Condition="'$(BuildForiOSOnly)' == 'true'"></MauiAdditionalPlatforms>
+    <MauiPlatforms Condition="'$(BuildForAndroidOnly)' == 'true'">MonoAndroid10.0</MauiPlatforms>
+    <MauiAdditionalPlatforms Condition="'$(BuildForAndroidOnly)' == 'true'"></MauiAdditionalPlatforms>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -80,7 +87,7 @@
     <PackageProjectUrl>https://github.com/dotnet/maui</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <PackageVersion>0.0.1-alpha1</PackageVersion>
+    <PackageVersion>6.0.100-dev</PackageVersion>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts</PackageOutputPath>
   </PropertyGroup>
   <!-- This target is replaced by GitInfo when restored. Allows Versions.targets to rely on it before restore. -->

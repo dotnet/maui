@@ -41,33 +41,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
 		}
 
-		[Theory(DisplayName = "Font Family Initializes Correctly")]
-		[InlineData(null)]
-		[InlineData("monospace")]
-		[InlineData("Dokdo")]
-		public async Task FontFamilyInitializesCorrectly(string family)
-		{
-			var editor = new EditorStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize(family, 10)
-			};
-
-			var handler = await CreateHandlerAsync(editor);
-			var nativeEditor = GetNativeEditor(handler);
-
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
-
-			var nativeFont = fontManager.GetTypeface(Font.OfSize(family, 0.0));
-
-			Assert.Equal(nativeFont, nativeEditor.Typeface);
-
-			if (string.IsNullOrEmpty(family))
-				Assert.Equal(fontManager.DefaultTypeface, nativeEditor.Typeface);
-			else
-				Assert.NotEqual(fontManager.DefaultTypeface, nativeEditor.Typeface);
-		}
-
 		[Fact(DisplayName = "Horizontal TextAlignment Initializes Correctly")]
 		public async Task HorizontalTextAlignmentInitializesCorrectly()
 		{
@@ -99,11 +72,14 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, textAlignment);
 		}
 
-		AppCompatEditText GetNativeEditor(EditorHandler editorHandler) =>
+		static AppCompatEditText GetNativeEditor(EditorHandler editorHandler) =>
 			(AppCompatEditText)editorHandler.NativeView;
 
 		string GetNativeText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Text;
+
+		static void SetNativeText(EditorHandler editorHandler, string text) =>
+			GetNativeEditor(editorHandler).Text = text;
 
 		string GetNativePlaceholderText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Hint;

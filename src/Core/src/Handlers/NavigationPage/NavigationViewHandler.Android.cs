@@ -6,14 +6,14 @@ using Android.Views;
 
 namespace Microsoft.Maui.Handlers
 {
-	internal partial class NavigationViewHandler :
+	public partial class NavigationViewHandler :
 		ViewHandler<INavigationView, NavigationLayout>
 	{
 		NavigationManager? _navigationManager;
 
 		protected override NavigationLayout CreateNativeView()
 		{
-			LayoutInflater? li = LayoutInflater.From(Context);
+			LayoutInflater? li = MauiContext?.GetLayoutInflater();
 			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
 
 			var view = li.Inflate(Resource.Layout.navigationlayout, null).JavaCast<NavigationLayout>();

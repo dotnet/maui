@@ -173,12 +173,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || NativeView == null)
 				return;
 
-			// Even though <null> is technically different to "", it has no
-			// functional difference to apps. Thus, hide it.
-			var mauiText = VirtualView!.Text ?? string.Empty;
-			var nativeText = NativeView.Text ?? string.Empty;
-			if (mauiText != nativeText)
-				VirtualView.Text = nativeText;
+			VirtualView.UpdateText(NativeView.Text);
 		}
 
 		bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString)

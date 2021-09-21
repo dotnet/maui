@@ -1,0 +1,12 @@
+<Project>
+
+  <PropertyGroup>
+    <UsingMicrosoftMauiControlsSdk>true</UsingMicrosoftMauiControlsSdk>
+  </PropertyGroup>
+
+  <!-- Imported last -->
+  <PropertyGroup>
+    <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)Microsoft.Maui.Sdk.After.targets</AfterMicrosoftNETSdkTargets>
+  </PropertyGroup>
+
+</Project>

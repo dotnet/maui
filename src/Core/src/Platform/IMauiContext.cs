@@ -22,5 +22,13 @@ namespace Microsoft.Maui
 	internal interface IScopedMauiContext : IMauiContext
 	{
 		IAnimationManager AnimationManager { get; }
+
+
+#if __ANDROID__
+		Android.Views.LayoutInflater? LayoutInflater { get; }
+		AndroidX.Fragment.App.FragmentManager? FragmentManager { get; }
+#elif WINDOWS
+		WindowManager WindowManager { get; }
+#endif
 	}
 }

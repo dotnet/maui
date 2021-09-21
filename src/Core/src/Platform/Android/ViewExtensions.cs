@@ -30,6 +30,12 @@ namespace Microsoft.Maui
 				wrapper.Clip = view.Clip;
 		}
 
+		public static void UpdateShadow(this AView nativeView, IView view)
+		{
+			if (nativeView is WrapperView wrapper)
+				wrapper.Shadow = view.Shadow;
+		}
+
 		public static ViewStates ToNativeVisibility(this Visibility visibility)
 		{
 			return visibility switch
@@ -188,8 +194,10 @@ namespace Microsoft.Maui
 		{
 			if (view == null)
 				return;
+
 			if (view.Parent == null)
 				return;
+
 			((ViewGroup)view.Parent).RemoveView(view);
 		}
 	}

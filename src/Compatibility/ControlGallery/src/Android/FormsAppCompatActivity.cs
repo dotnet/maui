@@ -1,4 +1,6 @@
-﻿using Android.App;
+﻿using System.Net.Http;
+using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
@@ -8,8 +10,6 @@ using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppLinks;
 using Microsoft.Maui.Controls.Internals;
-using System.Threading.Tasks;
-using System.Net.Http;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 	// This is the AppCompat version of Activity1
 
 	[Activity(Label = "Microsoft Maui Controls Compatibility Gallery", Icon = "@drawable/icon", Theme = "@style/MyTheme",
-		MainLauncher = true, HardwareAccelerated = true, 
+		MainLauncher = true, HardwareAccelerated = true,
 		ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.UiMode)]
 	[IntentFilter(new[] { Intent.ActionView },
 		Categories = new[]
@@ -65,7 +65,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 			//FormsMaterial.Init(this, bundle);
 			AndroidAppLinks.Init(this);
-			Microsoft.Maui.Controls.Compatibility.Forms.ViewInitialized += (sender, e) => {
+			Microsoft.Maui.Controls.Compatibility.Forms.ViewInitialized += (sender, e) =>
+			{
 				//				if (!string.IsNullOrWhiteSpace(e.View.StyleId)) {
 				//					e.NativeView.ContentDescription = e.View.StyleId;
 				//				}
@@ -96,7 +97,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			SetUpForceRestartTest();
 
 			// Make the activity accessible to platform unit tests
-			DependencyResolver.ResolveUsing((t) => {
+			DependencyResolver.ResolveUsing((t) =>
+			{
 				if (t == typeof(Context))
 				{
 					return this;
@@ -106,7 +108,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			});
 
 			DependencyService.Register<IMultiWindowService, MultiWindowService>();
-			
+
 			LoadApplication(_app);
 
 #if LEGACY_RENDERERS
