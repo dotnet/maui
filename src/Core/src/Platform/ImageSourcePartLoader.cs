@@ -24,7 +24,7 @@ namespace Microsoft.Maui
 		Action<NativeImage?>? SetImage { get; }
 		NativeView? NativeView => Handler.NativeView as NativeView;
 
-		public ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
+		internal ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
 
 		IElementHandler Handler { get; }
 
