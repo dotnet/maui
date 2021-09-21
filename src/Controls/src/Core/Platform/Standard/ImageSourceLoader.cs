@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	partial class ImageSourceLoader
 	{
-		static Task<IImageSourceServiceResult<object>> GetNativeImage(IImageSource imageSource, IImageSourceService imageSourceService, IMauiContext mauiContext)
+		static Task<IImageSourceServiceResult<object>> GetNativeImageAsync(IImageSource imageSource, IImageSourceService imageSourceService, IMauiContext mauiContext)
 		{
 			throw new NotImplementedException();
 		}

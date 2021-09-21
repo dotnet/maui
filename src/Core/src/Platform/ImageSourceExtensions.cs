@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 	{
 		public static void LoadImage(this IImageSource source, IMauiContext mauiContext, Action<IImageSourceServiceResult<NativeImage>?>? finished = null)
 		{
-			LoadImageResult(source.GetNativeImage(mauiContext), finished)
+			LoadImageResult(source.GetNativeImageAsync(mauiContext), finished)
 						.FireAndForget(mauiContext.Services.CreateLogger<IImageSource>(), nameof(LoadImage));
 		}
 
@@ -30,15 +30,15 @@ namespace Microsoft.Maui
 			finished?.Invoke(result);
 		}
 
-		public static Task<IImageSourceServiceResult<NativeImage>?> GetNativeImage(this IImageSource imageSource, IMauiContext mauiContext)
+		public static Task<IImageSourceServiceResult<NativeImage>?> GetNativeImageAsync(this IImageSource imageSource, IMauiContext mauiContext)
 		{
 			var services = mauiContext.Services;
 			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 			var imageSourceService = provider.GetRequiredImageSourceService(imageSource);
-			return imageSource.GetNativeImage(mauiContext, imageSourceService);
+			return imageSource.GetNativeImageAsync(mauiContext, imageSourceService);
 		}
 
-		public static Task<IImageSourceServiceResult<NativeImage>?> GetNativeImage(this IImageSource imageSource, IMauiContext mauiContext, IImageSourceService imageSourceService)
+		public static Task<IImageSourceServiceResult<NativeImage>?> GetNativeImageAsync(this IImageSource imageSource, IMauiContext mauiContext, IImageSourceService imageSourceService)
 		{
 #if __IOS__ || MACCATALYST
 			return imageSourceService.GetImageAsync(imageSource);
