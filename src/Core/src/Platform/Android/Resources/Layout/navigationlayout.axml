@@ -20,7 +20,7 @@
 				app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
         <androidx.fragment.app.FragmentContainerView
-                   android:id="@+id/tab_container_view"
+                   android:id="@+id/toptabs_containerview"
                    android:layout_width="match_parent"
                    android:layout_height="wrap_content"
             />
@@ -36,7 +36,7 @@
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             />
     <androidx.fragment.app.FragmentContainerView
-               android:id="@+id/bottom_tab_container_view"
+               android:id="@+id/bottomtab_containerview"
                android:layout_width="match_parent"
                android:layout_height="wrap_content"
                android:layout_gravity="bottom"

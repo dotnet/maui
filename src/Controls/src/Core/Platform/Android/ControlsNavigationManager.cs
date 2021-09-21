@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Controls.Platform
 			int id;
 			if(tabbedPageHandler.BottomNavigationView != null)
 			{
-				id = Resource.Id.bottom_tab_container_view;
+				id = Resource.Id.bottomtab_containerview;
 				_tabLayoutFragment = new ViewFragment(tabbedPageHandler.BottomNavigationView);
 			}
 			else
