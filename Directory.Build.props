@@ -17,6 +17,11 @@
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
     <!-- Workaround: https://github.com/dotnet/sdk/issues/19050 -->
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+
+    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-ios'">14.2</SupportedOSPlatformVersion>
+   	<SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-maccatalyst'">14.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="'$(TargetFramework)' == 'net6.0-android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.18362.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildForLegacy)' != 'True'">
