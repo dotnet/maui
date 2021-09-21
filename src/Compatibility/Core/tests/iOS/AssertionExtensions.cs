@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			return pixel;
 		}
 
-		
+
 
 		public static UIImage AssertColorAtPoint(this UIImage bitmap, UIColor expectedColor, int x, int y)
 		{
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 				return bitmap;
 			}
-			catch (Exception ex) 
+			catch (Exception ex)
 			{
 				System.Diagnostics.Debug.WriteLine(ex);
 			}
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 		public static async Task AssertEqualsAsync(this UIImage expectedBitmap, UIImage actualBitmap)
 		{
-			if(!actualBitmap.AsPNG().IsEqual(expectedBitmap.AsPNG()))
+			if (!actualBitmap.AsPNG().IsEqual(expectedBitmap.AsPNG()))
 			{
 				string failureMessage = null;
 				await Device.InvokeOnMainThreadAsync(() =>

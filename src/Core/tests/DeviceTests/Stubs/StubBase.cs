@@ -30,6 +30,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IShape Clip { get; set; }
 
+		public IShadow Shadow { get; set; }
+
 		public IView Parent { get; set; }
 
 		public Size DesiredSize { get; set; } = new Size(50, 50);

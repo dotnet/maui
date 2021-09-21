@@ -41,8 +41,8 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidateNativeProgressColor(progressBar, progressColor);
-    }
-    
+		}
+
 		[Fact(DisplayName = "Null Progress Color Doesn't Crash")]
 		public async Task NullProgressColorDoesntCrash()
 		{

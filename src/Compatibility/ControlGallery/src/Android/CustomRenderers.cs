@@ -16,18 +16,18 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
-using NestedScrollView = AndroidX.Core.Widget.NestedScrollView;
 using AMenuItemCompat = AndroidX.Core.View.MenuItemCompat;
-using IOPath = System.IO.Path;
 using AView = Android.Views.View;
+using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
+using IOPath = System.IO.Path;
+using NestedScrollView = AndroidX.Core.Widget.NestedScrollView;
 
 [assembly: ExportRenderer(typeof(Issue5461.ScrollbarFadingEnabledFalseScrollView), typeof(ScrollbarFadingEnabledFalseScrollViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1942.CustomGrid), typeof(Issue1942GridRenderer))]

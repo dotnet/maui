@@ -28,7 +28,7 @@
       "packs": [
           "Microsoft.Maui.Dependencies",
           "Microsoft.Maui.Controls.Build.Tasks",
-          "Microsoft.Maui.Controls.Sdk",
+          "Microsoft.Maui.Sdk",
           "Microsoft.Maui.Extensions",
           "Microsoft.Maui.Resizetizer.Sdk",
           "Microsoft.Maui.Templates",
@@ -454,7 +454,7 @@
       "kind": "library",
       "version": "@SystemTextJsonPackageVersion@"
     },
-    "Microsoft.Maui.Controls.Sdk": {
+    "Microsoft.Maui.Sdk": {
       "kind": "sdk",
       "version": "@VERSION@"
     },
