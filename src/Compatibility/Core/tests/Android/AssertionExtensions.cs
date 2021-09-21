@@ -1,9 +1,9 @@
-using AView = Android.Views.View;
-using AColor = Android.Graphics.Color;
-using Android.Graphics;
 using System;
-using NUnit.Framework;
 using System.IO;
+using Android.Graphics;
+using NUnit.Framework;
+using AColor = Android.Graphics.Color;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			return bitmap;
 		}
 
-		public static Bitmap AssertColorAtCenter(this Bitmap bitmap, AColor expectedColor) 
+		public static Bitmap AssertColorAtCenter(this Bitmap bitmap, AColor expectedColor)
 		{
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width / 2, bitmap.Height / 2);
 		}
@@ -92,11 +92,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		{
 			var bitmap = view.ToBitmap();
 
-			for(int x = 1; x < view.Width; x++)
+			for (int x = 1; x < view.Width; x++)
 			{
-				for(int y = 1; y < view.Height; y++)
+				for (int y = 1; y < view.Height; y++)
 				{
-					if(bitmap.ColorAtPoint(x, y, true) == expectedColor)
+					if (bitmap.ColorAtPoint(x, y, true) == expectedColor)
 					{
 						return bitmap;
 					}

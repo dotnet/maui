@@ -45,8 +45,8 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __ANDROID__ || __IOS__
 			{ typeof(RefreshView), typeof(RefreshViewHandler) },
 #endif
-#if __ANDROID__ 
-			{ typeof(NavigationPage), typeof(Controls.Handlers.NavigationPageHandler) },
+#if __ANDROID__  || WINDOWS
+			{ typeof(NavigationPage), typeof(NavigationPageHandler) },
 #endif
 		};
 

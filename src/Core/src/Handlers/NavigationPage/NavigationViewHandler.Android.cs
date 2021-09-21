@@ -6,7 +6,7 @@ using Android.Views;
 
 namespace Microsoft.Maui.Handlers
 {
-	internal partial class NavigationViewHandler :
+	public partial class NavigationViewHandler :
 		ViewHandler<INavigationView, NavigationLayout>
 	{
 		NavigationManager? _navigationManager;

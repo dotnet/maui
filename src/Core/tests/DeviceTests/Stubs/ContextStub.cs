@@ -30,6 +30,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public UIKit.UIWindow Window => UIKit.UIApplication.SharedApplication.GetKeyWindow();
 #elif WINDOWS
 		public UI.Xaml.Window Window => throw new NotImplementedException();
+		
+		WindowManager _windowManager;
+		public WindowManager WindowManager => _windowManager ??= new WindowManager(this);
 #endif
 	}
 }

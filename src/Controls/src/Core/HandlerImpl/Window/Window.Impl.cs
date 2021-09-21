@@ -259,6 +259,11 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		bool IWindow.BackButtonPressed()
+		{
+			return this.Page?.SendBackButtonPressed() ?? false;
+		}
+
 		class NavigationImpl : NavigationProxy
 		{
 			readonly Window _owner;

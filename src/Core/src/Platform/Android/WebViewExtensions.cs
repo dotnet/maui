@@ -14,5 +14,14 @@ namespace Microsoft.Maui
 			if (webViewDelegate != null)
 				webView.Source?.Load(webViewDelegate);
 		}
+
+		public static void UpdateSettings(this AWebView nativeWebView, IWebView webView, bool javaScriptEnabled, bool domStorageEnabled)
+		{
+			if (nativeWebView.Settings == null)
+				return;
+
+			nativeWebView.Settings.JavaScriptEnabled = javaScriptEnabled;
+			nativeWebView.Settings.DomStorageEnabled = domStorageEnabled;
+		}
 	}
 }

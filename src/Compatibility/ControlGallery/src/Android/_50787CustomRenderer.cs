@@ -1,7 +1,7 @@
 ﻿using Android.Content;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 [assembly: ExportRenderer(typeof(NavigationPage), typeof(_50787CustomRenderer))]
