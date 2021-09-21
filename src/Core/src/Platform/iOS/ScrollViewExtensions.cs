@@ -15,9 +15,11 @@ namespace Microsoft.Maui
 			scrollView.ShowsHorizontalScrollIndicator = scrollBarVisibility == ScrollBarVisibility.Always || scrollBarVisibility == ScrollBarVisibility.Default;
 		}
 
-		public static void UpdateContent(this UIScrollView scrollView, UIView content)
+		public static void UpdateContent(this UIScrollView scrollView, IView? content, IMauiContext context)
 		{
-			if (scrollView.Subviews.Length > 0 && scrollView.Subviews[0] == content)
+			var nativeContent = content == null ? null : content.ToNative(context);
+
+			if (scrollView.Subviews.Length > 0 && scrollView.Subviews[0] == nativeContent)
 			{
 				return;
 			}
@@ -28,7 +30,10 @@ namespace Microsoft.Maui
 				scrollView.Subviews[0].RemoveFromSuperview();
 			}
 
-			scrollView.AddSubview(content);
+			if (nativeContent != null)
+			{
+				scrollView.AddSubview(nativeContent);
+			}
 		}
 
 		public static void UpdateContentSize(this UIScrollView scrollView, Size contentSize)
