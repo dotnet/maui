@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls
 	{
 		const int DefaultPadding = 4;
 
+		const int DefaultViewSize = 10;
+
 		public static readonly BindableProperty IndicatorsShapeProperty = BindableProperty.Create(nameof(IndicatorsShape), typeof(IndicatorShape), typeof(IndicatorView), Controls.IndicatorShape.Circle);
 
 		public static readonly BindableProperty PositionProperty = BindableProperty.Create(nameof(Position), typeof(int), typeof(IndicatorView), default(int), BindingMode.TwoWay);
@@ -122,7 +124,7 @@ namespace Microsoft.Maui.Controls
 			var defaultSize = IndicatorSize + padding + padding;
 			var items = GetMaximumVisible();
 
-			var sizeRequest = new SizeRequest(new Size(items * defaultSize, IndicatorSize), new Size(10, 10));
+			var sizeRequest = new SizeRequest(new Size(items * defaultSize, IndicatorSize), new Size(DefaultViewSize, DefaultViewSize));
 
 			return sizeRequest;
 		}
