@@ -9,19 +9,19 @@
             <Label
                     Text="AspectFit"
                     Style="{StaticResource Headline}"/>
-            <ImageButton WidthRequest="200" HeightRequest="100" Clicked="OnImageButtonClicked" Aspect="AspectFit" Background="Green" Source="settings.png" Padding="16, 9, 16, 9" />
+            <ImageButton HorizontalOptions="Center" WidthRequest="200" HeightRequest="100" Clicked="OnImageButtonClicked" Aspect="AspectFit" Background="Green" Source="settings.png" Padding="16, 9, 16, 9" />
             <Label
                     Text="AspectFill"
                     Style="{StaticResource Headline}"/>
-            <ImageButton WidthRequest="200" HeightRequest="100" Clicked="OnImageButtonClicked" Aspect="AspectFill" Background="Green" Source="settings.png" Padding="16, 9, 16, 9" />
+            <ImageButton HorizontalOptions="Center" WidthRequest="200" HeightRequest="100" Clicked="OnImageButtonClicked" Aspect="AspectFill" Background="Green" Source="settings.png" Padding="16, 9, 16, 9" />
             <Label
                     Text="Fill"
                     Style="{StaticResource Headline}"/>
-            <ImageButton WidthRequest="200" HeightRequest="100" Clicked="OnImageButtonClicked" Aspect="Fill" Background="Green" Source="settings.png" Padding="16, 9, 16, 9" />
+            <ImageButton HorizontalOptions="Center" WidthRequest="200" HeightRequest="100" Clicked="OnImageButtonClicked" Aspect="Fill" Background="Green" Source="settings.png" Padding="16, 9, 16, 9" />
             <Label 
                     x:Name="InfoLabel"
                     Text="0 ImageButton clicks"
-                    FontSize="Large"
+                    FontSize="16"
                     HorizontalOptions="Center"
                     VerticalOptions="CenterAndExpand" />
         </VerticalStackLayout>

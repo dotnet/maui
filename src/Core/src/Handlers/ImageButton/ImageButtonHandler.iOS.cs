@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Handlers
 
 		void OnSetImageSource(UIImage? obj)
 		{
-			NativeView.ImageView.Image = obj;
+			NativeView.SetImage(obj?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
+			NativeView.HorizontalAlignment = UIControlContentHorizontalAlignment.Fill;
+			NativeView.VerticalAlignment = UIControlContentVerticalAlignment.Fill;
 		}
 
 		protected override void ConnectHandler(UIButton nativeView)
