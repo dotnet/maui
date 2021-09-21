@@ -30,11 +30,7 @@ namespace Microsoft.Maui.Handlers
 
 		ImageSourcePartLoader? _imageSourcePartLoader;
 		public ImageSourcePartLoader SourceLoader =>
-			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, 
-				() => VirtualView.Source,
-				() => VirtualView.IsAnimationPlaying,
-				(isLoading) => (VirtualView as IImage)?.UpdateIsLoading(isLoading),
-				OnSetImageSource);
+			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => VirtualView, OnSetImageSource);
 
 		public ImageHandler() : base(Mapper)
 		{

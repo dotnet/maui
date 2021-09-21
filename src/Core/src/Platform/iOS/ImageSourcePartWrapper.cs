@@ -15,11 +15,9 @@ namespace Microsoft.Maui
 
 		public ImageSourcePartLoader(
 			IElementHandler handler,
-			Func<IImageSource?> getSource,
-			Func<bool>? getIsAnimationPlaying,
-			Action<bool>? setIsLoading,
+			Func<IImageSourcePart?> imageSourcePart,
 			Action<UIImage?> setImage)
-			: this(handler, getSource, getIsAnimationPlaying, setIsLoading)
+			: this(handler, imageSourcePart)
 		{
 			SetImage = setImage;
 		}

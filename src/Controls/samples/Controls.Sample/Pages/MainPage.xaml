@@ -60,7 +60,7 @@
             RowDefinitions="150, *, Auto"
             RowSpacing="0">
             <!-- HEADER -->
-            <Image
+            <ImageButton
                 Grid.Row="0"
                 Aspect="AspectFill"
                 Source="header_background"/>

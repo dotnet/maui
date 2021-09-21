@@ -14,11 +14,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		ImageSourcePartLoader? _imageSourcePartLoader;
 		public ImageSourcePartLoader ImageSourceLoader =>
-			_imageSourcePartLoader ??= new ImageSourcePartLoader(this,
-				() => VirtualView.ImageSource,
-				() => false,
-				(isLoading) => (VirtualView as IImage)?.UpdateIsLoading(isLoading),
-				OnSetImageSource);
+			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => VirtualView?.ImageSource, OnSetImageSource);
 
 		public static IPropertyMapper<ITextStyle, IButtonHandler> TextStyleMapper = new PropertyMapper<ITextStyle, IButtonHandler>(ViewHandler.ViewMapper)
 		{

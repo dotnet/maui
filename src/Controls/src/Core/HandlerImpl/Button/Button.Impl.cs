@@ -4,13 +4,13 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Button : IButton, IText, IImageSourcePart
+	public partial class Button : IButton, IText
 	{
 		public new static void RemapForControls()
 		{
 			// IButton does not include the ContentType property, so we map it here to handle Image Positioning
 
-			IPropertyMapper<IButton, IButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, IButtonHandler>(ButtonMapper.Mapper)
+			IPropertyMapper<IButton, ButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, ButtonHandler>(ButtonHandler.Mapper)
 			{
 				[nameof(ContentLayout)] = MapContentLayout,
 #if __IOS__
@@ -18,16 +18,12 @@ namespace Microsoft.Maui.Controls
 #endif
 			};
 
-			ButtonMapper.Mapper = ControlsButtonMapper;
+			ButtonHandler.Mapper = ControlsButtonMapper;
 		}
 
-		public static void MapContentLayout(IButtonHandler handler, Button button)
+		public static void MapContentLayout(ButtonHandler handler, Button button)
 		{
-#if __IOS__
-			(handler.NativeView as UIKit.UIButton)?.UpdateContentLayout(button);
-#elif  __ANDROID__
-			(handler.NativeView as Google.Android.Material.Button.MaterialButton)?.UpdateContentLayout(button);
-#endif
+			handler.NativeView.UpdateContentLayout(button);
 		}
 
 		void IButton.Clicked()
@@ -45,16 +41,33 @@ namespace Microsoft.Maui.Controls
 			(this as IButtonController).SendReleased();
 		}
 
-		IImageSource IImageSourcePart.Source => ImageSource;
-
-		void IImageSourcePart.UpdateIsLoading(bool isLoading) 
+		void IButton.ImageSourceLoaded()
 		{
-			if (!isLoading)
-				Handler?.UpdateValue(nameof(ContentLayout));
+			Handler?.UpdateValue(nameof(ContentLayout));
 		}
 
-		bool IImageSourcePart.IsAnimationPlaying => false;
-
 		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
+
+		ButtonImageSourcePart _buttonImageSourcePart;
+		IImageSourcePart IButton.ImageSource => _buttonImageSourcePart ??= new ButtonImageSourcePart(this);
+
+		class ButtonImageSourcePart : IImageSourcePart
+		{
+			readonly Button _button;
+
+			public IImageSource Source => _button.ImageSource;
+
+			public bool IsAnimationPlaying => false;
+
+			public void UpdateIsLoading(bool isLoading)
+			{
+				
+			}
+
+			public ButtonImageSourcePart(Button button)
+			{
+				_button = button;
+			}
+		}
 	}
 }

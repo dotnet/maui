@@ -8,7 +8,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui
 {
-	public partial class ImageSourcePartLoader : IImageSourcePart
+	public partial class ImageSourcePartLoader
 	{
 		Action<Drawable?>? SetImage { get; }
 
@@ -16,10 +16,8 @@ namespace Microsoft.Maui
 
 		public ImageSourcePartLoader(
 			IElementHandler handler,
-			Func<IImageSource?> getSource,
-			Func<bool>? getIsAnimationPlaying,
-			Action<bool>? setIsLoading,
-			Action<Drawable?> setDrawable) : this(handler, getSource, getIsAnimationPlaying, setIsLoading)
+			Func<IImageSourcePart?> imageSourcePart,
+			Action<Drawable?> setDrawable) : this(handler, imageSourcePart)
 		{
 			SetImage = setDrawable;
 		}

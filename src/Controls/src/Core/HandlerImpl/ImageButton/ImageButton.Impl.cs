@@ -6,11 +6,11 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class ImageButton : IImageButton
 	{
-		IImageSource IImageSourcePart.Source => Source;
-
 		void IImageSourcePart.UpdateIsLoading(bool isLoading) { }
 
 		bool IImageSourcePart.IsAnimationPlaying => false;
+
+		IImageSource IImageSourcePart.Source => Source;
 
 		void IButton.Clicked()
 		{
@@ -26,5 +26,11 @@ namespace Microsoft.Maui.Controls
 		{
 			(this as IButtonController).SendReleased();
 		}
+
+		void IButton.ImageSourceLoaded()
+		{
+		}
+
+		IImageSourcePart IButton.ImageSource => this;
 	}
 }

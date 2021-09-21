@@ -1,42 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
+#if __IOS__ || MACCATALYST
+using NativeImage = UIKit.UIImage;
+#elif MONOANDROID
+using NativeImage = Android.Graphics.Drawables.Drawable;
+#elif WINDOWS
+using NativeImage = Microsoft.UI.Xaml.Media.ImageSource;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using NativeImage = System.Object;
+#endif
 
 namespace Microsoft.Maui
 {
-	public partial class ImageSourcePartLoader : IImageSourcePart
+	public partial class ImageSourcePartLoader
 	{
+		readonly Func<IImageSourcePart?> _imageSourcePart;
+
 		public ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
-
-		Func<IImageSource?>? GetSource { get; }
-
-		Func<bool>? GetIsAnimationPlaying { get; }
-
-		Action<bool>? SetIsLoading { get; }
 
 		IElementHandler Handler { get; }
 
 		internal ImageSourcePartLoader(
 			IElementHandler handler,
-			Func<IImageSource?> getSource,
-			Func<bool>? getIsAnimationPlaying,
-			Action<bool>? setIsLoading)
+			Func<IImageSourcePart?> imageSourcePart)
 		{
 			Handler = handler;
+			_imageSourcePart = imageSourcePart;
 		}
 
 		public void Reset()
 		{
 			SourceManager.Reset();
 		}
-
-		IImageSource? IImageSourcePart.Source => GetSource?.Invoke();
-
-		bool IImageSourcePart.IsAnimationPlaying => GetIsAnimationPlaying?.Invoke() ?? false;
-
-		void IImageSourcePart.UpdateIsLoading(bool isLoading) => SetIsLoading?.Invoke(isLoading);
 
 		public async Task UpdateImageSourceAsync()
 		{
@@ -45,8 +41,18 @@ namespace Microsoft.Maui
 			{
 				var token = this.SourceManager.BeginLoad();
 				var provider = Handler.GetRequiredService<IImageSourceServiceProvider>();
-				var result = await this.UpdateSourceAsync(NativeView, provider, SetImage!, token);
-				SourceManager.CompleteLoad(result);
+				var imageSource = _imageSourcePart();
+
+				if (imageSource != null)
+				{
+					var result = await imageSource.UpdateSourceAsync(NativeView, provider, SetImage!, token);
+					SourceManager.CompleteLoad(result);
+				}
+				else
+				{
+					SetImage?.Invoke(null);
+					SourceManager.CompleteLoad(null);
+				}
 			}
 #else
 			await Task.CompletedTask;
