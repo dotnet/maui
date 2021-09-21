@@ -13,63 +13,18 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	partial class ImageSourceLoader : IImageSourcePart
+	partial class ImageSourceLoader
 	{
-		public IImageSource Source
+		public static void LoadImage(IImageSource source, IMauiContext mauiContext, Action<IImageSourceServiceResult<NativeView>> finished = null)
 		{
-			get;
-			set;
-		}
-
-		public IMauiContext MauiContext
-		{
-			get;
-			set;
-		}
-
-		public bool IsAnimationPlaying { get; set; }
-		public bool IsLoading { get; private set; }
-
-		public void UpdateIsLoading(bool isLoading)
-		{
-			IsLoading = isLoading;
-		}
-
-		public static Task<IImageSourceServiceResult<NativeView>> GetImageAsync(IImageSource imageSource, IMauiContext mauiContext)
-		{
-			if (imageSource == null)
-				return Task.FromResult<IImageSourceServiceResult<NativeView>>(new ImageSourceServiceResult(null));
-
-			var services = mauiContext.Services;
-			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
-			var imageSourceService = provider.GetRequiredImageSourceService(imageSource);
-			return GetNativeImage(imageSource, imageSourceService, mauiContext);
-		}
-
-		public static Task<IImageSourceServiceResult<NativeView>> GetImageAsync(IImageSourcePart imagePart, IMauiContext mauiContext)
-		{
-			var services = mauiContext.Services;
-			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
-			var imageSourceService = provider.GetRequiredImageSourceService(imagePart.Source);
-			return GetNativeImage(imagePart.Source, imageSourceService, mauiContext);
+			LoadImageResult(source.GetNativeImage(mauiContext), finished)
+						.FireAndForget(e => Internals.Log.Warning(nameof(ImageSourceLoader), $"{e}"));
 		}
 
 		static async Task LoadImageResult(Task<IImageSourceServiceResult<NativeView>> task, Action<IImageSourceServiceResult<NativeView>> finished = null)
 		{
 			var result = await task;
 			finished?.Invoke(result);
-		}
-
-		public static void LoadImage(IImageSource source, IMauiContext mauiContext, Action<IImageSourceServiceResult<NativeView>> finished = null)
-		{
-			LoadImageResult(GetImageAsync(source, mauiContext), finished)
-						.FireAndForget(e => Internals.Log.Warning(nameof(ImageSourceLoader), $"{e}"));
-		}
-
-		public static void LoadImage(IImageSourcePart part, IMauiContext mauiContext, Action<IImageSourceServiceResult<NativeView>> finished = null)
-		{
-			LoadImageResult(GetImageAsync(part.Source, mauiContext), finished)
-						.FireAndForget(e => Internals.Log.Warning(nameof(ImageSourceLoader), $"{e}"));
 		}
 	}
 }

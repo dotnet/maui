@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	partial class ImageSourceLoader : IImageSourcePart
+	partial class ImageSourceLoader
 	{
 		static Task<IImageSourceServiceResult<object>> GetNativeImage(IImageSource imageSource, IImageSourceService imageSourceService, IMauiContext mauiContext)
 		{

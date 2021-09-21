@@ -167,16 +167,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 					image.ImageTintList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.6f).ToNative());
 
-					ImageSourceLoader shellImagePart = new ImageSourceLoader()
+					ImageSourceLoader.LoadImage(shellContent.icon, mauiContext, result =>
 					{
-						Source = shellContent.icon
-					};
-
-
-					var services = mauiContext.Services;
-					var provider = services.GetRequiredService<IImageSourceServiceProvider>();
-					image.UpdateSourceAsync(new ImageSourceLoader() { Source = shellContent.icon }, provider)
-						.FireAndForget(e => Internals.Log.Warning("MenuItem", $"{e}"));
+						image.SetImageDrawable(result.Value);
+					});
 
 					innerLayout.AddView(image);
 

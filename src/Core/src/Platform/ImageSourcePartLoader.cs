@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
+
 #if __IOS__ || MACCATALYST
 using NativeImage = UIKit.UIImage;
+using NativeView = UIKit.UIView;
 #elif MONOANDROID
 using NativeImage = Android.Graphics.Drawables.Drawable;
+using NativeView = Android.Views.View;
 #elif WINDOWS
 using NativeImage = Microsoft.UI.Xaml.Media.ImageSource;
+using NativeView = Microsoft.UI.Xaml.FrameworkElement;
 #elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using NativeView = System.Object;
 using NativeImage = System.Object;
 #endif
 
@@ -21,12 +26,19 @@ namespace Microsoft.Maui
 
 		IElementHandler Handler { get; }
 
-		internal ImageSourcePartLoader(
+
+		Action<NativeImage?>? SetImage { get; }
+
+		NativeView? NativeView => Handler.NativeView as NativeView;
+
+		public ImageSourcePartLoader(
 			IElementHandler handler,
-			Func<IImageSourcePart?> imageSourcePart)
+			Func<IImageSourcePart?> imageSourcePart,
+			Action<NativeImage?> setImage)
 		{
 			Handler = handler;
 			_imageSourcePart = imageSourcePart;
+			SetImage = setImage;
 		}
 
 		public void Reset()

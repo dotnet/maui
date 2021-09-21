@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal static void UpdateMenuItemIcon(IMauiContext mauiContext, IMenuItem menuItem, ToolbarItem toolBarItem, Color tintColor)
 		{
-			ImageSourceLoader.LoadImage(toolBarItem, mauiContext, result =>
+			ImageSourceLoader.LoadImage(toolBarItem.IconImageSource, mauiContext, result =>
 			{
 				var baseDrawable = result.Value;
 				if (menuItem == null || !menuItem.IsAlive())

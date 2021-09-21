@@ -47,7 +47,7 @@ namespace Microsoft.Maui
 			imageView.Clear();
 			return image.UpdateSourceAsync(imageView, services, (uiImage) =>
 			{
-				imageView.UpdateSource(uiImage, image);
+				imageView.Image = uiImage;
 
 			}, cancellationToken);
 		}
@@ -84,6 +84,9 @@ namespace Microsoft.Maui
 				if (applied)
 				{
 					setImage.Invoke(uiImage);
+					if (destinationContext is UIImageView imageView)
+						imageView.UpdateIsAnimationPlaying(image);
+
 				}
 
 				events?.LoadingCompleted(applied);
