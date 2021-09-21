@@ -65,7 +65,8 @@ namespace Microsoft.Maui.Handlers
 
 		void OnWindowChanged(object? sender, EventArgs e)
 		{
-			UpdateValue(nameof(IImage.Source));
+			if (SourceLoader.SourceManager.IsResolutionDependent)
+				UpdateValue(nameof(IImage.Source));
 		}
 	}
 }

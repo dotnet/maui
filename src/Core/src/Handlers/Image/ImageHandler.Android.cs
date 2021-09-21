@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
@@ -8,6 +7,18 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
+		protected override ImageView CreateNativeView() => new AppCompatImageView(Context);
+
+		protected override void DisconnectHandler(ImageView nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+			SourceLoader.Reset();
+		}
+
+		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
+			base.NeedsContainer;
+
 		public static void MapBackground(IImageHandler handler, IImage image)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
@@ -34,17 +45,5 @@ namespace Microsoft.Maui.Handlers
 		{
 			NativeView.SetImageDrawable(obj);
 		}
-
-		protected override ImageView CreateNativeView() => new AppCompatImageView(Context);
-
-		protected override void DisconnectHandler(ImageView nativeView)
-		{
-			base.DisconnectHandler(nativeView);
-			SourceLoader.Reset();
-		}
-
-		public override bool NeedsContainer =>
-			VirtualView?.Background != null ||
-			base.NeedsContainer;
 	}
 }
