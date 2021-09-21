@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Graphics
 		}
 
 		public void SetPaint(RadialGradientPaint radialGradientPaint)
-		{	
+		{
 			_backgroundColor = null;
 			SetShaderFactory(PaintExtensions.GetRadialGradientShaderFactory(radialGradientPaint));
 		}
