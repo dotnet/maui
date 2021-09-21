@@ -1,8 +1,8 @@
 ﻿using System;
-using UIKit;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers;
+using UIKit;
 
 // REMARK: Test renderer to validate that Virtual UpdateCancelButton works
 

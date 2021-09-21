@@ -794,6 +794,8 @@ namespace Microsoft.Maui.Controls
 		{
 			PropagateBindingContextToStateTriggers();
 
+			PropagateBindingContextToShadow();
+
 			base.OnBindingContextChanged();
 		}
 

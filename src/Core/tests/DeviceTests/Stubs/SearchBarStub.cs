@@ -8,10 +8,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		string _text;
 
-		public string Text 
-		{ 
-			get => _text; 
-			set => SetProperty(ref _text, value, onChanged: OnTextChanged); 
+		public string Text
+		{
+			get => _text;
+			set => SetProperty(ref _text, value, onChanged: OnTextChanged);
 		}
 
 		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));
 
 		public string Placeholder { get; set; }
-		
+
 		public Color PlaceholderColor { get; set; }
 
 		public Color TextColor { get; set; }

@@ -7,27 +7,27 @@ using Microsoft.Web.WebView2.Core;
 
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 {
-    internal class WindowsFormsCoreWebView2WebResourceRequestedEventArgsWrapper : ICoreWebView2WebResourceRequestedEventArgsWrapper
-    {
-        private readonly CoreWebView2Environment _environment;
-        private readonly CoreWebView2WebResourceRequestedEventArgs _webResourceRequestedEventArgs;
+	internal class WindowsFormsCoreWebView2WebResourceRequestedEventArgsWrapper : ICoreWebView2WebResourceRequestedEventArgsWrapper
+	{
+		private readonly CoreWebView2Environment _environment;
+		private readonly CoreWebView2WebResourceRequestedEventArgs _webResourceRequestedEventArgs;
 
-        public WindowsFormsCoreWebView2WebResourceRequestedEventArgsWrapper(CoreWebView2Environment environment, CoreWebView2WebResourceRequestedEventArgs webResourceRequestedEventArgs)
-        {
-            _environment = environment;
-            _webResourceRequestedEventArgs = webResourceRequestedEventArgs;
+		public WindowsFormsCoreWebView2WebResourceRequestedEventArgsWrapper(CoreWebView2Environment environment, CoreWebView2WebResourceRequestedEventArgs webResourceRequestedEventArgs)
+		{
+			_environment = environment;
+			_webResourceRequestedEventArgs = webResourceRequestedEventArgs;
 
-            Request = new WindowsFormsCoreWebView2WebResourceRequestWrapper(webResourceRequestedEventArgs);
-            ResourceContext = (CoreWebView2WebResourceContextWrapper)webResourceRequestedEventArgs.ResourceContext;
-        }
+			Request = new WindowsFormsCoreWebView2WebResourceRequestWrapper(webResourceRequestedEventArgs);
+			ResourceContext = (CoreWebView2WebResourceContextWrapper)webResourceRequestedEventArgs.ResourceContext;
+		}
 
-        public ICoreWebView2WebResourceRequestWrapper Request { get; }
+		public ICoreWebView2WebResourceRequestWrapper Request { get; }
 
-        public CoreWebView2WebResourceContextWrapper ResourceContext { get; }
+		public CoreWebView2WebResourceContextWrapper ResourceContext { get; }
 
-        public void SetResponse(Stream content, int statusCode, string statusMessage, string headerString)
-        {
-            _webResourceRequestedEventArgs.Response = _environment.CreateWebResourceResponse(content, statusCode, statusMessage, headerString);
-        }
-    }
+		public void SetResponse(Stream content, int statusCode, string statusMessage, string headerString)
+		{
+			_webResourceRequestedEventArgs.Response = _environment.CreateWebResourceResponse(content, statusCode, statusMessage, headerString);
+		}
+	}
 }
