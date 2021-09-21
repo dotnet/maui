@@ -8,7 +8,7 @@ using NUnit.Framework.Internal;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
 	[TestFixture]
-	public class ObservrableItemsSourceTests 
+	public class ObservrableItemsSourceTests
 	{
 		Handler _handler = new Handler(Looper.MainLooper);
 
@@ -43,11 +43,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			int countBeforeNotify = -1;
 
 			// Add an item from a threadpool thread
-			await Task.Run(() => { 
+			await Task.Run(() =>
+			{
 				source.Add(1);
 
 				// Post a check ahead of the queued update on the main thread
-				_handler.PostAtFrontOfQueue(() => {
+				_handler.PostAtFrontOfQueue(() =>
+				{
 					countBeforeNotify = ois.Count;
 				});
 			});
@@ -74,7 +76,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			await Task.Run(() =>
 			{
 				source.Remove(1);
-				
+
 				// Post a check ahead of the queued update on the main thread
 				_handler.PostAtFrontOfQueue(() => countBeforeNotify = ois.Count);
 			});
@@ -104,7 +106,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			string itemAtPosition2BeforeNotify = string.Empty;
 
 			// Add an item from a threadpool thread
-			await Task.Run(() => {
+			await Task.Run(() =>
+			{
 				source.Insert(0, "foo");
 
 				// Post a check ahead of the queued update on the main thread
@@ -136,7 +139,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			int positionBeforeNotify = -1;
 
 			// Add an item from a threadpool thread
-			await Task.Run(() => { 
+			await Task.Run(() =>
+			{
 				source.Insert(0, "foo");
 
 				// Post a check ahead of the queued update on the main thread

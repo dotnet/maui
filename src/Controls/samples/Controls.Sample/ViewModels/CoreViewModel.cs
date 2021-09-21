@@ -35,6 +35,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(SemanticsPage), "Semantics",
 				".NET MAUI allows accessibility values to be set on user interface elements by using Semantics values."),
+			
+			new SectionModel(typeof(ShadowPage), "Shadows",
+ 				"Shadow is one way a user perceives elevation. Light above an elevated object creates a shadow on the surface below. The higher the object, the larger and softer the shadow becomes."),
 
 			new SectionModel(typeof(TransformationsPage), "Transformations",
 				"Apply scale transformations, rotation, etc. to a View."),
