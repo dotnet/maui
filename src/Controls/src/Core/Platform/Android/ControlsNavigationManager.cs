@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 			{
 				_tabLayoutFragment = new ViewFragment(tabbedPageHandler.TabLayout);
-				id = Resource.Id.tab_container_view;
+				id = Resource.Id.toptabs_containerview;
 			}
 
 			MauiContext
