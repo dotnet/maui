@@ -14,10 +14,6 @@ namespace Microsoft.Maui.Handlers
 		static UIColor? ButtonTextColorDefaultDisabled;
 		static UIColor? ButtonTextColorDefaultHighlighted;
 		static UIColor? ButtonTextColorDefaultNormal;
-		//ImageSourcePartWrapper<ButtonHandler>? _imageSourcePartWrapper;
-		//ImageSourcePartWrapper<ButtonHandler> ImageSourcePartWrapper =>
-		//	_imageSourcePartWrapper ??= new ImageSourcePartWrapper<ButtonHandler>(
-		//		this, (h) => h.VirtualView.ImageSource, null, null, OnSetImageSourceDrawable);
 
 		protected override UIButton CreateNativeView()
 		{
