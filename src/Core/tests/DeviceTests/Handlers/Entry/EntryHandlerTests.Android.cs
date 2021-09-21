@@ -104,13 +104,13 @@ namespace Microsoft.Maui.DeviceTests
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
-		AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
+		static AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
 			entryHandler.NativeView;
 
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
 
-		void SetNativeText(EntryHandler entryHandler, string text) =>
+		static void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
 
 		Color GetNativeTextColor(EntryHandler entryHandler)

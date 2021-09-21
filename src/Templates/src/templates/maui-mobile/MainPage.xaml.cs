@@ -2,7 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Essentials;
 
-namespace MauiApp1
+namespace MauiApp._1
 {
 	public partial class MainPage : ContentPage
 	{

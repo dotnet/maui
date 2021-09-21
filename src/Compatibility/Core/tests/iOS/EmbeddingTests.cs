@@ -8,10 +8,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 	public class EmbeddingTests
 	{
 		[Test]
-		public async Task CanCreateViewControllerFromContentPage() 
+		public async Task CanCreateViewControllerFromContentPage()
 		{
 			var contentPage = new ContentPage { Title = "Embedded Page" };
-			await Device.InvokeOnMainThreadAsync(() => {
+			await Device.InvokeOnMainThreadAsync(() =>
+			{
 				UIViewController controller = contentPage.CreateViewController();
 			});
 		}

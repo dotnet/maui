@@ -11,7 +11,7 @@
       "language": "C#",
       "type": "solution"
     },
-    "sourceName": "MauiApp1",
+    "sourceName": "MauiApp.1",
     "sources": [
       {
         "source": "./",
@@ -37,7 +37,7 @@
         "type": "parameter",
         "description": "Overrides the $(ApplicationId) in the project",
         "datatype": "string",
-        "replaces": "com.companyname.MauiApp1"
+        "replaces": "com.companyname.MauiApp.1"
       },
       "windowsAppSdkVersion": {
         "type": "parameter",

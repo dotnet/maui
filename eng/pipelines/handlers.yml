@@ -166,6 +166,7 @@ stages:
               inputs:
                 Contents: |
                   artifacts/**/*.*nupkg
+                  artifacts/**/*.zip
                   artifacts/vs-workload.props
                   eng/automation/SignList.xml
                 TargetFolder: $(build.artifactstagingdirectory)
@@ -306,3 +307,9 @@ stages:
         symbolArtifactPatterns: |
           **/signed/*.nupkg
           **/*.snupkg
+          **/additional-assets.zip
+        pushToShippingFeed: true
+        nupkgArtifactName: nuget
+        nupkgArtifactPatterns: |
+          **/signed/*.nupkg
+        msiNupkgArtifactName: vs-msi-nugets

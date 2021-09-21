@@ -90,11 +90,14 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		SearchView GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
+		static SearchView GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
 			searchBarHandler.NativeView;
 
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Query;
+
+		static void SetNativeText(SearchBarHandler searchBarHandler, string text) =>
+			GetNativeSearchBar(searchBarHandler).SetQuery(text, false);
 
 		Color GetNativeTextColor(SearchBarHandler searchBarHandler)
 		{

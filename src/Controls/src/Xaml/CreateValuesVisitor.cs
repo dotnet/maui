@@ -99,16 +99,7 @@ namespace Microsoft.Maui.Controls.Xaml
 							value = converted;
 					}
 					if (value == null)
-					{
-						try
-						{
-							value = Activator.CreateInstance(type);
-						}
-						catch (Exception e) when (e is TargetInvocationException || e is MemberAccessException)
-						{
-							value = XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name }, type, e) ?? throw e;
-						}
-					}
+						value = Activator.CreateInstance(type);
 				}
 				catch (TargetInvocationException e) when (e.InnerException is XamlParseException || e.InnerException is XmlException)
 				{
@@ -160,14 +151,6 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			if (value is BindableObject bindableValue && node.NameScopeRef != (parentNode as IElementNode)?.NameScopeRef)
 				NameScope.SetNameScope(bindableValue, node.NameScopeRef.NameScope);
-
-			if (XamlLoader.ValueCreatedCallback != null)
-			{
-				var name = node.XmlType.Name;
-				if (name.Contains(":"))
-					name = name.Substring(name.LastIndexOf(':') + 1);
-				XamlLoader.ValueCreatedCallback(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = name }, value);
-			}
 
 			var assemblyName = (Context.RootAssembly ?? Context.RootElement?.GetType().GetTypeInfo().Assembly)?.GetName().Name;
 			if (assemblyName != null && value != null && !value.GetType().GetTypeInfo().IsValueType && XamlFilePathAttribute.GetFilePathForObject(Context.RootElement) is string path)
@@ -236,15 +219,7 @@ namespace Microsoft.Maui.Controls.Xaml
 							ci.GetParameters().Length != 0 && ci.IsPublic &&
 							ci.GetParameters().All(pi => pi.CustomAttributes.Any(attr => attr.AttributeType == typeof(ParameterAttribute))));
 			object[] arguments = CreateArgumentsArray(node, ctorInfo);
-			try
-			{
-				return ctorInfo.Invoke(arguments);
-			}
-			catch (Exception e) when (e is TargetInvocationException || e is MissingMemberException)
-			{
-				return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name }, nodeType, e) ?? throw e;
-			}
-
+			return ctorInfo.Invoke(arguments);
 		}
 
 		public object CreateFromFactory(Type nodeType, IElementNode node)
@@ -254,14 +229,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (!node.Properties.ContainsKey(XmlName.xFactoryMethod))
 			{
 				//non-default ctor
-				try
-				{
-					return Activator.CreateInstance(nodeType, arguments);
-				}
-				catch (Exception e) when (e is TargetInvocationException || e is MissingMemberException)
-				{
-					return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name }, nodeType, e) ?? throw e;
-				}
+				return Activator.CreateInstance(nodeType, arguments);
 			}
 
 			var factoryMethod = ((string)((ValueNode)node.Properties[XmlName.xFactoryMethod]).Value);
@@ -290,17 +258,10 @@ namespace Microsoft.Maui.Controls.Xaml
 				return true;
 			}
 
-			try
-			{
-				var mi = nodeType.GetRuntimeMethods().FirstOrDefault(isMatch);
-				if (mi == null)
-					throw new MissingMemberException($"No static method found for {nodeType.FullName}::{factoryMethod} ({string.Join(", ", types.Select(t => t.FullName))})");
-				return mi.Invoke(null, arguments);
-			}
-			catch (Exception e) when (e is TargetInvocationException || e is MissingMemberException)
-			{
-				return XamlLoader.InstantiationFailedCallback?.Invoke(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = node.XmlType.Name }, nodeType, e) ?? throw e;
-			}
+			var mi = nodeType.GetRuntimeMethods().FirstOrDefault(isMatch);
+			if (mi == null)
+				throw new MissingMemberException($"No static method found for {nodeType.FullName}::{factoryMethod} ({string.Join(", ", types.Select(t => t.FullName))})");
+			return mi.Invoke(null, arguments);
 		}
 
 		public object[] CreateArgumentsArray(IElementNode enode)

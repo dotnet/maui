@@ -381,9 +381,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (!_wasPanGestureStartedSent)
 				{
-					recognizer.SendPanStarted(view, Application.Current.PanGestureId);
+					recognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 				}
-				recognizer.SendPan(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y, Application.Current.PanGestureId);
+				recognizer.SendPan(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y, PanGestureRecognizer.CurrentId.Value);
 			}
 			_wasPanGestureStartedSent = true;
 		}
@@ -559,15 +559,15 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (success)
 				{
-					recognizer.SendPanCompleted(view, Application.Current.PanGestureId);
+					recognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
 				}
 				else
 				{
-					recognizer.SendPanCanceled(view, Application.Current.PanGestureId);
+					recognizer.SendPanCanceled(view, PanGestureRecognizer.CurrentId.Value);
 				}
 			}
 
-			Application.Current.PanGestureId++;
+			PanGestureRecognizer.CurrentId.Increment();
 			_isPanning = false;
 		}
 

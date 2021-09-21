@@ -8,8 +8,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, SearchView>
 	{
-		QueryTextListener QueryListener { get; } = new QueryTextListener();
-
 		static Drawable? DefaultBackground;
 		static ColorStateList? DefaultPlaceholderTextColors { get; set; }
 
@@ -28,16 +26,14 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(SearchView nativeView)
 		{
-			QueryListener.Handler = this;
-
-			nativeView.SetOnQueryTextListener(QueryListener);
+			nativeView.QueryTextChange += OnQueryTextChange;
+			nativeView.QueryTextSubmit += OnQueryTextSubmit;
 		}
 
 		protected override void DisconnectHandler(SearchView nativeView)
 		{
-			nativeView.SetOnQueryTextListener(null);
-
-			QueryListener.Handler = null;
+			nativeView.QueryTextChange -= OnQueryTextChange;
+			nativeView.QueryTextSubmit -= OnQueryTextSubmit;
 		}
 
 		void SetupDefaults(SearchView nativeView)
@@ -104,23 +100,18 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateCancelButtonColor(searchBar);
 		}
 
-		public class QueryTextListener : Java.Lang.Object, IOnQueryTextListener
+
+		void OnQueryTextSubmit(object? sender, QueryTextSubmitEventArgs e)
 		{
-			public SearchBarHandler? Handler { get; set; }
+			VirtualView.SearchButtonPressed();
+			// TODO: Clear focus
+			e.Handled = true;
+		}
 
-			public bool OnQueryTextChange(string newText)
-			{
-				return true;
-			}
-
-			public bool OnQueryTextSubmit(string newText)
-			{
-				Handler?.VirtualView?.SearchButtonPressed();
-
-				// TODO: Clear focus
-
-				return true;
-			}
+		void OnQueryTextChange(object? sender, QueryTextChangeEventArgs e)
+		{
+			VirtualView.UpdateText(e.NewText);
+			e.Handled = true;
 		}
 	}
 }

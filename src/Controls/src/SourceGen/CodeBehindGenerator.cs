@@ -118,8 +118,8 @@ namespace Microsoft.Maui.Controls.SourceGen
 				sb.AppendLine($"namespace {rootClrNamespace}");
 				sb.AppendLine("{");
 
-				if (context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.ItemSpec", out string? itemSpec))
-					sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{itemSpec.Replace("\\", "\\\\")}\")]");
+				if (context.AnalyzerConfigOptions.GetOptions(file).TryGetValue("build_metadata.additionalfiles.RelativePath", out string? relativePath))
+					sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{relativePath.Replace("\\", "\\\\")}\")]");
 				if (addXamlCompilationAttribute)
 					sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]");
 				if (hideFromIntellisense)
@@ -307,13 +307,13 @@ namespace Microsoft.Maui.Controls.SourceGen
 			string typeName = xmlType.GetTypeReference<string>(xmlnsDefinitionCache, null,
 				(typeInfo) =>
 				{
-					string typeName = typeInfo.TypeName.Replace('+', '/'); //Nested types
-					string fullName = $"{typeInfo.ClrNamespace}.{typeInfo.TypeName}";
+					string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
+					string fullName = $"{typeInfo.clrNamespace}.{typeInfo.typeName}";
 
 					if (context.Compilation.GetTypeByMetadataName(fullName) != null)
 						return fullName;
 					return null;
-				}, out _);
+				});
 
 			return typeName;
 #nullable enable

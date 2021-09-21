@@ -4,11 +4,11 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
 	[TestFixture]
-	public class DatePickerTests : PlatformTestFixture 
+	public class DatePickerTests : PlatformTestFixture
 	{
 		[Test, Category("DatePicker")]
 		[Description("DatePicker should be using wheels-style picker")]
-		public async Task UsingWheelPicker() 
+		public async Task UsingWheelPicker()
 		{
 			if (!Forms.IsiOS14OrNewer)
 			{
