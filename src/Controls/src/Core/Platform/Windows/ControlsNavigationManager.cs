@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Platform
 				header.Visibility = (hasNavigationBar) ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
 				header.Title = title;
 
-				ImageSourceLoader.LoadImage(titleIcon, MauiContext, (result) =>
+				titleIcon.LoadImage(MauiContext, (result) =>
 				{
 					header.TitleIcon = result.Value;
 				});

@@ -364,7 +364,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 
 			_bgImage.Clear();
-			ImageSourceLoader.LoadImage(imageSource, MauiContext, result =>
+			imageSource.LoadImage(MauiContext, result =>
 			{
 				_bgImage.SetImageDrawable(result.Value);
 

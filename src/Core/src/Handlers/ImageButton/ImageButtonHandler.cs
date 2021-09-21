@@ -1,40 +1,52 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+#if __IOS__ || MACCATALYST
+using NativeImage = UIKit.UIImage;
+using NativeView = UIKit.UIButton;
+#elif MONOANDROID
+using NativeImage = Android.Graphics.Drawables.Drawable;
+using NativeView = AndroidX.AppCompat.Widget.AppCompatImageButton;
+#elif WINDOWS
+using NativeImage = Microsoft.UI.Xaml.Media.ImageSource;
+using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using NativeView = System.Object;
+using NativeImage = System.Object;
+#endif
 
-//namespace Microsoft.Maui.Handlers
-//{
-//	public partial interface IImageButtonHandler : IViewHandler, IButtonHandler, IImageHandler
-//	{
-//		public new IImageButton VirtualView { get; }
-//	}
+namespace Microsoft.Maui.Handlers
+{
+	public partial class ImageButtonHandler : IImageButtonHandler
+	{
+		public static IPropertyMapper<IImage, IImageHandler> ImageMapper = new PropertyMapper<IImage, IImageHandler>(ImageHandler.Mapper);
+		public static IPropertyMapper<IImageButton, IImageButtonHandler> Mapper = new PropertyMapper<IImageButton, IImageButtonHandler>(ImageMapper);
 
-//	public static partial class ImageButtonMapper
-//	{
-//		public static IPropertyMapper<IImageButton, IImageButtonHandler> Mapper =
-//			new PropertyMapper<IImageButton, IImageButtonHandler>(ViewHandler.ViewMapper, ButtonMapper.Mapper, ImageMapper.Mapper)
-//			{
-//			};
+		ImageSourcePartLoader? _imageSourcePartLoader;
+		public ImageSourcePartLoader SourceLoader =>
+			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => VirtualView, OnSetImageSource);
 
-//		public static CommandMapper<IButton, IButtonHandler> ImageButtonCommandMapper = new(ButtonMapper.CommandMapper)
-//		{
-//		};
-//	}
+		public ImageButtonHandler() : base(Mapper)
+		{
+		}
 
-//	public partial class ImageButtonHandler : IImageButtonHandler
-//	{
-//		IButton IButtonHandler.VirtualView => this.VirtualView;
+		public ImageButtonHandler(IPropertyMapper mapper) : base(mapper ?? Mapper)
+		{
+		}
 
-//		IImage IImageHandler.VirtualView => this.VirtualView;
+		IImageButton IImageButtonHandler.TypedVirtualView => VirtualView;
 
-//		ImageSourceServiceResultManager IImageHandler.SourceManager { get; } = new ImageSourceServiceResultManager();
+		IImage IImageHandler.TypedVirtualView => VirtualView;
 
-//		public ImageButtonHandler() : base(ImageMapper.Mapper)
-//		{
-//		}
-
-//		public ImageButtonHandler(IPropertyMapper mapper) : base(mapper ?? ImageButtonMapper.Mapper)
-//		{
-//		}
-//	}
-//}
+#if __IOS__
+		UIKit.UIImageView IImageHandler.TypedNativeView => NativeView.ImageView;
+#elif WINDOWS
+		UI.Xaml.Controls.Image IImageHandler.TypedNativeView => (UI.Xaml.Controls.Image)NativeView.Content;
+#elif __ANDROID__
+		Android.Widget.ImageView IImageHandler.TypedNativeView => NativeView;
+#else
+		object IImageHandler.TypedNativeView => NativeView;
+#endif
+		ImageSourcePartLoader IImageHandler.SourceLoader => SourceLoader;
+	}
+}

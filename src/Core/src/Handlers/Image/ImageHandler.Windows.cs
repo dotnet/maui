@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnSetImageSource(ImageSource? obj)
 		{
-			NativeView.UpdateSource(obj, VirtualView);
+			NativeView.Source = obj;
 		}
 
 		void OnNativeViewLoaded(object sender = null!, RoutedEventArgs e = null!)

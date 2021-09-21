@@ -15,13 +15,5 @@ namespace Microsoft.Maui.Handlers
 		IButton TypedVirtualView { get; }
 		NativeView TypedNativeView { get; }
 		ImageSourcePartLoader ImageSourceLoader { get; }
-
-
-#if __ANDROID__
-		// These are a little odd here but Android doesn't let you retrieve these from a control
-		ButtonHandler.ButtonClickListener ClickListener { get; }
-		ButtonHandler.ButtonTouchListener TouchListener { get; }
-#endif
-
 	}
 }

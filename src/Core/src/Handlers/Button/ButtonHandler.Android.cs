@@ -19,8 +19,8 @@ namespace Microsoft.Maui.Handlers
 		static Thickness? DefaultPadding;
 		static Drawable? DefaultBackground;
 
-		public ButtonClickListener ClickListener { get; } = new ButtonClickListener();
-		public ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();
+		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
+		ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();
 
 		static ColorStateList? _transparentColorStateList;
 
@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Handlers
 			button?.Clicked();
 		}
 
-		public class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener
+		class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener
 		{
 			public ButtonHandler? Handler { get; set; }
 
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public class ButtonTouchListener : Java.Lang.Object, AView.IOnTouchListener
+		class ButtonTouchListener : Java.Lang.Object, AView.IOnTouchListener
 		{
 			public ButtonHandler? Handler { get; set; }
 

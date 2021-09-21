@@ -55,12 +55,6 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void UpdateSource(this WImage imageView, WImageSource? uIImage, IImageSourcePart image)
-		{
-			imageView.Source = uIImage;
-			imageView.UpdateIsAnimationPlaying(image);
-		}
-
 		public static async Task<IImageSourceServiceResult<WImageSource>?> UpdateSourceAsync(
 			this IImageSourcePart image,
 			FrameworkElement destinationContext,
@@ -93,6 +87,8 @@ namespace Microsoft.Maui
 				if (applied)
 				{
 					setImage(uiImage);
+					if (destinationContext is WImage imageView)
+						imageView.UpdateIsAnimationPlaying(image);
 				}
 
 				events?.LoadingCompleted(applied);

@@ -477,7 +477,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
 		{
-			ImageSourceLoader.LoadImage(toolBarItem.IconImageSource, MauiContext, finished =>
+			toolBarItem.IconImageSource.LoadImage(MauiContext, finished =>
 			{
 				var baseDrawable = finished.Value;
 				if (baseDrawable != null)

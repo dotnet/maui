@@ -18,6 +18,18 @@ namespace Microsoft.Maui
 {
 	public static class ImageSourceExtensions
 	{
+		public static void LoadImage(this IImageSource source, IMauiContext mauiContext, Action<IImageSourceServiceResult<NativeImage>?>? finished = null)
+		{
+			LoadImageResult(source.GetNativeImage(mauiContext), finished)
+						.FireAndForget(mauiContext.Services.CreateLogger<IImageSource>(), nameof(LoadImage));
+		}
+
+		static async Task LoadImageResult(Task<IImageSourceServiceResult<NativeImage>?> task, Action<IImageSourceServiceResult<NativeImage>?>? finished = null)
+		{
+			var result = await task;
+			finished?.Invoke(result);
+		}
+
 		public static Task<IImageSourceServiceResult<NativeImage>?> GetNativeImage(this IImageSource imageSource, IMauiContext mauiContext)
 		{
 			var services = mauiContext.Services;

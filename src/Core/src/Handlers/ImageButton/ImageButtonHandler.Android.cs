@@ -1,23 +1,29 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Text;
-//using Android.Views;
-//using Android.Widget;
-//using AndroidX.AppCompat.Widget;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Android.Graphics.Drawables;
+using Android.Views;
+using Android.Widget;
+using AndroidX.AppCompat.Widget;
 
-//namespace Microsoft.Maui.Handlers
-//{
-//	public partial class ImageButtonHandler : ViewHandler<IImageButton, AppCompatImageButton>, IImageButtonHandler
-//	{
-//		ImageView IImageHandler.NativeView => this.NativeView;
+namespace Microsoft.Maui.Handlers
+{
+	public partial class ImageButtonHandler : ViewHandler<IImageButton, AppCompatImageButton>
+	{
+		protected override AppCompatImageButton CreateNativeView()
+		{
+			return new AppCompatImageButton(Context);
+		}
 
-//		ButtonHandler.ButtonClickListener IButtonHandler.ClickListener { get; } = new ButtonHandler.ButtonClickListener();
+		void OnSetImageSource(Drawable? obj)
+		{
+			NativeView.SetImageDrawable(obj);
+		}
 
-//		ButtonHandler.ButtonTouchListener IButtonHandler.TouchListener { get; } = new ButtonHandler.ButtonTouchListener();
-
-//		protected override AppCompatImageButton CreateNativeView()
-//		{
-//			return new AppCompatImageButton(Context);
-//		}
-//	}
-//}
+		protected override void DisconnectHandler(AppCompatImageButton nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+			SourceLoader.Reset();
+		}
+	}
+}

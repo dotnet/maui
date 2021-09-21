@@ -210,8 +210,7 @@ namespace Microsoft.Maui.Controls.Platform
 					var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 					var icon = shellContent.Icon;
 
-					ImageSourceLoader.LoadImage(
-						shellContent.Icon,
+					shellContent.Icon.LoadImage(
 						MauiContext,
 						(result) =>
 						{

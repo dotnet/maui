@@ -6,10 +6,6 @@ using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial interface IImageHandler : IViewHandler
-	{
-	}
-
 	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
 		public static void MapBackground(IImageHandler handler, IImage image)

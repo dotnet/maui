@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					image.ImageTintList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.6f).ToNative());
 
-					ImageSourceLoader.LoadImage(shellContent.icon, mauiContext, result =>
+					shellContent.icon.LoadImage(mauiContext, result =>
 					{
 						image.SetImageDrawable(result.Value);
 					});
