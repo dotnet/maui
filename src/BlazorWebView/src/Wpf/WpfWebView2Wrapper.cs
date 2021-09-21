@@ -9,41 +9,41 @@ using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
 {
-    internal class WpfWebView2Wrapper : IWebView2Wrapper
-    {
-        private readonly WpfCoreWebView2Wrapper _coreWebView2Wrapper;
+	internal class WpfWebView2Wrapper : IWebView2Wrapper
+	{
+		private readonly WpfCoreWebView2Wrapper _coreWebView2Wrapper;
 
-        public WpfWebView2Wrapper(WebView2Control webView2)
-        {
-            if (webView2 is null)
-            {
-                throw new ArgumentNullException(nameof(webView2));
-            }
+		public WpfWebView2Wrapper(WebView2Control webView2)
+		{
+			if (webView2 is null)
+			{
+				throw new ArgumentNullException(nameof(webView2));
+			}
 
-            WebView2 = webView2;
-            _coreWebView2Wrapper = new WpfCoreWebView2Wrapper(this);
-        }
+			WebView2 = webView2;
+			_coreWebView2Wrapper = new WpfCoreWebView2Wrapper(this);
+		}
 
-        public ICoreWebView2Wrapper CoreWebView2 => _coreWebView2Wrapper;
+		public ICoreWebView2Wrapper CoreWebView2 => _coreWebView2Wrapper;
 
-        public Uri Source
-        {
-            get => WebView2.Source;
-            set => WebView2.Source = value;
-        }
+		public Uri Source
+		{
+			get => WebView2.Source;
+			set => WebView2.Source = value;
+		}
 
-        public WebView2Control WebView2 { get; }
+		public WebView2Control WebView2 { get; }
 
-        public CoreWebView2Environment Environment { get; set; }
+		public CoreWebView2Environment Environment { get; set; }
 
-        public async Task CreateEnvironmentAsync()
-        {
-            Environment = await CoreWebView2Environment.CreateAsync();
-        }
+		public async Task CreateEnvironmentAsync()
+		{
+			Environment = await CoreWebView2Environment.CreateAsync();
+		}
 
-        public Task EnsureCoreWebView2Async()
-        {
-            return WebView2.EnsureCoreWebView2Async(Environment);
-        }
-    }
+		public Task EnsureCoreWebView2Async()
+		{
+			return WebView2.EnsureCoreWebView2Async(Environment);
+		}
+	}
 }

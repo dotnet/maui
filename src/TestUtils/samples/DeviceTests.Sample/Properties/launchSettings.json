@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Microsoft.Maui.TestUtils.DeviceTests.Sample": {
+    "Windows Machine": {
       "commandName": "MsixPackage"
     }
   }
