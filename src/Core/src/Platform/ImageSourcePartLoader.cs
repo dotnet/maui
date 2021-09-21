@@ -20,6 +20,10 @@ namespace Microsoft.Maui
 {
 	public partial class ImageSourcePartLoader
 	{
+		IImageSourceServiceProvider? _imageSourceServiceProvider;
+		IImageSourceServiceProvider ImageSourceServiceProvider =>
+			_imageSourceServiceProvider ??= Handler.GetRequiredService<IImageSourceServiceProvider>();
+
 		readonly Func<IImageSourcePart?> _imageSourcePart;
 		Action<NativeImage?>? SetImage { get; }
 		NativeView? NativeView => Handler.NativeView as NativeView;
@@ -59,13 +63,12 @@ namespace Microsoft.Maui
 			if (NativeView != null)
 			{
 				var token = this.SourceManager.BeginLoad();
-				var provider = Handler.GetRequiredService<IImageSourceServiceProvider>();
 				var imageSource = _imageSourcePart();
 
 				if (imageSource != null)
 				{
 #if __IOS__ || __ANDROID__ || WINDOWS
-					var result = await imageSource.UpdateSourceAsync(NativeView, provider, SetImage!, token);
+					var result = await imageSource.UpdateSourceAsync(NativeView, ImageSourceServiceProvider, SetImage!, token);
 					SourceManager.CompleteLoad(result);
 #else
 					await Task.CompletedTask;
