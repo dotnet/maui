@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public override void SetVirtualView(IView view)
 		{
-			_tabbedPageManager.SetElement(VirtualView);
 			base.SetVirtualView(view);
+			_tabbedPageManager.SetElement((TabbedPage)view);
 		}
 	}
 }
