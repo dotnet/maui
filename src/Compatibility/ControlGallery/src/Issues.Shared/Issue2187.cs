@@ -29,13 +29,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Text = "\uf0c9"
 			};
 
-			switch (DeviceInfo.Platform)
+			if (Essentials.DeviceInfo.Platform == Device.WPF)
 			{
-				case Device.WPF:
-					issueTestLabel1.FontFamily = "/Microsoft.Maui.Controls.ControlGallery.WPF;component/Assets/#FontAwesome";
-					break;
-				default:
-					break;
+				issueTestLabel1.FontFamily = "/Microsoft.Maui.Controls.ControlGallery.WPF;component/Assets/#FontAwesome";
 			}
 
 			Label issueTestLabel2Description = new Label();

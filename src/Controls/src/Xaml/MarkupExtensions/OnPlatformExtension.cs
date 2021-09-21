@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				value = Tizen;
 				return true;
 			}
-			if (DeviceInfo.Platform == DevicePlatform.Windows && UWP != s_notset)
+			if (DeviceInfo.Platform == DevicePlatform.WinUI && UWP != s_notset)
 			{
 				value = UWP;
 				return true;

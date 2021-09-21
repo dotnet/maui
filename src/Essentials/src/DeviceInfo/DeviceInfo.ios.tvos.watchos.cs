@@ -54,6 +54,8 @@ namespace Microsoft.Maui.Essentials
 					return DeviceIdiom.Phone;
 				case UIUserInterfaceIdiom.TV:
 					return DeviceIdiom.TV;
+				case UIUserInterfaceIdiom.Mac:
+					return DeviceIdiom.Desktop;
 				case UIUserInterfaceIdiom.CarPlay:
 				case UIUserInterfaceIdiom.Unspecified:
 				default:

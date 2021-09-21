@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Essentials
 		DeviceType currentType = DeviceType.Unknown;
 		string systemProductName;
 
-		PlatformDeviceInfo()
+		public PlatformDeviceInfo()
 		{
 			deviceInfo = new EasClientDeviceInformation();
 			currentIdiom = DeviceIdiom.Unknown;
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Essentials
 			return version;
 		}
 
-		DevicePlatform GetPlatform() => DevicePlatform.Windows;
+		DevicePlatform GetPlatform() => DevicePlatform.WinUI;
 
 		DeviceIdiom GetIdiom()
 		{

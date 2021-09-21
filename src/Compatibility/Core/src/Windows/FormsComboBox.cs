@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Essentials;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using WVisualState = Microsoft.UI.Xaml.VisualState;
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
-			
+
 			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 			{
 				// If we're running on the phone, we have to give the PickerRenderer hooks

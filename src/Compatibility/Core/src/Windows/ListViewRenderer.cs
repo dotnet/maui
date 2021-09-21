@@ -17,13 +17,13 @@ using WListView = Microsoft.UI.Xaml.Controls.ListView;
 using WBinding = Microsoft.UI.Xaml.Data.Binding;
 using WApp = Microsoft.UI.Xaml.Application;
 using WRect = Windows.Foundation.Rect;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.ListView;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.Platform;
 using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
+using Microsoft.Maui.Essentials;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
