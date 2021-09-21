@@ -80,7 +80,7 @@ namespace Microsoft.Maui
 		}
 
 		// TODO MAUI: This is currently here so that Button can continue to use IImageSource
-		// At a later point once we add an interface for IButtonHandler we will probably
+		// At a later point once we further define the interface for IButtonHandler we will probably
 		// change IButton to return an IImageSourcePart and we can get rid of this class
 		class ImageSourcePartWrapper : IImageSourcePart
 		{
