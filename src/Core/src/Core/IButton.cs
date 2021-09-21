@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Allows you to display a bitmap image on the Button.
 		/// </summary>
-		IImageSourcePart? ImageSource { get; }
+		IImageSource? ImageSource { get; }
 
 
 		void ImageSourceLoaded();

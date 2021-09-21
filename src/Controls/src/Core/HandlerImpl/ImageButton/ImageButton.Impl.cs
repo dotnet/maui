@@ -31,6 +31,6 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		IImageSourcePart IButton.ImageSource => this;
+		IImageSource IButton.ImageSource => Source;
 	}
 }

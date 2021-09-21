@@ -21,15 +21,12 @@ namespace Microsoft.Maui
 	public partial class ImageSourcePartLoader
 	{
 		readonly Func<IImageSourcePart?> _imageSourcePart;
+		Action<NativeImage?>? SetImage { get; }
+		NativeView? NativeView => Handler.NativeView as NativeView;
 
 		public ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
 
 		IElementHandler Handler { get; }
-
-
-		Action<NativeImage?>? SetImage { get; }
-
-		NativeView? NativeView => Handler.NativeView as NativeView;
 
 		public ImageSourcePartLoader(
 			IElementHandler handler,
@@ -41,6 +38,17 @@ namespace Microsoft.Maui
 			SetImage = setImage;
 		}
 
+		internal ImageSourcePartLoader(
+			IElementHandler handler,
+			Func<IImageSource?> imageSource,
+			Action<NativeImage?> setImage)
+		{
+			Handler = handler;
+			var wrapper = new ImageSourcePartWrapper(imageSource);
+			_imageSourcePart = () => wrapper;
+			SetImage = setImage;
+		}
+
 		public void Reset()
 		{
 			SourceManager.Reset();
@@ -48,7 +56,6 @@ namespace Microsoft.Maui
 
 		public async Task UpdateImageSourceAsync()
 		{
-#if __IOS__ || __ANDROID__ || WINDOWS
 			if (NativeView != null)
 			{
 				var token = this.SourceManager.BeginLoad();
@@ -57,8 +64,12 @@ namespace Microsoft.Maui
 
 				if (imageSource != null)
 				{
+#if __IOS__ || __ANDROID__ || WINDOWS
 					var result = await imageSource.UpdateSourceAsync(NativeView, provider, SetImage!, token);
 					SourceManager.CompleteLoad(result);
+#else
+					await Task.CompletedTask;
+#endif
 				}
 				else
 				{
@@ -66,9 +77,27 @@ namespace Microsoft.Maui
 					SourceManager.CompleteLoad(null);
 				}
 			}
-#else
-			await Task.CompletedTask;
-#endif
+		}
+
+		// TODO MAUI: This is currently here so that Button can continue to use IImageSource
+		// At a later point once we add an interface for IButtonHandler we will probably
+		// change IButton to return an IImageSourcePart and we can get rid of this class
+		class ImageSourcePartWrapper : IImageSourcePart
+		{
+			readonly Func<IImageSource?> _imageSource;
+
+			public ImageSourcePartWrapper(Func<IImageSource?> imageSource)
+			{
+				_imageSource = imageSource;
+			}
+
+			IImageSource? IImageSourcePart.Source => _imageSource.Invoke();
+
+			bool IImageSourcePart.IsAnimationPlaying => false;
+
+			void IImageSourcePart.UpdateIsLoading(bool isLoading)
+			{
+			}
 		}
 	}
 }

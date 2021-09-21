@@ -46,28 +46,8 @@ namespace Microsoft.Maui.Controls
 			Handler?.UpdateValue(nameof(ContentLayout));
 		}
 
+		IImageSource IButton.ImageSource => ImageSource;
+
 		Font ITextStyle.Font => (Font)GetValue(FontElement.FontProperty);
-
-		ButtonImageSourcePart _buttonImageSourcePart;
-		IImageSourcePart IButton.ImageSource => _buttonImageSourcePart ??= new ButtonImageSourcePart(this);
-
-		class ButtonImageSourcePart : IImageSourcePart
-		{
-			readonly Button _button;
-
-			public IImageSource Source => _button.ImageSource;
-
-			public bool IsAnimationPlaying => false;
-
-			public void UpdateIsLoading(bool isLoading)
-			{
-				
-			}
-
-			public ButtonImageSourcePart(Button button)
-			{
-				_button = button;
-			}
-		}
 	}
 }
