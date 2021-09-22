@@ -175,9 +175,9 @@ stages:
               condition: always()
               displayName: 'Copy rollbacks to staging'
               inputs:
-                SourceFolder: artifacts/rollbacks
+                SourceFolder: artifacts
                 Contents: |
-                  **
+                  rollbacks/**
                 TargetFolder: $(build.artifactstagingdirectory)
             - task: CopyFiles@2
               displayName: 'Copy Log Files'
