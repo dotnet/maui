@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers

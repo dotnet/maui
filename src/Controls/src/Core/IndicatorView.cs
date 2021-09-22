@@ -117,54 +117,6 @@ namespace Microsoft.Maui.Controls
 			else
 				return base.OnMeasure(widthConstraint, heightConstraint);
 		}
-		//protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
-		//{
-		//			double widthRequest = WidthRequest;
-		//			double heightRequest = HeightRequest;
-		//			var childRequest = new SizeRequest();
-
-		//			return new SizeRequest
-		//			{
-		//				Request = new Size { Width = widthRequest != -1 ? widthRequest : childRequest.Request.Width, Height = heightRequest != -1 ? heightRequest : childRequest.Request.Height },
-		//				Minimum = childRequest.Minimum
-		//			};
-		//			//var baseRequest = base.OnMeasure(widthConstraint, heightConstraint);
-
-		//			//if (IndicatorTemplate != null)
-		//			//	return baseRequest;
-
-		////			var padding = DefaultPadding;
-		//////#if __IOS__
-		//////			padding += 7;
-		//////#endif
-		////			var defaultSize = IndicatorSize + padding + padding;
-		////			var items = (this as ITemplatedIndicatorView).GetMaximumVisible();
-
-		////			var sizeRequest = new SizeRequest(new Size(items * defaultSize, IndicatorSize), new Size(DefaultViewSize, DefaultViewSize));
-
-		////			return sizeRequest;
-		//		}
-
-		//protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-		//{
-		//	var margin = Margin;
-
-		//	// Adjust the constraints to account for the margins
-		//	widthConstraint -= margin.HorizontalThickness;
-		//	heightConstraint -= margin.VerticalThickness;
-
-		//	// Use the old measurement override to figure out the xplat size
-		//	var measure = OnMeasure(widthConstraint, heightConstraint).Request;
-
-		//	// Make sure the native control gets measured
-		//	var nativeMeasure = Handler?.GetDesiredSize(measure.Width, measure.Height);
-
-		//	// Account for the margins when reporting the desired size value
-		//	DesiredSize = new Size(measure.Width + margin.HorizontalThickness,
-		//		measure.Height + margin.VerticalThickness);
-
-		//	return DesiredSize;
-		//}
 
 		static void UpdateIndicatorLayout(IndicatorView indicatorView, object newValue)
 		{
