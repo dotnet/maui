@@ -172,6 +172,13 @@ stages:
                 TargetFolder: $(build.artifactstagingdirectory)
                 flattenFolders: true
             - task: CopyFiles@2
+              condition: always()
+              displayName: 'Copy rollbacks to staging'
+              inputs:
+                Contents: |
+                  artifacts/rollbacks/**
+                TargetFolder: $(build.artifactstagingdirectory)
+            - task: CopyFiles@2
               displayName: 'Copy Log Files'
               condition: always()
               inputs:
