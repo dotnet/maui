@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Platform
 				header.Visibility = (hasNavigationBar) ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
 
 				// HeaderContent is set to a MinHeight of 48 so we have to collapse it if we
-				// don't want it if we want to hide the navbar completely
+				// we want to hide the navbar completely
 				if (nativeNavigationView.HeaderContent != null)
 					nativeNavigationView.HeaderContent.Visibility = header.Visibility;
 
