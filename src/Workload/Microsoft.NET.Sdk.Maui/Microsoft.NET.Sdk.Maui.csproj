@@ -19,8 +19,20 @@
     <ProjectReference Include="$(MauiRootDirectory)src/SingleProject/Resizetizer/src/Resizetizer.csproj" />
   </ItemGroup>
 
-  <Target Name="_GenerateWorkloadManifest" BeforeTargets="Build;AssignTargetPaths" DependsOnTargets="SetVersions" Inputs="$(MSBuildProjectFile);WorkloadManifest.in.json" Outputs="$(IntermediateOutputPath)WorkloadManifest.json">
+  <ItemGroup>
+    <_JsonInputFile Include="WorkloadManifest.in.json" OutputPath="$(IntermediateOutputPath)WorkloadManifest.json" Pack="true" />
+    <_JsonInputFile Include="Rollback.in.json" OutputPath="$(IntermediateOutputPath)Rollback.json" Pack="false" />
+  </ItemGroup>
+
+  <Target Name="_GenerateWorkloadManifest" BeforeTargets="Build;AssignTargetPaths" DependsOnTargets="SetVersions" Inputs="$(MSBuildProjectFile);@(_JsonInputFile)" Outputs="@(_JsonInputFile->'%(OutputPath)')">
     <ItemGroup>
+      <_VersionsToReplace Include="MicrosoftDotnetSdkInternalPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftNETCoreAppRefPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftAndroidSdkWindowsPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftiOSSdkPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftMacCatalystSdkPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftmacOSSdkPackageVersion" />
+      <_VersionsToReplace Include="MicrosofttvOSSdkPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreAuthorizationPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsAnalyzersPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsFormsPackageVersion" />
@@ -66,21 +78,28 @@
       <_VersionsToReplace Update="@(_VersionsToReplace)" PropertyName="%(Identity)" />
       <_VersionsToReplace Include="MicrosoftMauiGraphicsWin2DWinUIDesktopPackageVersion" PropertyName="MicrosoftMauiGraphicsVersion" />
     </ItemGroup>
+    <CreateItem
+        Include="@(_JsonInputFile)"
+        AdditionalMetadata="OldValue=@%(_VersionsToReplace.Identity)@;NewValue=$(%(_VersionsToReplace.PropertyName))">
+        <Output
+            TaskParameter="Include"
+            ItemName="_JsonVariableMatrix"/>
+    </CreateItem>
     <ReplaceText
-        Input="WorkloadManifest.in.json"
-        Output="$(IntermediateOutputPath)WorkloadManifest.json"
+        Input="%(_JsonInputFile.Identity)"
+        Output="%(_JsonInputFile.OutputPath)"
         OldValue="@VERSION@"
         NewValue="$(PackageReferenceVersion)"
     />
     <ReplaceText
-        Input="$(IntermediateOutputPath)WorkloadManifest.json"
-        Output="$(IntermediateOutputPath)WorkloadManifest.json"
-        OldValue="@%(_VersionsToReplace.Identity)@"
-        NewValue="$(%(_VersionsToReplace.PropertyName))"
+        Input="%(_JsonVariableMatrix.OutputPath)"
+        Output="%(_JsonVariableMatrix.OutputPath)"
+        OldValue="%(_JsonVariableMatrix.OldValue)"
+        NewValue="%(_JsonVariableMatrix.NewValue)"
     />
     <ItemGroup>
-      <None Include="$(IntermediateOutputPath)WorkloadManifest.json" Link="WorkloadManifest.json" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="data" Visible="false" />
-      <FileWrites Include="$(IntermediateOutputPath)WorkloadManifest.json" />
+      <FileWrites Include="@(_JsonInputFile->'%(OutputPath)')" />
+      <None Include="%(_JsonInputFile.OutputPath)" Link="$([System.IO.Path]::GetFileName('%(_JsonInputFile.OutputPath)'))" CopyToOutputDirectory="PreserveNewest" Pack="%(_JsonInputFile.Pack)" PackagePath="data" Visible="false" />
     </ItemGroup>
   </Target>
 
@@ -90,6 +109,15 @@
     <ItemGroup>
       <FileWrites Include="$(PackageOutputPath)/vs-workload.props" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="_CopyRollbackFile" AfterTargets="Build">
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/rollbacks/$(Version)/$(GitSha).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/rollbacks/$(Version)/$(GitSemVerLabel).$(BUILDVERSION).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/rollbacks/$(Version)/$(GitSemVerLabel).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/rollbacks/$(GitSha).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/rollbacks/$(GitSemVerLabel).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/rollbacks/$(GitBranch).json" />
   </Target>
 
   <Target Name="_CopyManifest" AfterTargets="Build">
