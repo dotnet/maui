@@ -6,12 +6,11 @@ namespace Microsoft.Maui
 {
 	public static class KeyboardExtensions
 	{
-		public static InputScope ToInputScope(this Keyboard self)
+		public static InputScopeName ToInputScopeName(this Keyboard self)
 		{
 			if (self == null)
-				throw new ArgumentNullException("self");
+				throw new ArgumentNullException(nameof(self));
 
-			var result = new InputScope();
 			var name = new InputScopeName();
 
 			if (self == Keyboard.Default)
@@ -79,8 +78,7 @@ namespace Microsoft.Maui
 				name.NameValue = nameValue;
 			}
 
-			result.Names.Add(name);
-			return result;
+			return name;
 		}
 	}
 }
