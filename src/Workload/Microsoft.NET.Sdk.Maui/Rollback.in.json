@@ -5,6 +5,6 @@
   "microsoft.net.sdk.macos": "@MicrosoftmacOSSdkPackageVersion@",
   "microsoft.net.sdk.maui": "@VERSION@",
   "microsoft.net.sdk.tvos": "@MicrosofttvOSSdkPackageVersion@",
-  "microsoft.net.workload.emscripten": "@MicrosoftNETCoreAppRefPackageVersion@",
+  "microsoft.net.workload.emscripten": "@MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion@",
   "microsoft.net.workload.mono.toolchain": "@MicrosoftNETCoreAppRefPackageVersion@"
 }
