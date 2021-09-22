@@ -32,7 +32,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Category(TestCategory.ImageButton)]
 		public partial class ImageButtonImageHandlerTests : ImageHandlerTests<ImageButtonHandler, ImageButtonStub>
 		{
-			[Fact(Skip = "Animated GIFs are not yet supported on iOS. Test failing on ANDROID")]
 			public override Task AnimatedSourceInitializesCorrectly(string filename, bool isAnimating)
 			{
 				return Task.CompletedTask;

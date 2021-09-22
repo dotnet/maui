@@ -81,6 +81,12 @@ namespace Microsoft.Maui.DeviceTests
 			where TCustomHandler : THandler, new()
 		{
 			var handler = new TCustomHandler();
+			InitializeViewHandler(view, handler);
+			return handler;
+		}
+
+		protected void InitializeViewHandler(IView view, IViewHandler handler)
+		{
 			handler.SetMauiContext(MauiContext);
 
 			handler.SetVirtualView(view);
@@ -88,8 +94,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
 			handler.NativeArrange(view.Frame);
-
-			return handler;
 		}
 
 		protected async Task<THandler> CreateHandlerAsync(IView view)

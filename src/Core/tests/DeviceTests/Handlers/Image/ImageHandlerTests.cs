@@ -154,7 +154,7 @@ namespace Microsoft.Maui.DeviceTests
 			return await InvokeOnMainThreadAsync(async () =>
 			{
 				// get the handler and reset things we don't care about
-				var handler = CreateHandler(image) as CountedImageHandler;
+				var handler = CreateHandler<CountedImageHandler>(image);
 				await image.Wait();
 				handler.ImageEvents.Clear();
 
@@ -216,7 +216,7 @@ namespace Microsoft.Maui.DeviceTests
 			var events = await InvokeOnMainThreadAsync(async () =>
 			{
 				// get the handler and reset things we don't care about
-				var handler = CreateHandler(image) as CountedImageHandler;
+				var handler = CreateHandler<CountedImageHandler>(image);
 				await image.Wait();
 				handler.ImageEvents.Clear();
 
@@ -258,6 +258,22 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(new[] { "LoadingStarted", "LoadingStarted", "LoadingCompleted(True)", "LoadingCompleted(False)" }, order);
 
 			return events;
+		}
+
+		protected new TCustomHandler CreateHandler<TCustomHandler>(IView view)
+			where TCustomHandler : IImageHandler, new()
+		{
+			var handler = new TCustomHandler();
+			InitializeViewHandler(view, handler);
+			handler.SetMauiContext(MauiContext);
+
+			handler.SetVirtualView(view);
+			view.Handler = handler;
+
+			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
+			handler.NativeArrange(view.Frame);
+
+			return handler;
 		}
 	}
 }
