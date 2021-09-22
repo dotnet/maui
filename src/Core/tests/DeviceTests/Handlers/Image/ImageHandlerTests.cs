@@ -125,16 +125,16 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				var handler = CreateHandler(image);
+				var handler = (INativeViewHandler)CreateHandler(image);
 
 				await image.Wait();
 
 #if __ANDROID__
-				handler.TypedNativeView.SetMinimumHeight(1);
-				handler.TypedNativeView.SetMinimumWidth(1);
+				handler.NativeView.SetMinimumHeight(1);
+				handler.NativeView.SetMinimumWidth(1);
 #endif
 
-				await handler.TypedNativeView.AssertContainsColor(color);
+				await handler.NativeView.AssertContainsColor(color);
 			});
 
 			Assert.Equal(new[] { "LoadingStarted", "LoadingFailed" }, order);
