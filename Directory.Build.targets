@@ -10,12 +10,7 @@
     Comment out this section if you need to update Resource.designer.cs files.
     See DEVELOPMENT.md#Android for details.
   -->
-  <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'Android' and '$(AndroidApplication)' != 'true'">
-    <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
-    <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$(TargetFramework.StartsWith('MonoAndroid'))">
+  <PropertyGroup Condition="($(TargetFramework.StartsWith('MonoAndroid')) or '$(TargetPlatformIdentifier)' == 'Android') and '$(AndroidApplication)' != 'true'">
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
     <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
   </PropertyGroup>
