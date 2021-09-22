@@ -34,7 +34,7 @@
 
 		void DrawStrokePath(ICanvas canvas, RectangleF dirtyRect, PathF path)
 		{
-			if (ShapeView == null || ShapeView.Shape == null)
+			if (ShapeView == null || ShapeView.Shape == null || ShapeView.StrokeThickness <= 0 || ShapeView.Stroke == null)
 				return;
 
 			canvas.SaveState();

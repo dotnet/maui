@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Graphics
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a View that enables you to draw a shape to the screen.
