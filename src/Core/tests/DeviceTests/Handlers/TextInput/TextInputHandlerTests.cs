@@ -34,7 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("Hello", "Goodbye", true)]
 		public async Task TextChangedEventsFireCorrectly(string initialText, string newText, bool eventExpected)
 		{
-			var textInput = Activator.CreateInstance<TStub>();
+			var textInput = new TStub();
 			textInput.Text = initialText;
 
 			var eventFiredCount = 0;
@@ -54,6 +54,29 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(0, eventFiredCount);
 		}
 
+		[Fact]
+		public async Task CursorPositionDoesntResetWhenNativeTextValueChanges()
+		{
+			var textInput = new TStub()
+			{
+				Text = "Hello"
+			};
+
+
+			int cursorPosition = 0;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(textInput);
+				UpdateCursorStartPosition(handler, 5);
+				handler.UpdateValue(nameof(ITextInput.Text));
+				cursorPosition = GetCursorStartPosition(handler);
+			});
+
+			Assert.Equal(5, cursorPosition);
+		}
+
+		protected abstract void UpdateCursorStartPosition(THandler entryHandler, int position);
+		protected abstract int GetCursorStartPosition(THandler entryHandler);
 		protected abstract void SetNativeText(THandler entryHandler, string text);
 	}
 }

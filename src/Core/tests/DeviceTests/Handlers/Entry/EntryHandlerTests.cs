@@ -586,6 +586,15 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				EntryHandlerTests.SetNativeText(entryHandler, text);
 			}
+			protected override int GetCursorStartPosition(EntryHandler entryHandler)
+			{
+				return EntryHandlerTests.GetCursorStartPosition(entryHandler);
+			}
+
+			protected override void UpdateCursorStartPosition(EntryHandler entryHandler, int position)
+			{
+				EntryHandlerTests.UpdateCursorStartPosition(entryHandler, position);
+			}
 		}
 
 	}
