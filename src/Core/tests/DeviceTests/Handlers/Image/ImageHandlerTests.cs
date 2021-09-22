@@ -90,7 +90,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(Aspect.Fill)]
 		public async Task AspectInitializesCorrectly(Aspect aspect)
 		{
-			var image = new ImageStub()
+			var image = new TStub()
 			{
 				Aspect = aspect
 			};

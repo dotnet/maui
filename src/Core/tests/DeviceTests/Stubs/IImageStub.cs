@@ -14,5 +14,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		new IImageSource Source { get; set; }
 		bool IsLoading { get; }
 		new bool IsAnimationPlaying { get; set; }
+		new Aspect Aspect { get; set; }
 	}
 }
