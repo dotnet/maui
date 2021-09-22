@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ImageHandlerTests<TStub>
+	public partial class ImageHandlerTests<TImageHandler, TStub>
 	{
 		[Theory]
 		[InlineData("#FF0000")]
@@ -18,14 +18,14 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var expectedColor = Color.FromArgb(colorHex);
 
-			var image = new ImageStub
+			var image = new TStub
 			{
 				Background = new SolidPaintStub(expectedColor),
 			};
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				var handler = CreateHandler<CountedImageHandler>(image);
+				var handler = CreateHandler(image) as CountedImageHandler;
 
 				await image.Wait();
 
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task InitializingSourceOnlyUpdatesImageOnce()
 		{
-			var image = new ImageStub
+			var image = new TStub
 			{
 				Background = new SolidPaintStub(Colors.Black),
 				Source = new FileImageSourceStub("red.png"),
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				var handler = CreateHandler<CountedImageHandler>(image);
+				var handler = CreateHandler(image) as CountedImageHandler;
 
 				await image.Wait();
 
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task UpdatingSourceOnlyUpdatesDrawableTwice()
 		{
-			var image = new ImageStub
+			var image = new TStub
 			{
 				Background = new SolidPaintStub(Colors.Black),
 				Source = new FileImageSourceStub("red.png"),
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				var handler = CreateHandler<CountedImageHandler>(image);
+				var handler = CreateHandler(image) as CountedImageHandler;
 
 				await image.Wait();
 

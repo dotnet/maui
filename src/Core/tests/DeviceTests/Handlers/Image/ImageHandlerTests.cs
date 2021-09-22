@@ -11,11 +11,12 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Image)]
-	public partial class ImageHandlerTests : ImageHandlerTests<ImageStub>
+	public partial class ImageHandlerTests : ImageHandlerTests<ImageHandler, ImageStub>
 	{
 	}
 
-	public partial class ImageHandlerTests<TStub> : HandlerTestBase<IImageHandler, TStub>
+	public abstract partial class ImageHandlerTests<TImageHandler, TStub> : HandlerTestBase<TImageHandler, TStub>
+		where TImageHandler : IImageHandler, new()
 		where TStub : StubBase, IImageStub, new()
 	{
 		[Theory(
@@ -94,7 +95,7 @@ namespace Microsoft.Maui.DeviceTests
 				Aspect = aspect
 			};
 
-			await ValidatePropertyInitValue(image, () => image.Aspect, GetNativeAspect, aspect);
+			await ValidatePropertyInitValue(image, () => image.Aspect, (h) => GetNativeAspect(h), aspect);
 		}
 
 		[Theory]
@@ -153,7 +154,7 @@ namespace Microsoft.Maui.DeviceTests
 			return await InvokeOnMainThreadAsync(async () =>
 			{
 				// get the handler and reset things we don't care about
-				var handler = CreateHandler<CountedImageHandler>(image);
+				var handler = CreateHandler(image) as CountedImageHandler;
 				await image.Wait();
 				handler.ImageEvents.Clear();
 
@@ -215,7 +216,7 @@ namespace Microsoft.Maui.DeviceTests
 			var events = await InvokeOnMainThreadAsync(async () =>
 			{
 				// get the handler and reset things we don't care about
-				var handler = CreateHandler<CountedImageHandler>(image);
+				var handler = CreateHandler(image) as CountedImageHandler;
 				await image.Wait();
 				handler.ImageEvents.Clear();
 

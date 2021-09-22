@@ -9,7 +9,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase<THandler, TStub> : TestBase, IDisposable
-		where THandler : IViewHandler
+		where THandler : IViewHandler, new()
 		where TStub : StubBase, IView, new()
 	{
 		IApplication _app;
@@ -78,9 +78,9 @@ namespace Microsoft.Maui.DeviceTests
 			CreateHandler<THandler>(view);
 
 		protected TCustomHandler CreateHandler<TCustomHandler>(IView view)
-			where TCustomHandler : THandler
+			where TCustomHandler : THandler, new()
 		{
-			var handler = Activator.CreateInstance<TCustomHandler>();
+			var handler = new TCustomHandler();
 			handler.SetMauiContext(MauiContext);
 
 			handler.SetVirtualView(view);

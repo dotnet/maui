@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var clicked = false;
 
-			var button = new ButtonStub();
+			var button = new ImageButtonStub();
 			button.Clicked += delegate
 			{
 				clicked = true;
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Category(TestCategory.ImageButton)]
-		public partial class ImageButtonImageHandlerTests : ImageHandlerTests<ImageButtonStub>
+		public partial class ImageButtonImageHandlerTests : ImageHandlerTests<ImageButtonHandler, ImageButtonStub>
 		{
 			[Fact(Skip = "Animated GIFs are not yet supported on iOS. Test failing on ANDROID")]
 			public override Task AnimatedSourceInitializesCorrectly(string filename, bool isAnimating)
