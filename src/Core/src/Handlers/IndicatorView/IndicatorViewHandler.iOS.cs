@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class IndicatorViewHandler : ViewHandler<ITemplatedIndicatorView, UIPageControl>
+	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, UIPageControl>
 	{
 		MauiPageControl? UIPager => NativeView as MauiPageControl;
 
@@ -67,15 +67,16 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateIndicator()
 		{
-			if (VirtualView.IndicatorsLayoutOverride == null)
-				return;
-
-			UIView? handler;
-			if (MauiContext != null)
+			if (VirtualView is ITemplatedIndicatorView iTemplatedIndicatorView)
 			{
-				ClearIndicators();
-				handler = VirtualView.IndicatorsLayoutOverride.ToNative(MauiContext);
-				NativeView.AddSubview(handler);
+				var indicatorsLayoutOverride = iTemplatedIndicatorView.IndicatorsLayoutOverride;
+				UIView? handler;
+				if (MauiContext != null && indicatorsLayoutOverride != null)
+				{
+					ClearIndicators();
+					handler = indicatorsLayoutOverride.ToNative(MauiContext);
+					NativeView.AddSubview(handler);
+				}
 			}
 
 			void ClearIndicators()

@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Platform.Android
 
 			var index = GetIndexFromPosition();
 
-			var count = GetMaximumVisible();
+			var count = _indicatorView.GetMaximumVisible();
 
 			var childCount = ChildCount;
 
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Platform.Android
 
 			AShapeDrawable shape;
 			
-			if (IsCircleShape())
+			if (_indicatorView.IsCircleShape())
 				shape = new AShapeDrawable(new AShapes.OvalShape());
 			else
 				shape = new AShapeDrawable(new AShapes.RectShape());
@@ -153,38 +153,7 @@ namespace Microsoft.Maui.Platform.Android
 			if (shape.Paint != null)
 				shape.Paint.Color = color;
 
-			bool IsCircleShape()
-			{
-				if (_indicatorView == null)
-					return false;
-
-				var sH = _indicatorView.IndicatorsShape;
-				var pointsCount = 13;
-				if (sH != null)
-				{
-					var path = sH.PathForBounds(new Rectangle(0, 0, 6, 6));
-					pointsCount = path.Count;
-				}
-
-				return pointsCount == 13;
-			}
-
 			return shape;
-		}
-
-		int GetMaximumVisible()
-		{
-			if (_indicatorView == null)
-				return 0;
-
-			var minValue = Math.Min(_indicatorView.MaximumVisible, _indicatorView.Count);
-			var maximumVisible = minValue <= 0 ? 0 : minValue;
-			bool hideSingle = _indicatorView.HideSingle;
-
-			if (maximumVisible == 1 && hideSingle)
-				maximumVisible = 0;
-
-			return maximumVisible;
 		}
 
 		int GetIndexFromPosition()
@@ -192,7 +161,7 @@ namespace Microsoft.Maui.Platform.Android
 			if (_indicatorView == null)
 				return 0;
 
-			var maxVisible = GetMaximumVisible();
+			var maxVisible = _indicatorView.GetMaximumVisible();
 			var position = _indicatorView.Position;
 			return Math.Max(0, position >= maxVisible ? maxVisible - 1 : position);
 		}

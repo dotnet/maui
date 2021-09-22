@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Platform.iOS
 				BackgroundStyle = UIPageControlBackgroundStyle.Minimal;
 			}
 		}
-		
+
 		public void SetIndicatorView(IIndicatorView? indicatorView)
 		{
 			if (indicatorView == null)
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Platform.iOS
 		{
 			if (disposing)
 				ValueChanged -= MauiPageControlValueChanged;
-			
+
 			base.Dispose(disposing);
 		}
 
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Platform.iOS
 				if (_indicatorView == null)
 					return -1;
 
-				var maxVisible = GetMaximumVisible();
+				var maxVisible = _indicatorView.GetMaximumVisible();
 				var position = _indicatorView.Position;
 				var index = position >= maxVisible ? maxVisible - 1 : position;
 				return index;
@@ -90,7 +90,9 @@ namespace Microsoft.Maui.Platform.iOS
 
 		public void UpdateIndicatorCount()
 		{
-			this.UpdatePages(GetMaximumVisible());
+			if (_indicatorView == null)
+				return;
+			this.UpdatePages(_indicatorView.GetMaximumVisible());
 			UpdatePosition();
 		}
 
@@ -139,20 +141,6 @@ namespace Microsoft.Maui.Platform.iOS
 			if (IsSquare && !NativeVersion.IsAtLeast(14))
 				LayoutSubviews();
 
-		}
-
-		int GetMaximumVisible()
-		{
-			if (_indicatorView == null)
-				return 1;
-			var minValue = Math.Min(_indicatorView.MaximumVisible, _indicatorView.Count);
-			var maximumVisible = minValue <= 0 ? 0 : minValue;
-			bool hideSingle = _indicatorView.HideSingle;
-
-			if (maximumVisible == 1 && hideSingle)
-				maximumVisible = 0;
-
-			return maximumVisible;
 		}
 	}
 }
