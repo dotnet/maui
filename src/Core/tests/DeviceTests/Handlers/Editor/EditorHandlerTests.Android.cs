@@ -2,7 +2,6 @@
 using Android.Text;
 using Android.Text.Method;
 using AndroidX.AppCompat.Widget;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -48,10 +47,16 @@ namespace Microsoft.Maui.DeviceTests
 		static void SetNativeText(EditorHandler editorHandler, string text) =>
 			GetNativeEditor(editorHandler).Text = text;
 
-		static int GetCursorPosition(EditorHandler entryHandler)
+		static int GetCursorStartPosition(EditorHandler editorHandler)
 		{
-			var control = GetNativeEditor(entryHandler);
+			var control = GetNativeEditor(editorHandler);
 			return control.SelectionStart;
+		}
+
+		static void UpdateCursorStartPosition(EditorHandler editorHandler, int position)
+		{
+			var control = GetNativeEditor(editorHandler);
+			control.SetSelection(position);
 		}
 
 		string GetNativePlaceholderText(EditorHandler editorHandler) =>

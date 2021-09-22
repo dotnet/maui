@@ -129,9 +129,14 @@ namespace Microsoft.Maui.DeviceTests
 				SearchBarHandlerTests.SetNativeText(searchBarHandler, text);
 			}
 
-			protected override int GetCursorPosition(SearchBarHandler searchBarHandler)
+			protected override int GetCursorStartPosition(SearchBarHandler searchBarHandler)
 			{
-				return SearchBarHandlerTests.GetCursorPosition(searchBarHandler);
+				return SearchBarHandlerTests.GetCursorStartPosition(searchBarHandler);
+			}
+
+			protected override void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position)
+			{
+				SearchBarHandlerTests.UpdateCursorStartPosition(searchBarHandler, position);
 			}
 		}
 	}

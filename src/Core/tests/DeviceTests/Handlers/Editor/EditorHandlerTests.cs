@@ -356,14 +356,19 @@ namespace Microsoft.Maui.DeviceTests
 		[Category(TestCategory.Editor)]
 		public class EditorTextInputTests : TextInputHandlerTests<EditorHandler, EditorStub>
 		{
-			protected override void SetNativeText(EditorHandler entryHandler, string text)
+			protected override void SetNativeText(EditorHandler editorHandler, string text)
 			{
-				EditorHandlerTests.SetNativeText(entryHandler, text);
+				EditorHandlerTests.SetNativeText(editorHandler, text);
 			}
 
-			protected override int GetCursorPosition(EditorHandler entryHandler)
+			protected override int GetCursorStartPosition(EditorHandler editorHandler)
 			{
-				return EditorHandlerTests.GetCursorPosition(entryHandler);
+				return EditorHandlerTests.GetCursorStartPosition(editorHandler);
+			}
+
+			protected override void UpdateCursorStartPosition(EditorHandler editorHandler, int position)
+			{
+				EditorHandlerTests.UpdateCursorStartPosition(editorHandler, position);
 			}
 		}
 	}

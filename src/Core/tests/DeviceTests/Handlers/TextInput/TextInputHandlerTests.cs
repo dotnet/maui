@@ -57,20 +57,26 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task CursorPositionDoesntResetWhenNativeTextValueChanges()
 		{
-			var textInput = new TStub();
+			var textInput = new TStub()
+			{
+				Text = "Hello"
+			};
 
 
 			int cursorPosition = 0;
-			await SetValueAsync(textInput, "Hello", (handler, input) =>
+			await InvokeOnMainThreadAsync(() =>
 			{
-				SetNativeText(handler, input);
-				cursorPosition = GetCursorPosition(handler);
+				var handler = CreateHandler(textInput);
+				UpdateCursorStartPosition(handler, 5);
+				handler.UpdateValue(nameof(ITextInput.Text));
+				cursorPosition = GetCursorStartPosition(handler);
 			});
 
 			Assert.Equal(5, cursorPosition);
 		}
 
-		protected abstract int GetCursorPosition(THandler entryHandler);
+		protected abstract void UpdateCursorStartPosition(THandler entryHandler, int position);
+		protected abstract int GetCursorStartPosition(THandler entryHandler);
 		protected abstract void SetNativeText(THandler entryHandler, string text);
 	}
 }

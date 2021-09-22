@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -127,10 +128,17 @@ namespace Microsoft.Maui.DeviceTests
 		static void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
 
-		static int GetCursorPosition(EntryHandler entryHandler)
+		static int GetCursorStartPosition(EntryHandler entryHandler)
 		{
 			var control = GetNativeEntry(entryHandler);
 			return (int)control.GetOffsetFromPosition(control.BeginningOfDocument, control.SelectedTextRange.Start);
+		}
+
+		static void UpdateCursorStartPosition(EntryHandler entryHandler, int position)
+		{
+			var control = GetNativeEntry(entryHandler);
+			var endPosition = control.GetPosition(control.BeginningOfDocument, position);
+			control.SelectedTextRange = control.GetTextRange(endPosition, endPosition);
 		}
 
 		Color GetNativeTextColor(EntryHandler entryHandler) =>
