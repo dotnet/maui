@@ -15,6 +15,12 @@
     <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('MonoAndroid'))">
+    <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+    <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
+  </PropertyGroup>
+  
+
   <!-- HACK: Prevent the Platform checks -->
   <Target Name="BinPlaceBootstrapDll" />
 

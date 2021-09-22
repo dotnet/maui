@@ -124,9 +124,14 @@ namespace Microsoft.Maui.DeviceTests
 		[Category(TestCategory.SearchBar)]
 		public class SearchBarTextInputTests : TextInputHandlerTests<SearchBarHandler, SearchBarStub>
 		{
-			protected override void SetNativeText(SearchBarHandler entryHandler, string text)
+			protected override void SetNativeText(SearchBarHandler searchBarHandler, string text)
 			{
-				SearchBarHandlerTests.SetNativeText(entryHandler, text);
+				SearchBarHandlerTests.SetNativeText(searchBarHandler, text);
+			}
+
+			protected override int GetCursorPosition(SearchBarHandler searchBarHandler)
+			{
+				return SearchBarHandlerTests.GetCursorPosition(searchBarHandler);
 			}
 		}
 	}

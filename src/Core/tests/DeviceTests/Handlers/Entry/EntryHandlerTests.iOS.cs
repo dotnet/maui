@@ -127,6 +127,12 @@ namespace Microsoft.Maui.DeviceTests
 		static void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
 
+		static int GetCursorPosition(EntryHandler entryHandler)
+		{
+			var control = GetNativeEntry(entryHandler);
+			return (int)control.GetOffsetFromPosition(control.BeginningOfDocument, control.SelectedTextRange.Start);
+		}
+
 		Color GetNativeTextColor(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextColor.ToColor();
 

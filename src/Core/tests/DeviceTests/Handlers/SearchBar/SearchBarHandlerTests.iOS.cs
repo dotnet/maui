@@ -70,6 +70,12 @@ namespace Microsoft.Maui.DeviceTests
 		static void SetNativeText(SearchBarHandler searchBarHandler, string text) =>
 			GetNativeSearchBar(searchBarHandler).Text = text;
 
+		static int GetCursorPosition(SearchBarHandler searchBarHandler)
+		{
+			var control = searchBarHandler.QueryEditor;
+			return (int)control.GetOffsetFromPosition(control.BeginningOfDocument, control.SelectedTextRange.Start);
+		}
+
 		Color GetNativeTextColor(SearchBarHandler searchBarHandler)
 		{
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);

@@ -48,6 +48,12 @@ namespace Microsoft.Maui.DeviceTests
 		static void SetNativeText(EditorHandler editorHandler, string text) =>
 			GetNativeEditor(editorHandler).Text = text;
 
+		static int GetCursorPosition(EditorHandler entryHandler)
+		{
+			var control = GetNativeEditor(entryHandler);
+			return control.SelectionStart;
+		}
+
 		string GetNativePlaceholderText(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Hint;
 
