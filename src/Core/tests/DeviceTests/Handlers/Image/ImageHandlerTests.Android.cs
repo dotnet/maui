@@ -74,7 +74,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				var handler = CreateHandler(image) as CountedImageHandler;
+				var handler = CreateHandler<CountedImageHandler>(image);
 
 				await image.Wait();
 
