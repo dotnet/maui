@@ -310,11 +310,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				throw new NotImplementedException();
 			}
 
-			public void OpenUriAction(Uri uri)
-			{
-				throw new NotImplementedException();
-			}
-
 			public void QuitApplication()
 			{
 				throw new NotImplementedException();

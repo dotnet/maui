@@ -1,13 +1,8 @@
 using System;
 using System.IO;
-
-#if !NETSTANDARD1_0
 using System.Net.Http;
-#endif
-
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -16,7 +11,8 @@ namespace Microsoft.Maui.Controls
 		readonly Stream _wrapped;
 		IDisposable _additionalDisposable;
 
-		public StreamWrapper(Stream wrapped) : this(wrapped, null)
+		public StreamWrapper(Stream wrapped)
+			: this(wrapped, null)
 		{
 		}
 
@@ -92,11 +88,9 @@ namespace Microsoft.Maui.Controls
 			base.Dispose(disposing);
 		}
 
-#if !NETSTANDARD1_0
-
 		public static async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken, HttpClient client)
 		{
-			HttpResponseMessage response = await client.GetAsync(uri, cancellationToken).ConfigureAwait(false);
+			var response = await client.GetAsync(uri, cancellationToken).ConfigureAwait(false);
 			if (!response.IsSuccessStatusCode)
 			{
 				Internals.Log.Warning("HTTP Request", $"Could not retrieve {uri}, status code {response.StatusCode}");
@@ -107,7 +101,5 @@ namespace Microsoft.Maui.Controls
 			// otherwise the stream may get disposed before the caller can use it
 			return new StreamWrapper(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), response);
 		}
-#endif
-
 	}
 }

@@ -683,21 +683,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public string RuntimePlatform => Device.macOS;
 #endif
 
-			public void OpenUriAction(Uri uri)
-			{
-				NSUrl url;
-
-				if (uri.Scheme == "tel" || uri.Scheme == "mailto")
-					url = new NSUrl(uri.AbsoluteUri);
-				else
-					url = NSUrl.FromString(uri.OriginalString) ?? new NSUrl(uri.Scheme, uri.Host, uri.PathAndQuery);
-#if __MOBILE__
-				UIApplication.SharedApplication.OpenUrl(url);
-#else
-				NSWorkspace.SharedWorkspace.OpenUrl(url);
-#endif
-			}
-
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
 				NSTimer timer = NSTimer.CreateRepeatingTimer(interval, t =>

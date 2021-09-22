@@ -24,19 +24,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	internal class MockPlatformServices : Internals.IPlatformServices
 	{
 		Action<Action> invokeOnMainThread;
-		Action<Uri> openUriAction;
 		Func<Uri, CancellationToken, Task<Stream>> getStreamAsync;
 		Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc;
 		readonly bool useRealisticLabelMeasure;
 		readonly bool _isInvokeRequired;
 
-		public MockPlatformServices(Action<Action> invokeOnMainThread = null, Action<Uri> openUriAction = null,
+		public MockPlatformServices(Action<Action> invokeOnMainThread = null,
 			Func<Uri, CancellationToken, Task<Stream>> getStreamAsync = null,
 			Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc = null,
 			bool useRealisticLabelMeasure = false, bool isInvokeRequired = false)
 		{
 			this.invokeOnMainThread = invokeOnMainThread;
-			this.openUriAction = openUriAction;
 			this.getStreamAsync = getStreamAsync;
 			this.getNativeSizeFunc = getNativeSizeFunc;
 			this.useRealisticLabelMeasure = useRealisticLabelMeasure;
@@ -81,14 +79,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				default:
 					return null;
 			}
-		}
-
-		public void OpenUriAction(Uri uri)
-		{
-			if (openUriAction != null)
-				openUriAction(uri);
-			else
-				throw new NotImplementedException();
 		}
 
 		public bool IsInvokeRequired

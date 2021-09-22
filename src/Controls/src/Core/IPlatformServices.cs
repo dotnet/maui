@@ -29,8 +29,6 @@ namespace Microsoft.Maui.Controls.Internals
 
 		IIsolatedStorageFile GetUserStoreForApplication();
 
-		void OpenUriAction(Uri uri);
-
 		void StartTimer(TimeSpan interval, Func<bool> callback);
 
 		string RuntimePlatform { get; }

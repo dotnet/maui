@@ -852,19 +852,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public string RuntimePlatform => Device.Android;
 
-			public void OpenUriAction(Uri uri)
-			{
-				global::Android.Net.Uri aUri = global::Android.Net.Uri.Parse(uri.ToString());
-				var intent = new Intent(Intent.ActionView, aUri);
-				intent.SetFlags(ActivityFlags.ClearTop);
-				intent.SetFlags(ActivityFlags.NewTask);
-
-				// This seems to work fine even if the context has been destroyed (while another activity is in the
-				// foreground). If we run into a situation where that's not the case, we'll have to do some work to
-				// make sure this uses the active activity when launching the Intent
-				_context.StartActivity(intent);
-			}
-
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
 				var handler = new Handler(Looper.MainLooper);
