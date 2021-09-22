@@ -28,18 +28,22 @@ namespace Microsoft.Maui.Controls.Platform
 		// TODO MAUI: This will need to be updated to handle multiple nested navigation pages
 		protected virtual void UpdateToolbar()
 		{
-			if (WindowManager.RootView is not MauiNavigationView navigationView || NavigationStack.Count == 0)
+			if (WindowManager.RootView is not MauiNavigationView nativeNavigationView || NavigationStack.Count == 0)
 				return;
 
 			var commandBar = WindowManager.GetCommandBar();
-			var header = navigationView.Header as WindowHeader;
+			var header = nativeNavigationView.Header as WindowHeader;
 
 			// TODO MAUI: these only apply for the top level NavigationManager
 			if (commandBar != null)
 				commandBar.IsDynamicOverflowEnabled = NavigationView.OnThisPlatform().GetToolbarDynamicOverflowEnabled();
 
 			bool hasNavigationBar = NavigationPage.GetHasNavigationBar(CurrentPage);
-			bool hasBackButton = NavigationPage.GetHasBackButton(CurrentPage) && NavigationStack.Count > 1;
+			bool hasBackButton = 
+				NavigationPage.GetHasBackButton(CurrentPage) &&
+				hasNavigationBar &&
+				NavigationStack.Count > 1;
+
 			var title = CurrentPage.Title;
 			var titleIcon = NavigationPage.GetTitleIconImageSource(CurrentPage);
 			var titleView = NavigationPage.GetTitleView(CurrentPage);
@@ -58,6 +62,12 @@ namespace Microsoft.Maui.Controls.Platform
 			if (header != null)
 			{
 				header.Visibility = (hasNavigationBar) ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
+
+				// HeaderContent is set to a MinHeight of 48 so we have to collapse it if we
+				// don't want it if we want to hide the navbar completely
+				if (nativeNavigationView.HeaderContent != null)
+					nativeNavigationView.HeaderContent.Visibility = header.Visibility;
+
 				header.Title = title;
 
 				ImageSourceLoader.LoadImage(titleIcon, MauiContext, (result) =>
@@ -70,14 +80,14 @@ namespace Microsoft.Maui.Controls.Platform
 				header.TitleView = titleView?.ToNative(MauiContext);
 			}
 
-			navigationView.IsBackButtonVisible = (hasBackButton) ? NavigationViewBackButtonVisible.Visible : NavigationViewBackButtonVisible.Collapsed;
-			navigationView.IsBackEnabled = true;
-			navigationView.UpdateBarBackgroundBrush(
+			nativeNavigationView.IsBackButtonVisible = (hasBackButton) ? NavigationViewBackButtonVisible.Visible : NavigationViewBackButtonVisible.Collapsed;
+			nativeNavigationView.IsBackEnabled = true;
+			nativeNavigationView.UpdateBarBackgroundBrush(
 				barBackground?.ToBrush() ?? barBackgroundColor?.ToNative());
 
 			UpdateToolbarItems();
-			navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
-			navigationView.IsPaneOpen = false;
+			nativeNavigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+			nativeNavigationView.IsPaneOpen = false;
 		}
 
 		//TODO MAUI: This will need to be updated to handle nested pages propagating up
