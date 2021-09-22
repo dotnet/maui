@@ -12,12 +12,12 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIPageControl CreateNativeView() => new MauiPageControl();
 
-		public override void NativeArrange(Rectangle rect)
-		{
-			base.NativeArrange(rect);
-			if (NativeView != null)
-				NativeView.Frame = new CGRect(rect.X, rect.Y, rect.Width, rect.Height);
-		}
+		//public override void NativeArrange(Rectangle rect)
+		//{
+		//	base.NativeArrange(rect);
+		//	if (NativeView != null)
+		//		NativeView.Frame = new CGRect(rect.X, rect.Y, rect.Width + 7, VirtualView.IndicatorSize);
+		//}
 
 		protected override void ConnectHandler(UIPageControl nativeView)
 		{
