@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls
 			padding += 7;
 #endif
 			var defaultSize = IndicatorSize + padding + padding;
-			var items = GetMaximumVisible();
+			var items = (this as ITemplatedIndicatorView).GetMaximumVisible();
 
 			var sizeRequest = new SizeRequest(new Size(items * defaultSize, IndicatorSize), new Size(DefaultViewSize, DefaultViewSize));
 
@@ -190,18 +190,6 @@ namespace Microsoft.Maui.Controls
 				count++;
 			}
 			Count = count;
-		}
-
-		int GetMaximumVisible()
-		{
-			var minValue = Math.Min(MaximumVisible, Count);
-			var maximumVisible = minValue <= 0 ? 0 : minValue;
-			bool hideSingle = HideSingle;
-
-			if (maximumVisible == 1 && hideSingle)
-				maximumVisible = 0;
-
-			return maximumVisible;
 		}
 	}
 }
