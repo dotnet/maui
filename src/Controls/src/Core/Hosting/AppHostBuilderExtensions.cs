@@ -48,6 +48,9 @@ namespace Microsoft.Maui.Controls.Hosting
 #if __ANDROID__  || WINDOWS
 			{ typeof(NavigationPage), typeof(NavigationPageHandler) },
 #endif
+#if __ANDROID__
+			{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
+#endif
 		};
 
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)

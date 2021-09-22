@@ -69,6 +69,9 @@ namespace Microsoft.Maui
 			// aapt resource value: 0x7F080059
 			public static int automation_tag_id = 2131230809;
 
+			// aapt resource value: 0x7F080061
+			public static int bottomtab_containerview = 2131230817;
+
 			// aapt resource value: 0x7F080107
 			public static int maui_toolbar = 2131230983;
 
@@ -80,6 +83,9 @@ namespace Microsoft.Maui
 
 			// aapt resource value: 0x7F08016B
 			public static int search_close_btn = 2131231083;
+
+			// aapt resource value: 0x7F0801C6
+			public static int toptabs_containerview = 2131231174;
 
 			static Id()
 			{
