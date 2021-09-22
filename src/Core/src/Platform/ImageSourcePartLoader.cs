@@ -68,7 +68,9 @@ namespace Microsoft.Maui
 				if (imageSource != null)
 				{
 #if __IOS__ || __ANDROID__ || WINDOWS
-					var result = await imageSource.UpdateSourceAsync(NativeView, ImageSourceServiceProvider, SetImage!, token);
+					var result = await imageSource.UpdateSourceAsync(NativeView, ImageSourceServiceProvider, SetImage!, token)
+						.ConfigureAwait(false);
+
 					SourceManager.CompleteLoad(result);
 #else
 					await Task.CompletedTask;
