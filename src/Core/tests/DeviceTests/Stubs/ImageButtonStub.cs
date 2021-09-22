@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public partial class ImageStub : StubBase, IImageStub, IImageSourcePartEvents
+	public partial class ImageButtonStub : StubBase, IImageButton, IImageSourcePartEvents, IImageStub
 	{
 		public Aspect Aspect { get; set; }
 
@@ -14,6 +14,14 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public bool IsAnimationPlaying { get; set; }
 
 		public bool IsLoading { get; private set; }
+
+		public IImageSource ImageSource
+		{
+			get => Source;
+			set => Source = value;
+		}
+
+		public Thickness Padding { get; set; }
 
 		public event Action LoadingStarted;
 		public event Action<bool> LoadingCompleted;
@@ -30,21 +38,19 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		void IImageSourcePartEvents.LoadingStarted() =>
 			LoadingStarted?.Invoke();
-	}
 
-	public static class ImageStubExtensions
-	{
-		static readonly Random rnd = new Random();
 
-		public static async Task Wait(this IImageStub image, int timeout = 1000)
+		public event EventHandler Pressed;
+		public event EventHandler Released;
+		public event EventHandler Clicked;
+
+		void IButton.Pressed() => Pressed?.Invoke(this, EventArgs.Empty);
+		void IButton.Released() => Released?.Invoke(this, EventArgs.Empty);
+		void IButton.Clicked() => Clicked?.Invoke(this, EventArgs.Empty);
+
+		void IButton.ImageSourceLoaded()
 		{
-			while ((timeout -= 100) > 0)
-			{
-				if (image.IsLoading)
-					await Task.Delay(rnd.Next(100, 200));
-				else
-					break;
-			}
+			throw new NotImplementedException();
 		}
 	}
 }

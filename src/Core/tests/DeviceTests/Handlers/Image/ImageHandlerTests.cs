@@ -11,7 +11,12 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Image)]
-	public partial class ImageHandlerTests : HandlerTestBase<ImageHandler, ImageStub>
+	public partial class ImageHandlerTests : ImageHandlerTests<ImageStub>
+	{
+	}
+
+	public partial class ImageHandlerTests<TStub> : HandlerTestBase<IImageHandler, TStub>
+		where TStub : StubBase, IImageStub, new()
 	{
 		[Theory(
 #if _ANDROID__
@@ -23,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("black.png", "#000000")]
 		public async Task SourceInitializesCorrectly(string filename, string colorHex)
 		{
-			var image = new ImageStub
+			var image = new TStub
 			{
 				Background = new SolidPaintStub(Colors.Black),
 				Source = new FileImageSourceStub(filename),
@@ -43,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var expectedColor = Color.FromArgb(colorHex);
 
-				await handler.NativeView.AssertContainsColor(expectedColor);
+				await handler.TypedNativeView.AssertContainsColor(expectedColor);
 			});
 
 			Assert.Equal(new[] { "LoadingStarted", "LoadingCompleted(True)" }, order);
@@ -56,9 +61,9 @@ namespace Microsoft.Maui.DeviceTests
 		)]
 		[InlineData("animated_heart.gif", true)]
 		[InlineData("animated_heart.gif", false)]
-		public async Task AnimatedSourceInitializesCorrectly(string filename, bool isAnimating)
+		public async virtual Task AnimatedSourceInitializesCorrectly(string filename, bool isAnimating)
 		{
-			var image = new ImageStub
+			var image = new TStub
 			{
 				Source = new FileImageSourceStub(filename),
 				IsAnimationPlaying = isAnimating,
@@ -100,7 +105,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var color = Color.FromArgb(colorHex);
 
-			var image = new ImageStub
+			var image = new TStub
 			{
 				Background = new SolidPaintStub(color),
 				Source = new FileImageSourceStub("bad path"),
@@ -124,11 +129,11 @@ namespace Microsoft.Maui.DeviceTests
 				await image.Wait();
 
 #if __ANDROID__
-				handler.NativeView.SetMinimumHeight(1);
-				handler.NativeView.SetMinimumWidth(1);
+				handler.TypedNativeView.SetMinimumHeight(1);
+				handler.TypedNativeView.SetMinimumWidth(1);
 #endif
 
-				await handler.NativeView.AssertContainsColor(color);
+				await handler.TypedNativeView.AssertContainsColor(color);
 			});
 
 			Assert.Equal(new[] { "LoadingStarted", "LoadingFailed" }, order);
@@ -138,7 +143,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task<List<(string Member, object Value)>> ImageLoadSequenceIsCorrect()
 		{
-			var image = new ImageStub
+			var image = new TStub
 			{
 				Background = new SolidPaintStub(Colors.Black)
 			};
@@ -196,7 +201,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task<List<(string Member, object Value)>> InterruptingLoadCancelsAndStartsOver()
 		{
-			var image = new ImageStub
+			var image = new TStub
 			{
 				Background = new SolidPaintStub(Colors.Black)
 			};

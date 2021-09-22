@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ImageHandlerTests
+	public partial class ImageHandlerTests<TStub>
 	{
 		[Theory]
 		[InlineData("#FF0000")]
@@ -125,13 +125,13 @@ namespace Microsoft.Maui.DeviceTests
 			drawable.Color.IsEquivalent(Colors.Red.ToNative());
 		}
 
-		ImageView GetNativeImageView(ImageHandler imageHandler) =>
-			imageHandler.NativeView;
+		ImageView GetNativeImageView(IImageHandler imageHandler) =>
+			imageHandler.TypedNativeView;
 
-		bool GetNativeIsAnimationPlaying(ImageHandler imageHandler) =>
+		bool GetNativeIsAnimationPlaying(IImageHandler imageHandler) =>
 			GetNativeImageView(imageHandler).Drawable is IAnimatable animatable && animatable.IsRunning;
 
-		Aspect GetNativeAspect(ImageHandler imageHandler)
+		Aspect GetNativeAspect(IImageHandler imageHandler)
 		{
 			var scaleType = GetNativeImageView(imageHandler).GetScaleType();
 			if (scaleType == ImageView.ScaleType.Center)

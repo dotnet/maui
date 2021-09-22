@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ImageHandlerTests
+	public partial class ImageHandlerTests<TStub>
 	{
 		[Theory]
 		[InlineData("#FF0000")]
@@ -124,13 +124,13 @@ namespace Microsoft.Maui.DeviceTests
 			image.AssertContainsColor(Colors.Red.ToNative());
 		}
 
-		UIImageView GetNativeImageView(ImageHandler imageHandler) =>
-			imageHandler.NativeView;
+		UIImageView GetNativeImageView(IImageHandler imageHandler) =>
+			imageHandler.TypedNativeView;
 
-		bool GetNativeIsAnimationPlaying(ImageHandler imageHandler) =>
+		bool GetNativeIsAnimationPlaying(IImageHandler imageHandler) =>
 			GetNativeImageView(imageHandler).IsAnimating;
 
-		Aspect GetNativeAspect(ImageHandler imageHandler) =>
+		Aspect GetNativeAspect(IImageHandler imageHandler) =>
 			GetNativeImageView(imageHandler).ContentMode switch
 			{
 				UIViewContentMode.ScaleAspectFit => Aspect.AspectFit,
