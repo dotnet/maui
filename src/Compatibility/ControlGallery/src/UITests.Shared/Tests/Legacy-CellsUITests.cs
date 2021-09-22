@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NUnit.Framework;
 using Microsoft.Maui.Controls.CustomAttributes;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
@@ -348,7 +348,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			App.WaitForElement(q => q.Marked("Entered: 1"));
 			App.Screenshot("Completed should have changed label's text");
-			
+
 #endif
 		}
 

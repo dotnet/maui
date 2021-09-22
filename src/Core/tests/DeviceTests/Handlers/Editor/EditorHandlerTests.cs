@@ -55,6 +55,18 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(editor, () => editor.TextColor, GetNativeTextColor, editor.TextColor);
 		}
 
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
+		{
+			var editor = new EditorStub()
+			{
+				Text = "Test",
+				TextColor = null
+			};
+
+			await CreateHandlerAsync(editor);
+		}
+
 		[Fact(DisplayName = "PlaceholderColor Initializes Correctly")]
 		public async Task PlaceholderColorInitializesCorrectly()
 		{
@@ -65,6 +77,18 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(editor, () => editor.PlaceholderColor, GetNativePlaceholderColor, editor.PlaceholderColor);
+		}
+
+		[Fact(DisplayName = "Null Placeholder Color Doesn't Crash")]
+		public async Task NullPlaceholderColorDoesntCrash()
+		{
+			var editor = new EditorStub()
+			{
+				Placeholder = "Test",
+				PlaceholderColor = null
+			};
+
+			await CreateHandlerAsync(editor);
 		}
 
 		[Theory(DisplayName = "PlaceholderColor Updates Correctly")]
@@ -196,7 +220,12 @@ namespace Microsoft.Maui.DeviceTests
 				IsTextPredictionEnabled = isEnabled
 			};
 
-			await ValidatePropertyInitValue(editor, () => editor.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
+			var nativeIsTextPredictionEnabled = await GetValueAsync(editor, handler =>
+			{
+				return GetNativeIsTextPredictionEnabled(handler);
+			});
+
+			Assert.Equal(isEnabled, nativeIsTextPredictionEnabled);
 		}
 
 		[Theory(DisplayName = "IsTextPredictionEnabled Updates Correctly")]
@@ -216,20 +245,121 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
-		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
+		[Theory(DisplayName = "Validates Numeric Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), true)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateNumericKeyboard(string keyboardName, bool expected)
 		{
-			var editor = new EditorStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", fontSize)
-			};
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
 
-			await ValidatePropertyInitValue(editor, () => editor.Font.FontSize, GetNativeUnscaledFontSize, editor.Font.FontSize);
+			var editor = new EditorStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(editor, () => expected, GetNativeIsNumericKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Email Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), true)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateEmailKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var editor = new EditorStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(editor, () => expected, GetNativeIsEmailKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Telephone Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), true)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateTelephoneKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var editor = new EditorStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(editor, () => expected, GetNativeIsTelephoneKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Url Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), true)]
+		public async Task ValidateUrlKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var editor = new EditorStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(editor, () => expected, GetNativeIsUrlKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Text Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), true)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateTextKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var editor = new EditorStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(editor, () => expected, GetNativeIsTextKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Chat Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), true)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateChatKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var editor = new EditorStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(editor, () => expected, GetNativeIsChatKeyboard, expected);
+		}
+
+		[Category(TestCategory.Editor)]
+		public class EditorTextInputTests : TextInputHandlerTests<EditorHandler, EditorStub>
+		{
+			protected override void SetNativeText(EditorHandler entryHandler, string text)
+			{
+				EditorHandlerTests.SetNativeText(entryHandler, text);
+			}
 		}
 	}
 }

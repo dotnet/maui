@@ -34,6 +34,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateIsChecked(check);
 		}
 
+		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
+		{
+			handler.NativeView?.UpdateForeground(check);
+		}
+
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var size = base.GetDesiredSize(widthConstraint, heightConstraint);

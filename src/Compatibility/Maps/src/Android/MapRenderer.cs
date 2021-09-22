@@ -13,17 +13,18 @@ using Android.Gms.Maps.Model;
 using Android.OS;
 using AndroidX.Core.Content;
 using Java.Lang;
-using Microsoft.Maui.Controls.Maps;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using ACircle = Android.Gms.Maps.Model.Circle;
 using APolygon = Android.Gms.Maps.Model.Polygon;
 using APolyline = Android.Gms.Maps.Model.Polyline;
+using Circle = Microsoft.Maui.Controls.Maps.Circle;
 using Math = System.Math;
 using Polygon = Microsoft.Maui.Controls.Maps.Polygon;
 using Polyline = Microsoft.Maui.Controls.Maps.Polyline;
-using Circle = Microsoft.Maui.Controls.Maps.Circle;
 
 namespace Microsoft.Maui.Controls.Compatibility.Maps.Android
 {

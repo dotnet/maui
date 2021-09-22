@@ -6,29 +6,73 @@ using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class StubBase : IFrameworkElement
+	public class StubBase : IView
 	{
+		IElementHandler IElement.Handler
+		{
+			get => Handler;
+			set => Handler = (IViewHandler)value;
+		}
+
+		IElement IElement.Parent => Parent;
+
 		public bool IsEnabled { get; set; } = true;
 
-		public Color BackgroundColor { get; set; }
+		public Visibility Visibility { get; set; } = Visibility.Visible;
+
+		public double Opacity { get; set; } = 1.0d;
+
+		public Paint Background { get; set; }
 
 		public Rectangle Frame { get; set; }
 
 		public IViewHandler Handler { get; set; }
 
-		public IFrameworkElement Parent { get; set; }
+		public IShape Clip { get; set; }
 
-		public Size DesiredSize { get; set; } = new Size(20, 20);
+		public IShadow Shadow { get; set; }
 
-		public double Width { get; set; } = 20;
+		public IView Parent { get; set; }
 
-		public double Height { get; set; } = 20;
+		public Size DesiredSize { get; set; } = new Size(50, 50);
+
+		public double Width { get; set; } = 50;
+
+		public double Height { get; set; } = 50;
+
+		public double MaximumWidth { get; set; } = Primitives.Dimension.Maximum;
+
+		public double MaximumHeight { get; set; } = Primitives.Dimension.Maximum;
+
+		public double MinimumWidth { get; set; } = Primitives.Dimension.Minimum;
+
+		public double MinimumHeight { get; set; } = Primitives.Dimension.Minimum;
+
+		public double TranslationX { get; set; }
+
+		public double TranslationY { get; set; }
+
+		public double Scale { get; set; } = 1d;
+
+		public double ScaleX { get; set; } = 1d;
+
+		public double ScaleY { get; set; } = 1d;
+
+		public double Rotation { get; set; }
+
+		public double RotationX { get; set; }
+
+		public double RotationY { get; set; }
+
+		public double AnchorX { get; set; } = .5d;
+
+		public double AnchorY { get; set; } = .5d;
 
 		public Thickness Margin { get; set; }
 
 		public string AutomationId { get; set; }
 
-		public FlowDirection FlowDirection { get; set; }
+		public FlowDirection FlowDirection { get; set; } = FlowDirection.LeftToRight;
 
 		public LayoutAlignment HorizontalLayoutAlignment { get; set; }
 

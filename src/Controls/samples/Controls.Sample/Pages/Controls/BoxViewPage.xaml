@@ -1,0 +1,54 @@
+﻿<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.BoxViewPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="BoxView">
+    <ScrollView>
+        <VerticalStackLayout Padding="12" Spacing="6">
+
+            <Label
+                Text="Default"
+                Style="{StaticResource Headline}"/>
+            <BoxView
+                BackgroundColor="CornflowerBlue"
+                WidthRequest="160"
+                HeightRequest="160"
+                VerticalOptions="Center"
+                HorizontalOptions="Center" />
+
+            <Label
+                Text="Using Color"
+                Style="{StaticResource Headline}"/>
+            <BoxView
+                Color="Purple"
+                WidthRequest="160"
+                HeightRequest="160"
+                VerticalOptions="Center"
+                HorizontalOptions="Center" />
+
+            <Label
+                Text="Using CornerRadius"
+                Style="{StaticResource Headline}"/>
+            <BoxView
+                Color="LightGreen"
+                CornerRadius="10"
+                WidthRequest="160"
+                HeightRequest="160"
+                VerticalOptions="Center"
+                HorizontalOptions="Center" />
+
+            <Label
+                Text="Using Complex CornerRadius"
+                Style="{StaticResource Headline}"/>
+            <BoxView
+                Color="Orange"
+                CornerRadius="10, 0, 5, 20"
+                WidthRequest="160"
+                HeightRequest="160"
+                VerticalOptions="Center"
+                HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</views:BasePage>

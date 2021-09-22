@@ -1,0 +1,38 @@
+﻿<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.IndicatorViewPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="IndicatorView">
+    <views:BasePage.Content>
+        <StackLayout
+            Margin="12">
+            <CarouselView
+                  IndicatorView="indicatorView">
+                <CarouselView.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Item 1</x:String>
+                        <x:String>Item 2</x:String>
+                        <x:String>Item 3</x:String>
+                    </x:Array>
+                </CarouselView.ItemsSource>
+                <CarouselView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Label 
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                FontSize="Large"
+                                Text="{Binding}"/>
+                        </Grid>
+                    </DataTemplate>
+                </CarouselView.ItemTemplate>
+            </CarouselView>
+            <IndicatorView
+                x:Name="indicatorView"
+                IndicatorColor="LightGray"
+                SelectedIndicatorColor="DarkGray"
+                HorizontalOptions="Center" />
+        </StackLayout>
+    </views:BasePage.Content>
+</views:BasePage>

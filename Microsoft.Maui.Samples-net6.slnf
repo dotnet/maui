@@ -1,0 +1,9 @@
+{
+  "solution": {
+    "path": "Microsoft.Maui-net6.sln",
+    "projects": [
+      "src\\Controls\\samples\\Controls.Sample.SingleProject\\Maui.Controls.Sample.SingleProject.csproj",
+      "src\\Controls\\samples\\Controls.Sample\\Maui.Controls.Sample-net6.csproj"
+    ]
+  }
+}

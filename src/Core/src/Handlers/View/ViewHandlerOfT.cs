@@ -1,10 +1,6 @@
-#nullable enable
 using System;
-using System.Runtime.CompilerServices;
-#if __IOS__
+#if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
-#elif __MACOS__
-using NativeView = AppKit.NSView;
 #elif MONOANDROID
 using NativeView = Android.Views.View;
 #elif WINDOWS
@@ -15,8 +11,7 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TNativeView> : ViewHandler<TVirtualView>,
-		IViewHandler
+	public abstract partial class ViewHandler<TVirtualView, TNativeView> : ViewHandler, IViewHandler
 		where TVirtualView : class, IView
 #if !NETSTANDARD || IOS || ANDROID || WINDOWS
 		where TNativeView : NativeView
@@ -24,122 +19,61 @@ namespace Microsoft.Maui.Handlers
 		where TNativeView : class
 #endif
 	{
-		protected readonly PropertyMapper _defaultMapper;
-		protected PropertyMapper _mapper;
-		static bool HasSetDefaults;
-
-		protected ViewHandler(PropertyMapper mapper)
+		[HotReload.OnHotReload]
+		internal static void OnHotReload()
 		{
-			_ = mapper ?? throw new ArgumentNullException(nameof(mapper));
-			_defaultMapper = mapper;
-			_mapper = _defaultMapper;
 		}
 
-		protected abstract TNativeView CreateNativeView();
-
-		public new TNativeView? NativeView
+		protected ViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
+			: base(mapper, commandMapper)
 		{
-			get => (TNativeView?)base.NativeView;
+		}
+
+		public new TNativeView NativeView
+		{
+			get => (TNativeView?)base.NativeView ?? throw new InvalidOperationException($"NativeView cannot be null here");
 			private set => base.NativeView = value;
 		}
 
-		protected TNativeView NativeViewValidation([CallerMemberName] string callerName = "")
+		public new TVirtualView VirtualView
 		{
-			_ = NativeView ?? throw new InvalidOperationException($"NativeView cannot be null here: {callerName}");
-			return NativeView;
+			get => (TVirtualView?)base.VirtualView ?? throw new InvalidOperationException($"VirtualView cannot be null here");
+			private protected set => base.VirtualView = value;
 		}
 
-		public override void SetVirtualView(IView view)
-		{
-			_ = view ?? throw new ArgumentNullException(nameof(view));
+		IView? IViewHandler.VirtualView => base.VirtualView;
 
-			if (VirtualView == view)
-				return;
+		IElement? IElementHandler.VirtualView => base.VirtualView;
 
-			if (VirtualView?.Handler != null)
-				VirtualView.Handler = null;
+		object? IElementHandler.NativeView => base.NativeView;
 
-			bool setupNativeView = VirtualView == null;
+		public virtual void SetVirtualView(IView view) =>
+			base.SetVirtualView(view);
 
-			VirtualView = (TVirtualView)view;
-			NativeView ??= CreateNativeView();
+		public sealed override void SetVirtualView(IElement view) =>
+			SetVirtualView((IView)view);
 
-			if (VirtualView != null && VirtualView.Handler != this)
-				VirtualView.Handler = this;
+		public static Func<ViewHandler<TVirtualView, TNativeView>, TNativeView>? NativeViewFactory { get; set; }
 
-			if (setupNativeView && NativeView != null)
-			{
-				ConnectHandler(NativeView);
-			}
-
-			if (!HasSetDefaults)
-			{
-				if (NativeView != null)
-				{
-					SetupDefaults(NativeView);
-				}
-
-				HasSetDefaults = true;
-			}
-
-			_mapper = _defaultMapper;
-
-			if (VirtualView is IPropertyMapperView imv)
-			{
-				var map = imv.GetPropertyMapperOverrides();
-				var instancePropertyMapper = map as PropertyMapper<TVirtualView>;
-				if (map != null && instancePropertyMapper == null)
-				{
-				}
-				if (instancePropertyMapper != null)
-				{
-					instancePropertyMapper.Chained = _defaultMapper;
-					_mapper = instancePropertyMapper;
-				}
-			}
-
-			_mapper.UpdateProperties(this, VirtualView);
-		}
-
-		void IViewHandler.DisconnectHandler()
-		{
-			if (NativeView != null && VirtualView != null)
-				DisconnectHandler(NativeView);
-		}
+		protected abstract TNativeView CreateNativeView();
 
 		protected virtual void ConnectHandler(TNativeView nativeView)
 		{
-			base.ConnectHandler(nativeView);
 		}
 
 		protected virtual void DisconnectHandler(TNativeView nativeView)
 		{
-			base.DisconnectHandler(nativeView);
 		}
 
-		public override void UpdateValue(string property)
-			=> _mapper?.UpdateProperty(this, VirtualView, property);
-
-		protected virtual void SetupDefaults(TNativeView nativeView) { }
-	}
-
-	public abstract partial class ViewHandler<TVirtualView> : ViewHandler
-		where TVirtualView : class, IView
-	{
-		internal ViewHandler()
+		private protected override NativeView OnCreateNativeView()
 		{
+			return NativeViewFactory?.Invoke(this) ?? CreateNativeView();
 		}
 
-		public new TVirtualView? VirtualView
-		{
-			get => (TVirtualView?)base.VirtualView;
-			private protected set => base.VirtualView = value;
-		}
+		private protected override void OnConnectHandler(NativeView nativeView) =>
+			ConnectHandler((TNativeView)nativeView);
 
-		protected TVirtualView VirtualViewWithValidation([CallerMemberName] string callerName = "")
-		{
-			_ = VirtualView ?? throw new InvalidOperationException($"VirtualView cannot be null here: {callerName}");
-			return VirtualView;
-		}
+		private protected override void OnDisconnectHandler(NativeView nativeView) =>
+			DisconnectHandler((TNativeView)nativeView);
 	}
 }

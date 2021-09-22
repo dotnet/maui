@@ -1,10 +1,11 @@
 ﻿using System;
-using UIKit;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Graphics;
-using static Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue6368;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
+using UIKit;
+using static Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue6368;
 
 [assembly: ExportRenderer(typeof(RoundedLabel), typeof(RoundedLabelRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers

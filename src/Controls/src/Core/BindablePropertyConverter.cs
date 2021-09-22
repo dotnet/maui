@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
@@ -8,9 +10,14 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.BindablePropertyConverter")]
-	[Xaml.TypeConversion(typeof(BindableProperty))]
 	public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConverter
 	{
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> true;
+
 		object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 		{
 			if (string.IsNullOrWhiteSpace(value))
@@ -63,16 +70,18 @@ namespace Microsoft.Maui.Controls
 			throw new XamlParseException($"Can't resolve {value}. Syntax is [[prefix:]Type.]PropertyName.", lineinfo);
 		}
 
-		public override object ConvertFromInvariantString(string value)
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (string.IsNullOrWhiteSpace(value))
+			var strValue = value?.ToString();
+
+			if (string.IsNullOrWhiteSpace(strValue))
 				return null;
-			if (value.Contains(":"))
+			if (strValue.Contains(":"))
 			{
 				Log.Warning(null, "Can't resolve properties with xml namespace prefix.");
 				return null;
 			}
-			string[] parts = value.Split('.');
+			string[] parts = strValue.Split('.');
 			if (parts.Length != 2)
 			{
 				Log.Warning(null, $"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
@@ -135,9 +144,9 @@ namespace Microsoft.Maui.Controls
 			return style.TargetType;
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is BindableProperty bp))
+			if (value is not BindableProperty bp)
 				throw new NotSupportedException();
 			return $"{bp.DeclaringType.Name}.{bp.PropertyName}";
 		}

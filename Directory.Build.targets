@@ -1,19 +1,32 @@
 <Project>
+
+  <Import Condition="'$(SampleProject)' == 'true' or '$(CI)' != 'true' " Project="eng\Versions.dev.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true'" Project="eng\Git.Build.targets" />
   <Import Condition="'$(SampleProject)' != 'true' and '$(CI)' == 'true' " Project="eng\Versions.targets" />
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\Microsoft.Extensions.targets" />
 
-  <!-- Temporarily disable the linker for net6.0-ios and net6.0-maccatalyst until we get machine pools with Big Sur and Xcode 12.5 is stable -->
-  <PropertyGroup>
-    <PublishTrimmed Condition=" '$(TargetFramework)' == 'net6.0-ios' or '$(TargetFramework)' == 'net6.0-maccatalyst' ">false</PublishTrimmed>
+  <!--
+    Comment out this section if you need to update Resource.designer.cs files.
+    See DEVELOPMENT.md#Android for details.
+  -->
+  <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'Android' and '$(AndroidApplication)' != 'true'">
+    <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+    <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
   </PropertyGroup>
 
-  <Target Name="Net6WinUIPackagingWorkaround" BeforeTargets="GetPackagingOutputs" Condition="$(TargetFramework.Contains('-windows')) == true AND '$(DisableEmbeddedXbf)' != 'true' ">
-    <PropertyGroup>
-      <TargetPlatformIdentifierAdjusted>UAP</TargetPlatformIdentifierAdjusted>
-      <_SupportEmbedFileResources>true</_SupportEmbedFileResources>
-      <_EmbedFileResfilePath>$(IntermediateOutputPath)$(AppxSubfolderWithFilesToBeEmbedded)\embed.resfiles</_EmbedFileResfilePath>
-    </PropertyGroup>
-  </Target>
+  <!-- HACK: Prevent the Platform checks -->
+  <Target Name="BinPlaceBootstrapDll" />
+
+  <!-- semi HACK: by default, WinUI includes all @(None) with .bmp/.png as @(Content) and adds that to the .pri -->
+  <ItemGroup>
+    <Content Remove="@(None->WithMetadataValue('Pack','true'))" />
+  </ItemGroup>
+
+  <!-- Until we get a new enough dotnet -->
+  <ItemGroup>
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.18362.19" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.18362.19" />
+  </ItemGroup>
+
 </Project>

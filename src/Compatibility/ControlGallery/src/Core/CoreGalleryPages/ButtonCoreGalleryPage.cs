@@ -81,14 +81,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				}
 			);
 
-			var fontContainer = new ViewContainer<Button>(Test.Button.Font,
-				new Button
-				{
-					Text = "Font",
-					Font = Font.SystemFontOfSize(NamedSize.Large, FontAttributes.Bold)
-				}
-			);
-
 			var imageContainer = new ViewContainer<Button>(Test.Button.Image,
 				new Button
 				{
@@ -127,7 +119,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			Add(clickedContainer);
 			Add(pressedContainer);
 			Add(commandContainer);
-			Add(fontContainer);
 			Add(imageContainer);
 			Add(textContainer);
 			Add(textColorContainer);

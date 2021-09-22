@@ -107,8 +107,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.Android
 				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
 
-					if (Platform.Android.AppCompat.Platform.GetRenderer(Element) == this)
-						Element.ClearValue(Platform.Android.AppCompat.Platform.RendererProperty);
+					if (Platform.Android.Platform.GetRenderer(Element) == this)
+						Element.ClearValue(Platform.Android.Platform.RendererProperty);
 				}
 			}
 
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.Android
 			{
 				if (children[i] is VisualElement visualElement)
 				{
-					var renderer = Platform.Android.AppCompat.Platform.GetRenderer(visualElement);
+					var renderer = Platform.Android.Platform.GetRenderer(visualElement);
 					renderer?.UpdateLayout();
 				}
 			}
@@ -278,7 +278,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Material.Android
 		// IVisualElementRenderer
 		VisualElement IVisualElementRenderer.Element => Element;
 		VisualElementTracker IVisualElementRenderer.Tracker => _visualElementTracker;
-		ViewGroup IVisualElementRenderer.ViewGroup => this;
 		AView IVisualElementRenderer.View => this;
 		void IVisualElementRenderer.SetElement(VisualElement element) =>
 			Element = (element as Frame) ?? throw new ArgumentException("Element must be of type Frame.");

@@ -1,5 +1,8 @@
 using System;
+using System.Threading.Tasks;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -11,11 +14,16 @@ namespace Microsoft.Maui.Handlers
 		static UIColor? ButtonTextColorDefaultDisabled;
 		static UIColor? ButtonTextColorDefaultHighlighted;
 		static UIColor? ButtonTextColorDefaultNormal;
+		ImageSourcePartWrapper<ButtonHandler>? _imageSourcePartWrapper;
+		ImageSourcePartWrapper<ButtonHandler> ImageSourcePartWrapper =>
+			_imageSourcePartWrapper ??= new ImageSourcePartWrapper<ButtonHandler>(
+				this, (h) => h.VirtualView.ImageSource, null, null, OnSetImageSourceDrawable);
 
 		protected override UIButton CreateNativeView()
 		{
-			SetControlPropertiesFromProxy();
-			return new UIButton(UIButtonType.System);
+			var button = new UIButton(UIButtonType.System);
+			SetControlPropertiesFromProxy(button);
+			return button;
 		}
 
 		protected override void ConnectHandler(UIButton nativeView)
@@ -32,17 +40,28 @@ namespace Microsoft.Maui.Handlers
 			nativeView.TouchUpInside -= OnButtonTouchUpInside;
 			nativeView.TouchUpOutside -= OnButtonTouchUpOutside;
 			nativeView.TouchDown -= OnButtonTouchDown;
-
 			base.DisconnectHandler(nativeView);
 		}
 
-		protected override void SetupDefaults(UIButton nativeView)
+		void SetupDefaults(UIButton nativeView)
 		{
 			ButtonTextColorDefaultNormal = nativeView.TitleColor(UIControlState.Normal);
 			ButtonTextColorDefaultHighlighted = nativeView.TitleColor(UIControlState.Highlighted);
 			ButtonTextColorDefaultDisabled = nativeView.TitleColor(UIControlState.Disabled);
+		}
 
-			base.SetupDefaults(nativeView);
+		private void OnSetImageSourceDrawable(UIImage? image)
+		{
+			if (image != null)
+			{
+				NativeView.SetImage(image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
+			}
+			else
+			{
+				NativeView.SetImage(null, UIControlState.Normal);
+			}
+
+			VirtualView.ImageSourceLoaded();
 		}
 
 		public static void MapText(ButtonHandler handler, IButton button)
@@ -81,16 +100,27 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateCharacterSpacing(button);
 		}
 
-		void SetControlPropertiesFromProxy()
-		{
-			if (NativeView == null)
-				return;
+		public static void MapImageSource(ButtonHandler handler, IButton image) =>
+			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
+		public static Task MapImageSourceAsync(ButtonHandler handler, IButton image)
+		{
+			if (image.ImageSource == null)
+			{
+				handler.OnSetImageSourceDrawable(null);
+				return Task.CompletedTask;
+			}
+
+			return handler.ImageSourcePartWrapper.UpdateImageSource();
+		}
+
+		static void SetControlPropertiesFromProxy(UIButton nativeView)
+		{
 			foreach (UIControlState uiControlState in ControlStates)
 			{
-				NativeView.SetTitleColor(UIButton.Appearance.TitleColor(uiControlState), uiControlState); // If new values are null, old values are preserved.
-				NativeView.SetTitleShadowColor(UIButton.Appearance.TitleShadowColor(uiControlState), uiControlState);
-				NativeView.SetBackgroundImage(UIButton.Appearance.BackgroundImageForState(uiControlState), uiControlState);
+				nativeView.SetTitleColor(UIButton.Appearance.TitleColor(uiControlState), uiControlState); // If new values are null, old values are preserved.
+				nativeView.SetTitleShadowColor(UIButton.Appearance.TitleShadowColor(uiControlState), uiControlState);
+				nativeView.SetBackgroundImage(UIButton.Appearance.BackgroundImageForState(uiControlState), uiControlState);
 			}
 		}
 

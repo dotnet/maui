@@ -1,3 +1,5 @@
+using Foundation;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
@@ -5,11 +7,6 @@ namespace Microsoft.Maui
 {
 	public static class LabelExtensions
 	{
-		public static void UpdateText(this UILabel nativeLabel, ILabel label)
-		{
-			nativeLabel.Text = label.Text;
-		}
-
 		public static void UpdateTextColor(this UILabel nativeLabel, ITextStyle textStyle, UIColor? defaultColor = null)
 		{
 			// Default value of color documented to be black in iOS docs
@@ -20,19 +17,23 @@ namespace Microsoft.Maui
 		public static void UpdateCharacterSpacing(this UILabel nativeLabel, ITextStyle textStyle)
 		{
 			var textAttr = nativeLabel.AttributedText?.WithCharacterSpacing(textStyle.CharacterSpacing);
+
 			if (textAttr != null)
 				nativeLabel.AttributedText = textAttr;
 		}
 
-		public static void UpdateFont(this UILabel nativeLabel, ITextStyle textStyle, IFontManager fontManager)
+		public static void UpdateFont(this UILabel nativeLabel, ITextStyle textStyle, IFontManager fontManager) =>
+			nativeLabel.UpdateFont(textStyle, fontManager, UIFont.LabelFontSize);
+
+		public static void UpdateFont(this UILabel nativeLabel, ITextStyle textStyle, IFontManager fontManager, double defaultSize)
 		{
-			var uiFont = fontManager.GetFont(textStyle.Font);
+			var uiFont = fontManager.GetFont(textStyle.Font, defaultSize);
 			nativeLabel.Font = uiFont;
 		}
 
 		public static void UpdateHorizontalTextAlignment(this UILabel nativeLabel, ILabel label)
 		{
-			nativeLabel.TextAlignment = label.HorizontalTextAlignment.ToNative(label.FlowDirection == FlowDirection.LeftToRight);
+			nativeLabel.TextAlignment = label.HorizontalTextAlignment.ToNative(label);
 		}
 
 		public static void UpdateLineBreakMode(this UILabel nativeLabel, ILabel label)
@@ -68,6 +69,26 @@ namespace Microsoft.Maui
 
 			if (modAttrText != null)
 				nativeLabel.AttributedText = modAttrText;
+		}
+
+		internal static void UpdateTextHtml(this UILabel nativeLabel, ILabel label)
+		{
+			string text = label.Text ?? string.Empty;
+
+			var attr = new NSAttributedStringDocumentAttributes
+			{
+				DocumentType = NSDocumentType.HTML,
+				StringEncoding = NSStringEncoding.UTF8
+			};
+
+			NSError? nsError = null;
+
+			nativeLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
+		}
+
+		internal static void UpdateTextPlainText(this UILabel nativeLabel, ILabel label)
+		{
+			nativeLabel.Text = label.Text;
 		}
 
 		internal static void SetLineBreakMode(this UILabel nativeLabel, ILabel label)

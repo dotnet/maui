@@ -1,10 +1,11 @@
-﻿using Android.Content;
-using System;
+﻿using System;
 using System.Linq;
+using Android.Content;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
-using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.Page), typeof(_2489CustomRenderer))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android

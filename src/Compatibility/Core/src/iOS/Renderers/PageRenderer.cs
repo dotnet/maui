@@ -2,20 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Foundation;
-using UIKit;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
-using PageSpecific = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
+using UIKit;
+using PageSpecific = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page;
+using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
-	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider, IAccessibilityElementsController, IShellContentInsetObserver, IDisconnectable
+	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider, IShellContentInsetObserver, IDisconnectable
 	{
 		bool _appeared;
 		bool _disposed;
-		EventTracker _events;
 		VisualElementPackager _packager;
 		VisualElementTracker _tracker;
 
@@ -24,7 +23,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal PageContainer Container => NativeView as PageContainer;
 
 		Page Page => Element as Page;
-		IAccessibilityElementsController AccessibilityElementsController => this;
 		Thickness SafeAreaInsets => Page.On<PlatformConfiguration.iOS>().SafeAreaInsets();
 		bool IsPartOfShell => (Element?.Parent is BaseShellItem);
 		ShellSection _shellSection;
@@ -46,55 +44,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
-		public List<NSObject> GetAccessibilityElements()
-		{
-			if (Container == null || Element == null)
-				return null;
-
-			SortedDictionary<int, List<ITabStopElement>> tabIndexes = null;
-			foreach (var child in Element.LogicalChildren)
-			{
-				if (!(child is VisualElement ve))
-					continue;
-
-				tabIndexes = ve.GetSortedTabIndexesOnParentPage();
-				break;
-			}
-
-			if (tabIndexes == null)
-				return null;
-
-			// Just return all elements on the page in order.
-			if (tabIndexes.Count <= 1)
-				return null;
-
-			var views = new List<NSObject>();
-			foreach (var idx in tabIndexes?.Keys)
-			{
-				var tabGroup = tabIndexes[idx];
-				foreach (var child in tabGroup)
-				{
-					if (!(child is VisualElement ve && ve.GetRenderer()?.NativeView is UIView view))
-						continue;
-
-					UIView thisControl = null;
-
-					if (view is ITabStop tabStop)
-						thisControl = tabStop.TabStop;
-
-					if (thisControl == null)
-						continue;
-
-					if (views.Contains(thisControl))
-						break; // we've looped to the beginning
-
-					views.Add(thisControl);
-				}
-			}
-
-			return views;
-		}
-
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
@@ -104,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			get { return _disposed ? null : View; }
 		}
-		
+
 		public void SetElement(VisualElement element)
 		{
 			VisualElement oldElement = Element;
@@ -161,7 +110,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var bounds = UIApplication.SharedApplication?.GetKeyWindow()?.Bounds ??
 					UIScreen.MainScreen.Bounds;
 
-				_pageContainer = new PageContainer(this) { Frame = bounds };
+				_pageContainer = new PageContainer() { Frame = bounds };
 			}
 
 			View = _pageContainer;
@@ -169,8 +118,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
-
-			Container?.ClearAccessibilityElements();
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -255,9 +202,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Element.PropertyChanged += OnHandlePropertyChanged;
 			_tracker = new VisualElementTracker(this, !(Element.Parent is BaseShellItem));
 
-			_events = new EventTracker(this);
-			_events.LoadEvents(NativeView);
-
 			Element.SendViewInitialized(NativeView);
 		}
 
@@ -283,11 +227,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (_appeared)
 					Page.SendDisappearing();
-				
+
 				Element = null;
 			}
-				
-			_events?.Disconnect();
+
 			_packager?.Disconnect();
 			_tracker?.Disconnect();
 		}
@@ -301,10 +244,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				(this as IDisconnectable).Disconnect();
 
-				_events?.Dispose();
 				_packager?.Dispose();
 				_tracker?.Dispose();
-				_events = null;
 				_packager = null;
 				_tracker = null;
 

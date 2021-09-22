@@ -1,10 +1,13 @@
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using FlexLayout = Microsoft.Maui.Controls.Compatibility.FlexLayout;
+
 	[TestFixture]
 	public class FlexLayoutFlexDirectionTests : BaseTestFixture
 	{

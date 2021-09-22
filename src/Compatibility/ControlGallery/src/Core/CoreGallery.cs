@@ -22,6 +22,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
+using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 {
@@ -110,7 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	{
 		protected override void Init()
 		{
-			On<Android>().SetToolbarPlacement(ToolbarPlacement.Bottom);
+			On<PlatformConfiguration.Android>().SetToolbarPlacement(ToolbarPlacement.Bottom);
 			base.Init();
 		}
 	}
@@ -169,7 +170,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				Title = "Bookmarks",
 			});
 
-			if (On<Android>().GetMaxItemCount() > 5)
+			if (On<PlatformConfiguration.Android>().GetMaxItemCount() > 5)
 			{
 				Children.Add(new NavigationPage(new Page { Title = "Alertes" })
 				{
@@ -300,11 +301,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		List<GalleryPageFactory> _pages = new List<GalleryPageFactory> {
 				new GalleryPageFactory(() => new GalleryPages.LayoutGalleries.LayoutGallery(), ".NET MAUI Layouts"),
-				new GalleryPageFactory(() => new TabIndexTest.TabIndex(), "Accessibility TabIndex (2)"),
 				new GalleryPageFactory(() => new PlatformTestsConsole(), "Platform Automated Tests"),
 				new GalleryPageFactory(() => new EmbeddedFonts(), "Embedded Fonts"),
 				new GalleryPageFactory(() => new MemoryLeakGallery(), "Memory Leak"),
-				new GalleryPageFactory(() => new Issues.A11yTabIndex(), "Accessibility TabIndex"),
 				new GalleryPageFactory(() => new RadioButtonGalleries(), "RadioButton Gallery"),
 				new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Core Gallery"),
 				new GalleryPageFactory(() => new FontImageSourceGallery(), "Font ImageSource"),
@@ -552,12 +551,21 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	[Preserve(AllMembers = true)]
 	internal class CoreRootPage : ContentPage
 	{
+		bool registrarValidated;
 		CoreRootView CoreRootView { get; }
+
+		private protected override void OnHandlerChangedCore()
+		{
+			base.OnHandlerChangedCore();
+
+			if (!registrarValidated)
+				ValidateRegistrar();
+
+			registrarValidated = true;
+		}
 
 		public CoreRootPage(Page rootPage, NavigationBehavior navigationBehavior = NavigationBehavior.PushAsync)
 		{
-			ValidateRegistrar();
-
 			var galleryFactory = DependencyService.Get<IPlatformSpecificCoreGalleryFactory>();
 
 			Title = galleryFactory?.Title ?? "Core Gallery";
@@ -578,7 +586,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			{
 				Text = "Go to Test Cases",
 				AutomationId = "GoToTestButton",
-				TabIndex = -2,
 				Command = new Command(async () =>
 				{
 					if (!string.IsNullOrEmpty(searchBar.Text))
@@ -607,7 +614,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					searchBar,
 					new Button {
 						Text = "Click to Force GC",
-						TabIndex = -2,
 						Command = new Command(() => {
 							GC.Collect ();
 							GC.WaitForPendingFinalizers ();

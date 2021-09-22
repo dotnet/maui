@@ -12,41 +12,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestFontForSize()
 		{
 			var font = Font.OfSize("Foo", 12);
-			Assert.AreEqual("Foo", font.FontFamily);
-			Assert.AreEqual(12, font.FontSize);
-			Assert.AreEqual((NamedSize)0, font.NamedSize);
+			Assert.AreEqual("Foo", font.Family);
+			Assert.AreEqual(12, font.Size);
 		}
 
 		[Test]
 		public void TestFontForSizeDouble()
 		{
 			var font = Font.OfSize("Foo", 12.7);
-			Assert.AreEqual("Foo", font.FontFamily);
-			Assert.AreEqual(12.7, font.FontSize);
-			Assert.AreEqual((NamedSize)0, font.NamedSize);
+			Assert.AreEqual("Foo", font.Family);
+			Assert.AreEqual(12.7, font.Size);
 		}
 
 		[Test]
 		public void TestFontForNamedSize()
 		{
-			var font = Font.OfSize("Foo", NamedSize.Large);
-			Assert.AreEqual("Foo", font.FontFamily);
-			Assert.AreEqual(0, font.FontSize);
-			Assert.AreEqual(NamedSize.Large, font.NamedSize);
+			var size = Device.GetNamedSize(NamedSize.Large, null, false);
+			var font = Font.OfSize("Foo", size);
+			Assert.AreEqual("Foo", font.Family);
+			Assert.AreEqual(size, font.Size);
 		}
 
 		[Test]
 		public void TestSystemFontOfSize()
 		{
 			var font = Font.SystemFontOfSize(12);
-			Assert.AreEqual(null, font.FontFamily);
-			Assert.AreEqual(12, font.FontSize);
-			Assert.AreEqual((NamedSize)0, font.NamedSize);
+			Assert.AreEqual(null, font.Family);
+			Assert.AreEqual(12, font.Size);
 
-			font = Font.SystemFontOfSize(NamedSize.Medium);
-			Assert.AreEqual(null, font.FontFamily);
-			Assert.AreEqual(0, font.FontSize);
-			Assert.AreEqual(NamedSize.Medium, font.NamedSize);
+
+			var size = Device.GetNamedSize(NamedSize.Medium, null, false);
+			font = Font.SystemFontOfSize(size);
+			Assert.AreEqual(null, font.Family);
+			Assert.AreEqual(size, font.Size);
 		}
 
 		[TestCase("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
@@ -55,14 +53,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
 
 			var font = Font.SystemFontOfSize(12.7);
-			Assert.AreEqual(null, font.FontFamily);
-			Assert.AreEqual(12.7, font.FontSize);
-			Assert.AreEqual((NamedSize)0, font.NamedSize);
+			Assert.AreEqual(null, font.Family);
+			Assert.AreEqual(12.7, font.Size);
 
-			font = Font.SystemFontOfSize(NamedSize.Medium);
-			Assert.AreEqual(null, font.FontFamily);
-			Assert.AreEqual(0, font.FontSize);
-			Assert.AreEqual(NamedSize.Medium, font.NamedSize);
+			var size = Device.GetNamedSize(NamedSize.Medium, null, false);
+			font = Font.SystemFontOfSize(size);
+			Assert.AreEqual(null, font.Family);
+			Assert.AreEqual(size, font.Size);
 		}
 
 		[Test]
@@ -108,18 +105,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestFontConverter()
 		{
 			var converter = new FontTypeConverter();
+			var microSize = Device.GetNamedSize(NamedSize.Micro, null, false);
+			var mediumSize = Device.GetNamedSize(NamedSize.Medium, null, false);
+			var largeSize = Device.GetNamedSize(NamedSize.Large, null, false);
 			Assert.True(converter.CanConvertFrom(typeof(string)));
-			Assert.AreEqual(Font.SystemFontOfSize(NamedSize.Medium), converter.ConvertFromInvariantString("Medium"));
+			Assert.AreEqual(Font.SystemFontOfSize(mediumSize), converter.ConvertFromInvariantString("Medium"));
 			Assert.AreEqual(Font.SystemFontOfSize(42), converter.ConvertFromInvariantString("42"));
-			Assert.AreEqual(Font.OfSize("Foo", NamedSize.Micro), converter.ConvertFromInvariantString("Foo, Micro"));
+			Assert.AreEqual(Font.OfSize("Foo", microSize), converter.ConvertFromInvariantString("Foo, Micro"));
 			Assert.AreEqual(Font.OfSize("Foo", 42), converter.ConvertFromInvariantString("Foo, 42"));
 			Assert.AreEqual(Font.OfSize("Foo", 12.7), converter.ConvertFromInvariantString("Foo, 12.7"));
-			Assert.AreEqual(Font.SystemFontOfSize(NamedSize.Large, FontAttributes.Bold), converter.ConvertFromInvariantString("Bold, Large"));
-			Assert.AreEqual(Font.SystemFontOfSize(42, FontAttributes.Bold), converter.ConvertFromInvariantString("Bold, 42"));
-			Assert.AreEqual(Font.OfSize("Foo", NamedSize.Medium), converter.ConvertFromInvariantString("Foo"));
-			Assert.AreEqual(Font.OfSize("Foo", NamedSize.Large).WithAttributes(FontAttributes.Bold), converter.ConvertFromInvariantString("Foo, Bold, Large"));
-			Assert.AreEqual(Font.OfSize("Foo", NamedSize.Large).WithAttributes(FontAttributes.Italic), converter.ConvertFromInvariantString("Foo, Italic, Large"));
-			Assert.AreEqual(Font.OfSize("Foo", NamedSize.Large).WithAttributes(FontAttributes.Bold | FontAttributes.Italic), converter.ConvertFromInvariantString("Foo, Bold, Italic, Large"));
+			Assert.AreEqual(Font.SystemFontOfSize(largeSize, FontWeight.Bold), converter.ConvertFromInvariantString("Bold, Large"));
+			Assert.AreEqual(Font.SystemFontOfSize(42, FontWeight.Bold), converter.ConvertFromInvariantString("Bold, 42"));
+			Assert.AreEqual(Font.OfSize("Foo", mediumSize), converter.ConvertFromInvariantString("Foo"));
+			Assert.AreEqual(Font.OfSize("Foo", largeSize).WithAttributes(FontAttributes.Bold), converter.ConvertFromInvariantString("Foo, Bold, Large"));
+			Assert.AreEqual(Font.OfSize("Foo", largeSize).WithAttributes(FontAttributes.Italic), converter.ConvertFromInvariantString("Foo, Italic, Large"));
+			Assert.AreEqual(Font.OfSize("Foo", largeSize).WithAttributes(FontAttributes.Bold | FontAttributes.Italic), converter.ConvertFromInvariantString("Foo, Bold, Italic, Large"));
 			Assert.AreEqual(Font.OfSize("Foo", 12).WithAttributes(FontAttributes.Bold), converter.ConvertFromInvariantString("Foo, Bold, 12"));
 			Assert.AreEqual(Font.OfSize("Foo", 12.7).WithAttributes(FontAttributes.Bold), converter.ConvertFromInvariantString("Foo, Bold, 12.7"));
 			Assert.AreEqual(Font.OfSize("Foo", 12).WithAttributes(FontAttributes.Italic), converter.ConvertFromInvariantString("Foo, Italic, 12"));

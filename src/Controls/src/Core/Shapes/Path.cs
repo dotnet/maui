@@ -1,8 +1,18 @@
 using System.ComponentModel;
+
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public class Path : Shape
+	public sealed partial class Path : Shape
 	{
+		public Path() : base()
+		{
+		}
+
+		public Path(Geometry data) : this()
+		{
+			Data = data;
+		}
+
 		public static readonly BindableProperty DataProperty =
 			 BindableProperty.Create(nameof(Data), typeof(Geometry), typeof(Path), null,
 				 propertyChanged: OnGeometryPropertyChanged);
@@ -11,7 +21,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			BindableProperty.Create(nameof(RenderTransform), typeof(Transform), typeof(Path), null,
 				propertyChanged: OnTransformPropertyChanged);
 
-		[TypeConverter(typeof(PathGeometryConverter))]
+		[System.ComponentModel.TypeConverter(typeof(PathGeometryConverter))]
 		public Geometry Data
 		{
 			set { SetValue(DataProperty, value); }

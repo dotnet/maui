@@ -6,6 +6,7 @@ using Android.Content;
 using Android.Text.Format;
 using Android.Util;
 using Android.Widget;
+using Microsoft.Maui.Controls.Platform;
 using ATimePicker = Android.Widget.TimePicker;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -188,6 +189,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			}
 		}
 
+		[PortHandler]
 		abstract protected void UpdateTextColor();
 	}
 
@@ -205,6 +207,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		protected override EditText EditText => Control;
+
+		[PortHandler]
 		protected override void UpdateTextColor()
 		{
 			_textColorSwitcher = _textColorSwitcher ?? new TextColorSwitcher(EditText.TextColors, Element.UseLegacyColorManagement());

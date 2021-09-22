@@ -1,7 +1,6 @@
 ﻿using System;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
@@ -21,14 +20,22 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiTextView nativeView)
 		{
+			base.ConnectHandler(nativeView);
+
 			nativeView.Changed += OnChanged;
 			nativeView.ShouldChangeText += OnShouldChangeText;
+			nativeView.Ended += OnEnded;
+			nativeView.TextPropertySet += OnTextPropertySet;
 		}
 
 		protected override void DisconnectHandler(MauiTextView nativeView)
 		{
+			base.DisconnectHandler(nativeView);
+
 			nativeView.Changed -= OnChanged;
 			nativeView.ShouldChangeText -= OnShouldChangeText;
+			nativeView.Ended -= OnEnded;
+			nativeView.TextPropertySet -= OnTextPropertySet;
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
@@ -74,7 +81,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor)
 		{
-			handler.NativeView?.UpdatePredictiveText(editor);
+			handler.NativeView?.UpdateIsTextPredictionEnabled(editor);
 		}
 
 		public static void MapFormatting(EditorHandler handler, IEditor editor)
@@ -85,7 +92,14 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateCharacterSpacing(editor);
 		}
 
-		void OnChanged(object? sender, System.EventArgs e) => OnTextChanged();
+		public static void MapFont(EditorHandler handler, IEditor editor)
+		{
+			var fontManager = handler.GetRequiredService<IFontManager>();
+
+			handler.NativeView?.UpdateFont(editor, fontManager);
+		}
+
+		void OnChanged(object? sender, EventArgs e) => OnTextChanged();
 
 		void OnTextChanged()
 		{
@@ -99,7 +113,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var currLength = textView?.Text?.Length ?? 0;
 
-			// fix a crash on undo
+			// Fix a crash on undo
 			if (range.Length + range.Location > currLength)
 				return false;
 
@@ -114,11 +128,21 @@ namespace Microsoft.Maui.Handlers
 			return newLength <= VirtualView.MaxLength;
 		}
 
-		public static void MapFont(EditorHandler handler, IEditor editor)
+		void OnEnded(object? sender, EventArgs eventArgs)
 		{
-			var fontManager = handler.GetRequiredService<IFontManager>();
+			// TODO: Update IsFocused property
+			VirtualView.Completed();
+		}
 
-			handler.NativeView?.UpdateFont(editor, fontManager);
+		private void OnTextPropertySet(object? sender, EventArgs e)
+		{
+			VirtualView.UpdateText(NativeView.Text);
+		}
+
+
+		public static void MapKeyboard(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateKeyboard(editor);
 		}
 	}
 }

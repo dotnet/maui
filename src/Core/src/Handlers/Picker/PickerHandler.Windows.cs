@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 
@@ -11,10 +11,10 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiComboBox CreateNativeView()
 		{
 			var nativePicker = new MauiComboBox();
-			
+
 			if (VirtualView != null)
-				nativePicker.ItemsSource = ((LockableObservableListWrapper)VirtualView.Items)._list;
-		
+				nativePicker.ItemsSource = new ItemDelegateList<string>(VirtualView);
+
 			return nativePicker;
 		}
 
@@ -28,14 +28,27 @@ namespace Microsoft.Maui.Handlers
 			nativeView.SelectionChanged -= OnControlSelectionChanged;
 		}
 
-		protected override void SetupDefaults(MauiComboBox nativeView)
+		void SetupDefaults(MauiComboBox nativeView)
 		{
 			_defaultForeground = nativeView.Foreground;
-
-			base.SetupDefaults(nativeView);
 		}
 
+		void Reload()
+		{
+
+			if (VirtualView == null || NativeView == null)
+				return;
+			NativeView.ItemsSource = new ItemDelegateList<string>(VirtualView);
+		}
+
+		public static void MapReload(PickerHandler handler, IPicker picker, object? args) => handler.Reload();
+
 		public static void MapTitle(PickerHandler handler, IPicker picker) 
+		{
+			handler.NativeView?.UpdateTitle(picker);
+		}
+
+		public static void MapTitleColor(PickerHandler handler, IPicker picker)
 		{
 			handler.NativeView?.UpdateTitle(picker);
 		}
@@ -62,8 +75,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateTextColor(picker, handler._defaultForeground);
 		}
 
-		[MissingMapper]
-		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker view) { }
+		public static void MapHorizontalTextAlignment(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateHorizontalTextAlignment(picker);
+		}
 
 		void OnControlSelectionChanged(object? sender, WSelectionChangedEventArgs e)
 		{

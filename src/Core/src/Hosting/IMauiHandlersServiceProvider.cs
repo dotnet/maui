@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui
 {
@@ -7,8 +8,10 @@ namespace Microsoft.Maui
 	{
 		Type? GetHandlerType(Type iview);
 
-		IViewHandler? GetHandler(Type type);
+		IElementHandler? GetHandler(Type type);
 
-		IViewHandler? GetHandler<T>() where T : IView;
+		IElementHandler? GetHandler<T>() where T : IElement;
+
+		IMauiHandlersCollection GetCollection();
 	}
 }

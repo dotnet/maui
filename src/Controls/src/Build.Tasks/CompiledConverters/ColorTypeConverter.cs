@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml;
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.XamlC
 
 				if (value.StartsWith("#", StringComparison.Ordinal))
 				{
-					var color = Color.FromHex(value);
+					var color = Color.FromArgb(value);
 
 					yield return Instruction.Create(OpCodes.Ldc_R4, color.Red);
 					yield return Instruction.Create(OpCodes.Ldc_R4, color.Green);

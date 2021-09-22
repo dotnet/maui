@@ -89,9 +89,6 @@
     <Compile Update="GalleryPages\RadioButtonGalleries\RadioButtonGroupGallery.xaml.cs">
       <DependentUpon>RadioButtonGroupGallery.xaml</DependentUpon>
     </Compile>
-    <Compile Update="TabIndexTest\DaysOfWeekView.xaml.cs">
-      <DependentUpon>DaysOfWeekView.xaml</DependentUpon>
-    </Compile>
     <Compile Update="GalleryPages\IndicatorViewGalleries\IndicatorGalleries.cs">
       <SubType></SubType>
     </Compile>
@@ -106,15 +103,6 @@
     <EmbeddedResource Update="GalleryPages\RadioButtonGalleries\TemplateFromStyle.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="TabIndexTest\DayView.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="TabIndexTest\TabIndex.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="TabIndexTest\DaysOfWeekView.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -123,6 +111,7 @@
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Compatibility.csproj" />
   </ItemGroup>
 
   <ItemGroup>

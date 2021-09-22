@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui
 {
@@ -6,24 +7,21 @@ namespace Microsoft.Maui
 	/// Provides the base properties and methods for all Layout elements.
 	/// Use Layout elements to position and size child elements in .NET MAUI applications.
 	/// </summary>
-	public interface ILayout : IView, IContainer
+	public interface ILayout : IView, IContainer, ISafeAreaView, IPadding
 	{
+		/// <summary>
+		/// Measures the desired size of the ILayout within the given constraints.
+		/// </summary>
+		/// <param name="widthConstraint">The width limit for measuring the ILayout.</param>
+		/// <param name="heightConstraint">The height limit for measuring the ILayout.</param>
+		/// <returns>The desired size of the ILayout.</returns>
+		Size CrossPlatformMeasure(double widthConstraint, double heightConstraint);
 
 		/// <summary>
-		/// Gets the Layout Handler.
+		/// Arranges the children of the ILayout within the given bounds.
 		/// </summary>
-		ILayoutHandler LayoutHandler { get; }
-
-		/// <summary>
-		/// Add a child View to the Layout.
-		/// </summary>
-		/// <param name="child">The child View to add to the Layout.</param>
-		void Add(IView child);
-
-		/// <summary>
-		/// Remove a child View from the Layout.
-		/// </summary>
-		/// <param name="child">The child View to remove from the Layout.</param>
-		void Remove(IView child);
+		/// <param name="bounds">The bounds in which the ILayout's children should be arranged.</param>
+		/// <returns>The actual size of the arranged ILayout.</returns>
+		Size CrossPlatformArrange(Rectangle bounds);
 	}
 }

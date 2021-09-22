@@ -78,7 +78,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[TestCase(typeof(Label), "LabelTest")]
 		[TestCase(typeof(Editor), "EditorTest")]
 		[TestCase(typeof(TimePicker), "01:00:00")]
-		[TestCase(typeof(DatePicker), "12/12/2020 12:00:00 AM")]
 		[TestCase(typeof(CheckBox), "True")]
 		[TestCase(typeof(Switch), "True")]
 		[TestCase(typeof(RadioButton), "True")]
@@ -90,6 +89,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var args = new DropEventArgs(new DataPackageView(new DataPackage() { Text = result }));
 			await dropRec.SendDrop(args);
 			Assert.AreEqual(element.GetStringValue(), result);
+		}
+
+		[TestCase(typeof(DatePicker), "12/12/2020 12:00:00 AM")]
+		public void DateTextPackageCorrectlySetsOnCompatibleTarget(Type fieldType, string result)
+		{
+			var date = DateTime.Parse(result);
+			result = date.ToString();
+			TextPackageCorrectlySetsOnCompatibleTarget(fieldType, result);
 		}
 
 		[Test]

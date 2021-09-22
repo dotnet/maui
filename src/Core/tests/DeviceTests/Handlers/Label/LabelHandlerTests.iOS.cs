@@ -13,31 +13,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class LabelHandlerTests
 	{
-		[Theory(DisplayName = "Font Family Initializes Correctly")]
-		[InlineData(null)]
-		[InlineData("Times New Roman")]
-		[InlineData("Dokdo")]
-		public async Task FontFamilyInitializesCorrectly(string family)
-		{
-			var label = new LabelStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize(family, 10)
-			};
-
-			var (services, nativeFont) = await GetValueAsync(label, handler => (handler.Services, GetNativeLabel(handler).Font));
-
-			var fontManager = services.GetRequiredService<IFontManager>();
-
-			var expectedNativeFont = fontManager.GetFont(Font.OfSize(family, 0.0));
-
-			Assert.Equal(expectedNativeFont.FamilyName, nativeFont.FamilyName);
-			if (string.IsNullOrEmpty(family))
-				Assert.Equal(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
-			else
-				Assert.NotEqual(fontManager.DefaultFont.FamilyName, nativeFont.FamilyName);
-		}
-
 		[Fact(DisplayName = "Horizontal TextAlignment Updates Correctly")]
 		public async Task HorizontalTextAlignmentInitializesCorrectly()
 		{
@@ -210,15 +185,6 @@ namespace Microsoft.Maui.DeviceTests
 		Color GetNativeTextColor(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).TextColor.ToColor();
 
-		double GetNativeUnscaledFontSize(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Font.PointSize;
-
-		bool GetNativeIsBold(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Bold);
-
-		bool GetNativeIsItalic(LabelHandler labelHandler) =>
-			GetNativeLabel(labelHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
-
 		int GetNativeMaxLines(LabelHandler labelHandler) =>
  			(int)GetNativeLabel(labelHandler).Lines;
 
@@ -241,14 +207,6 @@ namespace Microsoft.Maui.DeviceTests
 		UITextAlignment GetNativeHorizontalTextAlignment(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).TextAlignment;
 
-		Task ValidateNativeBackgroundColor(ILabel label, Color color)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				return GetNativeLabel(CreateHandler(label)).AssertContainsColor(color);
-			});
-		}
-
 		UILineBreakMode GetNativeLineBreakMode(LabelHandler labelHandler) =>
 			GetNativeLabel(labelHandler).LineBreakMode;
 
@@ -265,6 +223,16 @@ namespace Microsoft.Maui.DeviceTests
 				return new nfloat(-1.0f);
 
 			return paragraphStyle.LineHeightMultiple;
+		}
+
+		Task ValidateHasColor(ILabel label, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeLabel = GetNativeLabel(CreateHandler(label));
+				action?.Invoke();
+				nativeLabel.AssertContainsColor(color);
+			});
 		}
 	}
 }

@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Microsoft.Maui.Controls.SourceGen</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Controls.SourceGen</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);NU5128;</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Core\Internals\INameScope.cs" Link="INameScope.cs" />
+    <Compile Include="..\Core\IXmlLineInfoProvider.cs" Link="IXmlLineInfoProvider.cs" />
+    <Compile Include="..\Core\XamlParseException.cs" Link="XamlParseException.cs" />
+    <Compile Include="..\Core\XmlLineInfo.cs" Link="XmlLineInfo.cs" />
+    <Compile Include="..\Core\XmlnsDefinitionAttribute.cs" Link="XmlnsDefinitionAttribute.cs" />
+    <Compile Include="..\Xaml\TypeArgumentsParser.cs" Link="TypeArgumentsParser.cs" />
+    <Compile Include="..\Xaml\XamlLoader.Types.cs" Link="XamlLoader.Types.cs" />
+    <Compile Include="..\Xaml\XamlParser.Namespaces.cs" Link="XamlParser.Namespaces.cs" />
+    <Compile Include="..\Xaml\XamlNode.cs" Link="XamlNode.cs" />
+    <Compile Include="..\Xaml\XamlNodeVisitor.cs" Link="XamlNodeVisitor.cs" />
+    <Compile Include="..\Xaml\XmlName.cs" Link="XmlName.cs" />
+    <Compile Include="..\Xaml\XmlnsHelper.cs" Link="XmlnsHelper.cs" />
+    <Compile Include="..\Xaml\XmlTypeXamlExtensions.cs" Link="XmlTypeXamlExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

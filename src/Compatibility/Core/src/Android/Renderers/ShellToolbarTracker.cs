@@ -335,7 +335,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected virtual async void UpdateLeftBarButtonItem(Context context, Toolbar toolbar, DrawerLayout drawerLayout, Page page)
 		{
-			if (_drawerToggle == null && !context.IsDesignerContext())
+			if (_drawerToggle == null)
 			{
 				_drawerToggle = new ActionBarDrawerToggle(context.GetActivity(), drawerLayout, toolbar, R.String.Ok, R.String.Ok)
 				{
@@ -551,7 +551,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			var menu = toolbar.Menu;
 			var sortedItems = page.ToolbarItems.OrderBy(x => x.Order);
 
-			toolbar.UpdateMenuItems(sortedItems, ShellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems);
+			toolbar.UpdateMenuItems(sortedItems, page.FindMauiContext(), TintColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems);
 
 			SearchHandler = Shell.GetSearchHandler(page);
 			if (SearchHandler != null && SearchHandler.SearchBoxVisibility != SearchBoxVisibility.Hidden)
@@ -613,7 +613,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var sortedItems = Page.ToolbarItems.OrderBy(x => x.Order).ToList();
-			_toolbar.OnToolbarItemPropertyChanged(e, (ToolbarItem)sender, sortedItems, ShellContext.AndroidContext, TintColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems);
+			_toolbar.OnToolbarItemPropertyChanged(e, (ToolbarItem)sender, sortedItems, Page.FindMauiContext(), TintColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems);
 		}
 
 		void OnSearchViewAttachedToWindow(object sender, AView.ViewAttachedToWindowEventArgs e)

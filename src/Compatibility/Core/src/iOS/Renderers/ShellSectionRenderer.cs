@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Foundation;
+using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -68,30 +68,44 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		ShellSection _shellSection;
 		bool _ignorePopCall;
 
+		// When setting base.ViewControllers iOS doesn't modify the property right away. 
+		// if you set base.ViewControllers to a new array and then retrieve base.ViewControllers
+		// iOS will return the previous array until the new array has been processed
+		// This means if you try to remove one VC and then try to remove a second VC before the first one is processed
+		// you'll end up re-adding back the first VC
+		// ViewControllers = ViewControllers.Remove(vc1)
+		// ViewControllers = ViewControllers.Remove(vc2)  
+		// You've now added vc1 back because the second call to ViewControllers will still return a ViewControllers list with vc1 in it
+		UIViewController[] _pendingViewControllers;
+
 		public ShellSectionRenderer(IShellContext context) : base()
 		{
 			Delegate = new NavDelegate(this);
 			_context = context;
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
+			_context.Shell.Navigated += OnNavigated;
+			_context.Shell.Navigating += OnNavigating;
 		}
 
-		public ShellSectionRenderer(IShellContext context, Type navigationBarType, Type toolbarType) 
+		public ShellSectionRenderer(IShellContext context, Type navigationBarType, Type toolbarType)
 			: base(navigationBarType, toolbarType)
 		{
 			Delegate = new NavDelegate(this);
 			_context = context;
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
+			_context.Shell.Navigated += OnNavigated;
+			_context.Shell.Navigating += OnNavigating;
 		}
 
 		[Export("navigationBar:shouldPopItem:")]
-		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
+		[Internals.Preserve(Conditional = true)]
 		public bool ShouldPopItem(UINavigationBar navigationBar, UINavigationItem item) =>
 			SendPop();
 
 		internal bool SendPop()
-		{ 
+		{
 			// this means the pop is already done, nothing we can do
-			if (ViewControllers.Length < NavigationBar.Items.Length)
+			if (ActiveViewControllers().Length < NavigationBar.Items.Length)
 				return true;
 
 			foreach (var tracker in _trackers)
@@ -202,6 +216,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_context.Shell != null)
 			{
 				_context.Shell.PropertyChanged -= HandleShellPropertyChanged;
+				_context.Shell.Navigated -= OnNavigated;
+				_context.Shell.Navigating -= OnNavigating;
 				((IShellController)_context.Shell).RemoveAppearanceObserver(this);
 			}
 
@@ -307,7 +323,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			_trackers[page] = tracker;
 
-			ViewControllers.Insert(ViewControllers.IndexOf(beforeRenderer.ViewController), renderer.ViewController);
+			InsertViewController(ActiveViewControllers().IndexOf(beforeRenderer.ViewController), renderer.ViewController);
 		}
 
 		protected virtual void OnNavigationRequested(object sender, NavigationRequestedEventArgs e)
@@ -353,7 +369,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override UIViewController[] PopToRootViewController(bool animated)
 		{
-			if (!_ignorePopCall && ViewControllers.Length > 1)
+			if (!_ignorePopCall && ActiveViewControllers().Length > 1)
 			{
 				ProcessPopToRoot();
 			}
@@ -432,9 +448,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					OnPopRequested(e);
 				}
 
-				if (ViewControllers.Contains(viewController))
-					ViewControllers = ViewControllers.Remove(viewController);
-
+				RemoveViewController(viewController);
 				DisposePage(page);
 			}
 		}
@@ -461,8 +475,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (_trackers.TryGetValue(page, out var tracker))
 			{
-				if (!calledFromDispose && tracker.ViewController != null && ViewControllers.Contains(tracker.ViewController))
-					ViewControllers = ViewControllers.Remove(_trackers[page].ViewController);
+				if (!calledFromDispose && tracker.ViewController != null && ActiveViewControllers().Contains(tracker.ViewController))
+				{
+					System.Diagnostics.Debug.Write($"Disposing {_trackers[page].ViewController.GetHashCode()}");
+					RemoveViewController(_trackers[page].ViewController);
+				}
 
 				tracker.Dispose();
 				_trackers.Remove(page);
@@ -500,6 +517,70 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				UpdateNavigationBarHidden();
 			else if (e.PropertyName == Shell.NavBarHasShadowProperty.PropertyName)
 				UpdateNavigationBarHasShadow();
+		}
+
+		// We only care about using pendingViewControllers when we are setting the ViewControllers array directly
+		// So, once navigation starts again (or ends) we can just clear the pendingViewControllers
+		void OnNavigating(object sender, ShellNavigatingEventArgs e)
+		{
+			_pendingViewControllers = null;
+		}
+
+		void OnNavigated(object sender, ShellNavigatedEventArgs e)
+		{
+			_pendingViewControllers = null;
+		}
+
+		// These are all just safety nets to ensure that _pendingViewControllers doesn't for some reason get out of sync
+		// and start causing issues. In theory we could just override ViewControllers here to make sure _pendingViewControllers
+		// stays in sync but I don't trust that `ViewControllers.set` is reliably called with every modification
+		public override UIViewController[] ViewControllers
+		{
+			get => base.ViewControllers;
+			set
+			{
+				if (_pendingViewControllers != null)
+					_pendingViewControllers = value;
+
+				base.ViewControllers = value;
+			}
+		}
+
+		public override UIViewController[] PopToViewController(UIViewController viewController, bool animated)
+		{
+			_pendingViewControllers = null;
+			return base.PopToViewController(viewController, animated);
+		}
+
+		public override void PushViewController(UIViewController viewController, bool animated)
+		{
+			_pendingViewControllers = null;
+			base.PushViewController(viewController, animated);
+		}
+
+		public override UIViewController PopViewController(bool animated)
+		{
+			_pendingViewControllers = null;
+			return base.PopViewController(animated);
+		}
+
+		UIViewController[] ActiveViewControllers() =>
+			_pendingViewControllers ?? base.ViewControllers;
+
+		void RemoveViewController(UIViewController viewController)
+		{
+			_pendingViewControllers = _pendingViewControllers ?? base.ViewControllers;
+			if (_pendingViewControllers.Contains(viewController))
+				_pendingViewControllers = _pendingViewControllers.Remove(viewController);
+
+			ViewControllers = _pendingViewControllers;
+		}
+
+		void InsertViewController(int index, UIViewController viewController)
+		{
+			_pendingViewControllers = _pendingViewControllers ?? base.ViewControllers;
+			_pendingViewControllers = _pendingViewControllers.Insert(index, viewController);
+			ViewControllers = _pendingViewControllers;
 		}
 
 		void PushPage(Page page, bool animated, TaskCompletionSource<bool> completionSource = null)
@@ -576,7 +657,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			public override bool ShouldBegin(UIGestureRecognizer recognizer)
 			{
-				if (_parent.ViewControllers.Length == 1)
+				if ((_parent as ShellSectionRenderer).ActiveViewControllers().Length == 1)
 					return false;
 				return _shouldPop();
 			}
@@ -593,7 +674,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			// This is currently working around a Mono Interpreter bug
 			// if you remove this code please verify that hot restart still works
-			// https://github.com/xamarin/Microsoft.Maui.Controls.Compatibility/issues/10519
+			// https://github.com/xamarin/Xamarin.Forms/issues/10519
 			[Export("navigationController:animationControllerForOperation:fromViewController:toViewController:")]
 			[Foundation.Preserve(Conditional = true)]
 			public new IUIViewControllerAnimatedTransitioning GetAnimationControllerForOperation(UINavigationController navigationController, UINavigationControllerOperation operation, UIViewController fromViewController, UIViewController toViewController)
@@ -619,6 +700,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			public override void WillShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
+				System.Diagnostics.Debug.Write($"WillShowViewController {viewController.GetHashCode()}");
 				var element = _self.ElementForViewController(viewController);
 
 				bool navBarVisible;

@@ -15,31 +15,16 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
-		[Theory(DisplayName = "Font Family Initializes Correctly")]
-		[InlineData(null)]
-		[InlineData("monospace")]
-		[InlineData("Dokdo")]
-		public async Task FontFamilyInitializesCorrectly(string family)
+		[Fact(DisplayName = "PlaceholderColor Initializes Correctly")]
+		public async Task PlaceholderColorInitializesCorrectly()
 		{
-			var entry = new EntryStub
+			var entry = new EntryStub()
 			{
-				Text = "Test",
-				Font = Font.OfSize(family, 10)
+				Placeholder = "Test",
+				PlaceholderColor = Colors.Yellow
 			};
 
-			var handler = await CreateHandlerAsync(entry);
-			var nativeEntry = GetNativeEntry(handler);
-
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
-
-			var nativeFont = fontManager.GetTypeface(Font.OfSize(family, 0.0));
-
-			Assert.Equal(nativeFont, nativeEntry.Typeface);
-
-			if (string.IsNullOrEmpty(family))
-				Assert.Equal(fontManager.DefaultTypeface, nativeEntry.Typeface);
-			else
-				Assert.NotEqual(fontManager.DefaultTypeface, nativeEntry.Typeface);
+			await ValidatePropertyInitValue(entry, () => entry.PlaceholderColor, GetNativePlaceholderColor, entry.PlaceholderColor);
 		}
 
 		[Fact(DisplayName = "ReturnType Initializes Correctly")]
@@ -93,13 +78,39 @@ namespace Microsoft.Maui.DeviceTests
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
-		AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
-			(AppCompatEditText)entryHandler.NativeView;
+		[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
+		public async Task VerticalTextAlignmentInitializesCorrectily()
+		{
+			var xplatVerticalTextAlignment = TextAlignment.End;
+
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				VerticalTextAlignment = xplatVerticalTextAlignment
+			};
+
+			Android.Views.GravityFlags expectedValue = Android.Views.GravityFlags.Bottom;
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.VerticalTextAlignment,
+					NativeViewValue = GetNativeVerticalTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
+		static AppCompatEditText GetNativeEntry(EntryHandler entryHandler) =>
+			entryHandler.NativeView;
 
 		string GetNativeText(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Text;
 
-		void SetNativeText(EntryHandler entryHandler, string text) =>
+		static void SetNativeText(EntryHandler entryHandler, string text) =>
 			GetNativeEntry(entryHandler).Text = text;
 
 		Color GetNativeTextColor(EntryHandler entryHandler)
@@ -120,6 +131,13 @@ namespace Microsoft.Maui.DeviceTests
 
 		string GetNativePlaceholder(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Hint;
+
+		Color GetNativePlaceholderColor(EntryHandler entryHandler)
+		{
+			int currentHintTextColor = GetNativeEntry(entryHandler).CurrentHintTextColor;
+			AColor currentPlaceholderColor = new AColor(currentHintTextColor);
+			return currentPlaceholderColor.ToColor();
+		}
 
 		bool GetNativeIsReadOnly(EntryHandler entryHandler)
 		{
@@ -177,20 +195,11 @@ namespace Microsoft.Maui.DeviceTests
 			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
 		}
 
-		double GetNativeUnscaledFontSize(EntryHandler entryHandler)
-		{
-			var textView = GetNativeEntry(entryHandler);
-			return textView.TextSize / textView.Resources.DisplayMetrics.Density;
-		}
-
-		bool GetNativeIsBold(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Typeface.IsBold;
-
-		bool GetNativeIsItalic(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).Typeface.IsItalic;
-
 		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
+
+		Android.Views.GravityFlags GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).Gravity;
 
 		ImeAction GetNativeReturnType(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).ImeOptions;
@@ -247,6 +256,26 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				return editText.LetterSpacing;
 			}
+
+			return -1;
+		}
+
+		int GetNativeCursorPosition(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+
+			if (editText != null)
+				return editText.SelectionEnd;
+
+			return -1;
+		}
+
+		int GetNativeSelectionLength(EntryHandler entryHandler)
+		{
+			var editText = GetNativeEntry(entryHandler);
+
+			if (editText != null)
+				return editText.SelectionEnd - editText.SelectionStart;
 
 			return -1;
 		}

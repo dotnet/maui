@@ -1,0 +1,51 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Enable Razor files to be visible in Solution Explorer because they are not Content files in .NET MAUI projects -->
+  <ItemGroup>
+    <AvailableItemName Include="RazorComponent"/>
+  </ItemGroup>
+
+  <!-- Prevent Razor files from being packaged as bundle resources in iOS/MacCatalyst targets by declaring them
+       as RazorComponent instead of Content. -->
+  <ItemGroup Condition="'$(DesignTimeBuild)' != 'true'">
+    <Content Remove="**\*.razor" />
+    <RazorComponent Include="**\*.razor" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+    <StaticWebAssetProjectMode>Root</StaticWebAssetProjectMode>
+  </PropertyGroup>
+
+  <Target Name="ConvertStaticWebAssetsToMauiAssets" BeforeTargets="GetMauiItems;ResizetizeCollectItems" DependsOnTargets="StaticWebAssetsPrepareForRun;StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest">
+    <ComputeStaticWebAssetsTargetPaths Assets="@(StaticWebAsset)" PathPrefix="wwwroot">
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_MauiStaticWebAssetWithTargetPath" />
+    </ComputeStaticWebAssetsTargetPaths>
+    <ItemGroup>
+      <MauiAsset Include="%(_MauiStaticWebAssetWithTargetPath.Identity)">
+        <Link>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</Link>
+        <TargetPath>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</TargetPath>
+      </MauiAsset>
+    </ItemGroup>
+  </Target>
+
+  <!-- Targets temporarily remove Content items in the wwwroot folder so that they don't conflict with iOS/MacCatalyst SDK tasks -->
+  <Target Name="HideContentFromBundleResources" BeforeTargets="_CollectBundleResources">
+    <ItemGroup>
+      <!-- Find all files outside the wwwroot folder -->
+      <_NonWWWRootContent Include="@(Content)" Exclude="wwwroot/**/*" />
+      <!-- Create a list of all content that *is* in the wwwroot folder (to preserve ItemGroup metadata) -->
+      <_TemporaryHiddenContent Include="@(Content)" Exclude="@(_NonWWWRootContent)"  />
+      <!-- Temporarily remove the items -->
+      <Content Remove="@(_TemporaryHiddenContent)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="RestoreHiddenContent" AfterTargets="_CollectBundleResources" BeforeTargets="ResolveCurrentProjectStaticWebAssetsInputs">
+    <ItemGroup>
+      <!-- Restore the previously removed Content items -->
+      <Content Include="@(_TemporaryHiddenContent)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

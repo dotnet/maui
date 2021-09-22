@@ -1,5 +1,7 @@
 using System;
 using Android.App;
+using Android.Content;
+using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,42 +11,51 @@ using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
 {
-	public class MauiApplication<TStartup> : MauiApplication
-		where TStartup : IStartup, new()
-	{
-		public MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
-		{
-		}
-
-		public override void OnCreate()
-		{
-			RegisterActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
-
-			var startup = new TStartup();
-
-			var host = startup
-				.CreateAppHostBuilder()
-				.ConfigureServices(ConfigureNativeServices)
-				.ConfigureUsing(startup)
-				.Build();
-
-			Services = host.Services;
-			Application = Services.GetRequiredService<IApplication>();
-
-			base.OnCreate();
-		}
-
-		// Configure native services like HandlersContext, ImageSourceHandlers etc.. 
-		void ConfigureNativeServices(HostBuilderContext ctx, IServiceCollection services)
-		{
-		}
-	}
-
 	public abstract class MauiApplication : Application
 	{
 		protected MauiApplication(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
 		{
 			Current = this;
+		}
+
+		protected abstract MauiApp CreateMauiApp();
+
+		public override void OnCreate()
+		{
+			RegisterActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
+
+			var mauiApp = CreateMauiApp();
+
+			Services = mauiApp.Services;
+
+			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
+
+			Application = Services.GetRequiredService<IApplication>();
+
+			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreate>(del => del(this));
+
+			base.OnCreate();
+		}
+
+		public override void OnLowMemory()
+		{
+			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationLowMemory>(del => del(this));
+
+			base.OnLowMemory();
+		}
+
+		public override void OnTrimMemory(TrimMemory level)
+		{
+			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationTrimMemory>(del => del(this, level));
+
+			base.OnTrimMemory(level);
+		}
+
+		public override void OnConfigurationChanged(Configuration newConfig)
+		{
+			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationConfigurationChanged>(del => del(this, newConfig));
+
+			base.OnConfigurationChanged(newConfig);
 		}
 
 		public static MauiApplication Current { get; private set; } = null!;

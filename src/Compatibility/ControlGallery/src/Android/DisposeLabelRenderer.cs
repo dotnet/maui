@@ -17,13 +17,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 		{
 		}
 
-		protected override void Dispose (bool disposing)
+		protected override void Dispose(bool disposing)
 		{
 
-			if (disposing) {
-				((DisposeLabel) Element).SendRendererDisposed ();
+			if (disposing)
+			{
+				((DisposeLabel)Element).SendRendererDisposed();
 			}
-			base.Dispose (disposing);
+			base.Dispose(disposing);
 		}
 	}
 }

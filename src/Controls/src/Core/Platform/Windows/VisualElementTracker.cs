@@ -20,6 +20,7 @@ using Microsoft.Maui.Controls.Internals;
 using WCompositeTransform = Microsoft.UI.Xaml.Media.CompositeTransform;
 using WScaleTransform = Microsoft.UI.Xaml.Media.ScaleTransform;
 using Microsoft.Maui.Graphics;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -442,13 +443,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_isPanning = true;
 
-			foreach (PanGestureRecognizer recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
+			foreach (IPanGestureController recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
 			{
 				if (!_wasPanGestureStartedSent)
 				{
-					recognizer.SendPanStarted(view, Application.Current.PanGestureId);
+					recognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 				}
-				recognizer.SendPan(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y, Application.Current.PanGestureId);
+				recognizer.SendPan(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y, PanGestureRecognizer.CurrentId.Value);
 			}
 			_wasPanGestureStartedSent = true;
 		}
@@ -464,7 +465,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var scaleOriginPoint = new Point(translationPoint.X / view.Width, translationPoint.Y / view.Height);
 			IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
-			foreach (PinchGestureRecognizer recognizer in pinchGestures)
+			foreach (IPinchGestureController recognizer in pinchGestures)
 			{
 				if (!_wasPinchGestureStartedSent)
 				{
@@ -641,19 +642,19 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null || !_isPanning)
 				return;
 
-			foreach (PanGestureRecognizer recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
+			foreach (IPanGestureController recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
 			{
 				if (success)
 				{
-					recognizer.SendPanCompleted(view, Application.Current.PanGestureId);
+					recognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
 				}
 				else
 				{
-					recognizer.SendPanCanceled(view, Application.Current.PanGestureId);
+					recognizer.SendPanCanceled(view, PanGestureRecognizer.CurrentId.Value);
 				}
 			}
 
-			Application.Current.PanGestureId++;
+			PanGestureRecognizer.CurrentId.Increment();
 			_isPanning = false;
 		}
 
@@ -664,7 +665,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
-			foreach (PinchGestureRecognizer recognizer in pinchGestures)
+			foreach (IPinchGestureController recognizer in pinchGestures)
 			{
 				if (success)
 				{
@@ -790,7 +791,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static void UpdateVisibility(VisualElement view, FrameworkElement frameworkElement)
 		{
-			frameworkElement.Visibility = view.IsVisible ? Visibility.Visible : Visibility.Collapsed;
+			frameworkElement.Visibility = view.IsVisible ? WVisibility.Visible : WVisibility.Collapsed;
 		}
 
 		void UpdateDragAndDropGestureRecognizers()

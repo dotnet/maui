@@ -3,7 +3,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.UI.Xaml.Media;
@@ -40,40 +39,16 @@ namespace Microsoft.Maui
 
 		public FontFamily GetFontFamily(Font font)
 		{
-			if (font.IsDefault || string.IsNullOrWhiteSpace(font.FontFamily))
+			if (font.IsDefault || string.IsNullOrWhiteSpace(font.Family))
 				return DefaultFontFamily;
 
-			return _fonts.GetOrAdd(font.FontFamily, CreateFontFamily);
+			return _fonts.GetOrAdd(font.Family, CreateFontFamily);
 		}
 
-		public double GetFontSize(Font font)
-		{
-			if (font.UseNamedSize)
-				return GetFontSize(font.NamedSize);
-
-			return font.FontSize;
-		}
-
-		public double GetFontSize(NamedSize namedSize)
-		{
-			// TODO: Hmm, maybe we need to revisit this, since we no longer support Windows Phone OR WinRT.
-			// These are values pulled from the mapped sizes on Windows Phone, WinRT has no equivalent sizes, only intents.
-
-			return namedSize switch
-			{
-				NamedSize.Default => DefaultFontSize,
-				NamedSize.Micro => 15.667,
-				NamedSize.Small => 18.667,
-				NamedSize.Medium => 22.667,
-				NamedSize.Large => 32,
-				NamedSize.Body => 14,
-				NamedSize.Caption => 12,
-				NamedSize.Header => 46,
-				NamedSize.Subtitle => 20,
-				NamedSize.Title => 24,
-				_ => throw new ArgumentOutOfRangeException(nameof(namedSize)),
-			};
-		}
+		public double GetFontSize(Font font, double defaultFontSize = 0) =>
+			font.Size <= 0
+				? (defaultFontSize > 0 ? defaultFontSize : DefaultFontSize)
+				: font.Size;
 
 		FontFamily CreateFontFamily(string fontFamily)
 		{
@@ -87,7 +62,7 @@ namespace Microsoft.Maui
 		IEnumerable<string> GetAllFontPossibilities(string fontFamily)
 		{
 			// First check Alias
-			if (_fontRegistrar.TryGetFont(fontFamily, out var fontPostScriptName))
+			if (_fontRegistrar.GetFont(fontFamily) is string fontPostScriptName)
 			{
 				if (fontPostScriptName!.Contains("://") && fontPostScriptName.Contains("#"))
 				{
@@ -111,8 +86,7 @@ namespace Microsoft.Maui
 			var hasExtension = !string.IsNullOrWhiteSpace(fontFile.Extension);
 			if (hasExtension)
 			{
-				var (hasFont, filePath) = _fontRegistrar.HasFont(fontFile.FileNameWithExtension());
-				if (hasFont)
+				if (_fontRegistrar.GetFont(fontFile.FileNameWithExtension()) is string filePath)
 				{
 					var familyName = FindFontFamilyName(filePath);
 					var formatted = $"{filePath}#{familyName ?? fontFile.GetPostScriptNameWithSpaces()}";
@@ -129,8 +103,7 @@ namespace Microsoft.Maui
 			// There was no extension so let's just try a few things
 			foreach (var ext in TypicalFontFileExtensions)
 			{
-				var (hasFont, filePath) = _fontRegistrar.HasFont(fontFile.FileNameWithExtension(ext));
-				if (hasFont)
+				if (_fontRegistrar.GetFont(fontFile.FileNameWithExtension(ext)) is string filePath)
 				{
 					var familyName = FindFontFamilyName(filePath);
 					var formatted = $"{filePath}#{familyName ?? fontFile.GetPostScriptNameWithSpaces()}";
@@ -169,7 +142,10 @@ namespace Microsoft.Maui
 					using (var fontSet = new CanvasFontSet(fontUri))
 					{
 						if (fontSet.Fonts.Count != 0)
-							return fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName).FirstOrDefault().Value;
+						{
+							var props = fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName);
+							return props.Length == 0 ? null : props[0].Value;
+						}
 					}
 				}
 

@@ -6,5 +6,6 @@ namespace Microsoft.Maui
 	public interface INativeViewHandler : IViewHandler
 	{
 		new FrameworkElement? NativeView { get; }
+		new FrameworkElement? ContainerView { get; }
 	}
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using Foundation;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
@@ -9,21 +8,31 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextField>
 	{
-		static readonly int BaseHeight = 30;
-
-		static UIColor? DefaultTextColor;
+		UIColor? _defaultTextColor;
+		Color? _defaultPlaceholderColor;
 
 		protected override MauiTextField CreateNativeView()
 		{
-			return new MauiTextField
+			var nativeEntry = new MauiTextField
 			{
 				BorderStyle = UITextBorderStyle.RoundedRect,
 				ClipsToBounds = true
 			};
+
+			_defaultTextColor = nativeEntry.TextColor;
+
+			// Placeholder default color is 70% gray					
+			// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
+			_defaultPlaceholderColor = ColorExtensions.SeventyPercentGrey.ToColor();
+
+			return nativeEntry;
 		}
 
 		protected override void ConnectHandler(MauiTextField nativeView)
 		{
+			base.ConnectHandler(nativeView);
+
+			nativeView.ShouldReturn = OnShouldReturn;
 			nativeView.EditingChanged += OnEditingChanged;
 			nativeView.EditingDidEnd += OnEditingEnded;
 			nativeView.TextPropertySet += OnTextPropertySet;
@@ -32,19 +41,13 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiTextField nativeView)
 		{
+			base.DisconnectHandler(nativeView);
+
 			nativeView.EditingChanged -= OnEditingChanged;
 			nativeView.EditingDidEnd -= OnEditingEnded;
 			nativeView.TextPropertySet -= OnTextPropertySet;
 			nativeView.ShouldChangeCharacters -= OnShouldChangeCharacters;
 		}
-
-		protected override void SetupDefaults(MauiTextField nativeView)
-		{
-			DefaultTextColor = nativeView.TextColor;
-		}
-
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
-			new SizeRequest(new Size(widthConstraint, BaseHeight));
 
 		public static void MapText(EntryHandler handler, IEntry entry)
 		{
@@ -56,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateTextColor(entry, DefaultTextColor);
+			handler.NativeView?.UpdateTextColor(entry, handler._defaultTextColor);
 		}
 
 		public static void MapIsPassword(EntryHandler handler, IEntry entry)
@@ -67,6 +70,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateHorizontalTextAlignment(entry);
+		}
+
+		public static void MapVerticalTextAlignment(EntryHandler handler, IEntry entry)
+		{
+			handler?.NativeView?.UpdateVerticalTextAlignment(entry);
 		}
 
 		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry)
@@ -82,6 +90,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdatePlaceholder(entry);
+		}
+
+		public static void MapPlaceholderColor(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdatePlaceholder(entry, handler._defaultPlaceholderColor);
 		}
 
 		public static void MapIsReadOnly(EntryHandler handler, IEntry entry)
@@ -123,9 +136,30 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateCharacterSpacing(entry);
 		}
 
+		public static void MapCursorPosition(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateCursorPosition(entry);
+		}
+
+		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateSelectionLength(entry);
+		}
+
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateClearButtonVisibility(entry);
+		}
+
+		protected virtual bool OnShouldReturn(UITextField view)
+		{
+			view.ResignFirstResponder();
+
+			// TODO: Focus next View
+
+			VirtualView?.Completed();
+
+			return false;
 		}
 
 		void OnEditingChanged(object? sender, EventArgs e) => OnTextChanged();
@@ -139,12 +173,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || NativeView == null)
 				return;
 
-			// Even though <null> is technically different to "", it has no
-			// functional difference to apps. Thus, hide it.
-			var mauiText = VirtualView!.Text ?? string.Empty;
-			var nativeText = NativeView.Text ?? string.Empty;
-			if (mauiText != nativeText)
-				VirtualView.Text = nativeText;
+			VirtualView.UpdateText(NativeView.Text);
 		}
 
 		bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString)

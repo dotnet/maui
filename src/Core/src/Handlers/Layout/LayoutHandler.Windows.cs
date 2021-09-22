@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
@@ -22,15 +23,15 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.CrossPlatformMeasure = VirtualView.Measure;
-			NativeView.CrossPlatformArrange = VirtualView.Arrange;
+			NativeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 
-			foreach (var child in VirtualView.Children)
+			NativeView.Children.Clear();
+			foreach (var child in VirtualView)
 			{
 				Add(child);
 			}
 		}
-
 
 		public void Remove(IView child)
 		{
@@ -43,6 +44,29 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		public void Clear() 
+		{
+			NativeView?.Children.Clear();
+		}
+
+		public void Insert(int index, IView child)
+		{
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			NativeView.Children.Insert(index, child.ToNative(MauiContext));
+		}
+
+		public void Update(int index, IView child) 
+		{
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			NativeView.Children[index] = child.ToNative(MauiContext);
+		}
+
 		protected override LayoutPanel CreateNativeView()
 		{
 			if (VirtualView == null)
@@ -52,11 +76,18 @@ namespace Microsoft.Maui.Handlers
 
 			var view = new LayoutPanel
 			{
-				CrossPlatformMeasure = VirtualView.Measure,
-				CrossPlatformArrange = VirtualView.Arrange,
+				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
+				CrossPlatformArrange = VirtualView.CrossPlatformArrange,
 			};
 
 			return view;
+		}
+
+		protected override void DisconnectHandler(LayoutPanel nativeView)
+		{
+			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
+			Clear();
+			base.DisconnectHandler(nativeView);
 		}
 	}
 }

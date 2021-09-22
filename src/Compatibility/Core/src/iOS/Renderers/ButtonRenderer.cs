@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using UIKit;
-using SizeF = CoreGraphics.CGSize;
-using PreserveAttribute = Foundation.PreserveAttribute;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
+using UIKit;
+using PreserveAttribute = Foundation.PreserveAttribute;
+using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (e.PropertyName == Button.TextColorProperty.PropertyName)
 				UpdateTextColor();
-			else if (e.PropertyName == Button.FontProperty.PropertyName)
+			else if (e.PropertyName == FontElement.FontProperty.PropertyName)
 				UpdateFont();
 		}
 

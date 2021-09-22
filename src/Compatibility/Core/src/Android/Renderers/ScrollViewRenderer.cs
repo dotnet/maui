@@ -139,8 +139,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Tracker?.UpdateLayout();
 		}
 
-		public ViewGroup ViewGroup => this;
-
 		AView IVisualElementRenderer.View => this;
 
 		public override void Draw(Canvas canvas)
@@ -320,8 +318,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.SetContainer(this);
-			effect.SetControl(this);
+			effect.Container = this;
+			effect.Control = this;
 		}
 
 		static int GetDistance(double start, double position, double v)

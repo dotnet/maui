@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Foundation;
+using Microsoft.Maui.Controls.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
@@ -147,7 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Controller.UpdateItemsSource();
 		}
 
-		protected virtual void UpdateVisibility() 
+		protected virtual void UpdateVisibility()
 		{
 			Controller?.UpdateVisibility();
 		}

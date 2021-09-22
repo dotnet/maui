@@ -4,6 +4,7 @@ using System.Threading;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
 #if __MOBILE__
@@ -266,7 +267,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 
 					// must reset transform prior to setting frame...
-					if(caLayer.AnchorPoint != _originalAnchor)
+					if (caLayer.AnchorPoint != _originalAnchor)
 						caLayer.AnchorPoint = _originalAnchor;
 
 					caLayer.Transform = transform;
@@ -342,7 +343,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 #if __MOBILE__
 			if (thread)
-				CADisplayLinkTicker.Default.Invoke(update);
+				view.Dispatcher.Dispatch(update);
 			else
 				update();
 #else
@@ -374,6 +375,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 		}
 
+		[PortHandler("Partially ported")]
 		void UpdateNativeControl()
 		{
 			Performance.Start(out string reference);
@@ -489,6 +491,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				return true;
 
 			return false;
-		}	
+		}
 	}
 }

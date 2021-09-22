@@ -1,0 +1,54 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Microsoft",
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI", "Blazor" ],
+    "identity": "Microsoft.Maui.BlazorApp",
+    "groupIdentity": "Microsoft.Maui.BlazorApp",
+    "name": ".NET MAUI Blazor App",
+    "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, and WinUI using Blazor",
+    "shortName": "maui-blazor",
+    "tags": {
+      "language": "C#",
+      "type": "solution"
+    },
+    "sourceName": "MauiApp.1",
+    "sources": [
+      {
+        "source": "./",
+        "target": "./",
+        "copyOnly": [ "**/wwwroot/css/**", "**/*.svg", "**/*.ttf" ],
+        "modifiers": [
+          {
+            "condition": "(HostIdentifier != \"dotnetcli\")",
+            "exclude": [
+              "*.sln"
+            ]
+          }
+        ]
+      }
+    ],
+    "preferNameDirectory": true,
+    "guids": [
+      "07CD65EF-6238-4365-AF5D-F6D433967F48",
+      "8B51DC95-6D07-4C39-BC6C-3BFE96E8A7EA"
+    ],
+    "symbols": {
+      "applicationId": {
+        "type": "parameter",
+        "description": "Overrides the $(ApplicationId) in the project",
+        "datatype": "string",
+        "replaces": "com.companyname.MauiApp.1"
+      },
+      "windowsAppSdkVersion": {
+        "type": "parameter",
+        "dataType": "string",
+        "replaces": "WINDOWSAPPSDK_VERSION",
+        "defaultValue": "WINDOWSAPPSDK_VERSION_VALUE"
+      },
+      "HostIdentifier": {
+        "type": "bind",
+        "binding": "HostIdentifier"
+      }
+    },
+    "defaultName": "MauiApp1"
+  }

@@ -1,15 +1,30 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using AColor = Android.Graphics.Color;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
+		[Fact(DisplayName = "PlaceholderColor Initializes Correctly")]
+		public async Task PlaceholderColorInitializesCorrectly()
+		{
+			var searchBar = new SearchBarStub()
+			{
+				Placeholder = "Test",
+				PlaceholderColor = Colors.Yellow
+			};
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.PlaceholderColor, GetNativePlaceholderColor, searchBar.PlaceholderColor);
+		}
+
 		[Fact(DisplayName = "Horizontal TextAlignment Initializes Correctly")]
 		public async Task HorizontalTextAlignmentInitializesCorrectly()
 		{
@@ -88,26 +103,41 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
 		}
 
-		SearchView GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
-			(SearchView)searchBarHandler.NativeView;
+		[Fact]
+		public async Task SearchViewHasEditTextChild()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var view = new SearchView(MauiContext.Context);
+
+				var editText = view.GetFirstChildOfType<EditText>();
+
+				Assert.NotNull(editText);
+			});
+		}
+
+		static SearchView GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
+			searchBarHandler.NativeView;
 
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Query;
 
-		string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
-			GetNativeSearchBar(searchBarHandler).QueryHint;
+		static void SetNativeText(SearchBarHandler searchBarHandler, string text) =>
+			GetNativeSearchBar(searchBarHandler).SetQuery(text, false);
 
-		double GetNativeCharacterSpacing(SearchBarHandler searchBarHandler)
+		Color GetNativeTextColor(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 
 			if (editText != null)
 			{
-				return editText.LetterSpacing;
+				int currentTextColorInt = editText.CurrentTextColor;
+				AColor currentTextColor = new AColor(currentTextColorInt);
+				return currentTextColor.ToColor();
 			}
 
-			return -1;
+			return Colors.Transparent;
 		}
 
 		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(SearchBarHandler searchBarHandler)
@@ -124,37 +154,52 @@ namespace Microsoft.Maui.DeviceTests
 			return editText.Gravity;
 		}
 
-		double GetNativeUnscaledFontSize(SearchBarHandler searchBarHandler)
+		string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
+			GetNativeSearchBar(searchBarHandler).QueryHint;
+
+		Color GetNativePlaceholderColor(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 
-			if (editText == null)
-				return -1;
+			if (editText != null)
+			{
+				int currentHintTextColor = editText.CurrentHintTextColor;
+				AColor currentPlaceholderColorr = new AColor(currentHintTextColor);
+				return currentPlaceholderColorr.ToColor();
+			}
 
-			return editText.TextSize / editText.Resources.DisplayMetrics.Density;
+			return Colors.Transparent;
 		}
 
-		bool GetNativeIsBold(SearchBarHandler searchBarHandler)
+		double GetNativeCharacterSpacing(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 
-			if (editText == null)
-				return false;
+			if (editText != null)
+			{
+				return editText.LetterSpacing;
+			}
 
-			return editText.Typeface.IsBold;
+			return -1;
 		}
 
-		bool GetNativeIsItalic(SearchBarHandler searchBarHandler)
+		Android.Views.TextAlignment GetNativeTextAlignment(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+			return editText.TextAlignment;
+		}
 
-			if (editText == null)
-				return false;
-
-			return editText.Typeface.IsItalic;
+		Task ValidateHasColor(ISearchBar searchBar, Color color, Action action = null)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeSearchBar = GetNativeSearchBar(CreateHandler(searchBar));
+				action?.Invoke();
+				nativeSearchBar.AssertContainsColor(color);
+			});
 		}
 	}
 }

@@ -1,0 +1,26 @@
+﻿<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.TimePickerPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="TimePicker">
+    <views:BasePage.Content>
+        <VerticalStackLayout
+            Margin="12">
+            <Label
+                Text="Default"
+                Style="{StaticResource Headline}"/>
+            <TimePicker/>
+            <Label
+                Text="Disabled"
+                Style="{StaticResource Headline}"/>
+            <TimePicker
+                IsEnabled="False"/>
+            <Label
+                Text="TextColor"
+                Style="{StaticResource Headline}"/>
+            <TimePicker
+                TextColor="Green"/>
+        </VerticalStackLayout>
+    </views:BasePage.Content>
+</views:BasePage>

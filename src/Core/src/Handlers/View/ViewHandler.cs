@@ -1,11 +1,7 @@
-#nullable enable
 using Microsoft.Maui.Graphics;
-using System;
-#if __IOS__
+#if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIView;
-#elif __MACOS__
-using NativeView = AppKit.NSView;
-#elif MONOANDROID
+#elif __ANDROID__
 using NativeView = Android.Views.View;
 #elif WINDOWS
 using NativeView = Microsoft.UI.Xaml.FrameworkElement;
@@ -15,26 +11,50 @@ using NativeView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler : IViewHandler
+	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
-		public static PropertyMapper<IView> ViewMapper = new PropertyMapper<IView>
+		public static IPropertyMapper<IView, IViewHandler> ViewMapper = new PropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
-			[nameof(IView.BackgroundColor)] = MapBackgroundColor,
+			[nameof(IView.Clip)] = MapClip,
+			[nameof(IView.Shadow)] = MapShadow,
+			[nameof(IView.Visibility)] = MapVisibility,
+			[nameof(IView.Background)] = MapBackground,
+			[nameof(IView.FlowDirection)] = MapFlowDirection,
 			[nameof(IView.Width)] = MapWidth,
 			[nameof(IView.Height)] = MapHeight,
+			[nameof(IView.MinimumHeight)] = MapMinimumHeight,
+			[nameof(IView.MaximumHeight)] = MapMaximumHeight,
+			[nameof(IView.MinimumWidth)] = MapMinimumWidth,
+			[nameof(IView.MaximumWidth)] = MapMaximumWidth,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
+			[nameof(IView.Opacity)] = MapOpacity,
 			[nameof(IView.Semantics)] = MapSemantics,
-			Actions = {
-					[nameof(IFrameworkElement.InvalidateMeasure)] = MapInvalidateMeasure
-				}
+			[nameof(IView.TranslationX)] = MapTranslationX,
+			[nameof(IView.TranslationY)] = MapTranslationY,
+			[nameof(IView.Scale)] = MapScale,
+			[nameof(IView.ScaleX)] = MapScaleX,
+			[nameof(IView.ScaleY)] = MapScaleY,
+			[nameof(IView.Rotation)] = MapRotation,
+			[nameof(IView.RotationX)] = MapRotationX,
+			[nameof(IView.RotationY)] = MapRotationY,
+			[nameof(IView.AnchorX)] = MapAnchorX,
+			[nameof(IView.AnchorY)] = MapAnchorY,
+			[nameof(IViewHandler.ContainerView)] = MapContainerView,
 		};
 
-		internal ViewHandler()
+		public static CommandMapper<IView, ViewHandler> ViewCommandMapper = new()
 		{
-		}
+			[nameof(IView.InvalidateMeasure)] = MapInvalidateMeasure,
+			[nameof(IView.Frame)] = MapFrame,
+		};
 
 		bool _hasContainer;
+
+		protected ViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
+			: base(mapper, commandMapper ?? ViewCommandMapper)
+		{
+		}
 
 		public bool HasContainer
 		{
@@ -57,41 +77,55 @@ namespace Microsoft.Maui.Handlers
 
 		protected abstract void RemoveContainer();
 
-		public IMauiContext? MauiContext { get; private set; }
+		public virtual bool NeedsContainer =>
+			VirtualView?.Clip != null || VirtualView?.Shadow != null;
 
-		public IServiceProvider? Services => MauiContext?.Services;
+		public NativeView? ContainerView { get; private protected set; }
 
-		public object? NativeView { get; private protected set; }
+		object? IViewHandler.ContainerView => ContainerView;
 
-		public IView? VirtualView { get; private protected set; }
+		public new NativeView? NativeView
+		{
+			get => (NativeView?)base.NativeView;
+			private protected set => base.NativeView = value;
+		}
 
-		public void SetMauiContext(IMauiContext mauiContext) => MauiContext = mauiContext;
-
-		public abstract void SetVirtualView(IView view);
-
-		public abstract void UpdateValue(string property);
-
-		void IViewHandler.DisconnectHandler() => DisconnectHandler(((NativeView?)NativeView));
+		public new IView? VirtualView
+		{
+			get => (IView?)base.VirtualView;
+			private protected set => base.VirtualView = value;
+		}
 
 		public abstract Size GetDesiredSize(double widthConstraint, double heightConstraint);
 
 		public abstract void NativeArrange(Rectangle frame);
 
-		private protected void ConnectHandler(NativeView? nativeView)
+		private protected abstract NativeView OnCreateNativeView();
+
+		private protected sealed override object OnCreateNativeElement() =>
+			OnCreateNativeView();
+
+#if !NETSTANDARD
+		private protected abstract void OnConnectHandler(NativeView nativeView);
+
+		partial void ConnectingHandler(NativeView? nativeView);
+
+		private protected sealed override void OnConnectHandler(object nativeView)
 		{
+			ConnectingHandler((NativeView)nativeView);
+			OnConnectHandler((NativeView)nativeView);
 		}
 
-		partial void DisconnectingHandler(NativeView? nativeView);
+		private protected abstract void OnDisconnectHandler(NativeView nativeView);
 
-		private protected void DisconnectHandler(NativeView? nativeView)
+		partial void DisconnectingHandler(NativeView nativeView);
+
+		private protected sealed override void OnDisconnectHandler(object nativeView)
 		{
-			DisconnectingHandler(nativeView);
-
-			if (VirtualView != null)
-				VirtualView.Handler = null;
-
-			VirtualView = null;
+			DisconnectingHandler((NativeView)nativeView);
+			OnDisconnectHandler((NativeView)nativeView);
 		}
+#endif
 
 		public static void MapWidth(IViewHandler handler, IView view)
 		{
@@ -103,19 +137,88 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateHeight(view);
 		}
 
+		public static void MapMinimumHeight(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateMinimumHeight(view);
+		}
+
+		public static void MapMaximumHeight(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateMaximumHeight(view);
+		}
+
+		public static void MapMinimumWidth(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateMinimumWidth(view);
+		}
+
+		public static void MapMaximumWidth(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateMaximumWidth(view);
+		}
+
 		public static void MapIsEnabled(IViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateIsEnabled(view);
 		}
 
-		public static void MapBackgroundColor(IViewHandler handler, IView view)
+		public static void MapVisibility(IViewHandler handler, IView view)
 		{
-			((NativeView?)handler.NativeView)?.UpdateBackgroundColor(view);
+			((NativeView?)handler.NativeView)?.UpdateVisibility(view);
+		}
+
+		public static void MapBackground(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateBackground(view);
+		}
+
+		public static void MapFlowDirection(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateFlowDirection(view);
+		}
+
+		public static void MapOpacity(IViewHandler handler, IView view)
+		{
+			((NativeView?)handler.NativeView)?.UpdateOpacity(view);
 		}
 
 		public static void MapAutomationId(IViewHandler handler, IView view)
 		{
 			((NativeView?)handler.NativeView)?.UpdateAutomationId(view);
+		}
+
+		public static void MapClip(IViewHandler handler, IView view)
+		{
+			var clipShape = view.Clip;
+
+			if (clipShape != null)
+			{
+				handler.HasContainer = true;
+			}
+			else
+			{
+				if (handler is ViewHandler viewHandler)
+					handler.HasContainer = viewHandler.NeedsContainer;
+			}
+
+			((NativeView?)handler.ContainerView)?.UpdateClip(view);
+		}
+
+		public static void MapShadow(IViewHandler handler, IView view)
+		{
+			var shadow = view.Shadow;
+
+			if (shadow != null)
+			{
+				handler.HasContainer = true;
+			}
+			else
+			{
+				if (handler is ViewHandler viewHandler)
+					handler.HasContainer = viewHandler.NeedsContainer;
+			}
+
+ 			((NativeView?)handler.ContainerView)?.UpdateShadow(view);
 		}
 
 		static partial void MappingSemantics(IViewHandler handler, IView view);
@@ -126,9 +229,27 @@ namespace Microsoft.Maui.Handlers
 			((NativeView?)handler.NativeView)?.UpdateSemantics(view);
 		}
 
-		public static void MapInvalidateMeasure(IViewHandler handler, IView view)
+		public static void MapInvalidateMeasure(IViewHandler handler, IView view, object? args)
 		{
-			((NativeView?)handler.NativeView)?.InvalidateMeasure(view);
+			(handler.NativeView as NativeView)?.InvalidateMeasure(view);
+		}
+
+		public static void MapContainerView(IViewHandler handler, IView view)
+		{
+			if (handler is ViewHandler viewHandler)
+				handler.HasContainer = viewHandler.NeedsContainer;
+		}
+
+		static partial void MappingFrame(IViewHandler handler, IView view);
+
+		public static void MapFrame(IViewHandler handler, IView view, object? args)
+		{
+			MappingFrame(handler, view);
+#if WINDOWS
+			// Both Clip and Shadow depend on the Control size.
+			MapClip(handler, view);
+			MapShadow(handler, view);
+#endif
 		}
 	}
 }

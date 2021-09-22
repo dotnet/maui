@@ -1,23 +1,24 @@
 ﻿#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : IViewHandler
+	public partial class PageHandler : ContentViewHandler
 	{
-		public static PropertyMapper<IPage, PageHandler> PageMapper = new PropertyMapper<IPage, PageHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IContentView, PageHandler> PageMapper = new PropertyMapper<IContentView, PageHandler>(ContentViewMapper)
 		{
-			[nameof(IPage.Title)] = MapTitle,
+			[nameof(ITitledElement.Title)] = MapTitle
 		};
 
-		public PageHandler() : base(PageMapper)
+		public static CommandMapper<IContentView, PageHandler> PageCommandMapper = new(ContentViewCommandMapper)
+		{
+
+		};
+
+		public PageHandler() : base(PageMapper, PageCommandMapper)
 		{
 
 		}
 
-		public PageHandler(PropertyMapper? mapper = null) : base(mapper ?? PageMapper)
+		public PageHandler(IPropertyMapper? mapper = null) : base(mapper ?? PageMapper)
 		{
 
 		}

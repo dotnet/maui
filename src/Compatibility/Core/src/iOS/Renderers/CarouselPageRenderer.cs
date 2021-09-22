@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
@@ -17,7 +17,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		bool _appeared;
 		Dictionary<Page, UIView> _containerMap;
 		bool _disposed;
-		EventTracker _events;
 		bool _ignoreNativeScrolling;
 		UIScrollView _scrollView;
 		VisualElementTracker _tracker;
@@ -126,8 +125,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			base.ViewDidLoad();
 
 			_tracker = new VisualElementTracker(this);
-			_events = new EventTracker(this);
-			_events.LoadEvents(View);
 
 			_scrollView = new UIScrollView { ShowsHorizontalScrollIndicator = false };
 
@@ -202,12 +199,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					PageController?.SendDisappearing();
 				}
 
-				if (_events != null)
-				{
-					_events.Dispose();
-					_events = null;
-				}
-
 				if (_tracker != null)
 				{
 					_tracker.Dispose();
@@ -271,7 +262,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (_ignoreNativeScrolling || SelectedIndex >= ElementController.LogicalChildren.Count)
 				return;
-						
+
 			var currentPage = (ContentPage)ElementController.LogicalChildren[SelectedIndex];
 			if (_previousPage != currentPage)
 			{

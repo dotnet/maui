@@ -1,0 +1,54 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Microsoft",
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI" ],
+    "identity": "Microsoft.Maui.MauiApp",
+    "groupIdentity": "Microsoft.Maui.App",
+    "name": ".NET MAUI App",
+    "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, and WinUI",
+    "shortName": "maui",
+    "tags": {
+      "language": "C#",
+      "type": "solution"
+    },
+    "sourceName": "MauiApp.1",
+    "sources": [
+      {
+        "source": "./",
+        "target": "./",
+        "copyOnly": [ "**/*.svg", "**/*.ttf" ],
+        "modifiers": [
+          {
+            "condition": "(HostIdentifier != \"dotnetcli\")",
+            "exclude": [
+              "*.sln"
+            ]
+          }
+        ]
+      }
+    ],
+    "preferNameDirectory": true,
+    "guids": [
+      "07CD65EF-6238-4365-AF5D-F6D433967F48",
+      "919dc1f9-17a9-48b3-81f8-0b8016bdfbf7"
+    ],
+    "symbols": {
+      "applicationId": {
+        "type": "parameter",
+        "description": "Overrides the $(ApplicationId) in the project",
+        "datatype": "string",
+        "replaces": "com.companyname.MauiApp.1"
+      },
+      "windowsAppSdkVersion": {
+        "type": "parameter",
+        "dataType": "string",
+        "replaces": "WINDOWSAPPSDK_VERSION",
+        "defaultValue": "WINDOWSAPPSDK_VERSION_VALUE"
+      },
+      "HostIdentifier": {
+        "type": "bind",
+        "binding": "HostIdentifier"
+      }
+    },
+    "defaultName": "MauiApp1"
+  }

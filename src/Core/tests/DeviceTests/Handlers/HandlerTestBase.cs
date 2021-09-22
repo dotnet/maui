@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
@@ -11,33 +13,59 @@ namespace Microsoft.Maui.DeviceTests
 		where TStub : StubBase, IView, new()
 	{
 		IApplication _app;
-		IAppHost _host;
+		MauiApp _mauiApp;
+		IServiceProvider _servicesProvider;
 		IMauiContext _context;
+		static readonly Random rnd = new Random();
 
 		public HandlerTestBase()
 		{
-			var appBuilder = AppHost
-				.CreateDefaultBuilder()
-				.ConfigureImageSources((ctx, services) =>
+			var appBuilder = MauiApp
+				.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(SliderStub), typeof(SliderHandler));
+					handlers.AddHandler(typeof(ButtonStub), typeof(ButtonHandler));
+				})
+				.ConfigureImageSources(services =>
 				{
 					services.AddService<ICountedImageSourceStub, CountedImageSourceServiceStub>();
 				})
-				.ConfigureFonts((ctx, fonts) =>
+				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
+					fonts.AddFont("LobsterTwo-Regular.ttf", "Lobster Two");
+					fonts.AddFont("LobsterTwo-Bold.ttf", "Lobster Two Bold");
+					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
+					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 				});
 
-			_host = appBuilder.Build();
+			_mauiApp = appBuilder.Build();
+			_servicesProvider = _mauiApp.Services;
 
 			_app = new ApplicationStub();
 
-			_context = new ContextStub(_host.Services);
+			_context = new ContextStub(_servicesProvider);
+		}
+
+		public static async Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000)
+		{
+			while ((timeout -= 100) > 0)
+			{
+				if (!exitCondition.Invoke())
+					await Task.Delay(rnd.Next(100, 200));
+				else
+					break;
+			}
+
+			return exitCondition.Invoke();
 		}
 
 		public void Dispose()
 		{
-			_host.Dispose();
-			_host = null;
+			((IDisposable)_mauiApp).Dispose();
+			_mauiApp = null;
+			_servicesProvider = null;
 			_app = null;
 			_context = null;
 		}
@@ -57,6 +85,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			handler.SetVirtualView(view);
 			view.Handler = handler;
+
+			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
+			handler.NativeArrange(view.Frame);
 
 			return handler;
 		}

@@ -1,21 +1,22 @@
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
-    public class BorderEffect : PlatformEffect
-    {
-        protected override void OnAttached ()
-        {
-            Control.SetBackgroundColor (global::Android.Graphics.Color.Aqua);
+	public class BorderEffect : PlatformEffect
+	{
+		protected override void OnAttached()
+		{
+			Control.SetBackgroundColor(global::Android.Graphics.Color.Aqua);
 
-            var childLabel = (Element as ScrollView)?.Content as Label;
-            if (childLabel != null)
-                childLabel.Text = "Success";
-        }
+			var childLabel = (Element as ScrollView)?.Content as Label;
+			if (childLabel != null)
+				childLabel.Text = "Success";
+		}
 
-        protected override void OnDetached ()
-        {
-            Control.SetBackgroundColor(global::Android.Graphics.Color.Beige);
-        }
-    }
+		protected override void OnDetached()
+		{
+			Control.SetBackgroundColor(global::Android.Graphics.Color.Beige);
+		}
+	}
 }

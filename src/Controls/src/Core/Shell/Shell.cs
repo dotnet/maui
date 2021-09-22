@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var element = (Element)bindable;
 
-			while (!Application.IsApplicationOrNull(element))
+			while (!Application.IsApplicationOrWindowOrNull(element))
 			{
 				if (element is Shell shell)
 					shell.NotifyFlyoutBehaviorObservers();
@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls
 			var item = (Element)bindable;
 			var source = item;
 
-			while (!Application.IsApplicationOrNull(item))
+			while (!Application.IsApplicationOrWindowOrNull(item))
 			{
 				if (item is IShellController shell)
 				{
@@ -358,7 +358,7 @@ namespace Microsoft.Maui.Controls
 					target = pivot;
 				}
 
-				while (!Application.IsApplicationOrNull(leaf))
+				while (!Application.IsApplicationOrWindowOrNull(leaf))
 				{
 					if (leaf == target)
 					{
@@ -469,10 +469,13 @@ namespace Microsoft.Maui.Controls
 			var modalStack = shellSection?.Navigation?.ModalStack;
 			var result = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, stack, modalStack);
 
-			SetValueFromRenderer(CurrentStatePropertyKey, result);
-
-			_navigationManager.HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
+			if (result?.Location != oldState?.Location)
+			{
+				SetValueFromRenderer(CurrentStatePropertyKey, result);
+				_navigationManager.HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
+			}
 		}
+
 		ReadOnlyCollection<ShellItem> IShellController.GetItems() =>
 			new ReadOnlyCollection<ShellItem>(((ShellItemCollection)Items).VisibleItemsReadOnly.ToList());
 
@@ -493,6 +496,16 @@ namespace Microsoft.Maui.Controls
 		public Task GoToAsync(ShellNavigationState state, bool animate)
 		{
 			return _navigationManager.GoToAsync(state, animate, false);
+		}
+
+		public Task GoToAsync(ShellNavigationState state, IDictionary<string, object> parameters)
+		{
+			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(parameters));
+		}
+
+		public Task GoToAsync(ShellNavigationState state, bool animate, IDictionary<string, object> parameters)
+		{
+			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
 
 		public void AddLogicalChild(Element element)
@@ -582,32 +595,49 @@ namespace Microsoft.Maui.Controls
 		View _flyoutFooterView;
 		ShellNavigationManager _navigationManager;
 		ShellFlyoutItemsManager _flyoutManager;
+		Page _previousPage;
 
 		ObservableCollection<Element> _logicalChildren = new ObservableCollection<Element>();
 
-		internal override ReadOnlyCollection<Element> LogicalChildrenInternal =>
+		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			new ReadOnlyCollection<Element>(_logicalChildren);
 
 		public Shell()
 		{
 			_navigationManager = new ShellNavigationManager(this);
-			_navigationManager.Navigated += (_, args) =>
-			{
-				OnNavigated(args);
-				Navigated?.Invoke(this, args);
-			};
-
-			_navigationManager.Navigating += (_, args) =>
-			{
-				Navigating?.Invoke(this, args);
-				OnNavigating(args);
-			};
+			_navigationManager.Navigated += (_, args) => SendNavigated(args);
+			_navigationManager.Navigating += (_, args) => SendNavigating(args);
 
 			_flyoutManager = new ShellFlyoutItemsManager(this);
 			Navigation = new NavigationImpl(this);
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
 			InternalChildren.CollectionChanged += OnInternalChildrenCollectionChanged;
+
+			if (Application.Current != null)
+			{
+				this.SetAppThemeColor(Shell.FlyoutBackgroundColorProperty, Colors.White, Colors.Black);
+				this.SetOnAppTheme<Brush>(Shell.FlyoutBackgroundProperty, Brush.White, Brush.Black);
+			}
+		}
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			if (Application.Current == null)
+				return;
+
+			if (args.NewHandler == null)
+				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+
+			if (args.NewHandler != null && args.OldHandler == null)
+				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+		}
+
+		private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+		{
+			ShellController.AppearanceChanged(CurrentPage, false);
 		}
 
 		void Initialize()
@@ -714,7 +744,7 @@ namespace Microsoft.Maui.Controls
 
 		public ShellNavigationState CurrentState => (ShellNavigationState)GetValue(CurrentStateProperty);
 
-		[TypeConverter(typeof(ImageSourceConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 		public ImageSource FlyoutBackgroundImage
 		{
 			get => (ImageSource)GetValue(FlyoutBackgroundImageProperty);
@@ -891,6 +921,28 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool ValidDefaultShellItem(Element child) => !(child is MenuShellItem);
+
+		void SendNavigated(ShellNavigatedEventArgs args)
+		{
+			Navigated?.Invoke(this, args);
+			OnNavigated(args);
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			_previousPage = null;
+		}
+
+		void SendNavigating(ShellNavigatingEventArgs args)
+		{
+			Navigating?.Invoke(this, args);
+			OnNavigating(args);
+
+			if (!args.Cancelled)
+			{
+				_previousPage = CurrentPage;
+				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs());
+			}
+		}
 
 		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
 		{
@@ -1073,7 +1125,7 @@ namespace Microsoft.Maui.Controls
 			bool anySet = false;
 			ShellAppearance result = new ShellAppearance();
 			// Now we walk up
-			while (!Application.IsApplicationOrNull(pivot))
+			while (!Application.IsApplicationOrWindowOrNull(pivot))
 			{
 				if (pivot is ShellContent)
 					foundShellContent = true;
@@ -1198,7 +1250,7 @@ namespace Microsoft.Maui.Controls
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, LogicalChildren);
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IElementController)this).LogicalChildren);
 			if (FlyoutHeaderView != null)
 				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutHeaderView });
 			if (FlyoutFooterView != null)
@@ -1281,7 +1333,7 @@ namespace Microsoft.Maui.Controls
 			string constructorHint = null,
 			[CallerMemberName] string memberName = "")
 		{
-			ExperimentalFlags.VerifyFlagEnabled(nameof(Shell), ExperimentalFlags.ShellUWPExperimental);
+			// ExperimentalFlags.VerifyFlagEnabled(nameof(Shell), ExperimentalFlags.ShellUWPExperimental);
 		}
 
 		class NavigationImpl : NavigationProxy

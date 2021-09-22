@@ -69,6 +69,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			}
 		}
 
+		protected MauiContext MauiContext
+		{
+			get
+			{
+				throw new InvalidOperationException("MauiContext not wired up into Control Gallery yet");
+				//if (_mauiContext == null)
+				//{
+				//	_mauiContext = DependencyService.Resolve<Context>();
+				//}
+
+				//return _mauiContext;
+			}
+		}
+
 		[SetUp]
 		public virtual void Setup()
 		{
@@ -98,8 +112,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			var renderer = element.GetRenderer();
 			if (renderer == null)
 			{
-				renderer = AppCompat.Platform.CreateRendererWithContext(element, context);
-				AppCompat.Platform.SetRenderer(element, renderer);
+				renderer = Platform.CreateRendererWithContext(element, context);
+				Platform.SetRenderer(element, renderer);
 			}
 
 			return renderer;

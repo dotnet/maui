@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Input;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 using System.Text;
+using Microsoft.UI.Input;
 
 namespace Microsoft.Maui
 {
@@ -296,12 +297,11 @@ namespace Microsoft.Maui
 		// handled accordingly.
 		protected override void OnKeyDown(KeyRoutedEventArgs e)
 		{
-			// TODO: MAUI Change for MultiWindow
-			if (IsPassword && Application.Current is MauiWinUIApplication app)
+			if (IsPassword)
 			{
 				// The ctrlDown flag is used to track if the Ctrl key is pressed; if it's actively being used and the most recent
 				// key to trigger OnKeyDown, then treat it as handled.
-				var ctrlDown = app.MainWindow.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+				var ctrlDown = KeyboardInput.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
 
 				// The shift, tab, and directional (Home/End/PgUp/PgDown included) keys can be used to select text and should otherwise
 				// be ignored.

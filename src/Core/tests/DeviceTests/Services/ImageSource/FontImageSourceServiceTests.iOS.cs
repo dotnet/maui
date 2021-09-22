@@ -30,20 +30,20 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task GetImageAsync(string colorHex)
 		{
-			var expectedColor = Color.FromHex(colorHex);
+			var expectedColor = Color.FromArgb(colorHex);
 
-			var host = new AppHostBuilder()
+			var mauiApp = MauiApp.CreateBuilder()
 				.ConfigureFonts()
 				.ConfigureImageSources()
 				.Build();
 
-			var images = host.Services.GetRequiredService<IImageSourceServiceProvider>();
+			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
 			var service = images.GetRequiredImageSourceService<FontImageSourceStub>();
 
 			var imageSource = new FontImageSourceStub
 			{
 				Glyph = "X",
-				Font = Font.Default,
+				Font = Font.Default.WithSize(30),
 				Color = expectedColor,
 			};
 
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task GetImageAsyncWithCustomFont()
 		{
-			var host = new AppHostBuilder()
+			var mauiApp = MauiApp.CreateBuilder()
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("dokdo_regular.ttf", "Dokdo");
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 				.ConfigureImageSources()
 				.Build();
 
-			var images = host.Services.GetRequiredService<IImageSourceServiceProvider>();
+			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
 			var service = images.GetRequiredImageSourceService<FontImageSourceStub>();
 
 			var imageSource = new FontImageSourceStub

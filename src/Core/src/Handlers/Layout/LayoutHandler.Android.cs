@@ -14,9 +14,12 @@ namespace Microsoft.Maui.Handlers
 
 			var viewGroup = new LayoutViewGroup(Context!)
 			{
-				CrossPlatformMeasure = VirtualView.Measure,
-				CrossPlatformArrange = VirtualView.Arrange
+				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
+				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
+
+			// .NET MAUI layouts should not impose clipping on their children	
+			viewGroup.SetClipChildren(false);
 
 			return viewGroup;
 		}
@@ -29,14 +32,12 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.CrossPlatformMeasure = VirtualView.Measure;
-			NativeView.CrossPlatformArrange = VirtualView.Arrange;
+			NativeView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 
-			this.NativeView.RemoveAllViews();
-			foreach (var child in VirtualView.Children)
+			NativeView.RemoveAllViews();
+			foreach (var child in VirtualView)
 			{
-				//var wrap = ViewGroup.LayoutParams.WrapContent;
-				//NativeView.AddView(child.ToNative(MauiContext), new ViewGroup.LayoutParams(wrap, wrap));
 				NativeView.AddView(child.ToNative(MauiContext));
 			}
 		}
@@ -47,7 +48,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			NativeView.AddView(child.ToNative(MauiContext), 0);
+			NativeView.AddView(child.ToNative(MauiContext));
 		}
 
 		public void Remove(IView child)
@@ -59,6 +60,43 @@ namespace Microsoft.Maui.Handlers
 			{
 				NativeView.RemoveView(view);
 			}
+		}
+
+
+		void Clear(LayoutViewGroup nativeView)
+		{
+			nativeView.RemoveAllViews();
+		}
+
+		public void Clear()
+		{
+			Clear(NativeView);
+		}
+
+		public void Insert(int index, IView child)
+		{
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			NativeView.AddView(child.ToNative(MauiContext), index);
+		}
+
+		public void Update(int index, IView child)
+		{
+			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			NativeView.RemoveViewAt(index);
+			NativeView.AddView(child.ToNative(MauiContext), index);
+		}
+
+		protected override void DisconnectHandler(LayoutViewGroup nativeView)
+		{
+			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
+			Clear(nativeView);
+			base.DisconnectHandler(nativeView);
 		}
 	}
 }

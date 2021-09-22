@@ -17,11 +17,11 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task InitializingNullSourceOnlyUpdatesTransparent(string colorHex)
 		{
-			var expectedColor = Color.FromHex(colorHex);
+			var expectedColor = Color.FromArgb(colorHex);
 
 			var image = new ImageStub
 			{
-				BackgroundColor = expectedColor,
+				Background = new SolidPaintStub(expectedColor)
 			};
 
 			await InvokeOnMainThreadAsync(async () =>
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var image = new ImageStub
 			{
-				BackgroundColor = Colors.Black,
+				Background = new SolidPaintStub(Colors.Black),
 				Source = new FileImageSourceStub("red.png"),
 			};
 
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var image = new ImageStub
 			{
-				BackgroundColor = Colors.Black,
+				Background = new SolidPaintStub(Colors.Black),
 				Source = new FileImageSourceStub("red.png"),
 			};
 
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		ImageView GetNativeImageView(ImageHandler imageHandler) =>
-			(ImageView)imageHandler.NativeView;
+			imageHandler.NativeView;
 
 		bool GetNativeIsAnimationPlaying(ImageHandler imageHandler) =>
 			GetNativeImageView(imageHandler).Drawable is IAnimatable animatable && animatable.IsRunning;

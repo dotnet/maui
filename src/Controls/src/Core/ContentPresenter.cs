@@ -1,10 +1,11 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public class ContentPresenter : Layout
+	public class ContentPresenter : Compatibility.Layout, IContentView
 	{
 		public static BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
 			typeof(ContentPresenter), null, propertyChanged: OnContentChanged);
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		public ContentPresenter()
 		{
 			SetBinding(ContentProperty, new Binding(ContentProperty.PropertyName, source: RelativeBindingSource.TemplatedParent,
-				converter: new ContentConverter()));
+				converterParameter: this, converter: new ContentConverter()));
 		}
 
 		public View Content
@@ -20,6 +21,9 @@ namespace Microsoft.Maui.Controls
 			get { return (View)GetValue(ContentProperty); }
 			set { SetValue(ContentProperty, value); }
 		}
+
+		object IContentView.Content => Content;
+		IView IContentView.PresentedContent => Content;
 
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
@@ -32,9 +36,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			double widthRequest = WidthRequest;
 			double heightRequest = HeightRequest;
@@ -91,6 +93,17 @@ namespace Microsoft.Maui.Controls
 				self.InternalChildren.Add(newView);
 				newView.ParentOverride = await TemplateUtilities.FindTemplatedParentAsync((Element)bindable);
 			}
+		}
+
+		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			return this.MeasureContent(widthConstraint, heightConstraint);
+		}
+
+		Size IContentView.CrossPlatformArrange(Rectangle bounds)
+		{
+			this.ArrangeContent(bounds);
+			return bounds.Size;
 		}
 	}
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls
 {
-	[TypeConverter(typeof(ImageSourceConverter))]
+	[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 	public abstract partial class ImageSource : Element
 	{
 		readonly object _synchandle = new object();
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		private protected void OnSourceChanged()
+		protected void OnSourceChanged()
 		{
 			_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(SourceChanged));
 		}
