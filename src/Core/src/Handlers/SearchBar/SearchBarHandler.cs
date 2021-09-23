@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISearchBar.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(ISearchBar.Font)] = MapFont,
 			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+      [nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(ISearchBar.IsReadOnly)] = MapIsReadOnly,
 			[nameof(ISearchBar.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(ISearchBar.MaxLength)] = MapMaxLength,

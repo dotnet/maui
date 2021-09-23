@@ -48,6 +48,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdatePlaceholder(searchBar);
 		}
+			
+		[MissingMapper]
+		public static void MapHorizontalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
+		
+    [MissingMapper]
+		public static void MapVerticalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
 
 		public static void MapPlaceholderColor(SearchBarHandler handler, ISearchBar searchBar)
 		{

@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholderColor(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapFont(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapHorizontalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapVerticalTextAlignment(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapCharacterSpacing(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapCancelButtonColor(IViewHandler handler, ISearchBar searchBar) { }

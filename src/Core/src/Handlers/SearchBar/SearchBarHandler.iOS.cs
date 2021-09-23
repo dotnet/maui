@@ -94,6 +94,11 @@ namespace Microsoft.Maui.Handlers
 			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
 		}
 
+		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(searchBar, handler?._editor);
+		}
+
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);

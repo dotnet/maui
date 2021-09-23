@@ -43,11 +43,37 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = searchBarStub.HorizontalTextAlignment,
-					NativeViewValue = GetNativeTextAlignment(handler)
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
+		[Fact(DisplayName = "Vertical TextAlignment Initializes Correctly")]
+		public async Task VerticalTextAlignmentInitializesCorrectly()
+		{
+			var xplatVerticalTextAlignment = TextAlignment.End;
+
+			var searchBarStub = new SearchBarStub()
+			{
+				Text = "Test",
+				VerticalTextAlignment = xplatVerticalTextAlignment
+			};
+
+			Android.Views.GravityFlags expectedValue = Android.Views.GravityFlags.Bottom;
+
+			var values = await GetValueAsync(searchBarStub, (handler) =>
+			{
+				return new
+				{
+					ViewValue = searchBarStub.VerticalTextAlignment,
+					NativeViewValue = GetNativeVerticalTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
@@ -128,11 +154,24 @@ namespace Microsoft.Maui.DeviceTests
 			return Colors.Transparent;
 		}
 
+		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+			return editText.TextAlignment;
+		}
+
+		Android.Views.GravityFlags GetNativeVerticalTextAlignment(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+			return editText.Gravity;
+		}
+
 		string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).QueryHint;
 
 		Color GetNativePlaceholderColor(SearchBarHandler searchBarHandler)
-
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
