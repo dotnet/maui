@@ -1,5 +1,6 @@
 using System;
 using Android.App;
+using Android.Content;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -41,28 +42,34 @@ namespace Microsoft.Maui
 			return result;
 		}
 
-		public static void SetWindow(this Activity activity, IWindow window, IMauiContext context)
+		public static void SetApplicationHandler(this Application nativeApplication, IApplication application, IMauiApplicationContext context) =>
+			SetHandler(nativeApplication, application, context);
+
+		public static void SetWindowHandler(this Activity activity, IWindow window, IMauiWindowContext context) =>
+			SetHandler(activity, window, context);
+
+		static void SetHandler(this Context nativeElement, IElement element, IMauiContext context)
 		{
-			_ = activity ?? throw new ArgumentNullException(nameof(activity));
-			_ = window ?? throw new ArgumentNullException(nameof(window));
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
 
-			var handler = window.Handler;
+			var handler = element.Handler;
 			if (handler?.MauiContext != null && handler.MauiContext != context)
 				handler = null;
 
 			if (handler == null)
-				handler = context.Handlers.GetHandler(window.GetType());
+				handler = context.Handlers.GetHandler(element.GetType());
 
 			if (handler == null)
-				throw new Exception($"Handler not found for window {window}.");
+				throw new Exception($"Handler not found for window {element}.");
 
 			handler.SetMauiContext(context);
 
-			window.Handler = handler;
+			element.Handler = handler;
 
-			if (handler.VirtualView != window)
-				handler.SetVirtualView(window);
+			if (handler.VirtualView != element)
+				handler.SetVirtualView(element);
 		}
 	}
 }

@@ -10,6 +10,8 @@ namespace Microsoft.Maui
 {
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
+		MauiApplicationContext? _applicationContext;
+
 		WeakReference<IWindow>? _virtualWindow;
 		internal IWindow? VirtualWindow
 		{
@@ -32,6 +34,8 @@ namespace Microsoft.Maui
 		{
 			var mauiApp = CreateMauiApp();
 
+			_applicationContext = new MauiApplicationContext(mauiApp.Services, this);
+
 			Services = mauiApp.Services;
 
 			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
@@ -42,6 +46,8 @@ namespace Microsoft.Maui
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
 			Application = Services.GetRequiredService<IApplication>();
+
+			this.SetApplicationHandler(Application, _applicationContext!);
 
 			var uiWindow = CreateNativeWindow();
 
@@ -65,7 +71,7 @@ namespace Microsoft.Maui
 			var activationState = new ActivationState(mauiContext);
 			var window = Application.CreateWindow(activationState);
 			_virtualWindow = new WeakReference<IWindow>(window);
-			uiWindow.SetWindow(window, mauiContext);
+			uiWindow.SetWindowHandler(window, mauiContext);
 
 			return uiWindow;
 		}

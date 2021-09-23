@@ -74,7 +74,7 @@ namespace Microsoft.Maui
 			}
 
 			_virtualWindow = new WeakReference<IWindow>(window);
-			this.SetWindow(window, mauiContext);
+			this.SetWindowHandler(window, mauiContext);
 		}
 	}
 }

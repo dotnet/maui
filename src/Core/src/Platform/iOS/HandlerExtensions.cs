@@ -1,4 +1,5 @@
 using System;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -45,25 +46,31 @@ namespace Microsoft.Maui
 			return result;
 		}
 
-		public static void SetWindow(this UIWindow nativeWindow, IWindow window, IMauiContext mauiContext)
+		public static void SetApplicationHandler(this UIApplicationDelegate nativeApplication, IApplication application, IMauiApplicationContext context) =>
+			SetHandler(nativeApplication, application, context);
+
+		public static void SetWindowHandler(this UIWindow nativeWindow, IWindow window, IMauiWindowContext context) =>
+			SetHandler(nativeWindow, window, context);
+
+		static void SetHandler(this NSObject nativeElement, IElement element, IMauiContext mauiContext)
 		{
-			_ = nativeWindow ?? throw new ArgumentNullException(nameof(nativeWindow));
-			_ = window ?? throw new ArgumentNullException(nameof(window));
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
 			_ = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
 
-			var handler = window.Handler;
+			var handler = element.Handler;
 			if (handler == null)
-				handler = mauiContext.Handlers.GetHandler(window.GetType());
+				handler = mauiContext.Handlers.GetHandler(element.GetType());
 
 			if (handler == null)
-				throw new Exception($"Handler not found for window {window}.");
+				throw new Exception($"Handler not found for window {element}.");
 
 			handler.SetMauiContext(mauiContext);
 
-			window.Handler = handler;
+			element.Handler = handler;
 
-			if (handler.VirtualView != window)
-				handler.SetVirtualView(window);
+			if (handler.VirtualView != element)
+				handler.SetVirtualView(element);
 		}
 	}
 }
