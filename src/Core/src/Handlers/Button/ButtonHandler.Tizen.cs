@@ -46,9 +46,18 @@ namespace Microsoft.Maui.Handlers
 			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}
 
-		//TODO : Need to impl
-		[MissingMapper]
-		public static void MapImageSource(ButtonHandler handler, IButton image) { }
+		public static void MapImageSource(IButtonHandler handler, IButton image) =>
+			MapImageSourceAsync(handler, image).FireAndForget(handler);
+
+		public static Task MapImageSourceAsync(IButtonHandler handler, IButton image)
+		{
+			if (image.ImageSource == null)
+			{
+				return Task.CompletedTask;
+			}
+
+			return handler.ImageSourceLoader.UpdateImageSourceAsync();
+		}
 
 		[MissingMapper]
 		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button) { }

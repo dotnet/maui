@@ -31,9 +31,9 @@
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('tizen')) != true AND $(TargetFramework.StartsWith('net6.0-tizen')) != true ">
     <Compile Remove="**\**\*.Tizen.cs" />
-    <None Include="**\**\*.Tizen.cs" />
+    <None Include="**\**\*.Tizen.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Remove="**\Tizen\**\*.cs" />
-    <None Include="**\Tizen\**\*.cs" />
+    <None Include="**\Tizen\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
   <ItemGroup Condition="'$(_MauiNoTargetPlatform)' != 'True'">
   <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard')) != true AND '$(TargetFramework)' != 'net6.0'">
