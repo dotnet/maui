@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Platform
 			foreach (PanGestureRecognizer panGesture in
 				view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>(g => g.TouchPoints == pointerCount))
 			{
-				((IPanGestureController)panGesture).SendPan(view, _pixelTranslation(x), _pixelTranslation(y), Application.Current.PanGestureId);
+				((IPanGestureController)panGesture).SendPan(view, _pixelTranslation(x), _pixelTranslation(y), PanGestureRecognizer.CurrentId.Value);
 				result = true;
 			}
 
@@ -44,10 +44,10 @@ namespace Microsoft.Maui.Controls.Platform
 			var result = false;
 			foreach (PanGestureRecognizer panGesture in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>())
 			{
-				((IPanGestureController)panGesture).SendPanCompleted(view, Application.Current.PanGestureId);
+				((IPanGestureController)panGesture).SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
 				result = true;
 			}
-			Application.Current.PanGestureId++;
+			PanGestureRecognizer.CurrentId.Increment();
 			return result;
 		}
 
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls.Platform
 			foreach (PanGestureRecognizer panGesture in
 				view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>(g => g.TouchPoints == pointerCount))
 			{
-				((IPanGestureController)panGesture).SendPanStarted(view, Application.Current.PanGestureId);
+				((IPanGestureController)panGesture).SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 				result = true;
 			}
 			return result;

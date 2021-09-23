@@ -44,11 +44,11 @@ namespace Microsoft.Maui
 		public IView CurrentPage
 			=> _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
 
-		public IMauiContext MauiContext => VirtualView?.Handler?.MauiContext ??
-			throw new InvalidOperationException($"MauiContext cannot be null");
+		public IMauiContext MauiContext { get; }
 
-		public NavigationManager()
+		public NavigationManager(IMauiContext mauiContext)
 		{
+			MauiContext = new ScopedMauiContext(mauiContext, navigationManager: this);
 			BackClick = new ProcessBackClick(this);
 		}
 
@@ -271,7 +271,7 @@ namespace Microsoft.Maui
 			NavigationView = (INavigationView)navigationView;
 			_navigationLayout = nativeView;
 
-			var fragmentManager = _navigationLayout?.Context?.GetFragmentManager();
+			var fragmentManager = MauiContext?.GetFragmentManager();
 			_ = fragmentManager ?? throw new InvalidOperationException($"GetFragmentManager returned null");
 			_ = NavigationView ?? throw new InvalidOperationException($"VirtualView cannot be null");
 
@@ -346,6 +346,10 @@ namespace Microsoft.Maui
 
 		protected virtual void OnDestinationChanged(NavController navController, NavDestination navDestination, Bundle bundle)
 		{
+			if (CurrentPage is ITitledElement titledElement)
+			{
+				Toolbar.Title = titledElement.Title;
+			}
 		}
 
 		class Callbacks :
@@ -372,6 +376,12 @@ namespace Microsoft.Maui
 			{
 				if (f is NavigationViewFragment pf)
 					_navigationManager.OnNavigationViewFragmentResumed(fm, pf);
+
+
+				// This wires up the hardware back button to this fragment
+				f.RequireActivity()
+					.OnBackPressedDispatcher
+					.AddCallback(f, _navigationManager.BackClick);
 			}
 
 			public override void OnFragmentAttached(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f, Context context)
@@ -419,6 +429,5 @@ namespace Microsoft.Maui
 			#endregion
 
 		}
-
 	}
 }

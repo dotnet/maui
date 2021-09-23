@@ -1,9 +1,21 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
 	public partial class Line : IShape
 	{
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == X1Property.PropertyName ||
+				propertyName == Y1Property.PropertyName ||
+				propertyName == X2Property.PropertyName ||
+				propertyName == Y2Property.PropertyName)
+				Handler?.UpdateValue(nameof(IShapeView.Shape));
+		}
+
 		public override PathF GetPath()
 		{
 			var path = new PathF();

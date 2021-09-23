@@ -28,11 +28,37 @@ namespace Microsoft.Maui.DeviceTests
 				return new
 				{
 					ViewValue = searchBarStub.HorizontalTextAlignment,
-					NativeViewValue = GetNativeTextAlignment(handler)
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
 				};
 			});
 
 			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
+		[Fact(DisplayName = "Horizontal TextAlignment Updates Correctly")]
+		public async Task VerticalTextAlignmentInitializesCorrectly()
+		{
+			var xplatVerticalTextAlignment = TextAlignment.End;
+
+			var searchBarStub = new SearchBarStub()
+			{
+				Text = "Test",
+				VerticalTextAlignment = xplatVerticalTextAlignment
+			};
+
+			UIControlContentVerticalAlignment expectedValue = UIControlContentVerticalAlignment.Bottom;
+
+			var values = await GetValueAsync(searchBarStub, (handler) =>
+			{
+				return new
+				{
+					ViewValue = searchBarStub.VerticalTextAlignment,
+					NativeViewValue = GetNativeVerticalTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatVerticalTextAlignment, values.ViewValue);
 			values.NativeViewValue.AssertHasFlag(expectedValue);
 		}
 
@@ -61,11 +87,27 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
 		}
 
-		UISearchBar GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
+		static UISearchBar GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
 			(UISearchBar)searchBarHandler.NativeView;
 
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Text;
+
+		static void SetNativeText(SearchBarHandler searchBarHandler, string text) =>
+			GetNativeSearchBar(searchBarHandler).Text = text;
+
+		static int GetCursorStartPosition(SearchBarHandler searchBarHandler)
+		{
+			var control = searchBarHandler.QueryEditor;
+			return (int)control.GetOffsetFromPosition(control.BeginningOfDocument, control.SelectedTextRange.Start);
+		}
+
+		static void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position)
+		{
+			var control = searchBarHandler.QueryEditor;
+			var endPosition = control.GetPosition(control.BeginningOfDocument, position);
+			control.SelectedTextRange = control.GetTextRange(endPosition, endPosition);
+		}
 
 		Color GetNativeTextColor(SearchBarHandler searchBarHandler)
 		{
@@ -81,7 +123,7 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativePlaceholder(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Placeholder;
 
-		UITextAlignment GetNativeTextAlignment(SearchBarHandler searchBarHandler)
+		UITextAlignment GetNativeHorizontalTextAlignment(SearchBarHandler searchBarHandler)
 		{
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
@@ -90,6 +132,17 @@ namespace Microsoft.Maui.DeviceTests
 				return UITextAlignment.Left;
 
 			return textField.TextAlignment;
+		}
+
+		UIControlContentVerticalAlignment GetNativeVerticalTextAlignment(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return UIControlContentVerticalAlignment.Center;
+
+			return textField.VerticalAlignment;
 		}
 
 		double GetNativeCharacterSpacing(SearchBarHandler searchBarHandler)

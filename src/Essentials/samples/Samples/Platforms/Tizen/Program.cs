@@ -1,6 +1,6 @@
-using Tizen.NET.MaterialComponents;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Tizen.NET.MaterialComponents;
 using Xamarin.Forms.Platform.Tizen;
 
 namespace Samples.Tizen

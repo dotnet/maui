@@ -51,6 +51,21 @@ namespace Microsoft.Maui
 			editText.UpdateFont(searchBar, fontManager);
 		}
 
+		public static void UpdateVerticalTextAlignment(this SearchView searchView, ISearchBar searchBar)
+		{
+			searchView.UpdateVerticalTextAlignment(searchBar, null);
+		}
+
+		public static void UpdateVerticalTextAlignment(this SearchView searchView, ISearchBar searchBar, EditText? editText)
+		{
+			editText ??= searchView.GetFirstChildOfType<EditText>();
+
+			if (editText == null)
+				return;
+
+			editText.UpdateVerticalAlignment(searchBar.VerticalTextAlignment, TextAlignment.Center.ToVerticalGravityFlags());
+    }
+    
 		public static void UpdateMaxLength(this SearchView searchView, ISearchBar searchBar)
 		{
 			searchView.UpdateMaxLength(searchBar.MaxLength, null);

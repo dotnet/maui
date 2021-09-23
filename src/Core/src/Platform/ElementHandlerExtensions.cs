@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 {
 	static class ElementHandlerExtensions
 	{
-		public static IServiceProvider GetServiceProvider(this ElementHandler handler)
+		public static IServiceProvider GetServiceProvider(this IElementHandler handler)
 		{
 			var context = handler.MauiContext ??
 				throw new InvalidOperationException($"Unable to find the context. The {nameof(ElementHandler.MauiContext)} property should have been set by the host.");
@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 			return services;
 		}
 
-		public static T? GetService<T>(this ElementHandler handler, Type type)
+		public static T? GetService<T>(this IElementHandler handler, Type type)
 		{
 			var services = handler.GetServiceProvider();
 
@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 			return (T?)service;
 		}
 
-		public static T? GetService<T>(this ElementHandler handler)
+		public static T? GetService<T>(this IElementHandler handler)
 		{
 			var services = handler.GetServiceProvider();
 
@@ -37,7 +37,7 @@ namespace Microsoft.Maui
 			return service;
 		}
 
-		public static T GetRequiredService<T>(this ElementHandler handler, Type type)
+		public static T GetRequiredService<T>(this IElementHandler handler, Type type)
 			where T : notnull
 		{
 			var services = handler.GetServiceProvider();
@@ -47,7 +47,7 @@ namespace Microsoft.Maui
 			return (T)service;
 		}
 
-		public static T GetRequiredService<T>(this ElementHandler handler)
+		public static T GetRequiredService<T>(this IElementHandler handler)
 			where T : notnull
 		{
 			var services = handler.GetServiceProvider();

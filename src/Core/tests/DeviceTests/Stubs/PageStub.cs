@@ -9,8 +9,21 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		private IView _content;
 		private string _title;
 
-		public IView Content { get => _content; set => this.SetProperty(ref _content, value); }
+		public object Content { get => _content; set => this.SetProperty(ref _content, (IView)value); }
+		public IView PresentedContent => _content;
+
+		public Thickness Padding { get; set; }
 
 		public string Title { get => _title; set => this.SetProperty(ref _title, value); }
+
+		public Size CrossPlatformArrange(Rectangle bounds)
+		{
+			return bounds.Size;
+		}
+
+		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			return new Size(widthConstraint, heightConstraint);
+		}
 	}
 }

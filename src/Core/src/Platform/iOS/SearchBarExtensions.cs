@@ -43,6 +43,21 @@ namespace Microsoft.Maui
 			textField.UpdateFont(textStyle, fontManager);
 		}
 
+		public static void UpdateVerticalTextAlignment(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			uiSearchBar.UpdateVerticalTextAlignment(searchBar, null);
+		}
+
+		public static void UpdateVerticalTextAlignment(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField)
+		{
+			textField ??= uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return;
+
+			textField.VerticalAlignment = searchBar.VerticalTextAlignment.ToNative();
+    }
+    
 		public static void UpdateMaxLength(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			var maxLength = searchBar.MaxLength;

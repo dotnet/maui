@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform.iOS;
 using UIKit;
 
@@ -25,45 +26,46 @@ namespace Microsoft.Maui.Handlers
 			if (NativeView is MauiImageView imageView)
 				imageView.WindowChanged -= OnWindowChanged;
 
-			_sourceManager.Reset();
+			SourceLoader.Reset();
 		}
 
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||
 			base.NeedsContainer;
 
-		public static void MapBackground(ImageHandler handler, IImage image)
+		public static void MapBackground(IImageHandler handler, IImage image)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			handler.GetWrappedNativeView()?.UpdateBackground(image);
 		}
 
-		public static void MapAspect(ImageHandler handler, IImage image) =>
-			handler.NativeView?.UpdateAspect(image);
+		public static void MapAspect(IImageHandler handler, IImage image) =>
+			handler.TypedNativeView?.UpdateAspect(image);
 
-		public static void MapIsAnimationPlaying(ImageHandler handler, IImage image) =>
-			handler.NativeView?.UpdateIsAnimationPlaying(image);
+		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) =>
+			handler.TypedNativeView?.UpdateIsAnimationPlaying(image);
 
-		public static void MapSource(ImageHandler handler, IImage image) =>
+		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static async Task MapSourceAsync(ImageHandler handler, IImage image)
+		public static Task MapSourceAsync(IImageHandler handler, IImage image)
 		{
 			if (handler.NativeView == null)
-				return;
+				return Task.CompletedTask;
 
-			var token = handler._sourceManager.BeginLoad();
+			handler.TypedNativeView.Clear();
+			return handler.SourceLoader.UpdateImageSourceAsync();
+		}
 
-			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-			var result = await handler.NativeView.UpdateSourceAsync(image, provider, token);
-
-			handler._sourceManager.CompleteLoad(result);
+		void OnSetImageSource(UIImage? obj)
+		{
+			NativeView.Image = obj;
 		}
 
 		void OnWindowChanged(object? sender, EventArgs e)
 		{
-			if (_sourceManager.IsResolutionDependent)
+			if (SourceLoader.SourceManager.IsResolutionDependent)
 				UpdateValue(nameof(IImage.Source));
 		}
 	}

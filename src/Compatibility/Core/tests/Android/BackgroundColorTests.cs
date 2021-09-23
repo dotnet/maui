@@ -2,15 +2,15 @@ using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
-using NUnit.Framework;
-using NUnit.Framework.Internal;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Graphics;
+using NUnit.Framework;
+using NUnit.Framework.Internal;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
 	[TestFixture]
-	public class BackgroundColorTests : PlatformTestFixture 
+	public class BackgroundColorTests : PlatformTestFixture
 	{
 		static IEnumerable TestCases
 		{
@@ -30,11 +30,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		[Description("Button background color should match renderer background color")]
 		public async Task ButtonBackgroundColorConsistent()
 		{
-			var button = new Button 
-			{ 
+			var button = new Button
+			{
 				Text = "      ",
-				HeightRequest = 100, WidthRequest = 100,
-				BackgroundColor = Colors.AliceBlue 
+				HeightRequest = 100,
+				WidthRequest = 100,
+				BackgroundColor = Colors.AliceBlue
 			};
 
 			var expectedColor = button.BackgroundColor.ToAndroid();

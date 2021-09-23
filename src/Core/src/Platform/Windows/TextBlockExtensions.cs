@@ -26,13 +26,13 @@ namespace Microsoft.Maui
 			nativeControl.UpdateTextPlainText(label);
 		}
 
-		public static void UpdateTextColor(this TextBlock nativeControl, IText text) =>
+		public static void UpdateTextColor(this TextBlock nativeControl, ITextStyle text) =>
 			nativeControl.UpdateProperty(TextBlock.ForegroundProperty, text.TextColor);
 
 		public static void UpdatePadding(this TextBlock nativeControl, ILabel label) =>
 			nativeControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToNative());
 
-		public static void UpdateCharacterSpacing(this TextBlock nativeControl, ILabel label)
+		public static void UpdateCharacterSpacing(this TextBlock nativeControl, ITextStyle label)
 		{
 			nativeControl.CharacterSpacing = label.CharacterSpacing.ToEm();
 		}
@@ -173,7 +173,7 @@ namespace Microsoft.Maui
 		internal static void DetermineTruncatedTextWrapping(this TextBlock textBlock) =>
 			textBlock.TextWrapping = textBlock.MaxLines > 1 ? TextWrapping.Wrap : TextWrapping.NoWrap;
 
-		internal static void UpdateTextPlainText(this TextBlock nativeControl, ILabel label)
+		internal static void UpdateTextPlainText(this TextBlock nativeControl, IText label)
 		{
 			nativeControl.Text = label.Text;
 		}

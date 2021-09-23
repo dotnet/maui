@@ -7,7 +7,7 @@ using static Microsoft.Maui.Controls.Compatibility.UITests.ParsingUtils;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
 	[TestFixture]
-	public class RotationTests : PlatformTestFixture 
+	public class RotationTests : PlatformTestFixture
 	{
 		static IEnumerable RotationXCases
 		{

@@ -40,6 +40,11 @@ namespace Microsoft.Maui
 		IShape? Clip { get; }
 
 		/// <summary>
+		/// Paints a shadow around the target View.
+		/// </summary>
+		IShadow? Shadow { get; }
+
+		/// <summary>
 		/// Gets a value indicating whether this View is enabled in the user interface. 
 		/// </summary>
 		bool IsEnabled { get; }

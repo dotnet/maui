@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Content is IView view)
 			{
-				view.Measure(widthConstraint, heightConstraint);
+				_ = view.Measure(widthConstraint, heightConstraint);
 			}
 
 			return new Size(widthConstraint, heightConstraint);

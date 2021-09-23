@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 			protected set => base.ContainerView = value;
 		}
 
-		UIViewController? INativeViewHandler.ViewController => null;
+		public UIViewController? ViewController { get; set; }
 
 		public override void NativeArrange(Rectangle rect)
 		{

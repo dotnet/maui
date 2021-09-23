@@ -21,9 +21,6 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(FramePage), "Frame",
 				"The Frame class derives from ContentView and displays a border, or frame, around its child."),
 
-			new SectionModel(typeof(IndicatorViewPage), "IndicatorView",
-				"IndicatorView displays indicators that represent the number of items in a CarouselView. Set the CarouselView.IndicatorView property to the IndicatorView object to display indicators for the CarouselView."),
-
 			new SectionModel(typeof(ListViewPage), "ListView",
 				"ListView derives from ItemsView and displays a scrollable list of selectable data items."),
 
@@ -33,8 +30,8 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(TableViewPage), "TableView",
 				"TableView displays a list of rows of type Cell with optional headers and subheaders. Set the Root property to an object of type TableRoot, and add TableSection objects to that TableRoot. Each TableSection is a collection of Cell objects."),
 
-			new SectionModel(typeof(WebViewPage), "WebView",
-				"WebView displays Web pages or HTML content."),
+			new SectionModel(typeof(TabbedPageGallery), "TabbedPage",
+				"Display pages as a set of Tabs."),
 		};
 	}
 }

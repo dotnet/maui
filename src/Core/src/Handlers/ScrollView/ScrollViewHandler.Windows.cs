@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.NativeView == null || handler.MauiContext == null || scrollView.Content == null)
 				return;
 
-			handler.NativeView.Content = scrollView.Content.ToNative(handler.MauiContext);
+			handler.NativeView.Content = scrollView.PresentedContent?.ToNative(handler.MauiContext);
 		}
 
 		public static void MapHorizontalScrollBarVisibility(ScrollViewHandler handler, IScrollView scrollView)

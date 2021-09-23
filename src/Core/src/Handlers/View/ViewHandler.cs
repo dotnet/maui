@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.Clip)] = MapClip,
+			[nameof(IView.Shadow)] = MapShadow,
 			[nameof(IView.Visibility)] = MapVisibility,
 			[nameof(IView.Background)] = MapBackground,
 			[nameof(IView.FlowDirection)] = MapFlowDirection,
@@ -77,11 +78,7 @@ namespace Microsoft.Maui.Handlers
 		protected abstract void RemoveContainer();
 
 		public virtual bool NeedsContainer =>
-#if WINDOWS
-			false;
-#else
-			VirtualView?.Clip != null;
-#endif
+			VirtualView?.Clip != null || VirtualView?.Shadow != null;
 
 		public NativeView? ContainerView { get; private protected set; }
 
@@ -192,11 +189,36 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapClip(IViewHandler handler, IView view)
 		{
-#if WINDOWS
-			((NativeView?)handler.NativeView)?.UpdateClip(view);
-#else
-			handler.GetWrappedNativeView()?.UpdateClip(view);
-#endif
+			var clipShape = view.Clip;
+
+			if (clipShape != null)
+			{
+				handler.HasContainer = true;
+			}
+			else
+			{
+				if (handler is ViewHandler viewHandler)
+					handler.HasContainer = viewHandler.NeedsContainer;
+			}
+
+			((NativeView?)handler.ContainerView)?.UpdateClip(view);
+		}
+
+		public static void MapShadow(IViewHandler handler, IView view)
+		{
+			var shadow = view.Shadow;
+
+			if (shadow != null)
+			{
+				handler.HasContainer = true;
+			}
+			else
+			{
+				if (handler is ViewHandler viewHandler)
+					handler.HasContainer = viewHandler.NeedsContainer;
+			}
+
+ 			((NativeView?)handler.ContainerView)?.UpdateShadow(view);
 		}
 
 		static partial void MappingSemantics(IViewHandler handler, IView view);
@@ -224,7 +246,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			MappingFrame(handler, view);
 #if WINDOWS
+			// Both Clip and Shadow depend on the Control size.
 			MapClip(handler, view);
+			MapShadow(handler, view);
 #endif
 		}
 	}

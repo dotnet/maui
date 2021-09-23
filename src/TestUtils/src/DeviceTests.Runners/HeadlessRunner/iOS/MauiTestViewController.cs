@@ -1,6 +1,6 @@
 ﻿#nullable enable
-using UIKit;
 using Microsoft.Extensions.DependencyInjection;
+using UIKit;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {

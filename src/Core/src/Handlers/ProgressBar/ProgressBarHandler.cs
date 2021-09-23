@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Handlers
 		public static IPropertyMapper<IProgress, ProgressBarHandler> ProgressMapper = new PropertyMapper<IProgress, ProgressBarHandler>(ViewHandler.ViewMapper)
 		{
 			[nameof(IProgress.Progress)] = MapProgress,
+			[nameof(IProgress.ProgressColor)] = MapProgressColor
 		};
 
 		public ProgressBarHandler() : base(ProgressMapper)

@@ -5,17 +5,17 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
-using UIKit;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
-using IOPath = System.IO.Path;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
-using Size = Microsoft.Maui.Graphics.Size;
 using Microsoft.Maui.Controls.Platform;
+using UIKit;
+using IOPath = System.IO.Path;
+using Size = Microsoft.Maui.Graphics.Size;
 
 [assembly: Dependency(typeof(TestCloudService))]
 [assembly: Dependency(typeof(CacheService))]
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			page.NativeControlsAdded = true;
 		}
 
-#region Stuff for repro of Bugzilla case 40911
+		#region Stuff for repro of Bugzilla case 40911
 
 		void SetUp40911Test(Bugzilla40911 page)
 		{
@@ -341,7 +341,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			vc.PresentViewController(loginViewController, true, null);
 		}
 
-#endregion
+		#endregion
 
 		[Export("navigateToTest:")]
 		public string NavigateToTest(string test)

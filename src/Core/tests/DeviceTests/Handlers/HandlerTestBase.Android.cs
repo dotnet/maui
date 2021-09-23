@@ -121,7 +121,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory]
 		[InlineData(0)]
 		[InlineData(100)]
-		public async Task MinimumHeightInitializes(double minHeight) 
+		public async Task MinimumHeightInitializes(double minHeight)
 		{
 			var view = new TStub()
 			{

@@ -72,5 +72,51 @@ namespace Microsoft.Maui.Graphics
 
 		static bool IsValid(this GradientPaint? gradienPaint) =>
 			gradienPaint?.GradientStops?.Length > 0;
+
+		internal static GradientData GetGradientPaintData(GradientPaint gradientPaint)
+		{
+			var orderStops = gradientPaint.GradientStops;
+
+			var data = new GradientData(orderStops.Length);
+
+			int count = 0;
+			foreach (var orderStop in orderStops)
+			{
+				data.Colors[count] = orderStop.Color.ToNative().ToArgb();
+				data.Offsets[count] = orderStop.Offset;
+				count++;
+			}
+
+			return data;
+		}
+
+		internal static LinearGradientShaderFactory GetLinearGradientShaderFactory(LinearGradientPaint linearGradientPaint)
+		{
+			var p1 = linearGradientPaint.StartPoint;
+			var x1 = (float)p1.X;
+			var y1 = (float)p1.Y;
+
+			var p2 = linearGradientPaint.EndPoint;
+			var x2 = (float)p2.X;
+			var y2 = (float)p2.Y;
+			var data = GetGradientPaintData(linearGradientPaint);
+			var linearGradientShaderFactory = new LinearGradientShaderFactory(new LinearGradientData(data.Colors, data.Offsets, x1, y1, x2, y2));
+
+			return linearGradientShaderFactory;
+		}
+
+		internal static RadialGradientShaderFactory GetRadialGradientShaderFactory(RadialGradientPaint radialGradientPaint)
+		{
+			var center = radialGradientPaint.Center;
+			float centerX = (float)center.X;
+			float centerY = (float)center.Y;
+			float radius = (float)radialGradientPaint.Radius;
+
+			var data = PaintExtensions.GetGradientPaintData(radialGradientPaint);
+			var shader = new RadialGradientData(data.Colors, data.Offsets, centerX, centerY, radius);
+
+			var radialGradientShaderFactory = new RadialGradientShaderFactory(shader);
+			return radialGradientShaderFactory;
+		}
 	}
 }
