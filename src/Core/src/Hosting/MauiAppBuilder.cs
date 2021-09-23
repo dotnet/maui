@@ -20,7 +20,8 @@ namespace Microsoft.Maui.Hosting
 		private readonly HostBuilder _hostBuilder = new();
 		private readonly BootstrapHostBuilder _bootstrapHostBuilder;
 		private readonly MauiApplicationServiceCollection _services = new();
-
+		private readonly LoggingBuilder _logging;
+		private readonly ConfigureHostBuilder _host;
 		private MauiApp? _builtApplication;
 
 		internal MauiAppBuilder(bool useDefaults = true)
@@ -39,8 +40,8 @@ namespace Microsoft.Maui.Hosting
 			// This is the application configuration
 			var hostContext = _bootstrapHostBuilder.RunDefaultCallbacks(Configuration, _hostBuilder);
 
-			Logging = new LoggingBuilder(Services);
-			Host = new ConfigureHostBuilder(hostContext, Configuration, Services);
+			_logging = new LoggingBuilder(Services);
+			_host = new ConfigureHostBuilder(hostContext, Configuration, Services);
 
 			if (useDefaults)
 			{
@@ -67,13 +68,13 @@ namespace Microsoft.Maui.Hosting
 		/// <summary>
 		/// A collection of logging providers for the application to compose. This is useful for adding new logging providers.
 		/// </summary>
-		public ILoggingBuilder Logging { get; }
+		public ILoggingBuilder Logging => _logging;
 
 		/// <summary>
 		/// An <see cref="IHostBuilder"/> for configuring host specific properties, but not building.
 		/// To build after configuration, call <see cref="Build"/>.
 		/// </summary>
-		public ConfigureHostBuilder Host { get; }
+		public IHostBuilder Host => _host;
 
 		/// <summary>
 		/// Builds the <see cref="MauiApp"/>.
@@ -116,7 +117,7 @@ namespace Microsoft.Maui.Hosting
 			});
 
 			// Run the other callbacks on the final host builder
-			Host.RunDeferredCallbacks(_hostBuilder);
+			_host.RunDeferredCallbacks(_hostBuilder);
 
 			_builtApplication = new MauiApp(_hostBuilder.Build());
 
