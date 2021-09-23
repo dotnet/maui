@@ -220,7 +220,11 @@ namespace Maui.Controls.Sample
 #endif
 				});
 
-			return appBuilder.Build();
+			return appBuilder
+#if (__ANDROID__ || __IOS__ || WINDOWS) && !MACCATALYST
+				.UseVirtualListView()
+#endif
+				.Build();
 		}
 	}
 }

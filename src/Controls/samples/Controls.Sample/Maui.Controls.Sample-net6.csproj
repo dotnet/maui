@@ -57,7 +57,10 @@
     <MauiFont Include="Resources\Fonts\*" />
     <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
   </ItemGroup>
-
+  <ItemGroup Condition="$(TargetFramework.Contains('-android')) != true AND $(TargetFramework.Contains('-ios')) != true AND $(TargetFramework.Contains('-windows')) != true">
+    <Compile Remove="VirtualListView\**" />
+  </ItemGroup>
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
+
 
 </Project>
