@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
@@ -36,6 +36,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <MauiImage Include="Resources\Images\*" />
+    <MauiImage Update="Resources\Images\*.gif" Resize="false" />
+    <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
+    <MauiAsset Include="Resources\Raw\*" Link="%(Filename)%(Extension)" />
+    <MauiSplashScreen Include="Resources\AppIcons\appicon_foreground.svg" Color="#FF69B4" />
     <ProjectReference Include="..\Controls.Sample\Maui.Controls.Sample-net6.csproj" />
   </ItemGroup>
 

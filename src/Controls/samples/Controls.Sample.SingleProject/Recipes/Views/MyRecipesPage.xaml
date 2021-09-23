@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Recipes.Views.MyRecipesPage"
+             Title="{Binding Title}"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             xmlns:vm="clr-namespace:Recipes.ViewModels"
+             xmlns:vlv="clr-namespace:Microsoft.Maui.Controls"
+             xmlns:local="clr-namespace:Recipes">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <local:EvenIndexBackgroundConverter x:Key="evenIndexBackgroundConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="New" Command="{Binding NewItemCommand}" />
+    </ContentPage.ToolbarItems>
+    <StackLayout Margin="20">
+        <Label Text="Your recipes" SemanticProperties.HeadingLevel="Level1" FontSize="30" FontAttributes="Bold" TextColor="Black"/>
+        <vlv:VirtualListView
+            x:Name="vMyRecipesListView"
+            WidthRequest="350"
+            HeightRequest="570"
+			HorizontalOptions="FillAndExpand"
+			VerticalOptions="FillAndExpand"
+			Adapter="{Binding Adapter}"
+            Orientation="Horizontal"
+			SelectionMode="None">
+            <vlv:VirtualListView.ItemTemplate>
+                <DataTemplate>
+                    <vlv:VirtualViewCell  x:Name="self">
+                        <Grid RowDefinitions="*, Auto" 
+                              Padding="0,0,20,0" 
+                              HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" 
+                              Background="{Binding Source={x:Reference self}, Path=SectionIndex, Converter={StaticResource evenIndexBackgroundConverter}}"
+                              SemanticProperties.Description="{Binding RecipeName}">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="MyRecipesPage_Tapped" NumberOfTapsRequired="1"  />
+                            </Grid.GestureRecognizers>
+                            <Image Source="{Binding ImageUrl}" VerticalOptions="FillAndExpand" WidthRequest="340" Aspect="AspectFill"/>
+                            <Label Grid.Row="1"  x:Name="recipeName" Padding="10" Text="{Binding RecipeName}" LineBreakMode="WordWrap" MaxLines="3" Style="{DynamicResource ListItemTextStyle}" FontSize="24" VerticalTextAlignment="Center" TextColor="Black" FontAttributes="Bold" BackgroundColor="White" />
+                        </Grid>
+                    </vlv:VirtualViewCell>
+                </DataTemplate>
+            </vlv:VirtualListView.ItemTemplate>
+        </vlv:VirtualListView>
+    </StackLayout>
+</ContentPage>

@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Recipes.Views.RecipeSearchPage"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             xmlns:vm="clr-namespace:Recipes.ViewModels"
+             xmlns:vlv="clr-namespace:Microsoft.Maui.Controls"
+             Title="{Binding Title}" xmlns:local="clr-namespace:Recipes">
+    
+    <Grid RowDefinitions="Auto,Auto,*" Margin="5,5,5,0">
+        
+        <SearchBar GridLayout.Row="0" x:Name="searchBar"
+                   ios:SearchBar.SearchBarStyle="Default"
+                   BackgroundColor="White"
+                   Placeholder="Search recipes"
+                   CancelButtonColor="{StaticResource Primary}"
+                   Text="{Binding SearchQuery}"
+                   PlaceholderColor="Gray"
+                   TextColor="Black"
+                   SearchCommand="{Binding SearchCommand}"
+                   SearchCommandParameter="{Binding Text, Source={x:Reference searchBar}}"/>
+        
+        <Label GridLayout.Row="1" Text="{Binding NoResultsLabel}" IsVisible="{Binding NoResultsLabelVisible}" Padding="20,10,20,0" HorizontalTextAlignment="Center" FontAttributes="Italic" TextColor="{StaticResource Primary}"/>
+
+        <vlv:VirtualListView
+            GridLayout.Row="2"
+			HorizontalOptions="FillAndExpand"
+			VerticalOptions="FillAndExpand"
+			Adapter="{Binding Adapter}"
+            x:Name="vListView"
+			SelectionMode="None">
+            <vlv:VirtualListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid RowDefinitions="*, Auto" HeightRequest="220" Padding="0,0,0,20" SemanticProperties.Description="{Binding Recipe.RecipeName}">
+
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="RecipeSearchPage_Tapped" NumberOfTapsRequired="1"  />
+                        </Grid.GestureRecognizers>
+
+                        <Image Source="{Binding Recipe.ImageUrl}" VerticalOptions="FillAndExpand" Aspect="AspectFill"/>
+                        <Label Grid.Row="1"  x:Name="recipeName" Padding="10" Text="{Binding Recipe.RecipeName}" LineBreakMode="WordWrap" MaxLines="3" Style="{DynamicResource ListItemTextStyle}" FontSize="16" VerticalTextAlignment="Center" TextColor="Black" FontAttributes="Bold" BackgroundColor="White"/>
+                    </Grid>
+                </DataTemplate>
+            </vlv:VirtualListView.ItemTemplate>
+        </vlv:VirtualListView>
+    </Grid>
+</ContentPage>

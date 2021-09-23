@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:xct="http://xamarin.com/schemas/2020/toolkit" x:Class="Recipes.Views.HitDetailPage" Title="{Binding Title}" Visual="Material">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Add to My Recipes" Command="{Binding AddItemCommand}" Clicked="AddItem_Clicked"/>
+    </ContentPage.ToolbarItems>
+    <Grid Margin="15">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="3*" />
+            <RowDefinition Height="7*" />
+        </Grid.RowDefinitions>
+        <StackLayout Grid.Column="0" Grid.Row="0" VerticalOptions="Fill" HorizontalOptions="Fill" Margin="0,0,0,10" BackgroundColor="White">
+            <Image Source="{Binding ImageUrl}" VerticalOptions="FillAndExpand" Aspect="AspectFill" IsVisible="{Binding ImageUrlVisible}" />
+            <Label Text="{Binding RecipeName}" SemanticProperties.HeadingLevel="Level1" FontSize="25" FontAttributes="Bold" IsVisible="{Binding RecipeNameVisible}" TextColor="Black" MaxLines="3" Padding="15,10" BackgroundColor="White"/>
+        </StackLayout>
+        <ScrollView Grid.Column="0" Grid.Row="1" Padding="0,5,0,0" BackgroundColor="White">
+            <StackLayout>
+                <Frame Background="{StaticResource BlueGradient}" CornerRadius="10" HasShadow="False" Margin="0,5">
+                    <StackLayout Margin="2">
+                        <Label Text="Ingredients:" SemanticProperties.HeadingLevel="Level2" TextDecorations="Underline" FontSize="Medium" TextColor="{StaticResource Primary}"/>
+                        <Label Text="{Binding Ingredients}" FontSize="Small" IsVisible="{Binding IngredientsVisible}" TextColor="Black"/>
+                    </StackLayout>
+                </Frame>
+                <Frame Background="{StaticResource BlueGradient}" CornerRadius="10" HasShadow="False">
+                    <StackLayout Margin="2">
+                        <Label Text="Recipe:" SemanticProperties.HeadingLevel="Level2" TextDecorations="Underline" FontSize="Medium" TextColor="{StaticResource Primary}"/>
+                        <Label Text="{Binding RecipeBody}" FontSize="Small" IsVisible="{Binding RecipeBodyVisible}" TextColor="Black"/>
+                        <Label FormattedText="{Binding RecipeUrl}" FontSize="Small" IsVisible="{Binding RecipeUrlVisible}" TextColor="Black" AutomationProperties.IsInAccessibleTree="True"/>
+                    </StackLayout>
+                </Frame>
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
