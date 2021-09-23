@@ -173,11 +173,11 @@ stages:
                 flattenFolders: true
             - task: CopyFiles@2
               condition: always()
-              displayName: 'Copy rollbacks to staging'
+              displayName: 'Copy metadata to staging'
               inputs:
                 SourceFolder: artifacts
                 Contents: |
-                  rollbacks/**
+                  metadata/**
                 TargetFolder: $(build.artifactstagingdirectory)
             - task: CopyFiles@2
               displayName: 'Copy Log Files'
