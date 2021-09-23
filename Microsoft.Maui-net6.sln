@@ -106,7 +106,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.DeviceTests.Sampl
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Benchmarks", "src\Core\tests\Benchmarks\Core.Benchmarks.csproj", "{33B599D2-B231-4D17-8957-397E24B0FE33}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Benchmarks", "src\Core\tests\Benchmarks\Core.Benchmarks-net6.csproj", "{33B599D2-B231-4D17-8957-397E24B0FE33}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.DeviceTests", "src\Core\tests\DeviceTests\Core.DeviceTests.csproj", "{A9D5F998-78D3-4DEE-883F-510A7C3AA587}"
 EndProject
