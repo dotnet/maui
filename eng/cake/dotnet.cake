@@ -88,6 +88,8 @@ Task("dotnet-templates")
 
         // Create an empty NuGet.config
         StartProcess(dn, "new nugetconfig -o ../templatesTest/");
+        // NOTE: this should be temporary until 'library-packs' are working for .msi-based installs
+        StartProcess(dn, "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json --name dotnet6 --configfile ../templatesTest/nuget.config");
         var properties = new Dictionary<string, string> {
             // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
             { "RestoreNoCache", "true" },
