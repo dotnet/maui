@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static void Init(IActivationState state, InitializationOptions? options = null)
 		{
-			SetupInit(state.Context, state.Context.Window, maybeOptions: options);
+			SetupInit(state.Context, (state.Context as IMauiWindowContext)?.Window, maybeOptions: options);
 		}
 
 		public static void Init(

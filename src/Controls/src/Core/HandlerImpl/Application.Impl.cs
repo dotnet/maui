@@ -33,6 +33,11 @@ namespace Microsoft.Maui.Controls
 			Current?.TriggerThemeChanged(new AppThemeChangedEventArgs(Current.RequestedTheme));
 		}
 
+		void IApplication.RequestTerminate()
+		{
+			Handler?.Invoke(nameof(IApplication.RequestTerminate));
+		}
+
 		protected virtual Window CreateWindow(IActivationState activationState)
 		{
 			if (Windows.Count > 0)

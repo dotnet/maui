@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 
 		public void Quit()
 		{
-			Device.PlatformServices?.QuitApplication();
+			(this as IApplication).RequestTerminate();
 		}
 
 		public IAppLinks AppLinks

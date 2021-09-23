@@ -880,11 +880,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return false;
 			}
 
-			public void QuitApplication()
-			{
-				Internals.Log.Warning(nameof(AndroidPlatformServices), "Platform doesn't implement QuitApp");
-			}
-
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
 				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);

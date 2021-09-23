@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.Hosting
 #if WINDOWS || __ANDROID__
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif
+			{ typeof(Application), typeof(ApplicationHandler) },
 			{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
 			{ typeof(BoxView), typeof(BoxViewHandler) },
 			{ typeof(Button), typeof(ButtonHandler) },

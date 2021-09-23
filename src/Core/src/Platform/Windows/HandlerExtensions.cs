@@ -37,25 +37,31 @@ namespace Microsoft.Maui
 			return result;
 		}
 
-		public static void SetWindow(this UI.Xaml.Window nativeWindow, IWindow window, IMauiContext context)
+		public static void SetApplicationHandler(this UI.Xaml.Application nativeApplication, IApplication application, IMauiApplicationContext context) =>
+			SetHandler(nativeApplication, application, context);
+
+		public static void SetWindowHandler(this UI.Xaml.Window nativeWindow, IWindow window, IMauiWindowContext context) =>
+			SetHandler(nativeWindow, window, context);
+
+		static void SetHandler(this WinRT.IWinRTObject nativeElement, IElement element, IMauiContext context)
 		{
-			_ = nativeWindow ?? throw new ArgumentNullException(nameof(nativeWindow));
-			_ = window ?? throw new ArgumentNullException(nameof(window));
+			_ = nativeElement ?? throw new ArgumentNullException(nameof(nativeElement));
+			_ = element ?? throw new ArgumentNullException(nameof(element));
 			_ = context ?? throw new ArgumentNullException(nameof(context));
 
-			var handler = window.Handler;
+			var handler = element.Handler;
 			if (handler == null)
-				handler = context.Handlers.GetHandler(window.GetType());
+				handler = context.Handlers.GetHandler(element.GetType());
 
 			if (handler == null)
-				throw new Exception($"Handler not found for window {window}.");
+				throw new Exception($"Handler not found for window {element}.");
 
 			handler.SetMauiContext(context);
 
-			window.Handler = handler;
+			element.Handler = handler;
 
-			if (handler.VirtualView != window)
-				handler.SetVirtualView(window);
+			if (handler.VirtualView != element)
+				handler.SetVirtualView(element);
 		}
 	}
 }

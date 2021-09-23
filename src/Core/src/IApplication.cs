@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Class that represents a cross-platform .NET MAUI application.
 	/// </summary>
-	public interface IApplication
+	public interface IApplication : IElement
 	{
 		/// <summary>
 		/// Gets the instantiated windows in an application.
@@ -23,5 +23,7 @@ namespace Microsoft.Maui
 		/// Notify a theme change.
 		/// </summary>
 		void ThemeChanged();
+
+		void RequestTerminate();
 	}
 }

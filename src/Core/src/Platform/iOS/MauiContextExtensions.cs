@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
 	internal static class MauiContextExtensions
 	{
 		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
 		{
-			var window = mauiContext.Window;
+			var window = (mauiContext as IMauiWindowContext)?.Window;
 			if (window == null)
 				return FlowDirection.LeftToRight;
 

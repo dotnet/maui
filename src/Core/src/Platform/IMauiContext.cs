@@ -11,7 +11,21 @@ namespace Microsoft.Maui
 
 #if __ANDROID__
 		global::Android.Content.Context? Context { get; }
-#elif __IOS__
+#endif
+	}
+
+	public interface IMauiApplicationContext : IMauiContext
+	{
+#if __IOS__
+		UIKit.UIApplicationDelegate? ApplicationDelegate { get; }
+#elif WINDOWS
+		UI.Xaml.Application? Application { get; }
+#endif
+	}
+
+	public interface IMauiWindowContext : IMauiContext
+	{
+#if __IOS__
 		UIKit.UIWindow? Window { get; }
 #elif WINDOWS
 		UI.Xaml.Window? Window { get; }
@@ -22,7 +36,6 @@ namespace Microsoft.Maui
 	internal interface IScopedMauiContext : IMauiContext
 	{
 		IAnimationManager AnimationManager { get; }
-
 
 #if __ANDROID__
 		Android.Views.LayoutInflater? LayoutInflater { get; }

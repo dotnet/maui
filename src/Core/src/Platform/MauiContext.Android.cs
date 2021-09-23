@@ -5,6 +5,22 @@ using AndroidX.Fragment.App;
 
 namespace Microsoft.Maui
 {
+	public partial class MauiApplicationContext : IMauiApplicationContext
+	{
+		public MauiApplicationContext(IServiceProvider services, Context context)
+			: this(services)
+		{
+			Context = context ?? throw new ArgumentNullException(nameof(context));
+		}
+
+		internal MauiApplicationContext(Context context)
+			: this()
+		{
+			Context = context ?? throw new ArgumentNullException(nameof(context));
+		}
+
+		public Context? Context { get; }
+	}
 
 	public partial class MauiContext : IScopedMauiContext
 	{

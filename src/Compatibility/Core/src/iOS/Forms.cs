@@ -739,14 +739,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
+#if !__MOBILE__
 			public void QuitApplication()
 			{
-#if __MOBILE__
-				Log.Warning(nameof(IOSPlatformServices), "Platform doesn't implement QuitApp");
-#else
 				NSApplication.SharedApplication.Terminate(new NSObject());
-#endif
 			}
+#endif
 
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{
