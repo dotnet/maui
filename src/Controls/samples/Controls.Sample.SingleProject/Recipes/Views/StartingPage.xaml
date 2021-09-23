@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Recipes.Views.StartingPage"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             Title="{Binding Title}">
+    <Grid Margin="5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2.5*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="6*" />
+        </Grid.RowDefinitions>
+
+        <Label Grid.Column="0" Grid.Row="0" Text="Find the recipe for you" SemanticProperties.HeadingLevel="Level1" FontSize="50" FontAttributes="Bold" TextColor="Black" Margin="15,15,15,0" />
+        <SearchBar Grid.Column="0" Grid.Row="1"
+                   x:Name="searchBar"
+                   ios:SearchBar.SearchBarStyle="Default"
+                   BackgroundColor="White"
+                   Placeholder="Search recipes"
+                   CancelButtonColor="{StaticResource Primary}"
+                   Text="{Binding SearchQuery}"
+                   PlaceholderColor="Gray"
+                   TextColor="Black"
+                   Margin="0,5,0,5"
+                   SearchCommand="{Binding SearchCommand}"
+                   SearchCommandParameter="{Binding Text, Source={x:Reference searchBar}}"/>
+        
+        <Label Grid.Column="0" Grid.Row="2" Text="{Binding NoResultsLabel}" IsVisible="{Binding NoResultsVisible}" Padding="20,0,20,0" HorizontalTextAlignment="Center" FontAttributes="Italic" TextColor="{StaticResource Primary}"/>
+        
+        <Grid Grid.Column="0" Grid.Row="2" Margin="20,5" IsVisible="{Binding RecipeTypeButtonsVisible}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="4.5*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="4.5*" />
+            </Grid.RowDefinitions>
+
+            <Label Grid.Column="0" Grid.Row="0" Text="Search by meal type" SemanticProperties.HeadingLevel="Level2" TextColor="Black" FontAttributes="Bold" FontSize="20"/>
+            <ScrollView Grid.Column="0" Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+                <StackLayout Orientation="Horizontal" Spacing="10" Padding="0,5">
+                    <Button Text="Breakfast" ImageSource="breakfast.png" Command="{Binding FilteredSearchCommand}" CommandParameter="mealType=breakfast" TextTransform="None" ContentLayout="Top,0" TextColor="White" FontAttributes="Bold" Padding="-5,10" />
+                    <Button Text="Lunch" ImageSource="lunch.png" Command="{Binding FilteredSearchCommand}" CommandParameter="mealType=lunch" TextTransform="None" ContentLayout="Top,0" TextColor="White" FontAttributes="Bold" Padding="-5,10" />
+                    <Button Text="Dinner" ImageSource="dinner.png" Command="{Binding FilteredSearchCommand}" CommandParameter="mealType=dinner" TextTransform="None" ContentLayout="Top,0" TextColor="White" FontAttributes="Bold" Padding="-5,10" />
+                    <Button Text="Snack" ImageSource="snack.png" Command="{Binding FilteredSearchCommand}" CommandParameter="mealType=snack" TextTransform="None" ContentLayout="Top,0" TextColor="White" FontAttributes="Bold" Padding="-5,10" />
+                    <Button Text="Dessert" ImageSource="dessert.png" Command="{Binding FilteredSearchCommand}" CommandParameter="dishType=dessert" TextTransform="None" ContentLayout="Top,0" TextColor="White" FontAttributes="Bold" Padding="-5,10"/>
+                    <Button Text="Drinks" ImageSource="drinks.png" Command="{Binding FilteredSearchCommand}" CommandParameter="dishType=drinks" TextTransform="None" ContentLayout="Top,0" TextColor="White" FontAttributes="Bold" Padding="-5,10" />
+                </StackLayout>
+            </ScrollView>
+
+            <Label Grid.Column="0" Grid.Row="2" Text="Search by diet" SemanticProperties.HeadingLevel="Level2" TextColor="Black" FontAttributes="Bold" FontSize="20"/>
+            <ScrollView Grid.Column="0" Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,10">
+                <StackLayout Orientation="Horizontal" Spacing="10" Padding="0,5">
+                    <Button Text="Balanced" ImageSource="balanced.png" Command="{Binding FilteredSearchCommand}" CommandParameter="diet=balanced" TextTransform="None" ContentLayout="Top,0" TextColor="White" FontAttributes="Bold" Padding="-5,10"/>
+                    <Button Text="Vegetarian" ImageSource="vegetarian.png" Command="{Binding FilteredSearchCommand}" CommandParameter="health=vegetarian" TextTransform="None" ContentLayout="Top,0" TextColor="White" FontAttributes="Bold" Padding="-5,10"/>
+                    <Button Text="Vegan" ImageSource="vegan.png" Command="{Binding FilteredSearchCommand}" CommandParameter="health=vegan" TextTransform="None" ContentLayout="Top,0" TextColor="White" FontAttributes="Bold" Padding="-5,10"/>
+                    <Button Text="Kosher" ImageSource="kosher.png" Command="{Binding FilteredSearchCommand}" CommandParameter="health=kosher" TextTransform="None" ContentLayout="Top,0" TextColor="White" FontAttributes="Bold" Padding="-5,10"/>
+                    <Button Text="Gluten-free" ImageSource="gluten_free.png" Command="{Binding FilteredSearchCommand}" CommandParameter="health=gluten-free" TextTransform="None" ContentLayout="Top,0" TextColor="White" FontAttributes="Bold" Padding="-5,10"/>
+                    <Button Text="Keto" ImageSource="keto.png" Command="{Binding FilteredSearchCommand}" CommandParameter="health=keto-friendly" TextTransform="None" ContentLayout="Top,0" TextColor="White" FontAttributes="Bold" Padding="-5,10"/>
+                </StackLayout>
+            </ScrollView>
+        </Grid>
+    </Grid>
+</ContentPage>

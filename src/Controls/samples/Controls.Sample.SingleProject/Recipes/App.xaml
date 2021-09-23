@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Recipes.App">
+    <!--
+        Define global resources and styles here, that apply to all pages in your app.
+    -->
+    <Application.Resources>
+        <ResourceDictionary>
+            <Color x:Key="Primary">#2BB0ED</Color>
+            <Color x:Key="Background">#F2F7FF</Color>
+            <LinearGradientBrush x:Key="BlueGradient" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="White" Offset="0" />
+                <GradientStop Color="{StaticResource Primary}" Offset="1.0" />
+            </LinearGradientBrush>
+            <Style TargetType="Button">
+                <Setter Property="FontSize" Value="16"/>
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="#2BB0EDF3" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

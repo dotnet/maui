@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Recipes.Views.ItemDetailPage"
+             Title="{Binding Title}">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Edit" Command="{Binding EditItemCommand}" />
+    </ContentPage.ToolbarItems>
+    <Grid Margin="15">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="3*" />
+            <RowDefinition Height="7*" />
+        </Grid.RowDefinitions>
+        <StackLayout Grid.Column="0" Grid.Row="0" VerticalOptions="Fill" HorizontalOptions="Fill" Margin="0,0,0,10" BackgroundColor="White">
+            <Image Source="{Binding ImageUrl}" VerticalOptions="FillAndExpand" Aspect="AspectFill" IsVisible="{Binding ImageUrlVisible}" />
+            <Label Text="{Binding RecipeName}" FontSize="25" FontAttributes="Bold" IsVisible="{Binding RecipeNameVisible}" TextColor="Black" MaxLines="3" Padding="15,10" BackgroundColor="White"/>
+        </StackLayout>
+        <ScrollView Grid.Column="0" Grid.Row="1" Padding="0,5,0,0" BackgroundColor="White">
+            <StackLayout>
+                <Frame Background="{StaticResource BlueGradient}" CornerRadius="10" HasShadow="False" Margin="0,5">
+                    <StackLayout Margin="2">
+                        <Label Text="Ingredients:" TextDecorations="Underline" FontSize="Medium" TextColor="{StaticResource Primary}"/>
+                        <CollectionView  HeightRequest="150" ItemsSource="{Binding IngredientCheckList}" IsVisible="{Binding IngredientsVisible}" SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <StackLayout Orientation="Horizontal">
+                                        <CheckBox Color="{StaticResource Primary}" IsChecked="{Binding IngredientChecked}"/>
+                                        <Label Text="{Binding IngredientItem}" TextColor="Black" VerticalOptions="Center"/>
+                                    </StackLayout>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </StackLayout>
+                </Frame>
+                <Frame Background="{StaticResource BlueGradient}" CornerRadius="10" HasShadow="False">
+                    <StackLayout Margin="2">
+                        <Label Text="Recipe:" TextDecorations="Underline" FontSize="Medium" TextColor="{StaticResource Primary}"/>
+                        <Label Text="{Binding RecipeBody}" IsVisible="{Binding RecipeBodyVisible}" TextColor="Black"/>
+                        <Label FormattedText="{Binding RecipeUrl}" IsVisible="{Binding RecipeUrlVisible}" TextColor="Black"/>
+                    </StackLayout>
+                </Frame>
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
