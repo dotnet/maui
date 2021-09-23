@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.TypedNativeView?.UpdateVerticalTextAlignment(searchBar, handler._editText);
+			handler.NativeView?.UpdateVerticalTextAlignment(searchBar, handler._editText);
 		}
 
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)

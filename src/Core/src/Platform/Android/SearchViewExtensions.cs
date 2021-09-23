@@ -58,7 +58,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateVerticalTextAlignment(this SearchView searchView, ISearchBar searchBar, EditText? editText)
 		{
-			editText ??= searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+			editText ??= searchView.GetFirstChildOfType<EditText>();
 
 			if (editText == null)
 				return;
