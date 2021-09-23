@@ -56,6 +56,6 @@ namespace Microsoft.Maui.Essentials
 		}
 
 		static Task LaunchUri(Uri mapsUri) =>
-			Windows.System.Launcher.LaunchUriAsync(mapsUri).AsTask();
+			global::Windows.System.Launcher.LaunchUriAsync(mapsUri).AsTask();
 	}
 }

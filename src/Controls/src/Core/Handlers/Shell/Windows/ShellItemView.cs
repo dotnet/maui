@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (ShellContext.IsPaneToggleButtonVisible)
 				inset += 45;
 
-			if (Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Controls.NavigationView", "IsBackButtonVisible"))
+			if (global::Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Controls.NavigationView", "IsBackButtonVisible"))
 			{
 				if (ShellContext.IsBackButtonVisible != Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed &&
 					ShellContext.IsBackEnabled)

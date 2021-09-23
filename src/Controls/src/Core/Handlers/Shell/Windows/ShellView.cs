@@ -22,10 +22,10 @@ namespace Microsoft.Maui.Controls.Platform
 			nameof(FlyoutBackgroundColor), typeof(Brush), typeof(ShellView),
 			new PropertyMetadata(default(Brush)));
 
-		internal static readonly Windows.UI.Color DefaultBackgroundColor = Windows.UI.Color.FromArgb(255, 3, 169, 244);
-		internal static readonly Windows.UI.Color DefaultForegroundColor = Microsoft.UI.Colors.White;
-		internal static readonly Windows.UI.Color DefaultTitleColor = Microsoft.UI.Colors.White;
-		internal static readonly Windows.UI.Color DefaultUnselectedColor = Windows.UI.Color.FromArgb(180, 255, 255, 255);
+		internal static readonly global::Windows.UI.Color DefaultBackgroundColor = global::Windows.UI.Color.FromArgb(255, 3, 169, 244);
+		internal static readonly global::Windows.UI.Color DefaultForegroundColor = Microsoft.UI.Colors.White;
+		internal static readonly global::Windows.UI.Color DefaultTitleColor = Microsoft.UI.Colors.White;
+		internal static readonly global::Windows.UI.Color DefaultUnselectedColor = global::Windows.UI.Color.FromArgb(180, 255, 255, 255);
 		const string TogglePaneButton = "TogglePaneButton";
 		const string NavigationViewBackButton = "NavigationViewBackButton";
 		internal const string ShellStyle = "ShellNavigationView";
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 
 			double oldWidth = Width;
 			double oldHeight = Height;
@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (color is WBrush brush)
 					FlyoutBackgroundColor = brush;
-				else if (color is Windows.UI.Color uiColor)
+				else if (color is global::Windows.UI.Color uiColor)
 					new WSolidColorBrush(uiColor);
 			}
 			else
@@ -460,8 +460,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
-			Windows.UI.Color backgroundColor = DefaultBackgroundColor;
-			Windows.UI.Color titleColor = DefaultTitleColor;
+			global::Windows.UI.Color backgroundColor = DefaultBackgroundColor;
+			global::Windows.UI.Color titleColor = DefaultTitleColor;
 			if (appearance != null)
 			{
 				if (!appearance.BackgroundColor.IsDefault())

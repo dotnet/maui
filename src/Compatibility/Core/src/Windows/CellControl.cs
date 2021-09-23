@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			get { return (FrameworkElement)Content; }
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			ListView lv = _listView.Value;
 
@@ -105,23 +105,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					{
 						var estimate = (double)lv.GetValue(MeasuredEstimateProperty);
 						if (estimate > -1)
-							return new Windows.Foundation.Size(availableSize.Width, estimate);
+							return new global::Windows.Foundation.Size(availableSize.Width, estimate);
 					}
 					else
 					{
 						double rowHeight = lv.RowHeight;
 						if (rowHeight > -1)
-							return new Windows.Foundation.Size(availableSize.Width, rowHeight);
+							return new global::Windows.Foundation.Size(availableSize.Width, rowHeight);
 					}
 				}
 
 				// This needs to return a size with a non-zero height; 
 				// otherwise, it kills virtualization.
-				return new Windows.Foundation.Size(0, Cell.DefaultCellHeight);
+				return new global::Windows.Foundation.Size(0, Cell.DefaultCellHeight);
 			}
 
 			// Children still need measure called on them
-			Windows.Foundation.Size result = base.MeasureOverride(availableSize);
+			global::Windows.Foundation.Size result = base.MeasureOverride(availableSize);
 
 			if (lv != null)
 			{
@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnClick(object sender, PointerRoutedEventArgs e)
 		{
 			var point = e.GetCurrentPoint(CellContent);
-			if (point.Properties.PointerUpdateKind != PointerUpdateKind.RightButtonReleased)
+			if (point.Properties.PointerUpdateKind != Microsoft.UI.Input.PointerUpdateKind.RightButtonReleased)
 				return;
 
 			OpenContextMenu();
@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void OnLongTap(object sender, HoldingRoutedEventArgs e)
 		{
-			if (e.HoldingState == HoldingState.Started)
+			if (e.HoldingState == Microsoft.UI.Input.HoldingState.Started)
 				OpenContextMenu();
 		}
 
