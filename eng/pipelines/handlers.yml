@@ -177,7 +177,8 @@ stages:
               inputs:
                 SourceFolder: artifacts
                 Contents: |
-                  rollbacks/**
+                  metadata/rollbacks/**
+                  metadata/sdks/**
                 TargetFolder: $(build.artifactstagingdirectory)
             - task: CopyFiles@2
               displayName: 'Copy Log Files'
