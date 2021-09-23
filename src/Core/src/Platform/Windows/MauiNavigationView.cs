@@ -46,6 +46,10 @@ namespace Microsoft.Maui
 			HeaderContent = (ContentControl)GetTemplateChild("HeaderContent");
 			NavigationViewBackButton = (Button)GetTemplateChild("NavigationViewBackButton");
 
+			// HeaderContent is set to a MinHeight of 48 so we have to collapse it if we
+			// don't want it to take up any space
+			HeaderContent.Visibility = _windowHeader.Visibility;
+
 			// Read comment on MarginPropertyChanged
 			var currentMargin = HeaderContent.Margin;
 			HeaderContentMargin = new WThickness(

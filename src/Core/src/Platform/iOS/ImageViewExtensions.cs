@@ -31,6 +31,13 @@ namespace Microsoft.Maui
 					imageView.StopAnimating();
 			}
 		}
+
+		public static void UpdateSource(this UIImageView imageView, UIImage? uIImage, IImageSourcePart image)
+		{
+			imageView.Image = uIImage;
+			imageView.UpdateIsAnimationPlaying(image);
+		}
+
 		public static Task<IImageSourceServiceResult<UIImage>?> UpdateSourceAsync(
 			this UIImageView imageView,
 			IImageSourcePart image,
@@ -41,7 +48,6 @@ namespace Microsoft.Maui
 			return image.UpdateSourceAsync(imageView, services, (uiImage) =>
 			{
 				imageView.Image = uiImage;
-				imageView.UpdateIsAnimationPlaying(image);
 
 			}, cancellationToken);
 		}
@@ -78,6 +84,9 @@ namespace Microsoft.Maui
 				if (applied)
 				{
 					setImage.Invoke(uiImage);
+					if (destinationContext is UIImageView imageView)
+						imageView.UpdateIsAnimationPlaying(image);
+
 				}
 
 				events?.LoadingCompleted(applied);

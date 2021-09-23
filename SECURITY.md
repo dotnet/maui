@@ -23,6 +23,8 @@ Please include the requested information listed below (as much as you can provid
   * Impact of the issue, including how an attacker might exploit the issue
 
 This information will help us triage your report more quickly.
+
+Reports via MSRC may qualify for the .NET Core Bug Bounty. Details of the .NET Core Bug Bounty including terms and conditions are at https://aka.ms/corebounty.
  
 ## Preferred Languages
 
