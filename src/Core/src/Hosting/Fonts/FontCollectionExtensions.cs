@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Hosting
 			return fontCollection;
 		}
 
-		public static IFontCollection AddEmeddedResourceFont(this IFontCollection fontCollection, Assembly assembly, string filename, string? alias = null)
+		public static IFontCollection AddEmbeddedResourceFont(this IFontCollection fontCollection, Assembly assembly, string filename, string? alias = null)
 		{
 			_ = assembly ?? throw new ArgumentNullException(nameof(assembly));
 			_ = filename ?? throw new ArgumentNullException(nameof(filename));

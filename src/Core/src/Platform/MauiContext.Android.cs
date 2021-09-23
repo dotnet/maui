@@ -52,5 +52,7 @@ namespace Microsoft.Maui
 		LayoutInflater? IScopedMauiContext.LayoutInflater => null;
 
 		FragmentManager? IScopedMauiContext.FragmentManager => null;
+
+		NavigationManager? IScopedMauiContext.NavigationManager => null;
 	}
 }

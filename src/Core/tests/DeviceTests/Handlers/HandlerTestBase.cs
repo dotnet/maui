@@ -9,7 +9,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class HandlerTestBase<THandler, TStub> : TestBase, IDisposable
-		where THandler : IViewHandler
+		where THandler : IViewHandler, new()
 		where TStub : StubBase, IView, new()
 	{
 		IApplication _app;
@@ -78,9 +78,15 @@ namespace Microsoft.Maui.DeviceTests
 			CreateHandler<THandler>(view);
 
 		protected TCustomHandler CreateHandler<TCustomHandler>(IView view)
-			where TCustomHandler : THandler
+			where TCustomHandler : THandler, new()
 		{
-			var handler = Activator.CreateInstance<TCustomHandler>();
+			var handler = new TCustomHandler();
+			InitializeViewHandler(view, handler);
+			return handler;
+		}
+
+		protected void InitializeViewHandler(IView view, IViewHandler handler)
+		{
 			handler.SetMauiContext(MauiContext);
 
 			handler.SetVirtualView(view);
@@ -88,8 +94,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			view.Arrange(new Rectangle(0, 0, view.Width, view.Height));
 			handler.NativeArrange(view.Frame);
-
-			return handler;
 		}
 
 		protected async Task<THandler> CreateHandlerAsync(IView view)

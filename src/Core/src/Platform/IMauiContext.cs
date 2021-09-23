@@ -40,6 +40,9 @@ namespace Microsoft.Maui
 #if __ANDROID__
 		Android.Views.LayoutInflater? LayoutInflater { get; }
 		AndroidX.Fragment.App.FragmentManager? FragmentManager { get; }
+
+		// Each layer of navigation will create a new ScopedContext
+		NavigationManager? NavigationManager { get; }
 #elif WINDOWS
 		WindowManager WindowManager { get; }
 #endif

@@ -11,6 +11,8 @@
     <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.9.20</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>12.0.101-preview.9.20</MicrosoftmacOSSdkPackageVersion>
     <MicrosofttvOSSdkPackageVersion>15.0.101-preview.9.20</MicrosofttvOSSdkPackageVersion>
+    <!-- emsdk -->
+    <MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>6.0.0-rc.2.21464.1</MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion>
     <!-- Everything else -->
     <MicrosoftAspNetCoreAppRuntimewinx64Version>6.0.0-rc.2.21462.1</MicrosoftAspNetCoreAppRuntimewinx64Version>
     <MicrosoftAspNetCoreAuthorizationPackageVersion>6.0.0-rc.2.21462.1</MicrosoftAspNetCoreAuthorizationPackageVersion>

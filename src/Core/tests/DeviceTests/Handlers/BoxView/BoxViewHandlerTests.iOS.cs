@@ -7,10 +7,10 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class BoxViewHandlerTests
 	{
-		MauiBoxView GetNativeBoxView(BoxViewHandler boxViewHandler) =>
+		MauiShapeView GetNativeBoxView(ShapeViewHandler boxViewHandler) =>
 			boxViewHandler.NativeView;
 
-		Task ValidateHasColor(IBoxView boxView, Color color, Action action = null)
+		Task ValidateHasColor(IShapeView boxView, Color color, Action action = null)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{

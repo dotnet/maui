@@ -10,9 +10,6 @@ namespace Microsoft.Maui
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateText(this AppCompatButton appCompatButton, IButton button) =>
-			appCompatButton.Text = button.Text;
-
 		public static void UpdatePadding(this AppCompatButton appCompatButton, IButton button, Thickness? defaultPadding = null)
 		{
 			var context = appCompatButton.Context;

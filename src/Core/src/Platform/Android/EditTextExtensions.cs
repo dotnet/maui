@@ -18,7 +18,12 @@ namespace Microsoft.Maui
 
 		public static void UpdateText(this AppCompatEditText editText, IEntry entry)
 		{
-			editText.Text = entry.Text;
+			// Setting the text causes the cursor to reset to position zero
+			// Therefore if:
+			// User Types => VirtualView Updated => Triggers Native Update
+			// Then it will cause the cursor to reset to position zero as the user typed
+			if (entry.Text != editText.Text)
+				editText.Text = entry.Text;
 
 			// TODO ezhart The renderer sets the text to selected and shows the keyboard if the EditText is focused
 		}

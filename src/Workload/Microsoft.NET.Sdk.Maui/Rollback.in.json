@@ -1,0 +1,10 @@
+{
+  "microsoft.net.sdk.android": "@MicrosoftAndroidSdkWindowsPackageVersion@",
+  "microsoft.net.sdk.ios": "@MicrosoftiOSSdkPackageVersion@",
+  "microsoft.net.sdk.maccatalyst": "@MicrosoftMacCatalystSdkPackageVersion@",
+  "microsoft.net.sdk.macos": "@MicrosoftmacOSSdkPackageVersion@",
+  "microsoft.net.sdk.maui": "@VERSION@",
+  "microsoft.net.sdk.tvos": "@MicrosofttvOSSdkPackageVersion@",
+  "microsoft.net.workload.emscripten": "@MicrosoftNETWorkloadEmscriptenManifest60100PackageVersion@",
+  "microsoft.net.workload.mono.toolchain": "@MicrosoftNETCoreAppRefPackageVersion@"
+}

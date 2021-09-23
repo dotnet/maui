@@ -47,6 +47,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 
+				StaticResourceExtension.XamlDoubleImplicitOperation = xamlDoubleImplicitOpHack;
+
 				if (!xamlDoubleImplicitOpHack)
 				{
 					if (useCompiledXaml)
@@ -59,6 +61,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					var layout = new Bz59818(useCompiledXaml);
 					Assert.That(layout.grid.ColumnDefinitions[0].Width, Is.EqualTo(new GridLength(100)));
 				}
+
+				StaticResourceExtension.XamlDoubleImplicitOperation = false;
 			}
 		}
 	}
