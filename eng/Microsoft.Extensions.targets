@@ -91,19 +91,6 @@
         Version="$(_MicrosoftWindowsAppSdkVersion)"
     />
     <PackageReference
-        Update="Microsoft.WindowsAppSDK.Foundation"
-        Version="$(_MicrosoftWindowsAppSdkVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.WindowsAppSDK.WinUI"
-        Version="$(_MicrosoftWindowsAppSdkVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.WindowsAppSDK.InteractiveExperiences"
-        Version="$(_MicrosoftWindowsAppSdkVersion)"
-        NoWarn="NU1701"
-    />
-    <PackageReference
         Update="Microsoft.Graphics.Win2D"
         Version="$(MicrosoftGraphicsWin2DVersion)"
     />
