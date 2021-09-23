@@ -188,7 +188,7 @@ namespace Microsoft.Maui
 			(nativeView as ContentPanel)?.UpdateBackground(view.Background);
 
 			if (nativeView is Control control)
-				control.UpdateBackground(null);
+				control.UpdateBackground((Paint?)null);
 			else if (nativeView is Border border)
 				border.UpdateBackground(null);
 			else if (nativeView is Panel panel)
