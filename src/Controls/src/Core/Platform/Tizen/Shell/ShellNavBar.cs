@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var provider = MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
 				var service = provider.GetRequiredImageSourceService(source);
 
-				await service.LoadImageAsync(source, _menuIcon);
+				await service.GetImageAsync(source, _menuIcon);
 			}
 			_menuButton.SetIconPart(_menuIcon);
 			_menuButton.Show();

@@ -11,10 +11,10 @@ namespace Microsoft.Maui
 {
 	public partial class FileImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<bool>?> LoadImageAsync(IImageSource imageSource, Image image, CancellationToken cancellationToken = default) =>
-			LoadImageAsync((IFileImageSource)imageSource, image, cancellationToken);
+		public override Task<IImageSourceServiceResult<Image>?> GetImageAsync(IImageSource imageSource, Image image, CancellationToken cancellationToken = default) =>
+			GetImageAsync((IFileImageSource)imageSource, image, cancellationToken);
 
-		public async Task<IImageSourceServiceResult<bool>?> LoadImageAsync(IFileImageSource imageSource, Image image, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<Image>?> GetImageAsync(IFileImageSource imageSource, Image image, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
 				return null;
@@ -24,17 +24,16 @@ namespace Microsoft.Maui
 			{
 				if (!string.IsNullOrEmpty(filename))
 				{
-					var isLoadComplate = await image.LoadAsync(GetPath(filename), cancellationToken);
+					var isLoadComplated = await image.LoadAsync(GetPath(filename), cancellationToken);
 
-					if (!isLoadComplate)
+					if (!isLoadComplated)
 					{
 						//If it fails, call the Load function to remove the previous image.
 						image.Load(string.Empty);
 						throw new InvalidOperationException("Unable to load image file.");
 					}
 
-					var result =  new ImageSourceServiceResult(isLoadComplate);
-
+					var result = new ImageSourceServiceResult(image, () => image.Unrealize());
 					return result;
 				}
 				else

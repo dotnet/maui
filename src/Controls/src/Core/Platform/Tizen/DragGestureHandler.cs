@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var services = Handler.MauiContext?.Services;
 			var provider = services.GetService(typeof(IImageSourceServiceProvider)) as IImageSourceServiceProvider;
 			var service = provider?.GetImageSourceService(mImage);
-			var result = await service.LoadImageAsync(mImage, image);
+			var result = await service.GetImageAsync(mImage, image);
 			if (result == null)
 				return null;
 			return image;

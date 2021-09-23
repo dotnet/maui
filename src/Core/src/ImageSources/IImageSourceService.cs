@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 			float scale = 1,
 			CancellationToken cancellationToken = default);
 #elif TIZEN || __TIZEN__
-		Task<IImageSourceServiceResult<bool>?> LoadImageAsync(
+		Task<IImageSourceServiceResult<Tizen.UIExtensions.ElmSharp.Image>?> GetImageAsync(
 			IImageSource imageSource,
 			Tizen.UIExtensions.ElmSharp.Image image,
 			CancellationToken cancellationToken = default);

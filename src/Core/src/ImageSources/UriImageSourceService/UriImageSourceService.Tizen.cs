@@ -9,10 +9,10 @@ namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<bool>?> LoadImageAsync(IImageSource imageSource, Image image, CancellationToken cancellationToken = default) =>
-			LoadImageAsync((IUriImageSource)imageSource, image, cancellationToken);
+		public override Task<IImageSourceServiceResult<Image>?> GetImageAsync(IImageSource imageSource, Image image, CancellationToken cancellationToken = default) =>
+			GetImageAsync((IUriImageSource)imageSource, image, cancellationToken);
 
-		public async Task<IImageSourceServiceResult<bool>?> LoadImageAsync(IUriImageSource imageSource, Image image, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<Image>?> GetImageAsync(IUriImageSource imageSource, Image image, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
 				return null;
@@ -21,12 +21,12 @@ namespace Microsoft.Maui
 
 			try
 			{
-				var result = await image.LoadAsync(uri, cancellationToken);
+				var isLoadComplated = await image.LoadAsync(uri, cancellationToken);
 				
-				if (!result)
+				if (!isLoadComplated)
 					throw new InvalidOperationException($"Unable to load image URI '{uri}'.");
 
-				return new ImageSourceServiceResult(result);
+				return new ImageSourceServiceResult(image, () => image.Unrealize());
 			}
 			catch (Exception ex)
 			{

@@ -9,10 +9,10 @@ namespace Microsoft.Maui
 {
 	public partial class StreamImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<bool>?> LoadImageAsync(IImageSource imageSource, Image image, CancellationToken cancellationToken = default) =>
-			LoadImageAsync((IStreamImageSource)imageSource, image, cancellationToken);
+		public override Task<IImageSourceServiceResult<Image>?> GetImageAsync(IImageSource imageSource, Image image, CancellationToken cancellationToken = default) =>
+			GetImageAsync((IStreamImageSource)imageSource, image, cancellationToken);
 
-		public async Task<IImageSourceServiceResult<bool>?> LoadImageAsync(IStreamImageSource imageSource, Image image, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<Image>?> GetImageAsync(IStreamImageSource imageSource, Image image, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
 				return null;
@@ -24,12 +24,12 @@ namespace Microsoft.Maui
 				if (stream == null)
 					throw new InvalidOperationException("Unable to load image stream.");
 
-				var result = await image.LoadAsync(stream, cancellationToken);
+				var isLoadComplated = await image.LoadAsync(stream, cancellationToken);
 				
-				if (!result)
+				if (!isLoadComplated)
 					throw new InvalidOperationException("Unable to decode image from stream.");
 
-				return new ImageSourceServiceResult(result);
+				return new ImageSourceServiceResult(image, () => image.Unrealize());
 			}
 			catch (Exception ex)
 			{

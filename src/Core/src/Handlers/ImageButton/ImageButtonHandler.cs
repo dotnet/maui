@@ -10,8 +10,12 @@ using PlatformView = Google.Android.Material.ImageView.ShapeableImageView;
 using System;
 using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
 using PlatformImageView = Microsoft.UI.Xaml.Controls.Image;
-using PlatformView = Microsoft.UI.Xaml.Controls.Button;
-#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID)
+using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
+#elif TIZEN
+using PlatformImage = Tizen.UIExtensions.ElmSharp.Image;
+using PlatformView = Tizen.UIExtensions.ElmSharp.Image;
+using PlatformImageView = Tizen.UIExtensions.ElmSharp.Image;
+#elif NETSTANDARD || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformImage = System.Object;
 using PlatformImageView = System.Object;
 using PlatformView = System.Object;

@@ -447,7 +447,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var provider = MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
 				var service = provider.GetRequiredImageSourceService(iconSource);
 
-				_ = service.LoadImageAsync(iconSource, image);
+				_ = service.GetImageAsync(iconSource, image);
 
 				item.SetIconPart(image);
 			}

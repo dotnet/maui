@@ -9,10 +9,10 @@ namespace Microsoft.Maui
 {
 	public partial class FontImageSourceService
 	{
-		public override Task<IImageSourceServiceResult<bool>?> LoadImageAsync(IImageSource imageSource, Image image, CancellationToken cancellationToken = default) =>
-			LoadImageAsync((IFontImageSource)imageSource, image, cancellationToken);
+		public override Task<IImageSourceServiceResult<Image>?> GetImageAsync(IImageSource imageSource, Image image, CancellationToken cancellationToken = default) =>
+			GetImageAsync((IFontImageSource)imageSource, image, cancellationToken);
 
-		public async Task<IImageSourceServiceResult<bool>?> LoadImageAsync(IFontImageSource imageSource, Image image, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult<Image>?> GetImageAsync(IFontImageSource imageSource, Image image, CancellationToken cancellationToken = default)
 		{
 			if (imageSource.IsEmpty)
 				return null;
@@ -20,15 +20,14 @@ namespace Microsoft.Maui
 			try
 			{
 				//TODO : Fix me correctly later.
-				var isLoadComplate = await image.LoadAsync(string.Empty, cancellationToken);
+				var isLoadComplated = await image.LoadAsync(string.Empty, cancellationToken);
 
-				if (!isLoadComplate)
+				if (!isLoadComplated)
 				{
 					throw new InvalidOperationException("Unable to load image file.");
 				}
 
-				var result = new ImageSourceServiceResult(isLoadComplate);
-
+				var result = new ImageSourceServiceResult(image, () => image.Unrealize());
 				return result;
 			}
 			catch (Exception ex)

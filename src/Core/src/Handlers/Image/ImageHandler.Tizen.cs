@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(Image nativeView)
 		{
 			base.DisconnectHandler(nativeView);
-			_sourceManager.Reset();
+			SourceLoader.Reset();
 		}
 
 		public override bool NeedsContainer =>
@@ -26,32 +26,38 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Clip != null ||
 			base.NeedsContainer;
 
-		public static void MapBackground(ImageHandler handler, IImage image)
+		public static void MapBackground(IImageHandler handler, IImage image)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 			handler.GetWrappedNativeView()?.UpdateBackground(image);
 		}
 
-		public static void MapAspect(ImageHandler handler, IImage image) =>
-			handler.NativeView?.UpdateAspect(image);
+		public static void MapAspect(IImageHandler handler, IImage image) =>
+			handler.TypedNativeView?.UpdateAspect(image);
 
-		public static void MapIsAnimationPlaying(ImageHandler handler, IImage image) =>
-			handler.NativeView?.UpdateIsAnimationPlaying(image);
+		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) =>
+			handler.TypedNativeView?.UpdateIsAnimationPlaying(image);
 
-		public static void MapSource(ImageHandler handler, IImage image) =>
+		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static async Task MapSourceAsync(ImageHandler handler, IImage image)
+		public static async Task MapSourceAsync(IImageHandler handler, IImage image)
 		{
 			if (handler.NativeView == null)
 				return;
 
-			var token = handler._sourceManager.BeginLoad();
+			// TODO : fix it later
+			//return handler.SourceLoader.UpdateImageSourceAsync();
 
+			var token = handler.SourceLoader.SourceManager.BeginLoad();
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-			var result = await handler.NativeView.UpdateSourceAsync(image, provider, token);
+			var result = await handler.TypedNativeView.UpdateSourceAsync(image, provider, token);
+			handler.SourceLoader.SourceManager.CompleteLoad(result);
+		}
 
-			handler._sourceManager.CompleteLoad(result);
+		void OnSetImageSource(Image? obj)
+		{
+			//Empty on purpose
 		}
 	}
 

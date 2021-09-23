@@ -67,6 +67,12 @@ namespace Microsoft.Maui
 				wrapper.Clip = view.Clip;
 		}
 
+		public static void UpdateShadow(this EvasObject nativeView, IView view)
+		{
+			if (nativeView is WrapperView wrapper)
+				wrapper.Shadow = view.Shadow;
+		}
+
 		public static void UpdateAutomationId(this EvasObject nativeView, IView view)
 		{
 			{
