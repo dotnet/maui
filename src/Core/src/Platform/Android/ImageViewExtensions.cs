@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
@@ -43,16 +42,6 @@ namespace Microsoft.Maui
 						animatable.Stop();
 				}
 			}
-		}
-
-		public static Task<IImageSourceServiceResult<Drawable>?> UpdateSourceAsync(
-			this ImageView imageView,
-			IImageSourcePart image,
-			IImageSourceServiceProvider services,
-			CancellationToken cancellationToken = default)
-		{
-			imageView.Clear();
-			return image.UpdateSourceAsync(imageView, services, (d) => imageView.SetImageDrawable(d), cancellationToken);
 		}
 
 		internal static async Task<IImageSourceServiceResult<Drawable>?> UpdateSourceAsync(

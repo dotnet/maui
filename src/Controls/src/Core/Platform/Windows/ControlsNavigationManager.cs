@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				header.Title = title;
 
-				ImageSourceLoader.LoadImage(titleIcon, MauiContext, (result) =>
+				titleIcon.LoadImage(MauiContext, (result) =>
 				{
 					header.TitleIcon = result.Value;
 				});

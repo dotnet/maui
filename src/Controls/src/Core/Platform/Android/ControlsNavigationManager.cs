@@ -489,7 +489,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_imageSource = source;
 				_titleIconView.SetImageResource(global::Android.Resource.Color.Transparent);
 
-				ImageSourceLoader.LoadImage(source, MauiContext, (result) =>
+				source.LoadImage(MauiContext, (result) =>
 				{
 					_titleIconView.SetImageDrawable(result.Value);
 					AutomationPropertiesProvider.AccessibilitySettingsChanged(_titleIconView, source);
