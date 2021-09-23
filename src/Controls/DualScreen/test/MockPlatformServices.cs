@@ -166,11 +166,6 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			}
 		}
 
-		public void QuitApplication()
-		{
-
-		}
-
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			if (getNativeSizeFunc != null)

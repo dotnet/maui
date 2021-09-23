@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Hosting
 {
 	public sealed class MauiApp : IHost
 	{

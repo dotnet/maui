@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Hosting.Internal;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Hosting
 {
 	public static class FontsMauiAppBuilderExtensions
 	{

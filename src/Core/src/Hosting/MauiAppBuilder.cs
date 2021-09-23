@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging.EventLog;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Hosting
 {
 	/// <summary>
 	/// A builder for .NET MAUI cross-platform applications and services.
