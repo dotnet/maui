@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls
 					? GetColorOrDefault(_indicatorView.SelectedIndicatorColor, Colors.Gray)
 					: GetColorOrDefault(_indicatorView.IndicatorColor, Colors.Silver);
 
-				
+
 				VisualStateManager.GoToState(visualElement, isSelected
 					? VisualStateManager.CommonStates.Selected
 					: VisualStateManager.CommonStates.Normal);
