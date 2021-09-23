@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif
 			{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
-			{ typeof(BoxView), typeof(BoxViewHandler) },
+			{ typeof(BoxView), typeof(ShapeViewHandler) },
 			{ typeof(Button), typeof(ButtonHandler) },
 			{ typeof(CheckBox), typeof(CheckBoxHandler) },
 			{ typeof(DatePicker), typeof(DatePickerHandler) },
@@ -42,11 +42,16 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Shapes.Polyline), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Rectangle), typeof(ShapeViewHandler) },
 			{ typeof(Window), typeof(WindowHandler) },
+			{ typeof(ImageButton), typeof(ImageButtonHandler) },
 #if __ANDROID__ || __IOS__
 			{ typeof(RefreshView), typeof(RefreshViewHandler) },
+			{ typeof(IndicatorView), typeof(IndicatorViewHandler) },
 #endif
 #if __ANDROID__  || WINDOWS
 			{ typeof(NavigationPage), typeof(NavigationPageHandler) },
+#endif
+#if __ANDROID__
+			{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
 #endif
 		};
 

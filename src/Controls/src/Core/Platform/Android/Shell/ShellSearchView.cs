@@ -328,17 +328,17 @@ namespace Microsoft.Maui.Controls.Platform
 			if (bindable.GetValue(property) is ImageSource image)
 				AutomationPropertiesProvider.SetContentDescription(result, image, null, null);
 
-			new ImageSourceLoader()
+			((ImageSource)bindable.GetValue(property)).LoadImage(MauiContext, (r) =>
 			{
-				Source = (ImageSource)bindable.GetValue(property),
-				MauiContext = MauiContext
-			}.LoadImage(result);
+				result.SetImageDrawable(r.Value);
+			});
 
 			var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(22), LP.MatchParent)
 			{
 				LeftMargin = leftMargin,
 				RightMargin = rightMargin
 			};
+
 			result.LayoutParameters = lp;
 			lp.Dispose();
 			result.SetBackground(null);
