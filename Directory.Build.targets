@@ -6,6 +6,16 @@
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\Microsoft.Extensions.targets" />
 
+  <!--
+    Comment out this section if you need to update Resource.designer.cs files.
+    See DEVELOPMENT.md#Android for details.
+  -->
+  <PropertyGroup Condition="($(TargetFramework.StartsWith('MonoAndroid')) or '$(TargetPlatformIdentifier)' == 'Android') and '$(AndroidApplication)' != 'true'">
+    <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+    <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
+  </PropertyGroup>
+  
+
   <!-- HACK: Prevent the Platform checks -->
   <Target Name="BinPlaceBootstrapDll" />
 

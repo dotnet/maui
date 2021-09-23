@@ -10,17 +10,8 @@ namespace Microsoft.Maui
 	{
 		public const string AssetBaseUrl = "file:///android_asset/";
 
-		WebViewClient? _webViewClient;
-		WebChromeClient? _webChromeClient;
-
 		public MauiWebView(Context context) : base(context)
 		{
-
-			_webViewClient = GetWebViewClient();
-			SetWebViewClient(_webViewClient);
-
-			_webChromeClient = GetWebChromeClient();
-			SetWebChromeClient(_webChromeClient);
 		}
 
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)
@@ -32,21 +23,5 @@ namespace Microsoft.Maui
 		{
 			LoadUrl(url ?? string.Empty);
 		}
-
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				_webViewClient?.Dispose();
-				_webChromeClient?.Dispose();
-			}
-			base.Dispose(disposing);
-		}
-
-		protected virtual WebViewClient GetWebViewClient() =>
-			new WebViewClient();
-
-		protected virtual WebChromeClient GetWebChromeClient() =>
-			new WebChromeClient();
 	}
 }

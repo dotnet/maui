@@ -86,7 +86,7 @@ namespace Microsoft.Maui
 			nativeLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
 		}
 
-		internal static void UpdateTextPlainText(this UILabel nativeLabel, ILabel label)
+		internal static void UpdateTextPlainText(this UILabel nativeLabel, IText label)
 		{
 			nativeLabel.Text = label.Text;
 		}

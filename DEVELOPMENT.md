@@ -71,3 +71,32 @@ To build and run WinUI 3 support, please install the additional components menti
 dotnet tool restore
 dotnet cake --target=VS-WINUI
 ```
+
+### Android
+
+To workaround a performance issue, all `Resource.designer.cs`
+generation is disabled for class libraries in this repo.
+
+If you need to add a new `@(AndroidResource)` value to be used from C#
+code in .NET MAUI:
+
+1. Comment out the `<PropertyGroup>` in `Directory.Build.targets` that
+   sets `$(AndroidGenerateResourceDesigner)` and
+   `$(AndroidUseIntermediateDesignerFile)` to `false`.
+
+2. Build .NET MAUI as you normally would. You will get compiler errors
+   about duplicate fields, but `obj\Debug\net6.0-android\Resource.designer.cs`
+   should now be generated.
+
+3. Open `obj\Debug\net6.0-android\Resource.designer.cs`, and find the
+   field you need such as:
+
+```csharp
+// aapt resource value: 0x7F010000
+public static int foo = 2130771968;
+```
+
+4. Copy this field to the `Resource.designer.cs` checked into source
+   control, such as: `src\Controls\src\Core\Platform\Android\Resource.designer.cs`
+
+5. Restore the commented code in `Directory.Build.targets`.

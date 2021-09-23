@@ -1,7 +1,4 @@
-﻿using System;
-using Android.Runtime;
-using Android.Views;
-using Microsoft.Maui.Controls.Platform;
+﻿using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers
@@ -9,7 +6,7 @@ namespace Microsoft.Maui.Controls.Handlers
 	// Currently only inheriting because we can't tap into CreateNativeView
 	// Once we can wire up into CreateNativeView then all of this code can move into the 
 	// Remap structures
-	internal partial class NavigationPageHandler : Microsoft.Maui.Handlers.NavigationViewHandler
+	internal partial class NavigationPageHandler : NavigationViewHandler
 	{
 		public static PropertyMapper<NavigationPage, NavigationPageHandler> NavigationPageMapper =
 			new PropertyMapper<NavigationPage, NavigationPageHandler>(NavigationViewHandler.NavigationViewMapper)
@@ -29,8 +26,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 
 		}
+
 		protected override NavigationManager CreateNavigationManager()
-			=> _controlsNavigationManager ??= new ControlsNavigationManager();
+			=> _controlsNavigationManager ??= new ControlsNavigationManager(MauiContext);
 
 		private static void UpdateToolBar(NavigationPageHandler arg1, NavigationPage arg2)
 		{
