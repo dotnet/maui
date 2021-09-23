@@ -41,7 +41,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public ShellItemView(ShellView shellContext)
 		{
-			Microsoft.Maui.Controls.Shell.VerifyShellUWPFlagEnabled(nameof(ShellItemView));
 			_ = shellContext ?? throw new ArgumentNullException(nameof(shellContext));
 
 			ShellContext = shellContext;

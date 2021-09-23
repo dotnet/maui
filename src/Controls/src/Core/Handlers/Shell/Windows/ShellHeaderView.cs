@@ -11,8 +11,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public ShellHeaderView(Shell element)
 		{
-			Shell.VerifyShellUWPFlagEnabled(nameof(ShellHeaderView));
-
 			SetElement(element);
 			SizeChanged += OnShellHeaderViewSizeChanged;
 			HorizontalContentAlignment = HorizontalAlignment.Stretch;

@@ -42,7 +42,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public ShellView()
 		{
-			Microsoft.Maui.Controls.Shell.VerifyShellUWPFlagEnabled(nameof(ShellView));
 			_flyoutBackdrop = Brush.Default;
 			IsSettingsVisible = false;
 			PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;

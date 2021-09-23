@@ -30,7 +30,6 @@ namespace Microsoft.Maui.Controls.Platform
 		ObservableCollection<ShellContent> ShellContentMenuItems;
 		public ShellSectionView()
 		{
-			Microsoft.Maui.Controls.Shell.VerifyShellUWPFlagEnabled(nameof(ShellSectionView));
 			MenuItemTemplate = (Microsoft.UI.Xaml.DataTemplate)Microsoft.UI.Xaml.Application.Current.Resources["ShellSectionMenuItemTemplate"];
 			IsBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed;
 			IsSettingsVisible = false;
