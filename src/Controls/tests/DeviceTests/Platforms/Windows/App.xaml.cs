@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.DeviceTests.WinUI
+﻿using Microsoft.Maui.Hosting;
+
+namespace Microsoft.Maui.DeviceTests.WinUI
 {
 	public partial class App : MauiWinUIApplication
 	{

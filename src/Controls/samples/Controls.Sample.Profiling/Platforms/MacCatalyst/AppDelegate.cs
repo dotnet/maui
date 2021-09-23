@@ -1,5 +1,6 @@
 ﻿using Foundation;
 using Microsoft.Maui;
+using Microsoft.Maui.Hosting;
 
 namespace Maui.Controls.Sample.Profiling
 {

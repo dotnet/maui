@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.TestUtils.DeviceTests.Runners;
+﻿using Microsoft.Maui.Hosting;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Sample
 {
