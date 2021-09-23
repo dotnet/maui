@@ -66,7 +66,7 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(IndicatorPage), "IndicatorView",
 				"IndicatorView displays indicators. It can also represent the number of items in a CarouselView. Set the CarouselView.IndicatorView property to the IndicatorView object to display indicators for the CarouselView."),
 
-      new SectionModel(typeof(WebViewPage), "WebView",
+	  new SectionModel(typeof(WebViewPage), "WebView",
 				"WebView is a view for displaying web and HTML content in your app.")
 		};
 	}

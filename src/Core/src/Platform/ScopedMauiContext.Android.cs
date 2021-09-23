@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 		{
 			_mauiContext = mauiContext;
 			_scopedMauiContext = _mauiContext as IScopedMauiContext;
-			_navigationManager = navigationManager ?? 
+			_navigationManager = navigationManager ??
 				_scopedMauiContext?.NavigationManager;
 
 			if (layoutInflater != null)

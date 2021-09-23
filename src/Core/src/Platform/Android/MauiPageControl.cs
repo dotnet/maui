@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform.Android
 		public void SetIndicatorView(IIndicatorView? indicatorView)
 		{
 			_indicatorView = indicatorView;
-			if(indicatorView == null)
+			if (indicatorView == null)
 			{
 				RemoveViews(0);
 			}
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Platform.Android
 				return null;
 
 			AShapeDrawable shape;
-			
+
 			if (_indicatorView.IsCircleShape())
 				shape = new AShapeDrawable(new AShapes.OvalShape());
 			else
