@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>net6.0-ios;net6.0-android</TargetFrameworks>
     <SingleProject>true</SingleProject>
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
@@ -56,9 +56,6 @@
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
     <MauiFont Include="Resources\Fonts\*" />
     <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
-  </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.Contains('-android')) != true AND $(TargetFramework.Contains('-ios')) != true AND $(TargetFramework.Contains('-windows')) != true">
-    <Compile Remove="VirtualListView\**" />
   </ItemGroup>
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
