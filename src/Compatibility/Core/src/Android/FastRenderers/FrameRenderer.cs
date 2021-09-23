@@ -65,10 +65,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		VisualElement IVisualElementRenderer.Element => Element;
 		AView IVisualElementRenderer.View => this;
 
-		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
+		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			Context context = Context;
-			return new SizeRequest(new Size(context.ToPixels(20), context.ToPixels(20)));
+			Measure(widthMeasureSpec, heightMeasureSpec);
+			return new SizeRequest(new Size(MeasuredWidth, MeasuredHeight));
 		}
 
 		void IVisualElementRenderer.SetElement(VisualElement element)
