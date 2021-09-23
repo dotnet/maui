@@ -4,7 +4,7 @@
              x:Class="Recipes.Views.RecipeSearchPage"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              xmlns:vm="clr-namespace:Recipes.ViewModels"
-             xmlns:vlv="clr-namespace:Microsoft.Maui.Controls"
+             xmlns:vlv="clr-namespace:Microsoft.Maui.Controls;assembly=Maui.Controls.Sample"
              Title="{Binding Title}" xmlns:local="clr-namespace:Recipes">
     
     <Grid RowDefinitions="Auto,Auto,*" Margin="5,5,5,0">
