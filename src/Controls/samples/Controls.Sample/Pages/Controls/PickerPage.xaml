@@ -20,6 +20,35 @@
                     </x:Array>
                 </Picker.ItemsSource>
             </Picker>
+            <Label
+                Text="SelectedIndex"
+                Style="{StaticResource Headline}"/>
+            <Picker 
+                Title="Select an item"
+                SelectedIndex="1">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Item 1</x:String>
+                        <x:String>Item 2</x:String>
+                        <x:String>Item 3</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+            <Label
+                Text="SelectedIndexChanged"
+                Style="{StaticResource Headline}"/>
+            <Picker 
+                Title="Select an item"
+                SelectedIndex="1"
+                SelectedIndexChanged="OnSelectedIndexChanged">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Item 1</x:String>
+                        <x:String>Item 2</x:String>
+                        <x:String>Item 3</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

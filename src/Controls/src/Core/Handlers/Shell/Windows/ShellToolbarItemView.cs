@@ -10,21 +10,21 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellToolbarItemRenderer : Microsoft.UI.Xaml.Controls.Button
+	public class ShellToolbarItemView : Microsoft.UI.Xaml.Controls.Button
 	{
 
 		public static readonly DependencyProperty ToolbarItemProperty =
-			DependencyProperty.Register("ToolbarItem", typeof(ToolbarItem), typeof(ShellToolbarItemRenderer), new PropertyMetadata(null, OnToolbarItemChanged));
+			DependencyProperty.Register("ToolbarItem", typeof(ToolbarItem), typeof(ShellToolbarItemView), new PropertyMetadata(null, OnToolbarItemChanged));
 
 		static void OnToolbarItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			((ShellToolbarItemRenderer)d)
+			((ShellToolbarItemView)d)
 				.ToolbarItemChanged(e.OldValue as ToolbarItem, e.NewValue as ToolbarItem);
 		}
 
-		public ShellToolbarItemRenderer()
+		public ShellToolbarItemView()
 		{
-			Microsoft.Maui.Controls.Shell.VerifyShellUWPFlagEnabled(nameof(ShellToolbarItemRenderer));
+			Microsoft.Maui.Controls.Shell.VerifyShellUWPFlagEnabled(nameof(ShellToolbarItemView));
 			Click += OnClick;
 		}
 

@@ -2,65 +2,25 @@ parameters:
   platform: '' # [ android, ios ]
   path: '' # path to csproj
   device: '' # the xharness device to use
-  net6: false # whether or not this is a net6 build
   cakeArgs: '' # additional cake args
 
 steps:
-  - checkout: self
-    clean: true
-  
-  - task: xamops.azdevex.provisionator-task.provisionator@1
-    displayName: 'Provision Xcode'
-    condition: ne(variables['REQUIRED_XCODE'], '')
-    inputs:
-      provisioning_script: $(provisionator.xcode)
 
-  - script: |
-      echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
-      echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
-    displayName: 'Setup SDK Paths'
-    condition: or(and(ne(variables['androidTestsVmPool'], 'Azure Pipelines'), ne('${{ parameters.platform }}', 'android')), and(ne(variables['iosTestsVmPool'], 'Azure Pipelines'), ne('${{ parameters.platform }}', 'ios')))
-  
-  - ${{ if eq(parameters['platform'], 'ios') }}:
-    - task: InstallAppleCertificate@2
-      displayName: 'Install an Apple certificate'
-      inputs:
-        certSecureFile: 'Maui.p12'
-        certPwd: $(P12password)
+  - template: provision.yml
+    parameters:
+      platform: macos
+      skipXcode: ${{ eq(parameters.platform, 'android') }}
 
-    - task: InstallAppleProvisioningProfile@1
-      displayName: 'Install an Apple provisioning profile'
-      inputs:
-        provProfileSecureFile: 'Maui_iOS_Provisioning.mobileprovision'
+  - pwsh: ./build.ps1 --target=dotnet --configuration="Release"
+    displayName: 'Install .NET'
 
-  - task: xamops.azdevex.provisionator-task.provisionator@1
-    displayName: 'Provisionator'
-    condition: eq(variables['provisioning'], 'true')
-    inputs:
-      provisioning_script: $(provisionator.path)
-      provisioning_extra_args: $(provisionator.extraArguments)
+  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+    displayName: 'Add .NET to PATH'
 
-  - script: |
-      dotnet build src/DotNet/DotNet.csproj -bl:$(Build.ArtifactStagingDirectory)/$(BuildConfiguration)-dotnet.binlog
-      echo "##vso[task.prependpath]$(DotNet.Dir)"
-    displayName: install .NET
-
-  - script: |
-      dotnet tool restore
-      dotnet tool update microsoft.dotnet.xharness.cli --version $(XHARNESS_VERSION)
-    displayName: install dotnet tools
-
-  - pwsh: |
-      ./build.ps1 --target provision --TeamProject="$(System.TeamProject)"
-    displayName: 'Cake Provision'
-    condition: eq(variables['provisioningCake'], 'true')
-
-  - pwsh: |
-      ./build.ps1 --target=${{ replace(replace(parameters.net6, 'true', 'dotnet-'), 'false', '') }}buildtasks --configuration=Debug --Build_ArtifactStagingDirectory="$(Build.ArtifactStagingDirectory)"
+  - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
     displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: |
-      ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(System.DefaultWorkingDirectory)/output/testlogs" ${{ replace(replace(parameters.net6, 'true', '--dotnet=true'), 'false', '') }} ${{ parameters.cakeArgs }}
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
 
   - task: PublishTestResults@2
@@ -68,12 +28,11 @@ steps:
     condition: always()
     inputs:
       testResultsFormat: xUnit
-      testResultsFiles: 'output/testlogs/**/TestResults.xml'
+      testResultsFiles: '$(TestResultsDirectory)/**/TestResults.xml'
       testRunTitle: '$(System.PhaseName)'
 
   - task: PublishBuildArtifacts@1
-    displayName: Publish the $(System.PhaseName) logs
+    displayName: Publish Artifacts
     condition: always()
     inputs:
       artifactName: $(System.PhaseName)
-      pathToPublish: 'output/testlogs'

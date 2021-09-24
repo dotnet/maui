@@ -19,13 +19,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void TearDown()
 		{
 			Device.PlatformServices = null;
-			XamlLoader.FallbackTypeResolver = null;
-			XamlLoader.ValueCreatedCallback = null;
-			XamlLoader.InstantiationFailedCallback = null;
 			Maui.Controls.Internals.ResourceLoader.ExceptionHandler2 = null;
-#pragma warning disable 0618
-			Internals.XamlLoader.DoNotThrowOnExceptions = false;
-#pragma warning restore 0618
 			Application.ClearCurrent();
 		}
 

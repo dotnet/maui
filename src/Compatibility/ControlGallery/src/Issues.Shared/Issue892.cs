@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		// Issue892
-		// NavigationPage nested in MasterDetail not working as expected Android
+		// NavigationPage nested in FlyoutPage not working as expected Android
 
 #if UITEST
 		[Test]

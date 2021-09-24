@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		[TypeConverter(typeof(ImageSourceConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 		public ImageSource ImageSource
 		{
 			get { return (ImageSource)GetValue(ImageSourceProperty); }

@@ -2,12 +2,9 @@
 using System.Runtime.InteropServices;
 using Android.App;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery;
 using Microsoft.Maui.Controls.Compatibility;
-
-[assembly: AssemblyTitle("Microsoft.Maui.Controls.ControlGallery.Android")]
-[assembly: ComVisible(false)]
+using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 
 // Add some common permissions, these can be removed if not needed
 [assembly: UsesPermission(Android.Manifest.Permission.Internet)]

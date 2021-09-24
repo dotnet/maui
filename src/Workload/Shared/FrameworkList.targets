@@ -18,7 +18,7 @@
       <_RootAttribute Include="TargetFrameworkIdentifier" Value=".NETCoreApp" />
       <_RootAttribute Include="TargetFrameworkVersion" Value="6.0" />
       <_RootAttribute Include="FrameworkName" Value="$(MSBuildProjectName.Replace('.Ref','').Replace('.Runtime',''))" />
-      <_AssemblyFiles Include="@(_PackageFiles->WithMetadataValue('Extension', '.dll'))" />
+      <_AssemblyFiles Include="@(_PackageFiles)" Condition=" '%(_PackageFiles.Extension)' == '.dll' and '%(_PackageFiles.SubFolder)' == '' " />
       <_Classifications Include="@(_AssemblyFiles->'%(FileName)%(Extension)'->Distinct())" Profile="@(_TargetPlatform->'%(Profile)')" />
     </ItemGroup>
 
@@ -48,11 +48,5 @@
       />
     </ItemGroup>
   </Target>
-
-  <!--
-    HACK: temporarily put runtime packs in 'library-packs', until they can be resolved from 'packs'
-    See: https://github.com/dotnet/sdk/issues/14044
-  -->
-  <Import Condition=" !$(MSBuildProjectName.Contains('.Ref')) " Project="LibraryPacks.targets" />
 
 </Project>

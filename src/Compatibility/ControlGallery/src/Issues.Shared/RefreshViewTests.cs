@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Enumerable
 				.Range(0, 10)
 				.Select(_ => new Label() { HeightRequest = 200, Text = "Pull me down to refresh me" })
+				.ToList()
 				.ForEach(x => scrollViewContent.Children.Add(x));
 
 

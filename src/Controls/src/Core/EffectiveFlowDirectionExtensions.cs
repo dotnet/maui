@@ -3,8 +3,7 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static class EffectiveFlowDirectionExtensions
+	internal static class EffectiveFlowDirectionExtensions
 	{
 		internal static EffectiveFlowDirection ToEffectiveFlowDirection(this FlowDirection self, bool isExplicit = false)
 		{
@@ -67,12 +66,6 @@ namespace Microsoft.Maui.Controls
 		public static bool IsExplicit(this EffectiveFlowDirection self)
 		{
 			return (self & EffectiveFlowDirection.Explicit) == EffectiveFlowDirection.Explicit;
-		}
-
-		public static Maui.FlowDirection ToPlatformFlowDirection(this FlowDirection flowDirection)
-		{
-			return flowDirection.ToEffectiveFlowDirection().IsLeftToRight()
-					? Maui.FlowDirection.LeftToRight : Maui.FlowDirection.RightToLeft;
 		}
 	}
 }

@@ -1,14 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Root))]
-	public class TableView : View, ITableViewController, IElementConfiguration<TableView>
+	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, IVisualTreeElement
 	{
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create("RowHeight", typeof(int), typeof(TableView), -1);
 
@@ -62,8 +64,10 @@ namespace Microsoft.Maui.Controls
 				{
 					_tableModel.Root.SectionCollectionChanged -= OnSectionCollectionChanged;
 					_tableModel.Root.PropertyChanged -= OnTableModelRootPropertyChanged;
+					VisualDiagnostics.OnChildRemoved(this, _tableModel.Root, 0);
 				}
 				_tableModel.Root = value ?? new TableRoot();
+				VisualDiagnostics.OnChildAdded(this, _tableModel.Root);
 				SetInheritedBindingContext(_tableModel.Root, BindingContext);
 
 				Root.SelectMany(r => r).ForEach(cell => cell.Parent = this);
@@ -113,9 +117,7 @@ namespace Microsoft.Maui.Controls
 			ModelChanged?.Invoke(this, EventArgs.Empty);
 		}
 
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			var minimumSize = new Size(40, 40);
 			double width = Math.Min(Device.Info.ScaledScreenSize.Width, Device.Info.ScaledScreenSize.Height);
@@ -149,6 +151,8 @@ namespace Microsoft.Maui.Controls
 			if (e.PropertyName == TableSectionBase.TitleProperty.PropertyName)
 				OnModelChanged();
 		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => new List<Maui.IVisualTreeElement>() { this.Root };
 
 		internal class TableSectionModel : TableModel
 		{

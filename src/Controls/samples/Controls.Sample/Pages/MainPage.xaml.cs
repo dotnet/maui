@@ -1,5 +1,6 @@
 ﻿using System;
 using Maui.Controls.Sample.ViewModels;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
 {

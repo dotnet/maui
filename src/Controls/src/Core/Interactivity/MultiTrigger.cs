@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty("Setters")]
 	public sealed class MultiTrigger : TriggerBase
 	{
-		public MultiTrigger([TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType) : base(new MultiCondition(), targetType)
+		public MultiTrigger([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType) : base(new MultiCondition(), targetType)
 		{
 		}
 

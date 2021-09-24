@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Animations
 			_timer = null;
 		}
 
-		void OnTimerElapsed(object sender, ElapsedEventArgs e) =>
+		void OnTimerElapsed(object? sender, ElapsedEventArgs e) =>
 			Fire?.Invoke();
 	}
 }

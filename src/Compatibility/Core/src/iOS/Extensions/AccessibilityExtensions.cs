@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			SetAccessibilityLabel(nativeViewElement, element);
 			SetAccessibilityHint(nativeViewElement, element);
 			SetIsAccessibilityElement(nativeViewElement, element);
+			SetAccessibilityElementsHidden(nativeViewElement, element);
 		}
 
 		public static string SetAccessibilityHint(this NativeView Control, Element Element, string _defaultAccessibilityHint = null)
@@ -116,6 +117,31 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 
 			return _defaultIsAccessibilityElement;
+		}
+
+		public static bool? SetAccessibilityElementsHidden(this NativeView Control, Element Element, bool? _defaultAccessibilityElementsHidden = null)
+		{
+			if (Element == null || Control == null)
+				return _defaultAccessibilityElementsHidden;
+
+			if (!Element.IsSet(AutomationProperties.ExcludedWithChildrenProperty))
+				return null;
+
+#if __MOBILE__
+			if (!_defaultAccessibilityElementsHidden.HasValue)
+			{
+				_defaultAccessibilityElementsHidden = Control.AccessibilityElementsHidden || Control is UIControl;
+			}
+
+			Control.AccessibilityElementsHidden = (bool)((bool?)Element.GetValue(AutomationProperties.ExcludedWithChildrenProperty) ?? _defaultAccessibilityElementsHidden);
+#else
+			if (!_defaultAccessibilityElementsHidden.HasValue)
+				_defaultAccessibilityElementsHidden = Control.AccessibilityElementsHidden;
+
+			Control.AccessibilityElementsHidden = (bool)((bool?)Element.GetValue(AutomationProperties.ExcludedWithChildrenProperty) ?? _defaultAccessibilityElementsHidden);
+#endif
+
+			return _defaultAccessibilityElementsHidden;
 		}
 	}
 }

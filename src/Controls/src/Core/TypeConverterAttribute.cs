@@ -37,60 +37,50 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
+//TODO driop this
 namespace Microsoft.Maui.Controls
 {
-	[AttributeUsage(AttributeTargets.All)]
-	public sealed class TypeConverterAttribute : Attribute
+	public sealed class TypeConverterAttribute
 	{
-		internal static string[] TypeConvertersType = {
-			"Microsoft.Maui.Controls.TypeConverterAttribute",
-			"System.ComponentModel.TypeConverterAttribute"
-		};
+		//internal static string[] TypeConvertersType = {
+		//	"Microsoft.Maui.Controls.TypeConverterAttribute",
+		//	"System.ComponentModel.TypeConverterAttribute"
+		//};
 
 		internal static Dictionary<Type, Type> KnownConverters = new Dictionary<Type, Type> {
-			{ typeof(Color), typeof(ColorTypeConverter) },
-			{ typeof(CornerRadius), typeof(CornerRadiusTypeConverter) },
-			{ typeof(Font), typeof(FontTypeConverter) },
-			{ typeof(Keyboard), typeof(KeyboardTypeConverter) },
-			{ typeof(Graphics.Rectangle), typeof(RectangleTypeConverter) },
-			{ typeof(Size), typeof(SizeTypeConverter) },
-			{ typeof(Thickness), typeof(ThicknessTypeConverter) },
-			{ typeof(Point), typeof(PointTypeConverter) },
-			{ typeof(PointCollection), typeof(PointCollectionConverter) },
-			{ typeof(DoubleCollection), typeof(DoubleCollectionConverter) },
-			{ typeof(FlexBasis), typeof(FlexBasisTypeConverter) },
+			{ typeof(Font), typeof(FontTypeConverter) }
 		};
 
-		public static readonly TypeConverterAttribute Default = new TypeConverterAttribute();
+		//public static readonly TypeConverterAttribute Default = new TypeConverterAttribute();
 
-		public TypeConverterAttribute()
-		{
-			ConverterTypeName = "";
-		}
+		//public TypeConverterAttribute()
+		//{
+		//	ConverterTypeName = "";
+		//}
 
-		public TypeConverterAttribute(string typeName)
-		{
-			ConverterTypeName = typeName;
-		}
+		//public TypeConverterAttribute(string typeName)
+		//{
+		//	ConverterTypeName = typeName;
+		//}
 
-		public TypeConverterAttribute(Type type)
-		{
-			ConverterTypeName = type.AssemblyQualifiedName;
-		}
+		//public TypeConverterAttribute(Type type)
+		//{
+		//	ConverterTypeName = type.AssemblyQualifiedName;
+		//}
 
-		public string ConverterTypeName { get; }
+		//public string ConverterTypeName { get; }
 
-		public override bool Equals(object obj)
-		{
-			if (!(obj is TypeConverterAttribute))
-				return false;
+		//public override bool Equals(object obj)
+		//{
+		//	if (!(obj is TypeConverterAttribute))
+		//		return false;
 
-			return ((TypeConverterAttribute)obj).ConverterTypeName == ConverterTypeName;
-		}
+		//	return ((TypeConverterAttribute)obj).ConverterTypeName == ConverterTypeName;
+		//}
 
-		public override int GetHashCode()
-		{
-			return ConverterTypeName.GetHashCode();
-		}
+		//public override int GetHashCode()
+		//{
+		//	return ConverterTypeName.GetHashCode();
+		//}
 	}
 }

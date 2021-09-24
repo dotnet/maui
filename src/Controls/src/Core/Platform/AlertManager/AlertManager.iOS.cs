@@ -67,23 +67,23 @@ namespace Microsoft.Maui.Controls.Platform
 				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName);
 			}
 
-			void OnPageBusy(IPage sender, bool enabled)
+			void OnPageBusy(IView sender, bool enabled)
 			{
 				_busyCount = Math.Max(0, enabled ? _busyCount + 1 : _busyCount - 1);
 				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = _busyCount > 0;
 			}
 
-			void OnAlertRequested(IPage sender, AlertArguments arguments)
+			void OnAlertRequested(IView sender, AlertArguments arguments)
 			{
 				PresentAlert(arguments);
 			}
 
-			void OnPromptRequested(IPage sender, PromptArguments arguments)
+			void OnPromptRequested(IView sender, PromptArguments arguments)
 			{
 				PresentPrompt(arguments);
 			}
 
-			void OnActionSheetRequested(IPage sender, ActionSheetArguments arguments)
+			void OnActionSheetRequested(IView sender, ActionSheetArguments arguments)
 			{
 				PresentActionSheet(arguments);
 			}

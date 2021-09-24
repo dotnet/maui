@@ -184,6 +184,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.Font = Element.ToUIFont();
 		}
 
+		[PortHandler]
 		protected internal virtual void UpdateTextColor()
 		{
 			var textColor = Element.TextColor;

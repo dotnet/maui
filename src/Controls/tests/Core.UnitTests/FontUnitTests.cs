@@ -12,16 +12,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestFontForSize()
 		{
 			var font = Font.OfSize("Foo", 12);
-			Assert.AreEqual("Foo", font.FontFamily);
-			Assert.AreEqual(12, font.FontSize);
+			Assert.AreEqual("Foo", font.Family);
+			Assert.AreEqual(12, font.Size);
 		}
 
 		[Test]
 		public void TestFontForSizeDouble()
 		{
 			var font = Font.OfSize("Foo", 12.7);
-			Assert.AreEqual("Foo", font.FontFamily);
-			Assert.AreEqual(12.7, font.FontSize);
+			Assert.AreEqual("Foo", font.Family);
+			Assert.AreEqual(12.7, font.Size);
 		}
 
 		[Test]
@@ -29,22 +29,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var size = Device.GetNamedSize(NamedSize.Large, null, false);
 			var font = Font.OfSize("Foo", size);
-			Assert.AreEqual("Foo", font.FontFamily);
-			Assert.AreEqual(size, font.FontSize);
+			Assert.AreEqual("Foo", font.Family);
+			Assert.AreEqual(size, font.Size);
 		}
 
 		[Test]
 		public void TestSystemFontOfSize()
 		{
 			var font = Font.SystemFontOfSize(12);
-			Assert.AreEqual(null, font.FontFamily);
-			Assert.AreEqual(12, font.FontSize);
+			Assert.AreEqual(null, font.Family);
+			Assert.AreEqual(12, font.Size);
 
 
 			var size = Device.GetNamedSize(NamedSize.Medium, null, false);
 			font = Font.SystemFontOfSize(size);
-			Assert.AreEqual(null, font.FontFamily);
-			Assert.AreEqual(size, font.FontSize);
+			Assert.AreEqual(null, font.Family);
+			Assert.AreEqual(size, font.Size);
 		}
 
 		[TestCase("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
@@ -53,13 +53,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
 
 			var font = Font.SystemFontOfSize(12.7);
-			Assert.AreEqual(null, font.FontFamily);
-			Assert.AreEqual(12.7, font.FontSize);
+			Assert.AreEqual(null, font.Family);
+			Assert.AreEqual(12.7, font.Size);
 
 			var size = Device.GetNamedSize(NamedSize.Medium, null, false);
 			font = Font.SystemFontOfSize(size);
-			Assert.AreEqual(null, font.FontFamily);
-			Assert.AreEqual(size, font.FontSize);
+			Assert.AreEqual(null, font.Family);
+			Assert.AreEqual(size, font.Size);
 		}
 
 		[Test]

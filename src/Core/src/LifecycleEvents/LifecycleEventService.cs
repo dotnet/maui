@@ -4,9 +4,20 @@ using System.Linq;
 
 namespace Microsoft.Maui.LifecycleEvents
 {
-	public class LifecycleEventService : ILifecycleEventService
+	public class LifecycleEventService : ILifecycleEventService, ILifecycleBuilder
 	{
 		readonly Dictionary<string, List<Delegate>> _mapper = new Dictionary<string, List<Delegate>>();
+
+		public LifecycleEventService(IEnumerable<LifecycleEventRegistration> registrations)
+		{
+			if (registrations != null)
+			{
+				foreach (var registrationAction in registrations)
+				{
+					registrationAction.AddRegistration(this);
+				}
+			}
+		}
 
 		public void AddEvent<TDelegate>(string eventName, TDelegate action)
 			where TDelegate : Delegate

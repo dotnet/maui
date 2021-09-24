@@ -18,6 +18,18 @@
             <Label
                 TextColor="Red"
                 Text="TextColor"/>
+
+            <Label
+                Text="Html text"
+                Style="{StaticResource Headline}"/>
+            <Label
+                TextType="Html">
+                <x:String>
+                <![CDATA[
+                    <h1>Hello World!</h1><br/>Second Line<br/><b>Bold Line</b>
+                ]]>
+                </x:String>
+            </Label>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

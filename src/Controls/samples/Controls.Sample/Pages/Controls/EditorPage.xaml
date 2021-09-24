@@ -29,6 +29,11 @@
                 <Editor
                     Text="I am read only"
                     IsReadOnly="True"/>
+                <Label
+                    Text="Keyboard"
+                    Style="{StaticResource Headline}"/>
+                <Editor
+                    Keyboard="Numeric"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

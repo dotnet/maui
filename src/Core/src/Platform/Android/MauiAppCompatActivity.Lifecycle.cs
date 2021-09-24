@@ -37,7 +37,14 @@ namespace Microsoft.Maui
 		{
 			base.OnConfigurationChanged(newConfig);
 
-			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnConfigurationChanged>(del => del(this, newConfig));
+			var mauiApp = MauiApplication.Current;
+
+			if (mauiApp != null)
+			{
+				mauiApp.Application?.ThemeChanged();
+
+				mauiApp.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnConfigurationChanged>(del => del(this, newConfig));
+			}
 		}
 
 		protected override void OnNewIntent(Intent? intent)

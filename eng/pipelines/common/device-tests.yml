@@ -10,7 +10,6 @@ parameters:
       desc: Human Description
       android: /optional/path/to/android.csproj
       ios: /optional/path/to/ios.csproj
-      net6: false
 
 stages:
 
@@ -29,7 +28,10 @@ stages:
                 name: ${{ parameters.androidVmPool }}
                 vmImage: ${{ parameters.androidVmImage }}
               variables:
-                ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
+                ${{ if ge(api, 24) }}:
+                  ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
+                ${{ if lt(api, 24) }}:
+                  ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
                 REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
               steps:
                 - template: device-tests-steps.yml
@@ -37,7 +39,6 @@ stages:
                     platform: android
                     path: ${{ project.android }}
                     device: android-emulator-32_${{ api }}
-                    net6: ${{ project.net6 }}
 
   - stage: ios_device_tests
     displayName: iOS Device Tests
@@ -64,4 +65,3 @@ stages:
                       device: ios-simulator-64
                     ${{ if ne(version, 'latest') }}:
                       device: ios-simulator-64_${{ version }}
-                    net6: ${{ project.net6 }}

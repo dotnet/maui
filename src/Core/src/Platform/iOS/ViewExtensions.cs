@@ -2,13 +2,15 @@ using System;
 using System.Collections.Generic;
 using CoreAnimation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using UIKit;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui
 {
-	public static class ViewExtensions
+	public static partial class ViewExtensions
 	{
-		const string BackgroundLayerName = "MauiBackgroundLayer";
+		internal const string BackgroundLayerName = "MauiBackgroundLayer";
 
 		public static void UpdateIsEnabled(this UIView nativeView, IView view)
 		{
@@ -49,11 +51,18 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateBackground(this ContentView nativeView, IBorder border) 
+		{ 
+			bool hasBorder = border.Shape != null && border.Stroke != null;
+
+			if (hasBorder)
+			{
+				nativeView.UpdateMauiCALayer(border);
+			}
+		}
+
 		public static void UpdateBackground(this UIView nativeView, IView view)
 		{
-			if (nativeView == null)
-				return;
-
 			// Remove previous background gradient layer if any
 			nativeView.RemoveBackgroundLayer();
 
@@ -86,6 +95,24 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateFlowDirection(this UIView nativeView, IView view)
+		{
+			UISemanticContentAttribute updateValue = nativeView.SemanticContentAttribute;
+
+			if (view.FlowDirection == view.Handler?.MauiContext?.GetFlowDirection() ||
+				view.FlowDirection == FlowDirection.MatchParent)
+			{
+				updateValue = UISemanticContentAttribute.Unspecified;
+			}
+			else if (view.FlowDirection == FlowDirection.RightToLeft)
+				updateValue = UISemanticContentAttribute.ForceRightToLeft;
+			else if (view.FlowDirection == FlowDirection.LeftToRight)
+				updateValue = UISemanticContentAttribute.ForceLeftToRight;
+
+			if (updateValue != nativeView.SemanticContentAttribute)
+				nativeView.SemanticContentAttribute = updateValue;
+		}
+
 		public static void UpdateOpacity(this UIView nativeView, IView view)
 		{
 			nativeView.Alpha = (float)view.Opacity;
@@ -100,24 +127,24 @@ namespace Microsoft.Maui
 				wrapper.Clip = view.Clip;
 		}
 
-		public static void UpdateSemantics(this UIView nativeView, IView view)
+		public static void UpdateShadow(this UIView nativeView, IView view)
 		{
-			var semantics = view.Semantics;
+			var shadow = view.Shadow;
+			var clip = view.Clip;
 
-			if (semantics == null)
-				return;
-
-			nativeView.AccessibilityLabel = semantics.Description;
-			nativeView.AccessibilityHint = semantics.Hint;
-
-			// UIControl elements automatically have IsAccessibilityElement set to true
-			if (nativeView is not UIControl && (!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description)))
-				nativeView.IsAccessibilityElement = true;
-
-			if (semantics.IsHeading)
-				nativeView.AccessibilityTraits |= UIAccessibilityTrait.Header;
+			// If there is a clip shape, then the shadow should be applied to the clip layer, not the view layer
+			if (clip == null)
+			{
+				if (shadow == null)
+					nativeView.ClearShadow();
+				else
+					nativeView.SetShadow(shadow);
+			}
 			else
-				nativeView.AccessibilityTraits &= ~UIAccessibilityTrait.Header;
+			{
+				if (nativeView is WrapperView wrapperView)
+					wrapperView.Shadow = view.Shadow;
+			}
 		}
 
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView
@@ -162,34 +189,49 @@ namespace Microsoft.Maui
 		public static void InvalidateMeasure(this UIView nativeView, IView view)
 		{
 			nativeView.SetNeedsLayout();
+			nativeView.Superview?.SetNeedsLayout();
 		}
 
 		public static void UpdateWidth(this UIView nativeView, IView view)
 		{
-			if (view.Width == -1)
-			{
-				// Ignore the initial set of the height; the initial layout will take care of it
-				return;
-			}
-
 			UpdateFrame(nativeView, view);
 		}
 
 		public static void UpdateHeight(this UIView nativeView, IView view)
 		{
-			if (view.Height == -1)
-			{
-				// Ignore the initial set of the height; the initial layout will take care of it
-				return;
-			}
+			UpdateFrame(nativeView, view);
+		}
 
+		public static void UpdateMinimumHeight(this UIView nativeView, IView view)
+		{
+			UpdateFrame(nativeView, view);
+		}
+
+		public static void UpdateMaximumHeight(this UIView nativeView, IView view)
+		{
+			UpdateFrame(nativeView, view);
+		}
+
+		public static void UpdateMinimumWidth(this UIView nativeView, IView view)
+		{
+			UpdateFrame(nativeView, view);
+		}
+
+		public static void UpdateMaximumWidth(this UIView nativeView, IView view)
+		{
 			UpdateFrame(nativeView, view);
 		}
 
 		public static void UpdateFrame(UIView nativeView, IView view)
 		{
+			if (!IsExplicitSet(view.Width) || !IsExplicitSet(view.Height))
+			{
+				// Ignore the initial setting of the value; the initial layout will take care of it
+				return;
+			}
+
 			// Updating the frame (assuming it's an actual change) will kick off a layout update
-			// Handling of the default (-1) width/height will be taken care of by GetDesiredSize
+			// Handling of the default width/height will be taken care of by GetDesiredSize
 			var currentFrame = nativeView.Frame;
 			nativeView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
 		}
@@ -200,6 +242,38 @@ namespace Microsoft.Maui
 				return -1;
 
 			return Array.IndexOf(nativeView.Subviews, subview);
+		}
+
+		public static UIImage? ConvertToImage(this UIView view)
+		{
+			if (!NativeVersion.IsAtLeast(10))
+			{
+				UIGraphics.BeginImageContext(view.Frame.Size);
+				view.Layer.RenderInContext(UIGraphics.GetCurrentContext());
+				var image = UIGraphics.GetImageFromCurrentImageContext();
+				UIGraphics.EndImageContext();
+
+				if (image.CGImage == null)
+					return null;
+
+				return new UIImage(image.CGImage);
+			}
+
+			var imageRenderer = new UIGraphicsImageRenderer(view.Bounds.Size);
+
+			return imageRenderer.CreateImage((a) =>
+			{
+				view.Layer.RenderInContext(a.CGContext);
+			});
+		}
+
+		public static UINavigationController? GetNavigationController(this UIView view)
+		{
+			var rootController = view.Window?.RootViewController;
+			if (rootController is UINavigationController nc)
+				return nc;
+
+			return rootController?.NavigationController;
 		}
 
 		internal static void Collapse(this UIView view)
@@ -236,44 +310,11 @@ namespace Microsoft.Maui
 			return false;
 		}
 
-		static void InsertBackgroundLayer(this UIView control, CALayer backgroundLayer, int index = -1)
+		public static void ClearSubviews(this UIView view)
 		{
-			control.RemoveBackgroundLayer();
-
-			if (backgroundLayer != null)
+			for (int n = view.Subviews.Length - 1; n >= 0; n--)
 			{
-				var layer = control.Layer;
-
-				if (index > -1)
-					layer.InsertSublayer(backgroundLayer, index);
-				else
-					layer.AddSublayer(backgroundLayer);
-			}
-		}
-
-		static void RemoveBackgroundLayer(this UIView control)
-		{
-			var layer = control.Layer;
-
-			if (layer == null)
-				return;
-
-			if (layer.Name == BackgroundLayerName)
-			{
-				layer.RemoveFromSuperLayer();
-				return;
-			}
-
-			if (layer.Sublayers == null || layer.Sublayers.Length == 0)
-				return;
-
-			foreach (var subLayer in layer.Sublayers)
-			{
-				if (subLayer.Name == BackgroundLayerName)
-				{
-					subLayer.RemoveFromSuperLayer();
-					break;
-				}
+				view.Subviews[n].RemoveFromSuperview();
 			}
 		}
 	}

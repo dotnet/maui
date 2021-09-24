@@ -1,69 +1,36 @@
 ﻿using System;
-using System.Linq;
 using UIKit;
-using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class PageHandler : ViewHandler<IPage, PageView>, INativeViewHandler
+	public partial class PageHandler : ContentViewHandler, INativeViewHandler
 	{
-		PageViewController? _pageViewController;
-		UIViewController? INativeViewHandler.ViewController => _pageViewController;
-
-		protected override PageView CreateNativeView()
+		protected override ContentView CreateNativeView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a LayoutView");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 
-			_pageViewController = new PageViewController(VirtualView, this.MauiContext);
+			if (ViewController == null)
+				ViewController = new PageViewController(VirtualView, this.MauiContext);
 
-			if (_pageViewController.CurrentNativeView is PageView pv)
+			if (ViewController is PageViewController pc && pc.CurrentNativeView is ContentView pv)
 				return pv;
 
-			throw new InvalidOperationException($"PageViewController.View must be a PageView");
+			if (ViewController.View is ContentView cv)
+				return cv;
+
+			throw new InvalidOperationException($"PageViewController.View must be a {nameof(ContentView)}");
 		}
 
-		public override void SetVirtualView(IView view)
+		public static void MapTitle(PageHandler handler, IContentView page)
 		{
-			base.SetVirtualView(view);
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-
-			NativeView.CrossPlatformArrange = VirtualView.Arrange;
-		}
-
-		void UpdateContent()
-		{
-			_ = NativeView ?? throw new InvalidOperationException($"{nameof(NativeView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-
-			//Cleanup the old view when reused
-			var oldChildren = NativeView.Subviews.ToList();
-			oldChildren.ForEach(x => x.RemoveFromSuperview());
-
-			if (VirtualView.Content != null)
-				NativeView.AddSubview(VirtualView.Content.ToNative(MauiContext));
-		}
-
-		public static void MapTitle(PageHandler handler, IPage page)
-		{
-			if (handler._pageViewController != null)
-				handler._pageViewController.Title = page.Title;
-		}
-
-		public static void MapContent(PageHandler handler, IPage page)
-		{
-			handler.UpdateContent();
-		}
-
-		public static void MapFrame(PageHandler handler, IView view)
-		{
-			ViewHandler.MapFrame(handler, view);
-
-			// TODO MAUI: Currently the background layer frame is tied to the layout system
-			// which needs to be investigated more
-			handler.NativeView?.UpdateBackgroundLayerFrame();
+			if (handler is INativeViewHandler invh && invh.ViewController != null)
+			{
+				if (page is ITitledElement titled)
+				{
+					invh.ViewController.Title = titled.Title;
+				}
+			}
 		}
 	}
 }

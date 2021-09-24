@@ -16,4 +16,8 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Comet")]
 [assembly: InternalsVisibleTo("Comet.Tests")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.UnitTests")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup.UnitTests")]
 [assembly: InternalsVisibleTo("Reloadify-emit")]

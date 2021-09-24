@@ -24,6 +24,11 @@ namespace Maui.Controls.Sample.ViewModels
 
 		protected override IEnumerable<SectionModel> CreateItems() => new[]
 		{
+#if NET6_0_OR_GREATER
+			new SectionModel(typeof(BlazorPage), "Blazor",
+				"The BlazorWebView control allow to easily embed Blazor content with native UI."),
+#endif
+
 			new SectionModel(typeof(CompatibilityPage), "Compatibility",
 				"Functionality available using the compatibility package."),
 
@@ -40,7 +45,7 @@ namespace Maui.Controls.Sample.ViewModels
 				"User interface concepts like Animations, Colors, Fonts and more."),
 
 			new SectionModel(typeof(OthersPage), "Others Concepts",
-				"Other options like Graphics.")
+				"Other options like Graphics."),
 		};
 	}
 }

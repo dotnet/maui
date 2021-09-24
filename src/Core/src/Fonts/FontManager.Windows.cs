@@ -39,16 +39,16 @@ namespace Microsoft.Maui
 
 		public FontFamily GetFontFamily(Font font)
 		{
-			if (font.IsDefault || string.IsNullOrWhiteSpace(font.FontFamily))
+			if (font.IsDefault || string.IsNullOrWhiteSpace(font.Family))
 				return DefaultFontFamily;
 
-			return _fonts.GetOrAdd(font.FontFamily, CreateFontFamily);
+			return _fonts.GetOrAdd(font.Family, CreateFontFamily);
 		}
 
 		public double GetFontSize(Font font, double defaultFontSize = 0) =>
-			font.FontSize <= 0
+			font.Size <= 0
 				? (defaultFontSize > 0 ? defaultFontSize : DefaultFontSize)
-				: font.FontSize;
+				: font.Size;
 
 		FontFamily CreateFontFamily(string fontFamily)
 		{

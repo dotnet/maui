@@ -1,34 +1,43 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
+	// TODO ezhart 2021-07-16 This interface is just here to give Layout and Compatibility.Layout common ground for BindableLayout
+	// once we have the IContainer changes in, we may be able to drop this in favor of simply Core.ILayout
+	// See also IndicatorView.cs 
+	public interface IBindableLayout
+	{
+		public IList Children { get; }
+	}
+
 	public static class BindableLayout
 	{
 		public static readonly BindableProperty ItemsSourceProperty =
-			BindableProperty.CreateAttached("ItemsSource", typeof(IEnumerable), typeof(Layout<View>), default(IEnumerable),
+			BindableProperty.CreateAttached("ItemsSource", typeof(IEnumerable), typeof(IBindableLayout), default(IEnumerable),
 				propertyChanged: (b, o, n) => { GetBindableLayoutController(b).ItemsSource = (IEnumerable)n; });
 
 		public static readonly BindableProperty ItemTemplateProperty =
-			BindableProperty.CreateAttached("ItemTemplate", typeof(DataTemplate), typeof(Layout<View>), default(DataTemplate),
+			BindableProperty.CreateAttached("ItemTemplate", typeof(DataTemplate), typeof(IBindableLayout), default(DataTemplate),
 				propertyChanged: (b, o, n) => { GetBindableLayoutController(b).ItemTemplate = (DataTemplate)n; });
 
 		public static readonly BindableProperty ItemTemplateSelectorProperty =
-			BindableProperty.CreateAttached("ItemTemplateSelector", typeof(DataTemplateSelector), typeof(Layout<View>), default(DataTemplateSelector),
+			BindableProperty.CreateAttached("ItemTemplateSelector", typeof(DataTemplateSelector), typeof(IBindableLayout), default(DataTemplateSelector),
 				propertyChanged: (b, o, n) => { GetBindableLayoutController(b).ItemTemplateSelector = (DataTemplateSelector)n; });
 
 		static readonly BindableProperty BindableLayoutControllerProperty =
-			 BindableProperty.CreateAttached("BindableLayoutController", typeof(BindableLayoutController), typeof(Layout<View>), default(BindableLayoutController),
-				 defaultValueCreator: (b) => new BindableLayoutController((Layout<View>)b),
+			 BindableProperty.CreateAttached("BindableLayoutController", typeof(BindableLayoutController), typeof(IBindableLayout), default(BindableLayoutController),
+				 defaultValueCreator: (b) => new BindableLayoutController((IBindableLayout)b),
 				 propertyChanged: (b, o, n) => OnControllerChanged(b, (BindableLayoutController)o, (BindableLayoutController)n));
 
 		public static readonly BindableProperty EmptyViewProperty =
-			BindableProperty.Create("EmptyView", typeof(object), typeof(Layout<View>), null, propertyChanged: (b, o, n) => { GetBindableLayoutController(b).EmptyView = n; });
+			BindableProperty.Create("EmptyView", typeof(object), typeof(IBindableLayout), null, propertyChanged: (b, o, n) => { GetBindableLayoutController(b).EmptyView = n; });
 
 		public static readonly BindableProperty EmptyViewTemplateProperty =
-			BindableProperty.Create("EmptyViewTemplate", typeof(DataTemplate), typeof(Layout<View>), null, propertyChanged: (b, o, n) => { GetBindableLayoutController(b).EmptyViewTemplate = (DataTemplate)n; });
+			BindableProperty.Create("EmptyViewTemplate", typeof(DataTemplate), typeof(IBindableLayout), null, propertyChanged: (b, o, n) => { GetBindableLayoutController(b).EmptyViewTemplate = (DataTemplate)n; });
 
 		public static void SetItemsSource(BindableObject b, IEnumerable value)
 		{
@@ -110,11 +119,71 @@ namespace Microsoft.Maui.Controls
 			newC.EmptyViewTemplate = GetEmptyViewTemplate(b);
 			newC.EndBatchUpdate();
 		}
+
+		internal static void Add(this IBindableLayout layout, object item)
+		{
+			if (layout is Maui.ILayout mauiLayout && item is IView view)
+			{
+				mauiLayout.Add(view);
+			}
+			else
+			{
+				_ = layout.Children.Add(item);
+			}
+		}
+
+		internal static void Insert(this IBindableLayout layout, object item, int index)
+		{
+			if (layout is Maui.ILayout mauiLayout && item is IView view)
+			{
+				mauiLayout.Insert(index, view);
+			}
+			else
+			{
+				layout.Children.Insert(index, item);
+			}
+		}
+
+		internal static void Remove(this IBindableLayout layout, object item)
+		{
+			if (layout is Maui.ILayout mauiLayout && item is IView view)
+			{
+				_ = mauiLayout.Remove(view);
+			}
+			else
+			{
+				layout.Children.Remove(item);
+			}
+		}
+
+		internal static void RemoveAt(this IBindableLayout layout, int index)
+		{
+			if (layout is Maui.ILayout mauiLayout)
+			{
+				mauiLayout.RemoveAt(index);
+			}
+			else
+			{
+				layout.Children.RemoveAt(index);
+			}
+		}
+
+		internal static void Clear(this IBindableLayout layout)
+		{
+			if (layout is Maui.ILayout mauiLayout)
+			{
+				mauiLayout.Clear();
+			}
+			else
+			{
+				layout.Children.Clear();
+			}
+		}
 	}
 
 	class BindableLayoutController
 	{
-		readonly WeakReference<Layout<View>> _layoutWeakReference;
+		readonly WeakReference<IBindableLayout> _layoutWeakReference;
 		IEnumerable _itemsSource;
 		DataTemplate _itemTemplate;
 		DataTemplateSelector _itemTemplateSelector;
@@ -130,9 +199,9 @@ namespace Microsoft.Maui.Controls
 		public object EmptyView { get => _emptyView; set => SetEmptyView(value); }
 		public DataTemplate EmptyViewTemplate { get => _emptyViewTemplate; set => SetEmptyViewTemplate(value); }
 
-		public BindableLayoutController(Layout<View> layout)
+		public BindableLayoutController(IBindableLayout layout)
 		{
-			_layoutWeakReference = new WeakReference<Layout<View>>(layout);
+			_layoutWeakReference = new WeakReference<IBindableLayout>(layout);
 		}
 
 		internal void StartBatchUpdate()
@@ -217,12 +286,12 @@ namespace Microsoft.Maui.Controls
 
 		void CreateChildren()
 		{
-			if (!_layoutWeakReference.TryGetTarget(out Layout<View> layout))
+			if (!_layoutWeakReference.TryGetTarget(out IBindableLayout layout))
 			{
 				return;
 			}
 
-			layout.Children.Clear();
+			layout.Clear();
 
 			UpdateEmptyView(layout);
 
@@ -231,27 +300,27 @@ namespace Microsoft.Maui.Controls
 
 			foreach (object item in _itemsSource)
 			{
-				layout.Children.Add(CreateItemView(item, layout));
+				layout.Add(CreateItemView(item, layout));
 			}
 		}
 
-		void UpdateEmptyView(Layout<View> layout)
+		void UpdateEmptyView(IBindableLayout layout)
 		{
 			if (_currentEmptyView == null)
 				return;
 
 			if (!_itemsSource?.GetEnumerator().MoveNext() ?? true)
 			{
-				layout.Children.Add(_currentEmptyView);
+				layout.Add(_currentEmptyView);
 				return;
 			}
 
-			layout.Children.Remove(_currentEmptyView);
+			layout.Remove(_currentEmptyView);
 		}
 
-		View CreateItemView(object item, Layout<View> layout)
+		View CreateItemView(object item, IBindableLayout layout)
 		{
-			return CreateItemView(item, _itemTemplate ?? _itemTemplateSelector?.SelectTemplate(item, layout));
+			return CreateItemView(item, _itemTemplate ?? _itemTemplateSelector?.SelectTemplate(item, layout as BindableObject));
 		}
 
 		View CreateItemView(object item, DataTemplate dataTemplate)
@@ -270,7 +339,7 @@ namespace Microsoft.Maui.Controls
 
 		View CreateEmptyView(object emptyView, DataTemplate dataTemplate)
 		{
-			if (!_layoutWeakReference.TryGetTarget(out Layout<View> layout))
+			if (!_layoutWeakReference.TryGetTarget(out IBindableLayout layout))
 			{
 				return null;
 			}
@@ -278,7 +347,7 @@ namespace Microsoft.Maui.Controls
 			if (dataTemplate != null)
 			{
 				var view = (View)dataTemplate.CreateContent();
-				view.BindingContext = layout.BindingContext;
+				view.BindingContext = (layout as BindableObject).BindingContext;
 				return view;
 			}
 
@@ -292,14 +361,14 @@ namespace Microsoft.Maui.Controls
 
 		void ItemsSourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (!_layoutWeakReference.TryGetTarget(out Layout<View> layout))
+			if (!_layoutWeakReference.TryGetTarget(out IBindableLayout layout))
 			{
 				return;
 			}
 
 			e.Apply(
-				insert: (item, index, _) => layout.Children.Insert(index, CreateItemView(item, layout)),
-				removeAt: (item, index) => layout.Children.RemoveAt(index),
+				insert: (item, index, _) => layout.Insert(CreateItemView(item, layout), index),
+				removeAt: (item, index) => layout.RemoveAt(index),
 				reset: CreateChildren);
 
 			// UpdateEmptyView is called from within CreateChildren, therefor skip it for Reset

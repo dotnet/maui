@@ -9,6 +9,7 @@ using AndroidX.AppCompat.App;
 using AActionMode = global::AndroidX.AppCompat.View.ActionMode;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
+using Microsoft.Maui.Controls.Platform;
 #if NET6_0
 using AMenu = Android.Views.IMenu;
 #else

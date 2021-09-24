@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls
 
 				while (queue.Count > 0)
 				{
-					ReadOnlyCollection<Element> children = queue.Dequeue().LogicalChildrenInternal;
+					IReadOnlyList<Element> children = queue.Dequeue().LogicalChildrenInternal;
 					for (var i = 0; i < children.Count; i++)
 					{
 						Element child = children[i];

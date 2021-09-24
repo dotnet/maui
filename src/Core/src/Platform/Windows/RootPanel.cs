@@ -25,7 +25,15 @@ namespace Microsoft.Maui
 				height = XamlRoot.Size.Height;
 			}
 
-			return new Windows.Foundation.Size(width, height);
+			var size = new Windows.Foundation.Size(width, height);
+
+			// Measure the children (should only be one, the Page)
+			foreach (var child in Children)
+			{
+				child.Measure(size);
+			}
+
+			return size;
 		}
 
 		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)

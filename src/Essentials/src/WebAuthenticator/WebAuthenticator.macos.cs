@@ -23,8 +23,11 @@ namespace Microsoft.Maui.Essentials
 			callbackHelper.Register();
 		}
 
-		internal static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(Uri url, Uri callbackUrl)
+		internal static async Task<WebAuthenticatorResult> PlatformAuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
+			var url = webAuthenticatorOptions?.Url;
+			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
+
 			if (!AppInfo.VerifyHasUrlScheme(callbackUrl.Scheme))
 				throw new InvalidOperationException("You must register your URL Scheme handler in your app's Info.plist!");
 
@@ -56,6 +59,7 @@ namespace Microsoft.Maui.Essentials
 				{
 					var ctx = new ContextProvider(Platform.GetCurrentWindow());
 					was.PresentationContextProvider = ctx;
+					was.PrefersEphemeralWebBrowserSession = webAuthenticatorOptions?.PrefersEphemeralWebBrowserSession ?? false;
 
 					was.Start();
 					return await tcsResponse.Task;

@@ -58,17 +58,17 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 							BackgroundColor = Colors.Blue,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Microsoft.Maui.Controls.Constraint.Constant (0)},
+						}, Compatibility.Constraint.Constant (0)},
 						{new Label {
 							BackgroundColor = Colors.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Microsoft.Maui.Controls.Constraint.Constant (0), Microsoft.Maui.Controls.Constraint.Constant (40)},
+						}, Compatibility.Constraint.Constant (0), Compatibility.Constraint.Constant (40)},
 						{new Label {
 							BackgroundColor = Colors.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Microsoft.Maui.Controls.Constraint.Constant (10), Microsoft.Maui.Controls.Constraint.Constant (80)},
+						}, Compatibility.Constraint.Constant (10), Compatibility.Constraint.Constant (80)},
 					}
 				}
 			};
@@ -89,17 +89,17 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 							BackgroundColor = Colors.Blue,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Microsoft.Maui.Controls.Constraint.Constant (0)},
+						}, Compatibility.Constraint.Constant (0)},
 						{new Label {
 							BackgroundColor = Colors.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Microsoft.Maui.Controls.Constraint.Constant (0), Microsoft.Maui.Controls.Constraint.Constant (40)},
+						}, Compatibility.Constraint.Constant (0), Compatibility.Constraint.Constant (40)},
 						{new Label {
 							BackgroundColor = Colors.Fuchsia,
 							Text = longString,
 							LineBreakMode = LineBreakMode.TailTruncation
-						}, Microsoft.Maui.Controls.Constraint.Constant (10), Microsoft.Maui.Controls.Constraint.Constant (80)},
+						}, Compatibility.Constraint.Constant (10), Compatibility.Constraint.Constant (80)},
 					}
 				}
 			};

@@ -116,17 +116,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		protected override void DisconnectHandler(NativeView nativeView)
 		{
-			if (VisualElementRenderer != null)
-			{
-				SetRenderer(
-					VisualElementRenderer.Element,
-					null);
-
-				VisualElementRenderer.SetElement(null);
-			}
-
+			VisualElementRenderer?.Dispose();
 			base.DisconnectHandler(nativeView);
-			base.VirtualView.Handler = null;
 		}
 
 		public override void SetVirtualView(IView view)
