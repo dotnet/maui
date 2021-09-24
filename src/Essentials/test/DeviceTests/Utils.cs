@@ -9,18 +9,18 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public static void Unused(params object[] obj) { }
 
 #if WINDOWS_UWP || WINDOWS
-        public static async Task OnMainThread(Windows.UI.Core.DispatchedHandler action)
+        public static async Task OnMainThread(global::Windows.UI.Core.DispatchedHandler action)
         {
-            var mainView = Windows.ApplicationModel.Core.CoreApplication.MainView;
-            var normal = Windows.UI.Core.CoreDispatcherPriority.Normal;
+            var mainView = global::Windows.ApplicationModel.Core.CoreApplication.MainView;
+            var normal = global::Windows.UI.Core.CoreDispatcherPriority.Normal;
             await mainView.CoreWindow.Dispatcher.RunAsync(normal, action);
         }
 
         public static Task OnMainThread(Func<Task> action)
         {
             var tcs = new TaskCompletionSource<bool>();
-            var mainView = Windows.ApplicationModel.Core.CoreApplication.MainView;
-            var normal = Windows.UI.Core.CoreDispatcherPriority.Normal;
+            var mainView = global::Windows.ApplicationModel.Core.CoreApplication.MainView;
+            var normal = global::Windows.UI.Core.CoreDispatcherPriority.Normal;
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             mainView.CoreWindow.Dispatcher.RunAsync(normal, async () =>
             {
