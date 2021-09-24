@@ -4,13 +4,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Hosting
 {
 	/// <summary>
 	/// A non-buildable <see cref="IHostBuilder"/> for <see cref="MauiAppBuilder"/>.
 	/// Use <see cref="MauiAppBuilder.Build"/> to build the <see cref="MauiAppBuilder"/>.
 	/// </summary>
-	public sealed class ConfigureHostBuilder : IHostBuilder
+	internal sealed class ConfigureHostBuilder : IHostBuilder
 	{
 		private readonly ConfigurationManager _configuration;
 		private readonly IServiceCollection _services;

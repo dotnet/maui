@@ -2,6 +2,7 @@
 using Android.Views;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
