@@ -1,5 +1,4 @@
 ﻿using Microsoft.Maui.Graphics.Skia.Views;
-using SkiaGraphicsView = Microsoft.Maui.Platform.Tizen.SkiaGraphicsView;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -7,10 +6,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override SkiaGraphicsView CreateNativeView()
 		{
-			return new SkiaGraphicsView(NativeParent)
-			{
-				DeviceScalingFactor = (float)Tizen.UIExtensions.Common.DeviceInfo.ScalingFactor
-			};
+			return new SkiaGraphicsView(NativeParent);
 		}
 
 		public static void MapDrawable(GraphicsViewHandler handler, IGraphicsView graphicsView)

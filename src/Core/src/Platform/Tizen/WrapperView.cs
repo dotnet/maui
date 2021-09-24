@@ -7,7 +7,6 @@ using Microsoft.Maui.Graphics.Skia.Views;
 using SkiaSharp.Views.Tizen;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
-using SkiaGraphicsView = Microsoft.Maui.Platform.Tizen.SkiaGraphicsView;
 
 namespace Microsoft.Maui
 {
@@ -26,10 +25,7 @@ namespace Microsoft.Maui
 		{
 			_backgroundCanvas = new Lazy<SkiaGraphicsView>(() =>
 			{
-				var view = new SkiaGraphicsView(parent)
-				{
-					DeviceScalingFactor = (float)DeviceInfo.ScalingFactor
-				};
+				var view = new SkiaGraphicsView(parent);
 				view.Show();
 				Children.Add(view);
 				view.Lower();

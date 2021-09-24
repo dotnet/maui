@@ -12,15 +12,6 @@
 			Paint _paint;
 			public BackgroundDrawable(Paint paint)
 			{
-				// Workaround.
-				// I think, SolidPaint violate LSP
-				// When Paint was used on Canvas.SetFillPaint, BackgroundColor was referred
-				// But SolidPaint do not update BackgroundColor when Color was updated even though it has same meaning.
-				if (paint is SolidPaint solidPaint)
-				{
-					solidPaint.BackgroundColor = solidPaint.Color;
-				}
-
 				_paint = paint;
 			}
 

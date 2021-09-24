@@ -1,5 +1,5 @@
 ﻿using ElmSharp;
-using SkiaGraphicsView = Microsoft.Maui.Platform.Tizen.SkiaGraphicsView;
+using Microsoft.Maui.Graphics.Skia.Views;
 
 namespace Microsoft.Maui
 {
@@ -7,7 +7,6 @@ namespace Microsoft.Maui
 	{
 		public MauiBoxView(EvasObject parent) : base(parent)
 		{
-			DeviceScalingFactor = (float)Tizen.UIExtensions.Common.DeviceInfo.ScalingFactor;
 		}
 	}
 }
