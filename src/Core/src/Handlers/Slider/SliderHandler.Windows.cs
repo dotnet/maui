@@ -28,6 +28,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiSlider nativeView)
 		{
+			SetupDefaults(NativeView);
+
 			nativeView.ValueChanged += OnNativeValueChanged;
 			nativeView.Ready += OnNativeViewReady;
 

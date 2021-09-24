@@ -104,11 +104,11 @@
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalThumb"
                                            Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightChromeAltLowBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ThumbColorOver, RelativeSource={RelativeSource TemplatedParent}}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalThumb"
                                            Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightChromeAltLowBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ThumbColorOver, RelativeSource={RelativeSource TemplatedParent}}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>

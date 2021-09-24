@@ -52,9 +52,10 @@ namespace Microsoft.Maui
 		{
 			var thumb = nativeSlider?.Thumb;
 
-			if (thumb == null)
+			if (thumb == null || slider?.ThumbColor == null || nativeSlider == null)
 				return;
 
+			nativeSlider.ThumbColorOver = slider.ThumbColor.ToNative();
 			BrushHelpers.UpdateColor(slider.ThumbColor, ref defaultThumbColor,
 				() => thumb.Background, brush => thumb.Background = brush);
     }
