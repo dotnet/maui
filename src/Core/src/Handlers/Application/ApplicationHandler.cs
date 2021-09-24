@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static CommandMapper<IApplication, ApplicationHandler> CommandMapper = new(ElementCommandMapper)
 		{
-			[nameof(TerminateCommandKey)] = MapTerminate
+			[TerminateCommandKey] = MapTerminate
 		};
 
 		ILogger<ApplicationHandler>? _logger;
