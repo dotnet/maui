@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(ToggleSwitch nativeView)
 		{
 			base.ConnectHandler(nativeView);
+			SetupDefaults(nativeView);
 			nativeView.Toggled += OnToggled;
 		}
 
