@@ -40,16 +40,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			SetupInit(state.Context, (state.Context as IMauiWindowContext)?.Window, maybeOptions: options);
 		}
 
-		public static void Init(
-			UI.Xaml.Window mainWindow,
-			IEnumerable<Assembly> rendererAssemblies = null)
-		{
-			SetupInit(new MauiContext(), mainWindow, rendererAssemblies);
-		}
-
-		public static void Init(InitializationOptions options) =>
-			SetupInit(new MauiContext(), null, null, options);
-
 		static void SetupInit(
 			IMauiContext mauiContext,
 			UI.Xaml.Window mainWindow,
