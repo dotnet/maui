@@ -13,12 +13,6 @@ namespace Microsoft.Maui
 			Context = context ?? throw new ArgumentNullException(nameof(context));
 		}
 
-		internal MauiApplicationContext(Context context)
-			: this()
-		{
-			Context = context ?? throw new ArgumentNullException(nameof(context));
-		}
-
 		public Context? Context { get; }
 	}
 
@@ -26,14 +20,8 @@ namespace Microsoft.Maui
 	{
 		readonly WeakReference<Context>? _context;
 
-		public MauiContext(IServiceProvider services, Context context)
-			: this(services)
-		{
-			_context = new WeakReference<Context>(context ?? throw new ArgumentNullException(nameof(context)));
-		}
-
-		internal MauiContext(Context context)
-			: this()
+		public MauiContext(IServiceProvider services, Context context, IMauiContext? applicationContext = null)
+			: this(services, applicationContext)
 		{
 			_context = new WeakReference<Context>(context ?? throw new ArgumentNullException(nameof(context)));
 		}

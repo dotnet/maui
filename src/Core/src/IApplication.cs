@@ -23,10 +23,5 @@ namespace Microsoft.Maui
 		/// Notify a theme change.
 		/// </summary>
 		void ThemeChanged();
-
-		/// <summary>
-		/// Request the application terminate itself.
-		/// </summary>
-		void RequestTerminate();
 	}
 }

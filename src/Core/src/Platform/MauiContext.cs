@@ -6,13 +6,6 @@ namespace Microsoft.Maui
 {
 	public partial class MauiApplicationContext : IMauiApplicationContext
 	{
-		public MauiApplicationContext()
-		{
-			// Temporary hack until we fully remove Forms.Init
-			Services = null!;
-			Handlers = null!;
-		}
-
 		public MauiApplicationContext(IServiceProvider services)
 		{
 			Services = services ?? throw new ArgumentNullException(nameof(services));
@@ -28,20 +21,16 @@ namespace Microsoft.Maui
 	{
 		IAnimationManager? _animationManager;
 
-		public MauiContext()
-		{
-			// Temporary hack until we fully remove Forms.Init
-			Services = null!;
-			Handlers = null!;
-		}
-
-		public MauiContext(IServiceProvider services)
+		public MauiContext(IServiceProvider services, IMauiContext? applicationContext = null)
 		{
 			Services = services ?? throw new ArgumentNullException(nameof(services));
+			ApplicationContext = applicationContext;
 			Handlers = Services.GetRequiredService<IMauiHandlersServiceProvider>();
 		}
 
 		public IServiceProvider Services { get; }
+
+		internal IMauiContext? ApplicationContext { get; }
 
 		public IMauiHandlersServiceProvider Handlers { get; }
 

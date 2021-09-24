@@ -18,8 +18,8 @@ namespace Microsoft.Maui
 	{
 		readonly WeakReference<UIWindow>? _window;
 
-		public MauiContext(IServiceProvider services, UIWindow window)
-			: this(services)
+		public MauiContext(IServiceProvider services, UIWindow window, IMauiContext? applicationContext = null)
+			: this(services, applicationContext)
 		{
 			_window = new WeakReference<UIWindow>(window ?? throw new ArgumentNullException(nameof(window)));
 		}

@@ -1,7 +1,6 @@
 using System;
 using Android.OS;
 using AndroidX.AppCompat.App;
-using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
@@ -55,7 +54,8 @@ namespace Microsoft.Maui
 			if (services == null)
 				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
 
-			var mauiContext = new MauiContext(services, this);
+			var applicationContext = MauiApplication.Current.MauiApplicationContext;
+			var mauiContext = new MauiContext(services, this, applicationContext);
 
 			services.InvokeLifecycleEvents<AndroidLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 

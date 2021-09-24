@@ -15,9 +15,10 @@ namespace Microsoft.Maui
 
 	public partial class MauiContext
 	{
-		WindowManager? _windowManager;
-		public MauiContext(IServiceProvider services, UI.Xaml.Window window)
-			: this(services)
+		readonly WindowManager? _windowManager;
+
+		public MauiContext(IServiceProvider services, UI.Xaml.Window window, IMauiContext? applicationContext = null)
+			: this(services, applicationContext)
 		{
 			Window = window ?? throw new ArgumentNullException(nameof(window));
 			_windowManager = new WindowManager(this);
