@@ -21,17 +21,19 @@ namespace Microsoft.Maui.Controls
 
 		Paint? IShapeView.Fill => Color?.AsPaint() ?? ((IView)this).Background;
 
-		Paint? IShapeView.Stroke => null;
+		Paint? IStroke.Stroke => null;
 
-		double IShapeView.StrokeThickness => 0;
+		double IStroke.StrokeThickness => 0;
 
-		LineCap IShapeView.StrokeLineCap => LineCap.Butt;
+		LineCap IStroke.StrokeLineCap => LineCap.Butt;
 
-		LineJoin IShapeView.StrokeLineJoin => LineJoin.Miter;
+		LineJoin IStroke.StrokeLineJoin => LineJoin.Miter;
 
-		float[]? IShapeView.StrokeDashPattern => null;
+		float[]? IStroke.StrokeDashPattern => null;
 
-		float IShapeView.StrokeMiterLimit => 0;
+		float IStroke.StrokeDashOffset => 0f;
+
+		float IStroke.StrokeMiterLimit => 0;
 
 		PathF IShape.PathForBounds(Rectangle bounds)
 		{

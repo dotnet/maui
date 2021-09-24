@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(TimePicker), typeof(TimePickerHandler) },
 			{ typeof(Page), typeof(PageHandler) },
 			{ typeof(WebView), typeof(WebViewHandler) },
+			{ typeof(Border), typeof(BorderHandler) },
 			{ typeof(IContentView), typeof(ContentViewHandler) },
 			{ typeof(Shapes.Ellipse), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Line), typeof(ShapeViewHandler) },
@@ -42,6 +43,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Shapes.Polygon), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Polyline), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Rectangle), typeof(ShapeViewHandler) },
+			{ typeof(Shapes.RoundRectangle), typeof(ShapeViewHandler) },
 			{ typeof(Window), typeof(WindowHandler) },
 			{ typeof(ImageButton), typeof(ImageButtonHandler) },
 #if __ANDROID__ || __IOS__

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 		List<Fragment> _fragments;
 
 		public MultiPageFragmentStateAdapter(
-			MultiPage<T> page, FragmentManager fragmentManager, IMauiContext context) 
+			MultiPage<T> page, FragmentManager fragmentManager, IMauiContext context)
 			: base(fragmentManager, (context.GetActivity() as AppCompatActivity).Lifecycle)
 		{
 			_page = page;

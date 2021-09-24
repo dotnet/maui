@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			// TODO: Create specific Path taking into account RadiusX and RadiusY
 			path.AppendRoundedRectangle(x, y, w, h, cornerRadius);
+
 			return path;
 		}
 	}

@@ -4,10 +4,11 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using WShape = Microsoft.UI.Xaml.Shapes.Shape;
 using Microsoft.Maui.Controls.Platform;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class BoxViewBorderRenderer : ViewRenderer<BoxView, Border>
+	public class BoxViewBorderRenderer : ViewRenderer<BoxView, WBorder>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<BoxView> e)
 		{
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var rect = new Border
+					var rect = new WBorder
 					{
 						DataContext = Element
 					};
