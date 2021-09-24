@@ -25,5 +25,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public float[] StrokeDashPattern { get; set; }
 
 		public float StrokeMiterLimit { get; set; }
+
+		public float StrokeDashOffset { get; set; }
 	}
 }
