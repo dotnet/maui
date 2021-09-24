@@ -124,9 +124,9 @@ namespace Microsoft.Maui
 			textBox.UpdateInputScope(editor);
 		}
 
-		public static void UpdateKeyboard(this MauiTextBox textBox, IEditor editor)
+		public static void UpdateKeyboard(this MauiTextBox textBox, ITextInput textInput)
 		{
-			textBox.UpdateInputScope(editor);
+			textBox.UpdateInputScope(textInput);
 		}
 
 		internal static void UpdateInputScope(this MauiTextBox textBox, ITextInput textInput)
