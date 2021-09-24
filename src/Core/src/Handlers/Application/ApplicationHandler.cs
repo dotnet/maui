@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ApplicationHandler
 	{
-		internal const string TerminateKey = "Terminate";
+		internal const string TerminateCommandKey = "Terminate";
 
 		public static IPropertyMapper<IApplication, ApplicationHandler> Mapper = new PropertyMapper<IApplication, ApplicationHandler>(ElementMapper)
 		{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static CommandMapper<IApplication, ApplicationHandler> CommandMapper = new(ElementCommandMapper)
 		{
-			[nameof(TerminateKey)] = MapTerminate
+			[nameof(TerminateCommandKey)] = MapTerminate
 		};
 
 		ILogger<ApplicationHandler>? _logger;

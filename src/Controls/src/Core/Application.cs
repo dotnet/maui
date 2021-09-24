@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls
 
 		public void Quit()
 		{
-			Handler?.Invoke(ApplicationHandler.TerminateKey);
+			Handler?.Invoke(ApplicationHandler.TerminateCommandKey);
 		}
 
 		public IAppLinks AppLinks
