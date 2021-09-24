@@ -19,6 +19,7 @@ using UwpApplication = Microsoft.UI.Xaml.Application;
 using UwpSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using Microsoft.Maui.Controls.Platform;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		ShellSectionView SectionRenderer { get; }
 		TextBlock _Title;
-		Border _BottomBarArea;
+		WBorder _BottomBarArea;
 		UwpGrid _BottomBar;
 		UwpGrid _HeaderArea;
 		ItemsControl _Toolbar;
@@ -76,7 +77,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Children.Add(SectionRenderer);
 
 			_BottomBar = new UwpGrid() { HorizontalAlignment = HorizontalAlignment.Center };
-			_BottomBarArea = new Border() { Child = _BottomBar };
+			_BottomBarArea = new WBorder() { Child = _BottomBar };
 			SetRow(_BottomBarArea, 2);
 			Children.Add(_BottomBarArea);
 		}

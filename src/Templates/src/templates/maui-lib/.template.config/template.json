@@ -4,7 +4,7 @@
     "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "WinUI" ],
     "identity": "Microsoft.Maui.MauiLib",
     "groupIdentity": "Microsoft.Maui.Library",
-    "name": ".NET MAUI Class Library",
+    "name": ".NET MAUI Class Library (Preview)",
     "description": "A project for creating a .NET MAUI class library",
     "shortName": "mauilib",
     "tags": {

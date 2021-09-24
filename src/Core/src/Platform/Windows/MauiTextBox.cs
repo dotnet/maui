@@ -255,21 +255,26 @@ namespace Microsoft.Maui
 
 		static string DetermineTextFromPassword(string realText, int start, string passwordText)
 		{
-			var lengthDifference = passwordText.Length - realText.Length;
+			var rt = realText ?? string.Empty;
+
+			var lengthDifference = passwordText.Length - (rt?.Length ?? 0);
 			if (lengthDifference > 0)
-				realText = realText.Insert(start - lengthDifference, new string(ObfuscationCharacter, lengthDifference));
+				rt = rt.Insert(start - lengthDifference, new string(ObfuscationCharacter, lengthDifference));
 			else if (lengthDifference < 0)
-				realText = realText.Remove(start, -lengthDifference);
+				rt = rt.Remove(start, -lengthDifference);
 
 			var sb = new StringBuilder(passwordText.Length);
 			for (int i = 0; i < passwordText.Length; i++)
-				sb.Append(passwordText[i] == ObfuscationCharacter ? realText[i] : passwordText[i]);
+				sb.Append(passwordText[i] == ObfuscationCharacter ? rt[i] : passwordText[i]);
 
 			return sb.ToString();
 		}
 
 		string Obfuscate(string text, bool leaveLastVisible = false)
 		{
+			if (string.IsNullOrEmpty(text))
+				return string.Empty;
+
 			if (!leaveLastVisible)
 				return new string(ObfuscationCharacter, text.Length);
 

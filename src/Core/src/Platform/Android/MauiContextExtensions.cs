@@ -16,6 +16,15 @@ namespace Microsoft.Maui
 			return config.LayoutDirection.ToFlowDirection();
 		}
 
+		public static NavigationManager GetNavigationManager(this IMauiContext mauiContext)
+		{
+			NavigationManager? navigationManager = null;
+			if (mauiContext is IScopedMauiContext smc)
+				navigationManager = smc.NavigationManager;
+
+			return navigationManager ?? throw new InvalidOperationException("NavigationManager Not Found");
+		}
+
 		public static LayoutInflater GetLayoutInflater(this IMauiContext mauiContext)
 		{
 			LayoutInflater? layoutInflater = null;
