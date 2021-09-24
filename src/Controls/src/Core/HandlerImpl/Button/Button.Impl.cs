@@ -4,13 +4,13 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Button : IButton
+	public partial class Button : IButton, IText
 	{
 		public new static void RemapForControls()
 		{
 			// IButton does not include the ContentType property, so we map it here to handle Image Positioning
 
-			IPropertyMapper<IButton, ButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, ButtonHandler>(ButtonHandler.ButtonMapper)
+			IPropertyMapper<IButton, ButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, ButtonHandler>(ButtonHandler.Mapper)
 			{
 				[nameof(ContentLayout)] = MapContentLayout,
 #if __IOS__
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 #endif
 			};
 
-			ButtonHandler.ButtonMapper = ControlsButtonMapper;
+			ButtonHandler.Mapper = ControlsButtonMapper;
 		}
 
 		public static void MapContentLayout(ButtonHandler handler, Button button)

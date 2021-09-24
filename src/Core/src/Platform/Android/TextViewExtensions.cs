@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 {
 	public static class TextViewExtensions
 	{
-		public static void UpdateTextPlainText(this TextView textView, ILabel label)
+		public static void UpdateTextPlainText(this TextView textView, IText label)
 		{
 			textView.Text = label.Text;
 		}

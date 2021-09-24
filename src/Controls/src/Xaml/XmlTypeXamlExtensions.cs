@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			var potentialTypes = new List<(string typeName, string clrNamespace, string assemblyName)>();
 			foreach (string typeName in lookupNames)
 				foreach (XmlnsDefinitionAttribute xmlnsDefinitionAttribute in lookupAssemblies)
-					potentialTypes.Add(new (typeName, xmlnsDefinitionAttribute.ClrNamespace, xmlnsDefinitionAttribute.AssemblyName));
+					potentialTypes.Add(new(typeName, xmlnsDefinitionAttribute.ClrNamespace, xmlnsDefinitionAttribute.AssemblyName));
 
 			T? type = null;
 			foreach (var typeInfo in potentialTypes)
