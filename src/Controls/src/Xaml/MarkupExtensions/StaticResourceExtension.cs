@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Controls.Xaml
 	[ContentProperty(nameof(Key))]
 	public sealed class StaticResourceExtension : IMarkupExtension
 	{
+		internal static bool XamlDoubleImplicitOperation { get; set; }
+
 		public string Key { get; set; }
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
@@ -56,8 +58,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			//Special case for https://bugzilla.xamarin.com/show_bug.cgi?id=59818
 			//On OnPlatform, check for an opImplicit from the targetType
-			if (Device.Flags != null
-				&& Device.Flags.Contains("xamlDoubleImplicitOpHack")
+			if (XamlDoubleImplicitOperation
 				&& value.GetType().GetTypeInfo().IsGenericType
 				&& (value.GetType().GetGenericTypeDefinition() == typeof(OnPlatform<>)))
 			{
