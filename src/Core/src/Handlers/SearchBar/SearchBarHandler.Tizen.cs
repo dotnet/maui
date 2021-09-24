@@ -66,6 +66,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateHorizontalTextAlignment(searchBar);
 		}
 
+		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(searchBar);
+		}
 
 		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
