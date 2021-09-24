@@ -3,6 +3,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
@@ -46,6 +47,14 @@ namespace Microsoft.Maui
 			};
 		}
 
+		public static void UpdateBackground(this ContentViewGroup nativeView, IBorder border) 
+		{
+			bool hasBorder = border.Shape != null && border.Stroke != null;
+
+			if (hasBorder)
+				nativeView.UpdateMauiDrawable(border);
+		}
+
 		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackground = null)
 		{
 			// Remove previous background gradient if any
@@ -56,6 +65,7 @@ namespace Microsoft.Maui
 			}
 
 			var paint = view.Background;
+
 			if (paint.IsNullOrEmpty())
 			{
 				if (defaultBackground != null)
@@ -70,7 +80,7 @@ namespace Microsoft.Maui
 				}
 				else
 				{
-					if (paint!.ToDrawable() is Drawable drawable)
+					if (paint!.ToDrawable(nativeView.Context) is Drawable drawable)
 						nativeView.Background = drawable;
 				}
 			}

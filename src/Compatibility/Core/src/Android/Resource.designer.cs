@@ -1,7 +1,7 @@
 #pragma warning disable 1591
 //------------------------------------------------------------------------------
 // This file was manually curated so we could avoid 5,172 fields.
-// See DEVELOPMENT.md#Android for details on updating this file.
+// See .github/DEVELOPMENT.md#Android for details on updating this file.
 //------------------------------------------------------------------------------
 
 [assembly: global::Android.Runtime.ResourceDesignerAttribute("Microsoft.Maui.Controls.Compatibility.Resource", IsApplication=false)]
