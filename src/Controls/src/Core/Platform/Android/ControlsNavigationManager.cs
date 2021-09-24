@@ -491,7 +491,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				source.LoadImage(MauiContext, (result) =>
 				{
-					_titleIconView.SetImageDrawable(result.Value);
+					_titleIconView.SetImageDrawable(result?.Value);
 					AutomationPropertiesProvider.AccessibilitySettingsChanged(_titleIconView, source);
 				});
 			}

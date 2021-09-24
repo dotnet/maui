@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.UI.Xaml.Controls;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly ImageConverter _imageConverter = new ImageConverter();
 		readonly ImageSourceIconElementConverter _imageSourceIconElementConverter = new ImageSourceIconElementConverter();
 		public new Page CurrentPage => (Page)base.CurrentPage;
-		public new NavigationPage NavigationView => (NavigationPage)base.NavigationView;
+		public new NavigationPage? NavigationView => (NavigationPage?)base.NavigationView;
 
 		public ControlsNavigationManager(IMauiContext mauiContext) : base(mauiContext)
 		{
@@ -48,16 +49,16 @@ namespace Microsoft.Maui.Controls.Platform
 			var titleIcon = NavigationPage.GetTitleIconImageSource(CurrentPage);
 			var titleView = NavigationPage.GetTitleView(CurrentPage);
 
-			var barBackground = NavigationView.BarBackground;
-			var barBackgroundColor = NavigationView.BarBackgroundColor;
-			var barTextColor = NavigationView.BarTextColor;
+			var barBackground = NavigationView?.BarBackground;
+			var barBackgroundColor = NavigationView?.BarBackgroundColor;
+			var barTextColor = NavigationView?.BarTextColor;
 
 			// TODO MAUI: it seems like this isn't wired up on WinUI
 			//var iconColor = NavigationPage.GetIconColor(CurrentPage);
 
 			// TODO MAUI: Should be able to just modify the GRID inside NavigationLayout to move header to footer
 			// Or we add a control in the footer
-			var toolbarPlacement = NavigationView.OnThisPlatform().GetToolbarPlacement();
+			var toolbarPlacement = NavigationView?.OnThisPlatform().GetToolbarPlacement();
 
 			if (header != null)
 			{
@@ -72,7 +73,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				titleIcon.LoadImage(MauiContext, (result) =>
 				{
-					header.TitleIcon = result.Value;
+					header.TitleIcon = result?.Value;
 				});
 				if (barTextColor != null)
 					header.TitleColor = barTextColor.ToNative();
@@ -106,7 +107,9 @@ namespace Microsoft.Maui.Controls.Platform
 			commandBar.PrimaryCommands.Clear();
 			commandBar.SecondaryCommands.Clear();
 
-			List<ToolbarItem> toolbarItems = new List<ToolbarItem>(NavigationView.ToolbarItems);
+			List<ToolbarItem> toolbarItems = new List<ToolbarItem>();
+			if (NavigationView != null)
+				toolbarItems.AddRange(NavigationView.ToolbarItems);
 			toolbarItems.AddRange(CurrentPage.ToolbarItems);
 
 			foreach (ToolbarItem item in toolbarItems)
