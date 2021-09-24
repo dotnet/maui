@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			FocusChangeListener.Handler = this;
 
+			nativeView.TextChanged += OnTextChanged;
 			nativeView.OnFocusChangeListener = FocusChangeListener;
 		}
 
@@ -41,13 +42,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.OnFocusChangeListener = null;
 
+			nativeView.TextChanged -= OnTextChanged;
 			FocusChangeListener.Handler = null;
 		}
 
+		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
+			VirtualView.UpdateText(e);
+
 		void SetupDefaults(AppCompatEditText nativeView)
 		{
-
-
 			DefaultTextColors = nativeView.TextColors;
 			DefaultPlaceholderTextColors = nativeView.HintTextColors;
 			DefaultBackground = nativeView.Background;

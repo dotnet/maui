@@ -16,9 +16,37 @@ namespace Microsoft.Maui
 			nativeControl.PlaceholderText = searchBar.Placeholder ?? string.Empty;
 		}
 
+		public static void UpdatePlaceholderColor(this AutoSuggestBox nativeControl, ISearchBar searchBar, Brush? defaultPlaceholderColorBrush, Brush? defaultPlaceholderColorFocusBrush, MauiTextBox? queryTextBox)
+		{
+			if (queryTextBox == null)
+				return;
+
+			Color placeholderColor = searchBar.PlaceholderColor;
+
+			BrushHelpers.UpdateColor(placeholderColor, ref defaultPlaceholderColorBrush,
+				() => queryTextBox.PlaceholderForegroundBrush, brush => queryTextBox.PlaceholderForegroundBrush = brush);
+
+			BrushHelpers.UpdateColor(placeholderColor, ref defaultPlaceholderColorFocusBrush,
+				() => queryTextBox.PlaceholderForegroundFocusBrush, brush => queryTextBox.PlaceholderForegroundFocusBrush = brush);
+		}
+
 		public static void UpdateText(this AutoSuggestBox nativeControl, ISearchBar searchBar)
 		{
 			nativeControl.Text = searchBar.Text;
+		}
+
+		public static void UpdateTextColor(this AutoSuggestBox nativeControl, ISearchBar searchBar, Brush? defaultTextColorBrush, Brush? defaultTextColorFocusBrush, MauiTextBox? queryTextBox)
+		{
+			if (queryTextBox == null)
+				return;
+
+			Color textColor = searchBar.TextColor;
+
+			BrushHelpers.UpdateColor(textColor, ref defaultTextColorBrush,
+				() => queryTextBox.Foreground, brush => queryTextBox.Foreground = brush);
+
+			BrushHelpers.UpdateColor(textColor, ref defaultTextColorFocusBrush,
+				() => queryTextBox.ForegroundFocusBrush, brush => queryTextBox.ForegroundFocusBrush = brush);
 		}
 
 		public static void UpdateFont(this AutoSuggestBox nativeControl, ISearchBar searchBar, IFontManager fontManager) =>

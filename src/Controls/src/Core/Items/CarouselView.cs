@@ -155,14 +155,14 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(ItemsLayout), typeof(LinearItemsLayout), typeof(ItemsView),
 				LinearItemsLayout.CarouselDefault);
 
-		[TypeConverter(typeof(CarouselLayoutTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(CarouselLayoutTypeConverter))]
 		public LinearItemsLayout ItemsLayout
 		{
 			get => (LinearItemsLayout)GetValue(ItemsLayoutProperty);
 			set => SetValue(ItemsLayoutProperty, value);
 		}
 
-		[TypeConverter(typeof(ReferenceTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ReferenceTypeConverter))]
 		public IndicatorView IndicatorView
 		{
 			set => LinkToIndicatorView(this, value);

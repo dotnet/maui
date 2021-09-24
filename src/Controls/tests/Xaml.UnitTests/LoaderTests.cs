@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Mono.Cecil;
@@ -195,16 +196,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void TestBindingPath()
 		{
 			var xaml = @"
-				<StackLayout 
+				<cmp:StackLayout 
 				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
+				xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
-					<StackLayout.Children>
+					<cmp:StackLayout.Children>
 						<Label x:Name=""label0"" Text=""{Binding text}""/>
 						<Label x:Name=""label1"" Text=""{Binding Path=text}""/>
-					</StackLayout.Children>
-				</StackLayout>";
+					</cmp:StackLayout.Children>
+				</cmp:StackLayout>";
 
-			var stacklayout = new StackLayout();
+			var stacklayout = new Compatibility.StackLayout();
 			stacklayout.LoadFromXaml(xaml);
 
 			var label0 = stacklayout.FindByName<Label>("label0");
@@ -231,6 +233,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				<ContentPage 
 				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+				xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
 				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
 					<ContentPage.Resources>
 						<ResourceDictionary>
@@ -238,12 +241,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 						</ResourceDictionary>
 					</ContentPage.Resources>
 					<ContentPage.Content>
-						<StackLayout Orientation=""Vertical"">
-							<StackLayout.Children>
+						<cmp:StackLayout Orientation=""Vertical"">
+							<cmp:StackLayout.Children>
 								<Label x:Name=""label0"" Text=""{Binding Text, Converter={StaticResource reverseConverter}}""/>
 								<Label x:Name=""label1"" Text=""{Binding Text, Mode=TwoWay}""/>
-							</StackLayout.Children>
-						</StackLayout>
+							</cmp:StackLayout.Children>
+						</cmp:StackLayout>
 					</ContentPage.Content>
 				</ContentPage>";
 

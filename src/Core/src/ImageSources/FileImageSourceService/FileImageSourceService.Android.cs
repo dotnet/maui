@@ -24,11 +24,25 @@ namespace Microsoft.Maui
 
 			try
 			{
-				var result = await Glide
-					.With(context)
-					.Load(filename, context)
-					.SubmitAsync(context, cancellationToken)
-					.ConfigureAwait(false);
+				ImageSourceServiceResult? result = null;
+				var id = context.GetDrawableId(filename);
+				if (id > 0)
+				{
+					var drawable = context.GetDrawable(id);
+					if (drawable != null)
+					{
+						result = new ImageSourceServiceResult(drawable);
+					}
+				}
+
+				if (result == null)
+				{
+					result = await Glide
+						.With(context)
+						.Load(filename, context)
+						.SubmitAsync(context, cancellationToken)
+						.ConfigureAwait(false);
+				}
 
 				if (result == null)
 					throw new InvalidOperationException("Unable to load image file.");

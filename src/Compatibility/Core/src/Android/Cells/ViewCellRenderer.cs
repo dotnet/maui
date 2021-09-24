@@ -254,7 +254,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				double height = Context.FromPixels(b - t);
 
 				Performance.Start(reference, "Element.Layout");
-				Microsoft.Maui.Controls.Layout.LayoutChildIntoBoundingRegion(_view.Element, new Rectangle(0, 0, width, height));
+				Microsoft.Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(_view.Element, new Rectangle(0, 0, width, height));
 				Performance.Stop(reference, "Element.Layout");
 
 				_view.UpdateLayout();
@@ -317,7 +317,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			static bool HasTapGestureRecognizers(View view)
 			{
 				return view.GestureRecognizers.Any(t => t is TapGestureRecognizer)
-					|| view.LogicalChildren.OfType<View>().Any(HasTapGestureRecognizers);
+					|| ((IElementController)view).LogicalChildren.OfType<View>().Any(HasTapGestureRecognizers);
 			}
 
 			void TriggerClick()

@@ -11,8 +11,8 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		protected ElementHandler(PropertyMapper mapper)
-			: base(mapper)
+		protected ElementHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
+			: base(mapper, commandMapper)
 		{
 		}
 

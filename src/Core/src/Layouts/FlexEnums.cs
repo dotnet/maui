@@ -1,7 +1,9 @@
 using System;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.Layouts
 {
+	[TypeConverter(typeof(Converters.FlexJustifyTypeConverter))]
 	public enum FlexJustify
 	{
 		Start = Flex.Justify.Start,
@@ -18,6 +20,7 @@ namespace Microsoft.Maui.Layouts
 		Absolute = Flex.Position.Absolute,
 	}
 
+	[TypeConverter(typeof(Converters.FlexDirectionTypeConverter))]
 	public enum FlexDirection
 	{
 		Column = Flex.Direction.Column,
@@ -26,6 +29,7 @@ namespace Microsoft.Maui.Layouts
 		RowReverse = Flex.Direction.RowReverse,
 	}
 
+	[TypeConverter(typeof(Converters.FlexAlignContentTypeConverter))]
 	public enum FlexAlignContent
 	{
 		Stretch = Flex.AlignContent.Stretch,
@@ -37,6 +41,7 @@ namespace Microsoft.Maui.Layouts
 		SpaceEvenly = Flex.AlignContent.SpaceEvenly,
 	}
 
+	[TypeConverter(typeof(Converters.FlexAlignItemsTypeConverter))]
 	public enum FlexAlignItems
 	{
 		Stretch = Flex.AlignItems.Stretch,
@@ -46,6 +51,7 @@ namespace Microsoft.Maui.Layouts
 		//Baseline = Flex.AlignItems.Baseline,
 	}
 
+	[TypeConverter(typeof(Converters.FlexAlignSelfTypeConverter))]
 	public enum FlexAlignSelf
 	{
 		Auto = Flex.AlignSelf.Auto,
@@ -56,6 +62,7 @@ namespace Microsoft.Maui.Layouts
 		//Baseline = Flex.AlignSelf.Baseline,
 	}
 
+	[TypeConverter(typeof(Converters.FlexWrapTypeConverter))]
 	public enum FlexWrap
 	{
 		NoWrap = Flex.Wrap.NoWrap,
@@ -63,6 +70,7 @@ namespace Microsoft.Maui.Layouts
 		Reverse = Flex.Wrap.WrapReverse,
 	}
 
+	[TypeConverter(typeof(Converters.FlexBasisTypeConverter))]
 	public struct FlexBasis
 	{
 		bool _isLength;

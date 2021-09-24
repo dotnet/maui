@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	[TypeConverter(typeof(AcceleratorTypeConverter))]
+	[System.ComponentModel.TypeConverter(typeof(AcceleratorTypeConverter))]
 	public class Accelerator
 	{
 		const char Separator = '+';

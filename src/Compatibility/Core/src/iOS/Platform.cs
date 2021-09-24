@@ -34,8 +34,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					if (mauiView.Handler == null && newvalue is IVisualElementRenderer ver)
 						mauiView.Handler = new RendererToHandlerShim(ver);
-					else if (mauiView.Handler != null && newvalue == null)
-						mauiView.Handler = null;
 				}
 			});
 

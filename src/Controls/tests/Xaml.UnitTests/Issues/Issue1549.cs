@@ -135,6 +135,7 @@ xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			var xaml = @"<local:BaseView 
 	xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
 	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" 
+	xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
   	xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
 	Padding=""0,40,0,0"">
     <local:BaseView.Resources>
@@ -153,10 +154,10 @@ xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			<DataTemplate> 
 				<ViewCell >
 				<ViewCell.View>
-					<Grid  VerticalOptions=""FillAndExpand"" HorizontalOptions=""FillAndExpand""  >			
+					<cmp:Grid  VerticalOptions=""FillAndExpand"" HorizontalOptions=""FillAndExpand""  >			
 					<Label  IsVisible=""{Binding IsLocked}""  Text=""Show Is Locked""  />
 					<Label  IsVisible=""{Binding IsLocked, Converter={StaticResource cnvInvert}}"" Text=""Show Is Not locked"" />
-				</Grid>
+				</cmp:Grid>
 				</ViewCell.View>
 				</ViewCell>
 			</DataTemplate>
@@ -182,8 +183,8 @@ xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 			var cell2 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(2, items[2]);
 			var cell3 = (ViewCell)lst.TemplatedItems.GetOrCreateContent(3, items[3]);
 
-			var label00 = (cell0.View as Grid).Children[0] as Label;
-			var label01 = (cell0.View as Grid).Children[1] as Label;
+			var label00 = (cell0.View as Compatibility.Grid).Children[0] as Label;
+			var label01 = (cell0.View as Compatibility.Grid).Children[1] as Label;
 
 			Assert.AreEqual("Show Is Locked", label00.Text);
 			Assert.AreEqual("Show Is Not locked", label01.Text);

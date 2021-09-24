@@ -5,6 +5,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using FlexLayout = Microsoft.Maui.Controls.Compatibility.FlexLayout;
+
 	[TestFixture]
 	public class FlexLayoutAlignContentTests : BaseTestFixture
 	{

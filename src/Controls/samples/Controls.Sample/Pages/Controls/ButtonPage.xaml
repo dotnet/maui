@@ -5,32 +5,47 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Button">
     <views:BasePage.Content>
-        <VerticalStackLayout
-            Margin="12">
-            <Label
-                Text="Default"
-                Style="{StaticResource Headline}"/>
-            <Button
-                Text="Button"/>
-            <Label
-                Text="Disabled"
-                Style="{StaticResource Headline}"/>
-            <Button
-                IsEnabled="False"
-                Text="Button"/>
-            <Label
-                Text="BackgroundColor"
-                Style="{StaticResource Headline}"/>
-            <Button
-                BackgroundColor="Blue"
-                Text="Button"/>
-            <Label
-                Text="TextColor"
-                Style="{StaticResource Headline}"/>
-            <Button
-                BackgroundColor="Red"
-                TextColor="White"
-                Text="Button"/>
-        </VerticalStackLayout>
+        <ScrollView>
+            <VerticalStackLayout Margin="12" Spacing="6">                
+                <Label
+                    Text="Default"
+                    Style="{StaticResource Headline}"/>
+                <Button Text="Button"/>
+                <Label
+                    Text="Disabled"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    IsEnabled="False"
+                    Text="Button"/>
+                <Label
+                    Text="BackgroundColor"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    BackgroundColor="Blue"
+                    Text="Button"/>
+                <Label
+                    Text="TextColor"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    BackgroundColor="Red"
+                    TextColor="White"
+                    Text="Button"/>
+                <Label
+                    Text="Image Source"
+                    Style="{StaticResource Headline}"/>
+                <Button ContentLayout="Top" TextColor="White" Background="Black" ImageSource="settings" Padding="16, 9, 16, 9" />
+                <Label
+                    Text="Image Source with Positioning"
+                    Style="{StaticResource Headline}"/>
+                <Button ContentLayout="Top" TextColor="White" Background="Black" ImageSource="settings" Text="settings" Padding="16, 9, 16, 9" />
+                <Button ContentLayout="Bottom" TextColor="White" Background="Black" ImageSource="settings" Text="settings" Padding="16, 9, 16, 9" />
+                <Button ContentLayout="Left" TextColor="White" Background="Black" ImageSource="settings" Text="settings" Padding="16, 9, 16, 9" />
+                <Button ContentLayout="Right" TextColor="White" Background="Black" ImageSource="settings" Text="settings" Padding="16, 9, 16, 9" />
+                <Label
+                    Text="Click To Change Positionng"
+                    Style="{StaticResource Headline}"/>
+                <Button x:Name="positionChange" ContentLayout="Top" TextColor="White" Background="Black" ImageSource="settings" Text="settings" Padding="16, 9, 16, 9" />
+            </VerticalStackLayout>
+        </ScrollView>
     </views:BasePage.Content>
 </views:BasePage>

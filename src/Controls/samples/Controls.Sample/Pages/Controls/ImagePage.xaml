@@ -12,7 +12,9 @@
                     Text="UriSource"
                     Style="{StaticResource Headline}"/>
                 <Image 
-                    Source="https://aka.ms/campus.jpg" />
+                    Source="https://aka.ms/campus.jpg"
+                    HeightRequest="200" 
+                    WidthRequest="200"/>
                 <Label
                     Text="FileSource"
                     Style="{StaticResource Headline}"/>
@@ -20,6 +22,32 @@
                     Source="dotnet_bot.png"
                     HeightRequest="200" 
                     WidthRequest="200"/>
+                <Label
+                    Text="Font Image Source"
+                    Style="{StaticResource Headline}"/>
+                <Image
+                    Background="Green">
+                    <Image.Source>
+                        <FontImageSource
+                            FontAutoScalingEnabled="True"
+                            FontFamily = "Ionicons" 
+                            Glyph = "&#xf30c;">
+                        </FontImageSource>
+                    </Image.Source>
+                </Image>
+                <Label
+                    Text="Font Image Source Scaling Disabled"
+                    Style="{StaticResource Headline}"/>
+                <Image
+                    Background="Green">
+                    <Image.Source>
+                        <FontImageSource
+                            FontAutoScalingEnabled="False"
+                            FontFamily = "Ionicons" 
+                            Glyph = "&#xf30c;">
+                        </FontImageSource>
+                    </Image.Source>
+                </Image>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

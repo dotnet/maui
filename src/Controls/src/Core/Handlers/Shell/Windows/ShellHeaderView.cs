@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnShellHeaderViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			if (Element is Layout layout)
+			if (Element is Compatibility.Layout layout)
 				layout.ForceLayout();
 		}
 

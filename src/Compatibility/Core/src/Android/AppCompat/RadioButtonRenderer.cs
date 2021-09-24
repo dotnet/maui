@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool _isDisposed;
 		bool _inputTransparent;
 		Lazy<TextColorSwitcher> _textColorSwitcher;
-		AutomationPropertiesProvider _automationPropertiesProvider;
+		FastRenderers.AutomationPropertiesProvider _automationPropertiesProvider;
 		VisualElementTracker _tracker;
 		VisualElementRenderer _visualElementRenderer;
 		BorderBackgroundManager _backgroundTracker;
@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void Initialize()
 		{
-			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
+			_automationPropertiesProvider = new FastRenderers.AutomationPropertiesProvider(this);
 			_backgroundTracker = new BorderBackgroundManager(this);
 
 			SoundEffectsEnabled = false;
@@ -252,7 +252,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return;
 			}
 
-			Font font = Font.OfSize(Element.FontFamily, Element.FontSize).WithAttributes(Element.FontAttributes);
+			Font font = Element.ToFont();
 
 			if (font == Font.Default && _defaultFontSize == 0f)
 			{
@@ -273,7 +273,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			else
 			{
 				Typeface = font.ToTypeface();
-				SetTextSize(ComplexUnitType.Sp, (float)font.FontSize);
+				if (font.AutoScalingEnabled)
+					SetTextSize(ComplexUnitType.Sp, (float)font.Size);
+				else
+					SetTextSize(ComplexUnitType.Dip, (float)font.Size);
 			}
 		}
 

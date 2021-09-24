@@ -155,7 +155,9 @@ namespace Microsoft.Maui.Essentials
 			remoteHostReachability.Schedule(CFRunLoop.Main, CFRunLoop.ModeDefault);
 
 #if __IOS__
+#pragma warning disable BI1234
 			Connectivity.CellularData.RestrictionDidUpdateNotifier = new Action<CTCellularDataRestrictedState>(OnRestrictedStateChanged);
+#pragma warning restore BI1234
 #endif
 		}
 
@@ -176,10 +178,12 @@ namespace Microsoft.Maui.Essentials
 		}
 
 #if __IOS__
+#pragma warning disable BI1234
 		void OnRestrictedStateChanged(CTCellularDataRestrictedState state)
 		{
 			ReachabilityChanged?.Invoke();
 		}
+#pragma warning restore BI1234
 #endif
 
 		async void OnChange(NetworkReachabilityFlags flags)

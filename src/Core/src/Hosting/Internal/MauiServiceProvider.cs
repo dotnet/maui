@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Hosting.Internal
 		readonly IMauiServiceCollection _collection;
 		readonly bool _constructorInjection;
 
+		protected IMauiServiceCollection InternalCollection => _collection;
+
 		// TODO: do this properly and support scopes
 		readonly IDictionary<ServiceDescriptor, object?> _singletons;
 

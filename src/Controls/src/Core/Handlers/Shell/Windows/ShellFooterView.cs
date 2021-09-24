@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnShellFooterViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			if (Element is Layout layout)
+			if (Element is Compatibility.Layout layout)
 				layout.ForceLayout();
 		}
 

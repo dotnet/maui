@@ -13,6 +13,10 @@ namespace Microsoft.Maui.Controls
 }
 namespace Microsoft.Maui.Controls.XamlcUnitTests
 {
+	using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
+	using ConstraintExpression = Microsoft.Maui.Controls.Compatibility.ConstraintExpression;
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[TestFixture]
 	public class TypeReferenceExtensionsTests
 	{
@@ -154,7 +158,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		[TestCase(typeof(OnPlatform<string>), typeof(BindableObject), ExpectedResult = false)]
 		[TestCase(typeof(OnPlatform<string>), typeof(BindingBase), ExpectedResult = false)]
 		[TestCase(typeof(OnPlatform<FontAttributes>), typeof(BindableObject), ExpectedResult = false)]
-		[TestCase(typeof(StackLayout), typeof(Layout<View>), ExpectedResult = true)]
+		[TestCase(typeof(StackLayout), typeof(Controls.Compatibility.Layout<View>), ExpectedResult = true)]
 		[TestCase(typeof(StackLayout), typeof(View), ExpectedResult = true)]
 		[TestCase(typeof(Foo<string>), typeof(Foo), ExpectedResult = true)]
 		[TestCase(typeof(Bar<string>), typeof(Foo), ExpectedResult = true)]

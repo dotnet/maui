@@ -1,7 +1,9 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using NUnit.Framework;
 using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 
@@ -57,7 +59,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(fired);
 
-			var result = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request;
+			var result = view.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
 			Assert.AreEqual(new Size(200, 300), result);
 		}
 
@@ -129,7 +131,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestFadeTo()
 		{
-			var view = AnimationReadyWindow.Prepare(new View());
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.FadeTo(0.1);
 
@@ -139,7 +141,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestTranslateTo()
 		{
-			var view = AnimationReadyWindow.Prepare(new View());
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.TranslateTo(100, 50);
 
@@ -150,7 +152,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task ScaleTo()
 		{
-			var view = AnimationReadyWindow.Prepare(new View());
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.ScaleTo(2);
 
@@ -173,7 +175,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRotateTo()
 		{
-			var view = AnimationReadyWindow.Prepare(new View());
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.RotateTo(25);
 
@@ -183,7 +185,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRotateYTo()
 		{
-			var view = AnimationReadyWindow.Prepare(new View());
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.RotateYTo(25);
 
@@ -193,7 +195,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRotateXTo()
 		{
-			var view = AnimationReadyWindow.Prepare(new View());
+			var view = AnimationReadyHandler.Prepare(new View());
 
 			await view.RotateXTo(25);
 
@@ -203,7 +205,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRelRotateTo()
 		{
-			var view = AnimationReadyWindow.Prepare(new View { Rotation = 30 });
+			var view = AnimationReadyHandler.Prepare(new View { Rotation = 30 });
 
 			await view.RelRotateTo(20);
 
@@ -213,7 +215,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public async Task TestRelScaleTo()
 		{
-			var view = AnimationReadyWindow.Prepare(new View { Scale = 1 });
+			var view = AnimationReadyHandler.Prepare(new View { Scale = 1 });
 
 			await view.RelScaleTo(1);
 
@@ -512,7 +514,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.WidthRequest = 200;
 			view.MinimumWidthRequest = 100;
 
-			var result = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var result = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(new Size(200, 20), result.Request);
 			Assert.AreEqual(new Size(100, 20), result.Minimum);
 		}
@@ -529,7 +531,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.WidthRequest = 20;
 			view.MinimumHeightRequest = 100;
 
-			var result = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var result = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(new Size(20, 200), result.Request);
 			Assert.AreEqual(new Size(20, 100), result.Minimum);
 		}
@@ -659,13 +661,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(gestureRecognizer.Parent);
 		}
 
+
+		[Test]
+		public void ClearingGestureRecognizers()
+		{
+			var view = new View();
+			var gestureRecognizer = new TapGestureRecognizer();
+
+			view.GestureRecognizers.Add(gestureRecognizer);
+			view.GestureRecognizers.Clear();
+
+
+			Assert.AreEqual(0, (view as IGestureController).CompositeGestureRecognizers.Count);
+			Assert.Null(gestureRecognizer.Parent);
+		}
+
 		[Test]
 		public void WidthRequestEffectsGetSizeRequest()
 		{
 			var view = new View();
 			view.IsPlatformEnabled = true;
 			view.WidthRequest = 20;
-			var request = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var request = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.AreEqual(new Size(20, 50), request.Request);
 		}
@@ -683,7 +700,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var view = new View();
 			view.IsPlatformEnabled = true;
 			view.HeightRequest = 20;
-			var request = view.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var request = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.AreEqual(new Size(40, 20), request.Request);
 		}

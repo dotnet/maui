@@ -169,5 +169,44 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			UpdateBackgroundColor();
 		}
+
+		public override SizeRequest GetDesiredSize(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			// Creating a custom override for measuring the BoxView on Android; this reports the same default size that's 
+			// specified in the old OnMeasure method. Normally we'd just do this centrally in the xplat code or override
+			// GetDesiredSize in a BoxViewHandler. But BoxView is a legacy control (replaced by Shapes), so we don't want
+			// to bring that into the new stuff. 
+
+			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
+			var specWidth = MeasureSpec.GetSize(widthMeasureSpec);
+			var specHeight = MeasureSpec.GetSize(heightMeasureSpec);
+
+			var elementWidthRequest = Element.WidthRequest;
+			var elementHeightRequest = Element.HeightRequest;
+
+			var widthRequest = elementWidthRequest >= 0 ? elementWidthRequest : 40;
+			var heightRequest = elementHeightRequest >= 0 ? elementHeightRequest : 40;
+
+			if (widthMode != MeasureSpecMode.Exactly && widthRequest >= 0)
+			{
+				if (widthMode == MeasureSpecMode.Unspecified || widthRequest <= specWidth)
+				{
+					var deviceWidth = (int)Context.ToPixels(widthRequest);
+					widthMeasureSpec = MeasureSpec.MakeMeasureSpec(deviceWidth, MeasureSpecMode.Exactly);
+				}
+			}
+
+			if (heightMode != MeasureSpecMode.Exactly && heightRequest >= 0)
+			{
+				if (heightMode == MeasureSpecMode.Unspecified || heightRequest <= specHeight)
+				{
+					var deviceheight = (int)Context.ToPixels(heightRequest);
+					heightMeasureSpec = MeasureSpec.MakeMeasureSpec(deviceheight, MeasureSpecMode.Exactly);
+				}
+			}
+
+			return base.GetDesiredSize(widthMeasureSpec, heightMeasureSpec);
+		}
 	}
 }

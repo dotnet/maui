@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
-	public class RefreshView : ContentView, IElementConfiguration<RefreshView>
+	public partial class RefreshView : ContentView, IElementConfiguration<RefreshView>
 	{
 		readonly Lazy<PlatformConfigurationRegistry<RefreshView>> _platformConfigurationRegistry;
 		public event EventHandler Refreshing;
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls
 			if (!value)
 				return;
 
-			var refreshView = ((RefreshView)bindable);
+			var refreshView = (RefreshView)bindable;
 			refreshView.Refreshing?.Invoke(bindable, EventArgs.Empty);
 			if (refreshView.Command != null)
 				refreshView.Command.Execute(refreshView.CommandParameter);
@@ -50,9 +50,6 @@ namespace Microsoft.Maui.Controls
 
 			if (view.Command == null)
 				return value;
-
-			if (!view.Command.CanExecute(view.CommandParameter))
-				return false;
 
 			return value;
 		}
@@ -99,10 +96,17 @@ namespace Microsoft.Maui.Controls
 
 		void RefreshCommandCanExecuteChanged(object sender, EventArgs eventArgs)
 		{
+			if (IsRefreshing)
+				return;
+
 			if (Command != null)
+			{
 				SetValueCore(IsEnabledProperty, Command.CanExecute(CommandParameter));
+			}
 			else
+			{
 				SetValueCore(IsEnabledProperty, true);
+			}
 		}
 
 		public static readonly BindableProperty RefreshColorProperty =
@@ -114,14 +118,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(RefreshColorProperty, value); }
 		}
 
-		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
-		{
-			if (Content == null)
-				return new SizeRequest(new Size(100, 100));
-
-			return base.OnMeasure(widthConstraint, heightConstraint);
-		}
-
 		public IPlatformElementConfiguration<T, RefreshView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
@@ -130,9 +126,13 @@ namespace Microsoft.Maui.Controls
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);
-			if (IsEnabledProperty.PropertyName == propertyName)
-				if (!IsEnabled && IsRefreshing)
-					IsRefreshing = false;
+
+			if (IsEnabledProperty.PropertyName == propertyName &&
+				!IsEnabled &&
+				IsRefreshing)
+			{
+				IsRefreshing = false;
+			}
 		}
 	}
 }

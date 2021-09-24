@@ -10,10 +10,11 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE
 string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 
 // optional
-var USE_DOTNET = Argument("dotnet", false);
+var USE_DOTNET = Argument("dotnet", true);
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net6.0-android" : ""));
-var BINLOG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? PROJECT + ".binlog");
+var BINLOG_ARG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
+DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("ANDROID_TEST_APP") ?? "");
 var TEST_APP_PACKAGE_NAME = Argument("package", EnvironmentVariable("ANDROID_TEST_APP_PACKAGE_NAME") ?? "");
 var TEST_APP_INSTRUMENTATION = Argument("instrumentation", EnvironmentVariable("ANDROID_TEST_APP_INSTRUMENTATION") ?? "");
@@ -30,15 +31,13 @@ bool DEVICE_BOOT_WAIT = Argument("wait", true);
 // set up env
 var ANDROID_SDK_ROOT = GetAndroidSDKPath();
 
-System.Environment.SetEnvironmentVariable("PATH",
-	$"{ANDROID_SDK_ROOT}/tools/bin" + System.IO.Path.PathSeparator +
-	$"{ANDROID_SDK_ROOT}/platform-tools" + System.IO.Path.PathSeparator +
-	$"{ANDROID_SDK_ROOT}/emulator" + System.IO.Path.PathSeparator +
-	EnvironmentVariable("PATH"));
+SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/tools/bin", prepend: true);
+SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/platform-tools", prepend: true);
+SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/emulator", prepend: true);
 
 Information("Android SDK Root: {0}", ANDROID_SDK_ROOT);
 Information("Project File: {0}", PROJECT);
-Information("Build Binary Log (binlog): {0}", BINLOG);
+Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Configuration: {0}", CONFIGURATION);
 
 var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = ANDROID_SDK_ROOT };
@@ -82,7 +81,8 @@ Setup(context =>
 			else
 				DEVICE_ARCH = "arm64-v8a";
 		}
-		DEVICE_ID = $"system-images;android-{api};google_apis;{DEVICE_ARCH}";
+		var sdk = api >= 24 ? "google_apis_playstore" : "google_apis";
+		DEVICE_ID = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
 
 		// we are not using a virtual device, so quit
 		if (!emulator)
@@ -135,14 +135,19 @@ Task("Build")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
 	.Does(() =>
 {
+	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android.binlog";
+
 	if (USE_DOTNET)
 	{
+		SetDotNetEnvironmentVariables(DOTNET_PATH);
+
 		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
 			Configuration = CONFIGURATION,
 			Framework = TARGET_FRAMEWORK,
 			ArgumentCustomization = args => args
 				.Append("/p:EmbedAssembliesIntoApk=true")
-				.Append("/bl:" + BINLOG),
+				.Append("/bl:" + binlog),
 			ToolPath = DOTNET_PATH,
 		});
 	}
@@ -159,7 +164,7 @@ Task("Build")
 			c.Targets.Add("SignAndroidPackage");
 			c.BinaryLogger = new MSBuildBinaryLogSettings {
 				Enabled = true,
-				FileName = BINLOG,
+				FileName = binlog,
 			};
 		});
 	}

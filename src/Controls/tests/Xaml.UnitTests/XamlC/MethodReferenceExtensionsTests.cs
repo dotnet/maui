@@ -54,17 +54,17 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		public void GenericGetter()
 		{
 			TypeReference declaringTypeReference;
-			var type = module.ImportReference(typeof(StackLayout));
+			var type = module.ImportReference(typeof(Compatibility.StackLayout));
 			var property = type.GetProperty(pd => pd.Name == "Children", out declaringTypeReference);
-			Assert.AreEqual("System.Collections.Generic.IList`1<T> Microsoft.Maui.Controls.Layout`1::Children()", property.FullName);
-			Assert.AreEqual("Microsoft.Maui.Controls.Layout`1<Microsoft.Maui.Controls.View>", declaringTypeReference.FullName);
+			Assert.AreEqual("System.Collections.Generic.IList`1<T> Microsoft.Maui.Controls.Compatibility.Layout`1::Children()", property.FullName);
+			Assert.AreEqual("Microsoft.Maui.Controls.Compatibility.Layout`1<Microsoft.Maui.Controls.View>", declaringTypeReference.FullName);
 			var propertyGetter = property.GetMethod;
-			Assert.AreEqual("System.Collections.Generic.IList`1<T> Microsoft.Maui.Controls.Layout`1::get_Children()", propertyGetter.FullName);
+			Assert.AreEqual("System.Collections.Generic.IList`1<T> Microsoft.Maui.Controls.Compatibility.Layout`1::get_Children()", propertyGetter.FullName);
 			var propertyGetterRef = module.ImportReference(propertyGetter);
-			Assert.AreEqual("System.Collections.Generic.IList`1<T> Microsoft.Maui.Controls.Layout`1::get_Children()", propertyGetterRef.FullName);
+			Assert.AreEqual("System.Collections.Generic.IList`1<T> Microsoft.Maui.Controls.Compatibility.Layout`1::get_Children()", propertyGetterRef.FullName);
 
 			propertyGetterRef = module.ImportReference(propertyGetterRef.ResolveGenericParameters(declaringTypeReference, module));
-			Assert.AreEqual("System.Collections.Generic.IList`1<T> Microsoft.Maui.Controls.Layout`1<Microsoft.Maui.Controls.View>::get_Children()", propertyGetterRef.FullName);
+			Assert.AreEqual("System.Collections.Generic.IList`1<T> Microsoft.Maui.Controls.Compatibility.Layout`1<Microsoft.Maui.Controls.View>::get_Children()", propertyGetterRef.FullName);
 			var returnType = propertyGetterRef.ReturnType.ResolveGenericParameters(declaringTypeReference);
 			Assert.AreEqual("System.Collections.Generic.IList`1<Microsoft.Maui.Controls.View>", returnType.FullName);
 		}

@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Controls.Sample.Models;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -17,6 +16,7 @@ namespace Maui.Controls.Sample.ViewModels
 		int _itemNumber = 1;
 		readonly Random _random;
 		bool _isRefreshing;
+		bool _isEnabled;
 
 		public bool IsRefreshing
 		{
@@ -25,12 +25,24 @@ namespace Maui.Controls.Sample.ViewModels
 			{
 				_isRefreshing = value;
 				OnPropertyChanged();
+				OnPropertyChanged(nameof(RefreshText));
+			}
+		}
+
+		public bool IsEnabled
+		{
+			get { return _isEnabled; }
+			set
+			{
+				_isEnabled = value;
+				OnPropertyChanged();
+				OnPropertyChanged(nameof(EnabledText));
 			}
 		}
 
 		public ObservableCollection<RefreshItem> Items { get; private set; }
 
-		public ICommand RefreshCommand => new Command(async () => await RefreshItemsAsync());
+		public Command RefreshCommand => new Command(async () => await RefreshItemsAsync(), () => !IsRefreshing);
 
 		public RefreshViewModel()
 		{
@@ -53,11 +65,15 @@ namespace Maui.Controls.Sample.ViewModels
 
 		async Task RefreshItemsAsync()
 		{
-			IsRefreshing = true;
+			RefreshCommand.ChangeCanExecute();
 			await Task.Delay(TimeSpan.FromSeconds(RefreshDuration));
 			AddItems();
 			IsRefreshing = false;
+			RefreshCommand.ChangeCanExecute();
 		}
+
+		public string RefreshText => $"Is Refreshing: {IsRefreshing}";
+		public string EnabledText => $"Is Enabled: {IsEnabled}";
 
 		#region INotifyPropertyChanged
 

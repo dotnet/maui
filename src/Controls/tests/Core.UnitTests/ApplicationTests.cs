@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
-		public void SettingMainPageSetsMainPageAndWindow()
+		public void SettingMainPageSetsMainPageButNotWindow()
 		{
 			var app = new Application();
 			var page = new ContentPage();
@@ -24,8 +24,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			app.MainPage = page;
 
 			Assert.AreEqual(page, app.MainPage);
-			Assert.AreEqual(1, app.Windows.Count);
-			Assert.AreEqual(page, app.Windows[0].Page);
+			Assert.IsEmpty(app.Windows);
 		}
 
 		[Test]
@@ -73,6 +72,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var iapp = app as IApplication;
 
 			Assert.Throws<NotImplementedException>(() => iapp.CreateWindow(null));
+		}
+
+		[Test]
+		public void SettingMainPageAndOverridingCreateWindowWithSamePageIsValid()
+		{
+			var page = new ContentPage();
+			var window = new Window(page);
+
+			var app = new StubApp() { MainWindow = window, MainPage = page };
+			var iapp = app as IApplication;
+
+			var win = iapp.CreateWindow(null);
+
+			Assert.AreEqual(window, win);
+			Assert.AreEqual(window.Page, page);
+			Assert.AreEqual(app.MainPage, page);
+		}
+
+		[Test]
+		public void SettingMainPageAndOverridingCreateWindowThrows()
+		{
+			var window = new Window(new ContentPage());
+
+			var app = new StubApp() { MainWindow = window, MainPage = new ContentPage() };
+			var iapp = app as IApplication;
+
+			Assert.Throws<InvalidOperationException>(() => iapp.CreateWindow(null));
 		}
 
 		[Test]

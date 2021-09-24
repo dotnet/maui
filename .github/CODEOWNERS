@@ -40,3 +40,9 @@
 
 # Core
 /Xamarin.Forms.Core/ @StephaneDelcroix
+
+# Blazor Desktop
+/src/BlazorWebView/                                     @Eilon
+/src/Templates/src/templates/maui-blazor/               @Eilon
+
+

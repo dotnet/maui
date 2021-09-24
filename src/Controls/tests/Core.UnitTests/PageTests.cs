@@ -424,7 +424,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage();
 
 			Page actual = null;
-			app.MainPage = page;
+			app.LoadPage(page);
 			app.PageAppearing += (sender, args) => actual = args;
 
 			((IPageController)page).SendDisappearing();
@@ -440,7 +440,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage();
 
 			Page actual = null;
-			app.MainPage = page;
+			app.LoadPage(page);
 			app.PageDisappearing += (sender, args) => actual = args;
 
 			((IPageController)page).SendAppearing();

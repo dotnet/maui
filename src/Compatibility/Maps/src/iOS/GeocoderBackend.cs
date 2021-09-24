@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Maps.MacOS
 					placemarks = new CLPlacemark[0];
 				List<string> addresses = new List<string>();
 #if __MOBILE__
+#pragma warning disable BI1234 // Type or member is obsolete
 				addresses = placemarks.Select(p => ABAddressFormatting.ToString(p.AddressDictionary, false)).ToList();
+#pragma warning restore BI1234 // Type or member is obsolete
 #else
 				foreach (var item in placemarks)
 				{

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 
 		IList<TriggerBase> _triggers;
 
-		public Style([TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType)
+		public Style([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType)
 		{
 			TargetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
 			Setters = new List<Setter>();

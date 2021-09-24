@@ -1,16 +1,21 @@
 ﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 {
-	sealed partial class App : MiddleApp
+	/// <summary>
+	/// Provides application-specific behavior to supplement the default Application class.
+	/// </summary>
+	sealed partial class App : MauiWinUIApplication
 	{
-		public static bool RunningAsUITests { get; set; }
+		public static bool RunningAsUITests { get; internal set; }
 
+		/// <summary>
+		/// Initializes the singleton application object.  This is the first line of authored code
+		/// executed, and as such is the logical equivalent of main() or WinMain().
+		/// </summary>
 		public App()
 		{
 			InitializeComponent();
 		}
-	}
 
-	public class MiddleApp : MauiWinUIApplication<WinUIStartup>
-	{
+		protected override MauiApp CreateMauiApp() => WinUIMauiProgram.CreateMauiApp();
 	}
 }

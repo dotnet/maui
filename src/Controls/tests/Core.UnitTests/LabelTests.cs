@@ -101,13 +101,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var label = new Label { IsPlatformEnabled = true };
 
-			Assert.AreEqual(label.FontSize, label.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request.Width);
+			Assert.AreEqual(label.FontSize, label.Measure(double.PositiveInfinity, double.PositiveInfinity).Request.Width);
 
 			bool fired = false;
 
 			label.MeasureInvalidated += (sender, args) =>
 			{
-				Assert.AreEqual(25, label.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity).Request.Width);
+				Assert.AreEqual(25, label.Measure(double.PositiveInfinity, double.PositiveInfinity).Request.Width);
 				fired = true;
 			};
 

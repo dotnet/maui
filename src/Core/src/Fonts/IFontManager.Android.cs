@@ -8,6 +8,6 @@ namespace Microsoft.Maui
 
 		Typeface? GetTypeface(Font font);
 
-		float GetFontSize(Font font, float defaultFontSize = 0);
+		FontSize GetFontSize(Font font, float defaultFontSize = 0);
 	}
 }

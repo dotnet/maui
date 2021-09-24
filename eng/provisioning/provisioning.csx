@@ -104,6 +104,7 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 		.ApiLevel((AndroidApiLevel)28)
 		.ApiLevel((AndroidApiLevel)29)
 		.ApiLevel((AndroidApiLevel)30)
+		.ApiLevel((AndroidApiLevel)31)
 		.SdkManagerPackage ("build-tools;29.0.3");
 }
 else{

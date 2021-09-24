@@ -251,11 +251,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.ResignFirstResponder();
 			((IEntryController)Element).SendCompleted();
 
-			if (Element != null && Element.ReturnType == ReturnType.Next)
-			{
-				FocusSearch(true);
-			}
-
 			return false;
 		}
 

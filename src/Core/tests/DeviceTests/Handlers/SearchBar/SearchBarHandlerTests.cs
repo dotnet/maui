@@ -78,39 +78,6 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Placeholder, GetNativePlaceholder, searchBar.Placeholder);
 		}
 
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
-		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
-		{
-			var searchBar = new SearchBarStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", fontSize)
-			};
-
-			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontSize, GetNativeUnscaledFontSize, searchBar.Font.FontSize);
-		}
-
-		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontWeight.Regular, false, false)]
-		[InlineData(FontWeight.Bold, true, false)]
-		[InlineData(FontWeight.Regular, false, true)]
-		[InlineData(FontWeight.Bold, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontWeight weight, bool isBold, bool isItalic)
-		{
-			var searchBar = new SearchBarStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default),
-			};
-
-			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
-		}
-
 		[Theory(DisplayName = "MaxLength Initializes Correctly")]
 		[InlineData(2)]
 		[InlineData(5)]
@@ -152,6 +119,25 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await CreateHandlerAsync(searchBar);
+		}
+
+		[Category(TestCategory.SearchBar)]
+		public class SearchBarTextInputTests : TextInputHandlerTests<SearchBarHandler, SearchBarStub>
+		{
+			protected override void SetNativeText(SearchBarHandler searchBarHandler, string text)
+			{
+				SearchBarHandlerTests.SetNativeText(searchBarHandler, text);
+			}
+
+			protected override int GetCursorStartPosition(SearchBarHandler searchBarHandler)
+			{
+				return SearchBarHandlerTests.GetCursorStartPosition(searchBarHandler);
+			}
+
+			protected override void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position)
+			{
+				SearchBarHandlerTests.UpdateCursorStartPosition(searchBarHandler, position);
+			}
 		}
 	}
 }

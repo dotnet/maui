@@ -4,8 +4,10 @@ using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui
 {
-	public partial class MauiContext : IMauiContext
+	public partial class MauiContext : IMauiContext, IScopedMauiContext
 	{
+		IAnimationManager? _animationManager;
+
 		public MauiContext()
 		{
 			// Temporary hack until we fully remove Forms.Init
@@ -22,5 +24,8 @@ namespace Microsoft.Maui
 		public IServiceProvider Services { get; }
 
 		public IMauiHandlersServiceProvider Handlers { get; }
+
+		IAnimationManager IScopedMauiContext.AnimationManager =>
+			_animationManager ??= Services.GetRequiredService<IAnimationManager>();
 	}
 }

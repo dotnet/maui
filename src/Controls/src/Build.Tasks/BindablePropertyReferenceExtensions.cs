@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (staticGetter != null && staticGetter.ReturnType.ResolveGenericParameters(bpRef.DeclaringType).ResolveCached().HasCustomAttributes)
 				attributes.AddRange(staticGetter.ReturnType.ResolveGenericParameters(bpRef.DeclaringType).ResolveCached().CustomAttributes);
 
-			if (attributes.FirstOrDefault(cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName))?.ConstructorArguments[0].Value is TypeReference typeConverter)
+			if (attributes.FirstOrDefault(cad => cad.AttributeType.FullName == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value is TypeReference typeConverter)
 				return typeConverter;
 
 			propertyType = propertyType ?? staticGetter?.ReturnType;

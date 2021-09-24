@@ -417,7 +417,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 
-			var sizeRequest = listView.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeRequest = listView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(40, sizeRequest.Minimum.Width);
 			Assert.AreEqual(40, sizeRequest.Minimum.Height);
 			Assert.AreEqual(50, sizeRequest.Request.Width);
@@ -436,7 +436,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 
-			var sizeRequest = listView.GetSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeRequest = listView.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.AreEqual(40, sizeRequest.Minimum.Width);
 			Assert.AreEqual(40, sizeRequest.Minimum.Height);
 			Assert.AreEqual(50, sizeRequest.Request.Width);

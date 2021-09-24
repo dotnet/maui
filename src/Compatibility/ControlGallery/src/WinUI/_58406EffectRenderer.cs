@@ -2,6 +2,7 @@ using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml.Controls;
 
 [assembly: ExportEffect(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI._58406EffectRenderer), Bugzilla58406.EffectName)]

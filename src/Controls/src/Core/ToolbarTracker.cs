@@ -28,16 +28,6 @@ namespace Microsoft.Maui.Controls
 		public bool SeparateFlyoutPage { get; set; }
 
 
-		[Obsolete("MASTERDETAILPAGE")]
-		public bool HaveMasterDetail => SeparateFlyoutPage;
-
-		[Obsolete("MASTERDETAILPAGE")]
-		public bool SeparateMasterDetail
-		{
-			get => SeparateFlyoutPage;
-			set => SeparateFlyoutPage = value;
-		}
-
 		public Page Target
 		{
 			get { return _target; }

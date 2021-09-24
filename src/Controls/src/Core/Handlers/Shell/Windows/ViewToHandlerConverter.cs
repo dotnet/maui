@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Platform
 						// If the view is a layout (stacklayout, grid, etc) we need to trigger a layout pass
 						// with all the controls in a consistent native state (i.e., loaded) so they'll actually
 						// have Bounds set
-						(_view as Layout)?.ForceLayout();
+						(_view as Compatibility.Layout)?.ForceLayout();
 						InvalidateMeasure();
 					};
 				}
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Platform
 			protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
 			{
 				_view.IsInNativeLayout = true;
-				Layout.LayoutChildIntoBoundingRegion(_view, new Rectangle(0, 0, finalSize.Width, finalSize.Height));
+				Compatibility.Layout.LayoutChildIntoBoundingRegion(_view, new Rectangle(0, 0, finalSize.Width, finalSize.Height));
 
 				if (_view.Width <= 0 || _view.Height <= 0)
 				{

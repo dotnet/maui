@@ -1,13 +1,13 @@
-﻿using AView = Android.Views.View;
-using System;
+﻿using System;
 using System.ComponentModel;
+using Android.Views;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using static Android.Views.ViewTreeObserver;
-using Android.Views;
-using Microsoft.Maui.Controls.Compatibility;
+using AView = Android.Views.View;
 
 [assembly: ExportRenderer(typeof(PerformanceTracker), typeof(PerformanceTrackerRenderer))]
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class PerformanceTrackerRenderer : ViewRenderer, IOnDrawListener
 	{
-		public PerformanceTrackerRenderer(global::Android.Content.Context context): base(context)
+		public PerformanceTrackerRenderer(global::Android.Content.Context context) : base(context)
 		{
 			ViewTreeObserver.AddOnDrawListener(this);
 		}

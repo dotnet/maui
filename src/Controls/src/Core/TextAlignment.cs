@@ -1,40 +1,48 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	[Xaml.TypeConversion(typeof(TextAlignment))]
 	public class TextAlignmentConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (value != null)
+			var strValue = value?.ToString();
+			if (strValue != null)
 			{
-				if (value.Equals("Start", StringComparison.OrdinalIgnoreCase) || value.Equals("left", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("Start", StringComparison.OrdinalIgnoreCase) || strValue.Equals("left", StringComparison.OrdinalIgnoreCase))
 					return TextAlignment.Start;
-				if (value.Equals("top", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("top", StringComparison.OrdinalIgnoreCase))
 					return TextAlignment.Start;
-				if (value.Equals("right", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("right", StringComparison.OrdinalIgnoreCase))
 					return TextAlignment.End;
-				if (value.Equals("bottom", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("bottom", StringComparison.OrdinalIgnoreCase))
 					return TextAlignment.End;
-				if (value.Equals("center", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("center", StringComparison.OrdinalIgnoreCase))
 					return TextAlignment.Center;
-				if (value.Equals("middle", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("middle", StringComparison.OrdinalIgnoreCase))
 					return TextAlignment.Center;
-				if (value.Equals("End", StringComparison.OrdinalIgnoreCase) || value.Equals("right", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("End", StringComparison.OrdinalIgnoreCase) || strValue.Equals("right", StringComparison.OrdinalIgnoreCase))
 					return TextAlignment.End;
-				if (value.Equals("Center", StringComparison.OrdinalIgnoreCase) || value.Equals("center", StringComparison.OrdinalIgnoreCase))
+				if (strValue.Equals("Center", StringComparison.OrdinalIgnoreCase) || strValue.Equals("center", StringComparison.OrdinalIgnoreCase))
 					return TextAlignment.Center;
 
-				if (Enum.TryParse(value, out TextAlignment direction))
+				if (Enum.TryParse(strValue, out TextAlignment direction))
 					return direction;
 			}
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(TextAlignment)));
+			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", strValue, typeof(TextAlignment)));
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is TextAlignment ta))
+			if (value is not TextAlignment ta)
 				throw new NotSupportedException();
 			if (ta == TextAlignment.Start)
 				return nameof(TextAlignment.Start);

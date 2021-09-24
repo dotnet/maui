@@ -174,39 +174,6 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
-		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
-		{
-			var entry = new EntryStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", fontSize)
-			};
-
-			await ValidatePropertyInitValue(entry, () => entry.Font.FontSize, GetNativeUnscaledFontSize, entry.Font.FontSize);
-		}
-
-		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontWeight.Regular, false, false)]
-		[InlineData(FontWeight.Bold, true, false)]
-		[InlineData(FontWeight.Regular, false, true)]
-		[InlineData(FontWeight.Bold, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontWeight weight, bool isBold, bool isItalic)
-		{
-			var entry = new EntryStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default)
-			};
-
-			await ValidatePropertyInitValue(entry, () => entry.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(entry, () => entry.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
-		}
-
 		[Theory(DisplayName = "Validates clear button visibility.")]
 		[InlineData(ClearButtonVisibility.WhileEditing, true)]
 		[InlineData(ClearButtonVisibility.Never, false)]
@@ -220,50 +187,6 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(entryStub, () => expected, GetNativeClearButtonVisibility, expected);
-		}
-
-		[Theory(DisplayName = "TextChanged Events Fire Correctly")]
-		// null/empty
-		[InlineData(null, null, false)]
-		[InlineData(null, "", false)]
-		[InlineData("", null, false)]
-		[InlineData("", "", false)]
-		// whitespace
-		[InlineData(null, " ", true)]
-		[InlineData("", " ", true)]
-		[InlineData(" ", null, true)]
-		[InlineData(" ", "", true)]
-		[InlineData(" ", " ", false)]
-		// text
-		[InlineData(null, "Hello", true)]
-		[InlineData("", "Hello", true)]
-		[InlineData(" ", "Hello", true)]
-		[InlineData("Hello", null, true)]
-		[InlineData("Hello", "", true)]
-		[InlineData("Hello", " ", true)]
-		[InlineData("Hello", "Goodbye", true)]
-		public async Task TextChangedEventsFireCorrectly(string initialText, string newText, bool eventExpected)
-		{
-			var entry = new EntryStub
-			{
-				Text = initialText,
-			};
-
-			var eventFiredCount = 0;
-			entry.TextChanged += (sender, e) =>
-			{
-				eventFiredCount++;
-
-				Assert.Equal(initialText, e.OldValue);
-				Assert.Equal(newText ?? string.Empty, e.NewValue);
-			};
-
-			await SetValueAsync(entry, newText, SetNativeText);
-
-			if (eventExpected)
-				Assert.Equal(1, eventFiredCount);
-			else
-				Assert.Equal(0, eventFiredCount);
 		}
 
 		[Theory(DisplayName = "Validates Numeric Keyboard")]
@@ -654,5 +577,25 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(text.Length, actualLength);
 		}
+
+
+		[Category(TestCategory.Entry)]
+		public class EntryTextInputTests : TextInputHandlerTests<EntryHandler, EntryStub>
+		{
+			protected override void SetNativeText(EntryHandler entryHandler, string text)
+			{
+				EntryHandlerTests.SetNativeText(entryHandler, text);
+			}
+			protected override int GetCursorStartPosition(EntryHandler entryHandler)
+			{
+				return EntryHandlerTests.GetCursorStartPosition(entryHandler);
+			}
+
+			protected override void UpdateCursorStartPosition(EntryHandler entryHandler, int position)
+			{
+				EntryHandlerTests.UpdateCursorStartPosition(entryHandler, position);
+			}
+		}
+
 	}
 }

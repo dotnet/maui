@@ -325,7 +325,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			{
 				Text = "Click Me On Mac",
 				ImageSource = "bank.png",
-				Font = Font.OfSize("Helvetica", 14),
+				FontFamily = "Helvetica",
+				FontSize = 14,
 				ContentLayout = layout,
 				BackgroundColor = Colors.Black,
 				TextColor = Colors.White

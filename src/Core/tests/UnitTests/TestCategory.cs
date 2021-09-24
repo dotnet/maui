@@ -7,5 +7,6 @@ namespace Microsoft.Maui.UnitTests
 		public const string PropertyMapping = "PropertyMapping";
 		public const string Lifecycle = "Lifecycle";
 		public const string Hosting = "Hosting";
+		public const string ImageSource = "ImageSource";
 	}
 }

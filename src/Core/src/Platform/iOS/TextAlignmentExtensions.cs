@@ -4,6 +4,9 @@ namespace Microsoft.Maui
 {
 	public static class TextAlignmentExtensions
 	{
+		public static UITextAlignment ToNative(this TextAlignment alignment, IView view)
+			=> alignment.ToNative(view.FlowDirection == FlowDirection.LeftToRight);
+
 		public static UITextAlignment ToNative(this TextAlignment alignment, bool isLtr)
 		{
 			switch (alignment)

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Media;
 
@@ -20,7 +21,7 @@ namespace Microsoft.Maui
 
 		public static void UpdateText(this MauiTextBox textBox, IEntry entry)
 		{
-			textBox.Text = entry.Text;
+			textBox.Text = entry.Text ?? string.Empty;
 		}
 
 		public static void UpdateTextColor(this MauiTextBox textBox, ITextStyle textStyle)
@@ -38,7 +39,7 @@ namespace Microsoft.Maui
 		{
 			textBox.CharacterSpacing = textStyle.CharacterSpacing.ToEm();
 		}
-		
+
 		public static void UpdateCharacterSpacing(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.CharacterSpacing = entry.CharacterSpacing.ToEm();
@@ -46,8 +47,8 @@ namespace Microsoft.Maui
 
 		public static void UpdateReturnType(this MauiTextBox textBox, IEntry entry)
 		{
-			textBox.InputScope = entry.ReturnType.ToNative();
-    	}
+			textBox.UpdateInputScope(entry);
+		}
 
 		public static void UpdateClearButtonVisibility(this MauiTextBox textBox, IEntry entry)
 		{
@@ -63,12 +64,12 @@ namespace Microsoft.Maui
 		{
 			textBox.PlaceholderText = entry.Placeholder ?? string.Empty;
 		}
-
-		public static void UpdatePlaceholderColor(this MauiTextBox textBox, IEditor editor, Brush? placeholderDefaultBrush, Brush? defaultPlaceholderColorFocusBrush)
+	
+		public static void UpdatePlaceholderColor(this MauiTextBox textBox, IPlaceholder placeholder, Brush? defaultPlaceholderColorBrush, Brush? defaultPlaceholderColorFocusBrush)
 		{
-			Color placeholderColor = editor.PlaceholderColor;
+			Color placeholderColor = placeholder.PlaceholderColor;
 
-			BrushHelpers.UpdateColor(placeholderColor, ref placeholderDefaultBrush,
+			BrushHelpers.UpdateColor(placeholderColor, ref defaultPlaceholderColorBrush,
 				() => textBox.PlaceholderForegroundBrush, brush => textBox.PlaceholderForegroundBrush = brush);
 
 			BrushHelpers.UpdateColor(placeholderColor, ref defaultPlaceholderColorFocusBrush,
@@ -77,14 +78,6 @@ namespace Microsoft.Maui
 
 		public static void UpdateFont(this MauiTextBox nativeControl, IText text, IFontManager fontManager) =>
 			nativeControl.UpdateFont(text.Font, fontManager);
-
-		public static void UpdateFont(this MauiTextBox nativeControl, Font font, IFontManager fontManager)
-		{
-			nativeControl.FontSize = fontManager.GetFontSize(font);
-			nativeControl.FontFamily = fontManager.GetFontFamily(font);
-			nativeControl.FontStyle = font.ToFontStyle();
-			nativeControl.FontWeight = font.ToFontWeight();
-		}
 
 		public static void UpdateIsReadOnly(this MauiTextBox textBox, IEditor editor)
 		{
@@ -124,6 +117,57 @@ namespace Microsoft.Maui
 		public static void UpdateIsPassword(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.IsPassword = entry.IsPassword;
+		}
+
+		public static void UpdateIsTextPredictionEnabled(this MauiTextBox textBox, IEditor editor)
+		{
+			textBox.UpdateInputScope(editor);
+		}
+
+		public static void UpdateKeyboard(this MauiTextBox textBox, IEditor editor)
+		{
+			textBox.UpdateInputScope(editor);
+		}
+
+		internal static void UpdateInputScope(this MauiTextBox textBox, ITextInput textInput)
+		{
+			if (textInput.Keyboard is CustomKeyboard custom)
+			{
+				textBox.IsTextPredictionEnabled = (custom.Flags & KeyboardFlags.Suggestions) != 0;
+				textBox.IsSpellCheckEnabled = (custom.Flags & KeyboardFlags.Spellcheck) != 0;
+			}
+			else
+			{
+				textBox.IsTextPredictionEnabled = textInput.IsTextPredictionEnabled;
+				textBox.IsSpellCheckEnabled = textInput.IsTextPredictionEnabled;
+			}
+
+			var inputScope = new UI.Xaml.Input.InputScope();
+
+			if (textInput is IEntry entry && entry.ReturnType == ReturnType.Search)
+				inputScope.Names.Add(new UI.Xaml.Input.InputScopeName(UI.Xaml.Input.InputScopeNameValue.Search));
+
+			inputScope.Names.Add(textInput.Keyboard.ToInputScopeName());
+
+			textBox.InputScope = inputScope;
+		}
+
+		public static void UpdateHorizontalTextAlignment(this MauiTextBox textBox, IEntry entry)
+		{
+			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
+			// TODO: Update this when FlowDirection is available 
+			// (or update the extension to take an ILabel instead of an alignment and work it out from there) 
+			textBox.TextAlignment = entry.HorizontalTextAlignment.ToNative(true);
+		}
+
+		public static void UpdateVerticalTextAlignment(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.VerticalAlignment = entry.VerticalTextAlignment.ToNativeVerticalAlignment();
+		}
+
+		public static void UpdateKeyboard(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.UpdateInputScope(entry);
 		}
 	}
 }
