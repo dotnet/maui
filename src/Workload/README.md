@@ -17,7 +17,7 @@ The idea, is a project to be able to set `$(UseMaui)`:
 `$(UseMaui)` automatically brings in the following workload packs:
 
 * `Microsoft.NET.Sdk.Maui`
-* `Microsoft.Maui.Controls.Sdk`
+* `Microsoft.Maui.Sdk`
 * `Microsoft.Maui.Resizetizer.Sdk`
 * `Microsoft.Maui.Core.Ref.[platform]`
 * `Microsoft.Maui.Core.Runtime.[platform]`
@@ -68,7 +68,7 @@ Special files:
   Maui projects will go. Note that this is imported by *all* .NET 6
   project types -- *even non-mobile ones*.
 * `WorkloadManifest.json` - general .NET workload configuration
-* `WorkloadManifest.targets` - imports `Microsoft.Maui.Controls.Sdk` when
+* `WorkloadManifest.targets` - imports `Microsoft.Maui.Sdk` when
   `$(UseMaui)` is `true`. Note that this is imported by *all* .NET 6
   project types -- *even non-mobile ones*.
 
@@ -94,9 +94,8 @@ installed:
 * `maui-macos`
 * `maui-windows`
 
-Eventually, Android will have a `microsoft-android-sdk-minimal`
-workload id that excludes AOT compilers. We'll need to modify some of
-the MAUI workload ids when this is available.
+Android has an `android` workload id that excludes AOT compilers, so
+`maui-android` will extend this. `android-aot` includes AOT support.
 
 These ids will not map exactly to the Visual Studio Installer's
 concept of a "workload". Consider the following diagram for what .NET
@@ -104,6 +103,37 @@ developers would get from the choices of `mobile`, `maui`, or
 `desktop`:
 
 ![Workload Diagram](docs/workload-diagram.png)
+
+## `$(MauiVersion)`
+
+Right now the .NET MAUI workload is installed side-by-side per .NET
+SDK band such as:
+
+    dotnet/sdk-manifests/6.0.100/microsoft.net.sdk.maui/
+
+To give greater flexibility, you can specify in your `.csproj`:
+
+```xml
+<MauiVersion>6.0.100-rc.2.2000</MauiVersion>
+```
+
+Even if you have `6.0.100-rc.2.1000` installed system-wide, placing
+this in your `.csproj` enables it to build with a newer version of
+.NET MAUI. This will mostly continue working until there is a major
+change in `Microsoft.Maui.Sdk`. We have a new
+`$(_MinimumMauiWorkloadVersion)` property to fall back on if there is
+a breaking change that requires a newer .NET MAUI system-wide install.
+
+    error MAUI004: At least version '6.0.100-preview.7' of the .NET MAUI workload is required to use <MauiVersion>6.0.100-preview.8</MauiVersion>.
+
+To achieve this, we've moved MSBuild tasks to `library-packs`:
+
+* `Microsoft.Maui.Controls.Build.Tasks`
+* `Microsoft.Maui.Resizetizer.Sdk`
+
+This means these two packs are regular NuGet packages, that are
+restores and used during .NET MAUI builds. `dotnet/library-packs` is
+simply an implicit NuGet feed.
 
 ## Using the .NET MAUI Workload
 

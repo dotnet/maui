@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.ValueChanged -= OnControlValueChanged;
 		}
 
-		protected override void SetupDefaults(UISwitch nativeView)
+		void SetupDefaults(UISwitch nativeView)
 		{
 			DefaultOnTrackColor = UISwitch.Appearance.OnTintColor;
 			DefaultOffTrackColor = nativeView.GetOffTrackColor();

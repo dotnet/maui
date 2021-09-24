@@ -57,52 +57,24 @@
       <_WorkloadFiles Include="$(_InstallTempDirectory)data/WorkloadManifest.*" />
     </ItemGroup>
     <CopyWorkloadFiles
-        Name="Microsoft.NET.Sdk.Maui"
+        Name="microsoft.net.sdk.maui"
         Files="@(_WorkloadFiles)"
         WorkloadDirectory="$(MSBuildExtensionsPath)../../sdk-manifests/$(DotNetPreviewVersionBand)"
         VersionBand="$(DotNetPreviewVersionBand)"
     />
     <RemoveDir Directories="$(_InstallTempDirectory)" />
 
-    <!-- Run 'dotnet workload install' -->
-    <PropertyGroup>
-      <_ThisDotNet>$(MSBuildExtensionsPath)../../dotnet</_ThisDotNet>
-      <_NuGetConfig>$(DotNetTempDirectory)NuGet.config</_NuGetConfig>
-      <_NuGetContent>
-<![CDATA[
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <clear />
-    <add key="local"   value="$(PackageOutputPath)" />
-    <add key="dotnet6" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json" />
-    <add key="xamarin" value="https://pkgs.dev.azure.com/azure-public/vside/_packaging/xamarin-impl/nuget/v3/index.json" />
-  </packageSources>
-</configuration>
-]]>
-      </_NuGetContent>
-    </PropertyGroup>
-    <WriteLinesToFile File="$(_NuGetConfig)" Lines="$(_NuGetContent)" Overwrite="true" />
-    <Exec
-        WorkingDirectory="$(DotNetTempDirectory)"
-        Command="&quot;$(_ThisDotNet)&quot; workload install maui --skip-manifest-update --verbosity diag"
-    />
-    <Delete Files="$(_NuGetConfig)" />
-
-    <!--
-      HACK: temporarily put runtime packs in 'library-packs', until they can be resolved from 'packs'
-      See: https://github.com/dotnet/sdk/issues/14044
-    -->
+    <!-- Run 'dotnet workload install' for the current running 'dotnet' install -->
     <ItemGroup>
-      <_RuntimePacks Include="$(PackageOutputPath)/*.Runtime.*.nupkg" />
-      <_RuntimePacks Include="$(PackageOutputPath)/Microsoft.Maui.Extensions.*.nupkg" />
+      <_WorkloadSource Include="$(PackageOutputPath)" />
+      <_WorkloadSource Include="$(DotNet6Feed)" />
     </ItemGroup>
-    <Copy SourceFiles="@(_RuntimePacks)" DestinationFolder="$(MSBuildExtensionsPath)../../library-packs" SkipUnchangedFiles="true" />
+    <Exec
+        Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; @(_WorkloadSource->'--source &quot;%(Identity)&quot;', ' ')"
+        WorkingDirectory="$(MauiRootDirectory)"
+    />
 
   </Target>
-
-  <!-- Eventually replaced by eng/Version.targets -->
-  <Target Name="SetVersions" />
 
   <PropertyGroup>
     <!-- These files should invalidate ./bin/dotnet completely -->
@@ -138,11 +110,11 @@
     <_PacksToRemove Include="Microsoft.NET.Workload.tvOS" />
     <_PacksToRemove Include="Microsoft.NET.Workload.macOS" />
     <!-- Ids for 'dotnet workload install' -->
-    <_WorkloadIds Include="microsoft-android-sdk-full" />
-    <_WorkloadIds Include="microsoft-maccatalyst-sdk-full" />
-    <_WorkloadIds Include="microsoft-macos-sdk-full" />
-    <_WorkloadIds Include="microsoft-ios-sdk-full" />
-    <_WorkloadIds Include="microsoft-tvos-sdk-full" />
+    <_WorkloadIds Include="android-aot" />
+    <_WorkloadIds Include="maccatalyst" />
+    <_WorkloadIds Include="macos" />
+    <_WorkloadIds Include="ios" />
+    <_WorkloadIds Include="tvos" />
   </ItemGroup>
 
   <Target Name="_AcquireWorkloadManifests"
@@ -179,7 +151,7 @@
       Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag"
+        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --source &quot;$(DotNet6Feed)&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
     />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />

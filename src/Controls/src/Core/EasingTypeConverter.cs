@@ -1,62 +1,71 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using static Microsoft.Maui.Controls.Easing;
+using static Microsoft.Maui.Easing;
 
 namespace Microsoft.Maui.Controls
 {
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.EasingTypeConverter")]
-	[Xaml.TypeConversion(typeof(Easing))]
 	public class EasingTypeConverter : TypeConverter
 	{
-		public override object ConvertFromInvariantString(string value)
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			=> sourceType == typeof(string);
+
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			=> destinationType == typeof(string);
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			if (string.IsNullOrWhiteSpace(value))
+			var strValue = value?.ToString();
+
+			if (string.IsNullOrWhiteSpace(strValue))
 				return null;
 
-			value = value?.Trim() ?? "";
-			var parts = value.Split('.');
+			strValue = strValue?.Trim() ?? "";
+			var parts = strValue.Split('.');
 			if (parts.Length == 2 && parts[0] == nameof(Easing))
-				value = parts[parts.Length - 1];
+				strValue = parts[parts.Length - 1];
 
-			if (value.Equals(nameof(Linear), StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals(nameof(Linear), StringComparison.OrdinalIgnoreCase))
 				return Linear;
-			if (value.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
 				return SinIn;
-			if (value.Equals(nameof(SinOut), StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals(nameof(SinOut), StringComparison.OrdinalIgnoreCase))
 				return SinOut;
-			if (value.Equals(nameof(SinInOut), StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals(nameof(SinInOut), StringComparison.OrdinalIgnoreCase))
 				return SinInOut;
-			if (value.Equals(nameof(CubicIn), StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals(nameof(CubicIn), StringComparison.OrdinalIgnoreCase))
 				return CubicIn;
-			if (value.Equals(nameof(CubicOut), StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals(nameof(CubicOut), StringComparison.OrdinalIgnoreCase))
 				return CubicOut;
-			if (value.Equals(nameof(CubicInOut), StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals(nameof(CubicInOut), StringComparison.OrdinalIgnoreCase))
 				return CubicInOut;
-			if (value.Equals(nameof(BounceIn), StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals(nameof(BounceIn), StringComparison.OrdinalIgnoreCase))
 				return BounceIn;
-			if (value.Equals(nameof(BounceOut), StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals(nameof(BounceOut), StringComparison.OrdinalIgnoreCase))
 				return BounceOut;
-			if (value.Equals(nameof(SpringIn), StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals(nameof(SpringIn), StringComparison.OrdinalIgnoreCase))
 				return SpringIn;
-			if (value.Equals(nameof(SpringOut), StringComparison.OrdinalIgnoreCase))
+			if (strValue.Equals(nameof(SpringOut), StringComparison.OrdinalIgnoreCase))
 				return SpringOut;
 
 			var fallbackValue = typeof(Easing)
 				.GetTypeInfo()
 				.DeclaredFields
-				.FirstOrDefault(f => f.Name.Equals(value, StringComparison.OrdinalIgnoreCase))
+				.FirstOrDefault(f => f.Name.Equals(strValue, StringComparison.OrdinalIgnoreCase))
 				?.GetValue(null);
 
 			if (fallbackValue is Easing fallbackEasing)
 				return fallbackEasing;
 
-			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Easing)}");
+			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Easing)}");
 		}
 
-		public override string ConvertToInvariantString(object value)
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (!(value is Easing easing))
+			if (value is not Easing easing)
 				throw new NotSupportedException();
 
 			if (easing == Linear)
@@ -83,5 +92,26 @@ namespace Microsoft.Maui.Controls
 				return nameof(SpringOut);
 			throw new NotSupportedException();
 		}
+
+		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
+			=> true;
+
+		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
+			=> false;
+
+		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+			=> new(new[] {
+				"Linear",
+				"SinOut",
+				"SinIn",
+				"SinInOut",
+				"CubicIn",
+				"CubicOut",
+				"CubicInOut",
+				"BounceOut",
+				"BounceIn",
+				"SpringIn",
+				"SpringOut"
+			});
 	}
 }

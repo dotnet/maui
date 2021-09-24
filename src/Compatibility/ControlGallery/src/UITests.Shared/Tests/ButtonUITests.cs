@@ -120,12 +120,12 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			remote.GoTo();
 
 #if __ANDROID__
-			var isBold = remote.GetProperty<bool> (Button.FontProperty);
-			Assert.True (isBold);
+			var isBold = remote.GetProperty<bool>(FontElement.FontProperty);
+			Assert.True(isBold);
 #elif __MACOS__
 			Assert.Inconclusive("needs testing");
 #else
-			var font = remote.GetProperty<Font>(Button.FontProperty);
+			var font = remote.GetProperty<Font>(FontElement.FontProperty);
 			Assert.AreEqual (FontWeight.Bold, font.Weight);
 #endif
 		}
@@ -157,14 +157,14 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 #if __ANDROID__
 		[Test]
-		[UiTest (typeof (Button), "TextColor")]
-		public void TextColor ()
+		[UiTest(typeof(Button), "TextColor")]
+		public void TextColor()
 		{
-			var remote = new ViewContainerRemote (App, Test.Button.TextColor, PlatformViewType);
-			remote.GoTo ();
+			var remote = new ViewContainerRemote(App, Test.Button.TextColor, PlatformViewType);
+			remote.GoTo();
 
-			var buttonTextColor = remote.GetProperty<Color> (Button.TextColorProperty);
-			Assert.AreEqual (Colors.Pink, buttonTextColor);
+			var buttonTextColor = remote.GetProperty<Color>(Button.TextColorProperty);
+			Assert.AreEqual(Colors.Pink, buttonTextColor);
 		}
 #endif
 

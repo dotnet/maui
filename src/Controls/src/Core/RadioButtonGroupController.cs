@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls
 {
 	internal class RadioButtonGroupController
 	{
-		readonly Layout<View> _layout;
+		readonly Compatibility.Layout<View> _layout;
 
 		string _groupName;
 		private object _selectedValue;
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 		public string GroupName { get => _groupName; set => SetGroupName(value); }
 		public object SelectedValue { get => _selectedValue; set => SetSelectedValue(value); }
 
-		public RadioButtonGroupController(Layout<View> layout)
+		public RadioButtonGroupController(Compatibility.Layout<View> layout)
 		{
 			if (layout is null)
 			{
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void UpdateGroupNames(Layout<View> layout, string name, string oldName = null)
+		void UpdateGroupNames(Compatibility.Layout<View> layout, string name, string oldName = null)
 		{
 			foreach (var descendant in layout.Descendants())
 			{

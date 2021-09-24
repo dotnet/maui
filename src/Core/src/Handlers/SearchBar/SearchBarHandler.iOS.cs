@@ -1,11 +1,12 @@
 using System;
 using System.Drawing;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SearchBarHandler : ViewHandler<ISearchBar, UISearchBar>
+	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
 		UIColor? _defaultTextColor;
 
@@ -17,16 +18,37 @@ namespace Microsoft.Maui.Handlers
 
 		public UITextField? QueryEditor => _editor;
 
-		protected override UISearchBar CreateNativeView()
+		protected override MauiSearchBar CreateNativeView()
 		{
-			var searchBar = new UISearchBar(RectangleF.Empty) { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
+			var searchBar = new MauiSearchBar() { ShowsCancelButton = true, BarStyle = UIBarStyle.Default };
 
-			_editor = searchBar.FindDescendantView<UITextField>();
+			if (NativeVersion.IsAtLeast(13))
+				_editor = searchBar.SearchTextField;
+			else
+				_editor = searchBar.FindDescendantView<UITextField>();
 
 			return searchBar;
 		}
 
-		protected override void SetupDefaults(UISearchBar nativeView)
+		protected override void ConnectHandler(MauiSearchBar nativeView)
+		{
+			nativeView.CancelButtonClicked += OnCancelClicked;
+			nativeView.SearchButtonClicked += OnSearchButtonClicked;
+			nativeView.TextPropertySet += OnTextPropertySet;
+			nativeView.ShouldChangeTextInRange += ShouldChangeText;
+			base.ConnectHandler(nativeView);
+		}
+
+		protected override void DisconnectHandler(MauiSearchBar nativeView)
+		{
+			nativeView.CancelButtonClicked -= OnCancelClicked;
+			nativeView.SearchButtonClicked -= OnSearchButtonClicked;
+			nativeView.TextPropertySet -= OnTextPropertySet;
+			nativeView.ShouldChangeTextInRange -= ShouldChangeText;
+			base.DisconnectHandler(nativeView);
+		}
+
+		void SetupDefaults(UISearchBar nativeView)
 		{
 			_defaultTextColor = QueryEditor?.TextColor;
 
@@ -39,7 +61,7 @@ namespace Microsoft.Maui.Handlers
 				_cancelButtonTextColorDefaultDisabled = cancelButton.TitleColor(UIControlState.Disabled);
 			}
 
-			base.SetupDefaults(nativeView);
+
 		}
 
 		public static void MapText(SearchBarHandler handler, ISearchBar searchBar)
@@ -52,7 +74,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPlaceholder(SearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.NativeView?.UpdatePlaceholder(searchBar);
+			handler.NativeView?.UpdatePlaceholder(searchBar, handler._editor);
+		}
+
+		public static void MapPlaceholderColor(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdatePlaceholder(searchBar, handler._editor);
 		}
 
 		public static void MapFont(SearchBarHandler handler, ISearchBar searchBar)
@@ -65,6 +92,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
+		}
+
+		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(searchBar, handler?._editor);
 		}
 
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
@@ -80,6 +112,9 @@ namespace Microsoft.Maui.Handlers
 			// Setting any of those may have removed text alignment settings,
 			// so we need to make sure those are applied, too
 			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
+
+			// We also update MaxLength which depends on the text
+			handler.NativeView?.UpdateMaxLength(searchBar);
 		}
 
 		public static void MapTextColor(SearchBarHandler handler, ISearchBar searchBar)
@@ -90,8 +125,10 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapIsTextPredictionEnabled(IViewHandler handler, ISearchBar searchBar) { }
 
-		[MissingMapper]
-		public static void MapMaxLength(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapMaxLength(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateMaxLength(searchBar);
+		}
 
 		[MissingMapper]
 		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
@@ -99,6 +136,32 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCancelButtonColor(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.NativeView?.UpdateCancelButton(searchBar, handler._cancelButtonTextColorDefaultNormal, handler._cancelButtonTextColorDefaultHighlighted, handler._cancelButtonTextColorDefaultDisabled);
+		}
+
+		void OnCancelClicked(object? sender, EventArgs args)
+		{
+			if (VirtualView != null)
+				VirtualView.Text = string.Empty;
+
+			NativeView?.ResignFirstResponder();
+		}
+
+		void OnSearchButtonClicked(object? sender, EventArgs e)
+		{
+			VirtualView?.SearchButtonPressed();
+			NativeView?.ResignFirstResponder();
+		}
+
+		void OnTextPropertySet(object? sender, EventArgs e)
+		{
+			if (VirtualView != null)
+				VirtualView.UpdateText(NativeView?.Text);
+		}
+
+		bool ShouldChangeText(UISearchBar searchBar, NSRange range, string text)
+		{
+			var newLength = searchBar?.Text?.Length + text.Length - range.Length;
+			return newLength <= VirtualView?.MaxLength;
 		}
 	}
 }

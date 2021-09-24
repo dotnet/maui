@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 
@@ -109,9 +110,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		Paint IShapeView.Fill => Fill;
 
-		Paint IShapeView.Stroke => Stroke;
+		Paint IStroke.Stroke => Stroke;
 
-		LineCap IShapeView.StrokeLineCap =>
+		LineCap IStroke.StrokeLineCap =>
 			StrokeLineCap switch
 			{
 				PenLineCap.Flat => LineCap.Butt,
@@ -120,7 +121,7 @@ namespace Microsoft.Maui.Controls.Shapes
 				_ => LineCap.Butt
 			};
 
-		LineJoin IShapeView.StrokeLineJoin =>
+		LineJoin IStroke.StrokeLineJoin =>
 			StrokeLineJoin switch
 			{
 				PenLineJoin.Round => LineJoin.Round,
@@ -132,7 +133,9 @@ namespace Microsoft.Maui.Controls.Shapes
 		public float[] StrokeDashPattern
 			=> StrokeDashArray?.Select(a => (float)a)?.ToArray();
 
-		float IShapeView.StrokeMiterLimit => (float)StrokeMiterLimit;
+		float IStroke.StrokeDashOffset => (float)StrokeDashOffset;
+
+		float IStroke.StrokeMiterLimit => (float)StrokeMiterLimit;
 
 		static void OnBrushChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -145,12 +148,79 @@ namespace Microsoft.Maui.Controls.Shapes
 				brush.Parent = this;
 		}
 
-		PathF IShape.PathForBounds(Graphics.Rectangle bounds)
+		PathF IShape.PathForBounds(Graphics.Rectangle viewBounds)
 		{
-			// TODO: Apply the necessary transformations (scale, translate, etc) after add in Microsost.Maui.Graphics
-			// the possibility of get the PathF Bounds.
+			if (HeightRequest < 0 && WidthRequest < 0)
+				Frame = viewBounds;
 
-			return GetPath();
+			var path = GetPath();
+
+#if !NETSTANDARD
+
+			RectangleF pathBounds = viewBounds;
+
+			try
+			{
+				pathBounds = path.GetBoundsByFlattening();
+			}
+			catch (Exception exc)
+			{
+				Internals.Log.Warning(nameof(Shape), $"Exception while getting shape Bounds: {exc}");
+			}
+
+			AffineTransform transform = null;
+
+			if (Aspect != Stretch.None)
+			{
+				viewBounds.X += StrokeThickness / 2;
+				viewBounds.Y += StrokeThickness / 2;
+				viewBounds.Width -= StrokeThickness;
+				viewBounds.Height -= StrokeThickness;
+
+				float factorX = (float)viewBounds.Width / pathBounds.Width;
+				float factorY = (float)viewBounds.Height / pathBounds.Height;
+
+				if (Aspect == Stretch.Uniform)
+				{
+					var factor = Math.Min(factorX, factorY);
+
+					var width = pathBounds.Width * factor;
+					var height = pathBounds.Height * factor;
+
+					var translateX = (float)((viewBounds.Width - width) / 2 + viewBounds.X);
+					var translateY = (float)((viewBounds.Height - height) / 2 + viewBounds.Y);
+
+					transform = AffineTransform.GetTranslateInstance(-pathBounds.X, -pathBounds.Y);
+					transform.Translate(translateX, translateY);
+					transform.Scale(factor, factor);
+				}
+				else if (Aspect == Stretch.UniformToFill)
+				{
+					var factor = (float)Math.Max(factorX, factorY);
+
+					transform = AffineTransform.GetScaleInstance(factor, factor);
+
+					var translateX = (float)(viewBounds.Left - factor * pathBounds.Left);
+					var translateY = (float)(viewBounds.Top - factor * pathBounds.Top);
+
+					transform.Translate(translateX, translateY);
+				}
+				else if (Aspect == Stretch.Fill)
+				{
+					transform = AffineTransform.GetScaleInstance(factorX, factorY);
+
+					var translateX = (float)(viewBounds.Left - factorX * pathBounds.Left);
+					var translateY = (float)(viewBounds.Top - factorY * pathBounds.Top);
+
+					transform.Translate(translateX, translateY);
+				}
+
+				if (transform != null && !transform.IsIdentity)
+					path.Transform(transform);
+			}
+#endif
+
+			return path;
 		}
 	}
 }

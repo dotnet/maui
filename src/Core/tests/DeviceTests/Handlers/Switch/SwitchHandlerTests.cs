@@ -58,6 +58,19 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateThumbColor(switchStub, Colors.Blue);
 		}
 
+
+		[Fact(DisplayName = "Null Thumb Color Doesn't Crash")]
+		public async Task NullThumbColorDoesntCrash()
+		{
+			var switchStub = new SwitchStub()
+			{
+				IsOn = true,
+				ThumbColor = null,
+			};
+
+			await CreateHandlerAsync(switchStub);
+		}
+
 		[Fact(DisplayName = "Track Color Updates Correctly")]
 		public async Task ThumbColorUpdatesCorrectly()
 		{

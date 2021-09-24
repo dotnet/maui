@@ -3,9 +3,12 @@ using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
+using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	using AbsoluteLayout = Microsoft.Maui.Controls.Compatibility.AbsoluteLayout;
+
 	public class ConvertibleToView
 	{
 		public static implicit operator View(ConvertibleToView source)

@@ -70,15 +70,15 @@ namespace Microsoft.Maui.Controls.Platform
 			return inputScope;
 		}
 
-		internal static UwpScrollBarVisibility ToUwpScrollBarVisibility(this Maui.Controls.ScrollBarVisibility visibility)
+		internal static UwpScrollBarVisibility ToUwpScrollBarVisibility(this ScrollBarVisibility visibility)
 		{
 			switch (visibility)
 			{
-				case Maui.Controls.ScrollBarVisibility.Always:
+				case ScrollBarVisibility.Always:
 					return UwpScrollBarVisibility.Visible;
-				case Maui.Controls.ScrollBarVisibility.Default:
+				case ScrollBarVisibility.Default:
 					return UwpScrollBarVisibility.Auto;
-				case Maui.Controls.ScrollBarVisibility.Never:
+				case ScrollBarVisibility.Never:
 					return UwpScrollBarVisibility.Hidden;
 				default:
 					return UwpScrollBarVisibility.Auto;

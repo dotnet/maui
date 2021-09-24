@@ -66,15 +66,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, selectedIndex);
 		}
 
-		double GetNativeUnscaledFontSize(PickerHandler pickerHandler) =>
-			GetNativePicker(pickerHandler).Font.PointSize;
-
-		bool GetNativeIsBold(PickerHandler pickerHandler) =>
-			GetNativePicker(pickerHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Bold);
-
-		bool GetNativeIsItalic(PickerHandler pickerHandler) =>
-			GetNativePicker(pickerHandler).Font.FontDescriptor.SymbolicTraits.HasFlag(UIFontDescriptorSymbolicTraits.Italic);
-
 		UITextAlignment GetNativeHorizontalTextAlignment(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).TextAlignment;
 

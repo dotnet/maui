@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public string Glyph { get; set; }
 		public Color Color { get; set; }
 
-		[TypeConverter(typeof(FontSizeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double Size { get; set; } = (double)FontImageSource.SizeProperty.DefaultValue;
 
 		public ImageSource ProvideValue(IServiceProvider serviceProvider)

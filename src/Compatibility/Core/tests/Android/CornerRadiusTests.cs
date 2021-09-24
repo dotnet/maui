@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Compatibility.Platform.Android;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
@@ -76,7 +76,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 
 		public async Task CheckCornerRadius(VisualElement visualElement)
 		{
-			var screenshot = await Device.InvokeOnMainThreadAsync(() => { 
+			var screenshot = await Device.InvokeOnMainThreadAsync(() =>
+			{
 
 				using (var renderer = GetRenderer(visualElement))
 				{

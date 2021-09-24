@@ -1,49 +1,52 @@
-﻿using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Hosting;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class ContentPage : IPage, HotReload.IHotReloadableView
+	public partial class ContentPage : IContentView, HotReload.IHotReloadableView
 	{
-		// TODO ezhart That there's a layout alignment here tells us this hierarchy needs work :) 
-		public Primitives.LayoutAlignment HorizontalLayoutAlignment => Primitives.LayoutAlignment.Fill;
-
-		IView IPage.Content => Content;
-
-
+		object IContentView.Content => Content;
+		IView IContentView.PresentedContent => Content;
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (Content is IFrameworkElement frameworkElement)
+			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
+			return DesiredSize;
+		}
+
+		protected override Size ArrangeOverride(Rectangle bounds)
+		{
+			Frame = this.ComputeFrame(bounds);
+			Handler?.NativeArrange(Frame);
+			return Frame.Size;
+		}
+
+		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			var content = (this as IContentView).PresentedContent;
+			var padding = Padding;
+
+			if (content != null)
 			{
-				frameworkElement.Measure(widthConstraint, heightConstraint);
+				_ = content.Measure(widthConstraint - padding.HorizontalThickness, heightConstraint - padding.VerticalThickness);
 			}
 
 			return new Size(widthConstraint, heightConstraint);
 		}
 
-		protected override Size ArrangeOverride(Rectangle bounds)
+		Size IContentView.CrossPlatformArrange(Rectangle bounds)
 		{
-			// Update the Bounds (Frame) for this page
-			Layout(bounds);
-
-			if (Content is IFrameworkElement element)
-			{
-				element.Arrange(bounds);
-				element.Handler?.NativeArrange(element.Frame);
-			}
-
-			return Frame.Size;
+			this.ArrangeContent(bounds);
+			return bounds.Size;
 		}
 
 		protected override void InvalidateMeasureOverride()
 		{
 			base.InvalidateMeasureOverride();
-			if (Content is IFrameworkElement frameworkElement)
+			if (Content is IView view)
 			{
-				frameworkElement.InvalidateMeasure();
+				view.InvalidateMeasure();
 			}
 		}
 

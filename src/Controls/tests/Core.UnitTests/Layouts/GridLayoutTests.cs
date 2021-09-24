@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Maui.Controls.Layout2;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts

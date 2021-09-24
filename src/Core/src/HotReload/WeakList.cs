@@ -1,14 +1,18 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-namespace Microsoft.Maui.HotReload
+
+namespace Microsoft.Maui.Internal
 {
-	internal class WeakList<T> : IList<T?>
+	class WeakList<T> : IList<T?>
 	{
-		List<WeakReference> items = new List<WeakReference>();
-		public T? this[int index] { get => (T?)items[index].Target; set => throw new NotImplementedException(); }
+		readonly List<WeakReference> _items = new();
+
+		public T? this[int index]
+		{
+			get => (T?)_items[index].Target;
+			set => throw new NotImplementedException();
+		}
 
 		public int Count => CleanseItems().Count;
 
@@ -18,63 +22,85 @@ namespace Microsoft.Maui.HotReload
 		{
 			if (item == null)
 				return;
+
 			if (Contains(item))
 				return;
-			items.Add(new WeakReference(item));
+
+			_items.Add(new WeakReference(item));
 		}
 
 		public void Clear()
 		{
-			var views = CleanseItems().ToList();
+			CleanseItems();
+
 			//foreach (var item in views)
 			//{
 			//	(item.Target as IDisposable)?.Dispose();
 			//}
-			items.Clear();
+
+			_items.Clear();
 		}
 
-		public bool Contains(T? item) => item == null ? false : CleanseItems().Any(x => x.IsAlive && EqualityComparer<T>.Default.Equals(item, (T)x.Target!));
-
-
-		public void CopyTo(T?[] array, int arrayIndex)
+		public bool Contains(T? item)
 		{
-			throw new NotImplementedException();
+			if (item == null)
+				return false;
+
+			var items = new List<WeakReference>(CleanseItems());
+			foreach (var x in items)
+			{
+				if (x.IsAlive && EqualityComparer<T>.Default.Equals(item, (T)x.Target!))
+					return true;
+			}
+
+			return false;
 		}
 
-		public IEnumerator<T> GetEnumerator() => CleanseItems().Select(x => (T)x.Target!).GetEnumerator();
-
-		public int IndexOf(T? item)
-		{ //=> CleanseItems().IndexOf(items.FirstOrDefault(x => x.IsAlive && EqualityComparer<T>.Default.Equals(item, (T)x.Target)));
-
+		public void CopyTo(T?[] array, int arrayIndex) =>
 			throw new NotImplementedException();
-		}
-		public void Insert(int index, T? item)
+
+		public IEnumerator<T> GetEnumerator()
 		{
-			throw new NotImplementedException();
+			var items = new List<WeakReference>(CleanseItems());
+			foreach (var x in items)
+				yield return (T)x.Target!;
 		}
 
-		public bool Remove(T? item) => item == null ? false : items.RemoveAll(x => EqualityComparer<T>.Default.Equals(item, (T)x.Target!)) > 0;
-
-		public void RemoveAt(int index)
-		{
+		public int IndexOf(T? item) =>
 			throw new NotImplementedException();
+
+		public void Insert(int index, T? item) =>
+			throw new NotImplementedException();
+
+		public bool Remove(T? item)
+		{
+			if (item == null)
+				return false;
+
+			var removed = _items.RemoveAll(x => EqualityComparer<T>.Default.Equals(item, (T)x.Target!));
+
+			return removed > 0;
+		}
+
+		public void RemoveAt(int index) =>
+			throw new NotImplementedException();
+
+		public void ForEach(Action<T> action)
+		{
+			var items = new List<WeakReference>(CleanseItems());
+			foreach (var item in items)
+			{
+				if (item.IsAlive)
+					action?.Invoke((T)item.Target!);
+			}
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 		List<WeakReference> CleanseItems()
 		{
-			items.RemoveAll(x => !x.IsAlive);
-			return items;
-		}
-		public void ForEach(Action<T> action)
-		{
-			var items = CleanseItems().ToList();
-			foreach (var item in items)
-			{
-				if (item.IsAlive)
-					action?.Invoke((T)item.Target!);
-			}
+			_items.RemoveAll(x => !x.IsAlive);
+			return _items;
 		}
 	}
 }

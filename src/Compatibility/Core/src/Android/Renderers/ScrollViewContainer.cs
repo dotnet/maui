@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					return;
 
 				IVisualElementRenderer renderer;
-				if ((renderer = AppCompat.Platform.GetRenderer(_childView)) == null)
-					AppCompat.Platform.SetRenderer(_childView, renderer = AppCompat.Platform.CreateRenderer(_childView, Context));
+				if ((renderer = Platform.GetRenderer(_childView)) == null)
+					Platform.SetRenderer(_childView, renderer = Platform.CreateRenderer(_childView, Context));
 
 				if (renderer.View.Parent != null)
 					renderer.View.RemoveFromParent();
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (_childView == null)
 				return;
 
-			IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(_childView);
+			IVisualElementRenderer renderer = Platform.GetRenderer(_childView);
 			renderer.UpdateLayout();
 		}
 

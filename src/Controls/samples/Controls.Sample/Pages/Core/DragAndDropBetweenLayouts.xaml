@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.DragAndDropBetweenLayouts"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
+    <views:BasePage.Resources>
+        <DataTemplate x:Key="colorTemplate">
+            <BoxView HeightRequest="100" Background="{Binding .}">
+                <BoxView.GestureRecognizers>
+                    <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting">
+                    </DragGestureRecognizer>
+                </BoxView.GestureRecognizers>
+            </BoxView>
+        </DataTemplate>
+    </views:BasePage.Resources>
+    <StackLayout Orientation="Horizontal">
+        <ScrollView HorizontalOptions="FillAndExpand">
+            <StackLayout 
+                    x:Name="SLAllColors" 
+                    BindableLayout.ItemTemplate="{StaticResource colorTemplate}" BindableLayout.ItemsSource="{Binding AllColors}">
+                <StackLayout.GestureRecognizers>
+                    <DropGestureRecognizer 
+                            DragOver="OnDragOver"
+                            DragLeave="OnDragLeave"
+                            Drop="OnDrop">
+                    </DropGestureRecognizer>
+                </StackLayout.GestureRecognizers>
+            </StackLayout>
+        </ScrollView>
+        <ScrollView HorizontalOptions="FillAndExpand">
+            <StackLayout x:Name="SLRainbow" BindableLayout.ItemTemplate="{StaticResource colorTemplate}" BindableLayout.ItemsSource="{Binding RainbowColors}">
+                <StackLayout.GestureRecognizers>
+                    <DropGestureRecognizer 
+                            DragOver="OnDragOver"
+                            DragLeave="OnDragLeave"
+                            Drop="OnDrop">
+                    </DropGestureRecognizer>
+                </StackLayout.GestureRecognizers>
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+</views:BasePage>

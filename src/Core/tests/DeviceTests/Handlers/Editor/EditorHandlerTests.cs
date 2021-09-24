@@ -55,6 +55,18 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(editor, () => editor.TextColor, GetNativeTextColor, editor.TextColor);
 		}
 
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
+		{
+			var editor = new EditorStub()
+			{
+				Text = "Test",
+				TextColor = null
+			};
+
+			await CreateHandlerAsync(editor);
+		}
+
 		[Fact(DisplayName = "PlaceholderColor Initializes Correctly")]
 		public async Task PlaceholderColorInitializesCorrectly()
 		{
@@ -65,6 +77,18 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(editor, () => editor.PlaceholderColor, GetNativePlaceholderColor, editor.PlaceholderColor);
+		}
+
+		[Fact(DisplayName = "Null Placeholder Color Doesn't Crash")]
+		public async Task NullPlaceholderColorDoesntCrash()
+		{
+			var editor = new EditorStub()
+			{
+				Placeholder = "Test",
+				PlaceholderColor = null
+			};
+
+			await CreateHandlerAsync(editor);
 		}
 
 		[Theory(DisplayName = "PlaceholderColor Updates Correctly")]
@@ -221,22 +245,6 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
-		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
-		{
-			var editor = new EditorStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", fontSize)
-			};
-
-			await ValidatePropertyInitValue(editor, () => editor.Font.FontSize, GetNativeUnscaledFontSize, editor.Font.FontSize);
-		}
-
 		[Theory(DisplayName = "Validates Numeric Keyboard")]
 		[InlineData(nameof(Keyboard.Chat), false)]
 		[InlineData(nameof(Keyboard.Default), false)]
@@ -343,6 +351,25 @@ namespace Microsoft.Maui.DeviceTests
 			var editor = new EditorStub() { Keyboard = keyboard };
 
 			await ValidatePropertyInitValue(editor, () => expected, GetNativeIsChatKeyboard, expected);
+		}
+
+		[Category(TestCategory.Editor)]
+		public class EditorTextInputTests : TextInputHandlerTests<EditorHandler, EditorStub>
+		{
+			protected override void SetNativeText(EditorHandler editorHandler, string text)
+			{
+				EditorHandlerTests.SetNativeText(editorHandler, text);
+			}
+
+			protected override int GetCursorStartPosition(EditorHandler editorHandler)
+			{
+				return EditorHandlerTests.GetCursorStartPosition(editorHandler);
+			}
+
+			protected override void UpdateCursorStartPosition(EditorHandler editorHandler, int position)
+			{
+				EditorHandlerTests.UpdateCursorStartPosition(editorHandler, position);
+			}
 		}
 	}
 }

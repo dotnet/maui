@@ -12,5 +12,7 @@
 		public static IiOSLifecycleBuilder PerformActionForShortcutItem(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.PerformActionForShortcutItem del) => lifecycle.OnEvent(del);
 		public static IiOSLifecycleBuilder WillEnterForeground(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.WillEnterForeground del) => lifecycle.OnEvent(del);
 		public static IiOSLifecycleBuilder WillTerminate(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.WillTerminate del) => lifecycle.OnEvent(del);
+
+		internal static IiOSLifecycleBuilder OnMauiContextCreated(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.OnMauiContextCreated del) => lifecycle.OnEvent(del);
 	}
 }

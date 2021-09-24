@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
+
 		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<TimePicker>> _platformConfigurationRegistry;
@@ -69,11 +71,17 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontFamilyProperty, value); }
 		}
 
-		[TypeConverter(typeof(FontSizeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
 			get { return (double)GetValue(FontSizeProperty); }
 			set { SetValue(FontSizeProperty, value); }
+		}
+
+		public bool FontAutoScalingEnabled
+		{
+			get => (bool)GetValue(FontAutoScalingEnabledProperty);
+			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
 		public TextTransform TextTransform
@@ -86,19 +94,27 @@ namespace Microsoft.Maui.Controls
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			HandleFontChanged();
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, (TimePicker)this);
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
+			HandleFontChanged();
+
+		void IFontElement.OnFontAutoScalingEnabledChanged(bool oldValue, bool newValue) =>
+			HandleFontChanged();
+
+		void HandleFontChanged()
+		{
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		}
 
 		public IPlatformElementConfiguration<T, TimePicker> On<T>() where T : IConfigPlatform
 		{

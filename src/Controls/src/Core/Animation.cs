@@ -1,65 +1,24 @@
-//
-// Tweener.cs
-//
-// Author:
-//       Jason Smith <jason.smith@xamarin.com>
-//
-// Copyright (c) 2012 Microsoft.Maui.Controls Inc.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
-
+using BaseAnimation = Microsoft.Maui.Animations.Animation;
 namespace Microsoft.Maui.Controls
 {
-	public class Animation : IEnumerable
+	public class Animation : BaseAnimation
 	{
-		readonly List<Animation> _children;
-		readonly Easing _easing;
-		readonly Action _finished;
-		readonly Action<double> _step;
-		double _beginAt;
-		double _finishAt;
 		bool _finishedTriggered;
 
 		public Animation()
 		{
-			_children = new List<Animation>();
-			_easing = Easing.Linear;
-			_step = f => { };
+			Easing = Easing.Linear;
 		}
 
-		public Animation(Action<double> callback, double start = 0.0f, double end = 1.0f, Easing easing = null, Action finished = null)
+		public Animation(Action<double> callback, double start = 0.0f, double end = 1.0f, Easing easing = null, Action finished = null) : base(callback, start, end - start, easing, finished)
 		{
-			_children = new List<Animation>();
-			_easing = easing ?? Easing.Linear;
-			_finished = finished;
 
+			Easing = easing ?? Easing.Linear;
 			Func<double, double> transform = AnimationExtensions.Interpolate(start, end);
-			_step = f => callback(transform(f));
-		}
-
-		public IEnumerator GetEnumerator()
-		{
-			return _children.GetEnumerator();
+			Step = f => callback(transform(f));
 		}
 
 		public void Add(double beginAt, double finishAt, Animation animation)
@@ -73,9 +32,9 @@ namespace Microsoft.Maui.Controls
 			if (finishAt <= beginAt)
 				throw new ArgumentException("finishAt must be greater than beginAt");
 
-			animation._beginAt = beginAt;
-			animation._finishAt = finishAt;
-			_children.Add(animation);
+			animation.StartDelay = beginAt;
+			animation.Duration = finishAt - beginAt;
+			childrenAnimations.Add(animation);
 		}
 
 		public void Commit(IAnimatable owner, string name, uint rate = 16, uint length = 250, Easing easing = null, Action<double, bool> finished = null, Func<bool> repeat = null)
@@ -87,13 +46,13 @@ namespace Microsoft.Maui.Controls
 		{
 			Action<double> result = f =>
 			{
-				_step(_easing.Ease(f));
-				foreach (Animation animation in _children)
+				Step?.Invoke(Easing.Ease(f));
+				foreach (Animation animation in childrenAnimations)
 				{
 					if (animation._finishedTriggered)
 						continue;
 
-					double val = Math.Max(0.0f, Math.Min(1.0f, (f - animation._beginAt) / (animation._finishAt - animation._beginAt)));
+					double val = Math.Max(0.0f, Math.Min(1.0f, (f - animation.StartDelay) / (animation.Duration)));
 
 					if (val <= 0.0f) // not ready to process yet
 						continue;
@@ -104,18 +63,19 @@ namespace Microsoft.Maui.Controls
 					if (val >= 1.0f)
 					{
 						animation._finishedTriggered = true;
-						if (animation._finished != null)
-							animation._finished();
+						animation.Finished?.Invoke();
 					}
 				}
 			};
 			return result;
 		}
 
-		internal void ResetChildren()
+		internal void ResetChildren() => this.Reset();
+
+		public override void Reset()
 		{
-			foreach (var anim in _children)
-				anim._finishedTriggered = false;
+			base.Reset();
+			_finishedTriggered = false;
 		}
 
 		public Animation Insert(double beginAt, double finishAt, Animation animation)
@@ -126,26 +86,26 @@ namespace Microsoft.Maui.Controls
 
 		public Animation WithConcurrent(Animation animation, double beginAt = 0.0f, double finishAt = 1.0f)
 		{
-			animation._beginAt = beginAt;
-			animation._finishAt = finishAt;
-			_children.Add(animation);
+			animation.StartDelay = beginAt;
+			animation.Duration = finishAt - beginAt;
+			childrenAnimations.Add(animation);
 			return this;
 		}
 
 		public Animation WithConcurrent(Action<double> callback, double start = 0.0f, double end = 1.0f, Easing easing = null, double beginAt = 0.0f, double finishAt = 1.0f)
 		{
 			var child = new Animation(callback, start, end, easing);
-			child._beginAt = beginAt;
-			child._finishAt = finishAt;
-			_children.Add(child);
+			child.StartDelay = beginAt;
+			child.Duration = finishAt - beginAt;
+			childrenAnimations.Add(child);
 			return this;
 		}
 
-		public static bool IsEnabled
+		public bool IsEnabled
 		{
 			get
 			{
-				return Internals.Ticker.Default.SystemEnabled;
+				return animationManger?.Ticker?.SystemEnabled ?? false;
 			}
 		}
 	}

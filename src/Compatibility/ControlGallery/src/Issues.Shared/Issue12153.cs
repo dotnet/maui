@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 12153, "Setting FontFamily to pre-installed fonts on UWP crashes", PlatformAffected.UWP)]
-	public class Issue12153 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue12153 : TestContentPage
 	{
 		protected override void Init()
 		{

@@ -1,13 +1,48 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using UIKit;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CheckBoxHandlerTests
 	{
+		[Fact(DisplayName = "Accessibility Value Sets Correctly")]
+		public async Task AccessibilityValueSetsCorrectly()
+		{
+			var checkboxStub = new CheckBoxStub()
+			{
+				IsChecked = true
+			};
+
+			var onValue = await GetValueAsync(checkboxStub, (handler) => GetNativeCheckBox(handler).AccessibilityValue);
+			checkboxStub.IsChecked = false;
+			var offValue = await GetValueAsync(checkboxStub, (handler) => GetNativeCheckBox(handler).AccessibilityValue);
+
+			Assert.Equal("1", onValue);
+			Assert.Equal("0", offValue);
+		}
+
+		[Fact(DisplayName = "Accessibility Traits Init Correctly")]
+		public async Task AccessibilityTraitsSetWithHeading()
+		{
+			var checkboxStub = new CheckBoxStub()
+			{
+				IsChecked = true,
+				Semantics = new Semantics() { HeadingLevel = SemanticHeadingLevel.Level4 }
+			};
+
+			var traits = await GetValueAsync(checkboxStub, (handler) => GetNativeCheckBox(handler).AccessibilityTraits);
+			var expectedTraits = await InvokeOnMainThreadAsync(() => new UISwitch().AccessibilityTraits);
+
+			Assert.True(traits.HasFlag(expectedTraits));
+			Assert.True(traits.HasFlag(UIAccessibilityTrait.Header));
+		}
+
+
 		MauiCheckBox GetNativeCheckBox(CheckBoxHandler checkBoxHandler) =>
 			(MauiCheckBox)checkBoxHandler.NativeView;
 

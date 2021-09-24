@@ -35,13 +35,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			//TestMainPageSwitches();
 
-			if (Device.RuntimePlatform != Device.iOS)
-				SetMainPage(new ImageSourcesGallery());
-		}
+			SetMainPage(CreateDefaultMainPage());
 
-		protected override IWindow CreateWindow(IActivationState activationState)
-		{
-			return new Window(CreateDefaultMainPage());
+			//TestMainPageSwitches();
+
+			//SetMainPage(new ImageSourcesGallery());
 		}
 
 		protected override void OnStart()

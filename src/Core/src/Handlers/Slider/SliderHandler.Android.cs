@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.SetOnSeekBarChangeListener(null);
 		}
 
-		protected override void SetupDefaults(SeekBar nativeView)
+		void SetupDefaults(SeekBar nativeView)
 		{
 			DefaultThumbColorFilter = nativeView.Thumb?.GetColorFilter();
 			DefaultProgressTintMode = nativeView.ProgressTintMode;

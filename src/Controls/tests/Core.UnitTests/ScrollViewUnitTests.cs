@@ -6,6 +6,8 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
+	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
+
 	[TestFixture]
 	public class ScrollViewUnitTests : BaseTestFixture
 	{
@@ -64,7 +66,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			scrollView.Content = hLayout;
 
-			var r = scrollView.GetSizeRequest(100, 100);
+			var r = scrollView.Measure(100, 100);
 
 			Assert.AreEqual(10, r.Request.Height);
 		}

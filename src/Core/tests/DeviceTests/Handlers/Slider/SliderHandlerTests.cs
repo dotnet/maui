@@ -64,6 +64,17 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateNativeThumbColor(slider, Colors.Purple);
 		}
 
+		[Fact(DisplayName = "Null Thumb Color Doesn't Crash")]
+		public async Task NullThumbColorDoesntCrash()
+		{
+			var slider = new SliderStub()
+			{
+				ThumbColor = null,
+			};
+
+			await CreateHandlerAsync(slider);
+		}
+
 #if !__ANDROID__ // Android native control behavior works differently; see SliderHandlerTests.Android.cs
 		[Fact(DisplayName = "Value Initializes Correctly")]
 		public async Task ValueInitializesCorrectly()

@@ -310,13 +310,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 #endif
 			}
 
-			var pinchRecognizer = recognizer as PinchGestureRecognizer;
+			var pinchRecognizer = recognizer as IPinchGestureController;
 			if (pinchRecognizer != null)
 			{
 				double startingScale = 1;
 				var uiRecognizer = CreatePinchRecognizer(r =>
 				{
-					var pinchGestureRecognizer = weakRecognizer.Target as PinchGestureRecognizer;
+					var pinchGestureRecognizer = weakRecognizer.Target as IPinchGestureController;
 					var eventTracker = weakEventTracker.Target as EventTracker;
 					var view = eventTracker?._renderer?.Element as View;
 
@@ -387,7 +387,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 					var eventTracker = weakEventTracker.Target as EventTracker;
 					var view = eventTracker?._renderer?.Element as View;
 
-					var panGestureRecognizer = weakRecognizer.Target as PanGestureRecognizer;
+					var panGestureRecognizer = weakRecognizer.Target as IPanGestureController;
 					if (panGestureRecognizer != null && view != null)
 					{
 						switch (r.State)
@@ -397,36 +397,36 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 									return;
 #endif
-								panGestureRecognizer.SendPanStarted(view, Application.Current.PanGestureId);
+								panGestureRecognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 								break;
 							case NativeGestureRecognizerState.Changed:
 #if __MOBILE__
 								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 								{
 									r.State = NativeGestureRecognizerState.Ended;
-									panGestureRecognizer.SendPanCompleted(view, Application.Current.PanGestureId);
-									Application.Current.PanGestureId++;
+									panGestureRecognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
+									PanGestureRecognizer.CurrentId.Increment();
 									return;
 								}
 #endif
 								var translationInView = r.TranslationInView(_handler);
-								panGestureRecognizer.SendPan(view, translationInView.X, translationInView.Y, Application.Current.PanGestureId);
+								panGestureRecognizer.SendPan(view, translationInView.X, translationInView.Y, PanGestureRecognizer.CurrentId.Value);
 								break;
 							case NativeGestureRecognizerState.Cancelled:
 							case NativeGestureRecognizerState.Failed:
-								panGestureRecognizer.SendPanCanceled(view, Application.Current.PanGestureId);
-								Application.Current.PanGestureId++;
+								panGestureRecognizer.SendPanCanceled(view, PanGestureRecognizer.CurrentId.Value);
+								PanGestureRecognizer.CurrentId.Increment();
 								break;
 							case NativeGestureRecognizerState.Ended:
 #if __MOBILE__
 								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 								{
-									panGestureRecognizer.SendPanCompleted(view, Application.Current.PanGestureId);
-									Application.Current.PanGestureId++;
+									panGestureRecognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
+									PanGestureRecognizer.CurrentId.Increment();
 								}
 #else
-								panGestureRecognizer.SendPanCompleted(view, Application.Current.PanGestureId);
-								Application.Current.PanGestureId++;
+								panGestureRecognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
+								PanGestureRecognizer.CurrentId.Increment();
 #endif
 								break;
 						}

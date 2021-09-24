@@ -11,9 +11,10 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>
+	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
 	{
 		readonly List<Element> _logicalChildren = new List<Element>();
+		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => _logicalChildren;
 
 		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement => _logicalChildren;
 
@@ -356,9 +357,7 @@ namespace Microsoft.Maui.Controls
 			return textCell;
 		}
 
-		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			var minimumSize = new Size(40, 40);
 			Size request;

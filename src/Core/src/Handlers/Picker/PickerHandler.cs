@@ -2,7 +2,7 @@
 {
 	public partial class PickerHandler
 	{
-		public static PropertyMapper<IPicker, PickerHandler> PickerMapper = new PropertyMapper<IPicker, PickerHandler>(ViewHandler.ViewMapper)
+		public static IPropertyMapper<IPicker, PickerHandler> PickerMapper = new PropertyMapper<IPicker, PickerHandler>(ViewMapper)
 		{
 #if __ANDROID__
 			[nameof(IPicker.Background)] = MapBackground,
@@ -14,19 +14,27 @@
 			[nameof(IPicker.Title)] = MapTitle,
 			[nameof(IPicker.TitleColor)] = MapTitleColor,
 			[nameof(IPicker.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
-			[nameof(IPicker.VerticalTextAlignment)] = MapVerticalTextAlignment,
-			Actions =
-			{
-				["Reload"] = MapReload,
-			}
+			[nameof(IPicker.VerticalTextAlignment)] = MapVerticalTextAlignment			
 		};
 
-		public PickerHandler() : base(PickerMapper)
+		public static CommandMapper<IPicker, PickerHandler> PickerCommandMapper = new(ViewCommandMapper)
+		{
+			["Reload"] = MapReload
+		};
+
+		static PickerHandler()
+		{
+#if __IOS__
+			PickerMapper.PrependToMapping(nameof(IView.FlowDirection), (h, __) => h.UpdateValue(nameof(ITextAlignment.HorizontalTextAlignment)));
+#endif
+		}
+
+		public PickerHandler() : base(PickerMapper, PickerCommandMapper)
 		{
 
 		}
 
-		public PickerHandler(PropertyMapper mapper) : base(mapper)
+		public PickerHandler(IPropertyMapper mapper) : base(mapper)
 		{
 
 		}

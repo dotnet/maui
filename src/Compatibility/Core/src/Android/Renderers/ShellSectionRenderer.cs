@@ -11,6 +11,7 @@ using AndroidX.Fragment.App;
 using AndroidX.ViewPager.Widget;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
+using Microsoft.Maui.Controls.Platform;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -142,14 +143,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			var root = inflater.Inflate(Resource.Layout.rootlayout, null).JavaCast<CoordinatorLayout>();
 
-			_toolbar = root.FindViewById<Toolbar>(Resource.Id.main_toolbar);
+			_toolbar = root.FindViewById<Toolbar>(Resource.Id.maui_toolbar);
 			_viewPager = root.FindViewById<FormsViewPager>(Resource.Id.main_viewpager);
 			_tablayout = root.FindViewById<TabLayout>(Resource.Id.main_tablayout);
 
 			_viewPager.EnableGesture = false;
 
 			_viewPager.AddOnPageChangeListener(this);
-			_viewPager.Id = AppCompat.Platform.GenerateViewId();
+			_viewPager.Id = Platform.GenerateViewId();
 
 			_viewPager.Adapter = new ShellFragmentPagerAdapter(shellSection, ChildFragmentManager);
 			_viewPager.OverScrollMode = OverScrollMode.Never;
@@ -204,7 +205,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				var tab = _tablayout.GetTabAt(i);
 
 				if (tab.View != null)
-					FastRenderers.AutomationPropertiesProvider.AccessibilitySettingsChanged(tab.View, items[i]);
+					AutomationPropertiesProvider.AccessibilitySettingsChanged(tab.View, items[i]);
 			}
 		}
 
@@ -264,7 +265,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			AnimationFinished?.Invoke(this, e);
 		}
 
-		protected virtual void OnItemsCollectionChagned(object sender, NotifyCollectionChangedEventArgs e) =>
+		protected virtual void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) =>
 			_tablayout.Visibility = (SectionController.GetItems().Count > 1) ? ViewStates.Visible : ViewStates.Gone;
 
 		protected virtual void OnShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -300,14 +301,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void HookEvents()
 		{
-			SectionController.ItemsCollectionChanged += OnItemsCollectionChagned;
+			SectionController.ItemsCollectionChanged += OnItemsCollectionChanged;
 			((IShellController)_shellContext.Shell).AddAppearanceObserver(this, ShellSection);
 			ShellSection.PropertyChanged += OnShellItemPropertyChanged;
 		}
 
 		void UnhookEvents()
 		{
-			SectionController.ItemsCollectionChanged -= OnItemsCollectionChagned;
+			SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 			((IShellController)_shellContext?.Shell)?.RemoveAppearanceObserver(this);
 			ShellSection.PropertyChanged -= OnShellItemPropertyChanged;
 		}

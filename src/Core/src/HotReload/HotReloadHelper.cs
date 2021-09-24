@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Internal;
 
 namespace Microsoft.Maui.HotReload
 {

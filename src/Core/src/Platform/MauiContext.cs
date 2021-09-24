@@ -1,10 +1,13 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui
 {
-	public partial class MauiContext : IMauiContext
+	public partial class MauiContext : IMauiContext, IScopedMauiContext
 	{
+		IAnimationManager? _animationManager;
+
 		public MauiContext()
 		{
 			// Temporary hack until we fully remove Forms.Init
@@ -12,7 +15,7 @@ namespace Microsoft.Maui
 			Handlers = null!;
 		}
 
-		private MauiContext(IServiceProvider services)
+		public MauiContext(IServiceProvider services)
 		{
 			Services = services ?? throw new ArgumentNullException(nameof(services));
 			Handlers = Services.GetRequiredService<IMauiHandlersServiceProvider>();
@@ -21,5 +24,8 @@ namespace Microsoft.Maui
 		public IServiceProvider Services { get; }
 
 		public IMauiHandlersServiceProvider Handlers { get; }
+
+		IAnimationManager IScopedMauiContext.AnimationManager =>
+			_animationManager ??= Services.GetRequiredService<IAnimationManager>();
 	}
 }

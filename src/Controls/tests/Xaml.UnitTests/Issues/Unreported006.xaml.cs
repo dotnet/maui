@@ -14,14 +14,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		public Layout<View> GenericProperty
+		public Controls.Compatibility.Layout<View> GenericProperty
 		{
-			get { return (Layout<View>)GetValue(GenericPropertyProperty); }
+			get { return (Controls.Compatibility.Layout<View>)GetValue(GenericPropertyProperty); }
 			set { SetValue(GenericPropertyProperty, value); }
 		}
 
 		public static readonly BindableProperty GenericPropertyProperty =
-			BindableProperty.Create(nameof(GenericProperty), typeof(Layout<View>), typeof(Unreported006));
+			BindableProperty.Create(nameof(GenericProperty), typeof(Controls.Compatibility.Layout<View>), typeof(Unreported006));
 
 		[TestFixture]
 		class Tests
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var page = new Unreported006();
 				Assert.NotNull(page.GenericProperty);
-				Assert.That(page.GenericProperty, Is.TypeOf<StackLayout>());
+				Assert.That(page.GenericProperty, Is.TypeOf<Compatibility.StackLayout>());
 			}
 		}
 	}

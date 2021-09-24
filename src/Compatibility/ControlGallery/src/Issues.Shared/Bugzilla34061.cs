@@ -37,10 +37,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 
 			_layout.Children.Add(stack,
-				Microsoft.Maui.Controls.Constraint.Constant(0),
-				Microsoft.Maui.Controls.Constraint.Constant(0),
-				Microsoft.Maui.Controls.Constraint.RelativeToParent(p => p.Width),
-				Microsoft.Maui.Controls.Constraint.RelativeToParent(p => p.Height));
+				Compatibility.Constraint.Constant(0),
+				Compatibility.Constraint.Constant(0),
+				Compatibility.Constraint.RelativeToParent(p => p.Width),
+				Compatibility.Constraint.RelativeToParent(p => p.Height));
 
 			Content = _layout;
 		}
@@ -57,10 +57,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			_layout.Children.Add(
 				newView,
-				Microsoft.Maui.Controls.Constraint.Constant(0),
-				Microsoft.Maui.Controls.Constraint.RelativeToParent(p => p.Height / 2),
-				Microsoft.Maui.Controls.Constraint.RelativeToParent(p => p.Width),
-				Microsoft.Maui.Controls.Constraint.RelativeToParent(p => p.Height / 2));
+				Compatibility.Constraint.Constant(0),
+				Compatibility.Constraint.RelativeToParent(p => p.Height / 2),
+				Compatibility.Constraint.RelativeToParent(p => p.Width),
+				Compatibility.Constraint.RelativeToParent(p => p.Height / 2));
 		}
 
 		void RemovePopover(View view)

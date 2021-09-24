@@ -1,22 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Android.Content;
-using Microsoft.Extensions.DependencyInjection;
-
+using Android.Views;
+using AndroidX.Fragment.App;
 
 namespace Microsoft.Maui
 {
-	public partial class MauiContext
+	public partial class MauiContext : IScopedMauiContext
 	{
 		readonly WeakReference<Context>? _context;
-		public MauiContext(IServiceProvider services, Context context) : this(services)
+
+		public MauiContext(IServiceProvider services, Context context)
+			: this(services)
 		{
 			_context = new WeakReference<Context>(context ?? throw new ArgumentNullException(nameof(context)));
 		}
 
-		public MauiContext(Context context) : this()
+		internal MauiContext(Context context)
+			: this()
 		{
+			_context = new WeakReference<Context>(context ?? throw new ArgumentNullException(nameof(context)));
 		}
 
 		public Context? Context
@@ -26,14 +28,14 @@ namespace Microsoft.Maui
 				if (_context == null)
 					return null;
 
-				Context? context;
-				if (_context.TryGetTarget(out context))
-				{
-					return context;
-				}
-
-				return null;
+				return _context.TryGetTarget(out Context? context) ? context : null;
 			}
 		}
+
+		LayoutInflater? IScopedMauiContext.LayoutInflater => null;
+
+		FragmentManager? IScopedMauiContext.FragmentManager => null;
+
+		NavigationManager? IScopedMauiContext.NavigationManager => null;
 	}
 }

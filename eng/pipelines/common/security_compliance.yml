@@ -28,7 +28,10 @@ stages:
         displayName: Create Security Analysis Report
         condition: succeededOrFailed()
         inputs:
-          AllTools: true
+          AllTools: false
+          CredScan: true
+          AntiMalware: true
+          PoliCheck: true
 
       - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
         displayName: Publish Security Analysis Logs
@@ -40,5 +43,8 @@ stages:
         displayName: Fail Job if Security Issues are Detected
         condition: succeededOrFailed()
         inputs:
-          AllTools: true
+          AllTools: false
+          CredScan: true
+          AntiMalware: true
+          PoliCheck: true
         

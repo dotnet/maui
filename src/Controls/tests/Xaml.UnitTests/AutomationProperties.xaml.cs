@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void AutomationPropertiesIsInAccessibleTree(bool useCompiledXaml)
 			{
 				var layout = new AutomationProperties(useCompiledXaml);
-				Application.Current.MainPage = layout;
+				Application.Current.LoadPage(layout);
 
 				Assert.AreEqual(true, (bool)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.IsInAccessibleTreeProperty));
 			}
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void AutomationPropertiesLabeledBy(bool useCompiledXaml)
 			{
 				var layout = new AutomationProperties(useCompiledXaml);
-				Application.Current.MainPage = layout;
+				Application.Current.LoadPage(layout);
 
 				Assert.AreEqual(layout.label, (Element)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.LabeledByProperty));
 			}

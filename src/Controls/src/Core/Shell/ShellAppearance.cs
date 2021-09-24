@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls
 			var dataSet = pivot.GetValues<Color>(s_ingestArray);
 			for (int i = 0; i < s_ingestArray.Length; i++)
 			{
-				if (_colorArray[i] != null && dataSet[i].IsSet)
+				if (_colorArray[i] == null && dataSet[i].IsSet)
 				{
 					anySet = true;
 					_colorArray[i] = dataSet[i].Value;

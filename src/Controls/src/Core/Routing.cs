@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 						var page = section.Navigation.ModalStack[i];
 						RegisterImplicitPageRoute(page);
 
-						if (page is NavigationPage np)
+						if (page is INavigationPageController np)
 						{
 							foreach (var npPages in np.Pages)
 							{
@@ -105,6 +105,7 @@ namespace Microsoft.Maui.Controls
 
 		internal static void Clear()
 		{
+			s_implicitPageRoutes.Clear();
 			s_routes.Clear();
 		}
 

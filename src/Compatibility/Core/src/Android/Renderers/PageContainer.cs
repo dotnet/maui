@@ -2,6 +2,7 @@ using System;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
+using AndroidX.Fragment.App;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public PageContainer(Context context, IVisualElementRenderer child, bool inFragment = false) : base(context)
 		{
-			Id = AppCompat.Platform.GenerateViewId();
+			Id = Platform.GenerateViewId();
 			Child = child;
 			IsInFragment = inFragment;
 			AddView(child.View);
@@ -30,7 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			Child.UpdateLayout();
 
-			if (Child.View is PageViewGroup pageViewGroup)
+			if (Child.View is ContentViewGroup ||
+				Child.View is NavigationLayout ||
+				Child.View is FragmentContainerView)
 			{
 				// This is a way to handle situations where the root page is shimmed and uses fragments to host other pages (e.g., NavigationPageRenderer)
 				// The old layout system would have set the width/height of the contained Page by now; the xplat layout call would have come
@@ -46,7 +49,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					(l, t, r, b) = Context.ToPixels(ipc.ContainerArea);
 				}
 
-				pageViewGroup.Layout(l, t, r, b);
+				var mode = MeasureSpecMode.Exactly;
+				var widthSpec = mode.MakeMeasureSpec(r - l);
+				var heightSpec = mode.MakeMeasureSpec(b - t);
+
+				Child.View.Measure(widthSpec, heightSpec);
+				Child.View.Layout(l, t, r, b);
 			}
 		}
 

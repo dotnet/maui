@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty("Value")]
 	public class On
 	{
-		[TypeConverter(typeof(ListStringTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> Platform { get; set; }
 		public object Value { get; set; }
 	}

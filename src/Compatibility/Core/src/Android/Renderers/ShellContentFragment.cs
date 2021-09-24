@@ -7,6 +7,7 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
+using Microsoft.Maui.Controls.Platform;
 using AndroidAnimation = Android.Views.Animations.Animation;
 using AnimationSet = Android.Views.Animations.AnimationSet;
 using AView = Android.Views.View;
@@ -134,8 +135,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			_toolbar = _root.FindViewById<Toolbar>(Resource.Id.shellcontent_toolbar);
 
-			_renderer = AppCompat.Platform.CreateRenderer(_page, Context);
-			AppCompat.Platform.SetRenderer(_page, _renderer);
+			_renderer = Platform.CreateRenderer(_page, Context);
+			Platform.SetRenderer(_page, _renderer);
 
 			_shellPageContainer = new ShellPageContainer(Context, _renderer);
 
@@ -164,7 +165,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (_shellContent != null)
 			{
 				((IShellContentController)_shellContent).RecyclePage(_page);
-				_page.ClearValue(AppCompat.Platform.RendererProperty);
+				_page.ClearValue(Platform.RendererProperty);
 				_page = null;
 			}
 

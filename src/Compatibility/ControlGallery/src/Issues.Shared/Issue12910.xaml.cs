@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 
 #if UITEST
 using Xamarin.UITest;
@@ -21,6 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	[Issue(IssueTracker.Github, 12910,
 		"[Bug] 'Cannot access a disposed object. Object name: 'DefaultRenderer' - on ios with CollectionView and EmptyView",
 		PlatformAffected.iOS)]
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class Issue12910 : TestContentPage
 	{
 		readonly Issue12910ViewModel _viewModel;

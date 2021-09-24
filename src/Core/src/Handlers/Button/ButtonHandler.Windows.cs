@@ -1,5 +1,7 @@
 #nullable enable
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -14,13 +16,11 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiButton CreateNativeView() 
 			=> new MauiButton();
 
-		protected override void SetupDefaults(MauiButton nativeView)
+		void SetupDefaults(MauiButton nativeView)
 		{
 			DefaultPadding = (UI.Xaml.Thickness)MauiWinUIApplication.Current.Resources["ButtonPadding"];
 			DefaultForeground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonForegroundThemeBrush"];
 			DefaultBackground = (UI.Xaml.Media.Brush)MauiWinUIApplication.Current.Resources["ButtonBackgroundThemeBrush"];
-
-			base.SetupDefaults(nativeView);
 		}
 
 		protected override void ConnectHandler(MauiButton nativeView)
@@ -44,36 +44,53 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// This is a Windows-specific mapping
-		public static void MapBackground(ButtonHandler handler, IButton button)
+		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateBackground(button, DefaultBackground);
+			handler.TypedNativeView?.UpdateBackground(button, DefaultBackground);
 		}
 
-		public static void MapText(ButtonHandler handler, IButton button)
+		public static void MapText(IButtonHandler handler, IText button)
 		{
-			handler.NativeView?.UpdateText(button);
+			handler.TypedNativeView?.UpdateText(button);
 		}
 
-		public static void MapTextColor(ButtonHandler handler, IButton button)
+		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			handler.NativeView?.UpdateTextColor(button, DefaultForeground);
+			handler.TypedNativeView?.UpdateTextColor(button, DefaultForeground);
 		}
 
-		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)
+		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(button.CharacterSpacing);
+			handler.TypedNativeView?.UpdateCharacterSpacing(button.CharacterSpacing);
 		}
 
-		public static void MapFont(ButtonHandler handler, IButton button)
+		public static void MapFont(IButtonHandler handler, ITextStyle button)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(button, fontManager);
+			handler.TypedNativeView?.UpdateFont(button, fontManager);
 		}
 
-		public static void MapPadding(ButtonHandler handler, IButton button)
+		public static void MapPadding(IButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdatePadding(button, DefaultPadding);
+			handler.TypedNativeView?.UpdatePadding(button, DefaultPadding);
+		}
+
+		public static void MapImageSource(IButtonHandler handler, IButton image) =>
+			MapImageSourceAsync(handler, image).FireAndForget(handler);
+
+		public static Task MapImageSourceAsync(IButtonHandler handler, IButton image)
+		{
+			if (image.ImageSource == null)
+			{
+				return Task.CompletedTask;
+			}
+
+			return handler.ImageSourceLoader.UpdateImageSourceAsync();
+		}
+
+		void OnSetImageSource(ImageSource? obj)
+		{
 		}
 
 		void OnClick(object sender, UI.Xaml.RoutedEventArgs e)

@@ -111,7 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var window = new WindowStub();
 
-			window.View = view;
+			window.Content = view;
 			view.Parent = window;
 
 			view.Frame = new Rectangle(0, 0, 100, 100);
@@ -124,6 +124,16 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).AccessibilityIdentifier;
+
+		protected FlowDirection GetFlowDirection(IViewHandler viewHandler)
+		{
+			var nativeView = (UIView)viewHandler.NativeView;
+
+			if (nativeView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft)
+				return FlowDirection.RightToLeft;
+
+			return FlowDirection.LeftToRight;
+		}
 
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).AccessibilityLabel;

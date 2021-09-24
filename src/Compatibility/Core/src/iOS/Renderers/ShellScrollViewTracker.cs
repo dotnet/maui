@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var parent = _renderer.Element.Parent;
 
-			while (!Application.IsApplicationOrNull(parent))
+			while (!Application.IsApplicationOrWindowOrNull(parent))
 			{
 				if (parent is ScrollView || parent is ListView || parent is TableView || parent is CollectionView)
 					break;

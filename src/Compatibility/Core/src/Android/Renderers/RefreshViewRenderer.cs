@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (refreshViewContent == null)
 				return;
 
-			IVisualElementRenderer renderer = AppCompat.Platform.GetRenderer(refreshViewContent);
+			IVisualElementRenderer renderer = Platform.GetRenderer(refreshViewContent);
 			renderer?.UpdateLayout();
 		}
 
@@ -116,9 +116,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (RefreshView.Content != null)
 			{
-				_renderer = AppCompat.Platform.CreateRenderer(RefreshView.Content, Context);
+				_renderer = Platform.CreateRenderer(RefreshView.Content, Context);
 
-				AppCompat.Platform.SetRenderer(RefreshView.Content, _renderer);
+				Platform.SetRenderer(RefreshView.Content, _renderer);
 
 				if (_renderer.View.Parent != null)
 					_renderer.View.RemoveFromParent();
@@ -272,8 +272,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.SetContainer(this);
-			effect.SetControl(this);
+			effect.Container = this;
+			effect.Control = this;
 		}
 	}
 }

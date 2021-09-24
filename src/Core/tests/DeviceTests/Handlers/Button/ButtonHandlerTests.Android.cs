@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.Widget;
+using Google.Android.Material.Button;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -35,33 +37,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
 			Assert.Equal(expectedValue, values.NativeViewValue, EmCoefficientPrecision);
-		}
-
-		[Theory(DisplayName = "Font Family Initializes Correctly")]
-		[InlineData(null)]
-		[InlineData("monospace")]
-		[InlineData("Dokdo")]
-		public async Task FontFamilyInitializesCorrectly(string family)
-		{
-			var button = new ButtonStub
-			{
-				Text = "Test",
-				Font = Font.OfSize(family, 10)
-			};
-
-			var handler = await CreateHandlerAsync(button);
-			var nativeButton = GetNativeButton(handler);
-
-			var fontManager = handler.Services.GetRequiredService<IFontManager>();
-
-			var nativeFont = fontManager.GetTypeface(Font.OfSize(family, 0.0));
-
-			Assert.Equal(nativeFont, nativeButton.Typeface);
-
-			if (string.IsNullOrEmpty(family))
-				Assert.Equal(fontManager.DefaultTypeface, nativeButton.Typeface);
-			else
-				Assert.NotEqual(fontManager.DefaultTypeface, nativeButton.Typeface);
 		}
 
 		[Fact(DisplayName = "Button Padding Initializing")]
@@ -127,18 +102,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		double GetNativeUnscaledFontSize(ButtonHandler buttonHandler)
-		{
-			var textView = GetNativeButton(buttonHandler);
-			return textView.TextSize / textView.Resources.DisplayMetrics.Density;
-		}
-
-		bool GetNativeIsBold(ButtonHandler buttonHandler) =>
-			GetNativeButton(buttonHandler).Typeface.GetFontWeight() == FontWeight.Bold;
-
-		bool GetNativeIsItalic(ButtonHandler buttonHandler) =>
-			GetNativeButton(buttonHandler).Typeface.IsItalic;
-
 		double GetNativeCharacterSpacing(ButtonHandler buttonHandler)
 		{
 			var button = GetNativeButton(buttonHandler);
@@ -149,6 +112,14 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return -1;
+		}
+
+		bool ImageSourceLoaded(ButtonHandler buttonHandler)
+		{
+			var image = buttonHandler.NativeView.Icon ??
+						TextViewCompat.GetCompoundDrawablesRelative(buttonHandler.NativeView)[3];
+
+			return image != null;
 		}
 	}
 }

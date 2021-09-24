@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 
@@ -28,12 +28,11 @@ namespace Microsoft.Maui.Handlers
 			nativeView.SelectionChanged -= OnControlSelectionChanged;
 		}
 
-		protected override void SetupDefaults(MauiComboBox nativeView)
+		void SetupDefaults(MauiComboBox nativeView)
 		{
 			_defaultForeground = nativeView.Foreground;
-
-			base.SetupDefaults(nativeView);
 		}
+
 		void Reload()
 		{
 
@@ -42,7 +41,7 @@ namespace Microsoft.Maui.Handlers
 			NativeView.ItemsSource = new ItemDelegateList<string>(VirtualView);
 		}
 
-		public static void MapReload(PickerHandler handler, IPicker picker) => handler.Reload();
+		public static void MapReload(PickerHandler handler, IPicker picker, object? args) => handler.Reload();
 
 		public static void MapTitle(PickerHandler handler, IPicker picker) 
 		{

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 45284, "[iOS10] Extra tab icons display in iOS when binding Title on TabbedPage", PlatformAffected.iOS)]
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class Bugzilla45284 : TabbedPage
 	{
 		public Bugzilla45284()

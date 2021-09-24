@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Input;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 using System.Text;
+using Microsoft.UI.Input;
 
 namespace Microsoft.Maui
 {
@@ -254,21 +255,26 @@ namespace Microsoft.Maui
 
 		static string DetermineTextFromPassword(string realText, int start, string passwordText)
 		{
-			var lengthDifference = passwordText.Length - realText.Length;
+			var rt = realText ?? string.Empty;
+
+			var lengthDifference = passwordText.Length - (rt?.Length ?? 0);
 			if (lengthDifference > 0)
-				realText = realText.Insert(start - lengthDifference, new string(ObfuscationCharacter, lengthDifference));
+				rt = rt.Insert(start - lengthDifference, new string(ObfuscationCharacter, lengthDifference));
 			else if (lengthDifference < 0)
-				realText = realText.Remove(start, -lengthDifference);
+				rt = rt.Remove(start, -lengthDifference);
 
 			var sb = new StringBuilder(passwordText.Length);
 			for (int i = 0; i < passwordText.Length; i++)
-				sb.Append(passwordText[i] == ObfuscationCharacter ? realText[i] : passwordText[i]);
+				sb.Append(passwordText[i] == ObfuscationCharacter ? rt[i] : passwordText[i]);
 
 			return sb.ToString();
 		}
 
 		string Obfuscate(string text, bool leaveLastVisible = false)
 		{
+			if (string.IsNullOrEmpty(text))
+				return string.Empty;
+
 			if (!leaveLastVisible)
 				return new string(ObfuscationCharacter, text.Length);
 
@@ -296,12 +302,11 @@ namespace Microsoft.Maui
 		// handled accordingly.
 		protected override void OnKeyDown(KeyRoutedEventArgs e)
 		{
-			// TODO: MAUI Change for MultiWindow
-			if (IsPassword && Application.Current is MauiWinUIApplication app)
+			if (IsPassword)
 			{
 				// The ctrlDown flag is used to track if the Ctrl key is pressed; if it's actively being used and the most recent
 				// key to trigger OnKeyDown, then treat it as handled.
-				var ctrlDown = app.MainWindow.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+				var ctrlDown = KeyboardInput.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
 
 				// The shift, tab, and directional (Home/End/PgUp/PgDown included) keys can be used to select text and should otherwise
 				// be ignored.

@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[QueryProperty("DoubleQueryParameter", "DoubleQueryParameter")]
 		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
 		[QueryProperty("CancelNavigationOnBackButtonPressed", "CancelNavigationOnBackButtonPressed")]
+		[QueryProperty("ComplexObject", "ComplexObject")]
 		public class ShellTestPage : ContentPage
 		{
 			public string CancelNavigationOnBackButtonPressed { get; set; }
@@ -100,6 +101,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			public double DoubleQueryParameter
+			{
+				get;
+				set;
+			}
+
+			public object ComplexObject
 			{
 				get;
 				set;
@@ -374,8 +381,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				OnNavigatingCount++;
 			}
 
-
-
 			public void TestNavigationArgs(ShellNavigationSource source, string from, string to)
 			{
 				TestNavigatingArgs(source, from, to);
@@ -392,6 +397,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					Assert.AreEqual(from, this.LastShellNavigatedEventArgs.Previous.Location.ToString());
 
 				Assert.AreEqual(to, this.LastShellNavigatedEventArgs.Current.Location.ToString());
+				Assert.AreEqual(to, this.CurrentState.Location.ToString());
 			}
 
 			public void TestNavigatingArgs(ShellNavigationSource source, string from, string to)

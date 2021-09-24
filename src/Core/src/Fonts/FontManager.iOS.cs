@@ -41,10 +41,10 @@ namespace Microsoft.Maui
 		public UIFont GetFont(Font font, double defaultFontSize = 0) =>
 			GetFont(font, defaultFontSize, CreateFont);
 
-		public double GetFontSize(Font font, double defaultFontSize = 0) =>
-			font.FontSize <= 0
+		double GetFontSize(Font font, double defaultFontSize = 0) =>
+			font.Size <= 0
 				? (defaultFontSize > 0 ? (float)defaultFontSize : DefaultFont.PointSize)
-				: (nfloat)font.FontSize;
+				: (nfloat)font.Size;
 
 		static float GetWeightConstant(FontWeight self)
 		{
@@ -59,7 +59,7 @@ namespace Microsoft.Maui
 		UIFont GetFont(Font font, double defaultFont, Func<Font, UIFont> factory)
 		{
 			var size = GetFontSize(font, defaultFont);
-			if (size != font.FontSize)
+			if (size != font.Size)
 				font = font.WithSize(size);
 			return _fonts.GetOrAdd(font, factory);
 		}
@@ -81,10 +81,10 @@ namespace Microsoft.Maui
 				a.Traits = new UIFontTraits
 				{
 					Weight = GetWeightConstant(font.Weight),
-					Slant = font.FontSlant == FontSlant.Oblique ? 30.0f : 0.0f
+					Slant = font.Slant == FontSlant.Oblique ? 30.0f : 0.0f
 				};
 			}
-			if (font.FontSlant == FontSlant.Italic)
+			if (font.Slant == FontSlant.Italic)
 				traits |= UIFontDescriptorSymbolicTraits.Italic;
 
 			a.Traits.SymbolicTrait = traits;
@@ -93,12 +93,12 @@ namespace Microsoft.Maui
 
 		UIFont CreateFont(Font font)
 		{
-			var family = font.FontFamily;
-			var size = (nfloat)font.FontSize;
+			var family = font.Family;
+			var size = (nfloat)font.Size;
 
 			var hasAttributes =
 				font.Weight != FontWeight.Regular ||
-				font.FontSlant != FontSlant.Default;
+				font.Slant != FontSlant.Default;
 
 			if (family != null && family != DefaultFont.FamilyName)
 			{
@@ -114,13 +114,13 @@ namespace Microsoft.Maui
 
 						result = UIFont.FromDescriptor(descriptor, size);
 						if (result != null)
-							return result;
+							return ApplyScaling(font, result);
 					}
 
 					var cleansedFont = CleanseFontName(family);
 					result = UIFont.FromName(cleansedFont, size);
 					if (result != null)
-						return result;
+						return ApplyScaling(font, result);
 
 					if (family.StartsWith(".SFUI", StringComparison.InvariantCultureIgnoreCase))
 					{
@@ -133,17 +133,17 @@ namespace Microsoft.Maui
 						{
 							result = UIFont.SystemFontOfSize(size, uIFontWeight);
 							if (result != null)
-								return result;
+								return ApplyScaling(font, result);
 						}
 
 						result = UIFont.SystemFontOfSize(size, UIFontWeight.Regular);
 						if (result != null)
-							return result;
+							return ApplyScaling(font, result);
 					}
 
 					result = UIFont.FromName(family, size);
 					if (result != null)
-						return result;
+						return ApplyScaling(font, result);
 				}
 				catch (Exception ex)
 				{
@@ -155,10 +155,18 @@ namespace Microsoft.Maui
 			{
 				var defaultFont = UIFont.SystemFontOfSize(size);
 				var descriptor = defaultFont.FontDescriptor.CreateWithAttributes(GetFontAttributes(font));
-				return UIFont.FromDescriptor(descriptor, size);
+				return ApplyScaling(font, UIFont.FromDescriptor(descriptor, size));
 			}
 
-			return UIFont.SystemFontOfSize(size);
+			return ApplyScaling(font, UIFont.SystemFontOfSize(size));
+
+			UIFont ApplyScaling(Font font, UIFont uiFont)
+			{
+				if (font.AutoScalingEnabled)
+					return UIFontMetrics.DefaultMetrics.GetScaledFont(uiFont);
+
+				return uiFont;
+			}
 		}
 
 		string? CleanseFontName(string fontName)

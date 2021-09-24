@@ -54,6 +54,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Test]
+		public void IsRefreshingStillTogglesTrueWhenCanExecuteToggledDuringExecute()
+		{
+			RefreshView refreshView = new RefreshView();
+			Command command = null;
+			command = new Command(() => command.ChangeCanExecute(), () => !refreshView.IsRefreshing);
+			refreshView.Command = command;
+			refreshView.IsRefreshing = true;
+			Assert.IsTrue(refreshView.IsRefreshing);
+		}
+
+		[Test]
 		public void CanExecuteChangesEnabled()
 		{
 			RefreshView refreshView = new RefreshView();

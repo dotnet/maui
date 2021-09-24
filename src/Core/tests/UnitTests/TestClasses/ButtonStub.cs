@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.UnitTests
 {
-	class ButtonStub : View, IButton
+	class ButtonStub : View, IButton, IText
 	{
 		public string Text { get; set; }
 
@@ -20,5 +20,11 @@ namespace Microsoft.Maui.UnitTests
 		public void Released() { }
 
 		public Font Font { get; set; }
+
+		public IImageSource ImageSource { get; set; }
+
+		public void ImageSourceLoaded()
+		{
+		}
 	}
 }

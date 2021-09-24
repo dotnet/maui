@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	[TypeConverter(typeof(LayoutOptionsConverter))]
+	[System.ComponentModel.TypeConverter(typeof(LayoutOptionsConverter))]
 	public struct LayoutOptions
 	{
 		int _flags;

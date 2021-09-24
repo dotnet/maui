@@ -17,10 +17,10 @@ namespace Microsoft.Maui.Controls.XamlC
 			double size;
 
 			if (string.IsNullOrEmpty(value) || !double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out size))
-				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Constraint));
+				throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Compatibility.Constraint));
 
 			yield return Create(Ldc_R8, size);
-			yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Constraint"),
+			yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Compatibility", "Constraint"),
 																   methodName: "Constant",
 																   parameterTypes: new[] { ("mscorlib", "System", "Double") },
 																   isStatic: true));

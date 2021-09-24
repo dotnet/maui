@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using Foundation;
+using UIKit;
 
 namespace Microsoft.Maui
 {
@@ -9,9 +10,22 @@ namespace Microsoft.Maui
 			uiSearchBar.Text = searchBar.Text;
 		}
 
-		public static void UpdatePlaceholder(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		public static void UpdatePlaceholder(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField)
 		{
-			uiSearchBar.Placeholder = searchBar.Placeholder;
+			textField ??= uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return;
+
+			var placeholder = searchBar.Placeholder ?? string.Empty;
+			var placeholderColor = searchBar.PlaceholderColor;
+			var foregroundColor = placeholderColor ?? ColorExtensions.PlaceholderColor.ToColor();
+
+			textField.AttributedPlaceholder = foregroundColor == null
+				? new NSAttributedString(placeholder)
+				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToNative());
+
+			textField.AttributedPlaceholder.WithCharacterSpacing(searchBar.CharacterSpacing);
 		}
 
 		public static void UpdateFont(this UISearchBar uiSearchBar, ITextStyle textStyle, IFontManager fontManager)
@@ -27,6 +41,34 @@ namespace Microsoft.Maui
 				return;
 
 			textField.UpdateFont(textStyle, fontManager);
+		}
+
+		public static void UpdateVerticalTextAlignment(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			uiSearchBar.UpdateVerticalTextAlignment(searchBar, null);
+		}
+
+		public static void UpdateVerticalTextAlignment(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField)
+		{
+			textField ??= uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField == null)
+				return;
+
+			textField.VerticalAlignment = searchBar.VerticalTextAlignment.ToNative();
+		}
+
+		public static void UpdateMaxLength(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			var maxLength = searchBar.MaxLength;
+
+			if (maxLength == -1)
+				maxLength = int.MaxValue;
+
+			var currentControlText = uiSearchBar.Text;
+
+			if (currentControlText?.Length > maxLength)
+				uiSearchBar.Text = currentControlText.Substring(0, maxLength);
 		}
 
 		public static void UpdateCancelButton(this UISearchBar uiSearchBar, ISearchBar searchBar,

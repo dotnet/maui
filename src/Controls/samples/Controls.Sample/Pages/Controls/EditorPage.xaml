@@ -1,0 +1,40 @@
+﻿<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.EditorPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="Editor">
+    <views:BasePage.Content>
+        <ScrollView>
+            <VerticalStackLayout
+                Margin="12">
+                <Label
+                    Text="Default"
+                    Style="{StaticResource Headline}"/>
+                <Editor />
+                <Label
+                    Text="Disabled"
+                    Style="{StaticResource Headline}"/>
+                <Editor
+                    Text="I am disabled"
+                    IsEnabled="False"/>
+                <Label
+                    Text="Placeholder"
+                    Style="{StaticResource Headline}"/>
+                <Editor
+                    Placeholder="Placeholder"/>
+                <Label
+                    Text="Read-only"
+                    Style="{StaticResource Headline}"/>
+                <Editor
+                    Text="I am read only"
+                    IsReadOnly="True"/>
+                <Label
+                    Text="Keyboard"
+                    Style="{StaticResource Headline}"/>
+                <Editor
+                    Keyboard="Numeric"/>
+            </VerticalStackLayout>
+        </ScrollView>
+    </views:BasePage.Content>
+</views:BasePage>

@@ -1,5 +1,7 @@
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using Xunit;
+
 
 namespace Microsoft.Maui.UnitTests.Layouts
 {
@@ -8,7 +10,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 	{
 		[Theory("When resolving constraints, external constraints take precedence")]
 		[InlineData(100, 200, 130, 100)]
-		[InlineData(100, -1, 130, 100)]
+		[InlineData(100, Dimension.Unset, 130, 100)]
 		public void ExternalWinsOverDesiredAndMeasured(double externalConstraint, double explicitLength, double measured, double expected)
 		{
 			var resolution = LayoutManager.ResolveConstraints(externalConstraint, explicitLength, measured);
@@ -18,7 +20,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Fact("If external and request constraints don't apply, constrain to measured value")]
 		public void MeasuredWinsIfNothingElseApplies()
 		{
-			var resolution = LayoutManager.ResolveConstraints(double.PositiveInfinity, -1, 245);
+			var resolution = LayoutManager.ResolveConstraints(double.PositiveInfinity, Dimension.Unset, 245);
 			Assert.Equal(245, resolution);
 		}
 

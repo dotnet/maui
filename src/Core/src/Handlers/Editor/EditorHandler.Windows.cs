@@ -28,12 +28,12 @@ namespace Microsoft.Maui.Handlers
 			nativeView.LostFocus -= OnLostFocus;
 		}
 
-		protected override void SetupDefaults(MauiTextBox nativeView)
+		void SetupDefaults(MauiTextBox nativeView)
 		{
 			_placeholderDefaultBrush = nativeView.PlaceholderForeground;
 			_defaultPlaceholderColorFocusBrush = nativeView.PlaceholderForegroundFocusBrush;
 
-			base.SetupDefaults(nativeView);
+			
 		}
 
 		public static void MapText(EditorHandler handler, IEditor editor)
@@ -61,8 +61,10 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateMaxLength(editor);
 		}
 
-		[MissingMapper]
-		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor) { }
+		public static void MapIsTextPredictionEnabled(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateIsTextPredictionEnabled(editor);
+		}
 
 		public static void MapFont(EditorHandler handler, IEditor editor)
 		{
@@ -79,8 +81,10 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateTextColor(editor);
 
-		[MissingMapper]
-		public static void MapKeyboard(EditorHandler handler, IEditor editor) { }
+		public static void MapKeyboard(EditorHandler handler, IEditor editor) 
+		{
+			handler.NativeView?.UpdateKeyboard(editor); 
+		}
 		
 		void OnLostFocus(object? sender, RoutedEventArgs e)
 		{

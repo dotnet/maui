@@ -1,6 +1,8 @@
 ﻿#nullable enable
 using System;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls.Internals;
+
 namespace Microsoft.Maui.Controls
 {
 	public static class FontExtensions
@@ -14,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		public static FontAttributes GetFontAttributes(this Font font)
 		{
 			FontAttributes attributes = font.Weight == FontWeight.Bold ? FontAttributes.Bold : FontAttributes.None;
-			if (font.FontSlant != FontSlant.Default)
+			if (font.Slant != FontSlant.Default)
 			{
 				if (attributes == FontAttributes.None)
 					attributes = FontAttributes.Italic;
@@ -23,5 +25,8 @@ namespace Microsoft.Maui.Controls
 			}
 			return attributes;
 		}
+
+		public static Font ToFont(this IFontElement element) =>
+			Font.OfSize(element.FontFamily, element.FontSize, enableScaling: element.FontAutoScalingEnabled).WithAttributes(element.FontAttributes);
 	}
 }

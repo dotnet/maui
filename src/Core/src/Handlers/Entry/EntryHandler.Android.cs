@@ -14,63 +14,59 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
 	{
-		TextWatcher Watcher { get; } = new TextWatcher();
-		EntryTouchListener TouchListener { get; } = new EntryTouchListener();
-		EntryFocusChangeListener FocusChangeListener { get; } = new EntryFocusChangeListener();
-		EditorActionListener ActionListener { get; } = new EditorActionListener();
+		readonly EntryTouchListener _touchListener = new();
+		readonly EntryFocusChangeListener _focusChangeListener = new();
+		readonly EditorActionListener _actionListener = new();
 
-		static ColorStateList? DefaultTextColors { get; set; }
-		static Drawable? ClearButtonDrawable { get; set; }
-		static Drawable? DefaultBackground;
+		Drawable? _clearButtonDrawable;
+		ColorStateList? _defaultPlaceholderColors;
 
 		protected override AppCompatEditText CreateNativeView()
 		{
-			return new AppCompatEditText(Context);
+			var nativeEntry = new AppCompatEditText(Context);
+
+			_defaultPlaceholderColors = nativeEntry.HintTextColors;
+
+			return nativeEntry;
 		}
 
 		// Returns the default 'X' char drawable in the AppCompatEditText.
 		protected virtual Drawable GetClearButtonDrawable() =>
-			ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
+			_clearButtonDrawable ??= ContextCompat.GetDrawable(Context, Resource.Drawable.abc_ic_clear_material);
 
 		protected override void ConnectHandler(AppCompatEditText nativeView)
 		{
-			Watcher.Handler = this;
-			TouchListener.Handler = this;
-			FocusChangeListener.Handler = this;
-			ActionListener.Handler = this;
+			_touchListener.Handler = this;
+			_focusChangeListener.Handler = this;
+			_actionListener.Handler = this;
 
-			nativeView.OnFocusChangeListener = FocusChangeListener;
-			nativeView.AddTextChangedListener(Watcher);
-			nativeView.SetOnTouchListener(TouchListener);
-			nativeView.SetOnEditorActionListener(ActionListener);
+			nativeView.TextChanged += OnTextChanged;
+			nativeView.OnFocusChangeListener = _focusChangeListener;
+			nativeView.SetOnTouchListener(_touchListener);
+			nativeView.SetOnEditorActionListener(_actionListener);
 		}
 
 		protected override void DisconnectHandler(AppCompatEditText nativeView)
 		{
-			nativeView.RemoveTextChangedListener(Watcher);
+			_clearButtonDrawable = null;
+
+			nativeView.TextChanged -= OnTextChanged;
 			nativeView.SetOnTouchListener(null);
 			nativeView.OnFocusChangeListener = null;
 			nativeView.SetOnEditorActionListener(null);
 
-			FocusChangeListener.Handler = null;
-			Watcher.Handler = null;
-			TouchListener.Handler = null;
-			ActionListener.Handler = null;
+			_focusChangeListener.Handler = null;
+			_touchListener.Handler = null;
+			_actionListener.Handler = null;
 		}
 
-		protected override void SetupDefaults(AppCompatEditText nativeView)
-		{
-			base.SetupDefaults(nativeView);
-
-			ClearButtonDrawable = GetClearButtonDrawable();
-			DefaultTextColors = nativeView.TextColors;
-			DefaultBackground = nativeView.Background;
-		}
+		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
+			VirtualView.UpdateText(e);
 
 		// This is a Android-specific mapping
 		public static void MapBackground(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateBackground(entry, DefaultBackground);
+			handler.NativeView?.UpdateBackground(entry);
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry)
@@ -80,7 +76,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateTextColor(entry, DefaultTextColors);
+			handler.NativeView?.UpdateTextColor(entry);
 		}
 
 		public static void MapIsPassword(EntryHandler handler, IEntry entry)
@@ -111,6 +107,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdatePlaceholder(entry);
+		}
+
+		public static void MapPlaceholderColor(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdatePlaceholderColor(entry, handler._defaultPlaceholderColors);
 		}
 
 		public static void MapFont(EntryHandler handler, IEntry entry)
@@ -152,7 +153,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapClearButtonVisibility(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView?.UpdateClearButtonVisibility(entry, ClearButtonDrawable);
+			handler.NativeView?.UpdateClearButtonVisibility(entry, handler.GetClearButtonDrawable);
 		}
 
 		void OnFocusedChange(bool hasFocus)
@@ -162,7 +163,7 @@ namespace Microsoft.Maui.Handlers
 
 			// This will eliminate additional native property setting if not required.
 			if (VirtualView.ClearButtonVisibility == ClearButtonVisibility.WhileEditing)
-				NativeView?.UpdateClearButtonVisibility(VirtualView, ClearButtonDrawable);
+				UpdateValue(nameof(VirtualView.ClearButtonVisibility));
 		}
 
 		bool OnTouch(MotionEvent? motionEvent)
@@ -179,15 +180,10 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || NativeView == null)
 				return;
 
-			// Even though <null> is technically different to "", it has no
-			// functional difference to apps. Thus, hide it.
-			var mauiText = VirtualView.Text ?? string.Empty;
-			var nativeText = text ?? string.Empty;
-			if (mauiText != nativeText)
-				VirtualView.Text = nativeText;
+			VirtualView.UpdateText(text);
 
 			// Text changed should trigger clear button visibility.
-			NativeView.UpdateClearButtonVisibility(VirtualView, ClearButtonDrawable);
+			UpdateValue(nameof(VirtualView.ClearButtonVisibility));
 		}
 
 		/// <summary>
@@ -200,54 +196,38 @@ namespace Microsoft.Maui.Handlers
 			if (motionEvent == null || NativeView == null || VirtualView == null)
 				return false;
 
-			var rBounds = ClearButtonDrawable?.Bounds;
+			var virtualView = VirtualView;
+			if (virtualView.ClearButtonVisibility == ClearButtonVisibility.Never)
+				return false;
 
-			if (rBounds != null)
+			var rBounds = GetClearButtonDrawable()?.Bounds;
+			var buttonWidth = rBounds?.Width();
+
+			if (buttonWidth > 0)
 			{
 				var x = motionEvent.GetX();
 				var y = motionEvent.GetY();
+				var nativeView = NativeView;
 
 				if (motionEvent.Action == MotionEventActions.Up
-					&& ((x >= (NativeView.Right - rBounds.Width())
-					&& x <= (NativeView.Right - NativeView.PaddingRight)
-					&& y >= NativeView.PaddingTop
-					&& y <= (NativeView.Height - NativeView.PaddingBottom)
-					&& (VirtualView.FlowDirection == FlowDirection.LeftToRight))
-					|| (x >= (NativeView.Left + NativeView.PaddingLeft)
-					&& x <= (NativeView.Left + rBounds.Width())
-					&& y >= NativeView.PaddingTop
-					&& y <= (NativeView.Height - NativeView.PaddingBottom)
-					&& VirtualView.FlowDirection == FlowDirection.RightToLeft)))
+					&& ((x >= nativeView.Right - buttonWidth
+					&& x <= nativeView.Right - nativeView.PaddingRight
+					&& y >= nativeView.PaddingTop
+					&& y <= nativeView.Height - nativeView.PaddingBottom
+					&& virtualView.FlowDirection == FlowDirection.LeftToRight)
+					|| (x >= nativeView.Left + nativeView.PaddingLeft
+					&& x <= nativeView.Left + buttonWidth
+					&& y >= nativeView.PaddingTop
+					&& y <= nativeView.Height - nativeView.PaddingBottom
+					&& virtualView.FlowDirection == FlowDirection.RightToLeft)))
 				{
-					NativeView.Text = null;
+					nativeView.Text = null;
 
 					return true;
 				}
 			}
 
 			return false;
-		}
-
-		class TextWatcher : Java.Lang.Object, ITextWatcher
-		{
-			public EntryHandler? Handler { get; set; }
-
-			void ITextWatcher.AfterTextChanged(IEditable? s)
-			{
-			}
-
-			void ITextWatcher.BeforeTextChanged(Java.Lang.ICharSequence? s, int start, int count, int after)
-			{
-			}
-
-			void ITextWatcher.OnTextChanged(Java.Lang.ICharSequence? s, int start, int before, int count)
-			{
-				// We are replacing 0 characters with 0 characters, so skip
-				if (before == 0 && count == 0)
-					return;
-
-				Handler?.OnTextChanged(s?.ToString());
-			}
 		}
 
 		// TODO: Maybe better to have generic version in INativeViewHandler?

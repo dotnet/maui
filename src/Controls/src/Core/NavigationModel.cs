@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class NavigationModel
+	internal class NavigationModel
 	{
 		readonly List<Page> _modalStack = new List<Page>();
 		readonly List<List<Page>> _navTree = new List<List<Page>>();
@@ -15,15 +13,27 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			get
 			{
-				if (_navTree.Any())
+				if (_navTree.Count > 0)
 					return _navTree.Last().Last();
 				return null;
 			}
 		}
 
-		public IEnumerable<Page> Modals
+		public Page LastRoot
 		{
-			get { return _modalStack; }
+			get
+			{
+				if (_navTree.Count == 0)
+					return null;
+
+				return _navTree.Last()[0];
+			}
+		}
+
+
+		public IReadOnlyList<Page> Modals
+		{
+			get { return _modalStack.AsReadOnly(); }
 		}
 
 		public IEnumerable<Page> Roots
@@ -81,7 +91,7 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			if (_navTree.Count <= 1)
 				throw new InvalidNavigationException("Can't pop modal without any modals pushed");
-			Page modal = _navTree.Last().First();
+			Page modal = _navTree.Last()[0];
 			_modalStack.Remove(modal);
 			_navTree.Remove(_navTree.Last());
 			return modal;
@@ -102,7 +112,7 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 			itemToRemove = _navTree.Last().Last();
 			_navTree.Last().Remove(itemToRemove);
-			if (!_navTree.Last().Any())
+			if (_navTree.Last().Count == 0)
 			{
 				_navTree.RemoveAt(_navTree.Count - 1);
 			}
@@ -130,7 +140,7 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			if (ancestralNav == null)
 			{
-				if (_navTree.Any())
+				if (_navTree.Count > 0)
 					throw new InvalidNavigationException("Ancestor must be provided for all pushes except first");
 				_navTree.Add(new List<Page> { page });
 				return;

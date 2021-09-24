@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		[TypeConverter(typeof(UriTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
 		public Uri Uri
 		{
 			get { return (Uri)GetValue(UriProperty); }

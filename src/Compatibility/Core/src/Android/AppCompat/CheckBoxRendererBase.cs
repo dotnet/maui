@@ -76,9 +76,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
 
-					if (AppCompat.Platform.GetRenderer(Element) == this)
+					if (Platform.GetRenderer(Element) == this)
 					{
-						Element.ClearValue(AppCompat.Platform.RendererProperty);
+						Element.ClearValue(Platform.RendererProperty);
 					}
 
 					Element = null;

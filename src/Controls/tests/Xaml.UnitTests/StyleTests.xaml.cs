@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void StylesDerivedFromDynamicStylesThroughStaticResource(bool useCompiledXaml)
 			{
 				var layout = new StyleTests(useCompiledXaml);
-				Application.Current.MainPage = layout;
+				Application.Current.LoadPage(layout);
 
 				var label = layout.labelWithStyleDerivedFromDynamic_StaticResource;
 
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void StylesDerivedFromDynamicStylesThroughDynamicResource(bool useCompiledXaml)
 			{
 				var layout = new StyleTests(useCompiledXaml);
-				Application.Current.MainPage = layout;
+				Application.Current.LoadPage(layout);
 
 				var label = layout.labelWithStyleDerivedFromDynamic_DynamicResource;
 

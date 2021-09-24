@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls
 		static void UpdateSemanticsProperty(BindableObject bindable, Action<Semantics> action)
 		{
 			action.Invoke(((VisualElement)bindable).SetupSemantics());
-			if (bindable is IFrameworkElement fe)
+			if (bindable is IView fe)
 				fe.Handler?.UpdateValue(nameof(IView.Semantics));
 		}
 

@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return false;
 			}
 
-			var renderer = parent as AppCompat.Platform.DefaultRenderer;
+			var renderer = parent as Platform.DefaultRenderer;
 			if (renderer == null || ShouldPassThroughElement())
 			{
 				return false;
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					return true;
 				}
 
-				if (AppCompat.Platform.GetRenderer(_element) is AppCompat.Platform.DefaultRenderer renderer)
+				if (Platform.GetRenderer(_element) is Platform.DefaultRenderer renderer)
 				{
 					// If the event is being bubbled up from a child which is not inputtransparent, we do not want
 					// it to be passed through (just up the tree)

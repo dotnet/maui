@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Android.Webkit;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using AWebView = Android.Webkit.WebView;
 
@@ -29,8 +30,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="dispatcher">A <see cref="Dispatcher"/> instance that can marshal calls to the required thread or sync context.</param>
 		/// <param name="fileProvider">Provides static content to the webview.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the <paramref name="fileProvider"/>.</param>
-		public AndroidWebKitWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, AWebView webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, string hostPageRelativePath)
-			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, hostPageRelativePath)
+		public AndroidWebKitWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, AWebView webview, IServiceProvider services, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string hostPageRelativePath)
+			: base(services, dispatcher, new Uri(AppOrigin), fileProvider, jsComponents, hostPageRelativePath)
 		{
 			_blazorWebViewHandler = blazorMauiWebViewHandler ?? throw new ArgumentNullException(nameof(blazorMauiWebViewHandler));
 			_webview = webview ?? throw new ArgumentNullException(nameof(webview));

@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			realListView.OnItemClickListener = this;
 			realListView.OnItemLongClickListener = this;
 
-			MessagingCenter.Subscribe<ListViewAdapter>(this, AppCompat.Platform.CloseContextActionsSignalName, lva => CloseContextActions());
+			MessagingCenter.Subscribe<ListViewAdapter>(this, Platform.CloseContextActionsSignalName, lva => CloseContextActions());
 
 			InvalidateCount();
 		}
@@ -436,7 +436,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			{
 				CloseContextActions();
 
-				MessagingCenter.Unsubscribe<ListViewAdapter>(this, AppCompat.Platform.CloseContextActionsSignalName);
+				MessagingCenter.Unsubscribe<ListViewAdapter>(this, Platform.CloseContextActionsSignalName);
 
 				_realListView.OnItemClickListener = null;
 				_realListView.OnItemLongClickListener = null;
@@ -515,10 +515,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (view != null)
 			{
-				var renderer = AppCompat.Platform.GetRenderer(view);
+				var renderer = Platform.GetRenderer(view);
 
 				if (renderer == renderedView)
-					element.ClearValue(AppCompat.Platform.RendererProperty);
+					element.ClearValue(Platform.RendererProperty);
 
 				renderer?.Dispose();
 				renderer = null;

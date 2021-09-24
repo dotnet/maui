@@ -317,9 +317,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		void SetControllers()
 		{
 			var list = new List<UIViewController>();
-			for (var i = 0; i < Element.LogicalChildren.Count; i++)
+			var logicalChildren = ((IElementController)Element).LogicalChildren;
+			for (var i = 0; i < logicalChildren.Count; i++)
 			{
-				var child = Element.LogicalChildren[i];
+				var child = logicalChildren[i];
 				var v = child as VisualElement;
 				if (v == null)
 					continue;

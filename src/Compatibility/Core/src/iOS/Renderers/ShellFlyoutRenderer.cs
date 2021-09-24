@@ -293,40 +293,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			TapoffView.AddGestureRecognizer(recognizer);
 		}
 
-		public void FocusSearch(bool forwardDirection)
-		{
-			var element = Shell.CurrentItem as ITabStopElement;
-			var tabIndexes = element?.GetTabIndexesOnParentPage(out _);
-			if (tabIndexes == null)
-				return;
-
-			int tabIndex = element.TabIndex;
-			element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
-			if (element is ShellItem item)
-				Shell.CurrentItem = item;
-			else if (element is VisualElement ve)
-				ve.Focus();
-		}
-
-		UIKeyCommand[] tabCommands = {
-			UIKeyCommand.Create ((Foundation.NSString)"\t", 0, new ObjCRuntime.Selector ("tabForward:")),
-			UIKeyCommand.Create ((Foundation.NSString)"\t", UIKeyModifierFlags.Shift, new ObjCRuntime.Selector ("tabBackward:"))
-		};
 		private IShellFlyoutTransition _flyoutTransition;
-
-		public override UIKeyCommand[] KeyCommands => tabCommands;
 
 		public UIView NativeView => throw new NotImplementedException();
 
 		public UIViewController ViewController => throw new NotImplementedException();
-
-		[Foundation.Export("tabForward:")]
-		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-		void TabForward(UIKeyCommand cmd) => FocusSearch(forwardDirection: true);
-
-		[Foundation.Export("tabBackward:")]
-		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
-		void TabBackward(UIKeyCommand cmd) => FocusSearch(forwardDirection: false);
 
 		void HandlePanGesture(UIPanGestureRecognizer pan)
 		{

@@ -52,7 +52,19 @@ namespace Microsoft.Maui.DeviceTests
 				TextColor = Colors.Red
 			};
 
-			await ValidatePropertyInitValue(searchBar, () => searchBar.TextColor, GetNativeTextColor, searchBar.TextColor);
+			await ValidatePropertyInitValue(searchBar, () => searchBar.TextColor, GetNativeTextColor, Colors.Red);
+		}
+
+		[Fact(DisplayName = "Null Text Color Doesn't Crash")]
+		public async Task NullTextColorDoesntCrash()
+		{
+			var searchBar = new SearchBarStub
+			{
+				Text = "TextColor",
+				TextColor = null,
+			};
+
+			await CreateHandlerAsync(searchBar);
 		}
 
 		[Fact(DisplayName = "Placeholder Initializes Correctly")]
@@ -66,37 +78,25 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Placeholder, GetNativePlaceholder, searchBar.Placeholder);
 		}
 
-		[Theory(DisplayName = "Font Size Initializes Correctly")]
-		[InlineData(1)]
+		[Theory(DisplayName = "MaxLength Initializes Correctly")]
+		[InlineData(2)]
+		[InlineData(5)]
+		[InlineData(8)]
 		[InlineData(10)]
-		[InlineData(20)]
-		[InlineData(100)]
-		public async Task FontSizeInitializesCorrectly(int fontSize)
+		public async Task MaxLengthInitializesCorrectly(int maxLength)
 		{
+			const string text = "Lorem ipsum dolor sit amet";
+			var expectedText = text.Substring(0, maxLength);
+
 			var searchBar = new SearchBarStub()
 			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", fontSize)
+				MaxLength = maxLength,
+				Text = text
 			};
 
-			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontSize, GetNativeUnscaledFontSize, searchBar.Font.FontSize);
-		}
+			var nativeText = await GetValueAsync(searchBar, GetNativeText);
 
-		[Theory(DisplayName = "Font Attributes Initialize Correctly")]
-		[InlineData(FontWeight.Regular, false, false)]
-		[InlineData(FontWeight.Bold, true, false)]
-		[InlineData(FontWeight.Regular, false, true)]
-		[InlineData(FontWeight.Bold, true, true)]
-		public async Task FontAttributesInitializeCorrectly(FontWeight weight, bool isBold, bool isItalic)
-		{
-			var searchBar = new SearchBarStub()
-			{
-				Text = "Test",
-				Font = Font.OfSize("Arial", 10, weight, isItalic ? FontSlant.Italic : FontSlant.Default),
-			};
-
-			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.Weight == FontWeight.Bold, GetNativeIsBold, isBold);
-			await ValidatePropertyInitValue(searchBar, () => searchBar.Font.FontSlant == FontSlant.Italic, GetNativeIsItalic, isItalic);
+			Assert.Equal(expectedText, nativeText);
 		}
 
 		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
@@ -108,6 +108,36 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidateHasColor(searchBar, Colors.MediumPurple, () => searchBar.CancelButtonColor = Colors.MediumPurple);
+		}
+
+		[Fact(DisplayName = "Null Cancel Button Color Doesn't Crash")]
+		public async Task NullCancelButtonColorDoesntCrash()
+		{
+			var searchBar = new SearchBarStub
+			{
+				CancelButtonColor = null,
+			};
+
+			await CreateHandlerAsync(searchBar);
+		}
+
+		[Category(TestCategory.SearchBar)]
+		public class SearchBarTextInputTests : TextInputHandlerTests<SearchBarHandler, SearchBarStub>
+		{
+			protected override void SetNativeText(SearchBarHandler searchBarHandler, string text)
+			{
+				SearchBarHandlerTests.SetNativeText(searchBarHandler, text);
+			}
+
+			protected override int GetCursorStartPosition(SearchBarHandler searchBarHandler)
+			{
+				return SearchBarHandlerTests.GetCursorStartPosition(searchBarHandler);
+			}
+
+			protected override void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position)
+			{
+				SearchBarHandlerTests.UpdateCursorStartPosition(searchBarHandler, position);
+			}
 		}
 	}
 }

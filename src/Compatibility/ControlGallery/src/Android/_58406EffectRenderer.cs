@@ -5,6 +5,7 @@ using Android.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportEffect(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Android._58406EffectRenderer), Bugzilla58406.EffectName)]
 

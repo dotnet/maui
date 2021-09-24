@@ -161,23 +161,23 @@ namespace Microsoft.Maui.Controls
 
 		static internal string[] RetrievePaths(string uri) => uri.Split(_pathSeparators, StringSplitOptions.RemoveEmptyEntries);
 
-		static internal NavigationRequest.WhatToDoWithTheStack CalculateStackRequest(Uri uri)
+		static internal ShellNavigationRequest.WhatToDoWithTheStack CalculateStackRequest(Uri uri)
 		{
 			if (uri.IsAbsoluteUri)
-				return NavigationRequest.WhatToDoWithTheStack.ReplaceIt;
+				return ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt;
 			else if (uri.OriginalString.StartsWith("//", StringComparison.Ordinal) || uri.OriginalString.StartsWith("\\\\", StringComparison.Ordinal))
-				return NavigationRequest.WhatToDoWithTheStack.ReplaceIt;
+				return ShellNavigationRequest.WhatToDoWithTheStack.ReplaceIt;
 
 
-			return NavigationRequest.WhatToDoWithTheStack.PushToIt;
+			return ShellNavigationRequest.WhatToDoWithTheStack.PushToIt;
 		}
 
-		internal static NavigationRequest GetNavigationRequest(Shell shell, Uri uri, bool enableRelativeShellRoutes = false, bool throwNavigationErrorAsException = true, ShellNavigationParameters shellNavigationParameters = null)
+		internal static ShellNavigationRequest GetNavigationRequest(Shell shell, Uri uri, bool enableRelativeShellRoutes = false, bool throwNavigationErrorAsException = true, ShellNavigationParameters shellNavigationParameters = null)
 		{
 			uri = FormatUri(uri, shell);
 
 			// figure out the intent of the Uri
-			NavigationRequest.WhatToDoWithTheStack whatDoIDo = CalculateStackRequest(uri);
+			ShellNavigationRequest.WhatToDoWithTheStack whatDoIDo = CalculateStackRequest(uri);
 
 			Uri request = ConvertToStandardFormat(shell, uri);
 
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls
 			RequestDefinition definition =
 				new RequestDefinition(theWinningRoute, shell);
 
-			NavigationRequest navigationRequest = new NavigationRequest(definition, whatDoIDo, request.Query, request.Fragment);
+			ShellNavigationRequest navigationRequest = new ShellNavigationRequest(definition, whatDoIDo, request.Query, request.Fragment);
 
 			return navigationRequest;
 		}
@@ -284,12 +284,16 @@ namespace Microsoft.Maui.Controls
 					continue;
 
 				var url = possibleRoutePath.PathFull;
+				var currentLocation = possibleRoutePath.GetNodeLocation();
+
+				if (currentLocation.Content == null)
+					continue;
 
 				var globalRouteMatches =
 					SearchForGlobalRoutes(
 						possibleRoutePath.RemainingSegments,
 						new ShellNavigationState(url, false).FullLocation,
-						possibleRoutePath.GetNodeLocation(),
+						currentLocation,
 						routeKeys);
 
 				if (globalRouteMatches.Count != 1)

@@ -1,11 +1,9 @@
-using Microsoft.Maui.Graphics;
-
 namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Provides functionality to be able to customize Text.
 	/// </summary>
-	public interface IText : ITextStyle
+	public interface IText : ITextStyle, IElement
 	{
 		/// <summary>
 		/// Gets the text.

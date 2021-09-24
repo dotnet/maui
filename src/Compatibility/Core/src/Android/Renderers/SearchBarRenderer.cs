@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return true;
 		}
 
+		[PortHandler("Partially ported")]
 		bool SearchView.IOnQueryTextListener.OnQueryTextSubmit(string query)
 		{
 			((ISearchBarController)Element).OnSearchButtonPressed();
@@ -180,6 +181,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			_editText.UpdateHorizontalAlignment(Element.HorizontalTextAlignment, Context.HasRtlSupport(), Microsoft.Maui.TextAlignment.Center.ToVerticalGravityFlags());
 		}
 
+		[PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
 			_editText = _editText ?? Control.GetChildrenOfType<EditText>().FirstOrDefault();
@@ -248,6 +250,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			Control.SetQueryHint(Element.Placeholder);
 		}
 
+		[PortHandler]
 		void UpdatePlaceholderColor()
 		{
 			_hintColorSwitcher?.UpdateTextColor(_editText, Element.PlaceholderColor, _editText.SetHintTextColor);
