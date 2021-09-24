@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
@@ -29,11 +30,11 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateMenuItems(this AToolbar toolbar,
 			IEnumerable<ToolbarItem> sortedToolbarItems,
 			IMauiContext mauiContext,
-			Color tintColor,
+			Color? tintColor,
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> previousMenuItems,
 			List<ToolbarItem> previousToolBarItems,
-			Action<Context, IMenuItem, ToolbarItem> updateMenuItemIcon = null)
+			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
 		{
 			if (sortedToolbarItems == null || previousMenuItems == null)
 				return;
@@ -67,20 +68,20 @@ namespace Microsoft.Maui.Controls.Platform
 			ToolbarItem item,
 			int? menuItemIndex,
 			IMauiContext mauiContext,
-			Color tintColor,
+			Color? tintColor,
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> previousMenuItems,
 			List<ToolbarItem> previousToolBarItems,
-			Action<Context, IMenuItem, ToolbarItem> updateMenuItemIcon = null)
+			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
 		{
-			var context = mauiContext.Context;
+			var context = mauiContext.Context!;
 			IMenu menu = toolbar.Menu;
 			item.PropertyChanged -= toolbarItemChanged;
 			item.PropertyChanged += toolbarItemChanged;
 
 			IMenuItem menuitem;
 
-			Java.Lang.ICharSequence newTitle = null;
+			Java.Lang.ICharSequence? newTitle = null;
 
 			if (!String.IsNullOrWhiteSpace(item.Text))
 			{
@@ -103,7 +104,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (menuItemIndex == null || menuItemIndex >= previousMenuItems?.Count)
 			{
-				menuitem = menu.Add(0, AView.GenerateViewId(), 0, newTitle);
+				menuitem = menu.Add(0, AView.GenerateViewId(), 0, newTitle)!;
 				previousMenuItems?.Add(menuitem);
 			}
 			else
@@ -145,14 +146,11 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal static void UpdateMenuItemIcon(IMauiContext mauiContext, IMenuItem menuItem, ToolbarItem toolBarItem, Color tintColor)
+		internal static void UpdateMenuItemIcon(IMauiContext mauiContext, IMenuItem menuItem, ToolbarItem toolBarItem, Color? tintColor)
 		{
-			if (toolBarItem.IconImageSource == null)
-				return;
-
 			toolBarItem.IconImageSource.LoadImage(mauiContext, result =>
 			{
-				var baseDrawable = result.Value;
+				var baseDrawable = result?.Value;
 				if (menuItem == null || !menuItem.IsAlive())
 				{
 					return;
@@ -160,7 +158,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (baseDrawable != null)
 				{
-					using (var constant = baseDrawable.GetConstantState())
+					using (var constant = baseDrawable.GetConstantState()!)
 					using (var newDrawable = constant.NewDrawable())
 					using (var iconDrawable = newDrawable.Mutate())
 					{
@@ -184,11 +182,11 @@ namespace Microsoft.Maui.Controls.Platform
 			ToolbarItem toolbarItem,
 			ICollection<ToolbarItem> toolbarItems,
 			IMauiContext mauiContext,
-			Color tintColor,
+			Color? tintColor,
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> currentMenuItems,
 			List<ToolbarItem> currentToolbarItems,
-			Action<Context, IMenuItem, ToolbarItem> updateMenuItemIcon = null)
+			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
 		{
 			if (toolbarItems == null)
 				return;
