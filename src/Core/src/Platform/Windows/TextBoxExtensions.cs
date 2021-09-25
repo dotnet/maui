@@ -119,9 +119,9 @@ namespace Microsoft.Maui
 			textBox.IsPassword = entry.IsPassword;
 		}
 
-		public static void UpdateIsTextPredictionEnabled(this MauiTextBox textBox, IEditor editor)
+		public static void UpdateIsTextPredictionEnabled(this MauiTextBox textBox, ITextInput textInput)
 		{
-			textBox.UpdateInputScope(editor);
+			textBox.UpdateInputScope(textInput);
 		}
 
 		public static void UpdateKeyboard(this MauiTextBox textBox, IEditor editor)
