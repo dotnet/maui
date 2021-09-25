@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFrame(BorderHandler handler, IBorder border)
 		{
-			
+
 		}
 	}
 }

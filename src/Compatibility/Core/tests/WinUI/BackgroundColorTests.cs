@@ -6,9 +6,9 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using NUnit.Framework;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WColor = Windows.UI.Color;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
-using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
