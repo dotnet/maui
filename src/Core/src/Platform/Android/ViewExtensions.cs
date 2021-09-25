@@ -47,7 +47,7 @@ namespace Microsoft.Maui
 			};
 		}
 
-		public static void UpdateBackground(this ContentViewGroup nativeView, IBorder border) 
+		public static void UpdateBackground(this ContentViewGroup nativeView, IBorder border)
 		{
 			bool hasBorder = border.Shape != null && border.Stroke != null;
 

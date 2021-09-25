@@ -2,9 +2,9 @@
 using System;
 using CoreAnimation;
 using CoreGraphics;
-using UIKit;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Native;
+using UIKit;
 
 namespace Microsoft.Maui
 {

@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Maui
 {
-	public interface IBorder : IContentView, IBorderStroke 
-	{ 
+	public interface IBorder : IContentView, IBorderStroke
+	{
 	}
 }
