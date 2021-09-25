@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public IElementHandler Handler { get; set; }
 
-		public IElement Parent { get; set; }
+		public Maui.IElement Parent { get; set; }
 
 		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
 
