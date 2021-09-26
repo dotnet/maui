@@ -12,6 +12,8 @@
     <WindowsPackageType>MSIX</WindowsPackageType>
     <ApplicationTitle>.NET MAUI Controls</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sample</ApplicationId>
+    <ApplicationId Condition="$(TargetFramework.Contains('-windows'))">f9e4fa3e-3505-4742-9b2b-d1acdaff4ec8</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
   </PropertyGroup>
