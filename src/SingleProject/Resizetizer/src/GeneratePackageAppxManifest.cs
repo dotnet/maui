@@ -10,8 +10,6 @@ namespace Microsoft.Maui.Resizetizer
 {
 	public class GeneratePackageAppxManifest : Task
 	{
-		//private static readonly XNamespace xmlns = "http://schemas.microsoft.com/appx/manifest/foundation/windows10";
-
 		private static readonly XNamespace xmlnsUap = "http://schemas.microsoft.com/appx/manifest/uap/windows10";
 
 		[Required]
