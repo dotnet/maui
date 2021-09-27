@@ -276,7 +276,10 @@ namespace Microsoft.Maui.Controls.Platform
 			layout.Parent = sender;
 			var nativeView = layout.ToNative(MauiContext);
 
-			var request = layout.CrossPlatformMeasure(sender.Width, sender.Height);
+			var width = sender.Width <= -1 ? double.PositiveInfinity : sender.Width;
+			var height = sender.Height <= -1 ? double.PositiveInfinity : sender.Height;
+			var request = layout.CrossPlatformMeasure(width, height);
+
 			nativeView.MinimumHeight = request.Height.ToScaledPixel();
 			nativeView.MinimumWidth = request.Width.ToScaledPixel();
 
