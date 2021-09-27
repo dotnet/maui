@@ -61,8 +61,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.EditingDidEnd += OnEnded;
 			nativeView.EditingChanged += OnEditing;
-
-
 			base.ConnectHandler(nativeView);
 		}
 
@@ -131,6 +129,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(PickerHandler handler, IPicker picker)
 		{
 			handler.NativeView?.UpdateTextColor(picker);		
+		}
+
+		public static void MapVerticalTextAlignment(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(picker);
 		}
 
 		void OnEnded(object? sender, EventArgs eventArgs)

@@ -37,6 +37,12 @@ namespace Microsoft.Maui.Handlers
 			base.NativeArrange(frame);
 		}
 
+		protected override void ConnectHandler(AppCompatTextView nativeView)
+		{
+			base.ConnectHandler(nativeView);
+			SetupDefaults(nativeView);
+		}
+
 		void SetupDefaults(AppCompatTextView nativeView)
 		{
 			if (nativeView.TextColors == null)

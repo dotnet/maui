@@ -90,6 +90,11 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView.UpdateTextColor(picker, s_defaultTextColors);
 		}
 
+		public static void MapVerticalTextAlignment(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
+		}
+
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
 		{
 			if (NativeView == null)

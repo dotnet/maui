@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.TextPropertySet += OnTextPropertySet;
 			nativeView.ShouldChangeTextInRange += ShouldChangeText;
 			base.ConnectHandler(nativeView);
+			SetupDefaults(nativeView);
 		}
 
 		protected override void DisconnectHandler(MauiSearchBar nativeView)
