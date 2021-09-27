@@ -41,8 +41,12 @@ $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.e
 
 Write-Host "Setting Environment Variables..."
 $installationPath = & $vswhere -latest -prerelease -property installationPath
-Write-Host "##vso[task.setvariable variable=MSBUILD_EXE]$installationPath\MSBuild\Current\Bin\MSBuild.exe"
+$msbuild = "$installationPath\MSBuild\Current\Bin\MSBuild.exe"
 Write-Host "##vso[task.setvariable variable=VS_INSTALL]$installationPath"
+Write-Host "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
+
+Write-Host "Selected MSBuild: $msbuild"
+& "$msbuild" /version
 
 Write-Host "Installed Visual Studio Versions:"
 & $vswhere -all -prerelease
