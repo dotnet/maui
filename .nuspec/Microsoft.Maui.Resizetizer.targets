@@ -4,6 +4,7 @@
     <ItemGroup>
         <AvailableItemName Include="MauiAsset" />
         <AvailableItemName Include="MauiImage" />
+        <AvailableItemName Include="MauiAppIcon" />
         <AvailableItemName Include="MauiFont" />
         <AvailableItemName Include="MauiSplashScreen" />
     </ItemGroup>
@@ -192,6 +193,7 @@
         <ItemGroup>
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' == ''" />
             <MauiItem Include="@(MauiImage)" ItemGroupName="MauiImage" Condition="'%(MauiImage.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiImage.ForegroundFile)'))" />
+            <MauiItem Include="@(MauiAppIcon)" ItemGroupName="MauiAppIcon" Condition="'%(MauiAppIcon.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiAppIcon.ForegroundFile)'))" />
             <MauiItem Include="@(MauiFont)"  ItemGroupName="MauiFont" />
             <MauiItem Include="@(MauiAsset)" ItemGroupName="MauiAsset" ProjectDirectory="$(MSBuildProjectDirectory)" />
             <MauiItem Include="@(MauiSplashScreen)" ItemGroupName="MauiSplashScreen" />
@@ -235,6 +237,9 @@
             <MauiImage
                 Include="@(ImportedMauiItem)"
                 Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiImage'" />
+            <MauiAppIcon
+                Include="@(ImportedMauiItem)"
+                Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiAppIcon'" />
             <MauiFont
                 Include="@(ImportedMauiItem)"
                 Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiFont'" />
@@ -244,6 +249,11 @@
             <MauiSplashScreen
                 Include="@(ImportedMauiItem)"
                 Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiSplashScreen'" />
+        </ItemGroup>
+
+        <!-- Map @(MauiAppIcon) to @(MauiImage IsAppIcon=true) -->
+        <ItemGroup>
+            <MauiImage Include="@(MauiAppIcon)" IsAppIcon="True" />
         </ItemGroup>
 
         <!-- Write out item spec and metadata to a file we can use as an inputs for the resize target -->
