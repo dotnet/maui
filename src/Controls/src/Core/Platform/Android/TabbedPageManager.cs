@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (IsBottomTabPlacement)
 				{
 					var menuItem = _bottomNavigationView.Menu.GetItem(index);
-					ImageSourceLoader.LoadImage(page.IconImageSource,
+					page.IconImageSource.LoadImage(
 						_context,
 						result =>
 						{
@@ -371,7 +371,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void SetTabIconImageSource(Page page, TabLayout.Tab tab)
 		{
-			ImageSourceLoader.LoadImage(page.IconImageSource,
+			page.IconImageSource.LoadImage(
 				_context,
 				result =>
 				{

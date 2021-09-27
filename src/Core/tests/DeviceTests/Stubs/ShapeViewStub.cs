@@ -22,5 +22,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public LineJoin StrokeLineJoin { get; set; }
 
 		public float StrokeMiterLimit { get; set; }
+		
+		public float StrokeDashOffset { get; set; }
 	}
 }

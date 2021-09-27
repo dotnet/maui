@@ -67,7 +67,7 @@
     <!-- Run 'dotnet workload install' for the current running 'dotnet' install -->
     <ItemGroup>
       <_WorkloadSource Include="$(PackageOutputPath)" />
-      <_WorkloadSource Include="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json" />
+      <_WorkloadSource Include="$(DotNet6Feed)" />
     </ItemGroup>
     <Exec
         Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; @(_WorkloadSource->'--source &quot;%(Identity)&quot;', ' ')"
@@ -151,7 +151,7 @@
       Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot;"
+        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --source &quot;$(DotNet6Feed)&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
     />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />

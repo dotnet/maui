@@ -1,8 +1,13 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Graphics;
+#if __IOS__ || MACCATALYST
+using NativeView = UIKit.UIView;
+#elif __ANDROID__
+using NativeView = Android.Views.View;
+#elif WINDOWS
+using NativeView = Microsoft.UI.Xaml.FrameworkElement;
+#elif NETSTANDARD
+using NativeView = System.Object;
+#endif
 
 namespace Microsoft.Maui.Handlers
 {
@@ -10,6 +15,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ILayout, ILayoutHandler> LayoutMapper = new PropertyMapper<ILayout, ILayoutHandler>(ViewMapper)
 		{
+			[nameof(ILayout.Background)] = MapBackground
 		};
 
 		public static CommandMapper<ILayout, ILayoutHandler> LayoutCommandMapper = new(ViewCommandMapper)
@@ -30,6 +36,12 @@ namespace Microsoft.Maui.Handlers
 			: base(mapper ?? LayoutMapper, commandMapper ?? LayoutCommandMapper)
 		{
 
+		}
+
+
+		public static void MapBackground(ILayoutHandler handler, ILayout layout)
+		{
+			((NativeView?)handler.NativeView)?.UpdateBackground(layout);
 		}
 
 		public static void MapAdd(ILayoutHandler handler, ILayout layout, object? arg)

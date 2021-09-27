@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Media;
 
@@ -46,8 +47,8 @@ namespace Microsoft.Maui
 
 		public static void UpdateReturnType(this MauiTextBox textBox, IEntry entry)
 		{
-			textBox.InputScope = entry.ReturnType.ToNative();
-    	}
+			textBox.UpdateInputScope(entry);
+		}
 
 		public static void UpdateClearButtonVisibility(this MauiTextBox textBox, IEntry entry)
 		{
@@ -112,7 +113,7 @@ namespace Microsoft.Maui
 			if (currentControlText.Length > maxLength)
 				textBox.Text = currentControlText.Substring(0, maxLength);
 		}
-    
+
 		public static void UpdateIsPassword(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.IsPassword = entry.IsPassword;
@@ -138,11 +139,17 @@ namespace Microsoft.Maui
 			else
 			{
 				textBox.IsTextPredictionEnabled = textInput.IsTextPredictionEnabled;
-
-				// TODO: Update IsSpellCheckEnabled
+				textBox.IsSpellCheckEnabled = textInput.IsTextPredictionEnabled;
 			}
 
-			textBox.InputScope = textInput.Keyboard.ToInputScope();
+			var inputScope = new UI.Xaml.Input.InputScope();
+
+			if (textInput is IEntry entry && entry.ReturnType == ReturnType.Search)
+				inputScope.Names.Add(new UI.Xaml.Input.InputScopeName(UI.Xaml.Input.InputScopeNameValue.Search));
+
+			inputScope.Names.Add(textInput.Keyboard.ToInputScopeName());
+
+			textBox.InputScope = inputScope;
 		}
 
 		public static void UpdateHorizontalTextAlignment(this MauiTextBox textBox, IEntry entry)
@@ -156,6 +163,11 @@ namespace Microsoft.Maui
 		public static void UpdateVerticalTextAlignment(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.VerticalAlignment = entry.VerticalTextAlignment.ToNativeVerticalAlignment();
-    }
+		}
+
+		public static void UpdateKeyboard(this MauiTextBox textBox, IEntry entry)
+		{
+			textBox.UpdateInputScope(entry);
+		}
 	}
 }

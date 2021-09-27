@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using CoreAnimation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
 
@@ -9,7 +10,7 @@ namespace Microsoft.Maui
 {
 	public static partial class ViewExtensions
 	{
-		const string BackgroundLayerName = "MauiBackgroundLayer";
+		internal const string BackgroundLayerName = "MauiBackgroundLayer";
 
 		public static void UpdateIsEnabled(this UIView nativeView, IView view)
 		{
@@ -50,11 +51,18 @@ namespace Microsoft.Maui
 			}
 		}
 
+		public static void UpdateBackground(this ContentView nativeView, IBorder border) 
+		{ 
+			bool hasBorder = border.Shape != null && border.Stroke != null;
+
+			if (hasBorder)
+			{
+				nativeView.UpdateMauiCALayer(border);
+			}
+		}
+
 		public static void UpdateBackground(this UIView nativeView, IView view)
 		{
-			if (nativeView == null)
-				return;
-
 			// Remove previous background gradient layer if any
 			nativeView.RemoveBackgroundLayer();
 
@@ -300,47 +308,6 @@ namespace Microsoft.Maui
 			}
 
 			return false;
-		}
-
-		static void InsertBackgroundLayer(this UIView control, CALayer backgroundLayer, int index = -1)
-		{
-			control.RemoveBackgroundLayer();
-
-			if (backgroundLayer != null)
-			{
-				var layer = control.Layer;
-
-				if (index > -1)
-					layer.InsertSublayer(backgroundLayer, index);
-				else
-					layer.AddSublayer(backgroundLayer);
-			}
-		}
-
-		static void RemoveBackgroundLayer(this UIView control)
-		{
-			var layer = control.Layer;
-
-			if (layer == null)
-				return;
-
-			if (layer.Name == BackgroundLayerName)
-			{
-				layer.RemoveFromSuperLayer();
-				return;
-			}
-
-			if (layer.Sublayers == null || layer.Sublayers.Length == 0)
-				return;
-
-			foreach (var subLayer in layer.Sublayers)
-			{
-				if (subLayer.Name == BackgroundLayerName)
-				{
-					subLayer.RemoveFromSuperLayer();
-					break;
-				}
-			}
 		}
 
 		public static void ClearSubviews(this UIView view)

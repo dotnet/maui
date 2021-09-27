@@ -22,6 +22,7 @@
   <ItemGroup>
     <_JsonInputFile Include="WorkloadManifest.in.json" OutputPath="$(IntermediateOutputPath)WorkloadManifest.json" Pack="true" />
     <_JsonInputFile Include="Rollback.in.json" OutputPath="$(IntermediateOutputPath)Rollback.json" Pack="false" />
+    <_JsonInputFile Include="SdkInstaller.in.json" OutputPath="$(IntermediateOutputPath)SdkInstaller.json" Pack="false" />
   </ItemGroup>
 
   <Target Name="_GenerateWorkloadManifest" BeforeTargets="Build;AssignTargetPaths" DependsOnTargets="SetVersions" Inputs="$(MSBuildProjectFile);@(_JsonInputFile)" Outputs="@(_JsonInputFile->'%(OutputPath)')">
@@ -112,13 +113,19 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_CopyRollbackFile" AfterTargets="Build">
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/rollbacks/$(Version)/$(GitSha).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/rollbacks/$(Version)/$(GitSemVerLabel).$(BUILDVERSION).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/rollbacks/$(Version)/$(GitSemVerLabel).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/rollbacks/$(GitSha).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/rollbacks/$(GitSemVerLabel).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/rollbacks/$(GitBranch).json" />
+  <Target Name="_CopyAdditionalFIles" AfterTargets="Build">
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(GitSha).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(GitSemVerLabel).$(BUILDVERSION).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(GitSemVerLabel).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(GitSha).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(GitSemVerLabel).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(GitBranch).json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(GitSha).json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(GitSemVerLabel).$(BUILDVERSION).json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(GitSemVerLabel).json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(GitSha).json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(GitSemVerLabel).json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(GitBranch).json" />
   </Target>
 
   <Target Name="_CopyManifest" AfterTargets="Build">

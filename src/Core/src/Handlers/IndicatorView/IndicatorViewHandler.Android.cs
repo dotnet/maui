@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView.ResetIndicators();
 		}
-		public static void MapIndicatorShape(IndicatorViewHandler handler, IIndicatorView indicator) 
+		public static void MapIndicatorShape(IndicatorViewHandler handler, IIndicatorView indicator)
 		{
 			handler.NativeView.ResetIndicators();
 		}

@@ -1,9 +1,11 @@
 ﻿using System;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
 {
 	public partial class ImageButtonPage
 	{
+
 		int _clickTotal;
 
 		public ImageButtonPage()

@@ -1,0 +1,29 @@
+﻿<views:BasePage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.ImageButtonPage"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    Title="ImageButton">
+    <views:BasePage.Content>
+        <VerticalStackLayout Margin="12" Spacing="6">
+            <Label
+                    Text="AspectFit"
+                    Style="{StaticResource Headline}"/>
+            <ImageButton HorizontalOptions="Center" WidthRequest="200" HeightRequest="100" Clicked="OnImageButtonClicked" Aspect="AspectFit" Background="Green" Source="settings.png" Padding="16, 9, 16, 9" />
+            <Label
+                    Text="AspectFill"
+                    Style="{StaticResource Headline}"/>
+            <ImageButton HorizontalOptions="Center" WidthRequest="200" HeightRequest="100" Clicked="OnImageButtonClicked" Aspect="AspectFill" Background="Green" Source="settings.png" Padding="16, 9, 16, 9" />
+            <Label
+                    Text="Fill"
+                    Style="{StaticResource Headline}"/>
+            <ImageButton HorizontalOptions="Center" WidthRequest="200" HeightRequest="100" Clicked="OnImageButtonClicked" Aspect="Fill" Background="Green" Source="settings.png" Padding="16, 9, 16, 9" />
+            <Label 
+                    x:Name="InfoLabel"
+                    Text="0 ImageButton clicks"
+                    FontSize="16"
+                    HorizontalOptions="Center"
+                    VerticalOptions="CenterAndExpand" />
+        </VerticalStackLayout>
+    </views:BasePage.Content>
+</views:BasePage>
