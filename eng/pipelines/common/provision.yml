@@ -69,8 +69,6 @@ steps:
       inputs:
         provisioning_script: $(provisionator.vs)
     - powershell: |
-        & "C:\Program Files\Microsoft Visual Studio\2022\Preview\Common7\IDE\devenv.exe" /version
-    - powershell: |
         if (-not $(where.exe pwsh)) {
           $url = "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.msi"
           $output = "$env:TEMP\PowerShell.msi"
@@ -80,8 +78,7 @@ steps:
         }
       displayName: 'Install PowerShell Core'
     - pwsh: |
-        $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
-        & "$msbuild" /version
+        $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/CI/MSBuild/Current/Bin/MSBuild.exe"
         echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
       displayName: 'Setup MSBuild Paths'
 
@@ -90,5 +87,3 @@ steps:
   - pwsh: ./build.ps1 --target provision
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
-  - pwsh: |
-      & "C:\Program Files\Microsoft Visual Studio\2022\Preview\Common7\IDE\devenv.exe" /version
