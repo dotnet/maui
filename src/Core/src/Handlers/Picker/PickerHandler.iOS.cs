@@ -61,8 +61,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.EditingDidEnd += OnEnded;
 			nativeView.EditingChanged += OnEditing;
-
-
 			base.ConnectHandler(nativeView);
 		}
 

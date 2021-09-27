@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.QueryTextChange += OnQueryTextChange;
 			nativeView.QueryTextSubmit += OnQueryTextSubmit;
+			SetupDefaults(nativeView);
 		}
 
 		protected override void DisconnectHandler(SearchView nativeView)
