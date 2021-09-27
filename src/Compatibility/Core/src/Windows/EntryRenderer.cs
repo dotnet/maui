@@ -254,7 +254,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.ClearButtonVisible = Element.ClearButtonVisibility == ClearButtonVisibility.WhileEditing;
 		}
 
-		[PortHandler("Pending to port IsSpellCheckEnabled")]
 		void UpdateInputScope()
 		{
 			Entry entry = Element;

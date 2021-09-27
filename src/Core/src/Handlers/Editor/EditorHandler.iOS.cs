@@ -134,11 +134,15 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Completed();
 		}
 
-		private void OnTextPropertySet(object? sender, EventArgs e)
+		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
+		}
+		
+		void OnTextPropertySet(object? sender, EventArgs e)
 		{
 			VirtualView.UpdateText(NativeView.Text);
 		}
-
 
 		public static void MapKeyboard(EditorHandler handler, IEditor editor)
 		{
