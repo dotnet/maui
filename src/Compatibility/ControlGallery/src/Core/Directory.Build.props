@@ -3,5 +3,4 @@
   <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.props"/>
   <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.DefaultItems.props"/>
   <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.props"/>
-  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.props" />
 </Project> 
