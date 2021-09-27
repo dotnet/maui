@@ -374,11 +374,36 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			abs.MinimumHeight.Returns(75);
 			abs.MaximumHeight.Returns(50);
 
-			var gridLayoutManager = new AbsoluteLayoutManager(abs);
-			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var layoutManager = new AbsoluteLayoutManager(abs);
+			var measure = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			// The minimum value should beat out the maximum value
 			Assert.Equal(75, measure.Height);
+		}
+
+		[Fact]
+		public void ArrangeAccountsForFill()
+		{
+			var abs = CreateTestLayout();
+			var child = CreateTestView();
+			SubstituteChildren(abs, child);
+			var childBounds = new Rectangle(0, 0, 100, 100);
+			SetLayoutBounds(abs, child, childBounds);
+
+			var layoutManager = new AbsoluteLayoutManager(abs);
+			_ = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			var arrangedWidth = 1000;
+			var arrangedHeight = 1000;
+
+			var target = new Rectangle(Point.Zero, new Size(arrangedWidth, arrangedHeight));
+
+			var actual = layoutManager.ArrangeChildren(target);
+
+			// Since we're arranging in a space larger than needed and the layout is set to Fill in both directions,
+			// we expect the returned actual arrangement size to be as large as the target space
+			Assert.Equal(arrangedWidth, actual.Width);
+			Assert.Equal(arrangedHeight, actual.Height);
 		}
 	}
 }

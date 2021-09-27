@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.Click += OnClick;
 
 			base.ConnectHandler(nativeView);
+			SetupDefaults(nativeView);
 		}
 
 		protected override void DisconnectHandler(MauiPicker nativeView)
@@ -40,8 +41,6 @@ namespace Microsoft.Maui.Handlers
 
 		void SetupDefaults(MauiPicker nativeView)
 		{
-
-
 			DefaultBackground = nativeView.Background;
 			DefaultTitleColors = nativeView.HintTextColors;
 		}
@@ -93,6 +92,11 @@ namespace Microsoft.Maui.Handlers
 			var nativePicker = handler.NativeView;
 			var hasRtlSupport = nativePicker?.Context!.HasRtlSupport() ?? false;
 			nativePicker?.UpdateHorizontalAlignment(picker.HorizontalTextAlignment, hasRtlSupport);
+		}
+
+		public static void MapVerticalTextAlignment(PickerHandler handler, IPicker picker)
+		{
+			handler.NativeView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 		}
 
 		[MissingMapper]
