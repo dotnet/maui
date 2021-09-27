@@ -72,7 +72,7 @@ steps:
       condition: always()
       displayName: publish artifacts
       inputs:
-        pathToPublish: C:\Users\XamarinForms\AppData\Local\Microsoft\Windows\INetCache\com.xamarin.provisionator\Provisions\**
+        pathToPublish: C:\Users\XamarinForms\AppData\Local\Microsoft\Windows\INetCache\com.xamarin.provisionator\Provisions
         ArtifactName: prv-thingy
     - powershell: |
         if (-not $(where.exe pwsh)) {
