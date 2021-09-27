@@ -555,6 +555,8 @@
         </ItemGroup>
     </Target>
 
+    <!-- This is required because the "CalculateAppxGenerateProjectPriEnabled" target explicitly depends
+         on "_ValidatePresenceOfAppxManifestItems" and we need to get in before then. -->
     <Target Name="_ValidatePresenceOfAppxManifestItemsBeforeTarget"
             BeforeTargets="_ValidatePresenceOfAppxManifestItems"
             DependsOnTargets="MauiGeneratePackageAppxManifest" />
