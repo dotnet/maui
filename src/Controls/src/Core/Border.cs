@@ -1,15 +1,15 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
-using Microsoft.Maui.Controls.Shapes;
 
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty("Content")]
 	public class Border : View, IContentView, IBorder, IPaddingElement
 	{
-		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(IView), 
+		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(IView),
 			typeof(Border), null, propertyChanged: ContentChanged);
-		
+
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		public IView Content
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls
 		{
 			((IBorder)bindable).InvalidateMeasure();
 		}
-		
+
 		public static void StrokeThicknessChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			((IBorder)bindable).InvalidateMeasure();

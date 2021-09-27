@@ -102,7 +102,7 @@ namespace Microsoft.Maui
 
 		public static Thickness Zero = new Thickness(0);
 
-		public static Thickness operator +(Thickness left, double addend) 
+		public static Thickness operator +(Thickness left, double addend)
 		{
 			if (addend == 0)
 			{

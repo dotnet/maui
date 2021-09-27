@@ -86,11 +86,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.GTK
 			return new GtkIsolatedStorageFile();
 		}
 
-		public void OpenUriAction(Uri uri)
-		{
-			System.Diagnostics.Process.Start(uri.AbsoluteUri);
-		}
-
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
 			GLib.Timeout.Add((uint)interval.TotalMilliseconds, () =>

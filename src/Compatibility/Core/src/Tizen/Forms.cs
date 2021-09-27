@@ -316,21 +316,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		static IReadOnlyList<string> s_flags;
-		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new string[0]);
-
-		public static void SetFlags(params string[] flags)
-		{
-			if (IsInitialized)
-			{
-				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
-			}
-
-			s_flags = (string[])flags.Clone();
-			if (s_flags.Contains("Profile"))
-				Profile.Enable();
-		}
-
 		public static void SetTitleBarVisibility(TizenTitleBarVisibility visibility)
 		{
 			TitleBarVisibility = visibility;
@@ -452,7 +437,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 
 			Device.Info = new Forms.TizenDeviceInfo();
-			Device.SetFlags(s_flags);
 
 			string profile = ((TizenDeviceInfo)Device.Info).Profile;
 			if (profile == "mobile")

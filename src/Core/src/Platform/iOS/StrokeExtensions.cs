@@ -65,7 +65,7 @@ namespace Microsoft.Maui
 
 			nativeView.UpdateMauiCALayer(border);
 		}
-		
+
 		public static void UpdateStrokeMiterLimit(this UIView nativeView, IBorder border)
 		{
 			CALayer? backgroundLayer = nativeView.Layer as MauiCALayer;

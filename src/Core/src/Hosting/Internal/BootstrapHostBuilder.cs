@@ -8,7 +8,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Hosting
 {
 	// This exists solely to bootstrap the configuration
 	internal class BootstrapHostBuilder : IHostBuilder

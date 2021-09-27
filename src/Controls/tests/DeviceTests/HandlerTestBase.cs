@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.DeviceTests
 {
