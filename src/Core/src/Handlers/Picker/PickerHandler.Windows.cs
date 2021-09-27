@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiComboBox nativeView)
 		{
 			nativeView.SelectionChanged += OnControlSelectionChanged;
+			SetupDefaults(nativeView);
 		}
 
 		protected override void DisconnectHandler(MauiComboBox nativeView)
@@ -35,7 +36,6 @@ namespace Microsoft.Maui.Handlers
 
 		void Reload()
 		{
-
 			if (VirtualView == null || NativeView == null)
 				return;
 			NativeView.ItemsSource = new ItemDelegateList<string>(VirtualView);
