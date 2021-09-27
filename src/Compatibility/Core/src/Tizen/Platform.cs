@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		internal static ITizenPlatform CreatePlatform(EvasObject parent)
 		{
-			if (Forms.PlatformType == PlatformType.Lightweight || Forms.Flags.Contains(Flags.LightweightPlatformExperimental))
+			if (Forms.PlatformType == PlatformType.Lightweight)
 			{
 				return new LightweightPlatform(parent);
 			}

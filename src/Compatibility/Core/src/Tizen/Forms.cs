@@ -327,6 +327,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+		public static bool IsInitializedRenderers { get; private set; }
+
 		public static void SetTitleBarVisibility(TizenTitleBarVisibility visibility)
 		{
 			TitleBarVisibility = visibility;

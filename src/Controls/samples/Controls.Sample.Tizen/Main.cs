@@ -1,6 +1,5 @@
 using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Hosting;
 
 namespace Maui.Controls.Sample.Tizen
 {
