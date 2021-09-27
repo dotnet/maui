@@ -6,11 +6,11 @@ $ErrorActionPreference = "Stop"
 
 $msbuildRoot = Split-Path -Parent $MSBuild
 
-$files = @(
-    'System.Text.Json.dll',
-    'System.Text.Encodings.Web.dll',
-    'System.Threading.Tasks.Extensions.dll'
-)
+$files = @{
+    'System.Text.Json' = '5.0.0.0';
+    'System.Text.Encodings.Web' = '5.0.0.0';
+    'System.Threading.Tasks.Extensions' = '4.2.0.1';
+}
 
 $urls = @{
     'https://globalcdn.nuget.org/packages/system.text.json.5.0.0.nupkg' = 'lib\net461\System.Text.Json.dll';
@@ -19,13 +19,14 @@ $urls = @{
 }
 
 # backup
-foreach ($file in $files) {
-    $p = Join-Path $msbuildRoot $file
+foreach ($file in $files.GetEnumerator()) {
+    $p = Join-Path $msbuildRoot "$($file.Key).dll"
     if (!(Test-Path $p-old)) {
         Move-Item $p $p-old
     }
 }
 
+# replace
 foreach ($url in $urls.GetEnumerator()) {
     $nupkg = Split-Path -Leaf $url.Key
     $dst = Join-Path $env:TEMP $nupkg
@@ -45,3 +46,19 @@ foreach ($url in $urls.GetEnumerator()) {
     $dst = Join-Path $msbuildRoot $dll
     Copy-Item -Path $src -Destination $dst
 }
+
+# update config
+$config = [xml](Get-Content "$MSBuild.config")
+foreach ($file in $files.GetEnumerator()) {
+    $v = $file.Value
+    $rootXpath = "/configuration/runtime/*[local-name()='assemblyBinding']/*[local-name()='dependentAssembly' and *[local-name()='assemblyIdentity' and @name='$($file.Key)']]/*[local-name()='bindingRedirect']"
+
+    $oldVersionXpath = "$rootXpath/@oldVersion"
+    $node = $config.SelectNodes($oldVersionXpath)[0]
+    $node.Value = "0.0.0.0-$v"
+
+    $newVersionXpath = "$rootXpath/@newVersion"
+    $node = $config.SelectNodes($newVersionXpath)[0]
+    $node.Value = $v
+}
+$config.Save("$MSBuild.config")
