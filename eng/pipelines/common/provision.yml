@@ -64,10 +64,12 @@ steps:
 
   # Prepare Windows
   - ${{ if eq(parameters.platform, 'windows') }}:
+    - powershell: devenv /version
     - task: xamops.azdevex.provisionator-task.provisionator@1
       displayName: 'Provision Visual Studio'
       inputs:
         provisioning_script: $(provisionator.vs)
+    - powershell: devenv /version
     - powershell: |
         if (-not $(where.exe pwsh)) {
           $url = "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.msi"
@@ -79,6 +81,7 @@ steps:
       displayName: 'Install PowerShell Core'
     - pwsh: |
         $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+        & "$msbuild" /version
         echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
       displayName: 'Setup MSBuild Paths'
 
@@ -87,3 +90,4 @@ steps:
   - pwsh: ./build.ps1 --target provision
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
+  - powershell: devenv /version
