@@ -72,6 +72,8 @@ steps:
         $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
         echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
       displayName: 'Setup MSBuild Paths'
+    - powershell: .\eng\scripts\patch-vs.ps1
+      displayName: 'Patch Visual Studio'
     - powershell: |
         if (-not $(where.exe pwsh)) {
           $url = "https://github.com/PowerShell/PowerShell/releases/download/v$env:POWERSHELL_VERSION/PowerShell-$env:POWERSHELL_VERSION-win-x64.msi"
