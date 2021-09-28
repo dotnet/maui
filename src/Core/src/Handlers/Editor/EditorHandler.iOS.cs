@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
 		}
-		
+
 		void OnTextPropertySet(object? sender, EventArgs e)
 		{
 			VirtualView.UpdateText(NativeView.Text);
