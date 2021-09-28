@@ -1,8 +1,6 @@
 <Project>
 
   <ItemGroup>
-    <_FrameworkListFile Condition=" !$(MSBuildProjectName.Contains('.Runtime')) " Include="$(IntermediateOutputPath)FrameworkList.xml" />
-    <_FrameworkListFile Condition=" !$(MSBuildProjectName.Contains('.Ref')) " Include="$(IntermediateOutputPath)RuntimeList.xml" />
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Packaging"  Version="6.0.0-beta.21169.1" PrivateAssets="all" />
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="6.0.0-beta.21169.1" PrivateAssets="all" />
   </ItemGroup>
@@ -13,26 +11,34 @@
   <!-- https://github.com/dotnet/runtime/blob/0647ec314948904319da5eb15e9931f7c85ed1e2/src/installer/pkg/projects/Directory.Build.targets#L281 -->
   <Target Name="_GenerateFrameworkListFile"
       BeforeTargets="Build;AssignTargetPaths">
+    <PropertyGroup>
+      <_FrameworkListFile Condition=" $(MSBuildProjectName.Contains('.Ref')) ">$(IntermediateOutputPath)FrameworkList.xml</_FrameworkListFile>
+      <_FrameworkListFile Condition=" $(MSBuildProjectName.Contains('.Runtime')) ">$(IntermediateOutputPath)RuntimeList.xml</_FrameworkListFile>
+    </PropertyGroup>
     <ItemGroup>
       <_RootAttribute Include="Name" Value=".NET MAUI" />
       <_RootAttribute Include="TargetFrameworkIdentifier" Value=".NETCoreApp" />
       <_RootAttribute Include="TargetFrameworkVersion" Value="6.0" />
       <_RootAttribute Include="FrameworkName" Value="$(MSBuildProjectName.Replace('.Ref','').Replace('.Runtime',''))" />
       <_AssemblyFiles Include="@(_PackageFiles)" Condition=" '%(_PackageFiles.Extension)' == '.dll' and '%(_PackageFiles.SubFolder)' == '' " />
-      <_Classifications Include="@(_AssemblyFiles->'%(FileName)%(Extension)')" Profile="%(_AssemblyFiles.Profile)" />
     </ItemGroup>
 
     <!-- https://github.com/dotnet/arcade/blob/1924d7ea148c9f26ca3d82b60f0a775a5389ed22/src/Microsoft.DotNet.Build.Tasks.SharedFramework.Sdk/src/CreateFrameworkListFile.cs -->
     <CreateFrameworkListFile
         Files="@(_AssemblyFiles)"
-        FileClassifications="@(_Classifications)"
-        TargetFile="%(_FrameworkListFile.Identity)"
+        FileClassifications="@(_AssemblyFiles->'%(FileName)%(Extension)'->Distinct())"
+        TargetFile="$(_FrameworkListFile)"
         TargetFilePrefixes="ref;lib"
         RootAttributes="@(_RootAttribute)"
     />
+    <!-- We have to manually add @Profile, because <CreateFrameworkList/> doesn't support multiple -->
+    <AddFrameworkListProfile
+        FrameworkListFile="$(_FrameworkListFile)"
+        Files="@(_AssemblyFiles)"
+    />
     <ItemGroup>
-      <FileWrites Include="@(_FrameworkListFile)" />
-      <Content Include="@(_FrameworkListFile)" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="data" Link="data/%(FileName)%(Extension)" />
+      <FileWrites Include="$(_FrameworkListFile)" />
+      <Content Include="$(_FrameworkListFile)" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="data" Link="data/$([System.IO.Path]::GetFileName($(_FrameworkListFile)))" />
     </ItemGroup>
   </Target>
 
@@ -48,5 +54,42 @@
       />
     </ItemGroup>
   </Target>
+
+  <UsingTask TaskName="AddFrameworkListProfile"
+      TaskFactory="RoslynCodeTaskFactory"
+      AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <FrameworkListFile ParameterType="System.String" Required="true" />
+      <Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Linq" />
+      <Using Namespace="System.Xml" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          // This is in C# because the <XmlPoke/> task cannot create attributes
+          var doc = new XmlDocument();
+          doc.Load(FrameworkListFile);
+
+          var lookup = Files.ToDictionary(f => f.GetMetadata("Link"));
+          foreach (XmlElement element in doc.SelectNodes("/FileList/File"))
+          {
+              var path = element.GetAttribute("Path");
+              if (lookup.TryGetValue (path, out var item))
+              {
+                  var profile = item.GetMetadata("Profile");
+                  if (!string.IsNullOrEmpty (profile))
+                  {
+                      Log.LogMessage($"Set {path}, Profile={profile}");
+                      element.SetAttribute("Profile", profile);
+                  }
+              }
+          }
+
+          doc.Save(FrameworkListFile);
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
 
 </Project>
