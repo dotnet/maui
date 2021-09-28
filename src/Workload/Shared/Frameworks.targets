@@ -1,59 +1,45 @@
 <Project>
 
-  <PropertyGroup Condition=" '$(MauiPlatformName)' != '' ">
-    <!-- NOTE: $(MauiPlatformName) is expected to be passed in: android, maccatalyst, ios, or win -->
-    <PackageId>$(PackageId).$(MauiPlatformName)</PackageId>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(MauiPlatformName)' == '' ">
-    <IsPackable>false</IsPackable>
+  <PropertyGroup>
+    <_AndroidTargetPlatformVersion>31.0</_AndroidTargetPlatformVersion>
+    <_iOSTargetPlatformVersion>15.0</_iOSTargetPlatformVersion>
+    <_MacCatalystTargetPlatformVersion>15.0</_MacCatalystTargetPlatformVersion>
+    <_WindowsTargetPlatformVersion>10.0.18362</_WindowsTargetPlatformVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <_TargetPlatform
-        Condition=" '$(MauiPlatformName)' == 'any' "
         Include="net6.0"
         FullTfm="%(Identity)"
         Tfm="net6.0"
     />
     <_TargetPlatform
-        Condition=" '$(MauiPlatformName)' == 'android' "
-        Include="net6.0-android30.0"
+        Include="net6.0-android$(_AndroidTargetPlatformVersion)"
         FullTfm="%(Identity)"
         Tfm="net6.0-android"
         Profile="Android"
     />
     <_TargetPlatform
-        Condition=" '$(MauiPlatformName)' == 'ios' "
-        Include="net6.0-ios13.6"
+        Include="net6.0-ios$(_iOSTargetPlatformVersion)"
         FullTfm="%(Identity)"
         Tfm="net6.0-ios"
         Profile="iOS"
     />
     <_TargetPlatform
-        Condition=" '$(MauiPlatformName)' == 'maccatalyst' "
-        Include="net6.0-maccatalyst13.5"
+        Include="net6.0-maccatalyst$(_MacCatalystTargetPlatformVersion)"
         FullTfm="%(Identity)"
         Tfm="net6.0-maccatalyst"
         Profile="MacCatalyst"
     />
     <_TargetPlatform
-        Condition=" '$(MauiPlatformName)' == 'win' "
-        Include="net6.0-windows10.0.18362"
+        Condition=" '$(IncludeWindowsTargetFrameworks)' == 'true' "
+        Include="net6.0-windows$(_WindowsTargetPlatformVersion)"
         FullTfm="%(Identity)"
-        Tfm="net6.0-windows10.0.18362"
+        Tfm="net6.0-windows$(_WindowsTargetPlatformVersion)"
         Profile="Windows"
     />
   </ItemGroup>
 
-  <Import Condition=" '$(MauiPlatformName)' != '' " Project="FrameworkList.targets" />
-
-  <ItemGroup>
-    <_Platforms Include="any;android;maccatalyst;ios" />
-    <_Platforms Include="win" Condition="'$(IncludeWindowsTargetFrameworks)' == 'true'" />
-  </ItemGroup>
-
-  <Target Name="_PackPerPlatform" Condition=" '$(MauiPlatformName)' == '' " AfterTargets="Build">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Pack" Properties="MauiPlatformName=%(_Platforms.Identity)" />
-  </Target>
+  <Import Project="FrameworkList.targets" />
 
 </Project>

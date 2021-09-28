@@ -4,10 +4,6 @@
     <_MauiRuntimePackVersion Condition=" '$(_MauiRuntimePackVersion)' == '' ">**FromWorkload**</_MauiRuntimePackVersion>
     <MauiWorkloadVersion>@VERSION@</MauiWorkloadVersion>
     <MauiVersion Condition=" '$(MauiVersion)' == '' ">$(MauiWorkloadVersion)</MauiVersion>
-    <!-- $(_MauiPlatformName) is used as RIDs as well as a suffix to targeting pack names -->
-    <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">win</_MauiPlatformName>
-    <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' != 'windows' ">$(TargetPlatformIdentifier.ToLowerInvariant())</_MauiPlatformName>
-    <_MauiPlatformName Condition=" '$(_MauiPlatformName)' == '' ">any</_MauiPlatformName>
   </PropertyGroup>
 
   <!-- Framework references -->
@@ -20,10 +16,10 @@
         RuntimeFrameworkName="Microsoft.Maui.Core"
         DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
-        TargetingPackName="Microsoft.Maui.Core.Ref.$(_MauiPlatformName)"
+        TargetingPackName="Microsoft.Maui.Core.Ref"
         TargetingPackVersion="$(_MauiRuntimePackVersion)"
-        RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
-        RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
+        RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime"
+        RuntimePackRuntimeIdentifiers="any"
         Profile="$(TargetPlatformIdentifier)"
     />
     <KnownFrameworkReference
@@ -33,10 +29,10 @@
         RuntimeFrameworkName="Microsoft.Maui.Controls"
         DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
-        TargetingPackName="Microsoft.Maui.Controls.Ref.$(_MauiPlatformName)"
+        TargetingPackName="Microsoft.Maui.Controls.Ref"
         TargetingPackVersion="$(_MauiRuntimePackVersion)"
-        RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
-        RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
+        RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime"
+        RuntimePackRuntimeIdentifiers="any"
         Profile="$(TargetPlatformIdentifier)"
     />
     <KnownFrameworkReference
@@ -46,10 +42,10 @@
         RuntimeFrameworkName="Microsoft.Maui.Essentials"
         DefaultRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
         LatestRuntimeFrameworkVersion="$(_MauiRuntimePackVersion)"
-        TargetingPackName="Microsoft.Maui.Essentials.Ref.$(_MauiPlatformName)"
+        TargetingPackName="Microsoft.Maui.Essentials.Ref"
         TargetingPackVersion="$(_MauiRuntimePackVersion)"
-        RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
-        RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
+        RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime"
+        RuntimePackRuntimeIdentifiers="any"
         Profile="$(TargetPlatformIdentifier)"
     />
   </ItemGroup>

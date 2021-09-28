@@ -19,7 +19,7 @@
       <_RootAttribute Include="TargetFrameworkVersion" Value="6.0" />
       <_RootAttribute Include="FrameworkName" Value="$(MSBuildProjectName.Replace('.Ref','').Replace('.Runtime',''))" />
       <_AssemblyFiles Include="@(_PackageFiles)" Condition=" '%(_PackageFiles.Extension)' == '.dll' and '%(_PackageFiles.SubFolder)' == '' " />
-      <_Classifications Include="@(_AssemblyFiles->'%(FileName)%(Extension)'->Distinct())" Profile="@(_TargetPlatform->'%(Profile)')" />
+      <_Classifications Include="@(_AssemblyFiles->'%(FileName)%(Extension)')" Profile="%(_AssemblyFiles.Profile)" />
     </ItemGroup>
 
     <!-- https://github.com/dotnet/arcade/blob/1924d7ea148c9f26ca3d82b60f0a775a5389ed22/src/Microsoft.DotNet.Build.Tasks.SharedFramework.Sdk/src/CreateFrameworkListFile.cs -->
@@ -38,7 +38,7 @@
 
   <Target Name="_AddWindowsPriFiles"
       AfterTargets="_GenerateFrameworkListFile"
-      Condition=" '$(MauiPlatformName)' == 'win' and $(MSBuildProjectName.Contains('.Ref')) ">
+      Condition=" $(MSBuildProjectName.Contains('.Ref')) ">
     <ItemGroup>
       <!-- Look for WinUI .pri files a directory above ref/*.dll files -->
       <Content
