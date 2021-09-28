@@ -110,7 +110,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		UITextAlignment GetNativeHorizontalTextAlignment(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).TextAlignment;
-			
+
 		bool GetNativeIsNumericKeyboard(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.DecimalPad;
 

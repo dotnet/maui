@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui
 {
-	public static class ScrollViewExtensions 
+	public static class ScrollViewExtensions
 	{
 		internal static void HandleScrollBarVisibilityChange(this IScrollBarView scrollView)
 		{
@@ -31,7 +31,7 @@ namespace Microsoft.Maui
 			scrollView.ScrollBarsInitialized = true;
 		}
 
-		public static void UpdateContent(this MauiScrollView scrollView, IView? content, IMauiContext context) 
+		public static void UpdateContent(this MauiScrollView scrollView, IView? content, IMauiContext context)
 		{
 			var nativeContent = content == null ? null : content.ToNative(context);
 

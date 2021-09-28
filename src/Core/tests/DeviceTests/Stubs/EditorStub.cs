@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Keyboard Keyboard { get; set; }
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
-		
+
 		public TextAlignment VerticalTextAlignment { get; set; }
 
 		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;

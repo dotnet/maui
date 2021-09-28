@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Android.Text;
-using Android.Views;
 using Android.Text.Method;
+using Android.Views;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.DeviceTests
 			var textView = GetNativeEditor(editorHandler);
 			return (textView.Gravity, textView.TextAlignment);
 		}
-		
+
 		bool GetNativeIsNumericKeyboard(EditorHandler editorHandler)
 		{
 			var textView = GetNativeEditor(editorHandler);
