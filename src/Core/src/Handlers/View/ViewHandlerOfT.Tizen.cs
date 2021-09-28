@@ -57,11 +57,11 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var nativeView = NativeView;
+			var nativeView = base.NativeView;
 
 			if (nativeView == null || VirtualView == null || NativeParent == null)
 			{
-				return VirtualView == null ? Size.Zero : new Size(VirtualView.Width, VirtualView.Height);
+				return VirtualView == null || double.IsNaN(VirtualView.Width) || double.IsNaN(VirtualView.Height) ? Size.Zero : new Size(VirtualView.Width, VirtualView.Height);
 			}
 
 			int availableWidth = widthConstraint.ToScaledPixel();
