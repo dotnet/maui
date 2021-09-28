@@ -102,7 +102,7 @@
                     Text="CursorPosition = 4"
                     Style="{StaticResource Headline}" />
                 <Entry
-                    x:Name="entry"
+                    x:Name="entryCursor"
                     Text="Cursor"
                     CursorPosition="4"/>
             </VerticalStackLayout>

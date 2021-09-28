@@ -8,13 +8,13 @@ namespace Maui.Controls.Sample.Pages
 		public EntryPage()
 		{
 			InitializeComponent();
-			entry.PropertyChanged += Entry_PropertyChanged;
+			entryCursor.PropertyChanged += OnEntryPropertyChanged;
 		}
 
-		private void Entry_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void OnEntryPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == nameof(entry.CursorPosition))
-				lblCursor.Text = $"CursorPosition = {entry.CursorPosition}";
+			if (e.PropertyName == nameof(Entry.CursorPosition))
+				lblCursor.Text = $"CursorPosition = {((Entry)sender).CursorPosition}";
 		}
 
 		void OnEntryCompleted(object sender, EventArgs e)
