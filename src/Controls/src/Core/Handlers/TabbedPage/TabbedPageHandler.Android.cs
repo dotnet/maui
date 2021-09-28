@@ -11,14 +11,6 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public sealed class TabbedPageHandler : ViewHandler<TabbedPage, ViewPager2>
 	{
-		public TabLayout TabLayout =>
-			_tabbedPageManager.IsBottomTabPlacement ? null :
-				_tabbedPageManager.TabLayout;
-
-		public BottomNavigationView BottomNavigationView =>
-			_tabbedPageManager.IsBottomTabPlacement ? _tabbedPageManager.BottomNavigationView :
-				null;
-
 		TabbedPageManager _tabbedPageManager;
 		public TabbedPageHandler() : base(ViewHandler.ViewMapper, null)
 		{

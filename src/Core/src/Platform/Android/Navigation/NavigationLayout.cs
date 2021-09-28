@@ -10,14 +10,14 @@ namespace Microsoft.Maui
 {
 	public class NavigationLayout : CoordinatorLayout
 	{
-		// I'd prefer to not need this here but I'm not sure how else
-		// to get this class to the NavigationViewFragment
-		NavigationManager? _navigationManager;
-		public NavigationManager NavigationManager
-		{
-			get => _navigationManager ?? throw new InvalidOperationException($"NavigationManager cannot be null");
-			internal set => _navigationManager = value;
-		}
+		//// I'd prefer to not need this here but I'm not sure how else
+		//// to get this class to the NavigationViewFragment
+		//NavigationManager? _navigationManager;
+		//public NavigationManager NavigationManager
+		//{
+		//	get => _navigationManager ?? throw new InvalidOperationException($"NavigationManager cannot be null");
+		//	internal set => _navigationManager = value;
+		//}
 
 #pragma warning disable CS0618 //FIXME: [Preserve] is obsolete
 		[Preserve(Conditional = true)]

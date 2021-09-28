@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		bool IWindow.BackButtonPressed()
+		bool IWindow.BackButtonClicked()
 		{
 			return this.Page?.SendBackButtonPressed() ?? false;
 		}

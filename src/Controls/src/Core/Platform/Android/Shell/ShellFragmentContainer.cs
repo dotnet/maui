@@ -21,18 +21,22 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override Page Page => _page;
 
-		protected override PageContainer CreatePageContainer(Context context, INativeViewHandler child, bool inFragment)
-		{
-			return new ShellPageContainer(context, child, inFragment)
-			{
-				LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
-			};
-		}
+		// TODO: MAUI TEST THIS
+		//protected override PageContainer CreatePageContainer(Context context, INativeViewHandler child, bool inFragment)
+		//{
+		//	return new ShellPageContainer(context, child, inFragment)
+		//	{
+		//		LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
+		//	};
+		//}
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
 			_page = ((IShellContentController)ShellContentTab).GetOrCreateContent();
-			return base.OnCreateView(inflater, container, savedInstanceState);
+			var view =  base.OnCreateView(inflater, container, savedInstanceState);
+			// TODO: MAUI TEST THIS
+			view.LayoutParameters = new LP(LP.MatchParent, LP.MatchParent);
+			return view;
 		}
 
 		public override void OnDestroyView()

@@ -12,36 +12,36 @@ namespace Microsoft.Maui
 	public class NavigationViewFragment : Fragment
 	{
 		AView? _currentView;
-		NavigationLayout? _navigationLayout;
+		//NavigationLayout? _navigationLayout;
 		FragmentContainerView? _fragmentContainerView;
 
 		// TODO MAUI: This currently feels like a very unreliable way to retrieve the NavigationLayout
 		// If this is called before the Fragment View is parented then this call fails.
 		// This should be converted to use Android ViewModels instead of just walking up the visual tree
-		NavigationLayout NavigationLayout
-		{
-			get
-			{
-				if (_navigationLayout != null)
-					return _navigationLayout;
+		//NavigationLayout NavigationLayout
+		//{
+		//	get
+		//	{
+		//		if (_navigationLayout != null)
+		//			return _navigationLayout;
 
-				var view = FragmentContainerView.Parent;
+		//		var view = FragmentContainerView.Parent;
 
-				while (view is not Maui.NavigationLayout && view != null)
-					view = view?.Parent;
+		//		while (view is not Maui.NavigationLayout && view != null)
+		//			view = view?.Parent;
 
-				_navigationLayout = view as NavigationLayout;
+		//		_navigationLayout = view as NavigationLayout;
 
-				return _navigationLayout ?? throw new InvalidOperationException($"NavigationLayout cannot be null here");
-			}
-		}
+		//		return _navigationLayout ?? throw new InvalidOperationException($"NavigationLayout cannot be null here");
+		//	}
+		//}
 
 		FragmentContainerView FragmentContainerView =>
-			_fragmentContainerView ??= NavigationLayout.FindViewById<FragmentContainerView>(Resource.Id.nav_host)
-			?? throw new InvalidOperationException($"FragmentContainerView cannot be null here");
+			_fragmentContainerView ?? throw new InvalidOperationException($"FragmentContainerView cannot be null here");
 
+		NavigationManager? _navigationManager;
 		// TODO Research ViewModels
-		NavigationManager NavigationManager => NavigationLayout.NavigationManager
+		NavigationManager NavigationManager => _navigationManager
 			?? throw new InvalidOperationException($"Graph cannot be null here");
 
 		protected NavigationViewFragment(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -54,6 +54,10 @@ namespace Microsoft.Maui
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
+			var navhost = Navigation.FindNavController(container);
+			var result = navhost.CurrentBackStackEntry.Arguments.GetInt("NavigationManager");
+			_navigationManager = NavigationManager.FindNavigationManager(result);
+			//_navigationLayout = _navigationManager.NavigationLayout;
 			_fragmentContainerView ??= (FragmentContainerView)container;
 
 			// When shuffling around the back stack sometimes we'll need a page to detach and then reattach.
@@ -100,7 +104,7 @@ namespace Microsoft.Maui
 
 		public override void OnDestroyView()
 		{
-			_navigationLayout = null;
+			//_navigationLayout = null;
 			base.OnDestroyView();
 		}
 

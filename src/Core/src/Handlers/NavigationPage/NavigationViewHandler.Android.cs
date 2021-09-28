@@ -1,22 +1,21 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using Android.Runtime;
 using Android.Views;
+using AndroidX.Fragment.App;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class NavigationViewHandler :
-		ViewHandler<INavigationView, NavigationLayout>
+		ViewHandler<INavigationView, View>
 	{
 		NavigationManager? _navigationManager;
 
-		protected override NavigationLayout CreateNativeView()
+		protected override View CreateNativeView()
 		{
 			LayoutInflater? li = MauiContext?.GetLayoutInflater();
 			_ = li ?? throw new InvalidOperationException($"LayoutInflater cannot be null");
 
-			var view = li.Inflate(Resource.Layout.navigationlayout, null).JavaCast<NavigationLayout>();
+			var view = li.Inflate(Resource.Layout.fragment_backstack, null).JavaCast<FragmentContainerView>();
 			_ = view ?? throw new InvalidOperationException($"Resource.Layout.navigationlayout view not found");
 
 			return view;
@@ -31,13 +30,15 @@ namespace Microsoft.Maui.Handlers
 		protected virtual NavigationManager CreateNavigationManager() =>
 			new NavigationManager(MauiContext!);
 
-		protected override void ConnectHandler(NavigationLayout nativeView)
+		protected override void ConnectHandler(View nativeView)
 		{
-			_navigationManager ??= CreateNavigationManager();
-			nativeView.NavigationManager = _navigationManager;
+			_navigationManager = CreateNavigationManager();
+			var rootContainer = MauiContext!.GetNavigationRootManager();
+			var navigationLayout = rootContainer.NavigationLayout;
 
+			//navigationLayout.NavigationManager = _navigationManager;
 			base.ConnectHandler(nativeView);
-			_navigationManager.Connect(VirtualView, nativeView);
+			_navigationManager.Connect(VirtualView, navigationLayout);
 		}
 
 		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)

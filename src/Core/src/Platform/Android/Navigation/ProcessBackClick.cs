@@ -17,12 +17,12 @@ namespace Microsoft.Maui
 
 		public override void HandleOnBackPressed()
 		{
-			_navigationManager.BackButtonPressed();
+			_navigationManager.HardwareBackButtonClicked();
 		}
 
 		public void OnClick(AView? v)
 		{
-			HandleOnBackPressed();
+			_navigationManager.ToolbarBackButtonClicked();
 		}
 	}
 }

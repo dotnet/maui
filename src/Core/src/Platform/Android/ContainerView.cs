@@ -69,7 +69,12 @@ namespace Microsoft.Maui
 			if (_view != null)
 			{
 				_ = _context ?? throw new ArgumentNullException(nameof(_context));
-				MainView = _view.ToNative(_context);
+				var nativeView = _view.ToNative(_context);
+
+				if (_view.Handler is IViewHandler vh)
+					MainView = vh.GetWrappedNativeView();
+				else
+					MainView = nativeView;
 			}
 		}
 

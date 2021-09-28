@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		readonly WeakReference _pageRenderer;
 		readonly IMauiContext _mauiContext;
-		Action<PageContainer> _onCreateCallback;
-		PageContainer _pageContainer;
+		Action<AView> _onCreateCallback;
+		AView _pageContainer;
 		INativeViewHandler _viewhandler;
 		//bool _isVisible = false;
 		AView NativeView => _viewhandler?.NativeView as AView;
@@ -40,24 +40,24 @@ namespace Microsoft.Maui.Controls.Platform
 			return new FragmentContainer(page, mauiContext) { Arguments = new Bundle() };
 		}
 
-		public void SetOnCreateCallback(Action<PageContainer> callback)
+		public void SetOnCreateCallback(Action<AView> callback)
 		{
 			_onCreateCallback = callback;
 		}
 
-		protected virtual PageContainer CreatePageContainer(Context context, INativeViewHandler child, bool inFragment)
-		{
-			return new PageContainer(context, child, inFragment);
-		}
+		//protected virtual PageContainer CreatePageContainer(Context context, INativeViewHandler child, bool inFragment)
+		//{
+		//	return new PageContainer(context, child, inFragment);
+		//}
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
 			if (Page != null)
 			{
-				Page.ToNative(_mauiContext);
-				_viewhandler = (INativeViewHandler)Page.Handler;
+				var scopedContext = new ScopedMauiContext(_mauiContext, null, null, inflater, ChildFragmentManager);
 
-				_pageContainer = CreatePageContainer(inflater.Context, _viewhandler, true);
+				_pageContainer = Page.ToNative(scopedContext);
+				_viewhandler = (INativeViewHandler)Page.Handler;
 
 				_onCreateCallback?.Invoke(_pageContainer);
 

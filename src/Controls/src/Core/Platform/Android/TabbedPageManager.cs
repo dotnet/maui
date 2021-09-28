@@ -29,12 +29,11 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public class TabbedPageManager
 	{
+		Fragment _tabLayoutFragment;
 		ColorStateList _originalTabTextColors;
 		ColorStateList _orignalTabIconColors;
-
 		ColorStateList _newTabTextColors;
 		ColorStateList _newTabIconColors;
-
 		FragmentManager _fragmentManager;
 		TabLayout _tabLayout;
 		BottomNavigationView _bottomNavigationView;
@@ -46,16 +45,17 @@ namespace Microsoft.Maui.Controls.Handlers
 		int _defaultARGBColor = Colors.Transparent.ToNative().ToArgb();
 		AColor _defaultAndroidColor = Colors.Transparent.ToNative();
 		readonly IMauiContext _context;
-		private readonly Listeners _listeners;
-
+		readonly Listeners _listeners;
 		TabbedPage Element { get; set; }
 		internal TabLayout TabLayout => _tabLayout;
 		internal BottomNavigationView BottomNavigationView => _bottomNavigationView;
 		internal ViewPager2 ViewPager => _viewPager;
+		NavigationRootManager NavigationRootManager { get; }
 
 		public TabbedPageManager(IMauiContext context)
 		{
 			_context = context;
+			NavigationRootManager = _context.GetNavigationRootManager();
 			_listeners = new Listeners(this);
 			_viewPager = new ViewPager2(context.Context)
 			{
@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = _context.GetFragmentManager());
 		public bool IsBottomTabPlacement => (Element != null) ? Element.OnThisPlatform().GetToolbarPlacement() == ToolbarPlacement.Bottom : false;
+
 
 		public Color BarItemColor
 		{
@@ -126,7 +127,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					if (_tabLayout == null)
 					{
 						var layoutInflater = Element.Handler.MauiContext.GetLayoutInflater();
-						var navManager = Element.Handler.MauiContext.GetNavigationManager();
+						//var navManager = Element.Handler.MauiContext.GetNavigationManager();
 						_tabLayout = new TabLayout(_context.Context)
 						{
 							TabMode = TabLayout.ModeFixed,
@@ -151,7 +152,44 @@ namespace Microsoft.Maui.Controls.Handlers
 				UpdateSwipePaging();
 				UpdateOffscreenPageLimit();
 			}
+
+			SetTabLayout();
 		}
+
+
+		internal void SetTabLayout()
+		{
+			if (_tabLayoutFragment != null)
+			{
+				_context
+					.GetFragmentManager()
+					.BeginTransaction()
+					.Remove(_tabLayoutFragment)
+					.SetReorderingAllowed(true)
+					.Commit();
+
+				_tabLayoutFragment = null;
+			}
+
+			int id;
+			if (IsBottomTabPlacement)
+			{
+				id = Resource.Id.navigationlayout_bottomtabs;
+				_tabLayoutFragment = new ViewFragment(BottomNavigationView);
+			}
+			else
+			{
+				_tabLayoutFragment = new ViewFragment(TabLayout);
+				id = Resource.Id.navigationlayout_toptabs;
+			}
+
+			_context.GetFragmentManager()
+					.BeginTransaction()
+					.Replace(id, _tabLayoutFragment)
+					.SetReorderingAllowed(true)
+					.Commit();
+		}
+
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{

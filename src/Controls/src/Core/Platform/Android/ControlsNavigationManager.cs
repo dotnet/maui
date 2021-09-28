@@ -33,13 +33,6 @@ namespace Microsoft.Maui.Controls.Platform
 	// As we move things into Core we'll better split it apart
 	public class ControlsNavigationManager : NavigationManager, IManageFragments
 	{
-
-		AppBarLayout _appBar;
-		Fragment _tabLayoutFragment;
-		internal AppBarLayout AppBar =>
-			_appBar ??= NavigationLayout.FindViewById<AppBarLayout>(Resource.Id.appbar)
-			?? throw new InvalidOperationException($"AppBar cannot be null");
-
 		ActionBarDrawerToggle _drawerToggle;
 		FragmentManager _fragmentManager;
 		ToolbarTracker ToolbarTracker;
@@ -144,45 +137,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		internal void SetTabLayout(TabbedPageHandler tabbedPageHandler)
-		{
-			if (tabbedPageHandler == null)
-			{
-				if (_tabLayoutFragment != null)
-				{
-					MauiContext
-						.GetFragmentManager()
-						.BeginTransaction()
-						.Remove(_tabLayoutFragment)
-						.SetReorderingAllowed(true)
-						.Commit();
-
-					_tabLayoutFragment = null;
-				}
-
-				return;
-			}
-
-			int id;
-			if (tabbedPageHandler.BottomNavigationView != null)
-			{
-				id = Resource.Id.bottomtab_containerview;
-				_tabLayoutFragment = new ViewFragment(tabbedPageHandler.BottomNavigationView);
-			}
-			else
-			{
-				_tabLayoutFragment = new ViewFragment(tabbedPageHandler.TabLayout);
-				id = Resource.Id.toptabs_containerview;
-			}
-
-			MauiContext
-					.GetFragmentManager()
-					.BeginTransaction()
-					.Replace(id, _tabLayoutFragment)
-					.SetReorderingAllowed(true)
-					.Commit();
-		}
-
 		protected override void OnNavigationViewFragmentResumed(FragmentManager fm, NavigationViewFragment navHostPageFragment)
 		{
 			base.OnNavigationViewFragmentResumed(fm, navHostPageFragment);
@@ -198,34 +152,6 @@ namespace Microsoft.Maui.Controls.Platform
 			if (ToolbarTracker != null)
 			{
 				ToolbarTracker.Target = CurrentPage;
-			}
-
-			// Check if the current Visible View has a Set of Tabs it would like to display
-			if (CurrentPage.Handler == null)
-			{
-				CurrentPage.HandlerChanged += OnHandlerChanged;
-			}
-			else
-			{
-				UpdateTablayout();
-			}
-
-			void OnHandlerChanged(object sender, EventArgs __)
-			{
-				UpdateTablayout();
-				((Element)sender).HandlerChanged -= OnHandlerChanged;
-			}
-
-			void UpdateTablayout()
-			{
-				if (CurrentPage.Handler is TabbedPageHandler tph)
-				{
-					SetTabLayout(tph);
-				}
-				else
-				{
-					SetTabLayout(null);
-				}
 			}
 		}
 

@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls
 			public static int bottomtab_tabbar = 2131230818;
 
 			// aapt resource value: 0x7F080063
-			public static int bottomtab_containerview = 2131230819;
+			public static int navigationlayout_bottomtabs = 2131230819;
 
 			// aapt resource value: 0x7F0800C7
 			public static int flyoutcontent_appbar = 2131230919;
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls
 			public static int shellcontent_toolbar = 2131231101;
 
 			// aapt resource value: 0x7F0801CD
-			public static int toptabs_containerview = 2131231181;
+			public static int navigationlayout_toptabs = 2131231181;
 
 			static Id()
 			{
@@ -109,6 +109,9 @@ namespace Microsoft.Maui.Controls
 		{
 			// aapt resource value: 0x7F0B001C
 			public static int bottomtablayout = 2131427356;
+
+			// aapt resource value: 0x7F0B002E
+			public static int fragment_backstack = 2131427374;
 
 			// aapt resource value: 0x7F0B002F
 			public static int flyoutcontent = 2131427375;
