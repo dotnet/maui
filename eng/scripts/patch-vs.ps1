@@ -36,7 +36,7 @@ foreach ($url in $urls.GetEnumerator()) {
     Remove-Item -Force -Recurse -ErrorAction Ignore $dst
     Remove-Item -Force -Recurse -ErrorAction Ignore $extract
 
-    # downlaod and extract
+    # download and extract
     Invoke-WebRequest -Uri $url.Key -OutFile $dst
     Expand-Archive -Path $dst -DestinationPath $extract
 
