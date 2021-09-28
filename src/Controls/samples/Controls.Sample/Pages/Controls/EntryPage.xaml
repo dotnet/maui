@@ -97,6 +97,14 @@
                     VerticalTextAlignment="End"
                     Text="This should be on the bottom"
                     HeightRequest="100"/>
+                <Label
+                    x:Name="lblCursor"
+                    Text="CursorPosition = 4"
+                    Style="{StaticResource Headline}" />
+                <Entry
+                    x:Name="entry"
+                    Text="Cursor"
+                    CursorPosition="4"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
