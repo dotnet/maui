@@ -89,15 +89,13 @@
                     Style="{StaticResource Headline}" />
                 <Entry 
                     HorizontalTextAlignment="End"
-                    Text="This should be on the end"
-                    Style="{StaticResource Headline}" />
+                    Text="This should be on the end" />
                 <Label
                     Text="VerticalTextAlignment"
                     Style="{StaticResource Headline}" />
                 <Entry 
                     VerticalTextAlignment="End"
-                      Text="This should be on the bottom"
-                    Style="{StaticResource Headline}" 
+                    Text="This should be on the bottom"
                     HeightRequest="100"/>
             </VerticalStackLayout>
         </ScrollView>
