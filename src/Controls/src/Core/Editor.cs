@@ -31,6 +31,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
+		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
+
 		readonly Lazy<PlatformConfigurationRegistry<Editor>> _platformConfigurationRegistry;
 
 		public EditorAutoSizeOption AutoSize
@@ -70,7 +72,11 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HorizontalTextAlignmentProperty, value); }
 		}
 
-		public TextAlignment VerticalTextAlignment { get; set; }
+		public TextAlignment VerticalTextAlignment
+		{
+			get { return (TextAlignment)GetValue(VerticalTextAlignmentProperty); }
+			set { SetValue(VerticalTextAlignmentProperty, value); }
+		}
 
 		public bool FontAutoScalingEnabled
 		{

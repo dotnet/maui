@@ -99,6 +99,22 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(editor, fontManager);
 		}
 
+		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
+		}
+
+		[MissingMapper]
+		public static void MapVerticalTextAlignment(EditorHandler handler, IEditor editor)
+		{
+			
+		}
+
+		public static void MapKeyboard(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateKeyboard(editor);
+		}
+
 		void OnChanged(object? sender, EventArgs e) => OnTextChanged();
 
 		void OnTextChanged()
@@ -133,20 +149,10 @@ namespace Microsoft.Maui.Handlers
 			// TODO: Update IsFocused property
 			VirtualView.Completed();
 		}
-
-		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
-		{
-			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
-		}
-
+		
 		void OnTextPropertySet(object? sender, EventArgs e)
 		{
 			VirtualView.UpdateText(NativeView.Text);
-		}
-
-		public static void MapKeyboard(EditorHandler handler, IEditor editor)
-		{
-			handler.NativeView?.UpdateKeyboard(editor);
 		}
 	}
 }
