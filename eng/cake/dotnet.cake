@@ -369,7 +369,9 @@ void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = nu
     else
     {
         // Otherwise we need to run MSBuild for WinUI support
-        var msbuildSettings = new MSBuildSettings { ToolPath = FindMSBuild() }
+        var msbuild = FindMSBuild();
+        Information("Using MSBuild: {0}", msbuild);
+        var msbuildSettings = new MSBuildSettings { ToolPath = msbuild }
             .WithRestore()
             .SetConfiguration(configuration)
             .EnableBinaryLogger(binlog);
