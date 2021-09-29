@@ -1,8 +1,8 @@
 ﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.Internals;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS

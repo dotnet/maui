@@ -26,10 +26,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Android.Views.LayoutInflater LayoutInflater => null;
 
 		public AndroidX.Fragment.App.FragmentManager FragmentManager => null;
+
+		public Microsoft.Maui.NavigationManager NavigationManager => null;
 #elif __IOS__
 		public UIKit.UIWindow Window => UIKit.UIApplication.SharedApplication.GetKeyWindow();
 #elif WINDOWS
 		public UI.Xaml.Window Window => throw new NotImplementedException();
+		
+		WindowManager _windowManager;
+		public WindowManager WindowManager => _windowManager ??= new WindowManager(this);
 #endif
 	}
 }

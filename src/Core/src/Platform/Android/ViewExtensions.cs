@@ -3,6 +3,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
 using AView = Android.Views.View;
@@ -30,6 +31,12 @@ namespace Microsoft.Maui
 				wrapper.Clip = view.Clip;
 		}
 
+		public static void UpdateShadow(this AView nativeView, IView view)
+		{
+			if (nativeView is WrapperView wrapper)
+				wrapper.Shadow = view.Shadow;
+		}
+
 		public static ViewStates ToNativeVisibility(this Visibility visibility)
 		{
 			return visibility switch
@@ -38,6 +45,14 @@ namespace Microsoft.Maui
 				Visibility.Collapsed => ViewStates.Gone,
 				_ => ViewStates.Visible,
 			};
+		}
+
+		public static void UpdateBackground(this ContentViewGroup nativeView, IBorder border)
+		{
+			bool hasBorder = border.Shape != null && border.Stroke != null;
+
+			if (hasBorder)
+				nativeView.UpdateMauiDrawable(border);
 		}
 
 		public static void UpdateBackground(this AView nativeView, IView view, Drawable? defaultBackground = null)
@@ -50,6 +65,7 @@ namespace Microsoft.Maui
 			}
 
 			var paint = view.Background;
+
 			if (paint.IsNullOrEmpty())
 			{
 				if (defaultBackground != null)
@@ -64,7 +80,7 @@ namespace Microsoft.Maui
 				}
 				else
 				{
-					if (paint!.ToDrawable() is Drawable drawable)
+					if (paint!.ToDrawable(nativeView.Context) is Drawable drawable)
 						nativeView.Background = drawable;
 				}
 			}
@@ -188,8 +204,10 @@ namespace Microsoft.Maui
 		{
 			if (view == null)
 				return;
+
 			if (view.Parent == null)
 				return;
+
 			((ViewGroup)view.Parent).RemoveView(view);
 		}
 	}

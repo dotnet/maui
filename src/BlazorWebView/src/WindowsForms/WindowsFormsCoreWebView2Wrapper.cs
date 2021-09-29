@@ -8,78 +8,78 @@ using Microsoft.Web.WebView2.Core;
 
 namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 {
-    internal class WindowsFormsCoreWebView2Wrapper : ICoreWebView2Wrapper
-    {
-        private readonly WindowsFormsWebView2Wrapper _webView2;
-        private WindowsFormsCoreWebView2SettingsWrapper _settings;
+	internal class WindowsFormsCoreWebView2Wrapper : ICoreWebView2Wrapper
+	{
+		private readonly WindowsFormsWebView2Wrapper _webView2;
+		private WindowsFormsCoreWebView2SettingsWrapper _settings;
 
-        public WindowsFormsCoreWebView2Wrapper(WindowsFormsWebView2Wrapper webView2)
-        {
-            if (webView2 is null)
-            {
-                throw new ArgumentNullException(nameof(webView2));
-            }
+		public WindowsFormsCoreWebView2Wrapper(WindowsFormsWebView2Wrapper webView2)
+		{
+			if (webView2 is null)
+			{
+				throw new ArgumentNullException(nameof(webView2));
+			}
 
-            _webView2 = webView2;
-        }
+			_webView2 = webView2;
+		}
 
-        public ICoreWebView2SettingsWrapper Settings
-        {
-            get
-            {
-                if (_settings == null)
-                {
-                    _settings = new WindowsFormsCoreWebView2SettingsWrapper(_webView2.WebView2.CoreWebView2.Settings);
-                }
-                return _settings;
-            }
-        }
+		public ICoreWebView2SettingsWrapper Settings
+		{
+			get
+			{
+				if (_settings == null)
+				{
+					_settings = new WindowsFormsCoreWebView2SettingsWrapper(_webView2.WebView2.CoreWebView2.Settings);
+				}
+				return _settings;
+			}
+		}
 
-        public Task AddScriptToExecuteOnDocumentCreatedAsync(string javaScript)
-        {
-            return _webView2.WebView2.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(javaScript);
-        }
+		public Task AddScriptToExecuteOnDocumentCreatedAsync(string javaScript)
+		{
+			return _webView2.WebView2.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(javaScript);
+		}
 
-        public Action AddWebMessageReceivedHandler(Action<WebMessageReceivedEventArgs> messageReceivedHandler)
-        {
-            void nativeEventHandler(object sender, CoreWebView2WebMessageReceivedEventArgs e)
-            {
-                messageReceivedHandler(new WebMessageReceivedEventArgs(e.Source, e.TryGetWebMessageAsString()));
-            }
+		public Action AddWebMessageReceivedHandler(Action<WebMessageReceivedEventArgs> messageReceivedHandler)
+		{
+			void nativeEventHandler(object sender, CoreWebView2WebMessageReceivedEventArgs e)
+			{
+				messageReceivedHandler(new WebMessageReceivedEventArgs(e.Source, e.TryGetWebMessageAsString()));
+			}
 
-            _webView2.WebView2.CoreWebView2.WebMessageReceived += nativeEventHandler;
+			_webView2.WebView2.CoreWebView2.WebMessageReceived += nativeEventHandler;
 
-            // Return removal callback
-            return () =>
-            {
-                _webView2.WebView2.CoreWebView2.WebMessageReceived -= nativeEventHandler;
-            };
-        }
+			// Return removal callback
+			return () =>
+			{
+				_webView2.WebView2.CoreWebView2.WebMessageReceived -= nativeEventHandler;
+			};
+		}
 
-        public void AddWebResourceRequestedFilter(string uri, CoreWebView2WebResourceContextWrapper resourceContext)
-        {
-            _webView2.WebView2.CoreWebView2.AddWebResourceRequestedFilter(uri, (CoreWebView2WebResourceContext)resourceContext);
-        }
+		public void AddWebResourceRequestedFilter(string uri, CoreWebView2WebResourceContextWrapper resourceContext)
+		{
+			_webView2.WebView2.CoreWebView2.AddWebResourceRequestedFilter(uri, (CoreWebView2WebResourceContext)resourceContext);
+		}
 
-        public Action AddWebResourceRequestedHandler(EventHandler<ICoreWebView2WebResourceRequestedEventArgsWrapper> webResourceRequestedHandler)
-        {
-            void nativeEventHandler(object sender, CoreWebView2WebResourceRequestedEventArgs e)
-            {
-                webResourceRequestedHandler(_webView2.WebView2, new WindowsFormsCoreWebView2WebResourceRequestedEventArgsWrapper(_webView2.Environment, e));
-            }
+		public Action AddWebResourceRequestedHandler(EventHandler<ICoreWebView2WebResourceRequestedEventArgsWrapper> webResourceRequestedHandler)
+		{
+			void nativeEventHandler(object sender, CoreWebView2WebResourceRequestedEventArgs e)
+			{
+				webResourceRequestedHandler(_webView2.WebView2, new WindowsFormsCoreWebView2WebResourceRequestedEventArgsWrapper(_webView2.Environment, e));
+			}
 
-            _webView2.WebView2.CoreWebView2.WebResourceRequested += nativeEventHandler;
+			_webView2.WebView2.CoreWebView2.WebResourceRequested += nativeEventHandler;
 
-            // Return removal callback
-            return () =>
-            {
-                _webView2.WebView2.CoreWebView2.WebResourceRequested -= nativeEventHandler;
-            };
-        }
+			// Return removal callback
+			return () =>
+			{
+				_webView2.WebView2.CoreWebView2.WebResourceRequested -= nativeEventHandler;
+			};
+		}
 
-        public void PostWebMessageAsString(string webMessageAsString)
-        {
-            _webView2.WebView2.CoreWebView2.PostWebMessageAsString(webMessageAsString);
-        }
-    }
+		public void PostWebMessageAsString(string webMessageAsString)
+		{
+			_webView2.WebView2.CoreWebView2.PostWebMessageAsString(webMessageAsString);
+		}
+	}
 }

@@ -1562,5 +1562,32 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view0, expectedRectangle);
 			AssertArranged(view1, expectedRectangle);
 		}
+
+		[Fact]
+		public void ArrangeAccountsForFill()
+		{
+			var grid = CreateGridLayout();
+			var view = CreateTestView(new Size(100, 100));
+			SubstituteChildren(grid, view);
+			SetLocation(grid, view);
+
+			grid.HorizontalLayoutAlignment.Returns(Primitives.LayoutAlignment.Fill);
+			grid.VerticalLayoutAlignment.Returns(Primitives.LayoutAlignment.Fill);
+
+			var layoutManager = new GridLayoutManager(grid);
+			_ = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			var arrangedWidth = 1000;
+			var arrangedHeight = 1000;
+
+			var target = new Rectangle(Point.Zero, new Size(arrangedWidth, arrangedHeight));
+
+			var actual = layoutManager.ArrangeChildren(target);
+
+			// Since we're arranging in a space larger than needed and the layout is set to Fill in both directions,
+			// we expect the returned actual arrangement size to be as large as the target space
+			Assert.Equal(arrangedWidth, actual.Width);
+			Assert.Equal(arrangedHeight, actual.Height);
+		}
 	}
 }

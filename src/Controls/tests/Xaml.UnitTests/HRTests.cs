@@ -19,9 +19,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void TearDown()
 		{
 			Device.PlatformServices = null;
-			XamlLoader.FallbackTypeResolver = null;
-			XamlLoader.ValueCreatedCallback = null;
-			XamlLoader.InstantiationFailedCallback = null;
 			Maui.Controls.Internals.ResourceLoader.ExceptionHandler2 = null;
 			Application.ClearCurrent();
 		}

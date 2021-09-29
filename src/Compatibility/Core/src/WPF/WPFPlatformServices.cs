@@ -23,11 +23,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 
 		public string RuntimePlatform => Device.WPF;
 
-		public void OpenUriAction(Uri uri)
-		{
-			System.Diagnostics.Process.Start(uri.AbsoluteUri);
-		}
-
 		public void BeginInvokeOnMainThread(Action action)
 		{
 			System.Windows.Application.Current?.Dispatcher.BeginInvoke(action);

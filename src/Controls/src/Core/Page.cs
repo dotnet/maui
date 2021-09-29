@@ -279,16 +279,17 @@ namespace Microsoft.Maui.Controls
 			if (RealParent is BaseShellItem || RealParent is Shell)
 				return false;
 
-			var application = RealParent as Window;
-			if (application == null || this == application.Page)
+
+			var window = RealParent as Window;
+			if (window == null || this == window.Page)
 				return false;
 
 			var canceled = false;
 			EventHandler handler = (sender, args) => { canceled = true; };
-			application.PopCanceled += handler;
+			window.PopCanceled += handler;
 			Navigation.PopModalAsync().ContinueWith(t => { throw t.Exception; }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.FromCurrentSynchronizationContext());
 
-			application.PopCanceled -= handler;
+			window.PopCanceled -= handler;
 			return !canceled;
 		}
 

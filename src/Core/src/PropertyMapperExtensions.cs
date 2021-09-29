@@ -38,7 +38,8 @@ namespace Microsoft.Maui
 			string key, Action<TViewHandler, TVirtualView> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
-			propertyMapper.ModifyMapping(key, (handler, view, action) => { 
+			propertyMapper.ModifyMapping(key, (handler, view, action) =>
+			{
 				action?.Invoke(handler, view);
 				method(handler, view);
 			});
@@ -56,7 +57,8 @@ namespace Microsoft.Maui
 			string key, Action<TViewHandler, TVirtualView> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
-			propertyMapper.ModifyMapping(key, (handler, view, action) => {
+			propertyMapper.ModifyMapping(key, (handler, view, action) =>
+			{
 				method(handler, view);
 				action?.Invoke(handler, view);
 			});

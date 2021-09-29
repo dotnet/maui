@@ -40,5 +40,20 @@ namespace BlazorWinFormsApp
 		{
 			blazorWebView1.WebView.CoreWebView2.ExecuteScriptAsync("alert('hello from native UI')");
 		}
+
+		private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			MessageBox.Show("About Blazor... it's great!");
+		}
+
+		private void option1ToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			MessageBox.Show("I don't do anything");
+		}
+
+		private void sendScriptalertToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			blazorWebView1.WebView.CoreWebView2.ExecuteScriptAsync("alert('hello from a native menu')");
+		}
 	}
 }

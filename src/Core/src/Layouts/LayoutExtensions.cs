@@ -152,18 +152,22 @@ namespace Microsoft.Maui.Layouts
 
 		public static Size MeasureContent(this IContentView contentView, double widthConstraint, double heightConstraint)
 		{
+			return contentView.MeasureContent(contentView.Padding, widthConstraint, heightConstraint);
+		}
+
+		public static Size MeasureContent(this IContentView contentView, Thickness inset, double widthConstraint, double heightConstraint)
+		{
 			var content = contentView.PresentedContent;
-			var padding = contentView.Padding;
 
 			var contentSize = Size.Zero;
 
 			if (content != null)
 			{
-				contentSize = content.Measure(widthConstraint - padding.HorizontalThickness,
-					heightConstraint - padding.VerticalThickness);
+				contentSize = content.Measure(widthConstraint - inset.HorizontalThickness,
+					heightConstraint - inset.VerticalThickness);
 			}
 
-			return new Size(contentSize.Width + padding.HorizontalThickness, contentSize.Height + padding.VerticalThickness);
+			return new Size(contentSize.Width + inset.HorizontalThickness, contentSize.Height + inset.VerticalThickness);
 		}
 
 		public static void ArrangeContent(this IContentView contentView, Rectangle bounds)
@@ -179,6 +183,21 @@ namespace Microsoft.Maui.Layouts
 				bounds.Width - padding.HorizontalThickness, bounds.Height - padding.VerticalThickness);
 
 			_ = contentView.PresentedContent.Arrange(targetBounds);
+		}
+
+		public static Size AdjustForFill(this Size size, Rectangle bounds, IView view)
+		{
+			if (view.HorizontalLayoutAlignment == LayoutAlignment.Fill)
+			{
+				size.Width = Math.Max(bounds.Width, size.Width);
+			}
+
+			if (view.VerticalLayoutAlignment == LayoutAlignment.Fill)
+			{
+				size.Height = Math.Max(bounds.Height, size.Height);
+			}
+
+			return size;
 		}
 	}
 }

@@ -2,11 +2,11 @@
 using System;
 using System.Collections.Generic;
 using Foundation;
+using Microsoft.DotNet.XHarness.iOS.Shared.Execution;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
-using UIKit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
-using Microsoft.DotNet.XHarness.iOS.Shared.Execution;
+using UIKit;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {
@@ -101,6 +101,6 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 			return true;
 		}
-		
+
 	}
 }

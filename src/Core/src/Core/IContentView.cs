@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// A View that contains another View.
 	/// </summary>
-	public interface IContentView : IView
+	public interface IContentView : IView, IPadding
 	{
 		/// <summary>
 		/// Gets the raw content of this view.
@@ -16,11 +16,6 @@ namespace Microsoft.Maui
 		/// Gets the content of this view as it will be rendered in the user interface, including any transformations or applied templates.
 		/// </summary>
 		IView? PresentedContent { get; }
-
-		/// <summary>
-		/// The space between the outer edge of the IContentViews's content area and its content.
-		/// </summary>
-		Thickness Padding { get; }
 
 		/// <summary>
 		/// Measures the desired size of the IContentView within the given constraints.

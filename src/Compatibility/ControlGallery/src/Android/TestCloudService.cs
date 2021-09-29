@@ -4,21 +4,21 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 {
 	public class TestCloudService : ITestCloudService
 	{
-		public bool IsOnTestCloud ()
+		public bool IsOnTestCloud()
 		{
-			var isInTestCloud = System.Environment.GetEnvironmentVariable ("XAMARIN_TEST_CLOUD");
+			var isInTestCloud = System.Environment.GetEnvironmentVariable("XAMARIN_TEST_CLOUD");
 
-			return isInTestCloud != null && isInTestCloud.Equals ("1");
+			return isInTestCloud != null && isInTestCloud.Equals("1");
 		}
 
-		public string GetTestCloudDeviceName ()
+		public string GetTestCloudDeviceName()
 		{
-			return System.Environment.GetEnvironmentVariable ("XTC_DEVICE_NAME");
+			return System.Environment.GetEnvironmentVariable("XTC_DEVICE_NAME");
 		}
 
-		public string GetTestCloudDevice ()
+		public string GetTestCloudDevice()
 		{
-			return System.Environment.GetEnvironmentVariable ("XTC_DEVICE");
+			return System.Environment.GetEnvironmentVariable("XTC_DEVICE");
 		}
 	}
 }

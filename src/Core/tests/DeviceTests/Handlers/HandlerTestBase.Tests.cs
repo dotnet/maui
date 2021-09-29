@@ -31,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 			var id = await GetValueAsync(view, handler => GetFlowDirection(handler));
 			Assert.Equal(view.FlowDirection, id);
 		}
-		
+
 		[Theory(DisplayName = "Opacity is set correctly")]
 		[InlineData(0)]
 		[InlineData(0.25)]
