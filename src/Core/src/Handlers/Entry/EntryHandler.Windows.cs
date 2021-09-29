@@ -25,14 +25,17 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiTextBox nativeView)
 		{
 			NativeView.CursorPositionChangePending = VirtualView.CursorPosition > 0;
+			NativeView.SelectionLengthChangePending = VirtualView.SelectionLength > 0;
 			nativeView.KeyUp += OnNativeKeyUp;
 			nativeView.CursorPositionChanged += OnCursorPositionChanged;
+			nativeView.SelectionLengthChanged += OnSelectionLengthChanged;
 		}
 
 		protected override void DisconnectHandler(MauiTextBox nativeView)
 		{
 			nativeView.KeyUp -= OnNativeKeyUp;
 			nativeView.CursorPositionChanged -= OnCursorPositionChanged;
+			nativeView.SelectionLengthChanged -= OnSelectionLengthChanged;
 		}
 
 		public static void MapText(EntryHandler handler, IEntry entry)
@@ -134,12 +137,19 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView.CursorPosition = entry.CursorPosition;
 		}
 
-		[MissingMapper]
-		public static void MapSelectionLength(IViewHandler handler, IEntry entry) { }
+		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView.SelectionCount = entry.SelectionLength;
+		}
 
 		void OnCursorPositionChanged(object? sender, EventArgs e)
 		{
 			VirtualView.CursorPosition = NativeView.CursorPosition;
+		}
+
+		void OnSelectionLengthChanged(object? sender, EventArgs e)
+		{
+			VirtualView.SelectionLength = NativeView.SelectionCount;
 		}
 
 	}

@@ -126,9 +126,15 @@ namespace Microsoft.Maui
 
 		public event EventHandler CursorPositionChanged;
 
+		public event EventHandler SelectionLengthChanged;
+
 		public int CursorPosition { get; set; }
 
+		public int SelectionCount { get; set; } = -1;
+
 		internal bool CursorPositionChangePending { get; set; }
+
+		internal bool SelectionLengthChangePending { get; set; }
 
 		InputScope PasswordInputScope
 		{
@@ -186,51 +192,96 @@ namespace Microsoft.Maui
 			base.OnGotFocus(e);
 
 			if (CursorPositionChangePending)
-				MapCursorPosition();
+				UpdateCursorPosition();
 
-			UpdateCurrentPosition(SelectionStart);
+			if (SelectionLengthChangePending)
+				UpdateSelectionLength();
+
+			SetCurrentPosition(SelectionStart);
+			SetSelectionLength(SelectionLength);
 		}
 
-		void MapCursorPosition()
+		void UpdateCursorPosition()
 		{
 			if (_nativeSelectionIsUpdating)
 				return;
 
-			if (Focus(FocusState.Programmatic))
+			if (!Focus(FocusState.Programmatic))
+				return;
+			try
 			{
-				try
-				{
-					int cursorPosition = CursorPosition;
+				int cursorPosition = CursorPosition;
 
-					int start = Math.Min(Text.Length, cursorPosition);
+				int start = Math.Min(Text.Length, cursorPosition);
 
-					if (start != cursorPosition)
-					{
-						_nativeSelectionIsUpdating = true;
-						UpdateCurrentPosition(start);
-						_nativeSelectionIsUpdating = false;
-					}
-					SelectionStart = start;
-				}
-				catch (Exception ex)
-				{
-					MauiWinUIApplication
-						.Current
-						.Services
-						.CreateLogger<ILogger>()
-						.LogWarning($"Failed to set Control.SelectionStart from CursorPosition: {ex}");
-				}
-				finally
-				{
-					CursorPositionChangePending = false;
-				}
+				if (start != cursorPosition)
+					SetCurrentPosition(start);
+
+				SelectionStart = start;
+				// Length is dependent on start, so we'll need to update it
+				UpdateSelectionLength();
 			}
+			catch (Exception ex)
+			{
+				MauiWinUIApplication
+					.Current
+					.Services
+					.CreateLogger<ILogger>()
+					.LogWarning($"Failed to set Control.SelectionStart from CursorPosition: {ex}");
+			}
+			finally
+			{
+				CursorPositionChangePending = false;
+			}
+
 		}
 
-		void UpdateCurrentPosition(int position)
+		void UpdateSelectionLength()
 		{
+			if (_nativeSelectionIsUpdating)
+				return;
+
+			if (!Focus(FocusState.Programmatic))
+				return;
+
+			try
+			{
+				int selectionLength = 0;
+				int elemSelectionLength = SelectionLength;
+
+				if (SelectionLength != -1)
+					selectionLength = Math.Max(0, Math.Min(Text.Length - CursorPosition, elemSelectionLength));
+
+				if (elemSelectionLength != selectionLength)
+					SetSelectionLength(selectionLength);
+
+				SelectionLength = selectionLength;
+			}
+			catch (Exception)
+			{
+
+			}
+			finally
+			{
+				SelectionLengthChangePending = false;
+			}
+
+		}
+
+		void SetCurrentPosition(int position)
+		{
+			_nativeSelectionIsUpdating = true;
 			CursorPosition = position;
 			CursorPositionChanged?.Invoke(this, EventArgs.Empty);
+			_nativeSelectionIsUpdating = false;
+		}
+
+		void SetSelectionLength(int selection)
+		{
+			_nativeSelectionIsUpdating = true;
+			SelectionCount = selection;
+			SelectionLengthChanged?.Invoke(this, EventArgs.Empty);
+			_nativeSelectionIsUpdating = false;
 		}
 
 		void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -356,14 +407,25 @@ namespace Microsoft.Maui
 			// Cache this value for later use as explained in OnKeyDown below
 			_cachedSelectionLength = SelectionLength;
 
+			int cursorPosition = CursorPosition;
+
 			if (!CursorPositionChangePending)
 			{
-				var start = CursorPosition;
+				var start = cursorPosition;
 				int selectionStart = SelectionStart;
 				if (selectionStart != start)
-					UpdateCurrentPosition(selectionStart);
+					SetCurrentPosition(selectionStart);
+			}
+
+			if (!SelectionLengthChangePending)
+			{
+				int elementSelectionLength = Math.Min(Text.Length - cursorPosition, SelectionLength);
+				int controlSelectionLength = SelectionLength;
+				if (controlSelectionLength != elementSelectionLength)
+					SetSelectionLength(controlSelectionLength);
 			}
 		}
+
 
 		// Because the implementation of a password entry is based around inheriting from TextBox (via MauiTextBox), there
 		// are some inaccuracies in the behavior. OnKeyDown is what needs to be used for a workaround in this case because 
