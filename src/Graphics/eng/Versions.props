@@ -3,10 +3,10 @@
   <PropertyGroup>
     <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-rc.1.21426.23</MicrosoftDotnetSdkInternalPackageVersion>
     <MicrosoftAndroidSdkWindowsPackageVersion>31.0.100-rc.1.12</MicrosoftAndroidSdkWindowsPackageVersion>
-    <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.10.54</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>15.0.101-preview.10.54</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>15.0.101-preview.10.54</MicrosofttvOSSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>12.0.101-preview.10.54</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.10.61</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>15.0.101-preview.10.61</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>15.0.101-preview.10.61</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>12.0.101-preview.10.61</MicrosoftmacOSSdkPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Trim all characters after first `-` or `+` is encountered. -->
