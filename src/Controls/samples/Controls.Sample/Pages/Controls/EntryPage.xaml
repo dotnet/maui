@@ -10,8 +10,7 @@
     </views:BasePage.BindingContext>
     <views:BasePage.Content>
         <ScrollView>
-            <VerticalStackLayout
-                Margin="12">
+            <VerticalStackLayout Margin="12">
                 <Label
                     Text="Basic"
                     Style="{StaticResource Headline}" />
@@ -105,6 +104,15 @@
                     x:Name="entryCursor"
                     Text="Cursor"
                     CursorPosition="4"/>
+                <Label
+                    x:Name="lblSelection"
+                    Text="SelectionLength = 4"
+                    Style="{StaticResource Headline}" />
+                <Entry
+                    x:Name="entrySelection"
+                    Text="Selection"
+                    CursorPosition="2"
+                    SelectionLength="4"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
