@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapSelectionLength(EntryHandler handler, IEntry entry)
 		{
-			handler.NativeView.SelectionCount = entry.SelectionLength;
+			handler.NativeView.ViewSelectionLength = entry.SelectionLength;
 		}
 
 		void OnCursorPositionChanged(object? sender, EventArgs e)
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnSelectionLengthChanged(object? sender, EventArgs e)
 		{
-			VirtualView.SelectionLength = NativeView.SelectionCount;
+			VirtualView.SelectionLength = NativeView.ViewSelectionLength;
 		}
 
 	}

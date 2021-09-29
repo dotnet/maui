@@ -130,7 +130,7 @@ namespace Microsoft.Maui
 
 		public int CursorPosition { get; set; }
 
-		public int SelectionCount { get; set; } = -1;
+		public int ViewSelectionLength { get; set; } = -1;
 
 		internal bool CursorPositionChangePending { get; set; }
 
@@ -247,9 +247,9 @@ namespace Microsoft.Maui
 			try
 			{
 				int selectionLength = 0;
-				int elemSelectionLength = SelectionLength;
+				int elemSelectionLength = ViewSelectionLength;
 
-				if (SelectionLength != -1)
+				if (ViewSelectionLength != -1)
 					selectionLength = Math.Max(0, Math.Min(Text.Length - CursorPosition, elemSelectionLength));
 
 				if (elemSelectionLength != selectionLength)
@@ -279,7 +279,7 @@ namespace Microsoft.Maui
 		void SetSelectionLength(int selection)
 		{
 			_nativeSelectionIsUpdating = true;
-			SelectionCount = selection;
+			ViewSelectionLength = selection;
 			SelectionLengthChanged?.Invoke(this, EventArgs.Empty);
 			_nativeSelectionIsUpdating = false;
 		}
@@ -419,7 +419,7 @@ namespace Microsoft.Maui
 
 			if (!SelectionLengthChangePending)
 			{
-				int elementSelectionLength = Math.Min(Text.Length - cursorPosition, SelectionLength);
+				int elementSelectionLength = Math.Min(Text.Length - cursorPosition, ViewSelectionLength);
 				int controlSelectionLength = SelectionLength;
 				if (controlSelectionLength != elementSelectionLength)
 					SetSelectionLength(controlSelectionLength);
