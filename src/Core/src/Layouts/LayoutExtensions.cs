@@ -184,5 +184,20 @@ namespace Microsoft.Maui.Layouts
 
 			_ = contentView.PresentedContent.Arrange(targetBounds);
 		}
+
+		public static Size AdjustForFill(this Size size, Rectangle bounds, IView view)
+		{
+			if (view.HorizontalLayoutAlignment == LayoutAlignment.Fill)
+			{
+				size.Width = Math.Max(bounds.Width, size.Width);
+			}
+
+			if (view.VerticalLayoutAlignment == LayoutAlignment.Fill)
+			{
+				size.Height = Math.Max(bounds.Height, size.Height);
+			}
+
+			return size;
+		}
 	}
 }

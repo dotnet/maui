@@ -13,6 +13,9 @@ namespace Microsoft.Maui
 		public static void UpdateTitleColor(this MauiPicker nativePicker, IPicker picker) =>
  			nativePicker.SetTitleColor(picker);
 
+		public static void UpdateTextColor(this MauiPicker nativePicker, IPicker picker) =>
+			nativePicker.TextColor = picker.TextColor?.ToNative();
+
 		public static void UpdateSelectedIndex(this MauiPicker nativePicker, IPicker picker) =>
 			nativePicker.SetSelectedIndex(picker, picker.SelectedIndex);
 

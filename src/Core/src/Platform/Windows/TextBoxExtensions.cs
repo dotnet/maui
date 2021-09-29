@@ -124,9 +124,9 @@ namespace Microsoft.Maui
 			textBox.UpdateInputScope(textInput);
 		}
 
-		public static void UpdateKeyboard(this MauiTextBox textBox, IEditor editor)
+		public static void UpdateKeyboard(this MauiTextBox textBox, ITextInput textInput)
 		{
-			textBox.UpdateInputScope(editor);
+			textBox.UpdateInputScope(textInput);
 		}
 
 		internal static void UpdateInputScope(this MauiTextBox textBox, ITextInput textInput)
@@ -152,22 +152,17 @@ namespace Microsoft.Maui
 			textBox.InputScope = inputScope;
 		}
 
-		public static void UpdateHorizontalTextAlignment(this MauiTextBox textBox, IEntry entry)
+		public static void UpdateHorizontalTextAlignment(this MauiTextBox textBox, ITextAlignment textAlignment)
 		{
 			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
 			// TODO: Update this when FlowDirection is available 
 			// (or update the extension to take an ILabel instead of an alignment and work it out from there) 
-			textBox.TextAlignment = entry.HorizontalTextAlignment.ToNative(true);
+			textBox.TextAlignment = textAlignment.HorizontalTextAlignment.ToNative(true);
 		}
 
-		public static void UpdateVerticalTextAlignment(this MauiTextBox textBox, IEntry entry)
+		public static void UpdateVerticalTextAlignment(this MauiTextBox textBox, ITextAlignment textAlignment)
 		{
-			textBox.VerticalAlignment = entry.VerticalTextAlignment.ToNativeVerticalAlignment();
-		}
-
-		public static void UpdateKeyboard(this MauiTextBox textBox, IEntry entry)
-		{
-			textBox.UpdateInputScope(entry);
+			textBox.VerticalAlignment = textAlignment.VerticalTextAlignment.ToNativeVerticalAlignment();
 		}
 	}
 }
