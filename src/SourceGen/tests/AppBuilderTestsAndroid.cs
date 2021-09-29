@@ -18,7 +18,7 @@ namespace Microsoft.Maui.SourceGen.Tests
 		public AppBuilderTestsAndroid(ITestOutputHelper output) : base(output)
 		{
 			AddPlatformReference("Microsoft.Maui");
-
+			Generator.AddReference(typeof(AppBuilderTestsAndroid).Assembly.Location);
 			Generator.AddMSBuildProperty("EnableMauiAppBuilderSourceGen", "true");
 			Generator.AddMSBuildProperty("TargetPlatformIdentifier", "android");
 			Generator.AddMSBuildProperty("OutputType", "Exe");
@@ -131,7 +131,7 @@ namespace MyApp
 		}
 	}
 
-	[Application]
+	[global::Android.App.Application]
 	public partial class MainApplication : Microsoft.Maui.MauiApplication
 	{
 		public MainApplication(IntPtr handle, JniHandleOwnership ownership)

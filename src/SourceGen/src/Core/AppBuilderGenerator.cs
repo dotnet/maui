@@ -18,7 +18,8 @@ namespace Microsoft.Maui.SourceGen
 		const string MauiAppTypeFullyQualifiedName = "global::Microsoft.Maui.MauiApp";
 		const string MauiUIApplicationDelegateFullyQualifiedName = "global::Microsoft.Maui.MauiUIApplicationDelegate";
 		const string UIKitUIApplicationDelegateFullyQualifiedName = "global::UIKit.UIApplicationDelegate";
-		const string AndroidAppActivityFullyQualifiedName = "global::Android.App.ActivityAttribute";
+		const string AndroidAppActivityAttributeFullyQualifiedName = "global::Android.App.ActivityAttribute";
+		const string AndroidAppApplicationAttributeFullyQualifiedName = "global::Android.App.ApplicationAttribute";
 		const string MauiAndroidApplicationFullyQualifiedName = "global::Microsoft.Maui.MauiApplication";
 		const string AndroidAppApplicationFullyQualifiedName = "global::Android.App.Application";
 		const string AndroidMainLauncherAttributeName = "MainLauncher";
@@ -130,16 +131,16 @@ namespace Microsoft.Maui.SourceGen
 
 				if (!HasMainLauncher && syntaxNode is AttributeSyntax attrSyntax)
 				{
-					//var attrFullName = attrSyntax.ToFullString(); // attrSyntax.GetSymbol(context.SemanticModel.Compilation)?.ToDisplayString();
+					var attrFullName = attrSyntax.GetSymbol(context.SemanticModel.Compilation)?.ToDisplayString();
 
-					//if (attrFullName == AndroidAppActivityFullyQualifiedName)
-					//{
-					HasMainLauncher = attrSyntax.ArgumentList != null
+					if (attrFullName == AndroidAppActivityAttributeFullyQualifiedName)
+					{
+						HasMainLauncher = attrSyntax.ArgumentList != null
 							&& attrSyntax.ArgumentList.ChildNodes().Any(cn => cn is AttributeArgumentSyntax aas
 								&& aas.NameEquals?.Name?.Identifier.ValueText == AndroidMainLauncherAttributeName
 								&& aas.Expression is ExpressionSyntax exs
 								&& exs.Kind() == SyntaxKind.TrueLiteralExpression);
-					//}
+					}
 				}
 
 				// Look for an Application implementation of some sort
