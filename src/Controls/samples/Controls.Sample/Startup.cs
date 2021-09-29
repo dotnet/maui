@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample
 		{
 			var appBuilder = MauiApp.CreateBuilder();
 
-			appBuilder.UseMauiApp<XamlApp>();
+			appBuilder.UseMauiApp<Recipes.App>();
 			var services = appBuilder.Services;
 
 			appBuilder
