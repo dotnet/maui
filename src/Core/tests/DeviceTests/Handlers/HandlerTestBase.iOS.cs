@@ -135,6 +135,9 @@ namespace Microsoft.Maui.DeviceTests
 			return FlowDirection.LeftToRight;
 		}
 
+		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
+			((UIView)viewHandler.NativeView).IsAccessibilityElement;
+
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).AccessibilityLabel;
 

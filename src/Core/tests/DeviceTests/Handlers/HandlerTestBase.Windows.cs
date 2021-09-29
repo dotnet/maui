@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Media;
 using Xunit;
 
@@ -121,6 +122,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected string GetAutomationId(IViewHandler viewHandler) =>
 			AutomationProperties.GetAutomationId((FrameworkElement)viewHandler.NativeView);
+
+		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
+			((AccessibilityView)((FrameworkElement)viewHandler.NativeView).GetValue(AutomationProperties.AccessibilityViewProperty)) == AccessibilityView.Content;
 
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
 			AutomationProperties.GetName((FrameworkElement)viewHandler.NativeView);
