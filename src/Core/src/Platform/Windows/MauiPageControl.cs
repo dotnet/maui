@@ -66,8 +66,11 @@ namespace Microsoft.Maui.Platform.Windows
 				for (int i = 0; i < indicatorCount; i++)
 				{
 					var shape = CreateIndicator(i, position);
+					
 					if (shape != null)
+					{
 						indicators.Add(shape);
+					}
 				}
 			}
 
@@ -92,9 +95,10 @@ namespace Microsoft.Maui.Platform.Windows
 				return null;
 
 			var indicatorSize = _indicatorView.IndicatorSize;
+			WShape? shape = null;
 			if (_indicatorView.IsCircleShape())
 			{
-				return new WEllipse()
+				shape = new WEllipse()
 				{
 					Fill = i == position ? _selectedColor : _fillColor,
 					Height = indicatorSize,
@@ -104,7 +108,7 @@ namespace Microsoft.Maui.Platform.Windows
 			}
 			else
 			{
-				return new WRectangle()
+				shape = new WRectangle()
 				{
 					Fill = i == position ? _selectedColor : _fillColor,
 					Height = indicatorSize,
@@ -112,6 +116,15 @@ namespace Microsoft.Maui.Platform.Windows
 					Margin = WinUIHelpers.CreateThickness(DefaultPadding, 0, DefaultPadding, 0)
 				};
 			}
+			shape.Tag = i;
+			shape.PointerPressed += (s,e) =>
+			{
+				if (_indicatorView == null)
+					return;
+
+				_indicatorView.Position = (int)((WShape)s).Tag;
+			};
+			return shape;
 		}
 
 		int GetIndexFromPosition()
