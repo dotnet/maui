@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Media;
 
@@ -46,8 +47,8 @@ namespace Microsoft.Maui
 
 		public static void UpdateReturnType(this MauiTextBox textBox, IEntry entry)
 		{
-			textBox.InputScope = entry.ReturnType.ToNative();
-    	}
+			textBox.UpdateInputScope(entry);
+		}
 
 		public static void UpdateClearButtonVisibility(this MauiTextBox textBox, IEntry entry)
 		{
@@ -112,20 +113,20 @@ namespace Microsoft.Maui
 			if (currentControlText.Length > maxLength)
 				textBox.Text = currentControlText.Substring(0, maxLength);
 		}
-    
+
 		public static void UpdateIsPassword(this MauiTextBox textBox, IEntry entry)
 		{
 			textBox.IsPassword = entry.IsPassword;
 		}
 
-		public static void UpdateIsTextPredictionEnabled(this MauiTextBox textBox, IEditor editor)
+		public static void UpdateIsTextPredictionEnabled(this MauiTextBox textBox, ITextInput textInput)
 		{
-			textBox.UpdateInputScope(editor);
+			textBox.UpdateInputScope(textInput);
 		}
 
-		public static void UpdateKeyboard(this MauiTextBox textBox, IEditor editor)
+		public static void UpdateKeyboard(this MauiTextBox textBox, ITextInput textInput)
 		{
-			textBox.UpdateInputScope(editor);
+			textBox.UpdateInputScope(textInput);
 		}
 
 		internal static void UpdateInputScope(this MauiTextBox textBox, ITextInput textInput)
@@ -138,24 +139,30 @@ namespace Microsoft.Maui
 			else
 			{
 				textBox.IsTextPredictionEnabled = textInput.IsTextPredictionEnabled;
-
-				// TODO: Update IsSpellCheckEnabled
+				textBox.IsSpellCheckEnabled = textInput.IsTextPredictionEnabled;
 			}
 
-			textBox.InputScope = textInput.Keyboard.ToInputScope();
+			var inputScope = new UI.Xaml.Input.InputScope();
+
+			if (textInput is IEntry entry && entry.ReturnType == ReturnType.Search)
+				inputScope.Names.Add(new UI.Xaml.Input.InputScopeName(UI.Xaml.Input.InputScopeNameValue.Search));
+
+			inputScope.Names.Add(textInput.Keyboard.ToInputScopeName());
+
+			textBox.InputScope = inputScope;
 		}
 
-		public static void UpdateHorizontalTextAlignment(this MauiTextBox textBox, IEntry entry)
+		public static void UpdateHorizontalTextAlignment(this MauiTextBox textBox, ITextAlignment textAlignment)
 		{
 			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
 			// TODO: Update this when FlowDirection is available 
 			// (or update the extension to take an ILabel instead of an alignment and work it out from there) 
-			textBox.TextAlignment = entry.HorizontalTextAlignment.ToNative(true);
+			textBox.TextAlignment = textAlignment.HorizontalTextAlignment.ToNative(true);
 		}
 
-		public static void UpdateVerticalTextAlignment(this MauiTextBox textBox, IEntry entry)
+		public static void UpdateVerticalTextAlignment(this MauiTextBox textBox, ITextAlignment textAlignment)
 		{
-			textBox.VerticalAlignment = entry.VerticalTextAlignment.ToNativeVerticalAlignment();
-    }
+			textBox.VerticalAlignment = textAlignment.VerticalTextAlignment.ToNativeVerticalAlignment();
+		}
 	}
 }

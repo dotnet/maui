@@ -353,16 +353,12 @@ namespace Microsoft.Maui.Controls.Xaml
 
 				var xaml = reader.ReadToEnd();
 
-				var pattern = String.Format("x:Class *= *\"{0}\"", type.FullName);
+				var pattern = $"x:Class *= *\"{type.FullName}\"";
 				var regex = new Regex(pattern, RegexOptions.ECMAScript);
-				if (regex.IsMatch(xaml) || xaml.Contains(String.Format("x:Class=\"{0}\"", type.FullName)))
+				if (regex.IsMatch(xaml) || xaml.Contains($"x:Class=\"{type.FullName}\""))
 					return xaml;
 			}
 			return null;
 		}
-
-		internal static Func<IList<FallbackTypeInfo>, Type, Type> FallbackTypeResolver { get; set; }
-		internal static Action<CallbackTypeInfo, object> ValueCreatedCallback { get; set; }
-		internal static Func<CallbackTypeInfo, Type, Exception, object> InstantiationFailedCallback { get; set; }
 	}
 }

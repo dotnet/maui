@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 		static ColorStateList? DefaultPlaceholderTextColors { get; set; }
 
 		EditText? _editText;
+
 		public EditText? QueryEditor => _editText;
 
 		protected override SearchView CreateNativeView()
@@ -28,6 +29,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.QueryTextChange += OnQueryTextChange;
 			nativeView.QueryTextSubmit += OnQueryTextSubmit;
+			SetupDefaults(nativeView);
 		}
 
 		protected override void DisconnectHandler(SearchView nativeView)
@@ -72,6 +74,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
+		}
+
+		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(searchBar, handler._editText);
 		}
 
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)

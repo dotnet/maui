@@ -1,13 +1,14 @@
 using System;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	internal class FormsCancelButton : Microsoft.UI.Xaml.Controls.Button
 	{
 		TextBlock _cancelButtonGlyph;
-		Border _cancelButtonBackground;
+		WBorder _cancelButtonBackground;
 
 		public WBrush ForegroundBrush 
 		{
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.OnApplyTemplate();
 
 			_cancelButtonGlyph = (TextBlock)GetTemplateChild("GlyphElement");
-			_cancelButtonBackground = (Border)GetTemplateChild("BorderElement");
+			_cancelButtonBackground = (WBorder)GetTemplateChild("BorderElement");
 
 			if (_cancelButtonGlyph != null && _cancelButtonBackground != null)
 			{

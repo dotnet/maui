@@ -6,7 +6,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Handlers
 {
-	internal partial class NavigationViewHandler
+	public partial class NavigationViewHandler
 	{
 		public static PropertyMapper<INavigationView, NavigationViewHandler> NavigationViewMapper
 			   = new PropertyMapper<INavigationView, NavigationViewHandler>(ViewHandler.ViewMapper);

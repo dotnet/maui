@@ -58,10 +58,6 @@ namespace Maui.Controls.Sample
 				builder.Add<FocusRoutingEffect, FocusPlatformEffect>();
 			});
 
-#if DEBUG && !WINDOWS
-			appBuilder.EnableHotReload();
-#endif
-
 			appBuilder.Configuration.AddInMemoryCollection(
 				new Dictionary<string, string>
 					{

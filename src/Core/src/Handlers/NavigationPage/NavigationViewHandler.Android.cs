@@ -6,7 +6,7 @@ using Android.Views;
 
 namespace Microsoft.Maui.Handlers
 {
-	internal partial class NavigationViewHandler :
+	public partial class NavigationViewHandler :
 		ViewHandler<INavigationView, NavigationLayout>
 	{
 		NavigationManager? _navigationManager;
@@ -22,14 +22,20 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
-		// this should move to a factory method
+		public override void SetVirtualView(IView view)
+		{
+			_navigationManager ??= CreateNavigationManager();
+			base.SetVirtualView(view);
+		}
+
 		protected virtual NavigationManager CreateNavigationManager() =>
-			_navigationManager ??= new NavigationManager();
+			new NavigationManager(MauiContext!);
 
 		protected override void ConnectHandler(NavigationLayout nativeView)
 		{
-			_navigationManager = CreateNavigationManager();
+			_navigationManager ??= CreateNavigationManager();
 			nativeView.NavigationManager = _navigationManager;
+
 			base.ConnectHandler(nativeView);
 			_navigationManager.Connect(VirtualView, nativeView);
 		}

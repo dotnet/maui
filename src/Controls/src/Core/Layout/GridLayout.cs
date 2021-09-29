@@ -312,14 +312,22 @@ namespace Microsoft.Maui.Controls
 		{
 			var gridLayout = (GridLayout)bindable;
 
-			if (oldValue is ColumnDefinitionCollection oldDefinition)
+			if (oldValue is ColumnDefinitionCollection oldColDefs)
 			{
-				oldDefinition.ItemSizeChanged -= gridLayout.DefinitionsChanged;
+				oldColDefs.ItemSizeChanged -= gridLayout.DefinitionsChanged;
+			}
+			else if (oldValue is RowDefinitionCollection oldRowDefs)
+			{
+				oldRowDefs.ItemSizeChanged -= gridLayout.DefinitionsChanged;
 			}
 
-			if (newValue is ColumnDefinitionCollection newDefinition)
+			if (newValue is ColumnDefinitionCollection newColDefs)
 			{
-				newDefinition.ItemSizeChanged += gridLayout.DefinitionsChanged;
+				newColDefs.ItemSizeChanged += gridLayout.DefinitionsChanged;
+			}
+			else if (newValue is RowDefinitionCollection newRowDefs)
+			{
+				newRowDefs.ItemSizeChanged += gridLayout.DefinitionsChanged;
 			}
 
 			gridLayout.DefinitionsChanged(bindable, EventArgs.Empty);
@@ -335,6 +343,10 @@ namespace Microsoft.Maui.Controls
 
 		void DefinitionsChanged(object sender, EventArgs args)
 		{
+			// Clear out the IGridLayout row/col defs; they'll be set up again next time they're accessed
+			_rowDefs = null;
+			_colDefs = null;
+
 			InvalidateMeasure();
 		}
 

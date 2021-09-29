@@ -79,28 +79,30 @@ Task("dotnet-templates")
 
         var dn = localDotnet ? dotnetPath : "dotnet";
 
-        CleanDirectories("./templatesTest/");
+        CleanDirectories("../templatesTest/");
 
         // Create empty Directory.Build.props/targets
-        EnsureDirectoryExists(Directory("./templatesTest/"));
-        FileWriteText(File("./templatesTest/Directory.Build.props"), "<Project/>");
-        FileWriteText(File("./templatesTest/Directory.Build.targets"), "<Project/>");
+        EnsureDirectoryExists(Directory("../templatesTest/"));
+        FileWriteText(File("../templatesTest/Directory.Build.props"), "<Project/>");
+        FileWriteText(File("../templatesTest/Directory.Build.targets"), "<Project/>");
 
         // Create an empty NuGet.config
-        StartProcess(dn, "new nugetconfig -o ./templatesTest/");
+        StartProcess(dn, "new nugetconfig -o ../templatesTest/");
+        // NOTE: this should be temporary until 'library-packs' are working for .msi-based installs
+        StartProcess(dn, "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json --name dotnet6 --configfile ../templatesTest/nuget.config");
         var properties = new Dictionary<string, string> {
             // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
             { "RestoreNoCache", "true" },
-            { "RestorePackagesPath", MakeAbsolute(File("./templatesTest/packages")).FullPath },
-            { "RestoreConfigFile", MakeAbsolute(File("./templatesTest/nuget.config")).FullPath },
+            { "RestorePackagesPath", MakeAbsolute(File("../templatesTest/packages")).FullPath },
+            { "RestoreConfigFile", MakeAbsolute(File("../templatesTest/nuget.config")).FullPath },
         };
 
         foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
         {
             var name = template.Replace("-", "") + " Space-Dash";
-            StartProcess(dn, $"new {template} -o \"./templatesTest/{name}\"");
+            StartProcess(dn, $"new {template} -o \"../templatesTest/{name}\"");
 
-            RunMSBuildWithDotNet($"./templatesTest/{name}", properties);
+            RunMSBuildWithDotNet($"../templatesTest/{name}", properties);
         }
     });
 
@@ -367,7 +369,9 @@ void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = nu
     else
     {
         // Otherwise we need to run MSBuild for WinUI support
-        var msbuildSettings = new MSBuildSettings { ToolPath = FindMSBuild() }
+        var msbuild = FindMSBuild();
+        Information("Using MSBuild: {0}", msbuild);
+        var msbuildSettings = new MSBuildSettings { ToolPath = msbuild }
             .WithRestore()
             .SetConfiguration(configuration)
             .EnableBinaryLogger(binlog);

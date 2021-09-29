@@ -49,5 +49,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			IsStopped = true;
 			IsResumed = false;
 		}
+
+		public bool BackButtonPressed() => true;
 	}
 }

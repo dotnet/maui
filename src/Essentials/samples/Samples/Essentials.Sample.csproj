@@ -17,8 +17,7 @@
   <PropertyGroup>
     <ApplicationTitle>Essentials</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.essentials</ApplicationId>
-    <ApplicationVersion>1.0</ApplicationVersion>
-    <AndroidVersionCode>1</AndroidVersionCode>
+    <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UseMaui)' != 'true' and $(TargetFramework.Contains('-windows'))">

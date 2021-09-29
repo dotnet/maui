@@ -20,11 +20,8 @@
   <PropertyGroup>
     <ApplicationTitle>Essentials Tests</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.essentials.devicetests</ApplicationId>
-    <ApplicationVersion>1.0.1.0</ApplicationVersion>
-    <AndroidVersionCode>1</AndroidVersionCode>
-
+    <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0.1.0</ApplicationDisplayVersion>
-    <ApplicationVersion Condition="$(TargetFramework.Contains('-ios'))">1</ApplicationVersion>
   </PropertyGroup>
 
   <ItemGroup>

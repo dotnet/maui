@@ -40,7 +40,6 @@ namespace Microsoft.Maui.Controls.Platform
 		int _actionBarHeight;
 		int _flyoutHeight;
 		int _flyoutWidth;
-		ImageSourceLoader _shellFlyoutBackgroundImagePart;
 
 		protected IMauiContext MauiContext => _shellContext.Shell.Handler.MauiContext;
 
@@ -53,7 +52,6 @@ namespace Microsoft.Maui.Controls.Platform
 		public ShellFlyoutTemplatedContentView(IShellContext shellContext)
 		{
 			_shellContext = shellContext;
-			_shellFlyoutBackgroundImagePart = new ImageSourceLoader();
 			LoadView(shellContext);
 		}
 
@@ -351,10 +349,9 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateFlyoutBgImageAsync();
 		}
 
-		async void UpdateFlyoutBgImageAsync()
+		void UpdateFlyoutBgImageAsync()
 		{
 			var imageSource = _shellContext.Shell.FlyoutBackgroundImage;
-			_shellFlyoutBackgroundImagePart.Source = imageSource;
 
 			if (imageSource == null || !_shellContext.Shell.IsSet(Shell.FlyoutBackgroundImageProperty))
 			{
@@ -366,8 +363,11 @@ namespace Microsoft.Maui.Controls.Platform
 			var services = MauiContext.Services;
 			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 
-			using (var result = await _bgImage.UpdateSourceAsync(_shellFlyoutBackgroundImagePart, provider))
+			_bgImage.Clear();
+			imageSource.LoadImage(MauiContext, result =>
 			{
+				_bgImage.SetImageDrawable(result.Value);
+
 				if (!_rootView.IsAlive())
 					return;
 
@@ -400,7 +400,7 @@ namespace Microsoft.Maui.Controls.Platform
 					else
 						_rootView.AddView(_bgImage, 0);
 				}
-			}
+			});
 		}
 
 		protected virtual void UpdateFlyoutHeaderBehavior()

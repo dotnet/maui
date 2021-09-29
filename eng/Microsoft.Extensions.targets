@@ -31,10 +31,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference
-        Update="Reloadify3000"
-        Version="1.0.7"
-    />
-    <PackageReference
         Update="Microsoft.Maui.Graphics"
         Version="$(MicrosoftMauiGraphicsVersion)"
     />

@@ -19,8 +19,7 @@
   <PropertyGroup>
     <ApplicationTitle>Tests Sample</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.testutils.devicetests</ApplicationId>
-    <ApplicationVersion>1.0</ApplicationVersion>
-    <AndroidVersionCode>1</AndroidVersionCode>
+    <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 
   <ItemGroup>

@@ -11,6 +11,7 @@
 		public const string Entry = "Entry";
 		public const string GraphicsView = "GraphicsView";
 		public const string Image = "Image";
+		public const string ImageButton = "ImageButton";
 		public const string ImageSource = "ImageSource";
 		public const string Label = "Label";
 		public const string Layout = "Layout";

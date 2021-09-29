@@ -10,7 +10,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	internal partial class NavigationViewHandler :
+	public partial class NavigationViewHandler :
 		ViewHandler<INavigationView, UIView>, INativeViewHandler
 	{
 		ControlsNavigationController? _controlsNavigationController;
