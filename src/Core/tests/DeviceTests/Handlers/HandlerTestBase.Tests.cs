@@ -101,9 +101,9 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task SetSemanticHint()
 		{
 			var view = new TStub();
-			view.Semantics.Description = "Test";
-			var id = await GetValueAsync(view, handler => GetSemanticDescription(handler));
-			Assert.Equal(view.Semantics.Description, id);
+			view.Semantics.Hint = "Test";
+			var id = await GetValueAsync(view, handler => GetSemanticHint(handler));
+			Assert.Equal(view.Semantics.Hint, id);
 		}
 
 		[Fact(DisplayName = "Semantic Heading is set correctly")]

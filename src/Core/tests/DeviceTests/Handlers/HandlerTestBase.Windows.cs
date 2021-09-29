@@ -129,6 +129,9 @@ namespace Microsoft.Maui.DeviceTests
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
 			AutomationProperties.GetName((FrameworkElement)viewHandler.NativeView);
 
+		protected string GetSemanticHint(IViewHandler viewHandler) =>
+			AutomationProperties.GetHelpText((FrameworkElement)viewHandler.NativeView);
+
 		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler) =>
 			(SemanticHeadingLevel)AutomationProperties.GetHeadingLevel((FrameworkElement)viewHandler.NativeView);
 
