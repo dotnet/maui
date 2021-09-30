@@ -7,6 +7,7 @@ namespace Microsoft.Maui
 		Android.OS.Bundle? SavedInstance { get; }
 #elif WINDOWS
 		UI.Xaml.LaunchActivatedEventArgs? LaunchActivatedEventArgs { get; }
+		IWindow? NewWindow { get; }
 #endif
 	}
 }

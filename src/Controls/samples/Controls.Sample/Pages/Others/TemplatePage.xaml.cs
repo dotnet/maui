@@ -1,4 +1,6 @@
 ﻿using System;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -9,11 +11,12 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		int count = 0;
 		private void OnCounterClicked(object sender, EventArgs e)
 		{
-			count++;
-			CounterLabel.Text = $"Current count: {count}";
+#if WINDOWS
+			var window = MauiWinUIApplication.Current.CreateNativeWindow(newWindow: new Window(new ContentPage()));
+			window.Activate();
+#endif
 		}
 	}
 }

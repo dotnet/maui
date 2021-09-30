@@ -14,7 +14,13 @@ namespace Microsoft.Maui.Controls
 
 		IWindow IApplication.CreateWindow(IActivationState activationState)
 		{
-			var window = CreateWindow(activationState);
+			Window window;
+#if WINDOWS
+			if (activationState.NewWindow is Window win)
+				window = win;
+			else
+#endif
+				window = CreateWindow(activationState);
 
 			if (_pendingMainPage != null && window.Page != null && window.Page != _pendingMainPage)
 				throw new InvalidOperationException($"Both {nameof(MainPage)} was set and {nameof(Application.CreateWindow)} was overridden to provide a page.");
