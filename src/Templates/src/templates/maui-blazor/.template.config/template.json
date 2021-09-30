@@ -45,6 +45,12 @@
         "replaces": "WINDOWSAPPSDK_VERSION",
         "defaultValue": "WINDOWSAPPSDK_VERSION_VALUE"
       },
+      "win2dVersion": {
+        "type": "parameter",
+        "dataType": "string",
+        "replaces": "WIN2D_VERSION",
+        "defaultValue": "WIN2D_VERSION_VALUE"
+      },
       "HostIdentifier": {
         "type": "bind",
         "binding": "HostIdentifier"
