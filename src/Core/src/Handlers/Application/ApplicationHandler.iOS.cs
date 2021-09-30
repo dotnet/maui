@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 #if __MACCATALYST__
 			NSApplication.SharedApplication.Terminate();
 #else
-			handler.Logger?.LogWarning("iOS does not support programatically terminating the app.");
+			handler.Logger?.LogWarning("iOS does not support programmatically terminating the app.");
 #endif
 		}
 

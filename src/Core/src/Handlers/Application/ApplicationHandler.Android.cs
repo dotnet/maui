@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static void MapTerminate(ApplicationHandler handler, IApplication application, object? args)
 		{
-			handler.Logger?.LogWarning("Android does not support programatically terminating the app.");
+			handler.Logger?.LogWarning("Android does not support programmatically terminating the app.");
 		}
 	}
 }
