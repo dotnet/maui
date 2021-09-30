@@ -24,14 +24,11 @@ namespace Microsoft.Maui.Controls
 		ReadOnlyCollection<Element>? _logicalChildren;
 		List<IVisualTreeElement> _visualChildren;
 
-		ToolbarTracker _toolbarTracker;
 		internal Toolbar Toolbar { get; }
 
 		public Window()
 		{
-			_toolbarTracker = new ToolbarTracker();
 			Toolbar = new Toolbar();
-			_toolbarTracker.CollectionChanged += OnToolbarTrackerCollectionChanged;
 			_visualChildren = new List<IVisualTreeElement>();
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
@@ -130,15 +127,6 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-		}
-
-		void OnToolbarTrackerCollectionChanged(object? sender, EventArgs e)
-		{
-		}
-
-		void UpdateWithNewPage(Page? newPage)
-		{
-			_toolbarTracker.Target = newPage;
 		}
 
 		void SendWindowAppearing()
@@ -261,8 +249,6 @@ namespace Microsoft.Maui.Controls
 				if (newPage.Handler != null)
 					OnPageHandlerChanged(newPage, EventArgs.Empty);
 			}
-
-			window.UpdateWithNewPage(newPage);
 
 			void OnPageHandlerChanged(object? sender, EventArgs e)
 			{

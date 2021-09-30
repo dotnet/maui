@@ -12,18 +12,13 @@ namespace Microsoft.Maui.Controls
 		public bool Visible { get; set; } = true;
 		public bool BackButtonVisible { get; set; }
 		public double? BarHeight { get; set; }
-
 		public string BackButtonTitle { get; set; }
-
 		public ImageSource TitleIcon { get; set; }
-
 		public Color BarBackgroundColor { get; set; }
 		public Brush BarBackground { get; set; }
 		public Color BarTextColor { get; set; }
-
 		public Color IconColor { get; set; }
 		public string Title { get; set; }
-
 		public VisualElement TitleView { get; set; }
 
 		NavigationPage _currentNavigationPage;

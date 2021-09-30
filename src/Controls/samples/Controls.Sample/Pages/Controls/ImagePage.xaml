@@ -13,10 +13,9 @@
                     Style="{StaticResource Headline}"/>
                 <Image 
                     Source="https://aka.ms/campus.jpg"
-                    SemanticProperties.Description="Cute dot net bot waving hi to you!"
                     HeightRequest="200" 
                     WidthRequest="200"/>
-                <!--<Label
+                <Label
                     Text="FileSource"
                     Style="{StaticResource Headline}"/>
                 <Image 
@@ -48,7 +47,7 @@
                             Glyph = "&#xf30c;">
                         </FontImageSource>
                     </Image.Source>
-                </Image>-->
+                </Image>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
