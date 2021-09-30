@@ -46,3 +46,8 @@ variables:
   value: Maui
 - name: POWERSHELL_VERSION
   value: 7.1.3
+# Variable groups required
+- ${{ if eq(variables['Build.DefinitionName'], 'MAUI-private') }}:
+  - name: PrivateBuild
+    value: true
+  - group: AzureDevOps-Artifact-Feeds-Pats

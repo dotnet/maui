@@ -89,3 +89,12 @@ steps:
   - pwsh: ./build.ps1 --target provision
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
+
+  - task: PowerShell@2
+    condition: eq(variables['PrivateBuild'], 'true')
+    displayName: Setup Private Feeds Credentials
+    inputs:
+      filePath: ${{ parameters.workingDirectory }}/eng/common/SetupNugetSources.ps1
+      arguments: -ConfigFile ${{ parameters.workingDirectory }}/NuGet.config -Password $Env:Token
+    env:
+      Token: $(dn-bot-dnceng-artifact-feeds-rw)
