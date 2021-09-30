@@ -229,6 +229,8 @@ stages:
                 displayName: Move the downloaded artifacts
               - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
+                env:
+                  DOTNET_TOKEN: $(dotnetclimsrc-read-sas-token)
               - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET 6 Samples'
               - task: PublishBuildArtifacts@1
@@ -269,6 +271,8 @@ stages:
                 displayName: Move the downloaded artifacts
               - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET (Local Workloads)'
+                env:
+                  DOTNET_TOKEN: $(dotnetclimsrc-read-sas-token)
               - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET 6 Templates'
               - task: PublishBuildArtifacts@1
