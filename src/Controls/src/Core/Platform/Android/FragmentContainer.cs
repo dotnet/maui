@@ -45,11 +45,6 @@ namespace Microsoft.Maui.Controls.Platform
 			_onCreateCallback = callback;
 		}
 
-		//protected virtual PageContainer CreatePageContainer(Context context, INativeViewHandler child, bool inFragment)
-		//{
-		//	return new PageContainer(context, child, inFragment);
-		//}
-
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
 			if (Page != null)
@@ -65,16 +60,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			return null;
-		}
-
-		public override void OnPause()
-		{
-			base.OnPause();
-		}
-
-		public override void OnResume()
-		{
-			base.OnResume();
 		}
 
 		protected virtual void RecyclePage()

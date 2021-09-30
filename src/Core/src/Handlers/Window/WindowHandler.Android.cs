@@ -12,14 +12,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var rootManager = handler.MauiContext.GetNavigationRootManager();
-			// TODO MAUI: TOOLBAR
-
-			// TODO MAUI
 			//var nativeContent = window.Content.ToContainerView(handler.MauiContext);
+			//handler.NativeView.SetContentView(nativeContent);
 
-			// Not sure how to connect these things together
-			//_ = window.Content.ToNative(handler.MauiContext);
+			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			rootManager.SetContentView(window.Content);
 			handler.NativeView.SetContentView(rootManager.RootView);
 		}

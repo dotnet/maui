@@ -3,38 +3,29 @@ using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
+using AndroidX.Fragment.App;
 using AView = Android.Views.View;
 using LP = Android.Views.ViewGroup.LayoutParams;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class ShellFragmentContainer : FragmentContainer
+	internal class ShellFragmentContainer : Fragment
 	{
 		Page _page;
+		readonly IMauiContext _mauiContext;
 
 		public ShellContent ShellContentTab { get; private set; }
 
-		public ShellFragmentContainer(ShellContent shellContent, IMauiContext mauiContext) : base(mauiContext)
+		public ShellFragmentContainer(ShellContent shellContent, IMauiContext mauiContext)
 		{
 			ShellContentTab = shellContent;
+			_mauiContext = mauiContext;
 		}
-
-		public override Page Page => _page;
-
-		// TODO: MAUI TEST THIS
-		//protected override PageContainer CreatePageContainer(Context context, INativeViewHandler child, bool inFragment)
-		//{
-		//	return new ShellPageContainer(context, child, inFragment)
-		//	{
-		//		LayoutParameters = new LP(LP.MatchParent, LP.MatchParent)
-		//	};
-		//}
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
 			_page = ((IShellContentController)ShellContentTab).GetOrCreateContent();
-			var view =  base.OnCreateView(inflater, container, savedInstanceState);
-			// TODO: MAUI TEST THIS
+			var view = _page.ToNative(_mauiContext);
 			view.LayoutParameters = new LP(LP.MatchParent, LP.MatchParent);
 			return view;
 		}
@@ -44,11 +35,6 @@ namespace Microsoft.Maui.Controls.Platform
 			base.OnDestroyView();
 			((IShellContentController)ShellContentTab).RecyclePage(_page);
 			_page = null;
-		}
-
-		protected override void RecyclePage()
-		{
-			// Don't remove the handler inside shell we just keep it around
 		}
 
 		public override void OnDestroy()
