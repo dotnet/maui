@@ -3,6 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
+    <InternalAzureFeed>https://dotnetclimsrc.blob.core.windows.net/dotnet</InternalAzureFeed>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
@@ -10,12 +11,14 @@
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
     <DotNetInstallCommand>powershell -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(DOTNET_TOKEN)' != '' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredentials &quot;$(DOTNET_TOKEN)&quot;</DotNetInstallCommand>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('osx'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.sh</DotNetInstallScriptUrl>
     <DotNetInstallScriptName>dotnet-install.sh</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>sh '$(DotNetInstallScriptPath)' --version $(MicrosoftDotnetSdkInternalPackageVersion) --install-dir '$(DotNetDirectory)' --verbose</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(DOTNET_TOKEN)' != '' ">$(DotNetInstallCommand) --azure-feed $(InternalAzureFeed) --feed-credentials &quot;$(DOTNET_TOKEN)&quot;</DotNetInstallCommand>
   </PropertyGroup>
 
   <PropertyGroup>
