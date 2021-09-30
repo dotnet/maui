@@ -49,7 +49,10 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(RefreshView), typeof(RefreshViewHandler) },
 			{ typeof(IndicatorView), typeof(IndicatorViewHandler) },
 #endif
-#if __ANDROID__  || WINDOWS
+#if __ANDROID__
+			{ typeof(NavigationPage), typeof(NavigationViewHandler) },
+#endif
+#if WINDOWS
 			{ typeof(NavigationPage), typeof(NavigationPageHandler) },
 #endif
 #if __ANDROID__
