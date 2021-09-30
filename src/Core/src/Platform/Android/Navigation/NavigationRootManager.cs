@@ -43,10 +43,6 @@ namespace Microsoft.Maui
 		public NavigationRootManager(IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
-
-			// TODO MAUI TOOLBAR
-			if (_mauiContext is MauiContext context)
-				context.SetNavigationRootManager(this);
 		}
 
 		// TODO MAUI: replace this with something else

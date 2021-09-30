@@ -15,13 +15,6 @@ namespace Microsoft.Maui.Controls
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(handler.MauiContext)} null");
 
-			// TODO MAUI: We don't really have a better place to tap into the window handler
-			// The factory is on the ViewHandler level not the Element Handler level
-			if (handler.NavigationRootManager == null)
-			{
-				handler.NavigationRootManager = new Platform.ControlsNavigationRootManager(handler.MauiContext);
-			}
-
 			if (view is Window window && window.Toolbar != null && window.Toolbar.Handler == null)
 			{
 				_ = window.Toolbar.ToNative(handler.MauiContext);

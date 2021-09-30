@@ -15,19 +15,6 @@ namespace Microsoft.Maui.Controls
 		public static void RemapForControls()
 		{
 			WindowHandler.WindowMapper = ControlsLabelMapper;
-
-#if __ANDROID__
-
-			// TODO MAUI: We don't really have a better place to tap into the window handler
-			// The factory is on the ViewHandler level not the Element Handler level
-			WindowHandler.WindowMapper.PrependToMapping(nameof(IWindow.Content), (handler, view) =>
-			{
-				if (handler.NavigationRootManager == null)
-				{
-					handler.NavigationRootManager = new Platform.ControlsNavigationRootManager(handler.MauiContext);
-				}
-			});
-#endif
 		}
 	}
 }

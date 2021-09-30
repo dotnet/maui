@@ -8,6 +8,7 @@ namespace Microsoft.Maui
 	public partial class MauiContext : IScopedMauiContext
 	{
 		readonly WeakReference<Context>? _context;
+		NavigationRootManager? _navigationRootManager;
 
 		public MauiContext(IServiceProvider services, Context context)
 			: this(services)
@@ -36,12 +37,7 @@ namespace Microsoft.Maui
 
 		FragmentManager? IScopedMauiContext.FragmentManager => null;
 
-		NavigationRootManager? _navigationRootManager;
-		internal void SetNavigationRootManager(NavigationRootManager navigationRootManager)
-		{
-			_navigationRootManager = navigationRootManager;
-		}
-
-		NavigationRootManager? IScopedMauiContext.NavigationRootManager => _navigationRootManager;
+		NavigationRootManager? IScopedMauiContext.NavigationRootManager => _navigationRootManager ??= 
+			new NavigationRootManager(this);
 	}
 }
