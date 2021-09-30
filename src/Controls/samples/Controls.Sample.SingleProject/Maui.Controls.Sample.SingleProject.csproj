@@ -14,7 +14,6 @@
     <ApplicationId>com.microsoft.maui.sample</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
-    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
