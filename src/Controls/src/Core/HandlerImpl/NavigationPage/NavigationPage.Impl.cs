@@ -12,6 +12,11 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class NavigationPage : INavigationView
 	{
+		partial void Init()
+		{
+			this.Appearing += OnAppearing;
+		}
+
 		Thickness IView.Margin => Thickness.Zero;
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
@@ -87,11 +92,9 @@ namespace Microsoft.Maui.Controls
 		IReadOnlyList<IView> NavigationStack => this.Navigation.NavigationStack;
 
 
-		// TODO: TOOLBAR MAUI Change to event?
-		protected override void OnAppearing()
+		void OnAppearing(object sender, EventArgs e)
 		{
-			base.OnAppearing();
-
+			// Update the Window level Toolbar with my Toolbar information
 			var window = this.FindParentOfType<Window>();
 			if (window?.Toolbar != null)
 				window.Toolbar.ApplyNavigationPage(this);

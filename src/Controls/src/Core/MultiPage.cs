@@ -89,7 +89,8 @@ namespace Microsoft.Maui.Controls
 				OnPropertyChanged();
 				OnCurrentPageChanged();
 
-				_current?.SendAppearing();
+				if (HasAppeared)
+					_current?.SendAppearing();
 
 				previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(_current));
 				_current?.SendNavigatedTo(new NavigatedToEventArgs(previousPage));

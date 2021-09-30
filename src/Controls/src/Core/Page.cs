@@ -412,7 +412,8 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendAppearing()
 		{
-			// Only fire appearing after the parent is set
+			// Only fire appearing if the page has been added to the windows
+			// Visual Hierarchy
 			var window = this.FindParentOfType<Window>();
 			if (window == null)
 			{
