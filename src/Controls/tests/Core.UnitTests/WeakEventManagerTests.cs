@@ -1,12 +1,14 @@
 using System;
+using System.ComponentModel;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	[TestFixture]
-	public class WeakEventManagerTests
+	public class WeakEventManagerTests : INotifyPropertyChanged
 	{
 		static int s_count;
+		readonly WeakEventManager _propertyChangedWeakEventManager = new WeakEventManager();
 
 		static void Handler(object sender, EventArgs eventArgs)
 		{
@@ -78,11 +80,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		public event PropertyChangedEventHandler PropertyChanged
+		{
+			add => _propertyChangedWeakEventManager.AddEventHandler(value);
+			remove => _propertyChangedWeakEventManager.RemoveEventHandler(value);
+		}
+
 		[Test]
 		public void AddHandlerWithEmptyEventNameThrowsException()
 		{
 			var wem = new WeakEventManager();
-			Assert.Throws<ArgumentNullException>(() => wem.AddEventHandler((sender, args) => { }, ""));
+			Assert.Throws<ArgumentNullException>(() => wem.AddEventHandler((EventHandler)((sender, args) => { }), ""));
 		}
 
 		[Test]
@@ -96,7 +104,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void AddHandlerWithNullEventNameThrowsException()
 		{
 			var wem = new WeakEventManager();
-			Assert.Throws<ArgumentNullException>(() => wem.AddEventHandler((sender, args) => { }, null));
+			Assert.Throws<ArgumentNullException>(() => wem.AddEventHandler((EventHandler)((sender, args) => { }), null));
 		}
 
 		[Test]
@@ -164,7 +172,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void RemoveHandlerWithEmptyEventNameThrowsException()
 		{
 			var wem = new WeakEventManager();
-			Assert.Throws<ArgumentNullException>(() => wem.RemoveEventHandler((sender, args) => { }, ""));
+			Assert.Throws<ArgumentNullException>(() => wem.RemoveEventHandler((EventHandler)((sender, args) => { }), ""));
 		}
 
 		[Test]
@@ -178,14 +186,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void RemoveHandlerWithNullEventNameThrowsException()
 		{
 			var wem = new WeakEventManager();
-			Assert.Throws<ArgumentNullException>(() => wem.RemoveEventHandler((sender, args) => { }, null));
+			Assert.Throws<ArgumentNullException>(() => wem.RemoveEventHandler((EventHandler)((sender, args) => { }), null));
 		}
 
 		[Test]
 		public void RemovingNonExistentHandlersShouldNotThrow()
 		{
 			var wem = new WeakEventManager();
-			wem.RemoveEventHandler((sender, args) => { }, "fake");
+			wem.RemoveEventHandler((EventHandler)((sender, args) => { }), "fake");
 			wem.RemoveEventHandler(Handler, "alsofake");
 		}
 
@@ -238,6 +246,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// The handler for this calls Assert.Fail, so if the subscriber has not been collected
 			// the handler will be called and the test will fail
 			source.FireTestEvent();
+		}
+
+		[Test]
+		public void VerifyPropertyChanged()
+		{
+			//Arrange
+			PropertyChanged += HandleDelegateTest;
+			bool didEventFire = false;
+
+			void HandleDelegateTest(object sender, PropertyChangedEventArgs e)
+			{
+				Assert.IsNotNull(sender);
+				Assert.AreEqual(this.GetType(), sender?.GetType());
+
+				Assert.IsNotNull(e);
+
+				didEventFire = true;
+				PropertyChanged -= HandleDelegateTest;
+			}
+
+			//Act
+			_propertyChangedWeakEventManager.HandleEvent(this, new PropertyChangedEventArgs("Test"), nameof(PropertyChanged));
+
+			//Assert
+			Assert.IsTrue(didEventFire);
 		}
 	}
 }

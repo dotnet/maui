@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using static System.String;
-
 namespace Microsoft.Maui.Controls
 {
 	public class WeakEventManager
