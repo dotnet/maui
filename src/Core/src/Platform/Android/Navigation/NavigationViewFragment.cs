@@ -76,9 +76,9 @@ namespace Microsoft.Maui
 			// Even if there's only one page on the stack
 
 			var scopedContext = new ScopedMauiContext(
-				NavigationManager.MauiContext,
-				layoutInflater: inflater,
-				fragmentManager: ChildFragmentManager);
+					NavigationManager.MauiContext,
+					layoutInflater: inflater,
+					fragmentManager: ChildFragmentManager);
 
 			_currentView = NavigationManager.CurrentPage.ToNative(scopedContext);
 			_currentView.RemoveFromParent();

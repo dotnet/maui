@@ -92,6 +92,16 @@ namespace Microsoft.Maui.Controls
 		IReadOnlyList<IView> NavigationStack => this.Navigation.NavigationStack;
 
 
+		static void OnCurrentPageChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (oldValue is Page oldPage)
+				oldPage.SendDisappearing();
+
+			if (newValue is Page newPage)
+				newPage.SendAppearing();
+		}
+
+
 		void OnAppearing(object sender, EventArgs e)
 		{
 			// Update the Window level Toolbar with my Toolbar information

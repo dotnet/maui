@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty TitleViewProperty = BindableProperty.CreateAttached("TitleView", typeof(View), typeof(NavigationPage), null, propertyChanging: TitleViewPropertyChanging);
 
-		static readonly BindablePropertyKey CurrentPagePropertyKey = BindableProperty.CreateReadOnly("CurrentPage", typeof(Page), typeof(NavigationPage), null);
+		static readonly BindablePropertyKey CurrentPagePropertyKey = BindableProperty.CreateReadOnly("CurrentPage", typeof(Page), typeof(NavigationPage), null, propertyChanged: OnCurrentPageChanged);
 
 		public static readonly BindableProperty CurrentPageProperty = CurrentPagePropertyKey.BindableProperty;
 
