@@ -1,4 +1,4 @@
-﻿#nullable disable
+﻿#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,21 +15,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void Subscribe(Window window)
 		{
-			var mauiContext = window?.MauiContext as IMauiWindowContext;
-			UI.Xaml.Window nativeWindow = mauiContext?.Window;
+			var nativeWindow = window.MauiContext.GetNativeWindow();
 
 			if (Subscriptions.Any(s => s.Window == nativeWindow))
-			{
 				return;
-			}
 
-			Subscriptions.Add(new AlertRequestHelper(nativeWindow, mauiContext));
+			Subscriptions.Add(new AlertRequestHelper(nativeWindow, window.MauiContext));
 		}
 
 		internal void Unsubscribe(Window window)
 		{
-			var mauiContext = window?.MauiContext as IMauiWindowContext;
-			UI.Xaml.Window nativeWindow = mauiContext?.Window;
+			var nativeWindow = window.MauiContext.GetNativeWindow();
 
 			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
 
@@ -42,8 +38,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal sealed class AlertRequestHelper : IDisposable
 		{
-			static Task<bool> CurrentAlert;
-			static Task<string> CurrentPrompt;
+			static Task<bool>? CurrentAlert;
+			static Task<string?>? CurrentPrompt;
 
 			internal AlertRequestHelper(UI.Xaml.Window window, IMauiContext mauiContext)
 			{
@@ -201,7 +197,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return result == ContentDialogResult.Primary;
 			}
 
-			static async Task<string> ShowPrompt(PromptDialog prompt)
+			static async Task<string?> ShowPrompt(PromptDialog prompt)
 			{
 				ContentDialogResult result = await prompt.ShowAsync();
 

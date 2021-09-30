@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIWindow;
 #elif MONOANDROID
@@ -28,22 +29,8 @@ namespace Microsoft.Maui.Handlers
 		}
 
 #if !NETSTANDARD
-		protected override NativeView CreateNativeElement()
-		{
-			if (MauiContext is not IMauiWindowContext windowContext)
-				throw new InvalidOperationException($"{nameof(MauiContext)} was not a {nameof(IMauiWindowContext)}.");
-
-			var native = windowContext.
-#if __ANDROID__
-				Context;
-#elif __IOS__
-				Window;
-#elif WINDOWS
-				Window;
-#endif
-
-			return native as NativeView ?? throw new InvalidOperationException($"MauiContext did not have a valid window.");
-		}
+		protected override NativeView CreateNativeElement() =>
+			MauiContext?.Services.GetService<NativeView>() ?? throw new InvalidOperationException($"MauiContext did not have a valid window.");
 #endif
 	}
 }

@@ -2,6 +2,7 @@
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui
 {
@@ -16,20 +17,12 @@ namespace Microsoft.Maui
 			return config.LayoutDirection.ToFlowDirection();
 		}
 
-		public static NavigationManager GetNavigationManager(this IMauiContext mauiContext)
-		{
-			NavigationManager? navigationManager = null;
-			if (mauiContext is IScopedMauiContext smc)
-				navigationManager = smc.NavigationManager;
-
-			return navigationManager ?? throw new InvalidOperationException("NavigationManager Not Found");
-		}
+		public static NavigationManager GetNavigationManager(this IMauiContext mauiContext) =>
+			mauiContext.Services.GetRequiredService<NavigationManager>();
 
 		public static LayoutInflater GetLayoutInflater(this IMauiContext mauiContext)
 		{
-			LayoutInflater? layoutInflater = null;
-			if (mauiContext is IScopedMauiContext smc)
-				layoutInflater = smc.LayoutInflater;
+			var layoutInflater = mauiContext.Services.GetService<LayoutInflater>();
 
 			if (layoutInflater == null && mauiContext.Context != null)
 			{
@@ -44,9 +37,7 @@ namespace Microsoft.Maui
 
 		public static FragmentManager GetFragmentManager(this IMauiContext mauiContext)
 		{
-			FragmentManager? fragmentManager = null;
-			if (mauiContext is IScopedMauiContext smc)
-				fragmentManager = smc.FragmentManager;
+			var fragmentManager = mauiContext.Services.GetService<FragmentManager>();
 
 			return fragmentManager
 				?? mauiContext.Context?.GetFragmentManager()
@@ -56,5 +47,27 @@ namespace Microsoft.Maui
 		public static AppCompatActivity GetActivity(this IMauiContext mauiContext) =>
 			(mauiContext.Context?.GetActivity() as AppCompatActivity)
 			?? throw new InvalidOperationException("AppCompatActivity Not Found");
+
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext, LayoutInflater? layoutInflater, FragmentManager? fragmentManager)
+		{
+			var scopedContext = new MauiContext(mauiContext);
+
+			if (layoutInflater != null)
+				scopedContext.AddWeakSpecific(layoutInflater);
+
+			if (fragmentManager != null)
+				scopedContext.AddWeakSpecific(fragmentManager);
+
+			return scopedContext;
+		}
+
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext, NavigationManager navigationManager)
+		{
+			var scopedContext = new MauiContext(mauiContext);
+
+			scopedContext.AddSpecific(navigationManager);
+
+			return scopedContext;
+		}
 	}
 }

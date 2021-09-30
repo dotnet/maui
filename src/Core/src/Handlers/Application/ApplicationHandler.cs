@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 #if __IOS__ || MACCATALYST
 using NativeView = UIKit.UIApplicationDelegate;
@@ -35,25 +36,12 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		ILogger? Logger => _logger ??= MauiContext?.Services.CreateLogger<ApplicationHandler>();
+		ILogger? Logger =>
+			_logger ??= MauiContext?.Services.CreateLogger<ApplicationHandler>();
 
 #if !NETSTANDARD
-		protected override NativeView CreateNativeElement()
-		{
-			if (MauiContext is not IMauiApplicationContext applicationContext)
-				throw new InvalidOperationException($"{nameof(MauiContext)} was not a {nameof(IMauiApplicationContext)}.");
-
-			var native = applicationContext.
-#if __ANDROID__
-				Context;
-#elif __IOS__
-				ApplicationDelegate;
-#elif WINDOWS
-				Application;
-#endif
-
-			return native as NativeView ?? throw new InvalidOperationException($"MauiContext did not have a valid application.");
-		}
+		protected override NativeView CreateNativeElement() =>
+			MauiContext?.Services.GetService<NativeView>() ?? throw new InvalidOperationException($"MauiContext did not have a valid application.");
 #endif
 	}
 }

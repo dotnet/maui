@@ -172,12 +172,7 @@ namespace Microsoft.Maui.Controls
 		internal static IAnimationManager? GetAnimationManager(this IAnimatable animatable)
 		{
 			if (animatable is Element e && e.FindMauiContext() is IMauiContext mauiContext)
-			{
-				if (mauiContext is IScopedMauiContext scoped)
-					return scoped.AnimationManager;
-				else
-					return mauiContext.Services.GetService<IAnimationManager>();
-			}
+				return mauiContext.Services.GetService<IAnimationManager>();
 
 			throw new ArgumentException($"Unable to find {nameof(IAnimationManager)} for '{animatable.GetType().FullName}'.", nameof(animatable));
 		}

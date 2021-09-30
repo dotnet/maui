@@ -15,7 +15,8 @@ namespace Microsoft.Maui
 
 			var mauiApp = CreateMauiApp();
 
-			var applicationContext = new MauiApplicationContext(mauiApp.Services, this);
+			var applicationContext = new MauiContext(mauiApp.Services);
+			applicationContext.AddSpecific<UI.Xaml.Application>(this);
 
 			Services = mauiApp.Services;
 
@@ -34,11 +35,11 @@ namespace Microsoft.Maui
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}
 
-		UI.Xaml.Window CreateNativeWindow(UI.Xaml.LaunchActivatedEventArgs args, MauiApplicationContext applicationContext)
+		UI.Xaml.Window CreateNativeWindow(UI.Xaml.LaunchActivatedEventArgs args, IMauiContext applicationContext)
 		{
 			var winuiWndow = new MauiWinUIWindow();
 
-			var mauiContext = new MauiContext(Services, winuiWndow, applicationContext);
+			var mauiContext = applicationContext.MakeScoped(winuiWndow);
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 

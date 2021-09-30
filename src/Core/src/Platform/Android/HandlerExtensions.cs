@@ -42,10 +42,10 @@ namespace Microsoft.Maui
 			return result;
 		}
 
-		public static void SetApplicationHandler(this Application nativeApplication, IApplication application, IMauiApplicationContext context) =>
+		public static void SetApplicationHandler(this Application nativeApplication, IApplication application, IMauiContext context) =>
 			SetHandler(nativeApplication, application, context);
 
-		public static void SetWindowHandler(this Activity activity, IWindow window, IMauiWindowContext context) =>
+		public static void SetWindowHandler(this Activity activity, IWindow window, IMauiContext context) =>
 			SetHandler(activity, window, context);
 
 		static void SetHandler(this Context nativeElement, IElement element, IMauiContext context)

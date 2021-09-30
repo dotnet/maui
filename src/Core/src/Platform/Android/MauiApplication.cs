@@ -25,7 +25,7 @@ namespace Microsoft.Maui
 
 			var mauiApp = CreateMauiApp();
 
-			MauiApplicationContext = new MauiApplicationContext(mauiApp.Services, this);
+			MauiApplicationContext = new MauiContext(mauiApp.Services, this);
 
 			Services = mauiApp.Services;
 
@@ -63,7 +63,7 @@ namespace Microsoft.Maui
 
 		public static MauiApplication Current { get; private set; } = null!;
 
-		internal IMauiApplicationContext MauiApplicationContext { get; private set; } = null!;
+		internal IMauiContext MauiApplicationContext { get; private set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

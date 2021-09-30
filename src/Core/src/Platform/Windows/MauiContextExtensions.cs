@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Windows.ApplicationModel.Resources.Core;
 
 namespace Microsoft.Maui
@@ -18,13 +16,18 @@ namespace Microsoft.Maui
 			return FlowDirection.MatchParent;
 		}
 
-		public static WindowManager GetWindowManager(this IMauiContext mauiContext)
-		{
-			WindowManager? windowManager = null;
-			if (mauiContext is IScopedMauiContext smc)
-				windowManager = smc.WindowManager;
+		public static WindowManager GetWindowManager(this IMauiContext mauiContext) =>
+			mauiContext.Services.GetRequiredService<WindowManager>();
 
-			return windowManager ?? throw new InvalidOperationException("WindowManager Not Found");
+		public static UI.Xaml.Window GetNativeWindow(this IMauiContext mauiContext) =>
+			mauiContext.Services.GetRequiredService<UI.Xaml.Window>();
+
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext, UI.Xaml.Window nativeWindow)
+		{
+			var scopedContext = new MauiContext(mauiContext);
+			scopedContext.AddSpecific(nativeWindow);
+			scopedContext.AddSpecific(new WindowManager(mauiContext));
+			return scopedContext;
 		}
 	}
 }
