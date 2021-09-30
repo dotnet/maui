@@ -1,8 +1,8 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="6.0.100-rc.2.21474.31" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
-      <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>c760c779e4c74579263e58c85875766ece392895</Sha>
+    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="6.0.100-rc.2.21478.25">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-installer</Uri>
+      <Sha>e3936c2261dc6fa63b2547ef61427956b7d40589</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="6.0.0-rc.2.21470.23" CoherentParentDependency="Microsoft.Dotnet.Sdk.Internal">
       <Uri>https://github.com/dotnet/runtime</Uri>
