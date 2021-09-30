@@ -11,7 +11,7 @@
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
     <DotNetInstallCommand>powershell -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(DOTNET_TOKEN)' != '' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredentials &quot;$(DOTNET_TOKEN)&quot;</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(DOTNET_TOKEN)' != '' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredentials '$(DOTNET_TOKEN)'</DotNetInstallCommand>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('osx'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.sh</DotNetInstallScriptUrl>

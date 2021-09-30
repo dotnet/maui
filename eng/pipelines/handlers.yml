@@ -162,6 +162,8 @@ stages:
                 platform: ${{ BuildPlatform.name }}
             - pwsh: ./build.ps1 --target=dotnet-pack --configuration="Release" --verbosity=diagnostic
               displayName: 'Pack .NET Maui'
+              env:
+                DOTNET_TOKEN: $(dotnetclimsrc-read-sas-token)
             - task: CopyFiles@2
               condition: always()
               displayName: 'Copy files to staging'
