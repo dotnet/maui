@@ -93,8 +93,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			// The Windows ScrollViewer doesn't allow us to arrange content at an offset; it forces the content to 0,0
 			// So if we want to account for ScrollView.Padding and any margins on the ScrollView's Content, we need 
-			// do do that by setting the Content's native Margin, and then update the bounds for Arrange to start
+			// do that by setting the Content's native Margin, and then update the bounds for Arrange to start
 			// at 0,0 and be large enough to account for the updated margin.
+
+			// We include the cross-platform ScrollView's Padding here because we can't map it directly to 
+			// ScrollViewer.Padding - the ScrollViewer puts the padding _outside_ of the scrollable area, which is not
+			// the behavior we want.
 
 			var margin = virtualView.Margin;
 			var padding = (virtualView.Parent as IPadding)?.Padding ?? Thickness.Zero;
