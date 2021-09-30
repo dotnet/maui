@@ -36,7 +36,6 @@ namespace Microsoft.Maui.Handlers
 			var rootContainer = MauiContext!.GetNavigationRootManager();
 			var navigationLayout = rootContainer.NavigationLayout;
 
-			//navigationLayout.NavigationManager = _navigationManager;
 			base.ConnectHandler(nativeView);
 			_navigationManager.Connect(VirtualView, navigationLayout);
 		}

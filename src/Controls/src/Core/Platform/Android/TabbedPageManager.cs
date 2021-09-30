@@ -104,11 +104,15 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				Element.PropertyChanged -= OnElementPropertyChanged;
 				((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
+				Element.Appearing -= OnTabbedPageAppearing;
+				Element.Disappearing -= OnTabbedPageDisappearing;
 			}
 
 			Element = tabbedPage;
 			if (Element != null)
 			{
+				Element.Appearing += OnTabbedPageAppearing;
+				Element.Disappearing += OnTabbedPageDisappearing;
 				_viewPager.Adapter = new MultiPageFragmentStateAdapter<Page>(tabbedPage, FragmentManager, _context) { CountOverride = tabbedPage.Children.Count };
 				Element.PropertyChanged += OnElementPropertyChanged;
 				if (IsBottomTabPlacement)
@@ -155,20 +159,31 @@ namespace Microsoft.Maui.Controls.Handlers
 			SetTabLayout();
 		}
 
+		void OnTabbedPageDisappearing(object sender, EventArgs e)
+		{
+			if (_tabLayoutFragment != null)
+			{
+				var fragment = _tabLayoutFragment;
+				_tabLayoutFragment = null;
+				_ = _context
+						.GetNavigationRootManager()
+						.FragmentManager
+						.BeginTransaction()
+						.Remove(fragment)
+						.SetReorderingAllowed(true)
+						.Commit();
+			}
+		}
+
+		void OnTabbedPageAppearing(object sender, EventArgs e)
+		{
+			SetTabLayout();
+		}
 
 		internal void SetTabLayout()
 		{
 			if (_tabLayoutFragment != null)
-			{
-				_ = _context
-						.GetFragmentManager()
-						.BeginTransaction()
-						.Remove(_tabLayoutFragment)
-						.SetReorderingAllowed(true)
-						.Commit();
-
-				_tabLayoutFragment = null;
-			}
+				return;
 
 			int id;
 			if (IsBottomTabPlacement)
