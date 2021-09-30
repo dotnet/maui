@@ -4,9 +4,15 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ShapeViewHandler : ViewHandler<IShapeView, MauiShapeView>
 	{
+		protected virtual double MinimumSize => 40d;
+
 		protected override MauiShapeView CreateNativeView()
 		{
-			return new MauiShapeView(NativeParent!);
+			return new MauiShapeView(NativeParent!)
+			{
+				MinimumWidth = MinimumSize.ToScaledPixel(),
+				MinimumHeight = MinimumSize.ToScaledPixel()
+			};
 		}
 
 		public static void MapShape(ShapeViewHandler handler, IShapeView shapeView)
