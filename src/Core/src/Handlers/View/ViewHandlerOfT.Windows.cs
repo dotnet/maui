@@ -100,6 +100,11 @@ namespace Microsoft.Maui.Handlers
 			// ScrollViewer.Padding - the ScrollViewer puts the padding _outside_ of the scrollable area, which is not
 			// the behavior we want.
 
+			if (rect.X == 0 && rect.Y == 0)
+			{
+				return rect;
+			}
+
 			var margin = virtualView.Margin;
 			var padding = (virtualView.Parent as IPadding)?.Padding ?? Thickness.Zero;
 
