@@ -32,7 +32,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		private static void UpdateToolBar(NavigationPageHandler arg1, NavigationPage arg2)
 		{
-			arg1._controlsNavigationManager.ToolbarPropertyChanged();
+			//TODO: TOOLBAR MAUI
+			//arg1._controlsNavigationManager.ToolbarPropertyChanged();
 		}
 	}
 }

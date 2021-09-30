@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 		AppBarLayout? _appBar;
 		Toolbar? _toolbar;
 		NavigationLayout? _navigationLayout;
-		IScopedMauiContext _scopedMauiContext;
+		IMauiContext _mauiContext;
 
 		internal NavigationLayout NavigationLayout => _navigationLayout ??=
 			LayoutInflater
@@ -32,20 +32,27 @@ namespace Microsoft.Maui
 			_appBar ??= NavigationLayout.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar)
 			?? throw new InvalidOperationException($"Resource.Id.navigationlayout_appbar missing");
 
-		LayoutInflater LayoutInflater => _scopedMauiContext.GetLayoutInflater();
+		LayoutInflater LayoutInflater => _mauiContext?.GetLayoutInflater()
+			?? throw new InvalidOperationException($"LayoutInflater missing");
 
-		FragmentManager FragmentManager => _scopedMauiContext.GetFragmentManager();
+		internal FragmentManager FragmentManager => _mauiContext?.GetFragmentManager()
+			?? throw new InvalidOperationException($"FragmentManager missing");
 
 		public AView RootView => NavigationLayout;
 
 		public NavigationRootManager(IMauiContext mauiContext)
 		{
-			_scopedMauiContext = (IScopedMauiContext)mauiContext;
+			_mauiContext = mauiContext;
+
+			// TODO MAUI TOOLBAR
+			if (_mauiContext is MauiContext context)
+				context.SetNavigationRootManager(this);
 		}
 
 		// TODO MAUI: replace this with something else
-		internal void SetContentView(AView content)
+		internal virtual void SetContentView(IView view)
 		{
+			var content = view.ToNative(_mauiContext);
 			FragmentManager.BeginTransaction()
 				.Replace(Resource.Id.navigationlayout_content, new FragmentView(content))
 				.SetReorderingAllowed(true)
@@ -72,21 +79,6 @@ namespace Microsoft.Maui
 			{
 				_aView.RemoveFromParent();
 				base.OnViewCreated(view, savedInstanceState);
-			}
-
-			public override Animation OnCreateAnimation(int transit, bool enter, int nextAnim)
-			{
-				return base.OnCreateAnimation(transit, enter, nextAnim);
-			}
-
-			public override void OnDestroy()
-			{
-				base.OnDestroy();
-			}
-
-			public override void OnDestroyView()
-			{
-				base.OnDestroyView();
 			}
 		}
 	}

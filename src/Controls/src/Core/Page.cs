@@ -412,6 +412,13 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendAppearing()
 		{
+			// Only fire appearing after the parent is set
+			var window = this.FindParentOfType<Window>();
+			if (window == null)
+			{
+				return;
+			}
+
 			if (_hasAppeared)
 				return;
 

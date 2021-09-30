@@ -23,7 +23,7 @@ namespace Microsoft.Maui
 
 		void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
 		{
-			_window?.BackButtonPressed();
+			_window?.BackButtonClicked();
 		}
 
 		public FrameworkElement RootView => _navigationView;

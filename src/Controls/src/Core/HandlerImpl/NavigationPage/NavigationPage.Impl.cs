@@ -86,34 +86,16 @@ namespace Microsoft.Maui.Controls
 
 		IReadOnlyList<IView> NavigationStack => this.Navigation.NavigationStack;
 
-		static void CurrentPagePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+
+		// TODO: TOOLBAR MAUI Change to event?
+		protected override void OnAppearing()
 		{
-			var np = (NavigationPage)bindable;
+			base.OnAppearing();
 
-			if (oldValue is INotifyPropertyChanged ncpOld)
-			{
-				ncpOld.PropertyChanged -= np.CurrentPagePropertyChanged;
-			}
-
-			if (newValue is INotifyPropertyChanged ncpNew)
-			{
-				ncpNew.PropertyChanged += np.CurrentPagePropertyChanged;
-			}
+			var window = this.FindParentOfType<Window>();
+			if (window?.Toolbar != null)
+				window.Toolbar.ApplyNavigationPage(this);
 		}
-
-		void CurrentPagePropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			if (e.IsOneOf(NavigationPage.HasNavigationBarProperty,
-				NavigationPage.HasBackButtonProperty,
-				NavigationPage.TitleIconImageSourceProperty,
-				NavigationPage.TitleViewProperty,
-				NavigationPage.IconColorProperty) ||
-				e.IsOneOf(Page.TitleProperty, PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))
-			{
-				Handler?.UpdateValue(e.PropertyName);
-			}
-		}
-
 
 		Task WaitForCurrentNavigationTask() =>
 			CurrentNavigationTask ?? Task.CompletedTask;

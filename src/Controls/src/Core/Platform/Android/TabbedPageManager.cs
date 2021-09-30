@@ -67,7 +67,6 @@ namespace Microsoft.Maui.Controls.Handlers
 		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = _context.GetFragmentManager());
 		public bool IsBottomTabPlacement => (Element != null) ? Element.OnThisPlatform().GetToolbarPlacement() == ToolbarPlacement.Bottom : false;
 
-
 		public Color BarItemColor
 		{
 			get
@@ -161,12 +160,12 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			if (_tabLayoutFragment != null)
 			{
-				_context
-					.GetFragmentManager()
-					.BeginTransaction()
-					.Remove(_tabLayoutFragment)
-					.SetReorderingAllowed(true)
-					.Commit();
+				_ = _context
+						.GetFragmentManager()
+						.BeginTransaction()
+						.Remove(_tabLayoutFragment)
+						.SetReorderingAllowed(true)
+						.Commit();
 
 				_tabLayoutFragment = null;
 			}
@@ -183,7 +182,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				id = Resource.Id.navigationlayout_toptabs;
 			}
 
-			_context.GetFragmentManager()
+			_ = _context
+					.GetNavigationRootManager()
+					.FragmentManager
 					.BeginTransaction()
 					.Replace(id, _tabLayoutFragment)
 					.SetReorderingAllowed(true)
@@ -219,14 +220,14 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			e.Apply((o, i, c) => SetupPage((Page)o), (o, i) => TeardownPage((Page)o), Reset);
 
+			ViewPager2 pager = _viewPager;
+			var adapter = (MultiPageFragmentStateAdapter<Page>)pager.Adapter;
+			adapter.CountOverride = Element.Children.Count;
 			if (IsBottomTabPlacement)
 			{
-				ViewPager2 pager = _viewPager;
 				BottomNavigationView bottomNavigationView = _bottomNavigationView;
 
-				((MultiPageFragmentStateAdapter<Page>)pager.Adapter).CountOverride = Element.Children.Count;
-
-				pager.Adapter.NotifyDataSetChanged();
+				adapter.NotifyDataSetChanged();
 
 				if (Element.Children.Count == 0)
 				{
@@ -242,11 +243,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 			else
 			{
-				ViewPager2 pager = _viewPager;
 				TabLayout tabs = _tabLayout;
 
-				((MultiPageFragmentStateAdapter<Page>)pager.Adapter).CountOverride = Element.Children.Count;
-				pager.Adapter.NotifyDataSetChanged();
+				adapter.NotifyDataSetChanged();
 				if (Element.Children.Count == 0)
 				{
 					tabs.RemoveAllTabs();

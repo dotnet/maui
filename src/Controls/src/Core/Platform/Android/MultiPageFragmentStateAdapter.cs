@@ -1,37 +1,42 @@
 using System.Collections.Generic;
-using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Adapter;
-using FragmentTransit = Android.App.FragmentTransit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal class MultiPageFragmentStateAdapter<T> : FragmentStateAdapter where T : Page
 	{
 		MultiPage<T> _page;
-		FragmentManager _fragmentManager;
+		private int _countOverride;
 		readonly IMauiContext _context;
-		List<Fragment> _fragments;
+		public Dictionary<int, FragmentContainer> Fragments { get; }
 
 		public MultiPageFragmentStateAdapter(
 			MultiPage<T> page, FragmentManager fragmentManager, IMauiContext context)
-			: base(fragmentManager, (context.GetActivity() as AppCompatActivity).Lifecycle)
+			: base(fragmentManager, context.GetActivity().Lifecycle)
 		{
 			_page = page;
-			_fragmentManager = fragmentManager;
 			_context = context;
-			_fragments = new List<Fragment>();
+			Fragments = new Dictionary<int, FragmentContainer>();
 		}
 
 		public override int ItemCount => CountOverride;
 
-		public int CountOverride { get; set; }
+		public int CountOverride
+		{
+			get => _countOverride;
+			set
+			{
+				_countOverride = value;
+				Fragments.Clear();
+			}
+		}
 
 		public override Fragment CreateFragment(int position)
 		{
 			var fragment = FragmentContainer.CreateInstance(_page.Children[position], _context);
 
-			_fragments.Add(fragment);
+			Fragments[position] = fragment;
 
 			return fragment;
 		}

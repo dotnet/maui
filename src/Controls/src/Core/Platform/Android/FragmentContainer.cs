@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		IPageController PageController => Page as IPageController;
 
-		public static Fragment CreateInstance(Page page, IMauiContext mauiContext)
+		public static FragmentContainer CreateInstance(Page page, IMauiContext mauiContext)
 		{
 			return new FragmentContainer(page, mauiContext) { Arguments = new Bundle() };
 		}
@@ -65,6 +65,16 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			return null;
+		}
+
+		public override void OnPause()
+		{
+			base.OnPause();
+		}
+
+		public override void OnResume()
+		{
+			base.OnResume();
 		}
 
 		protected virtual void RecyclePage()

@@ -372,10 +372,6 @@ namespace Microsoft.Maui
 
 		protected virtual void OnDestinationChanged(NavController navController, NavDestination navDestination, Bundle bundle)
 		{
-			if (CurrentPage is ITitledElement titledElement)
-			{
-				Toolbar.Title = titledElement.Title;
-			}
 		}
 
 		class Callbacks :

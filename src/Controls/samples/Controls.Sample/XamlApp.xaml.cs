@@ -30,7 +30,28 @@ namespace Maui.Controls.Sample
 				//	new Pages.ButtonPage() { Title = "Buttons" },
 				//	new Pages.SemanticsPage() { Title = "Semantics" }
 				//}
-			};//Services.GetRequiredService<Page>();
+			};
+
+			//MainPage = new NavigationPage(new TabbedPage()
+			//{
+			//	Children =
+			//	{
+			//		 new Pages.NavigationGallery(),
+			//		 new Pages.NavigationGallery(),
+			//	}
+			//});
+			//MainPage = new Pages.ImagePage();
+			//Children =
+			//{
+			//	Services.GetRequiredService<Page>(),
+			//	new NavigationPage(new Pages.NavigationGallery()) { Title = "Semantics" }
+			//}
+			//Children =
+			//{
+			//	new Pages.ButtonPage() { Title = "Buttons" },
+			//	new Pages.SemanticsPage() { Title = "Semantics" }
+			//}
+
 
 			RequestedThemeChanged += (sender, args) =>
 			{
