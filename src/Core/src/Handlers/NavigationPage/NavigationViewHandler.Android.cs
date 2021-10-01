@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class NavigationViewHandler :
 		ViewHandler<INavigationView, View>
 	{
-		NavigationManager? _navigationManager;
+		StackNavigationManager? _navigationManager;
 
 		protected override View CreateNativeView()
 		{
@@ -27,8 +27,8 @@ namespace Microsoft.Maui.Handlers
 			base.SetVirtualView(view);
 		}
 
-		protected virtual NavigationManager CreateNavigationManager() =>
-			new NavigationManager(MauiContext!);
+		protected virtual StackNavigationManager CreateNavigationManager() =>
+			new StackNavigationManager(MauiContext!);
 
 		protected override void ConnectHandler(View nativeView)
 		{

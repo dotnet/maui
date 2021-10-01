@@ -17,9 +17,9 @@ namespace Microsoft.Maui
 		FragmentContainerView FragmentContainerView =>
 			_fragmentContainerView ?? throw new InvalidOperationException($"FragmentContainerView cannot be null here");
 
-		NavigationManager? _navigationManager;
+		StackNavigationManager? _navigationManager;
 
-		NavigationManager NavigationManager => _navigationManager
+		StackNavigationManager NavigationManager => _navigationManager
 			?? throw new InvalidOperationException($"Graph cannot be null here");
 
 		protected NavigationViewFragment(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -34,7 +34,7 @@ namespace Microsoft.Maui
 		{
 			var navhost = Navigation.FindNavController(container);
 			var result = navhost.CurrentBackStackEntry.Arguments.GetInt("NavigationManager");
-			_navigationManager = NavigationManager.FindNavigationManager(result);
+			_navigationManager = StackNavigationManager.FindNavigationManager(result);
 			_fragmentContainerView ??= (FragmentContainerView)container;
 
 			// When shuffling around the back stack sometimes we'll need a page to detach and then reattach.

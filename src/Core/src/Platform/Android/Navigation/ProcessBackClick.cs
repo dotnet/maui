@@ -7,9 +7,9 @@ namespace Microsoft.Maui
 {
 	class ProcessBackClick : AndroidX.Activity.OnBackPressedCallback, AView.IOnClickListener
 	{
-		NavigationManager _navigationManager;
+		StackNavigationManager _navigationManager;
 
-		public ProcessBackClick(NavigationManager navHostPageFragment)
+		public ProcessBackClick(StackNavigationManager navHostPageFragment)
 			: base(true)
 		{
 			_navigationManager = navHostPageFragment;

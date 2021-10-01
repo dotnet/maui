@@ -14,7 +14,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui
 {
-	public class NavigationManager
+	public class StackNavigationManager
 	{
 		Toolbar? _toolbar;
 		NavHostFragment? _navHost;
@@ -52,17 +52,17 @@ namespace Microsoft.Maui
 		// TODO MAUI: currently using this to locate the correct NavigationManager inside NavigationViewFragment
 		// Need to figure out a better strategy for getting state information into NavigationViewFragment so 
 		// it knows what Page it's supposed to display
-		static Dictionary<int, NavigationManager> _navigationManager = new Dictionary<int, NavigationManager>();
+		static Dictionary<int, StackNavigationManager> _navigationManager = new Dictionary<int, StackNavigationManager>();
 		static int s_idCount = 0;
 		int _myID = -1;
 
-		public NavigationManager(IMauiContext mauiContext)
+		public StackNavigationManager(IMauiContext mauiContext)
 		{
 			MauiContext = mauiContext;
 			BackClick = new ProcessBackClick(this);
 		}
 
-		internal static NavigationManager FindNavigationManager(int id) =>
+		internal static StackNavigationManager FindNavigationManager(int id) =>
 			_navigationManager[id];
 
 		internal Toolbar Toolbar =>
@@ -390,9 +390,9 @@ namespace Microsoft.Maui
 			AndroidX.Fragment.App.FragmentManager.FragmentLifecycleCallbacks,
 			NavController.IOnDestinationChangedListener
 		{
-			NavigationManager _navigationManager;
+			StackNavigationManager _navigationManager;
 
-			public Callbacks(NavigationManager navigationLayout)
+			public Callbacks(StackNavigationManager navigationLayout)
 			{
 				_navigationManager = navigationLayout;
 			}
