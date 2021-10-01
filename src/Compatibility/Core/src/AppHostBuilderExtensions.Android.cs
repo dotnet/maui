@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
@@ -21,15 +22,15 @@ namespace Microsoft.Maui.Controls.Hosting
 
 					var services = MauiApplication.Current.Services;
 					var mauiContext = new MauiContext(services, app);
-					var state = new ActivationState(mauiContext);
-					Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
+					var state = new ActivationState(mauiContext, new Dictionary<string, string>());
+					Forms.Init(state, new Android.OS.Bundle(), new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
 				})
 				.OnMauiContextCreated((mauiContext) =>
 				{
 					// This is the final Init that sets up the real context from the activity.
 
-					var state = new ActivationState(mauiContext);
-					Forms.Init(state);
+					var state = new ActivationState(mauiContext, new Dictionary<string, string>());
+					Forms.Init(state, new Android.OS.Bundle());
 				});
 		}
 	}

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Controls.Hosting
 
 					var services = MauiUIApplicationDelegate.Current.Services;
 					var mauiContext = new MauiContext(services);
-					var state = new ActivationState(mauiContext, app.UserActivity);
+					var state = new ActivationState(mauiContext, new Dictionary<string, string>());
 					Forms.Init(state, new InitializationOptions { Flags = InitializationFlags.SkipRenderers });
 					return true;
 				})
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.Controls.Hosting
 				{
 					// This is the final Init that sets up the real context from the application.
 
-					var state = new ActivationState(mauiContext, null);
+					var state = new ActivationState(mauiContext, new Dictionary<string, string>());
 					Forms.Init(state);
 				});
 		}
