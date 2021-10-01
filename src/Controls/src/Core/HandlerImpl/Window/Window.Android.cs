@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(handler.MauiContext)} null");
 
-			if (view is Window window && window.Toolbar != null && window.Toolbar.Handler == null)
+			if (view is Window window && window.Toolbar != null)
 			{
 				_ = window.Toolbar.ToNative(handler.MauiContext);
 			}
