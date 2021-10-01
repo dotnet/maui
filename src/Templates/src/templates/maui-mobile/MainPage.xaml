@@ -3,8 +3,9 @@
              x:Class="MauiApp._1.MainPage"
              BackgroundColor="{DynamicResource SecondaryColor}">
 
-    <ScrollView Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
-        <Grid RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,*">
+    <ScrollView>
+        <Grid RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,*"
+              Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
 
             <Label 
                 Text="Hello, World!"
