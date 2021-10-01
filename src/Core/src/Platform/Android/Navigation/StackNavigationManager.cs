@@ -21,7 +21,7 @@ namespace Microsoft.Maui
 		FragmentNavigator? _fragmentNavigator;
 		NavGraph? _navGraph;
 		IView? _currentPage;
-		NavigationLayout? _navigationLayout;
+		CoordinatorLayout? _navigationLayout;
 		ProcessBackClick BackClick { get; }
 		internal IView? VirtualView { get; private set; }
 		internal INavigationView? NavigationView { get; private set; }
@@ -41,7 +41,7 @@ namespace Microsoft.Maui
 		internal NavGraph NavGraph => _navGraph ??
 			throw new InvalidOperationException($"NavGraph cannot be null");
 
-		internal NavigationLayout NavigationLayout => _navigationLayout ??
+		internal CoordinatorLayout NavigationLayout => _navigationLayout ??
 			throw new InvalidOperationException($"NavigationLayout cannot be null");
 
 		public IView CurrentPage
@@ -288,7 +288,7 @@ namespace Microsoft.Maui
 			_navigationManager.Remove(_myID);
 		}
 
-		public virtual void Connect(IView navigationView, NavigationLayout nativeView)
+		public virtual void Connect(IView navigationView, CoordinatorLayout nativeView)
 		{
 			if (_myID == -1)
 			{

@@ -4,6 +4,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.AppCompat.Widget;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.Tabs;
@@ -13,13 +14,13 @@ namespace Microsoft.Maui
 {
 	public class NavigationRootManager
 	{
-		NavigationLayout? _navigationLayout;
+		CoordinatorLayout? _navigationLayout;
 		IMauiContext _mauiContext;
 
-		internal NavigationLayout NavigationLayout => _navigationLayout ??=
+		internal CoordinatorLayout NavigationLayout => _navigationLayout ??=
 			LayoutInflater
 				.Inflate(Resource.Layout.navigationlayout, null)
-				.JavaCast<NavigationLayout>()
+				.JavaCast<CoordinatorLayout>()
 				?? throw new InvalidOperationException($"Resource.Layout.navigationlayout missing");
 
 		LayoutInflater LayoutInflater => _mauiContext?.GetLayoutInflater()
