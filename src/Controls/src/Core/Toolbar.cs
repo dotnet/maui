@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 		double? _barHeight;
 		bool _backButtonVisible;
 		bool _hasBackStack;
-		bool _isVisible = true;
+		bool _isVisible = false;
 		IEnumerable<ToolbarItem> _toolbarItems;
 		ToolbarTracker _toolbarTracker = new ToolbarTracker();
 
@@ -43,7 +43,6 @@ namespace Microsoft.Maui.Controls
 		public Color IconColor { get => _iconColor; set => SetProperty(ref _iconColor, value); }
 		public string Title { get => _title; set => SetProperty(ref _title, value); }
 		public VisualElement TitleView { get => _titleView; set => SetProperty(ref _titleView, value); }
-
 
 		void SetProperty<T>(ref T backingStore, T value,
 			[CallerMemberName] string propertyName = "")

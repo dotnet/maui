@@ -53,11 +53,6 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 		}
 
-		public override void SetVirtualView(Maui.IElement view)
-		{
-			base.SetVirtualView(view);
-		}
-
 		protected override MaterialToolbar CreateNativeElement()
 		{
 			return (MaterialToolbar)NavigationRootManager!.Toolbar;
@@ -187,6 +182,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			arg1.NativeView.UpdateIsVisible(arg2);
 		}
+
 		internal class Container : ViewGroup
 		{
 			INativeViewHandler? _child;
