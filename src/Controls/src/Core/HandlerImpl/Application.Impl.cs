@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
@@ -12,9 +13,18 @@ namespace Microsoft.Maui.Controls
 
 		public IReadOnlyList<Window> Windows => _windows.AsReadOnly();
 
+		readonly Dictionary<string, Window> _requestedWindows = new();
+
 		IWindow IApplication.CreateWindow(IActivationState activationState)
 		{
-			var window = CreateWindow(activationState);
+			var requestedWindowId = activationState.State?["__MAUI_WINDOW_ID__"];
+
+			Window window;
+
+			if (requestedWindowId != null && _requestedWindows.ContainsKey(requestedWindowId))
+				window = _requestedWindows[requestedWindowId];
+			else
+				window = CreateWindow(activationState);
 
 			if (_pendingMainPage != null && window.Page != null && window.Page != _pendingMainPage)
 				throw new InvalidOperationException($"Both {nameof(MainPage)} was set and {nameof(Application.CreateWindow)} was overridden to provide a page.");
@@ -26,6 +36,36 @@ namespace Microsoft.Maui.Controls
 			_pendingMainPage = null;
 
 			return window;
+		}
+
+		void IApplication.OpenWindow(IWindow window)
+		{
+			if (window is Window cwindow)
+				OpenWindow(cwindow);
+		}
+
+		protected virtual void OpenWindow(Window window)
+		{
+			var id = Guid.NewGuid().ToString();
+
+			_requestedWindows[id] = window;
+
+#if IOS || MACCATALYST
+			var userInfo = new Foundation.NSMutableDictionary();
+			userInfo.SetValueForKey(new Foundation.NSString(id), new Foundation.NSString("__MAUI_WINDOW_ID__"));
+
+			var userActivity = new Foundation.NSUserActivity("__MAUI_DEFAULT_SCENE_CONFIGURATION__");
+			userActivity.AddUserInfoEntries(userInfo);
+
+			UIKit.UIApplication.SharedApplication.RequestSceneSessionActivation(
+				null,
+				userActivity,
+				null,
+				err =>
+				{
+					Console.WriteLine(err.Description);
+				});
+#endif
 		}
 
 		public void ThemeChanged()

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,6 +19,16 @@ namespace Microsoft.Maui
 				IWindow? window = null;
 				_virtualWindow?.TryGetTarget(out window);
 				return window;
+			}
+			set
+			{
+				if (value != null)
+				{
+					if (_virtualWindow == null)
+						_virtualWindow = new WeakReference<IWindow>(value);
+					else
+						_virtualWindow.SetTarget(value);
+				}
 			}
 		}
 
@@ -43,31 +54,66 @@ namespace Microsoft.Maui
 		{
 			Application = Services.GetRequiredService<IApplication>();
 
-			var uiWindow = CreateNativeWindow();
 
-			Window = uiWindow;
+			if (UIDevice.CurrentDevice.CheckSystemVersion(13, 0))
+			{
+				Current.Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application, launchOptions));
+				return true;
+			}
+
+			var dicts = new List<NSDictionary>();
+
+			if (application?.UserActivity?.UserInfo != null)
+				dicts.Add(application.UserActivity.UserInfo);
+			if (launchOptions != null)
+				dicts.Add(launchOptions);
+
+			var w = CreateNativeWindow(null, dicts.ToArray());
+
+			Window = w.nativeWIndow;
+			VirtualWindow = w.virtualWindow;
 
 			Window.MakeKeyAndVisible();
 
-			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application, launchOptions));
+			Current.Services?.InvokeLifecycleEvents<iOSLifecycle.FinishedLaunching>(del => del(application!, launchOptions!));
 
 			return true;
 		}
 
-		UIWindow CreateNativeWindow()
+		public override UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
+			=> new ("Default Configuration", connectingSceneSession.Role);
+
+
+		internal (UIWindow nativeWIndow, IWindow virtualWindow) CreateNativeWindow(UIWindowScene? windowScene = null, NSDictionary[]? states = null)
 		{
-			var uiWindow = new UIWindow();
+			var uiWindow = windowScene != null ? new UIWindow(windowScene) : new UIWindow();
 
 			var mauiContext = new MauiContext(Services, uiWindow);
 
 			Services.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
-			var activationState = new ActivationState(mauiContext);
-			var window = Application.CreateWindow(activationState);
-			_virtualWindow = new WeakReference<IWindow>(window);
-			uiWindow.SetWindow(window, mauiContext);
+			var state = new Dictionary<string, string?>();
 
-			return uiWindow;
+			if (states != null)
+			{
+				foreach (var s in states)
+				{
+					foreach (var k in s.Keys)
+					{
+						var key = k.ToString();
+						var val = s?[k]?.ToString();
+
+						state[key] = val;
+					}
+				}
+			}
+
+			var activationState = new ActivationState(mauiContext, state);
+			var mauiWindow = Application.CreateWindow(activationState);
+
+			uiWindow.SetWindow(mauiWindow, mauiContext);
+
+			return (uiWindow, mauiWindow);
 		}
 
 		public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)

@@ -19,6 +19,8 @@ namespace Microsoft.Maui
 		/// <returns>The created window.</returns>
 		IWindow CreateWindow(IActivationState activationState);
 
+		void OpenWindow(IWindow window);
+
 		/// <summary>
 		/// Notify a theme change.
 		/// </summary>

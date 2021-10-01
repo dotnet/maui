@@ -71,6 +71,14 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnStopped() { }
 		protected virtual void OnDestroying() { }
 
+		void IWindow.Backgrounding(IPersistedState state)
+		{
+			//Backgrounding?.Invoke(this, EventArgs.Empty);
+			Backgrounding(state);
+		}
+
+		protected virtual void Backgrounding(IPersistedState state) { }
+
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);

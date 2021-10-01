@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Android.OS;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
@@ -68,8 +69,19 @@ namespace Microsoft.Maui
 			}
 			else
 			{
+				var dict = new Dictionary<string, string?>();
+
+				var keyset = savedInstanceState?.KeySet();
+				if (keyset != null)
+				{
+					foreach (var k in keyset)
+					{
+						dict[k] = savedInstanceState?.Get(k)?.ToString();
+					}
+				}
+
 				// there are no windows, so this is a fresh launch
-				var state = new ActivationState(mauiContext, savedInstanceState);
+				var state = new ActivationState(mauiContext, dict);
 				window = mauiApp.CreateWindow(state);
 			}
 
