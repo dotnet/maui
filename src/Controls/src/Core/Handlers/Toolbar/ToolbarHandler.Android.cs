@@ -55,7 +55,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override MaterialToolbar CreateNativeElement()
 		{
-			return (MaterialToolbar)NavigationRootManager!.Toolbar;
+			return NavigationRootManager!
+						.NavigationLayout
+						.FindViewById<MaterialToolbar>(Resource.Id.navigationlayout_toolbar)!;
 		}
 
 		protected virtual void OnToolbarItemPropertyChanged(object? sender, PropertyChangedEventArgs e)

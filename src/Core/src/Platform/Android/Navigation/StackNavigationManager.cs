@@ -65,10 +65,9 @@ namespace Microsoft.Maui
 		internal static StackNavigationManager FindNavigationManager(int id) =>
 			_navigationManager[id];
 
-		internal Toolbar Toolbar =>
+		internal Toolbar? Toolbar =>
 			_toolbar ??=
-			NavigationLayout.FindViewById<MaterialToolbar>(Resource.Id.navigationlayout_toolbar)
-			?? throw new InvalidOperationException($"Resource.Id.navigationlayout_toolbar missing");
+			NavigationLayout.FindViewById<MaterialToolbar>(Resource.Id.navigationlayout_toolbar);
 
 		/*
 		 * The important thing to know going into reading this method is that it's not possible to
@@ -425,10 +424,13 @@ namespace Microsoft.Maui
 						.Builder(controller.Graph)
 						.Build();
 
-				NavigationUI
-					.SetupWithNavController(_navigationManager.Toolbar, controller, appbarConfig);
+				if (_navigationManager.Toolbar != null)
+				{
+					NavigationUI
+						.SetupWithNavController(_navigationManager.Toolbar, controller, appbarConfig);
 
-				_navigationManager.Toolbar.SetNavigationOnClickListener(_navigationManager.BackClick);
+					_navigationManager.Toolbar.SetNavigationOnClickListener(_navigationManager.BackClick);
+				}
 			}
 
 			public override void OnFragmentAttached(AndroidX.Fragment.App.FragmentManager fm, AndroidX.Fragment.App.Fragment f, Context context)

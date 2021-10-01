@@ -13,8 +13,6 @@ namespace Microsoft.Maui
 {
 	public class NavigationRootManager
 	{
-		AppBarLayout? _appBar;
-		Toolbar? _toolbar;
 		NavigationLayout? _navigationLayout;
 		IMauiContext _mauiContext;
 
@@ -23,14 +21,6 @@ namespace Microsoft.Maui
 				.Inflate(Resource.Layout.navigationlayout, null)
 				.JavaCast<NavigationLayout>()
 				?? throw new InvalidOperationException($"Resource.Layout.navigationlayout missing");
-
-		internal Toolbar Toolbar =>
-			_toolbar ??= NavigationLayout.FindViewById<MaterialToolbar>(Resource.Id.navigationlayout_toolbar)
-			?? throw new InvalidOperationException($"Resource.Id.navigationlayout_toolbar missing");
-
-		internal AppBarLayout AppBar =>
-			_appBar ??= NavigationLayout.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar)
-			?? throw new InvalidOperationException($"Resource.Id.navigationlayout_appbar missing");
 
 		LayoutInflater LayoutInflater => _mauiContext?.GetLayoutInflater()
 			?? throw new InvalidOperationException($"LayoutInflater missing");
