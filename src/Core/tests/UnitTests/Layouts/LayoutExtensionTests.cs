@@ -120,7 +120,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var widthConstraint = 300;
 			var heightConstraint = 50;
-			var viewSizeIncludingMargins = new Size(100, 50);
+			var viewSize = new Size(100, 50);
+			var viewSizeIncludingMargins = new Size(viewSize.Width + margin.HorizontalThickness, viewSize.Height + margin.VerticalThickness);
 
 			var element = Substitute.For<IView>();
 
@@ -200,7 +201,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var widthConstraint = 50;
 			var heightConstraint = 300;
-			var viewSizeIncludingMargins = new Size(50, 100);
+			var viewSize = new Size(50, 100);
+			var viewSizeIncludingMargins = new Size(viewSize.Width + margin.HorizontalThickness, viewSize.Height + margin.VerticalThickness);
 
 			var element = Substitute.For<IView>();
 
@@ -258,7 +260,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var widthConstraint = 300;
 			var heightConstraint = 50;
-			var viewSizeIncludingMargins = new Size(100, 50);
+			var viewSize = new Size(100, 50);
+			var viewSizeIncludingMargins = new Size(viewSize.Width + margin.HorizontalThickness, viewSize.Height + margin.VerticalThickness);
 
 			var element = Substitute.For<IView>();
 
