@@ -17,13 +17,15 @@ namespace Microsoft.Maui.Controls
 
 		IWindow IApplication.CreateWindow(IActivationState activationState)
 		{
-			var requestedWindowId = activationState.State?["__MAUI_WINDOW_ID__"];
+			Window? window = null;
 
-			Window window;
+			if (activationState.State?.TryGetValue("__MAUI_WINDOW_ID__", out var requestedWindowId) ?? false)
+			{
+				if (requestedWindowId != null && _requestedWindows.TryGetValue(requestedWindowId, out var w))
+					window = w;
+			}
 
-			if (requestedWindowId != null && _requestedWindows.ContainsKey(requestedWindowId))
-				window = _requestedWindows[requestedWindowId];
-			else
+			if (window == null)
 				window = CreateWindow(activationState);
 
 			if (_pendingMainPage != null && window.Page != null && window.Page != _pendingMainPage)
