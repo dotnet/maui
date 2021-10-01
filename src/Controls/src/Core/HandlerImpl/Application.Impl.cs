@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls
 				OpenWindow(cwindow);
 		}
 
-		protected virtual void OpenWindow(Window window)
+		public virtual void OpenWindow(Window window)
 		{
 			var id = Guid.NewGuid().ToString();
 

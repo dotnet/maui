@@ -11,6 +11,17 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 
 			BindingContext = viewModel;
+
+			Services = services;
+			ViewModel = viewModel;
+		}
+
+		IServiceProvider Services { get; }
+		MainViewModel ViewModel { get; }
+
+		void Button_Clicked(System.Object sender, System.EventArgs e)
+		{
+			XamlApp.Instance.OpenWindow(new Window(new MainPage(Services, ViewModel)));
 		}
 	}
 }

@@ -70,6 +70,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Label
                     Text=".NET MAUI"
@@ -78,6 +79,7 @@
                     Grid.Row="1"
                     Text="An open-source framework for building iOS, Android, macOS and Windows apps"
                     Style="{StaticResource SubTitleStyle}"/>
+                <Button Text="One more window" Clicked="Button_Clicked" /> 
             </Grid>
             <!-- SECTIONS -->
             <Grid
