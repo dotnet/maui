@@ -19,23 +19,23 @@ namespace Maui.Controls.Sample
 
 			//MainPage = new Pages.AppShell();
 			//MainPage = Services.GetRequiredService<Page>();
-			//MainPage = new TabbedPage()
-			//{
-			//	Children =
-			//	{
-			//		Services.GetRequiredService<Page>(),
-			//		new NavigationPage(new Pages.NavigationGallery()) { Title = "Semantics" }
-			//	}
-			//};
-
-			MainPage = new NavigationPage(new TabbedPage()
+			MainPage = new TabbedPage()
 			{
 				Children =
 				{
-					 new Pages.NavigationGallery(),
-					 new Pages.NavigationGallery(),
+					Services.GetRequiredService<Page>(),
+					new NavigationPage(new Pages.NavigationGallery()) { Title = "Semantics" }
 				}
-			});
+			};
+
+			//MainPage = new NavigationPage(new TabbedPage()
+			//{
+			//	Children =
+			//	{
+			//		 new Pages.NavigationGallery(),
+			//		 new Pages.NavigationGallery(),
+			//	}
+			//});
 			//MainPage = new Pages.ImagePage();
 			//Children =
 			//{

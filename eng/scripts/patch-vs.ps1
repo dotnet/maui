@@ -1,3 +1,6 @@
+# THIS IS JUST TEMPORARY
+# We are waiting on the release of VS 2020 P5
+
 Param (
     [string] $MSBuild = "$env:MSBUILD_EXE"
 )
