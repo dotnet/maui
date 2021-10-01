@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public AndroidX.Fragment.App.FragmentManager FragmentManager => null;
 
-		public Microsoft.Maui.NavigationManager NavigationManager => null;
+		public Microsoft.Maui.NavigationRootManager NavigationRootManager => null;
 #elif __IOS__
 		public UIKit.UIWindow Window => UIKit.UIApplication.SharedApplication.GetKeyWindow();
 #elif WINDOWS
