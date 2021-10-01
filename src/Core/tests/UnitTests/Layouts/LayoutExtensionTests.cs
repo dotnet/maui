@@ -116,7 +116,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Theory]
 		[InlineData(50, 50, 100, 100)]
 		[InlineData(100, 0, 150, 100)]
-		public void FrameAccountsForHorizontalLayoutAlignmasdfent(
+		[InlineData(0, 100, 50, 100)]
+		public void LayoutCalculatesHorizontalMarginsCorrectly(
 			double marginL, double marginR, double expectedX, double expectedW)
 		{
 			var element = Substitute.For<IView>();
@@ -132,6 +133,28 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var frame = element.ComputeFrame(new Rectangle(0, 0, 300, 100));
 
 			Assert.Equal(new Rectangle(expectedX, 0, expectedW, 100), frame);
+		}
+
+		[Theory]
+		[InlineData(50, 50, 100, 100)]
+		[InlineData(100, 0, 150, 100)]
+		[InlineData(0, 100, 50, 100)]
+		public void LayoutCalculatesVerticalMarginsCorrectly(
+			double marginT, double marginB, double expectedY, double expectedH)
+		{
+			var element = Substitute.For<IView>();
+
+			element.Margin.Returns(new Thickness(0, marginT, 0, marginB));
+			element.DesiredSize.Returns(new Size(100, marginT + 100 + marginB));
+			element.HorizontalLayoutAlignment.Returns(LayoutAlignment.Start);
+			element.VerticalLayoutAlignment.Returns(LayoutAlignment.Center);
+			element.Width.Returns(Dimension.Unset);
+			element.Height.Returns(Dimension.Unset);
+			element.FlowDirection.Returns(FlowDirection.LeftToRight);
+
+			var frame = element.ComputeFrame(new Rectangle(0, 0, 100, 300));
+
+			Assert.Equal(new Rectangle(0, expectedY, 100, expectedH), frame);
 		}
 
 		//[Fact]
