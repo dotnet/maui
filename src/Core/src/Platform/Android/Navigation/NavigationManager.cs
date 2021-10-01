@@ -49,19 +49,21 @@ namespace Microsoft.Maui
 
 		public IMauiContext MauiContext { get; }
 
-		// TODO MAUI clean this up
+		// TODO MAUI: currently using this to locate the correct NavigationManager inside NavigationViewFragment
+		// Need to figure out a better strategy for getting state information into NavigationViewFragment so 
+		// it knows what Page it's supposed to display
 		static Dictionary<int, NavigationManager> _navigationManager = new Dictionary<int, NavigationManager>();
-		static int index = 0;
-		int myIndex;
+		static int s_idCount = 0;
+		int _myID = -1;
 
 		public NavigationManager(IMauiContext mauiContext)
 		{
 			MauiContext = mauiContext;
 			BackClick = new ProcessBackClick(this);
-			myIndex = index;
-			index++;
-			_navigationManager.Add(myIndex, this);
 		}
+
+		internal static NavigationManager FindNavigationManager(int id) =>
+			_navigationManager[id];
 
 		internal Toolbar Toolbar =>
 			_toolbar ??=
@@ -217,14 +219,11 @@ namespace Microsoft.Maui
 				NavGraph.StartDestination = startId;
 		}
 
-		internal static NavigationManager FindNavigationManager(int id) =>
-			_navigationManager[id];
-
 		public virtual FragmentNavigator.Destination AddFragmentDestination()
 		{
 			var destination = new FragmentNavigator.Destination(FragmentNavigator);
 			destination.AddArgument("NavigationManager",
-				new NavArgument.Builder().SetType(NavType.IntType).SetDefaultValue(myIndex).Build()
+				new NavArgument.Builder().SetType(NavType.IntType).SetDefaultValue(_myID).Build()
 			);
 
 			destination.SetClassName(Java.Lang.Class.FromType(typeof(NavigationViewFragment)).CanonicalName);
@@ -284,8 +283,21 @@ namespace Microsoft.Maui
 			_currentPage = NavigationStack[NavigationStack.Count - 1];
 		}
 
+		public virtual void Disconnect()
+		{
+			_myID = -1;
+			_navigationManager.Remove(_myID);
+		}
+
 		public virtual void Connect(IView navigationView, NavigationLayout nativeView)
 		{
+			if (_myID == -1)
+			{
+				_myID = s_idCount;
+				s_idCount++;
+				_navigationManager[_myID] = this;
+			}
+
 			VirtualView = navigationView;
 			NavigationView = (INavigationView)navigationView;
 			_navigationLayout = nativeView;

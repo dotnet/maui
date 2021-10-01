@@ -12,35 +12,13 @@ namespace Microsoft.Maui
 	public class NavigationViewFragment : Fragment
 	{
 		AView? _currentView;
-		//NavigationLayout? _navigationLayout;
 		FragmentContainerView? _fragmentContainerView;
-
-		// TODO MAUI: This currently feels like a very unreliable way to retrieve the NavigationLayout
-		// If this is called before the Fragment View is parented then this call fails.
-		// This should be converted to use Android ViewModels instead of just walking up the visual tree
-		//NavigationLayout NavigationLayout
-		//{
-		//	get
-		//	{
-		//		if (_navigationLayout != null)
-		//			return _navigationLayout;
-
-		//		var view = FragmentContainerView.Parent;
-
-		//		while (view is not Maui.NavigationLayout && view != null)
-		//			view = view?.Parent;
-
-		//		_navigationLayout = view as NavigationLayout;
-
-		//		return _navigationLayout ?? throw new InvalidOperationException($"NavigationLayout cannot be null here");
-		//	}
-		//}
 
 		FragmentContainerView FragmentContainerView =>
 			_fragmentContainerView ?? throw new InvalidOperationException($"FragmentContainerView cannot be null here");
 
 		NavigationManager? _navigationManager;
-		// TODO Research ViewModels
+
 		NavigationManager NavigationManager => _navigationManager
 			?? throw new InvalidOperationException($"Graph cannot be null here");
 
@@ -57,7 +35,6 @@ namespace Microsoft.Maui
 			var navhost = Navigation.FindNavController(container);
 			var result = navhost.CurrentBackStackEntry.Arguments.GetInt("NavigationManager");
 			_navigationManager = NavigationManager.FindNavigationManager(result);
-			//_navigationLayout = _navigationManager.NavigationLayout;
 			_fragmentContainerView ??= (FragmentContainerView)container;
 
 			// When shuffling around the back stack sometimes we'll need a page to detach and then reattach.
@@ -76,7 +53,7 @@ namespace Microsoft.Maui
 			// Even if there's only one page on the stack
 
 			_currentView =
-				(NavigationManager.CurrentPage.Handler?.NativeView as AView);
+				NavigationManager.CurrentPage.Handler?.NativeView as AView;
 
 			if (_currentView == null)
 			{
@@ -106,12 +83,6 @@ namespace Microsoft.Maui
 			}
 
 			base.OnResume();
-		}
-
-		public override void OnDestroyView()
-		{
-			//_navigationLayout = null;
-			base.OnDestroyView();
 		}
 
 		public override Animation OnCreateAnimation(int transit, bool enter, int nextAnim)

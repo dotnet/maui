@@ -40,6 +40,17 @@ namespace Microsoft.Maui.Handlers
 			_navigationManager.Connect(VirtualView, navigationLayout);
 		}
 
+		private protected override void OnDisconnectHandler(View nativeView)
+		{
+			_navigationManager.Disconnect();
+			base.OnDisconnectHandler(nativeView);
+		}
+
+		protected override void DisconnectHandler(View nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+		}
+
 		public static void RequestNavigation(NavigationViewHandler arg1, INavigationView arg2, object? arg3)
 		{
 			if (arg3 is NavigationRequest ea)
