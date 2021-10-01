@@ -106,6 +106,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 				Element.Appearing -= OnTabbedPageAppearing;
 				Element.Disappearing -= OnTabbedPageDisappearing;
+				RemoveTabs();
 			}
 
 			Element = tabbedPage;
@@ -130,7 +131,6 @@ namespace Microsoft.Maui.Controls.Handlers
 					if (_tabLayout == null)
 					{
 						var layoutInflater = Element.Handler.MauiContext.GetLayoutInflater();
-						//var navManager = Element.Handler.MauiContext.GetNavigationManager();
 						_tabLayout = new TabLayout(_context.Context)
 						{
 							TabMode = TabLayout.ModeFixed,
@@ -154,12 +154,11 @@ namespace Microsoft.Maui.Controls.Handlers
 				UpdateItemIconColor();
 				UpdateSwipePaging();
 				UpdateOffscreenPageLimit();
+				SetTabLayout();
 			}
-
-			SetTabLayout();
 		}
 
-		void OnTabbedPageDisappearing(object sender, EventArgs e)
+		void RemoveTabs()
 		{
 			if (_tabLayoutFragment != null)
 			{
@@ -172,7 +171,14 @@ namespace Microsoft.Maui.Controls.Handlers
 						.Remove(fragment)
 						.SetReorderingAllowed(true)
 						.Commit();
+
+				_tabplacementId = 0;
 			}
+		}
+
+		void OnTabbedPageDisappearing(object sender, EventArgs e)
+		{
+			RemoveTabs();
 		}
 
 		void OnTabbedPageAppearing(object sender, EventArgs e)
@@ -180,25 +186,43 @@ namespace Microsoft.Maui.Controls.Handlers
 			SetTabLayout();
 		}
 
+		int _tabplacementId;
 		internal void SetTabLayout()
 		{
-			if (_tabLayoutFragment != null)
-				return;
-
 			int id;
+			var rootManager =
+				_context.GetNavigationRootManager();
+
 			if (IsBottomTabPlacement)
 			{
 				id = Resource.Id.navigationlayout_bottomtabs;
+				if (_tabplacementId == id)
+					return;
+
 				_tabLayoutFragment = new ViewFragment(BottomNavigationView);
+
+				var layoutContent = rootManager.RootView.FindViewById(Resource.Id.navigationlayout_content);
+				if (layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
+				{
+					cl.BottomMargin = _context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height);
+				}
 			}
 			else
 			{
-				_tabLayoutFragment = new ViewFragment(TabLayout);
 				id = Resource.Id.navigationlayout_toptabs;
+				if (_tabplacementId == id)
+					return;
+
+				_tabLayoutFragment = new ViewFragment(TabLayout);
+				var layoutContent = rootManager.RootView.FindViewById(Resource.Id.navigationlayout_content);
+				if (layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
+				{
+					cl.BottomMargin = 0;
+				}
 			}
 
-			_ = _context
-					.GetNavigationRootManager()
+			_tabplacementId = id;
+			_ = rootManager
 					.FragmentManager
 					.BeginTransaction()
 					.Replace(id, _tabLayoutFragment)

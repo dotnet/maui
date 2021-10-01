@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<NavigationPage>>(() => new PlatformConfigurationRegistry<NavigationPage>(this));
 
-#if WINDOWS
+#if WINDOWS || __ANDROID__
 			Navigation = new MauiNavigationImpl(this);
 #else
 			Navigation = new NavigationImpl(this);

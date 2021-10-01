@@ -78,6 +78,9 @@ namespace Microsoft.Maui.Controls
 			// aapt resource value: 0x7F080063
 			public static int navigationlayout_bottomtabs = 2131230819;
 
+			// aapt resource value: 0x7F08013E
+			public static int navigationlayout_content = 2131231038;
+
 			// aapt resource value: 0x7F0800C7
 			public static int flyoutcontent_appbar = 2131230919;
 
@@ -123,6 +126,17 @@ namespace Microsoft.Maui.Controls
 			public static int shellrootlayout = 2131427439;
 
 			static Layout()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+		}
+
+		public partial class Dimension
+		{
+			// aapt resource value: 0x7F060067
+			public static int design_bottom_navigation_height = 2131099751;
+
+			static Dimension()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
 			}

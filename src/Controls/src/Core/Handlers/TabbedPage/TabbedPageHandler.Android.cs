@@ -11,8 +11,11 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public sealed class TabbedPageHandler : ViewHandler<TabbedPage, ViewPager2>
 	{
+		public static PropertyMapper<TabbedPage, TabbedPageHandler> Mapper =
+				new PropertyMapper<TabbedPage, TabbedPageHandler>(ViewMapper);
+
 		TabbedPageManager _tabbedPageManager;
-		public TabbedPageHandler() : base(ViewHandler.ViewMapper, null)
+		public TabbedPageHandler() : base(Mapper, null)
 		{
 		}
 
@@ -26,6 +29,12 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			base.SetVirtualView(view);
 			_tabbedPageManager.SetElement((TabbedPage)view);
+		}
+
+		protected override void DisconnectHandler(ViewPager2 nativeView)
+		{
+			base.DisconnectHandler(nativeView);
+			_tabbedPageManager.SetElement(null);
 		}
 	}
 }

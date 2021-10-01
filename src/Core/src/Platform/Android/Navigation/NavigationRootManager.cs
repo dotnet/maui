@@ -45,28 +45,13 @@ namespace Microsoft.Maui
 			_mauiContext = mauiContext;
 		}
 
-		// TODO MAUI: replace this with something else
+		// TODO MAUI: this will eventually get replaced by Navigation
 		internal virtual void SetContentView(AView view)
 		{
 			FragmentManager.BeginTransaction()
-				.Replace(Resource.Id.navigationlayout_content, new FragmentView(view))
+				.Replace(Resource.Id.navigationlayout_content, new ViewFragment(view))
 				.SetReorderingAllowed(true)
 				.Commit();
-		}
-
-		internal class FragmentView : Fragment
-		{
-			readonly AView _aView;
-
-			public FragmentView(AView aView)
-			{
-				_aView = aView;
-			}
-
-			public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-			{
-				return _aView;
-			}
 		}
 	}
 }
