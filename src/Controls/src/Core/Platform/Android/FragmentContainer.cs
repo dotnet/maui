@@ -33,8 +33,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public virtual Page Page => (Page)_pageRenderer?.Target;
 
-		IPageController PageController => Page as IPageController;
-
 		public static FragmentContainer CreateInstance(Page page, IMauiContext mauiContext)
 		{
 			return new FragmentContainer(page, mauiContext) { Arguments = new Bundle() };
@@ -45,14 +43,26 @@ namespace Microsoft.Maui.Controls.Platform
 			_onCreateCallback = callback;
 		}
 
+		ViewGroup _parent;
+
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
+			_parent = container ?? _parent;
+
 			if (Page != null)
 			{
-				var scopedContext = new ScopedMauiContext(_mauiContext, null, null, inflater, ChildFragmentManager);
+				_pageContainer = Page?.Handler?.NativeView as AView;
 
-				_pageContainer = Page.ToNative(scopedContext);
-				_viewhandler = (INativeViewHandler)Page.Handler;
+				if (_pageContainer == null)
+				{
+					var scopedContext = new ScopedMauiContext(_mauiContext, null, null, inflater, ChildFragmentManager);
+					_pageContainer = Page.ToNative(scopedContext);
+					_viewhandler = (INativeViewHandler)Page.Handler;
+				}
+				else
+				{
+					_parent = _parent ?? (_pageContainer.Parent as ViewGroup);
+				}
 
 				_onCreateCallback?.Invoke(_pageContainer);
 
@@ -62,31 +72,49 @@ namespace Microsoft.Maui.Controls.Platform
 			return null;
 		}
 
+		public override void OnResume()
+		{
+			if (_pageContainer == null)
+				return;
+
+			_parent = (_pageContainer.Parent as ViewGroup) ?? _parent;
+			if (_pageContainer.Parent == null && _parent != null)
+			{
+				// Re-add the view to the container if Android removed it
+				// Because we are re-using views inside OnCreateView Android
+				// will remove the "previous" view from the parent but since our
+				// "previous" view and "current" view are the same we have to re-add it
+				_parent.AddView(_pageContainer);
+			}
+
+			base.OnResume();
+		}
+
 		protected virtual void RecyclePage()
 		{
 			// Page.Handler = null;
 		}
 
-		public override void OnDestroyView()
-		{
-			if (Page != null)
-			{
-				if (_viewhandler != null)
-				{
-					if (NativeView.IsAlive())
-					{
-						NativeView.RemoveFromParent();
-					}
+		//public override void OnDestroyView()
+		//{
+		//	if (Page != null)
+		//	{
+		//		if (_viewhandler != null)
+		//		{
+		//			if (NativeView.IsAlive())
+		//			{
+		//				NativeView.RemoveFromParent();
+		//			}
 
-					RecyclePage();
-				}
-			}
+		//			RecyclePage();
+		//		}
+		//	}
 
-			_onCreateCallback = null;
-			_viewhandler = null;
+		//	_onCreateCallback = null;
+		//	_viewhandler = null;
 
-			base.OnDestroyView();
-		}
+		//	base.OnDestroyView();
+		//}
 
 		//public override void OnHiddenChanged(bool hidden)
 		//{

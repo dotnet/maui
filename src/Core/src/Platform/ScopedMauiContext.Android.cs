@@ -13,7 +13,7 @@ namespace Microsoft.Maui
 		NavigationRootManager _NavigationRootManager;
 		readonly IMauiContext _mauiContext;
 		readonly IScopedMauiContext? _scopedMauiContext;
-		readonly WeakReference<LayoutInflater>? _layoutInflater;
+		readonly WeakReference<LayoutInflater?>? _layoutInflater;
 		readonly WeakReference<FragmentManager>? _fragmentManager;
 
 		public ScopedMauiContext(
@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 				throw new InvalidOperationException("NavigationRootManager cannot be null on ScopedMauiContext");
 
 			if (layoutInflater != null)
-				_layoutInflater = new WeakReference<LayoutInflater>(layoutInflater);
+				_layoutInflater = new WeakReference<LayoutInflater?>(layoutInflater);
 
 			if (fragmentManager != null)
 				_fragmentManager = new WeakReference<FragmentManager>(fragmentManager);

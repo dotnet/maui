@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Controls.Platform
 		public override Fragment CreateFragment(int position)
 		{
 			var fragment = FragmentContainer.CreateInstance(_page.Children[position], _context);
-
 			return fragment;
 		}
 

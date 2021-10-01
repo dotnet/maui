@@ -131,8 +131,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			UpdateMenu();
 
-			//ActionBarDrawerToggle? toggle = _drawerToggle;
-			bool isNavigated = VirtualView.BackButtonVisible;
+			bool isNavigated = VirtualView.HasBackStack;
 
 			_defaultNavigationIcon ??= NativeView.NavigationIcon;
 
@@ -141,11 +140,6 @@ namespace Microsoft.Maui.Controls.Handlers
 				if (VirtualView.BackButtonVisible)
 				{
 					NativeView.NavigationIcon ??= _defaultNavigationIcon;
-					//if (toggle != null)
-					//{
-					//	toggle.DrawerIndicatorEnabled = false;
-					//	toggle.SyncState();
-					//}
 
 					var backButtonTitle = VirtualView.BackButtonTitle;
 					ImageSource image = VirtualView.TitleIcon;
@@ -160,24 +154,10 @@ namespace Microsoft.Maui.Controls.Handlers
 						NativeView.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
 					}
 				}
-				//else if (toggle != null && _flyoutPage != null)
-				//{
-				//	toggle.DrawerIndicatorEnabled = _flyoutPage.ShouldShowToolbarButton();
-				//	toggle.SyncState();
-				//}
 				else
 				{
 					NativeView.NavigationIcon = null;
 				}
-			}
-			else
-			{
-				//if (toggle != null && _flyoutPage != null)
-				//{
-				//	toggle.DrawerIndicatorEnabled = _flyoutPage.ShouldShowToolbarButton();
-				//	toggle.SyncState();
-				//	NativeView.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
-				//}
 			}
 
 			var tintColor = VirtualView.BarBackgroundColor;
@@ -334,65 +314,5 @@ namespace Microsoft.Maui.Controls.Handlers
 				SetMeasuredDimension(_child.NativeView.MeasuredWidth, _child.NativeView.MeasuredHeight);
 			}
 		}
-
-		//void RegisterToolbar()
-		//{
-		//	Context context = NavigationLayout.Context;
-		//	AToolbar bar = Toolbar;
-		//	Element page = NavigationView.RealParent;
-
-		//	_flyoutPage = null;
-		//	while (page != null)
-		//	{
-		//		if (page is FlyoutPage)
-		//		{
-		//			_flyoutPage = page as FlyoutPage;
-		//			break;
-		//		}
-		//		page = page.RealParent;
-		//	}
-
-		//	if (_flyoutPage == null)
-		//	{
-		//		if (PageController.InternalChildren.Count > 0)
-		//			_flyoutPage = PageController.InternalChildren[0] as FlyoutPage;
-
-		//		if (_flyoutPage == null)
-		//			return;
-		//	}
-
-		//	if (((IFlyoutPageController)_flyoutPage).ShouldShowSplitMode)
-		//		return;
-
-		//	var renderer = _flyoutPage.ToNative(NavigationView.Handler.MauiContext) as DrawerLayout;
-		//	if (renderer == null)
-		//		return;
-
-		//	_drawerLayout = renderer;
-
-		//	AutomationPropertiesProvider.GetDrawerAccessibilityResources(context, _flyoutPage, out int resourceIdOpen, out int resourceIdClose);
-
-		//	if (_drawerToggle != null)
-		//	{
-		//		_drawerToggle.ToolbarNavigationClickListener = null;
-		//		_drawerToggle.Dispose();
-		//	}
-
-		//	_drawerToggle = new ActionBarDrawerToggle(context.GetActivity(), _drawerLayout, bar,
-		//		resourceIdOpen == 0 ? global::Android.Resource.String.Ok : resourceIdOpen,
-		//		resourceIdClose == 0 ? global::Android.Resource.String.Ok : resourceIdClose)
-		//	{
-		//		ToolbarNavigationClickListener = new ClickListener(NavigationView)
-		//	};
-
-		//	if (_drawerListener != null)
-		//	{
-		//		_drawerLayout.RemoveDrawerListener(_drawerListener);
-		//		_drawerListener.Dispose();
-		//	}
-
-		//	_drawerListener = new DrawerMultiplexedListener { Listeners = { _drawerToggle, (DrawerLayout.IDrawerListener)_drawerLayout } };
-		//	_drawerLayout.AddDrawerListener(_drawerListener);
-		//}
 	}
 }

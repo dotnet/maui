@@ -75,12 +75,19 @@ namespace Microsoft.Maui
 			// Then we can try some other approachs like just modifying the navbar ourselves to include a back button
 			// Even if there's only one page on the stack
 
-			var scopedContext = new ScopedMauiContext(
-					NavigationManager.MauiContext,
-					layoutInflater: inflater,
-					fragmentManager: ChildFragmentManager);
+			_currentView =
+				(NavigationManager.CurrentPage.Handler?.NativeView as AView);
 
-			_currentView = NavigationManager.CurrentPage.ToNative(scopedContext);
+			if (_currentView == null)
+			{
+				var scopedContext = new ScopedMauiContext(
+						NavigationManager.MauiContext,
+						layoutInflater: inflater,
+						fragmentManager: ChildFragmentManager);
+
+				_currentView = NavigationManager.CurrentPage.ToNative(scopedContext);
+			}
+
 			_currentView.RemoveFromParent();
 
 			return _currentView;
@@ -99,7 +106,6 @@ namespace Microsoft.Maui
 			}
 
 			base.OnResume();
-
 		}
 
 		public override void OnDestroyView()

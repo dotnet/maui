@@ -62,19 +62,11 @@ namespace Microsoft.Maui
 			public FragmentView(AView aView)
 			{
 				_aView = aView;
-				_aView.RemoveFromParent();
 			}
 
 			public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 			{
-				_aView.RemoveFromParent();
 				return _aView;
-			}
-
-			public override void OnViewCreated(AView view, Bundle savedInstanceState)
-			{
-				_aView.RemoveFromParent();
-				base.OnViewCreated(view, savedInstanceState);
 			}
 		}
 	}

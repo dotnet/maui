@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls
 		ToolbarTracker _toolbarTracker = new ToolbarTracker();
 		public IEnumerable<ToolbarItem> ToolbarItems { get; set; }
 		public bool Visible { get; set; } = true;
+		public bool HasBackStack { get; set; }
 		public bool BackButtonVisible { get; set; }
 		public double? BarHeight { get; set; }
 		public string BackButtonTitle { get; set; }
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls
 		public Color IconColor { get; set; }
 		public string Title { get; set; }
 		public VisualElement TitleView { get; set; }
-
+		
 		NavigationPage _currentNavigationPage;
 
 		Page _currentPage;
@@ -78,6 +79,8 @@ namespace Microsoft.Maui.Controls
 
 			_currentPage = _currentNavigationPage.CurrentPage;
 			_currentNavigationPage.CurrentPage.PropertyChanged += OnPropertyChanged;
+
+			HasBackStack = _currentNavigationPage.Navigation.NavigationStack.Count > 1;
 		}
 
 		void ApplyChanges(NavigationPage navigationPage)
