@@ -6,22 +6,22 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class MainPage
 	{
+		IServiceProvider _services;
+		MainViewModel _viewModel;
+
 		public MainPage(IServiceProvider services, MainViewModel viewModel)
 		{
 			InitializeComponent();
 
 			BindingContext = viewModel;
 
-			Services = services;
-			ViewModel = viewModel;
+			_services = services;
+			_viewModel = viewModel;
 		}
 
-		IServiceProvider Services { get; }
-		MainViewModel ViewModel { get; }
-
-		void Button_Clicked(System.Object sender, System.EventArgs e)
+		void ShowNewWindow(object sender, EventArgs e)
 		{
-			XamlApp.Instance.OpenWindow(new Window(new MainPage(Services, ViewModel)));
+			Application.Current.OpenWindow(new Window(new MainPage(_services, _viewModel)));
 		}
 	}
 }
