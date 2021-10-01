@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 		{
 			var scopedContext = new MauiContext(mauiContext);
 			scopedContext.AddSpecific(nativeWindow);
-			scopedContext.AddSpecific(new WindowManager(mauiContext));
+			scopedContext.AddSpecific(new WindowManager(scopedContext));
 			return scopedContext;
 		}
 	}
