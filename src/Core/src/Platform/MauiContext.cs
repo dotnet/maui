@@ -11,10 +11,28 @@ namespace Microsoft.Maui
 		readonly IMauiContext? _parent;
 
 #if __ANDROID__
+		public MauiContext(IServiceProvider services, Android.App.Application application, IMauiContext? parent = null)
+			: this(services, (Android.Content.Context)application, parent)
+		{
+			AddSpecific(application);
+		}
+
 		public MauiContext(IServiceProvider services, Android.Content.Context context, IMauiContext? parent = null)
 			: this(services, parent)
 		{
 			AddWeakSpecific(context);
+		}
+#elif __IOS__
+		public MauiContext(IServiceProvider services, UIKit.UIApplicationDelegate application, IMauiContext? parent = null)
+			: this(services, parent)
+		{
+			AddSpecific(application);
+		}
+#elif WINDOWS
+		public MauiContext(IServiceProvider services, UI.Xaml.Application application, IMauiContext? parent = null)
+			: this(services, parent)
+		{
+			AddSpecific(application);
 		}
 #endif
 

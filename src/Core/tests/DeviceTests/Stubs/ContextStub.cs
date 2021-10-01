@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public object GetService(Type serviceType)
 		{
 			if (serviceType == typeof(IAnimationManager))
-				return _manager ??= Services.GetRequiredService<IAnimationManager>();
+				return _manager ??= _services.GetRequiredService<IAnimationManager>();
 #if __ANDROID__
 			if (serviceType == typeof(Android.Content.Context))
 				return Platform.DefaultContext;

@@ -35,8 +35,7 @@ namespace Microsoft.Maui
 
 			Services = mauiApp.Services;
 
-			_applicationContext = new MauiContext(Services);
-			_applicationContext.AddSpecific<UIApplicationDelegate>(this);
+			_applicationContext = new MauiContext(Services, this);
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
 

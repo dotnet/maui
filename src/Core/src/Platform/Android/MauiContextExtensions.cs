@@ -41,7 +41,7 @@ namespace Microsoft.Maui
 
 			return fragmentManager
 				?? mauiContext.Context?.GetFragmentManager()
-				?? throw new InvalidOperationException("LayoutInflater Not Found");
+				?? throw new InvalidOperationException("FragmentManager Not Found");
 		}
 
 		public static AppCompatActivity GetActivity(this IMauiContext mauiContext) =>

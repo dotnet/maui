@@ -1,58 +1,74 @@
 ﻿using Android.Content;
 using Android.Views;
 using AndroidX.Fragment.App;
-using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Category(TestCategory.MauiContext)]
 	public class MauiContextTests
 	{
-		IMauiContext GetContext()
+		readonly MauiApp _mauiApp;
+		readonly MauiContext _mauiContext;
+
+		public MauiContextTests()
 		{
-			return new ContextStub(MauiApp
+			_mauiApp = MauiApp
 				.CreateBuilder()
-				.Build()
-				.Services);
+				.Build();
+
+			_mauiContext = new MauiContext(_mauiApp.Services, Platform.DefaultContext);
 		}
 
 		[Fact(DisplayName = "Correct Layout Inflater pulled from Activity")]
 		public void ScopedMauiContextReturnsActivityInflator()
 		{
-			var context = GetContext().MakeScoped();
-			Assert.Equal(context.GetLayoutInflater(), LayoutInflater.From(Platform.DefaultContext));
+			var globalInflator = LayoutInflater.FromContext(Platform.DefaultContext);
+
+			var context = _mauiContext.MakeScoped();
+
+			Assert.Equal(globalInflator, context.GetLayoutInflater());
 		}
 
 		[Fact(DisplayName = "Correct Fragment Manager pulled from Activity")]
 		public void ScopedMauiContextReturnsActivityFragmentManager()
 		{
-			var context = GetContext().MakeScoped();
-			Assert.Equal(context.GetFragmentManager(), Platform.DefaultContext.GetFragmentManager());
+			var globalManager = Platform.DefaultContext.GetFragmentManager();
+
+			var context = _mauiContext.MakeScoped();
+
+			Assert.Equal(globalManager, context.GetFragmentManager());
 		}
 
 		[Fact(DisplayName = "Scoped Fragment Manager Returned")]
 		public void ScopedMauiContextReturnsChildFragmentManager()
 		{
 			var manager = new TestFragmentManager();
-			var context = GetContext().MakeScoped(fragmentManager: manager);
-			Assert.NotEqual(context.GetFragmentManager(), Platform.DefaultContext.GetFragmentManager());
-			Assert.Equal(context.GetFragmentManager(), manager);
+			var globalManager = Platform.DefaultContext.GetFragmentManager();
+
+			var context = _mauiContext.MakeScoped(fragmentManager: manager);
+
+			Assert.NotEqual(globalManager, context.GetFragmentManager());
+			Assert.Equal(manager, context.GetFragmentManager());
 		}
 
 		[Fact(DisplayName = "Scoped Layout Manager Returned")]
 		public void ScopedMauiContextReturnsChildLayoutInflater()
 		{
+			var globalInflator = LayoutInflater.FromContext(Platform.DefaultContext);
 			var layoutInflater = new TestLayoutInflater(Platform.DefaultContext);
-			var context = GetContext().MakeScoped(layoutInflater: layoutInflater);
-			Assert.NotEqual(context.GetLayoutInflater(), LayoutInflater.FromContext(Platform.DefaultContext));
-			Assert.Equal(context.GetLayoutInflater(), layoutInflater);
+
+			var context = _mauiContext.MakeScoped(layoutInflater: layoutInflater);
+
+			Assert.NotEqual(globalInflator, context.GetLayoutInflater());
+			Assert.Equal(layoutInflater, context.GetLayoutInflater());
 		}
 
 		[Fact(DisplayName = "Scoped Layout Returns Parent Animation Manager")]
 		public void ScopedMauiContextReturnsParentAnimationManager()
 		{
-			var parentContext = GetContext();
+			var parentContext = _mauiContext;
 			var context = parentContext.MakeScoped();
 			Assert.Equal(parentContext.GetAnimationManager(), context.GetAnimationManager());
 		}
