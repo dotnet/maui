@@ -1,6 +1,8 @@
 ﻿using System;
 using Maui.Controls.Sample.ViewModels;
 using Microsoft.Maui.Controls;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -21,7 +23,8 @@ namespace Maui.Controls.Sample.Pages
 
 		void Button_Clicked(System.Object sender, System.EventArgs e)
 		{
-			XamlApp.Instance.OpenWindow(new Window(new MainPage(Services, ViewModel)));
+			var mvm = Services.GetService<MainViewModel>();
+;			XamlApp.Instance.OpenWindow(new Window(new MainPage(Services, mvm)));
 		}
 	}
 }
