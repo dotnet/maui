@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool disposedValue;
 		ShellSearchResultList? _searchResultList;
 
-		public ShellSearchView(SearchHandler searchHandler, IMauiContext context)
+		public ShellSearchView(SearchHandler searchHandler, IMauiContext? context)
 		{
 			Element = searchHandler;
 			MauiContext = context;
@@ -55,11 +55,11 @@ namespace Microsoft.Maui.Controls.Platform
 		
 		public EvasObject? NativeView => Control;
 
-		protected IMauiContext MauiContext { get; private set; }
+		protected IMauiContext? MauiContext { get; private set; }
 
 		protected EvasObject? NativeParent
 		{
-			get => MauiContext.Context?.BaseLayout;
+			get => MauiContext?.Context?.BaseLayout;
 		}
 
 		ISearchHandlerController SearchHandlerController => Element;

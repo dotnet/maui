@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -11,18 +13,18 @@ using EToolbarItemEventArgs = ElmSharp.ToolbarItemEventArgs;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public interface IShellSectionRenderer : IDisposable
+	public interface IShellSectionHandler : IDisposable
 	{
 		EvasObject NativeView { get; }
 	}
 
-	public class ShellSectionView : IAppearanceObserver, IShellSectionRenderer
+	public class ShellSectionHandler : IAppearanceObserver, IShellSectionHandler
 	{
-		EBox _mainLayout = null;
-		EBox _contentArea = null;
-		Tabs _tabs = null;
-		EvasObject _currentContent = null;
-		Page _displayedPage;
+		EBox _mainLayout;
+		EBox _contentArea;
+		Tabs? _tabs = null;
+		EvasObject? _currentContent = null;
+		Page? _displayedPage;
 
 		Dictionary<ShellContent, EvasObject> _contentCache = new Dictionary<ShellContent, EvasObject>();
 		Dictionary<ShellContent, EToolbarItem> _contentToTabsItem = new Dictionary<ShellContent, EToolbarItem>();
@@ -34,12 +36,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool _disposed = false;
 
-		public ShellSectionView(ShellSection section, IMauiContext context)
+		public ShellSectionHandler(ShellSection section, IMauiContext context)
 		{
 			ShellSection = section;
 			MauiContext = context;
 			ShellSection.PropertyChanged += OnSectionPropertyChanged;
-			(ShellSection.Items as INotifyCollectionChanged).CollectionChanged += OnShellSectionCollectionChanged;
+			if (ShellSection.Items is INotifyCollectionChanged collection)
+			{
+				collection.CollectionChanged += OnShellSectionCollectionChanged;
+			}
 
 			_mainLayout = new EBox(NativeParent);
 			_mainLayout.SetLayoutCallback(OnLayout);
@@ -61,7 +66,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected IMauiContext MauiContext { get; private set; }
 
-		protected EvasObject NativeParent
+		protected EvasObject? NativeParent
 		{
 			get => MauiContext?.Context?.BaseLayout;
 		}
@@ -124,7 +129,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		~ShellSectionView()
+		~ShellSectionHandler()
 		{
 			Dispose(false);
 		}
@@ -139,8 +144,9 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var backgroundColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
 			var foregroundColor = appearance?.ForegroundColor;
-			ToolbarBackgroundColor = backgroundColor.IsDefault() ? ShellView.DefaultBackgroundColor : backgroundColor.ToNativeEFL();
-			ToolbarForegroundColor = foregroundColor.IsDefault() ? ShellView.DefaultForegroundColor : foregroundColor.ToNativeEFL();
+
+			ToolbarBackgroundColor = backgroundColor.IsDefault() ? ShellView.DefaultBackgroundColor : (backgroundColor?.ToNativeEFL()).GetValueOrDefault();
+			ToolbarForegroundColor = foregroundColor.IsDefault() ? ShellView.DefaultForegroundColor : (foregroundColor?.ToNativeEFL()).GetValueOrDefault();
 		}
 
 		void UpdateDisplayedPage(Page page)
@@ -160,7 +166,7 @@ namespace Microsoft.Maui.Controls.Platform
 			TabBarIsVisible = Shell.GetTabBarIsVisible(page);
 		}
 
-		void OnDisplayedPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnDisplayedPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 			{
@@ -197,6 +203,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void InitializeTabs()
 		{
+			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
+
 			if (_tabs != null)
 			{
 				return;
@@ -234,7 +242,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_tabs = null;
 		}
 
-		void OnSectionPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnSectionPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == "CurrentItem")
 			{
@@ -281,29 +289,35 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				InsertTabsItem(content);
 			}
-			_tabs.Scrollable = ShellSection.Items.Count > 3 ? TabsType.Scrollable : TabsType.Fixed;
+			
+			if(_tabs !=null)
+				_tabs.Scrollable = ShellSection.Items.Count > 3 ? TabsType.Scrollable : TabsType.Fixed;
 		}
 
-		EToolbarItem InsertTabsItem(ShellContent content)
+		EToolbarItem? InsertTabsItem(ShellContent content)
 		{
-			EToolbarItem item = _tabs.Append(content.Title, null);
-			item.SetBackgroundColor(_backgroundColor);
-			item.SetUnderlineColor(_foregroundColor);
+			EToolbarItem? item = _tabs?.Append(content.Title, null);
+			item?.SetBackgroundColor(_backgroundColor);
+			item?.SetUnderlineColor(_foregroundColor);
 
-			_tabsItems.Add(item);
-			_itemToContent[item] = content;
-			_contentToTabsItem[content] = item;
+			if (item != null)
+			{
+				_tabsItems.Add(item);
+				_itemToContent[item] = content;
+				_contentToTabsItem[content] = item;
+			}
+
 			return item;
 		}
 
-		void OnShellSectionCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		void OnShellSectionCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			UpdateTabsItem();
 		}
 
-		void OnTabsSelected(object sender, EToolbarItemEventArgs e)
+		void OnTabsSelected(object? sender, EToolbarItemEventArgs e)
 		{
-			if (_tabs.SelectedItem == null)
+			if (_tabs?.SelectedItem == null)
 			{
 				return;
 			}
@@ -354,7 +368,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var bound = NativeView.Geometry;
 
 			int tabsHeight;
-			if (HasTabs && TabBarIsVisible)
+			if (_tabs != null && TabBarIsVisible)
 			{
 				var tabsBound = bound;
 				tabsHeight = _tabs.MinimumHeight;

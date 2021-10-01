@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Reflection;
 using ElmSharp;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,15 +16,15 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public class ShellNavBar : EBox, IFlyoutBehaviorObserver, IDisposable
 	{
-		TImage _menuIcon = null;
-		TButton _menuButton = null;
-		TLabel _title = null;
-		ShellSearchView _searchView = null;
-		EvasObject _nativeTitleView = null;
+		TImage? _menuIcon;
+		TButton _menuButton;
+		TLabel _title;
+		ShellSearchView? _searchView = null;
+		EvasObject? _nativeTitleView = null;
 
-		SearchHandler _searchHandler = null;
-		View _titleView = null;
-		Page _page = null;
+		SearchHandler? _searchHandler = null;
+		View? _titleView = null;
+		Page? _page = null;
 
 		FlyoutBehavior _flyoutBehavior = FlyoutBehavior.Flyout;
 
@@ -41,6 +43,8 @@ namespace Microsoft.Maui.Controls.Platform
 		public ShellNavBar(IMauiContext context) : base(context?.Context?.BaseLayout)
 		{
 			MauiContext = context;
+
+			_ = NativeParent ?? throw new ArgumentNullException(nameof(NativeParent));
 
 			SetLayoutCallback(OnLayout);
 
@@ -70,9 +74,9 @@ namespace Microsoft.Maui.Controls.Platform
 			Dispose(false);
 		}
 
-		protected IMauiContext MauiContext { get; private set; }
+		protected IMauiContext? MauiContext { get; private set; }
 
-		protected EvasObject NativeParent
+		protected EvasObject? NativeParent
 		{
 			get => MauiContext?.Context?.BaseLayout;
 		}
@@ -105,7 +109,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public SearchHandler SearchHandler
+		public SearchHandler? SearchHandler
 		{
 			get
 			{
@@ -119,7 +123,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public View TitleView
+		public View? TitleView
 		{
 			get
 			{
@@ -137,7 +141,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get
 			{
-				return _title?.Text;
+				return _title.Text;
 			}
 			set
 			{
@@ -213,13 +217,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async void UpdateMenuIcon()
 		{
-			ImageSource source = null;
+			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
+
+			ImageSource? source = null;
 			if (HasBackButton)
 			{
 				if (_isTV)
 				{
-					_menuButton.Style = ThemeConstants.Button.Styles.Default;
-					_menuButton.Text = ThemeConstants.Shell.Resources.TV.BackIconCode;
+					_menuButton.Style = TThemeConstants.Button.Styles.Default;
+					_menuButton.Text = TThemeConstants.Shell.Resources.TV.BackIconCode;
 					_menuIcon = null;
 				}
 				else
@@ -237,7 +243,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (_isTV)
 				{
-					_menuButton.Style = ThemeConstants.Button.Styles.Circle;
+					_menuButton.Style = TThemeConstants.Button.Styles.Circle;
 					_menuIcon = new TImage(NativeParent);
 				}
 				source = Shell.Current.FlyoutIcon;
@@ -246,8 +252,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (_isTV)
 				{
-					_menuButton.Style = ThemeConstants.Button.Styles.Default;
-					_menuButton.Text = ThemeConstants.Shell.Resources.TV.MenuIconCode;
+					_menuButton.Style = TThemeConstants.Button.Styles.Default;
+					_menuButton.Text = TThemeConstants.Shell.Resources.TV.MenuIconCode;
 					_menuIcon = null;
 				}
 				else
@@ -262,16 +268,18 @@ namespace Microsoft.Maui.Controls.Platform
 			if (source != null && _menuIcon != null)
 			{
 				_menuIcon.Show();
-				var provider = MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
-				var service = provider.GetRequiredImageSourceService(source);
-
-				await service.GetImageAsync(source, _menuIcon);
+				var provider = MauiContext?.Services.GetRequiredService<IImageSourceServiceProvider>();
+				var service = provider?.GetRequiredImageSourceService(source);
+				if (service != null)
+				{
+					await service.GetImageAsync(source, _menuIcon);
+				}
 			}
 			_menuButton.SetIconPart(_menuIcon);
 			_menuButton.Show();
 		}
 
-		void OnMenuClicked(object sender, EventArgs e)
+		void OnMenuClicked(object? sender, EventArgs e)
 		{
 			var backButtonHandler = Shell.GetBackButtonBehavior(_page);
 			if (backButtonHandler?.Command != null)
@@ -288,8 +296,10 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		void UpdateTitleView(View titleView)
+		void UpdateTitleView(View? titleView)
 		{
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
 			_nativeTitleView?.Unrealize();
 			_nativeTitleView = null;
 
@@ -301,7 +311,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		void UpdateSearchHandler(SearchHandler handler)
+		void UpdateSearchHandler(SearchHandler? handler)
 		{
 			if (_searchView != null)
 			{
@@ -313,7 +323,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (handler != null)
 			{
 				_searchView = new ShellSearchView(handler, MauiContext);
-				_searchView.NativeView.Show();
+				_searchView.NativeView?.Show();
 				PackEnd(_searchView.NativeView);
 			}
 		}
@@ -322,13 +332,13 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_searchHandler != null)
 			{
-				_searchView.NativeView.Show();
+				_searchView?.NativeView?.Show();
 				_title?.Hide();
 				_nativeTitleView?.Hide();
 			}
 			else if (_titleView != null)
 			{
-				_nativeTitleView.Show();
+				_nativeTitleView?.Show();
 				_title?.Hide();
 				_searchView?.NativeView?.Hide();
 			}
@@ -366,11 +376,11 @@ namespace Microsoft.Maui.Controls.Platform
 			contentBound.Width -= (menuBound.Width + menuMargin + titleHMargin * 2);
 			contentBound.Height -= titleVMargin * 2;
 
-			if (_searchView != null)
+			if (_searchView != null && _searchView.NativeView != null)
 			{
 				_searchView.NativeView.Geometry = contentBound;
 			}
-			else if (_titleView != null)
+			else if (_titleView != null && _nativeTitleView != null)
 			{
 				_nativeTitleView.Geometry = contentBound;
 			}

@@ -1,63 +1,73 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using ElmSharp;
+using Microsoft.Extensions.DependencyInjection;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.ElmSharp;
+using EBox = ElmSharp.Box;
 using EColor = ElmSharp.Color;
-using TINavigationView = Tizen.UIExtensions.ElmSharp.INavigationView;
-using TNavigationView = Tizen.UIExtensions.ElmSharp.NavigationView;
-using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
+using ITNavigationView = Tizen.UIExtensions.ElmSharp.INavigationView;
 using TCollectionView = Tizen.UIExtensions.ElmSharp.CollectionView;
+using TImage = Tizen.UIExtensions.ElmSharp.Image;
+using TNavigationView = Tizen.UIExtensions.ElmSharp.NavigationView;
 using TSelectedItemChangedEventArgs = Tizen.UIExtensions.ElmSharp.SelectedItemChangedEventArgs;
+using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellView : NavigationDrawer, IFlyoutBehaviorObserver
+	public class ShellView : EBox, IFlyoutBehaviorObserver
 	{
-		TINavigationView _navigationView;
-		FlyoutHeaderBehavior _headerBehavior;
-
-		List<List<Element>> _cachedGroups;
-
-		View _headerView;
-		View _footerView;
-		TCollectionView _itemsView;
-
-		Element _lastSelected;
-		ShellItemView _currentShellItem;
-
 		public static readonly EColor DefaultBackgroundColor = TThemeConstants.Shell.ColorClass.DefaultBackgroundColor;
 		public static readonly EColor DefaultForegroundColor = TThemeConstants.Shell.ColorClass.DefaultForegroundColor;
 		public static readonly EColor DefaultTitleColor = TThemeConstants.Shell.ColorClass.DefaultTitleColor;
 
-		// The source of icon resources is https://materialdesignicons.com/
-		public const string MenuIcon = "";
+		INavigationDrawer _navigationDrawer;
+		ITNavigationView _navigationView;
+		FlyoutHeaderBehavior _headerBehavior;
 
-		protected EvasObject NativeParent { get; private set; }
+		List<List<Element>>? _cachedGroups;
 
-		protected Shell Element { get; private set; }
+		View? _headerView;
+		View? _footerView;
+		TCollectionView _itemsView;
 
-		public IMauiContext MauiContext { get; private set; }
-
-		public NavigationDrawer NativeView => this;
-
-		bool HeaderOnMenu => _headerBehavior == FlyoutHeaderBehavior.Scroll ||
-							 _headerBehavior == FlyoutHeaderBehavior.CollapseOnScroll;
+		Element? _lastSelected;
+		ShellItemView? _currentShellItem;
 
 		public ShellView(EvasObject parent) : base(parent)
 		{
 			NativeParent = parent;
+			_navigationDrawer = CreateNavigationDrawer();
 			_navigationView = CreateNavigationView();
 			_navigationView.LayoutUpdated += OnNavigationViewLayoutUpdated;
+			_navigationView.Content = _itemsView = CreateItemsView();
 
-			NavigationView = _navigationView.TargetView;
-			Toggled += OnDrawerToggled;
+			_navigationDrawer.NavigationView = _navigationView.TargetView;
+			_navigationDrawer.Toggled += OnDrawerToggled;
 
-			_navigationView.Content = CreateItemsView();
+			_navigationDrawer.TargetView.SetAlignment(-1.0, -1.0);
+			_navigationDrawer.TargetView.SetWeight(1.0, 1.0);
+			_navigationDrawer.TargetView.Show();
+			PackEnd(_navigationDrawer.TargetView);
 		}
 
-		internal void SetElement(Shell shell, IMauiContext context)
+		public IMauiContext? MauiContext { get; private set; }
+
+		protected EvasObject? NativeParent { get; private set; }
+
+		protected Shell? Element { get; private set; }
+
+		protected TCollectionView ItemsView => _itemsView;
+
+		protected ITNavigationView NavigationView => _navigationView;
+
+		protected bool HeaderOnMenu => _headerBehavior == FlyoutHeaderBehavior.Scroll || _headerBehavior == FlyoutHeaderBehavior.CollapseOnScroll;
+
+		public  virtual void SetElement(Shell shell, IMauiContext context)
 		{
 			Element = shell;
 			Element.PropertyChanged += OnElementPropertyChanged;
@@ -67,6 +77,8 @@ namespace Microsoft.Maui.Controls.Platform
 			_lastSelected = null;
 
 			UpdateFlyoutIsPresented();
+			UpdateFlyoutBackgroundColor();
+			UpdateFlyoutBackgroundImage();
 			UpdateCurrentItem();
 			UpdateFlyoutHeader();
 			UpdateFooter();
@@ -74,17 +86,30 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual ShellItemView CreateShellItemView(ShellItem item)
 		{
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
 			return new ShellItemView(item, MauiContext);
 		}
 
-		protected virtual TINavigationView CreateNavigationView()
+		protected virtual INavigationDrawer CreateNavigationDrawer()
 		{
+			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
+
+			return new NavigationDrawer(NativeParent);
+		}
+
+		protected virtual ITNavigationView CreateNavigationView()
+		{
+			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
+
 			return new TNavigationView(NativeParent);
 		}
 
-		protected virtual EvasObject CreateItemsView()
+		protected virtual TCollectionView CreateItemsView()
 		{
-			_itemsView = new TCollectionView(NativeParent)
+			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
+
+			return new TCollectionView(NativeParent)
 			{
 				AlignmentX = -1,
 				AlignmentY = -1,
@@ -95,11 +120,17 @@ namespace Microsoft.Maui.Controls.Platform
 				VerticalScrollBarVisiblePolicy = ScrollBarVisiblePolicy.Invisible,
 				LayoutManager = new LinearLayoutManager(false, Tizen.UIExtensions.ElmSharp.ItemSizingStrategy.MeasureFirstItem)
 			};
-
-			return _itemsView;
 		}
 
-		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected virtual ItemAdaptor GetItemAdaptor(IEnumerable items)
+		{
+			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			return new ShellFlyoutItemAdaptor(Element, MauiContext, items, HeaderOnMenu);
+		}
+
+		protected virtual void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.CurrentItemProperty.PropertyName)
 			{
@@ -112,6 +143,14 @@ namespace Microsoft.Maui.Controls.Platform
 			else if (e.PropertyName == Shell.FlyoutBackgroundColorProperty.PropertyName)
 			{
 				UpdateFlyoutBackgroundColor();
+			}
+			else if (e.PropertyName == Shell.FlyoutBackgroundImageProperty.PropertyName)
+			{
+				UpdateFlyoutBackgroundImage();
+			}
+			else if (e.PropertyName == Shell.FlyoutBackgroundImageProperty.PropertyName)
+			{
+				UpdateFlyoutBackgroundImageAspect();
 			}
 			else if (e.PropertyName == Shell.FlyoutHeaderProperty.PropertyName)
 			{
@@ -133,32 +172,33 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual void UpdateFlyoutIsPresented()
 		{
+			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
+
 			// It is workaround of Panel.IsOpen bug, Panel.IsOpen property is not working when layouting was triggered
 			Device.BeginInvokeOnMainThread(() =>
 			{
-				IsOpen = Element.FlyoutIsPresented;
+				_navigationDrawer.IsOpen = Element.FlyoutIsPresented;
 			});
 		}
 
-		protected void OnDrawerToggled(object sender, EventArgs e)
+		protected void OnDrawerToggled(object? sender, EventArgs e)
 		{
-			Element.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, IsOpen);
+			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
+
+			Element.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, _navigationDrawer.IsOpen);
 		}
 
 		protected virtual void UpdateFlyoutBehavior()
 		{
-			if (Element.FlyoutBehavior == FlyoutBehavior.Locked)
-			{
-				IsSplit = true;
-			}
-			else
-			{
-				IsSplit = false;
-			}
+			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
+
+			_navigationDrawer.IsSplit = (Element.FlyoutBehavior == FlyoutBehavior.Locked) ? true : false;
 		}
 
 		protected virtual void BuildMenu()
 		{
+			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
+
 			var groups = ((IShellController)Element).GenerateFlyoutGrouping();
 
 			if (!IsItemChanged(groups) && !HeaderOnMenu)
@@ -181,12 +221,15 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			_itemsView.Adaptor = new ShellFlyoutItemAdaptor(Element, MauiContext, items, HeaderOnMenu);
-			_itemsView.Adaptor.ItemSelected += OnItemSelected;
+			ItemsView.Adaptor = GetItemAdaptor(items);
+			ItemsView.Adaptor.ItemSelected += OnItemSelected;
 		}
 
 		protected virtual void UpdateFlyoutHeader()
 		{
+			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
 			if (_headerView != null)
 			{
 				_headerView.MeasureInvalidated -= OnHeaderSizeChanged;
@@ -206,7 +249,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
-					_navigationView.Header = _headerView?.ToNative(MauiContext);
+					_navigationView.Header = _headerView.ToNative(MauiContext);
 					_headerView.MeasureInvalidated += OnHeaderSizeChanged;
 				}
 			}
@@ -218,6 +261,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual void UpdateFooter()
 		{
+			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
 			if (_footerView != null)
 			{
 				_footerView.MeasureInvalidated -= OnFooterSizeChanged;
@@ -228,7 +274,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_footerView != null)
 			{
-				_navigationView.Footer = _footerView?.ToNative(MauiContext);
+				_navigationView.Footer = _footerView.ToNative(MauiContext);
 				_footerView.MeasureInvalidated += OnFooterSizeChanged;
 			}
 			else
@@ -237,13 +283,15 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		void OnShellStructureChanged(object sender, EventArgs e)
+		void OnShellStructureChanged(object? sender, EventArgs e)
 		{
 			BuildMenu();
 		}
 
-		void OnItemSelected(object sender, TSelectedItemChangedEventArgs e)
+		void OnItemSelected(object? sender, TSelectedItemChangedEventArgs e)
 		{
+			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
+
 			_lastSelected = e.SelectedItem as Element;
 			((IShellController)Element).OnFlyoutItemSelected(_lastSelected);
 		}
@@ -274,42 +322,79 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateCurrentItem()
 		{
+			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
+
 			_currentShellItem?.Dispose();
 			if (Element.CurrentItem != null)
 			{
 				_currentShellItem = CreateShellItemView(Element.CurrentItem);
-				Main = _currentShellItem.NativeView;
+				_navigationDrawer.Main = _currentShellItem.NativeView;
 			}
 			else
 			{
-				Main = null;
+				_navigationDrawer.Main = null;
 			}
 		}
 
 		void UpdateFlyoutBackgroundColor()
 		{
+			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
+
 			_navigationView.BackgroundColor = Element.FlyoutBackgroundColor.ToNativeEFL();
 		}
 
-		void OnNavigationViewLayoutUpdated(object sender, LayoutEventArgs args)
+		async void UpdateFlyoutBackgroundImage()
+		{
+			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
+			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			if (Element.FlyoutBackgroundImage != null)
+			{
+				var image = new TImage(NativeParent);
+				var imageSource = Element.FlyoutBackgroundImage;
+				var provider = MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
+				var service = provider.GetRequiredImageSourceService(imageSource);
+				image.Aspect = Element.FlyoutBackgroundImageAspect.ToNative();
+				_navigationView.BackgroundImage = image;
+
+				await service.GetImageAsync(imageSource, image);
+			}
+			else
+			{
+				_navigationView.BackgroundImage = null;
+			}
+		}
+
+		void UpdateFlyoutBackgroundImageAspect()
+		{
+			_ = Element ?? throw new InvalidOperationException($"{nameof(Element)} should have been set by base class.");
+
+			if (_navigationView.BackgroundImage is TImage image)
+			{
+				image.Aspect = Element.FlyoutBackgroundImageAspect.ToNative();
+			}
+		}
+
+		void OnNavigationViewLayoutUpdated(object? sender, LayoutEventArgs args)
 		{
 			UpdateHeaderLayout(args.Geometry.Width, args.Geometry.Height);
 			UpdateFooterLayout(args.Geometry.Width, args.Geometry.Height);
 		}
 
-		void OnHeaderSizeChanged(object sender, EventArgs e)
+		void OnHeaderSizeChanged(object? sender, EventArgs e)
 		{
-			var bound = (_navigationView as EvasObject).Geometry;
+			var bound = (_navigationView as EvasObject)?.Geometry;
 			Device.BeginInvokeOnMainThread(()=> {
-				UpdateHeaderLayout(bound.Width, bound.Height);
+				UpdateHeaderLayout((bound?.Width).GetValueOrDefault(), (bound?.Height).GetValueOrDefault());
 			});
 		}
 
-		void OnFooterSizeChanged(object sender, EventArgs e)
+		void OnFooterSizeChanged(object? sender, EventArgs e)
 		{
-			var bound = (_navigationView as EvasObject).Geometry;
+			var bound = (_navigationView as EvasObject)?.Geometry;
 			Device.BeginInvokeOnMainThread(() => {
-				UpdateFooterLayout(bound.Width, bound.Height);
+				UpdateFooterLayout((bound?.Width).GetValueOrDefault(), (bound?.Height).GetValueOrDefault());
 			});
 		}
 
@@ -318,7 +403,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if ((!HeaderOnMenu) && (_headerView != null))
 			{
 				var requestSize = _headerView.Measure(widthConstraint, heightConstraint);
-				_navigationView.Header.MinimumHeight = DPExtensions.ConvertToScaledPixel(requestSize.Request.Height);
+				if(_navigationView.Header != null)
+					_navigationView.Header.MinimumHeight = DPExtensions.ConvertToScaledPixel(requestSize.Request.Height);
 			}
 		}
 
@@ -327,7 +413,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_footerView != null)
 			{
 				var requestSize = _footerView.Measure(widthConstraint, heightConstraint);
-				_navigationView.Footer.MinimumHeight = DPExtensions.ConvertToScaledPixel(requestSize.Request.Height);
+				if (_navigationView.Footer != null)
+					_navigationView.Footer.MinimumHeight = DPExtensions.ConvertToScaledPixel(requestSize.Request.Height);
 			}
 		}
 

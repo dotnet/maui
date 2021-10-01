@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
+using Tizen.UIExtensions.Common;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -8,12 +9,19 @@ namespace Microsoft.Maui.Controls.Handlers
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
-			NativeView.SetElement((Shell)view, MauiContext);
+			NativeView?.SetElement((Shell)view, MauiContext);
 		}
 
 		protected override ShellView CreateNativeView()
 		{
-			return new ShellView(NativeParent);
+			if (DeviceInfo.GetDeviceType() == DeviceType.TV)
+			{
+				return new TVShellView(NativeParent);
+			}
+			else
+			{
+				return new ShellView(NativeParent);
+			}
 		}
 	}
 }

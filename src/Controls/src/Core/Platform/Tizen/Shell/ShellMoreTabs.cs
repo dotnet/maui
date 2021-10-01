@@ -1,9 +1,9 @@
 ﻿using ElmSharp;
-using Tizen.UIExtensions.ElmSharp;
 using EBox = ElmSharp.Box;
 using EImage = ElmSharp.Image;
 using TImage = Tizen.UIExtensions.ElmSharp.Image;
 using TLabel = Tizen.UIExtensions.ElmSharp.Label;
+using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Homogeneous = true;
 			SelectionMode = GenItemSelectionMode.Always;
 			BackgroundColor = ShellView.DefaultBackgroundColor;
-			_defaultClass = new GenItemClass(ThemeConstants.GenItemClass.Styles.Full)
+			_defaultClass = new GenItemClass(TThemeConstants.GenItemClass.Styles.Full)
 			{
 				GetContentHandler = GetContent,
 			};
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get
 			{
-				var cellHeight = this.GetIconSize() * 2 + this.GetIconSize();
+				var cellHeight = this.GetDefaultIconSize() * 2 + this.GetDefaultIconSize();
 				return DPExtensions.ConvertToScaledPixel(cellHeight) * Count;
 			}
 		}
@@ -66,8 +66,8 @@ namespace Microsoft.Maui.Controls.Platform
 			};
 			title.Show();
 			box.PackEnd(title);
-			int iconPadding = DPExtensions.ConvertToScaledPixel(this.GetIconPadding());
-			int iconSize = DPExtensions.ConvertToScaledPixel(this.GetIconSize());
+			int iconPadding = DPExtensions.ConvertToScaledPixel(this.GetDefaultIconPadding());
+			int iconSize = DPExtensions.ConvertToScaledPixel(this.GetDefaultIconSize());
 			int cellHeight = iconPadding * 2 + iconSize;
 			box.SetLayoutCallback(() =>
 			{

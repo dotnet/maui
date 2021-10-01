@@ -1,6 +1,7 @@
 ﻿using System;
 using NativeView = ElmSharp.EvasObject;
 using EColor = ElmSharp.Color;
+using Tizen.UIExtensions.Common;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -15,10 +16,12 @@ namespace Microsoft.Maui.Handlers
 
 			var view = new ContentCanvas(NativeParent, VirtualView)
 			{
-				BackgroundColor = EColor.White,
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
+
+			view.BackgroundColor = (DeviceInfo.GetDeviceType() == DeviceType.TV) ? EColor.Transparent : EColor.White;
+
 			view.Show();
 			return view;
 		}

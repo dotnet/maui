@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -17,13 +19,13 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public class ShellItemView : IAppearanceObserver, IDisposable
 	{
-		Tabs _tabs = null;
-		EBox _mainLayout = null;
-		EBox _contentHolder = null;
-		Panel _moreItemsDrawer = null;
-		ShellMoreTabs _moreItemsList = null;
-		EToolbarItem _moreTabItem = null;
-		ShellSectionStack _currentStack = null;
+		Tabs? _tabs = null;
+		EBox _mainLayout;
+		EBox _contentHolder;
+		Panel? _moreItemsDrawer = null;
+		ShellMoreTabs? _moreItemsList = null;
+		EToolbarItem? _moreTabItem = null;
+		ShellSectionStack? _currentStack = null;
 
 		Dictionary<EToolbarItem, ShellSection> _sectionsTable = new Dictionary<EToolbarItem, ShellSection>();
 		Dictionary<ShellSection, EToolbarItem> _tabItemsTable = new Dictionary<ShellSection, EToolbarItem>();
@@ -41,7 +43,13 @@ namespace Microsoft.Maui.Controls.Platform
 			ShellItem = item;
 			MauiContext = context;
 
-			Initialize();
+			//Initialize();
+			_mainLayout = new EBox(NativeParent);
+			_mainLayout.SetLayoutCallback(OnLayout);
+			_mainLayout.Show();
+			_contentHolder = new EBox(NativeParent);
+			_contentHolder.Show();
+			_mainLayout.PackEnd(_contentHolder);
 
 			ShellItem.PropertyChanged += OnShellItemPropertyChanged;
 			if (ShellItem.Items is INotifyCollectionChanged notifyCollectionChanged)
@@ -61,7 +69,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected IMauiContext MauiContext { get; private set; }
 
-		protected EvasObject NativeParent
+		protected EvasObject? NativeParent
 		{
 			get => MauiContext?.Context?.BaseLayout;
 		}
@@ -170,52 +178,47 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			UpdateCurrentShellSection(section);
 
-			if (HasTabs)
+			if (_tabs != null)
 			{
 				if (_tabItemsTable.ContainsKey(section))
 				{
 					_tabItemsTable[section].IsSelected = true;
 				}
-				else if (HasMoreItems)
+				else if (_moreItemsDrawer != null)
 				{
 					_disableMoreItemOpen = true;
-					_moreTabItem.IsSelected = true;
+
+					if (_moreTabItem != null)
+						_moreTabItem.IsSelected = true;
+					
 					_disableMoreItemOpen = false;
 				}
 
-				if (HasMoreItems)
+				if (_moreItemsDrawer != null)
 				{
 					_moreItemsDrawer.IsOpen = false;
 				}
 			}
 		}
 
-		void UpdateCurrentItemFromUI(ShellSection section)
+		void UpdateCurrentItemFromUI(ShellSection? section)
 		{
-			if (ShellItem.CurrentItem != section)
+			if (section != null &&  ShellItem.CurrentItem != section)
 			{
 				ShellItem.SetValueFromRenderer(ShellItem.CurrentItemProperty, section);
 			}
-			if (HasMoreItems)
+			if (_moreItemsDrawer != null)
 			{
 				_moreItemsDrawer.IsOpen = false;
 			}
-		}
-
-		void Initialize()
-		{
-			_mainLayout = new EBox(NativeParent);
-			_mainLayout.SetLayoutCallback(OnLayout);
-			_mainLayout.Show();
-			_contentHolder = new EBox(NativeParent);
-			_contentHolder.Show();
-			_mainLayout.PackEnd(_contentHolder);
 		}
 
 		void InitializeTabs()
 		{
 			if (_tabs != null)
 				return;
+
+			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
 
 			_tabs = new Tabs(NativeParent);
 			_tabs.Show();
@@ -263,20 +266,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_mainLayout.UnPack(_moreItemsDrawer);
 
-			_moreItemsList.Unrealize();
-			_moreItemsDrawer.Unrealize();
+			_moreItemsList?.Unrealize();
+			_moreItemsDrawer?.Unrealize();
 
 			_moreItemsList = null;
 			_moreItemsDrawer = null;
 		}
 
-		void OnMoreItemSelected(object sender, GenListItemEventArgs e)
+		void OnMoreItemSelected(object? sender, GenListItemEventArgs e)
 		{
-			ShellSection section = e.Item.Data as ShellSection;
+			ShellSection? section = e.Item.Data as ShellSection;
 			UpdateCurrentItemFromUI(section);
 		}
 
-		void OnShellItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnShellItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(ShellItem.CurrentItem))
 			{
@@ -288,8 +291,9 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var tabBarBackgroudColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarBackgroundColor;
 			var tabBarTitleColor = (appearance as IShellAppearanceElement)?.EffectiveTabBarTitleColor;
-			TabBarBackgroundColor = tabBarBackgroudColor.IsDefault() ? ShellView.DefaultBackgroundColor : tabBarBackgroudColor.ToNativeEFL();
-			TabBarTitleColor = tabBarTitleColor.IsDefault() ? ShellView.DefaultTitleColor : tabBarTitleColor.ToNativeEFL();
+
+			TabBarBackgroundColor = tabBarBackgroudColor.IsDefault() ? ShellView.DefaultBackgroundColor : (tabBarBackgroudColor?.ToNativeEFL()).GetValueOrDefault();
+			TabBarTitleColor = tabBarTitleColor.IsDefault() ? ShellView.DefaultTitleColor : (tabBarTitleColor?.ToNativeEFL()).GetValueOrDefault();
 		}
 
 		void UpdateTabsBackgroudColor(EColor color)
@@ -322,7 +326,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_moreTabItem = null;
 		}
 
-		void OnShellItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		void OnShellItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			UpdateTabsItems();
 		}
@@ -332,11 +336,14 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_tabsItems.Count < 5)
 			{
 				var item = AppendTabsItem(section.Title, section.Icon);
-				_sectionsTable.Add(item, section);
-				_tabItemsTable.Add(section, item);
-				_tabsItems.Add(item);
+				if (item != null)
+				{
+					_sectionsTable.Add(item, section);
+					_tabItemsTable.Add(section, item);
+					_tabsItems.Add(item);
+				}
 			}
-			else if (!HasMoreItems)
+			else if (_moreItemsDrawer == null)
 			{
 				CreateMoreItems();
 
@@ -352,14 +359,15 @@ namespace Microsoft.Maui.Controls.Platform
 				var assembly = typeof(ShellItemView).GetTypeInfo().Assembly;
 				var assemblyName = assembly.GetName().Name;
 				_moreTabItem = AppendTabsItem("More", ImageSource.FromResource(assemblyName + "." + _dotsIcon, assembly));
-				_tabsItems.Add(_moreTabItem);
+				if (_moreTabItem != null)
+					_tabsItems.Add(_moreTabItem);
 
-				_moreItemsList.AddItem(lastSection);
-				_moreItemsList.AddItem(section);
+				_moreItemsList?.AddItem(lastSection);
+				_moreItemsList?.AddItem(section);
 			}
 			else
 			{
-				_moreItemsList.AddItem(section);
+				_moreItemsList?.AddItem(section);
 			}
 		}
 
@@ -392,12 +400,12 @@ namespace Microsoft.Maui.Controls.Platform
 			_contentHolder.PackEnd(_currentStack);
 		}
 
-		void OnTabsSelected(object sender, EToolbarItemEventArgs e)
+		void OnTabsSelected(object? sender, EToolbarItemEventArgs e)
 		{
-			if (_tabs.SelectedItem == null)
+			if (_tabs?.SelectedItem == null)
 				return;
 
-			if (HasMoreItems && e.Item == _moreTabItem)
+			if (_moreItemsDrawer != null && e.Item == _moreTabItem)
 			{
 				if (!_disableMoreItemOpen)
 				{
@@ -417,14 +425,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 			int tabsHeight = 0;
 			var bound = _mainLayout.Geometry;
-			if (HasTabs)
+			if (_tabs != null)
 			{
 				tabsHeight = _tabs.MinimumHeight;
 				var tabsBound = bound;
 				tabsBound.Y += (bound.Height - tabsHeight);
 				tabsBound.Height = tabsHeight;
 				_tabs.Geometry = tabsBound;
-				if (HasMoreItems)
+				if (_moreItemsDrawer != null && _moreItemsList != null)
 				{
 					int moreItemListHeight = _moreItemsList.HeightRequest;
 					moreItemListHeight = Math.Min(moreItemListHeight, bound.Height - tabsHeight);
@@ -438,24 +446,30 @@ namespace Microsoft.Maui.Controls.Platform
 			_contentHolder.Geometry = bound;
 		}
 
-		EToolbarItem AppendTabsItem(string text, ImageSource iconSource)
+		EToolbarItem? AppendTabsItem(string text, ImageSource iconSource)
 		{
-			var item = _tabs.Append(text);
-			if (iconSource != null)
+			_ = NativeParent ?? throw new InvalidOperationException($"{nameof(NativeParent)} should have been set by base class.");
+
+			var item = _tabs?.Append(text);
+			if (item != null)
 			{
-				TImage image = new TImage(NativeParent);
-				var provider = MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
-				var service = provider.GetRequiredImageSourceService(iconSource);
+				if (iconSource != null)
+				{
+					TImage image = new TImage(NativeParent);
+					var provider = MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
+					var service = provider.GetRequiredImageSourceService(iconSource);
 
-				_ = service.GetImageAsync(iconSource, image);
+					_ = service.GetImageAsync(iconSource, image);
 
-				item.SetIconPart(image);
+					item.SetIconPart(image);
+				}
+
+				item.SetBackgroundColor(_tabBarBackgroudColor);
+				item.SetUnderlineColor(EColor.Transparent);
+				item.SetTextColor(_tabBarTitleColor);
+				return item;
 			}
-			item.SetBackgroundColor(_tabBarBackgroudColor);
-			item.SetUnderlineColor(EColor.Transparent);
-			item.SetTextColor(_tabBarTitleColor);
-
-			return item;
+			return null;
 		}
 	}
 }

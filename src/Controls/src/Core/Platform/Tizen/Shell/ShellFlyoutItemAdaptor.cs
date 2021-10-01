@@ -1,9 +1,10 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Handlers;
 using ElmSharp;
+using Microsoft.Maui.Controls.Internals;
 using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -11,19 +12,19 @@ namespace Microsoft.Maui.Controls.Platform
 	public class ShellFlyoutItemAdaptor : ItemAdaptor
 	{
 		Dictionary<EvasObject, View> _nativeFormsTable = new Dictionary<EvasObject, View>();
-		Dictionary<object, View> _dataBindedViewTable = new Dictionary<object, View>();
+		Dictionary<object, View?> _dataBindedViewTable = new Dictionary<object, View?>();
 		
 		Shell _shell;
-		View _headerCache;
+		View? _headerCache;
 		IMauiContext _context;
 
 		protected Shell Shell => _shell;
 
 		public bool HasHeader { get; set; }
 
-		protected virtual DataTemplate DefaultItemTemplate => null;
+		protected virtual DataTemplate? DefaultItemTemplate => null;
 
-		protected virtual DataTemplate DefaultMenuItemTemplate => null;
+		protected virtual DataTemplate? DefaultMenuItemTemplate => null;
 
 		public ShellFlyoutItemAdaptor(Shell shell, IMauiContext context, IEnumerable items, bool hasHeader) : base(items)
 		{
@@ -32,32 +33,37 @@ namespace Microsoft.Maui.Controls.Platform
 			HasHeader = hasHeader;
 		}
 
-		public override EvasObject CreateNativeView(EvasObject parent)
+		public override EvasObject? CreateNativeView(EvasObject parent)
 		{
 			return CreateNativeView(0, parent);
 		}
 
-		DataTemplate GetDataTemplate(int index)
+		DataTemplate? GetDataTemplate(int index)
 		{
-			var item = (BindableObject)this[index];
-			DataTemplate dataTemplate = (Shell as IShellController)?.GetFlyoutItemDataTemplate(item);
-			if (item is IMenuItemController)
+			var item = this[index];
+			if (item != null && item is BindableObject bo)
 			{
-				if (DefaultMenuItemTemplate != null && Shell.MenuItemTemplate == dataTemplate)
-					dataTemplate = DefaultMenuItemTemplate;
-			}
-			else
-			{
-				if (DefaultItemTemplate != null && Shell.ItemTemplate == dataTemplate)
-					dataTemplate = DefaultItemTemplate;
+				DataTemplate? dataTemplate = (Shell as IShellController)?.GetFlyoutItemDataTemplate(bo);
+				if (item is IMenuItemController)
+				{
+					if (DefaultMenuItemTemplate != null && Shell.MenuItemTemplate == dataTemplate)
+						dataTemplate = DefaultMenuItemTemplate;
+				}
+				else
+				{
+					if (DefaultItemTemplate != null && Shell.ItemTemplate == dataTemplate)
+						dataTemplate = DefaultItemTemplate;
+				}
+
+				var template = dataTemplate.SelectDataTemplate(item, Shell);
+
+				return template;
 			}
 
-			var template = dataTemplate.SelectDataTemplate(item, Shell);
-
-			return template;
+			return null;
 		}
 
-		public override EvasObject CreateNativeView(int index, EvasObject parent)
+		public override EvasObject? CreateNativeView(int index, EvasObject parent)
 		{
 
 			var template = GetDataTemplate(index);
@@ -74,12 +80,12 @@ namespace Microsoft.Maui.Controls.Platform
 			return null;
 		}
 
-		public override EvasObject GetFooterView(EvasObject parent)
+		public override EvasObject? GetFooterView(EvasObject parent)
 		{
 			return null;
 		}
 
-		public override EvasObject GetHeaderView(EvasObject parent)
+		public override EvasObject? GetHeaderView(EvasObject parent)
 		{
 			if (!HasHeader)
 				return null;
@@ -112,7 +118,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override Size MeasureItem(int index, int widthConstraint, int heightConstraint)
 		{
-			if (_dataBindedViewTable.TryGetValue(this[index], out View createdView) && createdView != null)
+			var item = this[index];
+			if (item != null && _dataBindedViewTable.TryGetValue(item, out View? createdView) && createdView != null)
 			{
 				return createdView.Measure(DPExtensions.ConvertToScaledDP(widthConstraint), DPExtensions.ConvertToScaledDP(heightConstraint), MeasureFlags.IncludeMargins).Request.ToEFLPixel();
 			}
@@ -127,11 +134,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override void SetBinding(EvasObject native, int index)
 		{
-			if (_nativeFormsTable.TryGetValue(native, out View view))
+			if (_nativeFormsTable.TryGetValue(native, out View? view))
 			{
 				ResetBindedView(view);
-				view.BindingContext = this[index];
-				_dataBindedViewTable[this[index]] = view;
+				var item = this[index];
+				if (item != null)
+				{
+					view.BindingContext = item;
+					_dataBindedViewTable[item] = view;
+				}
 
 				view.MeasureInvalidated += OnItemMeasureInvalidated;
 				Shell.AddLogicalChild(view);
@@ -140,7 +151,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override void UnBinding(EvasObject native)
 		{
-			if (_nativeFormsTable.TryGetValue(native, out View view))
+			if (_nativeFormsTable.TryGetValue(native, out View? view))
 			{
 				view.MeasureInvalidated -= OnItemMeasureInvalidated;
 				ResetBindedView(view);
@@ -157,13 +168,16 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		void OnItemMeasureInvalidated(object sender, EventArgs e)
+		void OnItemMeasureInvalidated(object? sender, EventArgs e)
 		{
 			var data = (sender as View)?.BindingContext ?? null;
-			int index = GetItemIndex(data);
-			if (index != -1)
+			if (data != null)
 			{
-				CollectionView?.ItemMeasureInvalidated(index);
+				int index = GetItemIndex(data);
+				if (index != -1)
+				{
+					CollectionView?.ItemMeasureInvalidated(index);
+				}
 			}
 		}
 	}

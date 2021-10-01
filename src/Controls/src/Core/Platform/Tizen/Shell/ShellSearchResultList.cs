@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using ElmSharp;
-using Tizen.UIExtensions.ElmSharp;
 using EColor = ElmSharp.Color;
+using TThemeConstants = Tizen.UIExtensions.ElmSharp.ThemeConstants;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 			SelectionMode = GenItemSelectionMode.Always;
 			BackgroundColor = EColor.White;
 
-			_defaultClass = new GenItemClass(ThemeConstants.GenItemClass.Styles.Full)
+			_defaultClass = new GenItemClass(TThemeConstants.GenItemClass.Styles.Full)
 			{
 				GetContentHandler = GetContent,
 			};

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using ElmSharp;
@@ -8,10 +10,10 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public class ShellSectionStack : EBox, IAppearanceObserver, IDisposable
 	{
-		ShellNavBar _navBar = null;
-		Page _currentPage = null;
-		SimpleViewStack _viewStack = null;
-		IShellSectionRenderer _shellSectionView;
+		ShellNavBar? _navBar = null;
+		Page? _currentPage = null;
+		SimpleViewStack _viewStack;
+		IShellSectionHandler? _shellSectionHandler;
 
 		bool _disposed = false;
 		bool _navBarIsVisible = true;
@@ -20,12 +22,25 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			ShellSection = section;
 			MauiContext = context;
+
+			SetAlignment(-1, -1);
+			SetWeight(1, 1);
+			SetLayoutCallback(OnLayout);
+
+			_viewStack = new SimpleViewStack(NativeParent);
+			if (Device.Idiom == TargetIdiom.Phone)
+			{
+				_viewStack.BackgroundColor = ElmSharp.Color.White;
+			}
+			_viewStack.Show();
+			PackEnd(_viewStack);
+
 			InitializeComponent();
 		}
 
-		protected IMauiContext MauiContext { get; private set; }
+		protected IMauiContext? MauiContext { get; private set; }
 
-		protected EvasObject NativeParent
+		protected EvasObject? NativeParent
 		{
 			get => MauiContext?.Context?.BaseLayout;
 		}
@@ -85,24 +100,16 @@ namespace Microsoft.Maui.Controls.Platform
 			_disposed = true;
 		}
 
-		protected virtual IShellSectionRenderer CreateShellSectionView(ShellSection section)
+		protected virtual IShellSectionHandler CreateShellSectionView(ShellSection section)
 		{
-			return new ShellSectionView(section, MauiContext);
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			return new ShellSectionHandler(section, MauiContext);
 		}
 
 		void InitializeComponent()
 		{
-			SetAlignment(-1, -1);
-			SetWeight(1, 1);
-			SetLayoutCallback(OnLayout);
-
-			_viewStack = new SimpleViewStack(NativeParent);
-			if (Device.Idiom == TargetIdiom.Phone)
-			{
-				_viewStack.BackgroundColor = ElmSharp.Color.White;
-			}
-			_viewStack.Show();
-			PackEnd(_viewStack);
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			_navBar = new ShellNavBar(MauiContext);
 			_navBar.Show();
@@ -114,13 +121,13 @@ namespace Microsoft.Maui.Controls.Platform
 			((IShellController)Shell.Current).AddAppearanceObserver(this, ShellSection);
 			((IShellController)Shell.Current).AddFlyoutBehaviorObserver(_navBar);
 
-			_shellSectionView = CreateShellSectionView(ShellSection);
-			_shellSectionView.NativeView.Show();
-			_viewStack.Push(_shellSectionView.NativeView);
+			_shellSectionHandler = CreateShellSectionView(ShellSection);
+			_shellSectionHandler.NativeView.Show();
+			_viewStack.Push(_shellSectionHandler.NativeView);
 
 			Device.BeginInvokeOnMainThread(() =>
 			{
-				(_shellSectionView.NativeView as Widget)?.SetFocus(true);
+				(_shellSectionHandler.NativeView as Widget)?.SetFocus(true);
 			});
 		}
 
@@ -137,7 +144,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_currentPage = page;
 			_currentPage.PropertyChanged += OnPagePropertyChanged;
 			NavBarIsVisible = Shell.GetNavBarIsVisible(page);
-			_navBar.SetPage(page);
+			_navBar?.SetPage(page);
 		}
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
@@ -149,17 +156,18 @@ namespace Microsoft.Maui.Controls.Platform
 			var backgroundColor = appearance?.BackgroundColor;
 			var foregroundColor = appearance?.ForegroundColor;
 
-			_navBar.TitleColor = titleColor.IsDefault() ? ShellView.DefaultTitleColor : titleColor.ToNativeEFL();
-			_navBar.BackgroundColor = backgroundColor.IsDefault() ? ShellView.DefaultBackgroundColor : backgroundColor.ToNativeEFL();
-			_navBar.ForegroundColor = foregroundColor.IsDefault() ? ShellView.DefaultForegroundColor : foregroundColor.ToNativeEFL();
+			_navBar.TitleColor = titleColor.IsDefault() ? ShellView.DefaultTitleColor : (titleColor?.ToNativeEFL()).GetValueOrDefault();
+			_navBar.BackgroundColor = backgroundColor.IsDefault() ? ShellView.DefaultBackgroundColor : (backgroundColor?.ToNativeEFL()).GetValueOrDefault();
+			_navBar.ForegroundColor = foregroundColor.IsDefault() ? ShellView.DefaultForegroundColor : (foregroundColor?.ToNativeEFL()).GetValueOrDefault();
 		}
 
 
-		protected virtual void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected virtual void OnPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.TitleProperty.PropertyName)
 			{
-				_navBar.Title = (sender as Page)?.Title;
+				if (_navBar != null)
+					_navBar.Title = (sender as Page)?.Title ?? "";
 			}
 			else if (e.PropertyName == Shell.NavBarIsVisibleProperty.PropertyName)
 			{
@@ -167,11 +175,12 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else if (e.PropertyName == Shell.TitleViewProperty.PropertyName)
 			{
-				_navBar.TitleView = Shell.GetTitleView(sender as Page);
+				if (_navBar != null)
+					_navBar.TitleView = Shell.GetTitleView(sender as Page);
 			}
 		}
 
-		void OnNavigationRequested(object sender, Internals.NavigationRequestedEventArgs e)
+		void OnNavigationRequested(object? sender, Internals.NavigationRequestedEventArgs e)
 		{
 			if (e.RequestType == Internals.NavigationRequestType.Push)
 			{
@@ -196,8 +205,10 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateHasBackButton();
 		}
 
-		void RemoveRequest(object sender, Internals.NavigationRequestedEventArgs request)
+		void RemoveRequest(object? sender, Internals.NavigationRequestedEventArgs request)
 		{
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
 			var nativePage = request.Page.ToNative(MauiContext);
 			if (nativePage == null)
 			{
@@ -208,20 +219,22 @@ namespace Microsoft.Maui.Controls.Platform
 			request.Task = Task.FromResult(true);
 		}
 
-		void PopRequest(object sender, Internals.NavigationRequestedEventArgs request)
+		void PopRequest(object? sender, Internals.NavigationRequestedEventArgs request)
 		{
 			_viewStack.Pop();
 			request.Task = Task.FromResult(true);
 		}
 
-		void PopToRootRequest(object sender, Internals.NavigationRequestedEventArgs request)
+		void PopToRootRequest(object? sender, Internals.NavigationRequestedEventArgs request)
 		{
 			_viewStack.PopToRoot();
 			request.Task = Task.FromResult(true);
 		}
 
-		void PushRequest(object sender, Internals.NavigationRequestedEventArgs request)
+		void PushRequest(object? sender, Internals.NavigationRequestedEventArgs request)
 		{
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
 			var nativePage = request.Page.ToNative(MauiContext);
 			_viewStack.Push(nativePage);
 			request.Task = Task.FromResult(true);
@@ -231,8 +244,10 @@ namespace Microsoft.Maui.Controls.Platform
 			});
 		}
 
-		void InsertRequest(object sender, Internals.NavigationRequestedEventArgs request)
+		void InsertRequest(object? sender, Internals.NavigationRequestedEventArgs request)
 		{
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
 			var before = request.BeforePage.ToNative(MauiContext);
 			if (before == null)
 			{
@@ -246,6 +261,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateHasBackButton()
 		{
+			if (_navBar == null)
+				return;
+
 			if (_viewStack.Stack.Count > 1)
 				_navBar.HasBackButton = true;
 			else
@@ -262,17 +280,20 @@ namespace Microsoft.Maui.Controls.Platform
 			if (NavBarIsVisible)
 			{
 				var navBound = bound;
-				navBarHeight = DPExtensions.ConvertToScaledPixel(_navBar.GetDefaultHeight());
+				navBarHeight = DPExtensions.ConvertToScaledPixel(_navBar.GetDefaultNavBarHeight());
 				navBound.Height = navBarHeight;
 
-				_navBar.Show();
-				_navBar.Geometry = navBound;
-				_navBar.RaiseTop();
+				if (_navBar != null)
+				{
+					_navBar.Show();
+					_navBar.Geometry = navBound;
+					_navBar.RaiseTop();
+				}
 			}
 			else
 			{
 				navBarHeight = 0;
-				_navBar.Hide();
+				_navBar?.Hide();
 			}
 
 			bound.Y += navBarHeight;
