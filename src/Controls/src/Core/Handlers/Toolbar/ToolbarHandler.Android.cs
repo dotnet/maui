@@ -23,35 +23,79 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static PropertyMapper<Toolbar, ToolbarHandler> Mapper =
 			   new PropertyMapper<Toolbar, ToolbarHandler>(ElementMapper)
 			   {
-				   [nameof(Toolbar.Visible)] = UpdateToolBar,
-				   [nameof(Toolbar.BackButtonVisible)] = UpdateToolBar,
-				   [nameof(Toolbar.TitleIcon)] = UpdateToolBar,
-				   [nameof(Toolbar.TitleView)] = UpdateToolBar,
-				   [nameof(Toolbar.IconColor)] = UpdateToolBar,
-				   [nameof(Toolbar.Title)] = UpdateToolBar,
-				   [nameof(Toolbar.ToolbarItems)] = UpdateToolBar,
-				   [nameof(Toolbar.BackButtonTitle)] = UpdateToolBar,
-				   [nameof(Toolbar.BarBackgroundColor)] = UpdateToolBar,
-				   [nameof(Toolbar.BarBackground)] = UpdateToolBar,
-				   [nameof(Toolbar.BarTextColor)] = UpdateToolBar,
-				   [nameof(Toolbar.IconColor)] = UpdateToolBar,
+				   [nameof(Toolbar.IsVisible)] = MapIsVisible,
+				   [nameof(Toolbar.BackButtonVisible)] = MapBackButtonVisible,
+				   [nameof(Toolbar.TitleIcon)] = MapTitleIcon,
+				   [nameof(Toolbar.TitleView)] = MapTitleView,
+				   [nameof(Toolbar.IconColor)] = MapIconColor,
+				   [nameof(Toolbar.Title)] = MapTitle,
+				   [nameof(Toolbar.ToolbarItems)] = MapToolbarItems,
+				   [nameof(Toolbar.BackButtonTitle)] = MapBackButtonTitle,
+				   [nameof(Toolbar.BarBackgroundColor)] = MapBarBackgroundColor,
+				   [nameof(Toolbar.BarBackground)] = MapBarBackground,
+				   [nameof(Toolbar.BarTextColor)] = MapBarTextColor,
+				   [nameof(Toolbar.IconColor)] = MapIconColor,
 			   };
 
-		private static void UpdateToolBar(ToolbarHandler arg1, Toolbar arg2)
+		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.UpdateToolbar();
+			arg1.NativeView.UpdateBarTextColor(arg2);
+		}
+
+		public static void MapBarBackground(ToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.NativeView.UpdateBarTextColor(arg2);
+		}
+
+		public static void MapBarBackgroundColor(ToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.NativeView.UpdateBarTextColor(arg2);
+		}
+
+		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.NativeView.UpdateBackButton(arg2);
+		}
+
+		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.UpdateMenu();
+		}
+
+		public static void MapTitle(ToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.NativeView.UpdateBarTextColor(arg2);
+		}
+
+		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.NativeView.UpdateBarTextColor(arg2);
+		}
+
+		public static void MapTitleView(ToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.UpdateTitleView();
+		}
+
+		public static void MapTitleIcon(ToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.NativeView.UpdateTitleIcon(arg2);
+		}
+
+		public static void MapBackButtonVisible(ToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.NativeView.UpdateBackButton(arg2);
+		}
+
+		public static void MapIsVisible(ToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.NativeView.UpdateIsVisible(arg2);
 		}
 
 		IViewHandler? _titleViewHandler;
 		Container? _titleView;
-		Android.Widget.ImageView? _titleIconView;
-		ImageSource? _imageSource;
 		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
 		List<ToolbarItem> _currentToolbarItems = new List<ToolbarItem>();
-		Drawable? _defaultNavigationIcon;
-		//ActionBarDrawerToggle? _drawerToggle;
-		//DrawerLayout? _drawerLayout;
-		//FlyoutPage? _flyoutPage;
 
 		public static CommandMapper<Toolbar, ToolbarHandler> CommandMapper = new()
 		{
@@ -76,158 +120,24 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (toolbarItems != null)
 				newToolBarItems.AddRange(toolbarItems);
 
-			NativeView.OnToolbarItemPropertyChanged(e, (ToolbarItem?)sender, newToolBarItems, MauiContext!, null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
-		}
-
-		void UpdateToolbarVisibility()
-		{
-			_ = MauiContext ?? throw new ArgumentNullException(nameof(MauiContext));
-			_ = MauiContext.Context ?? throw new ArgumentNullException(nameof(MauiContext.Context));
-
-			bool showNavBar = VirtualView.Visible;
-			var lp = NativeView.LayoutParameters;
-			if (lp == null)
-				return;
-
-			if (!showNavBar)
-			{
-				lp.Height = 0;
-			}
-			else
-			{
-				if (VirtualView.BarHeight != null)
-					lp.Height = (int)MauiContext.Context.ToPixels(VirtualView.BarHeight.Value);
-				else
-					lp.Height = ActionBarHeight();
-			}
-
-			NativeView.LayoutParameters = lp;
-
-			int ActionBarHeight()
-			{
-				int actionBarHeight = (int)MauiContext.Context.GetThemeAttributePixels(Resource.Attribute.actionBarSize);
-				return actionBarHeight;
-			}
+			if (sender is ToolbarItem ti)
+				NativeView.OnToolbarItemPropertyChanged(e, ti, newToolBarItems, MauiContext!, null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 
 		protected virtual void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
 		{
+			_ = MauiContext ?? throw new ArgumentNullException(nameof(MauiContext));
 			ToolbarExtensions.UpdateMenuItemIcon(MauiContext, menuItem, toolBarItem, null);
 		}
 
-
-
-		internal void ToolbarPropertyChanged() => UpdateToolbar();
-
 		void UpdateMenu()
 		{
+			_ = MauiContext ?? throw new ArgumentNullException(nameof(MauiContext));
+
 			if (_currentMenuItems == null)
 				return;
 
 			NativeView.UpdateMenuItems(VirtualView.ToolbarItems, MauiContext, null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
-		}
-
-		protected virtual void UpdateToolbar()
-		{
-			UpdateMenu();
-
-			bool isNavigated = VirtualView.HasBackStack;
-
-			_defaultNavigationIcon ??= NativeView.NavigationIcon;
-
-			if (isNavigated)
-			{
-				if (VirtualView.BackButtonVisible)
-				{
-					NativeView.NavigationIcon ??= _defaultNavigationIcon;
-
-					var backButtonTitle = VirtualView.BackButtonTitle;
-					ImageSource image = VirtualView.TitleIcon;
-
-					if (!string.IsNullOrEmpty(backButtonTitle))
-					{
-						NativeView.NavigationContentDescription = backButtonTitle;
-					}
-					else if (image == null ||
-						NativeView.SetNavigationContentDescription(image) == null)
-					{
-						NativeView.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
-					}
-				}
-				else
-				{
-					NativeView.NavigationIcon = null;
-				}
-			}
-
-			var tintColor = VirtualView.BarBackgroundColor;
-
-			if (tintColor == null)
-				NativeView.BackgroundTintMode = null;
-			else
-			{
-				NativeView.BackgroundTintMode = PorterDuff.Mode.Src;
-				NativeView.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToNative());
-			}
-
-			Brush barBackground = VirtualView.BarBackground;
-			NativeView.UpdateBackground(barBackground);
-
-			var textColor = VirtualView.BarTextColor;
-			if (textColor != null)
-				NativeView.SetTitleTextColor(textColor.ToNative().ToArgb());
-
-			var navIconColor = VirtualView.IconColor;
-			if (navIconColor != null && NativeView.NavigationIcon != null)
-				DrawableExtensions.SetColorFilter(NativeView.NavigationIcon, navIconColor, FilterMode.SrcAtop);
-
-			NativeView.Title = VirtualView?.Title ?? string.Empty;
-
-			if (NativeView.NavigationIcon != null && textColor != null)
-			{
-				var icon = this.NativeView.NavigationIcon as DrawerArrowDrawable;
-				if (icon != null)
-					icon.Color = textColor.ToNative().ToArgb();
-			}
-
-			UpdateTitleIcon();
-			UpdateTitleView();
-			UpdateToolbarVisibility();
-		}
-
-		void UpdateTitleIcon()
-		{
-			_ = MauiContext ?? throw new ArgumentNullException(nameof(MauiContext));
-			_ = MauiContext.Context ?? throw new ArgumentNullException(nameof(MauiContext.Context));
-
-			ImageSource source = VirtualView.TitleIcon;
-
-			if (source == null || source.IsEmpty)
-			{
-				NativeView.RemoveView(_titleIconView);
-				_titleIconView?.Dispose();
-				_titleIconView = null;
-				_imageSource = null;
-				return;
-			}
-
-			if (_titleIconView == null)
-			{
-				_titleIconView = new Android.Widget.ImageView(MauiContext.Context);
-				NativeView.AddView(_titleIconView, 0);
-			}
-
-			if (_imageSource != source)
-			{
-				_imageSource = source;
-				_titleIconView.SetImageResource(global::Android.Resource.Color.Transparent);
-
-				source.LoadImage(MauiContext, (result) =>
-				{
-					_titleIconView.SetImageDrawable(result?.Value);
-					AutomationPropertiesProvider.AccessibilitySettingsChanged(_titleIconView, source);
-				});
-			}
 		}
 
 		void UpdateTitleView()

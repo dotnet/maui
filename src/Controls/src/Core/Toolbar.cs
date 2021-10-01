@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Maui.Graphics;
 
@@ -7,24 +8,52 @@ namespace Microsoft.Maui.Controls
 {
 	internal class Toolbar : Element
 	{
-		ToolbarTracker _toolbarTracker = new ToolbarTracker();
-		public IEnumerable<ToolbarItem> ToolbarItems { get; set; }
-		public bool Visible { get; set; } = true;
-		public bool HasBackStack { get; set; }
-		public bool BackButtonVisible { get; set; }
-		public double? BarHeight { get; set; }
-		public string BackButtonTitle { get; set; }
-		public ImageSource TitleIcon { get; set; }
-		public Color BarBackgroundColor { get; set; }
-		public Brush BarBackground { get; set; }
-		public Color BarTextColor { get; set; }
-		public Color IconColor { get; set; }
-		public string Title { get; set; }
-		public VisualElement TitleView { get; set; }
-		
 		NavigationPage _currentNavigationPage;
-
 		Page _currentPage;
+		VisualElement _titleView;
+		string _title;
+		Color _iconColor;
+		Color _barTextColor;
+		Brush _barBackground;
+		Color _barBackgroundColor;
+		ImageSource _titleIcon;
+		string _backButtonTitle;
+		double? _barHeight;
+		bool _backButtonVisible;
+		bool _hasBackStack;
+		bool _isVisible = true;
+		IEnumerable<ToolbarItem> _toolbarItems;
+		ToolbarTracker _toolbarTracker = new ToolbarTracker();
+
+		public Toolbar()
+		{
+			_toolbarTracker.CollectionChanged += (_, __) => ToolbarItems = _toolbarTracker.ToolbarItems;
+		}
+
+		public IEnumerable<ToolbarItem> ToolbarItems { get => _toolbarItems; set => SetProperty(ref _toolbarItems, value); }
+		public bool IsVisible { get => _isVisible; set => SetProperty(ref _isVisible, value); }
+		public bool HasBackStack { get => _hasBackStack; set => SetProperty(ref _hasBackStack, value); }
+		public bool BackButtonVisible { get => _backButtonVisible; set => SetProperty(ref _backButtonVisible, value); }
+		public double? BarHeight { get => _barHeight; set => SetProperty(ref _barHeight, value); }
+		public string BackButtonTitle { get => _backButtonTitle; set => SetProperty(ref _backButtonTitle, value); }
+		public ImageSource TitleIcon { get => _titleIcon; set => SetProperty(ref _titleIcon, value); }
+		public Color BarBackgroundColor { get => _barBackgroundColor; set => SetProperty(ref _barBackgroundColor, value); }
+		public Brush BarBackground { get => _barBackground; set => SetProperty(ref _barBackground, value); }
+		public Color BarTextColor { get => _barTextColor; set => SetProperty(ref _barTextColor, value); }
+		public Color IconColor { get => _iconColor; set => SetProperty(ref _iconColor, value); }
+		public string Title { get => _title; set => SetProperty(ref _title, value); }
+		public VisualElement TitleView { get => _titleView; set => SetProperty(ref _titleView, value); }
+
+
+		void SetProperty<T>(ref T backingStore, T value,
+			[CallerMemberName] string propertyName = "")
+		{
+			if (EqualityComparer<T>.Default.Equals(backingStore, value))
+				return;
+
+			backingStore = value;
+			Handler?.UpdateValue(propertyName);
+		}
 
 		internal void ApplyNavigationPage(NavigationPage navigationPage)
 		{
@@ -40,7 +69,7 @@ namespace Microsoft.Maui.Controls
 			ApplyChanges(_currentNavigationPage);
 		}
 
-		private void OnPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void OnPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (sender == _currentNavigationPage && e.Is(NavigationPage.CurrentPageProperty))
 			{
@@ -99,7 +128,7 @@ namespace Microsoft.Maui.Controls
 			_toolbarTracker.Target = navigationPage.CurrentPage;
 			_toolbarTracker.AdditionalTargets = navigationPage.GetParentPages();
 			ToolbarItems = _toolbarTracker.ToolbarItems;
-			Visible = NavigationPage.GetHasNavigationBar(currentPage);
+			IsVisible = NavigationPage.GetHasNavigationBar(currentPage);
 			BackButtonVisible = NavigationPage.GetHasBackButton(currentPage) && stack.Count > 1;
 
 			if (navigationPage.IsSet(PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))
@@ -119,10 +148,6 @@ namespace Microsoft.Maui.Controls
 			IconColor = NavigationPage.GetIconColor(currentPage);
 			Title = currentPage.Title;
 			TitleView = NavigationPage.GetTitleView(navigationPage);
-
-
-			// TODO TOOLBAR MAUI: This will trigger a full update
-			Handler?.UpdateValue(nameof(Title));
 		}
 	}
 }
