@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
@@ -30,6 +31,16 @@ namespace Microsoft.Maui.Graphics
 				throw new ArgumentException("NaN is not a valid value for height");
 			_width = width;
 			_height = height;
+		}
+
+		public SizeF(Vector2 vector)
+		{
+			if (float.IsNaN(vector.X))
+				throw new ArgumentException("NaN is not a valid value for X");
+			if (float.IsNaN(vector.Y))
+				throw new ArgumentException("NaN is not a valid value for Y");
+			_width = vector.X;
+			_height = vector.Y;
 		}
 
 		public bool IsZero => _width == 0 && _height == 0;
@@ -86,6 +97,11 @@ namespace Microsoft.Maui.Graphics
 		public static explicit operator PointF(SizeF size)
 		{
 			return new PointF(size.Width, size.Height);
+		}
+
+		public static explicit operator Vector2(SizeF size)
+		{
+			return new Vector2(size.Width, size.Height);
 		}
 
 		public bool Equals(SizeF other)

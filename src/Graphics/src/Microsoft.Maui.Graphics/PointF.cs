@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
@@ -30,6 +31,12 @@ namespace Microsoft.Maui.Graphics
 		{
 			X = sz.Width;
 			Y = sz.Height;
+		}
+
+		public PointF(Vector2 v)
+		{
+			X = v.X;
+			Y = v.Y;
 		}
 
 		public override bool Equals(object o)
@@ -105,6 +112,10 @@ namespace Microsoft.Maui.Graphics
 			y = Y;
 		}
 		public static implicit operator Point(PointF p) => new Point(p.X, p.Y);
+
+		public static implicit operator PointF(Vector2 v) => new PointF(v);
+
+		public static explicit operator Vector2(PointF p) => new Vector2(p.X, p.Y);
 
 		public static bool TryParse(string value, out PointF pointF)
 		{
