@@ -114,78 +114,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Theory]
-		[InlineData(50, 50, 100, 100)]
-		[InlineData(100, 0, 150, 100)]
-		[InlineData(0, 100, 50, 100)]
-		public void LayoutCalculatesHorizontalMarginsCorrectly(
-			double marginL, double marginR, double expectedX, double expectedW)
-		{
-			var element = Substitute.For<IView>();
-
-			element.Margin.Returns(new Thickness(marginL, 0, marginR, 0));
-			element.DesiredSize.Returns(new Size(marginL + 100 + marginR, 100));
-			element.HorizontalLayoutAlignment.Returns(LayoutAlignment.Center);
-			element.VerticalLayoutAlignment.Returns(LayoutAlignment.Start);
-			element.Width.Returns(Dimension.Unset);
-			element.Height.Returns(Dimension.Unset);
-			element.FlowDirection.Returns(FlowDirection.LeftToRight);
-
-			var frame = element.ComputeFrame(new Rectangle(0, 0, 300, 100));
-
-			Assert.Equal(new Rectangle(expectedX, 0, expectedW, 100), frame);
-		}
-
-		[Theory]
-		[InlineData(50, 50, 100, 100)]
-		[InlineData(100, 0, 150, 100)]
-		[InlineData(0, 100, 50, 100)]
-		public void LayoutCalculatesVerticalMarginsCorrectly(
-			double marginT, double marginB, double expectedY, double expectedH)
-		{
-			var element = Substitute.For<IView>();
-
-			element.Margin.Returns(new Thickness(0, marginT, 0, marginB));
-			element.DesiredSize.Returns(new Size(100, marginT + 100 + marginB));
-			element.HorizontalLayoutAlignment.Returns(LayoutAlignment.Start);
-			element.VerticalLayoutAlignment.Returns(LayoutAlignment.Center);
-			element.Width.Returns(Dimension.Unset);
-			element.Height.Returns(Dimension.Unset);
-			element.FlowDirection.Returns(FlowDirection.LeftToRight);
-
-			var frame = element.ComputeFrame(new Rectangle(0, 0, 100, 300));
-
-			Assert.Equal(new Rectangle(0, expectedY, 100, expectedH), frame);
-		}
-
-		//[Fact]
-		//public void FrameAccountsForHorizontalLayoutAlignment2()
-		//{
-		//	LayoutAlignment layoutAlignment;
-		//	Point offset;
-		//	Thickness margin=new Thickness(50);
-		//	double expectedX;
-		//	double expectedWidth;
-
-		//	var widthConstraint = 300;
-		//	var heightConstraint = 50;
-		//	var viewSizeIncludingMargins = new Size(100, 50);
-
-		//	var element = Substitute.For<IView>();
-
-		//	element.Margin.Returns(margin);
-		//	element.DesiredSize.Returns(viewSizeIncludingMargins);
-		//	element.HorizontalLayoutAlignment.Returns(layoutAlignment);
-		//	element.Width.Returns(Dimension.Unset);
-		//	element.Height.Returns(Dimension.Unset);
-		//	element.FlowDirection.Returns(FlowDirection.LeftToRight);
-
-		//	var frame = element.ComputeFrame(new Rectangle(offset.X, offset.Y, widthConstraint, heightConstraint));
-
-		//	Assert.Equal(expectedX, frame.Left);
-		//	Assert.Equal(expectedWidth, frame.Width);
-		//}
-
-		[Theory]
 		[MemberData(nameof(AlignmentTestData))]
 		public void FrameAccountsForHorizontalLayoutAlignment(LayoutAlignment layoutAlignment, Point offset, Thickness margin,
 			double expectedX, double expectedWidth)
@@ -207,6 +135,62 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			Assert.Equal(expectedX, frame.Left);
 			Assert.Equal(expectedWidth, frame.Width);
+		}
+
+		[Theory]
+		[InlineData(LayoutAlignment.Center, 50, 50, 100, 100)]
+		[InlineData(LayoutAlignment.Center, 100, 0, 150, 100)]
+		[InlineData(LayoutAlignment.Center, 0, 100, 50, 100)]
+		[InlineData(LayoutAlignment.Start, 50, 50, 50, 100)]
+		[InlineData(LayoutAlignment.Start, 100, 0, 100, 100)]
+		[InlineData(LayoutAlignment.Start, 0, 100, 0, 100)]
+		[InlineData(LayoutAlignment.End, 50, 50, 150, 100)]
+		[InlineData(LayoutAlignment.End, 100, 0, 200, 100)]
+		[InlineData(LayoutAlignment.End, 0, 100, 100, 100)]
+		public void LayoutCalculatesHorizontalMarginsCorrectly(
+			LayoutAlignment alignment, double marginL, double marginR, double expectedX, double expectedW)
+		{
+			var element = Substitute.For<IView>();
+
+			element.Margin.Returns(new Thickness(marginL, 0, marginR, 0));
+			element.DesiredSize.Returns(new Size(marginL + 100 + marginR, 100));
+			element.HorizontalLayoutAlignment.Returns(alignment);
+			element.VerticalLayoutAlignment.Returns(LayoutAlignment.Start);
+			element.Width.Returns(Dimension.Unset);
+			element.Height.Returns(Dimension.Unset);
+			element.FlowDirection.Returns(FlowDirection.LeftToRight);
+
+			var frame = element.ComputeFrame(new Rectangle(0, 0, 300, 100));
+
+			Assert.Equal(new Rectangle(expectedX, 0, expectedW, 100), frame);
+		}
+
+		[Theory]
+		[InlineData(LayoutAlignment.Center, 50, 50, 100, 100)]
+		[InlineData(LayoutAlignment.Center, 100, 0, 150, 100)]
+		[InlineData(LayoutAlignment.Center, 0, 100, 50, 100)]
+		[InlineData(LayoutAlignment.Start, 50, 50, 50, 100)]
+		[InlineData(LayoutAlignment.Start, 100, 0, 100, 100)]
+		[InlineData(LayoutAlignment.Start, 0, 100, 0, 100)]
+		[InlineData(LayoutAlignment.End, 50, 50, 150, 100)]
+		[InlineData(LayoutAlignment.End, 100, 0, 200, 100)]
+		[InlineData(LayoutAlignment.End, 0, 100, 100, 100)]
+		public void LayoutCalculatesVerticalMarginsCorrectly(
+			LayoutAlignment alignment, double marginT, double marginB, double expectedY, double expectedH)
+		{
+			var element = Substitute.For<IView>();
+
+			element.Margin.Returns(new Thickness(0, marginT, 0, marginB));
+			element.DesiredSize.Returns(new Size(100, marginT + 100 + marginB));
+			element.HorizontalLayoutAlignment.Returns(LayoutAlignment.Start);
+			element.VerticalLayoutAlignment.Returns(alignment);
+			element.Width.Returns(Dimension.Unset);
+			element.Height.Returns(Dimension.Unset);
+			element.FlowDirection.Returns(FlowDirection.LeftToRight);
+
+			var frame = element.ComputeFrame(new Rectangle(0, 0, 100, 300));
+
+			Assert.Equal(new Rectangle(0, expectedY, 100, expectedH), frame);
 		}
 
 		[Theory]
