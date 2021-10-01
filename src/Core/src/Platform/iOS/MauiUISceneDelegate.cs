@@ -48,6 +48,14 @@ namespace Microsoft.Maui
 					dicts.Add(session.UserInfo);
 				if (session.StateRestorationActivity?.UserInfo != null)
 					dicts.Add(session.StateRestorationActivity.UserInfo);
+				if (connectionOptions.UserActivities != null)
+				{
+					foreach (var u in connectionOptions.UserActivities)
+					{
+						if (u is NSUserActivity userActivity && userActivity.UserInfo != null)
+							dicts.Add(userActivity.UserInfo);
+					}
+				}
 
 				var w = MauiUIApplicationDelegate.Current.CreateNativeWindow(scene as UIWindowScene, dicts.ToArray());
 				Window = w.nativeWIndow;
