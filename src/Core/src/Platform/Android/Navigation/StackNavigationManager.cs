@@ -348,7 +348,11 @@ namespace Microsoft.Maui
 
 		protected virtual void OnHardwareBackButtonClicked()
 		{
-			MauiContext.GetActivity().GetWindow()?.BackButtonClicked();
+			if (MauiContext.GetActivity().GetWindow()?.BackButtonClicked() == false &&
+				NavigationStack.Count == 1)
+			{
+				MauiContext.GetActivity().FinishAffinity();
+			}
 		}
 
 		internal void HardwareBackButtonClicked() => OnHardwareBackButtonClicked();
