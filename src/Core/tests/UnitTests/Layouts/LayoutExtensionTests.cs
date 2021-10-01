@@ -111,8 +111,56 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			yield return new object[] { LayoutAlignment.Center, point, margin, 110, 100 };
 			yield return new object[] { LayoutAlignment.End, point, margin, 210, 100 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 10, 300 };
-
 		}
+
+		[Theory]
+		[InlineData(50, 50, 100, 100)]
+		[InlineData(100, 0, 150, 100)]
+		public void FrameAccountsForHorizontalLayoutAlignmasdfent(
+			double marginL, double marginR, double expectedX, double expectedW)
+		{
+			var element = Substitute.For<IView>();
+
+			element.Margin.Returns(new Thickness(marginL, 0, marginR, 0));
+			element.DesiredSize.Returns(new Size(marginL + 100 + marginR, 100));
+			element.HorizontalLayoutAlignment.Returns(LayoutAlignment.Center);
+			element.VerticalLayoutAlignment.Returns(LayoutAlignment.Start);
+			element.Width.Returns(Dimension.Unset);
+			element.Height.Returns(Dimension.Unset);
+			element.FlowDirection.Returns(FlowDirection.LeftToRight);
+
+			var frame = element.ComputeFrame(new Rectangle(0, 0, 300, 100));
+
+			Assert.Equal(new Rectangle(expectedX, 0, expectedW, 100), frame);
+		}
+
+		//[Fact]
+		//public void FrameAccountsForHorizontalLayoutAlignment2()
+		//{
+		//	LayoutAlignment layoutAlignment;
+		//	Point offset;
+		//	Thickness margin=new Thickness(50);
+		//	double expectedX;
+		//	double expectedWidth;
+
+		//	var widthConstraint = 300;
+		//	var heightConstraint = 50;
+		//	var viewSizeIncludingMargins = new Size(100, 50);
+
+		//	var element = Substitute.For<IView>();
+
+		//	element.Margin.Returns(margin);
+		//	element.DesiredSize.Returns(viewSizeIncludingMargins);
+		//	element.HorizontalLayoutAlignment.Returns(layoutAlignment);
+		//	element.Width.Returns(Dimension.Unset);
+		//	element.Height.Returns(Dimension.Unset);
+		//	element.FlowDirection.Returns(FlowDirection.LeftToRight);
+
+		//	var frame = element.ComputeFrame(new Rectangle(offset.X, offset.Y, widthConstraint, heightConstraint));
+
+		//	Assert.Equal(expectedX, frame.Left);
+		//	Assert.Equal(expectedWidth, frame.Width);
+		//}
 
 		[Theory]
 		[MemberData(nameof(AlignmentTestData))]
