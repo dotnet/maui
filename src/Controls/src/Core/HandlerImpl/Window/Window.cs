@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Controls
 		public static IPropertyMapper<IWindow, WindowHandler> ControlsLabelMapper = new PropertyMapper<IWindow, WindowHandler>(WindowHandler.WindowMapper)
 		{
 #if __ANDROID__
-			[nameof(Toolbar)] = MapToolbar
+			[nameof(IWindow.Content)] = MapContent,
+			[nameof(Toolbar)] = MapToolbar,
 #endif
 		};
 

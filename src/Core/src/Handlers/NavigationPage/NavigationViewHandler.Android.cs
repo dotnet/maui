@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 
 		private protected override void OnDisconnectHandler(View nativeView)
 		{
-			_navigationManager.Disconnect();
+			_navigationManager?.Disconnect();
 			base.OnDisconnectHandler(nativeView);
 		}
 

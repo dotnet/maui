@@ -46,11 +46,10 @@ namespace Microsoft.Maui
 		}
 
 		// TODO MAUI: replace this with something else
-		internal virtual void SetContentView(IView view)
+		internal virtual void SetContentView(AView view)
 		{
-			var content = view.ToNative(_mauiContext);
 			FragmentManager.BeginTransaction()
-				.Replace(Resource.Id.navigationlayout_content, new FragmentView(content))
+				.Replace(Resource.Id.navigationlayout_content, new FragmentView(view))
 				.SetReorderingAllowed(true)
 				.Commit();
 		}
