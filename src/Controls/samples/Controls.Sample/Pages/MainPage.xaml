@@ -66,12 +66,8 @@
                 Source="header_background"/>
             <Grid
                 RowSpacing="0"
-                Grid.Row="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+                Grid.Row="0"
+                RowDefinitions="Auto,*,Auto">
                 <Label
                     Text=".NET MAUI"
                     Style="{StaticResource TitleStyle}"/>
@@ -79,7 +75,10 @@
                     Grid.Row="1"
                     Text="An open-source framework for building iOS, Android, macOS and Windows apps"
                     Style="{StaticResource SubTitleStyle}"/>
-                <Button Text="One more window" Clicked="Button_Clicked" /> 
+                <Button
+                    Grid.Row="2"
+                    Text="One more window"
+                    Clicked="ShowNewWindow" />
             </Grid>
             <!-- SECTIONS -->
             <Grid

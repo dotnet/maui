@@ -67,6 +67,10 @@ namespace Microsoft.Maui.Controls
 				{
 					Console.WriteLine(err.Description);
 				});
+#elif WINDOWS
+			var nativeWindow = MauiWinUIApplication.Current.CreateNativeWindow(window: window);
+			AddWindow(window);
+			nativeWindow.Activate();
 #endif
 		}
 

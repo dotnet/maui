@@ -9,12 +9,8 @@ namespace Maui.Controls.Sample
 {
 	public partial class XamlApp : Application
 	{
-		public static XamlApp Instance = null;
-
 		public XamlApp(IServiceProvider services, ITextService textService)
 		{
-			Instance = this;
-
 			InitializeComponent();
 
 			Services = services;

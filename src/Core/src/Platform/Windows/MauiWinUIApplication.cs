@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -31,7 +30,7 @@ namespace Microsoft.Maui
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}
 
-		UI.Xaml.Window CreateNativeWindow(UI.Xaml.LaunchActivatedEventArgs? args = null)
+		internal UI.Xaml.Window CreateNativeWindow(UI.Xaml.LaunchActivatedEventArgs? args = null, IWindow? window = null)
 		{
 			var winuiWndow = new MauiWinUIWindow();
 
@@ -39,8 +38,11 @@ namespace Microsoft.Maui
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
-			var activationState = new ActivationState(mauiContext, args);
-			var window = Application.CreateWindow(activationState);
+			if (window is null)
+			{
+				var activationState = new ActivationState(mauiContext, args);
+				window = Application.CreateWindow(activationState);
+			}
 
 			winuiWndow.SetWindow(window, mauiContext);
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnWindowCreated>(del => del(winuiWndow));
