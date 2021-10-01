@@ -18,7 +18,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	internal class ToolbarHandler : ElementHandler<Toolbar, MaterialToolbar>
+	public class ToolbarHandler : ElementHandler<Toolbar, MaterialToolbar>
 	{
 		public static PropertyMapper<Toolbar, ToolbarHandler> Mapper =
 			   new PropertyMapper<Toolbar, ToolbarHandler>(ElementMapper)

@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	internal class Toolbar : Element
+	public class Toolbar : Microsoft.Maui.IElement
 	{
 		NavigationPage _currentNavigationPage;
 		Page _currentPage;
@@ -43,6 +43,10 @@ namespace Microsoft.Maui.Controls
 		public Color IconColor { get => _iconColor; set => SetProperty(ref _iconColor, value); }
 		public string Title { get => _title; set => SetProperty(ref _title, value); }
 		public VisualElement TitleView { get => _titleView; set => SetProperty(ref _titleView, value); }
+		public IElementHandler Handler { get; set; }
+
+		Maui.IElement _parent;
+		Maui.IElement Maui.IElement.Parent => _parent;
 
 		void SetProperty<T>(ref T backingStore, T value,
 			[CallerMemberName] string propertyName = "")
@@ -56,6 +60,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void ApplyNavigationPage(NavigationPage navigationPage)
 		{
+			_parent = _parent ?? navigationPage.FindParentOfType<Window>();
 			if (_currentNavigationPage == navigationPage)
 				return;
 
