@@ -20,14 +20,14 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Correct Layout Inflater pulled from Activity")]
 		public void ScopedMauiContextReturnsActivityInflator()
 		{
-			var context = new ScopedMauiContext(GetContext());
+			var context = GetContext().MakeScoped();
 			Assert.Equal(context.GetLayoutInflater(), LayoutInflater.From(Platform.DefaultContext));
 		}
 
 		[Fact(DisplayName = "Correct Fragment Manager pulled from Activity")]
 		public void ScopedMauiContextReturnsActivityFragmentManager()
 		{
-			var context = new ScopedMauiContext(GetContext());
+			var context = GetContext().MakeScoped();
 			Assert.Equal(context.GetFragmentManager(), Platform.DefaultContext.GetFragmentManager());
 		}
 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 		public void ScopedMauiContextReturnsChildFragmentManager()
 		{
 			var manager = new TestFragmentManager();
-			var context = new ScopedMauiContext(GetContext(), fragmentManager: manager);
+			var context = GetContext().MakeScoped(fragmentManager: manager);
 			Assert.NotEqual(context.GetFragmentManager(), Platform.DefaultContext.GetFragmentManager());
 			Assert.Equal(context.GetFragmentManager(), manager);
 		}
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests
 		public void ScopedMauiContextReturnsChildLayoutInflater()
 		{
 			var layoutInflater = new TestLayoutInflater(Platform.DefaultContext);
-			var context = new ScopedMauiContext(GetContext(), layoutInflater: layoutInflater);
+			var context = GetContext().MakeScoped(layoutInflater: layoutInflater);
 			Assert.NotEqual(context.GetLayoutInflater(), LayoutInflater.FromContext(Platform.DefaultContext));
 			Assert.Equal(context.GetLayoutInflater(), layoutInflater);
 		}
@@ -52,9 +52,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Scoped Layout Returns Parent Animation Manager")]
 		public void ScopedMauiContextReturnsParentAnimationManager()
 		{
-			var parentContext = GetContext() as IScopedMauiContext;
-			var context = new ScopedMauiContext(parentContext) as IScopedMauiContext;
-			Assert.Equal(parentContext.AnimationManager, context.AnimationManager);
+			var parentContext = GetContext();
+			var context = parentContext.MakeScoped();
+			Assert.Equal(parentContext.GetAnimationManager(), context.GetAnimationManager());
 		}
 
 		class TestLayoutInflater : LayoutInflater

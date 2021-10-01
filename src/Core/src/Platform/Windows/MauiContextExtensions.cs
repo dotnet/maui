@@ -3,7 +3,7 @@ using Windows.ApplicationModel.Resources.Core;
 
 namespace Microsoft.Maui
 {
-	internal static class MauiContextExtensions
+	internal static partial class MauiContextExtensions
 	{
 		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
 		{
@@ -21,6 +21,9 @@ namespace Microsoft.Maui
 
 		public static UI.Xaml.Window GetNativeWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetRequiredService<UI.Xaml.Window>();
+
+		public static UI.Xaml.Window? GetOptionalNativeWindow(this IMauiContext mauiContext) =>
+			mauiContext.Services.GetService<UI.Xaml.Window>();
 
 		public static IMauiContext MakeScoped(this IMauiContext mauiContext, UI.Xaml.Window nativeWindow)
 		{

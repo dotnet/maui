@@ -169,10 +169,10 @@ namespace Microsoft.Maui.Controls
 			return tcs.Task;
 		}
 
-		internal static IAnimationManager? GetAnimationManager(this IAnimatable animatable)
+		internal static IAnimationManager GetAnimationManager(this IAnimatable animatable)
 		{
 			if (animatable is Element e && e.FindMauiContext() is IMauiContext mauiContext)
-				return mauiContext.Services.GetService<IAnimationManager>();
+				return mauiContext.GetAnimationManager();
 
 			throw new ArgumentException($"Unable to find {nameof(IAnimationManager)} for '{animatable.GetType().FullName}'.", nameof(animatable));
 		}

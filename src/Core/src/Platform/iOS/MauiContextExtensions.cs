@@ -3,7 +3,7 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
-	internal static class MauiContextExtensions
+	internal static partial class MauiContextExtensions
 	{
 		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
 		{

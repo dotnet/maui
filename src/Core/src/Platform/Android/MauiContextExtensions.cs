@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui
 {
-	internal static class MauiContextExtensions
+	internal static partial class MauiContextExtensions
 	{
 		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
 		{
@@ -48,7 +48,7 @@ namespace Microsoft.Maui
 			(mauiContext.Context?.GetActivity() as AppCompatActivity)
 			?? throw new InvalidOperationException("AppCompatActivity Not Found");
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, LayoutInflater? layoutInflater, FragmentManager? fragmentManager)
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext, LayoutInflater? layoutInflater = null, FragmentManager? fragmentManager = null)
 		{
 			var scopedContext = new MauiContext(mauiContext);
 
@@ -66,6 +66,15 @@ namespace Microsoft.Maui
 			var scopedContext = new MauiContext(mauiContext);
 
 			scopedContext.AddSpecific(navigationManager);
+
+			return scopedContext;
+		}
+
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext, Android.App.Activity nativeWindow)
+		{
+			var scopedContext = new MauiContext(mauiContext.Services, nativeWindow, mauiContext);
+
+			scopedContext.AddSpecific(nativeWindow);
 
 			return scopedContext;
 		}
