@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
@@ -39,6 +40,14 @@ namespace Microsoft.Maui.Graphics
 			Green = green.Clamp(0, 1);
 			Blue = blue.Clamp(0, 1);
 			Alpha = alpha.Clamp(0, 1);
+		}
+
+		public Color(Vector4 color)
+		{
+			Red = color.X.Clamp(0, 1);
+			Green = color.Y.Clamp(0, 1);
+			Blue = color.Z.Clamp(0, 1);
+			Alpha = color.W.Clamp(0, 1);
 		}
 
 		public override string ToString()
@@ -909,6 +918,8 @@ namespace Microsoft.Maui.Graphics
 
 		static double ParseOpacity(string elem)
 			=> double.Parse(elem, NumberStyles.Number, CultureInfo.InvariantCulture).Clamp(0, 1);
+
+		public static implicit operator Color(Vector4 color) => new Color(color);
 
 	}
 }
