@@ -23,8 +23,8 @@ namespace Maui.Controls.Sample.Pages
 
 		void ShowNewWindow(object sender, EventArgs e)
 		{
-			var mvm = Services.GetService<MainViewModel>();
-;			XamlApp.Instance.OpenWindow(new Window(new MainPage(Services, mvm)));
+			var mvm = _services.GetService<MainViewModel>();
+			Application.Current.OpenWindow(new Window(new MainPage(_services, mvm)));
 		}
 	}
 }
