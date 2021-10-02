@@ -177,11 +177,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			CompositionTarget.Rendering += renderingFrameEventHandler;
 		}
 
-		public void QuitApplication()
-		{
-			Log.Warning(nameof(WindowsBasePlatformServices), "Platform doesn't implement QuitApp");
-		}
-
 		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);

@@ -2,10 +2,11 @@
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui
 {
-	internal static class MauiContextExtensions
+	internal static partial class MauiContextExtensions
 	{
 		public static FlowDirection GetFlowDirection(this IMauiContext mauiContext)
 		{
@@ -16,20 +17,12 @@ namespace Microsoft.Maui
 			return config.LayoutDirection.ToFlowDirection();
 		}
 
-		public static NavigationRootManager GetNavigationRootManager(this IMauiContext mauiContext)
-		{
-			NavigationRootManager? navigationManager = null;
-			if (mauiContext is IScopedMauiContext smc)
-				navigationManager = smc.NavigationRootManager;
-
-			return navigationManager ?? throw new InvalidOperationException("NavigationRootManager Not Found");
-		}
+		public static NavigationRootManager GetNavigationRootManager(this IMauiContext mauiContext) =>
+			mauiContext.Services.GetRequiredService<NavigationRootManager>();
 
 		public static LayoutInflater GetLayoutInflater(this IMauiContext mauiContext)
 		{
-			LayoutInflater? layoutInflater = null;
-			if (mauiContext is IScopedMauiContext smc)
-				layoutInflater = smc.LayoutInflater;
+			var layoutInflater = mauiContext.Services.GetService<LayoutInflater>();
 
 			if (layoutInflater == null && mauiContext.Context != null)
 			{
@@ -44,17 +37,46 @@ namespace Microsoft.Maui
 
 		public static FragmentManager GetFragmentManager(this IMauiContext mauiContext)
 		{
-			FragmentManager? fragmentManager = null;
-			if (mauiContext is IScopedMauiContext smc)
-				fragmentManager = smc.FragmentManager;
+			var fragmentManager = mauiContext.Services.GetService<FragmentManager>();
 
 			return fragmentManager
 				?? mauiContext.Context?.GetFragmentManager()
-				?? throw new InvalidOperationException("LayoutInflater Not Found");
+				?? throw new InvalidOperationException("FragmentManager Not Found");
 		}
 
 		public static AppCompatActivity GetActivity(this IMauiContext mauiContext) =>
 			(mauiContext.Context?.GetActivity() as AppCompatActivity)
 			?? throw new InvalidOperationException("AppCompatActivity Not Found");
+
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext, LayoutInflater? layoutInflater = null, FragmentManager? fragmentManager = null)
+		{
+			var scopedContext = new MauiContext(mauiContext);
+
+			if (layoutInflater != null)
+				scopedContext.AddWeakSpecific(layoutInflater);
+
+			if (fragmentManager != null)
+				scopedContext.AddWeakSpecific(fragmentManager);
+
+			return scopedContext;
+		}
+
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext, NavigationManager navigationManager)
+		{
+			var scopedContext = new MauiContext(mauiContext);
+
+			scopedContext.AddSpecific(navigationManager);
+
+			return scopedContext;
+		}
+
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext, Android.App.Activity nativeWindow)
+		{
+			var scopedContext = new MauiContext(mauiContext.Services, nativeWindow, mauiContext);
+
+			scopedContext.AddSpecific(nativeWindow);
+
+			return scopedContext;
+		}
 	}
 }

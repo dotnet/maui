@@ -4,7 +4,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Fragment.App;
-using AndroidX.Navigation;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -57,10 +56,7 @@ namespace Microsoft.Maui
 
 			if (_currentView == null)
 			{
-				var scopedContext = new ScopedMauiContext(
-						NavigationManager.MauiContext,
-						layoutInflater: inflater,
-						fragmentManager: ChildFragmentManager);
+				var scopedContext = NavigationManager.MauiContext.MakeScoped(inflater, ChildFragmentManager);
 
 				_currentView = NavigationManager.CurrentPage.ToNative(scopedContext);
 			}
