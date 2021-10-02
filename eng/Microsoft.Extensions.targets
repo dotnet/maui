@@ -39,6 +39,10 @@
          Version="$(MicrosoftMauiGraphicsVersion)"
     />
     <PackageReference
+         Update="Microsoft.Maui.Graphics.Skia"
+         Version="$(MicrosoftMauiGraphicsVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Extensions.Configuration"
         Version="$(MicrosoftExtensionsConfigurationPackageVersion)"
     />
