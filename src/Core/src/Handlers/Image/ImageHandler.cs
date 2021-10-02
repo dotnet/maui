@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IImage.Source)] = MapSource,
 		};
 
-		public new static CommandMapper<IImage, IImageHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
+		public static CommandMapper<IImage, IImageHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
 		{
 		};
 

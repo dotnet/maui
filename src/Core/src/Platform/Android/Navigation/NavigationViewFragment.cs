@@ -4,7 +4,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Fragment.App;
-using AndroidX.Navigation;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -71,11 +70,7 @@ namespace Microsoft.Maui
 			// Then we can try some other approachs like just modifying the navbar ourselves to include a back button
 			// Even if there's only one page on the stack
 
-			var scopedContext = new ScopedMauiContext(
-				NavigationManager.MauiContext,
-				layoutInflater: inflater,
-				fragmentManager: ChildFragmentManager);
-
+			var scopedContext = NavigationManager.MauiContext.MakeScoped(inflater, ChildFragmentManager);
 			_currentView = NavigationManager.CurrentPage.ToNative(scopedContext);
 			_currentView.RemoveFromParent();
 
