@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public ShellToolbarItemView()
 		{
-			Microsoft.Maui.Controls.Shell.VerifyShellUWPFlagEnabled(nameof(ShellToolbarItemView));
 			Click += OnClick;
 		}
 

@@ -158,11 +158,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public string RuntimePlatform => Device.UWP;
 
-		public void OpenUriAction(Uri uri)
-		{
-			Launcher.LaunchUriAsync(uri).WatchForError();
-		}
-
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
 			var timerTick = 0L;

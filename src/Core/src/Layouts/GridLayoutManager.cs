@@ -42,7 +42,9 @@ namespace Microsoft.Maui.Layouts
 				view.Arrange(cell);
 			}
 
-			return new Size(structure.MeasuredGridWidth(), structure.MeasuredGridHeight());
+			var actual = new Size(structure.MeasuredGridWidth(), structure.MeasuredGridHeight());
+
+			return actual.AdjustForFill(bounds, Grid);
 		}
 
 		class GridStructure

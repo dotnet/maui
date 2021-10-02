@@ -36,6 +36,9 @@ namespace Microsoft.Maui
 			navigationFrame.Navigated += OnNavigated;
 			_navigationFrame = navigationFrame;
 			NavigationView = (INavigationView)navigationView;
+
+			if (WindowManager?.RootView is NavigationView nv)
+				nv.IsPaneVisible = true;
 		}
 
 		public virtual void Disconnect(IView navigationView, Frame navigationFrame)

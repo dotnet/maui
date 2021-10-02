@@ -8,8 +8,8 @@ using Microsoft.Maui.Graphics.Native;
 using static Android.Graphics.Paint;
 using AColor = Android.Graphics.Color;
 using AContext = Android.Content.Context;
-using ARect = Android.Graphics.Rect;
 using APaint = Android.Graphics.Paint;
+using ARect = Android.Graphics.Rect;
 using GPaint = Microsoft.Maui.Graphics.Paint;
 
 namespace Microsoft.Maui.Graphics
@@ -526,7 +526,7 @@ namespace Microsoft.Maui.Graphics
 			var p2 = linearGradientPaint.EndPoint;
 			var x2 = (float)p2.X;
 			var y2 = (float)p2.Y;
-			
+
 			var data = GetGradientPaintData(linearGradientPaint);
 			var shader = new LinearGradientData(data.Colors, data.Offsets, x1, y1, x2, y2);
 			if (_width == 0 && _height == 0)

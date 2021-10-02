@@ -48,6 +48,7 @@
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
 		<!-- Required - WinUI does not yet have buildTransitive for everything -->
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="WINDOWSAPPSDK_VERSION" />
+		<PackageReference Include="Microsoft.Graphics.Win2D" Version="WIN2D_VERSION" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
@@ -55,9 +56,4 @@
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 	</PropertyGroup>
 	
-	<PropertyGroup>
-		<!-- Required - WinUI can't deploy in a multi-targeting environment -->
-		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-windows'))">win-x64</RuntimeIdentifier>
-	</PropertyGroup>
-
 </Project>
