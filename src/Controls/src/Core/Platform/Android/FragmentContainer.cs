@@ -54,7 +54,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (_pageContainer == null)
 				{
-					var scopedContext = new ScopedMauiContext(_mauiContext, null, null, inflater, ChildFragmentManager);
+					var scopedContext =
+						_mauiContext.MakeScoped(inflater, ChildFragmentManager);
+
 					_pageContainer = Page.ToNative(scopedContext);
 					_viewhandler = (INativeViewHandler)Page.Handler;
 				}

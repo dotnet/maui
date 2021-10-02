@@ -4,6 +4,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Fragment.App;
+using AndroidX.Navigation;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui

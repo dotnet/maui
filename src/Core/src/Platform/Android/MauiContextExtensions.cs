@@ -61,15 +61,6 @@ namespace Microsoft.Maui
 			return scopedContext;
 		}
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, NavigationManager navigationManager)
-		{
-			var scopedContext = new MauiContext(mauiContext);
-
-			scopedContext.AddSpecific(navigationManager);
-
-			return scopedContext;
-		}
-
 		public static IMauiContext MakeScoped(this IMauiContext mauiContext, Android.App.Activity nativeWindow)
 		{
 			var scopedContext = new MauiContext(mauiContext.Services, nativeWindow, mauiContext);

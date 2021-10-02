@@ -21,6 +21,7 @@ namespace Microsoft.Maui
 			: this(services, parent)
 		{
 			AddWeakSpecific(context);
+			AddSpecific(new NavigationRootManager(this));
 		}
 #elif __IOS__
 		public MauiContext(IServiceProvider services, UIKit.UIApplicationDelegate application, IMauiContext? parent = null)
