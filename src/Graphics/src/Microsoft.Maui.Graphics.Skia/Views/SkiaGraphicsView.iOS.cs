@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Graphics.Skia.Views
 			}
 		}
 
-		private void Invalidate()
+		public void Invalidate()
 		{
 			if (Handle == IntPtr.Zero)
 				return;
