@@ -325,7 +325,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				sent = true;
 			});
 
-			var page = new ContentPage { IsBusy = true, IsPlatformEnabled = true };
+			var page = new ContentPage { IsBusy = true, IsPlatformEnabled = true, Parent = new Window() };
 
 			Assert.That(sent, Is.False, "Busy message sent while not visible");
 
@@ -337,7 +337,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void BusySentWhenBusyPageDisappears()
 		{
-			var page = new ContentPage { IsBusy = true };
+			var page = new ContentPage { IsBusy = true, Parent = new Window() };
 			((IPageController)page).SendAppearing();
 
 			var sent = false;
@@ -358,7 +358,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var sent = false;
 			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) => sent = true);
 
-			var page = new ContentPage();
+			var page = new ContentPage() { Parent = new Window() };
 			((IPageController)page).SendAppearing();
 
 			Assert.That(sent, Is.False, "Busy message sent appearing while not busy");
@@ -452,7 +452,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void SendAppearing()
 		{
-			var page = new ContentPage();
+			var page = new ContentPage() { Parent = new Window() };
 
 			bool sent = false;
 			page.Appearing += (sender, args) => sent = true;
@@ -465,7 +465,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void SendDisappearing()
 		{
-			var page = new ContentPage();
+			var page = new ContentPage() { Parent = new Window() };
 
 			((IPageController)page).SendAppearing();
 
@@ -480,7 +480,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Test]
 		public void SendAppearingDoesntGetCalledMultipleTimes()
 		{
-			var page = new ContentPage();
+			var page = new ContentPage() { Parent = new Window() };
 
 			int countAppearing = 0;
 			page.Appearing += (sender, args) => countAppearing++;
@@ -504,7 +504,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var page = new ContentPage();
 
-			var navPage = new NavigationPage(page);
+			var navPage = new NavigationPage(page) { Parent = new Window() };
 
 			bool sentNav = false;
 			bool sent = false;
@@ -527,7 +527,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var page = new ContentPage();
 
-			var navPage = new NavigationPage(page);
+			var navPage = new NavigationPage(page) { Parent = new Window() };
 			((IPageController)navPage).SendAppearing();
 
 			bool sentNav = false;
