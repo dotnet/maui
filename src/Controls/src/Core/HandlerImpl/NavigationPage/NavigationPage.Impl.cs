@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls
 			if (oldValue is Page oldPage)
 				oldPage.SendDisappearing();
 
-			if (newValue is Page newPage)
+			if (newValue is Page newPage && ((NavigationPage)bindable).HasAppeared)
 				newPage.SendAppearing();
 		}
 
