@@ -21,23 +21,31 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
-		public override void SetVirtualView(IView view)
+		public override void SetMauiContext(IMauiContext mauiContext)
 		{
-			_navigationManager ??= CreateNavigationManager();
-			base.SetVirtualView(view);
+			var currentInflater = mauiContext.GetLayoutInflater();
+			var inflater =
+				new StackNavigationManager.StackLayoutInflater(
+					currentInflater,
+					currentInflater.Context,
+					CreateNavigationManager());
+
+			mauiContext =
+				mauiContext.MakeScoped(inflater, context: inflater.Context);
+
+			base.SetMauiContext(mauiContext);
 		}
 
-		protected virtual StackNavigationManager CreateNavigationManager() =>
-			new StackNavigationManager(MauiContext!);
+		StackNavigationManager CreateNavigationManager() =>
+			_navigationManager ??= new StackNavigationManager();
 
 		protected override void ConnectHandler(View nativeView)
 		{
-			_navigationManager = CreateNavigationManager();
 			var rootContainer = MauiContext!.GetNavigationRootManager();
 			var navigationLayout = rootContainer.NavigationLayout;
 
 			base.ConnectHandler(nativeView);
-			_navigationManager.Connect(VirtualView, navigationLayout);
+			_navigationManager?.Connect(VirtualView, navigationLayout);
 		}
 
 		private protected override void OnDisconnectHandler(View nativeView)

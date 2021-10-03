@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using Android.Content;
 using Android.OS;
-using Android.Runtime;
+using Android.Views;
+using AndroidX.AppCompat.View;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
 using Google.Android.Material.AppBar;
-using Google.Android.Material.Tabs;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui
@@ -47,23 +47,14 @@ namespace Microsoft.Maui
 		public IView CurrentPage
 			=> _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
 
-		public IMauiContext MauiContext { get; }
+		public IMauiContext MauiContext =>
+			VirtualView?.Handler?.MauiContext
+			 ?? throw new InvalidOperationException("MauiContext cannot be null");
 
-		// TODO MAUI: currently using this to locate the correct NavigationManager inside NavigationViewFragment
-		// Need to figure out a better strategy for getting state information into NavigationViewFragment so 
-		// it knows what Page it's supposed to display
-		static Dictionary<int, StackNavigationManager> _navigationManager = new Dictionary<int, StackNavigationManager>();
-		static int s_idCount = 0;
-		int _myID = -1;
-
-		public StackNavigationManager(IMauiContext mauiContext)
+		public StackNavigationManager()
 		{
-			MauiContext = mauiContext;
 			BackClick = new ProcessBackClick(this);
 		}
-
-		internal static StackNavigationManager FindNavigationManager(int id) =>
-			_navigationManager[id];
 
 		internal Toolbar? Toolbar =>
 			_toolbar ??=
@@ -221,9 +212,6 @@ namespace Microsoft.Maui
 		public virtual FragmentNavigator.Destination AddFragmentDestination()
 		{
 			var destination = new FragmentNavigator.Destination(FragmentNavigator);
-			destination.AddArgument("NavigationManager",
-				new NavArgument.Builder().SetType(NavType.IntType).SetDefaultValue(_myID).Build()
-			);
 
 			destination.SetClassName(Java.Lang.Class.FromType(typeof(NavigationViewFragment)).CanonicalName);
 			destination.Id = AView.GenerateViewId();
@@ -284,19 +272,10 @@ namespace Microsoft.Maui
 
 		public virtual void Disconnect()
 		{
-			_myID = -1;
-			_navigationManager.Remove(_myID);
 		}
 
 		public virtual void Connect(IView navigationView, CoordinatorLayout nativeView)
 		{
-			if (_myID == -1)
-			{
-				_myID = s_idCount;
-				s_idCount++;
-				_navigationManager[_myID] = this;
-			}
-
 			VirtualView = navigationView;
 			NavigationView = (INavigationView)navigationView;
 			_navigationLayout = nativeView;
@@ -388,6 +367,40 @@ namespace Microsoft.Maui
 		protected virtual void OnDestinationChanged(NavController navController, NavDestination navDestination, Bundle bundle)
 		{
 		}
+
+		internal class StackLayoutInflater : LayoutInflater
+		{
+			readonly LayoutInflater _original;
+
+			public StackLayoutInflater(
+				LayoutInflater original,
+				Context? context,
+				StackNavigationManager stackNavigationManager) : 
+				base(original, new StackContext(context, stackNavigationManager))
+			{
+				_original = original;
+				StackNavigationManager = stackNavigationManager;
+			}
+
+			public StackNavigationManager StackNavigationManager { get; }
+
+			public override LayoutInflater? CloneInContext(Context? newContext)
+			{
+				return new StackLayoutInflater(_original, newContext, StackNavigationManager);
+			}
+		}
+
+			internal class StackContext : AndroidX.AppCompat.View.ContextThemeWrapper
+			{
+				public StackContext(
+					Context? context,
+					StackNavigationManager stackNavigationManager) : base(context, context?.Theme)
+				{
+					StackNavigationManager = stackNavigationManager;
+				}
+
+				public StackNavigationManager StackNavigationManager { get; }
+			}
 
 		class Callbacks :
 			AndroidX.Fragment.App.FragmentManager.FragmentLifecycleCallbacks,
