@@ -59,6 +59,7 @@ namespace GraphicsTester.Scenarios
 						new FilledArcDirection(),
 						new ClipRect(),
 						new SubtractFromClip(),
+						new DimensionTest(),
 					};
 				}
 
