@@ -50,10 +50,12 @@ namespace GraphicsTester.GDI
             // splitContainer1.Panel1
             // 
             this.splitContainer1.Panel1.Controls.Add(this.listBox1);
+            this.splitContainer1.Panel1.Padding = new System.Windows.Forms.Padding(4);
             // 
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.AutoScroll = true;
+            this.splitContainer1.Panel2.BackColor = System.Drawing.SystemColors.ControlDark;
             this.splitContainer1.Panel2.Controls.Add(this.gdiGraphicsView1);
             this.splitContainer1.Size = new System.Drawing.Size(1526, 850);
             this.splitContainer1.SplitterDistance = 508;
@@ -67,28 +69,25 @@ namespace GraphicsTester.GDI
             | System.Windows.Forms.AnchorStyles.Right)));
             this.listBox1.FormattingEnabled = true;
             this.listBox1.ItemHeight = 15;
-            this.listBox1.Location = new System.Drawing.Point(0, 0);
+            this.listBox1.Location = new System.Drawing.Point(4, 4);
             this.listBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(503, 844);
+            this.listBox1.Size = new System.Drawing.Size(495, 829);
             this.listBox1.TabIndex = 0;
             // 
             // gdiGraphicsView1
             // 
-            this.gdiGraphicsView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.gdiGraphicsView1.BackgroundColor = null;
             this.gdiGraphicsView1.Dirty = false;
             this.gdiGraphicsView1.Drawable = null;
-            this.gdiGraphicsView1.Location = new System.Drawing.Point(4, 3);
+            this.gdiGraphicsView1.Location = new System.Drawing.Point(0, 0);
             this.gdiGraphicsView1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.gdiGraphicsView1.Name = "gdiGraphicsView1";
             gdiDirectGraphicsRenderer1.BackgroundColor = null;
             gdiDirectGraphicsRenderer1.Dirty = false;
             gdiDirectGraphicsRenderer1.Drawable = null;
             this.gdiGraphicsView1.Renderer = gdiDirectGraphicsRenderer1;
-            this.gdiGraphicsView1.Size = new System.Drawing.Size(1006, 843);
+            this.gdiGraphicsView1.Size = new System.Drawing.Size(600, 400);
             this.gdiGraphicsView1.TabIndex = 0;
             // 
             // Form1
