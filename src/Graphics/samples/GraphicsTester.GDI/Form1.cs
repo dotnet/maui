@@ -22,6 +22,7 @@ namespace GraphicsTester.GDI
 			{
 				var item = ScenarioList.Scenarios[listBox1.SelectedIndex];
 				gdiGraphicsView1.Drawable = item;
+				splitContainer1.Panel2.AutoScrollMinSize = new System.Drawing.Size((int)item.Width, (int)item.Height);
 			};
 		}
 	}
