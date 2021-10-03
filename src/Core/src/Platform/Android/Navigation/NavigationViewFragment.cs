@@ -32,8 +32,6 @@ namespace Microsoft.Maui
 
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
-			var navhost = Navigation.FindNavController(container);
-
 			var context =
 				(container.Context as StackNavigationManager.StackContext) ??
 				(container.Parent as AView)?.Context as StackNavigationManager.StackContext
