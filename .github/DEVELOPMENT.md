@@ -1,4 +1,4 @@
-# Developer Guide
+# Development Guide
 
 This page contains steps to build and run the .NET MAUI repository from source.
 
