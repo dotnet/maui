@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.IO.IsolatedStorage;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -11,14 +10,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	[TestFixture]
 	public class UriImageSourceTests : BaseTestFixture
 	{
-		IsolatedStorageFile NativeStore { get; set; }
-
 		[SetUp]
 		public override void Setup()
 		{
 			base.Setup();
 			Device.PlatformServices = new MockPlatformServices(getStreamAsync: GetStreamAsync);
-			NativeStore = IsolatedStorageFile.GetUserStoreForAssembly();
 			networkcalls = 0;
 		}
 
@@ -27,14 +23,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			base.TearDown();
 			Device.PlatformServices = null;
-			string cacheName = "ImageLoaderCache";
-			if (NativeStore.DirectoryExists(cacheName))
-			{
-				foreach (var f in NativeStore.GetFileNames(cacheName + "/*"))
-					NativeStore.DeleteFile(IOPath.Combine(cacheName, f));
-			}
-			NativeStore.Dispose();
-			NativeStore = null;
 		}
 
 		static Random rnd = new Random();

@@ -147,11 +147,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
-		public IIsolatedStorageFile GetUserStoreForApplication()
-		{
-			return new WindowsIsolatedStorage(ApplicationData.Current.LocalFolder);
-		}
-
 		public bool IsInvokeRequired => !_dispatcher?.HasThreadAccess ?? true;
 
 		public string RuntimePlatform => Device.UWP;
