@@ -94,10 +94,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			TypeReference type = xmlType.GetTypeReference(xmlnsDefinitions, module.Assembly.Name.Name, (typeInfo) =>
 			{
-				string typeName = typeInfo.TypeName.Replace('+', '/'); //Nested types
-				return module.GetTypeDefinition((typeInfo.AssemblyName, typeInfo.ClrNamespace, typeName));
-			},
-				out IList<XamlLoader.FallbackTypeInfo> potentialTypes);
+				string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
+				return module.GetTypeDefinition((typeInfo.assemblyName, typeInfo.clrNamespace, typeName));
+			});
 
 			if (type != null && typeArguments != null && type.HasGenericParameters)
 				type = module.ImportReference(type).MakeGenericInstanceType(typeArguments.Select(x => GetTypeReference(x, module, xmlInfo)).ToArray());

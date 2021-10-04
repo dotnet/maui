@@ -42,7 +42,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public ShellView()
 		{
-			Microsoft.Maui.Controls.Shell.VerifyShellUWPFlagEnabled(nameof(ShellView));
 			_flyoutBackdrop = Brush.Default;
 			IsSettingsVisible = false;
 			PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
@@ -96,7 +95,7 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateFlyoutVerticalScrollMode();
 		}
 
-			
+
 		void OnPaneOpened(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
 		{
 			// UWP likes to sometimes set the back drop back to the
@@ -264,7 +263,7 @@ namespace Microsoft.Maui.Controls.Platform
 					ShellSplitView?.RefreshFlyoutPosition();
 			}
 		}
-		
+
 		void UpdateFlyoutBackdrop()
 		{
 			if (ShellSplitView != null && _flyoutBehavior != FlyoutBehavior.Flyout)
@@ -327,7 +326,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_shell.Navigated += OnShellNavigated;
 			UpdateToolBar();
 		}
-		
+
 		void OnShellNavigated(object sender, ShellNavigatedEventArgs e)
 		{
 			UpdateToolBar();
@@ -338,7 +337,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (SelectedItem == null)
 				return;
 
-			if(_shell.Navigation.NavigationStack.Count > 1)
+			if (_shell.Navigation.NavigationStack.Count > 1)
 			{
 				IsBackEnabled = true;
 				IsBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Visible;
@@ -486,7 +485,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		#endregion IAppearanceObserver
-		
+
 		void IFlyoutBehaviorObserver.OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
 		{
 			_flyoutBehavior = behavior;

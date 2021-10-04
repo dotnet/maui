@@ -5,6 +5,7 @@
 
   <PropertyGroup>
     <Description>.NET MAUI Controls runtime pack</Description>
+    <OutputPath Condition=" '$(MauiPlatformName)' != '' ">$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
   </PropertyGroup>
 
   <!-- Android-only files -->

@@ -3,7 +3,7 @@ using CoreAnimation;
 using CoreGraphics;
 using UIKit;
 
-namespace Microsoft.Maui.Platform.iOS
+namespace Microsoft.Maui
 {
 	public class MauiLabel : UILabel
 	{

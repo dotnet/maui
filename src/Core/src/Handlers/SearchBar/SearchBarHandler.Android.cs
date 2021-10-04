@@ -8,12 +8,11 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, SearchView>
 	{
-		QueryTextListener QueryListener { get; } = new QueryTextListener();
-
 		static Drawable? DefaultBackground;
 		static ColorStateList? DefaultPlaceholderTextColors { get; set; }
 
 		EditText? _editText;
+
 		public EditText? QueryEditor => _editText;
 
 		protected override SearchView CreateNativeView()
@@ -28,16 +27,15 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(SearchView nativeView)
 		{
-			QueryListener.Handler = this;
-
-			nativeView.SetOnQueryTextListener(QueryListener);
+			nativeView.QueryTextChange += OnQueryTextChange;
+			nativeView.QueryTextSubmit += OnQueryTextSubmit;
+			SetupDefaults(nativeView);
 		}
 
 		protected override void DisconnectHandler(SearchView nativeView)
 		{
-			nativeView.SetOnQueryTextListener(null);
-
-			QueryListener.Handler = null;
+			nativeView.QueryTextChange -= OnQueryTextChange;
+			nativeView.QueryTextSubmit -= OnQueryTextSubmit;
 		}
 
 		void SetupDefaults(SearchView nativeView)
@@ -78,6 +76,11 @@ namespace Microsoft.Maui.Handlers
 			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
 		}
 
+		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(searchBar, handler._editText);
+		}
+
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateCharacterSpacing(searchBar);
@@ -104,23 +107,18 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateCancelButtonColor(searchBar);
 		}
 
-		public class QueryTextListener : Java.Lang.Object, IOnQueryTextListener
+
+		void OnQueryTextSubmit(object? sender, QueryTextSubmitEventArgs e)
 		{
-			public SearchBarHandler? Handler { get; set; }
+			VirtualView.SearchButtonPressed();
+			// TODO: Clear focus
+			e.Handled = true;
+		}
 
-			public bool OnQueryTextChange(string newText)
-			{
-				return true;
-			}
-
-			public bool OnQueryTextSubmit(string newText)
-			{
-				Handler?.VirtualView?.SearchButtonPressed();
-
-				// TODO: Clear focus
-
-				return true;
-			}
+		void OnQueryTextChange(object? sender, QueryTextChangeEventArgs e)
+		{
+			VirtualView.UpdateText(e.NewText);
+			e.Handled = true;
 		}
 	}
 }

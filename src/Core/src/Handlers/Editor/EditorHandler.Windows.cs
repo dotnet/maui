@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MauiTextBox nativeView)
 		{
 			nativeView.LostFocus += OnLostFocus;
+			SetupDefaults(nativeView);
 		}
 
 		protected override void DisconnectHandler(MauiTextBox nativeView)
@@ -32,8 +33,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			_placeholderDefaultBrush = nativeView.PlaceholderForeground;
 			_defaultPlaceholderColorFocusBrush = nativeView.PlaceholderForegroundFocusBrush;
-
-			
 		}
 
 		public static void MapText(EditorHandler handler, IEditor editor)
@@ -80,6 +79,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTextColor(EditorHandler handler, IEditor editor) =>
 			handler.NativeView?.UpdateTextColor(editor);
+
+
+		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
+		}
 
 		public static void MapKeyboard(EditorHandler handler, IEditor editor) 
 		{

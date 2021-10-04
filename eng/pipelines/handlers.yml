@@ -166,10 +166,19 @@ stages:
               inputs:
                 Contents: |
                   artifacts/**/*.*nupkg
+                  artifacts/**/*.zip
                   artifacts/vs-workload.props
                   eng/automation/SignList.xml
                 TargetFolder: $(build.artifactstagingdirectory)
                 flattenFolders: true
+            - task: CopyFiles@2
+              condition: always()
+              displayName: 'Copy metadata to staging'
+              inputs:
+                SourceFolder: artifacts
+                Contents: |
+                  metadata/**
+                TargetFolder: $(build.artifactstagingdirectory)
             - task: CopyFiles@2
               displayName: 'Copy Log Files'
               condition: always()
@@ -306,3 +315,9 @@ stages:
         symbolArtifactPatterns: |
           **/signed/*.nupkg
           **/*.snupkg
+          **/additional-assets.zip
+        pushToShippingFeed: true
+        nupkgArtifactName: nuget
+        nupkgArtifactPatterns: |
+          **/signed/*.nupkg
+        msiNupkgArtifactName: vs-msi-nugets

@@ -13,8 +13,9 @@ namespace Microsoft.Maui.Controls.Hosting
 #if WINDOWS || __ANDROID__
 			{ typeof(Shell), typeof(ShellHandler) },
 #endif
+			{ typeof(Application), typeof(ApplicationHandler) },
 			{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
-			{ typeof(BoxView), typeof(BoxViewHandler) },
+			{ typeof(BoxView), typeof(ShapeViewHandler) },
 			{ typeof(Button), typeof(ButtonHandler) },
 			{ typeof(CheckBox), typeof(CheckBoxHandler) },
 			{ typeof(DatePicker), typeof(DatePickerHandler) },
@@ -33,18 +34,27 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(Switch), typeof(SwitchHandler) },
 			{ typeof(TimePicker), typeof(TimePickerHandler) },
 			{ typeof(Page), typeof(PageHandler) },
+			{ typeof(WebView), typeof(WebViewHandler) },
+			{ typeof(Border), typeof(BorderHandler) },
+			{ typeof(IContentView), typeof(ContentViewHandler) },
 			{ typeof(Shapes.Ellipse), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Line), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Path), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Polygon), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Polyline), typeof(ShapeViewHandler) },
 			{ typeof(Shapes.Rectangle), typeof(ShapeViewHandler) },
+			{ typeof(Shapes.RoundRectangle), typeof(ShapeViewHandler) },
 			{ typeof(Window), typeof(WindowHandler) },
+			{ typeof(ImageButton), typeof(ImageButtonHandler) },
 #if __ANDROID__ || __IOS__
 			{ typeof(RefreshView), typeof(RefreshViewHandler) },
+			{ typeof(IndicatorView), typeof(IndicatorViewHandler) },
 #endif
-#if __ANDROID__ 
-			{ typeof(NavigationPage), typeof(Controls.Handlers.NavigationPageHandler) },
+#if WINDOWS
+			{ typeof(NavigationPage), typeof(NavigationPageHandler) },
+#endif
+#if __ANDROID__
+			//{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
 #endif
 		};
 

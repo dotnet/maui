@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ImageHandlerTests
+	public partial class ImageHandlerTests<TImageHandler, TStub>
 	{
 		[Theory]
 		[InlineData("#FF0000")]
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var expectedColor = Color.FromArgb(colorHex);
 
-			var image = new ImageStub
+			var image = new TStub
 			{
 				Background = new SolidPaintStub(expectedColor),
 			};
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task InitializingSourceOnlyUpdatesImageOnce()
 		{
-			var image = new ImageStub
+			var image = new TStub
 			{
 				Background = new SolidPaintStub(Colors.Black),
 				Source = new FileImageSourceStub("red.png"),
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task UpdatingSourceOnlyUpdatesDrawableTwice()
 		{
-			var image = new ImageStub
+			var image = new TStub
 			{
 				Background = new SolidPaintStub(Colors.Black),
 				Source = new FileImageSourceStub("red.png"),
@@ -124,13 +124,13 @@ namespace Microsoft.Maui.DeviceTests
 			image.AssertContainsColor(Colors.Red.ToNative());
 		}
 
-		UIImageView GetNativeImageView(ImageHandler imageHandler) =>
-			imageHandler.NativeView;
+		UIImageView GetNativeImageView(IImageHandler imageHandler) =>
+			imageHandler.TypedNativeView;
 
-		bool GetNativeIsAnimationPlaying(ImageHandler imageHandler) =>
+		bool GetNativeIsAnimationPlaying(IImageHandler imageHandler) =>
 			GetNativeImageView(imageHandler).IsAnimating;
 
-		Aspect GetNativeAspect(ImageHandler imageHandler) =>
+		Aspect GetNativeAspect(IImageHandler imageHandler) =>
 			GetNativeImageView(imageHandler).ContentMode switch
 			{
 				UIViewContentMode.ScaleAspectFit => Aspect.AspectFit,

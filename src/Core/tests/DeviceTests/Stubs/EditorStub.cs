@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public partial class EditorStub : StubBase, IEditor
+	public partial class EditorStub : StubBase, IEditor, ITextInputStub
 	{
 		private string _text;
 
@@ -30,6 +30,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public bool IsTextPredictionEnabled { get; set; } = true;
 
 		public Keyboard Keyboard { get; set; }
+
+		public TextAlignment HorizontalTextAlignment { get; set; }
+
+		public TextAlignment VerticalTextAlignment { get; set; }
 
 		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
 

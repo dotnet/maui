@@ -27,8 +27,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			button.Handler = buttonHandler;
 
 			page.Content = button;
-			(page as IView).Measure(expectedSize.Width, expectedSize.Height);
-			(page as IView).Arrange(expectedRect);
+			(page as IContentView).CrossPlatformMeasure(expectedSize.Width, expectedSize.Height);
+			(page as IContentView).CrossPlatformArrange(expectedRect);
 
 			buttonHandler.Received().NativeArrange(expectedRect);
 			Assert.AreEqual(expectedSize, button.Bounds.Size);
@@ -52,11 +52,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			contentPage.Content = stackLayout;
 
 			var rect = new Rectangle(Point.Zero, expectedSize);
-			(contentPage as IView).Measure(expectedSize.Width, expectedSize.Height);
-			(contentPage as IView).Arrange(rect);
 
-			// This simulates the arrange call that happens from the native LayoutViewGroup
-			(grid as IView).Arrange(rect);
+			(contentPage as Microsoft.Maui.IContentView).CrossPlatformMeasure(expectedSize.Width, expectedSize.Height);
+			(contentPage as Microsoft.Maui.IContentView).CrossPlatformArrange(rect);
 
 			Assert.AreEqual(expectedSize, grid.Bounds.Size);
 		}

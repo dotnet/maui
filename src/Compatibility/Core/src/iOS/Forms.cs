@@ -166,28 +166,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 #endif
 
-		static IReadOnlyList<string> s_flags;
-		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new string[0]);
-
 		public static bool IsInitializedRenderers { get; private set; }
-
-		public static void SetFlags(params string[] flags)
-		{
-			if (IsInitialized)
-			{
-				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
-			}
-
-			s_flags = (string[])flags.Clone();
-			if (s_flags.Contains("Profile"))
-				Profile.Enable();
-		}
-
-		public static void Init() =>
-			SetupInit(new MauiContext());
-
-		public static void Init(InitializationOptions options) =>
-			SetupInit(new MauiContext(), options);
 
 		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
 			SetupInit(activationState.Context, options);
@@ -235,7 +214,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				NSApplication.SharedApplication.Appearance = aquaAppearance;
 			}
 #endif
-			Device.SetFlags(s_flags);
 			var platformServices = new IOSPlatformServices();
 
 			Device.PlatformServices = platformServices;
@@ -683,21 +661,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			public string RuntimePlatform => Device.macOS;
 #endif
 
-			public void OpenUriAction(Uri uri)
-			{
-				NSUrl url;
-
-				if (uri.Scheme == "tel" || uri.Scheme == "mailto")
-					url = new NSUrl(uri.AbsoluteUri);
-				else
-					url = NSUrl.FromString(uri.OriginalString) ?? new NSUrl(uri.Scheme, uri.Host, uri.PathAndQuery);
-#if __MOBILE__
-				UIApplication.SharedApplication.OpenUrl(url);
-#else
-				NSWorkspace.SharedWorkspace.OpenUrl(url);
-#endif
-			}
-
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
 				NSTimer timer = NSTimer.CreateRepeatingTimer(interval, t =>
@@ -770,14 +733,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
+#if !__MOBILE__
 			public void QuitApplication()
 			{
-#if __MOBILE__
-				Log.Warning(nameof(IOSPlatformServices), "Platform doesn't implement QuitApp");
-#else
 				NSApplication.SharedApplication.Terminate(new NSObject());
-#endif
 			}
+#endif
 
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 			{

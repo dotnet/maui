@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			Control.HorizontalContentAlignment = Element.HorizontalTextAlignment.ToNativeHorizontalAlignment();
 		}
-
+        [PortHandler]
 		void UpdateVerticalTextAlignment()
 		{
 			Control.VerticalContentAlignment = Element.VerticalTextAlignment.ToNativeVerticalAlignment();

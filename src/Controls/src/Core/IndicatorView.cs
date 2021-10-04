@@ -2,15 +2,18 @@
 using System.Collections;
 using System.Collections.Specialized;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(IndicatorLayout))]
-	public class IndicatorView : TemplatedView
+	public partial class IndicatorView : TemplatedView
 	{
 		const int DefaultPadding = 4;
 
-		public static readonly BindableProperty IndicatorsShapeProperty = BindableProperty.Create(nameof(IndicatorsShape), typeof(IndicatorShape), typeof(IndicatorView), IndicatorShape.Circle);
+		const int DefaultViewSize = 10;
+
+		public static readonly BindableProperty IndicatorsShapeProperty = BindableProperty.Create(nameof(IndicatorsShape), typeof(IndicatorShape), typeof(IndicatorView), Controls.IndicatorShape.Circle);
 
 		public static readonly BindableProperty PositionProperty = BindableProperty.Create(nameof(Position), typeof(int), typeof(IndicatorView), default(int), BindingMode.TwoWay);
 
@@ -25,9 +28,9 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty HideSingleProperty = BindableProperty.Create(nameof(HideSingle), typeof(bool), typeof(IndicatorView), true);
 
-		public static readonly BindableProperty IndicatorColorProperty = BindableProperty.Create(nameof(IndicatorColor), typeof(Color), typeof(IndicatorView), null);
+		public static readonly BindableProperty IndicatorColorProperty = BindableProperty.Create(nameof(IndicatorColor), typeof(Color), typeof(IndicatorView), Colors.LightGrey);
 
-		public static readonly BindableProperty SelectedIndicatorColorProperty = BindableProperty.Create(nameof(SelectedIndicatorColor), typeof(Color), typeof(IndicatorView), null);
+		public static readonly BindableProperty SelectedIndicatorColorProperty = BindableProperty.Create(nameof(SelectedIndicatorColor), typeof(Color), typeof(IndicatorView), Colors.Black);
 
 		public static readonly BindableProperty IndicatorSizeProperty = BindableProperty.Create(nameof(IndicatorSize), typeof(double), typeof(IndicatorView), 6.0);
 
@@ -107,25 +110,19 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ItemsSourceProperty, value);
 		}
 
-
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
-			var baseRequest = base.OnMeasure(widthConstraint, heightConstraint);
-
-			if (IndicatorTemplate != null)
-				return baseRequest;
-
-			var defaultSize = IndicatorSize + DefaultPadding + DefaultPadding + 1;
-			var items = Count;
-			var sizeRequest = new SizeRequest(new Size(items * defaultSize, IndicatorSize), new Size(10, 10));
-			return sizeRequest;
+			if (IndicatorTemplate == null)
+				return Device.PlatformServices.GetNativeSize(this, widthConstraint, heightConstraint);
+			else
+				return base.OnMeasure(widthConstraint, heightConstraint);
 		}
 
 		static void UpdateIndicatorLayout(IndicatorView indicatorView, object newValue)
 		{
 			if (newValue != null)
 			{
-				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView);
+				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView) { Spacing = DefaultPadding };
 			}
 			else if (indicatorView.IndicatorLayout == null)
 			{

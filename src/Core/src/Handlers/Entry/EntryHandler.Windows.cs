@@ -55,8 +55,10 @@ using Windows.System;
 			handler.NativeView?.UpdateVerticalTextAlignment(entry);
 		}
 
-		[MissingMapper]
-		public static void MapIsTextPredictionEnabled(IViewHandler handler, IEntry entry) { }
+		public static void MapIsTextPredictionEnabled(EntryHandler handler, IEntry entry)
+		{
+			handler.NativeView?.UpdateIsTextPredictionEnabled(entry);
+		}
 
 		public static void MapMaxLength(EntryHandler handler, IEntry entry)
 		{
@@ -100,8 +102,10 @@ using Windows.System;
 			handler.NativeView?.UpdateCharacterSpacing(entry);
 		}
 
-		[MissingMapper]
-		public static void MapKeyboard(IViewHandler handler, IEntry entry) { }
+		public static void MapKeyboard(EntryHandler handler, IEntry entry)
+		{ 
+			handler.NativeView?.UpdateKeyboard(entry); 
+		}
 
 		void OnNativeKeyUp(object? sender, KeyRoutedEventArgs args)
 		{

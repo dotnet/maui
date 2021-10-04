@@ -3,8 +3,8 @@
 
 namespace BlazorWpfApp
 {
-    public class AppState
-    {
-        public int Counter { get; set; }
-    }
+	public class AppState
+	{
+		public int Counter { get; set; }
+	}
 }
