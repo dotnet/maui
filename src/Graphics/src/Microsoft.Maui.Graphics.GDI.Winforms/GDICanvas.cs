@@ -248,12 +248,13 @@ namespace Microsoft.Maui.Graphics.GDI
 
 			float minEdgeLength = Math.Min(_rect.Width, _rect.Height);
 			cornerRadius = Math.Min(cornerRadius, minEdgeLength / 2);
+			float cornerDiameter = cornerRadius * 2;
 
 			var path = new GraphicsPath();
-			path.AddArc(_rect.X, _rect.Y, cornerRadius, cornerRadius, 180, 90);
-			path.AddArc(_rect.X + _rect.Width - cornerRadius, _rect.Y, cornerRadius, cornerRadius, 270, 90);
-			path.AddArc(_rect.X + _rect.Width - cornerRadius, _rect.Y + _rect.Height - cornerRadius, cornerRadius, cornerRadius, 0, 90);
-			path.AddArc(_rect.X, _rect.Y + _rect.Height - cornerRadius, cornerRadius, cornerRadius, 90, 90);
+			path.AddArc(_rect.X, _rect.Y, cornerDiameter, cornerDiameter, 180, 90);
+			path.AddArc(_rect.X + _rect.Width - cornerDiameter, _rect.Y, cornerDiameter, cornerDiameter, 270, 90);
+			path.AddArc(_rect.X + _rect.Width - cornerDiameter, _rect.Y + _rect.Height - cornerDiameter, cornerDiameter, cornerDiameter, 0, 90);
+			path.AddArc(_rect.X, _rect.Y + _rect.Height - cornerDiameter, cornerDiameter, cornerDiameter, 90, 90);
 			path.CloseAllFigures();
 
 			// ReSharper disable once AccessToDisposedClosure
@@ -333,12 +334,13 @@ namespace Microsoft.Maui.Graphics.GDI
 
 			float minEdgeLength = Math.Min(_rect.Width, _rect.Height);
 			cornerRadius = Math.Min(cornerRadius, minEdgeLength / 2);
+			float cornerDiameter = cornerRadius * 2;
 
 			var path = new GraphicsPath();
-			path.AddArc(_rect.X, _rect.Y, cornerRadius, cornerRadius, 180, 90);
-			path.AddArc(_rect.X + _rect.Width - cornerRadius, _rect.Y, cornerRadius, cornerRadius, 270, 90);
-			path.AddArc(_rect.X + _rect.Width - cornerRadius, _rect.Y + _rect.Height - cornerRadius, cornerRadius, cornerRadius, 0, 90);
-			path.AddArc(_rect.X, _rect.Y + _rect.Height - cornerRadius, cornerRadius, cornerRadius, 90, 90);
+			path.AddArc(_rect.X, _rect.Y, cornerDiameter, cornerDiameter, 180, 90);
+			path.AddArc(_rect.X + _rect.Width - cornerDiameter, _rect.Y, cornerDiameter, cornerDiameter, 270, 90);
+			path.AddArc(_rect.X + _rect.Width - cornerDiameter, _rect.Y + _rect.Height - cornerDiameter, cornerDiameter, cornerDiameter, 0, 90);
+			path.AddArc(_rect.X, _rect.Y + _rect.Height - cornerDiameter, cornerDiameter, cornerDiameter, 90, 90);
 			path.CloseAllFigures();
 
 			Draw(g => g.FillPath(CurrentState.FillBrush, path));
