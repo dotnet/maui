@@ -244,19 +244,10 @@ namespace Microsoft.Maui.Graphics.GDI
 				return;
 			}
 
-			var strokeWidth = CurrentState.StrokeWidth;
-
 			SetRect(x, y, width, height);
 
-			if (cornerRadius > _rect.Width / 2)
-			{
-				cornerRadius = _rect.Width / 2;
-			}
-
-			if (cornerRadius > _rect.Height / 2)
-			{
-				cornerRadius = _rect.Height / 2;
-			}
+			float minEdgeLength = Math.Min(_rect.Width, _rect.Height);
+			cornerRadius = Math.Min(cornerRadius, minEdgeLength / 2);
 
 			var path = new GraphicsPath();
 			path.AddArc(_rect.X, _rect.Y, cornerRadius, cornerRadius, 180, 90);
@@ -339,6 +330,9 @@ namespace Microsoft.Maui.Graphics.GDI
 			}
 
 			SetRect(x, y, width, height);
+
+			float minEdgeLength = Math.Min(_rect.Width, _rect.Height);
+			cornerRadius = Math.Min(cornerRadius, minEdgeLength / 2);
 
 			var path = new GraphicsPath();
 			path.AddArc(_rect.X, _rect.Y, cornerRadius, cornerRadius, 180, 90);
