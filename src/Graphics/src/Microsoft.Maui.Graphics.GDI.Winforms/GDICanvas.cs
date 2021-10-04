@@ -238,6 +238,12 @@ namespace Microsoft.Maui.Graphics.GDI
 
 		protected override void NativeDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
 		{
+			if (cornerRadius == 0)
+			{
+				NativeDrawRectangle(x, y, width, height);
+				return;
+			}
+
 			var strokeWidth = CurrentState.StrokeWidth;
 
 			SetRect(x, y, width, height);
@@ -326,6 +332,12 @@ namespace Microsoft.Maui.Graphics.GDI
 
 		public override void FillRoundedRectangle(float x, float y, float width, float height, float cornerRadius)
 		{
+			if (cornerRadius == 0)
+			{
+				FillRectangle(x, y, width, height);
+				return;
+			}
+
 			SetRect(x, y, width, height);
 
 			var path = new GraphicsPath();
