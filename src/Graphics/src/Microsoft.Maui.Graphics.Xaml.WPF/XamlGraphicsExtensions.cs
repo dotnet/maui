@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			}
 
 			var values = new float[6];
-			transform.GetMatrix(values);
+			transform.CopyTo(values);
 			return new MatrixTransform(values[0], values[1], values[2], values[3], values[4], values[5]);
 		}
 	}

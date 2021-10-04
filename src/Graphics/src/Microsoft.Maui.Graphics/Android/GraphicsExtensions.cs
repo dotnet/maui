@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Graphics.Native
 		public static Matrix AsMatrix(this AffineTransform transform)
 		{
 			var values = new float[9];
-			transform.GetMatrix(values);
+			transform.CopyTo(values);
 
 			values[Matrix.Mpersp0] = 0; // 6
 			values[Matrix.Mpersp1] = 0; // 7

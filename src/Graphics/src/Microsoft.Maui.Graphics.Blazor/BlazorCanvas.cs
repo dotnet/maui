@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Graphics.Blazor
 
 		protected override void NativeConcatenateTransform(AffineTransform transform)
 		{
-			transform.GetMatrix(_matrix);
+			transform.CopyTo(_matrix);
 			_context.SetTransform(_matrix[0], _matrix[1], _matrix[2], _matrix[3], _matrix[4], _matrix[5]);
 		}
 

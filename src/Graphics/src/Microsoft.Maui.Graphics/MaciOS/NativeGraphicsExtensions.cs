@@ -391,7 +391,7 @@ namespace Microsoft.Maui.Graphics.Native
 			if (transform != null)
 			{
 				var matrix = new float[6];
-				transform.GetMatrix(matrix);
+				transform.CopyTo(matrix);
 				float xx = matrix[0];
 				float yx = matrix[1];
 				float xy = matrix[2];

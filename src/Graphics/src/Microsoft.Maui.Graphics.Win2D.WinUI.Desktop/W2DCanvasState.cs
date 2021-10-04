@@ -440,7 +440,7 @@ namespace Microsoft.Maui.Graphics.Win2D
 		public Matrix3x2 AppendConcatenateTransform(AffineTransform transform)
 		{
 			var values = new float[6];
-			transform.GetMatrix(values);
+			transform.CopyTo(values);
 			Matrix = Matrix3x2.Multiply(Matrix, new Matrix3x2(values[0], values[1], values[2], values[3], values[4], values[5]));
 			return Matrix;
 		}

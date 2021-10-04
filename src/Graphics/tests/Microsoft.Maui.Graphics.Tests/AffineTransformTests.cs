@@ -35,8 +35,8 @@ namespace Microsoft.Maui.Graphics.Tests
 			var a = new AffineTransform();
 
 			var b = new AffineTransform();
-			b.RotateInDegrees(180);
-			b.Scale(-1, -1);			
+			b.ConcatenateRotationInDegrees(180);
+			b.ConcatenateScale(-1, -1);			
 
 			AssertEqual(a, b, 6);
 		}
@@ -88,9 +88,9 @@ namespace Microsoft.Maui.Graphics.Tests
 			// is in reverse order compared to Matrix3x2
 
 			at = new AffineTransform();
-			at.Translate(translation);
-			at.Rotate(rotation);
-			at.Scale(scaleX, scaleY);
+			at.ConcatenateTranslation(translation);
+			at.ConcatenateRotation(rotation);
+			at.ConcatenateScale(scaleX, scaleY);
 			AssertOrthogonal(at, 7);
 			AssertEqual(reference, at, 7);
 
@@ -98,8 +98,8 @@ namespace Microsoft.Maui.Graphics.Tests
 
 			
 			at = new AffineTransform();
-			at.Translate(translation);
-			at.Scale(scaleX, scaleY);
+			at.ConcatenateTranslation(translation);
+			at.ConcatenateScale(scaleX, scaleY);
 			at.Rotation = scaleX >= 0 ? rotation : rotation + (float)Math.PI;
 			AssertOrthogonal(at, 7);
 			AssertEqual(reference, at, 4);			
@@ -107,9 +107,9 @@ namespace Microsoft.Maui.Graphics.Tests
 			// concatenation and scale assign
 			
 			at = new AffineTransform();
-			at.Translate(translation);
-			at.Rotate(rotation);
-			at.Scaling = new SizeF(scaleX, scaleY); // changes scaling without affecting rotation/translation
+			at.ConcatenateTranslation(translation);
+			at.ConcatenateRotation(rotation);
+			at.Scale = new SizeF(scaleX, scaleY); // changes scaling without affecting rotation/translation
 			AssertOrthogonal(at, 7);
 			AssertEqual(reference, at, 7);
 
@@ -141,9 +141,9 @@ namespace Microsoft.Maui.Graphics.Tests
 			// create a matrix equivalent to reference.
 
 			var at = new AffineTransform();
-			at.Translate(translation);
-			at.Rotate(rotation);
-			at.Scale(scaleX, scaleY);
+			at.ConcatenateTranslation(translation);
+			at.ConcatenateRotation(rotation);
+			at.ConcatenateScale(scaleX, scaleY);
 			AssertEqual(reference, at, 5);
 			AssertEqual(pointx, at.Transform(point), 8);
 

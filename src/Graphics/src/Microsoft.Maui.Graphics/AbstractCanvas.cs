@@ -260,9 +260,9 @@ namespace Microsoft.Maui.Graphics
 			var radians = Geometry.DegreesToRadians(degrees);
 
 			var transform = _currentState.Transform;
-			transform.Translate(x, y);
-			transform.Rotate(radians);
-			transform.Translate(-x, -y);
+			transform.ConcatenateTranslation(x, y);
+			transform.ConcatenateRotation(radians);
+			transform.ConcatenateTranslation(-x, -y);
 
 			NativeRotate(degrees, radians, x, y);
 		}
@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Graphics
 		public void Rotate(float degrees)
 		{
 			var radians = Geometry.DegreesToRadians(degrees);
-			_currentState.Transform.Rotate(radians);
+			_currentState.Transform.ConcatenateRotation(radians);
 
 			NativeRotate(degrees, radians);
 		}
@@ -278,20 +278,20 @@ namespace Microsoft.Maui.Graphics
 		public void Scale(float fx, float fy)
 		{
 			_currentState.Scale *= fx;
-			_currentState.Transform.Scale(fx, fy);
+			_currentState.Transform.ConcatenateScale(fx, fy);
 
 			NativeScale(fx, fy);
 		}
 
 		public void Translate(float tx, float ty)
 		{
-			_currentState.Transform.Translate(tx, ty);
+			_currentState.Transform.ConcatenateTranslation(tx, ty);
 			NativeTranslate(tx, ty);
 		}
 
 		public void ConcatenateTransform(AffineTransform transform)
 		{
-			_currentState.Scale *= transform.AverageScaling;
+			_currentState.Scale *= transform.AverageScale;
 			_currentState.Transform.Concatenate(transform);
 			NativeConcatenateTransform(transform);
 		}

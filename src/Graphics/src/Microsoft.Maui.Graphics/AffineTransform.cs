@@ -65,26 +65,6 @@ namespace Microsoft.Maui.Graphics
 			_m32 = matrix.M32;
 		}
 
-		public void SetMatrix(float m11, float m12, float m21, float m22, float m31, float m32)
-		{
-			_m11 = m11;
-			_m12 = m12;
-			_m21 = m21;
-			_m22 = m22;
-			_m31 = m31;
-			_m32 = m32;
-		}
-
-		public void SetMatrix(in Matrix3x2 matrix)
-		{
-			_m11 = matrix.M11;
-			_m12 = matrix.M12;
-			_m21 = matrix.M21;
-			_m22 = matrix.M22;
-			_m31 = matrix.M31;
-			_m32 = matrix.M32;
-		}
-
 		public float M11 => _m11;
 
 		public float M22 => _m22;
@@ -115,21 +95,21 @@ namespace Microsoft.Maui.Graphics
 			set
 			{
 				var t = Translation;
-				var s = Scaling;
+				var s = Scale;
 				SetTo(t, value, s);
 			}
 		}
 
-		public float AverageScaling
+		public float AverageScale
 		{
 			get
 			{
-				var s = Scaling;
+				var s = Scale;
 				return (Math.Abs(s.Width) + Math.Abs(s.Height)) / 2;
 			}
 		}
 
-		public SizeF Scaling
+		public SizeF Scale
 		{
 			get
 			{
@@ -146,16 +126,20 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
-		public void GetMatrix(float[] matrix)
+		public bool IsIdentity => _m11 == 1.0f && _m22 == 1.0f && _m12 == 0.0f && _m21 == 0.0f && _m31 == 0.0f && _m32 == 0.0f;
+
+		public void CopyTo(float[] matrix, int offset = 0, int count = 6)
 		{
-			matrix[0] = _m11;
-			matrix[1] = _m12;
-			matrix[2] = _m21;
-			matrix[3] = _m22;
-			if (matrix.Length > 4)
+			count = Math.Min(matrix.Length, count);
+
+			matrix[offset + 0] = _m11;
+			matrix[offset + 1] = _m12;
+			matrix[offset + 2] = _m21;
+			matrix[offset + 3] = _m22;
+			if (count > 4)
 			{
-				matrix[4] = _m31;
-				matrix[5] = _m32;
+				matrix[offset + 4] = _m31;
+				matrix[offset + 5] = _m32;
 			}
 		}
 
@@ -163,7 +147,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			return _m11 * _m22 - _m21 * _m12;
 		}
-
+		
 		public void SetTransform(float m11, float m12, float m21, float m22, float m31, float m32)
 		{
 			_m11 = m11;
@@ -172,6 +156,19 @@ namespace Microsoft.Maui.Graphics
 			_m22 = m22;
 			_m31 = m31;
 			_m32 = m32;
+		}
+
+		public void SetTransform(float[] matrix)
+		{
+			_m11 = matrix[0];
+			_m12 = matrix[1];
+			_m21 = matrix[2];
+			_m22 = matrix[3];
+			if (matrix.Length > 4)
+			{
+				_m31 = matrix[4];
+				_m32 = matrix[5];
+			}
 		}
 
 		public void SetTransform(in Matrix3x2 matrix)
@@ -198,8 +195,8 @@ namespace Microsoft.Maui.Graphics
 		public void SetTo(PointF translation, float rotation, SizeF scale)
 		{
 			this.SetToTranslation(translation.X, translation.Y);
-			this.Rotate(rotation);
-			this.Scale(scale);
+			this.ConcatenateRotation(rotation);
+			this.ConcatenateScale(scale);
 		}
 
 		public void SetToTranslation(float mx, float my)
@@ -295,49 +292,59 @@ namespace Microsoft.Maui.Graphics
 			return t;
 		}
 
-		public void Translate(PointF point)
+		public void ConcatenateTranslation(PointF point)
 		{
 			Concatenate(GetTranslateInstance(point.X, point.Y));
 		}
 
-		public void Translate(float mx, float my)
+		public void ConcatenateTranslation(float mx, float my)
 		{
 			Concatenate(GetTranslateInstance(mx, my));
 		}
 
-		public void Scale(SizeF scale)
+		public void ConcatenateScale(SizeF scale)
 		{
 			Concatenate(GetScaleInstance(scale.Width, scale.Height));
 		}
 
-		public void Scale(float scx, float scy)
+		public void ConcatenateScale(float scx, float scy)
 		{
 			Concatenate(GetScaleInstance(scx, scy));
 		}
 
-		public void Shear(float shx, float shy)
+		public void ConcatenateShear(float shx, float shy)
 		{
 			Concatenate(GetShearInstance(shx, shy));
 		}
 
-		public void RotateInDegrees(float degrees)
+		public void ConcatenateRotationInDegrees(float degrees)
 		{
-			Rotate(Geometry.DegreesToRadians(degrees));
+			ConcatenateRotation(Geometry.DegreesToRadians(degrees));
 		}
 
-		public void RotateInDegrees(float degrees, float px, float py)
+		public void ConcatenateRotationInDegrees(float degrees, float px, float py)
 		{
-			Rotate(Geometry.DegreesToRadians(degrees), px, py);
+			ConcatenateRotation(Geometry.DegreesToRadians(degrees), px, py);
 		}
 
-		public void Rotate(float radians)
+		public void ConcatenateRotation(float radians)
 		{
 			Concatenate(GetRotateInstance(radians));
 		}
 
-		public void Rotate(float radians, float px, float py)
+		public void ConcatenateRotation(float radians, float px, float py)
 		{
 			Concatenate(GetRotateInstance(radians, px, py));
+		}
+
+		public void Concatenate(AffineTransform t)
+		{
+			SetTransform(Multiply(t, this));
+		}
+
+		public void PreConcatenate(AffineTransform t)
+		{
+			SetTransform(Multiply(this, t));
 		}
 
 		/// <summary>
@@ -355,16 +362,6 @@ namespace Microsoft.Maui.Graphics
 				t1._m21 * t2._m12 + t1._m22 * t2._m22, // m22
 				t1._m31 * t2._m11 + t1._m32 * t2._m21 + t2._m31, // m31
 				t1._m31 * t2._m12 + t1._m32 * t2._m22 + t2._m32); // m32
-		}
-
-		public void Concatenate(AffineTransform t)
-		{
-			SetTransform(Multiply(t, this));
-		}
-
-		public void PreConcatenate(AffineTransform t)
-		{
-			SetTransform(Multiply(this, t));
 		}
 
 		public AffineTransform CreateInverse()
@@ -445,7 +442,7 @@ namespace Microsoft.Maui.Graphics
 			// when the transform is rotated, we have to deconstruct
 			// the scaling and handle the check with precission loss:
 
-			var scale = this.Scaling;
+			var scale = this.Scale;
 
 			if (Math.Abs(scale.Width - 1) > Epsilon) return true;
 			if (Math.Abs(scale.Height - 1) > Epsilon) return true;
@@ -486,7 +483,7 @@ namespace Microsoft.Maui.Graphics
 
 		public void Deconstruct(out PointF translation, out float rotation, out SizeF scale)
 		{
-			scale = this.Scaling;
+			scale = this.Scale;
 			rotation = this.Rotation;
 			translation = Translation;
 		}
@@ -498,6 +495,6 @@ namespace Microsoft.Maui.Graphics
 			return new Matrix3x2(matrix._m11, matrix._m12, matrix._m21, matrix._m22, matrix._m31, matrix._m32);
 		}
 
-		public bool IsIdentity => _m11 == 1.0f && _m22 == 1.0f && _m12 == 0.0f && _m21 == 0.0f && _m31 == 0.0f && _m32 == 0.0f;
+		
 	}
 }

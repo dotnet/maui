@@ -616,7 +616,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 		public Matrix3x2 DxConcatenateTransform(AffineTransform transform)
 		{
 			var values = new float[6];
-			transform.GetMatrix(values);
+			transform.CopyTo(values);
 			Matrix = Matrix3x2.Multiply(Matrix, new Matrix3x2(values));
 			return Matrix;
 		}
