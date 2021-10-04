@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Essentials
 		{
 			var runtimeApiLevel = SdkInt;
 			
-			string fileName;
+			string fileName = "MAUI";
 			string prefsMainKey;
 			var context = Application.Context;
 
@@ -92,12 +92,10 @@ namespace Microsoft.Maui.Essentials
 			if (runtimeApiLevel >= 23)
 			{
 				prefsMainKey = GetOrCreateMasterKeyApi23OrNewer();
-				fileName = "MAUI";
 			}
 			else
 			{
 				prefsMainKey = GetOrCreateMasterKeyApi22OrOlder(context);
-				fileName = "MAUI_Legacy";
 			}
 
 			var sharedPreferences = EncryptedSharedPreferences.Create(
@@ -116,31 +114,24 @@ namespace Microsoft.Maui.Essentials
 
 		static string GetOrCreateMasterKeyApi22OrOlder(Context context)
 		{
-			// older versions don't support symmetric keys. but we still want to always use the KeyStore
-
-			var asymmetricAlias = $"dotnet.MAUI.asymmetric";
-
 			// Force to english for known bug in date parsing:
 			// https://issuetracker.google.com/issues/37095309
 			SetLocale(context, Java.Util.Locale.English);
 
-			// Otherwise we create a new key
 			var generator = KeyPairGenerator.GetInstance(
 			  KeyProperties.KeyAlgorithmRsa,
 			  "AndroidKeyStore"); // Const value for secure keystore
 
-			// certificates have issue date and expiration date. related to rsa
 			var end = DateTime.UtcNow.AddYears(30);
 			var startDate = new Java.Util.Date();
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			var endDate = new Java.Util.Date(end.Year, end.Month, end.Day);
 
-			// generates the key pair stuff
 			var builder = new KeyPairGeneratorSpec.Builder(context)
-			  .SetAlias(asymmetricAlias)
-			  .SetSerialNumber(Java.Math.BigInteger.ValueOf(Math.Abs(asymmetricAlias.GetHashCode())))
-			  .SetSubject(new Javax.Security.Auth.X500.X500Principal($"CN={asymmetricAlias}")) // CN is common name
+			  .SetAlias(Alias)
+			  .SetSerialNumber(Java.Math.BigInteger.ValueOf(Math.Abs(Alias.GetHashCode())))
+			  .SetSubject(new Javax.Security.Auth.X500.X500Principal($"CN={Alias}"))
 			  .SetStartDate(startDate)
 			  .SetEndDate(endDate);
 
