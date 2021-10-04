@@ -39,9 +39,6 @@ namespace Microsoft.Maui.Controls.DualScreen.UnitTests
 			_isInvokeRequired = isInvokeRequired;
 		}
 
-		public string GetHash(string input) => Internals.Crc64.GetHash(input);
-		string IPlatformServices.GetMD5Hash(string input) => GetHash(input);
-
 		static int hex(int v)
 		{
 			if (v < 10)

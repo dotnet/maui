@@ -1,12 +1,10 @@
-#if !NETSTANDARD1_0
+// https://github.com/xamarin/java.interop/blob/master/src/Java.Interop.Tools.JavaCallableWrappers/Java.Interop.Tools.JavaCallableWrappers/Crc64.cs
 
 using System;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
-// https://github.com/xamarin/java.interop/blob/master/src/Java.Interop.Tools.JavaCallableWrappers/Java.Interop.Tools.JavaCallableWrappers/Crc64.cs
-namespace Microsoft.Maui.Controls.Internals
+namespace Microsoft.Maui
 {
 	/// <summary>
 	///  CRC64 variant: crc-64-jones 64-bit
@@ -15,22 +13,8 @@ namespace Microsoft.Maui.Controls.Internals
 	///  * Starting Value: ulong.MaxValue
 	///  * XOR length in HashFinal()
 	/// </summary>
-	internal class Crc64 : HashAlgorithm
+	class Crc64 : HashAlgorithm, IHashAlgorithm
 	{
-		static Crc64 _instance;
-		public static Crc64 Instance
-		{
-			get
-			{
-				if (_instance == null)
-					_instance = new Crc64();
-
-				return _instance;
-			}
-		}
-
-		Crc64() { }
-
 		static readonly ulong[] Table = {
 			0x0000000000000000, 0x7ad870c830358979,
 			0xf5b0e190606b12f2, 0x8f689158505e9b8b,
@@ -182,8 +166,6 @@ namespace Microsoft.Maui.Controls.Internals
 
 		protected override byte[] HashFinal() => BitConverter.GetBytes(crc ^ length);
 
-
-
 		// https://stackoverflow.com/questions/311165/how-do-you-convert-a-byte-array-to-a-hexadecimal-string-and-vice-versa/24343727#24343727
 		static readonly uint[] _lookup32 = CreateLookup32();
 
@@ -211,12 +193,10 @@ namespace Microsoft.Maui.Controls.Internals
 			return new string(result);
 		}
 
-		public static string GetHash(string input)
+		public string ComputeHashString(string input)
 		{
-			byte[] bytes = Instance.ComputeHash(Encoding.UTF8.GetBytes(input));
+			byte[] bytes = ComputeHash(Encoding.UTF8.GetBytes(input));
 			return ByteArrayToHexViaLookup32(bytes);
 		}
-
 	}
 }
-#endif

@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls
 
 		static string GetCacheKey(Uri uri)
 		{
-			return Device.PlatformServices.GetHash(uri.AbsoluteUri);
+			return Application.Current.Handler.GetRequiredService<IHashAlgorithm>().ComputeHashString(uri.AbsoluteUri);
 		}
 
 		Task<bool> GetHasLocallyCachedCopyAsync(string key, bool checkValidity = true)
