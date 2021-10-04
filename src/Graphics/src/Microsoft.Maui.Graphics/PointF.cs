@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Graphics
 
 		public float Y { get; set; }
 
-		public static PointF Zero = new PointF();
+		public static readonly PointF Zero = new PointF();
 
 		public override string ToString()
 		{

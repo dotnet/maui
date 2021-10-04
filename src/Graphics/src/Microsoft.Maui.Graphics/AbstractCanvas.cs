@@ -291,7 +291,7 @@ namespace Microsoft.Maui.Graphics
 
 		public void ConcatenateTransform(AffineTransform transform)
 		{
-			_currentState.Scale *= transform.ScaleX;
+			_currentState.Scale *= transform.AverageScaling;
 			_currentState.Transform.Concatenate(transform);
 			NativeConcatenateTransform(transform);
 		}

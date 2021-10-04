@@ -1,176 +1,234 @@
 using System;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
+	[DebuggerDisplay("X={Translation.X} Y={Translation.Y} W={Scaling.Width} H={Scaling.Height} R={RotationDegrees}° ")]
 	public class AffineTransform
 	{
 		private const float Epsilon = 1E-10f;
 
-		private float _m00;
-		private float _m01;
-		private float _m02;
-		private float _m10;
 		private float _m11;
+		private float _m21;
+		private float _m31;
 		private float _m12;
+		private float _m22;
+		private float _m32;
 
 		public AffineTransform()
 		{
-			_m00 = _m11 = 1.0f;
-			_m10 = _m01 = _m02 = _m12 = 0.0f;
+			_m11 = _m22 = 1.0f;
+			_m12 = _m21 = _m31 = _m32 = 0.0f;
 		}
 
 		public AffineTransform(AffineTransform t)
 		{
-			_m00 = t._m00;
-			_m10 = t._m10;
-			_m01 = t._m01;
 			_m11 = t._m11;
-			_m02 = t._m02;
 			_m12 = t._m12;
+			_m21 = t._m21;
+			_m22 = t._m22;
+			_m31 = t._m31;
+			_m32 = t._m32;
 		}
 
-		public AffineTransform(float m00, float m10, float m01, float m11, float m02, float m12)
+		public AffineTransform(float m11, float m12, float m21, float m22, float m31, float m32)
 		{
-			_m00 = m00;
-			_m10 = m10;
-			_m01 = m01;
 			_m11 = m11;
-			_m02 = m02;
 			_m12 = m12;
+			_m21 = m21;
+			_m22 = m22;
+			_m31 = m31;
+			_m32 = m32;
 		}
 
 		public AffineTransform(float[] matrix)
 		{
-			_m00 = matrix[0];
-			_m10 = matrix[1];
-			_m01 = matrix[2];
-			_m11 = matrix[3];
+			_m11 = matrix[0];
+			_m12 = matrix[1];
+			_m21 = matrix[2];
+			_m22 = matrix[3];
 			if (matrix.Length > 4)
 			{
-				_m02 = matrix[4];
-				_m12 = matrix[5];
+				_m31 = matrix[4];
+				_m32 = matrix[5];
 			}
 		}
 
 		public AffineTransform(in Matrix3x2 matrix)
 		{
-			_m00 = matrix.M11;
-			_m10 = matrix.M12;
-			_m01 = matrix.M21;
-			_m11 = matrix.M22;
-			_m02 = matrix.M31;
-			_m12 = matrix.M32;
+			_m11 = matrix.M11;
+			_m12 = matrix.M12;
+			_m21 = matrix.M21;
+			_m22 = matrix.M22;
+			_m31 = matrix.M31;
+			_m32 = matrix.M32;
 		}
 
-		public void SetMatrix(float m00, float m10, float m01, float m11, float m02, float m12)
+		public void SetMatrix(float m11, float m12, float m21, float m22, float m31, float m32)
 		{
-			_m00 = m00;
-			_m10 = m10;
-			_m01 = m01;
 			_m11 = m11;
-			_m02 = m02;
 			_m12 = m12;
+			_m21 = m21;
+			_m22 = m22;
+			_m31 = m31;
+			_m32 = m32;
 		}
 
 		public void SetMatrix(in Matrix3x2 matrix)
 		{
-			_m00 = matrix.M11;
-			_m10 = matrix.M12;
-			_m01 = matrix.M21;
-			_m11 = matrix.M22;
-			_m02 = matrix.M31;
-			_m12 = matrix.M32;
+			_m11 = matrix.M11;
+			_m12 = matrix.M12;
+			_m21 = matrix.M21;
+			_m22 = matrix.M22;
+			_m31 = matrix.M31;
+			_m32 = matrix.M32;
 		}
 
-		public float ScaleX => _m00;
+		public float M11 => _m11;
 
-		public float ScaleY => _m11;
+		public float M22 => _m22;
 
-		public float ShearX => _m01;
+		public float M21 => _m21;
 
-		public float ShearY => _m10;
+		public float M12 => _m12;
 
-		public float TranslateX => _m02;
+		public float M31 => _m31;
 
-		public float TranslateY => _m12;
+		public float M32 => _m32;
+
+		public PointF Translation
+		{
+			get => new PointF(_m31, _m32);
+			set { _m31 = value.X; _m32 = value.Y; }
+		}
+
+		public float RotationDegrees
+		{
+			get => Geometry.RadiansToDegrees(Rotation);
+			set => Rotation = Geometry.DegreesToRadians(value);
+		}
+
+		public float Rotation
+		{
+			get => (float)Math.Atan2(M12, M11);
+			set
+			{
+				var t = Translation;
+				var s = Scaling;
+				SetTo(t, value, s);
+			}
+		}
+
+		public float AverageScaling
+		{
+			get
+			{
+				var s = Scaling;
+				return (Math.Abs(s.Width) + Math.Abs(s.Height)) / 2;
+			}
+		}
+
+		public SizeF Scaling
+		{
+			get
+			{
+				var sx = _m12 == 0 ? Math.Abs(_m11) : new Vector2(_m11, _m12).Length();
+				var sy = _m21 == 0 ? Math.Abs(_m22) : new Vector2(_m21, _m22).Length();
+				if (GetDeterminant() < 0) sy = -sy;
+				return new SizeF(sx, sy);
+			}
+			set
+			{
+				var t = Translation;
+				var r = Rotation;
+				SetTo(t, r, value);
+			}
+		}
 
 		public void GetMatrix(float[] matrix)
 		{
-			matrix[0] = _m00;
-			matrix[1] = _m10;
-			matrix[2] = _m01;
-			matrix[3] = _m11;
+			matrix[0] = _m11;
+			matrix[1] = _m12;
+			matrix[2] = _m21;
+			matrix[3] = _m22;
 			if (matrix.Length > 4)
 			{
-				matrix[4] = _m02;
-				matrix[5] = _m12;
+				matrix[4] = _m31;
+				matrix[5] = _m32;
 			}
 		}
 
 		public float GetDeterminant()
 		{
-			return _m00 * _m11 - _m01 * _m10;
+			return _m11 * _m22 - _m21 * _m12;
 		}
 
-		public void SetTransform(float m00, float m10, float m01, float m11, float m02, float m12)
+		public void SetTransform(float m11, float m12, float m21, float m22, float m31, float m32)
 		{
-			_m00 = m00;
-			_m10 = m10;
-			_m01 = m01;
 			_m11 = m11;
-			_m02 = m02;
 			_m12 = m12;
+			_m21 = m21;
+			_m22 = m22;
+			_m31 = m31;
+			_m32 = m32;
 		}
 
 		public void SetTransform(in Matrix3x2 matrix)
 		{
-			_m00 = matrix.M11;
-			_m10 = matrix.M12;
-			_m01 = matrix.M21;
-			_m11 = matrix.M22;
-			_m02 = matrix.M31;
-			_m12 = matrix.M32;
+			_m11 = matrix.M11;
+			_m12 = matrix.M12;
+			_m21 = matrix.M21;
+			_m22 = matrix.M22;
+			_m31 = matrix.M31;
+			_m32 = matrix.M32;
 		}
 
 		public void SetTransform(AffineTransform t)
 		{
-			SetTransform(t._m00, t._m10, t._m01, t._m11, t._m02, t._m12);
+			SetTransform(t._m11, t._m12, t._m21, t._m22, t._m31, t._m32);
 		}
 
 		public void SetToIdentity()
 		{
-			_m00 = _m11 = 1.0f;
-			_m10 = _m01 = _m02 = _m12 = 0.0f;
+			_m11 = _m22 = 1.0f;
+			_m12 = _m21 = _m31 = _m32 = 0.0f;
+		}
+
+		public void SetTo(PointF translation, float rotation, SizeF scale)
+		{
+			this.SetToTranslation(translation.X, translation.Y);
+			this.Rotate(rotation);
+			this.Scale(scale);
 		}
 
 		public void SetToTranslation(float mx, float my)
 		{
-			_m00 = _m11 = 1.0f;
-			_m01 = _m10 = 0.0f;
-			_m02 = mx;
-			_m12 = my;
+			_m11 = _m22 = 1.0f;
+			_m21 = _m12 = 0.0f;
+			_m31 = mx;
+			_m32 = my;
 		}
 
 		public void SetToScale(float scx, float scy)
 		{
-			_m00 = scx;
-			_m11 = scy;
-			_m10 = _m01 = _m02 = _m12 = 0.0f;
+			_m11 = scx;
+			_m22 = scy;
+			_m12 = _m21 = _m31 = _m32 = 0.0f;
 		}
 
 		public void SetToShear(float shx, float shy)
 		{
-			_m00 = _m11 = 1.0f;
-			_m02 = _m12 = 0.0f;
-			_m01 = shx;
-			_m10 = shy;
+			_m11 = _m22 = 1.0f;
+			_m31 = _m32 = 0.0f;
+			_m21 = shx;
+			_m12 = shy;
 		}
 
-		public void SetToRotation(float angle)
+		public void SetToRotation(float radians)
 		{
-			float sin = (float) Math.Sin(angle);
-			float cos = (float) Math.Cos(angle);
+			float sin = (float) Math.Sin(radians);
+			float cos = (float) Math.Cos(radians);
 			if (Math.Abs(cos) < Epsilon)
 			{
 				cos = 0.0f;
@@ -182,17 +240,24 @@ namespace Microsoft.Maui.Graphics
 				cos = cos > 0.0f ? 1.0f : -1.0f;
 			}
 
-			_m00 = _m11 = cos;
-			_m01 = -sin;
-			_m10 = sin;
-			_m02 = _m12 = 0.0f;
+			_m11 = _m22 = cos;
+			_m21 = -sin;
+			_m12 = sin;
+			_m31 = _m32 = 0.0f;
 		}
 
-		public void SetToRotation(float angle, float px, float py)
+		public void SetToRotation(float radians, float px, float py)
 		{
-			SetToRotation(angle);
-			_m02 = px * (1.0f - _m00) + py * _m10;
-			_m12 = py * (1.0f - _m00) - px * _m10;
+			SetToRotation(radians);
+			_m31 = px * (1.0f - _m11) + py * _m12;
+			_m32 = py * (1.0f - _m11) - px * _m12;
+		}
+
+		public static AffineTransform GetInstance(PointF translation, float rotation, SizeF scale)
+		{
+			var t = new AffineTransform();
+			t.SetTo(translation, rotation, scale);
+			return t;
 		}
 
 		public static AffineTransform GetTranslateInstance(float mx, float my)
@@ -230,9 +295,19 @@ namespace Microsoft.Maui.Graphics
 			return t;
 		}
 
+		public void Translate(PointF point)
+		{
+			Concatenate(GetTranslateInstance(point.X, point.Y));
+		}
+
 		public void Translate(float mx, float my)
 		{
 			Concatenate(GetTranslateInstance(mx, my));
+		}
+
+		public void Scale(SizeF scale)
+		{
+			Concatenate(GetScaleInstance(scale.Width, scale.Height));
 		}
 
 		public void Scale(float scx, float scy)
@@ -245,24 +320,24 @@ namespace Microsoft.Maui.Graphics
 			Concatenate(GetShearInstance(shx, shy));
 		}
 
-		public void RotateInDegrees(float angle)
+		public void RotateInDegrees(float degrees)
 		{
-			Rotate(Geometry.DegreesToRadians(angle));
+			Rotate(Geometry.DegreesToRadians(degrees));
 		}
 
-		public void RotateInDegrees(float angle, float px, float py)
+		public void RotateInDegrees(float degrees, float px, float py)
 		{
-			Rotate(Geometry.DegreesToRadians(angle), px, py);
+			Rotate(Geometry.DegreesToRadians(degrees), px, py);
 		}
 
-		public void Rotate(float angle)
+		public void Rotate(float radians)
 		{
-			Concatenate(GetRotateInstance(angle));
+			Concatenate(GetRotateInstance(radians));
 		}
 
-		public void Rotate(float angle, float px, float py)
+		public void Rotate(float radians, float px, float py)
 		{
-			Concatenate(GetRotateInstance(angle, px, py));
+			Concatenate(GetRotateInstance(radians, px, py));
 		}
 
 		/// <summary>
@@ -274,12 +349,12 @@ namespace Microsoft.Maui.Graphics
 		private AffineTransform Multiply(AffineTransform t1, AffineTransform t2)
 		{
 			return new AffineTransform(
-				t1._m00 * t2._m00 + t1._m10 * t2._m01, // m00
-				t1._m00 * t2._m10 + t1._m10 * t2._m11, // m01
-				t1._m01 * t2._m00 + t1._m11 * t2._m01, // m10
-				t1._m01 * t2._m10 + t1._m11 * t2._m11, // m11
-				t1._m02 * t2._m00 + t1._m12 * t2._m01 + t2._m02, // m02
-				t1._m02 * t2._m10 + t1._m12 * t2._m11 + t2._m12); // m12
+				t1._m11 * t2._m11 + t1._m12 * t2._m21, // m11
+				t1._m11 * t2._m12 + t1._m12 * t2._m22, // m21
+				t1._m21 * t2._m11 + t1._m22 * t2._m21, // m12
+				t1._m21 * t2._m12 + t1._m22 * t2._m22, // m22
+				t1._m31 * t2._m11 + t1._m32 * t2._m21 + t2._m31, // m31
+				t1._m31 * t2._m12 + t1._m32 * t2._m22 + t2._m32); // m32
 		}
 
 		public void Concatenate(AffineTransform t)
@@ -299,12 +374,12 @@ namespace Microsoft.Maui.Graphics
 				throw new Exception("Determinant is zero");
 
 			return new AffineTransform(
+				_m22 / det,
+				-_m12 / det,
+				-_m21 / det,
 				_m11 / det,
-				-_m10 / det,
-				-_m01 / det,
-				_m00 / det,
-				(_m01 * _m12 - _m11 * _m02) / det,
-				(_m10 * _m02 - _m00 * _m12) / det
+				(_m21 * _m32 - _m22 * _m31) / det,
+				(_m12 * _m31 - _m11 * _m32) / det
 			);
 		}
 
@@ -315,7 +390,7 @@ namespace Microsoft.Maui.Graphics
 
 		public PointF Transform(float x, float y)
 		{
-			return new PointF(x * _m00 + y * _m01 + _m02, x * _m10 + y * _m11 + _m12);
+			return new PointF(x * _m11 + y * _m21 + _m31, x * _m12 + y * _m22 + _m32);
 		}
 
 		public PointF InverseTransform(PointF src)
@@ -324,10 +399,10 @@ namespace Microsoft.Maui.Graphics
 			if (Math.Abs(det) < Epsilon)
 				throw new Exception("Unable to inverse this transform.");
 
-			float x = src.X - _m02;
-			float y = src.Y - _m12;
+			float x = src.X - _m31;
+			float y = src.Y - _m32;
 
-			return new PointF((x * _m11 - y * _m01) / det, (y * _m00 - x * _m10) / det);
+			return new PointF((x * _m22 - y * _m21) / det, (y * _m11 - x * _m12) / det);
 		}
 
 		public void Transform(float[] src, int srcOff, float[] dst, int dstOff, int length)
@@ -344,8 +419,8 @@ namespace Microsoft.Maui.Graphics
 			{
 				float x = src[srcOff + 0];
 				float y = src[srcOff + 1];
-				dst[dstOff + 0] = x * _m00 + y * _m01 + _m02;
-				dst[dstOff + 1] = x * _m10 + y * _m11 + _m12;
+				dst[dstOff + 0] = x * _m11 + y * _m21 + _m31;
+				dst[dstOff + 1] = x * _m12 + y * _m22 + _m32;
 				srcOff += step;
 				dstOff += step;
 			}
@@ -359,21 +434,38 @@ namespace Microsoft.Maui.Graphics
 		private bool HasScale()
 		{
 			// ReSharper disable CompareOfFloatsByEqualityOperator
-			return _m00 != 1.0 || _m11 != 1.0;
+
+			// if matrix has no rotation, we can do an exact check:
+
+			if (!HasRotate())
+			{
+				return _m11 != 1.0 || _m22 != 1.0;
+			}
+
+			// when the transform is rotated, we have to deconstruct
+			// the scaling and handle the check with precission loss:
+
+			var scale = this.Scaling;
+
+			if (Math.Abs(scale.Width - 1) > Epsilon) return true;
+			if (Math.Abs(scale.Height - 1) > Epsilon) return true;
+
+			return false;
+			
 			// ReSharper restore CompareOfFloatsByEqualityOperator
 		}
 
 		private bool HasRotate()
 		{
 			// ReSharper disable CompareOfFloatsByEqualityOperator
-			return _m10 != 0.0 || _m01 != 0.0;
+			return _m12 != 0.0 || _m21 != 0.0;
 			// ReSharper restore CompareOfFloatsByEqualityOperator
 		}
 
 		private bool HasTranslate()
 		{
 			// ReSharper disable CompareOfFloatsByEqualityOperator
-			return _m02 != 0.0 || _m12 != 0.0;
+			return _m31 != 0.0 || _m32 != 0.0;
 			// ReSharper restore CompareOfFloatsByEqualityOperator
 		}
 
@@ -392,13 +484,20 @@ namespace Microsoft.Maui.Graphics
 			return !HasRotate() && !HasTranslate();
 		}
 
+		public void Deconstruct(out PointF translation, out float rotation, out SizeF scale)
+		{
+			scale = this.Scaling;
+			rotation = this.Rotation;
+			translation = Translation;
+		}
+
 		public static implicit operator AffineTransform(Matrix3x2 matrix) => new AffineTransform(matrix);
 
 		public static explicit operator Matrix3x2(AffineTransform matrix)
 		{
-			return new Matrix3x2(matrix._m00, matrix._m10, matrix._m01, matrix._m11, matrix._m02, matrix._m12);
+			return new Matrix3x2(matrix._m11, matrix._m12, matrix._m21, matrix._m22, matrix._m31, matrix._m32);
 		}
 
-		public bool IsIdentity => _m00 == 1.0f && _m11 == 1.0f && _m10 == 0.0f && _m01 == 0.0f && _m02 == 0.0f && _m12 == 0.0f;
+		public bool IsIdentity => _m11 == 1.0f && _m22 == 1.0f && _m12 == 0.0f && _m21 == 0.0f && _m31 == 0.0f && _m32 == 0.0f;
 	}
 }

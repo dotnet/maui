@@ -223,8 +223,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void ConcatenateTransform(AffineTransform transform)
 		{
-			_scaleX *= transform.ScaleX;
-			_scaleY *= transform.ScaleY;
+			var scale = transform.Scaling;
+			_scaleX *= scale.Width;
+			_scaleY *= scale.Height;
 			_canvas.ConcatenateTransform(transform);
 		}
 

@@ -374,11 +374,9 @@ namespace Microsoft.Maui.Graphics.GDI
 		}
 
 		public void NativeConcatenateTransform(AffineTransform transform)
-		{
-			_scale *= transform.ScaleX;
-			var values = new float[6];
-			transform.GetMatrix(values);
-			var transformMatrix = new Matrix(values[0], values[1], values[2], values[3], values[4], values[5]);
+		{			
+			_scale *= transform.AverageScaling;			
+			var transformMatrix = new Matrix(transform.M11, transform.M12, transform.M21, transform.M22, transform.M31, transform.M32);
 			_graphics.MultiplyTransform(transformMatrix);
 		}
 	}

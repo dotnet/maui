@@ -78,12 +78,12 @@ namespace Microsoft.Maui.Graphics.Skia
 		{
 			var matrix = new SKMatrix
 			{
-				ScaleX = transform.ScaleX,
-				SkewX = transform.ShearX,
-				TransX = transform.TranslateX,
-				SkewY = transform.ShearY,
-				ScaleY = transform.ScaleY,
-				TransY = transform.TranslateY,
+				ScaleX = transform.M11,
+				SkewX = transform.M21,
+				TransX = transform.M31,
+				SkewY = transform.M12,
+				ScaleY = transform.M22,
+				TransY = transform.M32,
 				Persp0 = 0,
 				Persp1 = 0,
 				Persp2 = 1
