@@ -18,6 +18,10 @@ namespace Microsoft.Maui.Controls
 #if __IOS__
 				[nameof(Padding)] = MapPadding,
 #endif
+#if WINDOWS
+			[nameof(IText.Text)] = MapText,
+			[nameof(IButton.ImageSource)] = MapImageSource
+#endif
 			};
 
 			ButtonHandler.Mapper = ControlsButtonMapper;
@@ -27,5 +31,14 @@ namespace Microsoft.Maui.Controls
 		{
 			handler.NativeView.UpdateContentLayout(button);
 		}
+
+//#if WINDOWS
+//		protected override Graphics.Size ArrangeOverride(Graphics.Rectangle bounds)
+//		{
+//			var result = base.ArrangeOverride(bounds);
+//			Handler?.UpdateValue(nameof(ContentLayout));
+//			return result;
+//		}
+//#endif
 	}
 }

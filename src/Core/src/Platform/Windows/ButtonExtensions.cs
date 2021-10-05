@@ -41,50 +41,61 @@ namespace Microsoft.Maui
 			if (content is WImageSource nativeImageSource)
 			{
 				var imageSourceSize = nativeImageSource.GetImageSourceSize();
-				image = new WImage
-				{
-					Source = nativeImageSource,
-					VerticalAlignment = VerticalAlignment.Center,
-					HorizontalAlignment = HorizontalAlignment.Center,
-					Stretch = WStretch.Uniform,
-					Width = imageSourceSize.Width,
-					Height = imageSourceSize.Height
-				};
+				image = nativeButton.GetImage() ?? new();
+				image.Source = nativeImageSource;
+				image.Width = imageSourceSize.Width;
+				image.Height = imageSourceSize.Height;
 
 				// BitmapImage is a special case that has an event when the image is loaded
 				// when this happens, we want to resize the button
 				if (nativeImageSource is BitmapImage bitmapImage)
 				{
-					bitmapImage.ImageOpened += (sender, args) =>
-					{
-						var actualImageSourceSize = nativeImageSource.GetImageSourceSize();
+					bitmapImage.ImageOpened += OnImageOpened;
 
+					void OnImageOpened(object sender, RoutedEventArgs e)
+					{
+						bitmapImage.ImageOpened -= OnImageOpened;
+
+						var actualImageSourceSize = nativeImageSource.GetImageSourceSize();
 						image.Width = actualImageSourceSize.Width;
 						image.Height = actualImageSourceSize.Height;
-
-						button?.InvalidateMeasure();
 					};
 				}
 			}
-			else if(content is WImage contentImage)
+			else if (content is WImage contentImage)
 			{
 				image = contentImage;
+			}
+			// This means the users image hasn't loaded yet but we still want to setup the container for the user
+			else if (button.ImageSource != null)
+			{
+				image = nativeButton.GetImage() ?? new();
 			}
 
 			// No text, just the image
 			if (string.IsNullOrEmpty(text))
 			{
 				nativeButton.Content = image;
-				button?.InvalidateMeasure();
+				return;
+			}
+			else if (image == null)
+			{
+				nativeButton.Content = text;
 				return;
 			}
 
 			if (image != null)
 			{
-				// Both image and text, so we need to build a container for them
-				var container = CreateButtonContentContainer(image, text);
-				nativeButton.Content = container;
-				button?.InvalidateMeasure();
+				image.VerticalAlignment = VerticalAlignment.Center;
+				image.HorizontalAlignment = HorizontalAlignment.Center;
+				image.Stretch = WStretch.Uniform;
+
+				if (nativeButton.Content is not StackPanel)
+				{
+					// Both image and text, so we need to build a container for them
+					var container = CreateButtonContentContainer(image, text);
+					nativeButton.Content = container;
+				}
 			}
 		}
 
