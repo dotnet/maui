@@ -25,10 +25,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				return _manager ??= _services.GetRequiredService<IAnimationManager>();
 #if __ANDROID__
 			if (serviceType == typeof(Android.Content.Context))
-				return Platform.DefaultContext;
+				return MauiProgram.CurrentContext;
 #elif __IOS__
 			if (serviceType == typeof(UIKit.UIWindow))
-				return UIKit.UIApplication.SharedApplication.GetKeyWindow();
+				return UIKit.UIApplication.SharedApplication.KeyWindow;
 #elif WINDOWS
 			if (serviceType == typeof(WindowManager))
 				return _windowManager ??= new WindowManager(this);
