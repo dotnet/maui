@@ -36,6 +36,12 @@ namespace Microsoft.Maui.Handlers
 			Dispose(disposing: false);
 		}
 
+		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
+			VirtualView?.Clip != null ||
+			VirtualView?.Shadow != null ||
+			base.NeedsContainer;
+
 		public override void NativeArrange(Rectangle frame)
 		{
 			if (NativeParent == null)

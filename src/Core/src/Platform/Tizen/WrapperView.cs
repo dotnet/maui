@@ -10,22 +10,23 @@ using Tizen.UIExtensions.ElmSharp;
 
 namespace Microsoft.Maui
 {
-	public interface IBackgroundCanvas
+	public partial class WrapperView : Canvas, IWrapperViewCanvas
 	{
-		public SkiaGraphicsView BackgroundCanvas { get; }
-	}
-
-	public partial class WrapperView : Canvas, IBackgroundCanvas
-	{
-		Lazy<SkiaGraphicsView> _backgroundCanvas;
+		Lazy<SkiaGraphicsView> _drawableCanvas;
 		Lazy<SKClipperView> _clipperView;
 		EvasObject? _content;
 
 		public WrapperView(EvasObject parent) : base(parent)
 		{
-			_backgroundCanvas = new Lazy<SkiaGraphicsView>(() =>
+			_drawableCanvas = new Lazy<SkiaGraphicsView>(() =>
 			{
 				var view = new SkiaGraphicsView(parent);
+				var _drawables = new WrapperViewDrawables();
+				_drawables.Invalidated += (s, e) =>
+				{
+					view.Invalidate();
+				};
+				view.Drawable = _drawables;
 				view.Show();
 				Children.Add(view);
 				view.Lower();
@@ -74,22 +75,22 @@ namespace Microsoft.Maui
 
 			canvas.FillPath(clipPath);
 			Content?.SetClipperCanvas(_clipperView.Value);
-			if (_backgroundCanvas.IsValueCreated)
+			if (_drawableCanvas.IsValueCreated)
 			{
-				BackgroundCanvas.SetClipperCanvas(_clipperView.Value);
+				_drawableCanvas.Value.SetClipperCanvas(_clipperView.Value);
 			}
 		}
 
-		void OnLayout(object? sender, Tizen.UIExtensions.Common.LayoutEventArgs e)
+		void OnLayout(object? sender, LayoutEventArgs e)
 		{
 			if (Content != null)
 			{
 				Content.Geometry = Geometry;
 			}
 
-			if (_backgroundCanvas.IsValueCreated)
+			if (_drawableCanvas.IsValueCreated)
 			{
-				_backgroundCanvas.Value.Geometry = Geometry;
+				_drawableCanvas.Value.Geometry = Geometry;
 			}
 
 			if (_clipperView.IsValueCreated)
@@ -122,7 +123,13 @@ namespace Microsoft.Maui
 
 		}
 
-		public SkiaGraphicsView BackgroundCanvas => _backgroundCanvas.Value;
+		public IWrapperViewDrawables Drawables
+		{
+			get
+			{
+				return (_drawableCanvas.Value.Drawable as IWrapperViewDrawables)!;
+			}
+		}
 	}
 
 	public class DrawClipEventArgs : EventArgs
