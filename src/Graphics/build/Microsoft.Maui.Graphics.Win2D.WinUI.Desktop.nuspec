@@ -17,7 +17,7 @@
     <dependencies>
       <group targetFramework="net6.0-windows10.0.18362">
         <dependency id="Microsoft.Maui.Graphics" version="$version$" exclude="Build,Analyzers" />
-        <dependency id="Microsoft.Graphics.Win2D" version="1.0.0.26-experimental1" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Graphics.Win2D" version="1.0.0.27-preview1" exclude="Build,Analyzers" />
         <dependency id="Microsoft.WindowsAppSdk" version="1.0.0-preview1" exclude="Build,Analyzers" />
       </group>
     </dependencies>
