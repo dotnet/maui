@@ -31,14 +31,5 @@ namespace Microsoft.Maui.Controls
 		{
 			handler.NativeView.UpdateContentLayout(button);
 		}
-
-//#if WINDOWS
-//		protected override Graphics.Size ArrangeOverride(Graphics.Rectangle bounds)
-//		{
-//			var result = base.ArrangeOverride(bounds);
-//			Handler?.UpdateValue(nameof(ContentLayout));
-//			return result;
-//		}
-//#endif
 	}
 }

@@ -12,15 +12,15 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateContentLayout(this MauiButton materialButton, Button button)
+		public static void UpdateContentLayout(this MauiButton mauiButton, Button button)
 		{
 			// If the Content isn't the StackPanel setup by Maui.Core then
 			// The user has set a custom Content or the content isn't a mix of text/images
-			if (materialButton.Content is not StackPanel container)
+			if (mauiButton.Content is not StackPanel container)
 				return;
 
-			var image = materialButton.GetImage();
-			var textBlock = materialButton.GetTextBlock();
+			var image = mauiButton.GetImage();
+			var textBlock = mauiButton.GetTextBlock();
 
 			// If either of these are null then the user has taken control of the content
 			// and we don't know how to apply our changes
