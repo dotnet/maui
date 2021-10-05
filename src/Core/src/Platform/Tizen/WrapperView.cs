@@ -11,7 +11,7 @@ using Rect = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
-	public interface IBackgroundCanvas
+	public partial class WrapperView : Canvas, IWrapperViewCanvas
 	{
 		public SkiaGraphicsView BackgroundCanvas { get; }
 	}
