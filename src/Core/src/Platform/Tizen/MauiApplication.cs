@@ -46,6 +46,8 @@ namespace Microsoft.Maui
 
 			var mauiApp = CreateMauiApp();
 
+			MauiApplicationContext = new MauiContext(mauiApp.Services, this, CoreUIAppContext.GetInstance(this));
+
 			Services = mauiApp.Services;
 
 			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
@@ -61,7 +63,7 @@ namespace Microsoft.Maui
 
 			this.CreatePlatformWindow(Application);
 
-			var tizenWindow = mauiContext.Window;
+			var tizenWindow = mauiContext.Context?.MainWindow;
 
 			if (tizenWindow == null)
 				throw new InvalidOperationException($"The {nameof(tizenWindow)} instance was not found.");
@@ -70,7 +72,7 @@ namespace Microsoft.Maui
 			var window = Application.CreateWindow(activationState);
 
 			_virtualWindow = new WeakReference<IWindow>(window);
-			tizenWindow.SetWindow(window, mauiContext);
+			tizenWindow.SetWindowHandler(window, mauiContext);
 
 			return tizenWindow;
 		}
@@ -130,6 +132,8 @@ namespace Microsoft.Maui
 		}
 
 		public static new MauiApplication Current { get; private set; } = null!;
+
+		internal IMauiContext MauiApplicationContext { get; private set; } = null!;
 
 		public Window MainWindow { get; protected set; } = null!;
 

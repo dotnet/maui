@@ -12,7 +12,6 @@ namespace Microsoft.Maui
 		Android.Content.Context? Context { get; }
 #elif TIZEN
 		CoreUIAppContext? Context { get; }
-		ElmSharp.Window? Window { get; }
 #endif
 	}
 }

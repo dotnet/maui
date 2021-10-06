@@ -32,9 +32,9 @@ namespace Microsoft.Maui
 			var nativeGeometry = Geometry.ToDP();
 
 			var measured = CrossPlatformMeasure!(nativeGeometry.Width, nativeGeometry.Height);
-			if (measured != _measureCache)
+			if (measured != _measureCache && _virtualView?.Parent is IView parentView)
 			{
-				_virtualView?.Parent?.InvalidateMeasure();
+				parentView?.InvalidateMeasure();
 			}
 			_measureCache = measured;
 
