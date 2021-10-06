@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 		{
 			AddWeakSpecific(context);
 
-			if (parent?.GetNavigationRootManager() == null)
+			if (parent?.Services.GetService<NavigationRootManager>() == null && context is not Android.App.Application)
 				AddSpecific(new NavigationRootManager(this));
 		}
 #elif __IOS__
