@@ -7,10 +7,9 @@ namespace Maui.Controls.Sample.Pages
 		public ButtonPage()
 		{
 			InitializeComponent();
-			positionChange.Clicked += OnPositionChange;
 		}
 
-		private void OnPositionChange(object sender, System.EventArgs e)
+		void OnPositionChange(object sender, System.EventArgs e)
 		{
 			var newPosition = ((int)positionChange.ContentLayout.Position) + 1;
 
@@ -20,6 +19,20 @@ namespace Maui.Controls.Sample.Pages
 			positionChange.ContentLayout =
 				new Button.ButtonContentLayout((Button.ButtonContentLayout.ImagePosition)newPosition,
 					positionChange.ContentLayout.Spacing);
+		}
+
+		void OnDecreaseSpacing(object sender, System.EventArgs e)
+		{
+			positionChange.ContentLayout =
+				new Button.ButtonContentLayout(positionChange.ContentLayout.Position,
+					positionChange.ContentLayout.Spacing - 1);
+		}
+
+		void OnIncreasingSpacing(object sender, System.EventArgs e)
+		{
+			positionChange.ContentLayout =
+				new Button.ButtonContentLayout(positionChange.ContentLayout.Position,
+					positionChange.ContentLayout.Spacing + 1);
 		}
 	}
 }
