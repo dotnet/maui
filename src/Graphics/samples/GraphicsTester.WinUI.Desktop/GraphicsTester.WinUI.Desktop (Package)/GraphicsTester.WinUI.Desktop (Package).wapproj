@@ -64,10 +64,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSdk" Version="[1.0.0-experimental1]">
-      <IncludeAssets>build</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.WindowsAppSdk.WinUI" Version="[1.0.0-experimental1]">
+    <PackageReference Include="Microsoft.WindowsAppSdk" Version="[1.0.0-preview1]">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
   </ItemGroup>

@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
@@ -52,6 +53,16 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		public AffineTransform(in Matrix3x2 matrix)
+		{
+			_m00 = matrix.M11;
+			_m10 = matrix.M12;
+			_m01 = matrix.M21;
+			_m11 = matrix.M22;
+			_m02 = matrix.M31;
+			_m12 = matrix.M32;
+		}
+
 		public void SetMatrix(float m00, float m10, float m01, float m11, float m02, float m12)
 		{
 			_m00 = m00;
@@ -60,6 +71,16 @@ namespace Microsoft.Maui.Graphics
 			_m11 = m11;
 			_m02 = m02;
 			_m12 = m12;
+		}
+
+		public void SetMatrix(in Matrix3x2 matrix)
+		{
+			_m00 = matrix.M11;
+			_m10 = matrix.M12;
+			_m01 = matrix.M21;
+			_m11 = matrix.M22;
+			_m02 = matrix.M31;
+			_m12 = matrix.M32;
 		}
 
 		public float ScaleX => _m00;
@@ -100,6 +121,16 @@ namespace Microsoft.Maui.Graphics
 			_m11 = m11;
 			_m02 = m02;
 			_m12 = m12;
+		}
+
+		public void SetTransform(in Matrix3x2 matrix)
+		{
+			_m00 = matrix.M11;
+			_m10 = matrix.M12;
+			_m01 = matrix.M21;
+			_m11 = matrix.M22;
+			_m02 = matrix.M31;
+			_m12 = matrix.M32;
 		}
 
 		public void SetTransform(AffineTransform t)
@@ -359,6 +390,13 @@ namespace Microsoft.Maui.Graphics
 		public bool OnlyScale()
 		{
 			return !HasRotate() && !HasTranslate();
+		}
+
+		public static implicit operator AffineTransform(Matrix3x2 matrix) => new AffineTransform(matrix);
+
+		public static explicit operator Matrix3x2(AffineTransform matrix)
+		{
+			return new Matrix3x2(matrix._m00, matrix._m10, matrix._m01, matrix._m11, matrix._m02, matrix._m12);
 		}
 
 		public bool IsIdentity => _m00 == 1.0f && _m11 == 1.0f && _m10 == 0.0f && _m01 == 0.0f && _m02 == 0.0f && _m12 == 0.0f;

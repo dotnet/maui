@@ -1,11 +1,9 @@
 variables:
   BuildVersion: $[counter('release-counter', 1)]
   IsRunningOnCI: true
-  DotNet.Version: 6.0.100-rc.1.21426.23
+  DotNet.Version: 6.0.100-rc.2.21465.13
+  DotNet.Workloads: https://aka.ms/dotnet/maui/main.json
   DotNet.Cli.Telemetry.OptOut: true
-  MauiCheck.Version: 0.8.4
-  Maui.Version: '--preview'
-  Tizen.Version: 6.5.100-preview.7.84
 
 parameters:
   - name: BuildConfigurations
@@ -74,8 +72,27 @@ stages:
           displayName: Build Windows Phase (${{ BuildConfiguration }})
           timeoutInMinutes: 60
           pool:
-            vmImage:  windows-latest
+            vmImage: windows-2022
           steps:
+
+            - task: NuGetToolInstaller@0
+              displayName: install new nuget
+              inputs:
+                versionSpec: '5.x'
+
+            - pwsh: |
+                echo "##vso[task.setvariable variable=DOTNET_ROOT]$env:ProgramFiles\dotnet"
+              displayName: set DOTNET_ROOT
+              errorActionPreference: stop
+
+            - pwsh: |
+                $ProgressPreference = 'SilentlyContinue'
+                Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Redth/dotnet-maui-check/main/Clean-Old-DotNet6-Previews.ps1" -OutFile Clean-Old-DotNet6-Previews.ps1
+                & .\Clean-Old-DotNet6-Previews.ps1 -FullDelete -DotnetRoot "$env:DOTNET_ROOT"
+                & dotnet --list-sdks
+              displayName: remove old dotnet 6
+              errorActionPreference: stop
+
             - pwsh: |
                 $ProgressPreference = 'SilentlyContinue'
                 Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
@@ -88,25 +105,30 @@ stages:
               displayName: install dotnet tools
 
             - pwsh: |
-                # Update the installer installer
-                Invoke-WebRequest -UseBasicParsing -Uri "https://aka.ms/vs/install/latest/vs_setup.exe" -OutFile vs_setup.exe
-                & .\vs_setup.exe --update --quiet --wait | Out-Null
-
                 dotnet vs install preview Enterprise +core +mobile +desktop +uwp --quiet
                 dotnet vs where
               displayName: update vs
+
+            - pwsh: |
+                $uri = 'https://go.microsoft.com/fwlink/?linkid=2083338'
+                Invoke-WebRequest -Uri $uri -OutFile winsdksetup.exe
+                .\winsdksetup.exe /norestart /quiet | Out-Null
+                dir "C:\Program Files (x86)\Windows Kits\10\References\"
+              displayName: install Windows 10 SDK, version 1903 (10.0.18362.1)
 
             - pwsh: echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_11_X64)"
               displayName: Select JDK 11
 
             - pwsh: |
-                & dotnet tool update --global redth.net.maui.check --version $(MauiCheck.Version) --add-source https://api.nuget.org/v3/index.json
-                & maui-check $(Maui.Version) --ci --non-interactive --fix --skip androidsdk --skip xcode --skip vswin --skip vsmac --skip edgewebview2
-              displayName: maui-check
+                Invoke-WebRequest -Uri "$(DotNet.Workloads)" -OutFile rollback.json
+                & dotnet workload update --from-rollback-file rollback.json --source https://aka.ms/dotnet6/nuget/index.json
+                & dotnet workload install maui --skip-manifest-update --source https://aka.ms/dotnet6/nuget/index.json
+              displayName: install dotnet workloads
               errorActionPreference: stop
 
-            - pwsh:
-                dotnet boots --url https://workload-bin.s3.ap-northeast-2.amazonaws.com/windows/Samsung.NET.Workload.Tizen.$(Tizen.Version).msi
+            - pwsh: |
+                Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+                .\workload-install.ps1
               displayName: install tizen
 
             - pwsh: |

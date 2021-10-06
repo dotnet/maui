@@ -30,7 +30,14 @@ namespace Microsoft.Maui.Graphics.GDI
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
-			renderer.Draw(e.Graphics, e.ClipRectangle.AsRectangleF());
+			// Extend render area by 1px to prevent rendering artifacts at the edges
+			RectangleF rect = new RectangleF(
+				x: e.ClipRectangle.X - 1,
+				y: e.ClipRectangle.Y - 1,
+				width: e.ClipRectangle.Width + 2,
+				height: e.ClipRectangle.Height + 2);
+
+			renderer.Draw(e.Graphics, rect);
 		}
 
 		public bool Dirty

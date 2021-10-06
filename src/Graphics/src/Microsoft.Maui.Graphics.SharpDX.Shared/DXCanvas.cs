@@ -438,6 +438,14 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			CurrentState.ClipRectangle(x, y, width, height);
 		}
 
+		public override void SubtractFromClip(EWPath path, float ppu)
+		{    
+			if (path == null)        
+				return;        
+			
+			CurrentState.SubtractFromClip(path, ppu);
+		}
+
 		public override void SubtractFromClip(float x, float y, float width, float height)
 		{
 			CurrentState.SubtractFromClip(x, y, width, height);
