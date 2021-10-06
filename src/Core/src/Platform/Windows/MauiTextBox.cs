@@ -12,6 +12,8 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 using System.Text;
 using Microsoft.UI.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui
 {
@@ -210,9 +212,13 @@ namespace Microsoft.Maui
 					}
 					SelectionStart = start;
 				}
-				catch (Exception)
+				catch (Exception ex)
 				{
-					
+					MauiWinUIApplication
+						.Current
+						.Services
+						.CreateLogger<ILogger>()
+						.LogWarning($"Failed to set Control.SelectionStart from CursorPosition: {ex}");
 				}
 				finally
 				{
