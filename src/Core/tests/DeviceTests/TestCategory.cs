@@ -2,6 +2,8 @@
 {
 	public static class TestCategory
 	{
+		public const string MauiContext = "MauiContext";
+
 		public const string ActivityIndicator = "ActivityIndicator";
 		public const string BoxView = "BoxView";
 		public const string Button = "Button";

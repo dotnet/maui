@@ -5,7 +5,6 @@ using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -26,11 +25,17 @@ namespace Microsoft.Maui
 
 			var mauiApp = CreateMauiApp();
 
+			var applicationContext = new MauiContext(mauiApp.Services, this);
+
+			MauiApplicationContext = applicationContext;
+
 			Services = mauiApp.Services;
 
 			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
 
 			Application = Services.GetRequiredService<IApplication>();
+
+			this.SetApplicationHandler(Application, MauiApplicationContext);
 
 			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreate>(del => del(this));
 
@@ -59,6 +64,8 @@ namespace Microsoft.Maui
 		}
 
 		public static MauiApplication Current { get; private set; } = null!;
+
+		internal IMauiContext MauiApplicationContext { get; private set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

@@ -96,25 +96,16 @@ namespace Microsoft.Maui.Layouts
 		static double AlignHorizontal(double startX, double startMargin, double endMargin, double boundsWidth,
 			double desiredWidth, LayoutAlignment horizontalLayoutAlignment)
 		{
-			double frameX = 0;
+			double frameX = startX + startMargin;
 
 			switch (horizontalLayoutAlignment)
 			{
-				case LayoutAlignment.Fill:
-				case LayoutAlignment.Start:
-					frameX = startX + startMargin;
-					break;
-
 				case LayoutAlignment.Center:
-
-					frameX = startX + ((boundsWidth - desiredWidth) / 2);
-					var marginOffset = (startMargin - endMargin) / 2;
-					frameX += marginOffset;
-
+					frameX += (boundsWidth - desiredWidth) / 2;
 					break;
-				case LayoutAlignment.End:
 
-					frameX = startX + boundsWidth - desiredWidth + startMargin;
+				case LayoutAlignment.End:
+					frameX += boundsWidth - desiredWidth;
 					break;
 			}
 
@@ -123,27 +114,16 @@ namespace Microsoft.Maui.Layouts
 
 		static double AlignVertical(IView view, Rectangle bounds, Thickness margin)
 		{
-			double frameY = 0;
-			var startY = bounds.Y;
+			double frameY = bounds.Y + margin.Top;
 
 			switch (view.VerticalLayoutAlignment)
 			{
-				case LayoutAlignment.Fill:
-				case LayoutAlignment.Start:
-
-					frameY = startY + margin.Top;
-					break;
-
 				case LayoutAlignment.Center:
-
-					frameY = startY + ((bounds.Height - view.DesiredSize.Height) / 2);
-					var offset = (margin.Top - margin.Bottom) / 2;
-					frameY += offset;
+					frameY += (bounds.Height - view.DesiredSize.Height) / 2;
 					break;
 
 				case LayoutAlignment.End:
-
-					frameY = startY + bounds.Height - view.DesiredSize.Height + margin.Top;
+					frameY += bounds.Height - view.DesiredSize.Height;
 					break;
 			}
 
@@ -183,6 +163,21 @@ namespace Microsoft.Maui.Layouts
 				bounds.Width - padding.HorizontalThickness, bounds.Height - padding.VerticalThickness);
 
 			_ = contentView.PresentedContent.Arrange(targetBounds);
+		}
+
+		public static Size AdjustForFill(this Size size, Rectangle bounds, IView view)
+		{
+			if (view.HorizontalLayoutAlignment == LayoutAlignment.Fill)
+			{
+				size.Width = Math.Max(bounds.Width, size.Width);
+			}
+
+			if (view.VerticalLayoutAlignment == LayoutAlignment.Fill)
+			{
+				size.Height = Math.Max(bounds.Height, size.Height);
+			}
+
+			return size;
 		}
 	}
 }
