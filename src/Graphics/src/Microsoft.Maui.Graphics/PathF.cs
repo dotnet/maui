@@ -920,10 +920,10 @@ namespace Microsoft.Maui.Graphics
 			return Geometry.RotatePoint(pivotPoint, point, angle);
 		}
 
-		public void Transform(AffineTransform transform)
+		public void Transform(Matrix3x2 transform)
 		{
 			for (var i = 0; i < _points.Count; i++)
-				_points[i] = transform.Transform(_points[i]);
+				_points[i] = Vector2.Transform((Vector2)_points[i], transform);
 
 			Invalidate();
 		}

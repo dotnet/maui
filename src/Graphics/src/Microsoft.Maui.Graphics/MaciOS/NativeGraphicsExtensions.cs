@@ -1,4 +1,6 @@
 using System;
+using System.Numerics;
+
 using CoreGraphics;
 
 namespace Microsoft.Maui.Graphics.Native
@@ -386,23 +388,9 @@ namespace Microsoft.Maui.Graphics.Native
 			}
 		}
 
-		public static CGAffineTransform AsCGAffineTransform(this AffineTransform transform)
+		public static CGAffineTransform AsCGAffineTransform(this in Matrix3x2 transform)
 		{
-			if (transform != null)
-			{
-				var matrix = new float[6];
-				transform.CopyTo(matrix);
-				float xx = matrix[0];
-				float yx = matrix[1];
-				float xy = matrix[2];
-				float yy = matrix[3];
-				float x0 = matrix[4];
-				float y0 = matrix[5];
-
-				return new CGAffineTransform(xx, yx, xy, yy, x0, y0);
-			}
-
-			return CGAffineTransform.MakeIdentity();
+			return new CGAffineTransform(transform.M11, transform.M12, transform.M21, transform.M22, transform.M31, transform.M32);
 		}
 
 		public static CGColor AsCGColor(this Color color)

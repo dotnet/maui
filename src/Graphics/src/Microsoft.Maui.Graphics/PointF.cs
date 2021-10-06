@@ -69,6 +69,11 @@ namespace Microsoft.Maui.Graphics
 			return p;
 		}
 
+		public PointF TransformBy(in Matrix3x2 transform)
+		{
+			return Vector2.Transform((Vector2)this, transform);
+		}
+
 		public PointF Round()
 		{
 			return new PointF((float)Math.Round(X), (float)Math.Round(Y));

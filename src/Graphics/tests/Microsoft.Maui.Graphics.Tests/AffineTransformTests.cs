@@ -38,7 +38,29 @@ namespace Microsoft.Maui.Graphics.Tests
 			b.ConcatenateRotationInDegrees(180);
 			b.ConcatenateScale(-1, -1);			
 
-			AssertEqual(a, b, 6);
+			AssertEqual(a, b, 6);			
+		}
+
+		[Fact]
+		public void TestConcatenationEquivalence()
+		{
+			float x = 5;
+			float y = 7;
+			float r = 1;
+
+			var affine = new AffineTransform();
+			affine.ConcatenateTranslation(x, y);
+			affine.ConcatenateRotation(r);
+			affine.ConcatenateTranslation(-x, -y);
+			var p1 = Vector2.Transform(Vector2.One, (Matrix3x2)affine);
+
+			var matrix = Matrix3x2.Identity;
+			matrix = Matrix3x2.CreateTranslation(x, y) * matrix;
+			matrix = Matrix3x2.CreateRotation(r) * matrix;
+			matrix = Matrix3x2.CreateTranslation(-x, -y) * matrix;
+			var p2 = Vector2.Transform(Vector2.One, matrix);
+
+			Assert.Equal(p1, p2);
 		}
 
 		[Theory]

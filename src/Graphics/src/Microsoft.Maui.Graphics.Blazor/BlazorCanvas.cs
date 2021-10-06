@@ -1,4 +1,6 @@
 using System;
+using System.Numerics;
+
 using Microsoft.Maui.Graphics.Blazor.Canvas2D;
 using Microsoft.Maui.Graphics.Text;
 
@@ -232,10 +234,9 @@ namespace Microsoft.Maui.Graphics.Blazor
 			_context.Clip("evenodd");
 		}
 
-		protected override void NativeConcatenateTransform(AffineTransform transform)
-		{
-			transform.CopyTo(_matrix);
-			_context.SetTransform(_matrix[0], _matrix[1], _matrix[2], _matrix[3], _matrix[4], _matrix[5]);
+		protected override void NativeConcatenateTransform(Matrix3x2 transform)
+		{			
+			_context.SetTransform(transform.M11, transform.M12, transform.M21, transform.M22, transform.M31,transform.M32);
 		}
 
 		protected override void NativeDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed)

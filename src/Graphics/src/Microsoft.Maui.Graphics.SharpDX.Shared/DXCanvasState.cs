@@ -3,6 +3,8 @@ using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
 using System;
 
+using NumericsMatrix3x2 = System.Numerics.Matrix3x2;
+
 namespace Microsoft.Maui.Graphics.SharpDX
 {
 	public class DXCanvasState : CanvasState
@@ -84,7 +86,7 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			ShadowOffset = prototype.ShadowOffset;
 			ShadowBlur = prototype.ShadowBlur;
 
-			Matrix = new Matrix3x2(prototype.Matrix.ToArray());
+			Matrix = prototype.Matrix;
 
 			FontName = prototype.FontName;
 			FontSize = prototype.FontSize;
@@ -613,12 +615,10 @@ namespace Microsoft.Maui.Graphics.SharpDX
 			return Matrix;
 		}
 
-		public Matrix3x2 DxConcatenateTransform(AffineTransform transform)
+		public Matrix3x2 DxConcatenateTransform(NumericsMatrix3x2 transform)
 		{
-			var values = new float[6];
-			transform.CopyTo(values);
-			Matrix = Matrix3x2.Multiply(Matrix, new Matrix3x2(values));
-			return Matrix;
+			var dxTransform = new Matrix3x2(transform.M11, transform.M12, transform.M21, transform.M22, transform.M31, transform.M32);
+			return Matrix = Matrix3x2.Multiply(Matrix, dxTransform);
 		}
 
 		public Matrix3x2 DxScale(float tx, float ty)

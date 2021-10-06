@@ -69,6 +69,11 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		public SizeF TransformNormalBy(in Matrix3x2 transform)
+		{
+			return (SizeF)Vector2.TransformNormal((Vector2)this, transform);
+		}
+
 		public static SizeF operator +(SizeF s1, SizeF s2)
 		{
 			return new SizeF(s1._width + s2._width, s1._height + s2._height);

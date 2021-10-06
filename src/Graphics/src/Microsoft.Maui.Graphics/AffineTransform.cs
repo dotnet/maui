@@ -495,6 +495,26 @@ namespace Microsoft.Maui.Graphics
 			return new Matrix3x2(matrix._m11, matrix._m12, matrix._m21, matrix._m22, matrix._m31, matrix._m32);
 		}
 
-		
+		/// <summary>
+		/// Creates a matrix from an SRT.
+		/// </summary>
+		/// <param name="scale">The scale</param>
+		/// <param name="rotation">The rotation, in radians</param>
+		/// <param name="translation">the translation</param>
+		/// <returns>A Matrix3x2</returns>
+		/// <remarks>
+		/// This is equivalent to:<br/>
+		/// <c>
+		/// m = Matrix3x2.CreateScale(scale)<br/>
+		/// m *= Matri3x2.CreateRotation(rotation)<br/>
+		/// m *= Matri3x2.CreateTranslation(translation)<br/>
+		/// </c>		
+		/// </remarks>
+		public static Matrix3x2 CreateMatrix3x2(Vector2 scale, float rotation, Vector2 translation)
+		{
+			return Matrix3x2Extensions.CreateMatrix3x2(scale, rotation, translation);
+		}
+
+
 	}
 }

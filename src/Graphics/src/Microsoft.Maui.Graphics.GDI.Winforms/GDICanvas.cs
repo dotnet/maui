@@ -4,6 +4,7 @@ using Drawing = System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using Microsoft.Maui.Graphics.Text;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics.GDI
 {
@@ -457,7 +458,7 @@ namespace Microsoft.Maui.Graphics.GDI
 			CurrentState.NativeTranslate(tx, ty);
 		}
 
-		protected override void NativeConcatenateTransform(AffineTransform transform)
+		protected override void NativeConcatenateTransform(Matrix3x2 transform)
 		{
 			CurrentState.NativeConcatenateTransform(transform);
 		}

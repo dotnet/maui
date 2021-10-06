@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
@@ -7,18 +8,18 @@ namespace Microsoft.Maui.Graphics
 		public float[] StrokeDashPattern { get; set; }
 		public float StrokeSize { get; set; } = 1;
 		public float Scale { get; set; } = 1;
-		public AffineTransform Transform { get; set; }
+		public Matrix3x2 Transform { get; set; }
 
 		protected CanvasState()
 		{
-			Transform = new AffineTransform();
+			Transform = Matrix3x2.Identity;
 		}
 
 		protected CanvasState(CanvasState prototype)
 		{
 			StrokeDashPattern = prototype.StrokeDashPattern;
 			StrokeSize = prototype.StrokeSize;
-			Transform = new AffineTransform(prototype.Transform);
+			Transform = prototype.Transform;
 			Scale = prototype.Scale;
 		}
 

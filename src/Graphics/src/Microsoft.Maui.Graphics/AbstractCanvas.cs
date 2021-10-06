@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
+
 using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics
@@ -27,7 +29,7 @@ namespace Microsoft.Maui.Graphics
 		protected abstract void NativeRotate(float degrees, float radians);
 		protected abstract void NativeScale(float fx, float fy);
 		protected abstract void NativeTranslate(float tx, float ty);
-		protected abstract void NativeConcatenateTransform(AffineTransform transform);
+		protected abstract void NativeConcatenateTransform(Matrix3x2 transform);
 
 		protected AbstractCanvas(Func<object, TState> createNew, Func<TState, TState> createCopy)
 		{
@@ -260,9 +262,10 @@ namespace Microsoft.Maui.Graphics
 			var radians = Geometry.DegreesToRadians(degrees);
 
 			var transform = _currentState.Transform;
-			transform.ConcatenateTranslation(x, y);
-			transform.ConcatenateRotation(radians);
-			transform.ConcatenateTranslation(-x, -y);
+			transform = Matrix3x2.CreateTranslation(x, y) * transform;
+			transform = Matrix3x2.CreateRotation(radians) * transform;
+			transform = Matrix3x2.CreateTranslation(-x, -y) * transform;			
+			_currentState.Transform = transform;
 
 			NativeRotate(degrees, radians, x, y);
 		}
@@ -270,7 +273,10 @@ namespace Microsoft.Maui.Graphics
 		public void Rotate(float degrees)
 		{
 			var radians = Geometry.DegreesToRadians(degrees);
-			_currentState.Transform.ConcatenateRotation(radians);
+
+			var transform = _currentState.Transform;			
+			transform = Matrix3x2.CreateRotation(radians) * transform;			
+			_currentState.Transform = transform;
 
 			NativeRotate(degrees, radians);
 		}
@@ -278,21 +284,29 @@ namespace Microsoft.Maui.Graphics
 		public void Scale(float fx, float fy)
 		{
 			_currentState.Scale *= fx;
-			_currentState.Transform.ConcatenateScale(fx, fy);
+
+			var transform = _currentState.Transform;
+			transform = Matrix3x2.CreateScale(fx, fy) * transform;
+			_currentState.Transform = transform;
 
 			NativeScale(fx, fy);
 		}
 
 		public void Translate(float tx, float ty)
 		{
-			_currentState.Transform.ConcatenateTranslation(tx, ty);
+			var transform = _currentState.Transform;
+			transform = Matrix3x2.CreateTranslation(tx, ty) * transform;
+			_currentState.Transform = transform;
+
 			NativeTranslate(tx, ty);
 		}
 
-		public void ConcatenateTransform(AffineTransform transform)
+		public void ConcatenateTransform(Matrix3x2 transform)
 		{
-			_currentState.Scale *= transform.AverageScale;
-			_currentState.Transform.Concatenate(transform);
+			_currentState.Scale *= transform.GetAverageScale();
+
+			_currentState.Transform = transform * _currentState.Transform;
+
 			NativeConcatenateTransform(transform);
 		}
 	}

@@ -1,4 +1,6 @@
 using System;
+using System.Numerics;
+
 using SkiaSharp;
 
 namespace Microsoft.Maui.Graphics.Skia
@@ -74,7 +76,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			return new SKPoint(target.X, target.Y);
 		}
 
-		public static SKMatrix AsMatrix(this AffineTransform transform)
+		public static SKMatrix AsMatrix(this in Matrix3x2 transform)
 		{
 			var matrix = new SKMatrix
 			{
