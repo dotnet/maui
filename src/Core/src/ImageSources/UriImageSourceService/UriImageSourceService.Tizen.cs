@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 				if (!isLoadComplated)
 					throw new InvalidOperationException($"Unable to load image URI '{uri}'.");
 
-				return new ImageSourceServiceResult(image, () => image.Unrealize());
+				return new ImageSourceServiceResult(image);
 			}
 			catch (Exception ex)
 			{

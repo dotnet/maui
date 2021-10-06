@@ -27,7 +27,7 @@ namespace Microsoft.Maui
 					throw new InvalidOperationException("Unable to load image file.");
 				}
 
-				var result = new ImageSourceServiceResult(image, () => image.Unrealize());
+				var result = new ImageSourceServiceResult(image);
 				return result;
 			}
 			catch (Exception ex)

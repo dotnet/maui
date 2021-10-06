@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 				if (!isLoadComplated)
 					throw new InvalidOperationException("Unable to decode image from stream.");
 
-				return new ImageSourceServiceResult(image, () => image.Unrealize());
+				return new ImageSourceServiceResult(image);
 			}
 			catch (Exception ex)
 			{
