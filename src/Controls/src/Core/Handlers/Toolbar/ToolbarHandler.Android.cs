@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public class ToolbarHandler : ElementHandler<Toolbar, MaterialToolbar>
 	{
-		public static PropertyMapper<Toolbar, ToolbarHandler> Mapper =
+		public static IPropertyMapper<Toolbar, ToolbarHandler> Mapper =
 			   new PropertyMapper<Toolbar, ToolbarHandler>(ElementMapper)
 			   {
 				   [nameof(Toolbar.IsVisible)] = MapIsVisible,
