@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using WStretch = Microsoft.UI.Xaml.Media.Stretch;
 using Microsoft.Maui.Controls.Platform;
+using Windows.Foundation.Metadata;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
@@ -15,10 +16,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		static bool _nativeAnimationSupport = false;
 		static ImageElementManager()
 		{
-			if (Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "AutoPlay"))
-				if (Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "IsPlaying"))
-					if (Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Play"))
-						if (Windows.Foundation.Metadata.ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Stop"))
+			if (ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "AutoPlay"))
+				if (ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "IsPlaying"))
+					if (ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Play"))
+						if (ApiInformation.IsMethodPresent("Microsoft.UI.Xaml.Media.Imaging.BitmapImage", "Stop"))
 							_nativeAnimationSupport = true;
 		}
 

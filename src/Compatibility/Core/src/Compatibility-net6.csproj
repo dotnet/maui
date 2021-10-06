@@ -18,8 +18,6 @@
 
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
     <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
 

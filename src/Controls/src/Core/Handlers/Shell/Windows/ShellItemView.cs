@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.UI.Xaml;
+using Windows.Foundation.Metadata;
 
 using UwpGrid = Microsoft.UI.Xaml.Controls.Grid;
 using UwpColumnDefinition = Microsoft.UI.Xaml.Controls.ColumnDefinition;
@@ -123,7 +124,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (ShellContext.IsPaneToggleButtonVisible)
 				inset += 45;
 
-			if (Windows.Foundation.Metadata.ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Controls.NavigationView", "IsBackButtonVisible"))
+			if (ApiInformation.IsPropertyPresent("Microsoft.UI.Xaml.Controls.NavigationView", "IsBackButtonVisible"))
 			{
 				if (ShellContext.IsBackButtonVisible != Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed &&
 					ShellContext.IsBackEnabled)

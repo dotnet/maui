@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 
 		void OnHolding(object sender, HoldingRoutedEventArgs holdingRoutedEventArgs)
 		{
-			if (holdingRoutedEventArgs.HoldingState == HoldingState.Completed)
+			if (holdingRoutedEventArgs.HoldingState == global::Microsoft.UI.Input.HoldingState.Completed)
 			{
 				_customControl?.HandleLongPress(_customControl, new EventArgs());
 			}

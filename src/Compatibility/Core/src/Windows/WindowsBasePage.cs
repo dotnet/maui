@@ -11,7 +11,7 @@
 
 //		public WindowsBasePage()
 //		{
-//			if (!Windows.ApplicationModel.DesignMode.DesignModeEnabled)
+//			if (!global::Windows.ApplicationModel.DesignMode.DesignModeEnabled)
 //			{
 
 //				// TODO WINUI

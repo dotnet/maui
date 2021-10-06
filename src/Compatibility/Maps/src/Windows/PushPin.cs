@@ -51,7 +51,7 @@
 
 //		void UpdateLocation()
 //		{
-//			var anchor = new Windows.Foundation.Point(0.65, 1);
+//			var anchor = new global::Windows.Foundation.Point(0.65, 1);
 //			var location = new Geopoint(new BasicGeoposition
 //			{
 //				Latitude = _pin.Position.Latitude,

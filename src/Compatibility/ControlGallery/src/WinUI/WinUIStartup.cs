@@ -149,11 +149,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 
 					// We can re-center it by offsetting it during the Arrange call
 					double diff = Math.Abs(screenWidth.Width - finalSize.Width) / -2;
-					frameworkElement.Arrange(new Windows.Foundation.Rect(diff, 0, finalSize.Width - diff, finalSize.Height));
+					frameworkElement.Arrange(new global::Windows.Foundation.Rect(diff, 0, finalSize.Width - diff, finalSize.Height));
 
 					// Arranging the control to the left will make it show up past the edge of the stack layout
 					// We can fix that by clipping it manually
-					var clip = new RectangleGeometry { Rect = new Windows.Foundation.Rect(-diff, 0, finalSize.Width, finalSize.Height) };
+					var clip = new RectangleGeometry { Rect = new global::Windows.Foundation.Rect(-diff, 0, finalSize.Width, finalSize.Height) };
 					frameworkElement.Clip = clip;
 
 					return finalSize;
@@ -223,10 +223,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 			}
 			public static global::Windows.UI.Color ToWindowsColor(Color color)
 			{
-				return Windows.UI.Color.FromArgb((byte)(color.Alpha * 255), (byte)(color.Red * 255), (byte)(color.Green * 255), (byte)(color.Blue * 255));
+				return global::Windows.UI.Color.FromArgb((byte)(color.Alpha * 255), (byte)(color.Red * 255), (byte)(color.Green * 255), (byte)(color.Blue * 255));
 			}
 
-			public static Color ToColor(Windows.UI.Color color)
+			public static Color ToColor(global::Windows.UI.Color color)
 			{
 				return Color.FromRgba(color.R, color.G, color.B, color.A);
 			}

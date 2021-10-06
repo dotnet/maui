@@ -6,8 +6,8 @@ using Windows.ApplicationModel.Email;
 using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Streams;
-using NativeEmailAttachment = Windows.ApplicationModel.Email.EmailAttachment;
-using NativeEmailMessage = Windows.ApplicationModel.Email.EmailMessage;
+using NativeEmailAttachment = global::Windows.ApplicationModel.Email.EmailAttachment;
+using NativeEmailMessage = global::Windows.ApplicationModel.Email.EmailMessage;
 
 namespace Microsoft.Maui.Essentials
 {

@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		{
 			get
 			{
-				Windows.Foundation.Rect windowSize = Window.Current.Bounds;
+				global::Windows.Foundation.Rect windowSize = Window.Current.Bounds;
 				return new Size(windowSize.Width, windowSize.Height);
 			}
 		}
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 #if UWP_18362
 			var applicationView = ApplicationView.GetForCurrentView();
-			List<Windows.Foundation.Rect> spanningRects = null;
+			List<global::Windows.Foundation.Rect> spanningRects = null;
 
 #if UWP_19041
 			// This will make a come back with winui2.5
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.DualScreen
                 return null;
 
             var ttv = view.ContainerElement.TransformToVisual(Window.Current.Content);
-            Windows.Foundation.Point screenCoords = ttv.TransformPoint(new Windows.Foundation.Point(0, 0));
+            global::Windows.Foundation.Point screenCoords = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
 
             return new Point(screenCoords.X, screenCoords.Y);
         }

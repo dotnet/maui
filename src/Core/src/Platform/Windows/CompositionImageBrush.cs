@@ -28,7 +28,7 @@ namespace Microsoft.Maui
                 compositor, CanvasDevice.GetSharedDevice());
         }
 
-        void CreateDrawingSurface(Windows.Foundation.Size drawSize)
+        void CreateDrawingSurface(global::Windows.Foundation.Size drawSize)
         {
             _drawingSurface = _graphicsDevice.CreateDrawingSurface(
                 drawSize,

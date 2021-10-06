@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 
-using WindowsClipboard = Windows.ApplicationModel.DataTransfer.Clipboard;
+using WindowsClipboard = global::Windows.ApplicationModel.DataTransfer.Clipboard;
 
 namespace Microsoft.Maui.Essentials
 {

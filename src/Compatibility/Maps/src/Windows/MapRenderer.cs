@@ -455,8 +455,8 @@
 ////			try
 ////			{
 ////				Geopoint nw, se = null;
-////				Control.GetLocationFromOffset(new Windows.Foundation.Point(0, 0), out nw);
-////				Control.GetLocationFromOffset(new Windows.Foundation.Point(Control.ActualWidth, Control.ActualHeight), out se);
+////				Control.GetLocationFromOffset(new global::Windows.Foundation.Point(0, 0), out nw);
+////				Control.GetLocationFromOffset(new global::Windows.Foundation.Point(Control.ActualWidth, Control.ActualHeight), out se);
 
 ////				if (nw != null && se != null)
 ////				{
@@ -506,7 +506,7 @@
 ////				Control.Children.Remove(_userPositionCircle);
 
 ////			MapControl.SetLocation(_userPositionCircle, point);
-////			MapControl.SetNormalizedAnchorPoint(_userPositionCircle, new Windows.Foundation.Point(0.5, 0.5));
+////			MapControl.SetNormalizedAnchorPoint(_userPositionCircle, new global::Windows.Foundation.Point(0.5, 0.5));
 
 ////			Control.Children.Add(_userPositionCircle);
 

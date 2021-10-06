@@ -111,7 +111,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				foreach (var assm in TestAssemblies)
 				{
 #if WINDOWS
-					var location = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
+					var location = global::Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
 					var nameWithoutExt = assm.GetName().Name;
 					var assemblyFileName = Path.Combine(location, $"{nameWithoutExt}.dll");
 #elif ANDROID

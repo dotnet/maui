@@ -481,8 +481,8 @@ namespace Microsoft.Maui
 		 * the size of the text as it would fit into the TextBox unconstrained and then just return that Size from the GetDesiredSize call.
 		 * */
 		static MauiTextBox _copyOfTextBox;
-		static readonly Windows.Foundation.Size _zeroSize = new Windows.Foundation.Size(0, 0);
-		public static Windows.Foundation.Size GetCopyOfSize(MauiTextBox control, Windows.Foundation.Size constraint)
+		static readonly global::Windows.Foundation.Size _zeroSize = new global::Windows.Foundation.Size(0, 0);
+		public static global::Windows.Foundation.Size GetCopyOfSize(MauiTextBox control, global::Windows.Foundation.Size constraint)
 		{
 			if (_copyOfTextBox == null)
 			{
@@ -515,7 +515,7 @@ namespace Microsoft.Maui
 			_copyOfTextBox.Measure(_zeroSize);
 			_copyOfTextBox.Measure(constraint);
 
-			var result = new Windows.Foundation.Size
+			var result = new global::Windows.Foundation.Size
 			(
 				Math.Ceiling(_copyOfTextBox.DesiredSize.Width),
 				Math.Ceiling(_copyOfTextBox.DesiredSize.Height)
