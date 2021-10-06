@@ -401,8 +401,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static void Init(IActivationState activationState, InitializationOptions options) => Init(activationState.Context, options);
 
-		public static void Init(CoreApplication application) => Init(new MauiContext(CoreUIAppContext.GetInstance(application)));
-
 		public static void Init(IMauiContext context, InitializationOptions options = null)
 		{
 			if (options != null && options.DisplayResolutionUnit != null)
@@ -410,29 +408,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				DisplayResolutionUnit = options.DisplayResolutionUnit;
 			}
 			SetupInit(context, options);
-		}
-
-		public static void Init(CoreApplication application, bool useDeviceIndependentPixel)
-		{
-			DisplayResolutionUnit = DisplayResolutionUnit.FromInit(useDeviceIndependentPixel);
-			SetupInit(new MauiContext(CoreUIAppContext.GetInstance(application)));
-		}
-
-		public static void Init(CoreApplication application, DisplayResolutionUnit unit)
-		{
-			DisplayResolutionUnit = unit ?? DisplayResolutionUnit.Pixel();
-			SetupInit(new MauiContext(CoreUIAppContext.GetInstance(application)));
-		}
-
-		public static void Init(InitializationOptions options)
-		{
-			if (options == null)
-			{
-				throw new ArgumentException("Must be set options", nameof(options));
-			}
-
-			DisplayResolutionUnit = options.DisplayResolutionUnit ?? DisplayResolutionUnit.FromInit(options.UseDeviceIndependentPixel);
-			SetupInit(new MauiContext(CoreUIAppContext.GetInstance(options.Context)), options);
 		}
 
 		static void SetupInit(IMauiContext context, InitializationOptions options = null)

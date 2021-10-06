@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal void Subscribe(Window window)
 		{
 			IMauiContext mauiContext = window?.MauiContext;
-			EWindow nativeWindow = mauiContext?.Window;
+			EWindow nativeWindow = mauiContext.Context?.MainWindow;
 
 			if (mauiContext == null || nativeWindow == null)
 				return;
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal void Unsubscribe(Window window)
 		{
 			IMauiContext mauiContext = window?.MauiContext;
-			EWindow nativeWindow = mauiContext?.Window;
+			EWindow nativeWindow = mauiContext.Context?.MainWindow;
 
 			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
 

@@ -38,25 +38,36 @@ namespace Microsoft.Maui
 			return result;
 		}
 
-		public static void SetWindow(this Window nativeWindow, IWindow window, IMauiContext mauiContext)
+		public static void SetApplicationHandler(this CoreUIApplication nativeApplication, IApplication application, IMauiContext context)
+		{
+			_ = nativeApplication ?? throw new ArgumentNullException(nameof(nativeApplication));
+			SetHandler(application, context);
+		}
+
+		public static void SetWindowHandler(this Window nativeWindow, IWindow window, IMauiContext context)
 		{
 			_ = nativeWindow ?? throw new ArgumentNullException(nameof(nativeWindow));
-			_ = window ?? throw new ArgumentNullException(nameof(window));
-			_ = mauiContext ?? throw new ArgumentNullException(nameof(mauiContext));
+			SetHandler(window, context);
+		}
 
-			var handler = window.Handler;
+		static void SetHandler(IElement element, IMauiContext context)
+		{
+			_ = element ?? throw new ArgumentNullException(nameof(element));
+			_ = context ?? throw new ArgumentNullException(nameof(context));
+
+			var handler = element.Handler;
 			if (handler == null)
-				handler = mauiContext.Handlers.GetHandler(window.GetType());
+				handler = context.Handlers.GetHandler(element.GetType());
 
 			if (handler == null)
-				throw new Exception($"Handler not found for view {window}.");
+				throw new Exception($"Handler not found for view {element}.");
 
-			handler.SetMauiContext(mauiContext);
+			handler.SetMauiContext(context);
 
-			window.Handler = handler;
+			element.Handler = handler;
 
-			if (handler.VirtualView != window)
-				handler.SetVirtualView(window);
+			if (handler.VirtualView != element)
+				handler.SetVirtualView(element);
 		}
 	}
 }
