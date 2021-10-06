@@ -98,12 +98,12 @@ namespace Microsoft.Maui.Handlers
 						if (currentDelegate is MauiAccessibilityDelegateCompat)
 							currentDelegate = null;
 
-						var mauiDelegate = new MauiAccessibilityDelegateCompat(currentDelegate)
+						accessibilityDelegate = new MauiAccessibilityDelegateCompat(currentDelegate)
 						{
 							Handler = handler
 						};
 
-						ViewCompat.SetAccessibilityDelegate(nativeView, mauiDelegate);
+						ViewCompat.SetAccessibilityDelegate(nativeView, accessibilityDelegate);
 					}
 				}
 				else if (accessibilityDelegate != null)

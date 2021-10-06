@@ -7,6 +7,8 @@ namespace Microsoft.Maui
 {
 	public abstract class MauiWinUIApplication : UI.Xaml.Application
 	{
+		IMauiContext? applicationContext;
+
 		protected abstract MauiApp CreateMauiApp();
 
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
@@ -15,11 +17,15 @@ namespace Microsoft.Maui
 
 			var mauiApp = CreateMauiApp();
 
+			applicationContext = new MauiContext(mauiApp.Services, this);
+
 			Services = mauiApp.Services;
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
 			Application = Services.GetRequiredService<IApplication>();
+
+			this.SetApplicationHandler(Application, applicationContext);
 
 			var winuiWndow = CreateNativeWindow(args);
 
@@ -30,21 +36,29 @@ namespace Microsoft.Maui
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}
 
-		internal UI.Xaml.Window CreateNativeWindow(UI.Xaml.LaunchActivatedEventArgs? args = null, IWindow? window = null)
+		internal UI.Xaml.Window CreateNativeWindow(IWindow window) =>
+			CreateNativeWindow((mauiContext) => window);
+
+		UI.Xaml.Window CreateNativeWindow(UI.Xaml.LaunchActivatedEventArgs args) =>
+			CreateNativeWindow((mauiContext) =>
+			{
+				var activationState = new ActivationState(mauiContext, args);
+				var window = Application.CreateWindow(activationState);
+				return window;
+			});
+
+		UI.Xaml.Window CreateNativeWindow(Func<IMauiContext, IWindow> create)
 		{
 			var winuiWndow = new MauiWinUIWindow();
 
-			var mauiContext = new MauiContext(Services, winuiWndow);
+			var mauiContext = applicationContext!.MakeScoped(winuiWndow);
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
-			if (window is null)
-			{
-				var activationState = new ActivationState(mauiContext, args);
-				window = Application.CreateWindow(activationState);
-			}
+			var window = create(mauiContext);
 
-			winuiWndow.SetWindow(window, mauiContext);
+			winuiWndow.SetWindowHandler(window, mauiContext);
+
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnWindowCreated>(del => del(winuiWndow));
 
 			return winuiWndow;

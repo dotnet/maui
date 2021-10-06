@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
+using Android.App;
 using Android.OS;
 using AndroidX.AppCompat.App;
-using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
@@ -56,7 +55,7 @@ namespace Microsoft.Maui
 			if (services == null)
 				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
 
-			var mauiContext = new MauiContext(services, this);
+			var mauiContext = MauiApplication.Current.MauiApplicationContext.MakeScoped(this);
 
 			services.InvokeLifecycleEvents<AndroidLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
@@ -69,24 +68,13 @@ namespace Microsoft.Maui
 			}
 			else
 			{
-				var dict = new Dictionary<string, string?>();
-
-				var keyset = savedInstanceState?.KeySet();
-				if (keyset != null)
-				{
-					foreach (var k in keyset)
-					{
-						dict[k] = savedInstanceState?.Get(k)?.ToString();
-					}
-				}
-
 				// there are no windows, so this is a fresh launch
-				var state = new ActivationState(mauiContext, dict);
+				var state = new ActivationState(mauiContext, savedInstanceState);
 				window = mauiApp.CreateWindow(state);
 			}
 
 			_virtualWindow = new WeakReference<IWindow>(window);
-			this.SetWindow(window, mauiContext);
+			this.SetWindowHandler(window, mauiContext);
 		}
 	}
 }

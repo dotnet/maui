@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 
@@ -15,11 +16,7 @@ namespace Microsoft.Maui.DeviceTests
 				.CreateBuilder()
 				.Build();
 
-#if __ANDROID__
-			MauiContext = new MauiContext(_mauiApp.Services, MauiProgram.CurrentContext);
-#else
-			MauiContext = new MauiContext(_mauiApp.Services);
-#endif
+			MauiContext = new ContextStub(_mauiApp.Services);
 		}
 
 		public void Dispose()

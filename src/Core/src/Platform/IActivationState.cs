@@ -6,10 +6,7 @@ namespace Microsoft.Maui
 	{
 		IMauiContext Context { get; }
 		IReadOnlyDictionary<string, string?> State { get; }
-
-
 	}
-
 
 	public interface IPersistedState
 	{

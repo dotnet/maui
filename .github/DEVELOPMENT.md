@@ -1,6 +1,6 @@
-# Developer Guide
+# Development Guide
 
-This page contains steps to build and run the .NET MAUI repository from source.
+This page contains steps to build and run the .NET MAUI repository from source. If you are looking to build apps with .NET MAUI please head over to the [.NET MAUI documentation](https://docs.microsoft.com/dotnet/maui) to get started.
 
 ## Requirements
 
