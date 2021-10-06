@@ -12,6 +12,8 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 using System.Text;
 using Microsoft.UI.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui
 {
@@ -60,6 +62,7 @@ namespace Microsoft.Maui
 		CancellationTokenSource _cts;
 		bool _internalChangeFlag;
 		int _cachedSelectionLength;
+		bool _nativeSelectionIsUpdating;
 
 		public MauiTextBox()
 		{
@@ -80,7 +83,7 @@ namespace Microsoft.Maui
 		public bool ClearButtonVisible
 		{
 			get { return (bool)GetValue(ClearButtonVisibleProperty); }
-			set { SetValue(ClearButtonVisibleProperty, value);}
+			set { SetValue(ClearButtonVisibleProperty, value); }
 		}
 
 		public WBrush BackgroundFocusBrush
@@ -120,6 +123,12 @@ namespace Microsoft.Maui
 			get { return (string)GetValue(TextProperty); }
 			set { SetValue(TextProperty, value); }
 		}
+
+		public event EventHandler CursorPositionChanged;
+
+		public int CursorPosition { get; set; }
+
+		internal bool CursorPositionChangePending { get; set; }
 
 		InputScope PasswordInputScope
 		{
@@ -169,7 +178,59 @@ namespace Microsoft.Maui
 				UpdateClearButtonVisible();
 			}
 
-			_scrollViewer= GetTemplateChild("ContentElement") as ScrollViewer;
+			_scrollViewer = GetTemplateChild("ContentElement") as ScrollViewer;
+		}
+
+		protected override void OnGotFocus(RoutedEventArgs e)
+		{
+			base.OnGotFocus(e);
+
+			if (CursorPositionChangePending)
+				MapCursorPosition();
+
+			UpdateCurrentPosition(SelectionStart);
+		}
+
+		void MapCursorPosition()
+		{
+			if (_nativeSelectionIsUpdating)
+				return;
+
+			if (Focus(FocusState.Programmatic))
+			{
+				try
+				{
+					int cursorPosition = CursorPosition;
+
+					int start = Math.Min(Text.Length, cursorPosition);
+
+					if (start != cursorPosition)
+					{
+						_nativeSelectionIsUpdating = true;
+						UpdateCurrentPosition(start);
+						_nativeSelectionIsUpdating = false;
+					}
+					SelectionStart = start;
+				}
+				catch (Exception ex)
+				{
+					MauiWinUIApplication
+						.Current
+						.Services
+						.CreateLogger<ILogger>()
+						.LogWarning($"Failed to set Control.SelectionStart from CursorPosition: {ex}");
+				}
+				finally
+				{
+					CursorPositionChangePending = false;
+				}
+			}
+		}
+
+		void UpdateCurrentPosition(int position)
+		{
+			CursorPosition = position;
+			CursorPositionChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -294,6 +355,14 @@ namespace Microsoft.Maui
 		{
 			// Cache this value for later use as explained in OnKeyDown below
 			_cachedSelectionLength = SelectionLength;
+
+			if (!CursorPositionChangePending)
+			{
+				var start = CursorPosition;
+				int selectionStart = SelectionStart;
+				if (selectionStart != start)
+					UpdateCurrentPosition(selectionStart);
+			}
 		}
 
 		// Because the implementation of a password entry is based around inheriting from TextBox (via MauiTextBox), there
@@ -398,7 +467,7 @@ namespace Microsoft.Maui
 			{
 				if (ClearButtonVisible && !states.Contains(visibleState))
 					states.Add(visibleState);
-				else if(!ClearButtonVisible)
+				else if (!ClearButtonVisible)
 					states.Remove(visibleState);
 			}
 		}
