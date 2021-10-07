@@ -177,6 +177,8 @@ namespace Microsoft.Maui.Controls
 		{
 			var datePicker = (DatePicker)bindable;
 			EventHandler<DateChangedEventArgs> selected = datePicker.DateSelected;
+			if (selected == null)
+				return;
 			if (datePicker.Date == null)
 			{
 				selected(datePicker, new DateChangedEventArgs((DateTime)oldValue, null));
