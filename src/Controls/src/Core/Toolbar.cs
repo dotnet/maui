@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls
 		bool _isVisible = false;
 		IEnumerable<ToolbarItem> _toolbarItems;
 		ToolbarTracker _toolbarTracker = new ToolbarTracker();
+		bool _dynamicOverflowEnabled;
 
 		public Toolbar()
 		{
@@ -43,6 +44,8 @@ namespace Microsoft.Maui.Controls
 		public Color IconColor { get => _iconColor; set => SetProperty(ref _iconColor, value); }
 		public string Title { get => _title; set => SetProperty(ref _title, value); }
 		public VisualElement TitleView { get => _titleView; set => SetProperty(ref _titleView, value); }
+		public bool DynamicOverflowEnabled { get => _dynamicOverflowEnabled; set => SetProperty(ref _dynamicOverflowEnabled, value); }
+
 		public IElementHandler Handler { get; set; }
 
 		Maui.IElement _parent;
@@ -89,7 +92,10 @@ namespace Microsoft.Maui.Controls
 				PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty,
 				NavigationPage.BarBackgroundColorProperty,
 				NavigationPage.BarBackgroundProperty,
-				NavigationPage.BarTextColorProperty))
+				NavigationPage.BarTextColorProperty) || 
+				e.IsOneOf(
+					PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty,
+					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty))
 			{
 				ApplyChanges(_currentNavigationPage);
 			}
@@ -152,6 +158,7 @@ namespace Microsoft.Maui.Controls
 			IconColor = NavigationPage.GetIconColor(currentPage);
 			Title = currentPage.Title;
 			TitleView = NavigationPage.GetTitleView(navigationPage);
+			DynamicOverflowEnabled = PlatformConfiguration.WindowsSpecific.Page.GetToolbarDynamicOverflowEnabled(_currentPage);
 		}
 	}
 }

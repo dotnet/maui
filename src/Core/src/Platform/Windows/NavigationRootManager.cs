@@ -7,14 +7,14 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui
 {
-	public class WindowManager
+	public class NavigationRootManager
 	{
 		IMauiContext _mauiContext;
 		MauiNavigationView _navigationView;
 		IView? _content;
 		IWindow? _window;
 
-		public WindowManager(IMauiContext mauiContext)
+		public NavigationRootManager(IMauiContext mauiContext)
 		{
 			_mauiContext = mauiContext;
 			_navigationView = new MauiNavigationView();
