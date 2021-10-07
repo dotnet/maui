@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -52,10 +53,6 @@ namespace Microsoft.Maui.Controls
 		public static FlowDirection FlowDirection { get; internal set; }
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static bool IsInvokeRequired =>
-			Application.Current.GetDispatcher().IsInvokeRequired;
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IPlatformServices PlatformServices
 		{
 			get
@@ -83,70 +80,34 @@ namespace Microsoft.Maui.Controls
 			Flags = flags;
 		}
 
+		[Obsolete("Use BindableObject.Dispatcher instead.")]
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static bool IsInvokeRequired =>
+			Application.Current.Dispatcher.IsInvokeRequired;
+
+		[Obsolete("Use BindableObject.Dispatcher instead.")]
 		public static void BeginInvokeOnMainThread(Action action) =>
-			Application.Current.GetDispatcher().BeginInvokeOnMainThread(action);
+			Application.Current.Dispatcher.BeginInvokeOnMainThread(action);
 
-		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func)
-		{
-			var tcs = new TaskCompletionSource<T>();
-			BeginInvokeOnMainThread(() =>
-			{
-				try
-				{
-					var result = func();
-					tcs.SetResult(result);
-				}
-				catch (Exception ex)
-				{
-					tcs.SetException(ex);
-				}
-			});
-			return tcs.Task;
-		}
+		[Obsolete("Use BindableObject.Dispatcher instead.")]
+		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func) =>
+			Application.Current.Dispatcher.InvokeOnMainThreadAsync(func);
 
-		public static Task InvokeOnMainThreadAsync(Action action)
-		{
-			object wrapAction()
-			{ action(); return null; }
-			return InvokeOnMainThreadAsync((Func<object>)wrapAction);
-		}
+		[Obsolete("Use BindableObject.Dispatcher instead.")]
+		public static Task InvokeOnMainThreadAsync(Action action) =>
+			Application.Current.Dispatcher.InvokeOnMainThreadAsync(action);
 
-		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask)
-		{
-			var tcs = new TaskCompletionSource<T>();
-			BeginInvokeOnMainThread(
-				async () =>
-				{
-					try
-					{
-						var ret = await funcTask().ConfigureAwait(false);
-						tcs.SetResult(ret);
-					}
-					catch (Exception e)
-					{
-						tcs.SetException(e);
-					}
-				}
-			);
+		[Obsolete("Use BindableObject.Dispatcher instead.")]
+		public static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> funcTask) =>
+			Application.Current.Dispatcher.InvokeOnMainThreadAsync(funcTask);
 
-			return tcs.Task;
-		}
+		[Obsolete("Use BindableObject.Dispatcher instead.")]
+		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask) =>
+			Application.Current.Dispatcher.InvokeOnMainThreadAsync(funcTask);
 
-		public static Task InvokeOnMainThreadAsync(Func<Task> funcTask)
-		{
-			async Task<object> wrapFunction()
-			{ await funcTask().ConfigureAwait(false); return null; }
-			return InvokeOnMainThreadAsync(wrapFunction);
-		}
-
-		public static async Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync()
-		{
-			SynchronizationContext ret = null;
-			await InvokeOnMainThreadAsync(() =>
-				ret = SynchronizationContext.Current
-			).ConfigureAwait(false);
-			return ret;
-		}
+		[Obsolete("Use BindableObject.Dispatcher instead.")]
+		public static Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync() =>
+			Application.Current.Dispatcher.GetMainThreadSynchronizationContextAsync();
 
 		public static double GetNamedSize(NamedSize size, Element targetElement)
 		{
