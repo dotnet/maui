@@ -275,9 +275,13 @@ namespace Microsoft.Maui
 
 				SelectionLength = selectionLength;
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-
+				MauiWinUIApplication
+					.Current
+					.Services
+					.CreateLogger<ILogger>()
+					.LogWarning($"Failed to set Control.SelectionLength from SelectionLength: {ex}");
 			}
 			finally
 			{
