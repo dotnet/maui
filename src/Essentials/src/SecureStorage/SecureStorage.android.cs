@@ -1,11 +1,7 @@
-using System;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
-using Android.Security;
-using Android.Security.Keystore;
 using AndroidX.Security.Crypto;
-using Java.Security;
 using Javax.Crypto;
 
 namespace Microsoft.Maui.Essentials
@@ -82,85 +78,21 @@ namespace Microsoft.Maui.Essentials
 
 		static ISharedPreferences GetEncryptedSharedPreferences()
 		{
-			var runtimeApiLevel = SdkInt;
-			
-			string fileName = "MAUI";
-			string prefsMainKey;
 			var context = Application.Context;
 
-
-			if (runtimeApiLevel >= 23)
-			{
-				prefsMainKey = GetOrCreateMasterKeyApi23OrNewer();
-			}
-			else
-			{
-				prefsMainKey = GetOrCreateMasterKeyApi22OrOlder(context);
-			}
+			MasterKey prefsMainKey = new MasterKey.Builder(context, Alias)
+				.SetKeyScheme(MasterKey.KeyScheme.Aes256Gcm)
+				.Build();
 
 			var sharedPreferences = EncryptedSharedPreferences.Create(
-				fileName,
-				prefsMainKey,
 				context,
+				Alias,
+				prefsMainKey,
 				EncryptedSharedPreferences.PrefKeyEncryptionScheme.Aes256Siv,
 				EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm
 			);
 
 			return sharedPreferences;
 		}
-
-		static string GetOrCreateMasterKeyApi23OrNewer()
-			=> MasterKeys.GetOrCreate(MasterKeys.Aes256GcmSpec);
-
-		static string GetOrCreateMasterKeyApi22OrOlder(Context context)
-		{
-			// Force to english for known bug in date parsing:
-			// https://issuetracker.google.com/issues/37095309
-			SetLocale(context, Java.Util.Locale.English);
-
-			var generator = KeyPairGenerator.GetInstance(
-			  KeyProperties.KeyAlgorithmRsa,
-			  "AndroidKeyStore"); // Const value for secure keystore
-
-			var end = DateTime.UtcNow.AddYears(30);
-			var startDate = new Java.Util.Date();
-
-#pragma warning disable CS0618 // Type or member is obsolete
-			var endDate = new Java.Util.Date(end.Year, end.Month, end.Day);
-
-			var builder = new KeyPairGeneratorSpec.Builder(context)
-			  .SetAlias(Alias)
-			  .SetSerialNumber(Java.Math.BigInteger.ValueOf(Math.Abs(Alias.GetHashCode())))
-			  .SetSubject(new Javax.Security.Auth.X500.X500Principal($"CN={Alias}"))
-			  .SetStartDate(startDate)
-			  .SetEndDate(endDate);
-
-			generator.Initialize(builder.Build());
-#pragma warning restore CS0618
-
-			var keyPair = generator.GenerateKeyPair();
-			return keyPair.Public.ToString();
-		}
-
-		static int SdkInt
-		  => (int)Android.OS.Build.VERSION.SdkInt;
-
-		static void SetLocale(Context context, Java.Util.Locale locale)
-		{
-			Java.Util.Locale.Default = locale;
-			var resources = context.Resources;
-			var config = resources.Configuration;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-#if __ANDROID_24__
-			if (SdkInt >= 24)
-				config.SetLocale(locale);
-			else
-#endif
-				config.Locale = locale;
-			resources.UpdateConfiguration(config, resources.DisplayMetrics);
-#pragma warning restore CS0618 // Type or member is obsolete
-		}
-
 	}
 }
