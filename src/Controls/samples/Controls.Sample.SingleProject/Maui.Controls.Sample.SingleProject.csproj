@@ -18,7 +18,7 @@
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(UseMaui)' != 'true' and $(TargetFramework.Contains('-windows')) ">
+  <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" />
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />

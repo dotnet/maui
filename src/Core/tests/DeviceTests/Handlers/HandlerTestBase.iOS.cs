@@ -135,6 +135,19 @@ namespace Microsoft.Maui.DeviceTests
 			return FlowDirection.LeftToRight;
 		}
 
+		protected bool GetIsAccessibilityElement(IViewHandler viewHandler)
+		{
+			var nativeView = ((UIView)viewHandler.NativeView);
+
+			// UIControl elements when instantiated have IsAccessibilityElement set to false.
+			// Once they are added to the visual tree then iOS transitions IsAccessibilityElement
+			// to true. In code we only set non UIControl elements ourselves to true.
+			if (nativeView is UIControl)
+				return true;
+
+			return nativeView.IsAccessibilityElement;
+		}
+
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
 			((UIView)viewHandler.NativeView).AccessibilityLabel;
 

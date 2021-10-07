@@ -25,11 +25,25 @@
             <Label
                 TextType="Html">
                 <x:String>
-                <![CDATA[
+                    <![CDATA[
                     <h1>Hello World!</h1><br/>Second Line<br/><b>Bold Line</b>
                 ]]>
                 </x:String>
             </Label>
+            <Label
+                Text="HorizontalTextAlignment"
+                Style="{StaticResource Headline}" />
+            <Label 
+                HorizontalTextAlignment="End"
+                Text="This should be at the end of the line"
+                />
+            <Label
+                Text="VerticalTextAlignment"
+                Style="{StaticResource Headline}" />
+            <Label 
+                VerticalTextAlignment="End"
+                Text="This should be at the bottom"
+                HeightRequest="100"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

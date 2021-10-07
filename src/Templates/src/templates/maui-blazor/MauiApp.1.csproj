@@ -50,16 +50,12 @@
 		<PackageReference Include="Microsoft.WindowsAppSDK.Foundation" Version="WINDOWSAPPSDK_VERSION" />
 		<PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="WINDOWSAPPSDK_VERSION" />
 		<PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="WINDOWSAPPSDK_VERSION" NoWarn="NU1701" />
+		<PackageReference Include="Microsoft.Graphics.Win2D" Version="WIN2D_VERSION" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
 		<OutputType>WinExe</OutputType>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
-	</PropertyGroup>
-	
-	<PropertyGroup>
-		<!-- Required - WinUI can't deploy in a multi-targeting environment -->
-		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-windows'))">win-x64</RuntimeIdentifier>
 	</PropertyGroup>
 
 	<ItemGroup>
