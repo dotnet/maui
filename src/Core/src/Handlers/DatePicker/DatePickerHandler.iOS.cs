@@ -53,6 +53,7 @@ namespace Microsoft.Maui.Handlers
 			if (_picker != null)
 				_picker.ValueChanged += OnValueChanged;
 
+			SetupDefaults(nativeView);
 			base.ConnectHandler(nativeView);
 		}
 
@@ -63,7 +64,6 @@ namespace Microsoft.Maui.Handlers
 
 			base.DisconnectHandler(nativeView);
 		}
-
 
 		void SetupDefaults(MauiDatePicker nativeView)
 		{

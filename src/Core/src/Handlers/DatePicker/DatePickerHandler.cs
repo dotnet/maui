@@ -6,13 +6,12 @@
 		{
 #if __ANDROID__
 			[nameof(IDatePicker.Background)] = MapBackground,
-
 #endif
 			[nameof(IDatePicker.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IDatePicker.Date)] = MapDate,
 			[nameof(IDatePicker.Font)] = MapFont,
 			[nameof(IDatePicker.Format)] = MapFormat,
- 			[nameof(IDatePicker.MaximumDate)] = MapMaximumDate,
+			[nameof(IDatePicker.MaximumDate)] = MapMaximumDate,
 			[nameof(IDatePicker.MinimumDate)] = MapMinimumDate,
 			[nameof(IDatePicker.TextColor)] = MapTextColor,
 		};

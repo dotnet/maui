@@ -37,10 +37,10 @@ namespace Microsoft.Maui
 			var datePickerDate = datePicker.Date;
 
 			if (picker != null && picker.Date?.ToDateTime().Date != datePickerDate?.Date)
-            {
+			{
 				var nsDate = datePickerDate.ToNSDate();
 				if (nsDate != null)
-                {
+				{
 					picker.SetDate(nsDate, false);
 				}
 			}

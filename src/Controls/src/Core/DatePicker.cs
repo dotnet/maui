@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>
 	{
-		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(DatePicker), "d");						
+		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(DatePicker), "d");
 		public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime?), typeof(DatePicker), default(DateTime), BindingMode.TwoWay,
 			coerceValue: CoerceDate,
 			propertyChanged: DatePropertyChanged,
@@ -37,13 +37,11 @@ namespace Microsoft.Maui.Controls
 		public DatePicker()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<DatePicker>>(() => new PlatformConfigurationRegistry<DatePicker>(this));
-		}	
+		}
 		public DateTime? Date
 		{
 			get { return (DateTime)GetValue(DateProperty); }
-			set { 
-				SetValue(DateProperty, value);
-			}
+			set { SetValue(DateProperty, value); }
 		}
 
 		public string Format
@@ -180,13 +178,9 @@ namespace Microsoft.Maui.Controls
 			if (selected == null)
 				return;
 			if (datePicker.Date == null)
-			{
 				selected(datePicker, new DateChangedEventArgs((DateTime)oldValue, null));
-			}
 			else
-			{
 				selected(datePicker, new DateChangedEventArgs((DateTime)oldValue, (DateTime)newValue));
-			}
 		}
 
 		static bool ValidateMaximumDate(BindableObject bindable, object value)
