@@ -7,10 +7,7 @@
     windows:Application.ImageDirectory="Assets">
     <Application.Resources>
         <ResourceDictionary>
-            <Color x:Key="DotNetPurple">#512BD4</Color>
-
-            <DatePicker x:Name="dpName"></DatePicker>
-
+        
             <!-- COMMON COLORS -->
             <Color x:Key="BlackColor">#150303</Color>
             <Color x:Key="WhiteColor">#F8F8FF</Color>
