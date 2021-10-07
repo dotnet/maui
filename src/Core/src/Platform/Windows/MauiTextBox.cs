@@ -24,6 +24,8 @@ namespace Microsoft.Maui
 	public class MauiTextBox : TextBox
 	{
 		const char ObfuscationCharacter = '●';
+		int _cursorPosition = -1;
+		int _viewSelectionLength = -1;
 
 		public static readonly DependencyProperty PlaceholderForegroundBrushProperty =
 			DependencyProperty.Register(nameof(PlaceholderForegroundBrush), typeof(WBrush), typeof(MauiTextBox),
@@ -128,9 +130,25 @@ namespace Microsoft.Maui
 
 		public event EventHandler SelectionLengthChanged;
 
-		public int CursorPosition { get; set; }
+		public int CursorPosition
+		{
+			get { return _cursorPosition; }
+			set
+			{
+				_cursorPosition = value;
+				UpdateCursorPosition();
+			}
+		}
 
-		public int ViewSelectionLength { get; set; } = -1;
+		public int ViewSelectionLength
+		{
+			get { return _viewSelectionLength; }
+			set
+			{
+				_viewSelectionLength = value;
+				UpdateSelectionLength();
+			}
+		}
 
 		internal bool CursorPositionChangePending { get; set; }
 
