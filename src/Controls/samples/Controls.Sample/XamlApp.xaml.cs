@@ -17,7 +17,6 @@ namespace Maui.Controls.Sample
 
 			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
 
-
 			MainPage = Services.GetRequiredService<Page>();
 
 			RequestedThemeChanged += (sender, args) =>

@@ -7,7 +7,6 @@
     windows:Application.ImageDirectory="Assets">
     <Application.Resources>
         <ResourceDictionary>
-        
             <!-- COMMON COLORS -->
             <Color x:Key="BlackColor">#150303</Color>
             <Color x:Key="WhiteColor">#F8F8FF</Color>
