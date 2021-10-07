@@ -77,6 +77,34 @@
                 <Entry 
                     Text="Text"
                     Background="Orange"/>
+                <Label
+                    Text="Keyboard Numeric"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="123"
+                    Style="{StaticResource Headline}" 
+                    Keyboard="Numeric"/>
+                <Label
+                    Text="HorizontalTextAlignment"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    HorizontalTextAlignment="End"
+                    Text="This should be on the end" />
+                <Label
+                    Text="VerticalTextAlignment"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    VerticalTextAlignment="End"
+                    Text="This should be on the bottom"
+                    HeightRequest="100"/>
+                <Label
+                    x:Name="lblCursor"
+                    Text="CursorPosition = 4"
+                    Style="{StaticResource Headline}" />
+                <Entry
+                    x:Name="entryCursor"
+                    Text="Cursor"
+                    CursorPosition="4"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

@@ -18,14 +18,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		static Thickness? DefaultPadding;
 		static Drawable? DefaultBackground;
-		ImageSourcePartWrapper<ButtonHandler>? _imageSourcePartWrapper;
 
 		ButtonClickListener ClickListener { get; } = new ButtonClickListener();
 		ButtonTouchListener TouchListener { get; } = new ButtonTouchListener();
-
-		ImageSourcePartWrapper<ButtonHandler> ImageSourcePartWrapper =>
-			_imageSourcePartWrapper ??= new ImageSourcePartWrapper<ButtonHandler>(
-				this, (h) => h.VirtualView.ImageSource, null, null, OnSetImageSourceDrawable);
 
 		static ColorStateList? _transparentColorStateList;
 
@@ -72,56 +67,61 @@ namespace Microsoft.Maui.Handlers
 			TouchListener.Handler = null;
 			nativeView.SetOnTouchListener(null);
 
-			_sourceManager.Reset();
+			ImageSourceLoader.Reset();
 
 			base.DisconnectHandler(nativeView);
 		}
 
 		// This is a Android-specific mapping
-		public static void MapBackground(ButtonHandler handler, IButton button)
+		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdateBackground(button, DefaultBackground);
+			handler.TypedNativeView?.UpdateBackground(button, DefaultBackground);
 		}
 
-		public static void MapText(ButtonHandler handler, IButton button)
+		public static void MapText(IButtonHandler handler, IText button)
 		{
-			handler.NativeView?.UpdateText(button);
+			handler.TypedNativeView?.UpdateTextPlainText(button);
 		}
 
-		public static void MapTextColor(ButtonHandler handler, IButton button)
+		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			handler.NativeView?.UpdateTextColor(button);
+			handler.TypedNativeView?.UpdateTextColor(button);
 		}
 
-		public static void MapCharacterSpacing(ButtonHandler handler, IButton button)
+		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
 		{
-			handler.NativeView?.UpdateCharacterSpacing(button);
+			handler.TypedNativeView?.UpdateCharacterSpacing(button);
 		}
 
-		public static void MapFont(ButtonHandler handler, IButton button)
+		public static void MapFont(IButtonHandler handler, ITextStyle button)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
-			handler.NativeView?.UpdateFont(button, fontManager);
+			handler.TypedNativeView?.UpdateFont(button, fontManager);
 		}
 
-		public static void MapPadding(ButtonHandler handler, IButton button)
+		public static void MapPadding(IButtonHandler handler, IButton button)
 		{
-			handler.NativeView?.UpdatePadding(button, DefaultPadding);
+			handler.TypedNativeView?.UpdatePadding(button, DefaultPadding);
 		}
 
-		public static void MapImageSource(ButtonHandler handler, IButton image) =>
+		public static void MapImageSource(IButtonHandler handler, IButton image) =>
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapImageSourceAsync(ButtonHandler handler, IButton image)
+		public static Task MapImageSourceAsync(IButtonHandler handler, IButton image)
 		{
 			if (image.ImageSource == null)
 			{
-				handler.OnSetImageSourceDrawable(null);
 				return Task.CompletedTask;
 			}
 
-			return handler.ImageSourcePartWrapper.UpdateImageSource();
+			return handler.ImageSourceLoader.UpdateImageSourceAsync();
+		}
+
+		void OnSetImageSource(Drawable? obj)
+		{
+			NativeView.Icon = obj;
+			VirtualView?.ImageSourceLoaded();
 		}
 
 		bool NeedsExactMeasure()
@@ -174,13 +174,6 @@ namespace Microsoft.Maui.Handlers
 			// Convert to a native size to create the spec for measuring
 			var deviceSize = (int)Context!.ToPixels(size);
 			return MeasureSpecMode.Exactly.MakeMeasureSpec(deviceSize);
-		}
-
-
-		void OnSetImageSourceDrawable(Drawable? obj)
-		{
-			NativeView.Icon = obj;
-			VirtualView?.ImageSourceLoaded();
 		}
 
 		bool OnTouch(IButton? button, AView? v, MotionEvent? e)

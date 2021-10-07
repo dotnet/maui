@@ -3,11 +3,11 @@ using System;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.Maui.Handlers;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 
@@ -47,43 +47,43 @@ namespace Microsoft.Maui
 
 		public static void UpdateClip(this FrameworkElement nativeView, IView view)
 		{
-			var clipGeometry = view.Clip;
-			if (clipGeometry == null)
-				return;
-
-			if (view.Handler?.MauiContext?.Window is not Window window)
-				return;
-
-			var compositor = window.Compositor;
-			var visual = ElementCompositionPreview.GetElementVisual(nativeView);
-
-			var pathSize = new Rectangle(0, 0, view.Width, view.Height);
-			var clipPath = clipGeometry.PathForBounds(pathSize);
-			var device = CanvasDevice.GetSharedDevice();
-			var geometry = clipPath.AsPath(device);
-
-			var path = new CompositionPath(geometry);
-			var pathGeometry = compositor.CreatePathGeometry(path);
-			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
-
-			visual.Clip = geometricClip;
+			if (nativeView is WrapperView wrapper)
+			{
+				wrapper.Clip = view.Clip;
+			}
 		}
 
+		public static void UpdateShadow(this FrameworkElement nativeView, IView view)
+		{
+			if (nativeView is WrapperView wrapper)
+			{
+				wrapper.Shadow = view.Shadow;
+			}
+		}
+		
 		public static void UpdateOpacity(this FrameworkElement nativeView, IView view)
 		{
 			nativeView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
 		}
 
-		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
+		public static void UpdateBackground(this ContentPanel nativeView, IBorder border) 
 		{
-			if (nativeView is Control control)
-				control.UpdateBackground(view.Background);
-			else if (nativeView is Border border)
-				border.UpdateBackground(view.Background);
-			else if (nativeView is Panel panel)
-				panel.UpdateBackground(view.Background);
+			var hasBorder = border.Shape != null && border.Stroke != null;
+
+			if (hasBorder)
+			{
+				nativeView?.UpdateBorderBackground(border);
+			}
+			else
+			{
+				nativeView?.UpdateNativeViewBackground(border);
+			}
 		}
 
+		public static void UpdateBackground(this FrameworkElement nativeView, IView view)
+		{
+			nativeView?.UpdateNativeViewBackground(view);
+		}
 
 		public static WFlowDirection ToNative(this FlowDirection flowDirection)
 		{
@@ -119,6 +119,7 @@ namespace Microsoft.Maui
 		public static void UpdateSemantics(this FrameworkElement nativeView, IView view)
 		{
 			var semantics = view.Semantics;
+
 			if (semantics == null)
 				return;
 
@@ -180,6 +181,30 @@ namespace Microsoft.Maui
 		public static void UpdateMaximumWidth(this FrameworkElement nativeView, IView view)
 		{
 			nativeView.MaxWidth = view.MaximumWidth;
+		}
+
+		internal static void UpdateBorderBackground(this FrameworkElement nativeView, IView view)
+		{
+			(nativeView as ContentPanel)?.UpdateBackground(view.Background);
+
+			if (nativeView is Control control)
+				control.UpdateBackground((Paint?)null);
+			else if (nativeView is Border border)
+				border.UpdateBackground(null);
+			else if (nativeView is Panel panel)
+				panel.UpdateBackground(null);
+		}
+
+		internal static void UpdateNativeViewBackground(this FrameworkElement nativeView, IView view)
+		{
+			(nativeView as ContentPanel)?.UpdateBackground(null);
+
+			if (nativeView is Control control)
+				control.UpdateBackground(view.Background);
+			else if (nativeView is Border border)
+				border.UpdateBackground(view.Background);
+			else if (nativeView is Panel panel)
+				panel.UpdateBackground(view.Background);
 		}
 	}
 }

@@ -307,13 +307,13 @@ namespace Microsoft.Maui.Controls.SourceGen
 			string typeName = xmlType.GetTypeReference<string>(xmlnsDefinitionCache, null,
 				(typeInfo) =>
 				{
-					string typeName = typeInfo.TypeName.Replace('+', '/'); //Nested types
-					string fullName = $"{typeInfo.ClrNamespace}.{typeInfo.TypeName}";
+					string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
+					string fullName = $"{typeInfo.clrNamespace}.{typeInfo.typeName}";
 
 					if (context.Compilation.GetTypeByMetadataName(fullName) != null)
 						return fullName;
 					return null;
-				}, out _);
+				});
 
 			return typeName;
 #nullable enable

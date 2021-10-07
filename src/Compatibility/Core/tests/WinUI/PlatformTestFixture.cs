@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
 using Microsoft.UI.Xaml.Controls;
 using NUnit.Framework;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 {
@@ -58,11 +59,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UAP.UnitTests
 			return GetRenderer(element).ContainerElement as Panel;
 		}
 
-		protected Border GetBorder(VisualElement element)
+		protected WBorder GetBorder(VisualElement element)
 		{
 			var renderer = GetRenderer(element);
 			var nativeElement = renderer.GetNativeElement();
-			return nativeElement as Border;
+			return nativeElement as WBorder;
 		}
 
 		protected TextBlock GetNativeControl(Label label)

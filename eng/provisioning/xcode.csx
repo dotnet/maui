@@ -11,7 +11,7 @@ if (string.IsNullOrEmpty(desiredXcode)) {
     return;
 }
 
-desiredXcode = desiredXcode.Replace("Xcode_", "").Replace("_", ".");
+//desiredXcode = desiredXcode.Replace("Xcode_", "").Replace("_", ".");
 Console.WriteLine("Desired Xcode: {0}", desiredXcode);
 
 // Find the best version

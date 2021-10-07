@@ -413,6 +413,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateCursorPosition()
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)

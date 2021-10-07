@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Handlers
 			nativeView.TextPropertySet += OnTextPropertySet;
 			nativeView.ShouldChangeTextInRange += ShouldChangeText;
 			base.ConnectHandler(nativeView);
+			SetupDefaults(nativeView);
 		}
 
 		protected override void DisconnectHandler(MauiSearchBar nativeView)
@@ -92,6 +93,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHorizontalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateHorizontalTextAlignment(searchBar);
+		}
+
+		public static void MapVerticalTextAlignment(SearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.NativeView?.UpdateVerticalTextAlignment(searchBar, handler?._editor);
 		}
 
 		public static void MapCharacterSpacing(SearchBarHandler handler, ISearchBar searchBar)

@@ -372,7 +372,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (fid?.IconBitmapSource == image)
 					customIcon = fid.IconBitmap;
 				else
-					customIcon = (await ImageSourceLoader.GetImageAsync(image, MauiContext))?.Value;
+					customIcon = (await image.GetNativeImageAsync(MauiContext))?.Value;
 
 				if (customIcon != null)
 				{
@@ -477,7 +477,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected virtual void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
 		{
-			ImageSourceLoader.LoadImage(toolBarItem.IconImageSource, MauiContext, finished =>
+			toolBarItem.IconImageSource.LoadImage(MauiContext, finished =>
 			{
 				var baseDrawable = finished.Value;
 				if (baseDrawable != null)

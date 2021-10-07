@@ -1,6 +1,6 @@
-﻿using UIKit;
+using UIKit;
 
-namespace Maui.Controls.Sample.SingleProject
+namespace Maui.Controls.Sample.iOS
 {
 	public class Application
 	{

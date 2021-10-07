@@ -11,6 +11,9 @@ using Microsoft.UI.Xaml.Input;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 using System.Text;
+using Microsoft.UI.Input;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui
 {
@@ -59,6 +62,7 @@ namespace Microsoft.Maui
 		CancellationTokenSource _cts;
 		bool _internalChangeFlag;
 		int _cachedSelectionLength;
+		bool _nativeSelectionIsUpdating;
 
 		public MauiTextBox()
 		{
@@ -79,7 +83,7 @@ namespace Microsoft.Maui
 		public bool ClearButtonVisible
 		{
 			get { return (bool)GetValue(ClearButtonVisibleProperty); }
-			set { SetValue(ClearButtonVisibleProperty, value);}
+			set { SetValue(ClearButtonVisibleProperty, value); }
 		}
 
 		public WBrush BackgroundFocusBrush
@@ -119,6 +123,12 @@ namespace Microsoft.Maui
 			get { return (string)GetValue(TextProperty); }
 			set { SetValue(TextProperty, value); }
 		}
+
+		public event EventHandler CursorPositionChanged;
+
+		public int CursorPosition { get; set; }
+
+		internal bool CursorPositionChangePending { get; set; }
 
 		InputScope PasswordInputScope
 		{
@@ -168,7 +178,59 @@ namespace Microsoft.Maui
 				UpdateClearButtonVisible();
 			}
 
-			_scrollViewer= GetTemplateChild("ContentElement") as ScrollViewer;
+			_scrollViewer = GetTemplateChild("ContentElement") as ScrollViewer;
+		}
+
+		protected override void OnGotFocus(RoutedEventArgs e)
+		{
+			base.OnGotFocus(e);
+
+			if (CursorPositionChangePending)
+				MapCursorPosition();
+
+			UpdateCurrentPosition(SelectionStart);
+		}
+
+		void MapCursorPosition()
+		{
+			if (_nativeSelectionIsUpdating)
+				return;
+
+			if (Focus(FocusState.Programmatic))
+			{
+				try
+				{
+					int cursorPosition = CursorPosition;
+
+					int start = Math.Min(Text.Length, cursorPosition);
+
+					if (start != cursorPosition)
+					{
+						_nativeSelectionIsUpdating = true;
+						UpdateCurrentPosition(start);
+						_nativeSelectionIsUpdating = false;
+					}
+					SelectionStart = start;
+				}
+				catch (Exception ex)
+				{
+					MauiWinUIApplication
+						.Current
+						.Services
+						.CreateLogger<ILogger>()
+						.LogWarning($"Failed to set Control.SelectionStart from CursorPosition: {ex}");
+				}
+				finally
+				{
+					CursorPositionChangePending = false;
+				}
+			}
+		}
+
+		void UpdateCurrentPosition(int position)
+		{
+			CursorPosition = position;
+			CursorPositionChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -254,21 +316,26 @@ namespace Microsoft.Maui
 
 		static string DetermineTextFromPassword(string realText, int start, string passwordText)
 		{
-			var lengthDifference = passwordText.Length - realText.Length;
+			var rt = realText ?? string.Empty;
+
+			var lengthDifference = passwordText.Length - (rt?.Length ?? 0);
 			if (lengthDifference > 0)
-				realText = realText.Insert(start - lengthDifference, new string(ObfuscationCharacter, lengthDifference));
+				rt = rt.Insert(start - lengthDifference, new string(ObfuscationCharacter, lengthDifference));
 			else if (lengthDifference < 0)
-				realText = realText.Remove(start, -lengthDifference);
+				rt = rt.Remove(start, -lengthDifference);
 
 			var sb = new StringBuilder(passwordText.Length);
 			for (int i = 0; i < passwordText.Length; i++)
-				sb.Append(passwordText[i] == ObfuscationCharacter ? realText[i] : passwordText[i]);
+				sb.Append(passwordText[i] == ObfuscationCharacter ? rt[i] : passwordText[i]);
 
 			return sb.ToString();
 		}
 
 		string Obfuscate(string text, bool leaveLastVisible = false)
 		{
+			if (string.IsNullOrEmpty(text))
+				return string.Empty;
+
 			if (!leaveLastVisible)
 				return new string(ObfuscationCharacter, text.Length);
 
@@ -288,6 +355,14 @@ namespace Microsoft.Maui
 		{
 			// Cache this value for later use as explained in OnKeyDown below
 			_cachedSelectionLength = SelectionLength;
+
+			if (!CursorPositionChangePending)
+			{
+				var start = CursorPosition;
+				int selectionStart = SelectionStart;
+				if (selectionStart != start)
+					UpdateCurrentPosition(selectionStart);
+			}
 		}
 
 		// Because the implementation of a password entry is based around inheriting from TextBox (via MauiTextBox), there
@@ -296,12 +371,11 @@ namespace Microsoft.Maui
 		// handled accordingly.
 		protected override void OnKeyDown(KeyRoutedEventArgs e)
 		{
-			// TODO: MAUI Change for MultiWindow
-			if (IsPassword && Application.Current is MauiWinUIApplication app)
+			if (IsPassword)
 			{
 				// The ctrlDown flag is used to track if the Ctrl key is pressed; if it's actively being used and the most recent
 				// key to trigger OnKeyDown, then treat it as handled.
-				var ctrlDown = app.MainWindow.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+				var ctrlDown = KeyboardInput.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
 
 				// The shift, tab, and directional (Home/End/PgUp/PgDown included) keys can be used to select text and should otherwise
 				// be ignored.
@@ -393,7 +467,7 @@ namespace Microsoft.Maui
 			{
 				if (ClearButtonVisible && !states.Contains(visibleState))
 					states.Add(visibleState);
-				else if(!ClearButtonVisible)
+				else if (!ClearButtonVisible)
 					states.Remove(visibleState);
 			}
 		}

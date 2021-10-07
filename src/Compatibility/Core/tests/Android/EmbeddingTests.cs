@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 		{
 			var contentPage = new ContentPage { Title = "Embedded Page" };
 			contentPage.Parent = Application.Current;
-			await Device.InvokeOnMainThreadAsync(() => {
+			await Device.InvokeOnMainThreadAsync(() =>
+			{
 				Fragment fragment = contentPage.CreateSupportFragment(Context);
 			});
 			contentPage.Parent = null;

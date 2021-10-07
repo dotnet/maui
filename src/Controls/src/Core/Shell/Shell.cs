@@ -1327,15 +1327,6 @@ namespace Microsoft.Maui.Controls
 		}
 		#endregion
 
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void VerifyShellUWPFlagEnabled(
-			string constructorHint = null,
-			[CallerMemberName] string memberName = "")
-		{
-			// ExperimentalFlags.VerifyFlagEnabled(nameof(Shell), ExperimentalFlags.ShellUWPExperimental);
-		}
-
 		class NavigationImpl : NavigationProxy
 		{
 			readonly Shell _shell;

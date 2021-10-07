@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android.Views;
+using Microsoft.Maui.Controls.CustomAttributes;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using Microsoft.Maui.Controls.CustomAttributes;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 {
@@ -23,7 +23,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 				// Test with RTL support off 
 				ToggleRTLSupport(Context, false);
 
-				await Device.InvokeOnMainThreadAsync(() => { 
+				await Device.InvokeOnMainThreadAsync(() =>
+				{
 					var entry1 = new Entry { Text = "foo", HorizontalTextAlignment = TextAlignment.Center };
 					using (var editText = GetNativeControl(entry1))
 					{

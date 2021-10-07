@@ -10,6 +10,7 @@
 		<!-- The WINUI check for this only runs when there is an empty string so I just convert false to an empty string to fall in line with our other properties -->
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'==''">true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
 		<SkipMicrosoftUIXamlCheckTargetPlatformVersion Condition="'$(SkipMicrosoftUIXamlCheckTargetPlatformVersion)'=='false'"></SkipMicrosoftUIXamlCheckTargetPlatformVersion>
+		<AndroidUseDefaultAotProfile Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(AndroidUseDefaultAotProfile)' == ''">false</AndroidUseDefaultAotProfile>
 	</PropertyGroup>
 
 	<Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
@@ -22,6 +23,10 @@
 
 	<ItemGroup Condition=" '$(DisableMauiAnalyzers)' != 'true' ">
 		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.SourceGen.dll" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(MauiUseDefaultAotProfile)' != 'false'">
+		<AndroidAotProfile Include="$(MSBuildThisFileDirectory)maui.aotprofile" />
 	</ItemGroup>
 
 	<!-- Check Tasks ABI and other validations -->

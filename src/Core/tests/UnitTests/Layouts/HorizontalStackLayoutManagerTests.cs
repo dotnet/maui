@@ -348,11 +348,35 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			stack.MinimumHeight.Returns(75);
 			stack.MaximumHeight.Returns(50);
 
-			var gridLayoutManager = new HorizontalStackLayoutManager(stack);
-			var measure = gridLayoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var layoutManager = new HorizontalStackLayoutManager(stack);
+			var measure = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			// The minimum value should beat out the maximum value
 			Assert.Equal(75, measure.Height);
+		}
+
+		[Fact]
+		public void ArrangeAccountsForFill()
+		{
+			var stack = BuildStack(viewCount: 1, viewWidth: 100, viewHeight: 100);
+
+			stack.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+			stack.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var layoutManager = new HorizontalStackLayoutManager(stack);
+			_ = layoutManager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			var arrangedWidth = 1000;
+			var arrangedHeight = 1000;
+
+			var target = new Rectangle(Point.Zero, new Size(arrangedWidth, arrangedHeight));
+
+			var actual = layoutManager.ArrangeChildren(target);
+
+			// Since we're arranging in a space larger than needed and the layout is set to Fill in both directions,
+			// we expect the returned actual arrangement size to be as large as the target space
+			Assert.Equal(arrangedWidth, actual.Width);
+			Assert.Equal(arrangedHeight, actual.Height);
 		}
 	}
 }
