@@ -8,25 +8,25 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>491ed9a112559872c31ae40da8f6d9977ba4ce3a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.101-preview.10.29">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.101-preview.10.30">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>709be67be32b6734f74fafdb9c7b6c00421b1dee</Sha>
+      <Sha>ee12581ec3adb652422b3e647a46194ab764b04a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.0.101-preview.10.132">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.0.101-preview.10.136">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>dade24c63a758b1f9571c10e81f1b1bf8c3b9e5c</Sha>
+      <Sha>afff63f04deb6b9b29308316ab2e3bf2b39db59a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk" Version="15.0.101-preview.10.132">
+    <Dependency Name="Microsoft.iOS.Sdk" Version="15.0.101-preview.10.136">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>dade24c63a758b1f9571c10e81f1b1bf8c3b9e5c</Sha>
+      <Sha>afff63f04deb6b9b29308316ab2e3bf2b39db59a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.0.101-preview.10.132">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="15.0.101-preview.10.136">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>dade24c63a758b1f9571c10e81f1b1bf8c3b9e5c</Sha>
+      <Sha>afff63f04deb6b9b29308316ab2e3bf2b39db59a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk" Version="12.0.101-preview.10.132">
+    <Dependency Name="Microsoft.macOS.Sdk" Version="12.0.101-preview.10.136">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>dade24c63a758b1f9571c10e81f1b1bf8c3b9e5c</Sha>
+      <Sha>afff63f04deb6b9b29308316ab2e3bf2b39db59a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="6.0.0-rtm.21505.3">
       <Uri>https://github.com/dotnet/emsdk</Uri>
