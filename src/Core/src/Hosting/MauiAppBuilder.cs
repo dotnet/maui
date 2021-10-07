@@ -86,7 +86,11 @@ namespace Microsoft.Maui.Hosting
 		{
 			_hostBuilder.ConfigureHostConfiguration(builder =>
 			{
-				builder.AddInMemoryCollection(new Dictionary<string, string> { { HostDefaults.ApplicationKey, BootstrapHostBuilder.GetDefaultApplicationName() } });
+				builder.AddInMemoryCollection(
+					new Dictionary<string, string> {
+						{ HostDefaults.ApplicationKey, BootstrapHostBuilder.GetDefaultApplicationName() },
+						{ HostDefaults.ContentRootKey,  Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) },
+					});
 			});
 
 			// Chain the configuration sources into the final IConfigurationBuilder
