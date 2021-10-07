@@ -34,10 +34,18 @@ namespace Microsoft.Maui
 
 		public static void UpdateDate(this MauiDatePicker nativeDatePicker, IDatePicker datePicker, UIDatePicker? picker)
 		{
-			if (picker != null && picker.Date?.ToDateTime().Date != datePicker.Date?.Date)
-				picker.SetDate(datePicker.Date.ToNSDate(), false);
-			
-			nativeDatePicker.Text = datePicker.Date?.ToString(datePicker.Format);
+			var datePickerDate = datePicker.Date;
+
+			if (picker != null && picker.Date?.ToDateTime().Date != datePickerDate?.Date)
+            {
+				var nsDate = datePickerDate.ToNSDate();
+				if (nsDate != null)
+                {
+					picker.SetDate(nsDate, false);
+				}
+			}
+				
+			nativeDatePicker.Text = datePickerDate?.ToString(datePicker.Format);
 
 			nativeDatePicker.UpdateCharacterSpacing(datePicker);
 		}

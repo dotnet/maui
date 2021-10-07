@@ -18,5 +18,10 @@ namespace Microsoft.Maui
 
 			return NSDate.FromTimeIntervalSinceReferenceDate((date.Value - ReferenceDate).TotalSeconds);
 		}
+
+		public static NSDate ToNSDate(this DateTime date)
+		{
+			return ToNSDate(date);
+		}
 	}
 }

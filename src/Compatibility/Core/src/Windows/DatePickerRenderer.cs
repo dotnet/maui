@@ -102,9 +102,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.IsOneOf(DatePicker.DateProperty, DatePicker.FormatProperty))
-				UpdateDate(Element.Date);
-			else if (e.PropertyName == DatePicker.MaximumDateProperty.PropertyName)
+            if (e.IsOneOf(DatePicker.DateProperty, DatePicker.FormatProperty))
+                UpdateDate(Element.Date);
+            if (e.PropertyName == DatePicker.MaximumDateProperty.PropertyName)
 				UpdateMaximumDate();
 			else if (e.PropertyName == DatePicker.MinimumDateProperty.PropertyName)
 				UpdateMinimumDate();
@@ -126,7 +126,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Element == null)
 				return;
 
-			if (Element.Date.CompareTo(e.NewDate.Date) != 0)
+			var elementDate = Element.Date;
+
+			if (elementDate != null)
+				return;
+
+			if(elementDate.Value.CompareTo(e.NewDate.Date) != 0)
 			{
 				var date = e.NewDate.Date.Clamp(Element.MinimumDate, Element.MaximumDate);
 				Element.Date = date;
@@ -147,10 +152,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		}
 
 		[PortHandler]
-		void UpdateDate(DateTime date)
+		void UpdateDate(DateTime? date)
 		{
+			if (date == null)
+				return;
+
 			if (Control != null)
-				Control.Date = new DateTimeOffset(new DateTime(date.Ticks, DateTimeKind.Unspecified));
+				Control.Date = new DateTimeOffset(new DateTime(date.Value.Ticks, DateTimeKind.Unspecified));
 
 			UpdateDay();
 			UpdateMonth();
