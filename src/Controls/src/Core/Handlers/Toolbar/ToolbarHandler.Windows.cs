@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			commandBar.PrimaryCommands.Clear();
 			commandBar.SecondaryCommands.Clear();
 
-			List<ToolbarItem> toolbarItems = new List<ToolbarItem>(VirtualView.ToolbarItems);
+			List<ToolbarItem> toolbarItems = new List<ToolbarItem>(VirtualView.ToolbarItems ?? new ToolbarItem[0]);
 
 			foreach (ToolbarItem item in toolbarItems)
 			{
