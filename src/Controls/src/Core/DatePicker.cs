@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls
 		}
 		public DateTime? Date
 		{
-			get { return (DateTime)GetValue(DateProperty); }
+			get { return (DateTime?)GetValue(DateProperty); }
 			set { SetValue(DateProperty, value); }
 		}
 
@@ -140,6 +140,8 @@ namespace Microsoft.Maui.Controls
 		static object CoerceDate(BindableObject bindable, object value)
 		{
 			var picker = (DatePicker)bindable;
+			if (value == null)
+				return value;
 			DateTime dateValue = ((DateTime)value).Date;
 
 			if (dateValue > picker.MaximumDate)
