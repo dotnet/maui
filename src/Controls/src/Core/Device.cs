@@ -52,10 +52,8 @@ namespace Microsoft.Maui.Controls
 		public static FlowDirection FlowDirection { get; internal set; }
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static bool IsInvokeRequired
-		{
-			get { return PlatformServices.IsInvokeRequired; }
-		}
+		public static bool IsInvokeRequired =>
+			Application.Current.GetDispatcher().IsInvokeRequired;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IPlatformServices PlatformServices
@@ -85,10 +83,8 @@ namespace Microsoft.Maui.Controls
 			Flags = flags;
 		}
 
-		public static void BeginInvokeOnMainThread(Action action)
-		{
-			PlatformServices.BeginInvokeOnMainThread(action);
-		}
+		public static void BeginInvokeOnMainThread(Action action) =>
+			Application.Current.GetDispatcher().BeginInvokeOnMainThread(action);
 
 		public static Task<T> InvokeOnMainThreadAsync<T>(Func<T> func)
 		{

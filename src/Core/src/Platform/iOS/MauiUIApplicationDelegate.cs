@@ -9,7 +9,7 @@ namespace Microsoft.Maui
 {
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
-		MauiContext _applicationContext = null!;
+		IMauiContext _applicationContext = null!;
 		WeakReference<IWindow>? _virtualWindow;
 
 		internal IWindow? VirtualWindow
@@ -35,7 +35,9 @@ namespace Microsoft.Maui
 
 			Services = mauiApp.Services;
 
-			_applicationContext = new MauiContext(Services, this);
+			var rootContext = new MauiContext(Services);
+
+			_applicationContext = rootContext.MakeScoped(this);
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
 

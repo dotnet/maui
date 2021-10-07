@@ -25,9 +25,9 @@ namespace Microsoft.Maui
 
 			var mauiApp = CreateMauiApp();
 
-			var applicationContext = new MauiContext(mauiApp.Services, this);
+			var rootContext = new MauiContext(mauiApp.Services, this);
 
-			MauiApplicationContext = applicationContext;
+			MauiApplicationContext = rootContext.MakeScoped(this);
 
 			Services = mauiApp.Services;
 

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui
 {
@@ -10,45 +9,23 @@ namespace Microsoft.Maui
 		readonly WrappedServiceProvider _services;
 		readonly IMauiContext? _parent;
 
-#if __ANDROID__
-		public MauiContext(IServiceProvider services, Android.App.Application application, IMauiContext? parent = null)
-			: this(services, (Android.Content.Context)application, parent)
-		{
-			AddSpecific(application);
-		}
-
-		public MauiContext(IServiceProvider services, Android.Content.Context context, IMauiContext? parent = null)
-			: this(services, parent)
-		{
-			AddWeakSpecific(context);
-		}
-#elif __IOS__
-		public MauiContext(IServiceProvider services, UIKit.UIApplicationDelegate application, IMauiContext? parent = null)
-			: this(services, parent)
-		{
-			AddSpecific(application);
-		}
-#elif WINDOWS
-		public MauiContext(IServiceProvider services, UI.Xaml.Application application, IMauiContext? parent = null)
-			: this(services, parent)
-		{
-			AddSpecific(application);
-		}
-#endif
-
 		public MauiContext(IMauiContext parent)
 			: this(parent.Services, parent)
 		{
 		}
 
+#if __ANDROID__
+		public MauiContext(IServiceProvider services, Android.Content.Context context, IMauiContext? parent = null)
+			: this(services, parent)
+		{
+			AddWeakSpecific(context);
+		}
+#endif
+
 		public MauiContext(IServiceProvider services, IMauiContext? parent = null)
 		{
 			_services = new WrappedServiceProvider(services ?? throw new ArgumentNullException(nameof(services)));
 			_parent = parent;
-
-			// the animation manager should only be fetched once per context
-			// TODO: maybe this should be set from outside?
-			AddSpecific(() => services.GetRequiredService<IAnimationManager>());
 		}
 
 		public IServiceProvider Services => _services;
@@ -83,11 +60,28 @@ namespace Microsoft.Maui
 			_services.AddSpecific(typeof(TService), () => lazy.Value);
 		}
 
+		internal void AddSpecific<TService>(Func<IServiceProvider, TService> factory)
+			where TService : class
+		{
+			var lazy = new Lazy<TService>(() => factory(_services));
+
+			_services.AddSpecific(typeof(TService), () => lazy.Value);
+		}
+
 		internal void AddSpecific<TService, TImplementation>(Func<TImplementation> factory)
 			where TService : class
 			where TImplementation : class, TService
 		{
 			var lazy = new Lazy<TImplementation>(() => factory());
+
+			_services.AddSpecific(typeof(TService), () => lazy.Value);
+		}
+
+		internal void AddSpecific<TService, TImplementation>(Func<IServiceProvider, TImplementation> factory)
+			where TService : class
+			where TImplementation : class, TService
+		{
+			var lazy = new Lazy<TImplementation>(() => factory(_services));
 
 			_services.AddSpecific(typeof(TService), () => lazy.Value);
 		}

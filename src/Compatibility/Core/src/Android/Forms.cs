@@ -600,23 +600,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			double _microSize;
 			double _smallSize;
 
-			static Handler s_handler;
-
 			readonly Context _context;
 
 			public AndroidPlatformServices(Context context)
 			{
 				_context = context;
-			}
-
-			public void BeginInvokeOnMainThread(Action action)
-			{
-				if (s_handler == null || s_handler.Looper != Looper.MainLooper)
-				{
-					s_handler = new Handler(Looper.MainLooper);
-				}
-
-				s_handler.Post(action);
 			}
 
 			public Assembly[] GetAssemblies()
@@ -792,14 +780,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				throw new NotImplementedException("GetUserStoreForApplication currently not available https://github.com/dotnet/runtime/issues/52332");
 				//return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
-			}
-
-			public bool IsInvokeRequired
-			{
-				get
-				{
-					return Looper.MainLooper != Looper.MyLooper();
-				}
 			}
 
 			public string RuntimePlatform => Device.Android;

@@ -3,6 +3,8 @@ using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Animations;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui
 {
@@ -70,11 +72,23 @@ namespace Microsoft.Maui
 			return scopedContext;
 		}
 
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext, Android.App.Application nativeApplication)
+		{
+			var scopedContext = new MauiContext(mauiContext.Services, nativeApplication, mauiContext);
+
+			scopedContext.AddSpecific(nativeApplication);
+			scopedContext.AddSpecific(svc => svc.GetRequiredService<IDispatcherProvider>().GetDispatcher(nativeApplication));
+
+			return scopedContext;
+		}
+
 		public static IMauiContext MakeScoped(this IMauiContext mauiContext, Android.App.Activity nativeWindow)
 		{
 			var scopedContext = new MauiContext(mauiContext.Services, nativeWindow, mauiContext);
 
 			scopedContext.AddSpecific(nativeWindow);
+			scopedContext.AddSpecific(svc => svc.GetRequiredService<IAnimationManager>());
+			scopedContext.AddSpecific(svc => svc.GetRequiredService<IDispatcherProvider>().GetDispatcher(nativeWindow));
 
 			return scopedContext;
 		}

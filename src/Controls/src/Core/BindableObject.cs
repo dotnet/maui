@@ -5,17 +5,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
 	public abstract class BindableObject : INotifyPropertyChanged, IDynamicResourceHandler
 	{
-		IDispatcher _dispatcher;
-		public virtual IDispatcher Dispatcher
-		{
-			get => _dispatcher ??= this.GetDispatcher();
-			internal set => _dispatcher = value;
-		}
+		public virtual IDispatcher Dispatcher => this.GetDispatcher();
 
 		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
 		bool _applying;
