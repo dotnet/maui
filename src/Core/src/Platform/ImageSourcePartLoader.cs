@@ -42,17 +42,6 @@ namespace Microsoft.Maui
 			SetImage = setImage;
 		}
 
-		//internal ImageSourcePartLoader(
-		//	IElementHandler handler,
-		//	Func<IImageSource?> imageSource,
-		//	Action<NativeImage?> setImage)
-		//{
-		//	Handler = handler;
-		//	var wrapper = new ImageSourcePartWrapper(imageSource);
-		//	_imageSourcePart = () => wrapper;
-		//	SetImage = setImage;
-		//}
-
 		public void Reset()
 		{
 			SourceManager.Reset();
