@@ -1,3 +1,9 @@
-namespace Maui.Controls.Sample.MacCatalyst
+using UIKit;
 
-static void Main(string[] args) => UIApplication.Main(args, null, typeof(AppDelegate));
+namespace Maui.Controls.Sample.MacCatalyst
+{
+	public class Application
+	{
+		static void Main(string[] args) => UIApplication.Main(args, null, typeof(AppDelegate));
+	}
+}
