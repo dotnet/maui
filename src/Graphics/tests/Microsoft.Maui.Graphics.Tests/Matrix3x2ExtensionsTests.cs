@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Graphics.Tests
 {
-	public class Matrix3x2Extensions
+	public class Matrix3x2ExtensionsTests
 	{
 		public static IEnumerable<object[]> ScaleRotationData()
 		{
@@ -132,6 +132,22 @@ namespace Microsoft.Maui.Graphics.Tests
 			m = m.WithScale(new Vector2(2, 2));
 			Assert.Equal(2, m.GetRotation(), 4);
 			AssertEqual(new Vector2(2, 2), m.GetScale(), 5);
+		}
+
+		[Fact]
+		public void TestAverageScale()
+		{
+			for (float r = 0; r < 3; r += 1f)
+			{
+				var rm = Matrix3x2.CreateRotation(r);
+
+				Assert.Equal(1, (Matrix3x2.CreateScale(1, 1) * rm).GetLengthScale(), 6);
+				Assert.Equal(1, (Matrix3x2.CreateScale(-1, -1) * rm).GetLengthScale(), 6);
+				Assert.Equal(2, (Matrix3x2.CreateScale(2, 2) * rm).GetLengthScale(), 6);
+				Assert.Equal(1.414214f, (Matrix3x2.CreateScale(1, 2) * rm).GetLengthScale(), 5);
+				Assert.Equal(1.414214f, (Matrix3x2.CreateScale(2, 1) * rm).GetLengthScale(), 5);
+				Assert.Equal(1.414214f, (Matrix3x2.CreateScale(-2, 1) * rm).GetLengthScale(), 5);				
+			}
 		}
 
 

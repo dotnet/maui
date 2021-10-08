@@ -377,7 +377,7 @@ namespace Microsoft.Maui.Graphics.GDI
 
 		public void NativeConcatenateTransform(Matrix3x2 transform)
 		{			
-			_scale *= transform.GetAverageScale();			
+			_scale *= transform.GetLengthScale();			
 			var transformMatrix = new Matrix(transform.M11, transform.M12, transform.M21, transform.M22, transform.M31, transform.M32);
 			_graphics.MultiplyTransform(transformMatrix);
 		}

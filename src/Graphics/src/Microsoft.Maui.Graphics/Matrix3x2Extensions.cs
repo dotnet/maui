@@ -127,13 +127,13 @@ namespace Microsoft.Maui.Graphics
 			m.M31 = translation.X;
 			m.M32 = translation.Y;
 			return m;
-		}
+		}		
 
-
-		public static float GetAverageScale(this in Matrix3x2 matrix)
+		public static float GetLengthScale(this in Matrix3x2 matrix)
 		{
-			var s = matrix.GetScale();
-			return (Math.Abs(s.X) + Math.Abs(s.Y)) / 2;
+			var determinant = matrix.GetDeterminant();
+			var areaScale = Math.Abs(determinant);
+			return (float)Math.Sqrt(areaScale);
 		}
 
 		public static void CopyTo(this in Matrix3x2 matrix, float[] dst, int offset = 0, int count = 6)

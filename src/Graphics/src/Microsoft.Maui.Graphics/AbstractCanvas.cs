@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Graphics
 
 		public void ConcatenateTransform(Matrix3x2 transform)
 		{
-			_currentState.Scale *= transform.GetAverageScale();
+			_currentState.Scale *= transform.GetLengthScale();
 
 			_currentState.Transform = transform * _currentState.Transform;
 
