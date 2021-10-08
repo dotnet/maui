@@ -1,4 +1,4 @@
-﻿﻿using Tizen.UIExtensions.Common;
+﻿﻿﻿using Tizen.UIExtensions.Common;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Handlers
@@ -28,6 +28,14 @@ namespace Microsoft.Maui.Handlers
 
 		public override void NativeArrange(Graphics.Rectangle frame)
 		{
+		}
+
+		protected override ContentCanvas CreateNativeView()
+		{
+			var view = base.CreateNativeView();
+			view.BackgroundColor = (DeviceInfo.GetDeviceType() == DeviceType.TV) ? EColor.Transparent : EColor.White;
+
+			return view;
 		}
 	}
 }
