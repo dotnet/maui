@@ -4,9 +4,9 @@
       <Uri>https://github.com/dotnet/installer</Uri>
       <Sha>885ff3819901e75ee1782185a53a3ab4ea6deac8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.101-preview.10.31">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="31.0.101-preview.10.33">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>05ca38c7248b9af926c3c314bb99bf5cc22c3bd3</Sha>
+      <Sha>ad5f6e85b09baf2644b6131667b9631b64ad0cf3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="15.0.101-preview.10.108">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
