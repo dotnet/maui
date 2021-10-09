@@ -225,9 +225,9 @@ namespace Microsoft.Maui.Graphics
 
 		public void ConcatenateTransform(Matrix3x2 transform)
 		{
-			var scale = transform.GetScale();
-			_scaleX *= scale.X;
-			_scaleY *= scale.Y;
+			transform.DeconstructScales(out _, out var sx, out var sy);
+			_scaleX *= sx;
+			_scaleY *= sy;
 			_canvas.ConcatenateTransform(transform);
 		}
 

@@ -7,20 +7,45 @@ namespace Microsoft.Maui.Graphics
 	{
 		public float[] StrokeDashPattern { get; set; }
 		public float StrokeSize { get; set; } = 1;
-		public float Scale { get; set; } = 1;
-		public Matrix3x2 Transform { get; set; }
+
+		private Matrix3x2 _transform = Matrix3x2.Identity;
+		private float _scale = 1;
+		private float _scaleX = 1;
+		private float _scaleY = 1;
+
+		public Matrix3x2 Transform
+		{
+			get => this._transform;
+			set
+			{
+				this._transform = value;
+				value.DeconstructScales(out _scale, out _scaleX, out _scaleY);
+				TransformChanged();
+			}
+		}
+		public float Scale => this._scale;
+		public float ScaleX => this._scaleX;
+		public float ScaleY => this._scaleY;
 
 		protected CanvasState()
 		{
-			Transform = Matrix3x2.Identity;
+			
 		}
 
 		protected CanvasState(CanvasState prototype)
 		{
 			StrokeDashPattern = prototype.StrokeDashPattern;
 			StrokeSize = prototype.StrokeSize;
-			Transform = prototype.Transform;
-			Scale = prototype.Scale;
+
+			this._transform = prototype._transform;
+			this._scale = prototype._scale;
+			this._scaleX = prototype._scaleX;
+			this._scaleY = prototype._scaleY;
+		}
+
+		protected virtual void TransformChanged()
+		{
+			// let derived classes handle the transform change if needed.
 		}
 
 		public virtual void Dispose()

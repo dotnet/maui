@@ -149,6 +149,15 @@ namespace Microsoft.Maui.Graphics
 				dst[offset + 4] = matrix.M31;
 				dst[offset + 5] = matrix.M32;
 			}
-		}		
+		}
+
+		public static void DeconstructScales(this in Matrix3x2 value, out float scale, out float scalex, out float scaley)
+		{
+			var det = value.GetDeterminant();
+			scale = (float)Math.Sqrt(Math.Abs(det));
+			scalex = value.M12 == 0 ? Math.Abs(value.M11) : new Vector2(value.M11, value.M12).Length();
+			scaley = value.M21 == 0 ? Math.Abs(value.M22) : new Vector2(value.M21, value.M22).Length();
+			if (det < 0) scaley = -scaley;
+		}
 	}
 }

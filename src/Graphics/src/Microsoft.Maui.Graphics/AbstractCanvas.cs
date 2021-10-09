@@ -283,8 +283,6 @@ namespace Microsoft.Maui.Graphics
 
 		public void Scale(float fx, float fy)
 		{
-			_currentState.Scale *= fx;
-
 			var transform = _currentState.Transform;
 			transform = Matrix3x2.CreateScale(fx, fy) * transform;
 			_currentState.Transform = transform;
@@ -303,8 +301,6 @@ namespace Microsoft.Maui.Graphics
 
 		public void ConcatenateTransform(Matrix3x2 transform)
 		{
-			_currentState.Scale *= transform.GetLengthScale();
-
 			_currentState.Transform = transform * _currentState.Transform;
 
 			NativeConcatenateTransform(transform);
