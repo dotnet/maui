@@ -6,8 +6,8 @@
              xmlns:vm="clr-namespace:Recipes.ViewModels"
              xmlns:vlv="clr-namespace:Microsoft.Maui.Controls;assembly=Maui.Controls.Sample"
              Title="{Binding Title}" xmlns:local="clr-namespace:Recipes">
-    
-    <Grid RowDefinitions="Auto,Auto,*" Margin="5,5,5,0">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="5,5,5,0" HandlerChanged="OnImageHandlerChanged" >
         
         <SearchBar GridLayout.Row="0" x:Name="searchBar"
                    ios:SearchBar.SearchBarStyle="Default"
@@ -28,15 +28,13 @@
 			SelectionMode="None">
             <vlv:VirtualListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid RowDefinitions="*, Auto" HeightRequest="220" Padding="0,0,0,20" SemanticProperties.Description="{Binding Recipe.RecipeName}">
-
-                        <Grid.GestureRecognizers>
+                    <StackLayout HandlerChanged="OnImageHandlerChanged" HeightRequest="220"  Padding="0,0,0,5" SemanticProperties.Description="{Binding Recipe.RecipeName}">
+                        <StackLayout.GestureRecognizers>
                             <TapGestureRecognizer Tapped="RecipeSearchPage_Tapped" NumberOfTapsRequired="1"  />
-                        </Grid.GestureRecognizers>
-
-                        <Image Source="{Binding Recipe.ImageUrl}" VerticalOptions="FillAndExpand" Aspect="AspectFill"/>
-                        <Label Grid.Row="1"  x:Name="recipeName" Padding="10" Text="{Binding Recipe.RecipeName}" LineBreakMode="WordWrap" MaxLines="3" Style="{DynamicResource ListItemTextStyle}" FontSize="16" VerticalTextAlignment="Center" FontAttributes="Bold" />
-                    </Grid>
+                        </StackLayout.GestureRecognizers>
+                        <Image Source="{Binding Recipe.ImageUrl}" Aspect="AspectFill"/>
+                        <Label x:Name="recipeName" Padding="10" Text="{Binding Recipe.RecipeName}" LineBreakMode="WordWrap" MaxLines="3" Style="{DynamicResource ListItemTextStyle}" FontSize="16" FontAttributes="Bold" />
+                    </StackLayout>
                 </DataTemplate>
             </vlv:VirtualListView.ItemTemplate>
         </vlv:VirtualListView>
