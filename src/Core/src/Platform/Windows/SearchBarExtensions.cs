@@ -73,6 +73,14 @@ namespace Microsoft.Maui
 				nativeControl.Text = currentControlText.Substring(0, searchBar.MaxLength);
 		}
 
+		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiTextBox? queryTextBox)
+		{
+			if (queryTextBox == null)
+				return;
+
+			queryTextBox.IsTextPredictionEnabled = searchBar.IsTextPredictionEnabled;
+		}
+
 		public static void UpdateCancelButtonColor(this AutoSuggestBox nativeControl, ISearchBar searchBar, MauiCancelButton? cancelButton, Brush? defaultDeleteButtonBackgroundColorBrush, Brush? defaultDeleteButtonForegroundColorBrush)
 		{
 			if (cancelButton == null || !cancelButton.IsReady)

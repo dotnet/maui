@@ -48,6 +48,16 @@
             <SearchBar
                 SearchCommand="{Binding SearchCommand}"
                 SearchCommandParameter="SearchCommandParameter"/>
+            <Label
+                Text="IsTextPredictionEnabled=True"
+                Style="{StaticResource Headline}"/>
+            <SearchBar
+                IsTextPredictionEnabled="True"/>
+            <Label
+                Text="IsTextPredictionEnabled=False"
+                Style="{StaticResource Headline}"/>
+            <SearchBar
+                IsTextPredictionEnabled="False"/>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
