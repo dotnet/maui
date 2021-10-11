@@ -10,7 +10,7 @@
                 <GradientStop Color="White" Offset="0" />
                 <GradientStop Color="{StaticResource Primary}" Offset="1.0" />
             </LinearGradientBrush>
-            <Style TargetType="Button">
+            <Style TargetType="Button" x:Key="DefaultButtonStyle">
                 <Setter Property="FontSize" Value="16"/>
                 <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light=Black}"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
@@ -30,6 +30,8 @@
                     </VisualStateGroupList>
                 </Setter>
             </Style>
+            <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+            </Style>
             <Style TargetType="Label">
                 <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light=Black}"/>
             </Style>
@@ -37,6 +39,14 @@
                 <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light=Black}"/>
                 <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=Black, Light=White}"></Setter>
                 <Setter Property="PlaceholderColor" Value="Gray"></Setter>
+            </Style>
+
+
+            <Style TargetType="Button" x:Key="RecipeCategoryButtonStyle" BasedOn="{StaticResource DefaultButtonStyle}">
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="ContentLayout" Value="Top,0"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+                <Setter Property="Padding" Value="5,10"/>
             </Style>
 
         </ResourceDictionary>
