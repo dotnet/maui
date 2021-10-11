@@ -19,7 +19,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			var editText = new AppCompatEditText(Context)
 			{
-				ImeOptions = ImeAction.Done
+				ImeOptions = ImeAction.Done,
+				InputType = Android.Text.InputTypes.TextFlagMultiLine
 			};
 
 			editText.SetSingleLine(false);

@@ -301,12 +301,12 @@ namespace Microsoft.Maui
 		{
 			if (editor.IsReadOnly)
 			{
-				editText.InputType = InputTypes.Null;
+				editText.InputType = InputTypes.Null | Android.Text.InputTypes.TextFlagMultiLine;
 			}
 			else
 			{
 				var keyboard = editor.Keyboard;
-				var nativeInputTypeToUpdate = keyboard.ToInputType();
+				var nativeInputTypeToUpdate = keyboard.ToInputType() | Android.Text.InputTypes.TextFlagMultiLine;
 
 				if (keyboard is not CustomKeyboard)
 				{
