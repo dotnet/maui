@@ -1,7 +1,7 @@
 <Project>
   <!-- This is for arcade support. -->
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="$(RepositoryEngineeringDir)TargetFrameworkDefaults.props" />
+  <Import Project="eng\TargetFrameworkDefaults.props" />
   <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
     <!--    
       When building using source-build the process is:
