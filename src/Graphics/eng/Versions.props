@@ -1,6 +1,9 @@
 <Project>
-  <!--Package versions-->
-  <PropertyGroup>
+ <PropertyGroup>
+     <!-- This repo version -->
+    <VersionPrefix>6.0.101</VersionPrefix>
+    <PreReleaseVersionLabel>preview.10</PreReleaseVersionLabel>
+    <!--Package versions-->
     <MicrosoftDotnetSdkInternalPackageVersion>6.0.100-rc.1.21426.23</MicrosoftDotnetSdkInternalPackageVersion>
     <MicrosoftAndroidSdkWindowsPackageVersion>31.0.100-rc.1.12</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.10.108</MicrosoftMacCatalystSdkPackageVersion>

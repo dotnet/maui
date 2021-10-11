@@ -1,4 +1,6 @@
 <Project>
+  <!-- This is for arcade support. -->
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="eng\Git.Build.targets" />
   <Import Project="eng\Version.targets" />
   <!-- Temporarily disable the linker for net6.0-ios and net6.0-maccatalyst until we get machine pools with Big Sur and Xcode 12.5 is stable -->
