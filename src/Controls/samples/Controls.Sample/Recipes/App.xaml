@@ -6,14 +6,13 @@
     <Application.Resources>
         <ResourceDictionary>
             <Color x:Key="Primary">#2BB0ED</Color>
-            <Color x:Key="Background">#F2F7FF</Color>
             <LinearGradientBrush x:Key="BlueGradient" StartPoint="0,0" EndPoint="1,1">
                 <GradientStop Color="White" Offset="0" />
                 <GradientStop Color="{StaticResource Primary}" Offset="1.0" />
             </LinearGradientBrush>
             <Style TargetType="Button">
                 <Setter Property="FontSize" Value="16"/>
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light=Black}"/>
                 <Setter Property="VisualStateManager.VisualStateGroups">
                     <VisualStateGroupList>
                         <VisualStateGroup x:Name="CommonStates">
@@ -30,6 +29,14 @@
                         </VisualStateGroup>
                     </VisualStateGroupList>
                 </Setter>
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light=Black}"/>
+            </Style>
+            <Style TargetType="SearchBar">
+                <Setter Property="TextColor" Value="{AppThemeBinding Dark=White, Light=Black}"/>
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Dark=Black, Light=White}"></Setter>
+                <Setter Property="PlaceholderColor" Value="Gray"></Setter>
             </Style>
 
         </ResourceDictionary>
