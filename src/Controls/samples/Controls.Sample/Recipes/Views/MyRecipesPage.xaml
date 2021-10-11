@@ -16,7 +16,7 @@
         <ToolbarItem Text="New" Command="{Binding NewItemCommand}" />
     </ContentPage.ToolbarItems>
     <StackLayout Margin="20">
-        <Label Text="Your recipes" SemanticProperties.HeadingLevel="Level1" FontSize="30" FontAttributes="Bold" TextColor="Black"/>
+        <Label Text="Your recipes" SemanticProperties.HeadingLevel="Level1" FontSize="30" FontAttributes="Bold"/>
         <vlv:VirtualListView
             x:Name="vMyRecipesListView"
             WidthRequest="350"
@@ -38,7 +38,7 @@
                                 <TapGestureRecognizer Tapped="MyRecipesPage_Tapped" NumberOfTapsRequired="1"  />
                             </Grid.GestureRecognizers>
                             <Image Source="{Binding ImageUrl}" VerticalOptions="FillAndExpand" WidthRequest="340" Aspect="AspectFill"/>
-                            <Label Grid.Row="1"  x:Name="recipeName" Padding="10" Text="{Binding RecipeName}" LineBreakMode="WordWrap" MaxLines="3" Style="{DynamicResource ListItemTextStyle}" FontSize="24" VerticalTextAlignment="Center" TextColor="Black" FontAttributes="Bold" BackgroundColor="White" />
+                            <Label Grid.Row="1"  x:Name="recipeName" Padding="10" Text="{Binding RecipeName}" LineBreakMode="WordWrap" MaxLines="3" Style="{DynamicResource ListItemTextStyle}" FontSize="24" VerticalTextAlignment="Center" FontAttributes="Bold" />
                         </Grid>
                     </vlv:VirtualViewCell>
                 </DataTemplate>

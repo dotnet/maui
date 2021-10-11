@@ -11,12 +11,9 @@
         
         <SearchBar GridLayout.Row="0" x:Name="searchBar"
                    ios:SearchBar.SearchBarStyle="Default"
-                   BackgroundColor="White"
                    Placeholder="Search recipes"
                    CancelButtonColor="{StaticResource Primary}"
                    Text="{Binding SearchQuery}"
-                   PlaceholderColor="Gray"
-                   TextColor="Black"
                    SearchCommand="{Binding SearchCommand}"
                    SearchCommandParameter="{Binding Text, Source={x:Reference searchBar}}"/>
         
@@ -38,7 +35,7 @@
                         </Grid.GestureRecognizers>
 
                         <Image Source="{Binding Recipe.ImageUrl}" VerticalOptions="FillAndExpand" Aspect="AspectFill"/>
-                        <Label Grid.Row="1"  x:Name="recipeName" Padding="10" Text="{Binding Recipe.RecipeName}" LineBreakMode="WordWrap" MaxLines="3" Style="{DynamicResource ListItemTextStyle}" FontSize="16" VerticalTextAlignment="Center" TextColor="Black" FontAttributes="Bold" BackgroundColor="White"/>
+                        <Label Grid.Row="1"  x:Name="recipeName" Padding="10" Text="{Binding Recipe.RecipeName}" LineBreakMode="WordWrap" MaxLines="3" Style="{DynamicResource ListItemTextStyle}" FontSize="16" VerticalTextAlignment="Center" FontAttributes="Bold" />
                     </Grid>
                 </DataTemplate>
             </vlv:VirtualListView.ItemTemplate>

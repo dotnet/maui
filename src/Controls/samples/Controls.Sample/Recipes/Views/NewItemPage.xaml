@@ -19,10 +19,10 @@
             <Label FontSize="25" FontAttributes="Bold" Text="New recipe" SemanticProperties.HeadingLevel="Level1" Margin="15" TextColor="Black"/>
             <ScrollView Grid.Row="1">
                 <StackLayout>
-                    <Entry Placeholder="Recipe Name" PlaceholderColor="{StaticResource Primary}" BackgroundColor="White" Text="{Binding RecipeName, Mode=TwoWay}" IsSpellCheckEnabled="false" />
-                    <Entry Placeholder="Image URL" PlaceholderColor="{StaticResource Primary}" BackgroundColor="White" Text="{Binding ImageUrl, Mode=TwoWay}" IsSpellCheckEnabled="false" />
-                    <Editor Placeholder="Ingredients" PlaceholderColor="{StaticResource Primary}" BackgroundColor="White" Text="{Binding Ingredients, Mode=TwoWay}" IsSpellCheckEnabled="false" />
-                    <Editor Placeholder="Recipe" PlaceholderColor="{StaticResource Primary}" BackgroundColor="White" Text="{Binding RecipeBody, Mode=TwoWay}" IsSpellCheckEnabled="false" />
+                    <Entry Placeholder="Recipe Name" PlaceholderColor="{StaticResource Primary}" Text="{Binding RecipeName, Mode=TwoWay}" IsSpellCheckEnabled="false" />
+                    <Entry Placeholder="Image URL" PlaceholderColor="{StaticResource Primary}" Text="{Binding ImageUrl, Mode=TwoWay}" IsSpellCheckEnabled="false" />
+                    <Editor Placeholder="Ingredients" PlaceholderColor="{StaticResource Primary}" Text="{Binding Ingredients, Mode=TwoWay}" IsSpellCheckEnabled="false" />
+                    <Editor Placeholder="Recipe" PlaceholderColor="{StaticResource Primary}" Text="{Binding RecipeBody, Mode=TwoWay}" IsSpellCheckEnabled="false" />
                 </StackLayout>
             </ScrollView>
             <StackLayout Grid.Row="2" Orientation="Horizontal">
