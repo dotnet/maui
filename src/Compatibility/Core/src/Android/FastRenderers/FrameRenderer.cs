@@ -67,8 +67,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			Measure(widthMeasureSpec, heightMeasureSpec);
-			return new SizeRequest(new Size(MeasuredWidth, MeasuredHeight));
+			Context context = Context;
+			return new SizeRequest(new Size(context.ToPixels(20), context.ToPixels(20)));
 		}
 
 		void IVisualElementRenderer.SetElement(VisualElement element)
@@ -197,6 +197,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		{
 			if (Element == null)
 				return;
+
+			System.Diagnostics.Debug.WriteLine($">>>>>> FR OnLayout, {left}, {top}, {right}, {bottom}");
 
 			var children = ((IElementController)Element).LogicalChildren;
 			for (var i = 0; i < children.Count; i++)
