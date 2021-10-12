@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		/// </summary>
 		public BlazorWebView()
 		{
-			Dispatcher = new WindowsFormsDispatcher(this);
+			ComponentsDispatcher = new WindowsFormsDispatcher(this);
 
 			RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
 
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 		/// </summary>
 		public WebView2WebViewManager WebViewManager => _webviewManager;
 
-		private WindowsFormsDispatcher Dispatcher { get; }
+		private WindowsFormsDispatcher ComponentsDispatcher { get; }
 
 		/// <inheritdoc />
 		protected override void OnCreateControl()
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
 			var fileProvider = new PhysicalFileProvider(contentRootDir);
 
-			_webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, Dispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			_webviewManager = new WebView2WebViewManager(new WindowsFormsWebView2Wrapper(_webview), Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
 
 			foreach (var rootComponent in RootComponents)
 			{
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			if (_webviewManager != null)
 			{
 				// Dispatch because this is going to be async, and we want to catch any errors
-				_ = Dispatcher.InvokeAsync(async () =>
+				_ = ComponentsDispatcher.InvokeAsync(async () =>
 				{
 					var newItems = eventArgs.NewItems.Cast<RootComponent>();
 					var oldItems = eventArgs.OldItems.Cast<RootComponent>();

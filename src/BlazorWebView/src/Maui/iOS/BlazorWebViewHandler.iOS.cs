@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var mauiAssetFileProvider = new iOSMauiAssetFileProvider(contentRootDir);
 
-			_webviewManager = new IOSWebViewManager(this, NativeView, Services!, MauiDispatcher.Instance, mauiAssetFileProvider, VirtualView.JSComponents, hostPageRelativePath);
+			_webviewManager = new IOSWebViewManager(this, NativeView, Services!, ComponentsDispatcher, mauiAssetFileProvider, VirtualView.JSComponents, hostPageRelativePath);
 
 			if (RootComponents != null)
 			{
