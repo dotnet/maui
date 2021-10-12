@@ -54,8 +54,12 @@ namespace Recipes.Platforms
 			public override void OnInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfoCompat info)
 			{
 				base.OnInitializeAccessibilityNodeInfo(host, info);
-				info.SetCollectionInfo(AccessibilityNodeInfoCompat.CollectionInfoCompat.Obtain(ItemCount, 1, false,
-					(int)global::Android.Views.Accessibility.SelectionMode.None));
+
+				// Disabling the count behavior for now as it seems like Android by default doesn't want to you 
+				// to provide counts when using linear layouts
+
+				//info.SetCollectionInfo(AccessibilityNodeInfoCompat.CollectionInfoCompat.Obtain(ItemCount, 1, false,
+				//	(int)global::Android.Views.Accessibility.SelectionMode.None));
 			}
 
 			public override AccessibilityDelegateCompat GetItemDelegate()
@@ -75,32 +79,35 @@ namespace Recipes.Platforms
 				public override void OnInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfoCompat info)
 				{
 					base.OnInitializeAccessibilityNodeInfo(host, info);
-					
-					var adapter = _recyclerViewDelegate.RecipesVirtualListViewHandler.VirtualView?.Adapter;
 
-					if (host is RvViewContainer container && adapter != null &&
-						container.VirtualView is Microsoft.Maui.Controls.BindableObject bo)
-					{
-						// TODO HACK RECIPES
-						int i = 0;
-						for(int j = 0; j < _recyclerViewDelegate.ItemCount; j++)
-						{
-							var data = adapter.DataFor(PositionKind.Item, 0, j);
-							if (data == bo.BindingContext)
-							{
-								i = j;
-								break;
-							}
-						}
+					// Disabling the count behavior for now as it seems like Android by default doesn't want to you 
+					// to provide counts when using linear layouts
 
-						var count = _recyclerViewDelegate.RecyclerView.ChildCount;
-						bool isHeading = count == info.DrawingOrder;
-						info.Heading = isHeading;
+					//var adapter = _recyclerViewDelegate.RecipesVirtualListViewHandler.VirtualView?.Adapter;
 
-						// TODO RECIPES
-						// This breaks header navigation
-						//info.SetCollectionItemInfo(AccessibilityNodeInfoCompat.CollectionItemInfoCompat.Obtain(i, 1, 0, 1, isHeading, false));
-					}
+					//if (host is RvViewContainer container && adapter != null &&
+					//	container.VirtualView is Microsoft.Maui.Controls.BindableObject bo)
+					//{
+					//	// TODO HACK RECIPES
+					//	int i = 0;
+					//	for(int j = 0; j < _recyclerViewDelegate.ItemCount; j++)
+					//	{
+					//		var data = adapter.DataFor(PositionKind.Item, 0, j);
+					//		if (data == bo.BindingContext)
+					//		{
+					//			i = j;
+					//			break;
+					//		}
+					//	}
+
+					//	var count = _recyclerViewDelegate.RecyclerView.ChildCount;
+					//	bool isHeading = count == info.DrawingOrder;
+					//	info.Heading = isHeading;
+
+					//	// TODO RECIPES
+					//	// This breaks header navigation
+					//	//info.SetCollectionItemInfo(AccessibilityNodeInfoCompat.CollectionItemInfoCompat.Obtain(i, 1, 0, 1, isHeading, false));
+					//}
 				}
 			}
 		}
