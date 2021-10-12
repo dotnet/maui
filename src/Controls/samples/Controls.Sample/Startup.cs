@@ -210,9 +210,20 @@ namespace Maui.Controls.Sample
 					}
 				});
 
+#if ANDROID
+			appBuilder.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler<VirtualListView, Recipes.Platforms.RecipesVirtualListViewHandler>();
+				handlers.AddHandler<IVirtualListView, Recipes.Platforms.RecipesVirtualListViewHandler>();
+			});
+#endif
+
 			return appBuilder
 #if (__ANDROID__ || __IOS__ || WINDOWS) && !MACCATALYST
 				.UseVirtualListView()
+
+
+
 #endif
 				.Build();
 		}

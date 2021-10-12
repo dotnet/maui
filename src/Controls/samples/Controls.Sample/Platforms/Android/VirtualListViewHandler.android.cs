@@ -1,4 +1,6 @@
 ﻿using Android.Views;
+using Android.Views.Accessibility;
+using AndroidX.Core.View.Accessibility;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Handlers;
 using System;
@@ -17,7 +19,7 @@ namespace Microsoft.Maui
 
 		protected override void ConnectHandler(RecyclerView nativeView)
 		{
-			layoutManager = new LinearLayoutManager(Context);
+			layoutManager = new Recipes.Platforms.RecipesLinearLayoutManager(Context);
 			//layoutManager.Orientation = LinearLayoutManager.Horizontal;
 
 			positionalViewSelector = new PositionalViewSelector(VirtualView);
