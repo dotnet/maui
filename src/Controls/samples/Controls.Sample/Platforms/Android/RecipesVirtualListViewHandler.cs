@@ -93,8 +93,13 @@ namespace Recipes.Platforms
 							}
 						}
 
-						//TODO MAUI it seems like there's a bug with recycler view scrolling?
-						//info.SetCollectionItemInfo(AccessibilityNodeInfoCompat.CollectionItemInfoCompat.Obtain(i, 1, 0, 1, false, false));
+						var count = _recyclerViewDelegate.RecyclerView.ChildCount;
+						bool isHeading = count == info.DrawingOrder;
+						info.Heading = isHeading;
+
+						// TODO RECIPES
+						// This breaks header navigation
+						//info.SetCollectionItemInfo(AccessibilityNodeInfoCompat.CollectionItemInfoCompat.Obtain(i, 1, 0, 1, isHeading, false));
 					}
 				}
 			}
