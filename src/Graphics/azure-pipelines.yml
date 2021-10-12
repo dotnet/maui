@@ -132,7 +132,7 @@ stages:
 
             - pwsh: |
                 Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-                .\workload-install.ps1
+                .\workload-install.ps1 -DotnetInstallDir 'bin\dotnet'
               displayName: install tizen
 
             - pwsh: |
