@@ -198,8 +198,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			if (Element == null)
 				return;
 
-			System.Diagnostics.Debug.WriteLine($">>>>>> FR OnLayout, {left}, {top}, {right}, {bottom}");
-
 			var children = ((IElementController)Element).LogicalChildren;
 			for (var i = 0; i < children.Count; i++)
 			{
