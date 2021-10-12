@@ -33,6 +33,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(ImagePage), "Image",
 				"Displays an image."),
 
+			new SectionModel(typeof(IndicatorPage), "IndicatorView",
+				"IndicatorView displays indicators. It can also represent the number of items in a CarouselView. Set the CarouselView.IndicatorView property to the IndicatorView object to display indicators for the CarouselView."),
+
 			new SectionModel(typeof(LabelPage), "Label",
 				"The Label view is used for displaying text, both single and multi-line."),
 
@@ -62,9 +65,6 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(TimePickerPage), "TimePicker",
 				"A view that allows the user to select a time."),
-
-			new SectionModel(typeof(IndicatorPage), "IndicatorView",
-				"IndicatorView displays indicators. It can also represent the number of items in a CarouselView. Set the CarouselView.IndicatorView property to the IndicatorView object to display indicators for the CarouselView."),
 
 	  new SectionModel(typeof(WebViewPage), "WebView",
 				"WebView is a view for displaying web and HTML content in your app.")
