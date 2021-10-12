@@ -16,19 +16,19 @@
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
 
-            <Label FontSize="25" FontAttributes="Bold" Text="Edit recipe" Margin="15" />
-                <Grid Grid.Row="1"  RowDefinitions="Auto,Auto,*,*,Auto">
-                    <Entry Grid.Row="0"  Placeholder="Recipe Name" PlaceholderColor="{StaticResource Primary}" Text="{Binding RecipeName, Mode=TwoWay}" IsSpellCheckEnabled="false" />
-                    <Entry Grid.Row="1" Placeholder="Image URL" PlaceholderColor="{StaticResource Primary}" Text="{Binding ImageUrl, Mode=TwoWay}" IsSpellCheckEnabled="false" />
-                <Editor AutoSize="TextChanges" Grid.Row="2" Placeholder="Ingredients" PlaceholderColor="{StaticResource Primary}" Text="{Binding Ingredients, Mode=TwoWay}" IsSpellCheckEnabled="false" />
-                    <Editor AutoSize="TextChanges" Grid.Row="3" Placeholder="Recipe" PlaceholderColor="{StaticResource Primary}" Text="{Binding RecipeBody, Mode=TwoWay}" IsSpellCheckEnabled="false" />
-                    <Label Grid.Row="4" FontSize="Small" FormattedText="{Binding RecipeUrl}" FontAttributes="Italic" TextColor="Gray" />
-                </Grid>
-            <StackLayout Grid.Row="2" Orientation="Horizontal">
-                <Button Text="Cancel" Command="{Binding CancelCommand}" BackgroundColor="LightGray" HorizontalOptions="FillAndExpand"/>
-                <Button Text="Delete" Command="{Binding DeleteCommand}" BackgroundColor="#BF2E2E" HorizontalOptions="FillAndExpand"/>
-                <Button Text="Update" Command="{Binding UpdateCommand}" HorizontalOptions="FillAndExpand"/>
-            </StackLayout>
+            <Label FontSize="25" FontAttributes="Bold" Text="Edit recipe" />
+            <Grid Grid.Row="1"  RowDefinitions="Auto,Auto,*,*,Auto">
+                <Entry Grid.Row="0"  Placeholder="Recipe Name" PlaceholderColor="{StaticResource Primary}" Text="{Binding RecipeName, Mode=TwoWay}" IsSpellCheckEnabled="false" />
+                <Entry Grid.Row="1" Placeholder="Image URL" PlaceholderColor="{StaticResource Primary}" Text="{Binding ImageUrl, Mode=TwoWay}" IsSpellCheckEnabled="false" />
+                <Editor Grid.Row="2" Placeholder="Ingredients" PlaceholderColor="{StaticResource Primary}" Text="{Binding Ingredients, Mode=TwoWay}" IsSpellCheckEnabled="false" />
+                <Editor Grid.Row="3" Placeholder="Recipe" PlaceholderColor="{StaticResource Primary}" Text="{Binding RecipeBody, Mode=TwoWay}" IsSpellCheckEnabled="false" />
+                <Label Grid.Row="4" FontSize="Small" FormattedText="{Binding RecipeUrl}" FontAttributes="Italic" TextColor="Gray" />
+            </Grid>
+            <FlexLayout Grid.Row="2" AlignItems="Center" JustifyContent="SpaceEvenly">
+                <Button Padding="5" Text="Cancel" Command="{Binding CancelCommand}" BackgroundColor="LightGray" HorizontalOptions="FillAndExpand"/>
+                <Button Padding="5" Text="Delete" Command="{Binding DeleteCommand}" BackgroundColor="#BF2E2E" HorizontalOptions="FillAndExpand"/>
+                <Button Padding="5" Text="Update" Command="{Binding UpdateCommand}" HorizontalOptions="FillAndExpand"/>
+            </FlexLayout>
         </Grid>
     </ContentPage.Content>
 </ContentPage>

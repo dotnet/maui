@@ -25,10 +25,10 @@
                     <Editor Placeholder="Recipe" PlaceholderColor="{StaticResource Primary}" Text="{Binding RecipeBody, Mode=TwoWay}" IsSpellCheckEnabled="false" />
                 </StackLayout>
             </ScrollView>
-            <StackLayout Grid.Row="2" Orientation="Horizontal">
+            <FlexLayout Grid.Row="2" AlignItems="Center" JustifyContent="SpaceEvenly">
                 <Button Text="Cancel" SemanticProperties.HeadingLevel="Level2" Command="{Binding CancelCommand}" BackgroundColor="LightGray" HorizontalOptions="FillAndExpand"/>
                 <Button Text="Save" SemanticProperties.HeadingLevel="Level2" Command="{Binding SaveCommand}" HorizontalOptions="FillAndExpand"/>
-            </StackLayout>
+            </FlexLayout>
         </Grid>
     </ContentPage.Content>
 </ContentPage>

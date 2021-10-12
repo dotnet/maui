@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(nativeView);
 
-			nativeView.Changed += OnChanged;
 			nativeView.ShouldChangeText += OnShouldChangeText;
 			nativeView.Ended += OnEnded;
 			nativeView.TextPropertySet += OnTextPropertySet;
@@ -32,7 +31,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.DisconnectHandler(nativeView);
 
-			nativeView.Changed -= OnChanged;
 			nativeView.ShouldChangeText -= OnShouldChangeText;
 			nativeView.Ended -= OnEnded;
 			nativeView.TextPropertySet -= OnTextPropertySet;
@@ -99,8 +97,6 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.UpdateFont(editor, fontManager);
 		}
 
-		void OnChanged(object? sender, EventArgs e) => OnTextChanged();
-
 		void OnTextChanged()
 		{
 			if (NativeView == null)
@@ -142,6 +138,7 @@ namespace Microsoft.Maui.Handlers
 		void OnTextPropertySet(object? sender, EventArgs e)
 		{
 			VirtualView.UpdateText(NativeView.Text);
+			NativeView.HidePlaceholder(!string.IsNullOrEmpty(NativeView.Text));
 		}
 
 		public static void MapKeyboard(EditorHandler handler, IEditor editor)

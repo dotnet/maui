@@ -9,12 +9,13 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="2.5*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="6*" />
         </Grid.RowDefinitions>
 
-        <Label Grid.Column="0" Grid.Row="0" Text="Find the recipe for you" SemanticProperties.HeadingLevel="Level1" FontSize="50" FontAttributes="Bold" Margin="15,15,15,0" />
+        <Label Grid.Column="0" Grid.Row="0" Text="Find the recipe for you"
+               SemanticProperties.HeadingLevel="Level1" FontAttributes="Bold" Margin="15,15,15,0" />
         <SearchBar Grid.Column="0" Grid.Row="1"
                    x:Name="searchBar"
                    ios:SearchBar.SearchBarStyle="Default"
@@ -25,7 +26,10 @@
                    SearchCommand="{Binding SearchCommand}"
                    SearchCommandParameter="{Binding Text, Source={x:Reference searchBar}}"/>
         
-        <Label Grid.Column="0" Grid.Row="2" Text="{Binding NoResultsLabel}" IsVisible="{Binding NoResultsVisible}" Padding="20,0,20,0" HorizontalTextAlignment="Center" FontAttributes="Italic" TextColor="{StaticResource Primary}"/>
+        <Label Grid.Column="0" Grid.Row="2" Text="{Binding NoResultsLabel}"
+               IsVisible="{Binding NoResultsVisible}"
+               Padding="20,0,20,0" HorizontalTextAlignment="Center"
+               FontAttributes="Italic" TextColor="{StaticResource Primary}"/>
         
         <Grid Grid.Column="0" Grid.Row="2" Margin="20,5" IsVisible="{Binding RecipeTypeButtonsVisible}">
             <Grid.ColumnDefinitions>
@@ -38,7 +42,7 @@
                 <RowDefinition Height="4.5*" />
             </Grid.RowDefinitions>
 
-            <Label Grid.Column="0" Grid.Row="0" Text="Search by meal type" SemanticProperties.HeadingLevel="Level2" FontAttributes="Bold" FontSize="20"/>
+            <Label Grid.Column="0" Grid.Row="0" Text="Search by meal type" SemanticProperties.HeadingLevel="Level2" FontAttributes="Bold"/>
             <ScrollView Grid.Column="0" Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
                 <StackLayout Orientation="Horizontal" Spacing="10" Padding="0,5">
                     <Button Text="Breakfast" ImageSource="breakfast.png" Command="{Binding FilteredSearchCommand}" CommandParameter="mealType=breakfast" Style="{StaticResource RecipeCategoryButtonStyle}" />
@@ -50,7 +54,7 @@
                 </StackLayout>
             </ScrollView>
 
-            <Label Grid.Column="0" Grid.Row="2" Text="Search by diet" SemanticProperties.HeadingLevel="Level2" FontAttributes="Bold" FontSize="20"/>
+            <Label Grid.Column="0" Grid.Row="2" Text="Search by diet" SemanticProperties.HeadingLevel="Level2" FontAttributes="Bold"/>
             <ScrollView Grid.Column="0" Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,10">
                 <StackLayout Orientation="Horizontal" Spacing="10" Padding="0,5">
                     <Button Text="Balanced" ImageSource="balanced.png" Command="{Binding FilteredSearchCommand}" CommandParameter="diet=balanced" Style="{StaticResource RecipeCategoryButtonStyle}"/>
