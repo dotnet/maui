@@ -96,9 +96,7 @@ stages:
             - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
               displayName: 'Install .NET'
 
-            - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-              displayName: 'Build .NET Maui'
-
+           
             # - pwsh: |
             #     $ProgressPreference = 'SilentlyContinue'
             #     Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
@@ -143,11 +141,15 @@ stages:
                 & $msbuild /r ./build/Build.Microsoft.Maui.Graphics.Windows.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}.binlog
               displayName: build classic solutions
 
-            - pwsh: |
-                $vs = & dotnet vs where --preview --prop=InstallationPath
-                $msbuild = "$vs\MSBuild\Current\Bin\MSBuild.exe"
-                & $msbuild /r ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}-net6.binlog
-              displayName: build net6 solutions
+            - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+              displayName: 'Build .NET Maui'
+
+
+            # - pwsh: |
+            #     $vs = & dotnet vs where --preview --prop=InstallationPath
+            #     $msbuild = "$vs\MSBuild\Current\Bin\MSBuild.exe"
+            #     & $msbuild /r ./Microsoft.Maui.Graphics-net6.sln /p:Configuration=${{ BuildConfiguration }} /bl:$(Build.ArtifactStagingDirectory)/${{ BuildConfiguration }}-net6.binlog
+            #   displayName: build net6 solutions
 
             - task: NuGetCommand@2
               displayName: 'Pack nupkg'
