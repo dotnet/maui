@@ -24,7 +24,7 @@ namespace Maui.Controls.Sample.Pages
 		void ShowNewWindow(object sender, EventArgs e)
 		{
 			var mvm = _services.GetService<MainViewModel>();
-			Application.Current.OpenWindow(new Window(new MainPage(_services, mvm)));
+			Application.Current.OpenWindow(new Window(new NavigationPage(new MainPage(_services, mvm))));
 		}
 	}
 }
