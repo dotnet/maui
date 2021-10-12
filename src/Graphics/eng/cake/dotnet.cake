@@ -3,6 +3,7 @@
 var ext = IsRunningOnWindows() ? ".exe" : "";
 var dotnetPath = $"./bin/dotnet/dotnet{ext}";
 var dotnetProjectPath = "./build/DotNet/DotNet.csproj";
+var graphicsSln = "Microsoft.Maui.Graphics-net6.sln";
 
 // Tasks for CI
 
@@ -10,7 +11,7 @@ Task("dotnet")
     .Description("Provisions .NET 6 into bin/dotnet based on eng/Versions.props")
     .Does(() =>
     {
-          Information("Provisions");
+        Information("Provisions");
         // if (!localDotnet) 
         //     return;
 
@@ -21,6 +22,15 @@ Task("dotnet")
                 .SetConfiguration(configuration),
         });
     });
+
+Task("dotnet-build")
+    .IsDependentOn("dotnet")
+    .Description("Build the solutions")
+    .Does(() =>
+    {
+        RunMSBuildWithDotNet(graphicsSln);
+    });
+
 
 Task("dotnet-local-workloads")
     .Does(() =>

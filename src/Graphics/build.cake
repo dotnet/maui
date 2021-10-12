@@ -65,4 +65,4 @@ if(String.IsNullOrWhiteSpace(target))
 // EXECUTION
 //////////////////////////////////////////////////////////////////////
 
-RunTarget("dotnet");
+RunTarget(target);

@@ -4,5 +4,8 @@
     "Microsoft.Build.NoTargets": "2.0.1",
     "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.21508.1",
     "Microsoft.DotNet.Helix.Sdk": "7.0.0-beta.21508.1"
+  },
+  "sdk": {
+    "version": "6.0.100-rtm.21476.2"
   }
 }
