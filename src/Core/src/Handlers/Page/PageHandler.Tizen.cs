@@ -1,4 +1,4 @@
-﻿﻿﻿using Tizen.UIExtensions.Common;
+﻿﻿﻿﻿using Tizen.UIExtensions.Common;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Handlers
@@ -28,9 +28,15 @@ namespace Microsoft.Maui.Handlers
 
 		public override void NativeArrange(Graphics.Rectangle frame)
 		{
+			handler.UpdateValue(nameof(handler.ContainerView));
+			if (page.Background != null && handler.NativeView.BackgroundColor != EColor.Transparent)
+			{
+				handler.NativeView.BackgroundColor = EColor.Transparent;
+			}
+			handler.GetWrappedNativeView()?.UpdateBackground(page);
 		}
 
-		protected override ContentCanvas CreateNativeView()
+		public static void MapTitle(PageHandler handler, IContentView page)
 		{
 			var view = base.CreateNativeView();
 			view.BackgroundColor = (DeviceInfo.GetDeviceType() == DeviceType.TV) ? EColor.Transparent : EColor.White;
