@@ -93,13 +93,16 @@ stages:
               displayName: remove old dotnet 6
               errorActionPreference: stop
 
-            - pwsh: |
-                $ProgressPreference = 'SilentlyContinue'
-                Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
-                & .\dotnet-install.ps1 -Version $(DotNet.Version) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
-                & dotnet --list-sdks
-              displayName: install .NET $(DotNet.Version)
-              errorActionPreference: stop
+            - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+              displayName: 'Install .NET'
+
+            # - pwsh: |
+            #     $ProgressPreference = 'SilentlyContinue'
+            #     Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile dotnet-install.ps1
+            #     & .\dotnet-install.ps1 -Version $(DotNet.Version) -InstallDir "$env:ProgramFiles\dotnet\" -Verbose
+            #     & dotnet --list-sdks
+            #   displayName: install .NET $(DotNet.Version)
+            #   errorActionPreference: stop
 
             - pwsh: dotnet tool restore
               displayName: install dotnet tools
