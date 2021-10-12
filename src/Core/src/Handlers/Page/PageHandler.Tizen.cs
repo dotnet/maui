@@ -1,4 +1,4 @@
-﻿﻿using Tizen.UIExtensions.Common;
+﻿using Tizen.UIExtensions.Common;
 using EColor = ElmSharp.Color;
 
 namespace Microsoft.Maui.Handlers
