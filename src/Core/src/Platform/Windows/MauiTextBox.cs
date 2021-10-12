@@ -459,7 +459,7 @@ namespace Microsoft.Maui
 			{
 				// The ctrlDown flag is used to track if the Ctrl key is pressed; if it's actively being used and the most recent
 				// key to trigger OnKeyDown, then treat it as handled.
-				var ctrlDown = KeyboardInput.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+				var ctrlDown = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
 
 				// The shift, tab, and directional (Home/End/PgUp/PgDown included) keys can be used to select text and should otherwise
 				// be ignored.
