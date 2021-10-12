@@ -39,6 +39,12 @@ namespace Microsoft.Maui.Handlers
 			NativeView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
+		public static void MapBackground(ContentViewHandler handler, IContentView view)
+		{
+			handler.UpdateValue(nameof(handler.ContainerView));
+			handler.GetWrappedNativeView()?.UpdateBackground(view);
+		}
+
 		public static void MapContent(ContentViewHandler handler, IContentView page)
 		{
 			handler.UpdateContent();

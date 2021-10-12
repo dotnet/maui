@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(ViewHandler.ViewMapper)
 		{
-#if __IOS__
+#if __IOS__ || TIZEN
 			[nameof(ILabel.Background)] = MapBackground,
 			[nameof(ILabel.Opacity)] = MapOpacity,
 #elif WINDOWS

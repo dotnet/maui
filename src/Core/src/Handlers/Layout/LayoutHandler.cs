@@ -50,6 +50,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(ILayoutHandler handler, ILayout layout)
 		{
+#if TIZEN
+			handler.UpdateValue(nameof(handler.ContainerView));
+			handler.GetWrappedNativeView()?.UpdateBackground(layout);
+#endif
 			((PlatformView?)handler.PlatformView)?.UpdateBackground(layout);
 		}
 

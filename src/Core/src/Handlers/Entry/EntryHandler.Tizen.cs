@@ -54,6 +54,12 @@ namespace Microsoft.Maui.Handlers
 			nativeView.EntryLayoutUnfocused -= OnUnfocused;
 		}
 
+		public static void MapBackground(EntryHandler handler, IEntry entry)
+		{
+			handler.UpdateValue(nameof(handler.ContainerView));
+			handler.GetWrappedNativeView()?.UpdateBackground(entry);
+		}
+
 		public static void MapText(EntryHandler handler, IEntry entry)
 		{
 			handler.NativeView?.UpdateText(entry);
