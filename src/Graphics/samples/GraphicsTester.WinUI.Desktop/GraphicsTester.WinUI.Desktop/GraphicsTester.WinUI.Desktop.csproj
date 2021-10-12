@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSdk" Version="1.0.0-preview1" />
+    <PackageReference Include="Microsoft.WindowsAppSdk" Version="1.0.0-preview2" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.27-preview1" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
