@@ -81,7 +81,6 @@
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="123"
-                    Style="{StaticResource Headline}" 
                     Keyboard="Numeric"/>
                 <Label
                     Text="HorizontalTextAlignment"
