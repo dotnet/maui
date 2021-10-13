@@ -20,8 +20,6 @@ namespace Microsoft.Maui.Controls
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
 		readonly Lazy<IResourceDictionary> _systemResources;
 
-		public override IDispatcher Dispatcher => this.GetDispatcher();
-
 		IAppIndexingProvider? _appIndexProvider;
 		ReadOnlyCollection<Element>? _logicalChildren;
 

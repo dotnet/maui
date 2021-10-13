@@ -1,27 +1,30 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using Microsoft.UI.Dispatching;
 
 namespace Microsoft.Maui.Dispatching
 {
 	public partial class Dispatcher : IDispatcher
 	{
-		readonly DispatcherQueue _dispatcherQueue;
-
-		public Dispatcher()
-			: this(DispatcherQueue.GetForCurrentThread())
+		static IDispatcher? GetForCurrentThreadImplementation()
 		{
+			var q = DispatcherQueue.GetForCurrentThread();
+			if (q == null)
+				return null;
+
+			return new Dispatcher(q);
 		}
 
-		public Dispatcher(DispatcherQueue dispatcherQueue)
+		readonly DispatcherQueue _dispatcherQueue;
+
+		Dispatcher(DispatcherQueue dispatcherQueue)
 		{
 			_dispatcherQueue = dispatcherQueue ?? throw new ArgumentNullException(nameof(dispatcherQueue));
 		}
 
-		public bool IsInvokeRequired =>
+		bool IsInvokeRequiredImplementation() =>
 			!_dispatcherQueue.HasThreadAccess;
 
-		public void BeginInvokeOnMainThread(Action action) =>
+		void BeginInvokeOnMainThreadImplementation(Action action) =>
 			_dispatcherQueue.TryEnqueue(() => action());
 	}
 }

@@ -1,22 +1,32 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using Android.OS;
 
 namespace Microsoft.Maui.Dispatching
 {
-	public class Dispatcher : IDispatcher
+	public partial class Dispatcher : IDispatcher
 	{
-		volatile Handler? _handler;
-
-		public bool IsInvokeRequired =>
-			Looper.MyLooper() != Looper.MainLooper;
-
-		public void BeginInvokeOnMainThread(Action action)
+		static IDispatcher? GetForCurrentThreadImplementation()
 		{
-			if (_handler is null || _handler.Looper != Looper.MainLooper)
-				_handler = new Handler(Looper.MainLooper!);
+			var q = Looper.MyLooper();
+			if (q == null || q != Looper.MainLooper)
+				return null;
 
-			_handler.Post(action);
+			return new Dispatcher(q);
 		}
+
+		readonly Looper _looper;
+		readonly Handler _handler;
+
+		Dispatcher(Looper looper)
+		{
+			_looper = looper ?? throw new ArgumentNullException(nameof(looper));
+			_handler = new Handler(_looper);
+		}
+
+		bool IsInvokeRequiredImplementation() =>
+			_looper != Looper.MainLooper;
+
+		void BeginInvokeOnMainThreadImplementation(Action action) =>
+			_handler.Post(() => action());
 	}
 }

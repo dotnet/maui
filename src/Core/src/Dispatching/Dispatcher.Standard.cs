@@ -1,16 +1,19 @@
-﻿#nullable enable
-using System;
+﻿using System;
 
 namespace Microsoft.Maui.Dispatching
 {
-	public class Dispatcher : IDispatcher
+	public partial class Dispatcher : IDispatcher
 	{
-		public bool IsInvokeRequired =>
+		static IDispatcher? GetForCurrentThreadImplementation() =>
+			throw new NotImplementedException();
+		Dispatcher()
+		{
+		}
+
+		bool IsInvokeRequiredImplementation() =>
 			throw new NotImplementedException();
 
-		public void BeginInvokeOnMainThread(Action action)
-		{
+		void BeginInvokeOnMainThreadImplementation(Action action) =>
 			throw new NotImplementedException();
-		}
 	}
 }

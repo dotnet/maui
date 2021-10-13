@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 
 			MauiApplicationContext = rootContext.MakeScoped(this);
 
-			Services = mauiApp.Services;
+			Services = MauiApplicationContext.Services;
 
 			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
 

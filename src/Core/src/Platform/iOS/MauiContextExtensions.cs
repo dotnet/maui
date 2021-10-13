@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Animations;
-using Microsoft.Maui.Dispatching;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -24,18 +23,22 @@ namespace Microsoft.Maui
 			var scopedContext = new MauiContext(mauiContext);
 
 			scopedContext.AddSpecific(nativeApplication);
-			scopedContext.AddSpecific(svc => svc.GetRequiredService<IDispatcherProvider>().GetDispatcher(nativeApplication));
+
+			scopedContext.InitializeScopedServices();
 
 			return scopedContext;
 		}
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, UIWindow nativeWindow)
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext, UIWindow nativeWindow, out IServiceScope scope)
 		{
-			var scopedContext = new MauiContext(mauiContext);
+			scope = mauiContext.Services.CreateScope();
+
+			var scopedContext = new MauiContext(scope.ServiceProvider, mauiContext);
 
 			scopedContext.AddSpecific(nativeWindow);
 			scopedContext.AddSpecific(svc => svc.GetRequiredService<IAnimationManager>());
-			scopedContext.AddSpecific(svc => svc.GetRequiredService<IDispatcherProvider>().GetDispatcher(nativeWindow));
+
+			scopedContext.InitializeScopedServices();
 
 			return scopedContext;
 		}

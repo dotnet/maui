@@ -33,11 +33,11 @@ namespace Microsoft.Maui
 		{
 			var mauiApp = CreateMauiApp();
 
-			Services = mauiApp.Services;
-
-			var rootContext = new MauiContext(Services);
+			var rootContext = new MauiContext(mauiApp.Services);
 
 			_applicationContext = rootContext.MakeScoped(this);
+
+			Services = _applicationContext.Services;
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.WillFinishLaunching>(del => del(application, launchOptions));
 
@@ -65,7 +65,7 @@ namespace Microsoft.Maui
 		{
 			var uiWindow = new UIWindow();
 
-			var mauiContext = _applicationContext.MakeScoped(uiWindow);
+			var mauiContext = _applicationContext.MakeScoped(uiWindow, out var windowScope);
 
 			Services?.InvokeLifecycleEvents<iOSLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 

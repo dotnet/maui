@@ -55,7 +55,7 @@ namespace Microsoft.Maui
 			if (services == null)
 				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
 
-			var mauiContext = MauiApplication.Current.MauiApplicationContext.MakeScoped(this);
+			var mauiContext = MauiApplication.Current.MauiApplicationContext.MakeScoped(this, out var windowScope);
 
 			services.InvokeLifecycleEvents<AndroidLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 

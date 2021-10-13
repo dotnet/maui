@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -11,27 +12,31 @@ namespace Microsoft.Maui
 
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
-			LaunchActivatedEventArgs = args;
-
+			// Windows running on a different thread will "launch" the app again
+			if (Application != null)
+			{
+				Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
+				Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
+				return;
+			}
+			
 			var mauiApp = CreateMauiApp();
 
 			var rootContext = new MauiContext(mauiApp.Services);
 
 			var applicationContext = rootContext.MakeScoped(this);
 
-			Services = mauiApp.Services;
+			Services = applicationContext.Services;
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
 			Application = Services.GetRequiredService<IApplication>();
 
-			this.SetApplicationHandler(Application, applicationContext);
+			this.SetApplicationHandler(Application, applicationContext!);
 
-			var winuiWndow = CreateNativeWindow(args, applicationContext);
+			var winuiWndow = CreateNativeWindow(args, applicationContext!);
 
-			MainWindow = winuiWndow;
-
-			MainWindow.Activate();
+			winuiWndow.Activate();
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}
@@ -40,7 +45,7 @@ namespace Microsoft.Maui
 		{
 			var winuiWndow = new MauiWinUIWindow();
 
-			var mauiContext = applicationContext.MakeScoped(winuiWndow);
+			var mauiContext = applicationContext.MakeScoped(winuiWndow, out var windowScope);
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
@@ -55,10 +60,6 @@ namespace Microsoft.Maui
 		}
 
 		public static new MauiWinUIApplication Current => (MauiWinUIApplication)UI.Xaml.Application.Current;
-
-		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
-
-		public UI.Xaml.Window MainWindow { get; protected set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

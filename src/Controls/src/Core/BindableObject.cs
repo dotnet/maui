@@ -11,7 +11,14 @@ namespace Microsoft.Maui.Controls
 {
 	public abstract class BindableObject : INotifyPropertyChanged, IDynamicResourceHandler
 	{
-		public virtual IDispatcher Dispatcher => this.GetDispatcher();
+		public IDispatcher Dispatcher { get; }
+
+		public BindableObject()
+		{
+			Dispatcher = Dispatching.Dispatcher.GetForCurrentThread();
+			if (Dispatcher == null)
+				throw new InvalidOperationException($"BindableObjects can only be created on a thread with a dispatcher.");
+		}
 
 		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
 		bool _applying;
