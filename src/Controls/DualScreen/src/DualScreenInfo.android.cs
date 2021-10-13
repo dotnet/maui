@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Device.Display;
+//HACK:FOLDABLE using Microsoft.Device.Display;
 
 namespace Microsoft.Maui.Controls.DualScreen
 {
@@ -20,11 +20,11 @@ namespace Microsoft.Maui.Controls.DualScreen
 			{
 				if (newCount == 1)
 				{
-					DualScreen.DualScreenService.DualScreenServiceImpl.HingeAngleChanged += OnHingeAngleChanged;
+					//HACK:FOLDABLE DualScreen.DualScreenService.DualScreenServiceImpl.HingeAngleChanged += OnHingeAngleChanged;
 				}
 				else if (newCount == 0)
 				{
-					DualScreen.DualScreenService.DualScreenServiceImpl.HingeAngleChanged -= OnHingeAngleChanged;
+					//HACK:FOLDABLE DualScreen.DualScreenService.DualScreenServiceImpl.HingeAngleChanged -= OnHingeAngleChanged;
 				}
 			}
 		}
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		{
 			Device.BeginInvokeOnMainThread(() =>
 			{
-				_hingeAngleChanged?.Invoke(this, new HingeAngleChangedEventArgs(e.HingeAngle));
+				//HACK:FOLDABLE _hingeAngleChanged?.Invoke(this, new HingeAngleChangedEventArgs(e.HingeAngle));
 			});
 		}
 	}

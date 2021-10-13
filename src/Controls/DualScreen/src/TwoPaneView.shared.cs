@@ -1,4 +1,6 @@
 using System;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui;
 
 namespace Microsoft.Maui.Controls.DualScreen
 {
@@ -7,9 +9,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 	{
 		static TwoPaneView()
 		{
-#if UWP
-			DependencyService.Register<DualScreenService>();
-#elif !ANDROID
+			//HACK:FOLDABLE #if UWP
+			//DependencyService.Register<DualScreenService>();
+			//#elif !ANDROID
+#if !ANDROID
 			DependencyService.Register<NoDualScreenServiceImpl>();
 #endif
 		}
