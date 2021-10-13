@@ -24,7 +24,13 @@ namespace Recipes.ViewModels
         string _recipeBody;
         FormattedString _recipeUrl;
 
-        public ICommand TapCommand { get; }
+		bool _recipeNameVisible;
+		bool _imageUrlVisible;
+		bool _ingredientsVisible;
+		bool _recipeBodyVisible;
+		bool _recipeUrlVisible;
+
+		public ICommand TapCommand { get; }
         public Command AddItemCommand { get; }
 
         public HitDetailViewModel()
@@ -32,7 +38,13 @@ namespace Recipes.ViewModels
             // Launcher.OpenAsync is provided by Microsoft.Maui.Essentials.
             TapCommand = new Command<string>(async (url) => await Launcher.OpenAsync(url));
             AddItemCommand = new Command(OnAddItem);
-        }
+
+			RecipeNameVisible = true;
+			ImageUrlVisible = true;
+			IngredientsVisible = true;
+			RecipeBodyVisible = true;
+			RecipeUrlVisible = true;
+		}
 
         public string RecipeName
         {
@@ -62,9 +74,39 @@ namespace Recipes.ViewModels
         {
             get => _recipeUrl;
             set => SetProperty(ref _recipeUrl, value);
-        }
+		}
 
-        private void OnAddItem()
+		public bool RecipeNameVisible
+		{
+			get => _recipeNameVisible;
+			set => SetProperty(ref _recipeNameVisible, value);
+		}
+
+		public bool ImageUrlVisible
+		{
+			get => _imageUrlVisible;
+			set => SetProperty(ref _imageUrlVisible, value);
+		}
+
+		public bool IngredientsVisible
+		{
+			get => _ingredientsVisible;
+			set => SetProperty(ref _ingredientsVisible, value);
+		}
+
+		public bool RecipeBodyVisible
+		{
+			get => _recipeBodyVisible;
+			set => SetProperty(ref _recipeBodyVisible, value);
+		}
+
+		public bool RecipeUrlVisible
+		{
+			get => _recipeUrlVisible;
+			set => SetProperty(ref _recipeUrlVisible, value);
+		}
+
+		private void OnAddItem()
         {
 
             List<Ingredient> ingredientList = new List<Ingredient>();
@@ -113,14 +155,17 @@ namespace Recipes.ViewModels
         }
 
         public void LoadHitDetails(Hit hit)
-        {
-            Title = Hit.Recipe.RecipeName;
+		{
+			var emptyFormattedString = new FormattedString();
+			emptyFormattedString.Spans.Add(new Span { Text = "" });
+
+			Title = Hit.Recipe.RecipeName;
 
             RecipeName = Hit.Recipe.RecipeName;
             ImageUrl = Hit.Recipe.ImageUrl;
-            Ingredients = String.Join(Environment.NewLine, Hit.Recipe.Ingredients);
-
-            var recipeBodyFormattedString = new FormattedString();
+			//RecipeBody = Hit.Recipe;
+			Ingredients = String.Join(Environment.NewLine, Hit.Recipe.Ingredients);
+			var recipeBodyFormattedString = new FormattedString();
             recipeBodyFormattedString.Spans.Add(new Span { Text = "Click " });
 
             var recipeUrlFormattedString = new Span { Text = "here", TextColor = Colors.Blue, TextDecorations = TextDecorations.Underline };
@@ -133,6 +178,11 @@ namespace Recipes.ViewModels
 
             recipeBodyFormattedString.Spans.Add(new Span { Text = " to view full recipe." });
             RecipeUrl = recipeBodyFormattedString;
-        }
+			RecipeNameVisible = !String.IsNullOrEmpty(RecipeName);
+			ImageUrlVisible = !String.IsNullOrEmpty(ImageUrl);
+			IngredientsVisible = Hit.Recipe.Ingredients.Length > 0;
+			RecipeBodyVisible = !String.IsNullOrEmpty(RecipeBody);
+			RecipeUrlVisible = !(RecipeUrl == null || FormattedString.Equals(RecipeUrl, emptyFormattedString));
+		}
     }
 }
