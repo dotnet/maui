@@ -14,25 +14,27 @@
             <RowDefinition Height="3*" />
             <RowDefinition Height="7*" />
         </Grid.RowDefinitions>
-        <StackLayout Grid.Column="0" Grid.Row="0" VerticalOptions="Fill" HorizontalOptions="Fill" Margin="0,0,0,10" BackgroundColor="White">
+        <StackLayout Grid.Column="0" Grid.Row="0" VerticalOptions="Fill" HorizontalOptions="Fill" Margin="0,0,0,10">
             <Image Source="{Binding ImageUrl}" VerticalOptions="FillAndExpand" Aspect="AspectFill" IsVisible="{Binding ImageUrlVisible}" />
-            <Label Text="{Binding RecipeName}" FontSize="25" FontAttributes="Bold" IsVisible="{Binding RecipeNameVisible}" TextColor="Black" MaxLines="3" Padding="15,10" BackgroundColor="White"/>
+            <Label Text="{Binding RecipeName}" FontSize="25" FontAttributes="Bold" IsVisible="{Binding RecipeNameVisible}" MaxLines="3" Padding="15,10" />
         </StackLayout>
-        <ScrollView Grid.Column="0" Grid.Row="1" Padding="0,5,0,0" BackgroundColor="White">
+        <ScrollView Grid.Column="0" Grid.Row="1" Padding="0,5,0,0">
             <StackLayout>
                 <Frame Background="{StaticResource BlueGradient}" CornerRadius="10" HasShadow="False" Margin="0,5">
                     <StackLayout Margin="2">
                         <Label Text="Ingredients:" TextDecorations="Underline" FontSize="Medium" TextColor="{StaticResource Primary}"/>
-                        <CollectionView  HeightRequest="150" ItemsSource="{Binding IngredientCheckList}" IsVisible="{Binding IngredientsVisible}" SelectionMode="None">
-                            <CollectionView.ItemTemplate>
+                        <StackLayout  HeightRequest="150"
+                                      BindableLayout.ItemsSource="{Binding IngredientCheckList}"
+                                      IsVisible="{Binding IngredientsVisible}">
+                            <BindableLayout.ItemTemplate>
                                 <DataTemplate>
                                     <StackLayout Orientation="Horizontal">
                                         <CheckBox Color="{StaticResource Primary}" IsChecked="{Binding IngredientChecked}"/>
                                         <Label Text="{Binding IngredientItem}" TextColor="Black" VerticalOptions="Center"/>
                                     </StackLayout>
                                 </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
+                            </BindableLayout.ItemTemplate>
+                        </StackLayout>
                     </StackLayout>
                 </Frame>
                 <Frame Background="{StaticResource BlueGradient}" CornerRadius="10" HasShadow="False">
