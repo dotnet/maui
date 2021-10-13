@@ -65,9 +65,9 @@ namespace Microsoft.Maui
 			editText.SetInputType(entry);
 		}
 
-		public static void UpdateHorizontalTextAlignment(this AppCompatEditText editText, IEntry entry)
+		public static void UpdateHorizontalTextAlignment(this AppCompatEditText editText, ITextAlignment textAlignment)
 		{
-			editText.UpdateHorizontalAlignment(entry.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
+			editText.UpdateHorizontalAlignment(textAlignment.HorizontalTextAlignment, editText.Context != null && editText.Context.HasRtlSupport());
 		}
 
 		public static void UpdateVerticalTextAlignment(this AppCompatEditText editText, IEntry entry)
@@ -301,12 +301,12 @@ namespace Microsoft.Maui
 		{
 			if (editor.IsReadOnly)
 			{
-				editText.InputType = InputTypes.Null;
+				editText.InputType = InputTypes.Null | Android.Text.InputTypes.TextFlagMultiLine;
 			}
 			else
 			{
 				var keyboard = editor.Keyboard;
-				var nativeInputTypeToUpdate = keyboard.ToInputType();
+				var nativeInputTypeToUpdate = keyboard.ToInputType() | Android.Text.InputTypes.TextFlagMultiLine;
 
 				if (keyboard is not CustomKeyboard)
 				{

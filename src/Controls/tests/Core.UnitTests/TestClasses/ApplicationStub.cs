@@ -6,6 +6,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		readonly List<IWindow> _windows = new List<IWindow>();
 
+		public IElementHandler Handler { get; set; }
+
+		public Maui.IElement Parent { get; set; }
+
 		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
 
 		public string Property { get; set; } = "Default";

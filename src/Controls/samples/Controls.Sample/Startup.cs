@@ -208,21 +208,22 @@ namespace Maui.Controls.Sample
 						Debug.WriteLine($"Lifecycle event: {eventName}{(type == null ? "" : $" ({type})")}");
 						return true;
 					}
-
-#if __ANDROID__
-					Microsoft.Maui.Handlers.ButtonHandler.NativeViewFactory = (handler) => 
-					{
-						return new Google.Android.Material.Button.MaterialButton(handler.Context) 
-						{ 
-							CornerRadius = 50, SoundEffectsEnabled = true 
-						};
-					};
-#endif
 				});
+
+#if ANDROID
+			appBuilder.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler<VirtualListView, Recipes.Platforms.RecipesVirtualListViewHandler>();
+				handlers.AddHandler<IVirtualListView, Recipes.Platforms.RecipesVirtualListViewHandler>();
+			});
+#endif
 
 			return appBuilder
 #if (__ANDROID__ || __IOS__ || WINDOWS) && !MACCATALYST
 				.UseVirtualListView()
+
+
+
 #endif
 				.Build();
 		}

@@ -32,6 +32,8 @@ namespace Microsoft.Maui
 
 		public static Task<IImageSourceServiceResult<NativeImage>?> GetNativeImageAsync(this IImageSource imageSource, IMauiContext mauiContext)
 		{
+			if (imageSource == null)
+				return new Task<IImageSourceServiceResult<NativeImage>?>(() => null);
 			var services = mauiContext.Services;
 			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 			var imageSourceService = provider.GetRequiredImageSourceService(imageSource);

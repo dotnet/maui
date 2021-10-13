@@ -88,6 +88,8 @@ Task("dotnet-templates")
 
         // Create an empty NuGet.config
         StartProcess(dn, "new nugetconfig -o ../templatesTest/");
+        // NOTE: this should be temporary until 'library-packs' are working for .msi-based installs
+        StartProcess(dn, "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json --name dotnet6 --configfile ../templatesTest/nuget.config");
         var properties = new Dictionary<string, string> {
             // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
             { "RestoreNoCache", "true" },
@@ -367,7 +369,9 @@ void RunMSBuildWithDotNet(string sln, Dictionary<string, string> properties = nu
     else
     {
         // Otherwise we need to run MSBuild for WinUI support
-        var msbuildSettings = new MSBuildSettings { ToolPath = FindMSBuild() }
+        var msbuild = FindMSBuild();
+        Information("Using MSBuild: {0}", msbuild);
+        var msbuildSettings = new MSBuildSettings { ToolPath = msbuild }
             .WithRestore()
             .SetConfiguration(configuration)
             .EnableBinaryLogger(binlog);

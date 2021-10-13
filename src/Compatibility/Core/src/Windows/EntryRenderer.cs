@@ -254,7 +254,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.ClearButtonVisible = Element.ClearButtonVisibility == ClearButtonVisibility.WhileEditing;
 		}
 
-		[PortHandler("Pending to port IsSpellCheckEnabled")]
 		void UpdateInputScope()
 		{
 			Entry entry = Element;
@@ -358,6 +357,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.InputScope = Element.ReturnType.ToInputScope();
 		}
 
+		[PortHandler]
 		void SelectionChanged(object sender, RoutedEventArgs e)
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
@@ -383,6 +383,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateSelectionLength()
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
@@ -414,6 +415,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void UpdateCursorPosition()
 		{
 			if (_nativeSelectionIsUpdating || Control == null || Element == null)
@@ -448,6 +450,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void SetCursorPositionFromRenderer(int start)
 		{
 			try
@@ -465,6 +468,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			}
 		}
 
+		[PortHandler]
 		void SetSelectionLengthFromRenderer(int selectionLength)
 		{
 			try

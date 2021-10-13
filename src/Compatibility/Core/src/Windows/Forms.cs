@@ -37,18 +37,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public static void Init(IActivationState state, InitializationOptions? options = null)
 		{
-			SetupInit(state.Context, state.Context.Window, maybeOptions: options);
+			SetupInit(state.Context, state.Context.GetOptionalNativeWindow(), maybeOptions: options);
 		}
-
-		public static void Init(
-			UI.Xaml.Window mainWindow,
-			IEnumerable<Assembly> rendererAssemblies = null)
-		{
-			SetupInit(new MauiContext(), mainWindow, rendererAssemblies);
-		}
-
-		public static void Init(InitializationOptions options) =>
-			SetupInit(new MauiContext(), null, null, options);
 
 		static void SetupInit(
 			IMauiContext mauiContext,
@@ -71,7 +61,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Device.SetIdiom(TargetIdiom.Tablet);
 			Device.SetFlowDirection(mauiContext.GetFlowDirection());
 
-			Device.SetFlags(s_flags);
 			Device.Info = new WindowsDeviceInfo();
 
 			//TODO WINUI3

@@ -296,6 +296,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.VerticalAlignment = Element.VerticalTextAlignment.ToNativeTextAlignment();
 		}
 
+		[PortHandler]
 		protected internal virtual void UpdateTextColor()
 		{
 			var textColor = Element.TextColor;

@@ -60,7 +60,9 @@ namespace Microsoft.Maui.Layouts
 				stackWidth = ArrangeRightToLeft(height, left, top, Stack.Spacing, Stack);
 			}
 
-			return new Size(height, stackWidth);
+			var actual = new Size(height, stackWidth);
+
+			return actual.AdjustForFill(bounds, Stack);
 		}
 
 		static double ArrangeLeftToRight(double height, double left, double top, double spacing, IList<IView> children)

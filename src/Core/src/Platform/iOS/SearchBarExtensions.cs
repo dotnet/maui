@@ -56,8 +56,8 @@ namespace Microsoft.Maui
 				return;
 
 			textField.VerticalAlignment = searchBar.VerticalTextAlignment.ToNative();
-    }
-    
+		}
+
 		public static void UpdateMaxLength(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			var maxLength = searchBar.MaxLength;

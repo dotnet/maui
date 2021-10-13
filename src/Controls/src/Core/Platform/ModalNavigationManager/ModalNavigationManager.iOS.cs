@@ -16,12 +16,14 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			get
 			{
-				if (_window?.Page?.Handler?.NativeView is UIView view)
+				if (_window?.Handler?.NativeView is UIWindow window &&
+					window.RootViewController != null)
 				{
-					return view.Window.RootViewController;
+					return window.RootViewController;
 				}
 
-				return null;
+				var rootViewController = MauiContext.GetNativeWindow().RootViewController;
+				return rootViewController ?? throw new InvalidOperationException("Unable to find Root View Controller");
 			}
 		}
 

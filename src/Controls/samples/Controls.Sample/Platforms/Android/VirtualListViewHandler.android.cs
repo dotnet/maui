@@ -1,4 +1,6 @@
 ﻿using Android.Views;
+using Android.Views.Accessibility;
+using AndroidX.Core.View.Accessibility;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Handlers;
 using System;
@@ -9,7 +11,7 @@ namespace Microsoft.Maui
 	{
 		RvAdapter adapter;
 		RecyclerView recyclerView;
-		LinearLayoutManager layoutManager;
+		RecyclerView.LayoutManager layoutManager;
 		PositionalViewSelector positionalViewSelector;
 
 		protected override RecyclerView CreateNativeView()
@@ -17,7 +19,7 @@ namespace Microsoft.Maui
 
 		protected override void ConnectHandler(RecyclerView nativeView)
 		{
-			layoutManager = new LinearLayoutManager(Context);
+			layoutManager = new GridLayoutManager(Context, 1);
 			//layoutManager.Orientation = LinearLayoutManager.Horizontal;
 
 			positionalViewSelector = new PositionalViewSelector(VirtualView);
@@ -85,12 +87,16 @@ namespace Microsoft.Maui
 
 		public static void MapOrientation(VirtualListViewHandler handler, IVirtualListView virtualListView)
 		{
-			handler.layoutManager.Orientation = virtualListView.Orientation switch
+			if (handler.layoutManager is LinearLayoutManager ll)
 			{
-				ListOrientation.Vertical => LinearLayoutManager.Vertical,
-				ListOrientation.Horizontal => LinearLayoutManager.Horizontal,
-				_ => LinearLayoutManager.Vertical
-			};
+				ll.Orientation = virtualListView.Orientation switch
+				{
+					ListOrientation.Vertical => LinearLayoutManager.Vertical,
+					ListOrientation.Horizontal => LinearLayoutManager.Horizontal,
+					_ => LinearLayoutManager.Vertical
+				};
+			}
+
 			handler.adapter.NotifyDataSetChanged();
 		}
 

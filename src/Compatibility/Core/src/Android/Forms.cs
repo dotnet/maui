@@ -68,7 +68,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		internal static IMauiContext MauiContext { get; private set; }
 
 		public static bool IsInitialized { get; private set; }
-		static bool FlagsSet { get; set; }
 
 		static bool _ColorButtonNormalSet;
 		static Color _ColorButtonNormal = null;
@@ -187,11 +186,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public static void Init(IActivationState activationState, InitializationOptions? options = null) =>
 			Init(activationState.Context, activationState.SavedInstance, options);
 
-		// Provide backwards compat for Forms.Init and AndroidActivity
-		// Why is bundle a param if never used?
-		public static void Init(Context activity, Bundle bundle) =>
-			Init(new MauiContext(activity), bundle);
-
 		public static void Init(IMauiContext context, Bundle bundle, InitializationOptions? options = null)
 		{
 			Assembly resourceAssembly;
@@ -205,24 +199,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FrameEnd();
 		}
 
-		public static void Init(Context activity, Bundle bundle, Assembly resourceAssembly) =>
-			Init(new MauiContext(activity), bundle, resourceAssembly);
-
 		public static void Init(IMauiContext context, Bundle bundle, Assembly resourceAssembly)
 		{
 			Profile.FrameBegin();
 			SetupInit(context, resourceAssembly, null);
-			Profile.FrameEnd();
-		}
-
-		public static void Init(InitializationOptions options)
-		{
-			Profile.FrameBegin();
-			SetupInit(
-				new MauiContext(options.Activity),
-				options.ResourceAssembly,
-				options
-			);
 			Profile.FrameEnd();
 		}
 
@@ -357,11 +337,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			Profile.FramePartition("create AndroidDeviceInfo");
 			Device.Info = new AndroidDeviceInfo(activity);
 
-			Profile.FramePartition("setFlags");
-			Device.SetFlags(s_flags);
-
-			Profile.FramePartition("AndroidTicker");
-
 			Profile.FramePartition("RegisterAll");
 
 			if (maybeOptions?.Flags.HasFlag(InitializationFlags.SkipRenderers) != true)
@@ -434,29 +409,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			Device.SetIdiom(returnValue);
 			return returnValue;
-		}
-
-		static IReadOnlyList<string> s_flags;
-		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new string[0]);
-
-		public static void SetFlags(params string[] flags)
-		{
-			if (FlagsSet)
-			{
-				// Don't try to set the flags again if they've already been set
-				// (e.g., during a configuration change where OnCreate runs again)
-				return;
-			}
-
-			if (IsInitialized)
-			{
-				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
-			}
-
-			s_flags = (string[])flags.Clone();
-			if (s_flags.Contains("Profile"))
-				Profile.Enable();
-			FlagsSet = true;
 		}
 
 		static Color GetAccentColor(Context context)
@@ -852,19 +804,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			public string RuntimePlatform => Device.Android;
 
-			public void OpenUriAction(Uri uri)
-			{
-				global::Android.Net.Uri aUri = global::Android.Net.Uri.Parse(uri.ToString());
-				var intent = new Intent(Intent.ActionView, aUri);
-				intent.SetFlags(ActivityFlags.ClearTop);
-				intent.SetFlags(ActivityFlags.NewTask);
-
-				// This seems to work fine even if the context has been destroyed (while another activity is in the
-				// foreground). If we run into a situation where that's not the case, we'll have to do some work to
-				// make sure this uses the active activity when launching the Intent
-				_context.StartActivity(intent);
-			}
-
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
 				var handler = new Handler(Looper.MainLooper);
@@ -920,11 +859,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 					Internals.Log.Warning("Microsoft.Maui.Controls.Compatibility.Platform.Android.AndroidPlatformServices", "Error retrieving text appearance: {0}", ex);
 				}
 				return false;
-			}
-
-			public void QuitApplication()
-			{
-				Internals.Log.Warning(nameof(AndroidPlatformServices), "Platform doesn't implement QuitApp");
 			}
 
 			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)

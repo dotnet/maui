@@ -92,17 +92,32 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Even margin
 			margin = new Thickness(10);
-			yield return new object[] { LayoutAlignment.Start, point, margin, 10, 80 };
-			yield return new object[] { LayoutAlignment.Center, point, margin, 100, 80 };
-			yield return new object[] { LayoutAlignment.End, point, margin, 210, 80 };
+			yield return new object[] { LayoutAlignment.Start, point, margin, 10, 100 };
+			yield return new object[] { LayoutAlignment.Center, point, margin, 100, 100 };
+			yield return new object[] { LayoutAlignment.End, point, margin, 190, 100 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 10, 280 };
+
+			margin = new Thickness(50);
+			yield return new object[] { LayoutAlignment.Center, point, margin, 100, 100 };
+			yield return new object[] { LayoutAlignment.Start, point, margin, 50, 100 };
+			yield return new object[] { LayoutAlignment.End, point, margin, 150, 100 };
 
 			// Lopsided margin
 			margin = new Thickness(5, 5, 10, 10);
-			yield return new object[] { LayoutAlignment.Start, point, margin, 5, 85 };
-			yield return new object[] { LayoutAlignment.Center, point, margin, 97.5, 85 };
-			yield return new object[] { LayoutAlignment.End, point, margin, 205, 85 };
+			yield return new object[] { LayoutAlignment.Start, point, margin, 5, 100 };
+			yield return new object[] { LayoutAlignment.Center, point, margin, 97.5, 100 };
+			yield return new object[] { LayoutAlignment.End, point, margin, 190, 100 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 5, 285 };
+
+			margin = new Thickness(100, 100, 0, 0);
+			yield return new object[] { LayoutAlignment.Center, point, margin, 150, 100 };
+			yield return new object[] { LayoutAlignment.Start, point, margin, 100, 100 };
+			yield return new object[] { LayoutAlignment.End, point, margin, 200, 100 };
+
+			margin = new Thickness(0, 0, 100, 100);
+			yield return new object[] { LayoutAlignment.Center, point, margin, 50, 100 };
+			yield return new object[] { LayoutAlignment.Start, point, margin, 0, 100 };
+			yield return new object[] { LayoutAlignment.End, point, margin, 100, 100 };
 
 			// X and Y offsets (e.g., GridLayout columns and rows)
 			margin = Thickness.Zero;
@@ -111,7 +126,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			yield return new object[] { LayoutAlignment.Center, point, margin, 110, 100 };
 			yield return new object[] { LayoutAlignment.End, point, margin, 210, 100 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 10, 300 };
-
 		}
 
 		[Theory]
@@ -121,7 +135,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var widthConstraint = 300;
 			var heightConstraint = 50;
-			var viewSizeIncludingMargins = new Size(100, 50);
+			var viewSize = new Size(100, 50);
+			var viewSizeIncludingMargins = new Size(viewSize.Width + margin.HorizontalThickness, viewSize.Height + margin.VerticalThickness);
 
 			var element = Substitute.For<IView>();
 
@@ -145,7 +160,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var widthConstraint = 50;
 			var heightConstraint = 300;
-			var viewSizeIncludingMargins = new Size(50, 100);
+			var viewSize = new Size(50, 100);
+			var viewSizeIncludingMargins = new Size(viewSize.Width + margin.HorizontalThickness, viewSize.Height + margin.VerticalThickness);
 
 			var element = Substitute.For<IView>();
 
@@ -175,16 +191,16 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Even margin
 			margin = new Thickness(10);
-			yield return new object[] { LayoutAlignment.Start, point, margin, 210, 80 };
-			yield return new object[] { LayoutAlignment.Center, point, margin, 100, 80 };
-			yield return new object[] { LayoutAlignment.End, point, margin, 10, 80 };
+			yield return new object[] { LayoutAlignment.Start, point, margin, 190, 100 };
+			yield return new object[] { LayoutAlignment.Center, point, margin, 100, 100 };
+			yield return new object[] { LayoutAlignment.End, point, margin, 10, 100 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 10, 280 };
 
 			// Lopsided margin
 			margin = new Thickness(5, 5, 10, 10);
-			yield return new object[] { LayoutAlignment.Start, point, margin, 210, 85 };
-			yield return new object[] { LayoutAlignment.Center, point, margin, 102.5, 85 };
-			yield return new object[] { LayoutAlignment.End, point, margin, 10, 85 };
+			yield return new object[] { LayoutAlignment.Start, point, margin, 195, 100 };
+			yield return new object[] { LayoutAlignment.Center, point, margin, 102.5, 100 };
+			yield return new object[] { LayoutAlignment.End, point, margin, 10, 100 };
 			yield return new object[] { LayoutAlignment.Fill, point, margin, 10, 285 };
 
 			// X and Y offsets (e.g., GridLayout columns and rows)
@@ -203,7 +219,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var widthConstraint = 300;
 			var heightConstraint = 50;
-			var viewSizeIncludingMargins = new Size(100, 50);
+			var viewSize = new Size(100, 50);
+			var viewSizeIncludingMargins = new Size(viewSize.Width + margin.HorizontalThickness, viewSize.Height + margin.VerticalThickness);
 
 			var element = Substitute.For<IView>();
 

@@ -14,6 +14,7 @@
 			[nameof(IPicker.Title)] = MapTitle,
 			[nameof(IPicker.TitleColor)] = MapTitleColor,
 			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
+			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment
 		};
 
 		public static CommandMapper<IPicker, PickerHandler> PickerCommandMapper = new(ViewCommandMapper)

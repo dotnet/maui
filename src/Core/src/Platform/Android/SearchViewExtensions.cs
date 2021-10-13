@@ -64,8 +64,8 @@ namespace Microsoft.Maui
 				return;
 
 			editText.UpdateVerticalAlignment(searchBar.VerticalTextAlignment, TextAlignment.Center.ToVerticalGravityFlags());
-    }
-    
+		}
+
 		public static void UpdateMaxLength(this SearchView searchView, ISearchBar searchBar)
 		{
 			searchView.UpdateMaxLength(searchBar.MaxLength, null);

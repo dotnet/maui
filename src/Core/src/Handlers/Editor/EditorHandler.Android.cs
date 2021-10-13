@@ -19,7 +19,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			var editText = new AppCompatEditText(Context)
 			{
-				ImeOptions = ImeAction.Done
+				ImeOptions = ImeAction.Done,
+				InputType = Android.Text.InputTypes.TextFlagMultiLine
 			};
 
 			editText.SetSingleLine(false);
@@ -107,6 +108,11 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.NativeView?.UpdateFont(editor, fontManager);
+		}
+
+		public static void MapHorizontalTextAlignment(EditorHandler handler, IEditor editor)
+		{
+			handler.NativeView?.UpdateHorizontalTextAlignment(editor);
 		}
 
 		public static void MapKeyboard(EditorHandler handler, IEditor editor)

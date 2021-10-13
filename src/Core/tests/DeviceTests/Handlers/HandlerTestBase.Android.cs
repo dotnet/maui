@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Android.Views;
+using Android.Widget;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -163,8 +164,28 @@ namespace Microsoft.Maui.DeviceTests
 			return FlowDirection.LeftToRight;
 		}
 
+		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
+			GetSemanticNativeElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.Yes;
+
+
+		public View GetSemanticNativeElement(IViewHandler viewHandler)
+		{
+			if (viewHandler.NativeView is AndroidX.AppCompat.Widget.SearchView sv)
+				return sv.FindViewById(Resource.Id.search_button)!;
+
+			return (View)viewHandler.NativeView;
+		}
+
 		protected string GetSemanticDescription(IViewHandler viewHandler) =>
-			((View)viewHandler.NativeView).ContentDescription;
+			GetSemanticNativeElement(viewHandler).ContentDescription;
+
+		protected string GetSemanticHint(IViewHandler viewHandler)
+		{
+			if (GetSemanticNativeElement(viewHandler) is EditText et)
+				return et.Hint;
+
+			return null;
+		}
 
 		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler)
 		{

@@ -36,6 +36,32 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.NativeViewValue);
 		}
 
+		[Fact(DisplayName = "Horizontal TextAlignment Updates Correctly")]
+		public async Task HorizontalTextAlignmentInitializesCorrectly()
+		{
+			var xplatHorizontalTextAlignment = TextAlignment.End;
+
+			var editorStub = new EditorStub()
+			{
+				Text = "Test",
+				HorizontalTextAlignment = xplatHorizontalTextAlignment
+			};
+
+			UITextAlignment expectedValue = UITextAlignment.Right;
+
+			var values = await GetValueAsync(editorStub, (handler) =>
+			{
+				return new
+				{
+					ViewValue = editorStub.HorizontalTextAlignment,
+					NativeViewValue = GetNativeHorizontalTextAlignment(handler)
+				};
+			});
+
+			Assert.Equal(xplatHorizontalTextAlignment, values.ViewValue);
+			values.NativeViewValue.AssertHasFlag(expectedValue);
+		}
+
 		static MauiTextView GetNativeEditor(EditorHandler editorHandler) =>
 			editorHandler.NativeView;
 
@@ -81,6 +107,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		Color GetNativeTextColor(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).TextColor.ToColor();
+
+		UITextAlignment GetNativeHorizontalTextAlignment(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).TextAlignment;
 
 		bool GetNativeIsNumericKeyboard(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).KeyboardType == UIKeyboardType.DecimalPad;
