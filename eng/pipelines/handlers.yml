@@ -124,19 +124,17 @@ stages:
               - template: common/provision.yml
                 parameters:
                   platform: ${{ BuildPlatform.name }}
-              - pwsh: |
-                  copy-item "C:\Program Files\Microsoft Visual Studio\2022\Preview\MSBuild\Current\Bin\System.Text.Json.dll" -Destination "$(build.artifactstagingdirectory)"
-              # - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-              #   displayName: 'Install .NET'
-              # - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-              #   displayName: 'Build .NET Maui'
-              # - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-              #   displayName: 'Run Unit Tests'
-              # - task: PublishTestResults@2
-              #   condition: always()
-              #   inputs:
-              #     testRunner: VSTest
-              #     testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
+              - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+                displayName: 'Install .NET'
+              - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+                displayName: 'Build .NET Maui'
+              - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+                displayName: 'Run Unit Tests'
+              - task: PublishTestResults@2
+                condition: always()
+                inputs:
+                  testRunner: VSTest
+                  testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
               - task: PublishBuildArtifacts@1
                 condition: always()
                 displayName: Publish Artifacts (${{ BuildPlatform.artifact }})

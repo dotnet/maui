@@ -10,14 +10,14 @@ $ErrorActionPreference = "Stop"
 $msbuildRoot = Split-Path -Parent $MSBuild
 
 $files = @{
-    'System.Text.Json' = '5.0.0.0';
-    'System.Text.Encodings.Web' = '5.0.0.0';
+    'System.Text.Json' = '5.0.0.2';
+    'System.Text.Encodings.Web' = '5.0.0.1';
     'System.Threading.Tasks.Extensions' = '4.2.0.1';
 }
 
 $urls = @{
-    'https://globalcdn.nuget.org/packages/system.text.json.5.0.0.nupkg' = 'lib\net461\System.Text.Json.dll';
-    'https://globalcdn.nuget.org/packages/system.text.encodings.web.5.0.0.nupkg' = 'lib\netstandard2.0\System.Text.Encodings.Web.dll';
+    'https://globalcdn.nuget.org/packages/system.text.json.5.0.2.nupkg' = 'lib\net461\System.Text.Json.dll';
+    'https://globalcdn.nuget.org/packages/system.text.encodings.web.5.0.1.nupkg' = 'lib\netstandard2.0\System.Text.Encodings.Web.dll';
     'https://globalcdn.nuget.org/packages/system.threading.tasks.extensions.4.5.4.nupkg' = 'lib\netstandard2.0\System.Threading.Tasks.Extensions.dll';
 }
 
