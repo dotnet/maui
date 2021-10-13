@@ -15,16 +15,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(Button nativeView)
 		{
-			nativeView.Released += OnButtonClicked;
-			nativeView.Clicked += OnButtonReleased;
+			nativeView.Released += OnButtonReleased;
+			nativeView.Clicked += OnButtonClicked;
 			nativeView.Pressed += OnButtonPressed;
 			base.ConnectHandler(nativeView);
 		}
 
 		protected override void DisconnectHandler(Button nativeView)
 		{
-			nativeView.Released -= OnButtonClicked;
-			nativeView.Clicked -= OnButtonReleased;
+			nativeView.Released -= OnButtonReleased;
+			nativeView.Clicked -= OnButtonClicked;
 			nativeView.Pressed -= OnButtonPressed;
 			base.DisconnectHandler(nativeView);
 		}
