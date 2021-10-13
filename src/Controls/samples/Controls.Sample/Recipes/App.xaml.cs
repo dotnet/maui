@@ -13,7 +13,12 @@ namespace Recipes
 
         public App()
         {
-            InitializeComponent();
+			VisualElement.RemapForControls();
+			View.RemapForControls();
+			Label.RemapForControls();
+			Button.RemapForControls();
+
+			InitializeComponent();
             DependencyService.Register<MockDataStore>();
 			MainPage = new AppShell();
 
