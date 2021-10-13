@@ -1,12 +1,8 @@
-﻿using ElmSharp;
-using Microsoft.Maui.Graphics.Skia.Views;
+﻿using Tizen.UIExtensions.NUI.GraphicsView;
 
 namespace Microsoft.Maui.Platform
 {
 	public class MauiShapeView : SkiaGraphicsView
 	{
-		public MauiShapeView(EvasObject parent) : base(parent)
-		{
-		}
 	}
 }

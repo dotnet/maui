@@ -1,27 +1,41 @@
 using System;
 using System.Threading.Tasks;
-using Tizen.UIExtensions.ElmSharp;
+using Tizen.NUI.BaseComponents;
+using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
-		protected override Button CreatePlatformView() => new Button(PlatformParent);
+		protected override Button CreatePlatformView() => new Button();
 
 		protected override void ConnectHandler(Button platformView)
 		{
-			platformView.Released += OnButtonReleased;
-			platformView.Clicked += OnButtonClicked;
-			platformView.Pressed += OnButtonPressed;
-			base.ConnectHandler(platformView);
+			nativeView.TouchEvent += OnTouch;
+			nativeView.Clicked += OnButtonClicked;
+			base.ConnectHandler(nativeView);
 		}
 
-		protected override void DisconnectHandler(Button platformView)
+		private bool OnTouch(object source, View.TouchEventArgs e)
 		{
-			platformView.Released -= OnButtonReleased;
-			platformView.Clicked -= OnButtonClicked;
-			platformView.Pressed -= OnButtonPressed;
-			base.DisconnectHandler(platformView);
+			var state = e.Touch.GetState(0);
+
+			if (state == Tizen.NUI.PointStateType.Down)
+			{
+				OnButtonPressed(source, e);
+			}
+			else if (state == Tizen.NUI.PointStateType.Up)
+			{
+				OnButtonReleased(source, e);
+			}
+			return false;
+		}
+
+		protected override void DisconnectHandler(Button nativeView)
+		{
+			nativeView.TouchEvent -= OnTouch;
+			nativeView.Clicked -= OnButtonClicked;
+			base.DisconnectHandler(nativeView);
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)
@@ -107,9 +121,13 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Pressed();
 		}
 
-		void OnSetImageSource(Image? image)
+		void OnSetImageSource(ImageView? image)
 		{
-			PlatformView.Image = image;
+
+			// TODO need to implemention
+			if (image == null)
+				return;
+			PlatformView.Icon.ResourceUrl = image.ResourceUrl;
 		}
 	}
 }

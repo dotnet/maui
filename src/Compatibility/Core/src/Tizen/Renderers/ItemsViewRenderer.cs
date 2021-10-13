@@ -1,16 +1,18 @@
 using System.Collections.Specialized;
 using System.Linq;
-
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
-using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ItemsView;
+using Tizen.UIExtensions.NUI;
+using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
+using TCollectionViewScrolledEventArgs = Tizen.UIExtensions.NUI.CollectionViewScrolledEventArgs;
+using TItemSizingStrategy = Tizen.UIExtensions.NUI.ItemSizingStrategy;
+using TScrollToPosition = Tizen.UIExtensions.Common.ScrollToPosition;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
 	public abstract class ItemsViewRenderer<TItemsView, TNative> : ViewRenderer<TItemsView, TNative>
 		where TItemsView : ItemsView
-		where TNative : Native.CollectionView
+		where TNative : TCollectionView
 	{
 		INotifyCollectionChanged _observableSource;
 
@@ -20,24 +22,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			RegisterPropertyHandler(ItemsView.ItemsSourceProperty, UpdateItemsSource);
 			RegisterPropertyHandler(ItemsView.ItemTemplateProperty, UpdateAdaptor);
-			RegisterPropertyHandler(ItemsView.HorizontalScrollBarVisibilityProperty, UpdateHorizontalScrollBarVisibility);
-			RegisterPropertyHandler(ItemsView.VerticalScrollBarVisibilityProperty, UpdateVerticalScrollBarVisibility);
-			RegisterPropertyHandler(Specific.FocusedItemScrollPositionProperty, UpdateFocusedItemScrollPosition);
 		}
 
-		protected abstract TNative CreateNativeControl(ElmSharp.EvasObject parent);
+		protected abstract TNative CreateNativeControl();
+
+		protected virtual ItemTemplateAdaptor CreateItemAdaptor(ItemsView view)
+		{
+			return new ItemTemplateAdaptor(view);
+		}
+
+		protected virtual ItemTemplateAdaptor CreateDefaultItemAdaptor(ItemsView view)
+		{
+			return new ItemDefaultTemplateAdaptor(view);
+		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TItemsView> e)
 		{
 			if (Control == null)
 			{
-				SetNativeControl(CreateNativeControl(Forms.NativeParent));
+				SetNativeControl(CreateNativeControl());
 				Control.Scrolled += OnScrolled;
 			}
+
 			if (e.NewElement != null)
 			{
 				e.NewElement.ScrollToRequested += OnScrollToRequest;
 			}
+
 			base.OnElementChanged(e);
 			ItemsLayout = GetItemsLayout();
 			UpdateAdaptor(false);
@@ -49,9 +60,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				if (Element != null)
 				{
-					Element.ScrollToRequested -= OnScrollToRequest;
 					ItemsLayout.PropertyChanged -= OnLayoutPropertyChanged;
 					Control.Scrolled -= OnScrolled;
+
+					// Remove all child that created by ItemTemplate
+					foreach (var child in Element.LogicalChildrenInternal.ToList())
+					{
+						Element.RemoveLogicalChild(child);
+					}
 				}
 				if (_observableSource != null)
 				{
@@ -71,7 +87,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (ItemsLayout != null)
 			{
 				Control.LayoutManager = ItemsLayout.ToLayoutManager((Element as CollectionView)?.ItemSizingStrategy ?? ItemSizingStrategy.MeasureFirstItem);
-				Control.SnapPointsType = ((ItemsLayout)ItemsLayout)?.SnapPointsType ?? SnapPointsType.None;
 				ItemsLayout.PropertyChanged += OnLayoutPropertyChanged;
 			}
 		}
@@ -87,31 +102,66 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 		protected virtual void OnLayoutPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == nameof(Microsoft.Maui.Controls.ItemsLayout.SnapPointsType))
-			{
-				Control.SnapPointsType = (sender as ItemsLayout)?.SnapPointsType ?? SnapPointsType.None;
-			}
-			else if (e.PropertyName == nameof(GridItemsLayout.Span))
-			{
-				((GridLayoutManager)(Control.LayoutManager)).UpdateSpan(((GridItemsLayout)sender).Span);
-			}
-			else if (e.PropertyName == nameof(LinearItemsLayout.ItemSpacing)
+			if (e.PropertyName == nameof(LinearItemsLayout.ItemSpacing)
 				|| e.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing)
 				|| e.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing))
 			{
 				UpdateItemsLayout();
 			}
+			else if (e.PropertyName == nameof(GridItemsLayout.Span))
+			{
+				((GridLayoutManager)(Control.LayoutManager)).UpdateSpan(((GridItemsLayout)sender).Span);
+			}
 		}
 
 		protected abstract IItemsLayout GetItemsLayout();
 
-		protected virtual void OnItemSelectedFromUI(object sender, SelectedItemChangedEventArgs e)
+		protected void UpdateAdaptor(bool initialize)
+		{
+			if (!initialize)
+			{
+				if (Control.Adaptor is ItemTemplateAdaptor old)
+				{
+					old.SelectionChanged -= OnItemSelectedFromUI;
+				}
+
+				if (Element.ItemsSource == null || !Element.ItemsSource.Cast<object>().Any())
+				{
+					Control.Adaptor = EmptyItemAdaptor.Create(Element);
+				}
+				else if (Element.ItemTemplate == null)
+				{
+					Control.Adaptor = CreateDefaultItemAdaptor(Element);
+				}
+				else
+				{
+					Control.Adaptor = CreateItemAdaptor(Element);
+				}
+
+				if (Control.Adaptor is ItemTemplateAdaptor adaptor)
+				{
+					adaptor.SelectionChanged += OnItemSelectedFromUI;
+				}
+			}
+		}
+
+		protected virtual void OnItemSelectedFromUI(object sender, CollectionViewSelectionChangedEventArgs e)
 		{
 		}
 
-		void OnScrolled(object sender, ItemsViewScrolledEventArgs e)
+		void OnScrolled(object sender, TCollectionViewScrolledEventArgs e)
 		{
-			Element.SendScrolled(e);
+			Element.SendScrolled(new ItemsViewScrolledEventArgs
+			{
+				HorizontalDelta = Forms.ConvertToScaledDP(e.HorizontalDelta),
+				HorizontalOffset = Forms.ConvertToScaledDP(e.HorizontalOffset),
+				VerticalDelta = Forms.ConvertToScaledDP(e.VerticalDelta),
+				VerticalOffset = Forms.ConvertToScaledDP(e.VerticalOffset),
+				FirstVisibleItemIndex = e.FirstVisibleItemIndex,
+				CenterItemIndex = e.CenterItemIndex,
+				LastVisibleItemIndex = e.LastVisibleItemIndex,
+			});
+
 			if (Element.RemainingItemsThreshold >= 0)
 			{
 				if (Control.Adaptor.Count - 1 - e.LastVisibleItemIndex <= Element.RemainingItemsThreshold)
@@ -123,11 +173,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (e.Mode == ScrollToMode.Position)
 			{
-				Control.ScrollTo(e.Index, e.ScrollToPosition, e.IsAnimated);
+				Control.ScrollTo(e.Index, (TScrollToPosition)e.ScrollToPosition, e.IsAnimated);
 			}
 			else
 			{
-				Control.ScrollTo(e.Item, e.ScrollToPosition, e.IsAnimated);
+				Control.ScrollTo(e.Item, (TScrollToPosition)e.ScrollToPosition, e.IsAnimated);
 			}
 		}
 
@@ -159,43 +209,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				}
 			}
 		}
-
-		protected void UpdateAdaptor(bool initialize)
-		{
-			if (!initialize)
-			{
-				if (Element.ItemsSource == null || !Element.ItemsSource.Cast<object>().Any())
-				{
-					Control.Adaptor = EmptyItemAdaptor.Create(Element);
-				}
-				else if (Element.ItemTemplate == null)
-				{
-					Control.Adaptor = new ItemDefaultTemplateAdaptor(Element);
-				}
-				else
-				{
-					Control.Adaptor = new ItemTemplateAdaptor(Element);
-					Control.Adaptor.ItemSelected += OnItemSelectedFromUI;
-				}
-			}
-		}
-
-		protected virtual void UpdateHorizontalScrollBarVisibility()
-		{
-			Control.HorizontalScrollBarVisiblePolicy = Element.HorizontalScrollBarVisibility.ToPlatform();
-		}
-
-		protected virtual void UpdateVerticalScrollBarVisibility()
-		{
-			Control.VerticalScrollBarVisiblePolicy = Element.VerticalScrollBarVisibility.ToPlatform();
-		}
-
-		void UpdateFocusedItemScrollPosition(bool init)
-		{
-			if (init && Specific.GetFocusedItemScrollPosition(Element) == ScrollToPosition.MakeVisible)
-				return;
-			Control.FocusedItemScrollPosition = Specific.GetFocusedItemScrollPosition(Element);
-		}
 	}
 
 	static class ItemsLayoutExtension
@@ -205,17 +218,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			switch (layout)
 			{
 				case LinearItemsLayout listItemsLayout:
-					return new LinearLayoutManager(listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal, sizing, Forms.ConvertToScaledPixel(listItemsLayout.ItemSpacing));
+					return new LinearLayoutManager(listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal, (TItemSizingStrategy)sizing, Forms.ConvertToScaledPixel(listItemsLayout.ItemSpacing));
 				case GridItemsLayout gridItemsLayout:
 					return new GridLayoutManager(gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal,
-						gridItemsLayout.Span,
-						sizing,
-						Forms.ConvertToScaledPixel(gridItemsLayout.VerticalItemSpacing),
-						Forms.ConvertToScaledPixel(gridItemsLayout.HorizontalItemSpacing));
+												 gridItemsLayout.Span,
+												 (TItemSizingStrategy)sizing,
+												 Forms.ConvertToScaledPixel(gridItemsLayout.VerticalItemSpacing),
+												 Forms.ConvertToScaledPixel(gridItemsLayout.HorizontalItemSpacing));
 				default:
 					break;
 			}
-
 			return new LinearLayoutManager(false);
 		}
 	}

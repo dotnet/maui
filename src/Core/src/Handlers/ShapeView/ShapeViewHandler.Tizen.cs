@@ -8,10 +8,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override MauiShapeView CreatePlatformView()
 		{
-			return new MauiShapeView(PlatformParent)
+			return new MauiShapeView()
 			{
-				MinimumWidth = MinimumSize.ToScaledPixel(),
-				MinimumHeight = MinimumSize.ToScaledPixel()
+				MinimumSize = new Tizen.NUI.Size2D(MinimumSize.ToScaledPixel(), MinimumSize.ToScaledPixel())
 			};
 		}
 

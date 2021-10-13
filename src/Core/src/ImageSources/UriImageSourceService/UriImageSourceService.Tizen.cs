@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Tizen.UIExtensions.ElmSharp;
+using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui
 {
@@ -21,8 +21,8 @@ namespace Microsoft.Maui
 
 			try
 			{
-				var isLoadComplated = await image.LoadAsync(uri, cancellationToken);
-
+				var isLoadComplated = await image.LoadAsync(uri);
+				
 				if (!isLoadComplated)
 					throw new InvalidOperationException($"Unable to load image URI '{uri}'.");
 

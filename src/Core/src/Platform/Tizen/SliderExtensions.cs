@@ -1,6 +1,5 @@
-﻿using ElmSharp;
-using Tizen.UIExtensions.ElmSharp;
-using EColor = ElmSharp.Color;
+﻿using Tizen.UIExtensions.NUI.GraphicsView;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform
 {
@@ -26,15 +25,15 @@ namespace Microsoft.Maui.Platform
 			UpdateMinimumTrackColor(platformSlider, slider, null);
 		}
 
-		public static void UpdateMinimumTrackColor(this Slider platformSlider, ISlider slider, EColor? defaultMinTrackColor)
+		public static void UpdateMinimumTrackColor(this Slider platformSlider, ISlider slider, Color? defaultMinTrackColor)
 		{
 			if (slider.MinimumTrackColor == null)
 			{
 				if (defaultMinTrackColor != null)
-					platformSlider.SetBarColor(defaultMinTrackColor.Value);
+					platformSlider.MinimumTrackColor = defaultMinTrackColor.ToNative();
 			}
 			else
-				platformSlider.SetBarColor(slider.MinimumTrackColor.ToPlatformEFL());
+				platformSlider.MinimumTrackColor = slider.MinimumTrackColor.ToNative();
 		}
 
 		public static void UpdateMaximumTrackColor(this Slider platformSlider, ISlider slider)
@@ -42,16 +41,16 @@ namespace Microsoft.Maui.Platform
 			UpdateMaximumTrackColor(platformSlider, slider, null);
 		}
 
-		public static void UpdateMaximumTrackColor(this Slider platformSlider, ISlider slider, EColor? defaultMaxTrackColor)
+		public static void UpdateMaximumTrackColor(this Slider platformSlider, ISlider slider, Color? defaultMaxTrackColor)
 		{
 			if (slider.MaximumTrackColor == null)
 			{
 				if (defaultMaxTrackColor != null)
-					platformSlider.SetBackgroundColor(defaultMaxTrackColor.Value);
+					platformSlider.MaximumTrackColor = defaultMaxTrackColor.ToNative();
 			}
 			else
 			{
-				platformSlider.SetBackgroundColor(slider.MaximumTrackColor.ToPlatformEFL());
+				platformSlider.MaximumTrackColor = slider.MaximumTrackColor.ToNative();
 			}
 		}
 
@@ -60,16 +59,16 @@ namespace Microsoft.Maui.Platform
 			UpdateThumbColor(platformSlider, slider, null);
 		}
 
-		public static void UpdateThumbColor(this Slider platformSlider, ISlider slider, EColor? defaultThumbColor)
+		public static void UpdateThumbColor(this Slider platformSlider, ISlider slider, Color? defaultThumbColor)
 		{
 			if (slider.ThumbColor == null)
 			{
 				if (defaultThumbColor != null)
-					platformSlider.SetHandlerColor(defaultThumbColor.Value);
+					platformSlider.ThumbColor = defaultThumbColor.ToNative();
 			}
 			else
 			{
-				platformSlider.SetHandlerColor(slider.ThumbColor.ToPlatformEFL());
+				platformSlider.ThumbColor = slider.ThumbColor.ToNative();
 			}
 		}
 	}

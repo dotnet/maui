@@ -1,14 +1,16 @@
 using System;
-using ElmSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Tizen.Applications;
+using Tizen.NUI;
 
 namespace Microsoft.Maui
 {
-	public abstract class MauiApplication : CoreUIApplication, IPlatformApplication
+	public abstract class MauiApplication : NUIApplication, IPlatformApplication
 	{
+		internal Func<bool>? _handleBackButtonPressed;
+
 		IMauiContext _applicationContext = null!;
 
 		protected MauiApplication()
@@ -21,31 +23,7 @@ namespace Microsoft.Maui
 
 		protected override void OnPreCreate()
 		{
-			get
-			{
-				IWindow? window = null;
-				_virtualWindow?.TryGetTarget(out window);
-				return window;
-			}
-		}
-
-			Elementary.Initialize();
-			Elementary.ThemeOverlay();
-
-			var mauiApp = CreateMauiApp();
-
-			var rootContext = new MauiContext(mauiApp.Services);
-
-			var platformWindow = CoreAppExtensions.GetDefaultWindow();
-			platformWindow.Initialize();
-			rootContext.AddWeakSpecific(platformWindow);
-
-			_applicationContext = rootContext.MakeApplicationScope(this);
-
-			Services = _applicationContext.Services;
-
-			Elementary.Initialize();
-			Elementary.ThemeOverlay();
+			base.OnPreCreate();
 
 			var mauiApp = CreateMauiApp();
 
@@ -75,18 +53,12 @@ namespace Microsoft.Maui
 
 			this.CreatePlatformWindow(Application);
 
-			var tizenWindow = mauiContext.Context?.MainWindow;
+			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
+		}
 
-			if (tizenWindow == null)
-				throw new InvalidOperationException($"The {nameof(tizenWindow)} instance was not found.");
-
-			var activationState = new ActivationState(mauiContext);
-			var window = Application.CreateWindow(activationState);
-
-			_virtualWindow = new WeakReference<IWindow>(window);
-			tizenWindow.SetWindowHandler(window, mauiContext);
-
-			return tizenWindow;
+		public void SetBackButtonPressedHandler(Func<bool> handler)
+		{
+			_handleBackButtonPressed = handler;
 		}
 
 		protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
@@ -144,10 +116,6 @@ namespace Microsoft.Maui
 		}
 
 		public static new MauiApplication Current { get; private set; } = null!;
-
-		internal IMauiContext MauiApplicationContext { get; private set; } = null!;
-
-		public Window MainWindow { get; protected set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
 

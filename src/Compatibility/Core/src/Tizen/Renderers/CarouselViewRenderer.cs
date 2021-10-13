@@ -1,30 +1,38 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using ElmSharp;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
+using Tizen.UIExtensions.NUI;
+using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class CarouselViewRenderer : ItemsViewRenderer<CarouselView, Native.CarouselView>
+	public class CarouselViewRenderer : ItemsViewRenderer<CarouselView, TCollectionView>
 	{
 		List<View> _oldViews = new List<View>();
-		SmartEvent _animationStart;
 
 		public CarouselViewRenderer()
 		{
 			RegisterPropertyHandler(CarouselView.ItemsLayoutProperty, UpdateItemsLayout);
-			RegisterPropertyHandler(CarouselView.IsBounceEnabledProperty, UpdateIsBounceEnabled);
 			RegisterPropertyHandler(CarouselView.IsSwipeEnabledProperty, UpdateIsSwipeEnabled);
 			RegisterPropertyHandler(CarouselView.PositionProperty, UpdatePositionFromElement);
 			RegisterPropertyHandler(CarouselView.CurrentItemProperty, UpdateCurrentItemFromElement);
 		}
 
-		protected override Native.CarouselView CreateNativeControl(EvasObject parent)
+		protected override TCollectionView CreateNativeControl()
 		{
-			return new Native.CarouselView(parent);
+			return new TCollectionView();
+		}
+
+		protected override ItemTemplateAdaptor CreateItemAdaptor(ItemsView view)
+		{
+			return new CarouselViewItemTemplateAdaptor(view);
+		}
+
+		protected override ItemTemplateAdaptor CreateDefaultItemAdaptor(ItemsView view)
+		{
+			return new CarouselViewItemDefaultTemplateAdaptor(view);
 		}
 
 		protected override IItemsLayout GetItemsLayout()
@@ -38,32 +46,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (e.NewElement != null)
 			{
 				Control.Scrolled += OnScrolled;
-				Control.Scroll.DragStart += OnDragStart;
-				Control.Scroll.DragStop += OnDragStop;
-				_animationStart = new SmartEvent(Control.Scroll, Control.Scroll.RealHandle, ThemeConstants.Scroller.Signals.StartScrollAnimation);
-				_animationStart.On += OnScrollStart;
+				Control.ScrollView.ScrollDragStarted += OnDragStart;
+				Control.ScrollView.ScrollDragEnded += OnDragStop;
+				Control.ScrollView.ScrollAnimationStarted += OnScrollStart;
 			}
 			Application.Current.Dispatcher.Dispatch(() =>
 			{
-				UpdatePositionFromElement(false);
-				UpdateCurrentItemFromElement(false);
+				if (!IsDisposed)
+				{
+					UpdatePositionFromElement(false);
+					UpdateCurrentItemFromElement(false);
+				}
 			});
-		}
-
-		protected override void UpdateHorizontalScrollBarVisibility()
-		{
-			var visibility = Element.HorizontalScrollBarVisibility;
-			if (visibility == ScrollBarVisibility.Default)
-				visibility = ScrollBarVisibility.Never;
-			Control.HorizontalScrollBarVisiblePolicy = visibility.ToPlatform();
-		}
-
-		protected override void UpdateVerticalScrollBarVisibility()
-		{
-			var visibility = Element.VerticalScrollBarVisibility;
-			if (visibility == ScrollBarVisibility.Default)
-				visibility = ScrollBarVisibility.Never;
-			Control.VerticalScrollBarVisiblePolicy = visibility.ToPlatform();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -79,13 +73,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 		{
 			if (disposing)
 			{
-				if (Element != null)
-				{
-					Control.Scrolled -= OnScrolled;
-					Control.Scroll.DragStart -= OnDragStart;
-					Control.Scroll.DragStop -= OnDragStop;
-					_animationStart.On -= OnScrollStart;
-				}
+				Control.Scrolled -= OnScrolled;
+				Control.ScrollView.ScrollDragStarted -= OnDragStart;
+				Control.ScrollView.ScrollDragEnded -= OnDragStop;
+				Control.ScrollView.ScrollAnimationStarted -= OnScrollStart;
 			}
 			base.Dispose(disposing);
 		}
@@ -107,12 +98,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			Element.IsScrolling = true;
 		}
 
-		void OnScrolled(object sender, ItemsViewScrolledEventArgs e)
+		void OnScrolled(object sender, CollectionViewScrolledEventArgs e)
 		{
 			var scrolledIndex = e.CenterItemIndex;
 			Element.SetValueFromRenderer(CarouselView.PositionProperty, scrolledIndex);
 			Element.SetValueFromRenderer(CarouselView.CurrentItemProperty, Control.Adaptor[scrolledIndex]);
-			Control.Adaptor.RequestItemSelected(Control.Adaptor[scrolledIndex]);
+
+			if (0 <= scrolledIndex && scrolledIndex < Control.Count)
+				Control.RequestItemSelect(scrolledIndex);
+
 			Element.IsScrolling = false;
 
 			if (Control.Adaptor is ItemTemplateAdaptor adaptor)
@@ -194,51 +188,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 
 			if (position > -1 && position < Control.Adaptor.Count)
 			{
-				var scrollerIndex = Control.LayoutManager.IsHorizontal ? Control.Scroll.HorizontalPageIndex : Control.Scroll.VerticalPageIndex;
-				if (position != scrollerIndex)
-					Control.ScrollTo(position);
-			}
-		}
-
-		void UpdateIsBounceEnabled()
-		{
-			if (Element.IsBounceEnabled)
-			{
-				if (Control.LayoutManager.IsHorizontal)
-				{
-					Control.Scroll.HorizontalBounce = true;
-					Control.Scroll.VerticalBounce = false;
-				}
-				else
-				{
-					Control.Scroll.HorizontalBounce = false;
-					Control.Scroll.VerticalBounce = true;
-				}
-			}
-			else
-			{
-				Control.Scroll.HorizontalBounce = false;
-				Control.Scroll.VerticalBounce = false;
+				Control.ScrollTo(position, animate: true);
 			}
 		}
 
 		void UpdateIsSwipeEnabled()
 		{
-			if (Element.IsSwipeEnabled)
-			{
-				Control.Scroll.ScrollBlock = ScrollBlock.None;
-			}
-			else
-			{
-				if (Control.LayoutManager.IsHorizontal)
-				{
-					Control.Scroll.ScrollBlock = ScrollBlock.Horizontal;
-				}
-				else
-				{
-					Control.Scroll.ScrollBlock = ScrollBlock.Vertical;
-				}
-			}
+			Control.ScrollView.ScrollEnabled = Element.IsSwipeEnabled;
 		}
 	}
 }

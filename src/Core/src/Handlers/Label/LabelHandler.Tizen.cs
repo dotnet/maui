@@ -1,19 +1,11 @@
 using System;
-using Tizen.UIExtensions.ElmSharp;
+using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ViewHandler<ILabel, Label>
 	{
-		protected override Label CreatePlatformView()
-		{
-			var label = new Label(PlatformParent)
-			{
-				// Fix me : it is workaround code, LineBreakMode is not working when Label was measured but we set LineBreakMode as WordWrap at initialize time, it works
-				LineBreakMode = Tizen.UIExtensions.Common.LineBreakMode.WordWrap
-			};
-			return label;
-		}
+		protected override Label CreatePlatformView() => new();
 
 		public static void MapBackground(ILabelHandler handler, ILabel label)
 		{

@@ -3,9 +3,8 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
-using ElmSharp;
-using ElmSharp.Accessible;
-using Tizen.UIExtensions.ElmSharp;
+using Tizen.UIExtensions.NUI;
+using NView = Tizen.NUI.BaseComponents.View;
 using static Microsoft.Maui.Primitives.Dimension;
 using Rect = Microsoft.Maui.Graphics.Rect;
 using System.Linq;
@@ -14,15 +13,12 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class ViewExtensions
 	{
-		public static void UpdateIsEnabled(this EvasObject platformView, IView view)
+		public static void UpdateIsEnabled(this NView nativeView, IView view)
 		{
-			if (!(platformView is Widget widget))
-				return;
-
-			widget.IsEnabled = view.IsEnabled;
+			nativeView.SetEnable(view.IsEnabled);
 		}
 
-		public static void Focus(this EvasObject platformView, FocusRequest request)
+		public static void UpdateVisibility(this NView nativeView, IView view)
 		{
 			// TODO: Implement Focus on Tizen (ref #4588)
 		}
@@ -54,7 +50,7 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		public static void UpdateBackground(this EvasObject platformView, IView view)
+		public static void UpdateBackground(this NView nativeView, IView view)
 		{
 			if (view.Background is ImageSourcePaint image)
 			{
@@ -80,64 +76,24 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static async Task UpdateBackgroundImageSourceAsync(this EvasObject platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		public static void UpdateOpacity(this NView nativeView, IView view)
 		{
-			if (provider == null)
-				return;
-
-			if (platformView is WrapperView canvas)
-			{
-				if (imageSource != null)
-				{
-					var bgImage = canvas.Children.OfType<MauiBackgroundImage>().FirstOrDefault();
-					if (bgImage == null)
-					{
-						bgImage = new MauiBackgroundImage(canvas);
-					}
-					var service = provider.GetRequiredImageSourceService(imageSource);
-					await service.GetImageAsync(imageSource, bgImage);
-				}
-				else
-				{
-					var bgImage = canvas.Children.OfType<MauiBackgroundImage>().FirstOrDefault();
-					if (bgImage != null)
-					{
-						canvas.Children.Remove(bgImage);
-						bgImage?.Unrealize();
-					}
-				}
-			}
+			nativeView.Opacity = (float)view.Opacity;
 		}
 
-		public static void UpdateBorder(this EvasObject platformView, IView view)
-		{
-			var border = (view as IBorder)?.Border;
-
-			if (platformView is WrapperView wrapperView)
-				wrapperView.Border = border;
-		}
-
-		public static void UpdateOpacity(this EvasObject platformView, IView view)
-		{
-			if (platformView is Widget widget)
-			{
-				widget.Opacity = (int)(view.Opacity * 255.0);
-			}
-		}
-
-		public static void UpdateClip(this EvasObject platformView, IView view)
+		public static void UpdateClip(this NView nativeView, IView view)
 		{
 			if (platformView is WrapperView wrapper)
 				wrapper.Clip = view.Clip;
 		}
 
-		public static void UpdateShadow(this EvasObject platformView, IView view)
+		public static void UpdateShadow(this NView nativeView, IView view)
 		{
 			if (platformView is WrapperView wrapper)
 				wrapper.Shadow = view.Shadow;
 		}
 
-		public static void UpdateAutomationId(this EvasObject platformView, IView view)
+		public static void UpdateAutomationId(this NView nativeView, IView view)
 		{
 			{
 				//TODO: EvasObject.AutomationId is supported from tizen60.
@@ -145,56 +101,53 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateSemantics(this EvasObject platformView, IView view)
+		public static void UpdateSemantics(this NView nativeView, IView view)
 		{
-			var semantics = view.Semantics;
-			var accessibleObject = platformView as IAccessibleObject;
-
-			if (semantics == null || accessibleObject == null)
-				return;
-
-			accessibleObject.Name = semantics.Description;
-			accessibleObject.Description = semantics.Hint;
 		}
 
-		public static void InvalidateMeasure(this EvasObject platformView, IView view)
+		public static void InvalidateMeasure(this NView nativeView, IView view)
 		{
-			platformView.MarkChanged();
+			(nativeView.GetParent() as NView)?.Layout?.RequestLayout();
 		}
 
-		public static void UpdateWidth(this EvasObject platformView, IView view)
+		public static void UpdateWidth(this NView nativeView, IView view)
 		{
 			UpdateSize(platformView, view);
 		}
 
-		public static void UpdateHeight(this EvasObject platformView, IView view)
+		public static void UpdateHeight(this NView nativeView, IView view)
 		{
 			UpdateSize(platformView, view);
 		}
 
-		public static void UpdateMinimumWidth(this EvasObject platformView, IView view)
+		public static void UpdateMinimumWidth(this NView nativeView, IView view)
 		{
-			UpdateSize(platformView, view);
+			nativeView.MinimumSize = new Tizen.NUI.Size2D(view.MinimumWidth.ToScaledPixel(), view.MinimumHeight.ToScaledPixel());
 		}
 
-		public static void UpdateMinimumHeight(this EvasObject platformView, IView view)
+		public static void UpdateMinimumHeight(this NView nativeView, IView view)
 		{
-			UpdateSize(platformView, view);
+			nativeView.MinimumSize = new Tizen.NUI.Size2D(view.MinimumWidth.ToScaledPixel(), view.MinimumHeight.ToScaledPixel());
 		}
 
-		public static void UpdateMaximumWidth(this EvasObject platformView, IView view)
+		public static void UpdateMaximumWidth(this NView nativeView, IView view)
 		{
-			UpdateSize(platformView, view);
+			int maximumWidth = view.MaximumWidth == double.PositiveInfinity ? int.MaxValue : view.MaximumWidth.ToScaledPixel();
+			int maximumHeight = view.MaximumHeight == double.PositiveInfinity ? int.MaxValue : view.MaximumHeight.ToScaledPixel();
+			nativeView.MaximumSize = new Tizen.NUI.Size2D(maximumWidth, maximumHeight);
 		}
 
-		public static void UpdateMaximumHeight(this EvasObject platformView, IView view)
+		public static void UpdateMaximumHeight(this NView nativeView, IView view)
 		{
-			UpdateSize(platformView, view);
+			int maximumWidth = view.MaximumWidth == double.PositiveInfinity ? int.MaxValue : view.MaximumWidth.ToScaledPixel();
+			int maximumHeight = view.MaximumHeight == double.PositiveInfinity ? int.MaxValue : view.MaximumHeight.ToScaledPixel();
+			nativeView.MaximumSize = new Tizen.NUI.Size2D(maximumWidth, maximumHeight);
 		}
 
 		public static void UpdateInputTransparent(this EvasObject platformView, IViewHandler handler, IView view)
 		{
-			platformView.PassEvents = view.InputTransparent;
+			// TODO
+			//platformView.PassEvents = view.InputTransparent;
 		}
 
 		public static void UpdateSize(EvasObject platformView, IView view)
@@ -204,62 +157,9 @@ namespace Microsoft.Maui.Platform
 				// Ignore the initial setting of the value; the initial layout will take care of it
 				return;
 			}
-
 			// Updating the frame (assuming it's an actual change) will kick off a layout update
 			// Handling of the default (-1) width/height will be taken care of by GetDesiredSize
-			platformView.Resize(view.Width.ToScaledPixel(), view.Height.ToScaledPixel());
-		}
-
-		public static void UpdateToolTip(this EvasObject platformView, ToolTip? tooltip)
-		{
-			string? text = tooltip?.Content?.ToString();
-			platformView.SetTooltipText(text);
-		}
-
-		internal static Rect GetPlatformViewBounds(this IView view)
-		{
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-			{
-				return new Rect();
-			}
-
-			return platformView.GetPlatformViewBounds();
-		}
-
-		internal static Rect GetPlatformViewBounds(this EvasObject platformView)
-		{
-			if (platformView == null)
-				return new Rect();
-
-			return platformView.Geometry.ToDP();
-		}
-
-		internal static Matrix4x4 GetViewTransform(this IView view)
-		{
-			var platformView = view?.ToPlatform();
-			if (platformView == null)
-				return new Matrix4x4();
-			return platformView.GetViewTransform();
-		}
-
-		internal static Matrix4x4 GetViewTransform(this EvasObject platformView)
-			=> new Matrix4x4();
-
-		internal static Rect GetBoundingBox(this IView view)
-			=> view.ToPlatform().GetBoundingBox();
-
-		internal static Rect GetBoundingBox(this EvasObject? platformView)
-		{
-			if (platformView == null)
-				return new Rect();
-
-			return platformView.Geometry.ToDP();
-		}
-
-		internal static EvasObject? GetParent(this EvasObject? view)
-		{
-			return view?.Parent;
+			nativeView.UpdateSize(new Tizen.UIExtensions.Common.Size(view.Width, view.Height));
 		}
 
 		// TODO : Should consider a better way to determine that the view has been loaded/unloaded.

@@ -1,6 +1,5 @@
 ﻿using System;
-using ElmSharp;
-using PlatformView = ElmSharp.EvasObject;
+using PlatformView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -95,22 +94,14 @@ namespace Microsoft.Maui.Handlers
 			if (platformView == null)
 				return;
 
-
-			platformView.Deleted += OnPlatformViewDeleted;
-
-			if (platformView is Widget widget)
-			{
-				widget.Focused += OnFocused;
-				widget.Unfocused += OnUnfocused;
-			}
+			platformView.FocusGained += OnFocused;
+			platformView.FocusLost += OnUnfocused;
 		}
 
 		partial void DisconnectingHandler(PlatformView platformView)
 		{
 			if (platformView == null)
 				return;
-
-			platformView.Deleted -= OnPlatformViewDeleted;
 		}
 
 		public virtual bool NeedsContainer

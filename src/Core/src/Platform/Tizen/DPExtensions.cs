@@ -57,6 +57,18 @@ namespace Microsoft.Maui.Platform
 			return (int)Math.Round(dp * DeviceInfo.DPI / 160.0);
 		}
 
+		public static int ToScaledPixel(this double dp)
+		{
+			if (double.IsPositiveInfinity(dp))
+				return int.MaxValue;
+			return (int)Math.Round(dp * DeviceInfo.ScalingFactor);
+		}
+
+		public static double ToScaledDP(this int pixel)
+		{
+			return pixel / DeviceInfo.ScalingFactor;
+		}
+
 		public static float ToScaledDP(this float pixel)
 		{
 			return pixel / (float)DeviceInfo.ScalingFactor;
@@ -72,14 +84,14 @@ namespace Microsoft.Maui.Platform
 			return pixel / DeviceInfo.ScalingFactor;
 		}
 
-		public static int ToEflFontPoint(this double sp)
+		public static double ToPoint(this double dp)
 		{
-			return (int)Math.Round(ConvertToScaledPixel(sp) * DeviceInfo.ElmScale);
+			return dp * 72 / 160.0;
 		}
 
-		public static double ToDPFont(this int eflPt)
+		public static double ToScaledPoint(this double dp)
 		{
-			return ConvertToScaledDP(eflPt / DeviceInfo.ElmScale);
+			return dp.ToScaledPixel() * 72 / DeviceInfo.DPI;
 		}
 
 		public static int ConvertToPixel(double dp)
@@ -89,6 +101,8 @@ namespace Microsoft.Maui.Platform
 
 		public static int ConvertToScaledPixel(double dp)
 		{
+			if (double.IsPositiveInfinity(dp))
+				return int.MaxValue;
 			return (int)Math.Round(dp * DeviceInfo.ScalingFactor);
 		}
 
@@ -104,14 +118,9 @@ namespace Microsoft.Maui.Platform
 			return pixel / DeviceInfo.ScalingFactor;
 		}
 
-		public static int ConvertToEflFontPoint(double sp)
+		public static double ConvertToDPFont(int pt)
 		{
-			return (int)Math.Round(ConvertToScaledPixel(sp) * DeviceInfo.ElmScale);
-		}
-
-		public static double ConvertToDPFont(int eflPt)
-		{
-			return ConvertToScaledDP(eflPt / DeviceInfo.ElmScale);
+			return ConvertToScaledDP(pt * DeviceInfo.DPI / 72.0);
 		}
 
 		public static Point ToPoint(this EPoint point)

@@ -1,23 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ElmSharp;
 using Microsoft.Maui.Controls.Internals;
-using Tizen.UIExtensions.ElmSharp;
-using EBox = ElmSharp.Box;
-using EButton = ElmSharp.Button;
-using EColor = ElmSharp.Color;
-using EProgressBar = ElmSharp.ProgressBar;
-using EWindow = ElmSharp.Window;
-using GColor = Microsoft.Maui.Graphics.Color;
-using TButton = Tizen.UIExtensions.ElmSharp.Button;
-using TColor = Tizen.UIExtensions.Common.Color;
+using Microsoft.Maui.Handlers;
+using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class AlertManager
 	{
-		readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
+		//readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
 
 		internal void Subscribe(Window window)
 		{
@@ -40,13 +32,13 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext mauiContext = window?.MauiContext;
 			EWindow nativeWindow = mauiContext.GetPlatformWindow();
 
-			var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
+			//var toRemove = Subscriptions.Where(s => s.Window == nativeWindow).ToList();
 
-			foreach (AlertRequestHelper alertRequestHelper in toRemove)
-			{
-				alertRequestHelper.Dispose();
-				Subscriptions.Remove(alertRequestHelper);
-			}
+			//foreach (AlertRequestHelper alertRequestHelper in toRemove)
+			//{
+			//	alertRequestHelper.Dispose();
+			//	Subscriptions.Remove(alertRequestHelper);
+			//}
 		}
 	}
 

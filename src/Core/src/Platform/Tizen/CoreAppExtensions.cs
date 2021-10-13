@@ -3,7 +3,7 @@ using System.Reflection;
 using ElmSharp;
 using Microsoft.Maui.LifecycleEvents;
 using Tizen.Applications;
-using EWindow = ElmSharp.Window;
+using Tizen.NUI;
 
 namespace Microsoft.Maui.Platform
 {
@@ -13,9 +13,10 @@ namespace Microsoft.Maui.Platform
 
 		public static IWindow GetWindow(this CoreApplication application)
 		{
+			var nativeWindow = CoreUIAppContext.GetInstance(application)?.MainWindow;
 			foreach (var window in MauiApplication.Current.Application.Windows)
 			{
-				if (window?.Handler?.PlatformView is EWindow win && win == MainWindow)
+				if (window?.Handler?.PlatformView is Window win && win == MainWindow)
 					return window;
 			}
 

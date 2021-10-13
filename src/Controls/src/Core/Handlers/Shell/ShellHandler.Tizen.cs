@@ -1,10 +1,11 @@
 ﻿using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using Tizen.UIExtensions.Common;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class ShellHandler : ViewHandler<Shell, ShellView>
+	public partial class ShellHandler : ViewHandler<Shell, NView>
 	{
 		public static PropertyMapper<Shell, ShellHandler> Mapper =
 				new PropertyMapper<Shell, ShellHandler>(ElementMapper);

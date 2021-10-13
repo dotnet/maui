@@ -1,14 +1,12 @@
 ﻿#nullable enable
-using System;
 using System.Threading.Tasks;
-using Tizen.UIExtensions.Common;
-using Tizen.UIExtensions.ElmSharp;
+using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, Image>
 	{
-		protected override Image CreatePlatformView() => new Image(PlatformParent);
+		protected override Image CreatePlatformView() => new Image();
 
 		protected override void DisconnectHandler(Image platformView)
 		{

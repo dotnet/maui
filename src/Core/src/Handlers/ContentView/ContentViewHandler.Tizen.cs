@@ -1,25 +1,24 @@
 ﻿using System;
-using PlatformView = ElmSharp.EvasObject;
-using EColor = ElmSharp.Color;
 using Tizen.UIExtensions.Common;
+using Tizen.UIExtensions.NUI;
+using TColor = Tizen.UIExtensions.Common.Color;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ContentViewHandler : ViewHandler<IContentView, ContentCanvas>
+	public partial class ContentViewHandler : ViewHandler<IContentView, ContentViewGroup>
 	{
 		IPlatformViewHandler? _contentHandler;
 
-		protected override ContentCanvas CreatePlatformView()
+		protected override ContentViewGroup CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
 
-			var view = new ContentCanvas(PlatformParent, VirtualView)
+			var view = new ContentViewGroup(VirtualView)
 			{
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
 
-			view.Show();
 			return view;
 		}
 
@@ -67,7 +66,6 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.Children.Add(view.ToPlatform(MauiContext));
 				if (view.Handler is IPlatformViewHandler thandler)
 				{
-					thandler?.SetParent(this);
 					_contentHandler = thandler;
 				}
 			}

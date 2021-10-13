@@ -260,9 +260,10 @@ namespace Microsoft.Maui.Controls
 
 			if (e.NewItems != null)
 			{
-				foreach (Element item in e.NewItems)
+				// FixMe. error reference to null
+				foreach (Element? item in e.NewItems)
 				{
-					_visualChildren.Add(item);
+					_visualChildren.Add(item!);
 					OnChildAdded(item);
 
 					if (Parent != null && item is Page)

@@ -1,22 +1,22 @@
 using System;
-using ElmSharp;
+using Tizen.UIExtensions.NUI.GraphicsView;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class CheckBoxHandler : ViewHandler<ICheckBox, Check>
+	public partial class CheckBoxHandler : ViewHandler<ICheckBox, CheckBox>
 	{
-		protected override Check CreatePlatformView() => new Check(PlatformParent);
+		protected override CheckBox CreatePlatformView() => new CheckBox();
 
-		protected override void ConnectHandler(Check platformView)
+		protected override void ConnectHandler(CheckBox platformView)
 		{
 			base.ConnectHandler(platformView);
-			platformView.StateChanged += OnStateChanged;
+			platformView.ValueChanged += OnStateChanged;
 		}
 
-		protected override void DisconnectHandler(Check platformView)
+		protected override void DisconnectHandler(CheckBox platformView)
 		{
-			base.DisconnectHandler(platformView);
-			platformView.StateChanged -= OnStateChanged;
+			base.DisconnectHandler(nativeView);
+			platformView.ValueChanged -= OnStateChanged;
 		}
 
 		public static void MapIsChecked(ICheckBoxHandler handler, ICheckBox check)
@@ -25,11 +25,6 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public static void MapForeground(ICheckBoxHandler handler, ICheckBox check)
-		{
-			handler.PlatformView?.UpdateForeground(check);
-		}
-
-		public static void MapForeground(CheckBoxHandler handler, ICheckBox check)
 		{
 			handler.PlatformView?.UpdateForeground(check);
 		}

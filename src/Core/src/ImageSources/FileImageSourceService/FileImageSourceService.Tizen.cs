@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Tizen.UIExtensions.ElmSharp;
+using Tizen.UIExtensions.NUI;
 using AppFW = Tizen.Applications;
 
 namespace Microsoft.Maui
@@ -24,12 +24,12 @@ namespace Microsoft.Maui
 			{
 				if (!string.IsNullOrEmpty(filename))
 				{
-					var isLoadComplated = await image.LoadAsync(GetPath(filename), cancellationToken);
+					var isLoadComplated = await image.LoadAsync(GetPath(filename));
 
 					if (!isLoadComplated)
 					{
 						//If it fails, call the Load function to remove the previous image.
-						image.Load(string.Empty);
+						image.ResourceUrl = null;
 						throw new InvalidOperationException("Unable to load image file.");
 					}
 
@@ -55,7 +55,9 @@ namespace Microsoft.Maui
 				return res;
 			}
 
+#pragma warning disable CS8605
 			foreach (AppFW.ResourceManager.Category category in Enum.GetValues(typeof(AppFW.ResourceManager.Category)))
+#pragma warning restore CS8605
 			{
 				foreach (var file in new[] { res, res + ".jpg", res + ".png", res + ".gif" })
 				{

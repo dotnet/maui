@@ -1,32 +1,22 @@
 ﻿using System;
-using Tizen.UIExtensions.ElmSharp;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, IndicatorView>
+	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, NView>
 	{
-		protected override IndicatorView CreatePlatformView() => new IndicatorView(PlatformParent);
-
-		protected override void ConnectHandler(IndicatorView platformView)
+		protected override NView CreatePlatformView() => new NView
 		{
-			base.ConnectHandler(platformView);
-			PlatformView.SelectedPosition += OnSelectedPosition;
-		}
+			BackgroundColor = Tizen.NUI.Color.Red
+		};
 
-		protected override void DisconnectHandler(IndicatorView platformView)
-		{
-			base.DisconnectHandler(platformView);
-			PlatformView.SelectedPosition -= OnSelectedPosition;
-		}
 
 		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.PlatformView.UpdateIndicatorCount(indicator);
 		}
 
 		public static void MapPosition(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
-			handler.PlatformView.UpdatePosition(indicator);
 		}
 
 		//TODO : Need to impl
@@ -48,9 +38,5 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapIndicatorShape(IIndicatorViewHandler handler, IIndicatorView indicator) { }
 
-		void OnSelectedPosition(object? sender, SelectedPositionChangedEventArgs e)
-		{
-			VirtualView.Position = e.SelectedPosition;
-		}
 	}
 }

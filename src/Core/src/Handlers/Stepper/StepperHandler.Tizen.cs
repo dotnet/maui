@@ -1,18 +1,19 @@
 using System;
-using ElmSharp;
+using Tizen.UIExtensions.NUI.GraphicsView;
+
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class StepperHandler : ViewHandler<IStepper, Spinner>
+	public partial class StepperHandler : ViewHandler<IStepper, Stepper>
 	{
-		protected override Spinner CreatePlatformView() => new Spinner(PlatformParent) { IsEditable = false };
+		protected override Stepper CreatePlatformView() => new Stepper();
 
-		protected override void ConnectHandler(Spinner platformView)
+		protected override void ConnectHandler(Stepper nativeView)
 		{
 			platformView!.ValueChanged += OnValueChanged;
 		}
 
-		protected override void DisconnectHandler(Spinner platformView)
+		protected override void DisconnectHandler(Stepper platformView)
 		{
 			platformView!.ValueChanged -= OnValueChanged;
 		}

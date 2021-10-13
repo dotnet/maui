@@ -7,7 +7,7 @@ using PlatformView = Android.Graphics.Drawables.Drawable;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Media.ImageSource;
 #elif TIZEN
-using PlatformView = Tizen.UIExtensions.ElmSharp.Image;
+using PlatformView = Tizen.UIExtensions.NUI.Image;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif

@@ -3,7 +3,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Tizen.UIExtensions.ElmSharp;
+using Tizen.UIExtensions.NUI;
+using Tizen.NUI.BaseComponents;
 
 namespace Microsoft.Maui
 {
@@ -20,7 +21,7 @@ namespace Microsoft.Maui
 			try
 			{
 				//TODO : Fix me correctly later.
-				var isLoadComplated = await image.LoadAsync(string.Empty, cancellationToken);
+				var isLoadComplated = await image.LoadAsync(string.Empty);
 
 				if (!isLoadComplated)
 				{
@@ -28,6 +29,7 @@ namespace Microsoft.Maui
 				}
 
 				var result = new ImageSourceServiceResult(image);
+
 				return result;
 			}
 			catch (Exception ex)

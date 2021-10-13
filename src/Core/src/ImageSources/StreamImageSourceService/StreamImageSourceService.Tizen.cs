@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Tizen.UIExtensions.ElmSharp;
+using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui
 {
@@ -24,8 +24,8 @@ namespace Microsoft.Maui
 				if (stream == null)
 					throw new InvalidOperationException("Unable to load image stream.");
 
-				var isLoadComplated = await image.LoadAsync(stream, cancellationToken);
-
+				var isLoadComplated = await image.LoadAsync(stream);
+				
 				if (!isLoadComplated)
 					throw new InvalidOperationException("Unable to decode image from stream.");
 

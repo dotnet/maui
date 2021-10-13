@@ -1,5 +1,6 @@
-﻿using Tizen.UIExtensions.Common;
-using Tizen.UIExtensions.ElmSharp;
+﻿using System;
+using Tizen.UIExtensions.Common;
+using Tizen.UIExtensions.NUI;
 using TLineBreakMode = Tizen.UIExtensions.Common.LineBreakMode;
 using TTextDecorationse = Tizen.UIExtensions.Common.TextDecorations;
 
@@ -14,16 +15,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this Label platformLabel, ILabel label)
 		{
-			platformLabel.TextColor = label.TextColor.ToPlatform();
+			platformLabel.TextColor = label.TextColor == null ? Color.Black : label.TextColor.ToPlatform();
 		}
 
 		public static void UpdateFont(this Label platformLabel, ILabel label, IFontManager fontManager)
 		{
-			platformLabel.BatchBegin();
-			platformLabel.FontSize = label.Font.Size > 0 ? label.Font.Size : 25.ToDPFont();
+			platformLabel.FontSize = label.Font.Size > 0 ? label.Font.Size.ToScaledPoint() : 25d.ToScaledPoint();
 			platformLabel.FontAttributes = label.Font.GetFontAttributes();
-			platformLabel.FontFamily = fontManager.GetFontFamily(label.Font.Family) ?? "";
-			platformLabel.BatchCommit();
+			platformLabel.FontFamily = fontManager.GetFontFamily(label.Font.Family)??"";
 		}
 
 		public static void UpdateHorizontalTextAlignment(this Label platformLabel, ILabel label)

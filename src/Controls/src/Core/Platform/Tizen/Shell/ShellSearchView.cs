@@ -1,366 +1,373 @@
-﻿#nullable enable
+﻿// #nullable enable
 
-using System;
-using System.ComponentModel;
-using ElmSharp;
-using EColor = ElmSharp.Color;
-using TSearchBar = Tizen.UIExtensions.ElmSharp.SearchBar;
-using TTextChangedEventArgs = Tizen.UIExtensions.Common.TextChangedEventArgs;
+// using System;
+// using System.ComponentModel;
+// using ElmSharp;
+// using EColor = ElmSharp.Color;
+// using TSearchBar = Tizen.UIExtensions.ElmSharp.SearchBar;
+// using TTextChangedEventArgs = Tizen.UIExtensions.Common.TextChangedEventArgs;
 
-namespace Microsoft.Maui.Controls.Platform
-{
-	public class ShellSearchView : IDisposable
-	{
-		bool disposedValue;
-		ShellSearchResultList? _searchResultList;
+// namespace Microsoft.Maui.Controls.Platform
+// {
+// 	public class ShellSearchView : IDisposable
+// 	{
+// 		bool disposedValue;
+// 		ShellSearchResultList? _searchResultList;
 
-		public ShellSearchView(SearchHandler searchHandler, IMauiContext? context)
-		{
-			Element = searchHandler;
-			MauiContext = context;
+// 		public ShellSearchView(SearchHandler searchHandler, IMauiContext? context)
+// 		{
+// 			Element = searchHandler;
+// 			MauiContext = context;
 
-			Element.FocusChangeRequested += OnFocusChangedRequested;
-			Element.PropertyChanged += OnElementPropertyChanged;
-			(Element as ISearchHandlerController).ListProxyChanged += OnSearchResultListChanged;
+// 			Element.FocusChangeRequested += OnFocusChangedRequested;
+// 			Element.PropertyChanged += OnElementPropertyChanged;
+// 			(Element as ISearchHandlerController).ListProxyChanged += OnSearchResultListChanged;
 
-			Control = new TSearchBar(PlatformParent)
-			{
-				IsSingleLine = true,
-			};
-			Control.Show();
-			Control.SetInputPanelReturnKeyType(InputPanelReturnKeyType.Search);
-			Control.TextChanged += OnTextChanged;
-			Control.Activated += OnActivated;
-			Control.Focused += OnFocused;
-			Control.Unfocused += OnFocused;
+// 			Control = new TSearchBar(PlatformParent)
+// 			{
+// 				IsSingleLine = true,
+// 			};
+// 			Control.Show();
+// 			Control.SetInputPanelReturnKeyType(InputPanelReturnKeyType.Search);
+// 			Control.TextChanged += OnTextChanged;
+// 			Control.Activated += OnActivated;
+// 			Control.Focused += OnFocused;
+// 			Control.Unfocused += OnFocused;
 
-			UpdateKeyboard();
-			UpdatePlaceholder();
-			UpdatePlaceholderColor();
-			UpdateHorizontalTextAlignment();
-			UpdateTextColor();
-			UpdateFontAttributes();
-			UpdateFontFamily();
-			UpdateFontSize();
-			UpdateBackgroundColor();
-			UpdateQuery();
-			UpdateIsSearchEnabled();
-			UpdateSearchResult();
-		}
+// 			UpdateKeyboard();
+// 			UpdatePlaceholder();
+// 			UpdatePlaceholderColor();
+// 			UpdateHorizontalTextAlignment();
+// 			UpdateTextColor();
+// 			UpdateFontAttributes();
+// 			UpdateFontFamily();
+// 			UpdateFontSize();
+// 			UpdateBackgroundColor();
+// 			UpdateQuery();
+// 			UpdateIsSearchEnabled();
+// 			UpdateSearchResult();
+// 		}
 
-		public SearchHandler Element { get; }
+// 		public SearchHandler Element { get; }
+		
+//		public EvasObject? NativeView => Control;
 
-		public EvasObject? PlatformView => Control;
+//		protected IMauiContext? MauiContext { get; private set; }
 
-		protected IMauiContext? MauiContext { get; private set; }
+//		protected EvasObject? NativeParent
+//		{
+//			get => MauiContext?.Context?.BaseLayout;
+//		}
 
-		protected EvasObject PlatformParent => MauiContext?.GetPlatformParent() ?? throw new InvalidOperationException($"PlatformParent cannot be null here");
+//		ISearchHandlerController SearchHandlerController => Element;
+		
+//		TSearchBar? Control { get; }
 
-		ISearchHandlerController SearchHandlerController => Element;
+//		~ShellSearchView()
+//		{
+//			Dispose(false);
+//		}
 
-		TSearchBar? Control { get; }
+//		public void Dispose()
+//		{
+//			Dispose(true);
+//			GC.SuppressFinalize(this);
+//		}
 
-		~ShellSearchView()
-		{
-			Dispose(false);
-		}
+//		protected virtual void Dispose(bool disposing)
+//		{
+//			if (!disposedValue)
+//			{
+//				if (disposing)
+//				{
+//					Element.FocusChangeRequested -= OnFocusChangedRequested;
+//					Element.PropertyChanged -= OnElementPropertyChanged;
+//					(Element as ISearchHandlerController).ListProxyChanged -= OnSearchResultListChanged;
 
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+//					if (Control != null)
+//					{
+//						Control.TextChanged -= OnTextChanged;
+//						Control.Activated -= OnActivated;
+//						Control.Focused -= OnFocused;
+//						Control.Unfocused -= OnFocused;
+//						Control.Unrealize();
+//					}
+//				}
+//				disposedValue = true;
+//			}
+//		}
 
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!disposedValue)
-			{
-				if (disposing)
-				{
-					Element.FocusChangeRequested -= OnFocusChangedRequested;
-					Element.PropertyChanged -= OnElementPropertyChanged;
-					(Element as ISearchHandlerController).ListProxyChanged -= OnSearchResultListChanged;
+//		void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
+//		{
+//			if (e.PropertyName == nameof(Element.Keyboard))
+//			{
+//				UpdateKeyboard();
+//			}
+//			else if (e.PropertyName == nameof(Element.Placeholder))
+//			{
+//				UpdatePlaceholder();
+//			}
+//			else if (e.PropertyName == nameof(Element.PlaceholderColor))
+//			{
+//				UpdatePlaceholderColor();
+//			}
+//			else if (e.PropertyName == nameof(Element.HorizontalTextAlignment))
+//			{
+//				UpdateHorizontalTextAlignment();
+//			}
+//			else if (e.PropertyName == nameof(Element.TextColor))
+//			{
+//				UpdateTextColor();
+//			}
+//			else if (e.PropertyName == nameof(Element.FontAttributes))
+//			{
+//				UpdateFontAttributes();
+//			}
+//			else if (e.PropertyName == nameof(Element.FontFamily))
+//			{
+//				UpdateFontFamily();
+//			}
+//			else if (e.PropertyName == nameof(Element.FontSize))
+//			{
+//				UpdateFontSize();
+//			}
+//			else if (e.PropertyName == nameof(Element.BackgroundColor))
+//			{
+//				UpdateBackgroundColor();
+//			}
+//			else if (e.PropertyName == nameof(Element.Query))
+//			{
+//				UpdateQuery();
+//			}
+//			else if (e.PropertyName == nameof(Element.IsSearchEnabled))
+//			{
+//				UpdateIsSearchEnabled();
+//			}
+//			else if (e.PropertyName == nameof(Element.ShowsResults))
+//			{
+//				UpdateSearchResult();
+//			}
+//		}
 
-					if (Control != null)
-					{
-						Control.TextChanged -= OnTextChanged;
-						Control.Activated -= OnActivated;
-						Control.Focused -= OnFocused;
-						Control.Unfocused -= OnFocused;
-						Control.Unrealize();
-					}
-				}
-				disposedValue = true;
-			}
-		}
+//		void OnSearchResultListChanged(object? sender, ListProxyChangedEventArgs e)
+//		{
+//			UpdateSearchResult();
+//		}
 
-		void OnElementPropertyChanged(object? sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == nameof(Element.Keyboard))
-			{
-				UpdateKeyboard();
-			}
-			else if (e.PropertyName == nameof(Element.Placeholder))
-			{
-				UpdatePlaceholder();
-			}
-			else if (e.PropertyName == nameof(Element.PlaceholderColor))
-			{
-				UpdatePlaceholderColor();
-			}
-			else if (e.PropertyName == nameof(Element.HorizontalTextAlignment))
-			{
-				UpdateHorizontalTextAlignment();
-			}
-			else if (e.PropertyName == nameof(Element.TextColor))
-			{
-				UpdateTextColor();
-			}
-			else if (e.PropertyName == nameof(Element.FontAttributes))
-			{
-				UpdateFontAttributes();
-			}
-			else if (e.PropertyName == nameof(Element.FontFamily))
-			{
-				UpdateFontFamily();
-			}
-			else if (e.PropertyName == nameof(Element.FontSize))
-			{
-				UpdateFontSize();
-			}
-			else if (e.PropertyName == nameof(Element.BackgroundColor))
-			{
-				UpdateBackgroundColor();
-			}
-			else if (e.PropertyName == nameof(Element.Query))
-			{
-				UpdateQuery();
-			}
-			else if (e.PropertyName == nameof(Element.IsSearchEnabled))
-			{
-				UpdateIsSearchEnabled();
-			}
-			else if (e.PropertyName == nameof(Element.ShowsResults))
-			{
-				UpdateSearchResult();
-			}
-		}
+//		void InitializeSearchResultList()
+//		{
+//			if (_searchResultList != null)
+//			{
+//				return;
+//			}
+//			_searchResultList = new ShellSearchResultList(MauiContext);
+//			_searchResultList.Show();
+//			_searchResultList.ItemSelected += OnResultItemSelected;
+//		}
 
-		void OnSearchResultListChanged(object? sender, ListProxyChangedEventArgs e)
-		{
-			UpdateSearchResult();
-		}
+//		void OnResultItemSelected(object? sender, GenListItemEventArgs e)
+//		{
+//			var data = (e.Item.Data as View)?.BindingContext;
 
-		void InitializeSearchResultList()
-		{
-			if (_searchResultList != null)
-			{
-				return;
-			}
-			_searchResultList = new ShellSearchResultList(MauiContext);
-			_searchResultList.Show();
-			_searchResultList.ItemSelected += OnResultItemSelected;
-		}
+//			if (data != null)
+//			{
+//				SearchHandlerController.ItemSelected(data);
+//				Device.BeginInvokeOnMainThread(() =>
+//				{
+//					DeinitializeSearchResultList();
+//				});
+//			}
+//		}
 
-		void OnResultItemSelected(object? sender, GenListItemEventArgs e)
-		{
-			var data = (e.Item.Data as View)?.BindingContext;
+//		void DeinitializeSearchResultList()
+//		{
+//			if (_searchResultList == null)
+//			{
+//				return;
+//			}
 
-			if (data != null)
-			{
-				SearchHandlerController.ItemSelected(data);
-				Application.Current?.Dispatcher.Dispatch(() =>
-				{
-					DeinitializeSearchResultList();
-				});
-			}
-		}
+//			_searchResultList.ItemSelected -= OnResultItemSelected;
+//			_searchResultList.Unrealize();
+//			_searchResultList = null;
+//		}
 
-		void DeinitializeSearchResultList()
-		{
-			if (_searchResultList == null)
-			{
-				return;
-			}
+//		void UpdateSearchResult()
+//		{
+//			if (SearchHandlerController == null)
+//				return;
 
-			_searchResultList.ItemSelected -= OnResultItemSelected;
-			_searchResultList.Unrealize();
-			_searchResultList = null;
-		}
+//			if (!Element.ShowsResults)
+//			{
+//				DeinitializeSearchResultList();
+//				return;
+//			}
 
-		void UpdateSearchResult()
-		{
-			if (SearchHandlerController == null)
-				return;
+//			if (Control != null &&
+//				Control.IsFocused && SearchHandlerController.ListProxy != null &&
+//				SearchHandlerController.ListProxy.Count > 0 &&
+//				Element.ItemTemplate != null)
+//			{
+//				InitializeSearchResultList();
+//				if (_searchResultList != null)
+//				{
+//					_searchResultList.ItemTemplate = Element.ItemTemplate;
+//					_searchResultList.ItemsSource = SearchHandlerController.ListProxy;
+//					UpdateSearchResultLayout();
+//				}
+//			}
+//			else
+//			{
+//				DeinitializeSearchResultList();
+//			}
+//		}
 
-			if (!Element.ShowsResults)
-			{
-				DeinitializeSearchResultList();
-				return;
-			}
+//		void UpdateIsSearchEnabled()
+//		{
+//			if (Control == null)
+//				return;
 
-			if (Control != null &&
-				Control.IsFocused && SearchHandlerController.ListProxy != null &&
-				SearchHandlerController.ListProxy.Count > 0 &&
-				Element.ItemTemplate != null)
-			{
-				InitializeSearchResultList();
-				if (_searchResultList != null)
-				{
-					_searchResultList.ItemTemplate = Element.ItemTemplate;
-					_searchResultList.ItemsSource = SearchHandlerController.ListProxy;
-					UpdateSearchResultLayout();
-				}
-			}
-			else
-			{
-				DeinitializeSearchResultList();
-			}
-		}
+//			Control.IsEnabled = Element.IsSearchEnabled;
+//		}
 
-		void UpdateIsSearchEnabled()
-		{
-			if (Control == null)
-				return;
+//		void UpdateQuery()
+//		{
+//			if (Control == null)
+//				return;
 
-			Control.IsEnabled = Element.IsSearchEnabled;
-		}
+//			Control.Text = (Element.Query != null) ? Element.Query : "";
+//		}
 
-		void UpdateQuery()
-		{
-			if (Control == null)
-				return;
+//		void UpdateFontAttributes()
+//		{
+//			if (Control == null)
+//				return;
 
-			Control.Text = (Element.Query != null) ? Element.Query : "";
-		}
+//			Control.FontAttributes = Element.FontAttributes.ToNative();
+//		}
 
-		void UpdateFontAttributes()
-		{
-			if (Control == null)
-				return;
+//		void UpdateFontFamily()
+//		{
+//			if (Control == null)
+//				return;
 
-			Control.FontAttributes = Element.FontAttributes.ToPlatform();
-		}
+//			Control.FontFamily = Element.FontFamily;
+//		}
 
-		void UpdateFontFamily()
-		{
-			if (Control == null)
-				return;
+//		void UpdateFontSize()
+//		{
+//			if (Control == null)
+//				return;
 
-			Control.FontFamily = Element.FontFamily;
-		}
+//			Control.FontSize = Element.FontSize;
+//		}
 
-		void UpdateFontSize()
-		{
-			if (Control == null)
-				return;
+//		void UpdateBackgroundColor()
+//		{
+//			if (Control == null)
+//				return;
 
-			Control.FontSize = Element.FontSize;
-		}
+//			var color = Element.BackgroundColor.ToNativeEFL();
+//			Control.BackgroundColor = color == EColor.Default ? EColor.White : color;
+//		}
 
-		void UpdateBackgroundColor()
-		{
-			if (Control == null)
-				return;
+//		void UpdateTextColor()
+//		{
+//			if (Control == null)
+//				return;
 
-			var color = Element.BackgroundColor.ToPlatformEFL();
-			Control.BackgroundColor = color == EColor.Default ? EColor.White : color;
-		}
+//			Control.TextColor = Element.TextColor.ToNative();
+//		}
 
-		void UpdateTextColor()
-		{
-			if (Control == null)
-				return;
+//		void UpdateHorizontalTextAlignment()
+//		{
+//			if (Control == null)
+//				return;
 
-			Control.TextColor = Element.TextColor.ToPlatform();
-		}
+//			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToNative();
+//		}
 
-		void UpdateHorizontalTextAlignment()
-		{
-			if (Control == null)
-				return;
+//		void OnFocusChangedRequested(object? sender, VisualElement.FocusRequestArgs e)
+//		{
+//			if (Control == null)
+//				return;
 
-			Control.HorizontalTextAlignment = Element.HorizontalTextAlignment.ToPlatform();
-		}
+//			Control.SetFocus(e.Focus);
+//			e.Result = true;
+//		}
 
-		void OnFocusChangedRequested(object? sender, VisualElement.FocusRequestArgs e)
-		{
-			if (Control == null)
-				return;
+//		void UpdateKeyboard()
+//		{
+//			if (Control == null)
+//				return;
 
-			Control.SetFocus(e.Focus);
-			e.Result = true;
-		}
+//			Control.Keyboard = Element.Keyboard.ToNative();
+//		}
 
-		void UpdateKeyboard()
-		{
-			if (Control == null)
-				return;
+//		void UpdatePlaceholder()
+//		{
+//			if (Control == null)
+//				return;
 
-			Control.Keyboard = Element.Keyboard.ToPlatform();
-		}
+//			Control.Placeholder = Element.Placeholder;
+//		}
+//		void UpdatePlaceholderColor()
+//		{
+//			if (Control == null)
+//				return;
 
-		void UpdatePlaceholder()
-		{
-			if (Control == null)
-				return;
+//			Control.PlaceholderColor = Element.PlaceholderColor.ToNative();
+//		}
 
-			Control.Placeholder = Element.Placeholder;
-		}
-		void UpdatePlaceholderColor()
-		{
-			if (Control == null)
-				return;
+//		void OnFocused(object? sender, EventArgs e)
+//		{
+//			if (Control == null)
+//				return;
 
-			Control.PlaceholderColor = Element.PlaceholderColor.ToPlatform();
-		}
+//			Element.SetIsFocused(Control.IsFocused);
+//			if (Control.IsFocused)
+//			{
+//				UpdateSearchResult();
+//			}
+//			else
+//			{
+//				if (_searchResultList != null)
+//				{
+//					_searchResultList.Hide();
+//				}
+//				Device.BeginInvokeOnMainThread(() =>
+//				{
+//					Device.StartTimer(TimeSpan.FromMilliseconds(100), () =>
+//					{
+//						DeinitializeSearchResultList();
+//						return false;
+//					});
+//				});
+//			}
+//		}
 
-		void OnFocused(object? sender, EventArgs e)
-		{
-			if (Control == null)
-				return;
+//		void OnActivated(object? sender, EventArgs e)
+//		{
+//			if (Control == null)
+//				return;
 
-			Element.SetIsFocused(Control.IsFocused);
-			if (Control.IsFocused)
-			{
-				UpdateSearchResult();
-			}
-			else
-			{
-				if (_searchResultList != null)
-				{
-					_searchResultList.Hide();
-				}
-				Application.Current?.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
-				{
-					DeinitializeSearchResultList();
-				});
-			}
-		}
+//			Control.HideInputPanel();
+//			(Element as ISearchHandlerController).QueryConfirmed();
+//		}
 
-		void OnActivated(object? sender, EventArgs e)
-		{
-			if (Control == null)
-				return;
+//		void OnTextChanged(object? sender, TTextChangedEventArgs e)
+//		{
+//			Element.SetValueCore(SearchHandler.QueryProperty, (sender as TSearchBar)?.Text);
+//		}
 
-			Control.HideInputPanel();
-			(Element as ISearchHandlerController).QueryConfirmed();
-		}
-
-		void OnTextChanged(object? sender, TTextChangedEventArgs e)
-		{
-			Element.SetValueCore(SearchHandler.QueryProperty, (sender as TSearchBar)?.Text);
-		}
-
-		void UpdateSearchResultLayout()
-		{
-			if (_searchResultList != null && PlatformView != null)
-			{
-				var bound = PlatformView.Geometry;
-				bound.Y += PlatformView.Geometry.Height;
-				_searchResultList.Geometry = bound;
-				_searchResultList.UpdateLayout();
-			}
-		}
-	}
-}
+//		void UpdateSearchResultLayout()
+//		{
+//			if (_searchResultList != null && NativeView != null)
+//			{
+//				var bound = NativeView.Geometry;
+//				bound.Y += NativeView.Geometry.Height;
+//				_searchResultList.Geometry = bound;
+//				_searchResultList.UpdateLayout();
+//			}
+//		}
+//	}
+//}

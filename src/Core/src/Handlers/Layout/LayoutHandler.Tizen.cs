@@ -1,23 +1,24 @@
 ﻿using System;
-using ElmSharp;
+using System.Linq;
+using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class LayoutHandler : ViewHandler<ILayout, LayoutCanvas>
+	public partial class LayoutHandler : ViewHandler<ILayout, LayoutViewGroup>
 	{
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||
 			VirtualView?.Clip != null ||
 			base.NeedsContainer;
 
-		protected override LayoutCanvas CreatePlatformView()
+		protected override LayoutViewGroup CreatePlatformView()
 		{
 			if (VirtualView == null)
 			{
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Canvas");
 			}
 
-			var view = new LayoutCanvas(PlatformParent, VirtualView)
+			var view = new LayoutViewGroup(VirtualView)
 			{
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
@@ -48,10 +49,6 @@ namespace Microsoft.Maui.Handlers
 			foreach (var child in VirtualView.OrderByZIndex())
 			{
 				PlatformView.Children.Add(child.ToPlatform(MauiContext));
-				if (child.Handler is IPlatformViewHandler thandler)
-				{
-					thandler?.SetParent(this);
-				}
 			}
 		}
 
@@ -63,10 +60,6 @@ namespace Microsoft.Maui.Handlers
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
-			if (child.Handler is IPlatformViewHandler childHandler)
-			{
-				childHandler?.SetParent(this);
-			}
 		}
 
 		public void Remove(IView child)
@@ -74,7 +67,7 @@ namespace Microsoft.Maui.Handlers
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child.Handler is IPlatformViewHandler thandler && child?.ToPlatform() is EvasObject childView)
+			if (child.Handler is IPlatformViewHandler thandler && child?.ToPlatform() is NView childView)
 			{
 				PlatformView.Children.Remove(childView);
 				thandler.Dispose();
@@ -86,11 +79,12 @@ namespace Microsoft.Maui.Handlers
 			if (PlatformView == null)
 				return;
 
-			foreach (var child in PlatformView.Children)
-			{
-				child.Unrealize();
-			}
+			var children = PlatformView.Children.ToList();
 			PlatformView.Children.Clear();
+			foreach (var child in children)
+			{
+				child.Dispose();
+			}
 		}
 
 		public void Insert(int index, IView child)
@@ -101,10 +95,6 @@ namespace Microsoft.Maui.Handlers
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
-			if (child.Handler is IPlatformViewHandler childHandler)
-			{
-				childHandler?.SetParent(this);
-			}
 		}
 
 		public void Update(int index, IView child)
@@ -115,14 +105,10 @@ namespace Microsoft.Maui.Handlers
 
 			var toBeRemoved = PlatformView.Children[index];
 			PlatformView.Children.RemoveAt(index);
-			toBeRemoved.Unrealize();
+			toBeRemoved.Dispose();
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
-			if (child.Handler is IPlatformViewHandler childHandler)
-			{
-				childHandler?.SetParent(this);
-			}
 		}
 
 		public void UpdateZIndex(IView child)

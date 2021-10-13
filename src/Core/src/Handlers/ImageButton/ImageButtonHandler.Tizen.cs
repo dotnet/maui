@@ -1,11 +1,14 @@
 using System;
-using TImage = Tizen.UIExtensions.ElmSharp.Image;
+using Tizen.UIExtensions.NUI;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ImageButtonHandler : ViewHandler<IImageButton, MauiImageButton>
+	//TODO: Need to impl
+	public partial class ImageButtonHandler : ViewHandler<IImageButton, Image>
 	{
-		protected override MauiImageButton CreatePlatformView()
+		protected override Image CreatePlatformView() => throw new NotImplementedException();
+		
+		void OnSetImageSource(Image? obj)
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a ImageButton");
 

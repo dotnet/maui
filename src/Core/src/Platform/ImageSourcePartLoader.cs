@@ -12,8 +12,8 @@ using PlatformView = Android.Views.View;
 using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
-using PlatformImage = Tizen.UIExtensions.ElmSharp.Image;
-using PlatformView = ElmSharp.EvasObject;
+using PlatformImage = Tizen.UIExtensions.NUI.Image;
+using PlatformView = Tizen.UIExtensions.NUI.Image;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformImage = System.Object;
 using PlatformView = System.Object;

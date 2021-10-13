@@ -1,12 +1,10 @@
 using System;
-using ElmSharp;
 using Tizen.UIExtensions.Common;
-using Tizen.UIExtensions.ElmSharp;
-using ERect = ElmSharp.Rect;
-using ESize = ElmSharp.Size;
-using Point = Microsoft.Maui.Graphics.Point;
-using Rect = Microsoft.Maui.Graphics.Rect;
+using Tizen.UIExtensions.NUI;
+using Rectangle = Microsoft.Maui.Graphics.Rectangle;
 using Size = Microsoft.Maui.Graphics.Size;
+using NView = Tizen.NUI.BaseComponents.View;
+using TSize = Tizen.UIExtensions.Common.Size;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -14,20 +12,14 @@ namespace Microsoft.Maui.Handlers
 	{
 		bool _disposedValue;
 
-		EvasObject? IPlatformViewHandler.PlatformView => this.ToPlatform();
-		EvasObject? IPlatformViewHandler.ContainerView => ContainerView;
+		NView? IPlatformViewHandler.PlatformView => this.ToPlatform();
+		NView? IPlatformViewHandler.ContainerView => ContainerView;
 
 		public new WrapperView? ContainerView
 		{
 			get => (WrapperView?)base.ContainerView;
 			protected set => base.ContainerView = value;
 		}
-
-		public void SetParent(IPlatformViewHandler parent) => Parent = parent;
-
-		public IPlatformViewHandler? Parent { get; private set; }
-
-		public EvasObject PlatformParent => MauiContext?.GetPlatformParent() ?? throw new InvalidOperationException($"PlatformParent cannot be null here");
 
 		~ViewHandler()
 		{
@@ -37,7 +29,6 @@ namespace Microsoft.Maui.Handlers
 		public bool ForceContainer { get; set; }
 
 		public override bool NeedsContainer =>
-			VirtualView?.Background != null ||
 			VirtualView?.Clip != null ||
 			VirtualView?.Shadow != null ||
 			ForceContainer ||
@@ -56,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			platformView.UpdateBounds(new Rect(ComputeAbsolutePoint(frame), new Size(frame.Width, frame.Height)).ToPixel());
+			platformView.UpdateBounds(frame.ToPixel());
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -95,79 +86,29 @@ namespace Microsoft.Maui.Handlers
 				hasExplicitHeight ? explicitHeight : measured.Height);
 		}
 
-		public virtual ERect GetPlatformContentGeometry()
-		{
-			var platformView = this.ToPlatform();
-
-			if (platformView == null)
-			{
-				return new ERect();
-			}
-			return platformView.Geometry;
-		}
-
 		protected virtual Size Measure(double availableWidth, double availableHeight)
 		{
-			var platformView = this.ToPlatform();
-
-			if (platformView == null)
-			{
-				return new Size(0, 0);
-			}
-			return new ESize(platformView.MinimumWidth, platformView.MinimumHeight).ToDP();
-		}
-
-		protected virtual double ComputeAbsoluteX(Rect frame)
-		{
-			if (Parent != null)
-			{
-				return frame.X + Parent.GetPlatformContentGeometry().X.ToScaledDP();
-			}
-			else
-			{
-				return frame.X;
-			}
-		}
-
-		protected virtual double ComputeAbsoluteY(Rect frame)
-		{
-			if (Parent != null)
-			{
-				return frame.Y + Parent.GetPlatformContentGeometry().Y.ToScaledDP();
-			}
-			else
-			{
-				return frame.Y;
-			}
-		}
-
-		protected virtual Point ComputeAbsolutePoint(Rect frame)
-		{
-			return new Point(ComputeAbsoluteX(frame), ComputeAbsoluteY(frame));
+			return new TSize(PlatformView.NaturalSize.Width, PlatformView.NaturalSize.Height).ToDP();
 		}
 
 		protected override void SetupContainer()
 		{
-			var parent = Parent?.PlatformView as IContainable<EvasObject>;
-			parent?.Children.Remove(PlatformView!);
 
-			ContainerView ??= new WrapperView(PlatformParent);
-			ContainerView.Show();
-			ContainerView.Content = PlatformView;
+			var parent = PlatformView.GetParent();
+			parent?.Remove(PlatformView);
 
-			parent?.Children?.Add(ContainerView);
+			ContainerView ??= new WrapperView();
+			ContainerView.Add(PlatformView);
+
+			parent?.Add(ContainerView);
 		}
 
 		protected override void RemoveContainer()
 		{
-			var parent = Parent?.PlatformView as IContainable<EvasObject>;
-			parent?.Children.Remove(ContainerView!);
-
-			ContainerView!.Content = null;
-			ContainerView?.Unrealize();
-			ContainerView = null;
-
-			parent?.Children.Add(PlatformView!);
+			var parent = ContainerView!.GetParent();
+			parent?.Remove(ContainerView!);
+			ContainerView.Remove(PlatformView);
+			parent?.Add(PlatformView);
 		}
 
 		protected override void OnPlatformViewDeleted()
@@ -183,8 +124,8 @@ namespace Microsoft.Maui.Handlers
 				{
 					var platformView = base.PlatformView;
 					(this as IElementHandler)?.DisconnectHandler();
-					platformView?.Unrealize();
-					ContainerView?.Unrealize();
+					platformView?.Dispose();
+					ContainerView?.Dispose();
 				}
 
 				// TODO: free unmanaged resources (unmanaged objects) and override finalizer

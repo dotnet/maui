@@ -2,20 +2,23 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class BorderHandler : ViewHandler<IBorderView, BorderView>
+	public partial class BorderHandler : ViewHandler<IBorder, ContentViewGroup>
 	{
 		IPlatformViewHandler? _contentHandler;
 
-		protected override BorderView CreatePlatformView()
+		protected override ContentViewGroup CreateNativeView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a Page");
 
+<<<<<<< HEAD
 			var view = new BorderView(PlatformParent, VirtualView)
+=======
+			var view = new ContentViewGroup(VirtualView)
+>>>>>>> f87d0f187 (Add NUI handler)
 			{
 				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
 				CrossPlatformArrange = VirtualView.CrossPlatformArrange
 			};
-			view.Show();
 			return view;
 		}
 
@@ -61,7 +64,6 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.Children.Add(view.ToPlatform(MauiContext));
 				if (view.Handler is IPlatformViewHandler thandler)
 				{
-					thandler?.SetParent(this);
 					_contentHandler = thandler;
 				}
 			}

@@ -1,28 +1,25 @@
 using System;
-using ElmSharp;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Native;
-using Microsoft.Maui.Devices;
+using Tizen.UIExtensions.NUI;
+using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
+using TItemSizingStrategy = Tizen.UIExtensions.NUI.ItemSizingStrategy;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class TableViewRenderer : ViewRenderer<TableView, Native.ListView>
+	public class TableViewRenderer : ViewRenderer<TableView, TCollectionView>
 	{
-		internal static BindableProperty PresentationProperty = BindableProperty.Create("Presentation", typeof(View), typeof(TableSectionBase), null, BindingMode.OneWay, null, null, null, null, null as BindableProperty.CreateDefaultValueDelegate);
-
-		public TableViewRenderer()
-		{
-			RegisterPropertyHandler(TableView.HasUnevenRowsProperty, UpdateHasUnevenRows);
-			RegisterPropertyHandler(TableView.RowHeightProperty, UpdateRowHeight);
-		}
+		List<Cell> _items = new List<Cell>();
+		DataTemplateSelector _dataTemplateSelector = new TableViewTemplateSelector();
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TableView> e)
 		{
 			if (Control == null)
 			{
-				SetNativeControl(CreateNativeControl(Forms.NativeParent));
-				Control.ItemSelected += OnSelected;
+				SetNativeControl(new TCollectionView());
+				Control.SelectionMode = CollectionViewSelectionMode.SingleAlways;
 			}
 
 			if (e.OldElement != null)
@@ -33,22 +30,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			if (e.NewElement != null)
 			{
 				e.NewElement.ModelChanged += OnRootPropertyChanged;
-				(Control as ITableView)?.ApplyTableRoot(e.NewElement.Root);
 			}
-
 			base.OnElementChanged(e);
-		}
-
-		protected virtual Native.ListView CreateNativeControl(EvasObject parent)
-		{
-			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
-			{
-				return new Native.Watch.WatchTableView(parent, Forms.CircleSurface);
-			}
-			else
-			{
-				return new Native.TableView(parent);
-			}
+			Control.LayoutManager = new LinearLayoutManager(false, TItemSizingStrategy.MeasureAllItems);
+			ApplyTableRoot();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -59,47 +44,57 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				{
 					Element.ModelChanged -= OnRootPropertyChanged;
 				}
-
-				if (Control != null)
-				{
-					Control.ItemSelected -= OnSelected;
-				}
 			}
 
 			base.Dispose(disposing);
 		}
 
-		void OnSelected(object sender, GenListItemEventArgs e)
+		void ApplyTableRoot()
 		{
-			var item = e.Item as GenListItem;
-
-			if (item != null)
+			_items.Clear();
+			foreach (TableSection ts in Element.Root)
 			{
-				var clickedCell = item.Data as Native.ListView.ItemContext;
-				if (null != clickedCell)
+				if (!string.IsNullOrEmpty(ts.Title))
 				{
-					Element.Model.RowSelected(clickedCell.Cell);
+					_items.Add(new SectionCell
+					{
+						Text = ts.Title,
+						TextColor = ts.TextColor,
+					});
 				}
+				foreach (var cell in ts)
+				{
+					_items.Add(cell);
+				}
+			}
+
+			var adaptor = new TableViewAdaptor(Element, _items, _dataTemplateSelector);
+
+			adaptor.SelectionChanged += OnSelected;
+
+			Control.Adaptor = adaptor;
+		}
+
+		void OnSelected(object sender, CollectionViewSelectionChangedEventArgs e)
+		{
+			var selected = e.SelectedItems.FirstOrDefault();
+			if (selected != null && !(selected is SectionCell))
+			{
+				Element.Model.RowSelected(selected);
 			}
 		}
 
 		void OnRootPropertyChanged(object sender, EventArgs e)
 		{
-			if (Element != null)
+			ApplyTableRoot();
+		}
+
+		class TableViewTemplateSelector : DataTemplateSelector
+		{
+			protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
 			{
-				(Control as ITableView)?.ApplyTableRoot(Element.Root);
+				return new DataTemplate(() => CellContentFactory.CreateContent(item));
 			}
 		}
-
-		void UpdateHasUnevenRows()
-		{
-			Control.SetHasUnevenRows(Element.HasUnevenRows);
-		}
-
-		void UpdateRowHeight()
-		{
-			Control.UpdateRealizedItems();
-		}
-
 	}
 }
