@@ -27,6 +27,7 @@ namespace Microsoft.Maui
 		public static void UpdateVisibility(this FrameworkElement nativeView, IView view)
 		{
 			double opacity = view.Opacity;
+			var wasCollapsed = nativeView.Visibility == UI.Xaml.Visibility.Collapsed;
 
 			switch (view.Visibility)
 			{
@@ -42,6 +43,12 @@ namespace Microsoft.Maui
 					nativeView.Opacity = opacity;
 					nativeView.Visibility = UI.Xaml.Visibility.Collapsed;
 					break;
+			}
+
+			if (view.Visibility != Visibility.Collapsed && wasCollapsed)
+			{
+				// We may need to force the parent layout (if any) to re-layout to accomodate the new size
+				(nativeView.Parent as FrameworkElement)?.InvalidateMeasure();
 			}
 		}
 
