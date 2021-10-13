@@ -29,10 +29,9 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiImage
+		<MauiIcon
 			Include="Resources\appicon.svg"
 			ForegroundFile="Resources\appiconfg.svg"
-			IsAppIcon="true"
 			Color="#512BD4" />
 
 		<!-- Splash Screen -->
