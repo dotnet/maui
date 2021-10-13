@@ -243,20 +243,37 @@ namespace Microsoft.Maui.Controls.DualScreen
 			base.OnSizeAllocated(width, height);
 		}
 
-		protected override void LayoutChildren(double x, double y, double width, double height)
+		protected override Size ArrangeOverride(Rectangle bounds)
 		{
 			if (_updatingMode)
-				return;
+				return base.ArrangeOverride(bounds); //HACK:FOLDABLE this used to be void
 
 			if (_hasMeasured)
 			{
-				base.LayoutChildren(x, y, width, height);
+				return base.ArrangeOverride(bounds);
 			}
 			else
 			{
 				UpdateMode();
+				return base.ArrangeOverride(bounds); //HACK:FOLDABLE this used to not exist
 			}
+			
 		}
+		//HACK:FOLDABLE was
+		//protected override void LayoutChildren(double x, double y, double width, double height)
+		//{
+		//	if (_updatingMode)
+		//		return;
+
+		//	if (_hasMeasured)
+		//	{
+		//		base.LayoutChildren(x, y, width, height);
+		//	}
+		//	else
+		//	{
+		//		UpdateMode();
+		//	}
+		//}
 
 		void UpdateMode(bool invalidateLayout = true)
 		{
@@ -363,7 +380,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				else
 				{
 					if (invalidateLayout)
-						InvalidateLayout();
+						InvalidateMeasure(); //HACK:FOLDABLE was InvalidateLayout();
 				}
 			}
 			finally

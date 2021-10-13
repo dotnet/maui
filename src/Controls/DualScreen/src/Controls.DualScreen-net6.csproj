@@ -1,28 +1,30 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="Microsoft.Net.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.Maui.Controls.DualScreen</RootNamespace>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;net6.0;$(MauiPlatforms)</TargetFrameworks>
     <AssemblyName>Microsoft.Maui.Controls.DualScreen</AssemblyName>
-    <PackageId>Microsoft.Maui.Controls.DualScreen</PackageId>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(AndroidTargetFrameworks);netstandard2.1;netstandard2.0;net6.0;</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">$(AndroidTargetFrameworks);netstandard2.1;netstandard2.0net6.0;;</TargetFrameworks>
-    <SkipMicrosoftUIXamlCheckTargetPlatformVersion>true</SkipMicrosoftUIXamlCheckTargetPlatformVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <RootNamespace>Microsoft.Maui.Controls.DualScreen</RootNamespace>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <XamarinAndroidSupportSkipVerifyVersions>true</XamarinAndroidSupportSkipVerifyVersions>
-    <GenerateLibraryLayout Condition=" $(TargetFramework.StartsWith('uap10.0')) ">false</GenerateLibraryLayout>
+    <WarningsNotAsErrors>BI1234</WarningsNotAsErrors>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
-  <PropertyGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid'))">
-    <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
+  <Import Project="..\..\..\..\.nuspec\Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+    <!-- remove other AndroidX packages from the MultiTargeting -->
+    <PackageReference Remove="*" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Graphics" Version="6.0.101-preview.9.512" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
+  </ItemGroup>
+  
   <ItemGroup>
     <Compile Include="**\*.shared.cs" />
     <Compile Include="**\*.shared.*.cs" />
-    <Compile Remove="IDualScreenService.shared.cs" />
+    <Compile Include="DualScreenInfo.netstandard.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
@@ -46,22 +48,10 @@
     <Compile Include="**\*.android.*.cs" />
     <AndroidResource Include="Resources\xml\*.xml" />
     <PackageReference Include="Xamarin.AndroidX.Window.WindowJava" Version="1.0.0.3-beta02" />
-    <!--ProjectReference Include="..\..\..\Compatibility\Android.FormsViewGroup\src\Compatibility.Android.FormsViewGroup.csproj"></ProjectReference-->
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj">
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
-    <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj">
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj">
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-  <PackageReference Include="Microsoft.Maui.Graphics" Version="6.0.101-preview.9.512" />
-  </ItemGroup>
+  
   <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
