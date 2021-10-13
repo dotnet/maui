@@ -1,5 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:xct="http://xamarin.com/schemas/2020/toolkit" x:Class="Recipes.Views.HitDetailPage" Title="{Binding Title}" Visual="Material">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:xct="http://xamarin.com/schemas/2020/toolkit" x:Class="Recipes.Views.HitDetailPage"
+             Title="{Binding Title}"
+             Visual="Material"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             ios:Page.UseSafeArea="true"
+             >
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Add to My Recipes" Command="{Binding AddItemCommand}" Clicked="AddItem_Clicked"/>
     </ContentPage.ToolbarItems>
@@ -8,14 +15,14 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="3*" />
-            <RowDefinition Height="7*" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="8*" />
         </Grid.RowDefinitions>
-        <StackLayout Grid.Column="0" Grid.Row="0" VerticalOptions="Fill" HorizontalOptions="Fill" Margin="0,0,0,10">
-            <Image Source="{Binding ImageUrl}" VerticalOptions="FillAndExpand" Aspect="AspectFill" IsVisible="{Binding ImageUrlVisible}" />
-            <Label Text="{Binding RecipeName}" SemanticProperties.HeadingLevel="Level1" FontSize="25" FontAttributes="Bold" IsVisible="{Binding RecipeNameVisible}" TextColor="Black" MaxLines="3" Padding="15,10" BackgroundColor="White"/>
-        </StackLayout>
-        <ScrollView Grid.Column="0" Grid.Row="1" Padding="0,5,0,0">
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Image Source="{Binding ImageUrl}" Aspect="AspectFill" IsVisible="{Binding ImageUrlVisible}" />
+            <Label HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding RecipeName}" SemanticProperties.HeadingLevel="Level1" FontAttributes="Bold" IsVisible="{Binding RecipeNameVisible}" TextColor="Black" MaxLines="3" Padding="15,10" BackgroundColor="White"/>
+        </Grid>
+        <ScrollView Grid.Row="1" Padding="0,5,0,0">
             <StackLayout>
                 <Frame Background="{StaticResource BlueGradient}" CornerRadius="10" HasShadow="False" Margin="0,5">
                     <StackLayout Margin="2">

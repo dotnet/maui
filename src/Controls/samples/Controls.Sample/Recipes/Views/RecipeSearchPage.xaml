@@ -28,13 +28,21 @@
 			SelectionMode="None">
             <vlv:VirtualListView.ItemTemplate>
                 <DataTemplate>
-                    <StackLayout HandlerChanged="OnImageHandlerChanged" HeightRequest="220"  Padding="0,0,0,5" SemanticProperties.Description="{Binding Recipe.RecipeName}">
-                        <StackLayout.GestureRecognizers>
+                    <Grid HandlerChanged="OnImageHandlerChanged" HeightRequest="220" SemanticProperties.Description="{Binding Recipe.RecipeName}">
+                        <Grid.GestureRecognizers>
                             <TapGestureRecognizer Tapped="RecipeSearchPage_Tapped" NumberOfTapsRequired="1"  />
-                        </StackLayout.GestureRecognizers>
-                        <Image Source="{Binding Recipe.ImageUrl}" Aspect="AspectFill"/>
-                        <Label x:Name="recipeName" Padding="10" Text="{Binding Recipe.RecipeName}" LineBreakMode="WordWrap" MaxLines="3" Style="{DynamicResource ListItemTextStyle}" FontSize="16" FontAttributes="Bold" />
-                    </StackLayout>
+                        </Grid.GestureRecognizers>
+                        <Image HeightRequest="220" Source="{Binding Recipe.ImageUrl}" Aspect="AspectFill"/>
+                        <Label Background="White" TextColor="Black"
+                                HorizontalOptions="End"
+                                VerticalOptions="End"
+                                Margin="0,0,0,100"
+                                x:Name="recipeName"
+                                Text="{Binding Recipe.RecipeName}"
+                                LineBreakMode="WordWrap" MaxLines="3" Style="{DynamicResource ListItemTextStyle}"
+                                FontSize="16"
+                                FontAttributes="Bold" />
+                    </Grid>
                 </DataTemplate>
             </vlv:VirtualListView.ItemTemplate>
         </vlv:VirtualListView>
