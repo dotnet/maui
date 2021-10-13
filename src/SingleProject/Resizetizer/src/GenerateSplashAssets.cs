@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			Log.LogMessage(MessageImportance.Low, $"Splash Screen: Intermediate Path " + IntermediateOutputPath);
 
-			foreach (var dpi in DpiPath.UwpSplashScreen)
+			foreach (var dpi in DpiPath.Windows.SplashScreen)
 			{
 				Log.LogMessage(MessageImportance.Low, $"Splash Screen: " + dpi);
 
