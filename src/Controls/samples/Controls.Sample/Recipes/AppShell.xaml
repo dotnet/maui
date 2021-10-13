@@ -9,6 +9,8 @@
         The overall app visual hierarchy is defined here, along with navigation.
     
         https://docs.microsoft.com/xamarin/xamarin-forms/app-fundamentals/shell/
+    
+        Need to Review if NavBarHasShadow=true is also weird on iOS
     -->
     <Shell.Resources>
         <ResourceDictionary>
@@ -18,9 +20,6 @@
                 <Setter Property="Shell.TitleColor" Value="{StaticResource Primary}" />
                 <Setter Property="Shell.DisabledColor" Value="#2BB0EDFF" />
                 <Setter Property="Shell.UnselectedColor" Value="#2BB0EDFF" />
-                <!--
-                Need to Review if this is also weird on XF
-                <Setter Property="Shell.NavBarHasShadow" Value="True" />-->
                 <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Dark=Black, Light=White}" />
                 <Setter Property="Shell.TabBarForegroundColor" Value="{StaticResource Primary}" />
                 <Setter Property="Shell.TabBarUnselectedColor" Value="LightGray" />
