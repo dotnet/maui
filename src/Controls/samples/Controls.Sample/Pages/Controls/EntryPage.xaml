@@ -10,8 +10,7 @@
     </views:BasePage.BindingContext>
     <views:BasePage.Content>
         <ScrollView>
-            <VerticalStackLayout
-                Margin="12">
+            <VerticalStackLayout Margin="12">
                 <Label
                     Text="Basic"
                     Style="{StaticResource Headline}" />
@@ -82,7 +81,6 @@
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Text="123"
-                    Style="{StaticResource Headline}" 
                     Keyboard="Numeric"/>
                 <Label
                     Text="HorizontalTextAlignment"
@@ -97,14 +95,29 @@
                     VerticalTextAlignment="End"
                     Text="This should be on the bottom"
                     HeightRequest="100"/>
-                <Label
+                <HorizontalStackLayout>
+                    <Label
                     x:Name="lblCursor"
                     Text="CursorPosition = 4"
                     Style="{StaticResource Headline}" />
+                    <Slider x:Name="sldCursorPosition" ValueChanged="OnSlideCursorPositionValueChanged" WidthRequest="100"/>
+                </HorizontalStackLayout>
                 <Entry
                     x:Name="entryCursor"
                     Text="Cursor"
                     CursorPosition="4"/>
+                <HorizontalStackLayout>
+                    <Label
+                    x:Name="lblSelection"
+                    Text="SelectionLength = 4"
+                    Style="{StaticResource Headline}" />
+                    <Slider x:Name="sldSelection" ValueChanged="OnSlideSelectionValueChanged" WidthRequest="100"/>
+                </HorizontalStackLayout>
+                <Entry
+                    x:Name="entrySelection"
+                    Text="Selection"
+                    CursorPosition="2"
+                    SelectionLength="4"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

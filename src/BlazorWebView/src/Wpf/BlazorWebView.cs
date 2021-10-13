@@ -59,6 +59,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// </summary>
 		public BlazorWebView()
 		{
+			ComponentsDispatcher = new WpfDispatcher(Application.Current.Dispatcher);
+
 			SetValue(RootComponentsProperty, new RootComponentsCollection());
 			RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
 
@@ -156,7 +158,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
 			var fileProvider = new PhysicalFileProvider(contentRootDir);
 
-			_webviewManager = new WebView2WebViewManager(new WpfWebView2Wrapper(_webview), Services, WpfDispatcher.Instance, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
+			_webviewManager = new WebView2WebViewManager(new WpfWebView2Wrapper(_webview), Services, ComponentsDispatcher, fileProvider, RootComponents.JSComponents, hostPageRelativePath);
 			foreach (var rootComponent in RootComponents)
 			{
 				// Since the page isn't loaded yet, this will always complete synchronously
@@ -164,6 +166,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			}
 			_webviewManager.Navigate("/");
 		}
+
+		private WpfDispatcher ComponentsDispatcher { get; }
 
 		private void HandleRootComponentsCollectionChanged(object sender, NotifyCollectionChangedEventArgs eventArgs)
 		{
@@ -173,7 +177,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			if (_webviewManager != null)
 			{
 				// Dispatch because this is going to be async, and we want to catch any errors
-				WpfDispatcher.Instance.InvokeAsync(async () =>
+				_ = ComponentsDispatcher.InvokeAsync(async () =>
 				{
 					var newItems = eventArgs.NewItems.Cast<RootComponent>();
 					var oldItems = eventArgs.OldItems.Cast<RootComponent>();
