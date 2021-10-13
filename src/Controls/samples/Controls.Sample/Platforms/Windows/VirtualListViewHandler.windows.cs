@@ -1,13 +1,9 @@
 ﻿#nullable enable
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Linq;
+using WStackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 
 namespace Microsoft.Maui
 {
@@ -16,17 +12,29 @@ namespace Microsoft.Maui
 		ItemsRepeaterScrollHost itemsRepeaterScrollHost;
 		ScrollViewer scrollViewer;
 		ItemsRepeater itemsRepeater;
-		IrDataTemplateSelector? dataTemplateSelector;
+		//IrDataTemplateSelector dataTemplateSelector;
 		IrSource? irSource;
-		VirtualListViewDataTemplateSelector templateSelector;
+		IrDataTemplateSelector templateSelector;
+		WStackLayout layout;
 
 		internal PositionalViewSelector PositionalViewSelector { get; private set; }
+
+		Orientation NativeOrientation =>
+			VirtualView.Orientation switch
+			{
+				ListOrientation.Vertical => Orientation.Vertical,
+				ListOrientation.Horizontal => Orientation.Horizontal,
+				_ => Orientation.Vertical
+			};
 
 		protected override ItemsRepeaterScrollHost CreateNativeView()
 		{
 			itemsRepeaterScrollHost = new ItemsRepeaterScrollHost();
 			scrollViewer = new ScrollViewer();
 			itemsRepeater = new ItemsRepeater();
+
+			layout = new WStackLayout { Orientation = NativeOrientation };
+			itemsRepeater.Layout = layout;
 
 			scrollViewer.Content = itemsRepeater;
 			itemsRepeaterScrollHost.ScrollViewer = scrollViewer;
@@ -38,27 +46,19 @@ namespace Microsoft.Maui
 		{
 			base.ConnectHandler(nativeView);
 
-			templateSelector = new VirtualListViewDataTemplateSelector(VirtualView, NativeView.Resources["ContainerTemplate"] as VirtualListViewDataTemplate);
-
+			templateSelector = new IrDataTemplateSelector(VirtualView);
+			itemsRepeater.ItemTemplate = templateSelector;
 			PositionalViewSelector = new PositionalViewSelector(VirtualView);
-			irSource = new IrSource(PositionalViewSelector);
+			irSource = new IrSource(MauiContext, PositionalViewSelector, VirtualView);
 
 			itemsRepeater.ItemsSource = irSource;
-
-			dataTemplateSelector = new IrDataTemplateSelector(MauiContext, PositionalViewSelector);
-			itemsRepeater.ItemTemplate = templateSelector;
-
-			//itemsRepeater.ItemTemplate = dataTemplateSelector;
-			
 		}
-
-
 
 		protected override void DisconnectHandler(ItemsRepeaterScrollHost nativeView)
 		{
 			itemsRepeater.ItemTemplate = null;
-			dataTemplateSelector?.Dispose();
-			dataTemplateSelector = null;
+			//dataTemplateSelector.Dispose();
+			//dataTemplateSelector = null;
 
 			itemsRepeater.ItemsSource = null;
 			irSource = null;
@@ -68,7 +68,7 @@ namespace Microsoft.Maui
 
 		public void InvalidateData()
 		{
-			dataTemplateSelector?.Reset();
+			//dataTemplateSelector?.Reset();
 			irSource?.Reset();
 		}
 
@@ -87,16 +87,14 @@ namespace Microsoft.Maui
 		public static void MapSelectionMode(VirtualListViewHandler handler, IVirtualListView virtualListView)
 		{ }
 
-		public static void MapOrientation(VirtualListViewHandler handler, IVirtualListView virtualListView)
-		{ }
-
-		public static void MapInvalidateData(VirtualListViewHandler handler, IVirtualListView virtualListView)
+		public static void MapInvalidateData(VirtualListViewHandler handler, IVirtualListView virtualListView, object? parameter)
 			=> handler?.InvalidateData();
 
 		public static void MapSetSelected(VirtualListViewHandler handler, IVirtualListView virtualListView, object? parameter)
 		{
 			if (parameter is ItemPosition[] items)
 			{
+				//
 			}
 		}
 
@@ -108,8 +106,29 @@ namespace Microsoft.Maui
 			}
 		}
 
-		public static void MapOrientation(VirtualListViewHandler handler, IVirtualListView virtualListView, object? parameter)
+		public static void MapOrientation(VirtualListViewHandler handler, IVirtualListView virtualListView)
 		{
+			handler.layout.Orientation = handler.NativeOrientation;
+			handler.InvalidateData();
+		}
+
+		internal static void AddLibraryResources(string key, string uri)
+		{
+			var resources = UI.Xaml.Application.Current?.Resources;
+			if (resources == null)
+				return;
+
+			var dictionaries = resources.MergedDictionaries;
+			if (dictionaries == null)
+				return;
+
+			if (!resources.ContainsKey(key))
+			{
+				dictionaries.Add(new UI.Xaml.ResourceDictionary
+				{
+					Source = new Uri(uri)
+				});
+			}
 		}
 	}
 }

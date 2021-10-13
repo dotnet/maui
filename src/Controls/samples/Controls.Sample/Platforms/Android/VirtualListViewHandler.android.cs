@@ -1,6 +1,6 @@
-﻿using Android.Views;
-using Android.Views.Accessibility;
-using AndroidX.Core.View.Accessibility;
+﻿#nullable enable
+
+using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Handlers;
 using System;
@@ -9,9 +9,9 @@ namespace Microsoft.Maui
 {
 	public partial class VirtualListViewHandler : ViewHandler<IVirtualListView, RecyclerView>
 	{
-		RvAdapter adapter;
+		RvAdapter? adapter;
 		RecyclerView recyclerView;
-		RecyclerView.LayoutManager layoutManager;
+		LinearLayoutManager? layoutManager;
 		PositionalViewSelector positionalViewSelector;
 
 		protected override RecyclerView CreateNativeView()
@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 
 		protected override void ConnectHandler(RecyclerView nativeView)
 		{
-			layoutManager = new GridLayoutManager(Context, 1);
+			layoutManager = new LinearLayoutManager(Context);
 			//layoutManager.Orientation = LinearLayoutManager.Horizontal;
 
 			positionalViewSelector = new PositionalViewSelector(VirtualView);
@@ -45,9 +45,9 @@ namespace Microsoft.Maui
 		{
 			recyclerView.ClearOnScrollListeners();
 			recyclerView.SetAdapter(null);
-			adapter.Dispose();
+			adapter?.Dispose();
 			adapter = null;
-			layoutManager.Dispose();
+			layoutManager?.Dispose();
 			layoutManager = null;
 		}
 
@@ -72,32 +72,30 @@ namespace Microsoft.Maui
 
 		public static void MapSelectionMode(VirtualListViewHandler handler, IVirtualListView virtualListView)
 		{ }
-		public static void MapInvalidateData(VirtualListViewHandler handler, IVirtualListView virtualListView)
+
+		public static void MapInvalidateData(VirtualListViewHandler handler, IVirtualListView virtualListView, object? parameter)
 			=> handler.InvalidateData();
 
-		public static void MapSetSelected(VirtualListViewHandler handler, IVirtualListView virtualListView, object parameter)
+		public static void MapSetSelected(VirtualListViewHandler handler, IVirtualListView virtualListView, object? parameter)
 		{
-			handler.adapter.NotifyDataSetChanged();
+			handler.adapter?.NotifyDataSetChanged();
 		}
 
-		public static void MapSetDeselected(VirtualListViewHandler handler, IVirtualListView virtualListView, object parameter)
+		public static void MapSetDeselected(VirtualListViewHandler handler, IVirtualListView virtualListView, object? parameter)
 		{
-			handler.adapter.NotifyDataSetChanged();
+			handler.adapter?.NotifyDataSetChanged();
 		}
 
 		public static void MapOrientation(VirtualListViewHandler handler, IVirtualListView virtualListView)
 		{
-			if (handler.layoutManager is LinearLayoutManager ll)
-			{
-				ll.Orientation = virtualListView.Orientation switch
+			if (handler.layoutManager != null)
+				handler.layoutManager.Orientation = virtualListView.Orientation switch
 				{
 					ListOrientation.Vertical => LinearLayoutManager.Vertical,
 					ListOrientation.Horizontal => LinearLayoutManager.Horizontal,
 					_ => LinearLayoutManager.Vertical
 				};
-			}
-
-			handler.adapter.NotifyDataSetChanged();
+			handler.adapter?.NotifyDataSetChanged();
 		}
 
 		class RvScrollListener : RecyclerView.OnScrollListener

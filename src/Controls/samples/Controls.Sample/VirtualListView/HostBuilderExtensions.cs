@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Hosting;
 using System;
 using System.Collections.Generic;
@@ -11,14 +10,10 @@ namespace Microsoft.Maui
 {
     public static class VirtualListViewHostBuilderExtensions
     {
-		public static MauiAppBuilder UseVirtualListView(this MauiAppBuilder appHostBuilder)
-		{
-			return appHostBuilder.ConfigureMauiHandlers(handlers => {
-				handlers.TryAddHandler(typeof(VirtualListView), typeof(VirtualListViewHandler));
-				handlers.TryAddHandler(typeof(IVirtualListView), typeof(VirtualListViewHandler));
-			});
-		}
-	}
+        public static MauiAppBuilder UseVirtualListView(this MauiAppBuilder builder)
+            => builder.ConfigureMauiHandlers(handlers =>
+                handlers.AddHandler(typeof(IVirtualListView), typeof(VirtualListViewHandler)));
+    }
 
     public static class ViewExtensions
     {

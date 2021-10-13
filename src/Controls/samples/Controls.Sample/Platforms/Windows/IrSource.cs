@@ -2,23 +2,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.Maui
 {
-	internal record IrDataWrapper (PositionInfo position, object data);
-
 	class IrSource : IReadOnlyList<IrDataWrapper>, INotifyCollectionChanged
 	{
-
-		public IrSource(PositionalViewSelector positionalViewSelector)
+		public IrSource(IMauiContext context, PositionalViewSelector positionalViewSelector, IVirtualListView virtualListView)
 		{
+			Context = context;
 			PositionalViewSelector = positionalViewSelector;
+			VirtualListView = virtualListView;
 		}
 
+		public readonly IMauiContext Context;
+
 		readonly PositionalViewSelector PositionalViewSelector;
+		readonly IVirtualListView VirtualListView;
 
 		public event NotifyCollectionChangedEventHandler CollectionChanged;
 
@@ -42,7 +41,9 @@ namespace Microsoft.Maui
 				if (info == null)
 					return default;
 
-				return new(info, PositionalViewSelector?.Adapter?.DataFor(info.Kind, info.SectionIndex, info.ItemIndex));
+				var data = PositionalViewSelector?.Adapter?.DataFor(info.Kind, info.SectionIndex, info.ItemIndex);
+
+				return new(Context, info, data, PositionalViewSelector, VirtualListView);
 			}
 			set => throw new NotImplementedException();
 		}

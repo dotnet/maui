@@ -1,4 +1,5 @@
 ﻿using Android.Content;
+using Android.Runtime;
 using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using System;
@@ -34,6 +35,22 @@ namespace Microsoft.Maui
 		public float DisplayScale =>
 			handler?.Context?.Resources.DisplayMetrics.Density ?? 1;
 
+		public override void OnViewAttachedToWindow(Java.Lang.Object holder)
+		{
+			base.OnViewAttachedToWindow(holder);
+
+			if (holder is RvItemHolder rvItemHolder && rvItemHolder?.ViewContainer?.VirtualView != null)
+				handler.VirtualView.ViewSelector.ViewAttached(rvItemHolder.PositionInfo, rvItemHolder.ViewContainer.VirtualView);
+		}
+
+		public override void OnViewDetachedFromWindow(Java.Lang.Object holder)
+		{
+			if (holder is RvItemHolder rvItemHolder && rvItemHolder?.ViewContainer?.VirtualView != null)
+				handler.VirtualView.ViewSelector.ViewDetached(rvItemHolder.PositionInfo, rvItemHolder.ViewContainer.VirtualView);
+
+			base.OnViewDetachedFromWindow(holder);
+		}
+
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
 		{
 			var info = positionalViewSelector.GetInfo(position);
@@ -60,13 +77,13 @@ namespace Microsoft.Maui
 
 				if (!itemHolder.HasView)
 				{
-					var view = positionalViewSelector?.ViewSelector?.CreateView(info.Kind, data, info.SectionIndex, info.ItemIndex);
+					var view = positionalViewSelector?.ViewSelector?.CreateView(info, data);
 					itemHolder.SwapView(view);
 				}
 
 				itemHolder.Update(info);
 
-				positionalViewSelector?.ViewSelector?.RecycleView(info.Kind, data, itemHolder.ViewContainer.VirtualView, info.SectionIndex, info.ItemIndex);
+				positionalViewSelector?.ViewSelector?.RecycleView(info, data, itemHolder.ViewContainer.VirtualView);
 			}
 		}
 
@@ -88,7 +105,7 @@ namespace Microsoft.Maui
 				_ => null
 			};
 
-			var reuseId = positionalViewSelector.ViewSelector.GetReuseId(info.Kind, data, info.SectionIndex, info.ItemIndex);
+			var reuseId = positionalViewSelector.ViewSelector.GetReuseId(info, data);
 
 			int vt = -1;
 

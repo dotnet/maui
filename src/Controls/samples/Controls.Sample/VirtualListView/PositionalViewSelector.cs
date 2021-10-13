@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Maui
 {
-	internal class PositionalViewSelector
+	internal partial class PositionalViewSelector
 	{
 		public readonly IVirtualListView VirtualListView;
 		public IVirtualListViewAdapter Adapter => VirtualListView?.Adapter;
@@ -20,24 +20,86 @@ namespace Microsoft.Maui
 		const string GlobalHeaderReuseId = "GLOBAL_HEADER";
 		const string GlobalFooterReuseId = "GLOBAL_FOOTER";
 
-		readonly Dictionary<int, int> CachedItemsInSection = new ();
+		readonly Dictionary<int, int> cachedItemsInSection = new ();
 
 		int CachedItemsForSection(int sectionIndex)
 		{
-			if (CachedItemsInSection.TryGetValue(sectionIndex, out var n))
+			if (cachedItemsInSection.TryGetValue(sectionIndex, out var n))
 				return n;
 
 			n = Adapter.ItemsForSection(sectionIndex);
-			CachedItemsInSection.TryAdd(sectionIndex, n);
+			cachedItemsInSection.TryAdd(sectionIndex, n);
 			return n;
 		}
 
 		public void Reset()
 		{
-			CachedItemsInSection.Clear();
+			infoCache.Clear();
+			cachedItemsInSection.Clear();
+			cachedTotalCount = null;
 		}
 
+		int? cachedTotalCount;
+		public int TotalCount
+		{
+			get
+			{
+				if (!cachedTotalCount.HasValue)
+				{
+					var tc = GetTotalCount();
+					if (tc > 0)
+						cachedTotalCount = tc;
+				}
+
+				return cachedTotalCount ?? 0;
+			}
+		}
+
+		int GetTotalCount()
+		{
+			if (Adapter == null)
+				return 0;
+
+			var sum = 0;
+
+			if (HasGlobalHeader)
+				sum += 1;
+
+			if (Adapter != null)
+			{
+				for (int s = 0; s < Adapter.Sections; s++)
+				{
+					if (ViewSelector.SectionHasHeader(s))
+						sum += 1;
+
+					sum += CachedItemsForSection(s);
+
+					if (ViewSelector.SectionHasFooter(s))
+						sum += 1;
+				}
+			}
+
+			if (HasGlobalFooter)
+				sum += 1;
+
+			return sum;
+		}
+
+#if !IOS && !MACCATALYST
+		readonly LRUCache<int, PositionInfo> infoCache = new();
+
 		public PositionInfo GetInfo(int position)
+		{
+			if (infoCache.TryGet(position, out var cachedPositionInfo))
+				return cachedPositionInfo;
+
+			var positionInfo = GetUncachedInfo(position);
+
+			infoCache.AddReplace(position, positionInfo);
+			return positionInfo;
+		}
+
+		PositionInfo GetUncachedInfo(int position)
 		{
 			if (Adapter == null)
 				return null;
@@ -91,141 +153,7 @@ namespace Microsoft.Maui
 				Kind = PositionKind.Footer
 			};
 		}
+#endif
 
-		public (int realSectionIndex, int realItemIndex) GetRealIndexPath(int sectionIndex, int itemIndex)
-		{
-			var realSectionIndex = sectionIndex;
-
-			if (HasGlobalHeader)
-			{
-				if (sectionIndex == 0)
-					return (-1, -1);
-
-				// Global header takes up a section, real adapter is 1 less
-				realSectionIndex--;
-			}
-
-			var realNumberOfSections = Adapter.Sections;
-
-			if (HasGlobalFooter)
-			{
-				if (realSectionIndex >= realNumberOfSections)
-					return (-1, -1);
-			}
-
-			var realItemsInSection = CachedItemsForSection(realSectionIndex);
-
-			var realItemIndex = itemIndex;
-
-			if (ViewSelector.SectionHasHeader(sectionIndex))
-			{
-				realItemIndex--;
-
-				if (itemIndex == 0)
-					return (-1, -1);
-			}
-
-			if (ViewSelector.SectionHasFooter(sectionIndex))
-			{
-				if (realItemIndex >= realItemsInSection)
-					return (-1, -1);
-			}
-
-			return (realSectionIndex, realItemIndex);
-		}
-
-		public PositionInfo GetInfo(int sectionIndex, int itemIndex)
-		{
-			var realSectionIndex = sectionIndex;
-
-			if (HasGlobalHeader)
-			{
-				if (sectionIndex == 0)
-					return PositionInfo.ForHeader(0);
-
-				// Global header takes up a section, real adapter is 1 less
-				realSectionIndex--;
-			}
-
-			var realNumberOfSections = Adapter?.Sections ?? 0;
-
-			if (HasGlobalFooter)
-			{
-				if (realSectionIndex >= realNumberOfSections)
-					return PositionInfo.ForFooter(-1);
-			}
-
-
-			var realItemsInSection = Adapter?.ItemsForSection(realSectionIndex) ?? 0;
-
-			var realItemIndex = itemIndex;
-
-			var itemsAdded = 0;
-
-			if (ViewSelector?.SectionHasHeader(realSectionIndex) ?? false)
-			{
-				itemsAdded++;
-				realItemIndex--;
-
-				if (itemIndex == 0)
-					return PositionInfo.ForSectionHeader(-1, realSectionIndex, realItemsInSection);
-			}
-
-			if (ViewSelector.SectionHasFooter(realSectionIndex))
-			{
-				itemsAdded++;
-
-				if (itemIndex >= realItemsInSection + itemsAdded - 1)
-					return PositionInfo.ForSectionFooter(-1, realSectionIndex, realItemsInSection);
-			}
-
-			return PositionInfo.ForItem(-1, realSectionIndex, realItemIndex, CachedItemsForSection(realSectionIndex), realNumberOfSections);
-		}
-
-		int? cachedTotalCount;
-		public int TotalCount
-		{
-			get
-			{
-				if (!cachedTotalCount.HasValue)
-				{
-					var tc = GetTotalCount();
-					if (tc > 0)
-						cachedTotalCount = tc;
-				}
-
-				return cachedTotalCount ?? 0;
-			}
-		}
-
-		int GetTotalCount()
-		{
-			if (Adapter == null)
-				return 0;
-
-			var sum = 0;
-
-			if (HasGlobalHeader)
-				sum += 1;
-
-			if (Adapter != null)
-			{
-				for (int s = 0; s < Adapter.Sections; s++)
-				{
-					if (ViewSelector.SectionHasHeader(s))
-						sum += 1;
-
-					sum += CachedItemsForSection(s);
-
-					if (ViewSelector.SectionHasFooter(s))
-						sum += 1;
-				}
-			}
-
-			if (HasGlobalFooter)
-				sum += 1;
-
-			return sum;
-		}
 	}
 }
