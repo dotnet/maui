@@ -2,12 +2,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
-using Android.Util;
 using Android.Views;
-using Microsoft.Device.Display;
+//HACK:FOLDABLE using Microsoft.Device.Display;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.DualScreen;
-using Microsoft.Maui.Controls.Platform.Android;
+using Microsoft.Maui.Graphics;
+
 using AView = Android.Views.View;
 
 [assembly: Dependency(typeof(DualScreenService.DualScreenServiceImpl))]
@@ -24,11 +25,11 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		public static void Init(Activity activity)
 		{
-			DependencyService.Register<DualScreenServiceImpl>();
-			DualScreenServiceImpl.Init(activity);
+			//HACK:FOLDABLE DependencyService.Register<DualScreenServiceImpl>();
+			//HACK:FOLDABLE DualScreenServiceImpl.Init(activity);
 		}
 
-		internal class DualScreenServiceImpl : IDualScreenService, Platform.Android.DualScreen.IDualScreenService
+		internal class DualScreenServiceImpl : IDualScreenService //HACK: FOLDABLE, Platform.Android.DualScreen.IDualScreenService
 		{
 			ScreenHelper _helper;
 			bool _isDuo = false;
@@ -193,7 +194,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			public Point? GetLocationOnScreen(VisualElement visualElement)
 			{
-				var view = Platform.Android.Platform.GetRenderer(visualElement);
+				//HACK:FOLDABLE var view = Platform.Android.Platform.GetRenderer(visualElement);
 				var androidView = view?.View;
 
 				if (!androidView.IsAlive())
@@ -209,7 +210,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				if (action == null)
 					return null;
 
-				var view = Platform.Android.Platform.GetRenderer(visualElement);
+				//HACK:FOLDABLE var view = Platform.Android.Platform.GetRenderer(visualElement);
 				var androidView = view?.View;
 
 				if (androidView == null || !androidView.IsAlive())
@@ -229,7 +230,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 					return;
 
 				DualScreenGlobalLayoutListener ggl = null;
-				var view = Platform.Android.Platform.GetRenderer(visualElement);
+				//HACK:FOLDABLE var view = Platform.Android.Platform.GetRenderer(visualElement);
 				var androidView = view?.View;
 
 				if (androidView == null || !(table.TryGetValue(androidView, out ggl)))
@@ -428,7 +429,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 				if (_mainActivity != null)
 				{
-					using (DisplayMetrics display = _mainActivity.Resources.DisplayMetrics)
+					using (Android.Util.DisplayMetrics display = _mainActivity.Resources.DisplayMetrics)
 					{
 						var scalingFactor = display.Density;
 						_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);

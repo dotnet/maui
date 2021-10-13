@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.DualScreen
