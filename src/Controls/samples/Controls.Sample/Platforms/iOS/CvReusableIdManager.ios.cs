@@ -50,8 +50,14 @@ namespace Microsoft.Maui
 		{
 			lock (lockObj)
 			{
-				for (int i = 0; i < managedIds.Count; i++)
-					collectionView.RegisterClassForCell(null, GetReuseId(i));
+				/* TODO RECIPE RegisterClassForCell null doesn't work
+				 * for (int i = 0; i < managedIds.Count; i++)
+				{
+					var reuseId = GetReuseId(i);
+
+					if (reuseId != null)
+						collectionView.RegisterClassForCell(null, reuseId);
+				}*/
 
 				managedIds.Clear();
 			}
