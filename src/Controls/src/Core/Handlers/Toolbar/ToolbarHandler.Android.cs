@@ -18,40 +18,15 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public class ToolbarHandler : ElementHandler<Toolbar, MaterialToolbar>
+	public partial class ToolbarHandler : ElementHandler<Toolbar, MaterialToolbar>
 	{
-		public static IPropertyMapper<Toolbar, ToolbarHandler> Mapper =
-			   new PropertyMapper<Toolbar, ToolbarHandler>(ElementMapper)
-			   {
-				   [nameof(Toolbar.IsVisible)] = MapIsVisible,
-				   [nameof(Toolbar.BackButtonVisible)] = MapBackButtonVisible,
-				   [nameof(Toolbar.TitleIcon)] = MapTitleIcon,
-				   [nameof(Toolbar.TitleView)] = MapTitleView,
-				   [nameof(Toolbar.IconColor)] = MapIconColor,
-				   [nameof(Toolbar.Title)] = MapTitle,
-				   [nameof(Toolbar.ToolbarItems)] = MapToolbarItems,
-				   [nameof(Toolbar.BackButtonTitle)] = MapBackButtonTitle,
-				   [nameof(Toolbar.BarBackgroundColor)] = MapBarBackgroundColor,
-				   [nameof(Toolbar.BarBackground)] = MapBarBackground,
-				   [nameof(Toolbar.BarTextColor)] = MapBarTextColor,
-				   [nameof(Toolbar.IconColor)] = MapIconColor,
-			   };
-
 		IViewHandler? _titleViewHandler;
 		Container? _titleView;
 		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
 		List<ToolbarItem> _currentToolbarItems = new List<ToolbarItem>();
 
-		public static CommandMapper<Toolbar, ToolbarHandler> CommandMapper = new()
-		{
-		};
-
 		NavigationRootManager? NavigationRootManager =>
 			MauiContext?.GetNavigationRootManager();
-
-		public ToolbarHandler() : base(Mapper, CommandMapper)
-		{
-		}
 
 		protected override MaterialToolbar CreateNativeElement()
 		{
