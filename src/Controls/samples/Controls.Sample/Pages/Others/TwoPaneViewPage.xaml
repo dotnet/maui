@@ -9,16 +9,20 @@
         <foldable:TwoPaneView x:Name="twoPaneView"
                               TallModeConfiguration="TopBottom"
                               WideModeConfiguration="LeftRight"
-                              MinWideModeWidth="400"
-                              MinTallModeHeight="400">
+                              MinWideModeWidth="900"
+                              MinTallModeHeight="600">
             <foldable:TwoPaneView.Pane1>
-                <StackLayout BackgroundColor="Yellow">
-                <Label Text="One"/>
+                <StackLayout BackgroundColor="DarkGray"
+                             Orientation="Vertical"
+                             VerticalOptions="StartAndExpand">
+                    <Label Text="One"/>
+                    <Label Text="One point five... "/>
+                    <Label Text="Two"/>
                 </StackLayout>
             </foldable:TwoPaneView.Pane1>
             <foldable:TwoPaneView.Pane2>
-                <StackLayout BackgroundColor="Blue">
-                    <Label Text="Two"/>
+                <StackLayout BackgroundColor="DarkGreen">
+                    <Label Text="Three"/>
                 </StackLayout>
             </foldable:TwoPaneView.Pane2>
         </foldable:TwoPaneView>
