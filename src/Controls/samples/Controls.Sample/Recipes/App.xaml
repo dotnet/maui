@@ -51,6 +51,10 @@
                 <Setter Property="ContentLayout" Value="Top,0"/>
                 <Setter Property="FontAttributes" Value="Bold"/>
                 <Setter Property="Padding" Value="5,10"/>
+
+                <!-- For accessibility contrast reasons do not make this font size any smaller or change the background -->
+                <Setter Property="Background" Value="#0000FF"></Setter>
+                <Setter Property="FontSize" Value="27"></Setter>
             </Style>
 
         </ResourceDictionary>
