@@ -54,14 +54,14 @@ namespace Microsoft.Maui
 			var elementTextDecorations = label.TextDecorations;
 
 			if ((elementTextDecorations & TextDecorations.Underline) == 0)
-				nativeControl.TextDecorations &= ~Windows.UI.Text.TextDecorations.Underline;
+				nativeControl.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Underline;
 			else
-				nativeControl.TextDecorations |= Windows.UI.Text.TextDecorations.Underline;
+				nativeControl.TextDecorations |= global::Windows.UI.Text.TextDecorations.Underline;
 
 			if ((elementTextDecorations & TextDecorations.Strikethrough) == 0)
-				nativeControl.TextDecorations &= ~Windows.UI.Text.TextDecorations.Strikethrough;
+				nativeControl.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Strikethrough;
 			else
-				nativeControl.TextDecorations |= Windows.UI.Text.TextDecorations.Strikethrough;
+				nativeControl.TextDecorations |= global::Windows.UI.Text.TextDecorations.Strikethrough;
 
 			// TextDecorations are not updated in the UI until the text changes
 			if (nativeControl.Inlines != null && nativeControl.Inlines.Count > 0)
@@ -129,7 +129,7 @@ namespace Microsoft.Maui
 			catch (Exception)
 			{
 				// If anything goes wrong just show the html
-				nativeControl.Text = Windows.Data.Html.HtmlUtilities.ConvertToText(label.Text);
+				nativeControl.Text = global::Windows.Data.Html.HtmlUtilities.ConvertToText(label.Text);
 			}
 		}
 

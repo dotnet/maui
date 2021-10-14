@@ -33,25 +33,25 @@ namespace Microsoft.Maui
 			LayoutRootClip = LayoutRoot.Clip;
 		}
 
-		internal string Title
+		internal string? Title
 		{
 			get => title.Text;
 			set => title.Text = value;
 		}
 
-		internal WImageSource TitleIcon
+		internal WImageSource? TitleIcon
 		{
 			get => titleIcon.Source;
 			set => titleIcon.Source = value;
 		}
 
-		internal object TitleView
+		internal object? TitleView
 		{
 			get => titleView.Content;
 			set => titleView.Content = value;
 		}
 
-		internal WBrush TitleColor
+		internal WBrush? TitleColor
 		{
 			get => title.Foreground;
 			set => title.Foreground = value;

@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			IVisualElementRenderer childRenderer = Platform.GetRenderer(Element.CurrentPage);
 			FrameworkElement child = childRenderer.ContainerElement;
 
