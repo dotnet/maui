@@ -10,7 +10,7 @@
     </views:BasePage.BindingContext>
     <views:BasePage.Content>
         <ScrollView>
-            <VerticalStackLayout Margin="12">
+            <VerticalStackLayout Padding="12">
                 <Label
                     Text="Basic"
                     Style="{StaticResource Headline}" />
