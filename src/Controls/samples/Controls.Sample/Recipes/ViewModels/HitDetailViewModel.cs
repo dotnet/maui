@@ -23,7 +23,7 @@ namespace Recipes.ViewModels
         string _imageUrl;
 		string[] _ingredients;
         string _recipeBody;
-        FormattedString _recipeUrl;
+        string _recipeUrl;
 		public ObservableCollection<Ingredient> _ingredientCheckList;
 
 		bool _recipeNameVisible;
@@ -76,7 +76,7 @@ namespace Recipes.ViewModels
             set => SetProperty(ref _recipeBody, value);
         }
 
-        public FormattedString RecipeUrl
+        public string RecipeUrl
         {
             get => _recipeUrl;
             set => SetProperty(ref _recipeUrl, value);
@@ -196,21 +196,24 @@ namespace Recipes.ViewModels
 
             RecipeName = Hit.Recipe.RecipeName;
             ImageUrl = Hit.Recipe.ImageUrl;
+
 			//RecipeBody = Hit.Recipe;
 			Ingredients =  Hit.Recipe.Ingredients;
-			var recipeBodyFormattedString = new FormattedString();
-            recipeBodyFormattedString.Spans.Add(new Span { Text = "Click " });
+			//var recipeBodyFormattedString = new FormattedString();
+			//         recipeBodyFormattedString.Spans.Add(new Span { Text = "Click " });
 
-            var recipeUrlFormattedString = new Span { Text = "here", TextColor = Colors.Blue, TextDecorations = TextDecorations.Underline };
-            recipeUrlFormattedString.GestureRecognizers.Add(new TapGestureRecognizer()
-            {
-                Command = TapCommand,
-                CommandParameter = Hit.Recipe.RecipeUrl
-            });
-            recipeBodyFormattedString.Spans.Add(recipeUrlFormattedString);
+			//         var recipeUrlFormattedString = new Span { Text = "here", TextColor = Colors.Blue, TextDecorations = TextDecorations.Underline };
+			//         recipeUrlFormattedString.GestureRecognizers.Add(new TapGestureRecognizer()
+			//         {
+			//             Command = TapCommand,
+			//             CommandParameter = Hit.Recipe.RecipeUrl
+			//         });
+			//         recipeBodyFormattedString.Spans.Add(recipeUrlFormattedString);
 
-            recipeBodyFormattedString.Spans.Add(new Span { Text = " to view full recipe." });
-            RecipeUrl = recipeBodyFormattedString;
+			//         recipeBodyFormattedString.Spans.Add(new Span { Text = " to view full recipe." });
+			//         RecipeUrl = recipeBodyFormattedString;
+
+			RecipeUrl = Hit.Recipe.RecipeUrl;
 			RecipeNameVisible = !String.IsNullOrEmpty(RecipeName);
 			ImageUrlVisible = !String.IsNullOrEmpty(ImageUrl);
 			IngredientsVisible = Hit.Recipe.Ingredients.Length > 0;

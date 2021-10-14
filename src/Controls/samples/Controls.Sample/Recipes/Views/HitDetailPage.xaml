@@ -43,7 +43,7 @@
                     <StackLayout Margin="2">
                         <Label Text="Recipe:" SemanticProperties.HeadingLevel="Level2" TextDecorations="Underline" FontSize="Medium" TextColor="{StaticResource Primary}"/>
                         <Label Text="{Binding RecipeBody}" FontSize="Small" IsVisible="{Binding RecipeBodyVisible}"/>
-                        <Label TextColor="Black" TextDecorations="Underline" Text="{Binding RecipeUrl}" FontSize="Small" IsVisible="{Binding RecipeUrlVisible}">
+                        <Label TextColor="Black" TextDecorations="Underline" Text="Click here to view full recipe." FontSize="Small" IsVisible="{Binding RecipeUrlVisible}">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer NumberOfTapsRequired="1" Tapped="OpenUrl"></TapGestureRecognizer>
                             </Label.GestureRecognizers>

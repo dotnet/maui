@@ -23,15 +23,16 @@ namespace Recipes.ViewModels
         bool _ingredientChecked;
 
         string _recipeBody;
-        FormattedString _recipeUrl;
+        string _recipeUrl;
 
         bool _recipeNameVisible;
         bool _imageUrlVisible;
         bool _ingredientsVisible;
         bool _recipeBodyVisible;
         bool _recipeUrlVisible;
+		private string[] _recipeList;
 
-        public string Id { get; set; }
+		public string Id { get; set; }
 
         public ItemDetailViewModel()
         {
@@ -90,7 +91,13 @@ namespace Recipes.ViewModels
             set => SetProperty(ref _recipeBody, value);
         }
 
-        public FormattedString RecipeUrl
+		public string[] RecipeList
+		{
+			get => _recipeList;
+			set => SetProperty(ref _recipeList, value);
+		}
+
+		public string RecipeUrl
         {
             get => _recipeUrl;
             set => SetProperty(ref _recipeUrl, value);
@@ -136,8 +143,8 @@ namespace Recipes.ViewModels
                 ImageUrl = item.ImageUrl;
                 RecipeBody = item.RecipeBody;
                 RecipeUrl = item.RecipeUrl;
-
-                source = item.Ingredients;
+				RecipeList = item.RecipeBody?.Split("\n") ?? new string[0];
+				source = item.Ingredients;
                 IngredientCheckList = new ObservableCollection<Ingredient>(source);
 
                 foreach (Ingredient ingredient in IngredientCheckList)

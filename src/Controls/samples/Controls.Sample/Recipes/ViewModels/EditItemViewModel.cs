@@ -14,7 +14,7 @@ namespace Recipes.ViewModels
         string _ingredients;
         string _imageUrl;
         string _recipeBody;
-        FormattedString _recipeUrl;
+        string _recipeUrl;
 
         public EditItemViewModel()
         {
@@ -69,7 +69,7 @@ namespace Recipes.ViewModels
             set => SetProperty(ref _recipeBody, value);
         }
 
-        public FormattedString RecipeUrl
+        public string RecipeUrl
         {
             get => _recipeUrl;
             set => SetProperty(ref _recipeUrl, value);
