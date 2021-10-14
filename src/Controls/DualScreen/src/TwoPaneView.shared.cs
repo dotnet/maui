@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 		ContentView _content1;
 		ContentView _content2;
 		ViewMode _currentMode;
-		bool _hasMeasured = false;
+		//bool _hasMeasured = false;
 		bool _updatingMode = false;
 		bool _processPendingChange = false;
 		Rectangle _layoutGuidePane1;
@@ -221,42 +221,69 @@ namespace Microsoft.Maui.Controls.DualScreen
 			_layoutGuideHinge = _twoPaneViewLayoutGuide.Hinge;
 			_layoutGuideIsLandscape = _twoPaneViewLayoutGuide.IsLandscape;
 
-			UpdateMode();
+			UpdateMode(Width, Height);
 		}
 
 
-		protected override void OnSizeAllocated(double width, double height)
-		{
-			if (!_updatingMode &&
-				width > 0 &&
-				height > 0 &&
-				width != _previousWidth &&
-				height != _previousHeight)
-			{
-				_previousWidth = width;
-				_previousHeight = height;
-				UpdateMode(false);
-			}
+		//protected override void OnSizeAllocated(double width, double height)
+		//{
+		//	if (!_updatingMode &&
+		//		width > 0 &&
+		//		height > 0 &&
+		//		width != _previousWidth &&
+		//		height != _previousHeight)
+		//	{
+		//		_previousWidth = width;
+		//		_previousHeight = height;
+		//		UpdateMode(false);
+		//	}
 
-			base.OnSizeAllocated(width, height);
+		//	base.OnSizeAllocated(width, height);
+		//}
+
+
+		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
+		{
+			var sizeRequest = base.OnMeasure(widthConstraint, heightConstraint);
+
+			UpdateMode(sizeRequest.Request.Width, sizeRequest.Request.Height, false);
+			return sizeRequest;
 		}
 
-		protected override Size ArrangeOverride(Rectangle bounds)
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (_updatingMode)
-				return base.ArrangeOverride(bounds); //HACK:FOLDABLE this used to be void
+			var sizeRequest = base.MeasureOverride(widthConstraint, heightConstraint);
 
-			if (_hasMeasured)
-			{
-				return base.ArrangeOverride(bounds);
-			}
-			else
-			{
-				UpdateMode();
-				return base.ArrangeOverride(bounds); //HACK:FOLDABLE this used to not exist
-			}
+			UpdateMode(sizeRequest.Width, sizeRequest.Height, false);
+
+			return sizeRequest;
+		}
+
+		//protected override Size ArrangeOverride(Rectangle bounds)
+		//{
+		//	if (_updatingMode)
+		//		return base.ArrangeOverride(bounds); //HACK:FOLDABLE this used to be void
+
+		//	if (_hasMeasured)
+		//	{
+		//		if (!_updatingMode &&
+		//			 bounds.Width > 0 &&
+		//			 bounds.Height > 0 &&
+		//			 bounds.Width != _previousWidth &&
+		//			 bounds.Height != _previousHeight)
+		//		{
+		//			UpdateMode(false);
+		//		}
+
+		//		return base.ArrangeOverride(bounds);
+		//	}
+		//	else
+		//	{
+		//		UpdateMode(bounds.Width, bounds.Height);
+		//		return base.ArrangeOverride(bounds); //HACK:FOLDABLE this used to not exist
+		//	}
 			
-		}
+		//}
 		//HACK:FOLDABLE was LayoutChildren, temporarily updated to ArrangeOverride
 		//protected override void LayoutChildren(double x, double y, double width, double height)
 		//{
@@ -275,9 +302,21 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		void UpdateMode(bool invalidateLayout = true)
 		{
+			UpdateMode(Width, Height, invalidateLayout);
+		}
+
+		void UpdateMode(double width, double height, bool invalidateLayout = true)
+		{
 			// controls hasn't fully been created yet
-			if (RowDefinitions.Count != 3 || ColumnDefinitions.Count != 3)
+			if (RowDefinitions.Count != 3
+				|| ColumnDefinitions.Count != 3
+				|| width == -1
+				|| height == -1
+				|| width == _previousWidth
+				|| height == _previousHeight)
+			{
 				return;
+			}
 
 			if (_updatingMode)
 			{
@@ -288,12 +327,14 @@ namespace Microsoft.Maui.Controls.DualScreen
 			_updatingMode = true;
 			try
 			{
-				double controlWidth = this.Width;
-				double controlHeight = this.Height;
+				double controlWidth = width;
+				double controlHeight = height;
+				_previousWidth = width;
+				_previousHeight = height;
 
 				ViewMode newMode = (PanePriority == TwoPaneViewPriority.Pane1) ? ViewMode.Pane1Only : ViewMode.Pane2Only;
 
-				_hasMeasured = true;
+				//_hasMeasured = true;
 
 				_twoPaneViewLayoutGuide.UpdateLayouts();
 
