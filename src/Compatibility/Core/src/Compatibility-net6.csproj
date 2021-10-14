@@ -36,6 +36,10 @@
     <None Remove="MacOS\**" />
     <None Remove="Tizen\**" />
     <None Remove="WPF\**" />
+    <Content Remove="GTK\**" />
+    <Content Remove="MacOS\**" />
+    <Content Remove="Tizen\**" />
+    <Content Remove="WPF\**" />
     <Page Remove="**\WPF\**\*.xaml" />
     <MauiXaml Remove="**\WPF\**\*.xaml" />
   </ItemGroup>
