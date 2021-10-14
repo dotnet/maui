@@ -202,8 +202,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 			public Point? GetLocationOnScreen(VisualElement visualElement)
 			{
 				//HACK:FOLDABLE var view = Platform.Android.Platform.GetRenderer(visualElement);
-				var view =  global::Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.GetRenderer(visualElement);
-				var androidView = view?.View;
+				//var androidView = view?.View;
+				var androidView = visualElement.Handler?.NativeView as AView;
 
 				if (!androidView.IsAlive())
 					return null;
@@ -219,8 +219,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 					return null;
 
 				//HACK:FOLDABLE var view = Platform.Android.Platform.GetRenderer(visualElement);
-				var view = global::Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.GetRenderer(visualElement);
-				var androidView = view?.View;
+				//var androidView = view?.View;
+				var androidView = visualElement.Handler?.NativeView as AView;
 
 				if (androidView == null || !androidView.IsAlive())
 					return null;
@@ -240,8 +240,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 				DualScreenGlobalLayoutListener ggl = null;
 				//HACK:FOLDABLE var view = Platform.Android.Platform.GetRenderer(visualElement);
-				var view = global::Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.GetRenderer(visualElement);
-				var androidView = view?.View;
+				//var androidView = view?.View;
+				var androidView = visualElement.Handler?.NativeView as AView;
 
 				if (androidView == null || !(table.TryGetValue(androidView, out ggl)))
 				{
