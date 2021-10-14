@@ -33,6 +33,7 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\..\DualScreen\src\Controls.DualScreen-net6.csproj" />
   </ItemGroup>
 
   <ItemGroup>

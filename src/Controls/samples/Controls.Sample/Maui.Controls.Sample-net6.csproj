@@ -46,6 +46,7 @@
     <ProjectReference Include="..\..\src\Xaml\Controls.Xaml-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj" />
+    <ProjectReference Include="..\..\DualScreen\src\Controls.DualScreen-net6.csproj" />
   </ItemGroup>
 
   <ItemGroup>

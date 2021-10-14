@@ -20,14 +20,13 @@
     <ProjectReference Include="..\..\src\Core\Controls.Core-net6.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core-net6.csproj" />
   </ItemGroup>
-  
+  <!--Shared code available on all platforms-->
   <ItemGroup>
     <Compile Include="**\*.shared.cs" />
     <Compile Include="**\*.shared.*.cs" />
-    <Compile Include="DualScreenInfo.netstandard.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
+  <ItemGroup Condition=" $(TargetFramework.StartsWith('net')) ">
     <Compile Include="**\*.netstandard.cs" />
     <Compile Include="**\*.netstandard.*.cs" />
   </ItemGroup>
@@ -36,23 +35,17 @@
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
-    <Compile Include="**\*.uwp.cs" />
-    <Compile Include="**\*.uwp.*.cs" />
-    <ProjectReference Include="..\Xamarin.Forms.Platform.UAP\Xamarin.Forms.Platform.UAP.csproj">
-    </ProjectReference>
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.10" />
-  </ItemGroup>
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <Compile Include="**\*.android.cs" />
     <Compile Include="**\*.android.*.cs" />
+    <Compile Remove="DualScreenInfo.netstandard.cs" />
     <AndroidResource Include="Resources\xml\*.xml" />
     <PackageReference Include="Xamarin.AndroidX.Window.WindowJava" Version="1.0.0.3-beta02" />
     <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility-net6.csproj">
     </ProjectReference>
   </ItemGroup>
   
-  <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid10.0'">
+  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
     <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" />

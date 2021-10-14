@@ -3,12 +3,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Views;
-//HACK:FOLDABLE using Microsoft.Device.Display;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.DualScreen;
 using Microsoft.Maui.Graphics;
-
 using AView = Android.Views.View;
 
 [assembly: Dependency(typeof(DualScreenService.DualScreenServiceImpl))]
@@ -25,8 +25,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		public static void Init(Activity activity)
 		{
-			//HACK:FOLDABLE DependencyService.Register<DualScreenServiceImpl>();
-			//HACK:FOLDABLE DualScreenServiceImpl.Init(activity);
+			DependencyService.Register<DualScreenServiceImpl>();
+			DualScreenServiceImpl.Init(activity);
 		}
 
 		internal class DualScreenServiceImpl : IDualScreenService //HACK: FOLDABLE, Platform.Android.DualScreen.IDualScreenService
@@ -195,6 +195,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			public Point? GetLocationOnScreen(VisualElement visualElement)
 			{
 				//HACK:FOLDABLE var view = Platform.Android.Platform.GetRenderer(visualElement);
+				var view =  global::Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.GetRenderer(visualElement);
 				var androidView = view?.View;
 
 				if (!androidView.IsAlive())
@@ -211,6 +212,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 					return null;
 
 				//HACK:FOLDABLE var view = Platform.Android.Platform.GetRenderer(visualElement);
+				var view = global::Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.GetRenderer(visualElement);
 				var androidView = view?.View;
 
 				if (androidView == null || !androidView.IsAlive())
@@ -231,6 +233,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 				DualScreenGlobalLayoutListener ggl = null;
 				//HACK:FOLDABLE var view = Platform.Android.Platform.GetRenderer(visualElement);
+				var view = global::Microsoft.Maui.Controls.Compatibility.Platform.Android.Platform.GetRenderer(visualElement);
 				var androidView = view?.View;
 
 				if (androidView == null || !(table.TryGetValue(androidView, out ggl)))
@@ -429,7 +432,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 				if (_mainActivity != null)
 				{
-					using (Android.Util.DisplayMetrics display = _mainActivity.Resources.DisplayMetrics)
+					using (global::Android.Util.DisplayMetrics display = _mainActivity.Resources.DisplayMetrics)
 					{
 						var scalingFactor = display.Density;
 						_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
@@ -484,6 +487,35 @@ namespace Microsoft.Maui.Controls.DualScreen
 				if (toSet != null)
 					toSet.SetResult(hingeAngle);
 			}
+		}
+	}
+
+	static class JavaObjectExtensions
+	{
+		public static bool IsDisposed(this Java.Lang.Object obj)
+		{
+			return obj.Handle == IntPtr.Zero;
+		}
+
+		public static bool IsDisposed(this global::Android.Runtime.IJavaObject obj)
+		{
+			return obj.Handle == IntPtr.Zero;
+		}
+
+		public static bool IsAlive(this Java.Lang.Object obj)
+		{
+			if (obj == null)
+				return false;
+
+			return !obj.IsDisposed();
+		}
+
+		public static bool IsAlive(this global::Android.Runtime.IJavaObject obj)
+		{
+			if (obj == null)
+				return false;
+
+			return !obj.IsDisposed();
 		}
 	}
 }
