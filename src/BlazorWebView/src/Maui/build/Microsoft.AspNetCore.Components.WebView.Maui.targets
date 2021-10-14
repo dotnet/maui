@@ -35,7 +35,10 @@
       <!-- Find all files outside the wwwroot folder -->
       <_NonWWWRootContent Include="@(Content)" Exclude="wwwroot/**/*" />
       <!-- Create a list of all content that *is* in the wwwroot folder (to preserve ItemGroup metadata) -->
-      <_TemporaryHiddenContent Include="@(Content)" Exclude="@(_NonWWWRootContent)"  />
+      <_TemporaryHiddenContent Include="@(Content)" Exclude="@(_NonWWWRootContent)" />
+      <!-- Add Scoped CSS files in the app to the list of hidden items -->
+      <_TemporaryHiddenContent Include="Pages\**\*.razor.css" />
+      <_TemporaryHiddenContent Include="Shared\**\*.razor.css" />
       <!-- Temporarily remove the items -->
       <Content Remove="@(_TemporaryHiddenContent)" />
     </ItemGroup>
