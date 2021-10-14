@@ -8,7 +8,7 @@
              ios:Page.UseSafeArea="true"
              >
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Add to My Recipes" Command="{Binding AddItemCommand}" Clicked="AddItem_Clicked"/>
+        <ToolbarItem Text="{Binding AddRemoveItemText}" Command="{Binding AddRemoveItemCommand}" Clicked="AddItem_Clicked"/>
     </ContentPage.ToolbarItems>
     <Grid Margin="15">
         <Grid.ColumnDefinitions>

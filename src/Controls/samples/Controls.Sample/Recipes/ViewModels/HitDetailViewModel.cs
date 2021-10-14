@@ -31,15 +31,19 @@ namespace Recipes.ViewModels
 		bool _ingredientsVisible;
 		bool _recipeBodyVisible;
 		bool _recipeUrlVisible;
+		string _addRemoveItemText;
+		ICommand _addRemoveItemCommand;
 
 		public ICommand TapCommand { get; }
-        public Command AddItemCommand { get; }
+		public Command AddItemCommand { get; }
+		public Command RemoveItemCommand { get; }
 
-        public HitDetailViewModel()
+		public HitDetailViewModel()
         {
             // Launcher.OpenAsync is provided by Microsoft.Maui.Essentials.
             TapCommand = new Command<string>(async (url) => await Launcher.OpenAsync(url));
             AddItemCommand = new Command(OnAddItem);
+			RemoveItemCommand = new Command(OnRemoveItem);
 
 			RecipeNameVisible = true;
 			ImageUrlVisible = true;
@@ -48,7 +52,7 @@ namespace Recipes.ViewModels
 			RecipeUrlVisible = true;
 		}
 
-        public string RecipeName
+		public string RecipeName
         {
             get => _recipeName;
             set => SetProperty(ref _recipeName, value);
@@ -114,7 +118,27 @@ namespace Recipes.ViewModels
 			set => SetProperty(ref _ingredientCheckList, value);
 		}
 
-		private void OnAddItem()
+		public string AddRemoveItemText
+		{
+			get => _addRemoveItemText;
+			set => SetProperty(ref _addRemoveItemText, value);
+		}
+
+		public ICommand AddRemoveItemCommand
+		{
+			get => _addRemoveItemCommand;
+			set => SetProperty(ref _addRemoveItemCommand, value);
+		}
+
+
+		async void OnRemoveItem()
+		{
+			await DataStore.DeleteItemAsync(HitId);
+			AddRemoveItemText = "Add to My Recipes";
+			AddRemoveItemCommand = AddItemCommand;
+		}
+
+		async void OnAddItem()
         {
             List<Ingredient> ingredientList = new List<Ingredient>();
             foreach (string ingredientString in Ingredients)
@@ -130,8 +154,10 @@ namespace Recipes.ViewModels
                 RecipeUrl = RecipeUrl
             };
 
-            DataStore.AddItemAsync(newItem);
-        }
+            await DataStore.AddItemAsync(newItem);
+			AddRemoveItemText = "Remove from My Recipes";
+			AddRemoveItemCommand = RemoveItemCommand;
+		}
 
         public string HitId
         {
@@ -145,6 +171,7 @@ namespace Recipes.ViewModels
                 LoadHitId(value);
             }
         }
+
 
         public void LoadHitId(string hitId)
         {
@@ -160,7 +187,7 @@ namespace Recipes.ViewModels
             }
         }
 
-        public void LoadHitDetails(Hit hit)
+        public async void LoadHitDetails(Hit hit)
 		{
 			var emptyFormattedString = new FormattedString();
 			emptyFormattedString.Spans.Add(new Span { Text = "" });
@@ -189,6 +216,19 @@ namespace Recipes.ViewModels
 			IngredientsVisible = Hit.Recipe.Ingredients.Length > 0;
 			RecipeBodyVisible = !String.IsNullOrEmpty(RecipeBody);
 			RecipeUrlVisible = !(RecipeUrl == null || FormattedString.Equals(RecipeUrl, emptyFormattedString));
+
+			var item = await DataStore.GetItemAsync(HitId);
+
+			if (item == null)
+			{
+				AddRemoveItemText = "Add to My Recipes";
+				AddRemoveItemCommand = AddItemCommand;
+			}
+			else
+			{
+				AddRemoveItemText = "Remove from My Recipes";
+				AddRemoveItemCommand = RemoveItemCommand;
+			}
 		}
     }
 }
