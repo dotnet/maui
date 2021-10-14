@@ -241,20 +241,14 @@ namespace Microsoft.Maui.Controls.DualScreen
 		//	base.OnSizeAllocated(width, height);
 		//}
 
-
-		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
-		{
-			var sizeRequest = base.OnMeasure(widthConstraint, heightConstraint);
-
-			UpdateMode(sizeRequest.Request.Width, sizeRequest.Request.Height, false);
-			return sizeRequest;
-		}
-
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
+			UpdateMode(widthConstraint, heightConstraint, false);
 			var sizeRequest = base.MeasureOverride(widthConstraint, heightConstraint);
-
-			UpdateMode(sizeRequest.Width, sizeRequest.Height, false);
+			if (UpdateMode(sizeRequest.Width, sizeRequest.Height, false))
+			{
+				sizeRequest = base.MeasureOverride(widthConstraint, heightConstraint);
+			}
 
 			return sizeRequest;
 		}
@@ -305,7 +299,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			UpdateMode(Width, Height, invalidateLayout);
 		}
 
-		void UpdateMode(double width, double height, bool invalidateLayout = true)
+		bool UpdateMode(double width, double height, bool invalidateLayout = true)
 		{
 			// controls hasn't fully been created yet
 			if (RowDefinitions.Count != 3
@@ -313,15 +307,17 @@ namespace Microsoft.Maui.Controls.DualScreen
 				|| width == -1
 				|| height == -1
 				|| width == _previousWidth
-				|| height == _previousHeight)
+				|| height == _previousHeight
+				|| width == double.PositiveInfinity
+				|| height == double.PositiveInfinity)
 			{
-				return;
+				return false;
 			}
 
 			if (_updatingMode)
 			{
 				_processPendingChange = true;
-				return;
+				return false;
 			}
 
 			_updatingMode = true;
@@ -426,6 +422,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 			{
 				_updatingMode = false;
 			}
+
+			return true;
 		}
 
 		void UpdateRowsColumns(ViewMode newMode)
