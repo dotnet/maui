@@ -257,8 +257,8 @@ namespace Microsoft.Maui.Resizetizer
 		public static DpiPath[] TizenAppIcon
 			=> new[]
 			{
-				new DpiPath("shared/res", 1.0m, ".high", new SKSize(78, 89)),
-				new DpiPath("shared/res", 1.0m, ".xhigh", new SKSize(117, 117)),
+				new DpiPath("shared/res", 1.0m, null, ".high", new SKSize(78, 89)),
+				new DpiPath("shared/res", 1.0m, null, ".xhigh", new SKSize(117, 117)),
 			};
 
 		static DpiPath TizenOriginal => new DpiPath("res", 1.0m);
