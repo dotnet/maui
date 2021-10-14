@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Resizetizer
 			=> Path.GetExtension(filename)?.Equals(".svg", StringComparison.OrdinalIgnoreCase) ?? false;
 
 		public static ResizeImageInfo Parse(ITaskItem image)
-			=> Parse(new [] { image })[0];
+			=> Parse(new[] { image })[0];
 
 		public static List<ResizeImageInfo> Parse(IEnumerable<ITaskItem> images)
 		{
