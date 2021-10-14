@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Graphics
 			get => this._transform;
 			set
 			{
+				if (this._transform == value) return;
+
 				this._transform = value;
 				value.DeconstructScales(out _scale, out _scaleX, out _scaleY);
 				TransformChanged();
