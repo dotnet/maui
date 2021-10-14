@@ -8,6 +8,7 @@ using Recipes.Models;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui;
+using System.Collections.ObjectModel;
 
 namespace Recipes.ViewModels
 {
@@ -20,9 +21,10 @@ namespace Recipes.ViewModels
         string _hitId;
         string _recipeName;
         string _imageUrl;
-        string _ingredients;
+		string[] _ingredients;
         string _recipeBody;
         FormattedString _recipeUrl;
+		public ObservableCollection<Ingredient> _ingredientCheckList;
 
 		bool _recipeNameVisible;
 		bool _imageUrlVisible;
@@ -58,7 +60,7 @@ namespace Recipes.ViewModels
             set => SetProperty(ref _imageUrl, value);
         }
 
-        public string Ingredients
+        public string[] Ingredients
         {
             get => _ingredients;
             set => SetProperty(ref _ingredients, value);
@@ -106,12 +108,16 @@ namespace Recipes.ViewModels
 			set => SetProperty(ref _recipeUrlVisible, value);
 		}
 
+		public ObservableCollection<Ingredient> IngredientCheckList
+		{
+			get => _ingredientCheckList;
+			set => SetProperty(ref _ingredientCheckList, value);
+		}
+
 		private void OnAddItem()
         {
-
             List<Ingredient> ingredientList = new List<Ingredient>();
-            string[] ingredientStringList = Ingredients.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (string ingredientString in ingredientStringList)
+            foreach (string ingredientString in Ingredients)
                 ingredientList.Add(new Ingredient { IngredientItem = ingredientString });
 
             Item newItem = new Item()
@@ -164,7 +170,7 @@ namespace Recipes.ViewModels
             RecipeName = Hit.Recipe.RecipeName;
             ImageUrl = Hit.Recipe.ImageUrl;
 			//RecipeBody = Hit.Recipe;
-			Ingredients = String.Join(Environment.NewLine, Hit.Recipe.Ingredients);
+			Ingredients =  Hit.Recipe.Ingredients;
 			var recipeBodyFormattedString = new FormattedString();
             recipeBodyFormattedString.Spans.Add(new Span { Text = "Click " });
 

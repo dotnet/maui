@@ -51,14 +51,21 @@ namespace Microsoft.Maui
 				if (nativeImageSource is BitmapImage bitmapImage)
 				{
 					bitmapImage.ImageOpened += OnImageOpened;
+					bitmapImage.ImageFailed += OnImageFailed;
 
 					void OnImageOpened(object sender, RoutedEventArgs e)
 					{
 						bitmapImage.ImageOpened -= OnImageOpened;
+						bitmapImage.ImageFailed -= OnImageFailed;
 
 						var actualImageSourceSize = nativeImageSource.GetImageSourceSize();
 						image.Width = actualImageSourceSize.Width;
 						image.Height = actualImageSourceSize.Height;
+						image.InvalidateMeasure();
+					};
+
+					void OnImageFailed(object sender, ExceptionRoutedEventArgs e)
+					{
 					};
 				}
 			}

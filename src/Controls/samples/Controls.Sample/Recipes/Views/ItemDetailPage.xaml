@@ -23,8 +23,7 @@
                 <Frame Background="{StaticResource BlueGradient}" CornerRadius="10" HasShadow="False" Margin="0,5">
                     <StackLayout Margin="2">
                         <Label Text="Ingredients:" TextDecorations="Underline" FontSize="Medium" TextColor="{StaticResource Primary}"/>
-                        <StackLayout  HeightRequest="150"
-                                      BindableLayout.ItemsSource="{Binding IngredientCheckList}"
+                        <StackLayout  BindableLayout.ItemsSource="{Binding IngredientCheckList}"
                                       IsVisible="{Binding IngredientsVisible}">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate>
