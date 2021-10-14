@@ -27,6 +27,8 @@ namespace Microsoft.Maui.Essentials
 
 		public static event EventHandler<ActivityStateChangedEventArgs> ActivityStateChanged;
 
+		internal const string EssentialsConnectivityChanged = "com.maui.essentials.ESSENTIALS_CONNECTIVITY_CHANGED";
+
 		internal const int requestCodeFilePicker = 11001;
 		internal const int requestCodeMediaPicker = 11002;
 		internal const int requestCodeMediaCapture = 11003;
