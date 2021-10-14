@@ -15,6 +15,7 @@
                 <StackLayout BackgroundColor="DarkGray"
                              Orientation="Vertical"
                              VerticalOptions="StartAndExpand">
+                    <Label Text="Hinge" x:Name="hingeLabel"/>
                     <Label Text="One"/>
                     <Label Text="One point five... "/>
                     <Label Text="Two"/>

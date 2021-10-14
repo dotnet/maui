@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample.Droid
 		Label = "@string/app_name",
 		Theme = "@style/Maui.SplashTheme",
 		MainLauncher = true,
-		ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode)]
+		ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.UiMode)]
 	[IntentFilter(
 		new[] { Microsoft.Maui.Essentials.Platform.Intent.ActionAppAction },
 		Categories = new[] { Android.Content.Intent.CategoryDefault })]
@@ -17,6 +17,7 @@ namespace Maui.Controls.Sample.Droid
 	{
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
+			Android.Util.Log.Debug("JWM", "Activity.OnCreate - DualScreenService.Init");
 			Microsoft.Maui.Controls.DualScreen.DualScreenService.Init(this);
 			base.OnCreate(savedInstanceState);
 		}

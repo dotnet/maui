@@ -8,7 +8,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 {
 	public partial class HingeSensor
 	{
-		const string HINGE_SENSOR_TYPE = "microsoft.sensor.hinge_angle";
+		//HACK:FOLDABLE Change to generic hinge sensor name for other device types
+		//const string HINGE_SENSOR_TYPE = "microsoft.sensor.hinge_angle";
+		const string HINGE_SENSOR_NAME = "Hinge";
 
 		SensorManager sensorManager;
 		Sensor hingeSensor;
@@ -22,7 +24,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			var sensors = sensorManager.GetSensorList(SensorType.All);
 
-			hingeSensor = sensors.FirstOrDefault(s => s.StringType.Equals(HINGE_SENSOR_TYPE, StringComparison.OrdinalIgnoreCase));
+			//HACK:FOLDABLE Change to generic hinge sensor name for other device types
+			//hingeSensor = sensors.FirstOrDefault(s => s.StringType.Equals(HINGE_SENSOR_TYPE, StringComparison.OrdinalIgnoreCase));
+			hingeSensor = sensors.FirstOrDefault(s => s.Name.Contains(HINGE_SENSOR_NAME, StringComparison.InvariantCultureIgnoreCase));
 		}
 
 		public bool HasHinge

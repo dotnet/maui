@@ -15,8 +15,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 		readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
 		public NoDualScreenServiceImpl()
         {
+			//HACK:FOLDABLE 
+			System.Diagnostics.Debug.Write("NoDualScreenServiceImpl.ctor", "JWM");
 			Device.info.PropertyChanged += OnDeviceInfoChanged;
-
 		}
 
 		public Task<int> GetHingeAngleAsync() => Task.FromResult(0);

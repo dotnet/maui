@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		public Activity Activity { get; private set; }
 
+		//TODO: FOLDABLE remove this implementation
 		public static bool IsDualScreenDevice(Context context)
 			=> context.PackageManager.HasSystemFeature("com.microsoft.device.display.displaymask");
 

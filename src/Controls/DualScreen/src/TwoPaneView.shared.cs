@@ -9,10 +9,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 	{
 		static TwoPaneView()
 		{
-			//HACK:FOLDABLE #if UWP
-			//DependencyService.Register<DualScreenService>();
-			//#elif !ANDROID
 #if !ANDROID
+			// default implementation for other platforms
 			DependencyService.Register<NoDualScreenServiceImpl>();
 #endif
 		}
@@ -259,7 +257,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 			
 		}
-		//HACK:FOLDABLE was
+		//HACK:FOLDABLE was LayoutChildren, temporarily updated to ArrangeOverride
 		//protected override void LayoutChildren(double x, double y, double width, double height)
 		//{
 		//	if (_updatingMode)

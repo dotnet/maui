@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		public static void Init(Activity activity)
 		{
+			global::Android.Util.Log.Debug("JWM", "DualScreenService.Init - Android detected");
 			DependencyService.Register<DualScreenServiceImpl>();
 			DualScreenServiceImpl.Init(activity);
 		}
@@ -52,6 +53,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 			[Internals.Preserve(Conditional = true)]
 			public DualScreenServiceImpl()
 			{
+				//HACK:FOLDABLE 
+				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.ctor - Android detected");
+
 				_HingeService = this;
 				if (_mainActivity != null)
 					Init(_mainActivity);
@@ -59,6 +63,9 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			public static void Init(Activity activity)
 			{
+				//HACK:FOLDABLE 
+				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.Init - Android detected");
+
 				if (_HingeService == null)
 				{
 					_mainActivity = activity;
@@ -490,6 +497,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 		}
 	}
 
+	//HACK:FOLDABLE added this from Microsoft.Maui namespace, because otherwise it
+	// wasn't getting picked up as valid extension methods otherwise...
 	static class JavaObjectExtensions
 	{
 		public static bool IsDisposed(this Java.Lang.Object obj)
