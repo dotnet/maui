@@ -142,7 +142,7 @@ stages:
               displayName: build classic solutions
 
             - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-              displayName: 'Build .NET Maui'
+              displayName: build net6 solutions
 
 
             # - pwsh: |
