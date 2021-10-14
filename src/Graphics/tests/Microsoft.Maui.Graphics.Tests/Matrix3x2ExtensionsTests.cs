@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Graphics.Tests
 			Assert.Equal(refRot, r, 5);
 			AssertEqual(refTrans, t, 5);			
 
-			var m = AffineTransform.CreateMatrix3x2(s, r, t);
+			var m = Matrix3x2Extensions.CreateMatrix3x2(s, r, t);
 			AssertEqual(reference, m, 5);
 		}
 
@@ -111,11 +111,11 @@ namespace Microsoft.Maui.Graphics.Tests
 
 			// deconstruct/reconstruct
 
-			m1 = AffineTransform.CreateMatrix3x2(new Vector2(scaleX, scaleY), rotation, translation);
+			m1 = Matrix3x2Extensions.CreateMatrix3x2(new Vector2(scaleX, scaleY), rotation, translation);
 			var s = m1.GetScale();
 			var r = m1.GetRotation();
 			var t = m1.GetTranslation();
-			m1 = AffineTransform.CreateMatrix3x2(s, r, t);
+			m1 = Matrix3x2Extensions.CreateMatrix3x2(s, r, t);
 			AssertOrthogonal(m1, 7);
 			AssertEqual(reference, m1, 5);			
 		}

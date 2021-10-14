@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Microsoft.Maui.Graphics.Tests")]
+
 namespace Microsoft.Maui.Graphics
 {
-	public static class Matrix3x2Extensions
+	static class Matrix3x2Extensions
 	{
 		public static bool IsZero(this in Matrix3x2 matrix)
 		{

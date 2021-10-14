@@ -48,6 +48,8 @@ namespace Microsoft.Maui.Graphics
 			// let derived classes handle the transform change if needed.
 		}
 
+		protected static float GetLengthScale(Matrix3x2 matrix) => matrix.GetLengthScale();
+
 		public virtual void Dispose()
 		{
 			// Do nothing right now
