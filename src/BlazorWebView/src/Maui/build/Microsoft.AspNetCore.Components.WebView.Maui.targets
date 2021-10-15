@@ -29,8 +29,8 @@
     </ItemGroup>
   </Target>
 
-  <!-- Targets temporarily remove Content items in the wwwroot folder so that they don't conflict with iOS/MacCatalyst SDK tasks -->
-  <Target Name="HideContentFromBundleResources" BeforeTargets="_CollectBundleResources">
+  <!-- Targets temporarily remove Content items in various folders so that they don't conflict with iOS/MacCatalyst SDK tasks -->
+  <Target Name="HideContentFromiOSBundleResources" BeforeTargets="_CollectBundleResources">
     <ItemGroup>
       <!-- Find all files outside the wwwroot folder -->
       <_NonWWWRootContent Include="@(Content)" Exclude="wwwroot/**/*" />
@@ -44,10 +44,26 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="RestoreHiddenContent" AfterTargets="_CollectBundleResources" BeforeTargets="ResolveCurrentProjectStaticWebAssetsInputs">
+  <!-- Restore hidden Content items for iOS/MacCatalyst -->
+  <Target Name="RestoreHiddeniOSContent" AfterTargets="_CollectBundleResources" BeforeTargets="ResolveCurrentProjectStaticWebAssetsInputs">
     <ItemGroup>
       <!-- Restore the previously removed Content items -->
       <Content Include="@(_TemporaryHiddenContent)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Targets temporarily remove Content items in various folders so that they don't conflict with Android SDK tasks -->
+  <Target Name="HideContentFromAndroidCheck" BeforeTargets="_CheckForContent">
+    <ItemGroup>
+      <_TemporaryAndroidHiddenContent Include="@(Content)" />
+      <Content Remove="@(Content)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Restore hidden Content items for Android -->
+  <Target Name="RestoreHiddenAndroidContent" AfterTargets="_CheckForContent">
+    <ItemGroup>
+      <Content Include="@(_TemporaryAndroidHiddenContent)" />
     </ItemGroup>
   </Target>
 
