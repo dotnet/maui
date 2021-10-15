@@ -95,6 +95,9 @@ Task("dotnet-templates")
             { "RestoreNoCache", "true" },
             { "RestorePackagesPath", MakeAbsolute(File("../templatesTest/packages")).FullPath },
             { "RestoreConfigFile", MakeAbsolute(File("../templatesTest/nuget.config")).FullPath },
+
+            // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
+            { "IsRemoteBuild", "false" },
         };
 
         foreach (var template in new [] { "maui", "maui-blazor", "mauilib" })
