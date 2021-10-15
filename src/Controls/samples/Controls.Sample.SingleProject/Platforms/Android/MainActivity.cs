@@ -6,6 +6,10 @@ using Microsoft.Maui;
 using AndroidX.Window.Layout;
 using AndroidX.Window.Java.Layout;
 using Java.Interop;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using System;
+using Android.Content.Res;
 
 namespace Maui.Controls.Sample.Droid
 {
@@ -13,9 +17,9 @@ namespace Maui.Controls.Sample.Droid
 		Label = "@string/app_name",
 		Theme = "@style/Maui.SplashTheme",
 		MainLauncher = true,
-		ConfigurationChanges = ConfigChanges.ScreenSize 
-		| ConfigChanges.Orientation 
-		| ConfigChanges.ScreenLayout 
+		ConfigurationChanges = ConfigChanges.ScreenSize
+		| ConfigChanges.Orientation
+		| ConfigChanges.ScreenLayout
 		| ConfigChanges.UiMode
 		| ConfigChanges.SmallestScreenSize
 		| ConfigChanges.KeyboardHidden
@@ -23,9 +27,28 @@ namespace Maui.Controls.Sample.Droid
 	[IntentFilter(
 		new[] { Microsoft.Maui.Essentials.Platform.Intent.ActionAppAction },
 		Categories = new[] { Android.Content.Intent.CategoryDefault })]
-	public class MainActivity : MauiAppCompatActivity, AndroidX.Core.Util.IConsumer
+	public class MainActivity : MauiAppCompatActivity, IDeviceInfoProvider, Microsoft.Maui.Controls.DualScreen.IFoldableContext // AndroidX.Core.Util.IConsumer
 	{
 		WindowInfoRepositoryCallbackAdapter wir;
+		IWindowMetricsCalculator wmc;
+
+		#region Should be in MauiAppCompatActivity
+		// IDeviceInfoProvider
+		public event EventHandler ConfigurationChanged;
+		public override void OnConfigurationChanged(Configuration newConfig)
+		{
+			base.OnConfigurationChanged(newConfig);
+			ConfigurationChanged?.Invoke(this, new EventArgs());
+
+			//TODO: Xamarin.Forms.Application.Current?.TriggerThemeChanged (new AppThemeChangedEventArgs(Xamarin.Forms.Application.Current.RequestedTheme));
+		}
+		#endregion
+
+		#region IFoldableContext properties
+		public bool isSeparating { get; protected set; }
+		public Rectangle FoldingFeatureBounds { get; protected set; }
+		public Rectangle WindowBounds { get; protected set; }
+		#endregion
 
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
@@ -34,6 +57,7 @@ namespace Maui.Controls.Sample.Droid
 			base.OnCreate(savedInstanceState);
 
 			wir = new WindowInfoRepositoryCallbackAdapter(WindowInfoRepository.Companion.GetOrCreate(this));
+			wmc = WindowMetricsCalculator.Companion.OrCreate; // HACK: source method is `getOrCreate`, binding generator munges this badly :(
 		}
 
 		protected override void OnStart()
@@ -66,8 +90,15 @@ namespace Maui.Controls.Sample.Droid
 		{
 			var newLayoutInfo = windowLayoutInfo as WindowLayoutInfo;
 
+			var curWinBounds = wmc.ComputeCurrentWindowMetrics(this).Bounds;
+			WindowBounds = new Rectangle(curWinBounds.Left, curWinBounds.Top,
+										curWinBounds.Width(), curWinBounds.Height());
+
 			Android.Util.Log.Info("JWM", "===LayoutStateChangeCallback.Accept");
 			Android.Util.Log.Info("JWM", newLayoutInfo.ToString());
+
+			isSeparating = false; // we don't know if we'll find a displayFeature of not
+			FoldingFeatureBounds = Rectangle.Zero;
 
 			foreach (var displayFeature in newLayoutInfo.DisplayFeatures)
 			{
@@ -75,6 +106,11 @@ namespace Maui.Controls.Sample.Droid
 
 				if (foldingFeature != null) // HACK: requires JavaCast as shown above
 				{
+					isSeparating = foldingFeature.IsSeparating;
+
+					FoldingFeatureBounds = new Rectangle(foldingFeature.Bounds.Left, foldingFeature.Bounds.Top, 
+														foldingFeature.Bounds.Width(), foldingFeature.Bounds.Height());
+
 					Android.Util.Log.Info("JWM", "\nIsSeparating: " + foldingFeature.IsSeparating
 							+ "\nOrientation: " + foldingFeature.Orientation  // FoldingFeature.OrientationVertical or Horizontal
 							+ "\nState: " + foldingFeature.State // FoldingFeature.StateFlat or StateHalfOpened
@@ -85,7 +121,7 @@ namespace Maui.Controls.Sample.Droid
 					Android.Util.Log.Info("JWM", "DisplayFeature is not a fold or hinge (shouldn't happen currently)");
 				}
 			}
-		}
+	}
 		#endregion
 	}
 }

@@ -9,7 +9,7 @@
         <foldable:TwoPaneView x:Name="twoPaneView"
                               TallModeConfiguration="TopBottom"
                               WideModeConfiguration="LeftRight"
-                              MinWideModeWidth="900"
+                              MinWideModeWidth="400"
                               MinTallModeHeight="600">
             <foldable:TwoPaneView.Pane1>
                 <StackLayout BackgroundColor="DarkGray"

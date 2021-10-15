@@ -44,16 +44,21 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		internal DualScreenInfo(VisualElement element, IDualScreenService dualScreenService)
 		{
+			//HACK:FOLDABLE
+			System.Diagnostics.Debug.Write("DualScreenInfo.ctor DualScreenService:" + dualScreenService, "JWM");
+
 			_spanningBounds = new Rectangle[0];
 			Element = element;
 			_dualScreenService = dualScreenService;
 
 			if (element == null)
 			{
+				System.Diagnostics.Debug.Write("     element == null", "JWM");
 				_twoPaneViewLayoutGuide = TwoPaneViewLayoutGuide.Instance;
 			}
 			else
 			{
+				System.Diagnostics.Debug.Write("     element == " + element, "JWM");
 				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, dualScreenService);
 				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;				
 			}

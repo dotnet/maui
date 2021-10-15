@@ -16,7 +16,6 @@
 			System.Diagnostics.Debug.Write("TwoPaneViewPage.OnAppearing - hinge angle prepped", "JWM");
 			DualScreenInfo.Current.HingeAngleChanged += Current_HingeAngleChanged;
 			hingeLabel.Text = "Hinge prepped " + await DualScreenInfo.Current.GetHingeAngleAsync();
-
 			hingeLabel.Text += " spanmode:" + DualScreenInfo.Current.SpanMode;
 		}
 		protected override void OnDisappearing()

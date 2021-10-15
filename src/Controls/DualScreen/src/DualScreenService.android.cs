@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		}
 
-		public static void Init(Activity activity)
+		public static void Init(IFoldableContext activity)
 		{
 			global::Android.Util.Log.Debug("JWM", "DualScreenService.Init - Android detected");
 			DependencyService.Register<DualScreenServiceImpl>();
@@ -33,11 +33,14 @@ namespace Microsoft.Maui.Controls.DualScreen
 		internal class DualScreenServiceImpl : IDualScreenService //HACK: FOLDABLE, Platform.Android.DualScreen.IDualScreenService
 		{
 			ScreenHelper _helper;
+			[Obsolete("Should not care about specific device model")]
 			bool _isDuo = false;
+			[Obsolete("Should not care about specific device model")]
 			bool IsDuo => (_helper == null || _HingeService == null || _mainActivity == null || _singleUseHingeSensor == null) ? false : _isDuo;
 			HingeSensor _singleUseHingeSensor;
-			static Activity _mainActivity;
+			static IFoldableContext _mainActivity;
 			static DualScreenServiceImpl _HingeService;
+			//[Obsolete("don't rely on custom 'landscape'")]
 			bool _isLandscape;
 			Size _pixelScreenSize;
 			object _hingeAngleLock = new object();
@@ -45,7 +48,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			bool _isSpanned;
 			Rectangle _hingeDp = Rectangle.Zero;
 
-			internal static Activity MainActivity => _mainActivity;
+			internal static Activity MainActivity => (_mainActivity as Activity);
 
 			static HingeSensor DefaultHingeSensor;
 			readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
@@ -61,9 +64,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 					Init(_mainActivity);
 			}
 
-			public static void Init(Activity activity)
+			public static void Init(IFoldableContext activity)
 			{
 				//HACK:FOLDABLE 
+				
 				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.Init - Android detected");
 
 				if (_HingeService == null)
@@ -86,30 +90,31 @@ namespace Microsoft.Maui.Controls.DualScreen
 				if (_mainActivity == null)
 					return;
 
-				bool isDuo = _HingeService._isDuo = ScreenHelper.IsDualScreenDevice(_mainActivity);
-				if (!isDuo)
-				{
+				//bool isDuo = _HingeService._isDuo = ScreenHelper.IsDualScreenDevice(_mainActivity);
+				//if (!isDuo)
+				//{
 					if (_mainActivity is IDeviceInfoProvider infoProvider)
 					{
 						infoProvider.ConfigurationChanged += _HingeService.ConfigurationChanged;
 					}
 
-					return;
-				}
+					//return;
+				//}
 
-				var screenHelper = _HingeService._helper ?? new ScreenHelper();
-				isDuo = screenHelper.Initialize(_mainActivity);
-				_HingeService._isDuo = isDuo;
+				var screenHelper = _HingeService._helper ?? new ScreenHelper(activity);
+				//isDuo = screenHelper.Initialize(_mainActivity);
+				//_HingeService._isDuo = isDuo;
 
-				if (!isDuo)
-				{
-					_HingeService._helper = null;
-					_HingeService.SetupHingeSensors(null);
-					return;
-				}
+				//if (!isDuo)
+				//{
+				//	_HingeService._helper = null;
+				//	_HingeService.SetupHingeSensors(null);
+				//	return;
+				//}
 
+				// Hinge service is set up for every device - figure out how to NOT do that (based on hinge existing?)
 				_HingeService._helper = screenHelper;
-				_HingeService.SetupHingeSensors(_mainActivity);
+				_HingeService.SetupHingeSensors(_mainActivity as Activity);
 				if (_mainActivity is IDeviceInfoProvider newDeviceInfoProvider)
 				{
 					newDeviceInfoProvider.ConfigurationChanged += _HingeService.ConfigurationChanged;
@@ -132,10 +137,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			void Update()
 			{
-				_isSpanned = IsDuo && (_helper?.IsDualMode ?? false);
+				_isSpanned = /*IsDuo &&*/ (_helper?.IsDualMode ?? false);
 
 				// Hinge
-				if (!IsDuo)
+				if (!_isSpanned)
 				{
 					_hingeDp = Rectangle.Zero;
 				}
@@ -154,31 +159,31 @@ namespace Microsoft.Maui.Controls.DualScreen
 				}
 
 				// Is Landscape
-				if (!IsDuo)
-				{
-					if (_mainActivity == null)
-						_isLandscape = false;
-					else
-					{
-
-						var orientation = _mainActivity.Resources.Configuration.Orientation;
-						_isLandscape = (orientation == global::Android.Content.Res.Orientation.Landscape);
-					}
-				}
+				//if (!IsDuo)
+				//{
+				if (_mainActivity == null)
+					_isLandscape = false;
 				else
 				{
-
-					var rotation = ScreenHelper.GetRotation(_helper.Activity);
-					_isLandscape = (rotation == SurfaceOrientation.Rotation270 || rotation == SurfaceOrientation.Rotation90);
+					//var orientation = (_mainActivity as Activity).Resources.Configuration.Orientation;
+					//_isLandscape = (orientation == global::Android.Content.Res.Orientation.Landscape);
+					_isLandscape = (_mainActivity.WindowBounds.Width >= _mainActivity.WindowBounds.Height);
 				}
+				//}
+				//else
+				//{
+
+				//	var rotation = ScreenHelper.GetRotation(_helper.Activity);
+				//	_isLandscape = (rotation == SurfaceOrientation.Rotation270 || rotation == SurfaceOrientation.Rotation90);
+				//}
 			}
 
 			public bool IsSpanned => _isSpanned;
 
 			public Task<int> GetHingeAngleAsync()
 			{
-				if (!IsDuo)
-					return Task.FromResult(0);
+				//if (!IsDuo)
+				//	return Task.FromResult(0);
 
 				Task<int> returnValue = null;
 				lock (_hingeAngleLock)
@@ -196,8 +201,20 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 
 			public Rectangle GetHinge() => _hingeDp;
+			[Obsolete("shouldn't matter")]
 			public bool IsDualScreenDevice => IsDuo;
-			public bool IsLandscape => _isLandscape;
+			public bool IsLandscape
+			{ //=> _isLandscape;
+				get {
+					if (_mainActivity == null)
+						return false;
+					else
+					{
+						return (_mainActivity.WindowBounds.Width >= _mainActivity.WindowBounds.Height);
+					}
+				}
+				
+			}
 
 			public Point? GetLocationOnScreen(VisualElement visualElement)
 			{
@@ -343,7 +360,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 						// If the androidView itself becomes disposed of the listener will survive the life of the view
 						// and it will get moved to the root views tree observer
 						if (this.IsAlive())
-							_mainActivity?.Window?.DecorView?.RootView?.ViewTreeObserver?.RemoveOnGlobalLayoutListener(this);
+							(_mainActivity as Activity)?.Window?.DecorView?.RootView?.ViewTreeObserver?.RemoveOnGlobalLayoutListener(this);
 					}
 					catch
 					{
@@ -423,10 +440,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			void ConfigurationChanged(object sender, EventArgs e)
 			{
-				if (IsDuo)
-				{
-					_helper?.Update();
-				}
+				//if (IsDuo)
+				//{
+				_helper?.Update();
+				//}
 
 				bool wasLandscape = IsLandscape;
 				Update();
@@ -439,7 +456,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 				if (_mainActivity != null)
 				{
-					using (global::Android.Util.DisplayMetrics display = _mainActivity.Resources.DisplayMetrics)
+					using (global::Android.Util.DisplayMetrics display = (_mainActivity as Activity).Resources.DisplayMetrics)
 					{
 						var scalingFactor = display.Density;
 						_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
@@ -460,8 +477,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			void StartListeningForHingeChanges()
 			{
-				if (!IsDuo)
-					return;
+				//if (!IsDuo)
+				//	return;
 
 				_singleUseHingeSensor.OnSensorChanged += OnSensorChanged;
 				_singleUseHingeSensor.StartListening();
@@ -469,8 +486,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 			void StopListeningForHingeChanges()
 			{
-				if (!IsDuo)
-					return;
+				//if (!IsDuo)
+				//	return;
 
 				_singleUseHingeSensor.OnSensorChanged -= OnSensorChanged;
 				_singleUseHingeSensor.StopListening();

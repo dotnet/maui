@@ -11,29 +11,46 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.DualScreen
 {	public class ScreenHelper
 	{
 		//HACK: public DisplayMask DisplayMask { get; private set; }
-
+		public Rectangle FoldingFeatureBounds { get; private set; } = Rectangle.Zero;
+		public Rectangle WindowBounds { get; private set; } = Rectangle.Zero;
 		public Activity Activity { get; private set; }
 
-		//TODO: FOLDABLE remove this implementation
-		public static bool IsDualScreenDevice(Context context)
-			=> context.PackageManager.HasSystemFeature("com.microsoft.device.display.displaymask");
-
-		public bool Initialize(Activity activity)
+		public ScreenHelper() {
+			global::Android.Util.Log.Debug("JWM", "ScreenHelper.ctor - no Activity");
+		}
+		public ScreenHelper(IFoldableContext activity)
 		{
-			if (!IsDualScreenDevice(activity))
-				return false;
+			global::Android.Util.Log.Debug("JWM", "ScreenHelper.ctor - WITH Activity");
+			Activity = activity as Activity;
+		}
+
+		//TODO: FOLDABLE remove this implementation
+		[Obsolete("shouldnt care")]
+		public static bool IsDualScreenDevice(IFoldableContext context)
+		{
+			return context.isSeparating;
+			//return context.PackageManager.HasSystemFeature("com.microsoft.device.display.displaymask");
+		}
+		public bool Initialize(IFoldableContext activity)
+		{
+			//if (!IsDualScreenDevice(activity))
+			//	return false;
+			WindowBounds = activity.WindowBounds;
 
 			try
 			{
-				Activity = activity;
+				Activity = activity as Activity;
+				if (activity.isSeparating)
+					FoldingFeatureBounds = activity.FoldingFeatureBounds;
 				//HACK:DisplayMask = DisplayMask.FromResourcesRectApproximation(Activity);
 				//HACK:if (DisplayMask == null)
-				return false;
+				//    return false;
 			}
 			catch (Java.Lang.NoSuchMethodError ex)
 			{
@@ -51,14 +68,18 @@ namespace Microsoft.Maui.Controls.DualScreen
 				return false;
 			}
 
-			//HACK:return true;
+			return true;
 		}
 
 		public void OnConfigurationChanged(Configuration newConfig)
 			=> Update();
 
-		public void Update() { }
+		public void Update() {
 			//HACK:=> DisplayMask = DisplayMask.FromResourcesRectApproximation(Activity);
+			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds;
+			WindowBounds = (Activity as IFoldableContext).WindowBounds;
+		}
+
 
 		public SurfaceOrientation GetRotation()
 			=> GetRotation(Activity);
@@ -69,16 +90,34 @@ namespace Microsoft.Maui.Controls.DualScreen
 			// Double Landscape Rect(0, 1350 - 1800, 1434)
 			// Double Portrait  Rect(1350, 0 - 1434, 1800)
 			//HACK:var boundings = DisplayMask.GetBoundingRectsForRotation(rotation);
+			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds; // TODO get for rotation!!!!???
 
 			//HACK:if (boundings.Count <= 0)
-			return new Rect();
+			if (FoldingFeatureBounds == Rectangle.Zero)
+				return new Rect();
 
-			//HACK:return boundings[0];
+			return new Rect((int)FoldingFeatureBounds.Left, (int)FoldingFeatureBounds.Top, (int)FoldingFeatureBounds.Right, (int)FoldingFeatureBounds.Bottom);
+			//HACK:[0];  used to expect multiple - TODO maybe reinstate this?
+		}
+
+		Rect GetHinge()
+		{
+			// Hinge's coordinates of its 4 edges in different mode
+			// Double Landscape Rect(0, 1350 - 1800, 1434)
+			// Double Portrait  Rect(1350, 0 - 1434, 1800)
+			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds; // TODO get for rotation!!!!???
+
+			if (FoldingFeatureBounds == Rectangle.Zero)
+				return new Rect();
+
+			return new Rect((int)FoldingFeatureBounds.Left, (int)FoldingFeatureBounds.Top, (int)FoldingFeatureBounds.Right, (int)FoldingFeatureBounds.Bottom);
 		}
 
 		Rect GetWindowRect()
 		{
-			var windowRect = new Rect();
+			//HACK:FOLDABLE
+			var windowRect = new Rect(0, 0, (int)WindowBounds.Width, (int)WindowBounds.Height);
+
 			//HACK:Activity.WindowManager.DefaultDisplay.GetRectSize(windowRect); ;
 			return windowRect;
 		}
@@ -87,22 +126,21 @@ namespace Microsoft.Maui.Controls.DualScreen
 		{
 			get
 			{
-				var rotation = GetRotation();
-				var hinge = GetHinge(rotation);
+				//var rotation = GetRotation();
+				var hinge = GetHinge(); //GetHinge(rotation);
 				var windowRect = GetWindowRect();
 
 				// Make sure hinge isn't null and window rect
 				// Also make sure hinge has width OR height (not just Rect.Zero)
 				// Finally make sure the window rect has width AND height
 
-				//HACK:
-				//if (hinge != null && windowRect != null
-				//	&& (hinge.Width() > 0 || hinge.Height() > 0)
-				//	&& windowRect.Width() > 0 && windowRect.Height() > 0)
-				//{
-				//	// If the hinge intersects the window, dual mode
-				//	return hinge.Intersect(windowRect);
-				//}
+				if (hinge != null && windowRect != null
+					&& (hinge.Width() > 0 || hinge.Height() > 0)
+					&& windowRect.Width() > 0 && windowRect.Height() > 0)
+				{
+					// If the hinge intersects the window, dual mode
+					return hinge.Intersect(windowRect);
+				}
 
 				return false;
 			}
