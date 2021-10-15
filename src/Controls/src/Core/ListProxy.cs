@@ -216,13 +216,13 @@ namespace Microsoft.Maui.Controls
 				sync.Callback(ProxiedEnumerable, sync.Context, () =>
 				{
 					e = e.WithCount(Count);
-					_dispatcher.Dispatch(action);
+					_dispatcher.BeginInvokeOnMainThread(action);
 				}, false);
 			}
 			else
 			{
 				e = e.WithCount(Count);
-				_dispatcher.Dispatch(action);
+				_dispatcher.BeginInvokeOnMainThread(action);
 			}
 		}
 
