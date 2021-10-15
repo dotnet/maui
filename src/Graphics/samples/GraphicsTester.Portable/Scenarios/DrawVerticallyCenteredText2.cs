@@ -5,7 +5,7 @@ namespace GraphicsTester.Scenarios
 	public class DrawVerticallyCenteredText2 : AbstractScenario
 	{
 		public DrawVerticallyCenteredText2()
-			: base(720, 1024)
+			: base(2600, 2600)
 		{
 		}
 
