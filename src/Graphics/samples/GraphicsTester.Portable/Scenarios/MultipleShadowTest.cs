@@ -4,7 +4,7 @@ namespace GraphicsTester.Scenarios
 {
 	public class MultipleShadowTest : AbstractScenario
 	{
-		public MultipleShadowTest() : base(20, 20)
+		public MultipleShadowTest() : base(720, 1024)
 		{
 		}
 

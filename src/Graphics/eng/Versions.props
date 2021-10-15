@@ -10,10 +10,10 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>31.0.101-preview.10.31</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.10.164</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>15.0.101-preview.10.164</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>15.0.101-preview.10.164</MicrosofttvOSSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>12.0.101-preview.10.164</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>15.0.101-preview.10.165</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>15.0.101-preview.10.165</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>15.0.101-preview.10.165</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>12.0.101-preview.10.165</MicrosoftmacOSSdkPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Trim all characters after first `-` or `+` is encountered. -->
