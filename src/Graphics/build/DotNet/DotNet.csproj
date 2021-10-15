@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
+    <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
@@ -21,11 +22,59 @@
     <_ProvisionDependsOn>
       _DownloadDotNetInstallScript;
       _InstallDotNet;
-      _AcquireWorkloads;
-      _AcquirePacks;
+      _AcquireWorkloadManifests;
+      _InstallWorkloadPacks;
     </_ProvisionDependsOn>
   </PropertyGroup>
+
+  <!-- Build target provisions ./bin/dotnet/ -->
   <Target Name="_Provision" BeforeTargets="Build" DependsOnTargets="$(_ProvisionDependsOn)" />
+
+  <!--
+    Install target takes artifacts/*.nupkg and installs them to the current 'dotnet'.
+    Running this with ./bin/dotnet/dotnet will work without elevation.
+    For a system install, you will need to run this in an admin command-prompt on Windows, or use 'sudo' on Mac.
+  -->
+  <Target Name="Install" DependsOnTargets="SetVersions">
+
+    <Error
+        Condition=" '$(MSBuildRuntimeType)' != 'Core' "
+        Text="You should only run this target with 'dotnet build'."
+    />
+    <PropertyGroup>
+      <_InstallTempDirectory>$(DotNetTempDirectory)install/</_InstallTempDirectory>
+    </PropertyGroup>
+
+    <!-- Setup Microsoft.NET.Sdk.Maui/WorkloadManifest.* -->
+    <ItemGroup>
+      <_PackagesToUnzip Include="$(PackageOutputPath)/Microsoft.NET.Sdk.Maui.Manifest-$(DotNetPreviewVersionBand).*.nupkg" />
+    </ItemGroup>
+    <Unzip
+        SourceFiles="@(_PackagesToUnzip)"
+        DestinationFolder="$(_InstallTempDirectory)"
+    />
+    <ItemGroup>
+      <_WorkloadFiles Include="$(_InstallTempDirectory)data/WorkloadManifest.*" />
+    </ItemGroup>
+    <CopyWorkloadFiles
+        Name="microsoft.net.sdk.maui"
+        Files="@(_WorkloadFiles)"
+        WorkloadDirectory="$(MSBuildExtensionsPath)../../sdk-manifests/$(DotNetPreviewVersionBand)"
+        VersionBand="$(DotNetPreviewVersionBand)"
+    />
+    <RemoveDir Directories="$(_InstallTempDirectory)" />
+
+    <!-- Run 'dotnet workload install' for the current running 'dotnet' install -->
+    <ItemGroup>
+      <_WorkloadSource Include="$(PackageOutputPath)" />
+      <_WorkloadSource Include="$(DotNet6Feed)" />
+    </ItemGroup>
+    <Exec
+        Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install maui --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; @(_WorkloadSource->'--source &quot;%(Identity)&quot;', ' ')"
+        WorkingDirectory="$(MauiRootDirectory)"
+    />
+
+  </Target>
 
   <PropertyGroup>
     <!-- These files should invalidate ./bin/dotnet completely -->
@@ -60,23 +109,33 @@
     <_PacksToRemove Include="Microsoft.NET.Workload.iOS" />
     <_PacksToRemove Include="Microsoft.NET.Workload.tvOS" />
     <_PacksToRemove Include="Microsoft.NET.Workload.macOS" />
+    <!-- Ids for 'dotnet workload install' -->
+    <_WorkloadIds Include="android-aot" />
+    <_WorkloadIds Include="maccatalyst" />
+    <_WorkloadIds Include="macos" />
+    <_WorkloadIds Include="ios" />
+    <_WorkloadIds Include="tvos" />
   </ItemGroup>
 
-  <Target Name="_AcquireWorkloads"
+  <Target Name="_AcquireWorkloadManifests"
       Inputs="$(_Inputs);Dependencies/Workloads.csproj"
       Outputs="$(DotNetSdkManifestsDirectory).stamp">
-    <RemoveDir Directories="@(_PacksToRemove->'$(DotNetSdkManifestsDirectory)%(Identity)')" />
+    <PropertyGroup>
+      <_WorkloadManifestDir>$(DotNetTempDirectory)workload/</_WorkloadManifestDir>
+    </PropertyGroup>
+    <RemoveDir Directories="$(_WorkloadManifestDir);@(_PacksToRemove->'$(DotNetSdkManifestsDirectory)%(Identity)')" />
+    <MakeDir Directories="$(_WorkloadManifestDir)" />
     <Exec
         Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Workloads.csproj&quot; -bl:$(PackageOutputPath)/DotNetWorkloads.binlog"
-        EnvironmentVariables="NUGET_PACKAGES=$(DotNetTempDirectory);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
+        EnvironmentVariables="NUGET_PACKAGES=$(_WorkloadManifestDir);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
     />
     <!--
-      NOTE: Workloads need to go in dotnet/sdk-manifests/6.0.100/Microsoft.NET.*/
+      NOTE: Workloads need to go in dotnet/sdk-manifests/6.0.100/microsoft.net.*/
       Workloads only contain two files: data/WorkloadManifest.targets & data/WorkloadManifest.json
-      We downloaded these to $(DotNetTempDirectory), so we could move files individually.
+      We downloaded these to $(_WorkloadManifestDir), so we could move files individually.
     -->
     <ItemGroup>
-      <_WorkloadFiles Include="$(DotNetTempDirectory)Microsoft.NET.*/*/data/WorkloadManifest.*" />
+      <_WorkloadFiles Include="$(_WorkloadManifestDir)microsoft.net.*/*/data/WorkloadManifest.*" />
     </ItemGroup>
     <CopyWorkloadFiles
         Files="@(_WorkloadFiles)"
@@ -84,44 +143,17 @@
         VersionBand="$(DotNetPreviewVersionBand)"
     />
 
-    <!-- In order to support older MSBuild versions, change the version string to an integer -->
-    <ReplaceText
-        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.android/WorkloadManifest.json"
-        OldValue="&quot;version&quot;: &quot;$(MicrosoftAndroidSdkWindowsPackageVersion)&quot;"
-        NewValue="&quot;version&quot;: 6"
-    />
-    <ReplaceText
-        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.maccatalyst/WorkloadManifest.json"
-        OldValue="&quot;version&quot;: &quot;$(MicrosoftMacCatalystSdkPackageVersion)&quot;"
-        NewValue="&quot;version&quot;: 6"
-    />
-    <ReplaceText
-        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.ios/WorkloadManifest.json"
-        OldValue="&quot;version&quot;: &quot;$(MicrosoftiOSSdkPackageVersion)&quot;"
-        NewValue="&quot;version&quot;: 6"
-    />
-    <ReplaceText
-        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.tvos/WorkloadManifest.json"
-        OldValue="&quot;version&quot;: &quot;$(MicrosofttvOSSdkPackageVersion)&quot;"
-        NewValue="&quot;version&quot;: 6"
-    />
-    <ReplaceText
-        Input="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.macos/WorkloadManifest.json"
-        OldValue="&quot;version&quot;: &quot;$(MicrosoftmacOSSdkPackageVersion)&quot;"
-        NewValue="&quot;version&quot;: 6"
-    />
-
     <Touch Files="$(DotNetSdkManifestsDirectory).stamp" AlwaysCreate="true" />
   </Target>
 
-  <Target Name="_AcquirePacks"
-      Inputs="$(_Inputs);Dependencies/Packs.csproj"
+  <Target Name="_InstallWorkloadPacks"
+      Condition=" '$(InstallWorkloadPacks)' == 'true' "
+      Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Packs.csproj&quot; -bl:$(PackageOutputPath)/DotNetPacks.binlog"
-        EnvironmentVariables="NUGET_PACKAGES=$(DotNetPacksDirectory);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
+        Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --source &quot;$(DotNet6Feed)&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
     />
-    <RemoveDir Directories="@(_PacksToRemove->'$(DotNetPacksDirectory)%(Identity)')" />
     <Touch Files="$(DotNetPacksDirectory).stamp" AlwaysCreate="true" />
   </Target>
 
@@ -129,6 +161,7 @@
       TaskFactory="RoslynCodeTaskFactory"
       AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
+      <Name ParameterType="System.String" />
       <Files ParameterType="System.String[]" Required="true" />
       <WorkloadDirectory ParameterType="System.String" Required="true" />
       <VersionBand ParameterType="System.String" Required="true" />
@@ -140,32 +173,13 @@
           // This is only in C#, because the equivalent MSBuild XML would not be pretty.
           foreach (var file in Files)
           {
-              var name = Directory.GetParent (file).Parent.Parent.Name;
+              var name = string.IsNullOrEmpty(Name) ? Directory.GetParent (file).Parent.Parent.Name : Name;
               var directory = Path.Combine(WorkloadDirectory, name.Replace($".manifest-{VersionBand}", ""));
               Directory.CreateDirectory(directory);
               var destination = Path.Combine(directory, Path.GetFileName(file));
               Log.LogMessage($"Copying {file} to {destination}");
               File.Copy(file, destination, overwrite: true);
           }
-        ]]>
-      </Code>
-    </Task>
-  </UsingTask>
-  <UsingTask TaskName="ReplaceText"
-      TaskFactory="RoslynCodeTaskFactory"
-      AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <Input ParameterType="System.String" Required="true" />
-      <OldValue ParameterType="System.String" Required="true" />
-      <NewValue ParameterType="System.String" Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System.IO" />
-      <Using Namespace="System.Text.RegularExpressions" />
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-          var regex = new Regex(Regex.Escape(OldValue));
-          File.WriteAllText(Input, regex.Replace(File.ReadAllText(Input), NewValue, count: 1));
         ]]>
       </Code>
     </Task>

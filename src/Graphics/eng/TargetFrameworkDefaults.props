@@ -1,0 +1,12 @@
+<Project>
+
+  <!--
+    By default, build for an old TFM for wide applicability. When running source-build, target the
+    current .NET SDK framework version to avoid dependency challenges.
+  -->
+  <PropertyGroup>
+    <TargetFrameworkForNETSDK>netcoreapp3.1</TargetFrameworkForNETSDK>
+    <TargetFrameworkForNETSDK Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworkForNETSDK>
+  </PropertyGroup>
+
+</Project>

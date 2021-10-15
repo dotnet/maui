@@ -22,13 +22,14 @@ PowerShell:
 // #addin "nuget:?package=Cake.Boots&version=1.0.4.600-preview1"
 // #addin "nuget:?package=Cake.AppleSimulator&version=0.2.0"
 // #addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
-#load "eng/cake/dotnet.cake"
 
 //////////////////////////////////////////////////////////////////////
 // TOOLS
 //////////////////////////////////////////////////////////////////////
 #tool nuget:?package=NUnit.ConsoleRunner&version=3.11.1
 #tool "nuget:?package=nuget.commandline&version=5.8.1"
+#load "eng/cake/dotnet.cake"
+#load "eng/cake/helpers.cake"
 
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -42,7 +43,13 @@ string envProgramFiles = EnvironmentVariable("ProgramFiles(x86)");
 var configuration = GetBuildVariable("BUILD_CONFIGURATION", GetBuildVariable("configuration", "DEBUG"));
 var msbuildPath = GetBuildVariable("msbuild", $"{envProgramFiles}\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin\\MSBuild.exe");
 bool isHostedAgent = agentName.StartsWith("Azure Pipelines") || agentName.StartsWith("Hosted Agent");
-
+string logDirectory = EnvironmentVariable("LogDirectory", $"{artifactStagingDirectory}/logs");
+string testResultsDirectory = EnvironmentVariable("TestResultsDirectory", $"{artifactStagingDirectory}/test-results");
+string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
+string MSBuildArgumentsENV = EnvironmentVariable("MSBuildArguments", "");
+string MSBuildArgumentsARGS = Argument("MSBuildArguments", "");
+string MSBuildArguments;
+var localDotnet = GetBuildVariable("workloads",  (target == "VS-WINUI") ? "global" : "local") == "local";
 
 var target = Argument("target", "Default");
 if(String.IsNullOrWhiteSpace(target))
@@ -52,18 +59,10 @@ if(String.IsNullOrWhiteSpace(target))
 // TASK TARGETS
 //////////////////////////////////////////////////////////////////////
 
-Task("Default").IsDependentOn("dotnet-pack");
+// Task("Default").IsDependentOn("dotnet-pack");
 
 //////////////////////////////////////////////////////////////////////
 // EXECUTION
 //////////////////////////////////////////////////////////////////////
 
 RunTarget(target);
-
-T GetBuildVariable<T>(string key, T defaultValue)
-{
-    // on MAC all environment variables are upper case regardless of how you specify them in devops
-    // And then Environment Variable check is case sensitive
-    T upperCaseReturnValue = Argument(key.ToUpper(), EnvironmentVariable(key.ToUpper(), defaultValue));
-    return Argument(key, EnvironmentVariable(key, upperCaseReturnValue));
-}
