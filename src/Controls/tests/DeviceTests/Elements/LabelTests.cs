@@ -18,7 +18,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync<LabelHandler>(label);
 
-			Assert.Equal(expected, handler.NativeView.Text);
+			var nativeText = await InvokeOnMainThreadAsync(() =>
+			{ 
+				return handler.NativeView.Text;
+			});
+
+			Assert.Equal(expected, nativeText);
 		}
 	}
 }
