@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		void OnClick(object sender, PointerRoutedEventArgs e)
 		{
 			var point = e.GetCurrentPoint(CellContent);
-			if (point.Properties.PointerUpdateKind != PointerUpdateKind.RightButtonReleased)
+			if (point.Properties.PointerUpdateKind != Microsoft.UI.Input.PointerUpdateKind.RightButtonReleased)
 				return;
 
 			OpenContextMenu();
@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		void OnLongTap(object sender, HoldingRoutedEventArgs e)
 		{
-			if (e.HoldingState == HoldingState.Started)
+			if (e.HoldingState == Microsoft.UI.Input.HoldingState.Started)
 				OpenContextMenu();
 		}
 

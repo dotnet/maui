@@ -21,6 +21,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+    <PackageReference Include="Microsoft.Maui.Graphics.Skia" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
@@ -30,8 +31,6 @@
   </ItemGroup>
   <ItemGroup Condition="'$(UseMaui)' != 'true' and $(TargetFramework.Contains('-windows')) == true ">
     <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
 

@@ -432,7 +432,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (point == null)
 				return;
 
-			if (point.PointerDeviceType != PointerDeviceType.Mouse)
+			if (point.PointerDeviceType != Microsoft.UI.Input.PointerDeviceType.Mouse)
 				return;
 
 			if (point.Properties.IsXButton1Pressed)
