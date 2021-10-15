@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 	{
 		public static MauiAppBuilder UseDualScreen(this MauiAppBuilder builder)
 		{
+			//builder.Services.AddSingleton<IHostedService>();
 #if ANDROID
 			builder.ConfigureLifecycleEvents(lc =>
 			{
