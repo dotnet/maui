@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <Content Remove="build\**\*" />
-    <None Include="build\**\*" Pack="True" PackagePath="build\%(RecursiveDir)%(FileName)%(Extension);buildTransitive\%(RecursiveDir)%(FileName)%(Extension)" />
+    <None Include="build\**\*" Pack="True" PackagePath="build\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
