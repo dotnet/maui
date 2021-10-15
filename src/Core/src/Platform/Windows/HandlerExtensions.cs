@@ -29,12 +29,13 @@ namespace Microsoft.Maui
 			if (handler.VirtualView != view)
 				handler.SetVirtualView(view);
 
-			if (((INativeViewHandler)handler).NativeView is not FrameworkElement result)
-			{
-				throw new InvalidOperationException($"Unable to convert {view} to {typeof(FrameworkElement)}");
-			}
+			if (handler is INativeViewHandler nvh && nvh.NativeView is FrameworkElement)
+				return nvh.NativeView;
 
-			return result;
+			if (handler.NativeView is FrameworkElement result)
+				return result;
+
+			throw new InvalidOperationException($"Unable to convert {view} to {typeof(FrameworkElement)}");
 		}
 
 		public static void SetApplicationHandler(this UI.Xaml.Application nativeApplication, IApplication application, IMauiContext context) =>

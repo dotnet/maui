@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success);
 
 				var copied = task.CopiedResources;
-				Assert.Equal(items.Length * DpiPath.Android.Length, copied.Length);
+				Assert.Equal(items.Length * DpiPath.Android.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "drawable-mdpi/camera.png");
 				Assert.Equal("drawable-mdpi", mdpi.GetMetadata("_ResizetizerDpiPath"));
@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success);
 
 				var copied = task.CopiedResources;
-				Assert.Equal(items.Length * DpiPath.Android.Length, copied.Length);
+				Assert.Equal(items.Length * DpiPath.Android.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "drawable-mdpi/camera.png");
 				Assert.Equal("drawable-mdpi", mdpi.GetMetadata("_ResizetizerDpiPath"));
@@ -506,7 +506,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success);
 
 				var copied = task.CopiedResources;
-				Assert.Equal(items.Length * DpiPath.Ios.Length, copied.Length);
+				Assert.Equal(items.Length * DpiPath.Ios.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "camera.png");
 				Assert.Equal("", mdpi.GetMetadata("_ResizetizerDpiPath"));
@@ -531,7 +531,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success);
 
 				var copied = task.CopiedResources;
-				Assert.Equal(items.Length * DpiPath.Ios.Length, copied.Length);
+				Assert.Equal(items.Length * DpiPath.Ios.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "camera.png");
 				Assert.Equal("", mdpi.GetMetadata("_ResizetizerDpiPath"));
@@ -786,7 +786,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success);
 
 				var copied = task.CopiedResources;
-				Assert.Equal(items.Length * DpiPath.Uwp.Length, copied.Length);
+				Assert.Equal(items.Length * DpiPath.Windows.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "camera.scale-100.png");
 				Assert.Equal("Assets", mdpi.GetMetadata("_ResizetizerDpiPath"));
@@ -811,7 +811,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success);
 
 				var copied = task.CopiedResources;
-				Assert.Equal(items.Length * DpiPath.Uwp.Length, copied.Length);
+				Assert.Equal(items.Length * DpiPath.Windows.Image.Length, copied.Length);
 
 				var mdpi = GetCopiedResource(task, "camera.scale-100.png");
 				Assert.Equal("Assets", mdpi.GetMetadata("_ResizetizerDpiPath"));

@@ -416,7 +416,7 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateBrushColor("NavigationViewSelectionIndicatorForeground", tabBarForegroundColor);
 		}
 
-		void UpdateBrushColor(string resourceKey, Windows.UI.Color color)
+		void UpdateBrushColor(string resourceKey, global::Windows.UI.Color color)
 		{
 			if (Resources[resourceKey] is Microsoft.UI.Xaml.Media.SolidColorBrush sb)
 				sb.Color = color;

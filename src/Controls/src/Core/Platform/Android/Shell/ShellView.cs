@@ -16,7 +16,7 @@ using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
-using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return CreateShellSectionView(shellSection);
 		}
 
-		IShellToolbarTracker IShellContext.CreateTrackerForToolbar(Toolbar toolbar)
+		IShellToolbarTracker IShellContext.CreateTrackerForToolbar(AToolbar toolbar)
 		{
 			return CreateTrackerForToolbar(toolbar);
 		}
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return new ShellSectionView(this);
 		}
 
-		protected virtual IShellToolbarTracker CreateTrackerForToolbar(Toolbar toolbar)
+		protected virtual IShellToolbarTracker CreateTrackerForToolbar(AToolbar toolbar)
 		{
 			return new ShellToolbarTracker(this, toolbar, ((IShellContext)this).CurrentDrawerLayout);
 		}

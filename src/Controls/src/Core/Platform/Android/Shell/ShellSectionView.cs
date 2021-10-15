@@ -13,6 +13,7 @@ using AndroidX.ViewPager.Widget;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.Tabs;
 using AView = Android.Views.View;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -104,7 +105,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _selecting;
 		TabLayout _tablayout;
 		IShellTabLayoutAppearanceTracker _tabLayoutAppearanceTracker;
-		Toolbar _toolbar;
+		AToolbar _toolbar;
 		IShellToolbarAppearanceTracker _toolbarAppearanceTracker;
 		IShellToolbarTracker _toolbarTracker;
 		ViewPager2 _viewPager;
@@ -134,7 +135,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var root = inflater.Inflate(Resource.Layout.shellrootlayout, null).JavaCast<CoordinatorLayout>();
 
-			_toolbar = root.FindViewById<Toolbar>(Resource.Id.maui_toolbar);
+			_toolbar = root.FindViewById<AToolbar>(Resource.Id.maui_toolbar);
 			if (Context.GetActivity() is AppCompatActivity aca)
 				aca.SetSupportActionBar(_toolbar);
 

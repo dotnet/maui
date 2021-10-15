@@ -1,11 +1,12 @@
 using System;
 using AndroidX.AppCompat.Widget;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	public interface IShellToolbarAppearanceTracker : IDisposable
 	{
-		void SetAppearance(Toolbar toolbar, IShellToolbarTracker toolbarTracker, ShellAppearance appearance);
-		void ResetAppearance(Toolbar toolbar, IShellToolbarTracker toolbarTracker);
+		void SetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker, ShellAppearance appearance);
+		void ResetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker);
 	}
 }

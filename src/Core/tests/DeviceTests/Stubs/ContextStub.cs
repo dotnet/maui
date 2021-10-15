@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		IServiceProvider _services;
 		IAnimationManager _manager;
 #if WINDOWS
-		WindowManager _windowManager;
+		NavigationRootManager _windowManager;
 #endif
 
 		public ContextStub(IServiceProvider services)
@@ -30,8 +30,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			if (serviceType == typeof(UIKit.UIWindow))
 				return UIKit.UIApplication.SharedApplication.GetKeyWindow();
 #elif WINDOWS
-			if (serviceType == typeof(WindowManager))
-				return _windowManager ??= new WindowManager(this);
+			if (serviceType == typeof(NavigationRootManager))
+				return _windowManager ??= new NavigationRootManager(this);
 #endif
 
 			return _services.GetService(serviceType);

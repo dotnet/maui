@@ -11,22 +11,46 @@ namespace Microsoft.Maui.Essentials
 	public partial class Connectivity
 	{
 		static ConnectivityBroadcastReceiver conectivityReceiver;
+		static Intent connectivityIntent = new Intent(Platform.EssentialsConnectivityChanged);
+		static EssentialsNetworkCallback networkCallback;
 
 		static void StartListeners()
 		{
 			Permissions.EnsureDeclared<Permissions.NetworkState>();
 
+			var filter = new IntentFilter();
+
+			if (Platform.HasApiLevelN)
+			{
+				RegisterNetworkCallback();
+				filter.AddAction(Platform.EssentialsConnectivityChanged);
+			}
+			else
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				filter.AddAction(ConnectivityManager.ConnectivityAction);
+#pragma warning restore CS0618 // Type or member is obsolete
+			}
+
 			conectivityReceiver = new ConnectivityBroadcastReceiver(OnConnectivityChanged);
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			Platform.AppContext.RegisterReceiver(conectivityReceiver, new IntentFilter(ConnectivityManager.ConnectivityAction));
-#pragma warning restore CS0618 // Type or member is obsolete
+			Platform.AppContext.RegisterReceiver(conectivityReceiver, filter);
 		}
 
 		static void StopListeners()
 		{
 			if (conectivityReceiver == null)
 				return;
+
+			try
+			{
+				UnregisterNetworkCallback();
+			}
+			catch
+			{
+				Debug.WriteLine("Connectivity receiver already unregistered. Disposing of it.");
+			}
+
 			try
 			{
 				Platform.AppContext.UnregisterReceiver(conectivityReceiver);
@@ -37,6 +61,49 @@ namespace Microsoft.Maui.Essentials
 			}
 			conectivityReceiver.Dispose();
 			conectivityReceiver = null;
+		}
+		static void RegisterNetworkCallback()
+		{
+			if (!Platform.HasApiLevelN)
+				return;
+
+			var manager = Platform.ConnectivityManager;
+			if (manager == null)
+				return;
+
+			var request = new NetworkRequest.Builder().Build();
+			networkCallback = new EssentialsNetworkCallback();
+			manager.RegisterNetworkCallback(request, networkCallback);
+		}
+
+		static void UnregisterNetworkCallback()
+		{
+			if (!Platform.HasApiLevelN)
+				return;
+
+			var manager = Platform.ConnectivityManager;
+			if (manager == null || networkCallback == null)
+				return;
+
+			manager.UnregisterNetworkCallback(networkCallback);
+
+			networkCallback?.Dispose();
+			networkCallback = null;
+		}
+
+		class EssentialsNetworkCallback : ConnectivityManager.NetworkCallback
+		{
+			public override void OnAvailable(Network network) => Platform.AppContext.SendBroadcast(connectivityIntent);
+
+			public override void OnLost(Network network) => Platform.AppContext.SendBroadcast(connectivityIntent);
+
+			public override void OnCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) => Platform.AppContext.SendBroadcast(connectivityIntent);
+
+			public override void OnUnavailable() => Platform.AppContext.SendBroadcast(connectivityIntent);
+
+			public override void OnLinkPropertiesChanged(Network network, LinkProperties linkProperties) => Platform.AppContext.SendBroadcast(connectivityIntent);
+
+			public override void OnLosing(Network network, int maxMsToLive) => Platform.AppContext.SendBroadcast(connectivityIntent);
 		}
 
 		static NetworkAccess IsBetterAccess(NetworkAccess currentAccess, NetworkAccess newAccess) =>
@@ -181,7 +248,7 @@ namespace Microsoft.Maui.Essentials
 				}
 
 #pragma warning disable CS0618 // Type or member is obsolete
-				ConnectionProfile? ProcessNetworkInfo(NetworkInfo info)
+				static ConnectionProfile? ProcessNetworkInfo(NetworkInfo info)
 				{
 					if (info == null || !info.IsAvailable || !info.IsConnectedOrConnecting)
 						return null;
@@ -250,7 +317,7 @@ namespace Microsoft.Maui.Essentials
 		public override async void OnReceive(Context context, Intent intent)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
-			if (intent.Action != ConnectivityManager.ConnectivityAction)
+			if (intent.Action != ConnectivityManager.ConnectivityAction && intent.Action != Platform.EssentialsConnectivityChanged)
 #pragma warning restore CS0618 // Type or member is obsolete
 				return;
 

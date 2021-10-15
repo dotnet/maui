@@ -2,6 +2,7 @@
 using System;
 using Android.App;
 using AndroidX.AppCompat.App;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {

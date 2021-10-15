@@ -69,23 +69,32 @@ namespace Microsoft.Maui
 			// aapt resource value: 0x7F080059
 			public static int automation_tag_id = 2131230809;
 
-			// aapt resource value: 0x7F080061
-			public static int bottomtab_containerview = 2131230817;
+			// aapt resource value: 0x7F08013C
+			public static int navigationlayout_appbar = 2131231036;
 
-			// aapt resource value: 0x7F080107
-			public static int maui_toolbar = 2131230983;
+			// aapt resource value: 0x7F08013D
+			public static int navigationlayout_bottomtabs = 2131231037;
 
-			// aapt resource value: 0x7F08012D
-			public static int nav_host = 2131231021;
+			// aapt resource value: 0x7F08013E
+			public static int navigationlayout_content = 2131231038;
+
+			// aapt resource value: 0x7F08013F
+			public static int navigationlayout_toolbar = 2131231039;
+
+			// aapt resource value: 0x7F080140
+			public static int navigationlayout_toptabs = 2131231040;
+
+			// aapt resource value: 0x7F080135
+			public static int nav_host = 2131231029;
+
+			// aapt resource value: 0x7F080136
+			public static int nav_host_fragment_container = 2131231030;
 
 			// aapt resource value: 0x7F08016A
 			public static int search_button = 2131231082;
 
 			// aapt resource value: 0x7F08016B
 			public static int search_close_btn = 2131231083;
-
-			// aapt resource value: 0x7F0801C6
-			public static int toptabs_containerview = 2131231174;
 
 			static Id()
 			{
@@ -95,8 +104,13 @@ namespace Microsoft.Maui
 
 		public partial class Layout
 		{
-			// aapt resource value: 0x7F0B0059
-			public static int navigationlayout = 2131427417;
+			// aapt resource value: 0x7F0B005A
+			public static int navigationlayout = 2131427418;
+
+			// aapt resource value: 0x7F0B002E
+			public static int fragment_backstack = 2131427374;
+
+
 
 			static Layout()
 			{
