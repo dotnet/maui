@@ -3,10 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics;
+using Android.Graphics.Drawables;
+#nullable enable
 using Android.Text;
 using Android.Text.Style;
 using Android.Views;
+using AndroidX.AppCompat.Graphics.Drawable;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
 using ATextView = global::Android.Widget.TextView;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
@@ -17,6 +22,151 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class ToolbarExtensions
 	{
+		static Drawable? _defaultNavigationIcon;
+
+		public static void UpdateIsVisible(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			_ = nativeToolbar.Context ?? throw new ArgumentNullException(nameof(nativeToolbar.Context));
+
+			bool showNavBar = toolbar.IsVisible;
+			var lp = nativeToolbar.LayoutParameters;
+			if (lp == null)
+				return;
+
+			if (!showNavBar)
+			{
+				lp.Height = 0;
+			}
+			else
+			{
+				if (toolbar.BarHeight != null)
+					lp.Height = (int)nativeToolbar.Context.ToPixels(toolbar.BarHeight.Value);
+				else
+					lp.Height = ActionBarHeight();
+			}
+
+			nativeToolbar.LayoutParameters = lp;
+
+			int ActionBarHeight()
+			{
+				int actionBarHeight = (int)nativeToolbar.Context.GetThemeAttributePixels(Resource.Attribute.actionBarSize);
+				return actionBarHeight;
+			}
+		}
+
+		public static void UpdateTitleIcon(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			_ = nativeToolbar.Context ?? throw new ArgumentNullException(nameof(nativeToolbar.Context));
+			_ = toolbar?.Handler?.MauiContext ?? throw new ArgumentNullException(nameof(toolbar.Handler.MauiContext));
+
+			ImageSource source = toolbar.TitleIcon;
+
+			if (source == null || source.IsEmpty)
+			{
+				if (nativeToolbar.GetChildAt(0) is ToolbarTitleIconImageView existingImageView)
+					nativeToolbar.RemoveView(existingImageView);
+
+				return;
+			}
+
+			var iconView = new ToolbarTitleIconImageView(nativeToolbar.Context);
+			nativeToolbar.AddView(iconView, 0);
+			iconView.SetImageResource(global::Android.Resource.Color.Transparent);
+
+			source.LoadImage(toolbar.Handler.MauiContext, (result) =>
+			{
+				iconView.SetImageDrawable(result?.Value);
+				AutomationPropertiesProvider.AccessibilitySettingsChanged(iconView, source);
+			});
+		}
+
+		public static void UpdateBackButton(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			bool isNavigated = toolbar.HasBackStack;
+
+			_defaultNavigationIcon ??= nativeToolbar.NavigationIcon;
+
+			if (isNavigated)
+			{
+				if (toolbar.BackButtonVisible)
+				{
+					nativeToolbar.NavigationIcon ??= _defaultNavigationIcon;
+
+					var backButtonTitle = toolbar.BackButtonTitle;
+					ImageSource image = toolbar.TitleIcon;
+
+					if (!string.IsNullOrEmpty(backButtonTitle))
+					{
+						nativeToolbar.NavigationContentDescription = backButtonTitle;
+					}
+					else if (image == null ||
+						nativeToolbar.SetNavigationContentDescription(image) == null)
+					{
+						nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
+					}
+				}
+				else
+				{
+					nativeToolbar.NavigationIcon = null;
+				}
+			}
+
+			nativeToolbar.UpdateIconColor(toolbar);
+			nativeToolbar.UpdateBarTextColor(toolbar);
+		}
+
+		public static void UpdateBarBackgroundColor(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			var tintColor = toolbar.BarBackgroundColor;
+
+			if (tintColor == null)
+				nativeToolbar.BackgroundTintMode = null;
+			else
+			{
+				nativeToolbar.BackgroundTintMode = PorterDuff.Mode.Src;
+				nativeToolbar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToNative());
+			}
+		}
+
+		public static void UpdateBarBackground(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			Brush barBackground = toolbar.BarBackground;
+			nativeToolbar.UpdateBackground(barBackground);
+		}
+
+		public static void UpdateIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			var navIconColor = toolbar.IconColor;
+			if (navIconColor != null && nativeToolbar.NavigationIcon != null)
+				DrawableExtensions.SetColorFilter(nativeToolbar.NavigationIcon, navIconColor, FilterMode.SrcAtop);
+		}
+
+		public static void UpdateTitle(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			nativeToolbar.Title = toolbar?.Title ?? string.Empty;
+		}
+
+		public static void UpdateBarTextColor(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			var textColor = toolbar.BarTextColor;
+			if (textColor != null)
+				nativeToolbar.SetTitleTextColor(textColor.ToNative().ToArgb());
+
+			if (nativeToolbar.NavigationIcon != null && textColor != null)
+			{
+				var icon = nativeToolbar.NavigationIcon as DrawerArrowDrawable;
+				if (icon != null)
+					icon.Color = textColor.ToNative().ToArgb();
+			}
+		}
+
+		class ToolbarTitleIconImageView : AppCompatImageView
+		{
+			public ToolbarTitleIconImageView(Context context) : base(context)
+			{
+			}
+		}
+
 		const int DefaultDisabledToolbarAlpha = 127;
 		public static void DisposeMenuItems(this AToolbar toolbar, IEnumerable<ToolbarItem> toolbarItems, PropertyChangedEventHandler toolbarItemChanged)
 		{
@@ -74,8 +224,11 @@ namespace Microsoft.Maui.Controls.Platform
 			List<ToolbarItem> previousToolBarItems,
 			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
 		{
-			var context = mauiContext.Context!;
+			var context = mauiContext.Context ??
+					throw new ArgumentNullException($"{nameof(mauiContext.Context)}");
+
 			IMenu menu = toolbar.Menu;
+
 			item.PropertyChanged -= toolbarItemChanged;
 			item.PropertyChanged += toolbarItemChanged;
 
@@ -104,7 +257,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (menuItemIndex == null || menuItemIndex >= previousMenuItems?.Count)
 			{
-				menuitem = menu.Add(0, AView.GenerateViewId(), 0, newTitle)!;
+				menuitem = menu.Add(0, AView.GenerateViewId(), 0, newTitle) ??
+					throw new InvalidOperationException($"Failed to create menuitem: {newTitle}");
 				previousMenuItems?.Add(menuitem);
 			}
 			else
@@ -158,8 +312,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (baseDrawable != null)
 				{
-					using (var constant = baseDrawable.GetConstantState()!)
-					using (var newDrawable = constant.NewDrawable())
+					using (var constant = baseDrawable.GetConstantState())
+					using (var newDrawable = constant!.NewDrawable())
 					using (var iconDrawable = newDrawable.Mutate())
 					{
 						if (tintColor != null)

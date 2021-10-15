@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,11 @@ using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 using Microsoft.UI.Xaml.Media;
+using WImage = Microsoft.UI.Xaml.Controls.Image;
 
 namespace Microsoft.Maui
 {
-	partial class WindowHeader
+	public partial class WindowHeader
 	{
 		internal TranslateTransform? ClipGeometryTransform { get; private set; }
 		internal RectangleGeometry? LayoutRootClip { get; private set; }
@@ -24,6 +26,8 @@ namespace Microsoft.Maui
 		{
 			InitializeComponent();
 		}
+
+		internal MauiNavigationView? NavigationView { get; set; }
 
 		protected override void OnApplyTemplate()
 		{
@@ -39,7 +43,12 @@ namespace Microsoft.Maui
 			set => title.Text = value;
 		}
 
-		internal WImageSource? TitleIcon
+		internal WImage? TitleIconImage
+		{
+			get => titleIcon;
+		}
+
+		internal WImageSource? TitleIconImageSource
 		{
 			get => titleIcon.Source;
 			set => titleIcon.Source = value;

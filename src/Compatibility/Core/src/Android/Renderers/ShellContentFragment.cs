@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls.Platform;
 using AndroidAnimation = Android.Views.Animations.Animation;
 using AnimationSet = Android.Views.Animations.AnimationSet;
 using AView = Android.Views.View;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		AView _root;
 		ShellPageContainer _shellPageContainer;
 		ShellContent _shellContent;
-		Toolbar _toolbar;
+		AToolbar _toolbar;
 		IShellToolbarTracker _toolbarTracker;
 		bool _disposed;
 
@@ -133,7 +134,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			_root = inflater.Inflate(Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
 
-			_toolbar = _root.FindViewById<Toolbar>(Resource.Id.shellcontent_toolbar);
+			_toolbar = _root.FindViewById<AToolbar>(Resource.Id.shellcontent_toolbar);
 
 			_renderer = Platform.CreateRenderer(_page, Context);
 			Platform.SetRenderer(_page, _renderer);

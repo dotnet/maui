@@ -13,6 +13,7 @@ using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using Microsoft.Maui.Controls.Platform;
 using AView = Android.Views.View;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
@@ -114,7 +115,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		bool _selecting;
 		TabLayout _tablayout;
 		IShellTabLayoutAppearanceTracker _tabLayoutAppearanceTracker;
-		Toolbar _toolbar;
+		AToolbar _toolbar;
 		IShellToolbarAppearanceTracker _toolbarAppearanceTracker;
 		IShellToolbarTracker _toolbarTracker;
 		FormsViewPager _viewPager;
@@ -143,7 +144,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			var root = inflater.Inflate(Resource.Layout.rootlayout, null).JavaCast<CoordinatorLayout>();
 
-			_toolbar = root.FindViewById<Toolbar>(Resource.Id.maui_toolbar);
+			_toolbar = root.FindViewById<AToolbar>(Resource.Id.maui_toolbar);
 			_viewPager = root.FindViewById<FormsViewPager>(Resource.Id.main_viewpager);
 			_tablayout = root.FindViewById<TabLayout>(Resource.Id.main_tablayout);
 

@@ -51,11 +51,12 @@ namespace Microsoft.Maui.Controls.Hosting
 			{ typeof(RefreshView), typeof(RefreshViewHandler) },
 			
 #endif
-#if WINDOWS
-			{ typeof(NavigationPage), typeof(NavigationPageHandler) },
+#if WINDOWS || ANDROID
+			{ typeof(NavigationPage), typeof(NavigationViewHandler) },
+			{ typeof(Toolbar), typeof(Controls.Handlers.ToolbarHandler) },
 #endif
 #if __ANDROID__
-			//{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
+			{ typeof(TabbedPage), typeof(Controls.Handlers.TabbedPageHandler) },
 #endif
 		};
 
