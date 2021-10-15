@@ -11,8 +11,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation"  />
-    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI"  />
     <PackageReference Include="NUnit" Version="3.12.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>

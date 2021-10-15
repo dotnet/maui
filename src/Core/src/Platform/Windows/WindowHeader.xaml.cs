@@ -37,7 +37,7 @@ namespace Microsoft.Maui
 			LayoutRootClip = LayoutRoot.Clip;
 		}
 
-		internal string Title
+		internal string? Title
 		{
 			get => title.Text;
 			set => title.Text = value;
@@ -60,7 +60,7 @@ namespace Microsoft.Maui
 			set => titleView.Content = value;
 		}
 
-		internal WBrush TitleColor
+		internal WBrush? TitleColor
 		{
 			get => title.Foreground;
 			set => title.Foreground = value;

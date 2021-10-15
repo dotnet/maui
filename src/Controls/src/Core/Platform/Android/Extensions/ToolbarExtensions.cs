@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
@@ -301,9 +302,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal static void UpdateMenuItemIcon(IMauiContext mauiContext, IMenuItem menuItem, ToolbarItem toolBarItem, Color? tintColor)
 		{
-			if (toolBarItem.IconImageSource == null)
-				return;
-
 			toolBarItem.IconImageSource.LoadImage(mauiContext, result =>
 			{
 				var baseDrawable = result?.Value;

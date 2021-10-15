@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var width = r - l;
 			var height = b - t;
 
-			if (changed && Child.NativeView is AView aView)
+			if (Child.NativeView is AView aView)
 				aView.Layout(0, 0, width, height);
 		}
 
