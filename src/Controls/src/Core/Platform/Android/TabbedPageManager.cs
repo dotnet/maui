@@ -439,7 +439,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		protected virtual void SetTabIconImageSource(TabLayout.Tab tab, Drawable icon)
+		protected virtual void SetTabIconImageSource(TabLayout.Tab tab, Drawable? icon)
 		{
 			tab.SetIcon(icon);
 			SetIconColorFilter(tab);
@@ -451,7 +451,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				_context,
 				result =>
 				{
-					SetTabIconImageSource(tab, result.Value);
+					SetTabIconImageSource(tab, result?.Value);
 				});
 		}
 
