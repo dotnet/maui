@@ -15,6 +15,7 @@ using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Essentials;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Controls.DualScreen;
 
 #if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Components.WebView.Maui;
@@ -220,7 +221,7 @@ namespace Maui.Controls.Sample
 #endif
 				});
 
-			return appBuilder.Build();
+			return appBuilder.UseDualScreen().Build();
 		}
 	}
 }
