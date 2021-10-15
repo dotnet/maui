@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
@@ -406,7 +407,7 @@ namespace Microsoft.Maui.Graphics.Xaml
 			_transformGroup.Children.Add(transform);
 		}
 
-		public void XamlConcatenateTransform(AffineTransform transform)
+		public void XamlConcatenateTransform(Matrix3x2 transform)
 		{
 			InitGroup();
 			var nativeTransform = transform.AsTransform();

@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Text;
 using System;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics.Native
 {
@@ -780,7 +781,7 @@ namespace Microsoft.Maui.Graphics.Native
 			_canvas.Translate(tx * CurrentState.ScaleX, ty * CurrentState.ScaleY);
 		}
 
-		protected override void NativeConcatenateTransform(AffineTransform transform)
+		protected override void NativeConcatenateTransform(Matrix3x2 transform)
 		{
 			var matrix = new Matrix(_canvas.Matrix);
 			matrix.PostConcat(transform.AsMatrix());

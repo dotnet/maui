@@ -701,7 +701,7 @@ namespace Microsoft.Maui.Graphics.Win2D
             _session.Transform = CurrentState.AppendTranslate(tx, ty);
         }
 
-        protected override void NativeConcatenateTransform(AffineTransform transform)
+        protected override void NativeConcatenateTransform(Matrix3x2 transform)
         {
             _session.Transform = CurrentState.AppendConcatenateTransform(transform);
         }

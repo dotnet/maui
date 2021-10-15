@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.IO;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.Graphics
 			float scale)
 		{
 			var scaledPath = new PathF(target);
-			var transform = AffineTransform.GetScaleInstance(scale, scale);
+			var transform = Matrix3x2.CreateScale(scale);
 			scaledPath.Transform(transform);
 			return scaledPath;
 		}
