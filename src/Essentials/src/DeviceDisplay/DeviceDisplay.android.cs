@@ -118,9 +118,9 @@ namespace Microsoft.Maui.Essentials
 			: base(context) => onChanged = handler;
 
 		public override async void OnOrientationChanged(int orientation)
-        {
-            await Task.Delay(500);
-            onChanged();
-        }
+		{
+			await Task.Delay(500);
+			onChanged();
+		}
 	}
 }
