@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.Maui
 {
@@ -8,13 +7,13 @@ namespace Microsoft.Maui
 	{
 #if __ANDROID__
 		public ActivationState(IMauiContext context, Android.OS.Bundle? savedInstance)
-			: this(context, GetStateDictionary(savedInstance))
+			: this(context, GetPersistedState(savedInstance))
 		{
 			SavedInstance = savedInstance;
 		}
 #elif __IOS__
 		public ActivationState(IMauiContext context, Foundation.NSDictionary[]? states)
-			: this(context, GetStateDictionary(states))
+			: this(context, GetPersistedState(states))
 		{
 		}
 #elif WINDOWS
@@ -28,10 +27,10 @@ namespace Microsoft.Maui
 		public ActivationState(IMauiContext context)
 		{
 			Context = context ?? throw new ArgumentNullException(nameof(context));
-			State = new Dictionary<string, string?>();
+			State = new PersistedState();
 		}
 
-		public ActivationState(IMauiContext context, IReadOnlyDictionary<string, string?> state)
+		public ActivationState(IMauiContext context, IPersistedState state)
 		{
 			Context = context ?? throw new ArgumentNullException(nameof(context));
 			State = state ?? throw new ArgumentNullException(nameof(state));
@@ -39,7 +38,7 @@ namespace Microsoft.Maui
 
 		public IMauiContext Context { get; }
 
-		public IReadOnlyDictionary<string, string?> State { get; }
+		public IPersistedState State { get; }
 
 #if __ANDROID__
 		public Android.OS.Bundle? SavedInstance { get; }
@@ -48,9 +47,9 @@ namespace Microsoft.Maui
 #endif
 
 #if __ANDROID__
-		static IReadOnlyDictionary<string, string?> GetStateDictionary(Android.OS.Bundle? state)
+		static IPersistedState GetPersistedState(Android.OS.Bundle? state)
 		{
-			var dict = new Dictionary<string, string?>();
+			var dict = new PersistedState();
 
 			var keyset = state?.KeySet();
 			if (keyset != null)
@@ -64,9 +63,9 @@ namespace Microsoft.Maui
 			return dict;
 		}
 #elif __IOS__
-		static IReadOnlyDictionary<string, string?> GetStateDictionary(Foundation.NSDictionary[]? states)
+		static IPersistedState GetPersistedState(Foundation.NSDictionary[]? states)
 		{
-			var state = new Dictionary<string, string?>();
+			var state = new PersistedState();
 
 			if (states != null)
 			{
@@ -85,15 +84,5 @@ namespace Microsoft.Maui
 			return state;
 		}
 #endif
-	}
-
-	public class PersistedState : IPersistedState
-	{
-		public PersistedState()
-		{
-			State = new Dictionary<string, string?>();
-		}
-
-		public IDictionary<string, string?> State { get; }
 	}
 }

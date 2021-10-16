@@ -31,23 +31,16 @@ namespace Microsoft.Maui
 
 			MainWindow = winuiWndow;
 
-			MainWindow.Activate();
-
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}
 
-		internal UI.Xaml.Window CreateNativeWindow(IWindow window) =>
-			CreateNativeWindow((mauiContext) => window);
+		internal UI.Xaml.Window CreateNativeWindow(IPersistedState state) =>
+			CreateNativeWindow((mauiContext) => new ActivationState(mauiContext, state));
 
 		UI.Xaml.Window CreateNativeWindow(UI.Xaml.LaunchActivatedEventArgs args) =>
-			CreateNativeWindow((mauiContext) =>
-			{
-				var activationState = new ActivationState(mauiContext, args);
-				var window = Application.CreateWindow(activationState);
-				return window;
-			});
+			CreateNativeWindow((mauiContext) => new ActivationState(mauiContext, args));
 
-		UI.Xaml.Window CreateNativeWindow(Func<IMauiContext, IWindow> create)
+		UI.Xaml.Window CreateNativeWindow(Func<IMauiContext, IActivationState> create)
 		{
 			var winuiWndow = new MauiWinUIWindow();
 
@@ -55,11 +48,15 @@ namespace Microsoft.Maui
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
-			var window = create(mauiContext);
+			var activationState = create(mauiContext);
+
+			var window = Application.CreateWindow(activationState);
 
 			winuiWndow.SetWindowHandler(window, mauiContext);
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnWindowCreated>(del => del(winuiWndow));
+
+			winuiWndow.Activate();
 
 			return winuiWndow;
 		}

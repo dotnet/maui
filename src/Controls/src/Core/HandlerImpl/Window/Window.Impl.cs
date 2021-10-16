@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler? Deactivated;
 		public event EventHandler? Stopped;
 		public event EventHandler? Destroying;
+		public event EventHandler<BackgroundingEventArgs>? Backgrounding;
 
 		protected virtual void OnCreated() { }
 		protected virtual void OnResumed() { }
@@ -73,14 +74,7 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnDeactivated() { }
 		protected virtual void OnStopped() { }
 		protected virtual void OnDestroying() { }
-
-		void IWindow.Backgrounding(IPersistedState state)
-		{
-			//Backgrounding?.Invoke(this, EventArgs.Empty);
-			Backgrounding(state);
-		}
-
-		protected virtual void Backgrounding(IPersistedState state) { }
+		protected virtual void OnBackgrounding(IPersistedState state) { }
 
 		protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		{
@@ -219,6 +213,12 @@ namespace Microsoft.Maui.Controls
 			Resumed?.Invoke(this, EventArgs.Empty);
 			OnResumed();
 			Application?.SendResume();
+		}
+
+		void IWindow.Backgrounding(IPersistedState state)
+		{
+			Backgrounding?.Invoke(this, new BackgroundingEventArgs(state));
+			OnBackgrounding(state);
 		}
 
 		// Currently this returns MainPage + ModalStack

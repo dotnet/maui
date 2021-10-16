@@ -1,41 +1,52 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Application : IApplication
 	{
+		const string MauiWindowIdKey = "__MAUI_WINDOW_ID__";
+		const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
+
 		readonly List<Window> _windows = new();
-
-		IReadOnlyList<IWindow> IApplication.Windows => Windows;
-
-		public IReadOnlyList<Window> Windows => _windows.AsReadOnly();
-
 		readonly Dictionary<string, Window> _requestedWindows = new();
+		ILogger<Application>? _logger;
+
+		ILogger<Application>? Logger =>
+			_logger ??= Handler?.MauiContext?.CreateLogger<Application>();
+
+		IReadOnlyList<IWindow> IApplication.Windows => _windows;
+
+		public IReadOnlyList<Window> Windows => _windows;
 
 		IWindow IApplication.CreateWindow(IActivationState activationState)
 		{
 			Window? window = null;
 
-			if (activationState.State?.TryGetValue("__MAUI_WINDOW_ID__", out var requestedWindowId) ?? false)
+			// try get the window that is pending
+			if (activationState.State?.TryGetValue(MauiWindowIdKey, out var requestedWindowId) ?? false)
 			{
 				if (requestedWindowId != null && _requestedWindows.TryGetValue(requestedWindowId, out var w))
 					window = w;
 			}
 
+			// create a new one if there is no pending windows
 			if (window == null)
+			{
 				window = CreateWindow(activationState);
 
-			if (_pendingMainPage != null && window.Page != null && window.Page != _pendingMainPage)
-				throw new InvalidOperationException($"Both {nameof(MainPage)} was set and {nameof(Application.CreateWindow)} was overridden to provide a page.");
+				if (_pendingMainPage != null && window.Page != null && window.Page != _pendingMainPage)
+					throw new InvalidOperationException($"Both {nameof(MainPage)} was set and {nameof(Application.CreateWindow)} was overridden to provide a page.");
 
+				// clear out the pending main page as this will never be used again
+				_pendingMainPage = null;
+			}
+
+			// make sure it is added to the windows list
 			if (!_windows.Contains(window))
 				AddWindow(window);
-
-			// clear out the pending main page as this will never be used again
-			_pendingMainPage = null;
 
 			return window;
 		}
@@ -52,25 +63,19 @@ namespace Microsoft.Maui.Controls
 
 			_requestedWindows[id] = window;
 
+			var state = new PersistedState
+			{
+				[MauiWindowIdKey] = id
+			};
+
 #if IOS || MACCATALYST
-			var userInfo = new Foundation.NSMutableDictionary();
-			userInfo.SetValueForKey(new Foundation.NSString(id), new Foundation.NSString("__MAUI_WINDOW_ID__"));
-
-			var userActivity = new Foundation.NSUserActivity("__MAUI_DEFAULT_SCENE_CONFIGURATION__");
-			userActivity.AddUserInfoEntries(userInfo);
-
 			UIKit.UIApplication.SharedApplication.RequestSceneSessionActivation(
 				null,
-				userActivity,
+				state.ToUserActivity(MauiSceneConfigurationKey),
 				null,
-				err =>
-				{
-					Console.WriteLine(err.Description);
-				});
+				err => Logger?.LogError(new Foundation.NSErrorException(err), err.Description));
 #elif WINDOWS
-			var nativeWindow = MauiWinUIApplication.Current.CreateNativeWindow(window: window);
-			AddWindow(window);
-			nativeWindow.Activate();
+			MauiWinUIApplication.Current.CreateNativeWindow(state);
 #endif
 		}
 

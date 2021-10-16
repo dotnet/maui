@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using UIKit;
 using Foundation;
+using UIKit;
 
 namespace Microsoft.Maui
 {
-    public class MauiUISceneDelegate : UIWindowSceneDelegate
-    {
+	public class MauiUISceneDelegate : UIWindowSceneDelegate
+	{
 		WeakReference<IWindow>? _virtualWindow;
 		internal IWindow? VirtualWindow
 		{
@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 		}
 
 		public override UIWindow? Window { get; set; }
-		
+
 		public override void WillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
 		{
 			if (session.Configuration.Name != "__MAUI_DEFAULT_SCENE_CONFIGURATION__")
@@ -37,8 +37,6 @@ namespace Microsoft.Maui
 
 			if (Window == null)
 			{
-				var currentUIAppDelegate = MauiUIApplicationDelegate.Current;
-
 				var dicts = new List<NSDictionary>();
 
 				// Find any userinfo/dictionaries we might pass into the activation state
@@ -61,7 +59,7 @@ namespace Microsoft.Maui
 				Window = w.nativeWIndow;
 				VirtualWindow = w.virtualWindow;
 			}
-			
+
 			Window?.MakeKeyAndVisible();
 		}
 
@@ -75,19 +73,11 @@ namespace Microsoft.Maui
 				return null;
 			}
 
-			var userActivity = new NSUserActivity(virtualWindow.GetType().FullName!);
 			var persistedState = new PersistedState();
 
 			virtualWindow.Backgrounding(persistedState);
 
-			var mutableUserInfo = new NSMutableDictionary();
-
-			foreach (var kvp in persistedState.State)
-				mutableUserInfo.SetValueForKey(new NSString(kvp.Value), new NSString(kvp.Key));
-
-			userActivity.UserInfo = mutableUserInfo;
-
-			return userActivity;
+			return persistedState.ToUserActivity(virtualWindow.GetType().FullName!);
 		}
 	}
 }

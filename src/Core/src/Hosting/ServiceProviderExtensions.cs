@@ -7,6 +7,9 @@ namespace Microsoft.Maui
 {
 	public static class ServiceProviderExtensions
 	{
+		internal static ILogger<T>? CreateLogger<T>(this IMauiContext context) =>
+			context.Services.CreateLogger<T>();
+
 		internal static ILogger<T>? CreateLogger<T>(this IServiceProvider services) =>
 			services.GetService<ILoggerFactory>()?.CreateLogger<T>();
 	}
