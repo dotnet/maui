@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{
-		public static MauiAppBuilder ConfigureCoreServices(this MauiAppBuilder builder)
+		public static MauiAppBuilder ConfigureDispatching(this MauiAppBuilder builder)
 		{
 			builder.Services.TryAddSingleton<IDispatcherProvider>(svc => new DispatcherProvider());
 			builder.Services.TryAddScoped(svc =>

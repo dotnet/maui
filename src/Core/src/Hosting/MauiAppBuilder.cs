@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Hosting
 				this.ConfigureImageSources();
 				this.ConfigureAnimations();
 				this.ConfigureCrossPlatformLifecycleEvents();
-				this.ConfigureCoreServices();
+				this.ConfigureDispatching();
 			}
 		}
 
