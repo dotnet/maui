@@ -51,60 +51,26 @@ namespace Microsoft.Maui
 			where TService : class
 		{
 			var weak = new WeakReference(instance);
-
 			_services.AddSpecific(typeof(TService), () => weak.Target);
-		}
-
-		internal void AddSpecific<TService>(Func<TService> factory)
-			where TService : class
-		{
-			var lazy = new Lazy<TService>(() => factory());
-
-			_services.AddSpecific(typeof(TService), () => lazy.Value);
-		}
-
-		internal void AddSpecific<TService>(Func<IServiceProvider, TService> factory)
-			where TService : class
-		{
-			var lazy = new Lazy<TService>(() => factory(_services));
-
-			_services.AddSpecific(typeof(TService), () => lazy.Value);
-		}
-
-		internal void AddSpecific<TService, TImplementation>(Func<TImplementation> factory)
-			where TService : class
-			where TImplementation : class, TService
-		{
-			var lazy = new Lazy<TImplementation>(() => factory());
-
-			_services.AddSpecific(typeof(TService), () => lazy.Value);
-		}
-
-		internal void AddSpecific<TService, TImplementation>(Func<IServiceProvider, TImplementation> factory)
-			where TService : class
-			where TImplementation : class, TService
-		{
-			var lazy = new Lazy<TImplementation>(() => factory(_services));
-
-			_services.AddSpecific(typeof(TService), () => lazy.Value);
 		}
 
 		class WrappedServiceProvider : IServiceProvider
 		{
-			readonly IServiceProvider _serviceProvider;
 			readonly ConcurrentDictionary<Type, Func<object?>> _scopeStatic = new();
 
 			public WrappedServiceProvider(IServiceProvider serviceProvider)
 			{
-				_serviceProvider = serviceProvider;
+				Inner = serviceProvider;
 			}
+
+			public IServiceProvider Inner { get; }
 
 			public object? GetService(Type serviceType)
 			{
 				if (_scopeStatic.TryGetValue(serviceType, out var getter))
 					return getter.Invoke();
 
-				return _serviceProvider.GetService(serviceType);
+				return Inner.GetService(serviceType);
 			}
 
 			public void AddSpecific(Type type, Func<object?> getter)

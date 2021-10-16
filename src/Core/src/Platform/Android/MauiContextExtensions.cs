@@ -86,7 +86,6 @@ namespace Microsoft.Maui
 			var scopedContext = new MauiContext(scope.ServiceProvider, nativeWindow, mauiContext);
 
 			scopedContext.AddWeakSpecific(nativeWindow);
-			scopedContext.AddSpecific(svc => svc.GetRequiredService<IAnimationManager>());
 
 			scopedContext.InitializeScopedServices();
 

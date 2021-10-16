@@ -45,7 +45,6 @@ namespace Microsoft.Maui
 
 			scopedContext.AddSpecific(nativeWindow);
 			scopedContext.AddSpecific(new NavigationRootManager(scopedContext));
-			scopedContext.AddSpecific(svc => svc.GetRequiredService<IAnimationManager>());
 
 			scopedContext.InitializeScopedServices();
 

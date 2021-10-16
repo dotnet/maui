@@ -5,15 +5,7 @@ namespace Microsoft.Maui.Dispatching
 {
 	public partial class Dispatcher : IDispatcher
 	{
-		static IDispatcher? GetForCurrentThreadImplementation()
-		{
-			if (NSThread.Current.IsMainThread)
-				return null;
-
-			return new Dispatcher();
-		}
-
-		Dispatcher()
+		internal Dispatcher()
 		{
 		}
 
@@ -22,5 +14,16 @@ namespace Microsoft.Maui.Dispatching
 
 		void BeginInvokeOnMainThreadImplementation(Action action) =>
 			NSRunLoop.Main.BeginInvokeOnMainThread(() => action());
+	}
+
+	public partial class DispatcherProvider
+	{
+		static IDispatcher? GetForCurrentThreadImplementation()
+		{
+			if (NSThread.Current.IsMainThread)
+				return null;
+
+			return new Dispatcher();
+		}
 	}
 }

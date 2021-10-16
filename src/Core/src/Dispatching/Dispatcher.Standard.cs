@@ -4,9 +4,7 @@ namespace Microsoft.Maui.Dispatching
 {
 	public partial class Dispatcher : IDispatcher
 	{
-		static IDispatcher? GetForCurrentThreadImplementation() =>
-			throw new NotImplementedException();
-		Dispatcher()
+		internal Dispatcher()
 		{
 		}
 
@@ -14,6 +12,12 @@ namespace Microsoft.Maui.Dispatching
 			throw new NotImplementedException();
 
 		void BeginInvokeOnMainThreadImplementation(Action action) =>
+			throw new NotImplementedException();
+	}
+
+	public partial class DispatcherProvider
+	{
+		static IDispatcher? GetForCurrentThreadImplementation() =>
 			throw new NotImplementedException();
 	}
 }

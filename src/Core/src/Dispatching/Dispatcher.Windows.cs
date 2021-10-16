@@ -5,18 +5,9 @@ namespace Microsoft.Maui.Dispatching
 {
 	public partial class Dispatcher : IDispatcher
 	{
-		static IDispatcher? GetForCurrentThreadImplementation()
-		{
-			var q = DispatcherQueue.GetForCurrentThread();
-			if (q == null)
-				return null;
-
-			return new Dispatcher(q);
-		}
-
 		readonly DispatcherQueue _dispatcherQueue;
 
-		Dispatcher(DispatcherQueue dispatcherQueue)
+		internal Dispatcher(DispatcherQueue dispatcherQueue)
 		{
 			_dispatcherQueue = dispatcherQueue ?? throw new ArgumentNullException(nameof(dispatcherQueue));
 		}
@@ -26,5 +17,17 @@ namespace Microsoft.Maui.Dispatching
 
 		void BeginInvokeOnMainThreadImplementation(Action action) =>
 			_dispatcherQueue.TryEnqueue(() => action());
+	}
+
+	public partial class DispatcherProvider
+	{
+		static IDispatcher? GetForCurrentThreadImplementation()
+		{
+			var q = DispatcherQueue.GetForCurrentThread();
+			if (q == null)
+				return null;
+
+			return new Dispatcher(q);
+		}
 	}
 }
