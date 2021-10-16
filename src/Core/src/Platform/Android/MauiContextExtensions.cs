@@ -48,8 +48,8 @@ namespace Microsoft.Maui
 			(mauiContext.Context?.GetActivity() as AppCompatActivity)
 			?? throw new InvalidOperationException("AppCompatActivity Not Found");
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, 
-			LayoutInflater? layoutInflater = null, 
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext,
+			LayoutInflater? layoutInflater = null,
 			FragmentManager? fragmentManager = null,
 			Android.Content.Context? context = null)
 		{

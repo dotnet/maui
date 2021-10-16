@@ -20,12 +20,12 @@ using AColor = Android.Graphics.Color;
 using ActionBarDrawerToggle = AndroidX.AppCompat.App.ActionBarDrawerToggle;
 using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 using ATextView = global::Android.Widget.TextView;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
 using R = Android.Resource;
-using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

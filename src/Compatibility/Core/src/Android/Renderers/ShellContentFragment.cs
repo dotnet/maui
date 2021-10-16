@@ -10,8 +10,8 @@ using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Platform;
 using AndroidAnimation = Android.Views.Animations.Animation;
 using AnimationSet = Android.Views.Animations.AnimationSet;
-using AView = Android.Views.View;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

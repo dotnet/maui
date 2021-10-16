@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 				PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty,
 				NavigationPage.BarBackgroundColorProperty,
 				NavigationPage.BarBackgroundProperty,
-				NavigationPage.BarTextColorProperty) || 
+				NavigationPage.BarTextColorProperty) ||
 				e.IsOneOf(
 					PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty,
 					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty))

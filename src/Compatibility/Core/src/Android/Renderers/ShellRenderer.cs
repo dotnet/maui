@@ -12,11 +12,11 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
+using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
-using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

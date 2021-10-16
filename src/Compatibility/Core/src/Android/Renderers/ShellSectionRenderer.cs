@@ -12,8 +12,8 @@ using AndroidX.ViewPager.Widget;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using Microsoft.Maui.Controls.Platform;
-using AView = Android.Views.View;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {
