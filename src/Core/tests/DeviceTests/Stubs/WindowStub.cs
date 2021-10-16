@@ -51,6 +51,6 @@
 			IsResumed = false;
 		}
 
-		public bool BackButtonPressed() => true;
+		public bool BackButtonClicked() => true;
 	}
 }

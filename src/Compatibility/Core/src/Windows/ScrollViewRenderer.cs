@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			return result;
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (Element == null || Control == null)
 				return finalSize;
@@ -47,14 +47,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			base.Dispose(disposing);
 		}
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (Element == null)
-				return new Windows.Foundation.Size(0, 0);
+				return new global::Windows.Foundation.Size(0, 0);
 
 			double width = Math.Max(0, Element.Width);
 			double height = Math.Max(0, Element.Height);
-			var result = new Windows.Foundation.Size(width, height);
+			var result = new global::Windows.Foundation.Size(width, height);
 
 			Control?.Measure(result);
 			

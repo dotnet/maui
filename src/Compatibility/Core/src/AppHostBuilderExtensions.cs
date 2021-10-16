@@ -84,6 +84,7 @@ namespace Microsoft.Maui.Controls.Hosting
 
 #if __ANDROID__ || __IOS__ || WINDOWS || MACCATALYST
 
+					handlers.TryAddCompatibilityRenderer(typeof(Frame), typeof(FrameRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(BoxView), typeof(BoxRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Entry), typeof(EntryRenderer));
 					handlers.TryAddCompatibilityRenderer(typeof(Editor), typeof(EditorRenderer));
@@ -163,6 +164,7 @@ namespace Microsoft.Maui.Controls.Hosting
 					VisualElement.RemapForControls();
 					Label.RemapForControls();
 					Button.RemapForControls();
+					Window.RemapForControls();
 				});
 
 			builder.AddMauiCompat();

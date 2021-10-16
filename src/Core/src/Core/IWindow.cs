@@ -24,6 +24,6 @@ namespace Microsoft.Maui
 
 		void Backgrounding(IPersistedState state);
 
-		bool BackButtonPressed();
+		bool BackButtonClicked();
 	}
 }

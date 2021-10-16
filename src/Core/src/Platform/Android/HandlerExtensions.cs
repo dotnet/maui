@@ -36,10 +36,13 @@ namespace Microsoft.Maui
 			if (handler.VirtualView != view)
 				handler.SetVirtualView(view);
 
-			if (((INativeViewHandler)handler).NativeView is not AView result)
-				throw new InvalidOperationException($"Unable to convert {view} to {typeof(AView)}");
+			if (handler is INativeViewHandler nvh && nvh.NativeView is AView)
+				return nvh.NativeView;
 
-			return result;
+			if (handler.NativeView is AView result)
+				return result;
+
+			throw new InvalidOperationException($"Unable to convert {view} to {typeof(AView)}");
 		}
 
 		public static void SetApplicationHandler(this Application nativeApplication, IApplication application, IMauiContext context) =>

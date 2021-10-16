@@ -24,8 +24,11 @@ namespace Microsoft.Maui.Controls
 		ReadOnlyCollection<Element>? _logicalChildren;
 		List<IVisualTreeElement> _visualChildren;
 
+		internal Toolbar Toolbar { get; }
+
 		public Window()
 		{
+			Toolbar = new Toolbar();
 			_visualChildren = new List<IVisualTreeElement>();
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
@@ -267,7 +270,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		bool IWindow.BackButtonPressed()
+		bool IWindow.BackButtonClicked()
 		{
 			return this.Page?.SendBackButtonPressed() ?? false;
 		}

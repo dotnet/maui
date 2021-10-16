@@ -11,8 +11,6 @@ namespace Microsoft.Maui.Controls
 	{
 		const int DefaultPadding = 4;
 
-		const int DefaultViewSize = 10;
-
 		public static readonly BindableProperty IndicatorsShapeProperty = BindableProperty.Create(nameof(IndicatorsShape), typeof(IndicatorShape), typeof(IndicatorView), Controls.IndicatorShape.Circle);
 
 		public static readonly BindableProperty PositionProperty = BindableProperty.Create(nameof(Position), typeof(int), typeof(IndicatorView), default(int), BindingMode.TwoWay);
@@ -39,10 +37,7 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindableProperty IndicatorLayoutProperty = BindableProperty.Create(nameof(IndicatorLayout), typeof(IBindableLayout), typeof(IndicatorView), null, propertyChanged: TemplateUtilities.OnContentChanged);
 
-		public IndicatorView()
-		{
-
-		}
+		public IndicatorView() { }
 
 		public IndicatorShape IndicatorsShape
 		{
@@ -126,7 +121,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else if (indicatorView.IndicatorLayout == null)
 			{
-				(indicatorView.IndicatorLayout as IndicatorStackLayout).Remove();
+				(indicatorView.IndicatorLayout as IndicatorStackLayout)?.Remove();
 				indicatorView.IndicatorLayout = null;
 			}
 		}

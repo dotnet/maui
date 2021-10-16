@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Graphics.Rectangle, Size>? CrossPlatformArrange { get; set; }
 
-		protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
 			if (CrossPlatformMeasure == null)
 			{
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 			return measure.ToNative();
 		}
 
-		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
+		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			if (CrossPlatformArrange == null)
 			{
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 
 			var actual = CrossPlatformArrange(new Graphics.Rectangle(0, 0, width, height));
 
-			return new Windows.Foundation.Size(actual.Width, actual.Height);
+			return new global::Windows.Foundation.Size(actual.Width, actual.Height);
 		}
 
 		public ContentPanel() 
