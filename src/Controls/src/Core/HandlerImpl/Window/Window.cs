@@ -52,5 +52,5 @@ namespace Microsoft.Maui.Controls
 		}
 #endif
 
-		}
 	}
+}
