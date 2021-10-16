@@ -77,7 +77,7 @@
     <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == '' and $(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
     <!-- When setting UseInternalWinUIPackages=true, make sure to also uncomment the "wasdk-internal" nuget source in NuGet.config -->
-    <!-- <UseInternalWinUIPackages>true</UseInternalWinUIPackages> -->
+    <UseInternalWinUIPackages>true</UseInternalWinUIPackages>
   </PropertyGroup>
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>
