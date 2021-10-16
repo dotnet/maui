@@ -9,5 +9,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.Logger?.LogWarning("Android does not support programmatically terminating the app.");
 		}
+
+		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args) { }
 	}
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -75,7 +76,7 @@ namespace Microsoft.Maui.Controls
 				null,
 				err => Logger?.LogError(new Foundation.NSErrorException(err), err.Description));
 #elif WINDOWS
-			MauiWinUIApplication.Current.CreateNativeWindow(state);
+			Handler?.Invoke(nameof(IApplication.OpenWindow), new OpenWindowRequest(State: state));
 #endif
 		}
 

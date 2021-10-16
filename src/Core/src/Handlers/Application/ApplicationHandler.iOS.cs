@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Handlers
 #endif
 		}
 
+		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args) { }
+
 #if __MACCATALYST__
 		class NSApplication
 		{
