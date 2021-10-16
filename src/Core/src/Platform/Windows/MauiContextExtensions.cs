@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Animations;
 using Windows.ApplicationModel.Resources.Core;
 
 namespace Microsoft.Maui
@@ -25,30 +24,5 @@ namespace Microsoft.Maui
 
 		public static UI.Xaml.Window? GetOptionalNativeWindow(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetService<UI.Xaml.Window>();
-
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, UI.Xaml.Application nativeApplication)
-		{
-			var scopedContext = new MauiContext(mauiContext);
-
-			scopedContext.AddSpecific(nativeApplication);
-
-			scopedContext.InitializeScopedServices();
-
-			return scopedContext;
-		}
-
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, UI.Xaml.Window nativeWindow, out IServiceScope scope)
-		{
-			scope = mauiContext.Services.CreateScope();
-
-			var scopedContext = new MauiContext(scope.ServiceProvider, mauiContext);
-
-			scopedContext.AddSpecific(nativeWindow);
-			scopedContext.AddSpecific(new NavigationRootManager(scopedContext));
-
-			scopedContext.InitializeScopedServices();
-
-			return scopedContext;
-		}
 	}
 }

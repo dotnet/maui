@@ -3,7 +3,6 @@ using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Animations;
 
 namespace Microsoft.Maui
 {
@@ -49,8 +48,8 @@ namespace Microsoft.Maui
 			(mauiContext.Context?.GetActivity() as AppCompatActivity)
 			?? throw new InvalidOperationException("AppCompatActivity Not Found");
 
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, 
-			LayoutInflater? layoutInflater = null, 
+		public static IMauiContext MakeScoped(this IMauiContext mauiContext,
+			LayoutInflater? layoutInflater = null,
 			FragmentManager? fragmentManager = null,
 			Android.Content.Context? context = null)
 		{
@@ -64,30 +63,6 @@ namespace Microsoft.Maui
 
 			if (context != null)
 				scopedContext.AddWeakSpecific(context);
-
-			return scopedContext;
-		}
-
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, Android.App.Application nativeApplication)
-		{
-			var scopedContext = new MauiContext(mauiContext.Services, nativeApplication, mauiContext);
-
-			scopedContext.AddSpecific(nativeApplication);
-
-			scopedContext.InitializeScopedServices();
-
-			return scopedContext;
-		}
-
-		public static IMauiContext MakeScoped(this IMauiContext mauiContext, Android.App.Activity nativeWindow, out IServiceScope scope)
-		{
-			scope = mauiContext.Services.CreateScope();
-
-			var scopedContext = new MauiContext(scope.ServiceProvider, nativeWindow, mauiContext);
-
-			scopedContext.AddWeakSpecific(nativeWindow);
-
-			scopedContext.InitializeScopedServices();
 
 			return scopedContext;
 		}
