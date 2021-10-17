@@ -11,7 +11,8 @@ namespace Microsoft.Maui.DeviceTests
 #if WINDOWS
 			var tcs = new TaskCompletionSource<T>();
 
-			var didQueue = MauiWinUIApplication.Current.MainWindow.DispatcherQueue.TryEnqueue(() =>
+			var window = (UI.Xaml.Window)MauiWinUIApplication.Current.Application.Handler!.NativeView!;
+			var didQueue = window.DispatcherQueue.TryEnqueue(() =>
 			{
 				try
 				{
@@ -56,7 +57,8 @@ namespace Microsoft.Maui.DeviceTests
 #if WINDOWS
 			var tcs = new TaskCompletionSource<T>();
 
-			var didQueue = MauiWinUIApplication.Current.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+			var window = (UI.Xaml.Window)MauiWinUIApplication.Current.Application.Handler!.NativeView!;
+			var didQueue = window.DispatcherQueue.TryEnqueue(async () =>
 			{
 				try
 				{
