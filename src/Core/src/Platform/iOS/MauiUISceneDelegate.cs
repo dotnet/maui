@@ -26,6 +26,10 @@ namespace Microsoft.Maui
 
 			window.Backgrounding(persistedState);
 
+			// the user saved nothing, so there is nothing to restore
+			if (persistedState.Count == 0)
+				return null;
+
 			return persistedState.ToUserActivity(window.GetType().FullName!);
 		}
 	}
