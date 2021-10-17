@@ -238,6 +238,8 @@ namespace Microsoft.Maui
 		public static IWindow? GetWindow(this Context context)
 		{
 			var nativeWindow = context.GetActivity();
+			if (nativeWindow is null)
+				return null;
 
 			foreach (var window in MauiApplication.Current.Application.Windows)
 			{

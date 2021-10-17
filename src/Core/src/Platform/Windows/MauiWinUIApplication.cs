@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui
 {
@@ -26,7 +27,7 @@ namespace Microsoft.Maui
 
 			this.SetApplicationHandler(Application, applicationContext);
 
-			Application.Handler!.Invoke(nameof(IApplication.OpenWindow), new OpenWindowRequest(LaunchArgs: args));
+			this.CreateNativeWindow(Application, args);
 
 			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}

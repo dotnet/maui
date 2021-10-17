@@ -26,25 +26,20 @@ namespace Microsoft.Maui.Platform
 			nativeApplication.StartActivity(intent);
 		}
 
-		public static void CreateNativeWindow(this Activity activity, Bundle? savedInstanceState = null)
+		public static void CreateNativeWindow(this Activity activity, IApplication application, Bundle? savedInstanceState = null)
 		{
-			var mauiApp = MauiApplication.Current.Application;
-			if (mauiApp == null)
-				throw new InvalidOperationException($"The {nameof(IApplication)} instance was not found.");
-
-			var services = MauiApplication.Current.Services;
-			if (services == null)
-				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
+			if (application.Handler?.MauiContext is not IMauiContext applicationContext)
+				return;
 
 			savedInstanceState ??= activity.Intent?.Extras;
 
-			var mauiContext = MauiApplication.Current.MauiApplicationContext.MakeScoped(activity);
+			var mauiContext = applicationContext.MakeScoped(activity);
 
-			services.InvokeLifecycleEvents<AndroidLifecycle.OnMauiContextCreated>(del => del(mauiContext));
+			applicationContext.Services.InvokeLifecycleEvents<AndroidLifecycle.OnMauiContextCreated>(del => del(mauiContext));
 
 			var activationState = new ActivationState(mauiContext, savedInstanceState);
 
-			var window = mauiApp.CreateWindow(activationState);
+			var window = application.CreateWindow(activationState);
 
 			activity.SetWindowHandler(window, mauiContext);
 		}
