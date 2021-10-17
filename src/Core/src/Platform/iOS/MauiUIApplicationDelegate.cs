@@ -10,6 +10,8 @@ namespace Microsoft.Maui
 {
 	public abstract class MauiUIApplicationDelegate : UIApplicationDelegate, IUIApplicationDelegate
 	{
+		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
+
 		MauiContext _applicationContext = null!;
 		WeakReference<IWindow>? _virtualWindow;
 

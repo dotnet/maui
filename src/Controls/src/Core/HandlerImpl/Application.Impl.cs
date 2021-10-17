@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Controls
 	public partial class Application : IApplication
 	{
 		const string MauiWindowIdKey = "__MAUI_WINDOW_ID__";
-		const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
 
 		readonly List<Window> _windows = new();
 		readonly Dictionary<string, Window> _requestedWindows = new();
@@ -69,15 +68,7 @@ namespace Microsoft.Maui.Controls
 				[MauiWindowIdKey] = id
 			};
 
-#if IOS || MACCATALYST
-			UIKit.UIApplication.SharedApplication.RequestSceneSessionActivation(
-				null,
-				state.ToUserActivity(MauiSceneConfigurationKey),
-				null,
-				err => Logger?.LogError(new Foundation.NSErrorException(err), err.Description));
-#elif WINDOWS
 			Handler?.Invoke(nameof(IApplication.OpenWindow), new OpenWindowRequest(State: state));
-#endif
 		}
 
 		public void ThemeChanged()

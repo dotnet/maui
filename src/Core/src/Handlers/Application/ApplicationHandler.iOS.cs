@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
-using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -17,7 +17,10 @@ namespace Microsoft.Maui.Handlers
 #endif
 		}
 
-		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args) { }
+		public static void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args)
+		{
+			handler.NativeView?.RequestNewWindow(application, args as OpenWindowRequest);
+		}
 
 #if __MACCATALYST__
 		class NSApplication

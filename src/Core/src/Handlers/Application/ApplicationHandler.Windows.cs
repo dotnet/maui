@@ -1,5 +1,4 @@
 using Microsoft.Maui.Platform;
-using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -15,6 +14,4 @@ namespace Microsoft.Maui.Handlers
 			handler.NativeView?.CreateNativeWindow(application, args as OpenWindowRequest);
 		}
 	}
-
-	public record OpenWindowRequest(IPersistedState? State = null, LaunchActivatedEventArgs? LaunchArgs = null);
 }

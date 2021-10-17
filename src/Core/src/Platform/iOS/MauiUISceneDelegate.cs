@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Foundation;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui
@@ -32,7 +33,7 @@ namespace Microsoft.Maui
 
 		public override void WillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
 		{
-			if (session.Configuration.Name != "__MAUI_DEFAULT_SCENE_CONFIGURATION__")
+			if (session.Configuration.Name != MauiUIApplicationDelegate.MauiSceneConfigurationKey)
 				return;
 
 			if (Window == null)

@@ -12,7 +12,6 @@ using AActivity = Android.App.Activity;
 using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
 using AAttribute = Android.Resource.Attribute;
 using AColor = Android.Graphics.Color;
-using AFragmentManager = AndroidX.Fragment.App.FragmentManager;
 using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui
@@ -240,12 +239,9 @@ namespace Microsoft.Maui
 		{
 			var nativeWindow = context.GetActivity();
 
-			if (nativeWindow is MauiAppCompatActivity mac && mac.VirtualWindow != null)
-				return mac.VirtualWindow;
-
 			foreach (var window in MauiApplication.Current.Application.Windows)
 			{
-				if (window?.Handler?.NativeView is AActivity win && win == nativeWindow)
+				if (window?.Handler?.NativeView == nativeWindow)
 					return window;
 			}
 
