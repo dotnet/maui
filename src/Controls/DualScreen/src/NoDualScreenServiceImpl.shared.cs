@@ -9,10 +9,11 @@ namespace Microsoft.Maui.Controls.DualScreen
 {
     internal class NoDualScreenServiceImpl : IDualScreenService
     {
-        static Lazy<NoDualScreenServiceImpl> _Instance = new Lazy<NoDualScreenServiceImpl>(() => new NoDualScreenServiceImpl());
+		static Lazy<NoDualScreenServiceImpl> _Instance = new Lazy<NoDualScreenServiceImpl>(() => new NoDualScreenServiceImpl());
         public static NoDualScreenServiceImpl Instance => _Instance.Value;
 
 		readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
+		readonly WeakEventManager _onLayoutChangedEventManager = new WeakEventManager();
 		public NoDualScreenServiceImpl()
         {
 			//HACK:FOLDABLE 
@@ -33,7 +34,11 @@ namespace Microsoft.Maui.Controls.DualScreen
 			add { _onScreenChangedEventManager.AddEventHandler(value); }
 			remove { _onScreenChangedEventManager.RemoveEventHandler(value); }
 		}
-
+		public event EventHandler<FoldEventArgs> OnLayoutChanged
+		{
+			add { _onLayoutChangedEventManager.AddEventHandler(value); }
+			remove { _onLayoutChangedEventManager.RemoveEventHandler(value); }
+		}
 		public void Dispose()
         {
         }

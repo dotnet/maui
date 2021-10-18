@@ -4,14 +4,16 @@
     x:Class="Maui.Controls.Sample.Pages.TwoPaneViewPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:foldable="clr-namespace:Microsoft.Maui.Controls.DualScreen;assembly=Microsoft.Maui.Controls.DualScreen"
-    Title="TwoPaneView">
+    Title="TwoPaneView"
+    BackgroundColor="#bbbbbb">
     <views:BasePage.Content>
         <foldable:TwoPaneView x:Name="twoPaneView"
                               TallModeConfiguration="TopBottom"
                               WideModeConfiguration="LeftRight"
                               MinWideModeWidth="400"
                               MinTallModeHeight="600">
-            <foldable:TwoPaneView.Pane1>
+            <foldable:TwoPaneView.Pane1
+                BackgroundColor="#dddddd">
                 <StackLayout BackgroundColor="DarkGray"
                              Orientation="Vertical"
                              VerticalOptions="StartAndExpand">

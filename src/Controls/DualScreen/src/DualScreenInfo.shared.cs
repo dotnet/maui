@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			}
 			else
 			{
-				System.Diagnostics.Debug.Write("     element == " + element, "JWM");
+				System.Diagnostics.Debug.Write($"     element == [{element}]", "JWM");
 				_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(element, dualScreenService);
 				_twoPaneViewLayoutGuide.PropertyChanged += OnTwoPaneViewLayoutGuideChanged;				
 			}
@@ -137,6 +137,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			if (guide.Pane2 == Rectangle.Zero)
 				return new Rectangle[0];
 
+			//TODO: check the assumptions behind IsLandscape on other foldables
 			if(IsLandscape)
 				return new[] { guide.Pane1, new Rectangle(0, hinge.Height + guide.Pane1.Height, guide.Pane2.Width, guide.Pane2.Height) };
 			else
@@ -167,6 +168,12 @@ namespace Microsoft.Maui.Controls.DualScreen
 			IsLandscape = GetIsLandscape();
 			HingeBounds = GetHingeBounds();
 			SpanMode = GetSpanMode();
+
+			//HACK:FOLDABLE
+			System.Diagnostics.Debug.Write("DualScreenInfo.OnTwoPaneViewLayoutGuideChanged SpanningBounds:" + SpanningBounds.ToRectStrings(), "JWM");
+			System.Diagnostics.Debug.Write("                                               IsLandscape:" + IsLandscape, "JWM");
+			System.Diagnostics.Debug.Write("                                               HingeBounds:" + HingeBounds, "JWM");
+			System.Diagnostics.Debug.Write("                                               SpanMode:" + SpanMode, "JWM");
 		}
 
 		bool SetProperty<T>(ref T backingStore, T value,
@@ -180,6 +187,20 @@ namespace Microsoft.Maui.Controls.DualScreen
 			onChanged?.Invoke();
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 			return true;
+		}
+	}
+	//HACK:FOLDABLE for debugging
+	public static class BoundsExtensions
+	{
+		public static string ToRectStrings(this Rectangle[] bounds) {
+			if (bounds.Length == 0)
+				return "[]";
+			string output = "";
+			foreach (var rect in bounds)
+			{
+				output += rect.ToString() + " ";
+			}
+			return output;
 		}
 	}
 }

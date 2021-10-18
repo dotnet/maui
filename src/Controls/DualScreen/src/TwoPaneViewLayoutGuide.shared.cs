@@ -14,10 +14,10 @@ namespace Microsoft.Maui.Controls.DualScreen
 		public static TwoPaneViewLayoutGuide Instance => _twoPaneViewLayoutGuide.Value;
 		static Lazy<TwoPaneViewLayoutGuide> _twoPaneViewLayoutGuide = new Lazy<TwoPaneViewLayoutGuide>(() => new TwoPaneViewLayoutGuide());
 
-		IDualScreenService DualScreenService { 
+		internal IDualScreenService DualScreenService { 
 			get
 				{
-				System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.DualScreenService - property getter " + _dualScreenService, "JWM");
+				//HACK:FOLDABLE System.Diagnostics.Debug.Write("TwoPaneViewLayoutGuide.DualScreenService - property getter " + _dualScreenService, "JWM");
 				var ds = _dualScreenService ?? DependencyService.Get<IDualScreenService>() ?? NoDualScreenServiceImpl.Instance;
 				
 				return ds;

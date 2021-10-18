@@ -53,6 +53,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 			static HingeSensor DefaultHingeSensor;
 			readonly WeakEventManager _onScreenChangedEventManager = new WeakEventManager();
 
+			public event EventHandler<FoldEventArgs> OnLayoutChanged;
+
 			[Internals.Preserve(Conditional = true)]
 			public DualScreenServiceImpl()
 			{
@@ -61,7 +63,25 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 				_HingeService = this;
 				if (_mainActivity != null)
+				{ 
 					Init(_mainActivity);
+					(_mainActivity as IFoldableContext).FoldingFeatureChanged += DualScreenServiceImpl_FoldingFeatureChanged;
+				}
+			}
+
+			private void DualScreenServiceImpl_FoldingFeatureChanged(object sender, FoldEventArgs ea)
+			{
+				global::Android.Util.Log.Debug("JWM", "DualScreenServiceImpl.DualScreenServiceImpl_FoldingFeatureChanged");
+
+				_isLandscape = (_mainActivity.WindowBounds.Width >= _mainActivity.WindowBounds.Height);
+				_isSpanned = ea.isSeparating;
+
+				_helper.FoldingFeatureBounds = ea.FoldingFeatureBounds;
+				_helper.WindowBounds = ea.WindowBounds;
+				_helper.IsSpanned = ea.isSeparating;
+				
+				_helper.Update();
+				OnLayoutChanged?.Invoke(sender, ea);
 			}
 
 			public static void Init(IFoldableContext activity)
@@ -90,6 +110,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 				if (_mainActivity == null)
 					return;
 
+				
 				//bool isDuo = _HingeService._isDuo = ScreenHelper.IsDualScreenDevice(_mainActivity);
 				//if (!isDuo)
 				//{
@@ -122,6 +143,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 				_HingeService?.Update();
 			}
+
 
 			public Size ScaledScreenSize
 			{

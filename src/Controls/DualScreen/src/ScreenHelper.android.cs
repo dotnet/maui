@@ -17,9 +17,11 @@ namespace Microsoft.Maui.Controls.DualScreen
 {	public class ScreenHelper
 	{
 		//HACK: public DisplayMask DisplayMask { get; private set; }
-		public Rectangle FoldingFeatureBounds { get; private set; } = Rectangle.Zero;
-		public Rectangle WindowBounds { get; private set; } = Rectangle.Zero;
-		public Activity Activity { get; private set; }
+		public Rectangle FoldingFeatureBounds { get; set; } = Rectangle.Zero;
+		public Rectangle WindowBounds { get; set; } = Rectangle.Zero;
+		public bool IsSpanned { get; set; }
+		public Activity Activity { get; set; }
+		
 
 		public ScreenHelper() {
 			global::Android.Util.Log.Debug("JWM", "ScreenHelper.ctor - no Activity");
@@ -76,8 +78,8 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		public void Update() {
 			//HACK:=> DisplayMask = DisplayMask.FromResourcesRectApproximation(Activity);
-			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds;
-			WindowBounds = (Activity as IFoldableContext).WindowBounds;
+//			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds;
+//			WindowBounds = (Activity as IFoldableContext).WindowBounds;
 		}
 
 
@@ -90,7 +92,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			// Double Landscape Rect(0, 1350 - 1800, 1434)
 			// Double Portrait  Rect(1350, 0 - 1434, 1800)
 			//HACK:var boundings = DisplayMask.GetBoundingRectsForRotation(rotation);
-			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds; // TODO get for rotation!!!!???
+//			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds; // TODO get for rotation!!!!???
 
 			//HACK:if (boundings.Count <= 0)
 			if (FoldingFeatureBounds == Rectangle.Zero)
@@ -105,7 +107,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 			// Hinge's coordinates of its 4 edges in different mode
 			// Double Landscape Rect(0, 1350 - 1800, 1434)
 			// Double Portrait  Rect(1350, 0 - 1434, 1800)
-			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds; // TODO get for rotation!!!!???
+//			FoldingFeatureBounds = (Activity as IFoldableContext).FoldingFeatureBounds; // TODO get for rotation!!!!???
 
 			if (FoldingFeatureBounds == Rectangle.Zero)
 				return new Rect();

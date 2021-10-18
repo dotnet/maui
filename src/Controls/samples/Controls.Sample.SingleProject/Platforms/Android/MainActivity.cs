@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample.Droid
 		WindowInfoRepositoryCallbackAdapter wir;
 		IWindowMetricsCalculator wmc;
 
-		#region Should be in MauiAppCompatActivity
+		#region Should be in MauiAppCompatActivity?
 		// IDeviceInfoProvider
 		public event EventHandler ConfigurationChanged;
 		public override void OnConfigurationChanged(Configuration newConfig)
@@ -48,6 +48,7 @@ namespace Maui.Controls.Sample.Droid
 		public bool isSeparating { get; protected set; }
 		public Rectangle FoldingFeatureBounds { get; protected set; }
 		public Rectangle WindowBounds { get; protected set; }
+		public event EventHandler<Microsoft.Maui.Controls.DualScreen.FoldEventArgs> FoldingFeatureChanged;
 		#endregion
 
 		protected override void OnCreate(Bundle savedInstanceState)
@@ -121,7 +122,13 @@ namespace Maui.Controls.Sample.Droid
 					Android.Util.Log.Info("JWM", "DisplayFeature is not a fold or hinge (shouldn't happen currently)");
 				}
 			}
-	}
+			FoldingFeatureChanged?.Invoke(this, new Microsoft.Maui.Controls.DualScreen.FoldEventArgs()
+			{ 
+				isSeparating = isSeparating,
+				FoldingFeatureBounds = FoldingFeatureBounds,
+				WindowBounds = WindowBounds
+			});
+		}
 		#endregion
 	}
 }

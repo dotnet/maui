@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui;
+using System.Threading;
 
 namespace Microsoft.Maui.Controls.DualScreen
 {
@@ -171,6 +172,7 @@ namespace Microsoft.Maui.Controls.DualScreen
 
 		internal TwoPaneView(IDualScreenService dualScreenService)
 		{
+			dss = dualScreenService;
 			_twoPaneViewLayoutGuide = new TwoPaneViewLayoutGuide(this, dualScreenService);
 			_content1 = new ContentView();
 			_content2 = new ContentView();
@@ -186,6 +188,29 @@ namespace Microsoft.Maui.Controls.DualScreen
 			RowDefinitions = new RowDefinitionCollection() { new RowDefinition(), new RowDefinition(), new RowDefinition() };
 			ColumnDefinitions = new ColumnDefinitionCollection() { new ColumnDefinition(), new ColumnDefinition(), new ColumnDefinition() };
 
+			//HACK:FOLDABLE
+			if (_twoPaneViewLayoutGuide.DualScreenService != null)
+				_twoPaneViewLayoutGuide.DualScreenService.OnLayoutChanged += DualScreenService_OnFeatureChanged;
+		}
+
+		IDualScreenService dss;
+		private void DualScreenService_OnFeatureChanged(object sender, FoldEventArgs e)
+		{
+			System.Diagnostics.Debug.Write("TwoPaneView.DualScreenService_OnFeatureChanged - " + e, "JWM");
+			try
+			{
+				Device.BeginInvokeOnMainThread(() =>
+				{
+					_twoPaneViewLayoutGuide.IsLandscape = (e.WindowBounds.Width > e.WindowBounds.Height); // trigger prop changed
+					_twoPaneViewLayoutGuide.UpdateLayouts();
+					this.InvalidateMeasure();
+					this.UpdateMode(true);
+					this.ModeChanged?.Invoke(sender, e);
+				});
+			}
+			catch (Exception) {
+				
+			}
 		}
 
 		internal override void OnIsPlatformEnabledChanged()
