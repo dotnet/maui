@@ -17,7 +17,8 @@ public class WeatherForecastService
 				summaries[Random.Shared.Next(summaries.Length)]
 			))
 		   .ToArray();
-		return forecasts;
+
+		return Task.FromResult(forecasts);
 	}
 }
 
