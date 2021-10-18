@@ -1,26 +1,5 @@
 <Project>
-  <!-- This is for arcade support. -->
-  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="eng\TargetFrameworkDefaults.props" />
-  <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
-    <!--    
-      When building using source-build the process is:
-      - Newtonsoft.Json versions 9.0.1 and 12.0.2 are built by source-build
-      - Version 12.0.2 is written to Version.props
-      - Arcade needs to use 9.0.1 so we need to override Version.props value here
-    -->
-    <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(DotNetBuildOffline)' == 'true'">
-    <!--
-      Arcade has a special version prop for CodeAnalysis.CSharp in GenFacades
-      to try to match the version loaded by msbuild.  In the offline build, this
-      is simply the source-built version.
-    -->
-    <MsbuildTaskMicrosoftCodeAnalysisCSharpVersion>$(MicrosoftCodeAnalysisCSharpVersion)</MsbuildTaskMicrosoftCodeAnalysisCSharpVersion>
-  </PropertyGroup>
-  <!-- end arcade support. -->
-  <!-- <Import Project="eng\Versions.props" />  -->
+  <Import Project="eng\Versions.props" />
   <PropertyGroup>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -30,15 +9,12 @@
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
   </PropertyGroup>
   <PropertyGroup>
-     <DotNetOutputPath>$(MSBuildThisFileDirectory)bin/</DotNetOutputPath>
+    <DotNetOutputPath>$(MSBuildThisFileDirectory)bin/</DotNetOutputPath>
     <DotNetTempDirectory>$(DotNetOutputPath)temp/</DotNetTempDirectory>
     <DotNetDirectory>$(DotNetOutputPath)dotnet/</DotNetDirectory>
     <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
     <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
-    <DotNetLibraryPacksDirectory>$(DotNetDirectory)library-packs/</DotNetLibraryPacksDirectory>
     <DotNetSdkManifestsDirectory>$(DotNetDirectory)sdk-manifests/$(DotNetPreviewVersionBand)/</DotNetSdkManifestsDirectory>
-    <DotNetTemplatePacksDirectory>$(DotNetDirectory)template-packs/</DotNetTemplatePacksDirectory>
-    <DotNet6Feed>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json</DotNet6Feed>
   </PropertyGroup>
   <PropertyGroup>
     <GitDefaultBranch>main</GitDefaultBranch>
@@ -58,7 +34,7 @@
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts</PackageOutputPath>
   </PropertyGroup>
   <!-- This target is replaced by GitInfo when restored. Allows Version.targets to rely on it before restore. -->
-  <!-- <Target Name="GitVersion" />
-  <Target Name="GitInfo" /> -->
+  <Target Name="GitVersion" />
+  <Target Name="GitInfo" />
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
 </Project>
