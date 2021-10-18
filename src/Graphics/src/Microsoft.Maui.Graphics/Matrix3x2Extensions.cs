@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Microsoft.Maui.Graphics.Tests")]
+//[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Microsoft.Maui.Graphics.Tests")]
 
 namespace Microsoft.Maui.Graphics
 {
