@@ -375,7 +375,7 @@ namespace Microsoft.Maui
 			public StackLayoutInflater(
 				LayoutInflater original,
 				Context? context,
-				StackNavigationManager stackNavigationManager) : 
+				StackNavigationManager stackNavigationManager) :
 				base(original, new StackContext(context, stackNavigationManager))
 			{
 				_original = original;
@@ -390,17 +390,17 @@ namespace Microsoft.Maui
 			}
 		}
 
-			internal class StackContext : AndroidX.AppCompat.View.ContextThemeWrapper
+		internal class StackContext : AndroidX.AppCompat.View.ContextThemeWrapper
+		{
+			public StackContext(
+				Context? context,
+				StackNavigationManager stackNavigationManager) : base(context, context?.Theme)
 			{
-				public StackContext(
-					Context? context,
-					StackNavigationManager stackNavigationManager) : base(context, context?.Theme)
-				{
-					StackNavigationManager = stackNavigationManager;
-				}
-
-				public StackNavigationManager StackNavigationManager { get; }
+				StackNavigationManager = stackNavigationManager;
 			}
+
+			public StackNavigationManager StackNavigationManager { get; }
+		}
 
 		class Callbacks :
 			AndroidX.Fragment.App.FragmentManager.FragmentLifecycleCallbacks,
